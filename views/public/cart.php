@@ -1,1 +1,1 @@
-<h1>Cart</h1><p>Your devotional items will appear here.</p>
+<h1>Cart</h1><?php if(!$items): ?><p>Your devotional items will appear here.</p><?php else: ?><table><tr><th>Item</th><th>Qty</th></tr><?php foreach($items as $item): ?><tr><td><?= e($item['product']['name']) ?></td><td><?= e((string)$item['qty']) ?></td></tr><?php endforeach; ?></table><p><a href="/checkout">Proceed to checkout</a></p><?php endif; ?>

@@ -3,3 +3,5 @@
 /storage/logs/*.log
 /storage/backups/*
 !/storage/backups/.gitkeep
+
+/storage/data/*.lock

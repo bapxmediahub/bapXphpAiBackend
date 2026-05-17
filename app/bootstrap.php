@@ -8,7 +8,10 @@ spl_autoload_register(function (string $class): void {
     $prefix = 'App\\';
     if (!str_starts_with($class, $prefix)) return;
     $relative = str_replace('\\', '/', substr($class, strlen($prefix))) . '.php';
-    $paths = [__DIR__ . '/' . $relative, app_path('integrations/' . strtolower(str_replace('Integrations/', '', dirname($relative))) . '/' . basename($relative))];
+    $paths = [__DIR__ . '/' . $relative];
+    if (str_starts_with($relative, 'Integrations/Razorpay/')) $paths[] = app_path('integrations/razorpay/' . basename($relative));
+    if (str_starts_with($relative, 'Integrations/GoogleOAuth/')) $paths[] = app_path('integrations/google-oauth/' . basename($relative));
+    if (str_starts_with($relative, 'Integrations/GoogleCalendar/')) $paths[] = app_path('integrations/google-calendar/' . basename($relative));
     foreach ($paths as $path) { if (is_file($path)) { require $path; return; } }
 });
 

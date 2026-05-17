@@ -47,6 +47,11 @@ $tests['payment signature verification matches Razorpay format'] = function (): 
     assertTrue(!$service->verifySignature('order_1', 'pay_1', 'bad'), 'Invalid payment signature should fail');
 };
 
+$tests['calendar reminders preserve previous-day-evening rule'] = function (): void {
+    $minutes = (new App\Services\CalendarService())->remindersFor('2026-05-18 10:00:00');
+    assertSame([960,60,0], $minutes, 'Calendar reminders should include previous evening, one hour, and start time');
+};
+
 $tests['project map registry has no missing route mappings'] = function (): void {
     $map = ProjectMapService::registry();
     $validation = ProjectMapService::validate($map);

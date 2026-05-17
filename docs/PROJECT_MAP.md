@@ -30,3 +30,17 @@
 - `/admin/backups` → `AdminController@backups` → JsonStoreService
 - `/admin/audit-log` → `AdminController@audit` → AuditLogService
 - `/admin/developer/project-map` → `AdminController@projectMap` → ProjectMapService
+- `/admin/products/save` → `AdminController@saveProduct` → ResourceService
+- `/admin/products/delete` → `AdminController@deleteProduct` → ResourceService
+- `/admin/categories/save` → `AdminController@saveCategory` → ResourceService
+- `/admin/coupons/save` → `AdminController@saveCoupon` → ResourceService
+- `/admin/coupons/delete` → `AdminController@deleteCoupon` → ResourceService
+- `/admin/astrologers/save` → `AdminController@saveAstrologer` → ResourceService
+- `/admin/astrologers/delete` → `AdminController@deleteAstrologer` → ResourceService
+- `/admin/temples/save` → `AdminController@saveTemple` → ResourceService
+- `/admin/temples/delete` → `AdminController@deleteTemple` → ResourceService
+- `/admin/integrations/save` → `AdminController@saveIntegrations` → SecretService
+- `/cart/add` → `CommerceController@addToCart` → CartService
+- `/checkout/create-order` → `CommerceController@createOrder` → SecretService, PaymentService
+- `/payment/verify` → `CommerceController@verifyPayment` → SecretService, PaymentService
+- `/appointments/book` → `BookingController@book` → ResourceService, AvailabilityService, CalendarService

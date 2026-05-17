@@ -32,5 +32,9 @@ final class JsonStoreService {
         $this->write($collection, $records);
         return $record;
     }
+    public function delete(string $collection, string $value, string $key = 'id'): void {
+        $records = array_values(array_filter($this->read($collection), fn($record) => (string)($record[$key] ?? '') !== $value));
+        $this->write($collection, $records);
+    }
     private function file(string $collection): string { return rtrim($this->baseDir, '/') . '/' . $collection . '.json'; }
 }
