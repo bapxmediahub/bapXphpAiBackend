@@ -1,0 +1,1 @@
+<h1>Online Store</h1><div class="grid"><?php foreach (($items ?: [['name'=>'Sacred products will appear here','description'=>'Admin can add products from dashboard.']]) as $item): ?><article class="panel"><h2><?= e($item['name']) ?></h2><p><?= e($item['description'] ?? '') ?></p></article><?php endforeach; ?></div>

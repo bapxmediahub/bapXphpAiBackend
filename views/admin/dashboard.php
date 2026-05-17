@@ -1,0 +1,1 @@
+<h1>Admin Dashboard</h1><div class="cards"><article><h2>Catalog</h2><p>Products, categories, coupons</p></article><article><h2>Bookings</h2><p>Astrologers, slots, appointments</p></article><article><h2>Operations</h2><p>Orders, tracking, backups, settings</p></article></div>

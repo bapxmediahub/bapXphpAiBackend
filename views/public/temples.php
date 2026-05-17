@@ -1,0 +1,1 @@
+<h1>Sri Varahi Temple</h1><div class="grid"><?php foreach (($items ?: [['name'=>'Sri Maha Varahi Amman Temple','description'=>'Temple details are editable from admin.']]) as $item): ?><article class="panel"><h2><?= e($item['name']) ?></h2><p><?= e($item['description']) ?></p></article><?php endforeach; ?></div>

@@ -1,0 +1,32 @@
+# Project Map
+
+- `/` → `PublicController@home` → ProductService, AstrologerService, TempleService
+- `/about` → `PublicController@about` → 
+- `/sri-panchami-spiritual` → `PublicController@spiritual` → 
+- `/astrologers` → `PublicController@astrologers` → AstrologerService
+- `/astrologers/{slug}` → `PublicController@astrologer` → AstrologerService, AvailabilityService
+- `/temples` → `PublicController@temples` → TempleService
+- `/temples/{slug}` → `PublicController@temple` → TempleService
+- `/shop` → `PublicController@shop` → ProductService, CategoryService
+- `/product/{slug}` → `PublicController@product` → ProductService
+- `/cart` → `PublicController@cart` → CartService
+- `/checkout` → `PublicController@checkout` → AuthService, CartService, PaymentService
+- `/contact` → `PublicController@contact` → 
+- `/login` → `PublicController@login` → AuthService
+- `/account/orders` → `AccountController@orders` → AuthService, OrderService
+- `/account/bookings` → `AccountController@bookings` → AuthService, AppointmentService
+- `/admin` → `AdminController@dashboard` → OrderService, AppointmentService
+- `/admin/products` → `AdminController@products` → ProductService
+- `/admin/categories` → `AdminController@categories` → CategoryService
+- `/admin/coupons` → `AdminController@coupons` → CouponService
+- `/admin/orders` → `AdminController@orders` → OrderService
+- `/admin/orders/{id}` → `AdminController@order` → OrderService, ShippingService
+- `/admin/shipping` → `AdminController@shipping` → ShippingService, SettingsService
+- `/admin/astrologers` → `AdminController@astrologers` → AstrologerService, AvailabilityService
+- `/admin/appointments` → `AdminController@appointments` → AppointmentService, CalendarService
+- `/admin/temples` → `AdminController@temples` → TempleService
+- `/admin/settings` → `AdminController@settings` → SettingsService
+- `/admin/integrations` → `AdminController@integrations` → SettingsService, PaymentService, CalendarService
+- `/admin/backups` → `AdminController@backups` → JsonStoreService
+- `/admin/audit-log` → `AdminController@audit` → AuditLogService
+- `/admin/developer/project-map` → `AdminController@projectMap` → ProjectMapService
