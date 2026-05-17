@@ -13,6 +13,8 @@
 - `/checkout` → `PublicController@checkout` → AuthService, CartService, PaymentService
 - `/contact` → `PublicController@contact` → 
 - `/login` → `PublicController@login` → AuthService
+- `/auth/google` → `AuthController@redirect` → SecretService
+- `/auth/google/callback` → `AuthController@callback` → SecretService, JsonStoreService
 - `/account/orders` → `AccountController@orders` → AuthService, OrderService
 - `/account/bookings` → `AccountController@bookings` → AuthService, AppointmentService
 - `/admin` → `AdminController@dashboard` → OrderService, AppointmentService

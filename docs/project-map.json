@@ -132,6 +132,27 @@
         },
         {
             "method": "GET",
+            "path": "/auth/google",
+            "name": "auth.google",
+            "page": "public/login",
+            "controller": "AuthController@redirect",
+            "services": [
+                "SecretService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/auth/google/callback",
+            "name": "auth.google.callback",
+            "page": "public/login",
+            "controller": "AuthController@callback",
+            "services": [
+                "SecretService",
+                "JsonStoreService"
+            ]
+        },
+        {
+            "method": "GET",
             "path": "/account/orders",
             "name": "account.orders",
             "page": "account/orders",

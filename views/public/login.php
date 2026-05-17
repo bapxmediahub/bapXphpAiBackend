@@ -1,1 +1,1 @@
-<h1>Login</h1><p>Continue with Google to shop or book appointments.</p>
+<h1>Login</h1><?php if(!empty($_SESSION['flash'])): ?><p class="notice"><?= e($_SESSION['flash']); unset($_SESSION['flash']); ?></p><?php endif; ?><p>Continue with Google to shop or book appointments.</p><p><a class="button-link" href="/auth/google">Continue with Google</a></p>
