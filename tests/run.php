@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . '/../App/bootstrap.php';
+require __DIR__ . '/../app/bootstrap.php';
 
 use App\Services\JsonStoreService;
 use App\Services\AvailabilityService;
