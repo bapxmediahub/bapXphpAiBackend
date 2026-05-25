@@ -16,11 +16,7 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/checkout','name'=>'checkout','page'=>'public/checkout','controller'=>'PublicController@checkout','services'=>['AuthService','CartService','PaymentService']],
             ['method'=>'GET','path'=>'/contact','name'=>'contact','page'=>'public/contact','controller'=>'PublicController@contact','services'=>[]],
             ['method'=>'GET','path'=>'/login','name'=>'login','page'=>'public/login','controller'=>'PublicController@login','services'=>['AuthService']],
-            ['method'=>'GET','path'=>'/forgot-password','name'=>'password.forgot','page'=>'public/forgot-password','controller'=>'AuthController@forgotPassword','services'=>['SettingsService']],
-            ['method'=>'POST','path'=>'/forgot-password','name'=>'password.email','page'=>'public/forgot-password','controller'=>'AuthController@forgotPasswordPost','services'=>['PasswordResetService','SettingsService','SmtpMailer']],
-            ['method'=>'GET','path'=>'/reset-password','name'=>'password.reset','page'=>'public/reset-password','controller'=>'AuthController@resetPassword','services'=>['PasswordResetService']],
-            ['method'=>'POST','path'=>'/reset-password','name'=>'password.update','page'=>'public/reset-password','controller'=>'AuthController@resetPasswordPost','services'=>['PasswordResetService']],
-            ['method'=>'GET','path'=>'/auth/google','name'=>'auth.google','page'=>'public/login','controller'=>'AuthController@googleRedirect','services'=>['SecretService']],
+            ['method'=>'GET','path'=>'/auth/google','name'=>'auth.google','page'=>'public/login','controller'=>'AuthController@redirect','services'=>['SecretService']],
             ['method'=>'GET','path'=>'/auth/google/callback','name'=>'auth.google.callback','page'=>'public/login','controller'=>'AuthController@callback','services'=>['SecretService','JsonStoreService']],
             ['method'=>'GET','path'=>'/register','name'=>'register','page'=>'public/register','controller'=>'AuthController@register','services'=>[]],
             ['method'=>'POST','path'=>'/register','name'=>'register.post','page'=>'public/register','controller'=>'AuthController@registerPost','services'=>['JsonStoreService']],
@@ -39,8 +35,6 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/admin/appointments','name'=>'admin.appointments','page'=>'admin/list','controller'=>'AdminController@appointments','services'=>['AppointmentService','CalendarService']],
             ['method'=>'GET','path'=>'/admin/temples','name'=>'admin.temples','page'=>'admin/list','controller'=>'AdminController@temples','services'=>['TempleService']],
             ['method'=>'GET','path'=>'/admin/settings','name'=>'admin.settings','page'=>'admin/settings','controller'=>'AdminController@settings','services'=>['SettingsService']],
-            ['method'=>'POST','path'=>'/admin/settings/save','name'=>'admin.settings.save','page'=>'admin/settings','controller'=>'AdminController@saveSettings','services'=>['SettingsService']],
-            ['method'=>'POST','path'=>'/admin/settings/test-smtp','name'=>'admin.settings.test-smtp','page'=>'admin/settings','controller'=>'AdminController@testSmtp','services'=>['SettingsService','SmtpMailer']],
             ['method'=>'GET','path'=>'/admin/integrations','name'=>'admin.integrations','page'=>'admin/integrations','controller'=>'AdminController@integrations','services'=>['SettingsService','PaymentService','CalendarService']],
             ['method'=>'GET','path'=>'/admin/backups','name'=>'admin.backups','page'=>'admin/list','controller'=>'AdminController@backups','services'=>['JsonStoreService']],
             ['method'=>'GET','path'=>'/admin/audit-log','name'=>'admin.audit','page'=>'admin/list','controller'=>'AdminController@audit','services'=>['AuditLogService']],
@@ -62,7 +56,7 @@ final class ProjectMapService {
         ];
         return [
             'routes'=>$routes,
-            'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AvailabilityService','AppointmentService','TempleService','SettingsService','CalendarService','ProjectMapService','JsonStoreService','AuditLogService','ResourceService','SecretService','SmtpMailer','PasswordResetService'],
+            'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AvailabilityService','AppointmentService','TempleService','SettingsService','CalendarService','ProjectMapService','JsonStoreService','AuditLogService','ResourceService','SecretService'],
             'integrations'=>['GoogleOAuthClient','GoogleCalendarClient','RazorpayClient'],
             'collections'=>['users','products','categories','coupons','orders','astrologers','appointments','temples','settings','audit_events'],
         ];

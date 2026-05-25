@@ -16,7 +16,6 @@
                 <label>Password <input type="password" name="password" required></label>
                 <button>Sign in</button>
             </form>
-            <p><a href="/forgot-password">Forgot password?</a></p>
             <p>Don't have an account? <a href="/register">Register</a></p>
         </div>
     </div>
