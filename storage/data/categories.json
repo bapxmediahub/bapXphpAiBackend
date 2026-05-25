@@ -1,1 +1,38 @@
-[]
+[
+    {
+        "id": "cat-jagannath",
+        "slug": "jagannath",
+        "name": "Jagannath",
+        "description": "Divine pendants and idols of Lord Jagannath, evoking the spirit of Puri."
+    },
+    {
+        "id": "cat-narasimha",
+        "slug": "narasimha",
+        "name": "Narasimha",
+        "description": "Powerful protections and pendants of Lord Narasimha for strength and victory."
+    },
+    {
+        "id": "cat-krishna",
+        "slug": "krishna",
+        "name": "Krishna & ShrinathJi",
+        "description": "Serene and beautiful creations depicting Lord Krishna and ShrinathJi."
+    },
+    {
+        "id": "cat-hanuman",
+        "slug": "hanuman",
+        "name": "Ram & Hanuman",
+        "description": "Sacred emblems of devotion, strength, and loyalty."
+    },
+    {
+        "id": "cat-jewelry",
+        "slug": "spiritual-jewelry",
+        "name": "Spiritual Jewelry",
+        "description": "Exquisite wearable deities and sacred jewelry for daily sadhana."
+    },
+    {
+        "id": "cat-emblems",
+        "slug": "sacred-emblems",
+        "name": "Sacred Emblems",
+        "description": "Intricately carved symbols of divinity and spiritual protection."
+    }
+]

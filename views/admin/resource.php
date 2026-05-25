@@ -5,6 +5,8 @@
         <label><?= e(ucwords(str_replace('_',' ',$field))) ?>
             <?php if($field === 'description'): ?>
                 <textarea name="<?= e($field) ?>" id="field-<?= e($field) ?>"></textarea>
+            <?php elseif(str_starts_with($field, 'is_')): ?>
+                <input type="checkbox" name="<?= e($field) ?>" id="field-<?= e($field) ?>" value="1">
             <?php else: ?>
                 <input name="<?= e($field) ?>" id="field-<?= e($field) ?>">
             <?php endif; ?>
@@ -38,7 +40,13 @@ document.querySelectorAll('.edit-item').forEach(button => {
         document.getElementById('resource-id').value = item.__id || '';
         <?php foreach($fields as $field): ?>
             let field = document.getElementById('field-<?= e($field) ?>');
-            if (field) field.value = Array.isArray(item['<?= e($field) ?>']) ? item['<?= e($field) ?>'].join(', ') : (item['<?= e($field) ?>'] ?? '');
+            if (field) {
+                if (field.type === 'checkbox') {
+                    field.checked = !!item['<?= e($field) ?>'];
+                } else {
+                    field.value = Array.isArray(item['<?= e($field) ?>']) ? item['<?= e($field) ?>'].join(', ') : (item['<?= e($field) ?>'] ?? '');
+                }
+            }
         <?php endforeach; ?>
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });

@@ -1,1 +1,54 @@
-[]
+[
+    {
+        "id": "astro-1",
+        "slug": "pandit-shastri",
+        "name": "Pandit Rajesh Shastri",
+        "description": "Expert in Vedic Astrology and Vastu Shastra with 20+ years of experience in guiding families towards prosperity.",
+        "email": "rajesh@example.com",
+        "price": 1100,
+        "modes": ["online", "in-person"],
+        "working_days": ["monday", "wednesday", "friday"],
+        "start_time": "09:00",
+        "end_time": "18:00",
+        "slot_minutes": 30,
+        "languages": ["Hindi", "English", "Tamil"],
+        "experience_years": 20,
+        "speciality": "Kundli Analysis",
+        "photo_url": "https://placehold.co/400x400?text=Pandit+Rajesh"
+    },
+    {
+        "id": "astro-2",
+        "slug": "acharya-meena",
+        "name": "Acharya Meena",
+        "description": "Specialist in Nadi Astrology and Spiritual Healing, helping clients find their true purpose and inner peace.",
+        "category": "healing",
+        "email": "meena@example.com",
+        "price": 1500,
+        "modes": ["online"],
+        "working_days": ["tuesday", "thursday"],
+        "start_time": "10:00",
+        "end_time": "16:00",
+        "slot_minutes": 45,
+        "languages": ["English", "Sanskrit"],
+        "experience_years": 15,
+        "speciality": "Nadi Astrology",
+        "photo_url": "https://placehold.co/400x400?text=Acharya+Meena"
+    },
+    {
+        "id": "astro-3",
+        "slug": "swamy-vashishtha",
+        "name": "Swamy Vashishtha",
+        "description": "Deeply versed in the ancient scriptures, providing precise planetary readings and effective remedial measures.",
+        "email": "vashishtha@example.com",
+        "price": 2000,
+        "modes": ["online", "in-person"],
+        "working_days": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+        "start_time": "08:00",
+        "end_time": "20:00",
+        "slot_minutes": 30,
+        "languages": ["Hindi", "English"],
+        "experience_years": 25,
+        "speciality": "Planetary Remediation",
+        "photo_url": "https://placehold.co/400x400?text=Swamy+Vashishtha"
+    }
+]
