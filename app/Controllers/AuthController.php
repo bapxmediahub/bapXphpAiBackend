@@ -23,3 +23,39 @@ final class AuthController extends BaseController {
  private function post(string $url,array $data): array { $ch=curl_init($url); curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_POST=>true,CURLOPT_POSTFIELDS=>http_build_query($data)]); $body=curl_exec($ch); curl_close($ch); return json_decode($body,true)?:[]; }
  private function get(string $url,string $token): array { $ch=curl_init($url); curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_HTTPHEADER=>['Authorization: Bearer '.$token]]); $body=curl_exec($ch); curl_close($ch); return json_decode($body,true)?:[]; }
 }
+ public function register(): void {
+    $this->render('public/register');
+ }
+ public function registerPost(): void {
+    $email = trim($_POST['email'] ?? '');
+    $name = trim($_POST['name'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $confirm = $_POST['password_confirm'] ?? '';
+    if ($password === '' || $email === '' || $name === '') { $this->flash('All fields are required.'); $this->redirect('/register'); }
+    if ($password !== $confirm) { $this->flash('Passwords do not match.'); $this->redirect('/register'); }
+    $store = new JsonStoreService();
+    $users = $store->read('users');
+    foreach ($users as $u) { if (($u['email'] ?? '') === $email) { $this->flash('Email already registered.'); $this->redirect('/login'); } }
+    $id = bin2hex(random_bytes(8));
+    $record = ['id'=>$id,'email'=>$email,'name'=>$name,'password_hash'=>password_hash($password,PASSWORD_DEFAULT)];
+    $store->upsert('users',$record,'id');
+    $_SESSION['user'] = ['sub'=>$id,'email'=>$email,'name'=>$name];
+    $this->flash('Registered and signed in.');
+    $this->redirect('/');
+ }
+ public function loginPost(): void {
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+    if ($email === '' || $password === '') { $this->flash('Email and password required.'); $this->redirect('/login'); }
+    $store = new JsonStoreService();
+    $users = $store->read('users');
+    foreach ($users as $u) {
+        if (($u['email'] ?? '') === $email && !empty($u['password_hash']) && password_verify($password,$u['password_hash'])) {
+            $_SESSION['user'] = ['sub'=>$u['id'],'email'=>$u['email'],'name'=>$u['name'] ?? ''];
+            $this->flash('Signed in.');
+            $this->redirect('/');
+        }
+    }
+    $this->flash('Invalid credentials.');
+    $this->redirect('/login');
+ }
