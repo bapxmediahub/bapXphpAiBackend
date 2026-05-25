@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{ProjectMapService,ResourceService,SecretService};
+use App\Services\{ProjectMapService,ResourceService,SecretService,SettingsService,SmtpMailer};
 final class AdminController extends BaseController {
     public function dashboard(): void{$this->render('admin/dashboard');}
     public function products(): void{$this->resource('Products','products',['name','description','category','image_url','price','offer_price','stock_status']);}
@@ -21,7 +21,20 @@ final class AdminController extends BaseController {
     public function temples(): void{$this->resource('Temples','temples',['name','description','address','map_url']);}
     public function saveTemple(): void{$this->save('temples');}
     public function deleteTemple(): void{$this->delete('temples');}
-    public function settings(): void{$this->render('admin/settings',['title'=>'Site Settings']);}
+    public function settings(): void{$this->render('admin/settings',['title'=>'Site Settings','settings'=>(new SettingsService())->public()]);}
+    public function saveSettings(): void{(new SettingsService())->savePublic($_POST); $this->flash('Site, WhatsApp, and SMTP settings saved.'); $this->redirect('/admin/settings');}
+    public function testSmtp(): void{
+        $settings=(new SettingsService())->public();
+        $to=trim((string)($_POST['test_email'] ?? ($settings['admin_notification_email'] ?: $settings['smtp_from_email'])));
+        if($to===''){ $this->flash('Add a test email address first.'); $this->redirect('/admin/settings'); }
+        try{
+            (new SmtpMailer($settings))->send($to,'Sri Panchami SMTP test','<p>Your Sri Panchami Spiritual SMTP settings are working.</p>');
+            $this->flash('SMTP test email sent to '.$to.'.');
+        }catch(\Throwable $e){
+            $this->flash('SMTP test failed: '.$e->getMessage());
+        }
+        $this->redirect('/admin/settings');
+    }
     public function integrations(): void{$this->render('admin/integrations',['secrets'=>(new SecretService())->all()]);}
     public function saveIntegrations(): void{(new SecretService())->save($_POST); $this->flash('Integration settings saved.'); $this->redirect('/admin/integrations');}
     public function backups(): void{$this->list('Backups');}

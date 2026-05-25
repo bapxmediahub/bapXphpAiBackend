@@ -1,1 +1,38 @@
-[]
+[
+    {
+        "id": "cat-spiritual-jewelry",
+        "slug": "spiritual-jewelry",
+        "name": "Spiritual Jewelry",
+        "description": "Wearable devotional pieces for daily sadhana, gifting, and temple visits."
+    },
+    {
+        "id": "cat-yantras",
+        "slug": "yantras",
+        "name": "Yantras",
+        "description": "Sacred geometry plates and altar pieces for focused worship."
+    },
+    {
+        "id": "cat-deity-idols",
+        "slug": "deity-idols",
+        "name": "Deity Idols",
+        "description": "Compact altar idols and framed devotion objects for home pooja spaces."
+    },
+    {
+        "id": "cat-pooja-essentials",
+        "slug": "pooja-essentials",
+        "name": "Pooja Essentials",
+        "description": "Daily-use pooja articles selected for a clean devotional routine."
+    },
+    {
+        "id": "cat-malas",
+        "slug": "malas",
+        "name": "Malas",
+        "description": "Prayer malas and bead sets for mantra chanting and meditation."
+    },
+    {
+        "id": "cat-gift-sets",
+        "slug": "gift-sets",
+        "name": "Gift Sets",
+        "description": "Curated spiritual gift boxes for festivals, housewarmings, and blessings."
+    }
+]
