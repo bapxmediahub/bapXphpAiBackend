@@ -460,9 +460,9 @@ nav a:hover { color: var(--color-maroon); }
     position: absolute;
     top: var(--space-sm);
     left: var(--space-sm);
-    padding: 0.25rem 0.75rem;
-    border-radius: var(--radius-pill);
-    font-size: 0.7rem;
+     padding: 0.25rem 0.75rem;
+     border-radius: var(--radius-sm);
+     font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
