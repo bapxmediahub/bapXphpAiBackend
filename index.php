@@ -1,10 +1,9 @@
 <?php
 /**
  * Main Entry Point
- * Routes to either:
- * - SPA layout (React) for public pages
- * - API endpoints (/api/*)
- * - Admin pages (PHP)
+ * - /admin/* → PHP Admin pages
+ * - /api/* → JSON API endpoints
+ - Everything else → SPA (Vanilla JS)
  */
 
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -23,5 +22,5 @@ if (strpos($uri, '/api/') === 0) {
     exit;
 }
 
-// All other routes - React SPA
+// All other routes - SPA (Vanilla JS)
 require __DIR__ . '/views/layouts/spa.php';
