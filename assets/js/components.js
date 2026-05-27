@@ -20,7 +20,9 @@ function Header() {
             <img src="/assets/images/logo-square.jpeg" alt="Sri Panchami Spiritual">
             <span>Sri Panchami Spiritual</span>
         </a>
-        <button class="menu-toggle" id="menu-toggle" aria-label="Menu">☰</button>
+        <button class="menu-toggle" id="menu-toggle" aria-label="Menu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
         <nav id="primary-nav">
             <a href="/" data-link>Home</a>
             <a href="/shop" data-link>Shop</a>
@@ -103,39 +105,11 @@ function BottomNav() {
     return nav;
 }
 
-function Section({ className = '', children }) {
-    const sec = document.createElement('section');
-    sec.className = `section ${className}`;
-    if (children) sec.append(...children);
-    return sec;
-}
-
-function Container({ children, narrow = false }) {
-    const div = document.createElement('div');
-    div.className = `container${narrow ? ' container--narrow' : ''}`;
-    if (children) div.append(...children);
-    return div;
-}
-
-function Grid({ cols = 'auto', children }) {
-    const div = document.createElement('div');
-    div.className = 'grid';
-    if (cols !== 'auto') div.style.gridTemplateColumns = `repeat(auto-fit, minmax(${cols}, 1fr))`;
-    if (children) div.append(...children);
-    return div;
-}
-
-function Panel({ children, textCenter = false }) {
-    const div = document.createElement('div');
-    div.className = `panel${textCenter ? ' text-center' : ''}`;
-    if (children) div.append(...children);
-    return div;
-}
-
 function ProductCard(p) {
     const article = document.createElement('article');
     article.className = 'product-card';
     const hasOffer = p.offer_price && p.offer_price < p.price;
+    const price = p.offer_price || p.price;
     article.innerHTML = `
         <div class="product-card__image">
             <img src="${img(p.image_url, p.name)}" alt="${esc(p.name)}" loading="lazy">
@@ -145,12 +119,12 @@ function ProductCard(p) {
             <h3>${esc(p.name)}</h3>
             <p class="product-card__desc">${esc(p.description)}</p>
             <div class="product-card__price-row">
-                <span class="price">${fmt(p.offer_price || p.price)}</span>
+                <span class="price">${fmt(price)}</span>
                 ${hasOffer ? `<span class="old-price">${fmt(p.price)}</span><span class="discount-pct">-${Math.round((1 - p.offer_price / p.price) * 100)}%</span>` : ''}
             </div>
             <div class="product-card__actions">
                 <a href="/product/${p.slug}" data-link class="btn btn-sm btn-ghost">View</a>
-                <button class="btn btn-sm btn-primary" onclick="Cart.add(${JSON.stringify(p).replace(/"/g, '&quot;')}, 1)">Add to Cart</button>
+                <button class="btn btn-sm.btn-primary" onclick="Cart.add(${JSON.stringify(p).replace(/"/g, '&quot;')}, 1)">Add to Cart</button>
             </div>
         </div>
     `;
@@ -161,8 +135,4 @@ window.Layout = Layout;
 window.Header = Header;
 window.Footer = Footer;
 window.BottomNav = BottomNav;
-window.Section = Section;
-window.Container = Container;
-window.Grid = Grid;
-window.Panel = Panel;
 window.ProductCard = ProductCard;
