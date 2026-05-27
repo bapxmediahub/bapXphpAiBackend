@@ -4,8 +4,8 @@
         <h1>Divine Grace.<br>Timeless Protection.</h1>
         <p class="lede">Authentic spiritual products, sacred jewelry, expert astrology and temple guidance to elevate your life.</p>
         <div class="hero-actions">
-            <a href="/shop" class="btn btn-primary">Shop Spiritual Products →</a>
-            <a href="/astrologers" class="btn btn-outline">Book Astrology 📅</a>
+            <a href="/shop" class="btn btn-primary">Shop Spiritual Products</a>
+            <a href="/astrologers" class="btn btn-outline">Book Astrology</a>
         </div>
         <div class="hero-stats">
             <div>
@@ -28,10 +28,22 @@
 </section>
 
 <div class="trust-bar">
-    <div class="trust-item"><span>🔒</span> Secure Payments</div>
-    <div class="trust-item"><span>📦</span> Fast Delivery</div>
-    <div class="trust-item"><span>✅</span> Authentic Products</div>
-    <div class="trust-item"><span>🙏</span> Blessed Items</div>
+    <div class="trust-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        Secure Payments
+    </div>
+    <div class="trust-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        Fast Delivery
+    </div>
+    <div class="trust-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Authentic Products
+    </div>
+    <div class="trust-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        Blessed Items
+    </div>
 </div>
 
 <section class="category-section section">
@@ -41,7 +53,7 @@
     </div>
     <div class="category-grid">
         <?php foreach($categories as $cat): ?>
-            <a class="category-card" href="/category/<?= e($cat['slug']) ?>">
+            <a class="category-card" href="/shop?category=<?= e($cat['slug']) ?>">
                 <div class="category-img-wrap">
                     <img src="<?= e($cat['image_url'] ?? 'https://placehold.co/120x120/fdfbf7/d4af37?text='.urlencode($cat['name'])) ?>" alt="<?= e($cat['name']) ?>" loading="lazy">
                 </div>
@@ -55,7 +67,7 @@
 <section class="section">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-xl); flex-wrap:wrap; gap:var(--space-sm);">
         <h2 class="section-title" style="margin:0;">Featured Products</h2>
-        <a href="/shop" class="btn btn-sm btn-ghost">View All →</a>
+        <a href="/shop" class="btn btn-sm btn-ghost">View All</a>
     </div>
     <div class="product-grid">
         <?php foreach(array_slice($products, 0, min(5, count($products))) as $item): ?>
@@ -92,7 +104,41 @@
     </div>
 </section>
 
+<?php if(!empty($temples)): ?>
 <section class="section section--alt">
+    <div class="section-header">
+        <span class="eyebrow">Sacred Spaces · Divine Energy</span>
+        <h2 class="section-title">Our Temples</h2>
+        <p class="lede">Visit our sacred spaces for divine blessings and spiritual awakening.</p>
+    </div>
+    <div class="showcase-grid">
+        <?php foreach(array_slice($temples, 0, 3) as $temple): ?>
+            <article class="showcase-card reveal">
+                <div style="background:var(--color-bg-alt); border-radius:var(--radius-md); margin-bottom:var(--space-md); height:160px; display:flex; align-items:center; justify-content:center;">
+                    <?php if(!empty($temple['image_url'])): ?>
+                        <img src="<?= e($temple['image_url']) ?>" alt="<?= e($temple['name']) ?>" style="width:100%; height:100%; object-fit:cover; border-radius:var(--radius-md);">
+                    <?php else: ?>
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
+                    <?php endif; ?>
+                </div>
+                <h2><?= e($temple['name']) ?></h2>
+                <p><?= e($temple['description']) ?></p>
+                <?php if(!empty($temple['address'])): ?>
+                    <p style="margin-top:var(--space-sm); font-size:0.8rem; color:var(--color-text-muted);">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        <?= e($temple['address']) ?>
+                    </p>
+                <?php endif; ?>
+            </article>
+        <?php endforeach; ?>
+    </div>
+    <div style="text-align:center; margin-top:var(--space-xl);">
+        <a href="/temples" class="btn btn-primary">View All Temples</a>
+    </div>
+</section>
+<?php endif; ?>
+
+<section class="section">
     <div class="section-header">
         <span class="eyebrow">Guidance · Clarity · Remedies</span>
         <h2 class="section-title">Expert Astrology for a Better Tomorrow</h2>
@@ -103,7 +149,7 @@
         <?php foreach(array_slice($astrologers, 0, 3) as $astro): ?>
             <article class="astrologer-card reveal">
                 <div class="astrologer-card__header">
-                    <img class="astrologer-card__photo" src="<?= e($astro['photo_url'] ?? 'https://placehold.co/100x100/fdfbf7/d4af37?text=👤') ?>" alt="<?= e($astro['name']) ?>" loading="lazy">
+                    <img class="astrologer-card__photo" src="<?= e($astro['photo_url'] ?? 'https://placehold.co/100x100/fdfbf7/d4af37?text= Guru') ?>" alt="<?= e($astro['name']) ?>" loading="lazy">
                     <div>
                         <h3 class="astrologer-card__name"><?= e($astro['name']) ?></h3>
                         <p class="astrologer-card__speciality"><?= e($astro['speciality'] ?? 'Vedic Astrology') ?></p>
@@ -122,18 +168,34 @@
     </div>
     <?php endif; ?>
     <div style="text-align:center;">
-        <a href="/astrologers" class="btn btn-primary">Book Astrology Consultation 📅</a>
+        <a href="/astrologers" class="btn btn-primary">Book Astrology Consultation</a>
     </div>
 </section>
 
-<section class="section">
+<section class="section section--alt">
     <div class="section-header">
         <h2 class="section-title">Why Choose Us</h2>
     </div>
     <div class="feature-strip">
-        <article class="panel reveal"><span class="icon">🛕</span><h3>Authentic</h3><p>Genuine spiritual products sourced with devotion</p></article>
-        <article class="panel reveal"><span class="icon">⭐</span><h3>Expert Guidance</h3><p>Experienced astrologers with proven track record</p></article>
-        <article class="panel reveal"><span class="icon">🔒</span><h3>Secure</h3><p>Safe payments via Razorpay with encryption</p></article>
-        <article class="panel reveal"><span class="icon">📦</span><h3>Fast Delivery</h3><p>Quick and careful shipping across India</p></article>
+        <article class="panel reveal">
+            <svg class="icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
+            <h3>Authentic</h3>
+            <p>Genuine spiritual products sourced with devotion</p>
+        </article>
+        <article class="panel reveal">
+            <svg class="icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <h3>Expert Guidance</h3>
+            <p>Experienced astrologers with proven track record</p>
+        </article>
+        <article class="panel reveal">
+            <svg class="icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            <h3>Secure</h3>
+            <p>Safe payments via Razorpay with encryption</p>
+        </article>
+        <article class="panel reveal">
+            <svg class="icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+            <h3>Fast Delivery</h3>
+            <p>Quick and careful shipping across India</p>
+        </article>
     </div>
 </section>

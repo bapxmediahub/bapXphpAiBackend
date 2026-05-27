@@ -1,14 +1,14 @@
 <section class="booking-layout">
     <?php if(!$astrologer): ?>
         <div style="text-align:center; padding:var(--space-4xl) 0;">
-            <span style="font-size:3rem; display:block; margin-bottom:var(--space-md);">🔍</span>
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto var(--space-md);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <h1 style="font-family:var(--font-serif); margin:0 0 var(--space-sm);">Astrologer Not Found</h1>
             <p style="color:var(--color-text-muted); margin-bottom:var(--space-lg);">The astrologer profile you're looking for doesn't exist.</p>
             <a href="/astrologers" class="btn btn-primary">View All Astrologers</a>
         </div>
     <?php else: ?>
         <div class="booking-profile reveal">
-            <img class="booking-profile__photo" src="<?= e($astrologer['photo_url'] ?? 'https://placehold.co/150x150/fdfbf7/d4af37?text=👤') ?>" alt="<?= e($astrologer['name']) ?>">
+            <img class="booking-profile__photo" src="<?= e($astrologer['photo_url'] ?? 'https://placehold.co/150x150/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($astrologer['name']) ?>">
             <div>
                 <h1 class="booking-profile__name"><?= e($astrologer['name']) ?></h1>
                 <p class="booking-profile__meta"><?= e($astrologer['speciality'] ?? 'Vedic Astrology') ?> · <?= e($astrologer['experience_years'] ?? 'N/A') ?> years experience</p>
@@ -30,7 +30,7 @@
             <h3 style="margin-top:var(--space-lg);">Available Slots for <?= date('M j, Y', strtotime($date)) ?></h3>
             <?php if(empty($slots)): ?>
                 <div style="text-align:center; padding:var(--space-2xl);">
-                    <span style="font-size:2rem; display:block; margin-bottom:var(--space-sm);">📅</span>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto var(--space-sm);"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     <p style="color:var(--color-text-muted); margin:0;">No slots available for this date. Please select another date.</p>
                 </div>
             <?php else: ?>

@@ -7,7 +7,7 @@
 
     <?php if(empty($items)): ?>
         <div class="container container--narrow" style="text-align:center; padding:var(--space-4xl) 0;">
-            <span style="font-size:3rem; display:block; margin-bottom:var(--space-md);">🛒</span>
+            <span style="display:block; margin-bottom:var(--space-md);"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></span>
             <h1 style="font-family:var(--font-serif); margin:0 0 var(--space-sm);">Your Cart is Empty</h1>
             <a href="/shop" class="btn btn-primary">Browse Shop</a>
         </div>
@@ -60,7 +60,7 @@
                     <h2>Order Review</h2>
                     <?php foreach($items as $item): ?>
                         <div class="checkout-item">
-                            <img class="checkout-item__img" src="<?= e($item['product']['image_url'] ?? 'https://placehold.co/60x60/fdfbf7/8c7e6d?text=📿') ?>" alt="<?= e($item['product']['name']) ?>">
+                            <img class="checkout-item__img" src="<?= e($item['product']['image_url'] ?? 'https://placehold.co/60x60/fdfbf7/8c7e6d?text=Item') ?>" alt="<?= e($item['product']['name']) ?>">
                             <div>
                                 <div class="checkout-item__name"><?= e($item['product']['name']) ?></div>
                                 <div class="checkout-item__meta">Qty: <?= e((string)$item['qty']) ?></div>

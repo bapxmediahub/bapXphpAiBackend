@@ -12,10 +12,13 @@
 <body>
 <header class="site-header" id="site-header">
     <a href="/" class="brand"><img src="/assets/images/logo-square.jpeg" alt="Sri Panchami Spiritual logo"><span>Sri Panchami Spiritual</span></a>
-    <button class="menu-toggle" type="button" aria-expanded="false" aria-label="Toggle navigation">☰</button>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-label="Toggle navigation">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
     <nav id="primary-nav">
         <a href="/">Home</a>
         <a href="/shop">Shop</a>
+        <a href="/temples">Temples</a>
         <a href="/astrologers">Astrologers</a>
         <a href="/about">About Us</a>
         <a href="/contact">Contact Us</a>
@@ -28,7 +31,7 @@
     </nav>
     <div class="header-actions">
         <button class="cart-btn" aria-label="Shopping cart" onclick="window.location.href='/cart'">
-            🛒
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
             <?php
             $cartCount = 0;
             if (!empty($_SESSION['cart'])) {
@@ -50,23 +53,23 @@
 <nav class="bottom-nav" id="bottom-nav">
     <div class="nav-grid">
         <a href="/" class="nav-item <?= ($_SERVER['REQUEST_URI'] === '/' ? 'active' : '') ?>">
-            <span class="icon">🏠</span>
+            <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             <span>Home</span>
         </a>
         <a href="/shop" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/shop') === 0 ? 'active' : '') ?>">
-            <span class="icon">🛍️</span>
+            <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
             <span>Shop</span>
         </a>
+        <a href="/temples" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/temples') === 0 ? 'active' : '') ?>">
+            <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
+            <span>Temples</span>
+        </a>
         <a href="/astrologers" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/astrologers') === 0 ? 'active' : '') ?>">
-            <span class="icon">🔮</span>
+            <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20"/><path d="M2 12h20"/></svg>
             <span>Astro</span>
         </a>
-        <a href="/account/bookings" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/account') === 0 ? 'active' : '') ?>">
-            <span class="icon">📖</span>
-            <span>Account</span>
-        </a>
         <a href="/cart" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/cart') === 0 ? 'active' : '') ?>">
-            <span class="icon">🛒</span>
+            <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
             <span>Cart</span>
         </a>
     </div>

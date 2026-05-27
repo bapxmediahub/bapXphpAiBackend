@@ -1,7 +1,7 @@
 <section class="section" style="padding-top:var(--space-xl);">
     <?php if(empty($product)): ?>
         <div class="container container--narrow" style="text-align:center; padding:var(--space-4xl) 0;">
-            <span style="font-size:3rem; display:block; margin-bottom:var(--space-md);">😔</span>
+            <span style="display:block; margin-bottom:var(--space-md);"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg></span>
             <h1 style="font-family:var(--font-serif); margin:0 0 var(--space-sm);">Product Not Found</h1>
             <p style="color:var(--color-text-muted); margin-bottom:var(--space-lg);">The item you're looking for is unavailable.</p>
             <a href="/shop" class="btn btn-primary">Browse Shop</a>
@@ -23,7 +23,7 @@
                 <?php endif; ?>
                 <h1><?= e($product['name']) ?></h1>
                 <div class="product-info__meta">
-                    <div class="product-info__rating">★★★★★ <span style="color:var(--color-text-muted); font-size:0.8rem;">(Trusted)</span></div>
+                    <div class="product-info__rating"><span class="rating-stars" aria-label="5 star rating"><?php for($i=0;$i<5;$i++):?><svg class="icon-star" width="16" height="16" viewBox="0 0 24 24" fill="var(--color-rating)" stroke="var(--color-rating)" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><?php endfor;?></span> <span style="color:var(--color-text-muted); font-size:0.8rem;">(Trusted)</span></div>
                 </div>
                 <div class="product-info__price">
                     <span class="price">₹<?= e((string)($product['offer_price'] ?: $product['price'] ?: 0)) ?></span>
@@ -49,10 +49,10 @@
                     <a href="/checkout" class="btn btn-outline btn-lg btn-block">Buy Now →</a>
                 </div>
                 <div class="product-info__features">
-                    <div class="product-feature"><span>🔒</span> Secure Payment</div>
-                    <div class="product-feature"><span>📦</span> Fast Delivery</div>
-                    <div class="product-feature"><span>✅</span> Authentic Product</div>
-                    <div class="product-feature"><span>🙏</span> Blessed & Energized</div>
+                    <div class="product-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> Secure Payment</div>
+                    <div class="product-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Fast Delivery</div>
+                    <div class="product-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Authentic Product</div>
+                    <div class="product-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> Blessed & Energized</div>
                 </div>
             </div>
         </div>

@@ -1,1 +1,22 @@
-[]
+[
+    {
+        "id": "temple-1",
+        "slug": "sri-varahi-amman",
+        "name": "Sri Maha Varahi Amman Temple",
+        "description": "The divine abode of Goddess Varahi, one of the Matrika deities. Known for protection, prosperity, and spiritual awakening. Devotees experience deep peace and divine grace in this sacred space.",
+        "address": "Sri Panchami Spiritual Center, Ramapuram, Chennai",
+        "timings": "6:00 AM - 12:00 PM, 4:00 PM - 8:00 PM",
+        "image_url": "",
+        "pooja_types": ["Abhishekam", "Aarti", "Homam"]
+    },
+    {
+        "id": "temple-2",
+        "slug": "shri-shiva-vishnu",
+        "name": "Shri Shiva Vishnu Temple",
+        "description": "A sacred space dedicated to Lord Shiva and Lord Vishnu, representing the unity of destruction and preservation. Regular poojas and homams are performed for devotees' wellbeing.",
+        "address": "Near Kothari Nagar, Chennai",
+        "timings": "5:30 AM - 11:30 AM, 4:00 PM - 9:00 PM",
+        "image_url": "",
+        "pooja_types": ["Rudrabhishekam", "Lakshmi Pooja", "Satyanarayan Pooja"]
+    }
+]

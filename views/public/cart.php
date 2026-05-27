@@ -7,7 +7,7 @@
 
     <?php if(empty($items)): ?>
         <div class="container container--narrow" style="text-align:center; padding:var(--space-4xl) 0;">
-            <span style="font-size:3rem; display:block; margin-bottom:var(--space-md);">🛒</span>
+            <span style="display:block; margin-bottom:var(--space-md);"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></span>
             <h1 style="font-family:var(--font-serif); margin:0 0 var(--space-sm);">Your Cart is Empty</h1>
             <p style="color:var(--color-text-muted); margin-bottom:var(--space-lg);">Discover our spiritual products and add items to your cart.</p>
             <a href="/shop" class="btn btn-primary">Browse Shop</a>
@@ -18,7 +18,7 @@
                 <div class="cart-items">
                     <?php foreach($items as $i => $item): $lineTotal = ($item['offer_price'] ?: $item['price'] ?: 0) * $item['qty']; ?>
                         <div class="cart-item reveal" style="animation-delay:<?= $i * 0.05 ?>s">
-                            <img class="cart-item__img" src="<?= e($item['image_url'] ?? 'https://placehold.co/100x100/fdfbf7/8c7e6d?text=📿') ?>" alt="<?= e($item['name']) ?>">
+                            <img class="cart-item__img" src="<?= e($item['image_url'] ?? 'https://placehold.co/100x100/fdfbf7/8c7e6d?text=Item') ?>" alt="<?= e($item['name']) ?>">
                             <div>
                                 <h3 class="cart-item__name"><a href="/product/<?= e($item['slug']) ?>"><?= e($item['name']) ?></a></h3>
                                 <p class="cart-item__meta"><?= e($item['category'] ?? 'Spiritual Product') ?></p>

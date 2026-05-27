@@ -3,10 +3,13 @@
     <a href="/admin" class="btn btn-sm btn-ghost">← Dashboard</a>
 </div>
 <?php if(!empty($_SESSION['flash'])): ?><div class="flash flash--success" style="margin-bottom:var(--space-lg);"><?= e($_SESSION['flash']); unset($_SESSION['flash']); ?></div><?php endif; ?>
-<div class="admin-card" style="border-left:4px solid var(--color-gold);">
-    <h2>🔐 API Keys</h2>
-    <p>Secrets are encrypted at rest using AES-256-CBC. Never share these values.</p>
-</div>
+    <div class="admin-card" style="border-left:4px solid var(--color-gold);">
+        <h2>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:8px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            API Keys
+        </h2>
+        <p>Secrets are encrypted at rest using AES-256-CBC. Never share these values.</p>
+    </div>
 <div class="admin-card">
     <form method="post" action="/admin/integrations/save" class="admin-form">
         <h2 style="margin-bottom:var(--space-lg);">Google OAuth</h2>

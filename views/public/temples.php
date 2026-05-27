@@ -1,1 +1,48 @@
-<h1>Sri Varahi Temple</h1><div class="grid"><?php foreach (($items ?: [['name'=>'Sri Maha Varahi Amman Temple','description'=>'Temple details are editable from admin.']]) as $item): ?><article class="panel"><h2><?= e($item['name']) ?></h2><p><?= e($item['description']) ?></p></article><?php endforeach; ?></div>
+<section class="section" style="padding-top:var(--space-xl);">
+    <div class="container" style="margin-bottom:var(--space-2xl);">
+        <div style="text-align:center;">
+            <span class="eyebrow">Sacred Spaces · Divine Energy</span>
+            <h1 class="section-title" style="margin-bottom:var(--space-sm);">Our Temples</h1>
+            <p class="lede" style="margin:0 auto;">Visit our sacred spaces for divine blessings and spiritual awakening.</p>
+        </div>
+    </div>
+    <?php if(empty($items)): ?>
+        <div class="container" style="text-align:center; padding:var(--space-4xl) 0;">
+            <div style="font-size:3rem; margin-bottom:var(--space-md);">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto;"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
+            </div>
+            <h2 style="font-family:var(--font-serif); margin:0 0 var(--space-sm);">No Temples Listed</h2>
+            <p style="color:var(--color-text-muted);">Temple information will appear here soon.</p>
+        </div>
+    <?php else: ?>
+        <div class="container">
+            <div class="showcase-grid">
+                <?php foreach($items as $item): ?>
+                    <article class="showcase-card reveal">
+                        <div style="background:var(--color-bg-alt); border-radius:var(--radius-md); margin-bottom:var(--space-md); height:180px; display:flex; align-items:center; justify-content:center;">
+                            <?php if(!empty($item['image_url'])): ?>
+                                <img src="<?= e($item['image_url']) ?>" alt="<?= e($item['name']) ?>" style="width:100%; height:100%; object-fit:cover; border-radius:var(--radius-md);">
+                            <?php else: ?>
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
+                            <?php endif; ?>
+                        </div>
+                        <h2><?= e($item['name']) ?></h2>
+                        <p><?= e($item['description']) ?></p>
+                        <?php if(!empty($item['address'])): ?>
+                            <p style="margin-top:var(--space-sm); font-size:0.85rem; color:var(--color-text-muted);">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                <?= e($item['address']) ?>
+                            </p>
+                        <?php endif; ?>
+                        <?php if(!empty($item['timings'])): ?>
+                            <p style="font-size:0.85rem; color:var(--color-text-muted);">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                <?= e($item['timings']) ?>
+                            </p>
+                        <?php endif; ?>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    <?php endif; ?>
+</section>
