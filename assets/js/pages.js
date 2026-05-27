@@ -8,6 +8,7 @@ async function HomePage(root) {
         const data = await API.get('/');
         const { products=[], categories=[], astrologers=[], temples=[] } = data;
         root.innerHTML = '';
+        root.appendChild(Header());
 
         // Hero
         const hero = document.createElement('section');
@@ -62,6 +63,7 @@ async function ShopPage(root) {
         const [shopData, cats] = await Promise.all([API.get('/shop'+(cat?'?category='+cat:'')), API.get('/categories').catch(()=>[])]);
         const products = shopData.items || shopData.products || [];
         root.innerHTML = '';
+        root.appendChild(Header());
         const s = document.createElement('section');
         s.className = 'section';
         s.style.paddingTop = 'var(--space-xl)';
@@ -82,6 +84,7 @@ async function ProductPage(root, slug) {
         if (!p) { root.innerHTML = '<div class="section" style="text-align:center;padding:4rem"><h2>Not Found</h2><a href="/shop" data-link class="btn btn-primary">Back</a></div>'; root.appendChild(Footer()); root.appendChild(BottomNav()); return; }
         const offer = p.offer_price && p.offer_price < p.price;
         root.innerHTML = '';
+        root.appendChild(Header());
         const s = document.createElement('section');
         s.className = 'section';
         s.innerHTML = `<div class="container"><div class="product-detail"><div class="product-gallery"><div class="product-gallery__main"><img src="${img(p.image_url,p.name)}" alt="${esc(p.name)}"></div></div><div class="product-info"><span class="eyebrow">${esc(p.category)}</span><h1>${esc(p.name)}</h1><div class="product-info__price"><span class="price">${fmt(p.offer_price||p.price)}</span>${offer?`<span class="old-price">${fmt(p.price)}</span>`:''}</div><p class="product-info__desc">${esc(p.description)}</p><div class="product-info__form"><div class="qty-input"><button onclick="this.nextElementSibling.value=Math.max(1,parseInt(this.nextElementSibling.value)-1)">-</button><input type="number" value="1" id="qty"><button onclick="this.previousElementSibling.value=parseInt(this.previousElementSibling.value)+1">+</button></div><button class="btn btn-primary" id="addtocart">Add to Cart</button></div></div></div></div>`;
@@ -105,6 +108,7 @@ async function AstrologersPage(root) {
         const data = await API.get('/astrologers');
         const list = data.items || [];
         root.innerHTML = '';
+        root.appendChild(Header());
         const s = document.createElement('section');
         s.className = 'section';
         s.style.paddingTop = 'var(--space-xl)';
@@ -114,7 +118,7 @@ async function AstrologersPage(root) {
         root.appendChild(s);
         root.appendChild(Footer());
         root.appendChild(BottomNav());
-    } catch(e) { root.innerHTML = `<div class="section" style="text-align:center;padding:4rem"><p>Error</p></div>`; root.appendChild(Footer()); root.appendChild(BottomNav()); }
+    } catch(e) { root.innerHTML = `<div class="section" style="text-align:center;padding:4rem"><p>Error</p></div>`; root.appendChild(Header()); root.appendChild(Footer()); root.appendChild(BottomNav()); }
 }
 
 async function TemplesPage(root) {

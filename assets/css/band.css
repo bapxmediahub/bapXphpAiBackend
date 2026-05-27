@@ -513,17 +513,17 @@ nav a:hover { color: var(--color-maroon); }
 .shop-filters { background: var(--color-white); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); }
 .shop-filters h3 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-text-muted); margin: 0 0 var(--space-md); }
 .filter-group { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
-.filter-chip {
-    padding: 0.4rem 1rem;
-    border-radius: var(--radius-pill);
-    border: 1.5px solid var(--color-border);
-    background: var(--color-white);
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all var(--transition-base);
-    text-decoration: none;
-    color: var(--color-ink);
-}
+ .filter-chip {
+     padding: 0.4rem 1rem;
+     border-radius: var(--radius-sm);
+     border: 1.5px solid var(--color-border);
+     background: var(--color-white);
+     font-size: 0.8rem;
+     cursor: pointer;
+     transition: all var(--transition-base);
+     text-decoration: none;
+     color: var(--color-ink);
+ }
 .filter-chip:hover, .filter-chip.active { border-color: var(--color-gold); background: var(--color-gold-light); color: var(--color-maroon-deep); }
 .shop-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg); }
 .shop-toolbar__count { font-size: 0.85rem; color: var(--color-text-muted); }
@@ -584,7 +584,7 @@ nav a:hover { color: var(--color-maroon); }
     border-bottom: 1px solid var(--color-border);
 }
 .cart-item:last-child { border-bottom: none; }
-.cart-item__img { width: 100px; height: 100px; border-radius: var(--radius-md); object-fit: cover; }
+ .cart-item__img { width: 100px; height: 100px; border-radius: var(--radius-sm); object-fit: cover; }
 .cart-item__name { font-family: var(--font-serif); font-size: 1rem; font-weight: 600; margin: 0 0 var(--space-2xs); }
 .cart-item__name a { color: var(--color-ink); }
 .cart-item__name a:hover { color: var(--color-maroon); }
@@ -623,10 +623,9 @@ nav a:hover { color: var(--color-maroon); }
 .checkout-form__section { margin-bottom: var(--space-xl); }
 .checkout-form__section-title { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-text-muted); margin-bottom: var(--space-md); }
 .checkout-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
-.checkout-summary { background: var(--color-white); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); position: sticky; top: 100px; align-self: start; }
-.checkout-summary h2 { font-family: var(--font-serif); font-size: 1.3rem; margin: 0 0 var(--space-lg); }
-.checkout-item { display: flex; gap: var(--space-sm); padding: var(--space-sm) 0; border-bottom: 1px solid var(--color-border); }
-.checkout-item__img { width: 60px; height: 60px; border-radius: var(--radius-sm); object-fit: cover; }
+ .checkout-summary { background: var(--color-white); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); position: sticky; top: 100px; align-self: start; }
+ .checkout-item { display: flex; gap: var(--space-sm); padding: var(--space-sm) 0; border-bottom: 1px solid var(--color-border); }
+ .checkout-item__img { width: 60px; height: 60px; border-radius: var(--radius-sm); object-fit: cover; }
 .checkout-item__name { font-size: 0.85rem; font-weight: 600; color: var(--color-ink); }
 .checkout-item__meta { font-size: 0.75rem; color: var(--color-text-muted); }
 .checkout-item__price { font-size: 0.85rem; font-weight: 700; color: var(--color-maroon); margin-left: auto; }
@@ -767,7 +766,7 @@ nav a:hover { color: var(--color-maroon); }
     padding: var(--space-lg);
     margin-bottom: var(--space-xl);
 }
-.booking-profile__photo { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--color-gold); }
+ .booking-profile__photo { width: 80px; height: 80px; border-radius: var(--radius-md); object-fit: cover; border: 2px solid var(--color-gold); }
 .booking-profile__name { font-family: var(--font-serif); font-size: 1.5rem; margin: 0 0 var(--space-2xs); }
 .booking-profile__meta { font-size: 0.85rem; color: var(--color-text-muted); }
 .slot-picker { background: var(--color-white); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: var(--space-lg); margin-bottom: var(--space-xl); }
@@ -825,9 +824,9 @@ tr:hover td { background: var(--color-bg-alt); }
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 0.2rem 0.6rem;
-    border-radius: var(--radius-pill);
-    font-size: 0.7rem;
+     padding: 0.2rem 0.6rem;
+     border-radius: var(--radius-sm);
+     font-size: 0.7rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;

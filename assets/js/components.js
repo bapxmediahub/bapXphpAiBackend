@@ -16,8 +16,9 @@ function Header() {
             <a href="/contact" data-link>Contact Us</a>
         </nav>
         <div class="header-actions">
-            <button class="cart-btn" onclick="Router.navigate('/cart')" aria-label="Cart">🛒<span class="cart-badge" style="${Cart.count>0?'':'display:none'}">${Cart.count}</span></button>
+            <button class="cart-btn" id="cart-btn-header" aria-label="Cart">🛒<span class="cart-badge" style="${Cart.count>0?'':'display:none'}">${Cart.count}</span></button>
         </div>`;
+    h.querySelector('#cart-btn-header').onclick = () => Router.nav('/cart');
     h.querySelector('#menu-toggle').onclick = () => h.querySelector('#primary-nav').classList.toggle('open');
     return h;
 }
