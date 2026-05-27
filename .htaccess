@@ -4,13 +4,13 @@ RewriteEngine On
 # Block access to sensitive directories
 RewriteRule ^(app|modules|integrations|storage|tools|tests|docs)/ - [F,L]
 
-# API routes - proxy to api/index.php
+# API routes
 RewriteRule ^api/(.*)$ api/index.php [QSA,L]
 
-# Admin routes - let PHP handle (backend only)
+# Admin routes
 RewriteRule ^admin(.*)$ index.php [QSA,L]
 
-# All other routes - serve SPA (React)
+# All other routes - PHP serves views directly
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^ index.php [QSA,L]

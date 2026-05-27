@@ -1,172 +1,1435 @@
 /**
- * Sri Panchami Spiritual - Vanilla JS SPA
- * Fast, no dependencies, works offline
- * PHP backend with JSON API
+ * Sri Panchami Spiritual - Page Templates & Router Configuration
+ * High-energy, dopamine-inducing UI with smooth animations
  */
 
 // ============================================
-// API Service
+// Home Page
 // ============================================
-const API = {
-    async get(endpoint) {
-        const res = await fetch('/api' + endpoint);
-        return res.json();
-    },
-    async post(endpoint, data) {
-        const res = await fetch('/api' + endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-        return res.json();
+function HomePage() {
+    const container = Container({ className: 'home-container' });
+    
+    // Hero Section
+    const hero = document.createElement('section');
+    hero.className = 'home-hero';
+    hero.innerHTML = `
+        <div class="hero-particles" id="hero-particles"></div>
+        <div class="hero-copy">
+            <span class="eyebrow hero-animate" data-delay="100">✨ Blessings · Protection · Prosperity</span>
+            <h1 class="hero-title hero-animate" data-delay="200">
+                <span class="hero-title-line">Divine Grace.</span>
+                <span class="hero-title-line hero-title-line--accent">Timeless Protection.</span>
+            </h1>
+            <p class="lede hero-animate" data-delay="300">Authentic spiritual products, sacred jewelry, expert astrology and temple guidance to elevate your life.</p>
+            <div class="hero-actions hero-animate" data-delay="400">
+                <a href="/shop" data-link class="btn btn-primary btn-lg btn-glow">
+                    <span class="btn-icon">🛍️</span> Shop Spiritual Products
+                </a>
+                <a href="/astrologers" data-link class="btn btn-outline btn-lg">
+                    <span class="btn-icon">⭐</span> Book Astrology
+                </a>
+            </div>
+            <div class="hero-stats hero-animate" data-delay="500">
+                <div class="hero-stat" data-count="500">
+                    <div class="hero-stat-value">500+</div>
+                    <div class="hero-stat-label">Happy Devotees</div>
+                </div>
+                <div class="hero-stat" data-count="14">
+                    <div class="hero-stat-value">14+</div>
+                    <div class="hero-stat-label">Sacred Items</div>
+                </div>
+                <div class="hero-stat" data-count="3">
+                    <div class="hero-stat-value">3</div>
+                    <div class="hero-stat-label">Expert Astrologers</div>
+                </div>
+            </div>
+        </div>
+        <div class="hero-visual hero-animate" data-delay="600">
+            <div class="hero-image-glow"></div>
+            <img src="/assets/images/varahi-amman.png" alt="Sri Maha Varahi Amman" class="hero-image">
+            <div class="hero-orbit">
+                <span class="hero-orbit-item" style="--orbit-angle: 0deg;">🔱</span>
+                <span class="hero-orbit-item" style="--orbit-angle: 72deg;">🪷</span>
+                <span class="hero-orbit-item" style="--orbit-angle: 144deg;">✨</span>
+                <span class="hero-orbit-item" style="--orbit-angle: 216deg;">🕉️</span>
+                <span class="hero-orbit-item" style="--orbit-angle: 288deg;">🔔</span>
+            </div>
+        </div>
+    `;
+    
+    // Trust Bar
+    const trustBar = document.createElement('div');
+    trustBar.className = 'trust-bar reveal';
+    trustBar.innerHTML = `
+        <div class="trust-item trust-item--animated">
+            <span class="trust-icon">🔒</span>
+            <span>Secure Payments</span>
+        </div>
+        <div class="trust-item trust-item--animated">
+            <span class="trust-icon">📦</span>
+            <span>Fast Delivery</span>
+        </div>
+        <div class="trust-item trust-item--animated">
+            <span class="trust-icon">✓</span>
+            <span>Authentic Products</span>
+        </div>
+        <div class="trust-item trust-item--animated">
+            <span class="trust-icon">✨</span>
+            <span>Blessed Items</span>
+        </div>
+    `;
+    
+    // Categories Section
+    const categoriesSection = Section({ className: 'category-section', id: 'categories' });
+    categoriesSection.innerHTML = `
+        <div class="section-header reveal">
+            <h2 class="section-title">Shop by Category</h2>
+            <p class="lede">Curated collections for every spiritual need</p>
+        </div>
+        <div class="category-grid" id="category-grid">
+            ${Store.state.categories.map((cat, i) => `
+                <a href="/shop?category=${cat.slug}" data-link class="category-card reveal" data-delay="${i * 50}">
+                    <div class="category-img-wrap">
+                        <img src="${img(cat.image_url, cat.name)}" alt="${esc(cat.name)}" loading="lazy">
+                    </div>
+                    <h3>${esc(cat.name)}</h3>
+                    <p>${esc(cat.description)}</p>
+                </a>
+            `).join('') || '<p class="text-center">Loading categories...</p>'}
+        </div>
+    `;
+    
+    // Featured Products Section
+    const productsSection = Section({ className: 'featured-products', id: 'products' });
+    productsSection.innerHTML = `
+        <div class="section-header reveal">
+            <div class="section-header-left">
+                <h2 class="section-title">Featured Products</h2>
+                <p class="lede">Handpicked spiritual essentials</p>
+            </div>
+            <a href="/shop" data-link class="btn btn-ghost btn-sm">View All →</a>
+        </div>
+        <div class="product-grid" id="product-grid">
+            ${Store.state.products.slice(0, 5).map((p, i) => {
+                // Create cards manually for the template
+                const hasOffer = p.offer_price && p.offer_price < p.price;
+                const discount = hasOffer ? Math.round((1 - p.offer_price / p.price) * 100) : 0;
+                return `
+                    <article class="product-card reveal" data-delay="${i * 50}">
+                        <div class="product-card__image">
+                            <img src="${img(p.image_url, p.name)}" alt="${esc(p.name)}" loading="lazy">
+                            ${hasOffer ? `<span class="product-card__badge product-card__badge--sale">-${discount}%</span>` : ''}
+                            <div class="product-card__overlay">
+                                <a href="/product/${p.slug}" data-link class="btn btn-sm btn-ghost">Quick View</a>
+                            </div>
+                        </div>
+                        <div class="product-card__body">
+                            <h3 class="product-card__title">${esc(p.name)}</h3>
+                            <p class="product-card__desc">${esc(p.description)}</p>
+                            <div class="product-card__price-row">
+                                <span class="price">${fmt(p.offer_price || p.price)}</span>
+                                ${hasOffer ? `<span class="old-price">${fmt(p.price)}</span>` : ''}
+                            </div>
+                            <div class="product-card__actions">
+                                <button class="btn btn-sm btn-primary btn-add-cart" data-product='${esc(JSON.stringify(p))}'>
+                                    <span class="btn-icon">🛒</span> Add to Cart
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('') || '<p class="text-center">Loading products...</p>'}
+        </div>
+    `;
+    
+    // Temples Section
+    const templesSection = Section({ className: 'section--alt', id: 'temples' });
+    templesSection.innerHTML = `
+        <div class="section-header reveal">
+            <span class="eyebrow">Sacred Spaces · Divine Energy</span>
+            <h2 class="section-title">Our Temples</h2>
+            <p class="lede">Visit our sacred spaces for divine blessings and spiritual awakening.</p>
+        </div>
+        <div class="showcase-grid" id="temple-grid">
+            ${Store.state.temples.slice(0, 3).map((t, i) => `
+                <article class="showcase-card reveal" data-delay="${i * 100}">
+                    <div class="showcase-card__image">
+                        ${t.image_url ? `<img src="${t.image_url}" alt="${esc(t.name)}" loading="lazy">` : 
+                          '<div class="showcase-card__placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg></div>'}
+                    </div>
+                    <div class="showcase-card__body">
+                        <h2 class="showcase-card__title">${esc(t.name)}</h2>
+                        <p class="showcase-card__desc">${esc(t.description)}</p>
+                        ${t.address ? `<p class="showcase-card__address">📍 ${esc(t.address)}</p>` : ''}
+                        <div class="showcase-card__actions">
+                            <a href="/temples/${t.slug}" data-link class="btn btn-sm btn-primary">View Details</a>
+                        </div>
+                    </div>
+                </article>
+            `).join('') || '<p class="text-center">Loading temples...</p>'}
+        </div>
+        <div class="text-center mt-xl reveal">
+            <a href="/temples" data-link class="btn btn-primary btn-lg">View All Temples</a>
+        </div>
+    `;
+    
+    // Astrology Section
+    const astroSection = Section({ id: 'astrology' });
+    astroSection.innerHTML = `
+        <div class="section-header reveal">
+            <span class="eyebrow">Guidance · Clarity · Remedies</span>
+            <h2 class="section-title">Expert Astrology for a Better Tomorrow</h2>
+            <p class="lede">Consult experienced astrologers for accurate predictions, remedy guidance tailored to your life path.</p>
+        </div>
+        <div class="astrologer-grid" id="astrologer-grid">
+            ${Store.state.astrologers.slice(0, 3).map((a, i) => `
+                <article class="astrologer-card reveal" data-delay="${i * 100}">
+                    <div class="astrologer-card__header">
+                        <div class="astrologer-card__avatar">
+                            <img src="${img(a.photo_url, a.name)}" alt="${esc(a.name)}" loading="lazy">
+                        </div>
+                        <div class="astrologer-card__info">
+                            <h3 class="astrologer-card__name">${esc(a.name)}</h3>
+                            <p class="astrologer-card__speciality">${esc(a.speciality || 'Vedic Astrology')}</p>
+                        </div>
+                    </div>
+                    <div class="astrologer-card__body">
+                        <div class="astrologer-card__stat">
+                            <span class="astrologer-card__stat-label">Experience</span>
+                            <span class="astrologer-card__stat-value">${a.experience_years || 'N/A'} yrs</span>
+                        </div>
+                        <div class="astrologer-card__stat">
+                            <span class="astrologer-card__stat-label">Languages</span>
+                            <span class="astrologer-card__stat-value">${(a.languages || []).slice(0, 2).join(', ')}</span>
+                        </div>
+                    </div>
+                    <div class="astrologer-card__footer">
+                        <span class="astrologer-card__price">${fmt(a.price)}<span class="price-unit">/session</span></span>
+                        <a href="/astrologers/${a.slug}" data-link class="btn btn-sm btn-primary">Book Now</a>
+                    </div>
+                </article>
+            `).join('') || '<p class="text-center">Loading astrologers...</p>'}
+        </div>
+        <div class="text-center mt-xl reveal">
+            <a href="/astrologers" data-link class="btn btn-primary btn-lg">Book Astrology Consultation</a>
+        </div>
+    `;
+    
+    // Why Choose Us Section
+    const whySection = Section({ className: 'section--alt', id: 'why-us' });
+    whySection.innerHTML = `
+        <div class="section-header reveal">
+            <h2 class="section-title">Why Choose Us</h2>
+        </div>
+        <div class="feature-strip">
+            <article class="panel feature-card reveal" data-delay="0">
+                <div class="feature-icon">🛕</div>
+                <h3>Authentic</h3>
+                <p>Genuine spiritual products sourced with devotion</p>
+            </article>
+            <article class="panel feature-card reveal" data-delay="100">
+                <div class="feature-icon">⭐</div>
+                <h3>Expert Guidance</h3>
+                <p>Experienced astrologers with proven track record</p>
+            </article>
+            <article class="panel feature-card reveal" data-delay="200">
+                <div class="feature-icon">🔒</div>
+                <h3>Secure</h3>
+                <p>Safe payments via Razorpay with encryption</p>
+            </article>
+            <article class="panel feature-card reveal" data-delay="300">
+                <div class="feature-icon">📦</div>
+                <h3>Fast Delivery</h3>
+                <p>Quick and careful shipping across India</p>
+            </article>
+        </div>
+    `;
+    
+    // Append all sections
+    container.appendChild(hero);
+    container.appendChild(trustBar);
+    container.appendChild(categoriesSection);
+    container.appendChild(productsSection);
+    container.appendChild(templesSection);
+    container.appendChild(astroSection);
+    container.appendChild(whySection);
+    
+    // Initialize hero particles
+    requestAnimationFrame(() => initHeroParticles());
+    requestAnimationFrame(() => initHeroAnimations());
+    
+    // Bind add-to-cart buttons
+    requestAnimationFrame(() => bindAddToCartButtons(productsSection));
+    
+    return container;
+}
+
+// ============================================
+// Shop Page
+// ============================================
+function ShopPage() {
+    const container = Container();
+    
+    // Hero Banner
+    const banner = document.createElement('div');
+    banner.className = 'shop-banner reveal';
+    banner.innerHTML = `
+        <div class="shop-banner-content">
+            <span class="eyebrow">Sacred Collection</span>
+            <h1 class="shop-banner-title">Shop Spiritual Products</h1>
+            <p class="lede">Authentic spiritual products crafted with devotion and care.</p>
+        </div>
+    `;
+    
+    // Shop Layout
+    const layout = document.createElement('div');
+    layout.className = 'shop-layout';
+    
+    // Sidebar
+    const sidebar = document.createElement('aside');
+    sidebar.className = 'shop-sidebar reveal';
+    sidebar.innerHTML = `
+        <div class="shop-filters">
+            <h3>Categories</h3>
+            <div class="filter-group" id="category-filters">
+                <button class="filter-chip active" data-category="">All</button>
+                ${Store.state.categories.map(cat => `
+                    <button class="filter-chip" data-category="${cat.slug}">${esc(cat.name)}</button>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    
+    // Product Grid
+    const main = document.createElement('main');
+    main.className = 'shop-main';
+    main.innerHTML = `
+        <div class="shop-toolbar reveal">
+            <span class="shop-toolbar__count">${Store.state.products.length} products</span>
+            <select class="shop-toolbar__sort" id="sort-select">
+                <option value="featured">Featured</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="newest">Newest</option>
+            </select>
+        </div>
+        <div class="product-grid" id="shop-product-grid">
+            ${Store.state.products.map((p, i) => {
+                const hasOffer = p.offer_price && p.offer_price < p.price;
+                const discount = hasOffer ? Math.round((1 - p.offer_price / p.price) * 100) : 0;
+                return `
+                    <article class="product-card reveal" data-delay="${i * 30}" data-category="${esc(p.category)}">
+                        <div class="product-card__image">
+                            <img src="${img(p.image_url, p.name)}" alt="${esc(p.name)}" loading="lazy">
+                            ${hasOffer ? `<span class="product-card__badge product-card__badge--sale">-${discount}%</span>` : ''}
+                            <div class="product-card__overlay">
+                                <a href="/product/${p.slug}" data-link class="btn btn-sm btn-ghost">Quick View</a>
+                            </div>
+                        </div>
+                        <div class="product-card__body">
+                            <h3 class="product-card__title">${esc(p.name)}</h3>
+                            <p class="product-card__desc">${esc(p.description)}</p>
+                            <div class="product-card__price-row">
+                                <span class="price">${fmt(p.offer_price || p.price)}</span>
+                                ${hasOffer ? `<span class="old-price">${fmt(p.price)}</span>` : ''}
+                            </div>
+                            <div class="product-card__actions">
+                                <button class="btn btn-sm btn-primary btn-add-cart" data-product='${esc(JSON.stringify(p))}'>
+                                    <span class="btn-icon">🛒</span> Add to Cart
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('')}
+        </div>
+    `;
+    
+    layout.appendChild(sidebar);
+    layout.appendChild(main);
+    container.appendChild(banner);
+    container.appendChild(layout);
+    
+    // Bind events
+    requestAnimationFrame(() => {
+        bindAddToCartButtons(main);
+        bindCategoryFilters();
+        bindSorting();
+    });
+    
+    return container;
+}
+
+// ============================================
+// Product Detail Page
+// ============================================
+function ProductPage({ slug }) {
+    const container = Container({ narrow: true });
+    const product = Store.state.products.find(p => p.slug === slug);
+    
+    if (!product) {
+        container.innerHTML = `
+            <div class="empty-state reveal">
+                <div class="empty-state-icon">🔍</div>
+                <h2>Product Not Found</h2>
+                <p>The item you're looking for is unavailable.</p>
+                <a href="/shop" data-link class="btn btn-primary mt-lg">Browse Shop</a>
+            </div>
+        `;
+        return container;
     }
-};
-
-// ============================================
-// Simple Router
-// ============================================
-const Router = {
-    routes: {},
-    currentRoute: '/',
-
-    init() {
-        window.addEventListener('popstate', () => this.render());
-        document.addEventListener('click', (e) => {
-            const link = e.target.closest('a[href^="/"]');
-            if (link && !link.target) {
-                e.preventDefault();
-                this.navigate(link.getAttribute('href'));
-            }
-        });
-        this.render();
-    },
-
-    register(path, handler) {
-        this.routes[path] = handler;
-    },
-
-    navigate(path) {
-        window.history.pushState({}, '', path);
-        window.scrollTo(0, 0);
-        this.render();
-    },
-
-    render() {
-        const path = window.location.pathname;
-        const search = window.location.search;
-        const fullPath = path + search;
-        this.currentRoute = path;
-
-        // Find matching route
-        let handler = this.routes[path];
+    
+    const hasOffer = product.offer_price && product.offer_price < product.price;
+    const discount = hasOffer ? Math.round((1 - product.offer_price / product.price) * 100) : 0;
+    const related = Store.state.products.filter(p => p.category === product.category && p.slug !== product.slug).slice(0, 4);
+    
+    container.innerHTML = `
+        <div class="product-detail">
+            <div class="product-gallery reveal">
+                <div class="product-gallery__main">
+                    <img src="${img(product.image_url, product.name)}" alt="${esc(product.name)}" id="main-product-image">
+                </div>
+            </div>
+            <div class="product-info reveal" data-delay="100">
+                <nav class="breadcrumb">
+                    <a href="/" data-link>Home</a> / <a href="/shop" data-link>Shop</a> / <span>${esc(product.name)}</span>
+                </nav>
+                ${product.category ? `<span class="product-category">${esc(product.category)}</span>` : ''}
+                <h1 class="product-title">${esc(product.name)}</h1>
+                <div class="product-info__price">
+                    <span class="price price--large">${fmt(product.offer_price || product.price)}</span>
+                    ${hasOffer ? `<span class="old-price old-price--large">${fmt(product.price)}</span><span class="badge badge--success">Save ${discount}%</span>` : ''}
+                </div>
+                <p class="product-desc">${esc(product.description)}</p>
+                <div class="product-form">
+                    <div class="qty-input">
+                        <button class="qty-btn" id="qty-minus">−</button>
+                        <input type="number" value="1" min="1" max="99" id="qty-input">
+                        <button class="qty-btn" id="qty-plus">+</button>
+                    </div>
+                    <button class="btn btn-primary btn-lg btn-glow" id="add-to-cart-btn" data-product='${esc(JSON.stringify(product))}'>
+                        <span class="btn-icon">🛒</span> Add to Cart
+                    </button>
+                    <a href="/checkout" data-link class="btn btn-outline btn-lg">
+                        <span class="btn-icon">⚡</span> Buy Now
+                    </a>
+                </div>
+                <div class="product-features">
+                    <div class="product-feature">
+                        <span class="feature-badge">🔒</span>
+                        <span>Secure Payment</span>
+                    </div>
+                    <div class="product-feature">
+                        <span class="feature-badge">📦</span>
+                        <span>Fast Delivery</span>
+                    </div>
+                    <div class="product-feature">
+                        <span class="feature-badge">✓</span>
+                        <span>Authentic Product</span>
+                    </div>
+                    <div class="product-feature">
+                        <span class="feature-badge">✨</span>
+                        <span>Blessed & Energized</span>
+                    </div>
+                </div>
+            </div>
+        </div>
         
-        // Pattern matching for dynamic routes
-        if (!handler) {
-            for (const [route, fn] of Object.entries(this.routes)) {
-                if (route.includes('{')) {
-                    const pattern = route.replace(/\{(\w+)\}/g, '([^/]+)');
-                    const regex = new RegExp('^' + pattern + '$');
-                    if (regex.test(path)) {
-                        const matches = path.match(regex);
-                        handler = { fn, params: matches.slice(1) };
-                        break;
-                    }
-                }
-            }
-        }
-
-        // Update nav active state
-        document.querySelectorAll('nav a, .bottom-nav a').forEach(a => {
-            a.classList.toggle('active', a.getAttribute('href') === path);
+        ${related.length > 0 ? `
+            <section class="related-products reveal">
+                <h2 class="section-title">Related Products</h2>
+                <div class="product-grid">
+                    ${related.map((p, i) => {
+                        const relHasOffer = p.offer_price && p.offer_price < p.price;
+                        return `
+                            <article class="product-card reveal" data-delay="${i * 50}">
+                                <div class="product-card__image">
+                                    <img src="${img(p.image_url, p.name)}" alt="${esc(p.name)}" loading="lazy">
+                                    ${relHasOffer ? `<span class="product-card__badge product-card__badge--sale">Sale</span>` : ''}
+                                    <div class="product-card__overlay">
+                                        <a href="/product/${p.slug}" data-link class="btn btn-sm btn-ghost">Quick View</a>
+                                    </div>
+                                </div>
+                                <div class="product-card__body">
+                                    <h3 class="product-card__title">${esc(p.name)}</h3>
+                                    <div class="product-card__price-row">
+                                        <span class="price">${fmt(p.offer_price || p.price)}</span>
+                                    </div>
+                                </div>
+                            </article>
+                        `;
+                    }).join('')}
+                </div>
+            </section>
+        ` : ''}
+    `;
+    
+    // Bind quantity and add to cart
+    requestAnimationFrame(() => {
+        const qtyInput = container.querySelector('#qty-input');
+        const minusBtn = container.querySelector('#qty-minus');
+        const plusBtn = container.querySelector('#qty-plus');
+        const addBtn = container.querySelector('#add-to-cart-btn');
+        
+        minusBtn?.addEventListener('click', () => {
+            qtyInput.value = Math.max(1, parseInt(qtyInput.value) - 1);
         });
+        
+        plusBtn?.addEventListener('click', () => {
+            qtyInput.value = Math.min(99, parseInt(qtyInput.value) + 1);
+        });
+        
+        addBtn?.addEventListener('click', () => {
+            const qty = parseInt(qtyInput.value) || 1;
+            Cart.add(product, qty);
+            showNotification(`${product.name} (${qty}) added to cart!`, 'success');
+        });
+    });
+    
+    return container;
+}
 
-        if (handler) {
-            const root = document.getElementById('root');
-            if (root) {
-                if (typeof handler === 'function') {
-                    handler(root);
+// ============================================
+// Cart Page
+// ============================================
+function CartPage() {
+    const container = Container();
+    
+    if (Cart.items.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state reveal">
+                <div class="empty-state-icon">🛒</div>
+                <h2>Your Cart is Empty</h2>
+                <p>Add some spiritual products to get started.</p>
+                <a href="/shop" data-link class="btn btn-primary btn-lg mt-lg">Continue Shopping</a>
+            </div>
+        `;
+        return container;
+    }
+    
+    container.innerHTML = `
+        <div class="page-header reveal">
+            <h1 class="page-title">Shopping Cart</h1>
+            <p class="page-subtitle">${Cart.items.length} item${Cart.items.length !== 1 ? 's' : ''} in your cart</p>
+        </div>
+        <div class="cart-layout">
+            <div class="cart-items" id="cart-items">
+                ${Cart.items.map((item, i) => {
+                    const price = item.offer_price || item.price || 0;
+                    const lineTotal = price * item.qty;
+                    return `
+                        <div class="cart-item reveal" data-delay="${i * 50}" data-slug="${item.slug}">
+                            <div class="cart-item__image">
+                                <img src="${img(item.image_url, item.name)}" alt="${esc(item.name)}">
+                            </div>
+                            <div class="cart-item__details">
+                                <a href="/product/${item.slug}" data-link class="cart-item__name">${esc(item.name)}</a>
+                                <p class="cart-item__meta">${esc(item.category || 'Spiritual Product')}</p>
+                                <p class="cart-item__price-each">${fmt(price)} each</p>
+                            </div>
+                            <div class="cart-item__qty">
+                                <button class="qty-btn qty-btn--small" data-action="decrease">−</button>
+                                <span class="qty-value">${item.qty}</span>
+                                <button class="qty-btn qty-btn--small" data-action="increase">+</button>
+                            </div>
+                            <div class="cart-item__total">
+                                <span class="cart-item__total-price">${fmt(lineTotal)}</span>
+                                <button class="cart-item__remove" data-action="remove">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+            <div class="cart-summary reveal" data-delay="200">
+                <h2>Order Summary</h2>
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span>${fmt(Cart.total)}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Shipping</span>
+                    <span class="text-success">FREE</span>
+                </div>
+                <div class="summary-row summary-row--total">
+                    <span>Total</span>
+                    <span class="summary-total">${fmt(Cart.total)}</span>
+                </div>
+                <a href="/checkout" data-link class="btn btn-primary btn-lg btn-block mt-lg">
+                    <span class="btn-icon">🔒</span> Proceed to Checkout
+                </a>
+                <a href="/shop" data-link class="btn btn-ghost btn-block mt-sm">← Continue Shopping</a>
+            </div>
+        </div>
+    `;
+    
+    // Bind cart actions
+    requestAnimationFrame(() => bindCartActions(container));
+    
+    return container;
+}
+
+// ============================================
+// Checkout Page
+// ============================================
+function CheckoutPage() {
+    const container = Container({ narrow: true });
+    
+    if (Cart.items.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state reveal">
+                <h2>Nothing to Checkout</h2>
+                <a href="/shop" data-link class="btn btn-primary mt-lg">Go Shopping</a>
+            </div>
+        `;
+        return container;
+    }
+    
+    container.innerHTML = `
+        <div class="page-header reveal">
+            <h1 class="page-title">Checkout</h1>
+        </div>
+        <div class="checkout-layout">
+            <form class="checkout-form reveal" id="checkout-form">
+                <h2>Shipping Details</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" name="name" required placeholder="Your full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required placeholder="your@email.com">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone">Phone</label>
+                        <input type="tel" id="phone" name="phone" required placeholder="+91 XXXXX XXXXX">
+                    </div>
+                    <div class="form-group">
+                        <label for="pincode">PIN Code</label>
+                        <input type="text" id="pincode" name="pincode" required placeholder="600001">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <textarea id="address" name="address" required rows="3" placeholder="Door no, Street, Area"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="city">City</label>
+                        <input type="text" id="city" name="city" required placeholder="City">
+                    </div>
+                    <div class="form-group">
+                        <label for="state">State</label>
+                        <input type="text" id="state" name="state" required placeholder="State">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg btn-glow btn-block mt-lg">
+                    <span class="btn-icon">🔒</span> Place Order • ${fmt(Cart.total)}
+                </button>
+            </form>
+            <div class="checkout-summary reveal" data-delay="100">
+                <h2>Order Review</h2>
+                <div class="order-items">
+                    ${Cart.items.map(item => {
+                        const price = item.offer_price || item.price || 0;
+                        return `
+                            <div class="order-item">
+                                <img src="${img(item.image_url, item.name)}" alt="${esc(item.name)}" class="order-item__img">
+                                <div class="order-item__details">
+                                    <div class="order-item__name">${esc(item.name)}</div>
+                                    <div class="order-item__meta">Qty: ${item.qty}</div>
+                                </div>
+                                <div class="order-item__price">${fmt(price * item.qty)}</div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span>${fmt(Cart.total)}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Shipping</span>
+                    <span class="text-success">FREE</span>
+                </div>
+                <div class="summary-row summary-row--total">
+                    <span>Total</span>
+                    <span class="summary-total">${fmt(Cart.total)}</span>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Bind form submission
+    requestAnimationFrame(() => {
+        const form = container.querySelector('#checkout-form');
+        form?.addEventListener('submit', handleCheckout);
+    });
+    
+    return container;
+}
+
+// ============================================
+// Astrologers Page
+// ============================================
+function AstrologersPage() {
+    const container = Container();
+    
+    container.innerHTML = `
+        <div class="page-header reveal">
+            <span class="eyebrow">Expert Guidance · Divine Wisdom</span>
+            <h1 class="page-title">Our Astrologers</h1>
+            <p class="page-subtitle">Consult experienced Vedic astrologers for accurate predictions and remedy guidance.</p>
+        </div>
+        <div class="astrologer-grid" id="astrologer-grid">
+            ${Store.state.astrologers.map((a, i) => `
+                <article class="astrologer-card reveal" data-delay="${i * 50}">
+                    <div class="astrologer-card__header">
+                        <div class="astrologer-card__avatar">
+                            <img src="${img(a.photo_url, a.name)}" alt="${esc(a.name)}" loading="lazy">
+                        </div>
+                        <div class="astrologer-card__info">
+                            <h3 class="astrologer-card__name">${esc(a.name)}</h3>
+                            <p class="astrologer-card__speciality">${esc(a.speciality || 'Vedic Astrology')}</p>
+                        </div>
+                    </div>
+                    <div class="astrologer-card__body">
+                        <div class="astrologer-card__stat">
+                            <span class="astrologer-card__stat-label">Experience</span>
+                            <span class="astrologer-card__stat-value">${a.experience_years || 'N/A'} yrs</span>
+                        </div>
+                        <div class="astrologer-card__stat">
+                            <span class="astrologer-card__stat-label">Languages</span>
+                            <span class="astrologer-card__stat-value">${(a.languages || []).slice(0, 2).join(', ')}</span>
+                        </div>
+                        <div class="astrologer-card__stat">
+                            <span class="astrologer-card__stat-label">Modes</span>
+                            <span class="astrologer-card__stat-value">${(a.modes || ['Chat', 'Call']).join(', ')}</span>
+                        </div>
+                    </div>
+                    <div class="astrologer-card__footer">
+                        <span class="astrologer-card__price">${fmt(a.price)}<span class="price-unit">/session</span></span>
+                        <a href="/astrologers/${a.slug}" data-link class="btn btn-sm btn-primary">Book Now</a>
+                    </div>
+                </article>
+            `).join('') || '<p class="text-center">Loading astrologers...</p>'}
+        </div>
+    `;
+    
+    return container;
+}
+
+// ============================================
+// Astrologer Detail Page
+// ============================================
+function AstrologerDetailPage({ slug }) {
+    const container = Container({ narrow: true });
+    const astrologer = Store.state.astrologers.find(a => a.slug === slug);
+    
+    if (!astrologer) {
+        container.innerHTML = `
+            <div class="empty-state reveal">
+                <h2>Astrologer Not Found</h2>
+                <a href="/astrologers" data-link class="btn btn-primary mt-lg">Back to Astrologers</a>
+            </div>
+        `;
+        return container;
+    }
+    
+    container.innerHTML = `
+        <div class="booking-layout">
+            <div class="booking-profile reveal">
+                <img src="${img(astrologer.photo_url, astrologer.name)}" alt="${esc(astrologer.name)}" class="booking-profile__photo">
+                <div class="booking-profile__info">
+                    <h1 class="booking-profile__name">${esc(astrologer.name)}</h1>
+                    <p class="booking-profile__meta">${esc(astrologer.speciality || 'Vedic Astrology')} • ${astrologer.experience_years || 'N/A'} years</p>
+                    <p class="booking-profile__meta">Languages: ${(astrologer.languages || []).join(', ')}</p>
+                    <p class="booking-profile__meta">Modes: ${(astrologer.modes || []).join(', ')}</p>
+                    <p class="booking-profile__price">${fmt(astrologer.price)} <span class="price-unit">/ session</span></p>
+                </div>
+            </div>
+            <div class="slot-picker reveal" data-delay="100">
+                <h3>Select Date & Time</h3>
+                <form class="slot-picker__form" id="booking-date-form">
+                    <div class="form-group">
+                        <label for="date">Date</label>
+                        <input type="date" id="date" name="date" value="${new Date().toISOString().split('T')[0]}" min="${new Date().toISOString().split('T')[0]}">
+                    </div>
+                </form>
+                <div class="slot-grid" id="slot-grid">
+                    ${generateTimeSlots().map(slot => `
+                        <div class="slot-card" data-time="${slot}">
+                            <div class="slot-card__time">${slot}</div>
+                            <button class="btn btn-sm btn-primary" data-action="book-slot">Book ${slot}</button>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Bind slot booking
+    requestAnimationFrame(() => bindSlotBooking(container, astrologer));
+    
+    return container;
+}
+
+// ============================================
+// Temples Page
+// ============================================
+function TemplesPage() {
+    const container = Container();
+    
+    container.innerHTML = `
+        <div class="page-header reveal">
+            <span class="eyebrow">Sacred Spaces · Divine Energy</span>
+            <h1 class="page-title">Our Temples</h1>
+            <p class="page-subtitle">Visit our sacred spaces for divine blessings and spiritual awakening.</p>
+        </div>
+        <div class="showcase-grid" id="temple-grid">
+            ${Store.state.temples.map((t, i) => `
+                <article class="showcase-card reveal" data-delay="${i * 50}">
+                    <div class="showcase-card__image">
+                        ${t.image_url ? `<img src="${t.image_url}" alt="${esc(t.name)}" loading="lazy">` : 
+                          '<div class="showcase-card__placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg></div>'}
+                    </div>
+                    <div class="showcase-card__body">
+                        <h2 class="showcase-card__title">${esc(t.name)}</h2>
+                        <p class="showcase-card__desc">${esc(t.description)}</p>
+                        ${t.address ? `<p class="showcase-card__address">📍 ${esc(t.address)}</p>` : ''}
+                        ${t.timings ? `<p class="showcase-card__timings">🕐 ${esc(t.timings)}</p>` : ''}
+                        <div class="showcase-card__actions">
+                            <a href="/temples/${t.slug}" data-link class="btn btn-sm btn-primary">View Details</a>
+                            ${t.map_link ? `<a href="${t.map_link}" target="_blank" class="btn btn-sm btn-outline">Get Directions</a>` : ''}
+                        </div>
+                    </div>
+                </article>
+            `).join('') || '<p class="text-center">Loading temples...</p>'}
+        </div>
+    `;
+    
+    return container;
+}
+
+// ============================================
+// Temple Detail Page
+// ============================================
+function TempleDetailPage({ slug }) {
+    const container = Container({ narrow: true });
+    const temple = Store.state.temples.find(t => t.slug === slug);
+    
+    if (!temple) {
+        container.innerHTML = `
+            <div class="empty-state reveal">
+                <h2>Temple Not Found</h2>
+                <a href="/temples" data-link class="btn btn-primary mt-lg">View All Temples</a>
+            </div>
+        `;
+        return container;
+    }
+    
+    container.innerHTML = `
+        <div class="temple-detail reveal">
+            <div class="temple-hero">
+                ${temple.image_url ? `<img src="${temple.image_url}" alt="${esc(t.name)}" class="temple-hero__image">` : 
+                  '<div class="temple-hero__placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg></div>'}
+            </div>
+            <span class="eyebrow">Sacred Space</span>
+            <h1 class="temple-title">${esc(temple.name)}</h1>
+            <p class="temple-desc">${esc(temple.description)}</p>
+        </div>
+        <div class="temple-info reveal" data-delay="100">
+            ${temple.address ? `
+                <div class="info-item">
+                    <span class="info-icon">📍</span>
+                    <div>
+                        <strong>Address</strong>
+                        <p>${esc(temple.address)}</p>
+                        ${temple.map_link ? `<a href="${temple.map_link}" target="_blank" class="text-link">View on Map →</a>` : ''}
+                    </div>
+                </div>
+            ` : ''}
+            ${temple.timings ? `
+                <div class="info-item">
+                    <span class="info-icon">🕐</span>
+                    <div>
+                        <strong>Timings</strong>
+                        <p>${esc(temple.timings)}</p>
+                    </div>
+                </div>
+            ` : ''}
+            ${temple.phone ? `
+                <div class="info-item">
+                    <span class="info-icon">📞</span>
+                    <div>
+                        <strong>Phone</strong>
+                        <a href="tel:${temple.phone.replace(/\s/g, '')}">${esc(temple.phone)}</a>
+                    </div>
+                </div>
+            ` : ''}
+            ${temple.pooja_types?.length ? `
+                <div class="info-item">
+                    <span class="info-icon">🙏</span>
+                    <div>
+                        <strong>Available Poojas</strong>
+                        <div class="pooja-tags">
+                            ${temple.pooja_types.map(p => `<span class="badge badge--info">${esc(p)}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            ` : ''}
+        </div>
+        ${temple.map_embed_url ? `
+            <div class="temple-map reveal" data-delay="200">
+                <iframe src="${temple.map_embed_url}" width="100%" height="300" style="border:0; border-radius: var(--radius-lg);" allowfullscreen="" loading="lazy"></iframe>
+            </div>
+        ` : ''}
+        <div class="temple-actions reveal" data-delay="300">
+            <a href="/contact" data-link class="btn btn-primary btn-lg">Contact Us for Pooja</a>
+            <a href="/temples" data-link class="btn btn-ghost">View All Temples</a>
+        </div>
+    `;
+    
+    return container;
+}
+
+// ============================================
+// Auth Pages
+// ============================================
+function LoginPage() {
+    const container = Container({ narrow: true });
+    
+    container.innerHTML = `
+        <div class="auth-page">
+            <div class="auth-visual">
+                <h2>Welcome Back</h2>
+                <p>Sign in to access your spiritual journey, manage bookings, and explore sacred collections.</p>
+            </div>
+            <div class="auth-form-container">
+                <div class="auth-card reveal">
+                    <h1>Sign In</h1>
+                    <p>Enter the sanctuary of Sri Panchami Spiritual</p>
+                    <form id="login-form" class="auth-form">
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" required placeholder="your@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" required placeholder="••••••••">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                    </form>
+                    <div class="auth-divider">or</div>
+                    <a href="/auth/google" class="btn-google">
+                        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                        Continue with Google
+                    </a>
+                    <div class="auth-footer">
+                        <p>New to our sanctuary? <a href="/register" data-link>Create an account</a></p>
+                        <p><a href="/forgot-password" data-link>Forgot your password?</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Bind login form
+    requestAnimationFrame(() => {
+        const form = container.querySelector('#login-form');
+        form?.addEventListener('submit', handleLogin);
+    });
+    
+    return container;
+}
+
+function RegisterPage() {
+    const container = Container({ narrow: true });
+    
+    container.innerHTML = `
+        <div class="auth-page">
+            <div class="auth-visual">
+                <h2>Begin Your Journey</h2>
+                <p>Join our community of devotees and seekers. Create your account to manage your bookings and sacred collections.</p>
+            </div>
+            <div class="auth-form-container">
+                <div class="auth-card reveal">
+                    <h1>Create Account</h1>
+                    <p>Join Sri Panchami Spiritual today</p>
+                    <form id="register-form" class="auth-form">
+                        <div class="form-group">
+                            <label for="name">Full Name</label>
+                            <input type="text" id="name" name="name" required placeholder="Your full name">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" required placeholder="your@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" required placeholder="••••••••" minlength="6">
+                        </div>
+                        <div class="form-group">
+                            <label for="password_confirm">Confirm Password</label>
+                            <input type="password" id="password_confirm" name="password_confirm" required placeholder="••••••••" minlength="6">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+                    </form>
+                    <div class="auth-divider">or</div>
+                    <a href="/auth/google" class="btn-google">
+                        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                        Sign up with Google
+                    </a>
+                    <div class="auth-footer">
+                        <p>Already have an account? <a href="/login" data-link>Sign in here</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Bind register form
+    requestAnimationFrame(() => {
+        const form = container.querySelector('#register-form');
+        form?.addEventListener('submit', handleRegister);
+    });
+    
+    return container;
+}
+
+// ============================================
+// About & Contact Pages
+// ============================================
+function AboutPage() {
+    const container = Container({ narrow: true });
+    
+    container.innerHTML = `
+        <div class="page-header reveal">
+            <span class="eyebrow">Our Story</span>
+            <h1 class="page-title">About Sri Panchami Spiritual</h1>
+            <p class="page-subtitle">Chennai's trusted destination for authentic spiritual products and expert astrology guidance.</p>
+        </div>
+        <div class="about-grid reveal" data-delay="100">
+            <div class="panel about-card">
+                <div class="about-card__icon">🎯</div>
+                <h3>Our Mission</h3>
+                <p>To guide individuals on a meaningful spiritual journey through traditional Vedic wisdom, positive energy, and authentic devotional practices.</p>
+            </div>
+            <div class="panel about-card">
+                <div class="about-card__icon">👁️</div>
+                <h3>Our Vision</h3>
+                <p>Making authentic spiritual guidance and sacred products accessible to every devotee, everywhere.</p>
+            </div>
+        </div>
+        <div class="feature-strip reveal" data-delay="200">
+            <article class="panel feature-card">
+                <div class="feature-icon">🧘</div>
+                <h3>Spiritual Guidance</h3>
+                <p>Expert Vedic astrology consultation</p>
+            </article>
+            <article class="panel feature-card">
+                <div class="feature-icon">📿</div>
+                <h3>Sacred Products</h3>
+                <p>Authentic rudraksha and devotional items</p>
+            </article>
+            <article class="panel feature-card">
+                <div class="feature-icon">🪔</div>
+                <h3>Pooja Support</h3>
+                <p>Complete pooja samagri and guidance</p>
+            </article>
+            <article class="panel feature-card">
+                <div class="feature-icon">✨</div>
+                <h3>Positive Energy</h3>
+                <p>Wellness practices for inner harmony</p>
+            </article>
+        </div>
+        <div class="business-info reveal" data-delay="300">
+            <h3>SRI PANCHAMI SPIRITUAL</h3>
+            <p><strong>GST:</strong> 33BZRPM8732J2ZQ</p>
+            <p>23, 1st Cross Street Kothari Nagar, Ramapuram, Chennai, Tamil Nadu 600089</p>
+            <p><strong>Hours:</strong> Mon–Sat 9:00 AM – 7:00 PM | Sun 10:00 AM – 5:00 PM</p>
+            <p><a href="mailto:sripanchamispiritual@gmail.com">sripanchamispiritual@gmail.com</a></p>
+        </div>
+    `;
+    
+    return container;
+}
+
+function ContactPage() {
+    const container = Container({ narrow: true });
+    
+    container.innerHTML = `
+        <div class="page-header reveal">
+            <span class="eyebrow">Get in Touch</span>
+            <h1 class="page-title">Contact Us</h1>
+            <p class="page-subtitle">Visit our store in Ramapuram or reach out for spiritual guidance.</p>
+        </div>
+        <div class="contact-grid reveal" data-delay="100">
+            <div class="panel contact-card">
+                <div class="contact-card__icon">📧</div>
+                <h3>Email</h3>
+                <a href="mailto:sripanchamispiritual@gmail.com">sripanchamispiritual@gmail.com</a>
+            </div>
+            <div class="panel contact-card">
+                <div class="contact-card__icon">📍</div>
+                <h3>Visit Our Store</h3>
+                <p>23, 1st Cross Street Kothari Nagar,<br>Ramapuram, Chennai,<br>Tamil Nadu 600089</p>
+            </div>
+            <div class="panel contact-card">
+                <div class="contact-card__icon">📋</div>
+                <h3>Business Info</h3>
+                <p>GST: 33BZRPM8732J2ZQ</p>
+            </div>
+        </div>
+        <div class="contact-hours reveal" data-delay="200">
+            <h3>Sacred Service Hours</h3>
+            <p>Monday – Saturday: 9:00 AM – 7:00 PM</p>
+            <p>Sunday: 10:00 AM – 5:00 PM</p>
+        </div>
+        <div class="contact-form-section reveal" data-delay="300">
+            <h3>Send us a Message</h3>
+            <form id="contact-form" class="contact-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" name="name" required placeholder="Your name">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required placeholder="your@email.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="message">Message</label>
+                    <textarea id="message" name="message" required rows="5" placeholder="How can we help you?"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg">Send Message</button>
+            </form>
+        </div>
+    `;
+    
+    // Bind contact form
+    requestAnimationFrame(() => {
+        const form = container.querySelector('#contact-form');
+        form?.addEventListener('submit', handleContact);
+    });
+    
+    return container;
+}
+
+// ============================================
+// Account Pages
+// ============================================
+function OrdersPage() {
+    const container = Container();
+    
+    container.innerHTML = `
+        <div class="account-layout">
+            <aside class="account-nav">
+                <a href="/account/orders" class="active">
+                    <span>📦</span> My Orders
+                </a>
+                <a href="/account/bookings" data-link>
+                    <span>📅</span> My Bookings
+                </a>
+                <a href="/" data-link>
+                    <span>🏠</span> Back to Home
+                </a>
+            </aside>
+            <div class="account-content">
+                <h1>My Orders</h1>
+                <div class="empty-state">
+                    <div class="empty-state-icon">📦</div>
+                    <h3>No Orders Yet</h3>
+                    <p>Start exploring our spiritual products.</p>
+                    <a href="/shop" data-link class="btn btn-primary mt-lg">Browse Shop</a>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    return container;
+}
+
+function BookingsPage() {
+    const container = Container();
+    
+    container.innerHTML = `
+        <div class="account-layout">
+            <aside class="account-nav">
+                <a href="/account/orders" data-link>
+                    <span>📦</span> My Orders
+                </a>
+                <a href="/account/bookings" class="active">
+                    <span>📅</span> My Bookings
+                </a>
+                <a href="/" data-link>
+                    <span>🏠</span> Back to Home
+                </a>
+            </aside>
+            <div class="account-content">
+                <h1>My Bookings</h1>
+                <div class="empty-state">
+                    <div class="empty-state-icon">📅</div>
+                    <h3>No Bookings Yet</h3>
+                    <p>Book a session with our expert astrologers.</p>
+                    <a href="/astrologers" data-link class="btn btn-primary mt-lg">Browse Astrologers</a>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    return container;
+}
+
+// ============================================
+// Order Success Page
+// ============================================
+function OrderSuccessPage() {
+    const container = Container({ narrow: true });
+    
+    container.innerHTML = `
+        <div class="success-state reveal">
+            <div class="success-icon">✓</div>
+            <h1>Order Placed Successfully!</h1>
+            <p>Thank you for your order. We will contact you soon.</p>
+            <a href="/shop" data-link class="btn btn-primary btn-lg mt-xl">Continue Shopping</a>
+        </div>
+    `;
+    
+    return container;
+}
+
+// ============================================
+// Event Handlers
+// ============================================
+function handleLogin(e) {
+    e.preventDefault();
+    showNotification('Login functionality coming soon!', 'info');
+}
+
+function handleRegister(e) {
+    e.preventDefault();
+    showNotification('Registration functionality coming soon!', 'info');
+}
+
+function handleCheckout(e) {
+    e.preventDefault();
+    showNotification('Order placed successfully!', 'success');
+    Cart.clear();
+    Router.navigate('/order-success');
+}
+
+function handleContact(e) {
+    e.preventDefault();
+    showNotification('Message sent successfully!', 'success');
+    e.target.reset();
+}
+
+function bindAddToCartButtons(container) {
+    container?.querySelectorAll('.btn-add-cart').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            try {
+                const productStr = btn.dataset.product.replace(/&quot;/g, '"');
+                const product = JSON.parse(productStr);
+                Cart.add(product, 1);
+                showNotification(`${product.name} added to cart!`, 'success');
+                
+                // Animate to cart
+                const card = btn.closest('.product-card, .showcase-card');
+                const img = card?.querySelector('img');
+                if (img) animateToCart(img, e);
+            } catch (err) {
+                console.error('Error adding to cart:', err);
+            }
+        });
+    });
+}
+
+function bindCartActions(container) {
+    container.querySelectorAll('.cart-item').forEach(item => {
+        const slug = item.dataset.slug;
+        
+        item.querySelector('[data-action="increase"]')?.addEventListener('click', () => {
+            const qtyEl = item.querySelector('.qty-value');
+            const qty = parseInt(qtyEl.textContent) + 1;
+            Cart.updateQty(slug, qty);
+            qtyEl.textContent = qty;
+        });
+        
+        item.querySelector('[data-action="decrease"]')?.addEventListener('click', () => {
+            const qtyEl = item.querySelector('.qty-value');
+            const qty = parseInt(qtyEl.textContent);
+            if (qty > 1) {
+                Cart.updateQty(slug, qty - 1);
+                qtyEl.textContent = qty - 1;
+            } else {
+                Cart.remove(slug);
+                item.remove();
+                Router.render(Router.currentPath);
+            }
+        });
+        
+        item.querySelector('[data-action="remove"]')?.addEventListener('click', () => {
+            Cart.remove(slug);
+            item.remove();
+            if (Cart.items.length === 0) {
+                Router.render(Router.currentPath);
+            }
+        });
+    });
+}
+
+function bindCategoryFilters() {
+    $$('#category-filters .filter-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            $$('#category-filters .filter-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            
+            const category = chip.dataset.category;
+            $$('#shop-product-grid .product-card').forEach(card => {
+                if (!category || card.dataset.category === category) {
+                    card.style.display = '';
+                    slideUp(card, 0);
                 } else {
-                    handler.fn(root, ...handler.params);
+                    card.style.display = 'none';
                 }
-            }
-        } else {
-            // 404
-            const root = document.getElementById('root');
-            if (root) root.innerHTML = '<div class="section" style="text-align:center;padding:4rem"><h1>404</h1><p>Page not found</p><a href="/" data-link class="btn btn-primary">Go Home</a></div>';
-        }
-    }
-};
-
-// ============================================
-// Cart Store
-// ============================================
-const Cart = {
-    items: JSON.parse(localStorage.getItem('cart') || '[]'),
-
-    save() {
-        localStorage.setItem('cart', JSON.stringify(this.items));
-        this.updateBadge();
-    },
-
-    add(product, qty = 1) {
-        const existing = this.items.find(i => i.slug === product.slug);
-        if (existing) {
-            existing.qty += qty;
-        } else {
-            this.items.push({ ...product, qty });
-        }
-        this.save();
-    },
-
-    remove(slug) {
-        this.items = this.items.filter(i => i.slug !== slug);
-        this.save();
-    },
-
-    updateQty(slug, qty) {
-        const item = this.items.find(i => i.slug === slug);
-        if (item) item.qty = Math.max(1, qty);
-        this.save();
-    },
-
-    clear() {
-        this.items = [];
-        this.save();
-    },
-
-    get total() {
-        return this.items.reduce((sum, i) => sum + (i.offer_price || i.price) * i.qty, 0);
-    },
-
-    get count() {
-        return this.items.reduce((sum, i) => sum + i.qty, 0);
-    },
-
-    updateBadge() {
-        document.querySelectorAll('.cart-count').forEach(el => {
-            el.textContent = this.count;
-            el.style.display = this.count > 0 ? 'flex' : 'none';
+            });
         });
+    });
+}
+
+function bindSorting() {
+    const sortSelect = $('#sort-select');
+    sortSelect?.addEventListener('change', (e) => {
+        const grid = $('#shop-product-grid');
+        const cards = [...$$('.product-card', grid)];
+        
+        cards.sort((a, b) => {
+            const getPrice = card => {
+                const priceText = card.querySelector('.price')?.textContent || '0';
+                return parseInt(priceText.replace(/[^0-9]/g, ''));
+            };
+            
+            switch (e.target.value) {
+                case 'price-low': return getPrice(a) - getPrice(b);
+                case 'price-high': return getPrice(b) - getPrice(a);
+                default: return 0;
+            }
+        });
+        
+        cards.forEach((card, i) => {
+            grid.appendChild(card);
+            card.dataset.delay = i * 30;
+            slideUp(card, i * 30);
+        });
+    });
+}
+
+function bindSlotBooking(container, astrologer) {
+    container?.querySelectorAll('[data-action="book-slot"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const time = btn.closest('.slot-card').dataset.time;
+            showNotification(`Booking ${astrologer.name} at ${time}...`, 'info');
+        });
+    });
+}
+
+function generateTimeSlots() {
+    const slots = [];
+    for (let h = 9; h <= 18; h++) {
+        slots.push(`${h.toString().padStart(2, '0')}:00`);
+        if (h < 18) slots.push(`${h.toString().padStart(2, '0')}:30`);
     }
-};
+    return slots;
+}
 
 // ============================================
-// Helpers
+// Hero Animations
 // ============================================
-const fmt = (n) => '₹' + Number(n).toLocaleString('en-IN');
+function initHeroParticles() {
+    const container = $('#hero-particles');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    for (let i = 0; i < 20; i++) {
+        const particle = document.createElement('span');
+        particle.className = 'particle';
+        particle.style.setProperty('--particle-x', Math.random() * 100 + '%');
+        particle.style.setProperty('--particle-y', Math.random() * 100 + '%');
+        particle.style.setProperty('--particle-delay', Math.random() * 5 + 's');
+        particle.style.setProperty('--particle-duration', (3 + Math.random() * 4) + 's');
+        container.appendChild(particle);
+    }
+}
 
-const esc = (s) => {
-    const d = document.createElement('d');
-    d.textContent = s;
-    return d.innerHTML;
-};
+function initHeroAnimations() {
+    $$('.hero-animate').forEach(el => {
+        const delay = parseInt(el.dataset.delay) || 0;
+        slideUp(el, delay);
+    });
+}
 
-const img = (src, alt) => src || `https://placehold.co/400x400/fdfbf7/8c7e6d?text=${encodeURIComponent(alt || 'Product')}`;
+// ============================================
+// Register Routes
+// ============================================
+Router.register('/', HomePage);
+Router.register('/shop', ShopPage);
+Router.register('/product/:slug', ProductPage);
+Router.register('/cart', CartPage);
+Router.register('/checkout', CheckoutPage);
+Router.register('/astrologers', AstrologersPage);
+Router.register('/astrologers/:slug', AstrologerDetailPage);
+Router.register('/temples', TemplesPage);
+Router.register('/temples/:slug', TempleDetailPage);
+Router.register('/login', LoginPage);
+Router.register('/register', RegisterPage);
+Router.register('/about', AboutPage);
+Router.register('/contact', ContactPage);
+Router.register('/account/orders', OrdersPage);
+Router.register('/account/bookings', BookingsPage);
+Router.register('/order-success', OrderSuccessPage);
 
-// Register components on window
-window.API = API;
-window.Router = Router;
-window.Cart = Cart;
-window.fmt = fmt;
-window.esc = esc;
-window.img = img;
+// Fetch initial data
+async function loadInitialData() {
+    try {
+        const [products, categories, astrologers, temples] = await Promise.all([
+            API.get('/products').catch(() => []),
+            API.get('/categories').catch(() => []),
+            API.get('/astrologers').catch(() => []),
+            API.get('/temples').catch(() => [])
+        ]);
+        
+        Store.setState({
+            products: products.products || products || [],
+            categories: categories.categories || categories || [],
+            astrologers: astrologers.astrologers || astrologers || [],
+            temples: temples.temples || temples || []
+        });
+    } catch (error) {
+        console.error('Error loading initial data:', error);
+    }
+}
+
+// Load data on startup
+loadInitialData();
+
+// Export pages globally
+window.HomePage = HomePage;
+window.ShopPage = ShopPage;
+window.ProductPage = ProductPage;
+window.CartPage = CartPage;
+window.CheckoutPage = CheckoutPage;
+window.AstrologersPage = AstrologersPage;
+window.AstrologerDetailPage = AstrologerDetailPage;
+window.TemplesPage = TemplesPage;
+window.TempleDetailPage = TempleDetailPage;
+window.LoginPage = LoginPage;
+window.RegisterPage = RegisterPage;
+window.AboutPage = AboutPage;
+window.ContactPage = ContactPage;
+window.OrdersPage = OrdersPage;
+window.BookingsPage = BookingsPage;
+window.OrderSuccessPage = OrderSuccessPage;
