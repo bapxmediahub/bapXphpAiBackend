@@ -1,6 +1,16 @@
 Options -Indexes
 RewriteEngine On
+
+# Block access to sensitive directories
 RewriteRule ^(app|modules|integrations|storage|tools|tests|docs)/ - [F,L]
+
+# API routes - proxy to api/index.php
+RewriteRule ^api/(.*)$ api/index.php [QSA,L]
+
+# Admin routes - let PHP handle (backend only)
+RewriteRule ^admin(.*)$ index.php [QSA,L]
+
+# All other routes - serve SPA (React)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^ index.php [QSA,L]

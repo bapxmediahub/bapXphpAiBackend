@@ -3,25 +3,25 @@
         "id": "temple-1",
         "slug": "sri-maha-varahi-amman",
         "name": "Sri Maha Varahi Amman Temple",
-        "description": "The divine abode of Goddess Varahi, one of the powerful Matrika deities. Known for protection, prosperity, and spiritual awakening.",
+        "description": "The divine abode of Goddess Varahi, one of the powerful Matrika deities. Known for protection, prosperity, and spiritual awakening. Devotees experience deep peace and divine grace in this sacred space.",
         "address": "Porur - Vanagaram Main Rd, Odamanagar, Vanagaram, Chennai, Tamil Nadu 600095",
         "timings": "6:30 AM - 12:30 PM, 5:00 PM - 8:30 PM",
         "phone": "+91 97911 22995",
-        "image_url": "",
+        "image_url": "/assets/images/temples/varahi-amman-temple.jpg",
         "pooja_types": ["Abhishekam", "Aarti", "Homam"],
         "map_embed_url": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3887.5!2d80.1508!3d13.0558!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a52615737e57e2d%3A0x2b5e4a4b4e4b4e4b!2sSri%20Varahi%20Amman%20Temple!5e0!3m2!1sen!2sin!4v1234567890",
-        "map_link": "https://www.google.com/maps/search/Sri+Maha+Varahi+Amman+Temple+Vanagaram+Chennai"
+        "map_link": "https://maps.app.goo.gl/q84bMq116MdrLHe36"
     },
     {
         "id": "temple-2",
         "slug": "shri-shiva-vishnu",
         "name": "Shri Shiva Vishnu Temple",
-        "description": "A sacred space dedicated to Lord Shiva and Lord Vishnu, representing the unity of destruction and preservation. Regular poojas and homams are performed for devotees' wellbeing.",
-        "address": "Natesan Street, 2, N Usman Rd, T. Nagar, Chennai, Tamil Nadu 600017",
-        "timings": "7:00 AM - 8:00 PM",
+        "description": "A sacred space dedicated to Lord Shiva (Kedareswarar) and Lord Vishnu (Srinivasa Perumal), representing the unity of destruction and preservation. One of the few temples where both Shiva and Vishnu shrines coexist in harmony.",
+        "address": "2, Natesan Street, N Usman Rd, T. Nagar, Chennai, Tamil Nadu 600017",
+        "timings": "6:00 AM - 11:00 AM, 5:00 PM - 9:00 PM",
         "phone": "+91 44 2434 6031",
-        "image_url": "",
-        "pooja_types": ["Rudrabhishekam", "Lakshmi Pooja", "Satyanarayan Pooja"],
+        "image_url": "/assets/images/temples/shiva-vishnu-temple-tnagar.jpg",
+        "pooja_types": ["Rudrabhishekam", "Lakshmi Pooja", "Satyanarayan Pooja", "Abhishekam at Kasi Vishwanathar"],
         "map_embed_url": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3886.8!2d80.2375!3d13.0325!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a52663b2b1c9c0b%3A0x4e4b4e4b4e4b4e4b!2sSri%20Sivavishnu%20Temple!5e0!3m2!1sen!2sin!4v1234567890",
         "map_link": "https://www.google.com/maps/search/Shri+Shiva+Vishnu+Temple+T+Nagar+Chennai"
     }
