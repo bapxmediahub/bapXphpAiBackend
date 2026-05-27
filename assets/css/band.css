@@ -1,73 +1,75 @@
 :root {
-    /* Sacred Minimalism Luxury Palette */
-    --color-ink: #1a1a1a;
-    --color-ink-light: #4a4a4a;
+    /* Divine Color Palette */
+    --color-ink: #2c1e14;
+    --color-ink-light: #4a3828;
     --color-gold: #d4af37;
-    --color-gold-light: #f9f4e6;
-    --color-gold-dark: #b8941f;
-    --color-cream: #faf8f3;
-    --color-parchment: #f5f2ed;
-    --color-maroon: #8b0000;
-    --color-maroon-deep: #5d0000;
-    --color-maroon-light: #a02020;
-    --color-bg: #faf8f3;
-    --color-bg-alt: #f5f2ed;
-    --color-border: #e8e4dc;
-    --color-border-light: #f0ece6;
-    --color-text-muted: #6b6456;
-    --color-text-light: #8a826c;
+    --color-gold-light: #f1e5ac;
+    --color-gold-dark: #aa8a2e;
+    --color-cream: #fffdfa;
+    --color-parchment: #fdfbf7;
+    --color-maroon: #800000;
+    --color-maroon-deep: #5c0000;
+    --color-maroon-light: #a52a2a;
+    --color-bg: #fffdfa;
+    --color-bg-alt: #f8f4ee;
+    --color-border: #e8dcc5;
+    --color-border-light: #f0e8d8;
+    --color-text-muted: #8c7e6d;
+    --color-text-light: #b0a494;
     --color-white: #ffffff;
-    --color-success: #2d5016;
-    --color-success-light: #f0f7e8;
-    --color-warning: #8a6d3b;
-    --color-warning-light: #faf3e0;
-    --color-error: #8b2635;
-    --color-error-light: #f8e8eb;
-    --color-info: #2563eb;
+    --color-success: #2d8a4e;
+    --color-success-light: #e8f5ed;
+    --color-warning: #e8a317;
+    --color-warning-light: #fef7e6;
+    --color-error: #d64045;
+    --color-error-light: #fde8e9;
+    --color-info: #3b82f6;
     --color-info-light: #eff6ff;
-    --color-rating: #d97706;
+    --color-rating: #f59e0b;
 
-    /* Divine Shadows & Effects */
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-    --shadow-lg: 0 10px 30px rgba(0,0,0,0.1);
-    --shadow-xl: 0 20px 50px rgba(0,0,0,0.15);
-    --shadow-divine: 0 15px 35px rgba(212, 175, 55, 0.12);
-    --shadow-glow: 0 0 30px rgba(212, 175, 55, 0.25);
-    --shadow-serene: 0 8px 25px rgba(0,0,0,0.06);
+    /* Gradients */
+    --gradient-gold: linear-gradient(135deg, var(--color-gold), var(--color-gold-dark));
+    --gradient-divine: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.05));
+
+    /* Shadows - naming by elevation */
+    --shadow-sm: 0 1px 3px rgba(44,30,20,0.06), 0 1px 2px rgba(44,30,20,0.04);
+    --shadow-md: 0 4px 12px rgba(44,30,20,0.08), 0 2px 4px rgba(44,30,20,0.04);
+    --shadow-lg: 0 10px 30px rgba(44,30,20,0.1), 0 4px 8px rgba(44,30,20,0.04);
+    --shadow-xl: 0 20px 50px rgba(44,30,20,0.15), 0 8px 16px rgba(44,30,20,0.06);
+    --shadow-divine: 0 10px 30px rgba(138, 102, 44, 0.15);
+    --shadow-glow: 0 0 20px rgba(212, 175, 55, 0.3);
 
     /* Transitions */
-    --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-divine: 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-fast: 0.15s ease;
+    --transition-base: 0.25s ease;
+    --transition-divine: 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 
-    /* Typography - Elegant & Distinctive */
-    --font-main: 'Merriweather', 'Georgia', serif;
-    --font-serif: 'Cormorant Garamond', 'Palatino', serif;
-    --font-display: 'Playfair Display', 'Cormorant Garamond', serif;
-    --font-accent: 'Rufina', serif;
+    /* Typography */
+    --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-serif: 'Playfair Display', 'Georgia', serif;
 
-    /* Spacing Scale - Luxe Proportions */
-    --space-2xs: 0.3rem;
-    --space-xs: 0.6rem;
-    --space-sm: 0.9rem;
-    --space-md: 1.2rem;
-    --space-lg: 1.8rem;
-    --space-xl: 2.4rem;
-    --space-2xl: 3.6rem;
-    --space-3xl: 4.8rem;
-    --space-4xl: 7.2rem;
-    --space-5xl: 9.6rem;
+    /* Spacing scale */
+    --space-2xs: 0.25rem;
+    --space-xs: 0.5rem;
+    --space-sm: 0.75rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+    --space-3xl: 4rem;
+    --space-4xl: 6rem;
 
-    /* Border Radius - Refined Curves */
-    --radius-sm: 6px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
-    --radius-xl: 24px;
-    --radius-pill: 999px;
+     /* Border radius */
+     --radius-sm: 4px;
+     --radius-md: 8px;
+     --radius-lg: 10px;
+     --radius-xl: 12px;
+     --radius-pill: 999px;
 
-    /* Container - Elegant Widths */
-    --container-max: 1200px;
+    /* Container */
+    --container-max: 1300px;
+    --container-wide: 1440px;
+}
     --container-wide: 1400px;
 
     /* Divine Effects */
