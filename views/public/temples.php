@@ -2,8 +2,8 @@
     <div class="container" style="margin-bottom:var(--space-2xl);">
         <div style="text-align:center;">
             <span class="eyebrow">Sacred Spaces · Divine Energy</span>
-            <h1 class="section-title" style="margin-bottom:var(--space-sm);">Our Temples</h1>
-            <p class="lede" style="margin:0 auto;">Visit our sacred spaces for divine blessings and spiritual awakening.</p>
+            <h1 class="section-title" style="margin-bottom:var(--space-sm);">Our Temples in Chennai</h1>
+            <p class="lede">Visit our sacred spaces for divine blessings, traditional pooja ceremonies, and spiritual awakening in Chennai, Tamil Nadu.</p>
         </div>
     </div>
     <?php if(empty($items)): ?>
@@ -19,7 +19,7 @@
             <div class="showcase-grid">
                 <?php foreach($items as $item): ?>
                     <article class="showcase-card reveal">
-                        <div style="background:var(--color-bg-alt); border-radius:var(--radius-md); margin-bottom:var(--space-md); height:180px; display:flex; align-items:center; justify-content:center;">
+                        <div style="background:var(--color-bg-alt); border-radius:var(--radius-md); margin-bottom:var(--space-md); height:180px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
                             <?php if(!empty($item['image_url'])): ?>
                                 <img src="<?= e($item['image_url']) ?>" alt="<?= e($item['name']) ?>" style="width:100%; height:100%; object-fit:cover; border-radius:var(--radius-md);">
                             <?php else: ?>
@@ -40,6 +40,15 @@
                                 <?= e($item['timings']) ?>
                             </p>
                         <?php endif; ?>
+                        <div style="margin-top:var(--space-md); display:flex; gap:var(--space-xs); flex-wrap:wrap;">
+                            <a href="/temples/<?= e($item['slug']) ?>" class="btn btn-sm btn-primary">View Details</a>
+                            <?php if(!empty($item['map_link'])): ?>
+                                <a href="<?= e($item['map_link']) ?>" target="_blank" rel="noopener" class="btn btn-sm btn-outline">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                    Get Directions
+                                </a>
+                            <?php endif; ?>
+                        </div>
                     </article>
                 <?php endforeach; ?>
             </div>

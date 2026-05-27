@@ -2,8 +2,8 @@
     <div class="container container--narrow">
         <div style="text-align:center; margin-bottom:var(--space-2xl);">
             <span class="eyebrow">Get in Touch</span>
-            <h1 class="section-title" style="margin-bottom:var(--space-sm);">Contact Us</h1>
-            <p class="lede" style="margin:0 auto;">We'd love to hear from you. Reach out for any spiritual guidance or support.</p>
+            <h1 class="section-title" style="margin-bottom:var(--space-sm);">Contact Sri Panchami Spiritual — Chennai</h1>
+            <p class="lede" style="margin:0 auto;">Visit our store in Ramapuram or reach out for spiritual guidance, astrology consultation, or product inquiries. We are here to help.</p>
         </div>
         <div class="grid" style="margin-bottom:var(--space-2xl);">
             <div class="panel reveal" style="text-align:center;">
@@ -13,13 +13,13 @@
             </div>
             <div class="panel reveal" style="text-align:center;">
                 <span style="display:block; margin-bottom:var(--space-sm);"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
-                <h3 style="font-family:var(--font-serif); margin:0 0 var(--space-xs);">Address</h3>
+                <h3 style="font-family:var(--font-serif); margin:0 0 var(--space-xs);">Visit Our Store</h3>
                 <p style="color:var(--color-text-muted); font-size:0.9rem; margin:0;">23, 1st Cross Street Kothari Nagar,<br>Ramapuram, Chennai,<br>Tamil Nadu 600089</p>
             </div>
             <div class="panel reveal" style="text-align:center;">
                 <span style="display:block; margin-bottom:var(--space-sm);"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6a6 6 0 000 12"/><path d="M12 8v8"/><path d="M9 10l6 4"/><path d="M15 10l-6 4"/></svg></span>
-                <h3 style="font-family:var(--font-serif); margin:0 0 var(--space-xs);">Business</h3>
-                <p style="color:var(--color-text-muted); font-size:0.9rem; margin:0;">Reg. No: 33BZRPM8732J2ZQ</p>
+                <h3 style="font-family:var(--font-serif); margin:0 0 var(--space-xs);">Business Info</h3>
+                <p style="color:var(--color-text-muted); font-size:0.9rem; margin:0;">GST: 33BZRPM8732J2ZQ</p>
             </div>
         </div>
         <div class="admin-card reveal" style="text-align:center;">
@@ -29,3 +29,13 @@
         </div>
     </div>
 </section>
+
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "Contact Sri Panchami Spiritual",
+    "description": "Contact Sri Panchami Spiritual in Chennai for spiritual products, astrology consultation, and pooja services.",
+    "url": "https://sripanchamispiritual.com/contact"
+}
+</script>

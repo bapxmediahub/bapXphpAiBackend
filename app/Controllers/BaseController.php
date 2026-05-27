@@ -2,12 +2,13 @@
 namespace App\Controllers;
 use App\Services\CartService;
 abstract class BaseController {
+    protected string $layout = 'app';
     protected function redirect(string $path): never { header('Location: ' . $path); exit; }
     protected function flash(string $message): void { $_SESSION['flash'] = $message; }
     protected function render(string $view, array $data = []): void {
         extract($data);
         $viewFile = app_path('views/' . $view . '.php');
-        require app_path('views/layouts/app.php');
+        require app_path('views/layouts/' . $this->layout . '.php');
     }
     protected function resolveCartItems(): array {
         if (empty($_SESSION['cart'])) return [];

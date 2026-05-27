@@ -17,7 +17,7 @@
             </div>
             <?php if(empty($items)): ?>
                 <div class="panel" style="text-align:center; padding:var(--space-2xl);">
-                    <span style="display:block; margin-bottom:var(--space-md);"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><path d="M9 20l-1-4 3-2-1-4 3-2-1-4"/><path d="M15 20l1-4-3-2 1-4-3-2 1-4"/><path d="M12 7l-3 2 1 4-3 2 1 4h8l1-4-3-2 1-4-3-2z"/></svg></span>
+                    <span style="display:block; margin-bottom:var(--space-md);"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20"/><path d="M2 12h20"/></svg></span>
                     <h3 style="font-family:var(--font-serif); margin:0 0 var(--space-sm);">No products found</h3>
                     <p style="color:var(--color-text-muted); margin:0 0 var(--space-lg);">Check back soon for new spiritual products.</p>
                     <a href="/shop" class="btn btn-primary">Browse All</a>

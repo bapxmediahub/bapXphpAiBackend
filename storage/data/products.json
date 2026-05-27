@@ -7,7 +7,7 @@
         "category": "sacred-emblems",
         "price": 3499,
         "offer_price": 2999,
-        "image_url": "/assets/images/products/Varahi%20Amman%20Dollar/Varahi%20Amman%20Dollar%20Front%20PNG.png",
+        "image_url": "/assets/images/products/varahi-amman-dollar-front.png",
         "stock_status": "in_stock"
     },
     {
@@ -18,18 +18,18 @@
         "category": "jewelry",
         "price": 2499,
         "offer_price": 1999,
-        "image_url": "/assets/images/products/Varahi%20Amman%20Ring/Varahi%20Amman%20Ring%20Front%20PNG.png",
+        "image_url": "/assets/images/products/varahi-amman-ring-front.png",
         "stock_status": "in_stock"
     },
     {
         "id": "prod-murugar-vel-dollar",
-        "slug": "murugar-vel-dollar",
-        "name": "Murugar Vel Dollar",
+        "slug": "murugar-vel-mayil-dollar",
+        "name": "Murugar Vel Mayil Dollar",
         "description": "A divine dollar featuring Lord Murugan with his sacred vel (spear). Symbolizes courage, wisdom, and victory over obstacles.",
-        "category": "jewelry",
+        "category": "sacred-emblems",
         "price": 3199,
         "offer_price": 2799,
-        "image_url": "/assets/images/products/Murugar%20Vel%20Mayil%20Dollar/Murugar%20Vel%20Mayil%20Dollar%20Front%20PNG.png",
+        "image_url": "/assets/images/products/murugar-vel-mayil-dollar-front.png",
         "stock_status": "in_stock"
     },
     {
@@ -37,10 +37,10 @@
         "slug": "lingam-dollar",
         "name": "Lingam Dollar",
         "description": "A powerful representation of Lord Shiva in his Lingam form. This sacred pendant embodies cosmic energy and spiritual transformation.",
-        "category": "jewelry",
+        "category": "sacred-emblems",
         "price": 3999,
         "offer_price": 3499,
-        "image_url": "/assets/images/products/Lingam%20Dollar/Lingam%20Dollar%20Front%20PNG.png",
+        "image_url": "/assets/images/products/lingam-dollar-front.png",
         "stock_status": "in_stock"
     },
     {
@@ -48,10 +48,10 @@
         "slug": "lakshmi-dollar",
         "name": "Lakshmi Dollar",
         "description": "A beautiful dollar featuring Goddess Lakshmi, the deity of wealth and prosperity. Brings abundance and spiritual blessings to the wearer.",
-        "category": "jewelry",
+        "category": "sacred-emblems",
         "price": 2899,
         "offer_price": 2499,
-        "image_url": "/assets/images/products/Lakshmi%20Dollar/Lakshmi%20Dollar%20Front%20PNG.png",
+        "image_url": "/assets/images/products/lakshmi-dollar-front.png",
         "stock_status": "in_stock"
     },
     {
@@ -62,7 +62,7 @@
         "category": "sacred-emblems",
         "price": 2699,
         "offer_price": 2299,
-        "image_url": "/assets/images/products/Karuppasami%20Dollar/Karuppasami%20Dollar%20Front%20PNG.png",
+        "image_url": "/assets/images/products/karuppasami-dollar-front.png",
         "stock_status": "in_stock"
     },
     {
@@ -73,7 +73,7 @@
         "category": "sacred-emblems",
         "price": 2199,
         "offer_price": 1799,
-        "image_url": "/assets/images/products/Yamthiram%20Dollar/Yamthiram%20Dollar%20Front%20PNG.png",
+        "image_url": "/assets/images/products/yamthiram-dollar-front.png",
         "stock_status": "in_stock"
     }
 ]

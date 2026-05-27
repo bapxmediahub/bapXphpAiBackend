@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{ProductService,AstrologerService,TempleService,CategoryService,AvailabilityService,AppointmentService,SecretService};
+use App\Services\{ProductService,AstrologerService,TempleService,CategoryService,AvailabilityService,AppointmentService,SecretService,ContactService};
 final class PublicController extends BaseController {
     public function home(): void {
         $categories = (new CategoryService())->all();
@@ -49,6 +49,20 @@ final class PublicController extends BaseController {
         $secrets = (new SecretService())->all();
         $this->render('public/checkout', ['items' => $items, 'total' => $this->cartTotal($items), 'secrets' => $secrets]);
     }
-    public function contact(): void { $this->render('public/contact'); }
+    public function contact(): void {
+        $success = false;
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $contactService = new ContactService();
+            $contactService->save([
+                'name' => $_POST['name'] ?? '',
+                'email' => $_POST['email'] ?? '',
+                'phone' => $_POST['phone'] ?? '',
+                'subject' => $_POST['subject'] ?? '',
+                'message' => $_POST['message'] ?? '',
+            ]);
+            $success = true;
+        }
+        $this->render('public/contact', ['success' => $success]);
+    }
     public function login(): void { $this->render('public/login'); }
 }

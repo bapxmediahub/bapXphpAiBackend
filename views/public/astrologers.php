@@ -2,8 +2,8 @@
     <div class="container" style="margin-bottom:var(--space-2xl);">
         <div style="text-align:center;">
             <span class="eyebrow">Expert Guidance · Accurate Predictions</span>
-            <h1 class="section-title" style="margin-bottom:var(--space-sm);">Our Astrologers</h1>
-            <p class="lede">Experienced Vedic astrologers ready to guide you on your life's journey.</p>
+            <h1 class="section-title" style="margin-bottom:var(--space-sm);">Book Vedic Astrology Consultation in Chennai</h1>
+            <p class="lede">Connect with our experienced Vedic astrologers for kundli matching, horoscope reading, career guidance, and personalized remedies. Consultations available in Tamil and English online or in-person at our Chennai center.</p>
         </div>
     </div>
     <?php if(empty($items)): ?>

@@ -15,8 +15,8 @@
                 </div>
             </div>
             <div class="product-info">
-                <nav style="font-size:0.8rem; color:var(--color-text-muted); margin-bottom:var(--space-md);">
-                    <a href="/shop" style="color:var(--color-text-muted);">Shop</a> / <span><?= e($product['name']) ?></span>
+                 <nav class="breadcrumb" aria-label="Breadcrumb" style="font-size:0.8rem; color:var(--color-text-muted); margin-bottom:var(--space-md);">
+                    <a href="/" style="color:var(--color-text-muted);">Home</a> / <a href="/shop" style="color:var(--color-text-muted);">Shop</a><?php if(!empty($product['category'])): ?> / <a href="/shop?category=<?= e($product['category_slug'] ?? '') ?>" style="color:var(--color-text-muted);"><?= e($product['category']) ?></a><?php endif; ?> / <span style="color:var(--color-ink);"><?= e($product['name']) ?></span>
                 </nav>
                 <?php if(!empty($product['category'])): ?>
                     <span style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--color-gold); font-weight:600;"><?= e($product['category']) ?></span>

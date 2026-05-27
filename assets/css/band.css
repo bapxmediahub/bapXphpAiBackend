@@ -352,6 +352,20 @@ nav a:hover { color: var(--color-maroon); }
 .hero-stat-value { font-family: var(--font-serif); font-size: 1.8rem; color: var(--color-gold); font-weight: 700; }
 .hero-stat-label { font-size: 0.75rem; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.1em; }
 
+/* ── Icon Utilities ── */
+.icon { display: inline-block; vertical-align: middle; flex-shrink: 0; }
+.icon--sm { width: 16px; height: 16px; }
+.icon--md { width: 20px; height: 20px; }
+.icon--lg { width: 24px; height: 24px; }
+.icon-star { display: inline-block; }
+.rating-stars { display: inline-flex; gap: 2px; color: var(--color-rating); }
+
+/* ── Breadcrumb ── */
+.breadcrumb { font-size: 0.8rem; }
+.breadcrumb a { color: var(--color-text-muted); }
+.breadcrumb a:hover { color: var(--color-maroon); }
+.breadcrumb span { color: var(--color-ink); }
+
 /* ── Section ── */
 .section { padding: var(--space-4xl) 5vw; }
 .section--alt { background: var(--color-bg-alt); }
@@ -364,11 +378,15 @@ nav a:hover { color: var(--color-maroon); }
     display: inline-block;
     color: var(--color-ink);
 }
-.section-title::before, .section-title::after {
-    content: ' ✧ ';
-    color: var(--color-gold);
+.section-title::after {
+    content: '';
+    display: inline-block;
+    width: 28px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--color-gold), transparent);
+    vertical-align: middle;
     margin: 0 12px;
-    font-size: 1.2rem;
+    border-radius: 2px;
 }
 
 /* ── Category Grid ── */

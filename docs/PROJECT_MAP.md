@@ -11,7 +11,7 @@
 - `/product/{slug}` → `PublicController@product` → ProductService
 - `/cart` → `PublicController@cart` → CartService
 - `/checkout` → `PublicController@checkout` → AuthService, CartService, PaymentService
-- `/contact` → `PublicController@contact` → 
+- `/contact` → `PublicController@contact` → ContactService
 - `/login` → `PublicController@login` → AuthService
 - `/auth/google` → `AuthController@redirect` → SecretService
 - `/auth/google/callback` → `AuthController@callback` → SecretService, JsonStoreService
@@ -31,6 +31,7 @@
 - `/admin/integrations` → `AdminController@integrations` → SettingsService, PaymentService, CalendarService
 - `/admin/backups` → `AdminController@backups` → JsonStoreService
 - `/admin/audit-log` → `AdminController@audit` → AuditLogService
+- `/admin/contact-submissions` → `AdminController@contactSubmissions` → ContactService
 - `/admin/developer/project-map` → `AdminController@projectMap` → ProjectMapService
 - `/admin/products/save` → `AdminController@saveProduct` → ResourceService
 - `/admin/products/delete` → `AdminController@deleteProduct` → ResourceService

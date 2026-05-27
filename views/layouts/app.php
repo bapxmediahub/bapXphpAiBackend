@@ -3,18 +3,128 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sri Panchami Spiritual</title>
+<meta name="format-detection" content="telephone=no">
+<title>Sri Panchami Spiritual – Buy Rudraksha, Pooja Items & Astrology Consultation in Chennai</title>
+<meta name="description" content="Buy original rudraksha, pooja items, spiritual jewellery & accessories online in Chennai. Book expert Vedic astrology consultation. Free shipping across India. Trusted by 500+ devotees.">
+<meta name="keywords" content="buy rudraksha online Chennai, pooja items online India, spiritual products online, Vedic astrology consultation Chennai, original rudraksha mala, spiritual jewellery, astrologer booking online">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+<link rel="canonical" href="https://<?= e($_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']) ?>">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Sri Panchami Spiritual">
+<meta property="og:title" content="Sri Panchami Spiritual – Buy Rudraksha, Pooja Items & Astrology Consultation in Chennai">
+<meta property="og:description" content="Buy original rudraksha, pooja items, spiritual jewellery online. Expert Vedic astrology consultation in Chennai. Free shipping across India.">
+<meta property="og:url" content="https://<?= e($_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']) ?>">
+<meta property="og:image" content="https://<?= e($_SERVER['HTTP_HOST']) ?>/assets/images/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_IN">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Sri Panchami Spiritual – Rudraksha, Pooja Items & Astrology in Chennai">
+<meta name="twitter:description" content="Buy original rudraksha, pooja items & book Vedic astrology consultation online. Free shipping across India.">
+<meta name="twitter:image" content="https://<?= e($_SERVER['HTTP_HOST']) ?>/assets/images/og-image.jpg">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/band.css">
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": ["LocalBusiness", "Store"],
+    "name": "Sri Panchami Spiritual",
+    "description": "Authentic spiritual products, sacred jewellery, expert Vedic astrology consultation, and temple guidance in Chennai, Tamil Nadu.",
+    "url": "https://<?= e($_SERVER['HTTP_HOST']) ?>",
+    "telephone": "+91-XXXXXXXXXX",
+    "email": "sripanchamispiritual@gmail.com",
+    "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "23, 1st Cross Street Kothari Nagar, Ramapuram",
+        "addressLocality": "Chennai",
+        "addressRegion": "Tamil Nadu",
+        "postalCode": "600089",
+        "addressCountry": "IN"
+    },
+    "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": "13.0166",
+        "longitude": "80.1833"
+    },
+    "openingHoursSpecification": [
+        {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+            "opens": "09:00",
+            "closes": "19:00"
+        },
+        {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": "Sunday",
+            "opens": "10:00",
+            "closes": "17:00"
+        }
+    ],
+    "priceRange": "₹₹",
+    "sameAs": [],
+    "department": [
+        {
+            "@type": "DepartmentStore",
+            "name": "Spiritual Products Store",
+            "description": "Rudraksha, pooja items, spiritual jewellery, and devotional accessories"
+        }
+    ],
+    "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Sri Panchami Spiritual Products & Services",
+        "itemListElement": [
+            {
+                "@type": "Offer",
+                "itemOffered": {
+                    "@type": "Product",
+                    "name": "Rudraksha & Sacred Mala Collection",
+                    "description": "Original certified rudraksha beads and sacred malas"
+                }
+            },
+            {
+                "@type": "Offer",
+                "itemOffered": {
+                    "@type": "Product",
+                    "name": "Pooja Items & Samagri",
+                    "description": "Complete pooja samagri, brass items, dhoop, and incense"
+                }
+            },
+            {
+                "@type": "Offer",
+                "itemOffered": {
+                    "@type": "Service",
+                    "name": "Vedic Astrology Consultation",
+                    "description": "Online and in-person Vedic astrology reading by expert astrologers in Tamil and English"
+                }
+            },
+            {
+                "@type": "Offer",
+                "itemOffered": {
+                    "@type": "Service",
+                    "name": "Kundli Matching & Horoscope Reading",
+                    "description": "Accurate kundli matching, horoscope analysis, and gemstone recommendations"
+                }
+            }
+        ]
+    }
+}
+</script>
 </head>
 <body>
 <header class="site-header" id="site-header">
     <a href="/" class="brand"><img src="/assets/images/logo-square.jpeg" alt="Sri Panchami Spiritual logo"><span>Sri Panchami Spiritual</span></a>
     <button class="menu-toggle" type="button" aria-expanded="false" aria-label="Toggle navigation">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        </button>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
     <nav id="primary-nav">
         <a href="/">Home</a>
         <a href="/shop">Shop</a>
@@ -79,21 +189,23 @@
     <div class="footer-grid">
         <div>
             <span class="footer-brand">Sri Panchami Spiritual</span>
-            <p class="footer-desc">Authentic spiritual products, sacred jewelry, expert astrology and temple guidance to elevate your life in Chennai, Tamil Nadu.</p>
+            <p class="footer-desc">Authentic spiritual products, sacred jewellery, expert Vedic astrology and temple guidance in Chennai, Tamil Nadu. Buy original rudraksha, pooja items, and spiritual accessories online with free shipping across India.</p>
         </div>
         <div>
             <h4 class="footer-heading">Shop</h4>
             <ul class="footer-links">
                 <li><a href="/shop">All Products</a></li>
-                <li><a href="/shop?category=pendants">Pendants</a></li>
-                <li><a href="/shop?category=rings">Rings</a></li>
-                <li><a href="/shop?category=earrings">Earrings</a></li>
+                <li><a href="/temples">Temples</a></li>
+                <li><a href="/astrologers">Astrologers</a></li>
+                <li><a href="/about">About Us</a></li>
+                <li><a href="/contact">Contact</a></li>
             </ul>
         </div>
         <div>
             <h4 class="footer-heading">Services</h4>
             <ul class="footer-links">
                 <li><a href="/astrologers">Astrologers</a></li>
+                <li><a href="/temples">Temples</a></li>
                 <li><a href="/about">About Us</a></li>
                 <li><a href="/contact">Contact</a></li>
             </ul>
