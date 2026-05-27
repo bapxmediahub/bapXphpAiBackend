@@ -23,7 +23,9 @@ final class CommerceController extends BaseController {
         if (!$found) {
             $_SESSION['cart'][] = ['slug' => $slug, 'qty' => $qty];
         }
-        $this->redirect('/cart');
+        $this->flash('Product added to cart.');
+        $redirect = $_POST['redirect'] ?? $_SERVER['HTTP_REFERER'] ?? '/shop';
+        $this->redirect($redirect);
     }
     public function removeFromCart(): void {
         $slug = trim($_POST['slug'] ?? '');
