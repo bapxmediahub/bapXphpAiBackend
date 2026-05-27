@@ -353,15 +353,56 @@ nav a:hover { color: var(--color-maroon); }
     position: relative;
     min-height: 90vh;
     display: grid;
-    grid-template-columns: 1.3fr 0.7fr;
+    grid-template-columns: 1.2fr 0.8fr;
     align-items: center;
     gap: var(--space-2xl);
     padding: var(--space-4xl) 5vw;
-    background: linear-gradient(135deg, rgba(26,26,26,0.85), rgba(93,0,0,0.6)), url('/assets/images/hero-temple-bg.png') center/cover no-repeat;
+    background: linear-gradient(135deg, rgba(44, 30, 20, 0.95), rgba(92, 0, 0, 0.7)), url('/assets/images/hero-temple-bg.png') center/cover no-repeat;
     color: var(--color-white);
     overflow: hidden;
-    isolation: isolate;
 }
+.hero-copy { max-width: 750px; z-index: 2; }
+.eyebrow {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--color-gold);
+    margin-bottom: var(--space-md);
+    display: block;
+    font-weight: 600;
+}
+.home-hero h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(2.5rem, 5.5vw, 4.5rem);
+    line-height: 1.1;
+    margin: 0 0 var(--space-lg) 0;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.lede {
+    font-size: 1.15rem;
+    line-height: 1.8;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: var(--space-2xl);
+    font-weight: 300;
+}
+.hero-actions { display: flex; gap: var(--space-md); flex-wrap: wrap; }
+.home-hero .btn-outline { border-color: var(--color-white); color: var(--color-white); }
+.home-hero .btn-outline:hover { background: var(--color-white); color: var(--color-maroon-deep); }
+.hero-deity { position: relative; display: flex; justify-content: center; z-index: 2; }
+.hero-deity img {
+    width: 100%;
+    max-width: 500px;
+    filter: drop-shadow(0 30px 60px rgba(0,0,0,0.6));
+}
+.hero-stats {
+    display: flex;
+    gap: var(--space-2xl);
+    margin-top: var(--space-2xl);
+    padding-top: var(--space-lg);
+    border-top: 1px solid rgba(255,255,255,0.15);
+}
+.hero-stat-value { font-family: var(--font-serif); font-size: 1.8rem; color: var(--color-gold); font-weight: 700; }
+.hero-stat-label { font-size: 0.75rem; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.1em; }
 .home-hero::before {
     content: '';
     position: absolute;
