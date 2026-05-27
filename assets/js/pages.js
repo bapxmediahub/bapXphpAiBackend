@@ -86,7 +86,13 @@ async function ProductPage(root, slug) {
         s.className = 'section';
         s.innerHTML = `<div class="container"><div class="product-detail"><div class="product-gallery"><div class="product-gallery__main"><img src="${img(p.image_url,p.name)}" alt="${esc(p.name)}"></div></div><div class="product-info"><span class="eyebrow">${esc(p.category)}</span><h1>${esc(p.name)}</h1><div class="product-info__price"><span class="price">${fmt(p.offer_price||p.price)}</span>${offer?`<span class="old-price">${fmt(p.price)}</span>`:''}</div><p class="product-info__desc">${esc(p.description)}</p><div class="product-info__form"><div class="qty-input"><button onclick="this.nextElementSibling.value=Math.max(1,parseInt(this.nextElementSibling.value)-1)">-</button><input type="number" value="1" id="qty"><button onclick="this.previousElementSibling.value=parseInt(this.previousElementSibling.value)+1">+</button></div><button class="btn btn-primary" id="addtocart">Add to Cart</button></div></div></div></div>`;
         s.querySelector('#addtocart').onclick = () => { Cart.add(p, parseInt(document.getElementById('qty').value)); };
-        (data.related||[]).slice(0,4).forEach(r => s.querySelector('.container').appendChild(Object.assign(document.createElement('div'), {innerHTML:`<h3 style="margin-top:2rem">Related</h3><div class="product-grid">${ProductCard(r).outerHTML}</div>`}));
+        const relDiv = document.createElement('div');
+        relDiv.innerHTML = '<h3 style="margin-top:2rem">Related Products</h3>';
+        const relGrid = document.createElement('div');
+        relGrid.className = 'product-grid';
+        (data.related||[]).slice(0,4).forEach(r => relGrid.appendChild(ProductCard(r)));
+        relDiv.appendChild(relGrid);
+        s.querySelector('.container').appendChild(relDiv);
         root.appendChild(s);
         root.appendChild(Footer());
         root.appendChild(BottomNav());

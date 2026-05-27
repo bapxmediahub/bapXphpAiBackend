@@ -50,17 +50,20 @@ function ProductCard(p) {
     a.innerHTML = `<div class="product-card__image"><img src="${img(p.image_url, p.name)}" alt="${esc(p.name)}" loading="lazy">${offer?'<span class="product-card__badge product-card__badge--sale">Sale</span>':''}</div>
     <div class="product-card__body"><h3>${esc(p.name)}</h3><p class="product-card__desc">${esc(p.description)}</p>
     <div class="product-card__price-row"><span class="price">${fmt(p.offer_price||p.price)}</span>${offer?`<span class="old-price">${fmt(p.price)}</span><span class="discount-pct">-${Math.round((1-p.offer_price/p.price)*100)}%</span>`:''}</div>
-    <div class="product-card__actions"><a href="/product/${p.slug}" data-link class="btn btn-sm btn-ghost">View</a><button class="btn btn-sm btn-primary" data-product='${JSON.stringify(p).replace(/'/g,'&apos;')}'>Add to Cart</button></div></div>`;
-    a.querySelector('[data-product]').onclick = function() { Cart.add(JSON.parse(this.dataset.product), 1); };
+    <div class="product-card__actions"><a href="/product/${p.slug}" data-link class="btn btn-sm btn-ghost">View</a><button class="btn btn-sm btn-primary btn-addcart">Add to Cart</button></div></div>`;
+    a.querySelector('.btn-addcart').onclick = () => Cart.add(p, 1);
     return a;
 }
 
 function AstroCard(a) {
     const c = document.createElement('article');
     c.className = 'astrologer-card';
+    const phone = a.phone || '';
     c.innerHTML = `<div class="astrologer-card__header"><img class="astrologer-card__photo" src="${img(a.photo_url, a.name)}" alt="${esc(a.name)}" loading="lazy"><div><h3 class="astrologer-card__name">${esc(a.name)}</h3><p class="astrologer-card__speciality">${esc(a.speciality||'Vedic Astrology')}</p></div></div>
     <div class="astrologer-card__body"><div class="astrologer-card__stat"><span>Experience</span><span>${a.experience_years||'N/A'} yrs</span></div><div class="astrologer-card__stat"><span>Languages</span><span>${(a.languages||[]).slice(0,2).join(', ')}</span></div></div>
-    <div class="astrologer-card__footer"><span class="astrologer-card__price">${fmt(a.price||0)}</span><a href="/astrologers/${a.slug}" data-link class="btn btn-sm btn-primary">Book Now</a></div>`;
+    <div class="astrologer-card__footer"><span class="astrologer-card__price">${fmt(a.price||0)}</span><div class="astrologer-card__actions">${phone?`<a href="tel:${phone}" class="btn-call">📞 Call</a>`:''}<button class="btn-message" data-slug="${a.slug}">💬 Message</button><a href="/astrologers/${a.slug}" data-link class="btn btn-sm btn-primary">Book Now</a></div></div>`;
+    const msgBtn = c.querySelector('.btn-message');
+    if (msgBtn) msgBtn.onclick = () => Router.navigate('/astrologers/' + msgBtn.dataset.slug);
     return c;
 }
 

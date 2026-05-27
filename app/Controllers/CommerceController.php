@@ -35,17 +35,20 @@ final class CommerceController extends BaseController {
         $this->redirect('/cart');
     }
     public function updateCart(): void {
-        if (!empty($_POST['qty']) && is_array($_POST['qty'])) {
-            foreach ($_POST['qty'] as $slug => $qty) {
-                $qty = max(1, (int)$qty);
-                foreach ($_SESSION['cart'] as &$item) {
-                    if (($item['slug'] ?? '') === $slug) {
-                        $item['qty'] = $qty;
-                        break;
+        $slug = trim($_POST['slug'] ?? '');
+        $action = $_POST['action'] ?? '';
+        if (!empty($_SESSION['cart'])) {
+            foreach ($_SESSION['cart'] as &$item) {
+                if (($item['slug'] ?? '') === $slug) {
+                    if ($action === 'inc') {
+                        $item['qty'] = (int)($item['qty'] ?? 1) + 1;
+                    } elseif ($action === 'dec') {
+                        $item['qty'] = max(1, (int)($item['qty'] ?? 1) - 1);
                     }
+                    break;
                 }
-                unset($item);
             }
+            unset($item);
         }
         $this->redirect('/cart');
     }

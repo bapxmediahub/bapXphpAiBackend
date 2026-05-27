@@ -1,9 +1,14 @@
-<section class="section" style="padding-top:var(--space-xl);">
-    <div class="container container--narrow" style="margin-bottom:var(--space-xl);">
-        <nav style="font-size:0.8rem; color:var(--color-text-muted);">
-            <a href="/shop" style="color:var(--color-text-muted);">Shop</a> / <span style="color:var(--color-ink);">Cart</span>
-        </nav>
-    </div>
+ <section class="section" style="padding-top:var(--space-xl);">
+     <div class="container container--narrow" style="margin-bottom:var(--space-xl);">
+         <nav style="font-size:0.8rem; color:var(--color-text-muted);">
+             <a href="/shop" style="color:var(--color-text-muted);">Shop</a> / <span style="color:var(--color-ink);">Cart</span>
+         </nav>
+     </div>
+     <?php if(!empty($_SESSION['flash'])): ?>
+         <div class="container container--narrow">
+             <div class="flash flash--success" style="margin-bottom:var(--space-lg);">✓ <?= e($_SESSION['flash']); unset($_SESSION['flash']); ?></div>
+         </div>
+     <?php endif; ?>
 
     <?php if(empty($items)): ?>
         <div class="container container--narrow" style="text-align:center; padding:var(--space-4xl) 0;">
@@ -13,23 +18,35 @@
             <a href="/shop" class="btn btn-primary">Browse Shop</a>
         </div>
     <?php else: ?>
-        <div class="container">
-            <div class="cart-layout">
-                <div class="cart-items">
-                    <?php foreach($items as $i => $item): $lineTotal = ($item['offer_price'] ?: $item['price'] ?: 0) * $item['qty']; ?>
-                        <div class="cart-item reveal" style="animation-delay:<?= $i * 0.05 ?>s">
-                            <img class="cart-item__img" src="<?= e($item['image_url'] ?? 'https://placehold.co/100x100/fdfbf7/8c7e6d?text=Item') ?>" alt="<?= e($item['name']) ?>">
-                            <div>
-                                <h3 class="cart-item__name"><a href="/product/<?= e($item['slug']) ?>"><?= e($item['name']) ?></a></h3>
-                                <p class="cart-item__meta"><?= e($item['category'] ?? 'Spiritual Product') ?></p>
-                            </div>
-                            <div style="display:flex; align-items:center; gap:var(--space-sm);">
-                                <span style="font-weight:600; color:var(--color-text-muted);">Qty: <?= e((string)$item['qty']) ?></span>
-                            </div>
-                            <div class="cart-item__price">₹<?= e((string)$lineTotal) ?></div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
+         <div class="container">
+             <div class="cart-layout">
+                 <div class="cart-items">
+                     <?php foreach($items as $i => $item): $lineTotal = ($item['offer_price'] ?: $item['price'] ?: 0) * $item['qty']; ?>
+                         <div class="cart-item reveal" style="animation-delay:<?= $i * 0.05 ?>s">
+                             <a href="/product/<?= e($item['slug']) ?>"><img class="cart-item__img" src="<?= e($item['image_url'] ?? 'https://placehold.co/100x100/fdfbf7/8c7e6d?text=Item') ?>" alt="<?= e($item['name']) ?>"></a>
+                             <div>
+                                 <h3 class="cart-item__name"><a href="/product/<?= e($item['slug']) ?>"><?= e($item['name']) ?></a></h3>
+                                 <p class="cart-item__meta"><?= e($item['category'] ?? 'Spiritual Product') ?></p>
+                                 <div class="cart-item__price--mobile">₹<?= e((string)$lineTotal) ?></div>
+                             </div>
+                             <div class="cart-item__qty">
+                                 <form method="post" action="/cart/update" style="display:flex; align-items:center; gap:4px;">
+                                     <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
+                                     <button type="submit" name="action" value="dec" class="btn btn-sm btn-outline" <?= $item['qty'] <= 1 ? 'disabled' : '' ?>>−</button>
+                                     <span class="cart-item__qty-val"><?= e((string)$item['qty']) ?></span>
+                                     <button type="submit" name="action" value="inc" class="btn btn-sm btn-outline">+</button>
+                                 </form>
+                             </div>
+                             <div class="cart-item__price">₹<?= e((string)$lineTotal) ?></div>
+                             <form method="post" action="/cart/remove" class="cart-item__remove-wrap">
+                                 <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
+                                 <button class="cart-item__remove" title="Remove" aria-label="Remove <?= e($item['name']) ?> from cart">
+                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                                 </button>
+                             </form>
+                         </div>
+                     <?php endforeach; ?>
+                 </div>
                 <div class="cart-summary">
                     <h2>Order Summary</h2>
                     <div class="cart-summary__row">
