@@ -46,6 +46,32 @@
 <?php endif; ?>
 <?php require $viewFile; ?>
 </main>
+
+<nav class="bottom-nav" id="bottom-nav">
+    <div class="nav-grid">
+        <a href="/" class="nav-item <?= ($_SERVER['REQUEST_URI'] === '/' ? 'active' : '') ?>">
+            <span class="icon">🏠</span>
+            <span>Home</span>
+        </a>
+        <a href="/shop" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/shop') === 0 ? 'active' : '') ?>">
+            <span class="icon">🛍️</span>
+            <span>Shop</span>
+        </a>
+        <a href="/astrologers" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/astrologers') === 0 ? 'active' : '') ?>">
+            <span class="icon">🔮</span>
+            <span>Astro</span>
+        </a>
+        <a href="/account/bookings" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/account') === 0 ? 'active' : '') ?>">
+            <span class="icon">📖</span>
+            <span>Account</span>
+        </a>
+        <a href="/cart" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/cart') === 0 ? 'active' : '') ?>">
+            <span class="icon">🛒</span>
+            <span>Cart</span>
+        </a>
+    </div>
+</nav>
+
 <footer class="site-footer">
     <div class="footer-grid">
         <div>
