@@ -23,7 +23,14 @@
         </div>
     </div>
     <div class="hero-deity">
-        <img src="/assets/images/varahi-amman.png" alt="Sri Maha Varahi Amman — Divine deity worshipped at Sri Panchami Spiritual, Chennai">
+        <div class="deity-frame">
+            <img src="/assets/images/varahi-amman.png" 
+                 alt="Sri Maha Varahi Amman — Divine deity worshipped at Sri Panchami Spiritual, Chennai" 
+                 width="480" 
+                 height="640"
+                 fetchpriority="high">
+            <div class="deity-glow"></div>
+        </div>
     </div>
 </section>
 

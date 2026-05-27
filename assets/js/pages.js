@@ -53,7 +53,7 @@ async function HomePage(root) {
 
         root.appendChild(Footer());
         root.appendChild(BottomNav());
-    } catch(e) { root.innerHTML = `<div class="section" style="text-align:center;padding:4rem"><p>Error loading. <a href="/" data-link class="btn btn-primary">Retry</a></p></div>`; root.appendChild(Footer()); root.appendChild(BottomNav()); }
+    } catch(e) { root.innerHTML = `<div class="section" style="text-align:center;padding:4rem"><p>Error loading. <a href="/" data-link class="btn btn-primary">Retry</a></p></div>`; root.appendChild(Header()); root.appendChild(Footer()); root.appendChild(BottomNav()); }
 }
 
 async function ShopPage(root) {
@@ -67,13 +67,14 @@ async function ShopPage(root) {
         const s = document.createElement('section');
         s.className = 'section';
         s.style.paddingTop = 'var(--space-xl)';
-        s.innerHTML = `<div class="container"><div style="text-align:center;margin-bottom:var(--space-2xl)"><span class="eyebrow">Sacred Collection</span><h1 class="section-title" style="margin-bottom:var(--space-sm)">Shop Spiritual Products</h1><p class="lede" style="margin:0 auto">Authentic spiritual products crafted with devotion.</p></div><div class="shop-layout"><aside class="shop-sidebar"><div class="shop-filters"><h3>Categories</h3><div class="filter-group"><button class="filter-chip ${!cat?'active':''}" onclick="Router.navigate('/shop')">All</button>${cats.map(c => `<button class="filter-chip ${cat===c.slug?'active':''}" onclick="Router.navigate('/shop?category=${c.slug}')">${esc(c.name)}</button>`).join('')}</div></div></aside><div><div class="shop-toolbar"><span class="shop-toolbar__count">${products.length} products</span></div><div class="product-grid" id="sp"></div></div></div></div>`;
+        s.innerHTML = `<div class="container"><div style="text-align:center;margin-bottom:var(--space-2xl)"><span class="eyebrow">Sacred Collection</span><h1 class="section-title" style="margin-bottom:var(--space-sm)">Shop Spiritual Products</h1><p class="lede" style="margin:0 auto">Authentic spiritual products crafted with devotion.</p></div><div class="shop-layout"><aside class="shop-sidebar"><div class="shop-filters"><h3>Categories</h3><div class="filter-group"><button class="filter-chip ${!cat?'active':''}" data-nav="/shop">All</button>${cats.map(c => `<button class="filter-chip ${cat===c.slug?'active':''}" data-nav="/shop?category=${c.slug}">${esc(c.name)}</button>`).join('')}</div></div></aside><div><div class="shop-toolbar"><span class="shop-toolbar__count">${products.length} products</span></div><div class="product-grid" id="sp"></div></div></div></div>`;
+        s.querySelectorAll('[data-nav]').forEach(btn => btn.onclick = () => Router.nav(btn.dataset.nav));
         const g = s.querySelector('#sp');
         products.length ? products.forEach(p => g.appendChild(ProductCard(p))) : g.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--color-text-muted)">No products found.</div>';
         root.appendChild(s);
         root.appendChild(Footer());
         root.appendChild(BottomNav());
-    } catch(e) { root.innerHTML = `<div class="section" style="text-align:center;padding:4rem"><p>Error loading shop.</p></div>`; root.appendChild(Footer()); root.appendChild(BottomNav()); }
+    } catch(e) { root.innerHTML = `<div class="section" style="text-align:center;padding:4rem"><p>Error loading shop.</p></div>`; root.appendChild(Header()); root.appendChild(Footer()); root.appendChild(BottomNav()); }
 }
 
 async function ProductPage(root, slug) {
@@ -81,7 +82,7 @@ async function ProductPage(root, slug) {
     try {
         const data = await API.get('/product/' + slug);
         const p = data.product;
-        if (!p) { root.innerHTML = '<div class="section" style="text-align:center;padding:4rem"><h2>Not Found</h2><a href="/shop" data-link class="btn btn-primary">Back</a></div>'; root.appendChild(Footer()); root.appendChild(BottomNav()); return; }
+        if (!p) { root.innerHTML = ''; root.appendChild(Header()); const nf = document.createElement('div'); nf.className = 'section'; nf.style.cssText = 'text-align:center;padding:4rem'; nf.innerHTML = '<h2>Not Found</h2><a href="/shop" data-link class="btn btn-primary">Back</a>'; root.appendChild(nf); root.appendChild(Footer()); root.appendChild(BottomNav()); return; }
         const offer = p.offer_price && p.offer_price < p.price;
         root.innerHTML = '';
         root.appendChild(Header());
@@ -99,7 +100,7 @@ async function ProductPage(root, slug) {
         root.appendChild(s);
         root.appendChild(Footer());
         root.appendChild(BottomNav());
-    } catch(e) { root.innerHTML = `<div class="section" style="text-align:center;padding:4rem"><p>Error</p></div>`; root.appendChild(Footer()); root.appendChild(BottomNav()); }
+    } catch(e) { root.innerHTML = `<div class="section" style="text-align:center;padding:4rem"><p>Error</p></div>`; root.appendChild(Header()); root.appendChild(Footer()); root.appendChild(BottomNav()); }
 }
 
 async function AstrologersPage(root) {
@@ -127,6 +128,7 @@ async function TemplesPage(root) {
         const data = await API.get('/temples');
         const list = data.items || [];
         root.innerHTML = '';
+        root.appendChild(Header());
         const s = document.createElement('section');
         s.className = 'section';
         s.style.paddingTop = 'var(--space-xl)';
@@ -136,11 +138,12 @@ async function TemplesPage(root) {
         root.appendChild(s);
         root.appendChild(Footer());
         root.appendChild(BottomNav());
-    } catch(e) { root.innerHTML = `<div class="section" style="text-align:center;padding:4rem"><p>Error</p></div>`; root.appendChild(Footer()); root.appendChild(BottomNav()); }
+    } catch(e) { root.innerHTML = `<div class="section" style="text-align:center;padding:4rem"><p>Error</p></div>`; root.appendChild(Header()); root.appendChild(Footer()); root.appendChild(BottomNav()); }
 }
 
 function ContactPage(root) {
     root.innerHTML = '';
+    root.appendChild(Header());
     const s = document.createElement('section');
     s.className = 'section';
     s.innerHTML = `<div class="container container--narrow"><div style="text-align:center;margin-bottom:var(--space-2xl)"><span class="eyebrow">Get in Touch</span><h1 class="section-title" style="margin-bottom:var(--space-sm)">Contact Us</h1><p class="lede" style="margin:0 auto">We'd love to hear from you.</p></div><div id="ok" class="flash flash--success" style="display:none;margin-bottom:var(--space-lg)">✓ Thank you! We'll respond soon.</div><div class="admin-card" style="margin-bottom:var(--space-2xl)"><h2 style="font-family:var(--font-serif);text-align:center;margin-bottom:var(--space-lg)">Send Us a Message</h2><form id="cf" class="admin-form" style="max-width:600px;margin:0 auto"><div class="admin-form__row"><div class="form-group"><label>Name</label><input type="text" name="name" required></div><div class="form-group"><label>Email</label><input type="email" name="email" required></div></div><div class="admin-form__row"><div class="form-group"><label>Phone</label><input type="tel" name="phone"></div><div class="form-group"><label>Subject</label><select name="subject" required><option value="">Select</option><option value="general">General</option><option value="product">Product</option><option value="order">Order</option><option value="astrology">Astrology</option><option value="temple">Temple</option><option value="other">Other</option></select></div></div><div class="form-group"><label>Message</label><textarea name="message" required rows="5"></textarea></div><button type="submit" class="btn btn-primary btn-block">Send Message</button></form></div></div>`;
@@ -152,6 +155,7 @@ function ContactPage(root) {
 
 function AboutPage(root) {
     root.innerHTML = '';
+    root.appendChild(Header());
     const s = document.createElement('section');
     s.className = 'section';
     s.style.paddingTop = 'var(--space-xl)';
@@ -163,6 +167,7 @@ function AboutPage(root) {
 
 function CartPage(root) {
     root.innerHTML = '';
+    root.appendChild(Header());
     const s = document.createElement('section');
     s.className = 'section';
     if (!Cart.items.length) {
@@ -179,13 +184,14 @@ function CartPage(root) {
 
 function CheckoutPage(root) {
     root.innerHTML = '';
-    if (!Cart.items.length) { root.innerHTML = `<div class="section" style="text-align:center;padding:4rem"><h2>Nothing to Checkout</h2><a href="/shop" data-link class="btn btn-primary">Go Shopping</a></div>`; root.appendChild(Footer()); root.appendChild(BottomNav()); return; }
+    root.appendChild(Header());
+    if (!Cart.items.length) { root.innerHTML = ''; root.appendChild(Header()); root.insertAdjacentHTML('beforeend', `<div class="section" style="text-align:center;padding:4rem"><h2>Nothing to Checkout</h2><a href="/shop" data-link class="btn btn-primary">Go Shopping</a></div>`); root.appendChild(Footer()); root.appendChild(BottomNav()); return; }
     const s = document.createElement('section');
     s.className = 'section';
     s.innerHTML = `<div class="container"><h1 style="font-family:var(--font-serif);text-align:center;margin-bottom:var(--space-2xl)">Checkout</h1><div class="checkout-layout"><form class="checkout-form" id="co"><h2>Shipping Details</h2><div class="checkout-form__row"><div class="form-group"><label>Name</label><input type="text" name="name" required></div><div class="form-group"><label>Email</label><input type="email" name="email" required></div></div><div class="checkout-form__row"><div class="form-group"><label>Phone</label><input type="tel" name="phone" required></div><div class="form-group"><label>Pincode</label><input type="text" name="pincode" required></div></div><div class="form-group"><label>Address</label><textarea name="address" required rows="3"></textarea></div><div class="checkout-form__row"><div class="form-group"><label>City</label><input type="text" name="city" required></div><div class="form-group"><label>State</label><input type="text" name="state" required></div></div><button type="submit" class="btn btn-primary btn-block" style="margin-top:var(--space-lg)">Place Order</button></form><div class="checkout-summary"><h2>Order Summary</h2><div id="csi"></div><div class="cart-summary__row cart-summary__row--total" style="margin-top:var(--space-md);padding-top:var(--space-md);border-top:1px solid var(--color-border)"><span>Total</span><span>${fmt(Cart.total)}</span></div></div></div></div>`;
     const csi = s.querySelector('#csi');
     Cart.items.forEach(i => { const d = document.createElement('div'); d.className = 'checkout-item'; d.innerHTML = `<img class="checkout-item__img" src="${img(i.image_url,i.name)}"><div><div class="checkout-item__name">${esc(i.name)}</div><div class="checkout-item__meta">Qty: ${i.qty}</div></div><span class="checkout-item__price">${fmt((i.offer_price||i.price)*i.qty)}</span>`; csi.appendChild(d); });
-    s.querySelector('#co').onsubmit = async e => { e.preventDefault(); try { await API.post('/checkout/create-order', {...Object.fromEntries(new FormData(e.target)), items: Cart.items, total: Cart.total}); Cart.clear(); Router.navigate('/order-success'); } catch(err) { alert('Order failed.'); } };
+    s.querySelector('#co').onsubmit = async e => { e.preventDefault(); try { await API.post('/checkout/create-order', {...Object.fromEntries(new FormData(e.target)), items: Cart.items, total: Cart.total}); Cart.clear(); Router.nav('/order-success'); } catch(err) { alert('Order failed.'); } };
     root.appendChild(s);
     root.appendChild(Footer());
     root.appendChild(BottomNav());
@@ -193,6 +199,7 @@ function CheckoutPage(root) {
 
 function OrderSuccessPage(root) {
     root.innerHTML = '';
+    root.appendChild(Header());
     const s = document.createElement('section');
     s.className = 'section';
     s.style.textAlign = 'center';
@@ -204,7 +211,13 @@ function OrderSuccessPage(root) {
 }
 
 function NotFoundPage(root) {
-    root.innerHTML = `<div class="section" style="text-align:center;padding:4rem"><h1 style="font-size:4rem;font-family:var(--font-serif)">404</h1><p style="color:var(--color-text-muted);margin-bottom:var(--space-lg)">Page not found</p><a href="/" data-link class="btn btn-primary">Go Home</a></div>`;
+    root.innerHTML = '';
+    root.appendChild(Header());
+    const s = document.createElement('section');
+    s.className = 'section';
+    s.style.cssText = 'text-align:center;padding:4rem';
+    s.innerHTML = `<h1 style="font-size:4rem;font-family:var(--font-serif)">404</h1><p style="color:var(--color-text-muted);margin-bottom:var(--space-lg)">Page not found</p><a href="/" data-link class="btn btn-primary">Go Home</a></div>`;
+    root.appendChild(s);
     root.appendChild(Footer());
     root.appendChild(BottomNav());
 }
