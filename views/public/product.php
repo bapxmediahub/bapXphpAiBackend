@@ -34,10 +34,12 @@
                     <?php endif; ?>
                 </div>
                 <p class="product-info__desc"><?= e($product['description'] ?? 'A sacred spiritual product crafted with devotion and care.') ?></p>
-                <div class="product-info__form">
-                    <form method="post" action="/cart/add" style="display:flex; gap:var(--space-md); align-items:center; width:100%;">
-                        <input type="hidden" name="slug" value="<?= e($product['slug']) ?>">
-                        <div class="qty-input">
+                 <div class="product-info__form">
+                     <form method="post" action="/cart/add" style="display:flex; gap:var(--space-md); align-items:center; width:100%;">
+                         <input type="hidden" name="slug" value="<?= e($product['slug']) ?>">
+                         <input type="hidden" name="redirect" value="/product/<?= e($product['slug']) ?>">
+                         <div class="qty-input">
+
                             <button type="button" onclick="this.nextElementSibling.stepDown(); this.nextElementSibling.dispatchEvent(new Event('change'))">−</button>
                             <input type="number" name="qty" value="1" min="1" max="99" id="qty-input">
                             <button type="button" onclick="this.previousElementSibling.stepUp(); this.previousElementSibling.dispatchEvent(new Event('change'))">+</button>

@@ -721,8 +721,8 @@ nav a:hover { color: var(--color-maroon); }
 .form-group input.input-error { border-color: var(--color-error); }
 .form-group input.input-error:focus { box-shadow: 0 0 0 4px rgba(214,64,69,0.1); }
 
-/* ── Astrologer Cards ── */
-.astrologer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-xl); }
+/* ── Astrologer Cards - BIG ── */
+.astrologer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: var(--space-xl); }
 .astrologer-card {
     background: var(--color-white);
     border: 1px solid var(--color-border);
@@ -734,19 +734,25 @@ nav a:hover { color: var(--color-maroon); }
 .astrologer-card__header {
     display: flex;
     align-items: center;
-    gap: var(--space-md);
-    padding: var(--space-md);
+    gap: var(--space-lg);
+    padding: var(--space-lg);
     background: linear-gradient(135deg, var(--color-bg-alt), var(--color-white));
 }
-.astrologer-card__photo { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid var(--color-gold); }
-.astrologer-card__name { font-family: var(--font-serif); font-size: 1.1rem; font-weight: 700; margin: 0; }
-.astrologer-card__speciality { font-size: 0.8rem; color: var(--color-maroon); font-weight: 500; }
-.astrologer-card__body { padding: var(--space-md); }
-.astrologer-card__stat { display: flex; justify-content: space-between; font-size: 0.8rem; padding: var(--space-2xs) 0; border-bottom: 1px solid var(--color-border-light); }
+.astrologer-card__photo { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid var(--color-gold); }
+.astrologer-card__name { font-family: var(--font-serif); font-size: 1.4rem; font-weight: 700; margin: 0; }
+.astrologer-card__speciality { font-size: 0.9rem; color: var(--color-maroon); font-weight: 500; }
+.astrologer-card__body { padding: var(--space-md) var(--space-lg); }
+.astrologer-card__stat { display: flex; justify-content: space-between; font-size: 0.9rem; padding: var(--space-xs) 0; border-bottom: 1px solid var(--color-border-light); }
 .astrologer-card__stat:last-child { border-bottom: none; }
 .astrologer-card__stat-label { color: var(--color-text-muted); }
 .astrologer-card__stat-value { font-weight: 600; color: var(--color-ink); }
-.astrologer-card__footer { padding: var(--space-md); border-top: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; }
+.astrologer-card__footer { padding: var(--space-md) var(--space-lg); border-top: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-sm); }
+.astrologer-card__price { font-size: 1.2rem; font-weight: 700; color: var(--color-maroon); }
+.astrologer-card__actions { display: flex; gap: var(--space-xs); }
+.btn-call { background: var(--color-success); color: white; border: none; padding: 0.5rem 1rem; border-radius: var(--radius-pill); font-weight: 600; cursor: pointer; font-size: 0.85rem; }
+.btn-call:hover { background: #238a42; }
+.btn-message { background: var(--color-info); color: white; border: none; padding: 0.5rem 1rem; border-radius: var(--radius-pill); font-weight: 600; cursor: pointer; font-size: 0.85rem; }
+.btn-message:hover { background: #2563eb; }
 .astrologer-card__price { font-size: 1.1rem; font-weight: 700; color: var(--color-maroon); }
 
 /* ── Booking / Slots ── */

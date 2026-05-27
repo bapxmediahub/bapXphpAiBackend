@@ -47,14 +47,15 @@
                                         <span class="discount-pct">-<?= $pct ?>%</span>
                                     <?php endif; ?>
                                 </div>
-                                <div class="product-card__actions">
-                                    <a href="/product/<?= e($item['slug']) ?>" class="btn btn-sm btn-ghost">View</a>
-                                    <form method="post" action="/cart/add" style="flex:1;">
-                                        <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
-                                        <input type="hidden" name="qty" value="1">
-                                        <button class="btn btn-sm btn-primary" style="width:100%;">Add to Cart</button>
-                                    </form>
-                                </div>
+                                 <div class="product-card__actions">
+                                     <a href="/product/<?= e($item['slug']) ?>" class="btn btn-sm btn-ghost">View</a>
+                                     <form method="post" action="/cart/add" style="flex:1;">
+                                         <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
+                                         <input type="hidden" name="qty" value="1">
+                                         <input type="hidden" name="redirect" value="/shop">
+                                         <button class="btn btn-sm btn-primary" style="width:100%;">Add to Cart</button>
+                                     </form>
+                                 </div>
                             </div>
                         </article>
                     <?php endforeach; ?>
