@@ -1,8 +1,4 @@
-<div class="admin-header">
-    <h1><?= e($title ?? 'Detail') ?></h1>
-    <a href="/admin" class="btn btn-sm btn-ghost">← Dashboard</a>
-</div>
 <div class="admin-card">
-    <h2><?= e($title ?? 'Detail View') ?></h2>
-    <p>Order detail, fulfillment, and tracking workspace.</p>
+    <h2 style="font-size:1.1rem; margin:0 0 var(--space-md);"><?= e($title) ?></h2>
+    <p style="color:var(--color-text-muted);">Order detail, fulfillment, and tracking workspace.</p>
 </div>

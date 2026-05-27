@@ -833,46 +833,18 @@ tr:hover td { background: var(--color-bg-alt); }
 .badge--default { background: var(--color-bg-alt); color: var(--color-text-muted); }
 
 /* ── Admin ── */
-.admin-layout {
-    display: grid;
-    grid-template-columns: 240px 1fr;
-    min-height: 100vh;
-}
-.admin-sidebar {
-    background: var(--color-ink);
-    color: rgba(255,255,255,0.7);
-    padding: var(--space-lg);
-}
-.admin-sidebar__brand {
-    font-family: var(--font-serif);
-    font-size: 1.2rem;
-    color: var(--color-gold);
-    margin-bottom: var(--space-xl);
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-}
-.admin-sidebar nav { display: flex; flex-direction: column; gap: 2px; }
-.admin-sidebar nav a {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-md);
-    border-radius: var(--radius-md);
-    color: rgba(255,255,255,0.6);
-    font-size: 0.85rem;
-    transition: all var(--transition-base);
-}
-.admin-sidebar nav a:hover, .admin-sidebar nav a.active { background: rgba(255,255,255,0.08); color: var(--color-gold); }
-.admin-content { background: var(--color-bg-alt); padding: var(--space-xl); }
-.admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xl); }
-.admin-header h1 { font-family: var(--font-serif); font-size: 1.5rem; margin: 0; }
+.admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-xl); }
+.admin-stat { background: var(--color-white); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-xs); }
+.admin-stat__icon { width: 40px; height: 40px; border-radius: var(--radius-md); background: var(--color-bg-alt); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-xs); }
+.admin-stat__value { font-size: 1.8rem; font-weight: 700; color: var(--color-maroon); font-family: var(--font-serif); line-height: 1; }
+.admin-stat__label { font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.admin-quick-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-lg); }
 .admin-card { background: var(--color-white); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); margin-bottom: var(--space-lg); }
-.admin-card h2 { font-size: 1rem; margin: 0 0 var(--space-md); color: var(--color-text-muted); }
-.admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-xl); }
-.admin-stat { background: var(--color-white); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); }
-.admin-stat__value { font-size: 2rem; font-weight: 700; color: var(--color-maroon); font-family: var(--font-serif); }
-.admin-stat__label { font-size: 0.8rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.admin-card:last-child { margin-bottom: 0; }
+.admin-card h2 { font-size: 1rem; margin: 0 0 var(--space-sm); color: var(--color-ink); display: flex; align-items: center; gap: var(--space-xs); }
+.admin-card h2 svg { color: var(--color-gold); flex-shrink: 0; }
+.admin-card p { color: var(--color-text-muted); font-size: 0.9rem; margin: 0 0 var(--space-md); }
+.admin-card__actions { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
 .admin-form { display: grid; gap: var(--space-md); }
 .admin-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
 .admin-form label { display: flex; flex-direction: column; gap: var(--space-2xs); font-size: 0.8rem; font-weight: 600; color: var(--color-ink); text-transform: uppercase; letter-spacing: 0.05em; }
@@ -886,7 +858,7 @@ tr:hover td { background: var(--color-bg-alt); }
 }
 .admin-form input:focus, .admin-form select:focus, .admin-form textarea:focus { outline: none; border-color: var(--color-gold); box-shadow: 0 0 0 3px rgba(212,175,55,0.1); }
 
-/* ── Panels & Grids ── */
+/* ── Admin Responsive ── */
 .panel {
     background: var(--color-white);
     border: 1px solid var(--color-border);
