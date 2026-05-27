@@ -1,1 +1,59 @@
-<h1>Cart</h1><?php if(!$items): ?><p>Your devotional items will appear here.</p><?php else: ?><table><tr><th>Item</th><th>Qty</th></tr><?php foreach($items as $item): ?><tr><td><?= e($item['product']['name']) ?></td><td><?= e((string)$item['qty']) ?></td></tr><?php endforeach; ?></table><p><a href="/checkout">Proceed to checkout</a></p><?php endif; ?>
+<section class="section" style="padding-top:var(--space-xl);">
+    <div class="container container--narrow" style="margin-bottom:var(--space-xl);">
+        <nav style="font-size:0.8rem; color:var(--color-text-muted);">
+            <a href="/shop" style="color:var(--color-text-muted);">Shop</a> / <span style="color:var(--color-ink);">Cart</span>
+        </nav>
+    </div>
+
+    <?php if(empty($items)): ?>
+        <div class="container container--narrow" style="text-align:center; padding:var(--space-4xl) 0;">
+            <span style="font-size:3rem; display:block; margin-bottom:var(--space-md);">🛒</span>
+            <h1 style="font-family:var(--font-serif); margin:0 0 var(--space-sm);">Your Cart is Empty</h1>
+            <p style="color:var(--color-text-muted); margin-bottom:var(--space-lg);">Discover our spiritual products and add items to your cart.</p>
+            <a href="/shop" class="btn btn-primary">Browse Shop</a>
+        </div>
+    <?php else: ?>
+        <div class="container">
+            <div class="cart-layout">
+                <div class="cart-items">
+                    <?php foreach($items as $i => $item): $lineTotal = ($item['offer_price'] ?: $item['price'] ?: 0) * $item['qty']; ?>
+                        <div class="cart-item reveal" style="animation-delay:<?= $i * 0.05 ?>s">
+                            <img class="cart-item__img" src="<?= e($item['image_url'] ?? 'https://placehold.co/100x100/fdfbf7/8c7e6d?text=📿') ?>" alt="<?= e($item['name']) ?>">
+                            <div>
+                                <h3 class="cart-item__name"><a href="/product/<?= e($item['slug']) ?>"><?= e($item['name']) ?></a></h3>
+                                <p class="cart-item__meta"><?= e($item['category'] ?? 'Spiritual Product') ?></p>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:var(--space-sm);">
+                                <span style="font-weight:600; color:var(--color-text-muted);">Qty: <?= e((string)$item['qty']) ?></span>
+                            </div>
+                            <div class="cart-item__price">₹<?= e((string)$lineTotal) ?></div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <div class="cart-summary">
+                    <h2>Order Summary</h2>
+                    <div class="cart-summary__row">
+                        <span>Subtotal (<?= count($items) ?> item<?= count($items) !== 1 ? 's' : '' ?>)</span>
+                        <span>₹<?= e((string)($total ?? 0)) ?></span>
+                    </div>
+                    <div class="cart-summary__row">
+                        <span>Shipping</span>
+                        <span style="color:var(--color-success);">Free</span>
+                    </div>
+                    <div class="cart-coupon">
+                        <input type="text" placeholder="Coupon code" id="coupon-input">
+                        <button class="btn btn-sm btn-outline" onclick="document.getElementById('coupon-input').value=''; alert('Coupon feature coming soon');">Apply</button>
+                    </div>
+                    <div class="cart-summary__row cart-summary__row--total">
+                        <span>Total</span>
+                        <span>₹<?= e((string)($total ?? 0)) ?></span>
+                    </div>
+                    <a href="/checkout" class="btn btn-primary btn-block btn-lg">Proceed to Checkout</a>
+                    <div style="text-align:center; margin-top:var(--space-sm);">
+                        <a href="/shop" style="font-size:0.85rem; color:var(--color-text-muted);">← Continue Shopping</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+</section>

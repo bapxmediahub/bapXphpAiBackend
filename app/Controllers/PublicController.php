@@ -2,7 +2,7 @@
 namespace App\Controllers;
 use App\Services\{ProductService,AstrologerService,TempleService,CategoryService,AvailabilityService,AppointmentService,CartService,SecretService};
 final class PublicController extends BaseController {
-    public function home(): void { $this->render('public/home', ['products'=>(new ProductService())->all(),'astrologers'=>(new AstrologerService())->all(),'temples'=>(new TempleService())->all()]); }
+    public function home(): void { $this->render('public/home', ['products'=>(new ProductService())->all(),'astrologers'=>(new AstrologerService())->all(),'temples'=>(new TempleService())->all(),'categories'=>(new CategoryService())->all()]); }
     public function about(): void { $this->render('public/about'); }
     public function spiritual(): void { $this->render('public/spiritual'); }
     public function astrologers(): void { $this->render('public/astrologers', ['items'=>(new AstrologerService())->all()]); }

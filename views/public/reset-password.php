@@ -1,10 +1,27 @@
-<h1>Reset Password</h1>
-<?php if(!empty($_SESSION['flash'])): ?><p class="notice"><?= e($_SESSION['flash']); unset($_SESSION['flash']); ?></p><?php endif; ?>
-<div class="panel auth-panel">
-    <form method="post" action="/reset-password" class="auth-form">
-        <input type="hidden" name="token" value="<?= e($token ?? '') ?>">
-        <label>New password <input type="password" name="password" required></label>
-        <label>Confirm password <input type="password" name="password_confirm" required></label>
-        <button>Update password</button>
-    </form>
+<div class="auth-page">
+    <div class="auth-visual">
+        <h2>Secure Your Account</h2>
+        <p>Set a strong password to protect your account and ensure a seamless experience with your sacred collections.</p>
+    </div>
+    <div class="auth-form-container">
+        <div class="auth-card">
+            <h1>Reset Password</h1>
+            <p>Create a new secure password</p>
+            <form method="post" action="/reset-password" class="auth-form">
+                <input type="hidden" name="token" value="<?= e($token ?? '') ?>">
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" name="password" required placeholder="••••••••" minlength="6">
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" name="password_confirm" required placeholder="••••••••" minlength="6">
+                </div>
+                <button class="btn btn-primary btn-block">Update Password</button>
+            </form>
+            <div class="auth-footer">
+                <p>Still having trouble? <a href="/contact">Contact Support</a></p>
+            </div>
+        </div>
+    </div>
 </div>

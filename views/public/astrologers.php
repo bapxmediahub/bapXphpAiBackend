@@ -1,19 +1,41 @@
-<h1>Astrologer Enquiry</h1>
-<?php if(empty($items)): ?>
-	<p>No astrologers are available at the moment. Add profiles from the admin dashboard.</p>
-<?php else: ?>
-	<div class="grid">
-		<?php foreach($items as $item): ?>
-			<article class="panel">
-				<?php if(!empty($item['photo_url'])): ?><img src="<?= e($item['photo_url']) ?>" alt="<?= e($item['name'] ?? 'Astrologer') ?>"><?php endif; ?>
-				<h2><?= e($item['name'] ?? 'Astrologer') ?></h2>
-				<p><?= e($item['description'] ?? '') ?></p>
-				<p><strong>Speciality:</strong> <?= e($item['speciality'] ?? 'General astrology') ?></p>
-				<p><strong>Languages:</strong> <?= e(implode(', ', $item['languages'] ?? [])) ?></p>
-				<p><strong>Experience:</strong> <?= e($item['experience_years'] ?? 'N/A') ?> years</p>
-				<p><strong>Consultation:</strong> ₹<?= e((string)($item['price'] ?? 0)) ?></p>
-				<?php if(!empty($item['slug'])): ?><a href="/astrologers/<?= e($item['slug']) ?>">View availability</a><?php endif; ?>
-			</article>
-		<?php endforeach; ?>
-	</div>
-<?php endif; ?>
+<section class="section" style="padding-top:var(--space-xl);">
+    <div class="container" style="margin-bottom:var(--space-2xl);">
+        <div style="text-align:center;">
+            <span class="eyebrow">Expert Guidance · Accurate Predictions</span>
+            <h1 class="section-title" style="margin-bottom:var(--space-sm);">Our Astrologers</h1>
+            <p class="lede" style="margin:0 auto;">Experienced Vedic astrologers ready to guide you on your life's journey.</p>
+        </div>
+    </div>
+    <?php if(empty($items)): ?>
+        <div class="container" style="text-align:center; padding:var(--space-4xl) 0;">
+            <span style="font-size:3rem; display:block; margin-bottom:var(--space-md);">🔮</span>
+            <h2 style="font-family:var(--font-serif); margin:0 0 var(--space-sm);">No Astrologers Available</h2>
+            <p style="color:var(--color-text-muted);">Astrologer profiles will appear here. Please check back soon.</p>
+        </div>
+    <?php else: ?>
+        <div class="container">
+            <div class="astrologer-grid">
+                <?php foreach($items as $item): ?>
+                    <article class="astrologer-card reveal">
+                        <div class="astrologer-card__header">
+                            <img class="astrologer-card__photo" src="<?= e($item['photo_url'] ?? 'https://placehold.co/100x100/fdfbf7/d4af37?text=👤') ?>" alt="<?= e($item['name'] ?? 'Astrologer') ?>" loading="lazy">
+                            <div>
+                                <h3 class="astrologer-card__name"><?= e($item['name'] ?? 'Astrologer') ?></h3>
+                                <p class="astrologer-card__speciality"><?= e($item['speciality'] ?? 'Vedic Astrology') ?></p>
+                            </div>
+                        </div>
+                        <div class="astrologer-card__body">
+                            <div class="astrologer-card__stat"><span class="astrologer-card__stat-label">Experience</span><span class="astrologer-card__stat-value"><?= e($item['experience_years'] ?? 'N/A') ?> years</span></div>
+                            <div class="astrologer-card__stat"><span class="astrologer-card__stat-label">Languages</span><span class="astrologer-card__stat-value"><?= e(implode(', ', array_slice($item['languages'] ?? [], 0, 3))) ?></span></div>
+                            <div class="astrologer-card__stat"><span class="astrologer-card__stat-label">Modes</span><span class="astrologer-card__stat-value"><?= e(implode(', ', array_slice($item['modes'] ?? [], 0, 2))) ?></span></div>
+                        </div>
+                        <div class="astrologer-card__footer">
+                            <span class="astrologer-card__price">₹<?= e((string)($item['price'] ?? 0)) ?> <span style="font-size:0.75rem; color:var(--color-text-muted); font-weight:400;">/ session</span></span>
+                            <?php if(!empty($item['slug'])): ?><a href="/astrologers/<?= e($item['slug']) ?>" class="btn btn-sm btn-primary">Check Availability</a><?php endif; ?>
+                        </div>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    <?php endif; ?>
+</section>

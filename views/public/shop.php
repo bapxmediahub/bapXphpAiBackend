@@ -1,29 +1,65 @@
-<h1>Online Store</h1>
-<p>Choose trusted spiritual essentials with transparent pricing and fast checkout.</p>
-<?php if(!empty($categories)): ?>
-    <div class="filters">
-        <a href="/shop" class="<?= $category === '' ? 'active' : '' ?>">All categories</a>
-        <?php foreach($categories as $cat): ?>
-            <a href="/shop?category=<?= e($cat['slug'] ?? '') ?>" class="<?= ($category === ($cat['slug'] ?? '')) ? 'active' : '' ?>"><?= e($cat['name'] ?? 'Category') ?></a>
-        <?php endforeach; ?>
-    </div>
-<?php endif; ?>
-<div class="showcase-grid">
-    <?php foreach (($items ?: [['name'=>'Sacred products will appear here','description'=>'Admin can add products from dashboard.']]) as $item): ?>
-        <article class="showcase-card">
-            <?php if(!empty($item['image_url'])): ?><img src="<?= e($item['image_url']) ?>" alt="<?= e($item['name']) ?>"><?php endif; ?>
-            <h2><?= e($item['name']) ?></h2>
-            <p><?= e($item['description'] ?? '') ?></p>
-            <?php if(!empty($item['category'])): ?><p><strong>Category:</strong> <?= e($item['category']) ?></p><?php endif; ?>
-            <?php if(!empty($item['price'])): ?>
-                <p><strong>₹<?= e((string)($item['offer_price'] ?: $item['price'])) ?></strong></p>
-                <form method="post" action="/cart/add">
-                    <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
-                    <input type="hidden" name="qty" value="1">
-                    <button>Add to cart</button>
-                </form>
-                <?php if(!empty($item['slug'])): ?><p><a class="button-link" href="/product/<?= e($item['slug']) ?>">View product</a></p><?php endif; ?>
+<section class="section">
+    <div class="shop-layout">
+        <aside class="shop-sidebar">
+            <div class="shop-filters">
+                <h3>Categories</h3>
+                <div class="filter-group">
+                    <a href="/shop" class="filter-chip <?= ($category ?? '') === '' ? 'active' : '' ?>">All</a>
+                    <?php foreach($categories as $cat): ?>
+                        <a href="/shop?category=<?= e($cat['slug'] ?? '') ?>" class="filter-chip <?= ($category === ($cat['slug'] ?? '')) ? 'active' : '' ?>"><?= e($cat['name'] ?? 'Category') ?></a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </aside>
+        <div>
+            <div class="shop-toolbar">
+                <span class="shop-toolbar__count"><?= count($items) ?> product<?= count($items) !== 1 ? 's' : '' ?></span>
+            </div>
+            <?php if(empty($items)): ?>
+                <div class="panel" style="text-align:center; padding:var(--space-2xl);">
+                    <span style="font-size:3rem; display:block; margin-bottom:var(--space-md);">🧘</span>
+                    <h3 style="font-family:var(--font-serif); margin:0 0 var(--space-sm);">No products found</h3>
+                    <p style="color:var(--color-text-muted); margin:0 0 var(--space-lg);">Check back soon for new spiritual products.</p>
+                    <a href="/shop" class="btn btn-primary">Browse All</a>
+                </div>
+            <?php else: ?>
+                <div class="product-grid">
+                    <?php foreach($items as $item): ?>
+                        <?php $hasOffer = !empty($item['offer_price']) && $item['offer_price'] < $item['price']; ?>
+                        <article class="product-card reveal">
+                            <div class="product-card__image">
+                                <img src="<?= e($item['image_url'] ?? 'https://placehold.co/400x400/fdfbf7/8c7e6d?text='.urlencode($item['name'])) ?>" alt="<?= e($item['name']) ?>" loading="lazy">
+                                <?php if($hasOffer): ?>
+                                    <span class="product-card__badge product-card__badge--sale">Sale</span>
+                                <?php endif; ?>
+                            </div>
+                            <div class="product-card__body">
+                                <?php if(!empty($item['category'])): ?>
+                                    <span style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--color-gold); font-weight:600;"><?= e($item['category']) ?></span>
+                                <?php endif; ?>
+                                <h3><?= e($item['name']) ?></h3>
+                                <p class="product-card__desc"><?= e($item['description']) ?></p>
+                                <div class="product-card__price-row">
+                                    <span class="price">₹<?= e((string)($item['offer_price'] ?: $item['price'] ?: 0)) ?></span>
+                                    <?php if($hasOffer): ?>
+                                        <span class="old-price">₹<?= e($item['price']) ?></span>
+                                        <?php $pct = round((1 - $item['offer_price'] / $item['price']) * 100); ?>
+                                        <span class="discount-pct">-<?= $pct ?>%</span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="product-card__actions">
+                                    <a href="/product/<?= e($item['slug']) ?>" class="btn btn-sm btn-ghost">View</a>
+                                    <form method="post" action="/cart/add" style="flex:1;">
+                                        <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
+                                        <input type="hidden" name="qty" value="1">
+                                        <button class="btn btn-sm btn-primary" style="width:100%;">Add to Cart</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </article>
+                    <?php endforeach; ?>
+                </div>
             <?php endif; ?>
-        </article>
-    <?php endforeach; ?>
-</div>
+        </div>
+    </div>
+</section>

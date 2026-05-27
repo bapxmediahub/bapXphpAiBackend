@@ -7,7 +7,7 @@
         "category": "narasimha",
         "price": 3499,
         "offer_price": 2999,
-        "image_url": "https://artsofdevotion.com/cdn/shop/files/P1011743_copy.jpg?v=1769000100&width=800",
+        "image_url": "/assets/images/products/mayapur-narasimha.jpg",
         "stock_status": "in_stock"
     },
     {
@@ -18,7 +18,7 @@
         "category": "jagannath",
         "price": 2899,
         "offer_price": 2499,
-        "image_url": "https://artsofdevotion.com/cdn/shop/files/Arts_of_Devotion_finalised-21.1.png?v=1718639037&width=800",
+        "image_url": "/assets/images/products/ekatva-jagannath.png",
         "stock_status": "in_stock"
     },
     {
@@ -29,7 +29,7 @@
         "category": "jagannath",
         "price": 1899,
         "offer_price": 1599,
-        "image_url": "https://placehold.co/600x600?text=Mini+Enameled+Jagannath",
+        "image_url": "/assets/images/products/mini-enameled-jagannath.jpg",
         "stock_status": "in_stock"
     },
     {
@@ -40,7 +40,7 @@
         "category": "jagannath",
         "price": 3199,
         "offer_price": 2799,
-        "image_url": "https://placehold.co/600x600?text=Chakra+Jagannath",
+        "image_url": "/assets/images/products/chakra-jagannath.jpg",
         "stock_status": "in_stock"
     },
     {
@@ -51,7 +51,7 @@
         "category": "sacred-emblems",
         "price": 3999,
         "offer_price": 3499,
-        "image_url": "https://placehold.co/600x600?text=Mahakaleshwar+Pendant",
+        "image_url": "/assets/images/products/mahakaleshwar-pendant.jpg",
         "stock_status": "in_stock"
     },
     {
@@ -62,7 +62,7 @@
         "category": "krishna",
         "price": 2699,
         "offer_price": 2299,
-        "image_url": "https://placehold.co/600x600?text=Muralidhar+Gopal",
+        "image_url": "/assets/images/products/muralidhar-gopal.jpg",
         "stock_status": "in_stock"
     },
     {
@@ -73,7 +73,7 @@
         "category": "hanuman",
         "price": 2499,
         "offer_price": 1999,
-        "image_url": "https://placehold.co/600x600?text=Karuna+Hanuman",
+        "image_url": "/assets/images/products/karuna-hanuman.jpg",
         "stock_status": "in_stock"
     },
     {
@@ -84,7 +84,7 @@
         "category": "narasimha",
         "price": 4299,
         "offer_price": 3799,
-        "image_url": "https://placehold.co/600x600?text=Ananta+Narasimha",
+        "image_url": "/assets/images/products/ananta-narasimha.jpg",
         "stock_status": "in_stock"
     },
     {
@@ -95,7 +95,7 @@
         "category": "hanuman",
         "price": 2199,
         "offer_price": 1799,
-        "image_url": "https://placehold.co/600x600?text=Sindoori+Hanuman",
+        "image_url": "/assets/images/products/sindoori-hanuman.jpg",
         "stock_status": "in_stock"
     },
     {
@@ -106,7 +106,7 @@
         "category": "narasimha",
         "price": 2799,
         "offer_price": 2399,
-        "image_url": "https://placehold.co/600x600?text=Yoga+Narasimha",
+        "image_url": "/assets/images/products/yoga-narasimha.jpg",
         "stock_status": "in_stock"
     },
     {
@@ -117,7 +117,7 @@
         "category": "narasimha",
         "price": 5499,
         "offer_price": 4999,
-        "image_url": "https://placehold.co/600x600?text=Gold+Classic+Narasimha",
+        "image_url": "/assets/images/products/gold-classic-narasimha.jpg",
         "stock_status": "in_stock"
     },
     {
@@ -128,7 +128,7 @@
         "category": "hanuman",
         "price": 1999,
         "offer_price": 1599,
-        "image_url": "https://placehold.co/600x600?text=Hanuman+Ring",
+        "image_url": "/assets/images/products/hanuman-ring.jpg",
         "stock_status": "in_stock"
     },
     {
@@ -139,7 +139,7 @@
         "category": "jagannath",
         "price": 2699,
         "offer_price": 2299,
-        "image_url": "https://placehold.co/600x600?text=Rajapur+Jagannath",
+        "image_url": "/assets/images/products/rajapur-jagannath.jpg",
         "stock_status": "in_stock"
     },
     {
@@ -150,7 +150,7 @@
         "category": "sacred-emblems",
         "price": 3199,
         "offer_price": 2799,
-        "image_url": "https://placehold.co/600x600?text=Vitthal+Mukharvind",
+        "image_url": "/assets/images/products/vitthal-mukharvind.jpg",
         "stock_status": "in_stock"
     },
     {
@@ -161,7 +161,7 @@
         "category": "jewelry",
         "price": 1599,
         "offer_price": 1299,
-        "image_url": "https://placehold.co/600x600?text=Shanka+Chakra+Earrings",
+        "image_url": "/assets/images/products/shanka-chakra-earrings.jpg",
         "stock_status": "in_stock"
     }
 ]

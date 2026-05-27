@@ -2,7 +2,12 @@
 namespace App\Controllers;
 use App\Services\{ProjectMapService,ResourceService,SecretService};
 final class AdminController extends BaseController {
-    public function dashboard(): void{$this->render('admin/dashboard');}
+    public function dashboard(): void{
+        $productCount = count((new ResourceService('products'))->all());
+        $orderCount = count((new ResourceService('orders'))->all());
+        $bookingCount = count((new ResourceService('appointments'))->all());
+        $this->render('admin/dashboard', compact('productCount','orderCount','bookingCount'));
+    }
     public function products(): void{$this->resource('Products','products',['name','description','category','image_url','price','offer_price','stock_status']);}
     public function saveProduct(): void{$this->save('products');}
     public function deleteProduct(): void{$this->delete('products');}
