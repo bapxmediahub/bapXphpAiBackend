@@ -13,8 +13,11 @@
                 <h1 class="booking-profile__name"><?= e($astrologer['name']) ?></h1>
                 <p class="booking-profile__meta"><?= e($astrologer['speciality'] ?? 'Vedic Astrology') ?> · <?= e($astrologer['experience_years'] ?? 'N/A') ?> years experience</p>
                 <p class="booking-profile__meta">Languages: <?= e(implode(', ', $astrologer['languages'] ?? [])) ?></p>
-                <p class="booking-profile__meta">Modes: <?= e(implode(', ', $astrologer['modes'] ?? [])) ?></p>
-                <p style="margin-top:var(--space-sm);"><span style="font-size:1.3rem; font-weight:700; color:var(--color-maroon);">₹<?= e((string)($astrologer['price'] ?? 0)) ?></span> <span style="color:var(--color-text-muted); font-size:0.85rem;">/ session</span></p>
+                <p class="booking-profile__meta">Modes: <?= e(implode(', ', array_map(fn($mode) => ucwords(str_replace(['-', '_'], ' ', $mode)), $astrologer['modes'] ?? []))) ?></p>
+                <p style="margin-top:var(--space-sm); display:flex; flex-wrap:wrap; gap:var(--space-sm);">
+                    <span style="font-size:1.05rem; font-weight:700; color:var(--color-maroon);">₹<?= e((string)($astrologer['text_session_prm'] ?? 15)) ?> PRM <span style="color:var(--color-text-muted); font-size:0.8rem; font-weight:400;">text</span></span>
+                    <span style="font-size:1.05rem; font-weight:700; color:var(--color-maroon);">₹<?= e((string)($astrologer['call_session_prm'] ?? 15)) ?> PRM <span style="color:var(--color-text-muted); font-size:0.8rem; font-weight:400;">call</span></span>
+                </p>
             </div>
         </div>
 
@@ -53,8 +56,8 @@
                                 <div class="form-group">
                                     <label>Mode</label>
                                     <select name="mode">
-                                        <?php foreach($astrologer['modes'] ?? ['in-person'] as $mode): ?>
-                                            <option value="<?= e($mode) ?>"><?= e(ucfirst(str_replace('-', ' ', $mode))) ?></option>
+                                        <?php foreach($astrologer['modes'] ?? ['text_session', 'direct_call'] as $mode): ?>
+                                            <option value="<?= e($mode) ?>"><?= e(ucwords(str_replace(['-', '_'], ' ', $mode))) ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>

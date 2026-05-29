@@ -1,12 +1,12 @@
 # Sri Panchami Spiritual Platform
 
-A full-stack web application for devotional ecommerce, astrologer appointments, and temple management.
+A full-stack web application for devotional ecommerce, direct astrologer call sessions, text sessions, and temple management.
 
 ## Tech Stack
 
 **Frontend:**
-- React.js for dynamic UI components
-- Vanilla JavaScript for vanilla interactions
+- Vanilla JavaScript for the storefront app
+- PHP templates for public, account, and admin pages
 - CSS (band.css) for styling
 
 **Backend:**
@@ -37,4 +37,4 @@ php tools/validate-project-map.php
 - `storage/data/` - JSON collections (products, orders, users, etc.)
 - `tools/` - Project map generation and validation
 - `docs/` - Architecture, deployment guides, and documentation
-- `integrations/` - Third-party services (Google OAuth, Razorpay, Google Calendar)
+- `integrations/` - Third-party services (Google OAuth and Razorpay)

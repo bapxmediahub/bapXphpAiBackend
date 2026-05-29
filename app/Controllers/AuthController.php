@@ -3,7 +3,7 @@ namespace App\Controllers;
 use App\Services\{SecretService,JsonStoreService};
 use App\Integrations\GoogleOAuth\GoogleOAuthClient;
 final class AuthController extends BaseController {
- public function redirect(): void {
+ public function googleRedirect(): void {
   $s=(new SecretService())->all(); if(empty($s['google_client_id'])||empty($s['google_client_secret'])){$this->flash('Google login is not configured yet.');$this->redirect('/login');}
   $state=bin2hex(random_bytes(16)); $_SESSION['oauth_state']=$state;
   $url=(new GoogleOAuthClient($s['google_client_id'],$s['google_client_secret']))->authorizationUrl($this->redirectUri(),$state); $this->redirect($url);
@@ -22,7 +22,6 @@ final class AuthController extends BaseController {
  private function redirectUri(): string { $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http'; return $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'sripanchamispiritual.com') . '/auth/google/callback'; }
  private function post(string $url,array $data): array { $ch=curl_init($url); curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_POST=>true,CURLOPT_POSTFIELDS=>http_build_query($data)]); $body=curl_exec($ch); curl_close($ch); return json_decode($body,true)?:[]; }
  private function get(string $url,string $token): array { $ch=curl_init($url); curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_HTTPHEADER=>['Authorization: Bearer '.$token]]); $body=curl_exec($ch); curl_close($ch); return json_decode($body,true)?:[]; }
-}
  public function register(): void {
     $this->render('public/register');
  }
@@ -59,3 +58,4 @@ final class AuthController extends BaseController {
     $this->flash('Invalid credentials.');
     $this->redirect('/login');
  }
+}

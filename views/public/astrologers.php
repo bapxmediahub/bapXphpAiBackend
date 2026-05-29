@@ -3,7 +3,7 @@
         <div style="text-align:center;">
             <span class="eyebrow">Expert Guidance · Accurate Predictions</span>
             <h1 class="section-title" style="margin-bottom:var(--space-sm);">Book Vedic Astrology Consultation in Chennai</h1>
-            <p class="lede">Connect with our experienced Vedic astrologers for kundli matching, horoscope reading, career guidance, and personalized remedies. Consultations available in Tamil and English online or in-person at our Chennai center.</p>
+            <p class="lede">Connect with our experienced Vedic astrologers for kundli matching, horoscope reading, career guidance, and personalized remedies. Consultations are available as private text sessions or direct call sessions.</p>
         </div>
     </div>
     <?php if(empty($items)): ?>
@@ -27,10 +27,10 @@
                         <div class="astrologer-card__body">
                             <div class="astrologer-card__stat"><span class="astrologer-card__stat-label">Experience</span><span class="astrologer-card__stat-value"><?= e($item['experience_years'] ?? 'N/A') ?> years</span></div>
                             <div class="astrologer-card__stat"><span class="astrologer-card__stat-label">Languages</span><span class="astrologer-card__stat-value"><?= e(implode(', ', array_slice($item['languages'] ?? [], 0, 3))) ?></span></div>
-                            <div class="astrologer-card__stat"><span class="astrologer-card__stat-label">Modes</span><span class="astrologer-card__stat-value"><?= e(implode(', ', array_slice($item['modes'] ?? [], 0, 2))) ?></span></div>
+                            <div class="astrologer-card__stat"><span class="astrologer-card__stat-label">Modes</span><span class="astrologer-card__stat-value"><?= e(implode(', ', array_map(fn($mode) => ucwords(str_replace(['-', '_'], ' ', $mode)), array_slice($item['modes'] ?? [], 0, 2)))) ?></span></div>
                         </div>
                         <div class="astrologer-card__footer">
-                            <span class="astrologer-card__price">₹<?= e((string)($item['price'] ?? 0)) ?> <span style="font-size:0.75rem; color:var(--color-text-muted); font-weight:400;">/ session</span></span>
+                            <span class="astrologer-card__price">₹<?= e((string)($item['text_session_prm'] ?? 15)) ?> PRM <span style="font-size:0.75rem; color:var(--color-text-muted); font-weight:400;">text</span> · ₹<?= e((string)($item['call_session_prm'] ?? 15)) ?> PRM <span style="font-size:0.75rem; color:var(--color-text-muted); font-weight:400;">call</span></span>
                             <?php if(!empty($item['slug'])): ?><a href="/astrologers/<?= e($item['slug']) ?>" class="btn btn-sm btn-primary">Check Availability</a><?php endif; ?>
                         </div>
                     </article>

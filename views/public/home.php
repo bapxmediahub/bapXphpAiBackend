@@ -124,7 +124,7 @@
             <article class="showcase-card reveal">
                 <div style="background:var(--color-bg-alt); border-radius:var(--radius-md); margin-bottom:var(--space-md); height:160px; display:flex; align-items:center; justify-content:center;">
                     <?php if(!empty($temple['image_url'])): ?>
-                        <img src="<?= e($temple['image_url']) ?>" alt="<?= e($temple['name']) ?> — Temple at Sri Panchami Spiritual, Chennai" style="width:100%; height:100%; object-fit:cover; border-radius:var(--radius-md);">
+                        <img src="<?= e($temple['image_url']) ?>" alt="<?= e($temple['name']) ?> — Temple at Sri Panchami Spiritual, Chennai" loading="lazy" style="width:100%; height:100%; object-fit:cover; border-radius:var(--radius-md);">
                     <?php else: ?>
                         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
                     <?php endif; ?>
@@ -168,7 +168,7 @@
                     <div class="astrologer-card__stat"><span class="astrologer-card__stat-label">Languages</span><span class="astrologer-card__stat-value"><?= e(implode(', ', array_slice($astro['languages'] ?? [], 0, 2))) ?></span></div>
                 </div>
                 <div class="astrologer-card__footer">
-                    <span class="astrologer-card__price">₹<?= e((string)($astro['price'] ?? 0)) ?> <span style="font-size:0.75rem; color:var(--color-text-muted); font-weight:400;">/ session</span></span>
+                    <span class="astrologer-card__price">₹<?= e((string)($astro['text_session_prm'] ?? 15)) ?> PRM <span style="font-size:0.75rem; color:var(--color-text-muted); font-weight:400;">text</span> · ₹<?= e((string)($astro['call_session_prm'] ?? 15)) ?> PRM <span style="font-size:0.75rem; color:var(--color-text-muted); font-weight:400;">call</span></span>
                     <a href="/astrologers/<?= e($astro['slug']) ?>" class="btn btn-sm btn-outline">Book Now</a>
                 </div>
             </article>
@@ -228,7 +228,7 @@
             "name": "Do you offer Vedic astrology consultation in Chennai?",
             "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, we have 3 expert Vedic astrologers offering online and in-person consultations in Tamil and English. Services include kundli matching, horoscope reading, career guidance, and personalized remedies."
+                "text": "Yes, we have 13 expert Vedic astrologers offering private text sessions and direct call sessions in Tamil, English, and other Indian languages. Services include kundli matching, horoscope reading, career guidance, and personalized remedies."
             }
         },
         {

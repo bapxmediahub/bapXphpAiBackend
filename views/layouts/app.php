@@ -139,7 +139,7 @@ echo $critical;
 </head>
 <body>
 <header class="site-header" id="site-header">
-    <a href="/" class="brand"><img src="/assets/images/logo-square.jpeg" alt="Sri Panchami Spiritual logo"><span>Sri Panchami Spiritual</span></a>
+    <a href="/" class="brand"><img src="/assets/images/logo-small.jpeg" width="52" height="52" alt="Sri Panchami Spiritual logo"><span>Sri Panchami Spiritual</span></a>
     <button class="menu-toggle" type="button" aria-expanded="false" aria-label="Menu">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>

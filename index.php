@@ -1,5 +1,10 @@
 <?php
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$file = __DIR__ . $uri;
+
+if (PHP_SAPI === 'cli-server' && is_file($file)) {
+    return false;
+}
 
 // API routes - JSON only
 if (strpos($uri, '/api/') === 0) {

@@ -1,20 +1,25 @@
 # Project Map
 
-- `/` → `PublicController@home` → ProductService, AstrologerService, TempleService
-- `/about` → `PublicController@about` → 
-- `/sri-panchami-spiritual` → `PublicController@spiritual` → 
+- `/` → `PublicController@home` → ProductService, AstrologerService, TempleService, CategoryService
+- `/about` → `PublicController@about` → none
+- `/sri-panchami-spiritual` → `PublicController@spiritual` → none
 - `/astrologers` → `PublicController@astrologers` → AstrologerService
 - `/astrologers/{slug}` → `PublicController@astrologer` → AstrologerService, AvailabilityService
 - `/temples` → `PublicController@temples` → TempleService
 - `/temples/{slug}` → `PublicController@temple` → TempleService
 - `/shop` → `PublicController@shop` → ProductService, CategoryService
 - `/product/{slug}` → `PublicController@product` → ProductService
-- `/cart` → `PublicController@cart` → CartService
-- `/checkout` → `PublicController@checkout` → AuthService, CartService, PaymentService
+- `/cart` → `PublicController@cart` → CartService, ProductService
+- `/checkout` → `PublicController@checkout` → CartService, ProductService, SecretService
+- `/contact` → `PublicController@contact` → none
 - `/contact` → `PublicController@contact` → ContactService
 - `/login` → `PublicController@login` → AuthService
-- `/auth/google` → `AuthController@redirect` → SecretService
+- `/auth/google` → `AuthController@googleRedirect` → SecretService
 - `/auth/google/callback` → `AuthController@callback` → SecretService, JsonStoreService
+- `/register` → `AuthController@register` → none
+- `/register` → `AuthController@registerPost` → JsonStoreService
+- `/login` → `AuthController@loginPost` → JsonStoreService
+- `/logout` → `AuthController@logout` → AuthService
 - `/account/orders` → `AccountController@orders` → AuthService, OrderService
 - `/account/bookings` → `AccountController@bookings` → AuthService, AppointmentService
 - `/admin` → `AdminController@dashboard` → OrderService, AppointmentService
@@ -25,10 +30,10 @@
 - `/admin/orders/{id}` → `AdminController@order` → OrderService, ShippingService
 - `/admin/shipping` → `AdminController@shipping` → ShippingService, SettingsService
 - `/admin/astrologers` → `AdminController@astrologers` → AstrologerService, AvailabilityService
-- `/admin/appointments` → `AdminController@appointments` → AppointmentService, CalendarService
+- `/admin/appointments` → `AdminController@appointments` → AppointmentService
 - `/admin/temples` → `AdminController@temples` → TempleService
 - `/admin/settings` → `AdminController@settings` → SettingsService
-- `/admin/integrations` → `AdminController@integrations` → SettingsService, PaymentService, CalendarService
+- `/admin/integrations` → `AdminController@integrations` → SettingsService, PaymentService, SecretService
 - `/admin/backups` → `AdminController@backups` → JsonStoreService
 - `/admin/audit-log` → `AdminController@audit` → AuditLogService
 - `/admin/contact-submissions` → `AdminController@contactSubmissions` → ContactService
@@ -43,7 +48,9 @@
 - `/admin/temples/save` → `AdminController@saveTemple` → ResourceService
 - `/admin/temples/delete` → `AdminController@deleteTemple` → ResourceService
 - `/admin/integrations/save` → `AdminController@saveIntegrations` → SecretService
-- `/cart/add` → `CommerceController@addToCart` → CartService
+- `/cart/add` → `CommerceController@addToCart` → CartService, ProductService
+- `/cart/remove` → `CommerceController@removeFromCart` → CartService
+- `/cart/update` → `CommerceController@updateCart` → CartService
 - `/checkout/create-order` → `CommerceController@createOrder` → SecretService, PaymentService
-- `/payment/verify` → `CommerceController@verifyPayment` → SecretService, PaymentService
-- `/appointments/book` → `BookingController@book` → ResourceService, AvailabilityService, CalendarService
+- `/payment/verify` → `CommerceController@verifyPayment` → SecretService, PaymentService, JsonStoreService
+- `/appointments/book` → `BookingController@book` → ResourceService, AvailabilityService

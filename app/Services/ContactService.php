@@ -4,18 +4,21 @@ namespace App\Services;
 final class ContactService {
     private JsonStoreService $store;
 
-    public function __construct() {
-        $this->store = new JsonStoreService('contact_submissions');
+    public function __construct(?JsonStoreService $store = null) {
+        $this->store = $store ?? new JsonStoreService();
     }
 
     public function all(): array {
-        $items = $this->store->all();
+        $items = $this->store->read('contact_submissions');
         usort($items, fn($a, $b) => ($b['created_at'] ?? 0) <=> ($a['created_at'] ?? 0));
         return $items;
     }
 
     public function find(string $id): ?array {
-        return $this->store->find($id);
+        foreach ($this->all() as $item) {
+            if (($item['id'] ?? '') === $id) return $item;
+        }
+        return null;
     }
 
     public function save(array $data): string {
@@ -23,27 +26,27 @@ final class ContactService {
         $data['id'] = $id;
         $data['created_at'] = $data['created_at'] ?? time();
         $data['status'] = $data['status'] ?? 'new';
-        $this->store->save($id, $data);
+        $this->store->upsert('contact_submissions', $data);
         return $id;
     }
 
     public function updateStatus(string $id, string $status): void {
-        $item = $this->store->find($id);
+        $item = $this->find($id);
         if ($item) {
             $item['status'] = $status;
-            $this->store->save($id, $item);
+            $this->store->upsert('contact_submissions', $item);
         }
     }
 
     public function delete(string $id): void {
-        $this->store->delete($id);
+        $this->store->delete('contact_submissions', $id);
     }
 
     public function count(): int {
-        return count($this->store->all());
+        return count($this->all());
     }
 
     public function unreadCount(): int {
-        return count(array_filter($this->store->all(), fn($item) => ($item['status'] ?? 'new') === 'new'));
+        return count(array_filter($this->all(), fn($item) => ($item['status'] ?? 'new') === 'new'));
     }
 }

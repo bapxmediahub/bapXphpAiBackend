@@ -2,14 +2,8 @@
  * Core: API, Router, Cart, Helpers
  */
 const API = {
-    async request(ep, options = {}) {
-        const response = await fetch('/api' + ep, options);
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(data.error || 'Request failed');
-        return data;
-    },
-    get: (ep) => API.request(ep),
-    post: (ep, d) => API.request(ep, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(d) })
+    get: (ep) => fetch('/api' + ep).then(r => r.json()),
+    post: (ep, d) => fetch('/api' + ep, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(d) }).then(r => r.json())
 };
 
 const Cart = {
@@ -30,21 +24,10 @@ const Router = {
     nav(path) { history.pushState({}, '', path); window.scrollTo(0, 0); this.render(); },
     render() {
         const path = window.location.pathname;
-        const match = this.match(path);
-        const fn = match ? match.fn : this.routes['*'];
+        const fn = this.routes[path] || this.routes['*'];
         const root = document.getElementById('root');
-        if (fn && root) fn(root, ...(match ? match.params : []));
+        if (fn && root) fn(root);
         document.querySelectorAll('.cart-badge').forEach(e => { e.textContent = Cart.count; e.style.display = Cart.count > 0 ? '' : 'none'; });
-    },
-    match(path) {
-        if (this.routes[path]) return { fn: this.routes[path], params: [] };
-        for (const [route, fn] of Object.entries(this.routes)) {
-            if (!route.includes('{')) continue;
-            const pattern = '^' + route.replace(/\{[^/]+\}/g, '([^/]+)') + '$';
-            const matches = path.match(new RegExp(pattern));
-            if (matches) return { fn, params: matches.slice(1).map(decodeURIComponent) };
-        }
-        return null;
     },
     init() {
         window.addEventListener('popstate', () => this.render());

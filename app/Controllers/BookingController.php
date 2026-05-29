@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{ResourceService,AvailabilityService,CalendarService,AstrologerService,AppointmentService};
+use App\Services\{ResourceService,AvailabilityService,AstrologerService,AppointmentService};
 final class BookingController extends BaseController {
  public function book(): void {
   $data = $_POST;
@@ -25,17 +25,11 @@ final class BookingController extends BaseController {
   $data['id'] = bin2hex(random_bytes(8));
   $data['astrologer_name'] = $astrologer['name'] ?? '';
   $data['astrologer_email'] = $astrologer['email'] ?? '';
-  $data['status'] = ($data['mode'] ?? 'in-person') === 'remote' ? 'payment_pending' : 'confirmed';
+  $data['status'] = in_array(($data['mode'] ?? 'direct_call'), ['text_session', 'direct_call'], true) ? 'payment_pending' : 'confirmed';
   $data['created_at'] = date('c');
-  if ($data['status'] === 'payment_pending') {
-    $data['meeting_link'] = $this->generateMeetingLink();
-  }
   $data = array_filter($data, fn($v) => $v !== '');
   (new ResourceService('appointments'))->save($data);
-  $this->flash('Appointment request saved. ' . ($data['status'] === 'payment_pending' ? 'A remote meeting link has been reserved for you.' : 'Your appointment is confirmed.'));
+  $this->flash('Session request saved. ' . ($data['status'] === 'payment_pending' ? 'Complete payment to start your session.' : 'Your appointment is confirmed.'));
   $this->redirect('/account/bookings');
- }
- private function generateMeetingLink(): string {
-  return 'https://meet.google.com/' . implode('-', [substr(bin2hex(random_bytes(2)), 0, 3), substr(bin2hex(random_bytes(2)), 0, 4), substr(bin2hex(random_bytes(2)), 0, 3)]);
  }
 }

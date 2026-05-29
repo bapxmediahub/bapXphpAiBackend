@@ -440,9 +440,10 @@ nav a:hover { color: var(--color-maroon); }
     font-size: clamp(2.8rem, 6vw, 4.8rem);
     line-height: 1.05;
     margin: 0 0 var(--space-xl) 0;
+    color: var(--color-white);
     text-shadow: 0 6px 30px rgba(0,0,0,0.4);
     font-weight: 700;
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
 }
 .lede {
     font-size: 1.25rem;
@@ -1220,7 +1221,7 @@ tr:hover td { background: var(--color-bg-alt); }
 
 /* ── Mobile Meditation App Enhancements ── */
 @media (max-width: 767px) {
-    .menu-toggle { display: none; }
+    .site-header .menu-toggle { display: block; }
     nav:not(.open) { display: none; }
     
     .site-header {
@@ -1230,7 +1231,7 @@ tr:hover td { background: var(--color-bg-alt); }
     .brand { font-size: 0.9rem; }
     .brand img { width: 36px; height: 36px; border-radius: 50%; }
     .brand span { display: none; }
-    .header-actions { display: none; }
+    .header-actions { display: flex; }
     
     main { padding: var(--space-md); padding-bottom: calc(64px + var(--space-md)); }
     
@@ -1368,5 +1369,5 @@ tr:hover td { background: var(--color-bg-alt); }
 }
 
 @media (max-width: 767px) {
-    .bottom-nav { display: block; }
+    nav.bottom-nav { display: block; }
 }

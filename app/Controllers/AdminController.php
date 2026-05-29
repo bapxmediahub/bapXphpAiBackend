@@ -9,7 +9,7 @@ final class AdminController extends BaseController {
         $bookingCount = count((new ResourceService('appointments'))->all());
         $this->render('admin/dashboard', ['pageTitle' => 'Dashboard', 'productCount' => $productCount, 'orderCount' => $orderCount, 'bookingCount' => $bookingCount]);
     }
-    public function products(): void{$this->resource('Products','products',['name','description','category','image_url','price','offer_price','stock_status']);}
+    public function products(): void{$this->resource('Products','products',['slug','name','description','category','image_url','price','offer_price','stock_status']);}
     public function saveProduct(): void{$this->save('products');}
     public function deleteProduct(): void{$this->delete('products');}
     public function categories(): void{$this->resource('Categories','categories',['name','description']);}
@@ -20,7 +20,7 @@ final class AdminController extends BaseController {
     public function orders(): void{$this->list('Orders');}
     public function order(string $id): void{$this->render('admin/detail',['pageTitle' => 'Order '.$id, 'title' => 'Order '.$id]);}
     public function shipping(): void{$this->render('admin/settings',['pageTitle' => 'Shipping', 'title' => 'Shipping']);}
-    public function astrologers(): void{$this->resource('Astrologers','astrologers',['name','description','email','price','modes','working_days','start_time','end_time','slot_minutes','languages','experience_years','speciality','photo_url']);}
+    public function astrologers(): void{$this->resource('Astrologers','astrologers',['slug','name','description','email','text_session_prm','call_session_prm','payout_percentage','modes','working_days','start_time','end_time','slot_minutes','languages','experience_years','speciality','photo_url']);}
     public function saveAstrologer(): void{$this->save('astrologers');}
     public function deleteAstrologer(): void{$this->delete('astrologers');}
     public function appointments(): void{$this->list('Appointments');}
@@ -30,6 +30,10 @@ final class AdminController extends BaseController {
     public function settings(): void{$this->render('admin/settings',['pageTitle' => 'Settings', 'title' => 'Site Settings']);}
     public function integrations(): void{$this->render('admin/integrations',['pageTitle' => 'Integrations', 'secrets'=>(new SecretService())->all()]);}
     public function saveIntegrations(): void{(new SecretService())->save($_POST); $this->flash('Integration settings saved.'); $this->redirect('/admin/integrations');}
+    public function backups(): void{$this->list('Backups');}
+    public function audit(): void{$this->list('Audit Log');}
+    public function contactSubmissions(): void{$this->resource('Contact Submissions','contact_submissions',['name','email','phone','subject','message','status']);}
+    public function projectMap(): void{$this->render('admin/project-map',['pageTitle' => 'Project Map', 'map'=>\App\Services\ProjectMapService::registry(),'validation'=>\App\Services\ProjectMapService::validate(\App\Services\ProjectMapService::registry())]);}
     private function list(string $title): void{$this->render('admin/list',['pageTitle' => $title, 'title' => $title]);}
     private function resource(string $title,string $collection,array $fields): void{$this->render('admin/resource',['pageTitle' => $title, 'title' => $title, 'collection' => $collection, 'fields' => $fields, 'items'=>(new ResourceService($collection))->all()]);}
     private function save(string $collection): void{$data=array_filter($_POST,fn($v)=>$v!==''); if(isset($data['working_days']))$data['working_days']=array_map('trim',explode(',',$data['working_days'])); if(isset($data['modes']))$data['modes']=array_map('trim',explode(',',$data['modes'])); if(isset($data['languages']))$data['languages']=array_map('trim',explode(',',$data['languages'])); (new ResourceService($collection))->save($data); $this->flash('Saved.'); $this->redirect('/admin/'.$collection);}

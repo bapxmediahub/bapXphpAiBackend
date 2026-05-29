@@ -1,5 +1,5 @@
 /**
- * UI Components
+ * UI Components (merged from assets/js/components.js + components/)
  */
 function Header() {
     const h = document.createElement('header');
