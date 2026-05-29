@@ -46,8 +46,7 @@
             "page": "public/astrologer",
             "controller": "PublicController@astrologer",
             "services": [
-                "AstrologerService",
-                "AvailabilityService"
+                "AstrologerService"
             ]
         },
         {

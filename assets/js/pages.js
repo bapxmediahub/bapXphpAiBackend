@@ -13,7 +13,7 @@ async function HomePage(root) {
         // Hero
         const hero = document.createElement('section');
         hero.className = 'home-hero';
-        hero.innerHTML = `<div class="hero-copy"><span class="eyebrow">Blessings · Protection · Prosperity</span><h1>Divine Grace.<br>Timeless Protection.</h1><p class="lede">Authentic spiritual products, sacred jewelry, expert astrology and temple guidance.</p><div class="hero-actions"><a href="/shop" data-link class="btn btn-primary">Shop Spiritual Products</a><a href="/astrologers" data-link class="btn btn-outline">Book Astrology</a></div><div class="hero-stats"><div><div class="hero-stat-value">500+</div><div class="hero-stat-label">Happy Devotees</div></div><div><div class="hero-stat-value">14+</div><div class="hero-stat-label">Sacred Items</div></div><div><div class="hero-stat-value">3</div><div class="hero-stat-label">Expert Astrologers</div></div></div></div><div class="hero-deity"><img src="/assets/images/varahi-amman.png" alt="Sri Maha Varahi Amman"></div>`;
+        hero.innerHTML = `<div class="hero-copy"><span class="eyebrow">Blessings · Protection · Prosperity</span><h1>Divine Grace.<br>Timeless Protection.</h1><p class="lede">Authentic spiritual products, sacred jewelry, expert astrology and temple guidance.</p><div class="hero-actions"><a href="/shop" data-link class="btn btn-primary">Shop Spiritual Products</a><a href="/astrologers" data-link class="btn btn-outline">Remote Astrology</a></div><div class="hero-stats"><div><div class="hero-stat-value">500+</div><div class="hero-stat-label">Happy Devotees</div></div><div><div class="hero-stat-value">14+</div><div class="hero-stat-label">Sacred Items</div></div><div><div class="hero-stat-value">3</div><div class="hero-stat-label">Expert Astrologers</div></div></div></div><div class="hero-deity"><img src="/assets/images/varahi-amman.png" alt="Sri Maha Varahi Amman"></div>`;
         root.appendChild(hero);
 
         // Trust bar
@@ -40,7 +40,7 @@ async function HomePage(root) {
         if (astrologers.length) {
             const s = document.createElement('section');
             s.className = 'section';
-            s.innerHTML = `<div class="section-header"><span class="eyebrow">Guidance · Clarity · Remedies</span><h2 class="section-title">Expert Astrology</h2><p class="lede">Consult experienced astrologers for accurate predictions.</p></div><div class="astrologer-grid" id="ha"></div><div style="text-align:center;margin-top:2rem"><a href="/astrologers" data-link class="btn btn-primary">Book Astrology Consultation</a></div>`;
+            s.innerHTML = `<div class="section-header"><span class="eyebrow">Guidance · Clarity · Remedies</span><h2 class="section-title">Expert Astrology</h2><p class="lede">Consult experienced astrologers for accurate predictions.</p></div><div class="astrologer-grid" id="ha"></div><div style="text-align:center;margin-top:2rem"><a href="/astrologers" data-link class="btn btn-primary">Remote Astrology Consultation</a></div>`;
             astrologers.slice(0,3).forEach(a => s.querySelector('#ha').appendChild(AstroCard(a)));
             root.appendChild(s);
         }

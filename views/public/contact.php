@@ -27,6 +27,47 @@
             <h3 style="font-family:var(--font-serif); margin:0 0 var(--space-sm);">Sacred Service Hours</h3>
             <p style="color:var(--color-text-muted); font-size:0.9rem; margin:0;">Monday – Saturday: 9:00 AM – 7:00 PM<br>Sunday: 10:00 AM – 5:00 PM</p>
         </div>
+        <div class="admin-card reveal" id="contact-form" style="margin-top:var(--space-xl); scroll-margin-top:110px;">
+            <h2 style="font-family:var(--font-serif); text-align:center; margin:0 0 var(--space-sm);">Send a Consultation Request</h2>
+            <p style="text-align:center; color:var(--color-text-muted); margin:0 auto var(--space-lg); max-width:620px;">Use this form for remote astrology call/message requests, product questions, temple guidance, or store support.</p>
+            <?php if(!empty($success)): ?>
+                <div class="flash flash--success">Thank you. Sri Panchami Spiritual will contact you soon.</div>
+            <?php endif; ?>
+            <form method="post" action="/contact" class="admin-form" style="max-width:720px; margin:0 auto;">
+                <div class="admin-form__row">
+                    <div class="form-group">
+                        <label for="contact-name">Name</label>
+                        <input id="contact-name" type="text" name="name" required placeholder="Your name">
+                    </div>
+                    <div class="form-group">
+                        <label for="contact-email">Email</label>
+                        <input id="contact-email" type="email" name="email" required placeholder="your@email.com">
+                    </div>
+                </div>
+                <div class="admin-form__row">
+                    <div class="form-group">
+                        <label for="contact-phone">Phone</label>
+                        <input id="contact-phone" type="tel" name="phone" placeholder="+91 XXXXX XXXXX">
+                    </div>
+                    <div class="form-group">
+                        <label for="contact-subject">Subject</label>
+                        <select id="contact-subject" name="subject" required>
+                            <option value="">Select a subject</option>
+                            <option value="astrology" <?= (($subject ?? '') === 'astrology') ? 'selected' : '' ?>>Astrology Consultation</option>
+                            <option value="product">Product Inquiry</option>
+                            <option value="temple">Temple Guidance</option>
+                            <option value="order">Order Support</option>
+                            <option value="general">General Question</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="contact-message">Message</label>
+                    <textarea id="contact-message" name="message" rows="5" required placeholder="Tell us what guidance or support you need"></textarea>
+                </div>
+                <button class="btn btn-primary btn-block" type="submit">Send Request</button>
+            </form>
+        </div>
     </div>
 </section>
 

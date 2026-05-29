@@ -7,7 +7,7 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/about','name'=>'about','page'=>'public/about','controller'=>'PublicController@about','services'=>[]],
             ['method'=>'GET','path'=>'/sri-panchami-spiritual','name'=>'spiritual','page'=>'public/spiritual','controller'=>'PublicController@spiritual','services'=>[]],
             ['method'=>'GET','path'=>'/astrologers','name'=>'astrologers','page'=>'public/astrologers','controller'=>'PublicController@astrologers','services'=>['AstrologerService']],
-            ['method'=>'GET','path'=>'/astrologers/{slug}','name'=>'astrologer.show','page'=>'public/astrologer','controller'=>'PublicController@astrologer','services'=>['AstrologerService','AvailabilityService']],
+            ['method'=>'GET','path'=>'/astrologers/{slug}','name'=>'astrologer.show','page'=>'public/astrologer','controller'=>'PublicController@astrologer','services'=>['AstrologerService']],
             ['method'=>'GET','path'=>'/temples','name'=>'temples','page'=>'public/temples','controller'=>'PublicController@temples','services'=>['TempleService']],
             ['method'=>'GET','path'=>'/temples/{slug}','name'=>'temple.show','page'=>'public/temple','controller'=>'PublicController@temple','services'=>['TempleService']],
             ['method'=>'GET','path'=>'/shop','name'=>'shop','page'=>'public/shop','controller'=>'PublicController@shop','services'=>['ProductService','CategoryService']],

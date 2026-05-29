@@ -1034,8 +1034,223 @@ nav a:hover { color: var(--color-maroon); }
 .btn-message { background: var(--color-info); color: white; border: none; padding: 0.5rem 1rem; border-radius: var(--radius-pill); font-weight: 600; cursor: pointer; font-size: 0.85rem; }
 .btn-message:hover { background: #2563eb; }
 
+/* ── Astrologer Marketplace ── */
+.astro-market-toolbar {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.9fr) auto minmax(260px, 1.3fr) minmax(220px, 0.9fr);
+    gap: var(--space-md);
+    align-items: center;
+    margin-bottom: var(--space-xl);
+}
+.astro-wallet,
+.astro-search,
+.astro-filters button,
+.astro-recharge {
+    min-height: 56px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-white);
+    box-shadow: var(--shadow-sm);
+}
+.astro-wallet {
+    display: grid;
+    gap: 0.1rem;
+    padding: 0.65rem 0.85rem;
+}
+.astro-wallet span,
+.astro-search span {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-muted);
+    font-weight: 700;
+}
+.astro-wallet strong { color: var(--color-maroon); font-size: 1rem; }
+.astro-wallet small { color: var(--color-text-muted); font-size: 0.72rem; }
+.astro-recharge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1rem;
+    color: var(--color-white);
+    background: var(--color-maroon);
+    font-weight: 800;
+}
+.astro-filters {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-xs);
+}
+.astro-filters button {
+    cursor: pointer;
+    color: var(--color-ink);
+    font-weight: 700;
+    padding: 0 0.6rem;
+}
+.astro-search {
+    display: grid;
+    gap: 0.1rem;
+    padding: 0.45rem 0.75rem;
+}
+.astro-search input {
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--color-ink);
+    font: inherit;
+    min-width: 0;
+}
+.astro-market-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-lg);
+}
+.astro-market-card {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: var(--space-md);
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: var(--space-sm);
+    min-height: 196px;
+}
+.astro-market-card:hover { box-shadow: var(--shadow-lg); border-color: rgba(212,175,55,0.55); }
+.astro-market-photo {
+    position: relative;
+    display: block;
+    grid-row: 1 / 3;
+    width: 92px;
+    height: 116px;
+    align-self: start;
+}
+.astro-market-photo img {
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center top;
+    background: var(--color-bg-alt);
+}
+.astro-status-dot {
+    position: absolute;
+    top: 6px;
+    right: 4px;
+    width: 13px;
+    height: 13px;
+    border: 2px solid var(--color-white);
+    border-radius: 50%;
+    background: var(--color-success);
+}
+.astro-market-card--busy .astro-status-dot { background: var(--color-gold); }
+.astro-market-card--offline .astro-status-dot { background: #b6bcc7; }
+.astro-rating-pill {
+    position: absolute;
+    left: 8px;
+    bottom: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 74px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background: var(--color-white);
+    color: var(--color-ink);
+    font-size: 0.66rem;
+    font-weight: 800;
+}
+.astro-rating-pill::before { content: '*'; color: var(--color-gold); margin-right: 0.25rem; }
+.astro-market-info { min-width: 0; display: grid; gap: 0.28rem; }
+.astro-market-title-row { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-xs); }
+.astro-market-name {
+    min-width: 0;
+    color: var(--color-ink);
+    font-weight: 800;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.astro-follow {
+    flex: 0 0 auto;
+    border: 1px solid rgba(70,128,137,0.55);
+    color: #2b6872;
+    background: var(--color-white);
+    border-radius: var(--radius-pill);
+    min-height: 30px;
+    padding: 0 0.7rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+.astro-market-info p {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.84rem;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.astro-market-price {
+    grid-column: 1 / 3;
+    border-top: 1px solid var(--color-border-light);
+    margin-top: var(--space-xs);
+    padding-top: var(--space-xs);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--color-ink);
+    font-size: 0.82rem;
+}
+.astro-market-price strong { color: var(--color-maroon); }
+.astro-market-price span { color: var(--color-text-muted); }
+.astro-market-price em {
+    color: #d95f18;
+    font-style: normal;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+.astro-market-actions {
+    grid-column: 1 / 3;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-xs);
+    margin-top: var(--space-xs);
+}
+.astro-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    border-radius: var(--radius-pill);
+    border: 1.5px solid var(--color-success);
+    background: var(--color-white);
+    color: var(--color-success);
+    font-size: 0.78rem;
+    font-weight: 900;
+    letter-spacing: 0;
+    padding: 0 0.75rem;
+    text-align: center;
+}
+.astro-action--chat,
+.astro-action--call,
+.astro-action--queue { color: var(--color-success); border-color: var(--color-success); }
+.astro-action--session {
+    grid-column: 1 / -1;
+    border-color: #2b6872;
+    color: #2b6872;
+}
+.astro-action--disabled {
+    color: #a7adb8;
+    border-color: #d5dae3;
+    background: #f8f8f8;
+}
+
 /* ── Booking / Slots ── */
-.booking-layout { max-width: 900px; margin: 0 auto; padding: var(--space-2xl) 5vw; }
+.booking-layout { max-width: 1220px; margin: 0 auto; padding: var(--space-2xl) 5vw; }
 .booking-profile {
     display: flex;
     align-items: center;
@@ -1066,6 +1281,205 @@ nav a:hover { color: var(--color-maroon); }
 .slot-card .form-group label { font-size: 0.7rem; }
 .slot-card .form-group input, .slot-card .form-group select { padding: 0.4rem 0.6rem; font-size: 0.8rem; border-radius: var(--radius-sm); }
 .slot-card button { width: 100%; padding: 0.5rem; font-size: 0.75rem; }
+.consultation-panel__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
+    gap: var(--space-xl);
+    align-items: start;
+}
+.consultation-panel__modes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--space-md);
+}
+.consultation-panel__mode,
+.consultation-panel__contact {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    background: var(--color-bg-alt);
+}
+.consultation-panel__contact {
+    padding: var(--space-lg);
+    background: var(--color-white);
+}
+.expert-layout {
+    max-width: 1220px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 390px;
+    gap: var(--space-xl);
+    align-items: start;
+}
+.expert-main,
+.expert-side { display: grid; gap: var(--space-lg); }
+.expert-side { position: sticky; top: 100px; }
+.expert-profile-card,
+.expert-action-card,
+.gift-panel,
+.expert-copy-panel,
+.ratings-panel,
+.trust-panel {
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+.expert-profile-card {
+    display: grid;
+    grid-template-columns: 170px minmax(0, 1fr) auto;
+    gap: var(--space-lg);
+    align-items: center;
+    padding: var(--space-lg);
+}
+.expert-photo-wrap { position: relative; width: 170px; }
+.expert-photo-wrap .booking-profile__photo {
+    width: 170px;
+    height: 190px;
+    border-radius: var(--radius-lg);
+}
+.expert-credit-line {
+    margin: var(--space-xs) 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    color: var(--color-maroon);
+    font-weight: 800;
+}
+.expert-credit-line span { color: #2b6872; }
+.gift-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+}
+.gift-panel h2,
+.expert-copy-panel h2,
+.ratings-panel h2 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 1.4rem;
+}
+.gift-panel button {
+    min-height: 42px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--color-gold);
+    color: var(--color-ink);
+    padding: 0 1.1rem;
+    font-weight: 900;
+}
+.expert-copy-panel { padding: var(--space-lg); }
+.expert-copy-panel p {
+    margin: var(--space-sm) 0 0;
+    color: var(--color-ink);
+    line-height: 1.6;
+}
+.expert-tabs {
+    display: flex;
+    gap: var(--space-lg);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--space-sm);
+    text-transform: uppercase;
+    font-size: 0.78rem;
+}
+.expert-tabs span { color: var(--color-text-muted); font-weight: 800; }
+.review-list { display: grid; gap: var(--space-md); margin-top: var(--space-md); }
+.review-list article {
+    border-bottom: 1px solid var(--color-border-light);
+    padding-bottom: var(--space-sm);
+}
+.review-list article:last-child { border-bottom: 0; padding-bottom: 0; }
+.review-list span { display: block; color: var(--color-gold); font-size: 0.85rem; font-weight: 800; }
+.review-list p { margin: var(--space-xs) 0 0; }
+.expert-action-card { padding: var(--space-lg); }
+.expert-price {
+    display: grid;
+    gap: 0.2rem;
+    margin-bottom: var(--space-xs);
+}
+.expert-price strong { color: var(--color-ink); font-size: 1.2rem; }
+.expert-price span { color: var(--color-text-muted); font-weight: 700; }
+.flat-deal {
+    display: inline-flex;
+    width: max-content;
+    border-radius: var(--radius-sm);
+    background: #f06a2a;
+    color: var(--color-white);
+    padding: 0.25rem 0.6rem;
+    margin-bottom: var(--space-md);
+    text-transform: uppercase;
+    font-size: 0.76rem;
+    font-weight: 900;
+}
+.expert-action-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-sm);
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--space-md);
+}
+.expert-action-card p {
+    margin: var(--space-sm) 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+.ratings-panel { padding: var(--space-lg); }
+.ratings-panel__score {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--color-ink);
+    margin-top: var(--space-sm);
+}
+.ratings-panel p { margin: 0 0 var(--space-md); color: var(--color-text-muted); }
+.rating-row {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-top: 0.45rem;
+}
+.rating-row span { color: var(--color-ink); font-weight: 800; }
+.rating-row::after {
+    content: '';
+    grid-column: 2;
+    grid-row: 1;
+    height: 8px;
+    border-radius: var(--radius-pill);
+    background: #e7e7e7;
+}
+.rating-row i {
+    grid-column: 2;
+    grid-row: 1;
+    height: 8px;
+    border-radius: var(--radius-pill);
+    background: var(--color-success);
+    z-index: 1;
+}
+.trust-panel { padding: 0 var(--space-lg); }
+.trust-panel p {
+    margin: 0;
+    padding: var(--space-md) 0;
+    border-bottom: 1px solid var(--color-border-light);
+    color: var(--color-ink);
+    font-weight: 800;
+}
+.trust-panel p:last-child { border-bottom: 0; }
+.trust-panel p::before {
+    content: '✓';
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-right: 0.6rem;
+    border-radius: 50%;
+    background: #2f3d63;
+    color: var(--color-white);
+    font-size: 0.8rem;
+}
 
 /* ── Account Pages ── */
 .account-layout {
@@ -1270,6 +1684,12 @@ tr:hover td { background: var(--color-bg-alt); }
     .account-layout { grid-template-columns: 1fr; }
     .account-nav { position: static; }
     .footer-grid { grid-template-columns: 1fr 1fr; }
+    .astro-market-toolbar { grid-template-columns: 1fr 1fr; }
+    .astro-filters { grid-column: 1 / -1; }
+    .astro-market-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .expert-layout { grid-template-columns: 1fr; }
+    .expert-side { position: static; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .expert-side .consultation-panel__contact { grid-column: 1 / -1; }
 }
 @media (max-width: 860px) {
     .auth-page { grid-template-columns: 1fr; }
@@ -1300,6 +1720,13 @@ tr:hover td { background: var(--color-bg-alt); }
     .footer-grid { grid-template-columns: 1fr; }
     .booking-layout { padding: var(--space-lg); }
     .booking-profile { flex-direction: column; text-align: center; }
+    .consultation-panel__grid { grid-template-columns: 1fr; }
+    .astro-market-toolbar,
+    .astro-market-grid,
+    .expert-side { grid-template-columns: 1fr; }
+    .astro-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .expert-profile-card { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+    .expert-profile-card .astro-follow { justify-self: center; }
 }
 @media (max-width: 480px) {
     .product-grid { grid-template-columns: 1fr; }
@@ -1354,9 +1781,14 @@ tr:hover td { background: var(--color-bg-alt); }
     .category-card p { display: none; }
     
      .astrologers-page { padding-top: var(--space-md) !important; }
+     .astrologers-page .container { width: calc(100vw - 2rem); max-width: calc(100vw - 2rem); padding: 0; }
      .astrologers-hero { margin-bottom: var(--space-lg); }
-     .astrologers-hero .section-title { margin-bottom: var(--space-xs) !important; }
+     .astrologers-hero .section-title { max-width: 260px; margin-left: auto; margin-right: auto; margin-bottom: var(--space-xs) !important; font-size: 1.15rem; line-height: 1.25; }
+     .astrologers-hero .section-title::before,
+     .astrologers-hero .section-title::after { display: none; }
      .astrologers-hero .lede { font-size: 0.86rem; line-height: 1.45; max-width: 88%; }
+     .astrologers-hero .eyebrow { max-width: 100%; padding-left: 0; letter-spacing: 0.14em; line-height: 1.45; overflow-wrap: anywhere; font-size: 0.72rem; }
+     .astrologers-hero .eyebrow::before { display: none; }
      .astrologer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-sm); }
      .astrologer-card { border-radius: var(--radius-md); }
      .astrologer-card__header { padding: var(--space-md); gap: var(--space-md); }
@@ -1373,6 +1805,26 @@ tr:hover td { background: var(--color-bg-alt); }
      .astrologer-card__price { font-size: 0.68rem; line-height: 1.3; }
      .astrologer-card__actions { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.3rem; }
      .astrologer-card__actions .btn { min-height: 34px; padding: 0.35rem 0.2rem; font-size: 0.62rem; border-radius: var(--radius-sm); letter-spacing: 0; }
+     .astro-market-toolbar { width: 100%; min-width: 0; }
+     .astro-wallet, .astro-search, .astro-filters button, .astro-recharge { min-height: 48px; min-width: 0; width: 100%; }
+     .astro-filters { gap: 0.35rem; width: 100%; min-width: 0; }
+     .astro-filters { grid-template-columns: 1fr; }
+     .astro-filters button { font-size: 0.76rem; padding: 0 0.35rem; }
+     .astro-market-card { grid-template-columns: 76px minmax(0, 1fr); gap: var(--space-sm); min-height: 178px; width: 100%; min-width: 0; }
+     .astro-market-photo { width: 76px; height: 104px; }
+     .astro-market-photo img { width: 76px; height: 76px; }
+     .astro-rating-pill { left: 0; bottom: 10px; min-width: 68px; font-size: 0.58rem; }
+     .astro-market-title-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+     .astro-market-name { font-size: 0.86rem; }
+     .astro-market-info p, .astro-market-price { font-size: 0.72rem; }
+     .astro-action { min-height: 34px; font-size: 0.68rem; padding: 0 0.35rem; }
+     .astro-follow { min-height: 28px; padding: 0 0.45rem; font-size: 0.7rem; }
+     .expert-layout { gap: var(--space-md); }
+     .expert-main, .expert-side { gap: var(--space-md); }
+     .expert-profile-card, .expert-action-card, .gift-panel, .expert-copy-panel, .ratings-panel { padding: var(--space-md); }
+     .expert-action-grid { gap: var(--space-xs); }
+     .trust-panel { padding: 0 var(--space-md); }
+     .trust-panel p { font-size: 0.82rem; }
     
     .feature-strip { grid-template-columns: repeat(2, 1fr); gap: var(--space-md); }
     .feature-strip article { padding: var(--space-md); border-radius: var(--radius-lg); }

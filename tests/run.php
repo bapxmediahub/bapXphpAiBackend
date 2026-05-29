@@ -110,6 +110,15 @@ $tests['contact submissions persist to json storage'] = function (): void {
     assertSame('new', $saved['status'] ?? null, 'Saved contact submission should default to new status');
 };
 
+$tests['contact page exposes consultation request form'] = function (): void {
+    $view = file_get_contents(app_path('views/public/contact.php'));
+    assertTrue(str_contains($view, '<form') && str_contains($view, 'method="post"'), 'Contact page should expose a POST contact form');
+    foreach (['name="name"', 'name="email"', 'name="phone"', 'name="subject"', 'name="message"'] as $field) {
+        assertTrue(str_contains($view, $field), "Contact form should include {$field}");
+    }
+    assertTrue(str_contains($view, 'Astrology Consultation'), 'Contact form should include an astrology consultation subject');
+};
+
 $tests['frontend router and api error tests pass'] = function (): void {
     $output = [];
     $status = 0;
@@ -146,6 +155,35 @@ $tests['bookings use direct platform sessions without google meet or calendar'] 
     assertTrue(!is_file(app_path('integrations/google-calendar/GoogleCalendarClient.php')), 'Google Calendar integration source should be removed');
     assertTrue(!in_array('CalendarService', $services, true), 'CalendarService should not be wired into platform routes');
     assertTrue(!in_array('GoogleCalendarClient', $map['integrations'], true), 'Google Calendar should not be a configured integration');
+};
+
+$tests['astrologer profile uses remote consultation contact panel instead of appointment slot forms'] = function (): void {
+    $view = file_get_contents(app_path('views/public/astrologer.php'));
+    assertTrue(!str_contains($view, 'slot-picker'), 'Astrologer profile should not render appointment slot picker UI');
+    assertTrue(!str_contains($view, 'Available Slots'), 'Astrologer profile should not show cinema-style appointment slots');
+    assertTrue(!str_contains($view, 'action="/appointments/book"'), 'Astrologer profile should not post appointment bookings from slot cards');
+    assertTrue(str_contains($view, '/contact'), 'Astrologer profile should direct consultation requests to the contact page');
+    assertTrue(str_contains($view, 'Remote Call') || str_contains($view, 'Remote consultation'), 'Astrologer profile should describe remote call/message consultation');
+};
+
+$tests['astrologer marketplace exposes credit balance filters and direct session actions'] = function (): void {
+    $view = file_get_contents(app_path('views/public/astrologers.php'));
+    foreach (['Available Balance', 'Recharge', 'Filters', 'Available Now', 'On Chat', 'Search Astrologer'] as $needle) {
+        assertTrue(str_contains($view, $needle), "Astrologer marketplace should expose {$needle}");
+    }
+    foreach (['CHAT', 'CALL', 'JOIN Q', 'OFFLINE', '+ Follow'] as $needle) {
+        assertTrue(str_contains($view, $needle), "Astrologer marketplace should expose {$needle} actions");
+    }
+    assertTrue(!str_contains($view, 'Check Availability'), 'Astrologer marketplace should not use appointment availability CTA');
+};
+
+$tests['astrologer profile exposes competitor style remote action rating and trust panels'] = function (): void {
+    $view = file_get_contents(app_path('views/public/astrologer.php'));
+    foreach (['Flat Deal', 'CHAT', 'CALL', 'BOOK SESSION', 'Ratings', 'Money Back Guarantee', 'Verified Expert Astrologers', '100% Secure Payments', 'Send gifts'] as $needle) {
+        assertTrue(str_contains($view, $needle), "Astrologer profile should expose {$needle}");
+    }
+    assertTrue(str_contains($view, '5 credits/message'), 'Astrologer profile should explain message credit cost');
+    assertTrue(str_contains($view, '0.5 credits/sec call'), 'Astrologer profile should explain call credit cost');
 };
 
 $tests['astrologer catalog has thirteen editable priced profiles'] = function (): void {

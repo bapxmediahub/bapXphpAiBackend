@@ -10,7 +10,6 @@ flowchart LR
   c3 --> sAstrologerService["AstrologerService"]
   r4["/astrologers/{slug}"] --> c4["PublicController@astrologer"]
   c4 --> sAstrologerService["AstrologerService"]
-  c4 --> sAvailabilityService["AvailabilityService"]
   r5["/temples"] --> c5["PublicController@temples"]
   c5 --> sTempleService["TempleService"]
   r6["/temples/{slug}"] --> c6["PublicController@temple"]

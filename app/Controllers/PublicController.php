@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{ProductService,AstrologerService,TempleService,CategoryService,AvailabilityService,AppointmentService,SecretService,ContactService};
+use App\Services\{ProductService,AstrologerService,TempleService,CategoryService,SecretService,ContactService};
 final class PublicController extends BaseController {
     
     protected function detectApiRequest(): void {
@@ -36,9 +36,7 @@ final class PublicController extends BaseController {
     public function astrologer(string $slug): void {
         $this->detectApiRequest();
         $astrologer = (new AstrologerService())->findBySlug($slug);
-        $date = $_GET['date'] ?? date('Y-m-d');
-        $slots = $astrologer ? (new AvailabilityService())->slotsForDate($astrologer, $date, (new AppointmentService())->all()) : [];
-        $this->render('public/astrologer', compact('slug', 'astrologer', 'date', 'slots'));
+        $this->render('public/astrologer', compact('slug', 'astrologer'));
     }
     
     public function temples(): void { 
@@ -90,6 +88,7 @@ final class PublicController extends BaseController {
     public function contact(): void {
         $this->detectApiRequest();
         $success = false;
+        $subject = $_GET['subject'] ?? '';
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $contactService = new ContactService();
             $contactService->save([
@@ -101,7 +100,7 @@ final class PublicController extends BaseController {
             ]);
             $success = true;
         }
-        $this->render('public/contact', ['success' => $success]);
+        $this->render('public/contact', ['success' => $success, 'subject' => $subject]);
     }
     
     public function login(): void { 

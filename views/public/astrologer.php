@@ -7,67 +7,100 @@
             <a href="/astrologers" class="btn btn-primary">View All Astrologers</a>
         </div>
     <?php else: ?>
-        <div class="booking-profile reveal">
-            <img class="booking-profile__photo" src="<?= e($astrologer['photo_url'] ?? 'https://placehold.co/800x1000/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($astrologer['name']) ?>">
-            <div class="booking-profile__content">
-                <h1 class="booking-profile__name"><?= e($astrologer['name']) ?></h1>
-                <p class="booking-profile__meta"><?= e($astrologer['speciality'] ?? 'Vedic Astrology') ?> · <?= e($astrologer['experience_years'] ?? 'N/A') ?> years experience</p>
-                <p class="booking-profile__meta">Languages: <?= e(implode(', ', $astrologer['languages'] ?? [])) ?></p>
-                <p class="booking-profile__meta">Modes: <?= e(implode(', ', array_map(fn($mode) => ucwords(str_replace(['-', '_'], ' ', $mode)), $astrologer['modes'] ?? []))) ?></p>
-                <p style="margin-top:var(--space-sm); display:flex; flex-wrap:wrap; gap:var(--space-sm);">
-                    <span style="font-size:1.05rem; font-weight:700; color:var(--color-maroon);">5 credits <span style="color:var(--color-text-muted); font-size:0.8rem; font-weight:400;">per message</span></span>
-                    <span style="font-size:1.05rem; font-weight:700; color:var(--color-maroon);">0.5 credits <span style="color:var(--color-text-muted); font-size:0.8rem; font-weight:400;">per call second</span></span>
-                </p>
-                <p class="booking-profile__meta">1 rupee adds 20 credits. Minimum top-up is ₹10. Credits are only for astrologer text and call sessions.</p>
+        <div class="expert-layout">
+            <div class="expert-main">
+                <section class="expert-profile-card reveal">
+                    <div class="expert-photo-wrap">
+                        <img class="booking-profile__photo" src="<?= e($astrologer['photo_url'] ?? 'https://placehold.co/800x1000/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($astrologer['name']) ?>">
+                        <span class="astro-status-dot" aria-label="Online"></span>
+                        <span class="astro-rating-pill">4.9</span>
+                    </div>
+                    <div class="booking-profile__content">
+                        <h1 class="booking-profile__name"><?= e($astrologer['name']) ?></h1>
+                        <p class="booking-profile__meta"><?= e($astrologer['speciality'] ?? 'Vedic Astrology') ?></p>
+                        <p class="booking-profile__meta">Languages: <?= e(implode(', ', $astrologer['languages'] ?? [])) ?></p>
+                        <p class="booking-profile__meta"><?= e($astrologer['experience_years'] ?? 'N/A') ?> Years experience</p>
+                        <p class="booking-profile__meta">Remote consultation by chat and direct call</p>
+                        <p class="expert-credit-line">5 credits/message <span>0.5 credits/sec call</span></p>
+                    </div>
+                    <button class="astro-follow" type="button">+ Follow</button>
+                </section>
+
+                <section class="gift-panel reveal">
+                    <h2>Send gifts</h2>
+                    <button type="button">Gift</button>
+                </section>
+
+                <section class="expert-copy-panel reveal">
+                    <span class="eyebrow">Remote consultation only</span>
+                    <h2>About</h2>
+                    <p>
+                        <?= e($astrologer['description'] ?? 'Connect for practical spiritual guidance, horoscope clarity and family ritual support.') ?>
+                    </p>
+                    <p>
+                        This service is handled through remote call and message consultation. Appointment date slots and per-astrologer booking forms are not used on this page.
+                    </p>
+                </section>
+
+                <section class="expert-copy-panel reveal">
+                    <div class="expert-tabs">
+                        <strong>Reviews</strong>
+                        <span>All ratings</span>
+                    </div>
+                    <div class="review-list">
+                        <article>
+                            <strong>K B...</strong>
+                            <span>4.9 rating</span>
+                            <p>Accurate reading and clear guidance.</p>
+                        </article>
+                        <article>
+                            <strong>Anonymous</strong>
+                            <span>4.8 rating</span>
+                            <p>Helpful remote consultation for family decisions.</p>
+                        </article>
+                    </div>
+                </section>
             </div>
-        </div>
 
-        <div class="slot-picker reveal">
-            <h3>Select a Date</h3>
-            <form method="get" class="slot-picker__form">
-                <div class="form-group">
-                    <label>Appointment Date</label>
-                    <input type="date" name="date" value="<?= e($date) ?>" min="<?= date('Y-m-d') ?>" onchange="this.form.submit()">
-                </div>
-            </form>
+            <aside class="expert-side">
+                <section class="expert-action-card reveal">
+                    <div class="expert-price">
+                        <strong>5 credits/message</strong>
+                        <span>0.5 credits/sec call</span>
+                    </div>
+                    <span class="flat-deal">Flat Deal</span>
+                    <div class="expert-action-grid">
+                        <a href="/astrologers/<?= e($astrologer['slug']) ?>?mode=text_session" class="astro-action astro-action--chat">CHAT</a>
+                        <a href="/astrologers/<?= e($astrologer['slug']) ?>?mode=direct_call" class="astro-action astro-action--call">CALL</a>
+                        <a href="/contact?subject=astrology#contact-form" class="astro-action astro-action--session">BOOK SESSION</a>
+                    </div>
+                    <p>1 rupee adds 20 credits. Minimum top-up is ₹10. Credits are only for astrologer text and call sessions.</p>
+                </section>
 
-            <h3 style="margin-top:var(--space-lg);">Available Slots for <?= date('M j, Y', strtotime($date)) ?></h3>
-            <?php if(empty($slots)): ?>
-                <div style="text-align:center; padding:var(--space-2xl);">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto var(--space-sm);"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    <p style="color:var(--color-text-muted); margin:0;">No slots available for this date. Please select another date.</p>
-                </div>
-            <?php else: ?>
-                <div class="slot-grid">
-                    <?php foreach($slots as $slot): ?>
-                        <div class="slot-card">
-                            <div class="slot-card__time"><?= e($slot) ?></div>
-                            <form method="post" action="/appointments/book">
-                                <input type="hidden" name="astrologer_slug" value="<?= e($astrologer['slug']) ?>">
-                                <input type="hidden" name="date" value="<?= e($date) ?>">
-                                <input type="hidden" name="time" value="<?= e($slot) ?>">
-                                <div class="form-group">
-                                    <label>Name</label>
-                                    <input type="text" name="customer_name" value="<?= e($_SESSION['user']['name'] ?? '') ?>" required placeholder="Your name">
-                                </div>
-                                <div class="form-group">
-                                    <label>Email</label>
-                                    <input type="email" name="customer_email" value="<?= e($_SESSION['user']['email'] ?? '') ?>" required placeholder="your@email.com">
-                                </div>
-                                <div class="form-group">
-                                    <label>Mode</label>
-                                    <select name="mode">
-                                        <?php foreach($astrologer['modes'] ?? ['text_session', 'direct_call'] as $mode): ?>
-                                            <option value="<?= e($mode) ?>"><?= e(ucwords(str_replace(['-', '_'], ' ', $mode))) ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                                <button class="btn btn-sm btn-primary">Book <?= e($slot) ?></button>
-                            </form>
-                        </div>
+                <section class="ratings-panel reveal">
+                    <h2>Ratings</h2>
+                    <div class="ratings-panel__score">4.9</div>
+                    <p>87 ratings</p>
+                    <?php foreach([5 => 92, 4 => 14, 3 => 4, 2 => 0, 1 => 0] as $stars => $width): ?>
+                        <div class="rating-row"><span><?= e((string)$stars) ?></span><i style="width:<?= e((string)$width) ?>%;"></i></div>
                     <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
+                </section>
+
+                <section class="trust-panel reveal">
+                    <p>Money Back Guarantee</p>
+                    <p>Verified Expert Astrologers</p>
+                    <p>100% Secure Payments</p>
+                </section>
+
+                <section class="consultation-panel__contact reveal">
+                    <h3 style="font-family:var(--font-serif); margin:0 0 var(--space-xs);">Contact Sri Panchami Spiritual</h3>
+                    <p style="margin:0 0 var(--space-sm); color:var(--color-text-muted); font-size:0.9rem;">For ritual requests, store visit and support-assisted sessions.</p>
+                    <p style="margin:0; color:var(--color-text-muted); font-size:0.9rem;">
+                        23, 1st Cross Street Kothari Nagar<br>
+                        Ramapuram, Chennai, Tamil Nadu 600089
+                    </p>
+                </section>
+            </aside>
         </div>
     <?php endif; ?>
 </section>

@@ -5,7 +5,7 @@
         <p class="lede">Authentic certified rudraksha, sacred pooja samagri, spiritual jewellery, and expert Vedic astrology consultation — trusted by 500+ devotees across India. Free shipping on all orders.</p>
         <div class="hero-actions">
             <a href="/shop" class="btn btn-primary">Shop Spiritual Products</a>
-            <a href="/astrologers" class="btn btn-outline">Book Astrology Consultation</a>
+            <a href="/astrologers" class="btn btn-outline">Remote Astrology Consultation</a>
         </div>
         <div class="hero-stats">
             <div>
@@ -185,7 +185,7 @@
     </div>
     <?php endif; ?>
     <div style="text-align:center;">
-        <a href="/astrologers" class="btn btn-primary">Book Astrology Consultation</a>
+        <a href="/astrologers" class="btn btn-primary">Remote Astrology Consultation</a>
     </div>
 </section>
 
