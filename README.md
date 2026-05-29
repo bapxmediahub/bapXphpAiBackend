@@ -40,15 +40,16 @@ The durable architecture constraint is:
 - Product detail to cart flow works locally through PHP session cart state.
 - Cart quantity, remove, subtotal, free shipping, and checkout review screens render.
 - Checkout detects missing Razorpay configuration and blocks live payment.
-- Astrologer listing and profile pages render, including remote call/message session pricing.
-- Astrologer profile pages no longer show appointment date slots or per-slot booking forms; consultation requests go to the contact form.
+- Astrologer listing now follows the call/message marketplace pattern from competitor references: credit balance, recharge CTA, filters, search, status dots, ratings, and `CHAT`/`CALL`/`JOIN Q`/`OFFLINE` actions.
+- Astrologer profile pages now show a remote action panel with credit pricing, `CHAT`, `CALL`, support-assisted `BOOK SESSION`, ratings, trust points, gifts, reviews, and no appointment date slots or per-slot booking forms.
+- Consultation support requests go to the contact form with the astrology subject selected.
 - Admin pages render locally, including dashboard, products, categories, coupons, astrologers, appointments, temples, orders, contacts, settings, integrations, shipping, backups, audit log, and project map.
 - Contact submissions persist to JSON storage.
 - PHP syntax, service tests, route-controller mappings, project map validation, and frontend router/API unit tests pass.
 
 ## Pending Or Not Complete
 
-- Production deployment is not complete: `https://sripanchamispiritual.com` currently returns `HTTP 404`.
+- Production deployment is not complete: `https://sripanchamispiritual.com/` was checked on 2026-05-30 and currently returns `HTTP 404` from Hostinger/LiteSpeed.
 - Razorpay live keys are not configured locally, so ecommerce payment cannot be completed end to end.
 - Google OAuth is scaffolded but depends on configured client credentials and callback setup.
 - Customer account pages do not require login before showing order/booking pages; they should redirect guests to `/login`.
@@ -83,11 +84,12 @@ The durable architecture constraint is:
 3. Add authentication and authorization guards for account and admin routes.
 4. Complete Razorpay production setup and verify payment, order persistence, cart clearing, and customer redirect end to end.
 5. Complete remote call/message payment handling for text and direct-call sessions.
-6. Either implement coupons fully or remove the cart coupon UI until it is ready.
-7. Align `index.php`, `ProjectMapService`, SPA routes, and API routes so there are no dead paths.
-8. Remove unused duplicate JS modules after the frontend direction is finalized.
-9. Update stale docs that still describe a React/CDN architecture.
-10. Add browser-level end-to-end tests for product purchase, remote consultation contact request, login/register, contact form, and admin resource edits.
+6. Replace the placeholder balance/recharge UI with real wallet state, top-up checkout, insufficient-credit handling, session timers, and queue status from backend data.
+7. Either implement coupons fully or remove the cart coupon UI until it is ready.
+8. Align `index.php`, `ProjectMapService`, SPA routes, and API routes so there are no dead paths.
+9. Remove unused duplicate JS modules after the frontend direction is finalized.
+10. Update stale docs that still describe a React/CDN architecture.
+11. Add browser-level end-to-end tests for product purchase, remote consultation contact request, login/register, contact form, and admin resource edits.
 
 ## Local Development
 
