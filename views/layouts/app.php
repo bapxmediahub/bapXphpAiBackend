@@ -33,11 +33,11 @@ html{scroll-behavior:smooth}
 body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--color-bg);color:var(--color-ink);line-height:1.7;overflow-x:hidden}
 a{color:var(--color-maroon);text-decoration:none}
 img{max-width:100%;height:auto;display:block}
-.site-header{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:var(--space-sm) var(--space-md);background:rgba(255,253,250,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--color-border);transition:box-shadow 0.25s ease}
+.site-header{position:sticky;top:0;z-index:100;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:var(--space-lg);padding:var(--space-sm) var(--space-md);background:rgba(255,253,250,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--color-border);transition:box-shadow 0.25s ease}
 .site-header.scrolled{box-shadow:var(--shadow-md)}
 .brand{display:flex;align-items:center;gap:var(--space-xs);color:var(--color-ink);font-weight:700;font-size:1rem;text-decoration:none}
- .brand img{width:40px;height:40px;border-radius:4px;border:2px solid var(--color-gold)}
-nav{display:flex;gap:var(--space-lg);font-size:0}
+ .brand img{width:40px;height:40px;border-radius:50%;border:2px solid var(--color-gold);object-fit:cover;box-shadow:0 0 0 1px rgba(255,255,255,0.9) inset}
+nav{display:flex;gap:var(--space-lg);font-size:0;justify-content:center}
 nav a{font-weight:500;color:var(--color-ink);padding:var(--space-xs) 0;font-size:0.9rem;text-decoration:none}
 nav a:hover{color:var(--color-maroon)}
 .header-actions{display:flex;align-items:center;gap:var(--space-md)}
@@ -79,11 +79,28 @@ main{padding-bottom:0}
 .feature-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-xl)}
 .panel{background:var(--color-white);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-xl);transition:all 0.25s ease;box-shadow:var(--shadow-sm)}
 .panel:hover{box-shadow:var(--shadow-md)}
-.astrologer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:var(--space-xl)}
- .astrologer-card{background:var(--color-white);border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden;transition:all 0.3s ease;box-shadow:var(--shadow-sm)}
-.astrologer-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
-.astrologer-card__header{display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md);background:linear-gradient(135deg,var(--color-bg-alt),var(--color-white))}
- .astrologer-card__photo{width:60px;height:60px;border-radius:8px;object-fit:cover;border:2px solid var(--color-gold)}
+.astrologer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:var(--space-xl)}
+ .astrologer-card{background:var(--color-white);border:1px solid var(--color-border);border-radius:18px;overflow:hidden;transition:all 0.3s ease;box-shadow:var(--shadow-sm)}
+.astrologer-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-xl);border-color:rgba(212,175,55,0.65)}
+.astrologer-card__media{position:relative;aspect-ratio:3/4;overflow:hidden;background:linear-gradient(180deg,rgba(44,30,20,0.02),rgba(44,30,20,0.08)),linear-gradient(135deg,rgba(212,175,55,0.12),rgba(255,255,255,0.2))}
+ .astrologer-card__photo{width:100%;height:100%;object-fit:cover;object-position:center top;display:block;transform:scale(1.01)}
+.astrologer-card__media::after{content:\'\';position:absolute;inset:auto 0 0 0;height:42%;background:linear-gradient(180deg,rgba(18,12,8,0),rgba(18,12,8,0.28));pointer-events:none}
+.astrologer-card__media-badge{position:absolute;left:var(--space-sm);bottom:var(--space-sm);z-index:1;padding:0.3rem 0.65rem;border-radius:var(--radius-pill);background:rgba(44,30,20,0.78);color:var(--color-white);font-size:0.64rem;letter-spacing:0.08em;text-transform:uppercase;backdrop-filter:blur(8px)}
+.astrologer-card__body--portrait{padding:var(--space-md) var(--space-md) var(--space-sm);display:grid;gap:var(--space-xs)}
+.astrologer-card__title-row{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-sm)}
+.astrologer-card__status{padding:0.22rem 0.55rem;border-radius:var(--radius-pill);background:rgba(212,175,55,0.16);color:var(--color-maroon);font-size:0.64rem;font-weight:700;text-transform:uppercase;white-space:nowrap}
+.astrologer-card__speciality{margin:0;color:var(--color-text-muted);font-size:0.84rem}
+.astrologer-card__bio{margin:0;color:var(--color-ink);font-size:0.83rem;line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.astrologer-card__meta{display:flex;flex-wrap:wrap;gap:var(--space-xs);font-size:0.72rem;color:var(--color-text-muted)}
+.astrologer-card__meta span{padding:0.25rem 0.5rem;border:1px solid var(--color-border);border-radius:var(--radius-pill);background:var(--color-bg-alt)}
+.astrologers-hero{margin-bottom:var(--space-lg)}
+.astrologers-hero .lede{max-width:640px;margin:var(--space-sm) auto 0;line-height:1.55;color:var(--color-text-muted)}
+.astrologer-card__footer{padding:var(--space-md);border-top:1px solid var(--color-border);display:grid;gap:var(--space-sm)}
+.astrologer-card__price{font-size:0.88rem;font-weight:700;color:var(--color-maroon)}
+.astrologer-card__actions{display:grid;grid-template-columns:1fr 0.8fr 1fr;gap:var(--space-xs)}
+.astrologer-card__actions .btn{width:100%;padding-left:0.75rem;padding-right:0.75rem}
+.btn-call{background:var(--color-success);color:white;border:none;padding:0.5rem 1rem;border-radius:var(--radius-pill);font-weight:600;cursor:pointer;font-size:0.85rem}
+.btn-message{background:#3b82f6;color:white;border:none;padding:0.5rem 1rem;border-radius:var(--radius-pill);font-weight:600;cursor:pointer;font-size:0.85rem}
  .category-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:var(--space-lg)}
  .category-card{cursor:pointer;transition:all 0.3s ease;text-align:center;text-decoration:none;color:var(--color-ink)}
  .category-img-wrap{width:100%;aspect-ratio:1;border-radius:8px;overflow:hidden;margin:0 0 var(--space-xs);border:3px solid var(--color-white);box-shadow:0 4px 15px rgba(44,30,20,0.1)}
@@ -118,10 +135,33 @@ nav.open{display:flex}
 .footer-grid{grid-template-columns:1fr 1fr}
 .bottom-nav{display:block}
 .main-content{padding-bottom:calc(60px + var(--space-md))}
+.site-header{grid-template-columns:48px 1fr 48px}
+.site-header .brand{justify-self:start}
+.site-header .menu-toggle{justify-self:center;width:46px;height:46px;display:inline-flex;align-items:center;justify-content:center}
+.site-header .header-actions{justify-self:end}
+.cart-btn{width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center}
+.brand span{display:none}
+.astrologers-page{padding-top:var(--space-md)!important}
+.astrologers-hero{margin-bottom:var(--space-lg)}
+.astrologers-hero .lede{font-size:0.86rem;line-height:1.45;max-width:88%}
+.astrologer-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-sm)}
+.astrologer-card__media{aspect-ratio:1/1.1}
+.astrologer-card__media-badge{font-size:0.52rem;padding:0.18rem 0.4rem;left:0.45rem;bottom:0.45rem}
+.astrologer-card__name{font-size:0.86rem;line-height:1.15}
+.astrologer-card__status{display:none}
+.astrologer-card__speciality{font-size:0.72rem;line-height:1.25}
+.astrologer-card__bio{display:none}
+.astrologer-card__meta{gap:0.25rem;font-size:0.62rem}
+.astrologer-card__meta span{padding:0.15rem 0.35rem}
+.astrologer-card__body--portrait{padding:var(--space-sm)}
+.astrologer-card__footer{padding:var(--space-sm);gap:var(--space-xs)}
+.astrologer-card__price{font-size:0.68rem;line-height:1.3}
+.astrologer-card__actions{grid-template-columns:repeat(3,minmax(0,1fr));gap:0.3rem}
+.astrologer-card__actions .btn{min-height:34px;padding:0.35rem 0.2rem;font-size:0.62rem;border-radius:4px;letter-spacing:0}
 }
 @media(max-width:480px){
 .product-grid{grid-template-columns:1fr}
-.astrologer-grid{grid-template-columns:1fr}
+.astrologer-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 .footer-grid{grid-template-columns:1fr}
 .hero-actions{flex-direction:column;align-items:center}
 }

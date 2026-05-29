@@ -48,7 +48,7 @@ async function HomePage(root) {
         // Why choose us
         const why = document.createElement('section');
         why.className = 'section section--alt';
-        why.innerHTML = `<div class="section-header"><h2 class="section-title">Why Choose Us</h2></div><div class="feature-strip"><article class="panel"><span style="font-size:2rem;display:block;margin-bottom:1rem">🛕</span><h3>Authentic</h3><p>Genuine spiritual products sourced with devotion</p></article><article class="panel"><span style="font-size:2rem;display:block;margin-bottom:1rem">⭐</span><h3>Expert Guidance</h3><p>Experienced astrologers with proven track record</p></article><article class="panel"><span style="font-size:2rem;display:block;margin-bottom:1rem">🔒</span><h3>Secure</h3><p>Safe payments via Razorpay</p></article><article class="panel"><span style="font-size:2rem;display:block;margin-bottom:1rem">📦</span><h3>Fast Delivery</h3><p>Quick shipping across India</p></article></div>`;
+        why.innerHTML = `<div class="section-header"><h2 class="section-title">Why Choose Us</h2></div><div class="feature-strip"><article class="panel"><h3>Authentic</h3><p>Genuine spiritual products sourced with devotion</p></article><article class="panel"><h3>Expert Guidance</h3><p>Experienced astrologers with proven track record</p></article><article class="panel"><h3>Secure</h3><p>Safe payments via Razorpay</p></article><article class="panel"><h3>Fast Delivery</h3><p>Quick shipping across India</p></article></div>`;
         root.appendChild(why);
 
         root.appendChild(Footer());

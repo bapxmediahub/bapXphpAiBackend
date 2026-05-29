@@ -5,7 +5,7 @@ function Header() {
     const h = document.createElement('header');
     h.className = 'site-header';
     h.innerHTML = `
-        <a href="/" class="brand" data-link><img src="/assets/images/logo-small.jpeg" width="52" height="52" alt="Logo"><span>Sri Panchami Spiritual</span></a>
+        <a href="/" class="brand" data-link><img src="/assets/images/logo-small.jpeg" width="52" height="52" alt="Sri Panchami Spiritual logo"><span>Sri Panchami Spiritual</span></a>
         <button class="menu-toggle" id="menu-toggle" aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
         <nav id="primary-nav">
             <a href="/" data-link>Home</a>
@@ -59,11 +59,9 @@ function ProductCard(p) {
 function AstroCard(a) {
     const c = document.createElement('article');
     c.className = 'astrologer-card';
-    const textRate = a.text_session_prm || 15;
-    const callRate = a.call_session_prm || 15;
-    c.innerHTML = `<div class="astrologer-card__header"><div class="astrologer-card__photo-wrap"><img class="astrologer-card__photo" src="${img(a.photo_url, a.name)}" alt="${esc(a.name)}" loading="lazy"></div><div><h3 class="astrologer-card__name">${esc(a.name)}</h3><p class="astrologer-card__speciality">${esc(a.speciality||'Vedic Astrology')}</p></div></div>
-    <div class="astrologer-card__body"><div class="astrologer-card__stat"><span>Experience</span><span>${a.experience_years||'N/A'} yrs</span></div><div class="astrologer-card__stat"><span>Languages</span><span>${(a.languages||[]).slice(0,2).join(', ')}</span></div></div>
-    <div class="astrologer-card__footer"><span class="astrologer-card__price">₹${textRate} PRM text · ₹${callRate} PRM call</span><a href="/astrologers/${a.slug}" data-link class="btn btn-sm btn-primary">Book Now</a></div>`;
+    c.innerHTML = `<div class="astrologer-card__media"><img class="astrologer-card__photo" src="${img(a.photo_url, a.name)}" alt="${esc(a.name)}" loading="lazy"><div class="astrologer-card__media-badge">Live expert</div></div>
+    <div class="astrologer-card__body astrologer-card__body--portrait"><div class="astrologer-card__title-row"><h3 class="astrologer-card__name">${esc(a.name)}</h3><span class="astrologer-card__status">Verified</span></div><p class="astrologer-card__speciality">${esc(a.speciality||'Vedic Astrology')}</p><p class="astrologer-card__bio">${esc(a.description||'Experienced astrologer available for private guidance.')}</p><div class="astrologer-card__meta"><span>${a.experience_years||'N/A'} yrs</span><span>${(a.languages||[]).slice(0,2).join(' · ')}</span></div></div>
+    <div class="astrologer-card__footer"><span class="astrologer-card__price">5 credits/message · 0.5 credits/sec call</span><div class="astrologer-card__actions"><a href="/astrologers/${a.slug}" data-link class="btn btn-sm btn-ghost">Know More</a><a href="/astrologers/${a.slug}?mode=direct_call" data-link class="btn btn-sm btn-call">Call</a><a href="/astrologers/${a.slug}?mode=text_session" data-link class="btn btn-sm btn-message">Message</a></div></div>`;
     return c;
 }
 

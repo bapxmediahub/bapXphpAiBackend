@@ -155,6 +155,8 @@ $tests['astrologer catalog has thirteen editable priced profiles'] = function ()
         assertTrue(!empty($astrologer['slug']), 'Every astrologer should have a slug');
         assertSame(15, (int)($astrologer['text_session_prm'] ?? 0), 'Text session PRM should default to 15');
         assertSame(15, (int)($astrologer['call_session_prm'] ?? 0), 'Call session PRM should default to 15');
+        assertSame(5, (int)($astrologer['message_credit_cost'] ?? 0), 'Message session should cost 5 credits per user message');
+        assertSame(0.5, (float)($astrologer['call_credit_per_second'] ?? 0), 'Call session should cost 0.5 credits per second');
     }
 };
 
@@ -163,7 +165,7 @@ $tests['admin product and astrologer forms expose editable owner fields'] = func
     foreach (['slug', 'image_url', 'price', 'offer_price', 'stock_status'] as $field) {
         assertTrue(str_contains($controller, "'{$field}'"), "Product admin form should expose {$field}");
     }
-    foreach (['slug', 'text_session_prm', 'call_session_prm', 'payout_percentage', 'languages', 'working_days'] as $field) {
+    foreach (['slug', 'message_credit_cost', 'call_credit_per_second', 'text_session_prm', 'call_session_prm', 'payout_percentage', 'languages', 'working_days'] as $field) {
         assertTrue(str_contains($controller, "'{$field}'"), "Astrologer admin form should expose {$field}");
     }
 };

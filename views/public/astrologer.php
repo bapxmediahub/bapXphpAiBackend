@@ -8,16 +8,17 @@
         </div>
     <?php else: ?>
         <div class="booking-profile reveal">
-            <img class="booking-profile__photo" src="<?= e($astrologer['photo_url'] ?? 'https://placehold.co/150x150/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($astrologer['name']) ?>">
-            <div>
+            <img class="booking-profile__photo" src="<?= e($astrologer['photo_url'] ?? 'https://placehold.co/800x1000/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($astrologer['name']) ?>">
+            <div class="booking-profile__content">
                 <h1 class="booking-profile__name"><?= e($astrologer['name']) ?></h1>
                 <p class="booking-profile__meta"><?= e($astrologer['speciality'] ?? 'Vedic Astrology') ?> · <?= e($astrologer['experience_years'] ?? 'N/A') ?> years experience</p>
                 <p class="booking-profile__meta">Languages: <?= e(implode(', ', $astrologer['languages'] ?? [])) ?></p>
                 <p class="booking-profile__meta">Modes: <?= e(implode(', ', array_map(fn($mode) => ucwords(str_replace(['-', '_'], ' ', $mode)), $astrologer['modes'] ?? []))) ?></p>
                 <p style="margin-top:var(--space-sm); display:flex; flex-wrap:wrap; gap:var(--space-sm);">
-                    <span style="font-size:1.05rem; font-weight:700; color:var(--color-maroon);">₹<?= e((string)($astrologer['text_session_prm'] ?? 15)) ?> PRM <span style="color:var(--color-text-muted); font-size:0.8rem; font-weight:400;">text</span></span>
-                    <span style="font-size:1.05rem; font-weight:700; color:var(--color-maroon);">₹<?= e((string)($astrologer['call_session_prm'] ?? 15)) ?> PRM <span style="color:var(--color-text-muted); font-size:0.8rem; font-weight:400;">call</span></span>
+                    <span style="font-size:1.05rem; font-weight:700; color:var(--color-maroon);">5 credits <span style="color:var(--color-text-muted); font-size:0.8rem; font-weight:400;">per message</span></span>
+                    <span style="font-size:1.05rem; font-weight:700; color:var(--color-maroon);">0.5 credits <span style="color:var(--color-text-muted); font-size:0.8rem; font-weight:400;">per call second</span></span>
                 </p>
+                <p class="booking-profile__meta">1 rupee adds 20 credits. Minimum top-up is ₹10. Credits are only for astrologer text and call sessions.</p>
             </div>
         </div>
 

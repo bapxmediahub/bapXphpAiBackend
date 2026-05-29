@@ -156,20 +156,29 @@
     <div class="astrologer-grid" style="margin-bottom: var(--space-xl);">
         <?php foreach(array_slice($astrologers, 0, 3) as $astro): ?>
             <article class="astrologer-card reveal">
-                <div class="astrologer-card__header">
-                    <img class="astrologer-card__photo" src="<?= e($astro['photo_url'] ?? 'https://placehold.co/100x100/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($astro['name']) ?> — <?= e($astro['speciality'] ?? 'Vedic Astrologer') ?> in Chennai" loading="lazy">
-                    <div>
+                <div class="astrologer-card__media">
+                    <img class="astrologer-card__photo" src="<?= e($astro['photo_url'] ?? 'https://placehold.co/800x1000/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($astro['name']) ?> — <?= e($astro['speciality'] ?? 'Vedic Astrologer') ?> in Chennai" loading="lazy">
+                    <div class="astrologer-card__media-badge">Live expert</div>
+                </div>
+                <div class="astrologer-card__body astrologer-card__body--portrait">
+                    <div class="astrologer-card__title-row">
                         <h3 class="astrologer-card__name"><?= e($astro['name']) ?></h3>
-                        <p class="astrologer-card__speciality"><?= e($astro['speciality'] ?? 'Vedic Astrology') ?></p>
+                        <span class="astrologer-card__status">Verified</span>
+                    </div>
+                    <p class="astrologer-card__speciality"><?= e($astro['speciality'] ?? 'Vedic Astrology') ?></p>
+                    <p class="astrologer-card__bio"><?= e($astro['description'] ?? '') ?></p>
+                    <div class="astrologer-card__meta">
+                        <span><?= e($astro['experience_years'] ?? 'N/A') ?> yrs</span>
+                        <span><?= e(implode(' · ', array_slice($astro['languages'] ?? [], 0, 2))) ?></span>
                     </div>
                 </div>
-                <div class="astrologer-card__body">
-                    <div class="astrologer-card__stat"><span class="astrologer-card__stat-label">Experience</span><span class="astrologer-card__stat-value"><?= e($astro['experience_years'] ?? 'N/A') ?> yrs</span></div>
-                    <div class="astrologer-card__stat"><span class="astrologer-card__stat-label">Languages</span><span class="astrologer-card__stat-value"><?= e(implode(', ', array_slice($astro['languages'] ?? [], 0, 2))) ?></span></div>
-                </div>
                 <div class="astrologer-card__footer">
-                    <span class="astrologer-card__price">₹<?= e((string)($astro['text_session_prm'] ?? 15)) ?> PRM <span style="font-size:0.75rem; color:var(--color-text-muted); font-weight:400;">text</span> · ₹<?= e((string)($astro['call_session_prm'] ?? 15)) ?> PRM <span style="font-size:0.75rem; color:var(--color-text-muted); font-weight:400;">call</span></span>
-                    <a href="/astrologers/<?= e($astro['slug']) ?>" class="btn btn-sm btn-outline">Book Now</a>
+                    <span class="astrologer-card__price">5 credits/message · 0.5 credits/sec call</span>
+                    <div class="astrologer-card__actions">
+                        <a href="/astrologers/<?= e($astro['slug']) ?>" class="btn btn-sm btn-ghost">Know More</a>
+                        <a href="/astrologers/<?= e($astro['slug']) ?>?mode=direct_call" class="btn btn-sm btn-call">Call</a>
+                        <a href="/astrologers/<?= e($astro['slug']) ?>?mode=text_session" class="btn btn-sm btn-message">Message</a>
+                    </div>
                 </div>
             </article>
         <?php endforeach; ?>
@@ -187,22 +196,18 @@
     </div>
     <div class="feature-strip">
         <article class="panel reveal">
-            <svg class="icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
             <h3>100% Authentic Products</h3>
             <p>Every item sourced with devotion and verified for genuineness</p>
         </article>
         <article class="panel reveal">
-            <svg class="icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             <h3>Expert Astrologers</h3>
             <p>Experienced Vedic astrologers with proven track record</p>
         </article>
         <article class="panel reveal">
-            <svg class="icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
             <h3>Secure Payments</h3>
             <p>Safe payments via Razorpay with bank-grade encryption</p>
         </article>
         <article class="panel reveal">
-            <svg class="icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
             <h3>Free Shipping</h3>
             <p>Quick and careful delivery across India</p>
         </article>

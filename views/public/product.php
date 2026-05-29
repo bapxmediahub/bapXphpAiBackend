@@ -34,6 +34,39 @@
                     <?php endif; ?>
                 </div>
                 <p class="product-info__desc"><?= e($product['description'] ?? 'A sacred spiritual product crafted with devotion and care.') ?></p>
+                <?php if(!empty($product['highlights']) && is_array($product['highlights'])): ?>
+                    <div class="product-copy-block">
+                        <h2>Key Features</h2>
+                        <ul>
+                            <?php foreach($product['highlights'] as $point): ?>
+                                <li><?= e($point) ?></li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endif; ?>
+                <?php if(!empty($product['description_points']) && is_array($product['description_points'])): ?>
+                    <div class="product-copy-block">
+                        <h2>Product Description</h2>
+                        <ul>
+                            <?php foreach($product['description_points'] as $point): ?>
+                                <li><?= e($point) ?></li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endif; ?>
+                <?php if(!empty($product['specifications']) && is_array($product['specifications'])): ?>
+                    <div class="product-copy-block product-copy-block--specs">
+                        <h2>Specifications</h2>
+                        <dl>
+                            <?php foreach($product['specifications'] as $label => $value): ?>
+                                <div>
+                                    <dt><?= e((string)$label) ?></dt>
+                                    <dd><?= e(is_array($value) ? implode(', ', $value) : (string)$value) ?></dd>
+                                </div>
+                            <?php endforeach; ?>
+                        </dl>
+                    </div>
+                <?php endif; ?>
                  <div class="product-info__form">
                      <form method="post" action="/cart/add" style="display:flex; gap:var(--space-md); align-items:center; width:100%;">
                          <input type="hidden" name="slug" value="<?= e($product['slug']) ?>">

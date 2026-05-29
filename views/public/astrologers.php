@@ -1,9 +1,9 @@
-<section class="section" style="padding-top:var(--space-xl);">
-    <div class="container" style="margin-bottom:var(--space-2xl);">
+<section class="section astrologers-page" style="padding-top:var(--space-xl);">
+    <div class="container astrologers-hero">
         <div style="text-align:center;">
             <span class="eyebrow">Expert Guidance · Accurate Predictions</span>
             <h1 class="section-title" style="margin-bottom:var(--space-sm);">Book Vedic Astrology Consultation in Chennai</h1>
-            <p class="lede">Connect with our experienced Vedic astrologers for kundli matching, horoscope reading, career guidance, and personalized remedies. Consultations are available as private text sessions or direct call sessions.</p>
+            <p class="lede">Choose an astrologer, send messages for 5 credits each, or start a direct call at 0.5 credits per second.</p>
         </div>
     </div>
     <?php if(empty($items)): ?>
@@ -17,21 +17,32 @@
             <div class="astrologer-grid">
                 <?php foreach($items as $item): ?>
                     <article class="astrologer-card reveal">
-                        <div class="astrologer-card__header">
-                            <img class="astrologer-card__photo" src="<?= e($item['photo_url'] ?? 'https://placehold.co/100x100/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($item['name'] ?? 'Astrologer') ?>" loading="lazy">
-                            <div>
+                        <div class="astrologer-card__media">
+                            <img class="astrologer-card__photo" src="<?= e($item['photo_url'] ?? 'https://placehold.co/800x1000/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($item['name'] ?? 'Astrologer') ?>" loading="lazy">
+                            <div class="astrologer-card__media-badge">Live expert</div>
+                        </div>
+                        <div class="astrologer-card__body astrologer-card__body--portrait">
+                            <div class="astrologer-card__title-row">
                                 <h3 class="astrologer-card__name"><?= e($item['name'] ?? 'Astrologer') ?></h3>
-                                <p class="astrologer-card__speciality"><?= e($item['speciality'] ?? 'Vedic Astrology') ?></p>
+                                <span class="astrologer-card__status">Verified</span>
+                            </div>
+                            <p class="astrologer-card__speciality"><?= e($item['speciality'] ?? 'Vedic Astrology') ?></p>
+                            <p class="astrologer-card__bio"><?= e($item['description'] ?? '') ?></p>
+                            <div class="astrologer-card__meta">
+                                <span><?= e($item['experience_years'] ?? 'N/A') ?> years</span>
+                                <span><?= e(implode(' · ', array_slice($item['languages'] ?? [], 0, 2))) ?></span>
+                                <span><?= e(implode(' · ', array_map(fn($mode) => ucwords(str_replace(['-', '_'], ' ', $mode)), array_slice($item['modes'] ?? [], 0, 2)))) ?></span>
                             </div>
                         </div>
-                        <div class="astrologer-card__body">
-                            <div class="astrologer-card__stat"><span class="astrologer-card__stat-label">Experience</span><span class="astrologer-card__stat-value"><?= e($item['experience_years'] ?? 'N/A') ?> years</span></div>
-                            <div class="astrologer-card__stat"><span class="astrologer-card__stat-label">Languages</span><span class="astrologer-card__stat-value"><?= e(implode(', ', array_slice($item['languages'] ?? [], 0, 3))) ?></span></div>
-                            <div class="astrologer-card__stat"><span class="astrologer-card__stat-label">Modes</span><span class="astrologer-card__stat-value"><?= e(implode(', ', array_map(fn($mode) => ucwords(str_replace(['-', '_'], ' ', $mode)), array_slice($item['modes'] ?? [], 0, 2)))) ?></span></div>
-                        </div>
                         <div class="astrologer-card__footer">
-                            <span class="astrologer-card__price">₹<?= e((string)($item['text_session_prm'] ?? 15)) ?> PRM <span style="font-size:0.75rem; color:var(--color-text-muted); font-weight:400;">text</span> · ₹<?= e((string)($item['call_session_prm'] ?? 15)) ?> PRM <span style="font-size:0.75rem; color:var(--color-text-muted); font-weight:400;">call</span></span>
-                            <?php if(!empty($item['slug'])): ?><a href="/astrologers/<?= e($item['slug']) ?>" class="btn btn-sm btn-primary">Check Availability</a><?php endif; ?>
+                            <span class="astrologer-card__price">5 credits/message · 0.5 credits/sec call</span>
+                            <?php if(!empty($item['slug'])): ?>
+                                <div class="astrologer-card__actions">
+                                    <a href="/astrologers/<?= e($item['slug']) ?>" class="btn btn-sm btn-ghost">Know More</a>
+                                    <a href="/astrologers/<?= e($item['slug']) ?>?mode=direct_call" class="btn btn-sm btn-call">Call</a>
+                                    <a href="/astrologers/<?= e($item['slug']) ?>?mode=text_session" class="btn btn-sm btn-message">Message</a>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </article>
                 <?php endforeach; ?>

@@ -17,7 +17,7 @@ A full-stack web application for devotional ecommerce, direct astrologer call se
 
 ```bash
 # Start PHP development server
-php -S 127.0.0.1:8000
+php -S 127.0.0.1:6020 index.php
 
 # Run tests
 php tests/run.php
@@ -38,3 +38,17 @@ php tools/validate-project-map.php
 - `tools/` - Project map generation and validation
 - `docs/` - Architecture, deployment guides, and documentation
 - `integrations/` - Third-party services (Google OAuth and Razorpay)
+
+## Pricing Rules
+
+- `1 rupee = 20 credits`
+- `1 credit = Rs. 0.05`
+- Minimum credit top-up: `Rs. 10`
+- Text astrology session: `5 credits per user message`
+- Direct call session: `0.5 credits per second`
+- Credits are only for astrologer text and call sessions. They cannot be used for ecommerce products.
+- Ecommerce products use direct card or UPI payment through Razorpay. Cash on delivery is not available.
+
+## Product Catalog
+
+The current ecommerce product list is documented in `docs/product-list.md`.

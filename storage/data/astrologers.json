@@ -8,15 +8,29 @@
         "text_session_prm": 15,
         "call_session_prm": 15,
         "payout_percentage": 60,
-        "modes": ["text_session", "direct_call"],
-        "working_days": ["monday", "wednesday", "friday"],
+        "modes": [
+            "text_session",
+            "direct_call"
+        ],
+        "working_days": [
+            "monday",
+            "wednesday",
+            "friday"
+        ],
         "start_time": "09:00",
         "end_time": "18:00",
         "slot_minutes": 30,
-        "languages": ["Hindi", "English", "Tamil"],
+        "languages": [
+            "Hindi",
+            "English",
+            "Tamil"
+        ],
         "experience_years": 20,
         "speciality": "Kundli Analysis",
-        "photo_url": "https://placehold.co/400x400?text=Pandit+Rajesh"
+        "photo_url": "/assets/images/astrologers/pandit-rajesh-shastri.jpg",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
+        "credit_to_rupee_rate": 0.05
     },
     {
         "id": "astro-2",
@@ -28,15 +42,28 @@
         "text_session_prm": 15,
         "call_session_prm": 15,
         "payout_percentage": 60,
-        "modes": ["text_session", "direct_call"],
-        "working_days": ["tuesday", "thursday"],
+        "modes": [
+            "text_session",
+            "direct_call"
+        ],
+        "working_days": [
+            "tuesday",
+            "thursday"
+        ],
         "start_time": "10:00",
         "end_time": "16:00",
         "slot_minutes": 45,
-        "languages": ["English", "Sanskrit", "Tamil"],
+        "languages": [
+            "English",
+            "Sanskrit",
+            "Tamil"
+        ],
         "experience_years": 15,
         "speciality": "Nadi Astrology",
-        "photo_url": "https://placehold.co/400x400?text=Acharya+Meena"
+        "photo_url": "/assets/images/astrologers/acharya-meena.jpg",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
+        "credit_to_rupee_rate": 0.05
     },
     {
         "id": "astro-3",
@@ -47,15 +74,33 @@
         "text_session_prm": 15,
         "call_session_prm": 15,
         "payout_percentage": 60,
-        "modes": ["text_session", "direct_call"],
-        "working_days": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+        "modes": [
+            "text_session",
+            "direct_call"
+        ],
+        "working_days": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+        ],
         "start_time": "08:00",
         "end_time": "20:00",
         "slot_minutes": 30,
-        "languages": ["Hindi", "English", "Tamil"],
+        "languages": [
+            "Hindi",
+            "English",
+            "Tamil"
+        ],
         "experience_years": 25,
         "speciality": "Planetary Remediation",
-        "photo_url": "https://placehold.co/400x400?text=Swamy+Vashishtha"
+        "photo_url": "/assets/images/astrologers/swamy-vashishtha.jpg",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
+        "credit_to_rupee_rate": 0.05
     },
     {
         "id": "astro-4",
@@ -66,15 +111,29 @@
         "text_session_prm": 15,
         "call_session_prm": 15,
         "payout_percentage": 60,
-        "modes": ["text_session", "direct_call"],
-        "working_days": ["monday", "tuesday", "friday", "saturday"],
+        "modes": [
+            "text_session",
+            "direct_call"
+        ],
+        "working_days": [
+            "monday",
+            "tuesday",
+            "friday",
+            "saturday"
+        ],
         "start_time": "09:30",
         "end_time": "18:30",
         "slot_minutes": 30,
-        "languages": ["Tamil", "English"],
+        "languages": [
+            "Tamil",
+            "English"
+        ],
         "experience_years": 18,
         "speciality": "Marriage Matching",
-        "photo_url": "https://placehold.co/400x400?text=Kannan+Jyotidar"
+        "photo_url": "/assets/images/astrologers/sri-kannan-jyotidar.jpg",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
+        "credit_to_rupee_rate": 0.05
     },
     {
         "id": "astro-5",
@@ -85,15 +144,30 @@
         "text_session_prm": 15,
         "call_session_prm": 15,
         "payout_percentage": 60,
-        "modes": ["text_session", "direct_call"],
-        "working_days": ["monday", "wednesday", "thursday", "sunday"],
+        "modes": [
+            "text_session",
+            "direct_call"
+        ],
+        "working_days": [
+            "monday",
+            "wednesday",
+            "thursday",
+            "sunday"
+        ],
         "start_time": "11:00",
         "end_time": "19:00",
         "slot_minutes": 30,
-        "languages": ["Tamil", "English", "Hindi"],
+        "languages": [
+            "Tamil",
+            "English",
+            "Hindi"
+        ],
         "experience_years": 16,
         "speciality": "Career Guidance",
-        "photo_url": "https://placehold.co/400x400?text=Lalitha+Raman"
+        "photo_url": "/assets/images/astrologers/dr-lalitha-raman.jpg",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
+        "credit_to_rupee_rate": 0.05
     },
     {
         "id": "astro-6",
@@ -104,15 +178,30 @@
         "text_session_prm": 15,
         "call_session_prm": 15,
         "payout_percentage": 60,
-        "modes": ["text_session", "direct_call"],
-        "working_days": ["tuesday", "wednesday", "friday", "saturday"],
+        "modes": [
+            "text_session",
+            "direct_call"
+        ],
+        "working_days": [
+            "tuesday",
+            "wednesday",
+            "friday",
+            "saturday"
+        ],
         "start_time": "08:30",
         "end_time": "17:30",
         "slot_minutes": 30,
-        "languages": ["Tamil", "Telugu", "English"],
+        "languages": [
+            "Tamil",
+            "Telugu",
+            "English"
+        ],
         "experience_years": 22,
         "speciality": "Graha Remedies",
-        "photo_url": "https://placehold.co/400x400?text=Guru+Prakash"
+        "photo_url": "/assets/images/astrologers/guru-prakash.jpg",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
+        "credit_to_rupee_rate": 0.05
     },
     {
         "id": "astro-7",
@@ -123,15 +212,30 @@
         "text_session_prm": 15,
         "call_session_prm": 15,
         "payout_percentage": 60,
-        "modes": ["text_session", "direct_call"],
-        "working_days": ["monday", "thursday", "friday", "sunday"],
+        "modes": [
+            "text_session",
+            "direct_call"
+        ],
+        "working_days": [
+            "monday",
+            "thursday",
+            "friday",
+            "sunday"
+        ],
         "start_time": "10:00",
         "end_time": "18:00",
         "slot_minutes": 30,
-        "languages": ["Tamil", "Malayalam", "English"],
+        "languages": [
+            "Tamil",
+            "Malayalam",
+            "English"
+        ],
         "experience_years": 14,
         "speciality": "Auspicious Dates",
-        "photo_url": "https://placehold.co/400x400?text=Acharya+Sarada"
+        "photo_url": "/assets/images/astrologers/acharya-sarada.jpg",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
+        "credit_to_rupee_rate": 0.05
     },
     {
         "id": "astro-8",
@@ -142,15 +246,27 @@
         "text_session_prm": 15,
         "call_session_prm": 15,
         "payout_percentage": 60,
-        "modes": ["text_session", "direct_call"],
-        "working_days": ["tuesday", "thursday", "saturday"],
+        "modes": [
+            "text_session",
+            "direct_call"
+        ],
+        "working_days": [
+            "tuesday",
+            "thursday",
+            "saturday"
+        ],
         "start_time": "07:00",
         "end_time": "15:00",
         "slot_minutes": 30,
-        "languages": ["Tamil"],
+        "languages": [
+            "Tamil"
+        ],
         "experience_years": 27,
         "speciality": "Temple Remedies",
-        "photo_url": "https://placehold.co/400x400?text=Siddhar+Velan"
+        "photo_url": "/assets/images/astrologers/siddhar-velan.jpg",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
+        "credit_to_rupee_rate": 0.05
     },
     {
         "id": "astro-9",
@@ -161,15 +277,31 @@
         "text_session_prm": 15,
         "call_session_prm": 15,
         "payout_percentage": 60,
-        "modes": ["text_session", "direct_call"],
-        "working_days": ["monday", "tuesday", "wednesday", "thursday", "friday"],
+        "modes": [
+            "text_session",
+            "direct_call"
+        ],
+        "working_days": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+        ],
         "start_time": "12:00",
         "end_time": "21:00",
         "slot_minutes": 30,
-        "languages": ["Hindi", "English", "Tamil"],
+        "languages": [
+            "Hindi",
+            "English",
+            "Tamil"
+        ],
         "experience_years": 12,
         "speciality": "Business Astrology",
-        "photo_url": "https://placehold.co/400x400?text=Jyotishi+Anand"
+        "photo_url": "/assets/images/astrologers/jyotishi-anand.jpg",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
+        "credit_to_rupee_rate": 0.05
     },
     {
         "id": "astro-10",
@@ -180,15 +312,30 @@
         "text_session_prm": 15,
         "call_session_prm": 15,
         "payout_percentage": 60,
-        "modes": ["text_session", "direct_call"],
-        "working_days": ["wednesday", "thursday", "friday", "saturday"],
+        "modes": [
+            "text_session",
+            "direct_call"
+        ],
+        "working_days": [
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday"
+        ],
         "start_time": "09:00",
         "end_time": "17:00",
         "slot_minutes": 30,
-        "languages": ["Tamil", "Kannada", "English"],
+        "languages": [
+            "Tamil",
+            "Kannada",
+            "English"
+        ],
         "experience_years": 13,
         "speciality": "Relationship Guidance",
-        "photo_url": "https://placehold.co/400x400?text=Acharya+Devika"
+        "photo_url": "/assets/images/astrologers/acharya-devika.jpg",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
+        "credit_to_rupee_rate": 0.05
     },
     {
         "id": "astro-11",
@@ -199,15 +346,30 @@
         "text_session_prm": 15,
         "call_session_prm": 15,
         "payout_percentage": 60,
-        "modes": ["text_session", "direct_call"],
-        "working_days": ["monday", "wednesday", "saturday", "sunday"],
+        "modes": [
+            "text_session",
+            "direct_call"
+        ],
+        "working_days": [
+            "monday",
+            "wednesday",
+            "saturday",
+            "sunday"
+        ],
         "start_time": "06:00",
         "end_time": "14:00",
         "slot_minutes": 30,
-        "languages": ["Tamil", "Sanskrit", "English"],
+        "languages": [
+            "Tamil",
+            "Sanskrit",
+            "English"
+        ],
         "experience_years": 30,
         "speciality": "Dasha Analysis",
-        "photo_url": "https://placehold.co/400x400?text=Rishi+Narayanan"
+        "photo_url": "/assets/images/astrologers/rishi-narayanan.jpg",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
+        "credit_to_rupee_rate": 0.05
     },
     {
         "id": "astro-12",
@@ -218,15 +380,31 @@
         "text_session_prm": 15,
         "call_session_prm": 15,
         "payout_percentage": 60,
-        "modes": ["text_session", "direct_call"],
-        "working_days": ["tuesday", "wednesday", "friday", "sunday"],
+        "modes": [
+            "text_session",
+            "direct_call"
+        ],
+        "working_days": [
+            "tuesday",
+            "wednesday",
+            "friday",
+            "sunday"
+        ],
         "start_time": "13:00",
         "end_time": "21:00",
         "slot_minutes": 30,
-        "languages": ["Tamil", "Telugu", "Hindi", "English"],
+        "languages": [
+            "Tamil",
+            "Telugu",
+            "Hindi",
+            "English"
+        ],
         "experience_years": 11,
         "speciality": "Gemstone Guidance",
-        "photo_url": "https://placehold.co/400x400?text=Acharya+Kavitha"
+        "photo_url": "/assets/images/astrologers/acharya-kavitha.jpg",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
+        "credit_to_rupee_rate": 0.05
     },
     {
         "id": "astro-13",
@@ -237,14 +415,30 @@
         "text_session_prm": 15,
         "call_session_prm": 15,
         "payout_percentage": 60,
-        "modes": ["text_session", "direct_call"],
-        "working_days": ["monday", "tuesday", "thursday", "saturday"],
+        "modes": [
+            "text_session",
+            "direct_call"
+        ],
+        "working_days": [
+            "monday",
+            "tuesday",
+            "thursday",
+            "saturday"
+        ],
         "start_time": "08:00",
         "end_time": "18:00",
         "slot_minutes": 30,
-        "languages": ["Tamil", "Malayalam", "Hindi", "English"],
+        "languages": [
+            "Tamil",
+            "Malayalam",
+            "Hindi",
+            "English"
+        ],
         "experience_years": 24,
         "speciality": "Vastu Corrections",
-        "photo_url": "https://placehold.co/400x400?text=Suresh+Iyer"
+        "photo_url": "/assets/images/astrologers/pandit-suresh-iyer.jpg",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
+        "credit_to_rupee_rate": 0.05
     }
 ]

@@ -20,7 +20,7 @@ final class AdminController extends BaseController {
     public function orders(): void{$this->list('Orders');}
     public function order(string $id): void{$this->render('admin/detail',['pageTitle' => 'Order '.$id, 'title' => 'Order '.$id]);}
     public function shipping(): void{$this->render('admin/settings',['pageTitle' => 'Shipping', 'title' => 'Shipping']);}
-    public function astrologers(): void{$this->resource('Astrologers','astrologers',['slug','name','description','email','text_session_prm','call_session_prm','payout_percentage','modes','working_days','start_time','end_time','slot_minutes','languages','experience_years','speciality','photo_url']);}
+    public function astrologers(): void{$this->resource('Astrologers','astrologers',['slug','name','description','email','message_credit_cost','call_credit_per_second','credit_to_rupee_rate','text_session_prm','call_session_prm','payout_percentage','modes','working_days','start_time','end_time','slot_minutes','languages','experience_years','speciality','photo_url']);}
     public function saveAstrologer(): void{$this->save('astrologers');}
     public function deleteAstrologer(): void{$this->delete('astrologers');}
     public function appointments(): void{$this->list('Appointments');}
