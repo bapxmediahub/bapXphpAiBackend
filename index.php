@@ -29,5 +29,11 @@ if (strpos($uri, '/admin') === 0 || $isPhpRoute) {
     exit;
 }
 
-// Everything else - SPA (Vanilla JS)
-require __DIR__ . '/views/layouts/spa.php';
+http_response_code(404);
+require __DIR__ . '/app/bootstrap.php';
+$viewFile = __DIR__ . '/views/public/404.php';
+if (is_file($viewFile)) {
+    require __DIR__ . '/views/layouts/app.php';
+} else {
+    echo 'Page not found';
+}

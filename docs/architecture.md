@@ -3,9 +3,9 @@
 ## Frontend
 
 - PHP-rendered public, account, and admin templates in `views/`.
-- Shared CSS and lightweight vanilla JavaScript in `assets/`.
+- Shared CSS in `assets/css/` plus small inline enhancement scripts in PHP layouts.
 - Known public routes are dispatched by `index.php` into PHP controllers.
-- Unknown routes can still fall back to the legacy vanilla SPA layout while duplicate frontend files are being consolidated.
+- Unknown routes render the PHP 404 page with `HTTP 404`. There is no SPA fallback.
 
 ## Backend
 
@@ -38,7 +38,6 @@ app/
   Router.php            Route dispatcher
 assets/
   css/                  Shared stylesheets
-  js/                   Vanilla JS and legacy SPA files
 docs/                   Project, module, and deployment docs
 storage/data/           JSON collections
 tools/                  Validation, project-map, and queue scripts

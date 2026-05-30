@@ -23,7 +23,6 @@ The durable architecture constraint is:
 **Frontend**
 
 - PHP-rendered public, account, and admin templates in `views/`.
-- Vanilla JavaScript SPA files in `assets/js/` for fallback/SPA routes.
 - Shared styling in `assets/css/band.css`.
 
 **Backend**
@@ -60,7 +59,7 @@ The durable architecture constraint is:
 - `/sri-panchami-spiritual`, `/spiritual`, and `/api/categories` are routed locally and no longer fall through to missing pages.
 - Cart no longer exposes the unfinished coupon input.
 - Contact submissions persist to JSON storage.
-- PHP syntax, service tests, route-controller mappings, project map validation, and frontend router/API unit tests pass.
+- PHP syntax, service tests, route-controller mappings, project map validation, and local smoke tests pass.
 
 ## Pending Or Not Complete
 
@@ -72,24 +71,20 @@ The durable architecture constraint is:
 
 ## Duplicate Or Conflicting Areas
 
-- There are two frontend implementations for many screens:
-  - PHP templates in `views/public/`.
-  - Vanilla SPA pages in `assets/js/pages.js`.
-- The main routed app currently uses PHP templates for the primary public routes, while unknown routes fall back to the SPA.
-- The unused duplicate JavaScript helper/component copies under `assets/js/core/`, `assets/js/ui/`, root `components/`, and root `utils/` have been removed.
-- Architecture and Hostinger deployment docs now describe the current PHP-template stack.
+- The customer frontend now has one source of truth: PHP templates in `views/public/`.
+- The legacy SPA fallback and duplicate JavaScript page/component files have been removed.
+- Unknown routes return the PHP 404 page instead of loading a second frontend.
+- Architecture and Hostinger deployment docs describe the current PHP-template stack.
 
 ## What Needs Optimization Against The Objective
 
 1. Deploy the latest local `main` build to production so the live site matches verified local behavior.
-2. Choose one customer frontend source of truth: PHP templates or the vanilla SPA. Keeping both will continue creating duplicate UI, duplicate cart behavior, and mismatched routes.
-3. Complete Razorpay production setup and verify live payment, order persistence, cart clearing, and customer redirect end to end.
-4. Complete remote call/message credit charging for text and direct-call sessions.
-5. Replace the placeholder balance/recharge UI with real wallet state, top-up checkout, insufficient-credit handling, session timers, and queue status from backend data.
-6. Configure SMTP secrets and production cron for `php tools/process-mail-queue.php`, then verify payment, shipment, and delayed review emails on the live host.
-7. Implement coupons only when there is a real discount workflow and tests for totals.
-8. Decide whether to keep or remove the legacy SPA fallback after the live PHP-template deployment is verified.
-9. Add browser-level end-to-end tests for product purchase, remote consultation contact request, login/register, contact form, and admin resource edits.
+2. Complete Razorpay production setup and verify live payment, order persistence, cart clearing, and customer redirect end to end.
+3. Complete remote call/message credit charging for text and direct-call sessions.
+4. Replace the placeholder balance/recharge UI with real wallet state, top-up checkout, insufficient-credit handling, session timers, and queue status from backend data.
+5. Configure SMTP secrets and production cron for `php tools/process-mail-queue.php`, then verify payment, shipment, and delayed review emails on the live host.
+6. Implement coupons only when there is a real discount workflow and tests for totals.
+7. Add browser-level end-to-end tests for product purchase, remote consultation contact request, login/register, contact form, and admin resource edits.
 
 ## Local Development
 
@@ -144,6 +139,7 @@ The latest local audit verified:
 - Product and astrologer review storage and average rating calculation work locally.
 - Mail queue service stores payment, shipment, and 10-day delayed product-review request emails; due-mail selection and the cron processor script are covered by tests.
 - Local route gaps for `/sri-panchami-spiritual`, `/spiritual`, and `/api/categories` are fixed.
+- Legacy SPA fallback has been removed; unknown routes now return `HTTP 404`.
 - Admin settings and admin list/detail pages are data-backed instead of placeholder-only screens.
 
 Known audit failures:

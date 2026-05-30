@@ -193,13 +193,6 @@ $tests['contact page exposes consultation request form'] = function (): void {
     assertTrue(str_contains($view, 'Astrology Consultation'), 'Contact form should include an astrology consultation subject');
 };
 
-$tests['frontend router and api error tests pass'] = function (): void {
-    $output = [];
-    $status = 0;
-    exec('node ' . escapeshellarg(app_path('tests/frontend.test.js')) . ' 2>&1', $output, $status);
-    assertSame(0, $status, "Frontend regression tests should pass:\n" . implode("\n", $output));
-};
-
 $tests['admin integrations explain api setup and support bot keys'] = function (): void {
     $view = file_get_contents(app_path('views/admin/integrations.php'));
     foreach ([
@@ -316,21 +309,6 @@ $tests['home hero uses concise current copy and working cta links'] = function (
     }
     assertTrue(!str_contains($view, '<div class="hero-stat-value">3</div>'), 'Home hero astrologer count should not be stale');
     assertTrue(str_contains($view, 'count($astrologers)'), 'Home hero astrologer count should be derived from the current catalog');
-};
-
-$tests['spa fallback header and home copy match current php experience'] = function (): void {
-    $components = file_get_contents(app_path('assets/js/components.js'));
-    $pages = file_get_contents(app_path('assets/js/pages.js'));
-    foreach (['href="/login"', 'Login', 'href="/cart"'] as $needle) {
-        assertTrue(str_contains($components, $needle), "SPA fallback header should expose {$needle}");
-    }
-    assertTrue(!str_contains($components, '🛒'), 'SPA fallback header should not use the old emoji cart button');
-    assertTrue(!str_contains($pages, 'Divine Grace.<br>Timeless Protection.'), 'SPA fallback home should not show the old hero headline');
-    assertTrue(!str_contains($pages, 'Shop Spiritual Products</a>'), 'SPA fallback hero primary button should use shorter text');
-    assertTrue(!str_contains($pages, 'Remote Astrology Consultation</a>'), 'SPA fallback hero astrology button should use shorter text');
-    foreach (['>Shop</a>', '>Astrology</a>', 'astrologers.length', 'astro-carousel-track'] as $needle) {
-        assertTrue(str_contains($pages, $needle), "SPA fallback home should include {$needle}");
-    }
 };
 
 $tests['review service stores five star reviews and calculates averages'] = function (): void {
@@ -506,24 +484,49 @@ $tests['legacy duplicate frontend modules are removed from the php template app'
     foreach ([
         'assets/js/core/app-core.js',
         'assets/js/ui/components.js',
+        'assets/js/app.js',
+        'assets/js/components.js',
+        'assets/js/pages.js',
+        'assets/js/main.js',
+        'assets/js',
         'components/AstroCard.js',
         'components/BottomNav.js',
         'components/Footer.js',
         'components/Header.js',
         'components/Page.js',
         'components/ProductCard.js',
+        'tests/frontend.test.js',
         'utils/api.js',
         'utils/router.js',
+        'views/layouts/spa.php',
     ] as $path) {
         assertTrue(!is_file(app_path($path)), "Unused duplicate frontend module should be removed: {$path}");
     }
-    $spa = file_get_contents(app_path('views/layouts/spa.php'));
-    foreach (['/assets/js/app.js', '/assets/js/components.js', '/assets/js/pages.js', '/assets/js/main.js'] as $script) {
-        assertTrue(str_contains($spa, $script), "SPA fallback should keep its active script {$script}");
+    assertTrue(!is_dir(app_path('assets/js')), 'The legacy SPA app directory should be removed entirely');
+    $index = file_get_contents(app_path('index.php'));
+    assertTrue(!str_contains($index, 'views/layouts/spa.php'), 'Unknown routes should not load the legacy SPA fallback');
+    assertTrue(str_contains($index, 'http_response_code(404)'), 'Unknown routes should return a real 404');
+};
+
+$tests['documentation has deployment agent instructions and no one-line placeholder pages'] = function (): void {
+    assertTrue(is_file(app_path('example-Agent.md')), 'Agent workflow guide should exist');
+    $agent = file_get_contents(app_path('example-Agent.md'));
+    foreach (['Hostinger', 'Advanced', 'Git', 'Auto Deployment', 'main', 'project map', 'php tests/run.php', 'php tools/smoke-local.php', 'commit'] as $needle) {
+        assertTrue(str_contains($agent, $needle), "Agent guide should mention {$needle}");
+    }
+    foreach (glob(app_path('docs/pages/*.md')) ?: [] as $path) {
+        assertTrue(count(file($path) ?: []) > 3, basename($path) . ' should contain real page notes, not only a heading');
+    }
+    foreach (glob(app_path('docs/modules/*.md')) ?: [] as $path) {
+        assertTrue(count(file($path) ?: []) > 3, basename($path) . ' should contain real module notes, not only a heading');
+    }
+    $deployment = file_get_contents(app_path('docs/deployment-hostinger.md'));
+    foreach (['hPanel', 'Advanced', 'Git', 'Auto Deployment', 'Branch', 'public_html', 'Vercel'] as $needle) {
+        assertTrue(str_contains($deployment, $needle), "Deployment guide should mention {$needle}");
     }
 };
 
-$tests['local smoke tool verifies key routes api and spa fallback'] = function (): void {
+$tests['local smoke tool verifies key routes api and unknown route 404'] = function (): void {
     $tool = app_path('tools/smoke-local.php');
     assertTrue(is_file($tool), 'Local route/API smoke tool should exist');
     $output = [];

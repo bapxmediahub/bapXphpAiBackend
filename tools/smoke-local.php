@@ -84,20 +84,18 @@ try {
     foreach (['/assets/js/app.js', '/assets/js/components.js', '/assets/js/pages.js', '/assets/js/main.js'] as $path) {
         $response = httpRequest($base . $path);
         echo "{$response['status']} GET {$path}\n";
-        if ($response['status'] !== 200) {
-            $failures[] = "GET {$path} expected 200, got {$response['status']}";
+        if ($response['status'] !== 404) {
+            $failures[] = "Removed SPA asset {$path} expected 404, got {$response['status']}";
         }
     }
 
-    $spa = httpRequest($base . '/unknown-spa-route');
-    echo "{$spa['status']} GET /unknown-spa-route\n";
-    if ($spa['status'] !== 200) {
-        $failures[] = "SPA fallback expected 200, got {$spa['status']}";
+    $unknown = httpRequest($base . '/unknown-spa-route');
+    echo "{$unknown['status']} GET /unknown-spa-route\n";
+    if ($unknown['status'] !== 404) {
+        $failures[] = "Unknown route expected 404, got {$unknown['status']}";
     }
-    foreach (['/assets/js/app.js', '/assets/js/components.js', '/assets/js/pages.js', '/assets/js/main.js'] as $script) {
-        if (!str_contains($spa['body'], $script)) {
-            $failures[] = "SPA fallback missing {$script}";
-        }
+    if (!str_contains($unknown['body'], 'Page Not Found')) {
+        $failures[] = "Unknown route should render the PHP 404 page";
     }
 } finally {
     foreach ($pipes as $pipe) {

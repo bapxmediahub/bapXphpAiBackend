@@ -2,7 +2,7 @@ Options -Indexes
 RewriteEngine On
 
 # Block access to sensitive directories
-RewriteRule ^(app|modules|integrations|storage|tools|tests|docs)/ - [F,L]
+RewriteRule ^(app|integrations|storage|tools|tests|docs)/ - [F,L]
 
 # API routes
 RewriteRule ^api/(.*)$ api/index.php [QSA,L]
