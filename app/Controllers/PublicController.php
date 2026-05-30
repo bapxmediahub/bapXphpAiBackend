@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{ProductService,AstrologerService,TempleService,CategoryService,SecretService,ContactService};
+use App\Services\{ProductService,AstrologerService,TempleService,CategoryService,SecretService,ContactService,ReviewService};
 final class PublicController extends BaseController {
     
     protected function detectApiRequest(): void {
@@ -30,13 +30,15 @@ final class PublicController extends BaseController {
     
     public function astrologers(): void { 
         $this->detectApiRequest();
-        $this->render('public/astrologers', ['items' => (new AstrologerService())->all()]); 
+        $reviews = new ReviewService();
+        $this->render('public/astrologers', ['items' => (new AstrologerService())->all(), 'reviews' => $reviews]); 
     }
     
     public function astrologer(string $slug): void {
         $this->detectApiRequest();
         $astrologer = (new AstrologerService())->findBySlug($slug);
-        $this->render('public/astrologer', compact('slug', 'astrologer'));
+        $reviewSummary = (new ReviewService())->summary('astrologer', $slug);
+        $this->render('public/astrologer', compact('slug', 'astrologer', 'reviewSummary'));
     }
     
     public function temples(): void { 
@@ -60,6 +62,15 @@ final class PublicController extends BaseController {
         }
         $this->render('public/shop', compact('items', 'categories', 'category'));
     }
+
+    public function categories(): void {
+        $this->detectApiRequest();
+        $categories = (new CategoryService())->all();
+        if ($this->isApiRequest) {
+            $this->jsonResponse($categories);
+        }
+        $this->render('public/shop', ['items' => (new ProductService())->all(), 'categories' => $categories, 'category' => '']);
+    }
     
     public function product(string $slug): void {
         $this->detectApiRequest();
@@ -69,7 +80,8 @@ final class PublicController extends BaseController {
             $all = (new ProductService())->all();
             $related = array_values(array_filter($all, fn($p) => ($p['slug'] ?? '') !== $slug));
         }
-        $this->render('public/product', compact('product', 'related'));
+        $reviewSummary = (new ReviewService())->summary('product', $slug);
+        $this->render('public/product', compact('product', 'related', 'reviewSummary'));
     }
     
     public function cart(): void {

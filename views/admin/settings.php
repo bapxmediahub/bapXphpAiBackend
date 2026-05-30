@@ -4,15 +4,29 @@
 </div>
 <div class="admin-card">
     <h2 style="font-size:1rem; margin:0 0 var(--space-lg);">Shipping Configuration</h2>
-    <form class="admin-form">
+    <form class="admin-form" method="post" action="/admin/settings/save">
         <div class="admin-form__row">
             <div class="form-group">
                 <label>Shipping Mode</label>
-                <select><option>Flat rate</option><option selected>Free shipping</option></select>
+                <?php $mode = $settings['shipping_mode'] ?? 'free'; ?>
+                <select name="shipping_mode">
+                    <option value="flat" <?= $mode === 'flat' ? 'selected' : '' ?>>Flat rate</option>
+                    <option value="free" <?= $mode === 'free' ? 'selected' : '' ?>>Free shipping</option>
+                </select>
             </div>
             <div class="form-group">
                 <label>Flat Rate (₹)</label>
-                <input type="number" placeholder="50">
+                <input type="number" name="flat_rate" value="<?= e((string)($settings['flat_rate'] ?? 0)) ?>" min="0" step="1">
+            </div>
+        </div>
+        <div class="admin-form__row">
+            <div class="form-group">
+                <label>Currency</label>
+                <input type="text" name="currency" value="<?= e($settings['currency'] ?? 'INR') ?>">
+            </div>
+            <div class="form-group">
+                <label>Timezone</label>
+                <input type="text" name="timezone" value="<?= e($settings['timezone'] ?? 'Asia/Kolkata') ?>">
             </div>
         </div>
         <button class="btn btn-primary btn-sm">Save Settings</button>

@@ -1,0 +1,38 @@
+<?php
+namespace App\Controllers;
+
+use App\Services\ReviewService;
+
+final class ReviewController extends BaseController {
+    public function saveAstrologer(): void {
+        try {
+            (new ReviewService())->saveAstrologerReview([
+                'target_slug' => $_POST['target_slug'] ?? '',
+                'rating' => $_POST['rating'] ?? 0,
+                'review' => $_POST['review'] ?? '',
+                'customer_email' => $_SESSION['user']['email'] ?? ($_POST['customer_email'] ?? ''),
+                'source_id' => $_POST['source_id'] ?? '',
+            ]);
+            $this->flash('Thanks. Your astrologer rating was saved.');
+        } catch (\Throwable) {
+            $this->flash('Unable to save the review. Please try again.');
+        }
+        $this->redirect($_POST['redirect'] ?? '/account/bookings');
+    }
+
+    public function saveProduct(): void {
+        try {
+            (new ReviewService())->saveProductReview([
+                'target_slug' => $_POST['target_slug'] ?? '',
+                'rating' => $_POST['rating'] ?? 0,
+                'review' => $_POST['review'] ?? '',
+                'customer_email' => $_SESSION['user']['email'] ?? ($_POST['customer_email'] ?? ''),
+                'source_id' => $_POST['source_id'] ?? '',
+            ]);
+            $this->flash('Thanks. Your product rating was saved.');
+        } catch (\Throwable) {
+            $this->flash('Unable to save the review. Please try again.');
+        }
+        $this->redirect($_POST['redirect'] ?? '/account/orders');
+    }
+}

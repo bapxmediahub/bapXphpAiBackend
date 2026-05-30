@@ -22,8 +22,16 @@
                     <span style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--color-gold); font-weight:600;"><?= e($product['category']) ?></span>
                 <?php endif; ?>
                 <h1><?= e($product['name']) ?></h1>
+                <?php $productRating = $reviewSummary['average'] ?? 0; $productReviewCount = $reviewSummary['count'] ?? 0; ?>
                 <div class="product-info__meta">
-                    <div class="product-info__rating"><span class="rating-stars" aria-label="5 star rating"><?php for($i=0;$i<5;$i++):?><svg class="icon-star" width="16" height="16" viewBox="0 0 24 24" fill="var(--color-rating)" stroke="var(--color-rating)" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><?php endfor;?></span> <span style="color:var(--color-text-muted); font-size:0.8rem;">(Trusted)</span></div>
+                    <div class="product-info__rating">
+                        <span class="rating-stars" aria-label="<?= e((string)$productRating) ?> star product rating">
+                            <?php for($i=1;$i<=5;$i++):?>
+                                <svg class="icon-star" width="16" height="16" viewBox="0 0 24 24" fill="<?= $productRating >= $i ? 'var(--color-rating)' : 'none' ?>" stroke="var(--color-rating)" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            <?php endfor;?>
+                        </span>
+                        <span style="color:var(--color-text-muted); font-size:0.8rem;"><?= $productReviewCount > 0 ? e((string)$productRating) . ' from ' . e((string)$productReviewCount) . ' reviews' : 'No reviews yet' ?></span>
+                    </div>
                 </div>
                 <div class="product-info__price">
                     <span class="price">₹<?= e((string)($product['offer_price'] ?: $product['price'] ?: 0)) ?></span>

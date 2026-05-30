@@ -3,17 +3,23 @@
 - `/` → `PublicController@home` → ProductService, AstrologerService, TempleService, CategoryService
 - `/about` → `PublicController@about` → none
 - `/sri-panchami-spiritual` → `PublicController@spiritual` → none
+- `/spiritual` → `PublicController@spiritual` → none
 - `/astrologers` → `PublicController@astrologers` → AstrologerService
 - `/astrologers/{slug}` → `PublicController@astrologer` → AstrologerService
 - `/temples` → `PublicController@temples` → TempleService
 - `/temples/{slug}` → `PublicController@temple` → TempleService
 - `/shop` → `PublicController@shop` → ProductService, CategoryService
+- `/categories` → `PublicController@categories` → CategoryService
 - `/product/{slug}` → `PublicController@product` → ProductService
 - `/cart` → `PublicController@cart` → CartService, ProductService
 - `/checkout` → `PublicController@checkout` → CartService, ProductService, SecretService
 - `/contact` → `PublicController@contact` → none
 - `/contact` → `PublicController@contact` → ContactService
 - `/login` → `PublicController@login` → AuthService
+- `/forgot-password` → `AuthController@forgotPassword` → PasswordResetService
+- `/forgot-password` → `AuthController@forgotPasswordPost` → PasswordResetService
+- `/reset-password` → `AuthController@resetPassword` → PasswordResetService
+- `/reset-password` → `AuthController@resetPasswordPost` → PasswordResetService
 - `/auth/google` → `AuthController@googleRedirect` → SecretService
 - `/auth/google/callback` → `AuthController@callback` → SecretService, JsonStoreService
 - `/register` → `AuthController@register` → none
@@ -33,6 +39,7 @@
 - `/admin/appointments` → `AdminController@appointments` → AppointmentService
 - `/admin/temples` → `AdminController@temples` → TempleService
 - `/admin/settings` → `AdminController@settings` → SettingsService
+- `/admin/settings/save` → `AdminController@saveSettings` → SettingsService
 - `/admin/integrations` → `AdminController@integrations` → SettingsService, PaymentService, SecretService
 - `/admin/backups` → `AdminController@backups` → JsonStoreService
 - `/admin/audit-log` → `AdminController@audit` → AuditLogService
@@ -54,3 +61,5 @@
 - `/checkout/create-order` → `CommerceController@createOrder` → SecretService, PaymentService
 - `/payment/verify` → `CommerceController@verifyPayment` → SecretService, PaymentService, JsonStoreService
 - `/appointments/book` → `BookingController@book` → ResourceService, AvailabilityService
+- `/reviews/astrologer` → `ReviewController@saveAstrologer` → ReviewService
+- `/reviews/product` → `ReviewController@saveProduct` → ReviewService

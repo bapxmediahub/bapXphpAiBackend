@@ -57,10 +57,6 @@
                         <span>Shipping</span>
                         <span style="color:var(--color-success);">Free</span>
                     </div>
-                    <div class="cart-coupon">
-                        <input type="text" placeholder="Coupon code" id="coupon-input">
-                        <button class="btn btn-sm btn-outline" onclick="document.getElementById('coupon-input').value=''; alert('Coupon feature coming soon');">Apply</button>
-                    </div>
                     <div class="cart-summary__row cart-summary__row--total">
                         <span>Total</span>
                         <span>₹<?= e((string)($total ?? 0)) ?></span>

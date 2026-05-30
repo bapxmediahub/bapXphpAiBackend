@@ -86,8 +86,10 @@ final class CommerceController extends BaseController {
                 'total' => $total,
                 'customer_email' => $_SESSION['user']['email'] ?? ($_POST['email'] ?? 'guest'),
                 'customer_name' => $_SESSION['user']['name'] ?? '',
-                'items' => array_map(fn($i) => ['name' => $i['name'], 'qty' => $i['qty'], 'line_total' => $i['line_total']], $items),
+                'items' => array_map(fn($i) => ['slug' => $i['slug'], 'name' => $i['name'], 'qty' => $i['qty'], 'line_total' => $i['line_total']], $items),
                 'payment_id' => $_POST['payment_id'] ?? '',
+                'payment_email_status' => 'pending',
+                'review_request_after_at' => null,
                 'created_at' => date('c'),
             ];
             (new JsonStoreService())->upsert('orders', $order);

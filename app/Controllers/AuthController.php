@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{SecretService,JsonStoreService};
+use App\Services\{SecretService,JsonStoreService,PasswordResetService};
 use App\Integrations\GoogleOAuth\GoogleOAuthClient;
 final class AuthController extends BaseController {
  public function googleRedirect(): void {
@@ -57,5 +57,37 @@ final class AuthController extends BaseController {
     }
     $this->flash('Invalid credentials.');
     $this->redirect('/login');
+ }
+ public function forgotPassword(): void {
+    $this->render('public/forgot-password');
+ }
+ public function forgotPasswordPost(): void {
+    $email = trim($_POST['email'] ?? '');
+    if ($email !== '') {
+        $token = (new PasswordResetService())->createToken($email);
+        if ($token) {
+            $_SESSION['last_reset_link'] = '/reset-password?token=' . urlencode($token);
+        }
+    }
+    $this->flash('If this email is registered, a reset link will be sent.');
+    $this->redirect('/forgot-password');
+ }
+ public function resetPassword(): void {
+    $this->render('public/reset-password', ['token' => $_GET['token'] ?? '']);
+ }
+ public function resetPasswordPost(): void {
+    $token = trim($_POST['token'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $confirm = $_POST['password_confirm'] ?? '';
+    if ($password === '' || $password !== $confirm) {
+        $this->flash('Passwords do not match.');
+        $this->redirect('/reset-password?token=' . urlencode($token));
+    }
+    if ((new PasswordResetService())->resetPassword($token, $password)) {
+        $this->flash('Password updated. Please sign in.');
+        $this->redirect('/login');
+    }
+    $this->flash('Reset link is invalid or expired.');
+    $this->redirect('/forgot-password');
  }
 }

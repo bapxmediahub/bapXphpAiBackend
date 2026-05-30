@@ -26,7 +26,7 @@
             <?php else: ?>
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>Order ID</th><th>Status</th><th>Total</th><th>Email</th></tr></thead>
+                        <thead><tr><th>Order ID</th><th>Status</th><th>Total</th><th>Email</th><th>Product Review</th></tr></thead>
                         <tbody>
                         <?php foreach($orders as $order): ?>
                             <tr>
@@ -34,6 +34,31 @@
                                 <td><span class="badge badge--default"><?= e(ucfirst($order['status'] ?? 'pending')) ?></span></td>
                                 <td style="font-weight:600; color:var(--color-maroon);">₹<?= e((string)($order['total'] ?? 0)) ?></td>
                                 <td style="font-size:0.85rem; color:var(--color-text-muted);"><?= e($order['customer_email'] ?? '') ?></td>
+                                <td data-review_request_after_at="<?= e((string)($order['review_request_after_at'] ?? '')) ?>">
+                                    <?php if(isset($reviewService) && $reviewService->productReviewIsDue($order)): ?>
+                                        <?php foreach(($order['items'] ?? []) as $item): ?>
+                                            <?php if(empty($item['slug'])) continue; ?>
+                                            <?php $reviewRowId = ($order['id'] ?? bin2hex(random_bytes(4))) . '-' . $item['slug']; ?>
+                                            <form class="review-inline-form" action="/reviews/product" method="post">
+                                                <input type="hidden" name="target_type" value="product">
+                                                <input type="hidden" name="target_slug" value="<?= e($item['slug']) ?>">
+                                                <input type="hidden" name="source_id" value="<?= e($order['id'] ?? '') ?>">
+                                                <input type="hidden" name="redirect" value="/account/orders">
+                                                <strong><?= e($item['name'] ?? 'Product') ?></strong>
+                                                <div class="star-rating-input" aria-label="Rate product out of 5">
+                                                    <?php for($i=5;$i>=1;$i--): ?>
+                                                        <input id="product-<?= e($reviewRowId) ?>-<?= $i ?>" type="radio" name="rating" value="<?= $i ?>" required>
+                                                        <label for="product-<?= e($reviewRowId) ?>-<?= $i ?>" title="<?= $i ?> stars">★</label>
+                                                    <?php endfor; ?>
+                                                </div>
+                                                <textarea name="review" placeholder="Write a short review"></textarea>
+                                                <button type="submit" class="btn btn-sm btn-primary">Submit Review</button>
+                                            </form>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <span style="color:var(--color-text-muted); font-size:0.8rem;">After shipped date plus review wait</span>
+                                    <?php endif; ?>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                         </tbody>

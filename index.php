@@ -13,7 +13,7 @@ if (strpos($uri, '/api/') === 0) {
 }
 
 // PHP routes (admin + public pages)
-$phpRoutes = ['/','/shop','/shop/','/product','/cart','/checkout','/about','/contact','/temples','/astrologers','/login','/register','/account','/spiritual'];
+$phpRoutes = ['/','/shop','/shop/','/product','/cart','/checkout','/about','/contact','/temples','/astrologers','/login','/register','/forgot-password','/reset-password','/account','/reviews','/sri-panchami-spiritual','/spiritual','/categories'];
 $isPhpRoute = false;
 foreach ($phpRoutes as $route) {
     if (strpos($uri, $route . '/') === 0 || $uri === $route) {

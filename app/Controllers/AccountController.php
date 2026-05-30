@@ -1,13 +1,14 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AppointmentService,OrderService};
+use App\Services\{AppointmentService,OrderService,ReviewService};
 final class AccountController extends BaseController {
     public function orders(): void {
         $orders = (new OrderService())->all();
         if (!empty($_SESSION['user']['email'])) {
             $orders = array_values(array_filter($orders, fn($order) => ($order['customer_email'] ?? '') === $_SESSION['user']['email']));
         }
-        $this->render('account/orders', compact('orders'));
+        $reviewService = new ReviewService();
+        $this->render('account/orders', compact('orders', 'reviewService'));
     }
     public function bookings(): void {
         $bookings = (new AppointmentService())->all();

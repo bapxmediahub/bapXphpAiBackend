@@ -13,7 +13,7 @@
                     <div class="expert-photo-wrap">
                         <img class="booking-profile__photo" src="<?= e($astrologer['photo_url'] ?? 'https://placehold.co/800x1000/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($astrologer['name']) ?>">
                         <span class="astro-status-dot" aria-label="Online"></span>
-                        <span class="astro-rating-pill">4.9</span>
+                        <span class="astro-rating-pill"><?= e((string)(($reviewSummary['count'] ?? 0) > 0 ? $reviewSummary['average'] : 4.9)) ?></span>
                     </div>
                     <div class="booking-profile__content">
                         <h1 class="booking-profile__name"><?= e($astrologer['name']) ?></h1>
@@ -70,8 +70,16 @@
                     </div>
                     <span class="flat-deal">Flat Deal</span>
                     <div class="expert-action-grid">
-                        <a href="/astrologers/<?= e($astrologer['slug']) ?>?mode=text_session" class="astro-action astro-action--chat">CHAT</a>
-                        <a href="/astrologers/<?= e($astrologer['slug']) ?>?mode=direct_call" class="astro-action astro-action--call">CALL</a>
+                        <div class="astro-action-row">
+                            <a href="/astrologers/<?= e($astrologer['slug']) ?>?mode=text_session" class="astro-action astro-action--icon astro-action--chat" aria-label="Start message session" title="Message">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 9.2 9.2 0 0 1-3.7-.8L3 21l1.8-5.3A8.2 8.2 0 0 1 4 11.5 8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5Z"/><path d="M8 10h8M8 14h5"/></svg>
+                                <span class="sr-only">Message</span>
+                            </a>
+                            <a href="/astrologers/<?= e($astrologer['slug']) ?>?mode=direct_call" class="astro-action astro-action--icon astro-action--call" aria-label="Start call session" title="Call">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.7 19.7 0 0 1-8.6-3.1 19.1 19.1 0 0 1-5.9-5.9A19.7 19.7 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L8.1 10a16 16 0 0 0 5.9 5.9l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2Z"/></svg>
+                                <span class="sr-only">Call</span>
+                            </a>
+                        </div>
                         <a href="/contact?subject=astrology#contact-form" class="astro-action astro-action--session">BOOK SESSION</a>
                     </div>
                     <p>1 rupee adds 20 credits. Minimum top-up is ₹10. Credits are only for astrologer text and call sessions.</p>
@@ -79,8 +87,8 @@
 
                 <section class="ratings-panel reveal">
                     <h2>Ratings</h2>
-                    <div class="ratings-panel__score">4.9</div>
-                    <p>87 ratings</p>
+                    <div class="ratings-panel__score"><?= e((string)(($reviewSummary['count'] ?? 0) > 0 ? $reviewSummary['average'] : 4.9)) ?></div>
+                    <p><?= e((string)(($reviewSummary['count'] ?? 0) > 0 ? $reviewSummary['count'] : 87)) ?> ratings</p>
                     <?php foreach([5 => 92, 4 => 14, 3 => 4, 2 => 0, 1 => 0] as $stars => $width): ?>
                         <div class="rating-row"><span><?= e((string)$stars) ?></span><i style="width:<?= e((string)$width) ?>%;"></i></div>
                     <?php endforeach; ?>

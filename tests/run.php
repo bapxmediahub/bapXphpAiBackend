@@ -5,6 +5,7 @@ use App\Services\JsonStoreService;
 use App\Services\AvailabilityService;
 use App\Services\PaymentService;
 use App\Services\ProjectMapService;
+use App\Services\ReviewService;
 
 function assertTrue(bool $condition, string $message): void {
     if (!$condition) {
@@ -59,6 +60,24 @@ $tests['local development router serves existing static files directly'] = funct
     assertTrue(str_contains($index, "PHP_SAPI === 'cli-server'"), 'Router should detect PHP built-in server');
     assertTrue(str_contains($index, 'is_file($file)'), 'Router should return static files directly during local development');
     assertTrue(str_contains($index, 'return false'), 'Router should let the built-in server serve existing static assets');
+};
+
+$tests['public and api routes cover spiritual and category pages without fallback gaps'] = function (): void {
+    $index = file_get_contents(app_path('index.php'));
+    $routes = ProjectMapService::registry()['routes'];
+    $paths = array_column($routes, 'path');
+    assertTrue(str_contains($index, "'/sri-panchami-spiritual'"), 'Router should dispatch /sri-panchami-spiritual to PHP');
+    assertTrue(in_array('/sri-panchami-spiritual', $paths, true), 'Route registry should include /sri-panchami-spiritual');
+    assertTrue(in_array('/spiritual', $paths, true), 'Route registry should include /spiritual or remove it from route detection');
+    assertTrue(in_array('/categories', $paths, true), 'API /api/categories should map through /categories route');
+    assertTrue(in_array('/forgot-password', $paths, true), 'Login forgot-password link should have a GET route');
+    assertTrue(in_array('/reset-password', $paths, true), 'Password reset page should have a GET route');
+};
+
+$tests['cart does not expose unfinished coupon placeholder ui'] = function (): void {
+    $view = file_get_contents(app_path('views/public/cart.php'));
+    assertTrue(!str_contains($view, 'Coupon feature coming soon'), 'Cart should not ship a coupon coming-soon alert');
+    assertTrue(!str_contains($view, 'id="coupon-input"'), 'Cart should not expose inactive coupon input');
 };
 
 $tests['catalog image paths point to existing local assets'] = function (): void {
@@ -144,6 +163,29 @@ $tests['admin integrations explain api setup and support bot keys'] = function (
     assertTrue(!str_contains($view, 'name="support_bot_google_api_endpoint"'), 'Admin should not need to enter the Google API endpoint manually');
 };
 
+$tests['admin settings form persists shipping settings instead of rendering a dead form'] = function (): void {
+    $view = file_get_contents(app_path('views/admin/settings.php'));
+    $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
+    $map = ProjectMapService::registry();
+    $paths = array_column($map['routes'], 'path');
+    assertTrue(str_contains($view, 'action="/admin/settings/save"'), 'Admin settings form should post to a save route');
+    assertTrue(str_contains($view, 'name="shipping_mode"'), 'Admin settings form should name shipping mode field');
+    assertTrue(str_contains($view, 'name="flat_rate"'), 'Admin settings form should name flat rate field');
+    assertTrue(str_contains($controller, 'saveSettings'), 'Admin controller should implement settings persistence');
+    assertTrue(in_array('/admin/settings/save', $paths, true), 'Route registry should include admin settings save route');
+};
+
+$tests['admin list and order detail pages render real data surfaces instead of placeholder copy'] = function (): void {
+    $listView = file_get_contents(app_path('views/admin/list.php'));
+    $detailView = file_get_contents(app_path('views/admin/detail.php'));
+    $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
+    assertTrue(!str_contains($listView, 'Data managed through individual resource pages'), 'Admin list page should not render placeholder table copy');
+    assertTrue(str_contains($listView, '$items'), 'Admin list page should receive and render collection items');
+    assertTrue(!str_contains($detailView, 'Order detail, fulfillment, and tracking workspace.'), 'Order detail page should not be generic placeholder copy');
+    assertTrue(str_contains($detailView, '$order'), 'Order detail page should render order data');
+    assertTrue(str_contains($controller, "'orders'"), 'Admin orders action should pass orders collection data');
+};
+
 $tests['bookings use direct platform sessions without google meet or calendar'] = function (): void {
     $booking = file_get_contents(app_path('app/Controllers/BookingController.php'));
     $oauth = file_get_contents(app_path('integrations/google-oauth/GoogleOAuthClient.php'));
@@ -171,19 +213,44 @@ $tests['astrologer marketplace exposes credit balance filters and direct session
     foreach (['Available Balance', 'Recharge', 'Filters', 'Available Now', 'On Chat', 'Search Astrologer'] as $needle) {
         assertTrue(str_contains($view, $needle), "Astrologer marketplace should expose {$needle}");
     }
-    foreach (['CHAT', 'CALL', 'JOIN Q', 'OFFLINE', '+ Follow'] as $needle) {
+    foreach (['aria-label="Start message session"', 'aria-label="Start call session"', 'JOIN Q', 'OFFLINE', '+ Follow'] as $needle) {
         assertTrue(str_contains($view, $needle), "Astrologer marketplace should expose {$needle} actions");
     }
+    assertTrue(str_contains($view, 'astro-action-row'), 'Message and call icon buttons should sit below each astrologer card content');
     assertTrue(!str_contains($view, 'Check Availability'), 'Astrologer marketplace should not use appointment availability CTA');
 };
 
 $tests['astrologer profile exposes competitor style remote action rating and trust panels'] = function (): void {
     $view = file_get_contents(app_path('views/public/astrologer.php'));
-    foreach (['Flat Deal', 'CHAT', 'CALL', 'BOOK SESSION', 'Ratings', 'Money Back Guarantee', 'Verified Expert Astrologers', '100% Secure Payments', 'Send gifts'] as $needle) {
+    foreach (['Flat Deal', 'aria-label="Start message session"', 'aria-label="Start call session"', 'BOOK SESSION', 'Ratings', 'Money Back Guarantee', 'Verified Expert Astrologers', '100% Secure Payments', 'Send gifts'] as $needle) {
         assertTrue(str_contains($view, $needle), "Astrologer profile should expose {$needle}");
     }
     assertTrue(str_contains($view, '5 credits/message'), 'Astrologer profile should explain message credit cost');
     assertTrue(str_contains($view, '0.5 credits/sec call'), 'Astrologer profile should explain call credit cost');
+};
+
+$tests['review service stores five star reviews and calculates averages'] = function (): void {
+    $dir = sys_get_temp_dir() . '/sps-reviews-' . bin2hex(random_bytes(4));
+    $service = new ReviewService(new JsonStoreService($dir));
+    $service->saveAstrologerReview(['target_slug' => 'pandit-shastri', 'rating' => 5, 'review' => 'Clear reading']);
+    $service->saveAstrologerReview(['target_slug' => 'pandit-shastri', 'rating' => 3, 'review' => 'Helpful']);
+    $summary = $service->summary('astrologer', 'pandit-shastri');
+    assertSame(2, $summary['count'], 'Astrologer review count should include saved reviews');
+    assertSame(4.0, $summary['average'], 'Astrologer review average should be calculated from saved ratings');
+    $product = $service->saveProductReview(['target_slug' => 'rudraksha-mala', 'rating' => 4, 'review' => 'Good quality']);
+    assertSame('product', $product['target_type'], 'Product review should be tagged as product');
+};
+
+$tests['account pages expose review forms only for ended sessions and due shipped products'] = function (): void {
+    $bookingsView = file_get_contents(app_path('views/account/bookings.php'));
+    assertTrue(str_contains($bookingsView, 'name="target_type" value="astrologer"'), 'Ended astrology sessions should expose astrologer review form');
+    assertTrue(str_contains($bookingsView, 'session_ended') || str_contains($bookingsView, 'completed'), 'Astrologer review form should be gated to ended sessions');
+    assertTrue(str_contains($bookingsView, 'star-rating-input'), 'Astrologer review form should show a five-star input');
+
+    $ordersView = file_get_contents(app_path('views/account/orders.php'));
+    assertTrue(str_contains($ordersView, 'name="target_type" value="product"'), 'Shipped product orders should expose product review form');
+    assertTrue(str_contains($ordersView, 'review_request_after_at'), 'Product review form should wait until the post-shipment review date');
+    assertTrue(str_contains($ordersView, 'star-rating-input'), 'Product review form should show a five-star input');
 };
 
 $tests['astrologer catalog has thirteen editable priced profiles'] = function (): void {

@@ -31,6 +31,14 @@
         },
         {
             "method": "GET",
+            "path": "/spiritual",
+            "name": "spiritual.alias",
+            "page": "public/spiritual",
+            "controller": "PublicController@spiritual",
+            "services": []
+        },
+        {
+            "method": "GET",
             "path": "/astrologers",
             "name": "astrologers",
             "page": "public/astrologers",
@@ -77,6 +85,16 @@
             "controller": "PublicController@shop",
             "services": [
                 "ProductService",
+                "CategoryService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/categories",
+            "name": "categories",
+            "page": "public/shop",
+            "controller": "PublicController@categories",
+            "services": [
                 "CategoryService"
             ]
         },
@@ -139,6 +157,46 @@
             "controller": "PublicController@login",
             "services": [
                 "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/forgot-password",
+            "name": "forgot-password",
+            "page": "public/forgot-password",
+            "controller": "AuthController@forgotPassword",
+            "services": [
+                "PasswordResetService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/forgot-password",
+            "name": "forgot-password.post",
+            "page": "public/forgot-password",
+            "controller": "AuthController@forgotPasswordPost",
+            "services": [
+                "PasswordResetService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/reset-password",
+            "name": "reset-password",
+            "page": "public/reset-password",
+            "controller": "AuthController@resetPassword",
+            "services": [
+                "PasswordResetService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/reset-password",
+            "name": "reset-password.post",
+            "page": "public/reset-password",
+            "controller": "AuthController@resetPasswordPost",
+            "services": [
+                "PasswordResetService"
             ]
         },
         {
@@ -332,6 +390,16 @@
             "name": "admin.settings",
             "page": "admin/settings",
             "controller": "AdminController@settings",
+            "services": [
+                "SettingsService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/settings/save",
+            "name": "admin.settings.save",
+            "page": "admin/settings",
+            "controller": "AdminController@saveSettings",
             "services": [
                 "SettingsService"
             ]
@@ -552,6 +620,26 @@
                 "ResourceService",
                 "AvailabilityService"
             ]
+        },
+        {
+            "method": "POST",
+            "path": "/reviews/astrologer",
+            "name": "reviews.astrologer",
+            "page": "account/bookings",
+            "controller": "ReviewController@saveAstrologer",
+            "services": [
+                "ReviewService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/reviews/product",
+            "name": "reviews.product",
+            "page": "account/orders",
+            "controller": "ReviewController@saveProduct",
+            "services": [
+                "ReviewService"
+            ]
         }
     ],
     "services": [
@@ -573,7 +661,9 @@
         "AuditLogService",
         "ResourceService",
         "SecretService",
-        "ContactService"
+        "ContactService",
+        "ReviewService",
+        "PasswordResetService"
     ],
     "integrations": [
         "GoogleOAuthClient",
@@ -589,6 +679,7 @@
         "appointments",
         "temples",
         "settings",
-        "audit_events"
+        "audit_events",
+        "reviews"
     ]
 }

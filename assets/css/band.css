@@ -1215,10 +1215,17 @@ nav a:hover { color: var(--color-maroon); }
 }
 .astro-market-actions {
     grid-column: 1 / 3;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-xs);
+    display: flex;
+    justify-content: center;
+    gap: var(--space-sm);
     margin-top: var(--space-xs);
+}
+.astro-action-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    width: 100%;
 }
 .astro-action {
     display: inline-flex;
@@ -1234,6 +1241,27 @@ nav a:hover { color: var(--color-maroon); }
     letter-spacing: 0;
     padding: 0 0.75rem;
     text-align: center;
+}
+.astro-action--icon {
+    width: 46px;
+    height: 46px;
+    min-height: 46px;
+    padding: 0;
+    border-radius: 50%;
+}
+.astro-action--icon svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+.astro-action--icon:hover {
+    background: var(--color-success);
+    color: var(--color-white);
+    border-color: var(--color-success);
 }
 .astro-action--chat,
 .astro-action--call,
@@ -1420,6 +1448,7 @@ nav a:hover { color: var(--color-maroon); }
     border-top: 1px solid var(--color-border);
     padding-top: var(--space-md);
 }
+.expert-action-grid .astro-action-row { grid-column: 1 / -1; }
 .expert-action-card p {
     margin: var(--space-sm) 0 0;
     color: var(--color-text-muted);
@@ -1479,6 +1508,42 @@ nav a:hover { color: var(--color-maroon); }
     background: #2f3d63;
     color: var(--color-white);
     font-size: 0.8rem;
+}
+.review-inline-form {
+    display: grid;
+    gap: var(--space-xs);
+    min-width: 220px;
+}
+.review-inline-form textarea {
+    width: 100%;
+    min-height: 68px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.55rem 0.7rem;
+    font: inherit;
+    resize: vertical;
+}
+.star-rating-input {
+    display: inline-flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: 0.15rem;
+}
+.star-rating-input input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+.star-rating-input label {
+    color: #c8c0b4;
+    font-size: 1.35rem;
+    line-height: 1;
+    cursor: pointer;
+}
+.star-rating-input input:checked ~ label,
+.star-rating-input label:hover,
+.star-rating-input label:hover ~ label {
+    color: var(--color-gold);
 }
 
 /* ── Account Pages ── */
@@ -1543,6 +1608,30 @@ tr:hover td { background: var(--color-bg-alt); }
 .admin-card:last-child { margin-bottom: 0; }
 .admin-card h2 { font-size: 1rem; margin: 0 0 var(--space-sm); color: var(--color-ink); display: flex; align-items: center; gap: var(--space-xs); }
 .admin-card h2 svg { color: var(--color-gold); flex-shrink: 0; }
+.admin-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--space-md);
+}
+.admin-detail-grid > div {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    background: var(--color-bg-alt);
+}
+.admin-detail-grid strong {
+    display: block;
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: var(--space-xs);
+}
+.admin-detail-grid p {
+    margin: 0;
+    color: var(--color-ink);
+    font-weight: 700;
+}
 .admin-card p { color: var(--color-text-muted); font-size: 0.9rem; margin: 0 0 var(--space-md); }
 .admin-card__actions { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
 .admin-form { display: grid; gap: var(--space-md); }
