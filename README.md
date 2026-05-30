@@ -1,94 +1,71 @@
 # Sri Panchami Spiritual Platform
 
-Sri Panchami Spiritual is a PHP and JSON-backed web application for devotional ecommerce, Vedic astrology sessions, temple information, and owner-managed admin operations. It is designed for small PHP hosting plans where the repository can be placed in `public_html` and maintained with agentic development tools such as Codex, Claude Code, or Hermes-style coding agents.
+Sri Panchami Spiritual is a full-stack PHP ecommerce and astrology platform for small PHP hosting. It uses PHP templates, PHP controllers, and a JSON-backed backend with local storage under `storage/data/`; there is no SPA, no build step, and no SQL database requirement.
 
-## Live Website
+The project is designed to run from `public_html` on hosts such as Hostinger and to be maintained through Git-based agentic development with tools such as Codex, Claude Code, or similar coding agents.
 
-- Production URL is configured in `.env` with `APP_URL`; edit it for the live website before deployment.
-- Hosting target: a standard PHP host such as Hostinger/LiteSpeed with the app deployed under `public_html`.
-- Local validated URL: `http://127.0.0.1:6020` during the latest audit.
+## Documentation
 
-## Project Objective
+Start here when using or building on this repo:
 
-The app should let customers buy authentic spiritual products, browse temples, request remote astrologer text or direct-call sessions through Sri Panchami Spiritual, and let the owner manage catalog, astrologers, contact requests, orders, shipping, integrations, backups, and audit data without a database.
+- [Documentation index](docs/README.md): all guides in one place.
+- [Deployment guide](docs/deployment-hostinger.md): Hostinger hPanel, Advanced -> Git, Auto Deployment, branch setup, cron, and Vercel note.
+- [Agent workflow](example-Agent.md): instructions for coding agents working in this repo.
+- [Architecture](docs/architecture.md): PHP template stack, route flow, JSON persistence, and file structure.
+- [Project map](docs/PROJECT_MAP.md): generated route -> controller -> service map.
+- [JSON storage](docs/json-storage.md): local JSON collections and persistence model.
+- [Admin guide](docs/admin-guide.md): owner/admin surfaces.
+- [Product list](docs/product-list.md): current catalog notes.
 
-The durable architecture constraint is:
+Page notes:
 
-- Keep the backend in PHP.
-- Keep persistence in JSON files under `storage/data/`; this is a JSON-backed backend, not a SQL database.
-- Do not replace the backend with a database or external CMS unless that becomes a separate project decision.
+- [Home](docs/pages/home.md)
+- [Shop](docs/pages/shop.md)
+- [Checkout](docs/pages/checkout.md)
+- [Astrologers](docs/pages/astrologers.md)
+- [Temples](docs/pages/temples.md)
+- [About](docs/pages/about.md)
+- [Admin dashboard](docs/pages/admin-dashboard.md)
+- [Integrations](docs/pages/integrations.md)
+- [Project map page](docs/pages/project-map.md)
 
-## Current Tech Stack
+Module notes:
 
-**Frontend**
+- [Admin](docs/modules/admin.md)
+- [Auth](docs/modules/auth.md)
+- [Booking](docs/modules/booking.md)
+- [Catalog](docs/modules/catalog.md)
+- [Google OAuth](docs/modules/google-oauth.md)
+- [Orders](docs/modules/orders.md)
+- [Razorpay](docs/modules/razorpay.md)
+- [Temples](docs/modules/temples.md)
 
-- PHP-rendered public, account, and admin templates in `views/`.
-- Shared styling in `assets/css/band.css`.
+## What This App Includes
 
-**Backend**
+- Product catalog, category browsing, product detail pages, cart, checkout, and Razorpay verification flow.
+- Remote astrologer marketplace with call/message actions, waitlist/offline states, credit pricing, and account session history.
+- Five-star review collection for ended astrology sessions and post-shipment product reviews.
+- Temple listing and detail pages.
+- Contact and consultation request form.
+- Customer account order/session views.
+- Owner admin for products, categories, coupons, astrologers, appointments, temples, orders, contact submissions, settings, integrations, backups, audit logs, and project map.
+- Mail queue for payment confirmation, shipment notification, and delayed product review request emails.
+- `.env` admin login support with editable admin credentials from Admin Settings.
 
-- PHP routing, controllers, and services in `app/`.
-- JSON file storage in `storage/data/`.
-- Razorpay and Google OAuth integration scaffolding in `integrations/`.
+## Stack
 
-## What Is Done And Working
+- Frontend: PHP-rendered templates in `views/`.
+- Styling: `assets/css/band.css` plus critical inline layout CSS.
+- Backend: PHP controllers, services, and router under `app/`.
+- Data: JSON files in `storage/data/`.
+- Integrations: Razorpay and Google OAuth scaffolding in `integrations/`.
+- Deployment target: PHP hosting with `public_html`.
 
-- Public pages render locally: home, shop, product detail, cart, checkout, about, contact, temples, astrologers, spiritual, login, register, forgot password, and reset password.
-- Product catalog loads from JSON data and product images point to existing local assets.
-- Product detail to cart flow works locally through PHP session cart state.
-- Cart quantity, remove, subtotal, free shipping, and checkout review screens render.
-- Checkout payment verification persists customer name, email, phone, shipping address, city, and PIN code into the order record after Razorpay signature verification.
-- Checkout detects missing Razorpay configuration and blocks live payment.
-- Astrologer listing now follows the call/message marketplace pattern from competitor references: credit balance, recharge CTA, filters, search, status dots, ratings, round call/message buttons, `Waitlist`, and `OFFLINE` actions.
-- Home page astrology cards now use a looping carousel so all astrologers rotate across desktop and mobile instead of showing only three fixed profiles.
-- Remote call/message buttons create session requests without appointment date/time slots, and the user session panel shows session type, rate, and credits spent for each call/message record.
-- Astrologer listing and profile actions use round icon-only controls for message and call instead of large text buttons.
-- Astrologer profile pages now show a remote action panel with credit pricing, message/call icon controls, support-assisted `BOOK SESSION`, ratings, trust points, gifts, reviews, and no appointment date slots or per-slot booking forms.
-- Ended astrology sessions can collect a five-star review from account bookings, and astrologer ratings are calculated from saved reviews.
-- Product pages show product star rating summaries, and shipped/delivered orders can collect product reviews only after `review_request_after_at` is due.
-- Payment confirmation, shipment notification, and delayed product review request emails are queued to JSON in `mail_queue`.
-- Admin order status updates can mark orders as shipped/delivered, set `review_request_after_at` 10 days after shipment, and queue the shipment plus product-review emails.
-- `php tools/process-mail-queue.php` can be run by cron to send due queued emails after SMTP secrets are configured.
-- Consultation support requests go to the contact form with the astrology subject selected.
-- Account pages require a signed-in user before showing order or booking history.
-- Admin pages require an existing stored admin role. Public registration and Google OAuth create customer accounts only, preserving the live site's existing admin credentials.
-- Admin login can also be configured from `.env` with `ADMIN_USERNAME`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD`; the Admin Settings page can update those values.
-- Review submissions require a signed-in user before astrologer or product ratings can be saved.
-- Admin pages render locally, including dashboard, products, categories, coupons, astrologers, appointments, temples, orders, order detail, contacts, settings, integrations, shipping, backups, audit log, and project map.
-- Admin settings persist shipping mode, flat rate, currency, and timezone to JSON settings.
-- `/sri-panchami-spiritual`, `/spiritual`, and `/api/categories` are routed locally and no longer fall through to missing pages.
-- Cart no longer exposes the unfinished coupon input.
-- Contact submissions persist to JSON storage.
-- PHP syntax, service tests, route-controller mappings, project map validation, and local smoke tests pass.
+There is intentionally no SPA fallback. Unknown routes return the PHP 404 page.
 
-## Pending Or Not Complete
+## Environment Setup
 
-- Production deployment must be refreshed after local changes so the live site matches the latest `main` build.
-- Razorpay live keys are not configured locally, so ecommerce payment cannot be completed end to end.
-- Google OAuth is scaffolded but depends on configured client credentials and callback setup.
-- Real Razorpay payment verification, Google login, password reset email, and remote consultation credit charging still need live-credential testing.
-- SMTP credentials and production cron are not configured locally, so queued customer emails cannot be sent end to end yet.
-
-## Duplicate Or Conflicting Areas
-
-- The customer frontend now has one source of truth: PHP templates in `views/public/`.
-- The legacy SPA fallback and duplicate JavaScript page/component files have been removed.
-- Unknown routes return the PHP 404 page instead of loading a second frontend.
-- Architecture and Hostinger deployment docs describe the current PHP-template stack.
-
-## What Needs Optimization Against The Objective
-
-1. Deploy the latest local `main` build to production so the live site matches verified local behavior.
-2. Complete Razorpay production setup and verify live payment, order persistence, cart clearing, and customer redirect end to end.
-3. Complete remote call/message credit charging for text and direct-call sessions.
-4. Replace the placeholder balance/recharge UI with real wallet state, top-up checkout, insufficient-credit handling, session timers, and queue status from backend data.
-5. Configure SMTP secrets and production cron for `php tools/process-mail-queue.php`, then verify payment, shipment, and delayed review emails on the live host.
-6. Implement coupons only when there is a real discount workflow and tests for totals.
-7. Add browser-level end-to-end tests for product purchase, remote consultation contact request, login/register, contact form, and admin resource edits.
-
-## Local Development
-
-Copy or edit `.env` before running locally or deploying:
+Edit `.env` before using the app:
 
 ```dotenv
 APP_URL=https://your-domain.example
@@ -97,14 +74,14 @@ ADMIN_EMAIL=admin@your-domain.example
 ADMIN_PASSWORD=ChangeThisAdmin123!
 ```
 
+After first login, change admin credentials in `/admin/settings`.
+
+## Local Development
+
+Run the app:
+
 ```bash
 php -S 127.0.0.1:6020 index.php
-```
-
-If port `6020` is already in use:
-
-```bash
-php -S 127.0.0.1:6021 index.php
 ```
 
 Run validation:
@@ -115,33 +92,46 @@ php tools/validate-project-map.php
 php tools/smoke-local.php
 ```
 
-Generate project map:
+Regenerate project-map docs after route or service changes:
 
 ```bash
 php tools/generate-project-map.php
 ```
 
-## Latest Audit Results
+## Deployment
 
-The latest local audit verified:
+This repository is intended for Hostinger-style PHP hosting:
 
-- `php tests/run.php`: passing.
-- `php tools/validate-project-map.php`: passing.
-- `php tools/smoke-local.php`: passing.
-- Registered local public GET routes return `HTTP 200`; guest account and admin routes now redirect with `HTTP 302` to enforce authentication.
-- API smoke test verified valid JSON for `/api/`, `/api/shop`, `/api/categories`, `/api/product/karuppasami-dollar`, `/api/astrologers`, and `/api/temples`.
-- Browser smoke test on desktop viewport: public shopping and astrologer pages render; guest account/admin pages redirect instead of exposing private data.
-- Headless Google Chrome screenshots were captured for local astrologer list/profile and an Astroyogi competitor reference. Local matches the requested round icon call/message direction.
-- Product add-to-cart flow works locally.
-- Checkout screen renders the selected product and correctly reports that Razorpay is not configured.
-- Astrologer profile shows remote consultation details and directs users to the contact form.
-- Astrologer list/profile use icon-only message and call actions locally.
-- Product and astrologer review storage and average rating calculation work locally.
-- Mail queue service stores payment, shipment, and 10-day delayed product-review request emails; due-mail selection and the cron processor script are covered by tests.
-- Local route gaps for `/sri-panchami-spiritual`, `/spiritual`, and `/api/categories` are fixed.
-- Legacy SPA fallback has been removed; unknown routes now return `HTTP 404`.
-- Admin settings and admin list/detail pages are data-backed instead of placeholder-only screens.
+1. Connect the GitHub repo in Hostinger hPanel under **Advanced** -> **Git**.
+2. Select the production branch, normally `main`.
+3. Set the install path to `/public_html` when required.
+4. Enable **Auto Deployment** for that branch.
+5. Keep `storage/` and `storage/data/` writable by PHP.
+6. Configure Razorpay, Google OAuth, and SMTP from Admin Integrations.
+7. Add cron for queued mail:
 
-Known audit failures:
+```bash
+php /home/ACCOUNT/public_html/tools/process-mail-queue.php
+```
 
-- Live deployment still needs to be refreshed from the latest local `main` build after verification.
+Full details are in [docs/deployment-hostinger.md](docs/deployment-hostinger.md).
+
+## Agent Development Rules
+
+Agents should:
+
+- Read [example-Agent.md](example-Agent.md) before changing code.
+- Use [docs/PROJECT_MAP.md](docs/PROJECT_MAP.md) before editing routes/controllers/services.
+- Test locally and in a browser when changing UI.
+- Run all validation commands before committing.
+- Commit to the branch connected to hosting only after validation passes.
+
+Agents must not reintroduce a SPA, React/CDN app shell, placeholder pages, or a second frontend.
+
+## Current Known Gaps
+
+- Razorpay live payment requires production keys and live payment verification.
+- Google OAuth requires configured credentials and callback URL.
+- SMTP requires configured secrets and cron for real email delivery.
+- Remote call/message credit charging still needs production-grade wallet/session timers.
+- Coupon workflow should remain disabled until totals and discount rules are implemented and tested.

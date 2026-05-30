@@ -472,9 +472,10 @@ $tests['architecture and deployment docs describe current php template stack'] =
         assertTrue(!str_contains($doc, 'React'), 'Docs should not describe the removed React/CDN architecture');
         assertTrue(!str_contains($doc, 'CDN'), 'Docs should not say the app loads React from a CDN');
     }
-    foreach (['small PHP hosting', 'public_html', 'JSON-backed backend', '.env', 'ADMIN_EMAIL', 'ADMIN_PASSWORD', 'agentic development'] as $needle) {
+    foreach (['small PHP hosting', 'public_html', 'JSON-backed backend', '.env', 'ADMIN_EMAIL', 'ADMIN_PASSWORD', 'agentic development', 'docs/README.md', 'docs/deployment-hostinger.md', 'example-Agent.md', 'docs/PROJECT_MAP.md'] as $needle) {
         assertTrue(str_contains($readme, $needle), "README should describe {$needle}");
     }
+    assertTrue(is_file(app_path('docs/README.md')), 'Documentation index should exist and be linked from README');
     assertTrue(!str_contains($readme, 'https://sripanchamispiritual.com'), 'README should not hardcode the production website URL; use APP_URL in .env');
     assertTrue(str_contains($architecture, 'PHP-rendered public, account, and admin templates'), 'Architecture docs should describe the current PHP template frontend');
     assertTrue(str_contains($deployment, 'PHP-rendered templates'), 'Deployment docs should describe the current PHP template frontend');
