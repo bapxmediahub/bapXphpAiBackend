@@ -1,46 +1,50 @@
 # Architecture
 
-## Frontend (React + JavaScript)
-- React 18 loaded via CDN (no build step required)
-- Vanilla JavaScript for state management and routing
-- Single Page Application (SPA) architecture
-- All UI components decoupled from backend
-- Compatible with Hostinger shared hosting (static files)
+## Frontend
 
-## Backend (PHP)
-- PHP serves JSON API endpoints only (`/api/*`)
-- No HTML rendering in PHP controllers
-- Service-oriented architecture
-- Route registry in `app/Services/ProjectMapService.php`
+- PHP-rendered public, account, and admin templates in `views/`.
+- Shared CSS and lightweight vanilla JavaScript in `assets/`.
+- Known public routes are dispatched by `index.php` into PHP controllers.
+- Unknown routes can still fall back to the legacy vanilla SPA layout while duplicate frontend files are being consolidated.
+
+## Backend
+
+- PHP controllers in `app/Controllers/` render pages and handle form posts.
+- `/api/*` routes return JSON for the shop, product, astrologer, and temple endpoints.
+- Business logic lives in services under `app/Services/`.
+- Route and dependency documentation is generated from `app/Services/ProjectMapService.php`.
 
 ## Data Persistence
-- JSON file-based storage in `storage/data/`
-- No SQL/MySQL database required
-- Atomic writes with lock files for data integrity
 
-## Data Flow
-1. React SPA loads from `index.php` (spa.php layout)
-2. React components fetch data from `/api/*` endpoints
-3. PHP controllers return JSON responses
-4. React updates UI based on API responses
+- JSON file storage lives in `storage/data/`.
+- `JsonStoreService` uses lock files and atomic writes for persistence.
+- No SQL/MySQL database is required for the current application.
+
+## Current Data Flow
+
+1. `index.php` routes public, account, review, and admin paths into the PHP router.
+2. Controllers load data through services and render templates.
+3. Customer forms post back to PHP controllers for cart, checkout, contact, reviews, and account flows.
+4. Admin forms update JSON-backed resources through services.
+5. API clients use `/api/*` for JSON catalog data.
 
 ## File Structure
-```
-├── api/                    # PHP API entry point
-├── app/
-│   ├── Controllers/        # PHP controllers (JSON responses)
-│   ├── Services/           # Business logic
-│   └── Router.php          # Route handling
-├── assets/
-│   ├── css/                # Stylesheets
-│   └── js/
-│       ├── app.js          # Core app (API, Store, Router)
-│       ├── components/     # React components (Layout)
-│       ├── pages/          # Page components
-│       └── main.js         # App entry point
-├── storage/data/           # JSON data files
-└── views/
-    └── layouts/
-        ├── spa.php         # React SPA layout
-        └── admin.php       # Admin PHP layout (internal)
+
+```text
+api/                    PHP API entry point
+app/
+  Controllers/          Page and form controllers
+  Services/             Business logic and JSON persistence
+  Router.php            Route dispatcher
+assets/
+  css/                  Shared stylesheets
+  js/                   Vanilla JS and legacy SPA files
+docs/                   Project, module, and deployment docs
+storage/data/           JSON collections
+tools/                  Validation, project-map, and queue scripts
+views/
+  public/               Customer-facing PHP templates
+  account/              Signed-in customer pages
+  admin/                Owner/admin pages
+  layouts/              Shared layouts
 ```

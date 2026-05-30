@@ -2,42 +2,55 @@
 
 ## Deployment Steps
 
-1. **Upload files** to `/public_html` via Git or FTP
-2. **Set permissions**: `storage/data/` must be writable (755 or 775)
-3. **Configure .htaccess**: Ensure mod_rewrite is enabled
-4. **Test API**: Visit `/api/` to verify PHP is working
+1. Upload the current `main` build to `/public_html` with Git or FTP.
+2. Keep `index.php`, `.htaccess`, `api/`, `app/`, `assets/`, `integrations/`, `storage/`, `tools/`, and `views/` together.
+3. Set `storage/` and `storage/data/` writable by PHP.
+4. Configure integration secrets from the admin integrations page after deployment.
+5. Set a Hostinger cron job for queued mail after SMTP is configured:
+
+```bash
+php /home/ACCOUNT/public_html/tools/process-mail-queue.php
+```
+
+6. Smoke test public pages, account redirects, admin login, API endpoints, checkout configuration, and the mail queue.
 
 ## Hostinger Requirements
 
-- PHP 7.4 or higher
-- mod_rewrite enabled
-- Write permissions on `storage/` directory
+- PHP 8.0 or newer.
+- `mod_rewrite` enabled.
+- Writable `storage/` directory.
+- OpenSSL and cURL PHP extensions for encrypted settings and payment/OAuth calls.
 
 ## Architecture Notes
 
-- **Frontend**: React SPA (static JS/CSS files)
-- **Backend**: PHP API endpoints only
-- **Database**: JSON files (no MySQL required)
-- **Build Step**: None - React loads via CDN
+- Frontend: PHP-rendered templates plus vanilla JavaScript assets.
+- Backend: PHP controllers, services, and JSON API endpoints.
+- Database: JSON files in `storage/data/`.
+- Build step: none.
+- Email: queued in JSON and sent by `tools/process-mail-queue.php` when SMTP secrets are configured.
 
 ## Directory Structure on Hostinger
 
-```
+```text
 /public_html/
-├── .htaccess          # URL rewriting
-├── index.php          # Main entry point
-├── api/               # PHP API
-├── app/               # PHP backend (not web-accessible)
-├── assets/            # Static files (JS, CSS, images)
-│   └── js/            # React app files
-├── storage/           # JSON data (writable)
-│   └── data/          # Data files
-└── views/             # Layouts
+  .htaccess
+  index.php
+  api/
+  app/
+  assets/
+  docs/
+  integrations/
+  storage/
+    data/
+  tools/
+  views/
 ```
 
 ## Troubleshooting
 
-- **500 Error**: Check PHP version and .htaccess
-- **API not working**: Ensure `api/` directory exists and PHP is running
-- **Data not saving**: Check `storage/data/` permissions
-- **React not loading**: Check browser console for JS errors
+- 500 error: check PHP version, `.htaccess`, and PHP error logs.
+- Data not saving: check `storage/data/` permissions.
+- Admin blocked: confirm the existing admin user in `storage/data/users.json` has `role: "admin"`.
+- Razorpay disabled: add live key ID and secret in admin integrations.
+- Google login disabled: add Google OAuth client ID, secret, and callback URL.
+- Emails not sending: configure SMTP secrets and run `tools/process-mail-queue.php` from cron.

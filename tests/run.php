@@ -391,6 +391,17 @@ $tests['admin sidebar exposes every admin menu'] = function (): void {
     }
 };
 
+$tests['architecture and deployment docs describe current php template stack'] = function (): void {
+    $architecture = file_get_contents(app_path('docs/architecture.md'));
+    $deployment = file_get_contents(app_path('docs/deployment-hostinger.md'));
+    foreach ([$architecture, $deployment] as $doc) {
+        assertTrue(!str_contains($doc, 'React'), 'Docs should not describe the removed React/CDN architecture');
+        assertTrue(!str_contains($doc, 'CDN'), 'Docs should not say the app loads React from a CDN');
+    }
+    assertTrue(str_contains($architecture, 'PHP-rendered public, account, and admin templates'), 'Architecture docs should describe the current PHP template frontend');
+    assertTrue(str_contains($deployment, 'PHP-rendered templates'), 'Deployment docs should describe the current PHP template frontend');
+};
+
 foreach ($tests as $name => $test) {
     try {
         $test();

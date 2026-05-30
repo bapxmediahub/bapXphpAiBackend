@@ -82,7 +82,7 @@ The durable architecture constraint is:
   - `assets/js/core/app-core.js`
   - `utils/api.js`
   - `utils/router.js`
-- Documentation still has stale React wording in `docs/architecture.md` and `docs/deployment-hostinger.md`, while the current app is PHP templates plus vanilla JavaScript.
+- Architecture and Hostinger deployment docs now describe the current PHP-template stack, but duplicate legacy JavaScript files still remain until the frontend source of truth is finalized.
 
 ## What Needs Optimization Against The Objective
 
@@ -94,8 +94,7 @@ The durable architecture constraint is:
 6. Configure SMTP secrets and production cron for `php tools/process-mail-queue.php`, then verify payment, shipment, and delayed review emails on the live host.
 7. Implement coupons only when there is a real discount workflow and tests for totals.
 8. Remove unused duplicate JS modules after the frontend direction is finalized.
-9. Update stale docs that still describe a React/CDN architecture.
-10. Add browser-level end-to-end tests for product purchase, remote consultation contact request, login/register, contact form, and admin resource edits.
+9. Add browser-level end-to-end tests for product purchase, remote consultation contact request, login/register, contact form, and admin resource edits.
 
 ## Local Development
 
