@@ -119,6 +119,33 @@ $tests['routes point to callable controller actions'] = function (): void {
     }
 };
 
+$tests['private account admin and review endpoints enforce authentication guards'] = function (): void {
+    $account = file_get_contents(app_path('app/Controllers/AccountController.php'));
+    $admin = file_get_contents(app_path('app/Controllers/AdminController.php'));
+    $review = file_get_contents(app_path('app/Controllers/ReviewController.php'));
+    $auth = file_get_contents(app_path('app/Services/AuthService.php'));
+    assertTrue(str_contains($account, 'requireUser'), 'Account controller should require a signed-in user before rendering orders or bookings');
+    assertTrue(str_contains($admin, 'requireAdmin'), 'Admin controller should require an admin user before rendering owner pages');
+    assertTrue(str_contains($review, 'requireUser'), 'Review submissions should require a signed-in user');
+    assertTrue(str_contains($auth, 'function requireAdmin'), 'Auth service should expose an admin guard');
+
+    foreach (ProjectMapService::registry()['routes'] as $route) {
+        if (str_starts_with($route['path'], '/admin')) {
+            assertTrue(in_array('AuthService', $route['services'], true), "{$route['path']} should declare AuthService in the project map");
+        }
+        if (str_starts_with($route['path'], '/reviews')) {
+            assertTrue(in_array('AuthService', $route['services'], true), "{$route['path']} should declare AuthService in the project map");
+        }
+    }
+};
+
+$tests['local auth preserves roles and bootstraps the first owner account'] = function (): void {
+    $controller = file_get_contents(app_path('app/Controllers/AuthController.php'));
+    assertTrue(str_contains($controller, 'count($users) === 0 ? \'admin\' : \'customer\''), 'First local registration should bootstrap the owner admin role');
+    assertTrue(str_contains($controller, "'role'=>"), 'Session user should include a role after registration and login');
+    assertTrue(str_contains($controller, "\$u['role']"), 'Email/password login should preserve the stored role');
+};
+
 $tests['contact submissions persist to json storage'] = function (): void {
     $dir = sys_get_temp_dir() . '/sps-contact-' . bin2hex(random_bytes(4));
     $service = new App\Services\ContactService(new JsonStoreService($dir));

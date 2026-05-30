@@ -288,7 +288,8 @@
             "controller": "AdminController@dashboard",
             "services": [
                 "OrderService",
-                "AppointmentService"
+                "AppointmentService",
+                "AuthService"
             ]
         },
         {
@@ -298,7 +299,8 @@
             "page": "admin/list",
             "controller": "AdminController@products",
             "services": [
-                "ProductService"
+                "ProductService",
+                "AuthService"
             ]
         },
         {
@@ -308,7 +310,8 @@
             "page": "admin/list",
             "controller": "AdminController@categories",
             "services": [
-                "CategoryService"
+                "CategoryService",
+                "AuthService"
             ]
         },
         {
@@ -318,7 +321,8 @@
             "page": "admin/list",
             "controller": "AdminController@coupons",
             "services": [
-                "CouponService"
+                "CouponService",
+                "AuthService"
             ]
         },
         {
@@ -328,7 +332,8 @@
             "page": "admin/list",
             "controller": "AdminController@orders",
             "services": [
-                "OrderService"
+                "OrderService",
+                "AuthService"
             ]
         },
         {
@@ -339,7 +344,8 @@
             "controller": "AdminController@order",
             "services": [
                 "OrderService",
-                "ShippingService"
+                "ShippingService",
+                "AuthService"
             ]
         },
         {
@@ -350,7 +356,8 @@
             "controller": "AdminController@shipping",
             "services": [
                 "ShippingService",
-                "SettingsService"
+                "SettingsService",
+                "AuthService"
             ]
         },
         {
@@ -361,7 +368,8 @@
             "controller": "AdminController@astrologers",
             "services": [
                 "AstrologerService",
-                "AvailabilityService"
+                "AvailabilityService",
+                "AuthService"
             ]
         },
         {
@@ -371,7 +379,8 @@
             "page": "admin/list",
             "controller": "AdminController@appointments",
             "services": [
-                "AppointmentService"
+                "AppointmentService",
+                "AuthService"
             ]
         },
         {
@@ -381,7 +390,8 @@
             "page": "admin/list",
             "controller": "AdminController@temples",
             "services": [
-                "TempleService"
+                "TempleService",
+                "AuthService"
             ]
         },
         {
@@ -391,7 +401,8 @@
             "page": "admin/settings",
             "controller": "AdminController@settings",
             "services": [
-                "SettingsService"
+                "SettingsService",
+                "AuthService"
             ]
         },
         {
@@ -401,7 +412,8 @@
             "page": "admin/settings",
             "controller": "AdminController@saveSettings",
             "services": [
-                "SettingsService"
+                "SettingsService",
+                "AuthService"
             ]
         },
         {
@@ -413,7 +425,8 @@
             "services": [
                 "SettingsService",
                 "PaymentService",
-                "SecretService"
+                "SecretService",
+                "AuthService"
             ]
         },
         {
@@ -423,7 +436,8 @@
             "page": "admin/list",
             "controller": "AdminController@backups",
             "services": [
-                "JsonStoreService"
+                "JsonStoreService",
+                "AuthService"
             ]
         },
         {
@@ -433,7 +447,8 @@
             "page": "admin/list",
             "controller": "AdminController@audit",
             "services": [
-                "AuditLogService"
+                "AuditLogService",
+                "AuthService"
             ]
         },
         {
@@ -443,7 +458,8 @@
             "page": "admin/contact-submissions",
             "controller": "AdminController@contactSubmissions",
             "services": [
-                "ContactService"
+                "ContactService",
+                "AuthService"
             ]
         },
         {
@@ -453,7 +469,8 @@
             "page": "admin/project-map",
             "controller": "AdminController@projectMap",
             "services": [
-                "ProjectMapService"
+                "ProjectMapService",
+                "AuthService"
             ]
         },
         {
@@ -463,7 +480,8 @@
             "page": "admin/resource",
             "controller": "AdminController@saveProduct",
             "services": [
-                "ResourceService"
+                "ResourceService",
+                "AuthService"
             ]
         },
         {
@@ -473,7 +491,8 @@
             "page": "admin/resource",
             "controller": "AdminController@deleteProduct",
             "services": [
-                "ResourceService"
+                "ResourceService",
+                "AuthService"
             ]
         },
         {
@@ -483,7 +502,8 @@
             "page": "admin/resource",
             "controller": "AdminController@saveCategory",
             "services": [
-                "ResourceService"
+                "ResourceService",
+                "AuthService"
             ]
         },
         {
@@ -493,7 +513,8 @@
             "page": "admin/resource",
             "controller": "AdminController@saveCoupon",
             "services": [
-                "ResourceService"
+                "ResourceService",
+                "AuthService"
             ]
         },
         {
@@ -503,7 +524,8 @@
             "page": "admin/resource",
             "controller": "AdminController@deleteCoupon",
             "services": [
-                "ResourceService"
+                "ResourceService",
+                "AuthService"
             ]
         },
         {
@@ -513,7 +535,8 @@
             "page": "admin/resource",
             "controller": "AdminController@saveAstrologer",
             "services": [
-                "ResourceService"
+                "ResourceService",
+                "AuthService"
             ]
         },
         {
@@ -523,7 +546,8 @@
             "page": "admin/resource",
             "controller": "AdminController@deleteAstrologer",
             "services": [
-                "ResourceService"
+                "ResourceService",
+                "AuthService"
             ]
         },
         {
@@ -533,7 +557,8 @@
             "page": "admin/resource",
             "controller": "AdminController@saveTemple",
             "services": [
-                "ResourceService"
+                "ResourceService",
+                "AuthService"
             ]
         },
         {
@@ -543,7 +568,8 @@
             "page": "admin/resource",
             "controller": "AdminController@deleteTemple",
             "services": [
-                "ResourceService"
+                "ResourceService",
+                "AuthService"
             ]
         },
         {
@@ -553,7 +579,8 @@
             "page": "admin/integrations",
             "controller": "AdminController@saveIntegrations",
             "services": [
-                "SecretService"
+                "SecretService",
+                "AuthService"
             ]
         },
         {
@@ -628,7 +655,8 @@
             "page": "account/bookings",
             "controller": "ReviewController@saveAstrologer",
             "services": [
-                "ReviewService"
+                "ReviewService",
+                "AuthService"
             ]
         },
         {
@@ -638,7 +666,8 @@
             "page": "account/orders",
             "controller": "ReviewController@saveProduct",
             "services": [
-                "ReviewService"
+                "ReviewService",
+                "AuthService"
             ]
         }
     ],

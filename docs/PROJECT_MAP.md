@@ -28,38 +28,38 @@
 - `/logout` → `AuthController@logout` → AuthService
 - `/account/orders` → `AccountController@orders` → AuthService, OrderService
 - `/account/bookings` → `AccountController@bookings` → AuthService, AppointmentService
-- `/admin` → `AdminController@dashboard` → OrderService, AppointmentService
-- `/admin/products` → `AdminController@products` → ProductService
-- `/admin/categories` → `AdminController@categories` → CategoryService
-- `/admin/coupons` → `AdminController@coupons` → CouponService
-- `/admin/orders` → `AdminController@orders` → OrderService
-- `/admin/orders/{id}` → `AdminController@order` → OrderService, ShippingService
-- `/admin/shipping` → `AdminController@shipping` → ShippingService, SettingsService
-- `/admin/astrologers` → `AdminController@astrologers` → AstrologerService, AvailabilityService
-- `/admin/appointments` → `AdminController@appointments` → AppointmentService
-- `/admin/temples` → `AdminController@temples` → TempleService
-- `/admin/settings` → `AdminController@settings` → SettingsService
-- `/admin/settings/save` → `AdminController@saveSettings` → SettingsService
-- `/admin/integrations` → `AdminController@integrations` → SettingsService, PaymentService, SecretService
-- `/admin/backups` → `AdminController@backups` → JsonStoreService
-- `/admin/audit-log` → `AdminController@audit` → AuditLogService
-- `/admin/contact-submissions` → `AdminController@contactSubmissions` → ContactService
-- `/admin/developer/project-map` → `AdminController@projectMap` → ProjectMapService
-- `/admin/products/save` → `AdminController@saveProduct` → ResourceService
-- `/admin/products/delete` → `AdminController@deleteProduct` → ResourceService
-- `/admin/categories/save` → `AdminController@saveCategory` → ResourceService
-- `/admin/coupons/save` → `AdminController@saveCoupon` → ResourceService
-- `/admin/coupons/delete` → `AdminController@deleteCoupon` → ResourceService
-- `/admin/astrologers/save` → `AdminController@saveAstrologer` → ResourceService
-- `/admin/astrologers/delete` → `AdminController@deleteAstrologer` → ResourceService
-- `/admin/temples/save` → `AdminController@saveTemple` → ResourceService
-- `/admin/temples/delete` → `AdminController@deleteTemple` → ResourceService
-- `/admin/integrations/save` → `AdminController@saveIntegrations` → SecretService
+- `/admin` → `AdminController@dashboard` → OrderService, AppointmentService, AuthService
+- `/admin/products` → `AdminController@products` → ProductService, AuthService
+- `/admin/categories` → `AdminController@categories` → CategoryService, AuthService
+- `/admin/coupons` → `AdminController@coupons` → CouponService, AuthService
+- `/admin/orders` → `AdminController@orders` → OrderService, AuthService
+- `/admin/orders/{id}` → `AdminController@order` → OrderService, ShippingService, AuthService
+- `/admin/shipping` → `AdminController@shipping` → ShippingService, SettingsService, AuthService
+- `/admin/astrologers` → `AdminController@astrologers` → AstrologerService, AvailabilityService, AuthService
+- `/admin/appointments` → `AdminController@appointments` → AppointmentService, AuthService
+- `/admin/temples` → `AdminController@temples` → TempleService, AuthService
+- `/admin/settings` → `AdminController@settings` → SettingsService, AuthService
+- `/admin/settings/save` → `AdminController@saveSettings` → SettingsService, AuthService
+- `/admin/integrations` → `AdminController@integrations` → SettingsService, PaymentService, SecretService, AuthService
+- `/admin/backups` → `AdminController@backups` → JsonStoreService, AuthService
+- `/admin/audit-log` → `AdminController@audit` → AuditLogService, AuthService
+- `/admin/contact-submissions` → `AdminController@contactSubmissions` → ContactService, AuthService
+- `/admin/developer/project-map` → `AdminController@projectMap` → ProjectMapService, AuthService
+- `/admin/products/save` → `AdminController@saveProduct` → ResourceService, AuthService
+- `/admin/products/delete` → `AdminController@deleteProduct` → ResourceService, AuthService
+- `/admin/categories/save` → `AdminController@saveCategory` → ResourceService, AuthService
+- `/admin/coupons/save` → `AdminController@saveCoupon` → ResourceService, AuthService
+- `/admin/coupons/delete` → `AdminController@deleteCoupon` → ResourceService, AuthService
+- `/admin/astrologers/save` → `AdminController@saveAstrologer` → ResourceService, AuthService
+- `/admin/astrologers/delete` → `AdminController@deleteAstrologer` → ResourceService, AuthService
+- `/admin/temples/save` → `AdminController@saveTemple` → ResourceService, AuthService
+- `/admin/temples/delete` → `AdminController@deleteTemple` → ResourceService, AuthService
+- `/admin/integrations/save` → `AdminController@saveIntegrations` → SecretService, AuthService
 - `/cart/add` → `CommerceController@addToCart` → CartService, ProductService
 - `/cart/remove` → `CommerceController@removeFromCart` → CartService
 - `/cart/update` → `CommerceController@updateCart` → CartService
 - `/checkout/create-order` → `CommerceController@createOrder` → SecretService, PaymentService
 - `/payment/verify` → `CommerceController@verifyPayment` → SecretService, PaymentService, JsonStoreService
 - `/appointments/book` → `BookingController@book` → ResourceService, AvailabilityService
-- `/reviews/astrologer` → `ReviewController@saveAstrologer` → ReviewService
-- `/reviews/product` → `ReviewController@saveProduct` → ReviewService
+- `/reviews/astrologer` → `ReviewController@saveAstrologer` → ReviewService, AuthService
+- `/reviews/product` → `ReviewController@saveProduct` → ReviewService, AuthService

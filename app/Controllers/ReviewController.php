@@ -1,9 +1,13 @@
 <?php
 namespace App\Controllers;
 
-use App\Services\ReviewService;
+use App\Services\{AuthService,ReviewService};
 
 final class ReviewController extends BaseController {
+    public function __construct() {
+        (new AuthService())->requireUser();
+    }
+
     public function saveAstrologer(): void {
         try {
             (new ReviewService())->saveAstrologerReview([

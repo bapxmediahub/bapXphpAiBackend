@@ -1,8 +1,12 @@
 <?php
 namespace App\Controllers;
-use App\Services\{ResourceService,SecretService,SettingsService};
+use App\Services\{AuthService,ResourceService,SecretService,SettingsService};
 final class AdminController extends BaseController {
     protected string $layout = 'admin';
+    public function __construct() {
+        (new AuthService())->requireAdmin();
+    }
+
     public function dashboard(): void{
         $productCount = count((new ResourceService('products'))->all());
         $orderCount = count((new ResourceService('orders'))->all());

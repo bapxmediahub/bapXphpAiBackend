@@ -11,8 +11,11 @@ final class AuthController extends BaseController {
  public function callback(): void {
   if(($_GET['state']??'')!==($_SESSION['oauth_state']??'')) throw new \RuntimeException('Invalid OAuth state');
   $s=(new SecretService())->all(); $token=$this->post('https://oauth2.googleapis.com/token',['code'=>$_GET['code']??'','client_id'=>$s['google_client_id'],'client_secret'=>$s['google_client_secret'],'redirect_uri'=>$this->redirectUri(),'grant_type'=>'authorization_code']);
-  $user=$this->get('https://openidconnect.googleapis.com/v1/userinfo',$token['access_token']); $_SESSION['user']=$user;
-  $store=new JsonStoreService(); $store->upsert('users',['id'=>$user['sub'],'email'=>$user['email'],'name'=>$user['name']??'','picture'=>$user['picture']??'']); $this->redirect('/');
+  $user=$this->get('https://openidconnect.googleapis.com/v1/userinfo',$token['access_token']);
+  $store=new JsonStoreService(); $users=$store->read('users'); $role=count($users) === 0 ? 'admin' : 'customer';
+  foreach ($users as $u) { if (($u['id'] ?? '') === ($user['sub'] ?? '') || (($u['email'] ?? '') !== '' && ($u['email'] ?? '') === ($user['email'] ?? ''))) { $role=$u['role'] ?? (!empty($u['is_admin']) ? 'admin' : 'customer'); break; } }
+  $_SESSION['user']=['sub'=>$user['sub'],'email'=>$user['email'],'name'=>$user['name']??'','picture'=>$user['picture']??'','role'=>$role];
+  $store->upsert('users',['id'=>$user['sub'],'email'=>$user['email'],'name'=>$user['name']??'','picture'=>$user['picture']??'','role'=>$role]); $this->redirect('/');
  }
  public function logout(): void {
   unset($_SESSION['user']);
@@ -36,9 +39,10 @@ final class AuthController extends BaseController {
     $users = $store->read('users');
     foreach ($users as $u) { if (($u['email'] ?? '') === $email) { $this->flash('Email already registered.'); $this->redirect('/login'); } }
     $id = bin2hex(random_bytes(8));
-    $record = ['id'=>$id,'email'=>$email,'name'=>$name,'password_hash'=>password_hash($password,PASSWORD_DEFAULT)];
+    $role = count($users) === 0 ? 'admin' : 'customer';
+    $record = ['id'=>$id,'email'=>$email,'name'=>$name,'role'=>$role,'password_hash'=>password_hash($password,PASSWORD_DEFAULT)];
     $store->upsert('users',$record,'id');
-    $_SESSION['user'] = ['sub'=>$id,'email'=>$email,'name'=>$name];
+    $_SESSION['user'] = ['sub'=>$id,'email'=>$email,'name'=>$name,'role'=>$role];
     $this->flash('Registered and signed in.');
     $this->redirect('/');
  }
@@ -50,7 +54,7 @@ final class AuthController extends BaseController {
     $users = $store->read('users');
     foreach ($users as $u) {
         if (($u['email'] ?? '') === $email && !empty($u['password_hash']) && password_verify($password,$u['password_hash'])) {
-            $_SESSION['user'] = ['sub'=>$u['id'],'email'=>$u['email'],'name'=>$u['name'] ?? ''];
+            $_SESSION['user'] = ['sub'=>$u['id'],'email'=>$u['email'],'name'=>$u['name'] ?? '','role'=>$u['role'] ?? (!empty($u['is_admin']) ? 'admin' : 'customer')];
             $this->flash('Signed in.');
             $this->redirect('/');
         }

@@ -6,7 +6,7 @@ Sri Panchami Spiritual is a PHP and JSON-backed web application for devotional e
 
 - Intended production domain: `https://sripanchamispiritual.com`
 - Hosting signal: the domain responds from Hostinger/LiteSpeed.
-- Current live status: the root URL loads, but the live deployment is behind local `main`; `/astrologers`, `/sri-panchami-spiritual`, and `/forgot-password` do not yet match the local verified build.
+- Current live status: the root URL loads, but the live deployment is behind local `main`; `/astrologers` still uses text call/chat buttons instead of the latest round icon actions, and `/forgot-password` returns fallback content instead of the local reset-request page.
 - Local validated URL: `http://127.0.0.1:6021` during the latest audit.
 
 ## Project Objective
@@ -46,6 +46,9 @@ The durable architecture constraint is:
 - Ended astrology sessions can collect a five-star review from account bookings, and astrologer ratings are calculated from saved reviews.
 - Product pages show product star rating summaries, and shipped/delivered orders can collect product reviews only after `review_request_after_at` is due.
 - Consultation support requests go to the contact form with the astrology subject selected.
+- Account pages require a signed-in user before showing order or booking history.
+- Admin pages require an admin role. On a fresh JSON install, the first local email/password registration becomes the owner admin account and later registrations default to customer.
+- Review submissions require a signed-in user before astrologer or product ratings can be saved.
 - Admin pages render locally, including dashboard, products, categories, coupons, astrologers, appointments, temples, orders, order detail, contacts, settings, integrations, shipping, backups, audit log, and project map.
 - Admin settings persist shipping mode, flat rate, currency, and timezone to JSON settings.
 - `/sri-panchami-spiritual`, `/spiritual`, and `/api/categories` are routed locally and no longer fall through to missing pages.
@@ -55,11 +58,9 @@ The durable architecture constraint is:
 
 ## Pending Or Not Complete
 
-- Production deployment is behind local code: `https://sripanchamispiritual.com/` loads in the browser, but `/astrologers` still shows the previous text-button version and does not yet include the latest icon-button and review changes.
+- Production deployment is behind local code: `https://sripanchamispiritual.com/` loads in the browser, but `/astrologers` still shows text action buttons and does not yet include the latest local icon-button and guarded review flow.
 - Razorpay live keys are not configured locally, so ecommerce payment cannot be completed end to end.
 - Google OAuth is scaffolded but depends on configured client credentials and callback setup.
-- Customer account pages do not require login before showing order/booking pages; they should redirect guests to `/login`.
-- Admin routes currently render without an admin authentication guard.
 - Real payment verification, order creation with shipping/customer details, Google login, password reset email, and remote consultation payment flow still need live-credential testing.
 - Email notifications are still pending: payment confirmation email, shipped email, and delayed product review request email after shipment.
 - There is no scheduled worker/cron yet to send product review request emails when `review_request_after_at` becomes due.
@@ -85,16 +86,15 @@ The durable architecture constraint is:
 
 1. Deploy the latest local `main` build to production so the live site matches verified local behavior.
 2. Choose one customer frontend source of truth: PHP templates or the vanilla SPA. Keeping both will continue creating duplicate UI, duplicate cart behavior, and mismatched routes.
-3. Add authentication and authorization guards for account and admin routes.
-4. Complete Razorpay production setup and verify payment, order persistence, cart clearing, and customer redirect end to end.
-5. Complete remote call/message payment handling for text and direct-call sessions.
-6. Replace the placeholder balance/recharge UI with real wallet state, top-up checkout, insufficient-credit handling, session timers, and queue status from backend data.
-7. Add mail delivery and a scheduled job for payment, shipment, and delayed product review request emails.
-8. Add an admin shipping/status workflow that sets `review_request_after_at` when an order is shipped.
-9. Implement coupons only when there is a real discount workflow and tests for totals.
-10. Remove unused duplicate JS modules after the frontend direction is finalized.
-11. Update stale docs that still describe a React/CDN architecture.
-12. Add browser-level end-to-end tests for product purchase, remote consultation contact request, login/register, contact form, and admin resource edits.
+3. Complete Razorpay production setup and verify payment, order persistence, cart clearing, and customer redirect end to end.
+4. Complete remote call/message payment handling for text and direct-call sessions.
+5. Replace the placeholder balance/recharge UI with real wallet state, top-up checkout, insufficient-credit handling, session timers, and queue status from backend data.
+6. Add mail delivery and a scheduled job for payment, shipment, and delayed product review request emails.
+7. Add an admin shipping/status workflow that sets `review_request_after_at` when an order is shipped.
+8. Implement coupons only when there is a real discount workflow and tests for totals.
+9. Remove unused duplicate JS modules after the frontend direction is finalized.
+10. Update stale docs that still describe a React/CDN architecture.
+11. Add browser-level end-to-end tests for product purchase, remote consultation contact request, login/register, contact form, and admin resource edits.
 
 ## Local Development
 
@@ -127,9 +127,10 @@ The latest local audit verified:
 
 - `php tests/run.php`: passing.
 - `php tools/validate-project-map.php`: passing.
-- Registered local GET routes, excluding OAuth/logout side-effect routes, return `HTTP 200`.
+- Registered local public GET routes return `HTTP 200`; guest account and admin routes now redirect with `HTTP 302` to enforce authentication.
 - API smoke test verified valid JSON for `/api/`, `/api/shop`, `/api/categories`, `/api/product/karuppasami-dollar`, `/api/astrologers`, and `/api/temples`.
-- Browser smoke test on desktop viewport: home, shop, product, cart, checkout, astrologers, astrologer profile, spiritual, forgot/reset password, admin settings, and admin orders render without app console errors.
+- Browser smoke test on desktop viewport: public shopping and astrologer pages render; guest account/admin pages redirect instead of exposing private data.
+- Headless Google Chrome screenshots were captured for local astrologer list/profile, live astrologer list, and an Astroyogi competitor reference. Local matches the requested round icon call/message direction; live still shows text action buttons.
 - Product add-to-cart flow works locally.
 - Checkout screen renders the selected product and correctly reports that Razorpay is not configured.
 - Astrologer profile shows remote consultation details and directs users to the contact form.
@@ -140,4 +141,4 @@ The latest local audit verified:
 
 Known audit failures:
 
-- Live domain is behind the latest local code: `/astrologers` still shows old text actions, and `/sri-panchami-spiritual` plus `/forgot-password` show missing-page behavior live.
+- Live domain is behind the latest local code: `/astrologers` still shows old text actions, and `/forgot-password` returns fallback content rather than the local reset-request page.

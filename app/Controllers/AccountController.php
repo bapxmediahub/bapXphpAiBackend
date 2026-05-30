@@ -1,7 +1,11 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AppointmentService,OrderService,ReviewService};
+use App\Services\{AppointmentService,AuthService,OrderService,ReviewService};
 final class AccountController extends BaseController {
+    public function __construct() {
+        (new AuthService())->requireUser();
+    }
+
     public function orders(): void {
         $orders = (new OrderService())->all();
         if (!empty($_SESSION['user']['email'])) {
