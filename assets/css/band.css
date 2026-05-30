@@ -1227,6 +1227,10 @@ nav a:hover { color: var(--color-maroon); }
     gap: var(--space-sm);
     width: 100%;
 }
+.astro-session-form {
+    margin: 0;
+    display: inline-flex;
+}
 .astro-action {
     display: inline-flex;
     align-items: center;
@@ -1275,6 +1279,29 @@ nav a:hover { color: var(--color-maroon); }
     color: #a7adb8;
     border-color: #d5dae3;
     background: #f8f8f8;
+}
+.astro-carousel {
+    overflow: hidden;
+    margin-bottom: var(--space-xl);
+    padding: var(--space-sm) 0;
+}
+.astro-carousel-track {
+    display: flex;
+    gap: var(--space-xl);
+    width: max-content;
+    animation: astro-scroll 42s linear infinite;
+}
+.astro-carousel:hover .astro-carousel-track,
+.astro-carousel:focus-within .astro-carousel-track {
+    animation-play-state: paused;
+}
+.astro-carousel .astrologer-card {
+    width: min(330px, 82vw);
+    flex: 0 0 auto;
+}
+@keyframes astro-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
 }
 
 /* ── Booking / Slots ── */

@@ -227,11 +227,27 @@ $tests['bookings use direct platform sessions without google meet or calendar'] 
     assertTrue(!in_array('GoogleCalendarClient', $map['integrations'], true), 'Google Calendar should not be a configured integration');
 };
 
+$tests['remote astrology sessions do not use appointment slots and show per session spend'] = function (): void {
+    $booking = file_get_contents(app_path('app/Controllers/BookingController.php'));
+    $bookingsView = file_get_contents(app_path('views/account/bookings.php'));
+    $astrologersView = file_get_contents(app_path('views/public/astrologers.php'));
+    $profileView = file_get_contents(app_path('views/public/astrologer.php'));
+    assertTrue(!str_contains($booking, 'slotsForDate'), 'Remote sessions should not validate appointment date/time slots');
+    assertTrue(str_contains($booking, 'credits_spent'), 'Remote session records should track credits spent per call/message session');
+    assertTrue(str_contains($bookingsView, 'Credits Spent'), 'User session panel should show per-session credits spent');
+    assertTrue(str_contains($bookingsView, 'Session Type'), 'User session panel should show call/message session type');
+    assertTrue(!str_contains($astrologersView, 'JOIN Q'), 'Busy astrologer action should not say JOIN Q');
+    assertTrue(str_contains($astrologersView, 'Waitlist'), 'Busy astrologer action should say Waitlist');
+    assertTrue(str_contains($astrologersView, 'action="/appointments/book"'), 'Astrologer listing call/message actions should create remote session requests');
+    assertTrue(str_contains($profileView, 'action="/appointments/book"'), 'Astrologer profile call/message actions should create remote session requests');
+};
+
 $tests['astrologer profile uses remote consultation contact panel instead of appointment slot forms'] = function (): void {
     $view = file_get_contents(app_path('views/public/astrologer.php'));
     assertTrue(!str_contains($view, 'slot-picker'), 'Astrologer profile should not render appointment slot picker UI');
     assertTrue(!str_contains($view, 'Available Slots'), 'Astrologer profile should not show cinema-style appointment slots');
-    assertTrue(!str_contains($view, 'action="/appointments/book"'), 'Astrologer profile should not post appointment bookings from slot cards');
+    assertTrue(!str_contains($view, 'name="date"') && !str_contains($view, 'name="time"'), 'Astrologer profile should not post dated slot booking fields');
+    assertTrue(str_contains($view, 'action="/appointments/book"'), 'Astrologer profile should post remote call/message session requests');
     assertTrue(str_contains($view, '/contact'), 'Astrologer profile should direct consultation requests to the contact page');
     assertTrue(str_contains($view, 'Remote Call') || str_contains($view, 'Remote consultation'), 'Astrologer profile should describe remote call/message consultation');
 };
@@ -241,7 +257,7 @@ $tests['astrologer marketplace exposes credit balance filters and direct session
     foreach (['Available Balance', 'Recharge', 'Filters', 'Available Now', 'On Chat', 'Search Astrologer'] as $needle) {
         assertTrue(str_contains($view, $needle), "Astrologer marketplace should expose {$needle}");
     }
-    foreach (['aria-label="Start message session"', 'aria-label="Start call session"', 'JOIN Q', 'OFFLINE', '+ Follow'] as $needle) {
+    foreach (['aria-label="Start message session"', 'aria-label="Start call session"', 'Waitlist', 'OFFLINE', '+ Follow'] as $needle) {
         assertTrue(str_contains($view, $needle), "Astrologer marketplace should expose {$needle} actions");
     }
     assertTrue(str_contains($view, 'astro-action-row'), 'Message and call icon buttons should sit below each astrologer card content');
@@ -255,6 +271,12 @@ $tests['astrologer profile exposes competitor style remote action rating and tru
     }
     assertTrue(str_contains($view, '5 credits/message'), 'Astrologer profile should explain message credit cost');
     assertTrue(str_contains($view, '0.5 credits/sec call'), 'Astrologer profile should explain call credit cost');
+};
+
+$tests['home page rotates all astrologers instead of showing only three fixed cards'] = function (): void {
+    $view = file_get_contents(app_path('views/public/home.php'));
+    assertTrue(!str_contains($view, 'array_slice($astrologers, 0, 3)'), 'Home astrology section should not hard-limit to three astrologers');
+    assertTrue(str_contains($view, 'astro-carousel-track'), 'Home astrology section should use a carousel track');
 };
 
 $tests['review service stores five star reviews and calculates averages'] = function (): void {
@@ -360,6 +382,8 @@ $tests['account pages expose review forms only for ended sessions and due shippe
     assertTrue(str_contains($ordersView, 'name="target_type" value="product"'), 'Shipped product orders should expose product review form');
     assertTrue(str_contains($ordersView, 'review_request_after_at'), 'Product review form should wait until the post-shipment review date');
     assertTrue(str_contains($ordersView, 'star-rating-input'), 'Product review form should show a five-star input');
+    assertTrue(str_contains($ordersView, 'Delivery Address'), 'User orders should show delivery address');
+    assertTrue(str_contains($ordersView, 'Shipped At'), 'User orders should show shipped time or processing detail');
 };
 
 $tests['astrologer catalog has thirteen editable priced profiles'] = function (): void {

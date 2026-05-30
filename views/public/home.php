@@ -153,8 +153,9 @@
         <p class="lede">Consult experienced Vedic astrologers for accurate kundli matching, horoscope reading, career guidance, and personalized remedy recommendations in Tamil and English.</p>
     </div>
     <?php if(!empty($astrologers)): ?>
-    <div class="astrologer-grid" style="margin-bottom: var(--space-xl);">
-        <?php foreach(array_slice($astrologers, 0, 3) as $astro): ?>
+    <div class="astro-carousel" aria-label="Astrologers carousel">
+        <div class="astro-carousel-track">
+        <?php foreach(array_merge($astrologers, $astrologers) as $astro): ?>
             <article class="astrologer-card reveal">
                 <div class="astrologer-card__media">
                     <img class="astrologer-card__photo" src="<?= e($astro['photo_url'] ?? 'https://placehold.co/800x1000/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($astro['name']) ?> — <?= e($astro['speciality'] ?? 'Vedic Astrologer') ?> in Chennai" loading="lazy">
@@ -182,6 +183,7 @@
                 </div>
             </article>
         <?php endforeach; ?>
+        </div>
     </div>
     <?php endif; ?>
     <div style="text-align:center;">

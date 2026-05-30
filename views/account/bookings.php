@@ -26,14 +26,16 @@
             <?php else: ?>
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>Date</th><th>Time</th><th>Astrologer</th><th>Status</th><th>Review</th></tr></thead>
+                        <thead><tr><th>Requested</th><th>Astrologer</th><th>Session Type</th><th>Rate</th><th>Credits Spent</th><th>Status</th><th>Review</th></tr></thead>
                         <tbody>
                         <?php foreach($bookings as $booking): ?>
                             <?php $status = $booking['status'] ?? ''; ?>
                             <tr>
-                                <td><?= e($booking['date'] ?? '') ?></td>
-                                <td><?= e($booking['time'] ?? '') ?></td>
+                                <td><?= e(trim(($booking['date'] ?? '') . ' ' . ($booking['time'] ?? ''))) ?></td>
                                 <td><?= e($booking['astrologer_name'] ?? $booking['astrologer_slug'] ?? '') ?></td>
+                                <td><?= e($booking['session_type'] ?? (($booking['mode'] ?? '') === 'text_session' ? 'Message' : 'Call')) ?></td>
+                                <td><?= e($booking['credit_rate'] ?? '') ?></td>
+                                <td><?= e((string)($booking['credits_spent'] ?? 0)) ?></td>
                                 <td>
                                     <span class="badge badge--<?= $status === 'confirmed' ? 'success' : ($status === 'payment_pending' ? 'warning' : 'default') ?>"><?= e(ucfirst(str_replace('_', ' ', $status))) ?></span>
                                 </td>

@@ -41,7 +41,9 @@ The durable architecture constraint is:
 - Cart quantity, remove, subtotal, free shipping, and checkout review screens render.
 - Checkout payment verification persists customer name, email, phone, shipping address, city, and PIN code into the order record after Razorpay signature verification.
 - Checkout detects missing Razorpay configuration and blocks live payment.
-- Astrologer listing now follows the call/message marketplace pattern from competitor references: credit balance, recharge CTA, filters, search, status dots, ratings, and `CHAT`/`CALL`/`JOIN Q`/`OFFLINE` actions.
+- Astrologer listing now follows the call/message marketplace pattern from competitor references: credit balance, recharge CTA, filters, search, status dots, ratings, round call/message buttons, `Waitlist`, and `OFFLINE` actions.
+- Home page astrology cards now use a looping carousel so all astrologers rotate across desktop and mobile instead of showing only three fixed profiles.
+- Remote call/message buttons create session requests without appointment date/time slots, and the user session panel shows session type, rate, and credits spent for each call/message record.
 - Astrologer listing and profile actions use round icon-only controls for message and call instead of large text buttons.
 - Astrologer profile pages now show a remote action panel with credit pricing, message/call icon controls, support-assisted `BOOK SESSION`, ratings, trust points, gifts, reviews, and no appointment date slots or per-slot booking forms.
 - Ended astrology sessions can collect a five-star review from account bookings, and astrologer ratings are calculated from saved reviews.
@@ -65,7 +67,7 @@ The durable architecture constraint is:
 - Production deployment is behind local code: `https://sripanchamispiritual.com/` loads in the browser, but `/astrologers` still shows text action buttons and does not yet include the latest local icon-button and guarded review flow.
 - Razorpay live keys are not configured locally, so ecommerce payment cannot be completed end to end.
 - Google OAuth is scaffolded but depends on configured client credentials and callback setup.
-- Real Razorpay payment verification, Google login, password reset email, and remote consultation payment flow still need live-credential testing.
+- Real Razorpay payment verification, Google login, password reset email, and remote consultation credit charging still need live-credential testing.
 - SMTP credentials and production cron are not configured locally, so queued customer emails cannot be sent end to end yet.
 
 ## Duplicate Or Conflicting Areas
@@ -82,7 +84,7 @@ The durable architecture constraint is:
 1. Deploy the latest local `main` build to production so the live site matches verified local behavior.
 2. Choose one customer frontend source of truth: PHP templates or the vanilla SPA. Keeping both will continue creating duplicate UI, duplicate cart behavior, and mismatched routes.
 3. Complete Razorpay production setup and verify live payment, order persistence, cart clearing, and customer redirect end to end.
-4. Complete remote call/message payment handling for text and direct-call sessions.
+4. Complete remote call/message credit charging for text and direct-call sessions.
 5. Replace the placeholder balance/recharge UI with real wallet state, top-up checkout, insufficient-credit handling, session timers, and queue status from backend data.
 6. Configure SMTP secrets and production cron for `php tools/process-mail-queue.php`, then verify payment, shipment, and delayed review emails on the live host.
 7. Implement coupons only when there is a real discount workflow and tests for totals.

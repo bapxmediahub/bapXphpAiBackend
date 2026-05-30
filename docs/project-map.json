@@ -656,8 +656,9 @@
             "page": "public/astrologer",
             "controller": "BookingController@book",
             "services": [
+                "AuthService",
                 "ResourceService",
-                "AvailabilityService"
+                "AstrologerService"
             ]
         },
         {

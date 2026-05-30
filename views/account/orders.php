@@ -26,14 +26,20 @@
             <?php else: ?>
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>Order ID</th><th>Status</th><th>Total</th><th>Email</th><th>Product Review</th></tr></thead>
+                        <thead><tr><th>Order ID</th><th>Status</th><th>Total</th><th>Delivery Address</th><th>Shipped At</th><th>Product Review</th></tr></thead>
                         <tbody>
                         <?php foreach($orders as $order): ?>
                             <tr>
                                 <td><code style="font-size:0.8rem; background:var(--color-bg-alt); padding:0.2rem 0.5rem; border-radius:var(--radius-sm);"><?= e(substr($order['id'] ?? '', 0, 12)) ?></code></td>
                                 <td><span class="badge badge--default"><?= e(ucfirst($order['status'] ?? 'pending')) ?></span></td>
                                 <td style="font-weight:600; color:var(--color-maroon);">₹<?= e((string)($order['total'] ?? 0)) ?></td>
-                                <td style="font-size:0.85rem; color:var(--color-text-muted);"><?= e($order['customer_email'] ?? '') ?></td>
+                                <td style="font-size:0.85rem; color:var(--color-text-muted);">
+                                    <?= e($order['shipping_address'] ?? 'Not recorded') ?><br>
+                                    <?= e($order['shipping_city'] ?? '') ?> <?= e($order['shipping_pincode'] ?? '') ?>
+                                </td>
+                                <td style="font-size:0.85rem; color:var(--color-text-muted);">
+                                    <?= !empty($order['shipped_at']) ? e($order['shipped_at']) : e(ucfirst(str_replace('_', ' ', (string)($order['status'] ?? 'processing')))) ?>
+                                </td>
                                 <td data-review_request_after_at="<?= e((string)($order['review_request_after_at'] ?? '')) ?>">
                                     <?php if(isset($reviewService) && $reviewService->productReviewIsDue($order)): ?>
                                         <?php foreach(($order['items'] ?? []) as $item): ?>

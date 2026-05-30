@@ -61,6 +61,6 @@
 - `/cart/update` → `CommerceController@updateCart` → CartService
 - `/checkout/create-order` → `CommerceController@createOrder` → SecretService, PaymentService
 - `/payment/verify` → `CommerceController@verifyPayment` → SecretService, PaymentService, JsonStoreService
-- `/appointments/book` → `BookingController@book` → ResourceService, AvailabilityService
+- `/appointments/book` → `BookingController@book` → AuthService, ResourceService, AstrologerService
 - `/reviews/astrologer` → `ReviewController@saveAstrologer` → ReviewService, AuthService
 - `/reviews/product` → `ReviewController@saveProduct` → ReviewService, AuthService
