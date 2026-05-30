@@ -402,6 +402,27 @@ $tests['architecture and deployment docs describe current php template stack'] =
     assertTrue(str_contains($deployment, 'PHP-rendered templates'), 'Deployment docs should describe the current PHP template frontend');
 };
 
+$tests['legacy duplicate frontend modules are removed from the php template app'] = function (): void {
+    foreach ([
+        'assets/js/core/app-core.js',
+        'assets/js/ui/components.js',
+        'components/AstroCard.js',
+        'components/BottomNav.js',
+        'components/Footer.js',
+        'components/Header.js',
+        'components/Page.js',
+        'components/ProductCard.js',
+        'utils/api.js',
+        'utils/router.js',
+    ] as $path) {
+        assertTrue(!is_file(app_path($path)), "Unused duplicate frontend module should be removed: {$path}");
+    }
+    $spa = file_get_contents(app_path('views/layouts/spa.php'));
+    foreach (['/assets/js/app.js', '/assets/js/components.js', '/assets/js/pages.js', '/assets/js/main.js'] as $script) {
+        assertTrue(str_contains($spa, $script), "SPA fallback should keep its active script {$script}");
+    }
+};
+
 foreach ($tests as $name => $test) {
     try {
         $test();

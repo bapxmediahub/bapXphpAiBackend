@@ -73,16 +73,8 @@ The durable architecture constraint is:
   - PHP templates in `views/public/`.
   - Vanilla SPA pages in `assets/js/pages.js`.
 - The main routed app currently uses PHP templates for the primary public routes, while unknown routes fall back to the SPA.
-- JavaScript components are duplicated across:
-  - `assets/js/components.js`
-  - `assets/js/ui/components.js`
-  - root `components/*.js`
-- Core JS helpers are duplicated across:
-  - `assets/js/app.js`
-  - `assets/js/core/app-core.js`
-  - `utils/api.js`
-  - `utils/router.js`
-- Architecture and Hostinger deployment docs now describe the current PHP-template stack, but duplicate legacy JavaScript files still remain until the frontend source of truth is finalized.
+- The unused duplicate JavaScript helper/component copies under `assets/js/core/`, `assets/js/ui/`, root `components/`, and root `utils/` have been removed.
+- Architecture and Hostinger deployment docs now describe the current PHP-template stack.
 
 ## What Needs Optimization Against The Objective
 
@@ -93,7 +85,7 @@ The durable architecture constraint is:
 5. Replace the placeholder balance/recharge UI with real wallet state, top-up checkout, insufficient-credit handling, session timers, and queue status from backend data.
 6. Configure SMTP secrets and production cron for `php tools/process-mail-queue.php`, then verify payment, shipment, and delayed review emails on the live host.
 7. Implement coupons only when there is a real discount workflow and tests for totals.
-8. Remove unused duplicate JS modules after the frontend direction is finalized.
+8. Decide whether to keep or remove the legacy SPA fallback after the live PHP-template deployment is verified.
 9. Add browser-level end-to-end tests for product purchase, remote consultation contact request, login/register, contact form, and admin resource edits.
 
 ## Local Development
