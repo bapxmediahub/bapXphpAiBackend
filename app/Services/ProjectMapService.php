@@ -37,6 +37,7 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/admin/coupons','name'=>'admin.coupons','page'=>'admin/list','controller'=>'AdminController@coupons','services'=>['CouponService']],
             ['method'=>'GET','path'=>'/admin/orders','name'=>'admin.orders','page'=>'admin/list','controller'=>'AdminController@orders','services'=>['OrderService']],
             ['method'=>'GET','path'=>'/admin/orders/{id}','name'=>'admin.order.show','page'=>'admin/detail','controller'=>'AdminController@order','services'=>['OrderService','ShippingService']],
+            ['method'=>'POST','path'=>'/admin/orders/{id}/status','name'=>'admin.order.status','page'=>'admin/detail','controller'=>'AdminController@saveOrderStatus','services'=>['OrderService','MailQueueService']],
             ['method'=>'GET','path'=>'/admin/shipping','name'=>'admin.shipping','page'=>'admin/settings','controller'=>'AdminController@shipping','services'=>['ShippingService','SettingsService']],
             ['method'=>'GET','path'=>'/admin/astrologers','name'=>'admin.astrologers','page'=>'admin/list','controller'=>'AdminController@astrologers','services'=>['AstrologerService','AvailabilityService']],
             ['method'=>'GET','path'=>'/admin/appointments','name'=>'admin.appointments','page'=>'admin/list','controller'=>'AdminController@appointments','services'=>['AppointmentService']],
@@ -75,15 +76,15 @@ final class ProjectMapService {
         unset($route);
         return [
             'routes'=>$routes,
-            'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AvailabilityService','AppointmentService','TempleService','SettingsService','ProjectMapService','JsonStoreService','AuditLogService','ResourceService','SecretService','ContactService','ReviewService','PasswordResetService'],
+            'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AvailabilityService','AppointmentService','TempleService','SettingsService','ProjectMapService','JsonStoreService','AuditLogService','ResourceService','SecretService','ContactService','ReviewService','PasswordResetService','MailQueueService'],
             'integrations'=>['GoogleOAuthClient','RazorpayClient'],
-            'collections'=>['users','products','categories','coupons','orders','astrologers','appointments','temples','settings','audit_events','reviews'],
+            'collections'=>['users','products','categories','coupons','orders','astrologers','appointments','temples','settings','audit_events','reviews','mail_queue'],
         ];
     }
     public static function validate(array $map): array {
         $missingRouteMappings = array_values(array_filter($map['routes'], fn($r) => empty($r['controller']) || empty($r['page'])));
         $used = array_unique(array_merge(...array_map(fn($r) => $r['services'], $map['routes'])));
         $missingServices = array_values(array_diff($used, $map['services']));
-        return ['missing_route_mappings'=>$missingRouteMappings,'missing_services'=>$missingServices,'missing_collections'=>array_values(array_diff(['users','products','categories','coupons','orders','astrologers','appointments','temples','settings','audit_events','reviews'], $map['collections']))];
+        return ['missing_route_mappings'=>$missingRouteMappings,'missing_services'=>$missingServices,'missing_collections'=>array_values(array_diff(['users','products','categories','coupons','orders','astrologers','appointments','temples','settings','audit_events','reviews','mail_queue'], $map['collections']))];
     }
 }

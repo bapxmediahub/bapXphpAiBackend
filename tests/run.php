@@ -268,6 +268,71 @@ $tests['review service stores five star reviews and calculates averages'] = func
     assertSame('product', $product['target_type'], 'Product review should be tagged as product');
 };
 
+$tests['mail queue schedules payment shipment and delayed product review emails'] = function (): void {
+    $dir = sys_get_temp_dir() . '/sps-mail-' . bin2hex(random_bytes(4));
+    $store = new JsonStoreService($dir);
+    $queue = new App\Services\MailQueueService($store);
+    $order = [
+        'id' => 'ord_1',
+        'customer_email' => 'customer@example.com',
+        'customer_name' => 'Customer',
+        'total' => 1200,
+        'items' => [['name' => 'Rudraksha Mala', 'qty' => 1]],
+        'shipped_at' => '2026-06-02T10:00:00+05:30',
+    ];
+    $queue->enqueuePaymentConfirmation($order);
+    $queue->enqueueShipmentNotification($order);
+    $queue->enqueueProductReviewRequest($order, 10);
+    $records = $store->read('mail_queue');
+    assertSame(3, count($records), 'Payment, shipment, and review request emails should be queued');
+    assertSame('payment_confirmation', $records[0]['type'] ?? null, 'Payment email should be typed');
+    assertSame('shipment_notification', $records[1]['type'] ?? null, 'Shipment email should be typed');
+    assertSame('product_review_request', $records[2]['type'] ?? null, 'Delayed review email should be typed');
+    assertSame('2026-06-12T10:00:00+05:30', $records[2]['available_at'] ?? null, 'Product review request should wait 10 days after shipment');
+};
+
+$tests['mail queue exposes due messages and processor script for cron delivery'] = function (): void {
+    $dir = sys_get_temp_dir() . '/sps-mail-due-' . bin2hex(random_bytes(4));
+    $store = new JsonStoreService($dir);
+    $queue = new App\Services\MailQueueService($store);
+    $queue->enqueue('past_notice', 'customer@example.com', 'Past', '<p>Past</p>', new DateTimeImmutable('2026-06-01T10:00:00+05:30'));
+    $queue->enqueue('future_notice', 'customer@example.com', 'Future', '<p>Future</p>', new DateTimeImmutable('2026-06-20T10:00:00+05:30'));
+    $due = $queue->due(new DateTimeImmutable('2026-06-12T10:00:00+05:30'));
+    assertSame(['past_notice'], array_column($due, 'type'), 'Only pending mail available by now should be due');
+    assertTrue(is_file(app_path('tools/process-mail-queue.php')), 'Mail queue should have a cron-friendly processor script');
+};
+
+$tests['order shipping workflow sets review date and queues customer emails'] = function (): void {
+    $dir = sys_get_temp_dir() . '/sps-orders-' . bin2hex(random_bytes(4));
+    $store = new JsonStoreService($dir);
+    $store->write('orders', [[
+        'id' => 'ord_2',
+        'status' => 'confirmed',
+        'customer_email' => 'customer@example.com',
+        'customer_name' => 'Customer',
+        'items' => [['name' => 'Lamp', 'qty' => 1]],
+    ]]);
+    $service = new App\Services\OrderService($store, new App\Services\MailQueueService($store));
+    $order = $service->updateStatus('ord_2', 'shipped', new DateTimeImmutable('2026-06-02T10:00:00+05:30'));
+    assertSame('shipped', $order['status'] ?? null, 'Order status should update to shipped');
+    assertSame('2026-06-02T10:00:00+05:30', $order['shipped_at'] ?? null, 'Shipping timestamp should be stored');
+    assertSame('2026-06-12T10:00:00+05:30', $order['review_request_after_at'] ?? null, 'Review form should unlock 10 days after shipment');
+    $mail = $store->read('mail_queue');
+    assertSame(['shipment_notification', 'product_review_request'], array_column($mail, 'type'), 'Shipping should queue shipment and delayed review emails');
+};
+
+$tests['checkout and admin order pages wire customer email workflow'] = function (): void {
+    $commerce = file_get_contents(app_path('app/Controllers/CommerceController.php'));
+    $admin = file_get_contents(app_path('app/Controllers/AdminController.php'));
+    $detailView = file_get_contents(app_path('views/admin/detail.php'));
+    $map = ProjectMapService::registry();
+    $paths = array_column($map['routes'], 'path');
+    assertTrue(str_contains($commerce, 'enqueuePaymentConfirmation'), 'Successful payment verification should queue payment confirmation email');
+    assertTrue(str_contains($admin, 'saveOrderStatus'), 'Admin controller should expose order status updates');
+    assertTrue(str_contains($detailView, 'name="status"'), 'Order detail should expose a status update form');
+    assertTrue(in_array('/admin/orders/{id}/status', $paths, true), 'Project map should include the admin order status save route');
+};
+
 $tests['account pages expose review forms only for ended sessions and due shipped products'] = function (): void {
     $bookingsView = file_get_contents(app_path('views/account/bookings.php'));
     assertTrue(str_contains($bookingsView, 'name="target_type" value="astrologer"'), 'Ended astrology sessions should expose astrologer review form');

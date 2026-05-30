@@ -21,6 +21,17 @@
                 <p><?= e($order['payment_id'] ?? 'Not recorded') ?></p>
             </div>
         </div>
+        <form method="post" action="/admin/orders/<?= e((string)($order['id'] ?? '')) ?>/status" style="margin:var(--space-lg) 0; display:flex; gap:var(--space-sm); align-items:end; flex-wrap:wrap;">
+            <div>
+                <label for="order-status" style="display:block; font-size:0.78rem; font-weight:700; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:var(--space-xs);">Update Status</label>
+                <select id="order-status" name="status">
+                    <?php foreach(['confirmed','processing','shipped','delivered','cancelled'] as $status): ?>
+                        <option value="<?= e($status) ?>" <?= (($order['status'] ?? '') === $status ? 'selected' : '') ?>><?= e(ucfirst($status)) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <button class="btn btn-primary" type="submit">Save Status</button>
+        </form>
         <h3 style="font-size:1rem; margin:var(--space-lg) 0 var(--space-sm);">Items</h3>
         <div class="table-wrap">
             <table>

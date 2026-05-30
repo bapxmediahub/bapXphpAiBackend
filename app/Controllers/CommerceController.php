@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{CartService,ProductService,SecretService,PaymentService,JsonStoreService};
+use App\Services\{CartService,ProductService,SecretService,PaymentService,JsonStoreService,MailQueueService};
 use App\Integrations\Razorpay\RazorpayClient;
 final class CommerceController extends BaseController {
     public function addToCart(): void {
@@ -93,6 +93,7 @@ final class CommerceController extends BaseController {
                 'created_at' => date('c'),
             ];
             (new JsonStoreService())->upsert('orders', $order);
+            (new MailQueueService())->enqueuePaymentConfirmation($order);
             $_SESSION['cart'] = [];
         }
         header('Content-Type: application/json');

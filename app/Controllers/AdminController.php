@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AuthService,ResourceService,SecretService,SettingsService};
+use App\Services\{AuthService,OrderService,ResourceService,SecretService,SettingsService};
 final class AdminController extends BaseController {
     protected string $layout = 'admin';
     public function __construct() {
@@ -30,6 +30,7 @@ final class AdminController extends BaseController {
         }
         $this->render('admin/detail',['pageTitle' => 'Order '.$id, 'title' => 'Order '.$id, 'order' => $order]);
     }
+    public function saveOrderStatus(string $id): void{try{(new OrderService())->updateStatus($id, $_POST['status'] ?? 'confirmed'); $this->flash('Order status updated.');}catch(\Throwable){$this->flash('Unable to update order status.');} $this->redirect('/admin/orders/'.$id);}
     public function shipping(): void{$this->render('admin/settings',['pageTitle' => 'Shipping', 'title' => 'Shipping']);}
     public function astrologers(): void{$this->resource('Astrologers','astrologers',['slug','name','description','email','message_credit_cost','call_credit_per_second','credit_to_rupee_rate','text_session_prm','call_session_prm','payout_percentage','modes','working_days','start_time','end_time','slot_minutes','languages','experience_years','speciality','photo_url']);}
     public function saveAstrologer(): void{$this->save('astrologers');}

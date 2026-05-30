@@ -349,6 +349,18 @@
             ]
         },
         {
+            "method": "POST",
+            "path": "/admin/orders/{id}/status",
+            "name": "admin.order.status",
+            "page": "admin/detail",
+            "controller": "AdminController@saveOrderStatus",
+            "services": [
+                "OrderService",
+                "MailQueueService",
+                "AuthService"
+            ]
+        },
+        {
             "method": "GET",
             "path": "/admin/shipping",
             "name": "admin.shipping",
@@ -692,7 +704,8 @@
         "SecretService",
         "ContactService",
         "ReviewService",
-        "PasswordResetService"
+        "PasswordResetService",
+        "MailQueueService"
     ],
     "integrations": [
         "GoogleOAuthClient",
@@ -709,6 +722,7 @@
         "temples",
         "settings",
         "audit_events",
-        "reviews"
+        "reviews",
+        "mail_queue"
     ]
 }

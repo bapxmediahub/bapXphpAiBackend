@@ -45,6 +45,9 @@ The durable architecture constraint is:
 - Astrologer profile pages now show a remote action panel with credit pricing, message/call icon controls, support-assisted `BOOK SESSION`, ratings, trust points, gifts, reviews, and no appointment date slots or per-slot booking forms.
 - Ended astrology sessions can collect a five-star review from account bookings, and astrologer ratings are calculated from saved reviews.
 - Product pages show product star rating summaries, and shipped/delivered orders can collect product reviews only after `review_request_after_at` is due.
+- Payment confirmation, shipment notification, and delayed product review request emails are queued to JSON in `mail_queue`.
+- Admin order status updates can mark orders as shipped/delivered, set `review_request_after_at` 10 days after shipment, and queue the shipment plus product-review emails.
+- `php tools/process-mail-queue.php` can be run by cron to send due queued emails after SMTP secrets are configured.
 - Consultation support requests go to the contact form with the astrology subject selected.
 - Account pages require a signed-in user before showing order or booking history.
 - Admin pages require an admin role. On a fresh JSON install, the first local email/password registration becomes the owner admin account and later registrations default to customer.
@@ -62,8 +65,7 @@ The durable architecture constraint is:
 - Razorpay live keys are not configured locally, so ecommerce payment cannot be completed end to end.
 - Google OAuth is scaffolded but depends on configured client credentials and callback setup.
 - Real payment verification, order creation with shipping/customer details, Google login, password reset email, and remote consultation payment flow still need live-credential testing.
-- Email notifications are still pending: payment confirmation email, shipped email, and delayed product review request email after shipment.
-- There is no scheduled worker/cron yet to send product review request emails when `review_request_after_at` becomes due.
+- SMTP credentials and production cron are not configured locally, so queued customer emails cannot be sent end to end yet.
 
 ## Duplicate Or Conflicting Areas
 
@@ -89,12 +91,11 @@ The durable architecture constraint is:
 3. Complete Razorpay production setup and verify payment, order persistence, cart clearing, and customer redirect end to end.
 4. Complete remote call/message payment handling for text and direct-call sessions.
 5. Replace the placeholder balance/recharge UI with real wallet state, top-up checkout, insufficient-credit handling, session timers, and queue status from backend data.
-6. Add mail delivery and a scheduled job for payment, shipment, and delayed product review request emails.
-7. Add an admin shipping/status workflow that sets `review_request_after_at` when an order is shipped.
-8. Implement coupons only when there is a real discount workflow and tests for totals.
-9. Remove unused duplicate JS modules after the frontend direction is finalized.
-10. Update stale docs that still describe a React/CDN architecture.
-11. Add browser-level end-to-end tests for product purchase, remote consultation contact request, login/register, contact form, and admin resource edits.
+6. Configure SMTP secrets and production cron for `php tools/process-mail-queue.php`, then verify payment, shipment, and delayed review emails on the live host.
+7. Implement coupons only when there is a real discount workflow and tests for totals.
+8. Remove unused duplicate JS modules after the frontend direction is finalized.
+9. Update stale docs that still describe a React/CDN architecture.
+10. Add browser-level end-to-end tests for product purchase, remote consultation contact request, login/register, contact form, and admin resource edits.
 
 ## Local Development
 
@@ -136,6 +137,7 @@ The latest local audit verified:
 - Astrologer profile shows remote consultation details and directs users to the contact form.
 - Astrologer list/profile use icon-only message and call actions locally.
 - Product and astrologer review storage and average rating calculation work locally.
+- Mail queue service stores payment, shipment, and 10-day delayed product-review request emails; due-mail selection and the cron processor script are covered by tests.
 - Local route gaps for `/sri-panchami-spiritual`, `/spiritual`, and `/api/categories` are fixed.
 - Admin settings and admin list/detail pages are data-backed instead of placeholder-only screens.
 
