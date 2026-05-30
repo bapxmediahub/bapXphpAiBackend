@@ -48,7 +48,7 @@ Module notes:
 - Temple listing and detail pages.
 - Contact and consultation request form.
 - Customer account order/session views.
-- Owner admin for products, categories, coupons, astrologers, appointments, temples, orders, contact submissions, settings, integrations, backups, audit logs, and project map.
+- Owner admin for products, categories, coupons, astrologers, remote session requests, temples, orders, contact submissions, settings, integrations, backups, audit logs, and project map.
 - Mail queue for payment confirmation, shipment notification, and delayed product review request emails.
 - `.env` admin login support with editable admin credentials from Admin Settings.
 

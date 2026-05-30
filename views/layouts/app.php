@@ -191,7 +191,7 @@ echo $critical;
         <a href="/about">About Us</a>
         <a href="/contact">Contact Us</a>
         <?php if(!empty($_SESSION['user'])): ?>
-            <a href="/account/bookings">My Bookings</a>
+            <a href="/account/bookings">My Sessions</a>
             <a href="/logout">Logout</a>
         <?php else: ?>
             <a href="/login">Login</a>

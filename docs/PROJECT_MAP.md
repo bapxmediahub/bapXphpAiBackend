@@ -36,7 +36,7 @@
 - `/admin/orders/{id}` → `AdminController@order` → OrderService, ShippingService, AuthService
 - `/admin/orders/{id}/status` → `AdminController@saveOrderStatus` → OrderService, MailQueueService, AuthService
 - `/admin/shipping` → `AdminController@shipping` → ShippingService, SettingsService, AuthService
-- `/admin/astrologers` → `AdminController@astrologers` → AstrologerService, AvailabilityService, AuthService
+- `/admin/astrologers` → `AdminController@astrologers` → AstrologerService, AuthService
 - `/admin/appointments` → `AdminController@appointments` → AppointmentService, AuthService
 - `/admin/temples` → `AdminController@temples` → TempleService, AuthService
 - `/admin/settings` → `AdminController@settings` → SettingsService, AuthService

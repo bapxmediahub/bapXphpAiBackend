@@ -7,7 +7,7 @@ Collections are stored separately in `storage/data`. Writes use lock files plus 
 - `categories.json` - Product categories
 - `orders.json` - Customer orders
 - `users.json` - User accounts
-- `appointments.json` - Astrologer bookings
+- `appointments.json` - Remote astrologer call/message session requests
 - `astrologers.json` - Astrologer profiles
 - `temples.json` - Temple information
 - `coupons.json` - Discount coupons

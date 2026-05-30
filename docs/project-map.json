@@ -380,7 +380,6 @@
             "controller": "AdminController@astrologers",
             "services": [
                 "AstrologerService",
-                "AvailabilityService",
                 "AuthService"
             ]
         },
@@ -705,7 +704,6 @@
         "PaymentService",
         "ShippingService",
         "AstrologerService",
-        "AvailabilityService",
         "AppointmentService",
         "TempleService",
         "SettingsService",

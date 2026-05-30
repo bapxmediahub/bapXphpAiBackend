@@ -34,10 +34,10 @@
     </div>
     <div class="admin-card">
         <h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20"/><path d="M2 12h20"/></svg> Services</h2>
-        <p>Manage astrologers, appointments, and temples.</p>
+        <p>Manage astrologers, remote session requests, and temples.</p>
         <div class="admin-card__actions">
             <a href="/admin/astrologers" class="btn btn-sm btn-ghost">Astrologers</a>
-            <a href="/admin/appointments" class="btn btn-sm btn-ghost">Appointments</a>
+            <a href="/admin/appointments" class="btn btn-sm btn-ghost">Sessions</a>
             <a href="/admin/temples" class="btn btn-sm btn-ghost">Temples</a>
         </div>
     </div>

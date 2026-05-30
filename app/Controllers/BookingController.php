@@ -14,7 +14,7 @@ final class BookingController extends BaseController {
   $data['customer_name'] = trim($data['customer_name'] ?? $user['name'] ?? '');
   $data['customer_email'] = trim($data['customer_email'] ?? $user['email'] ?? '');
   if (empty($data['customer_name']) || empty($data['customer_email'])) {
-    $this->flash('Please provide your name and email to book this appointment.');
+    $this->flash('Please provide your name and email to start this remote session.');
     $this->redirect('/astrologers/' . ($astrologer['slug'] ?? ''));
   }
   $mode = in_array(($data['mode'] ?? 'direct_call'), ['text_session', 'direct_call'], true) ? $data['mode'] : 'direct_call';

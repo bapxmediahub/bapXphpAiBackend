@@ -25,7 +25,7 @@
     <div class="hero-deity">
         <div class="deity-frame">
             <img src="/assets/images/varahi-amman.png" 
-                 alt="Sri Maha Varahi Amman — Divine deity worshipped at Sri Panchami Spiritual, Chennai" 
+                 alt="Sri Maha Varahi Amman — Divine deity worshipped at Sri Panchami Spiritual"
                  width="480" 
                  height="640"
                  fetchpriority="high">
@@ -149,8 +149,8 @@
 <section class="section">
     <div class="section-header">
         <span class="eyebrow">Guidance · Clarity · Remedies</span>
-        <h2 class="section-title">Expert Vedic Astrology Consultation in Chennai</h2>
-        <p class="lede">Consult experienced Vedic astrologers for accurate kundli matching, horoscope reading, career guidance, and personalized remedy recommendations in Tamil and English.</p>
+        <h2 class="section-title">Expert Vedic Astrology Consultation</h2>
+        <p class="lede">Consult experienced Vedic astrologers by private message or direct call for kundli matching, horoscope reading, career guidance, and personalized remedies.</p>
     </div>
     <?php if(!empty($astrologers)): ?>
     <div class="astro-carousel" aria-label="Astrologers carousel">
@@ -158,7 +158,7 @@
         <?php foreach(array_merge($astrologers, $astrologers) as $astro): ?>
             <article class="astrologer-card reveal">
                 <div class="astrologer-card__media">
-                    <img class="astrologer-card__photo" src="<?= e($astro['photo_url'] ?? 'https://placehold.co/800x1000/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($astro['name']) ?> — <?= e($astro['speciality'] ?? 'Vedic Astrologer') ?> in Chennai" loading="lazy">
+                    <img class="astrologer-card__photo" src="<?= e($astro['photo_url'] ?? 'https://placehold.co/800x1000/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($astro['name']) ?> — <?= e($astro['speciality'] ?? 'Vedic Astrologer') ?>" loading="lazy">
                     <div class="astrologer-card__media-badge">Live expert</div>
                 </div>
                 <div class="astrologer-card__body astrologer-card__body--portrait">

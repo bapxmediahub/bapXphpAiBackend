@@ -1304,7 +1304,7 @@ nav a:hover { color: var(--color-maroon); }
     to { transform: translateX(-50%); }
 }
 
-/* ── Booking / Slots ── */
+/* ── Remote Consultation Profile ── */
 .booking-layout { max-width: 1220px; margin: 0 auto; padding: var(--space-2xl) 5vw; }
 .booking-profile {
     display: flex;
@@ -1320,22 +1320,6 @@ nav a:hover { color: var(--color-maroon); }
 .booking-profile__content { display: grid; gap: var(--space-xs); }
 .booking-profile__name { font-family: var(--font-serif); font-size: 1.5rem; margin: 0 0 var(--space-2xs); }
 .booking-profile__meta { font-size: 0.85rem; color: var(--color-text-muted); }
- .slot-picker { background: var(--color-white); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); margin-bottom: var(--space-xl); }
-.slot-picker h3 { font-family: var(--font-serif); margin: 0 0 var(--space-md); }
-.slot-picker__form { display: flex; gap: var(--space-md); align-items: flex-end; margin-bottom: var(--space-lg); flex-wrap: wrap; }
-.slot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--space-sm); }
-.slot-card {
-    border: 1.5px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-sm);
-    transition: all var(--transition-base);
-}
-.slot-card:hover { border-color: var(--color-gold); box-shadow: var(--shadow-sm); }
-.slot-card__time { font-weight: 600; font-size: 0.9rem; text-align: center; padding: var(--space-xs) 0; }
-.slot-card .form-group { gap: 2px; }
-.slot-card .form-group label { font-size: 0.7rem; }
-.slot-card .form-group input, .slot-card .form-group select { padding: 0.4rem 0.6rem; font-size: 0.8rem; border-radius: var(--radius-sm); }
-.slot-card button { width: 100%; padding: 0.5rem; font-size: 0.75rem; }
 .consultation-panel__grid {
     display: grid;
     grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
@@ -1980,9 +1964,6 @@ tr:hover td { background: var(--color-bg-alt); }
     .checkout-form { padding: var(--space-md); }
     .checkout-form h2 { font-size: 1.1rem; }
     .checkout-item { padding: var(--space-sm); }
-    
-    .slot-grid { grid-template-columns: 1fr; }
-    .slot-card { padding: var(--space-sm); }
     
     .flash { padding: var(--space-md); font-size: 0.85rem; }
     

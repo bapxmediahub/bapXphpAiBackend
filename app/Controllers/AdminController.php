@@ -35,7 +35,7 @@ final class AdminController extends BaseController {
     public function astrologers(): void{$this->resource('Astrologers','astrologers',['slug','name','description','email','message_credit_cost','call_credit_per_second','credit_to_rupee_rate','text_session_prm','call_session_prm','payout_percentage','modes','working_days','start_time','end_time','slot_minutes','languages','experience_years','speciality','photo_url']);}
     public function saveAstrologer(): void{$this->save('astrologers');}
     public function deleteAstrologer(): void{$this->delete('astrologers');}
-    public function appointments(): void{$this->list('Appointments','appointments');}
+    public function appointments(): void{$this->list('Sessions','appointments');}
     public function temples(): void{$this->resource('Temples','temples',['name','description','address','map_url']);}
     public function saveTemple(): void{$this->save('temples');}
     public function deleteTemple(): void{$this->delete('temples');}

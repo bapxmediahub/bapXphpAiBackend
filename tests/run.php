@@ -2,7 +2,6 @@
 require __DIR__ . '/../app/bootstrap.php';
 
 use App\Services\JsonStoreService;
-use App\Services\AvailabilityService;
 use App\Services\EnvService;
 use App\Services\PaymentService;
 use App\Services\ProjectMapService;
@@ -28,18 +27,6 @@ $tests['json store atomically persists records'] = function (): void {
     $store = new JsonStoreService($dir);
     $store->write('products', [['id' => 'p1', 'name' => 'Lamp']]);
     assertSame([['id' => 'p1', 'name' => 'Lamp']], $store->read('products'), 'JSON store should round-trip data');
-};
-
-$tests['availability excludes booked slots'] = function (): void {
-    $service = new AvailabilityService();
-    $astrologer = [
-        'working_days' => ['monday'],
-        'start_time' => '09:00',
-        'end_time' => '11:00',
-        'slot_minutes' => 60,
-    ];
-    $slots = $service->slotsForDate($astrologer, '2026-05-18', [['date' => '2026-05-18', 'time' => '09:00']]);
-    assertSame(['10:00'], $slots, 'Booked slots should be removed');
 };
 
 $tests['payment signature verification matches Razorpay format'] = function (): void {
