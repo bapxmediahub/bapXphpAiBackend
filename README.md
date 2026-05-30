@@ -105,6 +105,7 @@ Run validation:
 ```bash
 php tests/run.php
 php tools/validate-project-map.php
+php tools/smoke-local.php
 ```
 
 Generate project map:
@@ -119,6 +120,7 @@ The latest local audit verified:
 
 - `php tests/run.php`: passing.
 - `php tools/validate-project-map.php`: passing.
+- `php tools/smoke-local.php`: passing.
 - Registered local public GET routes return `HTTP 200`; guest account and admin routes now redirect with `HTTP 302` to enforce authentication.
 - API smoke test verified valid JSON for `/api/`, `/api/shop`, `/api/categories`, `/api/product/karuppasami-dollar`, `/api/astrologers`, and `/api/temples`.
 - Browser smoke test on desktop viewport: public shopping and astrologer pages render; guest account/admin pages redirect instead of exposing private data.

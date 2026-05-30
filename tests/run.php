@@ -423,6 +423,15 @@ $tests['legacy duplicate frontend modules are removed from the php template app'
     }
 };
 
+$tests['local smoke tool verifies key routes api and spa fallback'] = function (): void {
+    $tool = app_path('tools/smoke-local.php');
+    assertTrue(is_file($tool), 'Local route/API smoke tool should exist');
+    $output = [];
+    $status = 0;
+    exec('php ' . escapeshellarg($tool) . ' 2>&1', $output, $status);
+    assertSame(0, $status, "Local smoke tool should pass:\n" . implode("\n", $output));
+};
+
 foreach ($tests as $name => $test) {
     try {
         $test();
