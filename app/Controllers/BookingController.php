@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AuthService,ResourceService,AstrologerService};
+use App\Services\{AuthService,ResourceService,AstrologerService,WalletService};
 final class BookingController extends BaseController {
  public function book(): void {
   (new AuthService())->requireUser();
@@ -28,12 +28,23 @@ final class BookingController extends BaseController {
   $data['credit_rate'] = $mode === 'text_session'
     ? (string)($astrologer['message_credit_cost'] ?? 5) . ' credits/message'
     : (string)($astrologer['call_credit_per_second'] ?? 0.5) . ' credits/sec';
-  $data['credits_spent'] = 0;
+  $initialCredits = $mode === 'text_session' ? (int)($astrologer['message_credit_cost'] ?? 5) : max(1, (int)ceil(((float)($astrologer['call_credit_per_second'] ?? 0.5)) * 60));
+  $wallet = new WalletService();
+  if (($data['queue_status'] ?? '') !== 'waitlist' && $wallet->balanceFor($data['customer_email']) < $initialCredits) {
+    $this->flash('Please recharge your wallet to start this session.');
+    $this->redirect('/recharge?amount=100');
+  }
+  $data['credits_spent'] = ($data['queue_status'] ?? '') === 'waitlist' ? 0 : $initialCredits;
   $data['status'] = ($data['queue_status'] ?? '') === 'waitlist' ? 'waitlist' : 'payment_pending';
   $data['created_at'] = date('c');
   $data = array_filter($data, fn($v) => $v !== '');
   (new ResourceService('appointments'))->save($data);
-  $this->flash(($data['status'] === 'waitlist' ? 'Waitlist request saved. ' : 'Session request saved. ') . 'Complete payment to start your session.');
+  if ($data['status'] !== 'waitlist') {
+    $wallet->spend($data['customer_email'], $initialCredits, $data['id'], $data['session_type'] . ' session with ' . ($data['astrologer_name'] ?? 'astrologer'));
+    $data['status'] = 'session_started';
+    (new ResourceService('appointments'))->save($data);
+  }
+  $this->flash($data['status'] === 'waitlist' ? 'Waitlist request saved.' : 'Session started and credits were deducted.');
   $this->redirect('/account/bookings');
  }
 }

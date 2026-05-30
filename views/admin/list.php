@@ -16,6 +16,9 @@
                             <?php if(($collection ?? '') === 'orders' && !empty($item['id'])): ?>
                                 <a href="/admin/orders/<?= e($item['id']) ?>"><?= e($item['customer_email'] ?? 'Order') ?></a>
                                 <span style="color:var(--color-text-muted);"> · ₹<?= e((string)($item['total'] ?? 0)) ?></span>
+                            <?php elseif(($collection ?? '') === 'support_tickets'): ?>
+                                <strong><?= e($item['customer_email'] ?? 'Guest') ?></strong>
+                                <span style="color:var(--color-text-muted);"> · <?= e($item['message'] ?? 'Support request') ?></span>
                             <?php else: ?>
                                 <?= e($item['name'] ?? $item['email'] ?? $item['message'] ?? $item['event'] ?? 'Record') ?>
                             <?php endif; ?>

@@ -282,6 +282,55 @@
         },
         {
             "method": "GET",
+            "path": "/account/wallet",
+            "name": "account.wallet",
+            "page": "account/wallet",
+            "controller": "AccountController@wallet",
+            "services": [
+                "AuthService",
+                "WalletService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/recharge",
+            "name": "wallet.recharge",
+            "page": "account/wallet",
+            "controller": "WalletController@show",
+            "services": [
+                "AuthService",
+                "WalletService",
+                "SecretService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/recharge/create-order",
+            "name": "wallet.recharge.create-order",
+            "page": "account/wallet",
+            "controller": "WalletController@createOrder",
+            "services": [
+                "AuthService",
+                "WalletService",
+                "SecretService",
+                "PaymentService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/recharge/verify",
+            "name": "wallet.recharge.verify",
+            "page": "account/wallet",
+            "controller": "WalletController@verify",
+            "services": [
+                "AuthService",
+                "WalletService",
+                "SecretService",
+                "PaymentService"
+            ]
+        },
+        {
+            "method": "GET",
             "path": "/admin",
             "name": "admin.dashboard",
             "page": "admin/dashboard",
@@ -481,6 +530,17 @@
             "controller": "AdminController@contactSubmissions",
             "services": [
                 "ContactService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/support-tickets",
+            "name": "admin.support-tickets",
+            "page": "admin/list",
+            "controller": "AdminController@supportTickets",
+            "services": [
+                "JsonStoreService",
                 "AuthService"
             ]
         },
@@ -692,6 +752,16 @@
                 "ReviewService",
                 "AuthService"
             ]
+        },
+        {
+            "method": "POST",
+            "path": "/support/ask",
+            "name": "support.ask",
+            "page": "public/support",
+            "controller": "SupportController@ask",
+            "services": [
+                "SupportBotService"
+            ]
         }
     ],
     "services": [
@@ -716,7 +786,9 @@
         "ContactService",
         "ReviewService",
         "PasswordResetService",
-        "MailQueueService"
+        "MailQueueService",
+        "WalletService",
+        "SupportBotService"
     ],
     "integrations": [
         "GoogleOAuthClient",
@@ -734,6 +806,8 @@
         "settings",
         "audit_events",
         "reviews",
-        "mail_queue"
+        "mail_queue",
+        "wallet_transactions",
+        "support_tickets"
     ]
 }

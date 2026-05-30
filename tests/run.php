@@ -259,16 +259,47 @@ $tests['astrologer profile uses remote consultation contact panel instead of app
     assertTrue(str_contains($view, 'Remote Call') || str_contains($view, 'Remote consultation'), 'Astrologer profile should describe remote call/message consultation');
 };
 
-$tests['astrologer marketplace exposes credit balance filters and direct session actions'] = function (): void {
+$tests['astrologer marketplace exposes filters recharge link and direct session actions'] = function (): void {
     $view = file_get_contents(app_path('views/public/astrologers.php'));
-    foreach (['Available Balance', 'Recharge', 'Filters', 'Available Now', 'On Chat', 'Search Astrologer'] as $needle) {
+    foreach (['href="/recharge"', 'Recharge', 'Filters', 'Available Now', 'On Chat', 'Search Astrologer'] as $needle) {
         assertTrue(str_contains($view, $needle), "Astrologer marketplace should expose {$needle}");
     }
+    assertTrue(!str_contains($view, 'Available Balance'), 'Astrologer marketplace should not show account balance; that belongs in the user panel');
+    assertTrue(!str_contains($view, '/contact?subject=astrology#contact-form" class="astro-recharge"'), 'Recharge should not send customers to the contact form');
     foreach (['aria-label="Start message session"', 'aria-label="Start call session"', 'Waitlist', 'OFFLINE', '+ Follow'] as $needle) {
         assertTrue(str_contains($view, $needle), "Astrologer marketplace should expose {$needle} actions");
     }
     assertTrue(str_contains($view, 'astro-action-row'), 'Message and call icon buttons should sit below each astrologer card content');
     assertTrue(!str_contains($view, 'Check Availability'), 'Astrologer marketplace should not use appointment availability CTA');
+};
+
+$tests['wallet recharge is login gated and exposes pricing breakdown'] = function (): void {
+    $map = ProjectMapService::registry();
+    $paths = array_column($map['routes'], 'path');
+    foreach (['/recharge', '/recharge/create-order', '/recharge/verify', '/account/wallet'] as $path) {
+        assertTrue(in_array($path, $paths, true), "Wallet route {$path} should be registered");
+    }
+    $view = file_get_contents(app_path('views/account/wallet.php'));
+    foreach (['Remaining Balance', 'Recharge Amount', 'Service charge', 'GST/tax estimate', 'Pay with Razorpay', 'Razorpay is not configured yet'] as $needle) {
+        assertTrue(str_contains($view, $needle), "Wallet page should include {$needle}");
+    }
+    $booking = file_get_contents(app_path('app/Controllers/BookingController.php'));
+    assertTrue(str_contains($booking, 'WalletService'), 'Session booking should check wallet balance');
+    assertTrue(str_contains($booking, '/recharge?amount=100'), 'Insufficient session balance should redirect to recharge');
+};
+
+$tests['support assistant widget stores tickets and uses google model setting'] = function (): void {
+    $layout = file_get_contents(app_path('views/layouts/app.php'));
+    $service = file_get_contents(app_path('app/Services/SupportBotService.php'));
+    $map = ProjectMapService::registry();
+    $paths = array_column($map['routes'], 'path');
+    assertTrue(in_array('/support/ask', $paths, true), 'Support ask route should be registered');
+    foreach (['support-fab', 'support-panel', '/support/ask', 'orders, wallet recharge, products, or astrologer sessions'] as $needle) {
+        assertTrue(str_contains($layout, $needle), "Support widget should include {$needle}");
+    }
+    foreach (['gemma-4-31b-it', 'support_bot_google_api_key', 'support_tickets', 'Customer context JSON'] as $needle) {
+        assertTrue(str_contains($service, $needle), "Support bot service should include {$needle}");
+    }
 };
 
 $tests['astrologer profile exposes competitor style remote action rating and trust panels'] = function (): void {
@@ -440,6 +471,7 @@ $tests['admin sidebar exposes every admin menu'] = function (): void {
         '/admin/temples',
         '/admin/orders',
         '/admin/contact-submissions',
+        '/admin/support-tickets',
         '/admin/settings',
         '/admin/integrations',
         '/admin/shipping',

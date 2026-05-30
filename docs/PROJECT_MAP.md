@@ -28,6 +28,10 @@
 - `/logout` → `AuthController@logout` → AuthService
 - `/account/orders` → `AccountController@orders` → AuthService, OrderService
 - `/account/bookings` → `AccountController@bookings` → AuthService, AppointmentService
+- `/account/wallet` → `AccountController@wallet` → AuthService, WalletService
+- `/recharge` → `WalletController@show` → AuthService, WalletService, SecretService
+- `/recharge/create-order` → `WalletController@createOrder` → AuthService, WalletService, SecretService, PaymentService
+- `/recharge/verify` → `WalletController@verify` → AuthService, WalletService, SecretService, PaymentService
 - `/admin` → `AdminController@dashboard` → OrderService, AppointmentService, AuthService
 - `/admin/products` → `AdminController@products` → ProductService, AuthService
 - `/admin/categories` → `AdminController@categories` → CategoryService, AuthService
@@ -46,6 +50,7 @@
 - `/admin/backups` → `AdminController@backups` → JsonStoreService, AuthService
 - `/admin/audit-log` → `AdminController@audit` → AuditLogService, AuthService
 - `/admin/contact-submissions` → `AdminController@contactSubmissions` → ContactService, AuthService
+- `/admin/support-tickets` → `AdminController@supportTickets` → JsonStoreService, AuthService
 - `/admin/developer/project-map` → `AdminController@projectMap` → ProjectMapService, AuthService
 - `/admin/products/save` → `AdminController@saveProduct` → ResourceService, AuthService
 - `/admin/products/delete` → `AdminController@deleteProduct` → ResourceService, AuthService
@@ -65,3 +70,4 @@
 - `/appointments/book` → `BookingController@book` → AuthService, ResourceService, AstrologerService
 - `/reviews/astrologer` → `ReviewController@saveAstrologer` → ReviewService, AuthService
 - `/reviews/product` → `ReviewController@saveProduct` → ReviewService, AuthService
+- `/support/ask` → `SupportController@ask` → SupportBotService

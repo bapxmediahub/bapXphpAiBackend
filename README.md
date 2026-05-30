@@ -44,6 +44,8 @@ Module notes:
 
 - Product catalog, category browsing, product detail pages, cart, checkout, and Razorpay verification flow.
 - Remote astrologer marketplace with call/message actions, waitlist/offline states, credit pricing, and account session history.
+- Login-gated wallet recharge flow with Razorpay top-up order creation, service charge/tax breakdown, and credit balance shown in the user panel.
+- Floating support assistant that can answer product, order, wallet, and astrologer session questions and store support tickets for admin review.
 - Five-star review collection for ended astrology sessions and post-shipment product reviews.
 - Temple listing and detail pages.
 - Contact and consultation request form.

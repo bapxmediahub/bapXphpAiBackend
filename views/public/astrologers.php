@@ -15,18 +15,13 @@
     <?php else: ?>
         <div class="container">
             <div class="astro-market-toolbar reveal">
-                <div class="astro-wallet">
-                    <span>Available Balance</span>
-                    <strong>0 credits</strong>
-                    <small>1 rupee adds 20 credits</small>
-                </div>
-                <a href="/contact?subject=astrology#contact-form" class="astro-recharge">Recharge</a>
                 <div class="astro-filters" aria-label="Astrologer filters">
                     <button type="button">Filters</button>
                     <button type="button">Available Now</button>
                     <button type="button">On Chat</button>
                     <button type="button">On Call</button>
                 </div>
+                <a href="/recharge" class="astro-recharge">Recharge</a>
                 <label class="astro-search">
                     <span>Search Astrologer</span>
                     <input type="search" placeholder="Search Astrologer">

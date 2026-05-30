@@ -192,6 +192,7 @@ echo $critical;
         <a href="/contact">Contact Us</a>
         <?php if(!empty($_SESSION['user'])): ?>
             <a href="/account/bookings">My Sessions</a>
+            <a href="/account/wallet">Wallet</a>
             <a href="/logout">Logout</a>
         <?php else: ?>
             <a href="/login">Login</a>
@@ -235,6 +236,25 @@ echo $critical;
         </a>
     </div>
 </nav>
+
+<button class="support-fab" type="button" aria-controls="support-panel" aria-expanded="false" title="Support">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>
+    <span class="sr-only">Support</span>
+</button>
+<section class="support-panel" id="support-panel" hidden>
+    <div class="support-panel__head">
+        <strong>Support</strong>
+        <button type="button" class="support-panel__close" aria-label="Close support">×</button>
+    </div>
+    <div class="support-panel__body" id="support-log">
+        <p>Ask about your orders, wallet recharge, products, or astrologer sessions.</p>
+        <?php if(empty($_SESSION['user'])): ?><p>Sign in to ask about your personal order or session data.</p><?php endif; ?>
+    </div>
+    <form class="support-panel__form" id="support-form">
+        <textarea name="message" rows="3" required placeholder="Ask about an order, recharge, product, or session"></textarea>
+        <button class="btn btn-primary btn-sm">Send</button>
+    </form>
+</section>
 
 <footer class="site-footer">
     <div class="container">
@@ -289,6 +309,12 @@ document.body.prepend(s);
 new IntersectionObserver(function(e){h.classList.toggle('scrolled',!e[0].isIntersecting);},{threshold:0}).observe(s);
 var io=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('revealed');io.unobserve(e.target);}});},{threshold:0.1,rootMargin:'0px 0px -50px 0px'});
 document.querySelectorAll('.reveal,.panel,.product-card,.astrologer-card').forEach(function(el){io.observe(el);});
+var supportFab=document.querySelector('.support-fab'),supportPanel=document.getElementById('support-panel'),supportClose=document.querySelector('.support-panel__close'),supportForm=document.getElementById('support-form'),supportLog=document.getElementById('support-log');
+function supportEscape(value){return String(value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c];});}
+function supportToggle(open){supportPanel.hidden=!open;supportFab.setAttribute('aria-expanded',open?'true':'false');}
+supportFab.addEventListener('click',function(){supportToggle(supportPanel.hidden);});
+supportClose.addEventListener('click',function(){supportToggle(false);});
+supportForm.addEventListener('submit',async function(e){e.preventDefault();var data=new FormData(supportForm),msg=data.get('message');supportLog.insertAdjacentHTML('beforeend','<p><strong>You:</strong> '+supportEscape(msg)+'</p>');supportForm.reset();try{var r=await fetch('/support/ask',{method:'POST',body:data});var j=await r.json();supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> '+supportEscape(j.reply||j.error||'Unable to answer right now.')+'</p>');}catch(err){supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> Unable to answer right now.</p>');}supportLog.scrollTop=supportLog.scrollHeight;});
 </script>
 </body>
 </html>

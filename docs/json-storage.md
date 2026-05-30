@@ -14,3 +14,7 @@ Collections are stored separately in `storage/data`. Writes use lock files plus 
 - `contact_submissions.json` - Contact form submissions
 - `settings.json` - Site settings
 - `audit_events.json` - Admin audit log
+- `reviews.json` - Product and astrologer reviews
+- `mail_queue.json` - Queued transactional emails
+- `wallet_transactions.json` - Customer credit top-ups and session spends
+- `support_tickets.json` - Support assistant questions and replies

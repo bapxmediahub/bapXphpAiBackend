@@ -15,6 +15,9 @@ if (!is_resource($process)) {
 }
 
 $failures = [];
+$supportTicketsFile = storage_path('data/support_tickets.json');
+$hadSupportTickets = is_file($supportTicketsFile);
+$supportTicketsBefore = $hadSupportTickets ? file_get_contents($supportTicketsFile) : null;
 
 try {
     waitForServer($base);
@@ -33,6 +36,8 @@ try {
         '/reset-password' => 200,
         '/account/orders' => 302,
         '/account/bookings' => 302,
+        '/account/wallet' => 302,
+        '/recharge' => 302,
         '/admin' => 302,
         '/admin/settings' => 302,
     ] as $path => $expected) {
@@ -62,6 +67,12 @@ try {
     echo "{$paymentPost['status']} POST /payment/verify\n";
     if ($paymentPost['status'] !== 200 || !str_contains($paymentPost['body'], 'verified')) {
         $failures[] = "POST /payment/verify should return JSON verification status through PHP routing";
+    }
+
+    $supportPost = httpRequest($base . '/support/ask', 'POST', 'message=Where%20is%20my%20order%3F');
+    echo "{$supportPost['status']} POST /support/ask\n";
+    if ($supportPost['status'] !== 200 || !str_contains($supportPost['body'], 'reply')) {
+        $failures[] = "POST /support/ask should return a support reply JSON payload";
     }
 
     foreach ([
@@ -98,6 +109,11 @@ try {
         $failures[] = "Unknown route should render the PHP 404 page";
     }
 } finally {
+    if ($hadSupportTickets && $supportTicketsBefore !== false && $supportTicketsBefore !== null) {
+        file_put_contents($supportTicketsFile, $supportTicketsBefore);
+    } elseif (!$hadSupportTickets && is_file($supportTicketsFile)) {
+        unlink($supportTicketsFile);
+    }
     foreach ($pipes as $pipe) {
         if (is_resource($pipe)) fclose($pipe);
     }
