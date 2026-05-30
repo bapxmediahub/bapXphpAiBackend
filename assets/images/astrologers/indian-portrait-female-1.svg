@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000" role="img" aria-label="Indian astrologer profile portrait">
+  <rect width="800" height="1000" fill="#f8efe4"/>
+  <circle cx="400" cy="315" r="250" fill="#cf8d3b" opacity=".24"/>
+  <path d="M212 840c42-192 334-192 376 0z" fill="#f9f1df"/>
+  <path d="M248 835c28-135 276-135 304 0z" fill="#4f8f63"/>
+  <path d="M270 270c33-92 225-125 280 18 16 52 12 190-36 244-91-71-138-71-229 0-43-58-36-201-15-262z" fill="#231915"/>
+  <ellipse cx="400" cy="410" rx="125" ry="152" fill="#af6b41"/>
+  <path d="M294 366c60-51 150-53 213 0 5 100-39 174-107 174s-112-74-106-174z" fill="#ca8551"/>
+  <circle cx="351" cy="419" r="11" fill="#25150f"/><circle cx="449" cy="419" r="11" fill="#25150f"/>
+  <path d="M366 482c22 17 48 17 70 0" fill="none" stroke="#6c3424" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="400" cy="352" r="13" fill="#b51414"/>
+  <path d="M338 575c35 28 89 28 124 0 2 46-18 77-62 77-43 0-64-31-62-77z" fill="#2b1b17"/>
+  <circle cx="290" cy="426" r="16" fill="#d4af37"/><circle cx="510" cy="426" r="16" fill="#d4af37"/>
+</svg>

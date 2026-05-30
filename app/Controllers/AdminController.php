@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AuthService,OrderService,ResourceService,SecretService,SettingsService};
+use App\Services\{AuthService,EnvService,OrderService,ResourceService,SecretService,SettingsService};
 final class AdminController extends BaseController {
     protected string $layout = 'admin';
     public function __construct() {
@@ -39,8 +39,9 @@ final class AdminController extends BaseController {
     public function temples(): void{$this->resource('Temples','temples',['name','description','address','map_url']);}
     public function saveTemple(): void{$this->save('temples');}
     public function deleteTemple(): void{$this->delete('temples');}
-    public function settings(): void{$this->render('admin/settings',['pageTitle' => 'Settings', 'title' => 'Site Settings', 'settings'=>(new SettingsService())->public()]);}
+    public function settings(): void{$this->render('admin/settings',['pageTitle' => 'Settings', 'title' => 'Site Settings', 'settings'=>(new SettingsService())->public(), 'adminCredentials'=>(new EnvService())->adminCredentials()]);}
     public function saveSettings(): void{(new SettingsService())->savePublic(['shipping_mode'=>$_POST['shipping_mode'] ?? 'free','flat_rate'=>max(0,(float)($_POST['flat_rate'] ?? 0)),'currency'=>$_POST['currency'] ?? 'INR','timezone'=>$_POST['timezone'] ?? 'Asia/Kolkata']); $this->flash('Settings saved.'); $this->redirect('/admin/settings');}
+    public function saveAdminCredentials(): void{(new EnvService())->saveAdminCredentials($_POST); $this->flash('Admin credentials saved to .env.'); $this->redirect('/admin/settings');}
     public function integrations(): void{$this->render('admin/integrations',['pageTitle' => 'Integrations', 'secrets'=>(new SecretService())->all()]);}
     public function saveIntegrations(): void{(new SecretService())->save($_POST); $this->flash('Integration settings saved.'); $this->redirect('/admin/integrations');}
     public function backups(): void{$this->list('Backups','settings');}

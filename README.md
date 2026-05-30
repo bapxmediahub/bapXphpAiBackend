@@ -1,13 +1,12 @@
 # Sri Panchami Spiritual Platform
 
-Sri Panchami Spiritual is a PHP and JSON-backed web application for devotional ecommerce, Vedic astrology sessions, temple information, and owner-managed admin operations.
+Sri Panchami Spiritual is a PHP and JSON-backed web application for devotional ecommerce, Vedic astrology sessions, temple information, and owner-managed admin operations. It is designed for small PHP hosting plans where the repository can be placed in `public_html` and maintained with agentic development tools such as Codex, Claude Code, or Hermes-style coding agents.
 
 ## Live Website
 
-- Intended production domain: `https://sripanchamispiritual.com`
-- Hosting signal: the domain responds from Hostinger/LiteSpeed.
-- Current live status: the root URL loads, but the live deployment is behind local `main`; `/astrologers` still uses text call/chat buttons instead of the latest round icon actions, and `/forgot-password` returns fallback content instead of the local reset-request page.
-- Local validated URL: `http://127.0.0.1:6021` during the latest audit.
+- Production URL is configured in `.env` with `APP_URL`; edit it for the live website before deployment.
+- Hosting target: a standard PHP host such as Hostinger/LiteSpeed with the app deployed under `public_html`.
+- Local validated URL: `http://127.0.0.1:6020` during the latest audit.
 
 ## Project Objective
 
@@ -16,7 +15,7 @@ The app should let customers buy authentic spiritual products, browse temples, r
 The durable architecture constraint is:
 
 - Keep the backend in PHP.
-- Keep persistence in JSON files under `storage/data/`.
+- Keep persistence in JSON files under `storage/data/`; this is a JSON-backed backend, not a SQL database.
 - Do not replace the backend with a database or external CMS unless that becomes a separate project decision.
 
 ## Current Tech Stack
@@ -54,6 +53,7 @@ The durable architecture constraint is:
 - Consultation support requests go to the contact form with the astrology subject selected.
 - Account pages require a signed-in user before showing order or booking history.
 - Admin pages require an existing stored admin role. Public registration and Google OAuth create customer accounts only, preserving the live site's existing admin credentials.
+- Admin login can also be configured from `.env` with `ADMIN_USERNAME`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD`; the Admin Settings page can update those values.
 - Review submissions require a signed-in user before astrologer or product ratings can be saved.
 - Admin pages render locally, including dashboard, products, categories, coupons, astrologers, appointments, temples, orders, order detail, contacts, settings, integrations, shipping, backups, audit log, and project map.
 - Admin settings persist shipping mode, flat rate, currency, and timezone to JSON settings.
@@ -64,7 +64,7 @@ The durable architecture constraint is:
 
 ## Pending Or Not Complete
 
-- Production deployment is behind local code: `https://sripanchamispiritual.com/` loads in the browser, but `/astrologers` still shows text action buttons and does not yet include the latest local icon-button and guarded review flow.
+- Production deployment must be refreshed after local changes so the live site matches the latest `main` build.
 - Razorpay live keys are not configured locally, so ecommerce payment cannot be completed end to end.
 - Google OAuth is scaffolded but depends on configured client credentials and callback setup.
 - Real Razorpay payment verification, Google login, password reset email, and remote consultation credit charging still need live-credential testing.
@@ -92,6 +92,15 @@ The durable architecture constraint is:
 9. Add browser-level end-to-end tests for product purchase, remote consultation contact request, login/register, contact form, and admin resource edits.
 
 ## Local Development
+
+Copy or edit `.env` before running locally or deploying:
+
+```dotenv
+APP_URL=https://your-domain.example
+ADMIN_USERNAME=admin
+ADMIN_EMAIL=admin@your-domain.example
+ADMIN_PASSWORD=ChangeThisAdmin123!
+```
 
 ```bash
 php -S 127.0.0.1:6020 index.php
@@ -127,7 +136,7 @@ The latest local audit verified:
 - Registered local public GET routes return `HTTP 200`; guest account and admin routes now redirect with `HTTP 302` to enforce authentication.
 - API smoke test verified valid JSON for `/api/`, `/api/shop`, `/api/categories`, `/api/product/karuppasami-dollar`, `/api/astrologers`, and `/api/temples`.
 - Browser smoke test on desktop viewport: public shopping and astrologer pages render; guest account/admin pages redirect instead of exposing private data.
-- Headless Google Chrome screenshots were captured for local astrologer list/profile, live astrologer list, and an Astroyogi competitor reference. Local matches the requested round icon call/message direction; live still shows text action buttons.
+- Headless Google Chrome screenshots were captured for local astrologer list/profile and an Astroyogi competitor reference. Local matches the requested round icon call/message direction.
 - Product add-to-cart flow works locally.
 - Checkout screen renders the selected product and correctly reports that Razorpay is not configured.
 - Astrologer profile shows remote consultation details and directs users to the contact form.
@@ -139,4 +148,4 @@ The latest local audit verified:
 
 Known audit failures:
 
-- Live domain is behind the latest local code: `/astrologers` still shows old text actions, and `/forgot-password` returns fallback content rather than the local reset-request page.
+- Live deployment still needs to be refreshed from the latest local `main` build after verification.

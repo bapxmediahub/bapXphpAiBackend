@@ -3,6 +3,7 @@ require __DIR__ . '/../app/bootstrap.php';
 
 use App\Services\JsonStoreService;
 use App\Services\AvailabilityService;
+use App\Services\EnvService;
 use App\Services\PaymentService;
 use App\Services\ProjectMapService;
 use App\Services\ReviewService;
@@ -72,6 +73,8 @@ $tests['public and api routes cover spiritual and category pages without fallbac
     assertTrue(in_array('/categories', $paths, true), 'API /api/categories should map through /categories route');
     assertTrue(in_array('/forgot-password', $paths, true), 'Login forgot-password link should have a GET route');
     assertTrue(in_array('/reset-password', $paths, true), 'Password reset page should have a GET route');
+    assertTrue(str_contains($index, "'/appointments'"), 'Appointment POST actions should dispatch through PHP routes instead of SPA fallback');
+    assertTrue(str_contains($index, "'/payment'"), 'Payment verification POST actions should dispatch through PHP routes instead of SPA fallback');
 };
 
 $tests['cart does not expose unfinished coupon placeholder ui'] = function (): void {
@@ -82,9 +85,9 @@ $tests['cart does not expose unfinished coupon placeholder ui'] = function (): v
 
 $tests['catalog image paths point to existing local assets'] = function (): void {
     $store = new JsonStoreService();
-    foreach (['products', 'categories', 'temples'] as $collection) {
+    foreach (['products', 'categories', 'temples', 'astrologers'] as $collection) {
         foreach ($store->read($collection) as $item) {
-            $image = $item['image_url'] ?? '';
+            $image = $item['image_url'] ?? $item['photo_url'] ?? '';
             if ($image === '' || str_starts_with($image, 'http')) continue;
             $path = parse_url($image, PHP_URL_PATH);
             assertTrue(is_file(app_path($path)), "{$collection} image should exist: {$image}");
@@ -145,6 +148,30 @@ $tests['public registration never bootstraps admin on a live site'] = function (
     assertTrue(str_contains($controller, "\$role = 'customer';"), 'New public registrations and OAuth users should default to customer role');
     assertTrue(str_contains($controller, "'role'=>"), 'Session user should include a role after registration and login');
     assertTrue(str_contains($controller, "\$u['role']"), 'Email/password login should preserve an existing stored admin role and password');
+};
+
+$tests['env file defines editable local admin credentials'] = function (): void {
+    $envPath = app_path('.env');
+    assertTrue(is_file($envPath), '.env should exist for small PHP hosting setup');
+    $env = EnvService::readFile($envPath);
+    foreach (['ADMIN_USERNAME', 'ADMIN_EMAIL', 'ADMIN_PASSWORD'] as $key) {
+        assertTrue(($env[$key] ?? '') !== '', ".env should define {$key}");
+    }
+    $auth = file_get_contents(app_path('app/Controllers/AuthController.php'));
+    assertTrue(str_contains($auth, 'adminCredentials'), 'Login should check .env admin credentials');
+    assertTrue(str_contains($auth, "'role'=>'admin'"), 'Successful .env admin login should create an admin session');
+};
+
+$tests['admin settings can update env admin credentials'] = function (): void {
+    $view = file_get_contents(app_path('views/admin/settings.php'));
+    $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
+    $map = ProjectMapService::registry();
+    $paths = array_column($map['routes'], 'path');
+    foreach (['name="admin_username"', 'name="admin_email"', 'name="admin_password"', 'action="/admin/settings/admin-credentials"'] as $needle) {
+        assertTrue(str_contains($view, $needle), "Admin settings should expose {$needle}");
+    }
+    assertTrue(str_contains($controller, 'saveAdminCredentials'), 'Admin controller should save admin .env credentials');
+    assertTrue(in_array('/admin/settings/admin-credentials', $paths, true), 'Route registry should include admin credential save route');
 };
 
 $tests['contact submissions persist to json storage'] = function (): void {
@@ -279,6 +306,33 @@ $tests['home page rotates all astrologers instead of showing only three fixed ca
     assertTrue(str_contains($view, 'astro-carousel-track'), 'Home astrology section should use a carousel track');
 };
 
+$tests['home hero uses concise current copy and working cta links'] = function (): void {
+    $view = file_get_contents(app_path('views/public/home.php'));
+    assertTrue(!str_contains($view, 'Spiritual Products Online in Chennai'), 'Home hero headline should not say products online in Chennai');
+    assertTrue(!str_contains($view, 'Shop Spiritual Products</a>'), 'Home hero primary button should use shorter text');
+    assertTrue(!str_contains($view, 'Remote Astrology Consultation</a>'), 'Home hero astrology button should use shorter text');
+    foreach (['href="/shop"', 'href="/astrologers"', '>Shop</a>', '>Astrology</a>'] as $needle) {
+        assertTrue(str_contains($view, $needle), "Home hero should include {$needle}");
+    }
+    assertTrue(!str_contains($view, '<div class="hero-stat-value">3</div>'), 'Home hero astrologer count should not be stale');
+    assertTrue(str_contains($view, 'count($astrologers)'), 'Home hero astrologer count should be derived from the current catalog');
+};
+
+$tests['spa fallback header and home copy match current php experience'] = function (): void {
+    $components = file_get_contents(app_path('assets/js/components.js'));
+    $pages = file_get_contents(app_path('assets/js/pages.js'));
+    foreach (['href="/login"', 'Login', 'href="/cart"'] as $needle) {
+        assertTrue(str_contains($components, $needle), "SPA fallback header should expose {$needle}");
+    }
+    assertTrue(!str_contains($components, '🛒'), 'SPA fallback header should not use the old emoji cart button');
+    assertTrue(!str_contains($pages, 'Divine Grace.<br>Timeless Protection.'), 'SPA fallback home should not show the old hero headline');
+    assertTrue(!str_contains($pages, 'Shop Spiritual Products</a>'), 'SPA fallback hero primary button should use shorter text');
+    assertTrue(!str_contains($pages, 'Remote Astrology Consultation</a>'), 'SPA fallback hero astrology button should use shorter text');
+    foreach (['>Shop</a>', '>Astrology</a>', 'astrologers.length', 'astro-carousel-track'] as $needle) {
+        assertTrue(str_contains($pages, $needle), "SPA fallback home should include {$needle}");
+    }
+};
+
 $tests['review service stores five star reviews and calculates averages'] = function (): void {
     $dir = sys_get_temp_dir() . '/sps-reviews-' . bin2hex(random_bytes(4));
     $service = new ReviewService(new JsonStoreService($dir));
@@ -391,6 +445,7 @@ $tests['astrologer catalog has thirteen editable priced profiles'] = function ()
     assertSame(13, count($astrologers), 'Astrologer seed data should include the original 3 plus 10 more profiles');
     foreach ($astrologers as $astrologer) {
         assertTrue(!empty($astrologer['slug']), 'Every astrologer should have a slug');
+        assertTrue(str_contains($astrologer['photo_url'] ?? '', '/indian-portrait-'), 'Astrologer profile images should use local Indian-style profile artwork');
         assertSame(15, (int)($astrologer['text_session_prm'] ?? 0), 'Text session PRM should default to 15');
         assertSame(15, (int)($astrologer['call_session_prm'] ?? 0), 'Call session PRM should default to 15');
         assertSame(5, (int)($astrologer['message_credit_cost'] ?? 0), 'Message session should cost 5 credits per user message');
@@ -432,12 +487,17 @@ $tests['admin sidebar exposes every admin menu'] = function (): void {
 };
 
 $tests['architecture and deployment docs describe current php template stack'] = function (): void {
+    $readme = file_get_contents(app_path('README.md'));
     $architecture = file_get_contents(app_path('docs/architecture.md'));
     $deployment = file_get_contents(app_path('docs/deployment-hostinger.md'));
     foreach ([$architecture, $deployment] as $doc) {
         assertTrue(!str_contains($doc, 'React'), 'Docs should not describe the removed React/CDN architecture');
         assertTrue(!str_contains($doc, 'CDN'), 'Docs should not say the app loads React from a CDN');
     }
+    foreach (['small PHP hosting', 'public_html', 'JSON-backed backend', '.env', 'ADMIN_EMAIL', 'ADMIN_PASSWORD', 'agentic development'] as $needle) {
+        assertTrue(str_contains($readme, $needle), "README should describe {$needle}");
+    }
+    assertTrue(!str_contains($readme, 'https://sripanchamispiritual.com'), 'README should not hardcode the production website URL; use APP_URL in .env');
     assertTrue(str_contains($architecture, 'PHP-rendered public, account, and admin templates'), 'Architecture docs should describe the current PHP template frontend');
     assertTrue(str_contains($deployment, 'PHP-rendered templates'), 'Deployment docs should describe the current PHP template frontend');
 };

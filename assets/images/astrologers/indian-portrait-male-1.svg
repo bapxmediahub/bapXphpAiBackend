@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000" role="img" aria-label="Indian astrologer profile portrait">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#f7ead3"/><stop offset="1" stop-color="#c88a3a"/></linearGradient>
+    <radialGradient id="halo" cx="50%" cy="32%" r="42%"><stop stop-color="#fff4cc"/><stop offset="1" stop-color="#fff4cc" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="800" height="1000" fill="url(#bg)"/>
+  <circle cx="400" cy="295" r="245" fill="url(#halo)"/>
+  <circle cx="400" cy="315" r="185" fill="#8b3d1c"/>
+  <circle cx="400" cy="330" r="158" fill="#9f5528"/>
+  <path d="M230 830c35-190 305-190 340 0z" fill="#f6f0e5"/>
+  <path d="M248 828c22-120 282-120 304 0z" fill="#b23a2f"/>
+  <path d="M296 204c54-70 170-78 235-10 20 35 18 88-8 118-72-28-158-27-242 2-19-35-12-79 15-110z" fill="#2c2016"/>
+  <ellipse cx="400" cy="398" rx="118" ry="145" fill="#b87342"/>
+  <path d="M298 350c58-23 134-22 205 1 6 104-34 166-103 166-66 0-106-62-102-167z" fill="#c88555"/>
+  <circle cx="350" cy="399" r="11" fill="#27170f"/><circle cx="450" cy="399" r="11" fill="#27170f"/>
+  <path d="M364 462c26 18 52 18 78 0" fill="none" stroke="#5f2f21" stroke-width="9" stroke-linecap="round"/>
+  <path d="M350 528c35 22 72 22 105 0 8 56-7 101-55 101-44 0-58-45-50-101z" fill="#8b3d1c"/>
+  <rect x="385" y="277" width="30" height="72" rx="15" fill="#f0c04a"/>
+  <circle cx="400" cy="284" r="13" fill="#b41414"/>
+</svg>

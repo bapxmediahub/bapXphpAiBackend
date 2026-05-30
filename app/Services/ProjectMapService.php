@@ -44,6 +44,7 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/admin/temples','name'=>'admin.temples','page'=>'admin/list','controller'=>'AdminController@temples','services'=>['TempleService']],
             ['method'=>'GET','path'=>'/admin/settings','name'=>'admin.settings','page'=>'admin/settings','controller'=>'AdminController@settings','services'=>['SettingsService']],
             ['method'=>'POST','path'=>'/admin/settings/save','name'=>'admin.settings.save','page'=>'admin/settings','controller'=>'AdminController@saveSettings','services'=>['SettingsService']],
+            ['method'=>'POST','path'=>'/admin/settings/admin-credentials','name'=>'admin.settings.admin-credentials','page'=>'admin/settings','controller'=>'AdminController@saveAdminCredentials','services'=>['EnvService']],
             ['method'=>'GET','path'=>'/admin/integrations','name'=>'admin.integrations','page'=>'admin/integrations','controller'=>'AdminController@integrations','services'=>['SettingsService','PaymentService','SecretService']],
             ['method'=>'GET','path'=>'/admin/backups','name'=>'admin.backups','page'=>'admin/list','controller'=>'AdminController@backups','services'=>['JsonStoreService']],
             ['method'=>'GET','path'=>'/admin/audit-log','name'=>'admin.audit','page'=>'admin/list','controller'=>'AdminController@audit','services'=>['AuditLogService']],
@@ -76,7 +77,7 @@ final class ProjectMapService {
         unset($route);
         return [
             'routes'=>$routes,
-            'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AvailabilityService','AppointmentService','TempleService','SettingsService','ProjectMapService','JsonStoreService','AuditLogService','ResourceService','SecretService','ContactService','ReviewService','PasswordResetService','MailQueueService'],
+            'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AvailabilityService','AppointmentService','TempleService','SettingsService','ProjectMapService','JsonStoreService','AuditLogService','ResourceService','SecretService','EnvService','ContactService','ReviewService','PasswordResetService','MailQueueService'],
             'integrations'=>['GoogleOAuthClient','RazorpayClient'],
             'collections'=>['users','products','categories','coupons','orders','astrologers','appointments','temples','settings','audit_events','reviews','mail_queue'],
         ];

@@ -1,11 +1,11 @@
 <section class="home-hero">
     <div class="hero-copy">
         <span class="eyebrow">Blessings · Protection · Prosperity</span>
-        <h1>Buy Original Rudraksha, Pooja Items & Spiritual Products Online in Chennai</h1>
+        <h1>Buy Original Rudraksha, Pooja Items & Spiritual Products Online</h1>
         <p class="lede">Authentic certified rudraksha, sacred pooja samagri, spiritual jewellery, and expert Vedic astrology consultation — trusted by 500+ devotees across India. Free shipping on all orders.</p>
         <div class="hero-actions">
-            <a href="/shop" class="btn btn-primary">Shop Spiritual Products</a>
-            <a href="/astrologers" class="btn btn-outline">Remote Astrology Consultation</a>
+            <a href="/shop" class="btn btn-primary">Shop</a>
+            <a href="/astrologers" class="btn btn-outline">Astrology</a>
         </div>
         <div class="hero-stats">
             <div>
@@ -17,7 +17,7 @@
                 <div class="hero-stat-label">Sacred Categories</div>
             </div>
             <div>
-                <div class="hero-stat-value">3</div>
+                <div class="hero-stat-value"><?= e((string)count($astrologers)) ?></div>
                 <div class="hero-stat-label">Expert Astrologers</div>
             </div>
         </div>
@@ -187,7 +187,7 @@
     </div>
     <?php endif; ?>
     <div style="text-align:center;">
-        <a href="/astrologers" class="btn btn-primary">Remote Astrology Consultation</a>
+        <a href="/astrologers" class="btn btn-primary">Astrology</a>
     </div>
 </section>
 

@@ -429,6 +429,17 @@
             ]
         },
         {
+            "method": "POST",
+            "path": "/admin/settings/admin-credentials",
+            "name": "admin.settings.admin-credentials",
+            "page": "admin/settings",
+            "controller": "AdminController@saveAdminCredentials",
+            "services": [
+                "EnvService",
+                "AuthService"
+            ]
+        },
+        {
             "method": "GET",
             "path": "/admin/integrations",
             "name": "admin.integrations",
@@ -703,6 +714,7 @@
         "AuditLogService",
         "ResourceService",
         "SecretService",
+        "EnvService",
         "ContactService",
         "ReviewService",
         "PasswordResetService",

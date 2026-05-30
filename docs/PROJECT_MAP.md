@@ -41,6 +41,7 @@
 - `/admin/temples` → `AdminController@temples` → TempleService, AuthService
 - `/admin/settings` → `AdminController@settings` → SettingsService, AuthService
 - `/admin/settings/save` → `AdminController@saveSettings` → SettingsService, AuthService
+- `/admin/settings/admin-credentials` → `AdminController@saveAdminCredentials` → EnvService, AuthService
 - `/admin/integrations` → `AdminController@integrations` → SettingsService, PaymentService, SecretService, AuthService
 - `/admin/backups` → `AdminController@backups` → JsonStoreService, AuthService
 - `/admin/audit-log` → `AdminController@audit` → AuditLogService, AuthService

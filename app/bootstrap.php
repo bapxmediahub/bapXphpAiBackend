@@ -17,3 +17,5 @@ spl_autoload_register(function (string $class): void {
 function app_path(string $path = ''): string { return dirname(__DIR__) . ($path ? '/' . ltrim($path, '/') : ''); }
 function storage_path(string $path = ''): string { return app_path('storage' . ($path ? '/' . ltrim($path, '/') : '')); }
 function e(string $value): string { return htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); }
+
+\App\Services\EnvService::load();

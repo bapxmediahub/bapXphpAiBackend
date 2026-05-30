@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{SecretService,JsonStoreService,PasswordResetService};
+use App\Services\{EnvService,SecretService,JsonStoreService,PasswordResetService};
 use App\Integrations\GoogleOAuth\GoogleOAuthClient;
 final class AuthController extends BaseController {
  public function googleRedirect(): void {
@@ -50,6 +50,12 @@ final class AuthController extends BaseController {
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     if ($email === '' || $password === '') { $this->flash('Email and password required.'); $this->redirect('/login'); }
+    $admin = (new EnvService())->adminCredentials();
+    if ($admin['email'] !== '' && $admin['password'] !== '' && $email === $admin['email'] && hash_equals($admin['password'], $password)) {
+        $_SESSION['user'] = ['sub'=>'env-admin','email'=>$admin['email'],'name'=>$admin['username'] ?: 'Admin','role'=>'admin'];
+        $this->flash('Signed in.');
+        $this->redirect('/admin');
+    }
     $store = new JsonStoreService();
     $users = $store->read('users');
     foreach ($users as $u) {

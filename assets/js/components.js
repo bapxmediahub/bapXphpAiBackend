@@ -14,11 +14,14 @@ function Header() {
             <a href="/astrologers" data-link>Astrologers</a>
             <a href="/about" data-link>About Us</a>
             <a href="/contact" data-link>Contact Us</a>
+            <a href="/login" data-link>Login</a>
         </nav>
         <div class="header-actions">
-            <button class="cart-btn" id="cart-btn-header" aria-label="Cart">🛒<span class="cart-badge" style="${Cart.count>0?'':'display:none'}">${Cart.count}</span></button>
+            <a class="cart-btn" href="/cart" data-link aria-label="Cart">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 002 1.6h9.7a2 2 0 001.9-1.4L23 6H6"/></svg>
+                <span class="cart-badge" style="${Cart.count>0?'':'display:none'}">${Cart.count}</span>
+            </a>
         </div>`;
-    h.querySelector('#cart-btn-header').onclick = () => Router.nav('/cart');
     h.querySelector('#menu-toggle').onclick = () => h.querySelector('#primary-nav').classList.toggle('open');
     return h;
 }
@@ -39,7 +42,14 @@ function BottomNav() {
     const n = document.createElement('nav');
     n.className = 'bottom-nav';
     const path = window.location.pathname;
-    const items = [{p:'/',i:'🏠',l:'Home'},{p:'/shop',i:'🛍️',l:'Shop'},{p:'/temples',i:'🛕',l:'Temples'},{p:'/astrologers',i:'⭐',l:'Astro'},{p:'/cart',i:'🛒',l:'Cart'}];
+    const icons = {
+        home: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v11h14V10"/><path d="M9 21v-6h6v6"/></svg>',
+        shop: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2l1 4h10l1-4"/><path d="M3 6h18l-2 15H5L3 6z"/></svg>',
+        temple: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V9l7-5 7 5v12"/><path d="M9 21v-5a3 3 0 016 0v5"/></svg>',
+        astro: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.7 6.6 7.1.6-5.4 4.6 1.7 6.9L12 17l-6.1 3.7 1.7-6.9-5.4-4.6 7.1-.6L12 2z"/></svg>',
+        cart: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 002 1.6h9.7a2 2 0 001.9-1.4L23 6H6"/></svg>'
+    };
+    const items = [{p:'/',i:icons.home,l:'Home'},{p:'/shop',i:icons.shop,l:'Shop'},{p:'/temples',i:icons.temple,l:'Temples'},{p:'/astrologers',i:icons.astro,l:'Astro'},{p:'/cart',i:icons.cart,l:'Cart'}];
     n.innerHTML = '<div class="nav-grid">' + items.map(it => `<a href="${it.p}" data-link class="nav-item ${path===it.p?'active':''}"><span class="icon">${it.i}</span><span>${it.l}</span></a>`).join('') + '</div>';
     return n;
 }

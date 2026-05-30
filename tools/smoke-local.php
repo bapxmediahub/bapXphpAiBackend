@@ -52,6 +52,18 @@ try {
         $failures[] = "POST /admin/orders/test/status expected 302, got {$post['status']}";
     }
 
+    $appointmentPost = httpRequest($base . '/appointments/book', 'POST', 'astrologer_slug=pandit-shastri&mode=text_session');
+    echo "{$appointmentPost['status']} POST /appointments/book\n";
+    if ($appointmentPost['status'] !== 302) {
+        $failures[] = "POST /appointments/book expected guest login redirect 302, got {$appointmentPost['status']}";
+    }
+
+    $paymentPost = httpRequest($base . '/payment/verify', 'POST', 'order_id=&payment_id=&signature=');
+    echo "{$paymentPost['status']} POST /payment/verify\n";
+    if ($paymentPost['status'] !== 200 || !str_contains($paymentPost['body'], 'verified')) {
+        $failures[] = "POST /payment/verify should return JSON verification status through PHP routing";
+    }
+
     foreach ([
         '/api/',
         '/api/shop',
