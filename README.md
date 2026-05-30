@@ -50,7 +50,7 @@ The durable architecture constraint is:
 - `php tools/process-mail-queue.php` can be run by cron to send due queued emails after SMTP secrets are configured.
 - Consultation support requests go to the contact form with the astrology subject selected.
 - Account pages require a signed-in user before showing order or booking history.
-- Admin pages require an admin role. On a fresh JSON install, the first local email/password registration becomes the owner admin account and later registrations default to customer.
+- Admin pages require an existing stored admin role. Public registration and Google OAuth create customer accounts only, preserving the live site's existing admin credentials.
 - Review submissions require a signed-in user before astrologer or product ratings can be saved.
 - Admin pages render locally, including dashboard, products, categories, coupons, astrologers, appointments, temples, orders, order detail, contacts, settings, integrations, shipping, backups, audit log, and project map.
 - Admin settings persist shipping mode, flat rate, currency, and timezone to JSON settings.

@@ -139,11 +139,12 @@ $tests['private account admin and review endpoints enforce authentication guards
     }
 };
 
-$tests['local auth preserves roles and bootstraps the first owner account'] = function (): void {
+$tests['public registration never bootstraps admin on a live site'] = function (): void {
     $controller = file_get_contents(app_path('app/Controllers/AuthController.php'));
-    assertTrue(str_contains($controller, 'count($users) === 0 ? \'admin\' : \'customer\''), 'First local registration should bootstrap the owner admin role');
+    assertTrue(!str_contains($controller, 'count($users) === 0 ? \'admin\' : \'customer\''), 'Public registration should not make the first user an admin on a live site');
+    assertTrue(str_contains($controller, "\$role = 'customer';"), 'New public registrations and OAuth users should default to customer role');
     assertTrue(str_contains($controller, "'role'=>"), 'Session user should include a role after registration and login');
-    assertTrue(str_contains($controller, "\$u['role']"), 'Email/password login should preserve the stored role');
+    assertTrue(str_contains($controller, "\$u['role']"), 'Email/password login should preserve an existing stored admin role and password');
 };
 
 $tests['contact submissions persist to json storage'] = function (): void {
