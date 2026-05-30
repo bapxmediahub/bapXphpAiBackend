@@ -17,8 +17,19 @@
                 <p><?= e($order['customer_name'] ?? '') ?> <?= e($order['customer_email'] ?? '') ?></p>
             </div>
             <div>
+                <strong>Phone</strong>
+                <p><?= e($order['customer_phone'] ?? 'Not recorded') ?></p>
+            </div>
+            <div>
                 <strong>Payment</strong>
                 <p><?= e($order['payment_id'] ?? 'Not recorded') ?></p>
+            </div>
+            <div>
+                <strong>Shipping Address</strong>
+                <p>
+                    <?= e($order['shipping_address'] ?? 'Not recorded') ?><br>
+                    <?= e($order['shipping_city'] ?? '') ?> <?= e($order['shipping_pincode'] ?? '') ?>
+                </p>
             </div>
         </div>
         <form method="post" action="/admin/orders/<?= e((string)($order['id'] ?? '')) ?>/status" style="margin:var(--space-lg) 0; display:flex; gap:var(--space-sm); align-items:end; flex-wrap:wrap;">

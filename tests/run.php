@@ -334,6 +334,22 @@ $tests['checkout and admin order pages wire customer email workflow'] = function
     assertTrue(in_array('/admin/orders/{id}/status', $paths, true), 'Project map should include the admin order status save route');
 };
 
+$tests['checkout payment verification preserves shipping contact details'] = function (): void {
+    $checkout = file_get_contents(app_path('views/public/checkout.php'));
+    $commerce = file_get_contents(app_path('app/Controllers/CommerceController.php'));
+    $detailView = file_get_contents(app_path('views/admin/detail.php'));
+    foreach (['name="phone"', 'name="address"', 'name="city"', 'name="pincode"'] as $field) {
+        assertTrue(str_contains($checkout, $field), "Checkout form should collect {$field}");
+    }
+    foreach (['customer_phone', 'shipping_address', 'shipping_city', 'shipping_pincode'] as $field) {
+        assertTrue(str_contains($commerce, "'{$field}'"), "Payment verification should persist {$field}");
+        assertTrue(str_contains($detailView, $field), "Admin order detail should display {$field}");
+    }
+    foreach (['phone:', 'address:', 'city:', 'pincode:'] as $needle) {
+        assertTrue(str_contains($checkout, $needle), "Razorpay verification request should include {$needle}");
+    }
+};
+
 $tests['account pages expose review forms only for ended sessions and due shipped products'] = function (): void {
     $bookingsView = file_get_contents(app_path('views/account/bookings.php'));
     assertTrue(str_contains($bookingsView, 'name="target_type" value="astrologer"'), 'Ended astrology sessions should expose astrologer review form');
