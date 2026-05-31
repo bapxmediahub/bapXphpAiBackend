@@ -322,8 +322,11 @@ $tests['astrologer profile uses remote consultation contact panel instead of app
 
 $tests['astrologer marketplace exposes filters recharge link and direct session actions'] = function (): void {
     $view = file_get_contents(app_path('views/public/astrologers.php'));
-    foreach (['href="/recharge"', 'Recharge', 'Filters', 'Available Now', 'On Chat', 'Search Astrologer'] as $needle) {
+    foreach (['href="/recharge"', 'Recharge', 'Search Astrologer', 'astro-search-input', 'data-astro-card'] as $needle) {
         assertTrue(str_contains($view, $needle), "Astrologer marketplace should expose {$needle}");
+    }
+    foreach (['Filters', 'Available Now', 'On Chat', 'On Call'] as $needle) {
+        assertTrue(!str_contains($view, ">{$needle}<"), "Astrologer marketplace should not expose non-working {$needle} button");
     }
     assertTrue(!str_contains($view, 'Available Balance'), 'Astrologer marketplace should not show account balance; that belongs in the user panel');
     assertTrue(!str_contains($view, '/contact?subject=astrology#contact-form" class="astro-recharge"'), 'Recharge should not send customers to the contact form');

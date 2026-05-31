@@ -7,9 +7,9 @@
         </div>
         <div class="grid" style="margin-bottom:var(--space-2xl);">
             <div class="panel reveal" style="text-align:center;">
-                <span style="display:block; margin-bottom:var(--space-sm);"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
-                <h3 style="font-family:var(--font-serif); margin:0 0 var(--space-xs);">Email</h3>
-                <a href="mailto:sripanchamispiritual@gmail.com" style="color:var(--color-maroon);">sripanchamispiritual@gmail.com</a>
+                <span style="display:block; margin-bottom:var(--space-sm);"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
+                <h3 style="font-family:var(--font-serif); margin:0 0 var(--space-xs);">Sacred Service Hours</h3>
+                <p style="color:var(--color-text-muted); font-size:0.9rem; margin:0;">Monday – Saturday: 9:00 AM – 7:00 PM<br>Sunday: 10:00 AM – 5:00 PM</p>
             </div>
             <div class="panel reveal" style="text-align:center;">
                 <span style="display:block; margin-bottom:var(--space-sm);"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
@@ -17,15 +17,13 @@
                 <p style="color:var(--color-text-muted); font-size:0.9rem; margin:0;">23, 1st Cross Street Kothari Nagar,<br>Ramapuram, Chennai,<br>Tamil Nadu 600089</p>
             </div>
             <div class="panel reveal" style="text-align:center;">
-                <span style="display:block; margin-bottom:var(--space-sm);"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6a6 6 0 000 12"/><path d="M12 8v8"/><path d="M9 10l6 4"/><path d="M15 10l-6 4"/></svg></span>
-                <h3 style="font-family:var(--font-serif); margin:0 0 var(--space-xs);">Business Info</h3>
-                <p style="color:var(--color-text-muted); font-size:0.9rem; margin:0;">GST: 33BZRPM8732J2ZQ</p>
+                <span style="display:block; margin-bottom:var(--space-sm);"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.7 19.7 0 01-8.6-3.1 19.1 19.1 0 01-5.9-5.9A19.7 19.7 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 2 .7 2.9a2 2 0 01-.4 2.1L8.1 10a16 16 0 005.9 5.9l1.3-1.3a2 2 0 012.1-.4c.9.3 1.9.6 2.9.7a2 2 0 011.7 2z"/></svg></span>
+                <h3 style="font-family:var(--font-serif); margin:0 0 var(--space-xs);">Contact</h3>
+                <p style="color:var(--color-text-muted); font-size:0.9rem; margin:0;">
+                    <a href="tel:+919791122995" style="color:var(--color-maroon);">+91 97911 22995</a><br>
+                    <a href="mailto:sripanchamispiritual@gmail.com" style="color:var(--color-maroon);">sripanchamispiritual@gmail.com</a>
+                </p>
             </div>
-        </div>
-        <div class="admin-card reveal" style="text-align:center;">
-            <span style="display:block; margin-bottom:var(--space-sm);"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><path d="M12 8v8"/><path d="M8 12h8"/></svg></span>
-            <h3 style="font-family:var(--font-serif); margin:0 0 var(--space-sm);">Sacred Service Hours</h3>
-            <p style="color:var(--color-text-muted); font-size:0.9rem; margin:0;">Monday – Saturday: 9:00 AM – 7:00 PM<br>Sunday: 10:00 AM – 5:00 PM</p>
         </div>
         <div class="admin-card reveal" id="contact-form" style="margin-top:var(--space-xl); scroll-margin-top:110px;">
             <h2 style="font-family:var(--font-serif); text-align:center; margin:0 0 var(--space-sm);">Send a Consultation Request</h2>

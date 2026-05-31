@@ -15,16 +15,10 @@
     <?php else: ?>
         <div class="container">
             <div class="astro-market-toolbar reveal">
-                <div class="astro-filters" aria-label="Astrologer filters">
-                    <button type="button">Filters</button>
-                    <button type="button">Available Now</button>
-                    <button type="button">On Chat</button>
-                    <button type="button">On Call</button>
-                </div>
                 <a href="/recharge" class="astro-recharge">Recharge</a>
                 <label class="astro-search">
                     <span>Search Astrologer</span>
-                    <input type="search" placeholder="Search Astrologer">
+                    <input type="search" id="astro-search-input" placeholder="Search by name, language, speciality">
                 </label>
             </div>
             <div class="astro-market-grid">
@@ -38,7 +32,7 @@
                         $languageText = implode(', ', array_slice($item['languages'] ?? ['Tamil'], 0, 2));
                         $speciality = $item['speciality'] ?? 'Vedic Astrology';
                     ?>
-                    <article class="astro-market-card astro-market-card--<?= e($state) ?> reveal">
+                    <article class="astro-market-card astro-market-card--<?= e($state) ?> reveal" data-astro-card data-search="<?= e(strtolower(($item['name'] ?? '') . ' ' . $languageText . ' ' . $speciality)) ?>">
                         <a class="astro-market-photo" href="/astrologers/<?= e($item['slug'] ?? '') ?>" aria-label="View <?= e($item['name'] ?? 'Astrologer') ?>">
                             <img src="<?= e($item['photo_url'] ?? 'https://placehold.co/800x1000/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($item['name'] ?? 'Astrologer') ?>" loading="lazy">
                             <span class="astro-status-dot" aria-label="<?= e(ucfirst($state)) ?>"></span>
@@ -107,3 +101,16 @@
         </div>
     <?php endif; ?>
 </section>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var input = document.getElementById('astro-search-input');
+    if (!input) return;
+    var cards = Array.prototype.slice.call(document.querySelectorAll('[data-astro-card]'));
+    input.addEventListener('input', function () {
+        var term = input.value.trim().toLowerCase();
+        cards.forEach(function (card) {
+            card.hidden = term !== '' && !String(card.dataset.search || '').includes(term);
+        });
+    });
+});
+</script>
