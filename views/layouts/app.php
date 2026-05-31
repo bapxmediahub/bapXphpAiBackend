@@ -101,9 +101,16 @@ main{padding-bottom:0}
 .astrologer-card__actions .btn{width:100%;padding-left:0.75rem;padding-right:0.75rem}
 .btn-call{background:var(--color-success);color:white;border:none;padding:0.5rem 1rem;border-radius:var(--radius-pill);font-weight:600;cursor:pointer;font-size:0.85rem}
 .btn-message{background:#3b82f6;color:white;border:none;padding:0.5rem 1rem;border-radius:var(--radius-pill);font-weight:600;cursor:pointer;font-size:0.85rem}
- .category-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:var(--space-lg)}
+ .category-grid{grid-template-columns:repeat(auto-fit,minmax(180px,220px));justify-content:center;gap:var(--space-xl);max-width:760px;margin:0 auto}
  .category-card{cursor:pointer;transition:all 0.3s ease;text-align:center;text-decoration:none;color:var(--color-ink)}
- .category-img-wrap{width:100%;aspect-ratio:1;border-radius:8px;overflow:hidden;margin:0 0 var(--space-xs);border:3px solid var(--color-white);box-shadow:0 4px 15px rgba(44,30,20,0.1)}
+ .category-img-wrap{width:clamp(124px,14vw,178px);height:clamp(124px,14vw,178px);border-radius:50%;overflow:hidden;margin:0 auto var(--space-xs);border:4px solid var(--color-white);background:radial-gradient(circle at 50% 50%,rgba(92,0,0,0.92),rgba(44,30,20,0.96));box-shadow:0 4px 15px rgba(44,30,20,0.1)}
+ .category-img-wrap img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.temple-scroll{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(720px,82vw);gap:var(--space-xl);max-width:1300px;margin:0 auto;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 0 var(--space-md)}
+.temple-slide{display:grid;grid-template-columns:minmax(280px,0.85fr) minmax(320px,1fr);align-items:stretch;gap:var(--space-xl);scroll-snap-align:center;min-height:320px}
+.temple-slide__media{background:var(--color-bg-alt);border-radius:var(--radius-md);min-height:280px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.temple-slide__media img{width:100%;height:100%;min-height:280px;object-fit:cover;margin:0;border-radius:0}
+.temple-slide__copy{display:flex;flex-direction:column;justify-content:center;text-align:left}
+.temple-slide__address{display:flex;align-items:flex-start;gap:var(--space-xs);margin-top:var(--space-sm);font-size:0.82rem!important}
 .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);border-top:1px solid var(--color-border);padding:var(--space-xs) 0;z-index:1000}
 .nav-grid{display:grid;grid-template-columns:repeat(5,1fr);max-width:480px;margin:0 auto}
 .nav-item{display:flex;flex-direction:column;align-items:center;padding:var(--space-xs) 0;color:var(--color-text-muted);font-size:0.6rem;text-decoration:none;min-height:48px;justify-content:center}
@@ -129,9 +136,13 @@ nav{display:none;position:absolute;top:100%;left:0;right:0;background:rgba(255,2
 nav a{font-size:0.95rem;padding:var(--space-sm) var(--space-md);border-radius:var(--radius-md)}
 nav.open{display:flex}
 .menu-toggle{display:block}
-.home-hero{grid-template-columns:1fr;text-align:center;padding-top:var(--space-2xl)}
+.home-hero{grid-template-columns:1fr;text-align:center;width:100vw;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);padding:var(--space-2xl) var(--space-md) var(--space-lg)}
 .hero-actions{justify-content:center}
-.category-grid{grid-template-columns:repeat(3,1fr)}
+.category-grid{grid-template-columns:repeat(2,minmax(0,128px));justify-content:center;gap:var(--space-md)}
+.temple-scroll{grid-auto-columns:minmax(82vw,1fr);gap:var(--space-md);padding-left:var(--space-sm);padding-right:var(--space-sm)}
+.temple-slide{grid-template-columns:1fr;min-height:0;gap:var(--space-md)}
+.temple-slide__media,.temple-slide__media img{min-height:190px}
+.temple-slide__copy{text-align:center}
 .footer-grid{grid-template-columns:1fr 1fr}
 .bottom-nav{display:block}
 .main-content{padding-bottom:calc(60px + var(--space-md))}
@@ -205,7 +216,8 @@ echo $critical;
         </a>
     </div>
 </header>
-<main>
+<?php $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/'; ?>
+<main class="<?= $currentPath === '/' ? 'home-main' : '' ?>">
 <?php if(!empty($_SESSION['flash'])): ?>
     <div class="flash flash--info" style="margin:var(--space-lg) auto;max-width:1300px;padding:0 var(--space-lg)"><?= e($_SESSION['flash']); unset($_SESSION['flash']); ?></div>
 <?php endif; ?>

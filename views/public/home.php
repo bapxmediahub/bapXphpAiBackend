@@ -119,24 +119,26 @@
         <h2 class="section-title">Our Temples in Chennai</h2>
         <p class="lede">Visit our sacred spaces for divine blessings, spiritual awakening, and traditional pooja ceremonies.</p>
     </div>
-    <div class="showcase-grid">
+    <div class="temple-scroll" aria-label="Temple highlights">
         <?php foreach(array_slice($temples, 0, 3) as $temple): ?>
-            <article class="showcase-card reveal">
-                <div style="background:var(--color-bg-alt); border-radius:var(--radius-md); margin-bottom:var(--space-md); height:160px; display:flex; align-items:center; justify-content:center;">
+            <article class="showcase-card temple-slide reveal">
+                <div class="temple-slide__media">
                     <?php if(!empty($temple['image_url'])): ?>
-                        <img src="<?= e($temple['image_url']) ?>" alt="<?= e($temple['name']) ?> — Temple at Sri Panchami Spiritual, Chennai" loading="lazy" style="width:100%; height:100%; object-fit:cover; border-radius:var(--radius-md);">
+                        <img src="<?= e($temple['image_url']) ?>" alt="<?= e($temple['name']) ?> — Temple at Sri Panchami Spiritual, Chennai" loading="lazy">
                     <?php else: ?>
                         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
                     <?php endif; ?>
                 </div>
-                <h2><?= e($temple['name']) ?></h2>
-                <p><?= e($temple['description']) ?></p>
-                <?php if(!empty($temple['address'])): ?>
-                    <p style="margin-top:var(--space-sm); font-size:0.8rem; color:var(--color-text-muted);">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                        <?= e($temple['address']) ?>
-                    </p>
-                <?php endif; ?>
+                <div class="temple-slide__copy">
+                    <h2><?= e($temple['name']) ?></h2>
+                    <p><?= e($temple['description']) ?></p>
+                    <?php if(!empty($temple['address'])): ?>
+                        <p class="temple-slide__address">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <?= e($temple['address']) ?>
+                        </p>
+                    <?php endif; ?>
+                </div>
             </article>
         <?php endforeach; ?>
     </div>
