@@ -14,6 +14,9 @@ final class AuthService {
     }
 
     public function requireAdmin(): void {
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        header('Pragma: no-cache');
+        header('Expires: 0');
         $user = $this->user();
         if (!$user) {
             header('Location: /login');

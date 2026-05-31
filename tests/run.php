@@ -40,6 +40,7 @@ $tests['project map registry has no missing route mappings'] = function (): void
     $map = ProjectMapService::registry();
     $validation = ProjectMapService::validate($map);
     assertSame([], $validation['missing_route_mappings'], 'Routes should map to controllers');
+    assertSame([], $validation['missing_services'], 'Routes should reference declared services');
     assertSame([], $validation['missing_collections'], 'Collections should be declared');
 };
 
@@ -60,6 +61,7 @@ $tests['public and api routes cover spiritual and category pages without fallbac
     assertTrue(in_array('/categories', $paths, true), 'API /api/categories should map through /categories route');
     assertTrue(in_array('/forgot-password', $paths, true), 'Login forgot-password link should have a GET route');
     assertTrue(in_array('/reset-password', $paths, true), 'Password reset page should have a GET route');
+    assertTrue(str_contains($index, "'/logout'"), 'Logout should dispatch through PHP routes so the session is actually destroyed');
     assertTrue(str_contains($index, "'/appointments'"), 'Appointment POST actions should dispatch through PHP routes instead of SPA fallback');
     assertTrue(str_contains($index, "'/payment'"), 'Payment verification POST actions should dispatch through PHP routes instead of SPA fallback');
 };
@@ -118,6 +120,10 @@ $tests['private account admin and review endpoints enforce authentication guards
     assertTrue(str_contains($admin, 'requireAdmin'), 'Admin controller should require an admin user before rendering owner pages');
     assertTrue(str_contains($review, 'requireUser'), 'Review submissions should require a signed-in user');
     assertTrue(str_contains($auth, 'function requireAdmin'), 'Auth service should expose an admin guard');
+    assertTrue(str_contains($auth, 'no-store'), 'Admin pages should send no-store headers so logout cannot show cached owner pages');
+    $logout = file_get_contents(app_path('app/Controllers/AuthController.php'));
+    assertTrue(str_contains($logout, 'session_destroy'), 'Logout should destroy the session instead of only unsetting the user');
+    assertTrue(str_contains($logout, "redirect('/login')"), 'Logout should return to the login page before admin can be revisited');
 
     foreach (ProjectMapService::registry()['routes'] as $route) {
         if (str_starts_with($route['path'], '/admin')) {
@@ -451,12 +457,32 @@ $tests['astrologer catalog has thirteen editable priced profiles'] = function ()
 
 $tests['admin product and astrologer forms expose editable owner fields'] = function (): void {
     $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
-    foreach (['slug', 'image_url', 'price', 'offer_price', 'stock_status'] as $field) {
+    foreach (['slug', 'image_url', 'image_urls', 'price', 'offer_price', 'stock_status'] as $field) {
         assertTrue(str_contains($controller, "'{$field}'"), "Product admin form should expose {$field}");
     }
+    $resourceView = file_get_contents(app_path('views/admin/resource.php'));
+    $productView = file_get_contents(app_path('views/public/product.php'));
+    $auditService = file_get_contents(app_path('app/Services/AuditLogService.php'));
+    assertTrue(str_contains($resourceView, 'enctype="multipart/form-data"'), 'Admin resource form should support file uploads');
+    assertTrue(str_contains($resourceView, 'name="product_images[]"'), 'Product admin form should upload multiple product images');
+    assertTrue(str_contains($resourceView, 'multiple'), 'Product image upload should accept multiple files');
+    assertTrue(!str_contains($resourceView, 'let el = document.getElementById'), 'Generated admin edit script should not redeclare let for every field');
+    assertTrue(str_contains($productView, 'image_urls'), 'Product page should render product image galleries');
+    assertTrue(str_contains($controller, 'uploadProductImages'), 'Product save should persist uploaded images into local assets');
+    assertTrue(str_contains($controller, 'mergeExistingRecord'), 'Product save should preserve existing fields when editing only visible admin fields');
+    assertTrue(str_contains($controller, 'AuditLogService'), 'Admin mutations should write audit log records');
+    assertTrue(str_contains($auditService, 'function record'), 'Audit log service should be able to record admin changes');
     foreach (['slug', 'message_credit_cost', 'call_credit_per_second', 'text_session_prm', 'call_session_prm', 'payout_percentage', 'languages', 'working_days'] as $field) {
         assertTrue(str_contains($controller, "'{$field}'"), "Astrologer admin form should expose {$field}");
     }
+};
+
+$tests['admin project map has a working view'] = function (): void {
+    $view = app_path('views/admin/project-map.php');
+    assertTrue(is_file($view), 'Project map admin route should have a renderable view');
+    $contents = file_get_contents($view);
+    assertTrue(str_contains($contents, 'Validation'), 'Project map view should show validation status');
+    assertTrue(str_contains($contents, 'Routes'), 'Project map view should show route mappings');
 };
 
 $tests['admin sidebar exposes every admin menu'] = function (): void {

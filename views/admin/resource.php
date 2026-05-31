@@ -3,12 +3,12 @@
         <h2 style="margin:0; font-size:1.1rem;"><?= e($title) ?></h2>
         <span class="badge badge--default"><?= count($items) ?> record<?= count($items) !== 1 ? 's' : '' ?></span>
     </div>
-    <form id="resource-form" method="post" action="/admin/<?= e($collection) ?>/save" class="admin-form">
+    <form id="resource-form" method="post" action="/admin/<?= e($collection) ?>/save" class="admin-form" enctype="multipart/form-data">
         <input type="hidden" name="id" id="resource-id">
         <div class="admin-form__row" style="grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));">
             <?php foreach($fields as $field): ?>
                 <label><?= e(ucwords(str_replace('_',' ',$field))) ?>
-                    <?php if($field === 'description'): ?>
+                    <?php if($field === 'description' || $field === 'image_urls'): ?>
                         <textarea name="<?= e($field) ?>" id="field-<?= e($field) ?>" rows="3"></textarea>
                     <?php elseif($field === 'active'): ?>
                         <label style="flex-direction:row; align-items:center; gap:var(--space-xs); text-transform:none; font-weight:400;">
@@ -34,6 +34,15 @@
                 </label>
             <?php endforeach; ?>
         </div>
+        <?php if($collection === 'products'): ?>
+            <div class="admin-upload-panel">
+                <label>Upload Product Images
+                    <input type="file" name="product_images[]" id="field-product-images" accept="image/png,image/jpeg,image/webp" multiple>
+                </label>
+                <p>Use this for one or more local product photos. Existing image URLs stay in the gallery unless you remove them from the Image Urls field.</p>
+                <div class="admin-image-preview" id="product-image-preview"></div>
+            </div>
+        <?php endif; ?>
         <div style="margin-top:var(--space-md); display:flex; gap:var(--space-sm);">
             <button type="submit" class="btn btn-primary" id="save-btn">Save <?= e(rtrim($title,'s')) ?></button>
             <button type="reset" class="btn btn-ghost" onclick="document.getElementById('resource-id').value=''; document.getElementById('save-btn').textContent='Save <?= e(rtrim($title,'s')) ?>';">Clear</button>
@@ -53,7 +62,10 @@
                     <tr>
                         <?php foreach($fields as $field): ?>
                             <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                                <?php if(str_contains($field, '_url') && !empty($item[$field])): ?>
+                                <?php if($field === 'image_urls' && !empty($item[$field])): ?>
+                                    <?php $imageCount = is_array($item[$field]) ? count($item[$field]) : count(array_filter(preg_split('/[\r\n,]+/', (string)$item[$field]) ?: [])); ?>
+                                    <span class="badge badge--info"><?= e((string)$imageCount) ?> image<?= $imageCount === 1 ? '' : 's' ?></span>
+                                <?php elseif(str_contains($field, '_url') && !empty($item[$field])): ?>
                                     <a href="<?= e($item[$field]) ?>" target="_blank" style="font-size:0.8rem;">
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                                         View
@@ -93,20 +105,42 @@ document.querySelectorAll('.edit-item').forEach(button => {
         document.getElementById('resource-id').value = item.__id || '';
         document.getElementById('save-btn').textContent = 'Update <?= e(rtrim($title,'s')) ?>';
         <?php foreach($fields as $field): ?>
-            let el = document.getElementById('field-<?= e($field) ?>');
+            var el = document.getElementById('field-<?= e($field) ?>');
             if (el) {
                 if (el.type === 'checkbox') {
                     el.checked = !!item['<?= e($field) ?>'];
                 } else {
-                    el.value = Array.isArray(item['<?= e($field) ?>']) ? item['<?= e($field) ?>'].join(', ') : (item['<?= e($field) ?>'] ?? '');
+                    el.value = Array.isArray(item['<?= e($field) ?>']) ? item['<?= e($field) ?>'].join("\n") : (item['<?= e($field) ?>'] ?? '');
                 }
             }
         <?php endforeach; ?>
+        renderProductImages(item.image_urls || item.image_url || []);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 });
+function renderProductImages(images) {
+    const preview = document.getElementById('product-image-preview');
+    if (!preview) return;
+    const list = Array.isArray(images) ? images : [images];
+    preview.innerHTML = list.filter(Boolean).map(src => `<img src="${String(src).replaceAll('"', '&quot;')}" alt="">`).join('');
+}
+const productImageInput = document.getElementById('field-product-images');
+if (productImageInput) {
+    productImageInput.addEventListener('change', () => {
+        const preview = document.getElementById('product-image-preview');
+        if (!preview) return;
+        preview.innerHTML = '';
+        [...productImageInput.files].forEach(file => {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.alt = file.name;
+            preview.appendChild(img);
+        });
+    });
+}
 document.getElementById('resource-form').addEventListener('reset', () => {
     document.getElementById('resource-id').value = '';
     document.getElementById('save-btn').textContent = 'Save <?= e(rtrim($title,'s')) ?>';
+    renderProductImages([]);
 });
 </script>

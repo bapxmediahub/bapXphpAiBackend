@@ -345,7 +345,7 @@
             "method": "GET",
             "path": "/admin/products",
             "name": "admin.products",
-            "page": "admin/list",
+            "page": "admin/resource",
             "controller": "AdminController@products",
             "services": [
                 "ProductService",
@@ -356,7 +356,7 @@
             "method": "GET",
             "path": "/admin/categories",
             "name": "admin.categories",
-            "page": "admin/list",
+            "page": "admin/resource",
             "controller": "AdminController@categories",
             "services": [
                 "CategoryService",
@@ -367,7 +367,7 @@
             "method": "GET",
             "path": "/admin/coupons",
             "name": "admin.coupons",
-            "page": "admin/list",
+            "page": "admin/resource",
             "controller": "AdminController@coupons",
             "services": [
                 "CouponService",
@@ -425,7 +425,7 @@
             "method": "GET",
             "path": "/admin/astrologers",
             "name": "admin.astrologers",
-            "page": "admin/list",
+            "page": "admin/resource",
             "controller": "AdminController@astrologers",
             "services": [
                 "AstrologerService",
@@ -447,7 +447,7 @@
             "method": "GET",
             "path": "/admin/temples",
             "name": "admin.temples",
-            "page": "admin/list",
+            "page": "admin/resource",
             "controller": "AdminController@temples",
             "services": [
                 "TempleService",
@@ -563,6 +563,7 @@
             "controller": "AdminController@saveProduct",
             "services": [
                 "ResourceService",
+                "AuditLogService",
                 "AuthService"
             ]
         },
@@ -574,6 +575,7 @@
             "controller": "AdminController@deleteProduct",
             "services": [
                 "ResourceService",
+                "AuditLogService",
                 "AuthService"
             ]
         },
@@ -585,6 +587,7 @@
             "controller": "AdminController@saveCategory",
             "services": [
                 "ResourceService",
+                "AuditLogService",
                 "AuthService"
             ]
         },
@@ -596,6 +599,7 @@
             "controller": "AdminController@saveCoupon",
             "services": [
                 "ResourceService",
+                "AuditLogService",
                 "AuthService"
             ]
         },
@@ -607,6 +611,7 @@
             "controller": "AdminController@deleteCoupon",
             "services": [
                 "ResourceService",
+                "AuditLogService",
                 "AuthService"
             ]
         },
@@ -618,6 +623,7 @@
             "controller": "AdminController@saveAstrologer",
             "services": [
                 "ResourceService",
+                "AuditLogService",
                 "AuthService"
             ]
         },
@@ -629,6 +635,7 @@
             "controller": "AdminController@deleteAstrologer",
             "services": [
                 "ResourceService",
+                "AuditLogService",
                 "AuthService"
             ]
         },
@@ -640,6 +647,7 @@
             "controller": "AdminController@saveTemple",
             "services": [
                 "ResourceService",
+                "AuditLogService",
                 "AuthService"
             ]
         },
@@ -651,6 +659,7 @@
             "controller": "AdminController@deleteTemple",
             "services": [
                 "ResourceService",
+                "AuditLogService",
                 "AuthService"
             ]
         },

@@ -736,6 +736,27 @@ nav a:hover { color: var(--color-maroon); }
      background: var(--color-white);
  }
  .product-gallery__main img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 0; }
+.product-gallery__thumbs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+}
+.product-gallery__thumb {
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-white);
+    padding: 0;
+    overflow: hidden;
+    cursor: pointer;
+    aspect-ratio: 1;
+}
+.product-gallery__thumb.active,
+.product-gallery__thumb:hover {
+    border-color: var(--color-gold);
+    box-shadow: 0 0 0 3px rgba(212,175,55,0.12);
+}
+.product-gallery__thumb img { width: 100%; height: 100%; object-fit: cover; }
 .product-info h1 { font-family: var(--font-serif); font-size: 2rem; margin: 0 0 var(--space-sm); }
 .product-info__meta { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-md); }
 .product-info__rating { display: flex; align-items: center; gap: var(--space-2xs); color: var(--color-rating); font-size: 0.9rem; }
@@ -1713,6 +1734,47 @@ tr:hover td { background: var(--color-bg-alt); }
     transition: all var(--transition-base);
 }
 .admin-form input:focus, .admin-form select:focus, .admin-form textarea:focus { outline: none; border-color: var(--color-gold); box-shadow: 0 0 0 3px rgba(212,175,55,0.1); }
+.admin-upload-panel {
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    background: var(--color-bg-alt);
+}
+.admin-upload-panel p {
+    margin: var(--space-xs) 0 0;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+.admin-image-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    margin-top: var(--space-sm);
+}
+.admin-image-preview img {
+    width: 76px;
+    height: 76px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-white);
+}
+.admin-map-status {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--space-sm);
+}
+.admin-map-status__item {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    align-items: center;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-sm);
+    background: var(--color-bg-alt);
+}
+.admin-chip-list { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
 
 /* ── Admin Responsive ── */
 .panel {

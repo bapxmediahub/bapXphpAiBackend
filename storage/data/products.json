@@ -8,6 +8,9 @@
         "price": 499,
         "offer_price": 499,
         "image_url": "/assets/images/products/karuppasami-dollar-front.png",
+        "image_urls": [
+            "/assets/images/products/karuppasami-dollar-front.png"
+        ],
         "stock_status": "in_stock",
         "highlights": [
             "High-quality impon devotional jewellery",

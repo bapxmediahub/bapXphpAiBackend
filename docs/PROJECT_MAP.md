@@ -52,15 +52,15 @@
 - `/admin/contact-submissions` → `AdminController@contactSubmissions` → ContactService, AuthService
 - `/admin/support-tickets` → `AdminController@supportTickets` → JsonStoreService, AuthService
 - `/admin/developer/project-map` → `AdminController@projectMap` → ProjectMapService, AuthService
-- `/admin/products/save` → `AdminController@saveProduct` → ResourceService, AuthService
-- `/admin/products/delete` → `AdminController@deleteProduct` → ResourceService, AuthService
-- `/admin/categories/save` → `AdminController@saveCategory` → ResourceService, AuthService
-- `/admin/coupons/save` → `AdminController@saveCoupon` → ResourceService, AuthService
-- `/admin/coupons/delete` → `AdminController@deleteCoupon` → ResourceService, AuthService
-- `/admin/astrologers/save` → `AdminController@saveAstrologer` → ResourceService, AuthService
-- `/admin/astrologers/delete` → `AdminController@deleteAstrologer` → ResourceService, AuthService
-- `/admin/temples/save` → `AdminController@saveTemple` → ResourceService, AuthService
-- `/admin/temples/delete` → `AdminController@deleteTemple` → ResourceService, AuthService
+- `/admin/products/save` → `AdminController@saveProduct` → ResourceService, AuditLogService, AuthService
+- `/admin/products/delete` → `AdminController@deleteProduct` → ResourceService, AuditLogService, AuthService
+- `/admin/categories/save` → `AdminController@saveCategory` → ResourceService, AuditLogService, AuthService
+- `/admin/coupons/save` → `AdminController@saveCoupon` → ResourceService, AuditLogService, AuthService
+- `/admin/coupons/delete` → `AdminController@deleteCoupon` → ResourceService, AuditLogService, AuthService
+- `/admin/astrologers/save` → `AdminController@saveAstrologer` → ResourceService, AuditLogService, AuthService
+- `/admin/astrologers/delete` → `AdminController@deleteAstrologer` → ResourceService, AuditLogService, AuthService
+- `/admin/temples/save` → `AdminController@saveTemple` → ResourceService, AuditLogService, AuthService
+- `/admin/temples/delete` → `AdminController@deleteTemple` → ResourceService, AuditLogService, AuthService
 - `/admin/integrations/save` → `AdminController@saveIntegrations` → SecretService, AuthService
 - `/cart/add` → `CommerceController@addToCart` → CartService, ProductService
 - `/cart/remove` → `CommerceController@removeFromCart` → CartService

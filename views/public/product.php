@@ -7,12 +7,30 @@
             <a href="/shop" class="btn btn-primary">Browse Shop</a>
         </div>
     <?php else: ?>
-        <?php $hasOffer = !empty($product['offer_price']) && $product['offer_price'] < $product['price']; ?>
+        <?php
+            $hasOffer = !empty($product['offer_price']) && $product['offer_price'] < $product['price'];
+            $gallery = [];
+            if (!empty($product['image_urls'])) {
+                $gallery = is_array($product['image_urls']) ? $product['image_urls'] : preg_split('/[\r\n,]+/', (string)$product['image_urls']);
+            }
+            if (!empty($product['image_url'])) array_unshift($gallery, $product['image_url']);
+            $gallery = array_values(array_unique(array_filter(array_map('trim', $gallery))));
+            if (empty($gallery)) $gallery[] = 'https://placehold.co/600x600/fdfbf7/8c7e6d?text='.urlencode($product['name']);
+        ?>
         <div class="product-detail">
             <div class="product-gallery reveal">
                 <div class="product-gallery__main">
-                    <img src="<?= e($product['image_url'] ?? 'https://placehold.co/600x600/fdfbf7/8c7e6d?text='.urlencode($product['name'])) ?>" alt="<?= e($product['name']) ?>">
+                    <img id="product-main-image" src="<?= e($gallery[0]) ?>" alt="<?= e($product['name']) ?>">
                 </div>
+                <?php if(count($gallery) > 1): ?>
+                    <div class="product-gallery__thumbs" aria-label="Product images">
+                        <?php foreach($gallery as $index => $image): ?>
+                            <button type="button" class="product-gallery__thumb <?= $index === 0 ? 'active' : '' ?>" data-image="<?= e($image) ?>" aria-label="View product image <?= e((string)($index + 1)) ?>">
+                                <img src="<?= e($image) ?>" alt="">
+                            </button>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
             </div>
             <div class="product-info">
                  <nav class="breadcrumb" aria-label="Breadcrumb" style="font-size:0.8rem; color:var(--color-text-muted); margin-bottom:var(--space-md);">
@@ -127,3 +145,14 @@
         <?php endif; ?>
     <?php endif; ?>
 </section>
+<script>
+document.querySelectorAll('.product-gallery__thumb').forEach(button => {
+    button.addEventListener('click', () => {
+        const main = document.getElementById('product-main-image');
+        if (!main) return;
+        main.src = button.dataset.image || main.src;
+        document.querySelectorAll('.product-gallery__thumb').forEach(item => item.classList.remove('active'));
+        button.classList.add('active');
+    });
+});
+</script>

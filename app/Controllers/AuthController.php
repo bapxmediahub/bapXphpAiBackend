@@ -18,9 +18,15 @@ final class AuthController extends BaseController {
   $store->upsert('users',['id'=>$user['sub'],'email'=>$user['email'],'name'=>$user['name']??'','picture'=>$user['picture']??'','role'=>$role]); $this->redirect('/');
  }
  public function logout(): void {
-  unset($_SESSION['user']);
+  $_SESSION = [];
+  if (ini_get('session.use_cookies')) {
+   $params = session_get_cookie_params();
+   setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], (bool)$params['secure'], (bool)$params['httponly']);
+  }
+  session_destroy();
+  session_start();
   $this->flash('You are signed out.');
-  $this->redirect('/');
+  $this->redirect('/login');
  }
  private function redirectUri(): string { $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http'; return $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'sripanchamispiritual.com') . '/auth/google/callback'; }
  private function post(string $url,array $data): array { $ch=curl_init($url); curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_POST=>true,CURLOPT_POSTFIELDS=>http_build_query($data)]); $body=curl_exec($ch); curl_close($ch); return json_decode($body,true)?:[]; }

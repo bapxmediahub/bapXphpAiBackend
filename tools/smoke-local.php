@@ -34,6 +34,7 @@ try {
         '/sri-panchami-spiritual' => 200,
         '/forgot-password' => 200,
         '/reset-password' => 200,
+        '/logout' => 302,
         '/account/orders' => 302,
         '/account/bookings' => 302,
         '/account/wallet' => 302,
