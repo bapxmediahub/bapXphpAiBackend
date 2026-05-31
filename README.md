@@ -1,10 +1,16 @@
-# Agent-Ready PHP/JSON Full-Stack Platform
+# PHP JSON Agent Ready Backend and Full-Stack Platform
 
-This repository is a reusable PHP/JSON full-stack monorepo for small PHP hosting. Sri Panchami Spiritual is the current customer-facing use case, but the JSON-backed backend is intentionally built as an agent-readable product base: auth, JSON database, schema, media storage, admin control panel, environment editor, permissions, audit logs, support assistant context, ecommerce, wallet, reviews, and deployment docs live in one repo.
+This repository is a **php json agent ready** full-stack monorepo for developers who want a deployable PHP backend, local JSON database, built-in AI-agent instructions, and a modifiable PHP template frontend for shared-hosting projects. Sri Panchami Spiritual is the current customer-facing use case, but the JSON-backed backend is intentionally built as an agent-readable product base: auth, JSON database schema, media storage, admin control panel, environment editor, permissions, audit logs, support assistant context, ecommerce, wallet, reviews, and deployment docs live in one repo.
 
 It uses PHP templates, PHP controllers, and local JSON storage under `storage/data/`. There is no SPA, no build step, no SQL/Postgres/MySQL requirement, and no separate MCP or external skill repository required.
 
 The project is designed to run from `public_html` on hosts such as Hostinger and to be maintained through Git-based agentic development with tools such as Codex, Claude Code, OpenCode, Antigravity, Hermes, or similar coding agents.
+
+## Project Overview: PHP JSON Agent Ready for Shared Hosting
+
+The goal is to provide a **php json agent ready** backend that can be reused for many small business, ecommerce, booking, CRM, spiritual-service, or support-assistant projects. The backend should need only light schema and content changes while the frontend can be redesigned per customer.
+
+Developers searching for a PHP JSON backend, json-database starter, ai-agent app base, agentic-workflow repo, or shared-hosting full-stack template can use this as a working product instead of rebuilding auth, admin CRUD, media upload, JSON persistence, environment settings, project maps, and agent instructions from scratch.
 
 ## Agentic Backend Concept
 
@@ -18,6 +24,16 @@ The backend primitives are repo-native so agents do not rediscover the system ev
 - `MediaService` manages reusable uploaded files for products, temples, astrologers, and shared assets.
 - `/admin/environment` edits `.env` and checks/fixes writable storage paths.
 - `AGENTS.md`, `CLAUDE.md`, `.codex/skills/`, `.claude/skills/`, and `.agents/skills/` give built-in instructions for compatible agents.
+
+## Key Features for PHP JSON Agent Ready Apps
+
+- **php json agent ready backend**: PHP services and controllers use a local JSON database that coding agents can inspect and modify without SQL migrations.
+- **json-database schema contract**: `storage/schema/collections.json` documents collection fields, admin fields, media fields, ownership, and safe AI-agent context.
+- **ai-agent support context**: `AgentContextService` exposes only the logged-in user's orders, sessions, wallet transactions, and safe public site links.
+- **agentic-workflow skills included**: repo-native skills and instructions are included for Codex, Claude Code, OpenCode, Antigravity, Hermes-style agents, and generic folder-based agents.
+- **shared-hosting deployment**: designed for Hostinger-style PHP hosting with `public_html`, writable `storage/`, Git auto-deploy, and no Node build step.
+- **Ready backend, modifiable frontend**: auth, JSON DB, admin, media, support bot, project map, and settings stay stable while `views/` and `assets/css/` can be changed per project.
+- **Small hosting friendly**: no Postgres, MySQL, Redis, queue worker, frontend compiler, or separate MCP server is required.
 
 ## Documentation
 
@@ -77,8 +93,8 @@ Module notes:
 
 - Frontend: PHP-rendered templates in `views/`.
 - Styling: `assets/css/band.css` plus critical inline layout CSS.
-- Backend: PHP controllers, services, and router under `app/`.
-- Data: JSON files in `storage/data/`, described by `storage/schema/collections.json`.
+- Backend: PHP controllers, services, and router under `app/`; built to be php json agent ready.
+- Data: JSON files in `storage/data/`, described by `storage/schema/collections.json`; this is the local json-database.
 - Integrations: Razorpay and Google OAuth scaffolding in `integrations/`.
 - Deployment target: PHP hosting with `public_html`.
 
@@ -137,6 +153,29 @@ php /home/ACCOUNT/public_html/tools/process-mail-queue.php
 
 Full details are in [docs/deployment-hostinger.md](docs/deployment-hostinger.md).
 
+## Deploy This PHP JSON AI Agent on Shared Hosting
+
+This repo is meant for developers who want a PHP JSON AI agent backend that works on ordinary shared-hosting plans:
+
+1. Fork or clone the repository.
+2. Edit `.env` for the new domain, admin email, and admin password.
+3. Update `storage/schema/collections.json` only when the JSON database shape changes.
+4. Change `views/`, `assets/css/`, and `storage/data/*.json` for the customer/project use case.
+5. Push to the branch connected to Hostinger Git auto-deploy or another PHP host.
+6. Use the built-in skills so future agents follow the backend map instead of rediscovering the project.
+
+## Use This Project With Built-In Agent Skills
+
+The built-in skill folders are part of the product, not an external plugin:
+
+- `.codex/skills/sps-dev/` for Codex-style workflows.
+- `.claude/skills/sps-dev/` for Claude Code-style workflows.
+- `.agents/skills/sps-dev/` for generic folder-based agents.
+- `AGENTS.md` and `CLAUDE.md` for always-on repository instructions.
+- `example-Agent.md` for the expected agent workflow.
+
+For a new project, tell the agent to read `AGENTS.md`, `storage/schema/collections.json`, `docs/PROJECT_MAP.md`, and the matching skill folder first. The ready backend remains stable, while the modifiable frontend and content can change depending on the project.
+
 ## Agent Development Rules
 
 Agents should:
@@ -149,6 +188,10 @@ Agents should:
 - Commit to the branch connected to hosting only after validation passes.
 
 Agents must not reintroduce a SPA, React/CDN app shell, placeholder pages, or a second frontend.
+
+## Search Indexing Notes
+
+This README is optimized for the developer search phrase **php json agent ready** and supporting keywords such as php, json-database, ai-agent, agentic-workflow, and shared-hosting. GitHub search indexing is not instant; after a public repository update, allow 24-72 hours before checking ranking for the exact phrase `php json agent ready`.
 
 ## Current Known Gaps
 
