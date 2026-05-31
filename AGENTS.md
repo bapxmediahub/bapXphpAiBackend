@@ -24,7 +24,7 @@ This repo is an agent-ready PHP/JSON full-stack product base for small PHP hosti
 2. `storage/schema/collections.json`
 3. `docs/PROJECT_MAP.md`
 4. `example-Agent.md`
-5. The narrow skill under `.codex/skills/sps-dev/`, `.claude/skills/sps-dev/`, or `.agents/skills/sps-dev/` that matches the task.
+5. The narrow skill under `.codex/skills/php-dev/`, `.claude/skills/php-dev/`, or `.agents/skills/php-dev/` that matches the task.
 
 ## Rules
 

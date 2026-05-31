@@ -1,6 +1,6 @@
 # PHP JSON Agent Ready Backend and Full-Stack Platform
 
-This repository is a **php json agent ready** full-stack monorepo for developers who want a deployable PHP backend, local JSON database, built-in AI-agent instructions, and a modifiable PHP template frontend for shared-hosting projects. Sri Panchami Spiritual is the current customer-facing use case, but the JSON-backed backend is intentionally built as an agent-readable product base: auth, JSON database schema, media storage, admin control panel, environment editor, permissions, audit logs, support assistant context, ecommerce, wallet, reviews, and deployment docs live in one repo.
+This repository is a **php json agent ready** full-stack monorepo for developers who want a deployable PHP backend, local JSON database, built-in AI-agent instructions, and a modifiable PHP template frontend for shared-hosting projects. bapXphpAiBackend is the current customer-facing use case, but the JSON-backed backend is intentionally built as an agent-readable product base: auth, JSON database schema, media storage, admin control panel, environment editor, permissions, audit logs, support assistant context, ecommerce, wallet, reviews, and deployment docs live in one repo.
 
 It uses PHP templates, PHP controllers, and local JSON storage under `storage/data/`. There is no SPA, no build step, no SQL/Postgres/MySQL requirement, and no separate MCP or external skill repository required.
 
