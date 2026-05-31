@@ -186,10 +186,10 @@ echo $critical;
     <nav id="primary-nav">
         <a href="/">Home</a>
         <a href="/shop">Shop</a>
-        <a href="/temples">Temples</a>
         <a href="/astrologers">Astrologers</a>
-        <a href="/about">About Us</a>
-        <a href="/contact">Contact Us</a>
+        <a href="/temples">Temples</a>
+        <a href="/about">About SPS</a>
+        <a href="/contact">Contact</a>
         <?php if(!empty($_SESSION['user'])): ?>
             <a href="/account/bookings">My Sessions</a>
             <a href="/account/wallet">Wallet</a>
@@ -222,13 +222,13 @@ echo $critical;
             <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
             <span>Shop</span>
         </a>
-        <a href="/temples" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/temples') === 0 ? 'active' : '') ?>">
-            <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
-            <span>Temples</span>
-        </a>
         <a href="/astrologers" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/astrologers') === 0 ? 'active' : '') ?>">
             <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20"/><path d="M2 12h20"/></svg>
             <span>Astro</span>
+        </a>
+        <a href="/temples" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/temples') === 0 ? 'active' : '') ?>">
+            <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
+            <span>Temples</span>
         </a>
         <a href="/cart" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/cart') === 0 ? 'active' : '') ?>">
             <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
@@ -267,9 +267,9 @@ echo $critical;
                 <h4 class="footer-heading">Shop</h4>
                 <ul class="footer-links">
                     <li><a href="/shop">All Products</a></li>
-                    <li><a href="/temples">Temples</a></li>
                     <li><a href="/astrologers">Astrologers</a></li>
-                    <li><a href="/about">About Us</a></li>
+                    <li><a href="/temples">Temples</a></li>
+                    <li><a href="/about">About SPS</a></li>
                     <li><a href="/contact">Contact</a></li>
                 </ul>
             </div>
@@ -278,7 +278,7 @@ echo $critical;
                 <ul class="footer-links">
                     <li><a href="/astrologers">Astrology</a></li>
                     <li><a href="/temples">Temples</a></li>
-                    <li><a href="/about">About Us</a></li>
+                    <li><a href="/about">About SPS</a></li>
                     <li><a href="/contact">Contact</a></li>
                 </ul>
             </div>
