@@ -1759,6 +1759,46 @@ tr:hover td { background: var(--color-bg-alt); }
     border: 1px solid var(--color-border);
     background: var(--color-white);
 }
+.admin-media-picker {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    background: var(--color-white);
+}
+.admin-media-picker__head {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    align-items: center;
+    margin-bottom: var(--space-sm);
+}
+.admin-media-picker__head span { color: var(--color-text-muted); font-size: 0.8rem; }
+.admin-media-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: var(--space-sm);
+}
+.admin-media-tile {
+    display: grid;
+    gap: var(--space-xs);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-xs);
+    background: var(--color-bg-alt);
+}
+.admin-media-tile img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    background: var(--color-white);
+}
+.admin-media-tile small,
+.admin-media-tile code {
+    color: var(--color-text-muted);
+    font-size: 0.72rem;
+    overflow-wrap: anywhere;
+}
 .admin-map-status {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));

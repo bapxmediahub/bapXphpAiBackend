@@ -36,16 +36,16 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/recharge/create-order','name'=>'wallet.recharge.create-order','page'=>'account/wallet','controller'=>'WalletController@createOrder','services'=>['AuthService','WalletService','SecretService','PaymentService']],
             ['method'=>'POST','path'=>'/recharge/verify','name'=>'wallet.recharge.verify','page'=>'account/wallet','controller'=>'WalletController@verify','services'=>['AuthService','WalletService','SecretService','PaymentService']],
             ['method'=>'GET','path'=>'/admin','name'=>'admin.dashboard','page'=>'admin/dashboard','controller'=>'AdminController@dashboard','services'=>['OrderService','AppointmentService']],
-            ['method'=>'GET','path'=>'/admin/products','name'=>'admin.products','page'=>'admin/resource','controller'=>'AdminController@products','services'=>['ProductService']],
+            ['method'=>'GET','path'=>'/admin/products','name'=>'admin.products','page'=>'admin/resource','controller'=>'AdminController@products','services'=>['ProductService','SchemaService']],
             ['method'=>'GET','path'=>'/admin/categories','name'=>'admin.categories','page'=>'admin/resource','controller'=>'AdminController@categories','services'=>['CategoryService']],
             ['method'=>'GET','path'=>'/admin/coupons','name'=>'admin.coupons','page'=>'admin/resource','controller'=>'AdminController@coupons','services'=>['CouponService']],
             ['method'=>'GET','path'=>'/admin/orders','name'=>'admin.orders','page'=>'admin/list','controller'=>'AdminController@orders','services'=>['OrderService']],
             ['method'=>'GET','path'=>'/admin/orders/{id}','name'=>'admin.order.show','page'=>'admin/detail','controller'=>'AdminController@order','services'=>['OrderService','ShippingService']],
             ['method'=>'POST','path'=>'/admin/orders/{id}/status','name'=>'admin.order.status','page'=>'admin/detail','controller'=>'AdminController@saveOrderStatus','services'=>['OrderService','MailQueueService']],
             ['method'=>'GET','path'=>'/admin/shipping','name'=>'admin.shipping','page'=>'admin/settings','controller'=>'AdminController@shipping','services'=>['ShippingService','SettingsService']],
-            ['method'=>'GET','path'=>'/admin/astrologers','name'=>'admin.astrologers','page'=>'admin/resource','controller'=>'AdminController@astrologers','services'=>['AstrologerService']],
+            ['method'=>'GET','path'=>'/admin/astrologers','name'=>'admin.astrologers','page'=>'admin/resource','controller'=>'AdminController@astrologers','services'=>['AstrologerService','SchemaService']],
             ['method'=>'GET','path'=>'/admin/appointments','name'=>'admin.appointments','page'=>'admin/list','controller'=>'AdminController@appointments','services'=>['AppointmentService']],
-            ['method'=>'GET','path'=>'/admin/temples','name'=>'admin.temples','page'=>'admin/resource','controller'=>'AdminController@temples','services'=>['TempleService']],
+            ['method'=>'GET','path'=>'/admin/temples','name'=>'admin.temples','page'=>'admin/resource','controller'=>'AdminController@temples','services'=>['TempleService','SchemaService']],
             ['method'=>'GET','path'=>'/admin/settings','name'=>'admin.settings','page'=>'admin/settings','controller'=>'AdminController@settings','services'=>['SettingsService']],
             ['method'=>'POST','path'=>'/admin/settings/save','name'=>'admin.settings.save','page'=>'admin/settings','controller'=>'AdminController@saveSettings','services'=>['SettingsService']],
             ['method'=>'POST','path'=>'/admin/settings/admin-credentials','name'=>'admin.settings.admin-credentials','page'=>'admin/settings','controller'=>'AdminController@saveAdminCredentials','services'=>['EnvService']],
@@ -54,6 +54,11 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/admin/audit-log','name'=>'admin.audit','page'=>'admin/list','controller'=>'AdminController@audit','services'=>['AuditLogService']],
             ['method'=>'GET','path'=>'/admin/contact-submissions','name'=>'admin.contact-submissions','page'=>'admin/contact-submissions','controller'=>'AdminController@contactSubmissions','services'=>['ContactService']],
             ['method'=>'GET','path'=>'/admin/support-tickets','name'=>'admin.support-tickets','page'=>'admin/list','controller'=>'AdminController@supportTickets','services'=>['JsonStoreService']],
+            ['method'=>'GET','path'=>'/admin/media','name'=>'admin.media','page'=>'admin/media','controller'=>'AdminController@media','services'=>['MediaService']],
+            ['method'=>'POST','path'=>'/admin/media/upload','name'=>'admin.media.upload','page'=>'admin/media','controller'=>'AdminController@uploadMedia','services'=>['MediaService','AuditLogService']],
+            ['method'=>'GET','path'=>'/admin/environment','name'=>'admin.environment','page'=>'admin/environment','controller'=>'AdminController@environment','services'=>['EnvService','StoragePermissionService']],
+            ['method'=>'POST','path'=>'/admin/environment/save','name'=>'admin.environment.save','page'=>'admin/environment','controller'=>'AdminController@saveEnvironment','services'=>['EnvService','AuditLogService']],
+            ['method'=>'POST','path'=>'/admin/environment/fix-permissions','name'=>'admin.environment.fix-permissions','page'=>'admin/environment','controller'=>'AdminController@fixPermissions','services'=>['StoragePermissionService','AuditLogService']],
             ['method'=>'GET','path'=>'/admin/developer/project-map','name'=>'admin.project-map','page'=>'admin/project-map','controller'=>'AdminController@projectMap','services'=>['ProjectMapService']],
             ['method'=>'POST','path'=>'/admin/products/save','name'=>'admin.products.save','page'=>'admin/resource','controller'=>'AdminController@saveProduct','services'=>['ResourceService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/products/delete','name'=>'admin.products.delete','page'=>'admin/resource','controller'=>'AdminController@deleteProduct','services'=>['ResourceService','AuditLogService']],
@@ -73,7 +78,7 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/appointments/book','name'=>'appointments.book','page'=>'public/astrologer','controller'=>'BookingController@book','services'=>['AuthService','ResourceService','AstrologerService']],
             ['method'=>'POST','path'=>'/reviews/astrologer','name'=>'reviews.astrologer','page'=>'account/bookings','controller'=>'ReviewController@saveAstrologer','services'=>['ReviewService']],
             ['method'=>'POST','path'=>'/reviews/product','name'=>'reviews.product','page'=>'account/orders','controller'=>'ReviewController@saveProduct','services'=>['ReviewService']],
-            ['method'=>'POST','path'=>'/support/ask','name'=>'support.ask','page'=>'public/support','controller'=>'SupportController@ask','services'=>['SupportBotService']],
+            ['method'=>'POST','path'=>'/support/ask','name'=>'support.ask','page'=>'public/support','controller'=>'SupportController@ask','services'=>['SupportBotService','AgentContextService']],
         ];
         foreach ($routes as &$route) {
             if ((str_starts_with($route['path'], '/admin') || str_starts_with($route['path'], '/reviews')) && !in_array('AuthService', $route['services'], true)) {
@@ -83,15 +88,15 @@ final class ProjectMapService {
         unset($route);
         return [
             'routes'=>$routes,
-            'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AppointmentService','TempleService','SettingsService','ProjectMapService','JsonStoreService','AuditLogService','ResourceService','SecretService','EnvService','ContactService','ReviewService','PasswordResetService','MailQueueService','WalletService','SupportBotService'],
+            'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AppointmentService','TempleService','SettingsService','ProjectMapService','JsonStoreService','AuditLogService','ResourceService','SecretService','EnvService','ContactService','ReviewService','PasswordResetService','MailQueueService','WalletService','SupportBotService','MediaService','StoragePermissionService','SchemaService','AgentContextService'],
             'integrations'=>['GoogleOAuthClient','RazorpayClient'],
-            'collections'=>['users','products','categories','coupons','orders','astrologers','appointments','temples','settings','audit_events','reviews','mail_queue','wallet_transactions','support_tickets'],
+            'collections'=>['users','products','categories','coupons','orders','astrologers','appointments','temples','settings','audit_events','reviews','mail_queue','wallet_transactions','support_tickets','media_files'],
         ];
     }
     public static function validate(array $map): array {
         $missingRouteMappings = array_values(array_filter($map['routes'], fn($r) => empty($r['controller']) || empty($r['page'])));
         $used = array_unique(array_merge(...array_map(fn($r) => $r['services'], $map['routes'])));
         $missingServices = array_values(array_diff($used, $map['services']));
-        return ['missing_route_mappings'=>$missingRouteMappings,'missing_services'=>$missingServices,'missing_collections'=>array_values(array_diff(['users','products','categories','coupons','orders','astrologers','appointments','temples','settings','audit_events','reviews','mail_queue','wallet_transactions','support_tickets'], $map['collections']))];
+        return ['missing_route_mappings'=>$missingRouteMappings,'missing_services'=>$missingServices,'missing_collections'=>array_values(array_diff(['users','products','categories','coupons','orders','astrologers','appointments','temples','settings','audit_events','reviews','mail_queue','wallet_transactions','support_tickets','media_files'], $map['collections']))];
     }
 }

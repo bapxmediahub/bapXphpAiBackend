@@ -4,7 +4,8 @@ namespace App\Services;
 final class SupportBotService {
     public function __construct(
         private SecretService $secrets = new SecretService(),
-        private JsonStoreService $store = new JsonStoreService()
+        private JsonStoreService $store = new JsonStoreService(),
+        private AgentContextService $agentContext = new AgentContextService()
     ) {}
 
     public function answer(string $message, ?array $user): array {
@@ -26,27 +27,7 @@ final class SupportBotService {
 
     private function customerContext(?array $user): array {
         if (empty($user['email'])) return ['signed_in' => false, 'orders' => [], 'sessions' => []];
-        $email = strtolower((string)$user['email']);
-        $orders = array_values(array_filter($this->store->read('orders'), fn($o) => strtolower((string)($o['customer_email'] ?? '')) === $email));
-        $sessions = array_values(array_filter($this->store->read('appointments'), fn($a) => strtolower((string)($a['customer_email'] ?? '')) === $email));
-        return [
-            'signed_in' => true,
-            'orders' => array_slice(array_map(fn($o) => [
-                'id' => $o['id'] ?? '',
-                'status' => $o['status'] ?? '',
-                'total' => $o['total'] ?? 0,
-                'created_at' => $o['created_at'] ?? '',
-                'items' => array_map(fn($i) => $i['name'] ?? '', $o['items'] ?? []),
-            ], $orders), -5),
-            'sessions' => array_slice(array_map(fn($a) => [
-                'id' => $a['id'] ?? '',
-                'astrologer' => $a['astrologer_name'] ?? '',
-                'type' => $a['session_type'] ?? '',
-                'status' => $a['status'] ?? '',
-                'created_at' => $a['created_at'] ?? '',
-                'credits_spent' => $a['credits_spent'] ?? 0,
-            ], $sessions), -5),
-        ];
+        return ['signed_in' => true] + $this->agentContext->forUserEmail((string)$user['email']);
     }
 
     private function googleReply(string $message, array $context): ?string {

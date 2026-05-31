@@ -2,6 +2,8 @@
 
 Collections are stored separately in `storage/data`. Writes use lock files plus temporary files and atomic rename to reduce corruption risk. Runtime secrets must live outside Git-tracked collection files.
 
+The collection schema lives in `storage/schema/collections.json`. Agents should treat that file as the database contract before changing JSON shapes or admin forms.
+
 ## Collections
 - `products.json` - Product catalog
 - `categories.json` - Product categories
@@ -18,3 +20,4 @@ Collections are stored separately in `storage/data`. Writes use lock files plus 
 - `mail_queue.json` - Queued transactional emails
 - `wallet_transactions.json` - Customer credit top-ups and session spends
 - `support_tickets.json` - Support assistant questions and replies
+- `media_files.json` - Uploaded media library records

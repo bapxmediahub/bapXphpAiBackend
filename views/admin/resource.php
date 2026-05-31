@@ -14,7 +14,7 @@
                         <label style="flex-direction:row; align-items:center; gap:var(--space-xs); text-transform:none; font-weight:400;">
                             <input type="checkbox" name="<?= e($field) ?>" id="field-<?= e($field) ?>" value="1" checked> Active
                         </label>
-                    <?php elseif(str_contains($field, '_url')): ?>
+                    <?php elseif(str_contains($field, '_url') && !in_array($field, ['image_url', 'photo_url'], true)): ?>
                         <input type="url" name="<?= e($field) ?>" id="field-<?= e($field) ?>" placeholder="https://...">
                     <?php elseif(str_contains($field, 'price') || str_contains($field, 'amount') || str_contains($field, 'value') || str_contains($field, '_prm') || str_contains($field, '_percentage') || $field === 'slot_minutes' || $field === 'experience_years'): ?>
                         <input type="number" name="<?= e($field) ?>" id="field-<?= e($field) ?>" placeholder="0" step="any">
@@ -34,14 +34,36 @@
                 </label>
             <?php endforeach; ?>
         </div>
-        <?php if($collection === 'products'): ?>
+        <?php if(in_array($collection, ['products','temples','astrologers'], true)): ?>
             <div class="admin-upload-panel">
-                <label>Upload Product Images
-                    <input type="file" name="product_images[]" id="field-product-images" accept="image/png,image/jpeg,image/webp" multiple>
+                <label>Upload Media Files
+                    <input type="file" name="media_files[]" id="field-media-files" accept="image/png,image/jpeg,image/webp,image/gif" multiple>
                 </label>
-                <p>Use this for one or more local product photos. Existing image URLs stay in the gallery unless you remove them from the Image Urls field.</p>
+                <p>Uploaded files are saved into the media library by upload time. Product uploads are added to the gallery; temple and astrologer uploads fill the main image when empty.</p>
                 <div class="admin-image-preview" id="product-image-preview"></div>
             </div>
+            <?php if(!empty($mediaFiles)): ?>
+                <div class="admin-media-picker">
+                    <div class="admin-media-picker__head">
+                        <strong>Media Library</strong>
+                        <span>Newest first</span>
+                    </div>
+                    <div class="admin-media-grid">
+                        <?php foreach($mediaFiles as $media): ?>
+                            <div class="admin-media-tile">
+                                <img src="<?= e($media['path']) ?>" alt="<?= e($media['original_name'] ?? $media['filename'] ?? 'Media') ?>">
+                                <small><?= e(substr((string)($media['created_at'] ?? ''), 0, 10)) ?></small>
+                                <?php if($collection === 'products'): ?>
+                                    <button type="button" class="btn btn-sm btn-ghost use-media" data-field="image_url" data-path="<?= e($media['path']) ?>">Primary</button>
+                                    <button type="button" class="btn btn-sm btn-ghost use-media" data-field="image_urls" data-append="1" data-path="<?= e($media['path']) ?>">Gallery</button>
+                                <?php else: ?>
+                                    <button type="button" class="btn btn-sm btn-ghost use-media" data-field="<?= $collection === 'astrologers' ? 'photo_url' : 'image_url' ?>" data-path="<?= e($media['path']) ?>">Use</button>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
         <?php endif; ?>
         <div style="margin-top:var(--space-md); display:flex; gap:var(--space-sm);">
             <button type="submit" class="btn btn-primary" id="save-btn">Save <?= e(rtrim($title,'s')) ?></button>
@@ -124,7 +146,7 @@ function renderProductImages(images) {
     const list = Array.isArray(images) ? images : [images];
     preview.innerHTML = list.filter(Boolean).map(src => `<img src="${String(src).replaceAll('"', '&quot;')}" alt="">`).join('');
 }
-const productImageInput = document.getElementById('field-product-images');
+const productImageInput = document.getElementById('field-media-files');
 if (productImageInput) {
     productImageInput.addEventListener('change', () => {
         const preview = document.getElementById('product-image-preview');
@@ -138,6 +160,19 @@ if (productImageInput) {
         });
     });
 }
+document.querySelectorAll('.use-media').forEach(button => {
+    button.addEventListener('click', () => {
+        const field = document.getElementById('field-' + button.dataset.field);
+        if (!field) return;
+        if (button.dataset.append === '1') {
+            const current = field.value.trim();
+            field.value = current ? current + "\n" + button.dataset.path : button.dataset.path;
+        } else {
+            field.value = button.dataset.path || '';
+        }
+        renderProductImages(button.dataset.field === 'image_urls' ? field.value.split(/\n+/) : [button.dataset.path]);
+    });
+});
 document.getElementById('resource-form').addEventListener('reset', () => {
     document.getElementById('resource-id').value = '';
     document.getElementById('save-btn').textContent = 'Save <?= e(rtrim($title,'s')) ?>';

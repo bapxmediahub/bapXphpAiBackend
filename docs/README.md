@@ -10,6 +10,8 @@ This folder contains connected documentation for developers, maintainers, and co
 - [Deployment guide](deployment-hostinger.md): Hostinger Git auto deployment, branch setup, cron, and Vercel note.
 - [Project map](PROJECT_MAP.md): generated route/controller/service map.
 - [JSON storage](json-storage.md): JSON collections and persistence notes.
+- [Agentic monorepo](agentic-monorepo.md): repo-native backend primitives and built-in agent guidance.
+- [Schema registry](schema.md): JSON database schema and agent context contract.
 
 ## Page Notes
 

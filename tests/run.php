@@ -6,6 +6,7 @@ use App\Services\EnvService;
 use App\Services\PaymentService;
 use App\Services\ProjectMapService;
 use App\Services\ReviewService;
+use App\Services\SchemaService;
 
 function assertTrue(bool $condition, string $message): void {
     if (!$condition) {
@@ -42,6 +43,33 @@ $tests['project map registry has no missing route mappings'] = function (): void
     assertSame([], $validation['missing_route_mappings'], 'Routes should map to controllers');
     assertSame([], $validation['missing_services'], 'Routes should reference declared services');
     assertSame([], $validation['missing_collections'], 'Collections should be declared');
+};
+
+$tests['repo has agent-readable schema and built-in skills'] = function (): void {
+    $schemaPath = app_path('storage/schema/collections.json');
+    assertTrue(is_file($schemaPath), 'JSON schema registry should exist');
+    $schema = json_decode(file_get_contents($schemaPath), true);
+    assertTrue(is_array($schema), 'JSON schema registry should parse');
+    foreach (['products', 'astrologers', 'temples', 'orders', 'appointments', 'wallet_transactions', 'support_tickets', 'media_files'] as $collection) {
+        assertTrue(isset($schema['collections'][$collection]), "Schema should define {$collection}");
+    }
+    assertTrue(in_array('image_urls', $schema['collections']['products']['media_fields'] ?? [], true), 'Product schema should define gallery media field');
+    assertTrue((new SchemaService())->adminFields('products') !== [], 'SchemaService should expose admin fields');
+    foreach ([
+        'AGENTS.md',
+        'CLAUDE.md',
+        '.codex/skills/sps-dev/SKILL.md',
+        '.codex/skills/sps-dev/backend-json/SKILL.md',
+        '.codex/skills/sps-dev/schema/SKILL.md',
+        '.codex/skills/sps-dev/admin-ui/SKILL.md',
+        '.codex/skills/sps-dev/frontend-php/SKILL.md',
+        '.codex/skills/sps-dev/deployment/SKILL.md',
+        '.codex/skills/sps-dev/docs/SKILL.md',
+        '.claude/skills/sps-dev/SKILL.md',
+        '.agents/skills/sps-dev/SKILL.md',
+    ] as $path) {
+        assertTrue(is_file(app_path($path)), "Built-in agent instruction file should exist: {$path}");
+    }
 };
 
 $tests['local development router serves existing static files directly'] = function (): void {
@@ -165,6 +193,33 @@ $tests['admin settings can update env admin credentials'] = function (): void {
     }
     assertTrue(str_contains($controller, 'saveAdminCredentials'), 'Admin controller should save admin .env credentials');
     assertTrue(in_array('/admin/settings/admin-credentials', $paths, true), 'Route registry should include admin credential save route');
+};
+
+$tests['admin environment page edits env and storage permissions'] = function (): void {
+    $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
+    $layout = file_get_contents(app_path('views/layouts/admin.php'));
+    $view = file_get_contents(app_path('views/admin/environment.php'));
+    $env = file_get_contents(app_path('app/Services/EnvService.php'));
+    $permissions = file_get_contents(app_path('app/Services/StoragePermissionService.php'));
+    $paths = array_column(ProjectMapService::registry()['routes'], 'path');
+    foreach (['/admin/environment', '/admin/environment/save', '/admin/environment/fix-permissions'] as $path) {
+        assertTrue(in_array($path, $paths, true), "Environment route should include {$path}");
+    }
+    assertTrue(str_contains($layout, 'href="/admin/environment"'), 'Admin sidebar should link environment page');
+    assertTrue(str_contains($controller, 'saveEnvironment'), 'Admin controller should save raw env contents');
+    assertTrue(str_contains($controller, 'fixPermissions'), 'Admin controller should expose storage permission repair');
+    assertTrue(str_contains($view, 'name="env_raw"'), 'Environment page should expose editable env textarea');
+    assertTrue(str_contains($view, 'Storage Permissions'), 'Environment page should show storage permissions');
+    assertTrue(str_contains($env, 'function saveRaw'), 'Env service should support raw env saving');
+    assertTrue(str_contains($permissions, 'storage/data'), 'Permission service should check JSON storage path');
+};
+
+$tests['support assistant uses schema-filtered agent context'] = function (): void {
+    $service = file_get_contents(app_path('app/Services/SupportBotService.php'));
+    $context = file_get_contents(app_path('app/Services/AgentContextService.php'));
+    assertTrue(str_contains($service, 'AgentContextService'), 'Support bot should use AgentContextService for customer data');
+    assertTrue(str_contains($context, 'agentContextFields'), 'Agent context should respect schema-defined safe fields');
+    assertTrue(str_contains($context, 'customer_email'), 'Agent context should filter customer-owned collections by email');
 };
 
 $tests['contact submissions persist to json storage'] = function (): void {
@@ -464,11 +519,15 @@ $tests['admin product and astrologer forms expose editable owner fields'] = func
     $productView = file_get_contents(app_path('views/public/product.php'));
     $auditService = file_get_contents(app_path('app/Services/AuditLogService.php'));
     assertTrue(str_contains($resourceView, 'enctype="multipart/form-data"'), 'Admin resource form should support file uploads');
-    assertTrue(str_contains($resourceView, 'name="product_images[]"'), 'Product admin form should upload multiple product images');
+    assertTrue(str_contains($resourceView, 'name="media_files[]"'), 'Admin resource form should upload media files');
     assertTrue(str_contains($resourceView, 'multiple'), 'Product image upload should accept multiple files');
+    assertTrue(str_contains($resourceView, "['image_url', 'photo_url']"), 'Local asset image fields should not use URL inputs that reject /assets paths');
+    assertTrue(str_contains($resourceView, 'foreach($mediaFiles as $media)'), 'Media picker should show all files by upload time, not only the latest page');
+    assertTrue(str_contains($resourceView, 'class="admin-media-picker"'), 'Product temple and astrologer forms should expose a media library picker');
     assertTrue(!str_contains($resourceView, 'let el = document.getElementById'), 'Generated admin edit script should not redeclare let for every field');
     assertTrue(str_contains($productView, 'image_urls'), 'Product page should render product image galleries');
-    assertTrue(str_contains($controller, 'uploadProductImages'), 'Product save should persist uploaded images into local assets');
+    assertTrue(str_contains($controller, 'MediaService'), 'Admin save should persist uploaded media into the shared media library');
+    assertTrue(str_contains($controller, 'schemaFields'), 'Admin resource fields should be read from the JSON schema registry when available');
     assertTrue(str_contains($controller, 'mergeExistingRecord'), 'Product save should preserve existing fields when editing only visible admin fields');
     assertTrue(str_contains($controller, 'AuditLogService'), 'Admin mutations should write audit log records');
     assertTrue(str_contains($auditService, 'function record'), 'Audit log service should be able to record admin changes');
@@ -498,6 +557,8 @@ $tests['admin sidebar exposes every admin menu'] = function (): void {
         '/admin/orders',
         '/admin/contact-submissions',
         '/admin/support-tickets',
+        '/admin/media',
+        '/admin/environment',
         '/admin/settings',
         '/admin/integrations',
         '/admin/shipping',

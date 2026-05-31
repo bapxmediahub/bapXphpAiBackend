@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "purpose": "Agent-readable JSON database schema for the PHP hosting backend. Agents should update this file before changing storage/data collection shapes or admin resource forms.",
+  "collections": {
+    "users": {
+      "file": "storage/data/users.json",
+      "primary_key": "id",
+      "owner_field": "email",
+      "admin_managed": false,
+      "agent_context": ["id", "email", "name", "role", "wallet_balance"],
+      "fields": {
+        "id": {"type": "string", "required": true},
+        "email": {"type": "email", "required": true},
+        "name": {"type": "string"},
+        "role": {"type": "enum", "values": ["customer", "admin"]},
+        "password_hash": {"type": "secret"}
+      }
+    },
+    "products": {
+      "file": "storage/data/products.json",
+      "primary_key": "id",
+      "admin_managed": true,
+      "media_fields": ["image_url", "image_urls"],
+      "admin_fields": ["slug", "name", "description", "category", "image_url", "image_urls", "price", "offer_price", "stock_status"],
+      "agent_context": ["id", "slug", "name", "category", "price", "offer_price", "stock_status"],
+      "fields": {
+        "id": {"type": "string", "required": true},
+        "slug": {"type": "slug", "required": true},
+        "name": {"type": "string", "required": true},
+        "description": {"type": "text"},
+        "category": {"type": "string"},
+        "image_url": {"type": "local_or_remote_path"},
+        "image_urls": {"type": "array", "items": "local_or_remote_path"},
+        "price": {"type": "number"},
+        "offer_price": {"type": "number"},
+        "stock_status": {"type": "enum", "values": ["in_stock", "active", "inactive", "draft", "out_of_stock"]}
+      }
+    },
+    "astrologers": {
+      "file": "storage/data/astrologers.json",
+      "primary_key": "id",
+      "admin_managed": true,
+      "media_fields": ["photo_url"],
+      "admin_fields": ["slug", "name", "description", "email", "message_credit_cost", "call_credit_per_second", "credit_to_rupee_rate", "text_session_prm", "call_session_prm", "payout_percentage", "modes", "working_days", "start_time", "end_time", "slot_minutes", "languages", "experience_years", "speciality", "photo_url"],
+      "agent_context": ["slug", "name", "speciality", "languages", "availability_status", "message_credit_cost", "call_credit_per_second"],
+      "fields": {
+        "id": {"type": "string"},
+        "slug": {"type": "slug", "required": true},
+        "name": {"type": "string", "required": true},
+        "description": {"type": "text"},
+        "email": {"type": "email"},
+        "photo_url": {"type": "local_or_remote_path"},
+        "availability_status": {"type": "enum", "values": ["available", "busy", "offline", "waitlist"]},
+        "message_credit_cost": {"type": "number"},
+        "call_credit_per_second": {"type": "number"},
+        "languages": {"type": "array", "items": "string"}
+      }
+    },
+    "temples": {
+      "file": "storage/data/temples.json",
+      "primary_key": "id",
+      "admin_managed": true,
+      "media_fields": ["image_url"],
+      "admin_fields": ["name", "description", "image_url", "address", "map_url"],
+      "agent_context": ["slug", "name", "address", "timings", "phone"],
+      "fields": {
+        "id": {"type": "string"},
+        "slug": {"type": "slug", "required": true},
+        "name": {"type": "string", "required": true},
+        "description": {"type": "text"},
+        "image_url": {"type": "local_or_remote_path"},
+        "address": {"type": "text"},
+        "timings": {"type": "string"},
+        "phone": {"type": "string"},
+        "map_link": {"type": "url"},
+        "map_embed_url": {"type": "url"}
+      }
+    },
+    "orders": {
+      "file": "storage/data/orders.json",
+      "primary_key": "id",
+      "owner_field": "customer_email",
+      "admin_managed": true,
+      "agent_context": ["id", "customer_email", "status", "total", "items", "shipping_address", "shipped_at", "review_request_after_at"],
+      "fields": {
+        "id": {"type": "string", "required": true},
+        "customer_email": {"type": "email"},
+        "status": {"type": "enum", "values": ["pending", "confirmed", "processing", "packed", "shipped", "delivered", "cancelled"]},
+        "total": {"type": "number"},
+        "items": {"type": "array"},
+        "shipping_address": {"type": "object"},
+        "created_at": {"type": "datetime"},
+        "shipped_at": {"type": "datetime"}
+      }
+    },
+    "appointments": {
+      "file": "storage/data/appointments.json",
+      "primary_key": "id",
+      "owner_field": "customer_email",
+      "admin_managed": true,
+      "agent_context": ["id", "customer_email", "astrologer_slug", "mode", "status", "spent_credits", "created_at", "ended_at"],
+      "fields": {
+        "id": {"type": "string", "required": true},
+        "customer_email": {"type": "email"},
+        "astrologer_slug": {"type": "slug"},
+        "mode": {"type": "enum", "values": ["message", "call", "text_session", "call_session"]},
+        "status": {"type": "enum", "values": ["requested", "queued", "active", "completed", "cancelled"]},
+        "spent_credits": {"type": "number"}
+      }
+    },
+    "wallet_transactions": {
+      "file": "storage/data/wallet_transactions.json",
+      "primary_key": "id",
+      "owner_field": "customer_email",
+      "agent_context": ["id", "customer_email", "type", "credits", "amount", "description", "created_at"],
+      "fields": {
+        "id": {"type": "string"},
+        "customer_email": {"type": "email"},
+        "type": {"type": "enum", "values": ["recharge", "debit", "refund"]},
+        "credits": {"type": "number"},
+        "amount": {"type": "number"},
+        "description": {"type": "text"}
+      }
+    },
+    "support_tickets": {
+      "file": "storage/data/support_tickets.json",
+      "primary_key": "id",
+      "owner_field": "customer_email",
+      "agent_context": ["id", "customer_email", "message", "reply", "status", "created_at"],
+      "fields": {
+        "id": {"type": "string"},
+        "customer_email": {"type": "email"},
+        "message": {"type": "text"},
+        "reply": {"type": "text"},
+        "status": {"type": "enum", "values": ["open", "answered", "closed"]}
+      }
+    },
+    "media_files": {
+      "file": "storage/data/media_files.json",
+      "primary_key": "id",
+      "admin_managed": true,
+      "fields": {
+        "id": {"type": "string"},
+        "filename": {"type": "string"},
+        "original_name": {"type": "string"},
+        "path": {"type": "local_or_remote_path"},
+        "context": {"type": "enum", "values": ["shared", "products", "temples", "astrologers"]},
+        "mime": {"type": "string"},
+        "created_at": {"type": "datetime"}
+      }
+    }
+  }
+}

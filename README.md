@@ -1,8 +1,23 @@
-# Sri Panchami Spiritual Platform
+# Agent-Ready PHP/JSON Full-Stack Platform
 
-Sri Panchami Spiritual is a full-stack PHP ecommerce and astrology platform for small PHP hosting. It uses PHP templates, PHP controllers, and a JSON-backed backend with local storage under `storage/data/`; there is no SPA, no build step, and no SQL database requirement.
+This repository is a reusable PHP/JSON full-stack monorepo for small PHP hosting. Sri Panchami Spiritual is the current customer-facing use case, but the JSON-backed backend is intentionally built as an agent-readable product base: auth, JSON database, schema, media storage, admin control panel, environment editor, permissions, audit logs, support assistant context, ecommerce, wallet, reviews, and deployment docs live in one repo.
 
-The project is designed to run from `public_html` on hosts such as Hostinger and to be maintained through Git-based agentic development with tools such as Codex, Claude Code, or similar coding agents.
+It uses PHP templates, PHP controllers, and local JSON storage under `storage/data/`. There is no SPA, no build step, no SQL/Postgres/MySQL requirement, and no separate MCP or external skill repository required.
+
+The project is designed to run from `public_html` on hosts such as Hostinger and to be maintained through Git-based agentic development with tools such as Codex, Claude Code, OpenCode, Antigravity, Hermes, or similar coding agents.
+
+## Agentic Backend Concept
+
+The backend primitives are repo-native so agents do not rediscover the system every turn:
+
+- `storage/data/*.json` is the database.
+- `storage/schema/collections.json` is the database schema and admin/agent contract.
+- `app/Services/*Service.php` are backend primitives.
+- `ProjectMapService` generates route -> controller -> service docs.
+- `AgentContextService` builds safe customer-specific JSON for the support/model assistant.
+- `MediaService` manages reusable uploaded files for products, temples, astrologers, and shared assets.
+- `/admin/environment` edits `.env` and checks/fixes writable storage paths.
+- `AGENTS.md`, `CLAUDE.md`, `.codex/skills/`, `.claude/skills/`, and `.agents/skills/` give built-in instructions for compatible agents.
 
 ## Documentation
 
@@ -14,6 +29,8 @@ Start here when using or building on this repo:
 - [Architecture](docs/architecture.md): PHP template stack, route flow, JSON persistence, and file structure.
 - [Project map](docs/PROJECT_MAP.md): generated route -> controller -> service map.
 - [JSON storage](docs/json-storage.md): local JSON collections and persistence model.
+- [Agentic monorepo](docs/agentic-monorepo.md): how this repo works as a reusable backend/frontend base for agents.
+- [Schema](docs/schema.md): JSON database schema and agent context contract.
 - [Admin guide](docs/admin-guide.md): owner/admin surfaces.
 - [Product list](docs/product-list.md): current catalog notes.
 
@@ -51,6 +68,8 @@ Module notes:
 - Contact and consultation request form.
 - Customer account order/session views.
 - Owner admin for products, categories, coupons, astrologers, remote session requests, temples, orders, contact submissions, settings, integrations, backups, audit logs, and project map.
+- Media library for product, temple, astrologer, and shared uploads with explicit picker selection from all files sorted by upload time.
+- Environment editor and storage permission checker/fixer in admin.
 - Mail queue for payment confirmation, shipment notification, and delayed product review request emails.
 - `.env` admin login support with editable admin credentials from Admin Settings.
 
@@ -59,7 +78,7 @@ Module notes:
 - Frontend: PHP-rendered templates in `views/`.
 - Styling: `assets/css/band.css` plus critical inline layout CSS.
 - Backend: PHP controllers, services, and router under `app/`.
-- Data: JSON files in `storage/data/`.
+- Data: JSON files in `storage/data/`, described by `storage/schema/collections.json`.
 - Integrations: Razorpay and Google OAuth scaffolding in `integrations/`.
 - Deployment target: PHP hosting with `public_html`.
 
@@ -122,7 +141,8 @@ Full details are in [docs/deployment-hostinger.md](docs/deployment-hostinger.md)
 
 Agents should:
 
-- Read [example-Agent.md](example-Agent.md) before changing code.
+- Read [AGENTS.md](AGENTS.md), [example-Agent.md](example-Agent.md), and the built-in skill files before changing code.
+- Update [storage/schema/collections.json](storage/schema/collections.json) before changing JSON collection shapes.
 - Use [docs/PROJECT_MAP.md](docs/PROJECT_MAP.md) before editing routes/controllers/services.
 - Test locally and in a browser when changing UI.
 - Run all validation commands before committing.

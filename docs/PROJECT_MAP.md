@@ -33,16 +33,16 @@
 - `/recharge/create-order` → `WalletController@createOrder` → AuthService, WalletService, SecretService, PaymentService
 - `/recharge/verify` → `WalletController@verify` → AuthService, WalletService, SecretService, PaymentService
 - `/admin` → `AdminController@dashboard` → OrderService, AppointmentService, AuthService
-- `/admin/products` → `AdminController@products` → ProductService, AuthService
+- `/admin/products` → `AdminController@products` → ProductService, SchemaService, AuthService
 - `/admin/categories` → `AdminController@categories` → CategoryService, AuthService
 - `/admin/coupons` → `AdminController@coupons` → CouponService, AuthService
 - `/admin/orders` → `AdminController@orders` → OrderService, AuthService
 - `/admin/orders/{id}` → `AdminController@order` → OrderService, ShippingService, AuthService
 - `/admin/orders/{id}/status` → `AdminController@saveOrderStatus` → OrderService, MailQueueService, AuthService
 - `/admin/shipping` → `AdminController@shipping` → ShippingService, SettingsService, AuthService
-- `/admin/astrologers` → `AdminController@astrologers` → AstrologerService, AuthService
+- `/admin/astrologers` → `AdminController@astrologers` → AstrologerService, SchemaService, AuthService
 - `/admin/appointments` → `AdminController@appointments` → AppointmentService, AuthService
-- `/admin/temples` → `AdminController@temples` → TempleService, AuthService
+- `/admin/temples` → `AdminController@temples` → TempleService, SchemaService, AuthService
 - `/admin/settings` → `AdminController@settings` → SettingsService, AuthService
 - `/admin/settings/save` → `AdminController@saveSettings` → SettingsService, AuthService
 - `/admin/settings/admin-credentials` → `AdminController@saveAdminCredentials` → EnvService, AuthService
@@ -51,6 +51,11 @@
 - `/admin/audit-log` → `AdminController@audit` → AuditLogService, AuthService
 - `/admin/contact-submissions` → `AdminController@contactSubmissions` → ContactService, AuthService
 - `/admin/support-tickets` → `AdminController@supportTickets` → JsonStoreService, AuthService
+- `/admin/media` → `AdminController@media` → MediaService, AuthService
+- `/admin/media/upload` → `AdminController@uploadMedia` → MediaService, AuditLogService, AuthService
+- `/admin/environment` → `AdminController@environment` → EnvService, StoragePermissionService, AuthService
+- `/admin/environment/save` → `AdminController@saveEnvironment` → EnvService, AuditLogService, AuthService
+- `/admin/environment/fix-permissions` → `AdminController@fixPermissions` → StoragePermissionService, AuditLogService, AuthService
 - `/admin/developer/project-map` → `AdminController@projectMap` → ProjectMapService, AuthService
 - `/admin/products/save` → `AdminController@saveProduct` → ResourceService, AuditLogService, AuthService
 - `/admin/products/delete` → `AdminController@deleteProduct` → ResourceService, AuditLogService, AuthService
@@ -70,4 +75,4 @@
 - `/appointments/book` → `BookingController@book` → AuthService, ResourceService, AstrologerService
 - `/reviews/astrologer` → `ReviewController@saveAstrologer` → ReviewService, AuthService
 - `/reviews/product` → `ReviewController@saveProduct` → ReviewService, AuthService
-- `/support/ask` → `SupportController@ask` → SupportBotService
+- `/support/ask` → `SupportController@ask` → SupportBotService, AgentContextService

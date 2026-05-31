@@ -32,6 +32,18 @@ final class EnvService {
         return $values;
     }
 
+    public function raw(): string {
+        $path = app_path(self::PATH);
+        return is_file($path) ? (file_get_contents($path) ?: '') : '';
+    }
+
+    public function saveRaw(string $contents): void {
+        $path = app_path(self::PATH);
+        $normalized = str_replace(["\r\n", "\r"], "\n", $contents);
+        file_put_contents($path, rtrim($normalized) . "\n", LOCK_EX);
+        self::load($path, true);
+    }
+
     public function adminCredentials(): array {
         return [
             'username' => getenv('ADMIN_USERNAME') ?: '',

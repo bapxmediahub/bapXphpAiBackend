@@ -1,27 +1,30 @@
 # Example Agent Workflow
 
-Use this file as the operating note for Codex, Claude Code, Hermes-style agents, or any other coding agent working on this PHP/JSON project.
+Use this file as the operating note for Codex, Claude Code, OpenCode, Antigravity, Hermes-style agents, or any other coding agent working on this PHP/JSON project.
 
 ## Product Shape
 
 - The app is a small PHP hosting product meant to run from `public_html`.
 - The backend is PHP controllers and services.
 - The data store is local JSON under `storage/data/`.
+- The database schema is `storage/schema/collections.json`.
 - The customer, account, and admin UI are PHP templates in `views/`.
+- Built-in repo skills live under `.codex/skills/sps-dev/`, `.claude/skills/sps-dev/`, and `.agents/skills/sps-dev/`.
 - There is no SPA fallback. Unknown routes must return the PHP 404 page.
 
 ## Required Local Workflow
 
-1. Read `README.md`, `docs/architecture.md`, and `docs/PROJECT_MAP.md`.
+1. Read `AGENTS.md`, `README.md`, `docs/architecture.md`, `docs/PROJECT_MAP.md`, and `storage/schema/collections.json`.
 2. Use the project map before editing routes, controllers, services, or pages.
-3. Run the local server when browser testing is needed:
+3. Use the schema before editing JSON data, admin fields, media fields, or assistant-visible context.
+4. Run the local server when browser testing is needed:
 
 ```bash
 php -S 127.0.0.1:6020 index.php
 ```
 
-4. Test like a user in a browser for UI changes: navigate pages, click buttons, submit guarded forms, and confirm redirects.
-5. Run validation before committing:
+5. Test like a user in a browser for UI changes: navigate pages, click buttons, submit guarded forms, and confirm redirects.
+6. Run validation before committing:
 
 ```bash
 php tests/run.php
@@ -29,13 +32,23 @@ php tools/validate-project-map.php
 php tools/smoke-local.php
 ```
 
-6. Regenerate the project map after route/service changes:
+7. Regenerate the project map after route/service changes:
 
 ```bash
 php tools/generate-project-map.php
 ```
 
-7. Commit only when validation passes. Commit to the branch the host deploys, usually `main`.
+8. Commit only when validation passes. Commit to the branch the host deploys, usually `main`.
+
+## Built-In Backend Primitives
+
+- Auth: `AuthController`, `AuthService`, `.env` admin credentials.
+- JSON database: `JsonStoreService`, `ResourceService`, `storage/data/*.json`.
+- Schema: `storage/schema/collections.json`, `SchemaService`.
+- Agent support context: `AgentContextService`.
+- Media: `MediaService`, `/admin/media`, `assets/images/media`.
+- Environment and permissions: `/admin/environment`, `EnvService`, `StoragePermissionService`.
+- Audit: `AuditLogService`, `storage/data/audit_events.json`.
 
 ## Git Branch and CI/CD
 

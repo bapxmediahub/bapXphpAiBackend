@@ -349,6 +349,7 @@
             "controller": "AdminController@products",
             "services": [
                 "ProductService",
+                "SchemaService",
                 "AuthService"
             ]
         },
@@ -429,6 +430,7 @@
             "controller": "AdminController@astrologers",
             "services": [
                 "AstrologerService",
+                "SchemaService",
                 "AuthService"
             ]
         },
@@ -451,6 +453,7 @@
             "controller": "AdminController@temples",
             "services": [
                 "TempleService",
+                "SchemaService",
                 "AuthService"
             ]
         },
@@ -541,6 +544,65 @@
             "controller": "AdminController@supportTickets",
             "services": [
                 "JsonStoreService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/media",
+            "name": "admin.media",
+            "page": "admin/media",
+            "controller": "AdminController@media",
+            "services": [
+                "MediaService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/media/upload",
+            "name": "admin.media.upload",
+            "page": "admin/media",
+            "controller": "AdminController@uploadMedia",
+            "services": [
+                "MediaService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/environment",
+            "name": "admin.environment",
+            "page": "admin/environment",
+            "controller": "AdminController@environment",
+            "services": [
+                "EnvService",
+                "StoragePermissionService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/environment/save",
+            "name": "admin.environment.save",
+            "page": "admin/environment",
+            "controller": "AdminController@saveEnvironment",
+            "services": [
+                "EnvService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/environment/fix-permissions",
+            "name": "admin.environment.fix-permissions",
+            "page": "admin/environment",
+            "controller": "AdminController@fixPermissions",
+            "services": [
+                "StoragePermissionService",
+                "AuditLogService",
                 "AuthService"
             ]
         },
@@ -769,7 +831,8 @@
             "page": "public/support",
             "controller": "SupportController@ask",
             "services": [
-                "SupportBotService"
+                "SupportBotService",
+                "AgentContextService"
             ]
         }
     ],
@@ -797,7 +860,11 @@
         "PasswordResetService",
         "MailQueueService",
         "WalletService",
-        "SupportBotService"
+        "SupportBotService",
+        "MediaService",
+        "StoragePermissionService",
+        "SchemaService",
+        "AgentContextService"
     ],
     "integrations": [
         "GoogleOAuthClient",
@@ -817,6 +884,7 @@
         "reviews",
         "mail_queue",
         "wallet_transactions",
-        "support_tickets"
+        "support_tickets",
+        "media_files"
     ]
 }
