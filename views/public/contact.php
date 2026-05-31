@@ -1,8 +1,8 @@
 <section class="section">
     <div class="container container--narrow">
         <div style="text-align:center; margin-bottom:var(--space-2xl);">
-            <span class="eyebrow">Get in Touch</span>
-            <h1 class="section-title" style="margin-bottom:var(--space-sm);">Contact Sri Panchami Spiritual — Chennai</h1>
+            <span class="eyebrow">Contact</span>
+            <h1 class="section-title" style="margin-bottom:var(--space-sm);">Sri Panchami Spiritual</h1>
             <p class="lede" style="margin:0 auto;">Visit our store in Ramapuram or reach out for spiritual guidance, astrology consultation, or product inquiries. We are here to help.</p>
         </div>
         <div class="grid" style="margin-bottom:var(--space-2xl);">

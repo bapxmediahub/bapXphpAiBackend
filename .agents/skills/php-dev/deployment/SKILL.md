@@ -5,4 +5,4 @@ description: Use when editing Hostinger deployment, Git auto-deploy, environment
 
 # Deployment
 
-Follow `.codex/skills/sps-dev/deployment/SKILL.md`.
+Follow `.codex/skills/php-dev/deployment/SKILL.md`.

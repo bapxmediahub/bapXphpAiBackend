@@ -21,22 +21,7 @@ final class SupportBotService {
             }
         }
         $reply ??= $this->fallbackReply($message, $context);
-        $ticketId = null;
-        try {
-            $ticket = $this->store->upsert('support_tickets', [
-                'id' => bin2hex(random_bytes(8)),
-                'customer_email' => $user['email'] ?? '',
-                'customer_name' => $user['name'] ?? '',
-                'message' => $message,
-                'reply' => $reply,
-                'status' => 'answered',
-                'created_at' => date('c'),
-            ]);
-            $ticketId = $ticket['id'] ?? null;
-        } catch (\Throwable) {
-            $ticketId = null;
-        }
-        return ['reply' => $reply, 'ticket_id' => $ticketId];
+        return ['reply' => $reply, 'ticket_id' => null, 'memory' => 'browser_session'];
     }
 
     private function customerContext(?array $user): array {
@@ -99,18 +84,48 @@ final class SupportBotService {
     }
 
     private function fallbackReply(string $message, array $context): string {
+        $lower = strtolower($message);
         if (!$context['signed_in']) {
-            return 'Please sign in to ask about your orders, wallet balance, or astrologer sessions. I can still help you browse products or explain call and message consultations.';
+            if ($this->isPrivateAccountQuestion($lower)) {
+                return 'Please sign in to ask about your personal orders, wallet balance, or past astrologer sessions. I can still explain public products, services, recharge, and consultation booking.';
+            }
+            return $this->publicGuestReply($lower, $context);
         }
         if (preg_match('/^(hi|hello|hey|vanakkam|namaste)\b/i', trim($message))) {
             return 'Hello. I can help with product links, cart or recharge guidance, astrology call/message booking through the contact form, and your own order, wallet, or session history.';
         }
-        if (str_contains(strtolower($message), 'order')) {
+        if (str_contains($lower, 'order')) {
             return empty($context['orders']) ? 'I could not find orders in your account yet.' : 'I found your recent order data in the account panel. Open My Orders for full delivery address, status, shipped time, and review options.';
         }
-        if (str_contains(strtolower($message), 'talk') || str_contains(strtolower($message), 'session') || str_contains(strtolower($message), 'astrologer')) {
+        if (str_contains($lower, 'talk') || str_contains($lower, 'session') || str_contains($lower, 'astrologer')) {
             return empty($context['sessions']) ? 'I could not find astrologer sessions in your account yet.' : 'I found recent astrologer session records. Open My Sessions to see who you contacted, session type, credits spent, and review options.';
         }
         return 'I can help with product orders, wallet recharge, astrologer call/message sessions, reviews, and account history. Please ask one specific question.';
     }
+
+    private function publicGuestReply(string $message, array $context): string {
+        $site = $context['site'] ?? [];
+        $pages = $site['pages'] ?? [];
+        $products = array_slice($site['products'] ?? [], 0, 5);
+        if (preg_match('/\b(hi|hello|hey|vanakkam|namaste)\b/i', $message)) {
+            return 'Hello. I can help you browse spiritual products, explain remote astrology call/message services, guide wallet recharge, or send you to the consultation booking form.';
+        }
+        if (preg_match('/\b(product|available|shop|buy|item|pendant|jewelry|jewellery)\b/i', $message)) {
+            $names = array_filter(array_map(fn($p) => trim((string)($p['name'] ?? '')), $products));
+            $list = $names ? implode(', ', $names) : 'sacred emblems and spiritual jewelry';
+            return 'Available products include ' . $list . '. Open ' . ($pages['shop'] ?? '/shop') . ' to browse all products, or add an item to cart from its product page.';
+        }
+        if (preg_match('/\b(service|consult|booking|book|astrology|call|message|temple)\b/i', $message)) {
+            return 'Available services include spiritual product sales, remote astrology call/message consultation requests, wallet recharge for sessions, and temple guidance. Use ' . ($pages['booking_contact_form'] ?? '/contact?subject=astrology#contact-form') . ' to request a consultation booking.';
+        }
+        if (preg_match('/\b(recharge|wallet|credit|payment)\b/i', $message)) {
+            return 'Wallet recharge is available from ' . ($pages['recharge'] ?? '/recharge') . '. You may need to sign in before payment so credits are added to your account.';
+        }
+        return 'I can help with available products, astrology call/message services, recharge, temple guidance, and consultation booking. For personal order or session history, please sign in first.';
+    }
+
+    private function isPrivateAccountQuestion(string $message): bool {
+        return (bool)preg_match('/\b(my order|my booking|my session|my wallet|my balance|track|delivery|shipped|spent|history|past session|previous session)\b/i', $message);
+    }
+
 }

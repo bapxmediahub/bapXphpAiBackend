@@ -58,15 +58,15 @@ $tests['repo has agent-readable schema and built-in skills'] = function (): void
     foreach ([
         'AGENTS.md',
         'CLAUDE.md',
-        '.codex/skills/sps-dev/SKILL.md',
-        '.codex/skills/sps-dev/backend-json/SKILL.md',
-        '.codex/skills/sps-dev/schema/SKILL.md',
-        '.codex/skills/sps-dev/admin-ui/SKILL.md',
-        '.codex/skills/sps-dev/frontend-php/SKILL.md',
-        '.codex/skills/sps-dev/deployment/SKILL.md',
-        '.codex/skills/sps-dev/docs/SKILL.md',
-        '.claude/skills/sps-dev/SKILL.md',
-        '.agents/skills/sps-dev/SKILL.md',
+        '.codex/skills/php-dev/SKILL.md',
+        '.codex/skills/php-dev/backend-json/SKILL.md',
+        '.codex/skills/php-dev/schema/SKILL.md',
+        '.codex/skills/php-dev/admin-ui/SKILL.md',
+        '.codex/skills/php-dev/frontend-php/SKILL.md',
+        '.codex/skills/php-dev/deployment/SKILL.md',
+        '.codex/skills/php-dev/docs/SKILL.md',
+        '.claude/skills/php-dev/SKILL.md',
+        '.agents/skills/php-dev/SKILL.md',
     ] as $path) {
         assertTrue(is_file(app_path($path)), "Built-in agent instruction file should exist: {$path}");
     }
@@ -352,18 +352,19 @@ $tests['wallet recharge is login gated and exposes pricing breakdown'] = functio
     assertTrue(str_contains($booking, '/recharge?amount=100'), 'Insufficient session balance should redirect to recharge');
 };
 
-$tests['support assistant widget stores tickets and uses google model setting'] = function (): void {
+$tests['support assistant widget uses browser session memory and google model setting'] = function (): void {
     $layout = file_get_contents(app_path('views/layouts/app.php'));
     $service = file_get_contents(app_path('app/Services/SupportBotService.php'));
     $map = ProjectMapService::registry();
     $paths = array_column($map['routes'], 'path');
     assertTrue(in_array('/support/ask', $paths, true), 'Support ask route should be registered');
-    foreach (['support-fab', 'support-panel', '/support/ask', 'orders, wallet recharge, products, or astrologer sessions'] as $needle) {
+    foreach (['support-fab', 'support-panel', '/support/ask', 'orders, wallet recharge, products, or astrologer sessions', 'sessionStorage', 'data-support-key'] as $needle) {
         assertTrue(str_contains($layout, $needle), "Support widget should include {$needle}");
     }
-    foreach (['gemma-4-31b-it', 'support_bot_google_api_key', 'support_tickets', 'Customer context JSON'] as $needle) {
+    foreach (['gemma-4-31b-it', 'support_bot_google_api_key', 'Customer context JSON', 'browser_session'] as $needle) {
         assertTrue(str_contains($service, $needle), "Support bot service should include {$needle}");
     }
+    assertTrue(!str_contains($service, "upsert('support_tickets'"), 'Support bot chat should not persist browser chat into project JSON files');
 };
 
 $tests['astrologer profile exposes competitor style remote action rating and trust panels'] = function (): void {
@@ -384,9 +385,10 @@ $tests['home page rotates all astrologers instead of showing only three fixed ca
 $tests['home hero uses concise current copy and working cta links'] = function (): void {
     $view = file_get_contents(app_path('views/public/home.php'));
     assertTrue(!str_contains($view, 'Spiritual Products Online in Chennai'), 'Home hero headline should not say products online in Chennai');
-    assertTrue(!str_contains($view, 'Shop Spiritual Products</a>'), 'Home hero primary button should use shorter text');
+    assertTrue(!str_contains($view, 'Buy Original Rudraksha, Pooja Items & Spiritual Products Online'), 'Home hero should not lead with ecommerce as the primary business');
+    assertTrue(!str_contains($view, 'Shop Spiritual Products</a>'), 'Home hero shop button should use concise text');
     assertTrue(!str_contains($view, 'Remote Astrology Consultation</a>'), 'Home hero astrology button should use shorter text');
-    foreach (['href="/shop"', 'href="/astrologers"', '>Shop</a>', '>Astrology</a>'] as $needle) {
+    foreach (['Consult Astrologers Online by Chat or Call', 'href="/astrologers"', 'href="/shop"', '>Consult Now</a>', '>Shop Products</a>', 'Online Astrology Consultation'] as $needle) {
         assertTrue(str_contains($view, $needle), "Home hero should include {$needle}");
     }
     assertTrue(!str_contains($view, '<div class="hero-stat-value">3</div>'), 'Home hero astrologer count should not be stale');

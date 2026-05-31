@@ -4,22 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="format-detection" content="telephone=no">
-<title>Sri Panchami Spiritual – Buy Rudraksha, Pooja Items & Astrology Consultation in Chennai</title>
-<meta name="description" content="Buy original rudraksha, pooja items, spiritual jewellery & accessories online in Chennai. Book expert Vedic astrology consultation. Free shipping across India. Trusted by 500+ devotees.">
+<title>Sri Panchami Spiritual – Online Astrology Consultation, Chat, Call & Spiritual Products</title>
+<meta name="description" content="Consult verified astrologers online by private message or direct call. Recharge wallet credits, review session history, and shop spiritual products, rudraksha, pooja items, and sacred jewellery.">
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
 <link rel="canonical" href="https://<?= e($_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']) ?>">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Sri Panchami Spiritual">
-<meta property="og:title" content="Sri Panchami Spiritual – Buy Rudraksha, Pooja Items & Astrology Consultation in Chennai">
-<meta property="og:description" content="Buy original rudraksha, pooja items, spiritual jewellery online. Expert Vedic astrology consultation in Chennai. Free shipping across India.">
+<meta property="og:title" content="Sri Panchami Spiritual – Online Astrology Consultation, Chat, Call & Spiritual Products">
+<meta property="og:description" content="Consult verified astrologers by private message or direct call, recharge wallet credits, and shop spiritual products online.">
 <meta property="og:url" content="https://<?= e($_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']) ?>">
 <meta property="og:image" content="https://<?= e($_SERVER['HTTP_HOST']) ?>/assets/images/og-image.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="en_IN">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Sri Panchami Spiritual – Rudraksha, Pooja Items & Astrology in Chennai">
-<meta name="twitter:description" content="Buy original rudraksha, pooja items & book Vedic astrology consultation online. Free shipping across India.">
+<meta name="twitter:title" content="Sri Panchami Spiritual – Online Astrology Consultation">
+<meta name="twitter:description" content="Consult verified astrologers by chat or call, recharge wallet credits, and shop spiritual products online.">
 <meta name="twitter:image" content="https://<?= e($_SERVER['HTTP_HOST']) ?>/assets/images/og-image.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -197,7 +197,7 @@ echo $critical;
     <nav id="primary-nav">
         <a href="/">Home</a>
         <a href="/shop">Shop</a>
-        <a href="/astrologers">Astrologers</a>
+        <a href="/astrologers">Consult</a>
         <a href="/temples">Temples</a>
         <a href="/about">About SPS</a>
         <a href="/contact">Contact</a>
@@ -236,7 +236,7 @@ echo $critical;
         </a>
         <a href="/astrologers" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/astrologers') === 0 ? 'active' : '') ?>">
             <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20"/><path d="M2 12h20"/></svg>
-            <span>Astro</span>
+            <span>Consult</span>
         </a>
         <a href="/temples" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/temples') === 0 ? 'active' : '') ?>">
             <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
@@ -253,7 +253,7 @@ echo $critical;
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>
     <span class="sr-only">Support</span>
 </button>
-<section class="support-panel" id="support-panel" hidden>
+<section class="support-panel" id="support-panel" data-support-key="sps-support-chat-<?= !empty($_SESSION['user']['email']) ? e(strtolower((string)$_SESSION['user']['email'])) : 'guest' ?>" hidden>
     <div class="support-panel__head">
         <strong>Support</strong>
         <button type="button" class="support-panel__close" aria-label="Close support">×</button>
@@ -273,13 +273,13 @@ echo $critical;
         <div class="footer-grid">
             <div>
                 <span class="footer-brand">Sri Panchami Spiritual</span>
-                <p class="footer-desc">Authentic spiritual products, sacred jewellery, expert Vedic astrology and temple guidance in Chennai, Tamil Nadu. Buy original rudraksha, pooja items, and spiritual accessories online with free shipping across India.</p>
+                <p class="footer-desc">Online astrology consultation by private message or direct call, plus authentic spiritual products, sacred jewellery, rudraksha, pooja items, and temple guidance.</p>
             </div>
             <div>
                 <h4 class="footer-heading">Shop</h4>
                 <ul class="footer-links">
                     <li><a href="/shop">All Products</a></li>
-                    <li><a href="/astrologers">Astrologers</a></li>
+                    <li><a href="/astrologers">Consult</a></li>
                     <li><a href="/temples">Temples</a></li>
                     <li><a href="/about">About SPS</a></li>
                     <li><a href="/contact">Contact</a></li>
@@ -288,7 +288,7 @@ echo $critical;
             <div>
                 <h4 class="footer-heading">Services</h4>
                 <ul class="footer-links">
-                    <li><a href="/astrologers">Astrology</a></li>
+                    <li><a href="/astrologers">Consult</a></li>
                     <li><a href="/temples">Temples</a></li>
                     <li><a href="/about">About SPS</a></li>
                     <li><a href="/contact">Contact</a></li>
@@ -324,9 +324,12 @@ document.querySelectorAll('.reveal,.panel,.product-card,.astrologer-card').forEa
 var supportFab=document.querySelector('.support-fab'),supportPanel=document.getElementById('support-panel'),supportClose=document.querySelector('.support-panel__close'),supportForm=document.getElementById('support-form'),supportLog=document.getElementById('support-log');
 function supportEscape(value){return String(value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c];});}
 function supportToggle(open){supportPanel.hidden=!open;supportFab.setAttribute('aria-expanded',open?'true':'false');}
+function supportSaveLog(){try{sessionStorage.setItem(supportPanel.dataset.supportKey,supportLog.innerHTML);}catch(e){}}
+function supportLoadLog(){try{var saved=sessionStorage.getItem(supportPanel.dataset.supportKey);if(saved){supportLog.innerHTML=saved;}}catch(e){}}
+supportLoadLog();
 supportFab.addEventListener('click',function(){supportToggle(supportPanel.hidden);});
 supportClose.addEventListener('click',function(){supportToggle(false);});
-supportForm.addEventListener('submit',async function(e){e.preventDefault();var data=new FormData(supportForm),msg=data.get('message');supportLog.insertAdjacentHTML('beforeend','<p><strong>You:</strong> '+supportEscape(msg)+'</p>');supportForm.reset();try{var r=await fetch('/support/ask',{method:'POST',body:data});var j=await r.json();supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> '+supportEscape(j.reply||j.error||'Unable to answer right now.')+'</p>');}catch(err){supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> Unable to answer right now.</p>');}supportLog.scrollTop=supportLog.scrollHeight;});
+supportForm.addEventListener('submit',async function(e){e.preventDefault();var data=new FormData(supportForm),msg=data.get('message');supportLog.insertAdjacentHTML('beforeend','<p><strong>You:</strong> '+supportEscape(msg)+'</p>');supportSaveLog();supportForm.reset();try{var r=await fetch('/support/ask',{method:'POST',body:data});var j=await r.json();supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> '+supportEscape(j.reply||j.error||'Unable to answer right now.')+'</p>');}catch(err){supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> Unable to answer right now.</p>');}supportSaveLog();supportLog.scrollTop=supportLog.scrollHeight;});
 </script>
 </body>
 </html>

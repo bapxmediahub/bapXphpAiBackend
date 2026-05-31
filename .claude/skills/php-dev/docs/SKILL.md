@@ -5,4 +5,4 @@ description: Use when editing README, example-Agent, docs, project-map docs, or 
 
 # Docs
 
-Follow `.codex/skills/sps-dev/docs/SKILL.md`.
+Follow `.codex/skills/php-dev/docs/SKILL.md`.

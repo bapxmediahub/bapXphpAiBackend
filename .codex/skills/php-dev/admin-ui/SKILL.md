@@ -20,6 +20,8 @@ description: Use when editing owner/admin pages, CRUD forms, media library, envi
 - Environment variables and storage permissions belong in `/admin/environment`.
 - Every admin route must require `AuthService`.
 - Keep UI dense, direct, and operational. Avoid marketing sections in admin.
+- Admin controls must be real: no placeholder buttons, no disconnected upload fields, and no resource links that bypass authentication.
+- When admin changes affect schema, media, environment, or permissions, update the matching backend/schema skill if the rule is reusable for future projects.
 
 ## Validation
 

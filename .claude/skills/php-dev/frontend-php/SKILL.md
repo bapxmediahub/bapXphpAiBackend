@@ -5,4 +5,4 @@ description: Use when editing public, account, shop, astrologer, temple, cart, c
 
 # PHP Frontend
 
-Follow `.codex/skills/sps-dev/frontend-php/SKILL.md`.
+Follow `.codex/skills/php-dev/frontend-php/SKILL.md`.

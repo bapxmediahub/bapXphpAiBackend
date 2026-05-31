@@ -5,4 +5,4 @@ description: Use when editing owner/admin pages, CRUD forms, media library, envi
 
 # Admin UI
 
-Follow `.codex/skills/sps-dev/admin-ui/SKILL.md`.
+Follow `.codex/skills/php-dev/admin-ui/SKILL.md`.

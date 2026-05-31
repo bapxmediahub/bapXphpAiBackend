@@ -1,6 +1,6 @@
 # PHP JSON Agent Ready Backend and Full-Stack Platform
 
-This repository is a **php json agent ready** full-stack monorepo for developers who want a deployable PHP backend, local JSON database, built-in AI-agent instructions, and a modifiable PHP template frontend for shared-hosting projects. bapXphpAiBackend is the current customer-facing use case, but the JSON-backed backend is intentionally built as an agent-readable product base: auth, JSON database schema, media storage, admin control panel, environment editor, permissions, audit logs, support assistant context, ecommerce, wallet, reviews, and deployment docs live in one repo.
+This repository is a **php json agent ready** full-stack monorepo for developers who want a deployable PHP backend, local JSON database, built-in AI-agent instructions, and a modifiable PHP template frontend for small PHP hosting and shared-hosting projects. bapXphpAiBackend is the current customer-facing use case, but the JSON-backed backend is intentionally built as an agent-readable product base: auth, JSON database schema, media storage, admin control panel, environment editor, permissions, audit logs, support assistant context, ecommerce, wallet, reviews, and deployment docs live in one repo.
 
 It uses PHP templates, PHP controllers, and local JSON storage under `storage/data/`. There is no SPA, no build step, no SQL/Postgres/MySQL requirement, and no separate MCP or external skill repository required.
 
@@ -168,9 +168,9 @@ This repo is meant for developers who want a PHP JSON AI agent backend that work
 
 The built-in skill folders are part of the product, not an external plugin:
 
-- `.codex/skills/sps-dev/` for Codex-style workflows.
-- `.claude/skills/sps-dev/` for Claude Code-style workflows.
-- `.agents/skills/sps-dev/` for generic folder-based agents.
+- `.codex/skills/php-dev/` for Codex-style workflows.
+- `.claude/skills/php-dev/` for Claude Code-style workflows.
+- `.agents/skills/php-dev/` for generic folder-based agents.
 - `AGENTS.md` and `CLAUDE.md` for always-on repository instructions.
 - `example-Agent.md` for the expected agent workflow.
 

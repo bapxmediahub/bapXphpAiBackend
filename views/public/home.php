@@ -1,24 +1,24 @@
 <section class="home-hero">
     <div class="hero-copy">
-        <span class="eyebrow">Blessings · Protection · Prosperity</span>
-        <h1>Buy Original Rudraksha, Pooja Items & Spiritual Products Online</h1>
-        <p class="lede">Authentic certified rudraksha, sacred pooja samagri, spiritual jewellery, and expert Vedic astrology consultation — trusted by 500+ devotees across India. Free shipping on all orders.</p>
+        <span class="eyebrow">Live Astrology · Chat and Call Consultation</span>
+        <h1>Consult Astrologers Online by Chat or Call</h1>
+        <p class="lede">Start private message or direct call sessions with verified astrologers. Recharge credits, view session history, and shop spiritual products when you need remedies or sacred items.</p>
         <div class="hero-actions">
-            <a href="/shop" class="btn btn-primary">Shop</a>
-            <a href="/astrologers" class="btn btn-outline">Astrology</a>
+            <a href="/astrologers" class="btn btn-primary">Consult Now</a>
+            <a href="/shop" class="btn btn-outline">Shop Products</a>
         </div>
         <div class="hero-stats">
             <div>
-                <div class="hero-stat-value">500+</div>
-                <div class="hero-stat-label">Happy Devotees</div>
-            </div>
-            <div>
-                <div class="hero-stat-value">14+</div>
-                <div class="hero-stat-label">Sacred Categories</div>
-            </div>
-            <div>
                 <div class="hero-stat-value"><?= e((string)count($astrologers)) ?></div>
-                <div class="hero-stat-label">Expert Astrologers</div>
+                <div class="hero-stat-label">Online Astrologers</div>
+            </div>
+            <div>
+                <div class="hero-stat-value">Chat + Call</div>
+                <div class="hero-stat-label">Remote Sessions</div>
+            </div>
+            <div>
+                <div class="hero-stat-value">Credits</div>
+                <div class="hero-stat-label">Wallet Based</div>
             </div>
         </div>
     </div>
@@ -41,17 +41,62 @@
     </div>
     <div class="trust-item">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-        Free Shipping
+        Wallet Credits
     </div>
     <div class="trust-item">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        100% Authentic
+        Call & Message
     </div>
     <div class="trust-item">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-        Blessed & Energized
+        Spiritual Products
     </div>
 </div>
+
+<section class="section">
+    <div class="section-header">
+        <span class="eyebrow">Guidance · Clarity · Remedies</span>
+        <h2 class="section-title">Online Astrology Consultation</h2>
+        <p class="lede">Consult experienced Vedic astrologers by private message or direct call for kundli matching, horoscope reading, career guidance, and personalized remedies.</p>
+    </div>
+    <?php if(!empty($astrologers)): ?>
+    <div class="astro-carousel" aria-label="Astrologers carousel">
+        <div class="astro-carousel-track">
+        <?php foreach(array_merge($astrologers, $astrologers) as $astro): ?>
+            <article class="astrologer-card reveal">
+                <div class="astrologer-card__media">
+                    <img class="astrologer-card__photo" src="<?= e($astro['photo_url'] ?? 'https://placehold.co/800x1000/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($astro['name']) ?> — <?= e($astro['speciality'] ?? 'Vedic Astrologer') ?>" loading="lazy">
+                    <div class="astrologer-card__media-badge">Live expert</div>
+                </div>
+                <div class="astrologer-card__body astrologer-card__body--portrait">
+                    <div class="astrologer-card__title-row">
+                        <h3 class="astrologer-card__name"><?= e($astro['name']) ?></h3>
+                        <span class="astrologer-card__status">Verified</span>
+                    </div>
+                    <p class="astrologer-card__speciality"><?= e($astro['speciality'] ?? 'Vedic Astrology') ?></p>
+                    <p class="astrologer-card__bio"><?= e($astro['description'] ?? '') ?></p>
+                    <div class="astrologer-card__meta">
+                        <span><?= e($astro['experience_years'] ?? 'N/A') ?> yrs</span>
+                        <span><?= e(implode(' · ', array_slice($astro['languages'] ?? [], 0, 2))) ?></span>
+                    </div>
+                </div>
+                <div class="astrologer-card__footer">
+                    <span class="astrologer-card__price">5 credits/message · 0.5 credits/sec call</span>
+                    <div class="astrologer-card__actions">
+                        <a href="/astrologers/<?= e($astro['slug']) ?>" class="btn btn-sm btn-ghost">Know More</a>
+                        <a href="/astrologers/<?= e($astro['slug']) ?>?mode=direct_call" class="btn btn-sm btn-call">Call</a>
+                        <a href="/astrologers/<?= e($astro['slug']) ?>?mode=text_session" class="btn btn-sm btn-message">Message</a>
+                    </div>
+                </div>
+            </article>
+        <?php endforeach; ?>
+        </div>
+    </div>
+    <?php endif; ?>
+    <div style="text-align:center;">
+        <a href="/astrologers" class="btn btn-primary">View Consultants</a>
+    </div>
+</section>
 
 <section class="category-section section">
     <div class="section-header">
@@ -147,51 +192,6 @@
     </div>
 </section>
 <?php endif; ?>
-
-<section class="section">
-    <div class="section-header">
-        <span class="eyebrow">Guidance · Clarity · Remedies</span>
-        <h2 class="section-title">Expert Vedic Astrology Consultation</h2>
-        <p class="lede">Consult experienced Vedic astrologers by private message or direct call for kundli matching, horoscope reading, career guidance, and personalized remedies.</p>
-    </div>
-    <?php if(!empty($astrologers)): ?>
-    <div class="astro-carousel" aria-label="Astrologers carousel">
-        <div class="astro-carousel-track">
-        <?php foreach(array_merge($astrologers, $astrologers) as $astro): ?>
-            <article class="astrologer-card reveal">
-                <div class="astrologer-card__media">
-                    <img class="astrologer-card__photo" src="<?= e($astro['photo_url'] ?? 'https://placehold.co/800x1000/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($astro['name']) ?> — <?= e($astro['speciality'] ?? 'Vedic Astrologer') ?>" loading="lazy">
-                    <div class="astrologer-card__media-badge">Live expert</div>
-                </div>
-                <div class="astrologer-card__body astrologer-card__body--portrait">
-                    <div class="astrologer-card__title-row">
-                        <h3 class="astrologer-card__name"><?= e($astro['name']) ?></h3>
-                        <span class="astrologer-card__status">Verified</span>
-                    </div>
-                    <p class="astrologer-card__speciality"><?= e($astro['speciality'] ?? 'Vedic Astrology') ?></p>
-                    <p class="astrologer-card__bio"><?= e($astro['description'] ?? '') ?></p>
-                    <div class="astrologer-card__meta">
-                        <span><?= e($astro['experience_years'] ?? 'N/A') ?> yrs</span>
-                        <span><?= e(implode(' · ', array_slice($astro['languages'] ?? [], 0, 2))) ?></span>
-                    </div>
-                </div>
-                <div class="astrologer-card__footer">
-                    <span class="astrologer-card__price">5 credits/message · 0.5 credits/sec call</span>
-                    <div class="astrologer-card__actions">
-                        <a href="/astrologers/<?= e($astro['slug']) ?>" class="btn btn-sm btn-ghost">Know More</a>
-                        <a href="/astrologers/<?= e($astro['slug']) ?>?mode=direct_call" class="btn btn-sm btn-call">Call</a>
-                        <a href="/astrologers/<?= e($astro['slug']) ?>?mode=text_session" class="btn btn-sm btn-message">Message</a>
-                    </div>
-                </div>
-            </article>
-        <?php endforeach; ?>
-        </div>
-    </div>
-    <?php endif; ?>
-    <div style="text-align:center;">
-        <a href="/astrologers" class="btn btn-primary">Astrology</a>
-    </div>
-</section>
 
 <section class="section section--alt">
     <div class="section-header">

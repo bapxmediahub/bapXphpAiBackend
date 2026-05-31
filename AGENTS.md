@@ -30,6 +30,7 @@ This repo is an agent-ready PHP/JSON full-stack product base for small PHP hosti
 
 - Keep JSON storage first. Do not introduce SQL/Postgres/MySQL unless the user explicitly asks for a separate migration.
 - Update `storage/schema/collections.json` before changing a collection shape, admin fields, media fields, or agent-visible context.
+- When a code change reveals a reusable workflow rule, update the matching project skill under `.codex/skills/php-dev/` so future agents inherit the framework behavior. Keep skills business-agnostic: describe the PHP/JSON backend, admin, UI, validation, deployment, and agent-context pattern, not one customer's domain.
 - Keep route -> controller -> service -> JSON-store boundaries.
 - Do not add React, CDN React, or a SPA fallback.
 - Do not create a second frontend.
@@ -50,3 +51,5 @@ php tools/smoke-local.php
 ```
 
 For UI changes, also use a browser workflow. Click the changed page like a user and verify the visible result.
+
+Before finishing, search the touched workflow for placeholders, dead buttons, duplicated fallbacks, stale labels, and incomplete wiring. Remove or wire them instead of leaving non-working UI.

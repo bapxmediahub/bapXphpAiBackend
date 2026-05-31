@@ -5,4 +5,4 @@ description: Use when editing PHP controllers, services, JSON persistence, auth,
 
 # Backend JSON
 
-Follow `.codex/skills/sps-dev/backend-json/SKILL.md`.
+Follow `.codex/skills/php-dev/backend-json/SKILL.md`.

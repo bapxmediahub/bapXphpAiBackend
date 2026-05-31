@@ -5,4 +5,4 @@ description: Use when changing JSON database collections, fields, admin forms, m
 
 # JSON Schema
 
-Follow `.codex/skills/sps-dev/schema/SKILL.md`.
+Follow `.codex/skills/php-dev/schema/SKILL.md`.
