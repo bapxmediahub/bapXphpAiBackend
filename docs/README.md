@@ -18,7 +18,7 @@ This folder contains connected documentation for developers, maintainers, and co
 - [Home](pages/home.md)
 - [Shop](pages/shop.md)
 - [Checkout](pages/checkout.md)
-- [Astrologers](pages/astrologers.md)
+- [Consult](pages/consult.md)
 - [Temples](pages/temples.md)
 - [About](pages/about.md)
 - [Admin dashboard](pages/admin-dashboard.md)

@@ -28,13 +28,13 @@ final class PublicController extends BaseController {
         $this->render('public/spiritual'); 
     }
     
-    public function astrologers(): void { 
+    public function consult(): void {
         $this->detectApiRequest();
         $reviews = new ReviewService();
-        $this->render('public/astrologers', ['items' => (new AstrologerService())->all(), 'reviews' => $reviews]); 
+        $this->render('public/consult', ['items' => (new AstrologerService())->all(), 'reviews' => $reviews]);
     }
     
-    public function astrologer(string $slug): void {
+    public function consultant(string $slug): void {
         $this->detectApiRequest();
         $astrologer = (new AstrologerService())->findBySlug($slug);
         $reviewSummary = (new ReviewService())->summary('astrologer', $slug);

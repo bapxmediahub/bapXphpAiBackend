@@ -9,7 +9,7 @@ Use this file as the operating note for Codex, Claude Code, OpenCode, Antigravit
 - The data store is local JSON under `storage/data/`.
 - The database schema is `storage/schema/collections.json`.
 - The customer, account, and admin UI are PHP templates in `views/`.
-- Built-in repo skills live under `.codex/skills/sps-dev/`, `.claude/skills/sps-dev/`, and `.agents/skills/sps-dev/`.
+- Built-in repo skills live under `.codex/skills/<skill-name>/SKILL.md`, `.claude/skills/<skill-name>/SKILL.md`, and `.agents/skills/<skill-name>/SKILL.md`.
 - There is no SPA fallback. Unknown routes must return the PHP 404 page.
 
 ## Required Local Workflow

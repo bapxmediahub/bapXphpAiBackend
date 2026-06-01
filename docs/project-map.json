@@ -39,20 +39,20 @@
         },
         {
             "method": "GET",
-            "path": "/astrologers",
-            "name": "astrologers",
-            "page": "public/astrologers",
-            "controller": "PublicController@astrologers",
+            "path": "/consult",
+            "name": "consult",
+            "page": "public/consult",
+            "controller": "PublicController@consult",
             "services": [
                 "AstrologerService"
             ]
         },
         {
             "method": "GET",
-            "path": "/astrologers/{slug}",
-            "name": "astrologer.show",
+            "path": "/consult/{slug}",
+            "name": "consult.show",
             "page": "public/astrologer",
-            "controller": "PublicController@astrologer",
+            "controller": "PublicController@consultant",
             "services": [
                 "AstrologerService"
             ]

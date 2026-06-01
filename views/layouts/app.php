@@ -185,7 +185,7 @@ echo $critical;
 <link rel="preload" href="/assets/css/band.css?v=<?= filemtime(__DIR__ . '/../../assets/css/band.css') ?>" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="/assets/css/band.css?v=<?= filemtime(__DIR__ . '/../../assets/css/band.css') ?>"></noscript>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":["LocalBusiness","Store"],"name":"Sri Panchami Spiritual","description":"Authentic spiritual products, sacred jewellery, expert Vedic astrology consultation, and temple guidance in Chennai, Tamil Nadu.","url":"https://<?= e($_SERVER['HTTP_HOST']) ?>","email":"sripanchamispiritual@gmail.com","address":{"@type":"PostalAddress","streetAddress":"23, 1st Cross Street Kothari Nagar, Ramapuram","addressLocality":"Chennai","addressRegion":"Tamil Nadu","postalCode":"600089","addressCountry":"IN"},"geo":{"@type":"GeoCoordinates","latitude":"13.0166","longitude":"80.1833"},"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],"opens":"09:00","closes":"19:00"},{"@type":"OpeningHoursSpecification","dayOfWeek":"Sunday","opens":"10:00","closes":"17:00"}],"priceRange":"₹₹"}
+{"@context":"https://schema.org","@type":["LocalBusiness","Store"],"name":"Sri Panchami Spiritual","description":"Authentic spiritual products, sacred jewellery, expert Vedic astrology consultation, and temple guidance in Chennai, Tamil Nadu.","url":"https://<?= e($_SERVER['HTTP_HOST']) ?>","telephone":["+919789444037","+919789444038"],"email":"sripanchamispiritual@gmail.com","address":{"@type":"PostalAddress","streetAddress":"23, 1st Cross Street Kothari Nagar, Ramapuram","addressLocality":"Chennai","addressRegion":"Tamil Nadu","postalCode":"600089","addressCountry":"IN"},"geo":{"@type":"GeoCoordinates","latitude":"13.0166","longitude":"80.1833"},"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],"opens":"09:00","closes":"19:00"},{"@type":"OpeningHoursSpecification","dayOfWeek":"Sunday","opens":"10:00","closes":"17:00"}],"priceRange":"₹₹"}
 </script>
 </head>
 <body>
@@ -197,7 +197,7 @@ echo $critical;
     <nav id="primary-nav">
         <a href="/">Home</a>
         <a href="/shop">Shop</a>
-        <a href="/astrologers">Consult</a>
+        <a href="/consult">Consult</a>
         <a href="/temples">Temples</a>
         <a href="/about">About SPS</a>
         <a href="/contact">Contact</a>
@@ -234,7 +234,7 @@ echo $critical;
             <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
             <span>Shop</span>
         </a>
-        <a href="/astrologers" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/astrologers') === 0 ? 'active' : '') ?>">
+        <a href="/consult" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/consult') === 0 ? 'active' : '') ?>">
             <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20"/><path d="M2 12h20"/></svg>
             <span>Consult</span>
         </a>
@@ -279,7 +279,7 @@ echo $critical;
                 <h4 class="footer-heading">Shop</h4>
                 <ul class="footer-links">
                     <li><a href="/shop">All Products</a></li>
-                    <li><a href="/astrologers">Consult</a></li>
+                    <li><a href="/consult">Consult</a></li>
                     <li><a href="/temples">Temples</a></li>
                     <li><a href="/about">About SPS</a></li>
                     <li><a href="/contact">Contact</a></li>
@@ -288,7 +288,7 @@ echo $critical;
             <div>
                 <h4 class="footer-heading">Services</h4>
                 <ul class="footer-links">
-                    <li><a href="/astrologers">Consult</a></li>
+                    <li><a href="/consult">Consult</a></li>
                     <li><a href="/temples">Temples</a></li>
                     <li><a href="/about">About SPS</a></li>
                     <li><a href="/contact">Contact</a></li>
@@ -299,6 +299,8 @@ echo $critical;
                 <ul class="footer-links">
                     <li>23, 1st Cross Street Kothari Nagar</li>
                     <li>Ramapuram, Chennai, Tamil Nadu 600089</li>
+                    <li><a href="tel:+919789444037">+91 97894 44037</a></li>
+                    <li><a href="tel:+919789444038">+91 97894 44038</a></li>
                     <li><a href="mailto:sripanchamispiritual@gmail.com">sripanchamispiritual@gmail.com</a></li>
                 </ul>
             </div>

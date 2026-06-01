@@ -46,7 +46,7 @@ final class AgentContextService {
                 'shop' => '/shop',
                 'cart' => '/cart',
                 'recharge' => '/recharge',
-                'astrologers' => '/astrologers',
+                'astrologers' => '/consult',
                 'booking_contact_form' => '/contact?subject=astrology#contact-form',
                 'contact' => '/contact',
                 'orders' => '/account/orders',

@@ -55,7 +55,7 @@ Page notes:
 - [Home](docs/pages/home.md)
 - [Shop](docs/pages/shop.md)
 - [Checkout](docs/pages/checkout.md)
-- [Astrologers](docs/pages/astrologers.md)
+- [Consult](docs/pages/consult.md)
 - [Temples](docs/pages/temples.md)
 - [About](docs/pages/about.md)
 - [Admin dashboard](docs/pages/admin-dashboard.md)
@@ -102,9 +102,10 @@ There is intentionally no SPA fallback. Unknown routes return the PHP 404 page.
 
 ## Environment Setup
 
-Edit `.env` before using the app:
+Copy `.env.example` to `.env`, then edit `.env` before using the app:
 
 ```dotenv
+APP_NAME="Your App Name"
 APP_URL=https://your-domain.example
 ADMIN_USERNAME=admin
 ADMIN_EMAIL=admin@your-domain.example
@@ -168,9 +169,9 @@ This repo is meant for developers who want a PHP JSON AI agent backend that work
 
 The built-in skill folders are part of the product, not an external plugin:
 
-- `.codex/skills/php-dev/` for Codex-style workflows.
-- `.claude/skills/php-dev/` for Claude Code-style workflows.
-- `.agents/skills/php-dev/` for generic folder-based agents.
+- `.codex/skills/<skill-name>/SKILL.md` for Codex-style workflows.
+- `.claude/skills/<skill-name>/SKILL.md` for Claude Code-style workflows.
+- `.agents/skills/<skill-name>/SKILL.md` for generic folder-based agents.
 - `AGENTS.md` and `CLAUDE.md` for always-on repository instructions.
 - `example-Agent.md` for the expected agent workflow.
 

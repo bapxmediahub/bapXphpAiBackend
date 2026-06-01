@@ -8,7 +8,7 @@ alwaysApply: true
 
 Read `AGENTS.md` first. This file exists so Claude-compatible agents enter the same workflow as Codex, OpenCode, and other repo-aware agents.
 
-Use the matching skill under `.claude/skills/php-dev/`, then follow the canonical implementation guidance in `.codex/skills/php-dev/`.
+Use the matching skill under `.claude/skills/<skill-name>/SKILL.md`, then follow the canonical implementation guidance in `.codex/skills/<skill-name>/SKILL.md`.
 
 ## Required Habits
 

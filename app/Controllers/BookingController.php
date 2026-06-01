@@ -8,14 +8,14 @@ final class BookingController extends BaseController {
   $astrologer = (new AstrologerService())->findBySlug($data['astrologer_slug'] ?? '');
   if (!$astrologer) {
     $this->flash('Astrologer not found.');
-    $this->redirect('/astrologers');
+    $this->redirect('/consult');
   }
   $user = $_SESSION['user'] ?? [];
   $data['customer_name'] = trim($data['customer_name'] ?? $user['name'] ?? '');
   $data['customer_email'] = trim($data['customer_email'] ?? $user['email'] ?? '');
   if (empty($data['customer_name']) || empty($data['customer_email'])) {
     $this->flash('Please provide your name and email to start this remote session.');
-    $this->redirect('/astrologers/' . ($astrologer['slug'] ?? ''));
+    $this->redirect('/consult/' . ($astrologer['slug'] ?? ''));
   }
   $mode = in_array(($data['mode'] ?? 'direct_call'), ['text_session', 'direct_call'], true) ? $data['mode'] : 'direct_call';
   $data['id'] = bin2hex(random_bytes(8));

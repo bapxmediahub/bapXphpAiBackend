@@ -4,8 +4,8 @@
 - `/about` → `PublicController@about` → none
 - `/sri-panchami-spiritual` → `PublicController@spiritual` → none
 - `/spiritual` → `PublicController@spiritual` → none
-- `/astrologers` → `PublicController@astrologers` → AstrologerService
-- `/astrologers/{slug}` → `PublicController@astrologer` → AstrologerService
+- `/consult` → `PublicController@consult` → AstrologerService
+- `/consult/{slug}` → `PublicController@consultant` → AstrologerService
 - `/temples` → `PublicController@temples` → TempleService
 - `/temples/{slug}` → `PublicController@temple` → TempleService
 - `/shop` → `PublicController@shop` → ProductService, CategoryService

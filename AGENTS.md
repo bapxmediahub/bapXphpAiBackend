@@ -24,13 +24,13 @@ This repo is an agent-ready PHP/JSON full-stack product base for small PHP hosti
 2. `storage/schema/collections.json`
 3. `docs/PROJECT_MAP.md`
 4. `example-Agent.md`
-5. The narrow skill under `.codex/skills/php-dev/`, `.claude/skills/php-dev/`, or `.agents/skills/php-dev/` that matches the task.
+5. The narrow skill under `.codex/skills/<skill-name>/`, `.claude/skills/<skill-name>/`, or `.agents/skills/<skill-name>/` that matches the task.
 
 ## Rules
 
 - Keep JSON storage first. Do not introduce SQL/Postgres/MySQL unless the user explicitly asks for a separate migration.
 - Update `storage/schema/collections.json` before changing a collection shape, admin fields, media fields, or agent-visible context.
-- When a code change reveals a reusable workflow rule, update the matching project skill under `.codex/skills/php-dev/` so future agents inherit the framework behavior. Keep skills business-agnostic: describe the PHP/JSON backend, admin, UI, validation, deployment, and agent-context pattern, not one customer's domain.
+- When a code change reveals a reusable workflow rule, update the matching project skill under `.codex/skills/<skill-name>/SKILL.md` so future agents inherit the framework behavior. Keep skills business-agnostic: describe the PHP/JSON backend, admin, UI, validation, deployment, and agent-context pattern, not one customer's domain.
 - Keep route -> controller -> service -> JSON-store boundaries.
 - Do not add React, CDN React, or a SPA fallback.
 - Do not create a second frontend.

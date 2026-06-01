@@ -35,7 +35,7 @@ Compatible agents should read:
 1. `AGENTS.md`
 2. `storage/schema/collections.json`
 3. `docs/PROJECT_MAP.md`
-4. `.codex/skills/sps-dev/SKILL.md` or the equivalent `.claude/` / `.agents/` path
+4. `.codex/skills/<skill-name>/SKILL.md` or the equivalent `.claude/` / `.agents/` path
 
 Agents should not need a separate MCP server or global skill install to understand this repo. The operating rules live with the code.
 

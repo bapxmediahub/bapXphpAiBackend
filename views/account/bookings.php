@@ -29,7 +29,7 @@
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto var(--space-md);"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     <h3 style="font-family:var(--font-serif); margin:0 0 var(--space-sm);">No Sessions Yet</h3>
                     <p style="color:var(--color-text-muted); margin-bottom:var(--space-lg);">Start a call or message session with our expert astrologers.</p>
-                    <a href="/astrologers" class="btn btn-primary">Browse Astrologers</a>
+                    <a href="/consult" class="btn btn-primary">Browse Astrologers</a>
                 </div>
             <?php else: ?>
                 <div class="table-wrap">

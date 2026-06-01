@@ -4,7 +4,7 @@
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto var(--space-md);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <h1 style="font-family:var(--font-serif); margin:0 0 var(--space-sm);">Astrologer Not Found</h1>
             <p style="color:var(--color-text-muted); margin-bottom:var(--space-lg);">The astrologer profile you're looking for doesn't exist.</p>
-            <a href="/astrologers" class="btn btn-primary">View All Astrologers</a>
+            <a href="/consult" class="btn btn-primary">View All Astrologers</a>
         </div>
     <?php else: ?>
         <div class="expert-layout">

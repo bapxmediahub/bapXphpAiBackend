@@ -58,15 +58,15 @@ $tests['repo has agent-readable schema and built-in skills'] = function (): void
     foreach ([
         'AGENTS.md',
         'CLAUDE.md',
-        '.codex/skills/php-dev/SKILL.md',
-        '.codex/skills/php-dev/backend-json/SKILL.md',
-        '.codex/skills/php-dev/schema/SKILL.md',
-        '.codex/skills/php-dev/admin-ui/SKILL.md',
-        '.codex/skills/php-dev/frontend-php/SKILL.md',
-        '.codex/skills/php-dev/deployment/SKILL.md',
-        '.codex/skills/php-dev/docs/SKILL.md',
-        '.claude/skills/php-dev/SKILL.md',
-        '.agents/skills/php-dev/SKILL.md',
+        '.codex/skills/php-json-backend/SKILL.md',
+        '.codex/skills/backend-json/SKILL.md',
+        '.codex/skills/schema/SKILL.md',
+        '.codex/skills/admin-ui/SKILL.md',
+        '.codex/skills/frontend-php/SKILL.md',
+        '.codex/skills/deployment/SKILL.md',
+        '.codex/skills/docs/SKILL.md',
+        '.claude/skills/php-json-backend/SKILL.md',
+        '.agents/skills/php-json-backend/SKILL.md',
     ] as $path) {
         assertTrue(is_file(app_path($path)), "Built-in agent instruction file should exist: {$path}");
     }
@@ -172,6 +172,13 @@ $tests['public registration never bootstraps admin on a live site'] = function (
 };
 
 $tests['env file defines editable local admin credentials'] = function (): void {
+    $exampleEnvPath = app_path('.env.example');
+    assertTrue(is_file($exampleEnvPath), '.env.example should exist for safe setup documentation');
+    $exampleEnv = EnvService::readFile($exampleEnvPath);
+    foreach (['APP_NAME', 'APP_URL', 'ADMIN_USERNAME', 'ADMIN_EMAIL', 'ADMIN_PASSWORD'] as $key) {
+        assertTrue(($exampleEnv[$key] ?? '') !== '', ".env.example should define {$key}");
+    }
+
     $envPath = app_path('.env');
     assertTrue(is_file($envPath), '.env should exist for small PHP hosting setup');
     $env = EnvService::readFile($envPath);
@@ -239,6 +246,13 @@ $tests['contact page exposes consultation request form'] = function (): void {
         assertTrue(str_contains($view, $field), "Contact form should include {$field}");
     }
     assertTrue(str_contains($view, 'Astrology Consultation'), 'Contact form should include an astrology consultation subject');
+    foreach (['tel:+919789444037', 'tel:+919789444038', 'mailto:sripanchamispiritual@gmail.com', 'contact-direct-link--mail'] as $needle) {
+        assertTrue(str_contains($view, $needle), "Contact page should expose {$needle}");
+    }
+    foreach (['Online Store', 'VIP appointments only', 'Regular sessions are available through Consult'] as $needle) {
+        assertTrue(str_contains($view, $needle), "Contact page should clarify {$needle}");
+    }
+    assertTrue(!str_contains($view, 'Visit Our Store'), 'Contact page should not invite general ecommerce customers to visit the store directly');
 };
 
 $tests['admin integrations explain api setup and support bot keys'] = function (): void {
@@ -298,7 +312,7 @@ $tests['bookings use direct platform sessions without google meet or calendar'] 
 $tests['remote astrology sessions do not use appointment slots and show per session spend'] = function (): void {
     $booking = file_get_contents(app_path('app/Controllers/BookingController.php'));
     $bookingsView = file_get_contents(app_path('views/account/bookings.php'));
-    $astrologersView = file_get_contents(app_path('views/public/astrologers.php'));
+    $astrologersView = file_get_contents(app_path('views/public/consult.php'));
     $profileView = file_get_contents(app_path('views/public/astrologer.php'));
     assertTrue(!str_contains($booking, 'slotsForDate'), 'Remote sessions should not validate appointment date/time slots');
     assertTrue(str_contains($booking, 'credits_spent'), 'Remote session records should track credits spent per call/message session');
@@ -320,17 +334,20 @@ $tests['astrologer profile uses remote consultation contact panel instead of app
     assertTrue(str_contains($view, 'Remote Call') || str_contains($view, 'Remote consultation'), 'Astrologer profile should describe remote call/message consultation');
 };
 
-$tests['astrologer marketplace exposes filters recharge link and direct session actions'] = function (): void {
-    $view = file_get_contents(app_path('views/public/astrologers.php'));
-    foreach (['href="/recharge"', 'Recharge', 'Search Astrologer', 'astro-search-input', 'data-astro-card'] as $needle) {
+$tests['astrologer marketplace exposes search and direct session actions'] = function (): void {
+    $view = file_get_contents(app_path('views/public/consult.php'));
+    foreach (['Search Astrologer', 'astro-search-input', 'astro-status-filter', 'astro-language-filter', 'data-astro-card', 'data-status=', 'data-language='] as $needle) {
         assertTrue(str_contains($view, $needle), "Astrologer marketplace should expose {$needle}");
     }
     foreach (['Filters', 'Available Now', 'On Chat', 'On Call'] as $needle) {
         assertTrue(!str_contains($view, ">{$needle}<"), "Astrologer marketplace should not expose non-working {$needle} button");
     }
     assertTrue(!str_contains($view, 'Available Balance'), 'Astrologer marketplace should not show account balance; that belongs in the user panel');
-    assertTrue(!str_contains($view, '/contact?subject=astrology#contact-form" class="astro-recharge"'), 'Recharge should not send customers to the contact form');
-    foreach (['aria-label="Start message session"', 'aria-label="Start call session"', 'Waitlist', 'OFFLINE', '+ Follow'] as $needle) {
+    assertTrue(!str_contains($view, 'href="/recharge"'), 'Astrologer marketplace should not show recharge; that belongs in the logged-in user panel');
+    assertTrue(!str_contains($view, 'astro-recharge'), 'Astrologer marketplace should not render a recharge toolbar action');
+    assertTrue(!str_contains($view, 'OFFLINE'), 'Unavailable astrologers should show one waitlist action instead of a disabled offline plus call pair');
+    assertTrue(substr_count($view, 'astro-action--queue') === 1, 'Unavailable astrologer template should render one waitlist action');
+    foreach (['aria-label="Start message session"', 'aria-label="Start call session"', 'Waitlist', '+ Follow', 'astro-market-top'] as $needle) {
         assertTrue(str_contains($view, $needle), "Astrologer marketplace should expose {$needle} actions");
     }
     assertTrue(str_contains($view, 'astro-action-row'), 'Message and call icon buttons should sit below each astrologer card content');
@@ -388,7 +405,7 @@ $tests['home hero uses concise current copy and working cta links'] = function (
     assertTrue(!str_contains($view, 'Buy Original Rudraksha, Pooja Items & Spiritual Products Online'), 'Home hero should not lead with ecommerce as the primary business');
     assertTrue(!str_contains($view, 'Shop Spiritual Products</a>'), 'Home hero shop button should use concise text');
     assertTrue(!str_contains($view, 'Remote Astrology Consultation</a>'), 'Home hero astrology button should use shorter text');
-    foreach (['Consult Astrologers Online by Chat or Call', 'href="/astrologers"', 'href="/shop"', '>Consult Now</a>', '>Shop Products</a>', 'Online Astrology Consultation'] as $needle) {
+    foreach (['Consult Astrologers Online by Chat or Call', 'href="/consult"', 'href="/shop"', '>Consult Now</a>', '>Shop Products</a>', 'Online Astrology Consultation'] as $needle) {
         assertTrue(str_contains($view, $needle), "Home hero should include {$needle}");
     }
     assertTrue(!str_contains($view, '<div class="hero-stat-value">3</div>'), 'Home hero astrologer count should not be stale');

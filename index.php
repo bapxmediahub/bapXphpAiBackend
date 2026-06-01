@@ -6,6 +6,19 @@ if (PHP_SAPI === 'cli-server' && is_file($file)) {
     return false;
 }
 
+// Fallback static file serving for local dev when php -S is started from a different cwd.
+if (PHP_SAPI === 'cli-server' && preg_match('#^/(assets|storage)/#', $uri) === 1) {
+    $asset = realpath(__DIR__ . $uri);
+    $root = realpath(__DIR__);
+    if ($asset && $root && str_starts_with($asset, $root . DIRECTORY_SEPARATOR) && is_file($asset)) {
+        $mime = mime_content_type($asset) ?: 'application/octet-stream';
+        header('Content-Type: ' . $mime);
+        header('Content-Length: ' . (string) filesize($asset));
+        readfile($asset);
+        exit;
+    }
+}
+
 // API routes - JSON only
 if (strpos($uri, '/api/') === 0) {
     require __DIR__ . '/api/index.php';
@@ -13,7 +26,7 @@ if (strpos($uri, '/api/') === 0) {
 }
 
 // PHP routes (admin + public pages)
-$phpRoutes = ['/','/shop','/shop/','/product','/cart','/checkout','/payment','/recharge','/support','/about','/contact','/temples','/astrologers','/appointments','/login','/logout','/register','/forgot-password','/reset-password','/account','/reviews','/sri-panchami-spiritual','/spiritual','/categories'];
+$phpRoutes = ['/','/shop','/shop/','/product','/cart','/checkout','/payment','/recharge','/support','/about','/contact','/temples','/consult','/appointments','/auth','/login','/logout','/register','/forgot-password','/reset-password','/account','/reviews','/sri-panchami-spiritual','/spiritual','/categories'];
 $isPhpRoute = false;
 foreach ($phpRoutes as $route) {
     if (strpos($uri, $route . '/') === 0 || $uri === $route) {
