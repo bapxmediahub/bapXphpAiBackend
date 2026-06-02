@@ -175,7 +175,7 @@
     <div class="section-header">
         <span class="eyebrow">Sacred Spaces · Divine Energy</span>
         <h2 class="section-title">Panchami Temples Guide</h2>
-        <p class="lede">Explore temple guides for divine blessings, traditional pooja details, and spiritual routes around Chennai.</p>
+        <p class="lede">Explore temple guides for divine blessings, traditional pooja details, and spiritual routes around Chennai. <a href="/temples">Click here</a></p>
     </div>
     <div class="temple-carousel temple-carousel--single" data-temple-slider aria-label="Temple guide carousel">
         <div class="temple-carousel-track">
@@ -209,9 +209,6 @@
         <?php endforeach; ?>
         </div>
     </div>
-    <div style="text-align:center; margin-top:var(--space-xl);">
-        <a href="/temples" class="btn btn-primary">View All Temples</a>
-    </div>
 </section>
 <?php endif; ?>
 
@@ -226,7 +223,7 @@ document.addEventListener('DOMContentLoaded', function () {
         slides[index].classList.remove('is-active');
         index = (index + 1) % slides.length;
         slides[index].classList.add('is-active');
-    }, 3500);
+    }, 6500);
 });
 </script>
 
@@ -252,6 +249,14 @@ document.addEventListener('DOMContentLoaded', function () {
             <h3>Free Shipping</h3>
             <p>Quick and careful delivery across India</p>
         </article>
+    </div>
+    <div class="page-cta-card reveal">
+        <div>
+            <span class="page-cta-card__eyebrow">Need Guidance?</span>
+            <h3>Start a Consultation Request</h3>
+            <p>Use the contact form for astrology sessions, product questions, temple guidance, or VIP direct astrology visit requests.</p>
+        </div>
+        <a class="btn btn-primary page-cta-card__button" href="/contact#contact-form">Let’s Get Connected →</a>
     </div>
 </section>
 

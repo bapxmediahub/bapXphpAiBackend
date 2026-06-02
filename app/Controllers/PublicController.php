@@ -58,7 +58,14 @@ final class PublicController extends BaseController {
         $categories = (new CategoryService())->all();
         $items = (new ProductService())->all();
         if ($category) {
-            $items = array_values(array_filter($items, fn($item) => ($item['category'] ?? '') === $category));
+            $items = array_values(array_filter($items, function ($item) use ($category) {
+                $categoryList = $item['categories'] ?? [$item['category'] ?? ''];
+                if (!is_array($categoryList)) {
+                    $categoryList = preg_split('/[\r\n,]+/', (string)$categoryList) ?: [];
+                }
+                $categoryList[] = $item['category'] ?? '';
+                return in_array($category, array_filter(array_map('trim', $categoryList)), true);
+            }));
         }
         $this->render('public/shop', compact('items', 'categories', 'category'));
     }

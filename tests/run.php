@@ -112,6 +112,25 @@ $tests['catalog image paths point to existing local assets'] = function (): void
     }
 };
 
+$tests['shop supports plain vertical filters and multi category products'] = function (): void {
+    $store = new JsonStoreService();
+    $categories = $store->read('categories');
+    $products = $store->read('products');
+    $css = file_get_contents(app_path('assets/css/band.css'));
+    $controller = file_get_contents(app_path('app/Controllers/PublicController.php'));
+    assertTrue(in_array('pooja-idols', array_column($categories, 'slug'), true), 'Shop categories should include Pooja Idols');
+    foreach (['lakshmi-dollar', 'murugar-vel-mayil-dollar', 'lingam-dollar'] as $slug) {
+        $product = array_values(array_filter($products, fn($item) => ($item['slug'] ?? '') === $slug))[0] ?? null;
+        assertTrue($product !== null, "Product should exist: {$slug}");
+        foreach (['sacred-emblems', 'jewelry', 'pooja-idols'] as $category) {
+            assertTrue(in_array($category, $product['categories'] ?? [], true), "{$slug} should appear in {$category}");
+        }
+    }
+    assertTrue(str_contains($controller, '$item[\'categories\']'), 'Shop filter should check optional multi-category product data');
+    assertTrue(str_contains($css, 'grid-template-columns: 180px 1fr'), 'Shop sidebar should be reduced in width');
+    assertTrue(str_contains($css, '.filter-group { display: grid') && str_contains($css, 'background: transparent'), 'Shop filter links should be plain vertical links without boxed chips');
+};
+
 $tests['public catalog card images are not lazy deferred'] = function (): void {
     foreach (['views/public/home.php', 'views/public/shop.php', 'views/public/product.php', 'views/public/temples.php'] as $path) {
         $view = file_get_contents(app_path($path));
@@ -260,7 +279,38 @@ $tests['contact page exposes consultation request form'] = function (): void {
     foreach (['Online Store', 'VIP appointments only', 'Regular sessions are available through Consult'] as $needle) {
         assertTrue(str_contains($view, $needle), "Contact page should clarify {$needle}");
     }
+    foreach (['contact-info-grid', 'contact-card__icon', 'contact-card__eyebrow'] as $needle) {
+        assertTrue(str_contains($view, $needle), "Contact cards should use enhanced layout class {$needle}");
+    }
+    assertTrue(str_contains($view, 'contact-card--direct'), 'Phone and email cards should use simplified direct card styling');
+    assertTrue(!str_contains($view, '<h3>Call</h3>') && !str_contains($view, '<h3>Mail</h3>'), 'Phone and email cards should not repeat Call/Mail headings');
     assertTrue(!str_contains($view, 'Visit Our Store'), 'Contact page should not invite general ecommerce customers to visit the store directly');
+};
+
+$tests['about page uses focused responsive cards'] = function (): void {
+    $view = file_get_contents(app_path('views/public/about.php'));
+    $css = file_get_contents(app_path('assets/css/band.css'));
+    assertTrue(!str_contains($view, 'Positive Energy'), 'About page should not show the removed Positive Energy card');
+    foreach (['about-story-grid', 'about-feature-grid', 'about-feature-card', 'page-cta-card'] as $needle) {
+        assertTrue(str_contains($view, $needle), "About page should use {$needle}");
+    }
+    assertTrue(str_contains($view, 'href="/contact#contact-form"'), 'About page CTA should link to the contact booking form');
+    assertTrue(!str_contains($view, 'GST Registration'), 'About page CTA should replace the old GST/business detail block');
+    assertTrue(str_contains($css, '.about-feature-grid') && str_contains($css, 'repeat(3, minmax(0, 1fr))'), 'About feature cards should align as three columns on desktop');
+    assertTrue(str_contains($css, '.about-story-grid,') && str_contains($css, '.about-feature-grid { grid-template-columns: 1fr; }'), 'About cards should stack on smaller screens');
+};
+
+$tests['public pages expose shared consultation cta'] = function (): void {
+    $css = file_get_contents(app_path('assets/css/band.css'));
+    foreach (['home', 'shop', 'consult', 'temples', 'about'] as $page) {
+        $view = file_get_contents(app_path("views/public/{$page}.php"));
+        assertTrue(str_contains($view, 'page-cta-card'), "{$page} should render the shared consultation CTA card");
+        assertTrue(str_contains($view, 'href="/contact#contact-form"'), "{$page} CTA should link to the contact booking form");
+        assertTrue(str_contains($view, 'Let’s Get Connected →'), "{$page} CTA should use the updated button copy");
+    }
+    assertTrue(str_contains($css, '.page-cta-card:hover') && str_contains($css, 'translateY(-6px)'), 'Shared CTA should use the same lift animation language as home cards');
+    assertTrue(str_contains($css, '.about-feature-card:hover') && str_contains($css, 'scale(1.04)'), 'About feature cards should animate their icons on hover');
+    assertTrue(str_contains($css, '.page-cta-card.reveal.revealed:hover'), 'Shared CTA hover animation should win after scroll reveal');
 };
 
 $tests['admin integrations explain api setup and support bot keys'] = function (): void {
@@ -428,7 +478,9 @@ $tests['home temple guide uses admin driven dissolve carousel'] = function (): v
     assertTrue(str_contains($view, 'foreach(array_values($temples)'), 'Home temple carousel should use the admin-published temple list directly');
     assertTrue(!str_contains($view, 'array_merge($temples, $temples)'), 'Home temple carousel should not duplicate admin temple records for a dissolve transition');
     assertTrue(str_contains($view, 'data-temple-slider'), 'Home temple section should auto-advance one full-width temple at a time');
-    assertTrue(str_contains($view, 'setInterval(function ()') && str_contains($view, '3500'), 'Home temple dissolve should advance every 3.5 seconds');
+    assertTrue(str_contains($view, 'setInterval(function ()') && str_contains($view, '6500'), 'Home temple dissolve should advance at a slower 6.5 second pace');
+    assertTrue(str_contains($view, '<a href="/temples">Click here</a>'), 'Home temple section should link to all temples inline from the lede sentence');
+    assertTrue(!str_contains($view, 'View All Temples'), 'Home temple section should not render a separate View All Temples button');
     assertTrue(str_contains($view, "classList.remove('is-active')") && str_contains($view, "classList.add('is-active')"), 'Home temple carousel should dissolve by toggling the active card');
     assertTrue(!str_contains($view, 'translateX'), 'Home temple carousel should not slide or animate backward');
     assertTrue(str_contains($view, 'class="showcase-card temple-feature-card'), 'Home temple cards should use the improved temple feature card style');
@@ -436,7 +488,7 @@ $tests['home temple guide uses admin driven dissolve carousel'] = function (): v
     assertTrue(str_contains($css, 'grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.1fr)'), 'Temple feature cards should place image left and content right on desktop');
     assertTrue(str_contains($css, '.temple-carousel--single .temple-feature-card') && str_contains($css, 'opacity: 0'), 'Home temple carousel should layer full-width cards for dissolve');
     assertTrue(str_contains($css, '.temple-carousel--single .temple-feature-card.is-active') && str_contains($css, 'opacity: 1'), 'Home temple carousel should show only the active card');
-    assertTrue(str_contains($css, 'transition: opacity 0.75s ease'), 'Home temple carousel should use a smooth dissolve transition');
+    assertTrue(str_contains($css, 'transition: opacity 1.6s ease-in-out'), 'Home temple carousel should use a slow smooth dissolve transition');
 };
 
 $tests['review service stores five star reviews and calculates averages'] = function (): void {

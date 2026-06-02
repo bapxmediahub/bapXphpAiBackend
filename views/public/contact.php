@@ -5,38 +5,46 @@
             <h1 class="section-title" style="margin-bottom:var(--space-sm);">Sri Panchami Spiritual</h1>
             <p class="lede" style="margin:0 auto;">Shop spiritual products online. For astrology guidance, use Consult for regular sessions or contact us for VIP direct astrology visits.</p>
         </div>
-        <div class="grid" style="margin-bottom:var(--space-2xl);">
-            <div class="panel reveal" style="text-align:center;">
-                <span style="display:block; margin-bottom:var(--space-sm);"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
-                <h3 style="font-family:var(--font-serif); margin:0 0 var(--space-xs);">Sacred Service Hours</h3>
-                <p style="color:var(--color-text-muted); font-size:0.9rem; margin:0;">Monday – Saturday: 9:00 AM – 7:00 PM<br>Sunday: 10:00 AM – 5:00 PM</p>
-            </div>
-            <div class="panel reveal" style="text-align:center;">
-                <span style="display:block; margin-bottom:var(--space-sm);"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
-                <h3 style="font-family:var(--font-serif); margin:0 0 var(--space-xs);">Online Store</h3>
-                <p style="color:var(--color-text-muted); font-size:0.9rem; margin:0;">Products are available through the online shop.<br>Direct astrology visits are for VIP appointments only.<br>Regular sessions are available through Consult.</p>
-            </div>
-            <div class="panel reveal contact-direct-panel">
-                <span class="contact-direct-top-icon" aria-hidden="true"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.7 19.7 0 0 1-8.6-3.1 19.1 19.1 0 0 1-5.9-5.9A19.7 19.7 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L8.1 10a16 16 0 0 0 5.9 5.9l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2Z"/></svg></span>
-                <h3 style="font-family:var(--font-serif); margin:0 0 var(--space-xs);">Call</h3>
-                <div class="contact-direct-list">
-                    <a class="contact-direct-link" href="tel:+919789444037">
-                        <span class="contact-direct-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.7 19.7 0 0 1-8.6-3.1 19.1 19.1 0 0 1-5.9-5.9A19.7 19.7 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L8.1 10a16 16 0 0 0 5.9 5.9l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2Z"/></svg></span>
-                        <span>+91 97894 44037</span>
-                    </a>
-                    <a class="contact-direct-link" href="tel:+919789444038">
-                        <span class="contact-direct-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.7 19.7 0 0 1-8.6-3.1 19.1 19.1 0 0 1-5.9-5.9A19.7 19.7 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L8.1 10a16 16 0 0 0 5.9 5.9l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2Z"/></svg></span>
-                        <span>+91 97894 44038</span>
-                    </a>
+        <div class="contact-info-grid">
+            <div class="contact-card reveal">
+                <span class="contact-card__icon" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
+                <div class="contact-card__body">
+                    <span class="contact-card__eyebrow">Hours</span>
+                    <h3>Sacred Service Hours</h3>
+                    <p>Monday – Saturday: 9:00 AM – 7:00 PM<br>Sunday: 10:00 AM – 5:00 PM</p>
                 </div>
             </div>
-            <div class="panel reveal contact-direct-panel">
-                <span class="contact-direct-top-icon" aria-hidden="true"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="m22 6-10 7L2 6"/></svg></span>
-                <h3 style="font-family:var(--font-serif); margin:0 0 var(--space-xs);">Mail</h3>
-                <a class="contact-direct-link contact-direct-link--mail" href="mailto:sripanchamispiritual@gmail.com">
-                    <span class="contact-direct-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="m22 6-10 7L2 6"/></svg></span>
-                    <span>sripanchamispiritual@gmail.com</span>
-                </a>
+            <div class="contact-card reveal">
+                <span class="contact-card__icon" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+                <div class="contact-card__body">
+                    <span class="contact-card__eyebrow">Shop & visits</span>
+                    <h3>Online Store</h3>
+                    <p>Products are available through the online shop.<br>Direct astrology visits are for VIP appointments only.<br>Regular sessions are available through Consult.</p>
+                </div>
+            </div>
+            <div class="contact-card contact-card--direct contact-direct-panel reveal">
+                <div class="contact-card__body">
+                    <span class="contact-card__eyebrow">phone</span>
+                    <div class="contact-direct-list">
+                        <a class="contact-direct-link" href="tel:+919789444037">
+                            <span class="contact-direct-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.7 19.7 0 0 1-8.6-3.1 19.1 19.1 0 0 1-5.9-5.9A19.7 19.7 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L8.1 10a16 16 0 0 0 5.9 5.9l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2Z"/></svg></span>
+                            <span>+91 97894 44037</span>
+                        </a>
+                        <a class="contact-direct-link" href="tel:+919789444038">
+                            <span class="contact-direct-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.7 19.7 0 0 1-8.6-3.1 19.1 19.1 0 0 1-5.9-5.9A19.7 19.7 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L8.1 10a16 16 0 0 0 5.9 5.9l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2Z"/></svg></span>
+                            <span>+91 97894 44038</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="contact-card contact-card--direct contact-direct-panel reveal">
+                <div class="contact-card__body">
+                    <span class="contact-card__eyebrow">email</span>
+                    <a class="contact-direct-link contact-direct-link--mail" href="mailto:sripanchamispiritual@gmail.com">
+                        <span class="contact-direct-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="m22 6-10 7L2 6"/></svg></span>
+                        <span>sripanchamispiritual@gmail.com</span>
+                    </a>
+                </div>
             </div>
         </div>
         <div class="admin-card reveal" id="contact-form" style="margin-top:var(--space-xl); scroll-margin-top:110px;">

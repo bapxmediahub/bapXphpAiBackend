@@ -63,4 +63,14 @@
             <?php endif; ?>
         </div>
     </div>
+    <div class="container" style="margin-top:var(--space-2xl);">
+        <div class="page-cta-card reveal">
+            <div>
+                <span class="page-cta-card__eyebrow">Need Guidance?</span>
+                <h3>Start a Consultation Request</h3>
+                <p>Use the contact form for astrology sessions, product questions, temple guidance, or VIP direct astrology visit requests.</p>
+            </div>
+            <a class="btn btn-primary page-cta-card__button" href="/contact#contact-form">Let’s Get Connected →</a>
+        </div>
+    </div>
 </section>

@@ -39,6 +39,11 @@
         "name": "Sri Maha Lakshmi Pendant",
         "description": "A traditional Maha Lakshmi devotional pendant crafted to symbolize wealth, prosperity, fortune, positivity, and spiritual abundance.",
         "category": "sacred-emblems",
+        "categories": [
+            "sacred-emblems",
+            "jewelry",
+            "pooja-idols"
+        ],
         "price": 499,
         "offer_price": 499,
         "image_url": "/assets/images/products/lakshmi-dollar-front.png",
@@ -71,6 +76,11 @@
         "name": "Sri Vel Mayil Pendant",
         "description": "A Sri Vel and Mayil pendant associated with Lord Murugan, designed for devotees seeking courage, wisdom, victory, and spiritual protection.",
         "category": "sacred-emblems",
+        "categories": [
+            "sacred-emblems",
+            "jewelry",
+            "pooja-idols"
+        ],
         "price": 499,
         "offer_price": 499,
         "image_url": "/assets/images/products/murugar-vel-mayil-dollar-front.png",
@@ -198,6 +208,11 @@
         "name": "Sri Trishulam Pendant",
         "description": "A sacred Trishulam pendant representing Lord Shiva's trident, divine protection, spiritual strength, and the removal of negative energies.",
         "category": "sacred-emblems",
+        "categories": [
+            "sacred-emblems",
+            "jewelry",
+            "pooja-idols"
+        ],
         "price": 499,
         "offer_price": 499,
         "image_url": "/assets/images/products/lingam-dollar-front.png",
