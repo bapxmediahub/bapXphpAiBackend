@@ -28,7 +28,7 @@
                         <?php $hasOffer = !empty($item['offer_price']) && $item['offer_price'] < $item['price']; ?>
                         <article class="product-card reveal">
                             <div class="product-card__image">
-                                <img src="<?= e($item['image_url'] ?? 'https://placehold.co/400x400/fdfbf7/8c7e6d?text='.urlencode($item['name'])) ?>" alt="<?= e($item['name']) ?>" loading="lazy">
+                                <img src="<?= e($item['image_url'] ?? 'https://placehold.co/400x400/fdfbf7/8c7e6d?text='.urlencode($item['name'])) ?>" alt="<?= e($item['name']) ?>" decoding="async">
                                 <?php if($hasOffer): ?>
                                     <span class="product-card__badge product-card__badge--sale">Sale</span>
                                 <?php endif; ?>

@@ -120,7 +120,7 @@
         <?php foreach($categories as $cat): ?>
             <a class="category-card" href="/shop?category=<?= e($cat['slug']) ?>">
                 <div class="category-img-wrap">
-                    <img src="<?= e($cat['image_url'] ?? 'https://placehold.co/120x120/fdfbf7/d4af37?text='.urlencode($cat['name'])) ?>" alt="Buy <?= e($cat['name']) ?> online in Chennai" loading="lazy">
+                    <img src="<?= e($cat['image_url'] ?? 'https://placehold.co/120x120/fdfbf7/d4af37?text='.urlencode($cat['name'])) ?>" alt="Buy <?= e($cat['name']) ?> online in Chennai" decoding="async">
                 </div>
                 <h3><?= e($cat['name']) ?></h3>
                 <p><?= e($cat['description']) ?></p>
@@ -139,7 +139,7 @@
             <?php $hasOffer = !empty($item['offer_price']) && $item['offer_price'] < $item['price']; ?>
             <article class="product-card reveal">
                 <div class="product-card__image">
-                    <img src="<?= e($item['image_url'] ?? 'https://placehold.co/400x400/fdfbf7/8c7e6d?text='.urlencode($item['name'])) ?>" alt="<?= e($item['name']) ?> — Buy online at Sri Panchami Spiritual, Chennai" loading="lazy">
+                    <img src="<?= e($item['image_url'] ?? 'https://placehold.co/400x400/fdfbf7/8c7e6d?text='.urlencode($item['name'])) ?>" alt="<?= e($item['name']) ?> — Buy online at Sri Panchami Spiritual, Chennai" decoding="async">
                     <?php if($hasOffer): ?>
                         <span class="product-card__badge product-card__badge--sale">Sale</span>
                     <?php endif; ?>
@@ -174,37 +174,61 @@
 <section class="section section--alt">
     <div class="section-header">
         <span class="eyebrow">Sacred Spaces · Divine Energy</span>
-        <h2 class="section-title">Our Temples in Chennai</h2>
-        <p class="lede">Visit our sacred spaces for divine blessings, spiritual awakening, and traditional pooja ceremonies.</p>
+        <h2 class="section-title">Panchami Temples Guide</h2>
+        <p class="lede">Explore temple guides for divine blessings, traditional pooja details, and spiritual routes around Chennai.</p>
     </div>
-    <div class="temple-scroll" aria-label="Temple highlights">
-        <?php foreach(array_slice($temples, 0, 3) as $temple): ?>
-            <article class="showcase-card temple-slide reveal">
-                <div class="temple-slide__media">
+    <div class="temple-carousel temple-carousel--single" data-temple-slider aria-label="Temple guide carousel">
+        <div class="temple-carousel-track">
+        <?php foreach(array_values($temples) as $index => $temple): ?>
+            <a class="showcase-card temple-feature-card reveal <?= $index === 0 ? 'is-active' : '' ?>" href="/temples/<?= e($temple['slug'] ?? '') ?>" aria-label="View <?= e($temple['name'] ?? 'Temple') ?>">
+                <div class="temple-feature-card__media">
                     <?php if(!empty($temple['image_url'])): ?>
-                        <img src="<?= e($temple['image_url']) ?>" alt="<?= e($temple['name']) ?> — Temple at Sri Panchami Spiritual, Chennai" loading="lazy">
+                        <img src="<?= e($temple['image_url']) ?>" alt="<?= e($temple['name']) ?> — Temple guide at Sri Panchami Spiritual, Chennai" decoding="async">
                     <?php else: ?>
                         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
                     <?php endif; ?>
                 </div>
-                <div class="temple-slide__copy">
+                <div class="temple-feature-card__body">
                     <h2><?= e($temple['name']) ?></h2>
                     <p><?= e($temple['description']) ?></p>
                     <?php if(!empty($temple['address'])): ?>
-                        <p class="temple-slide__address">
+                        <p class="temple-feature-card__meta">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
                             <?= e($temple['address']) ?>
                         </p>
                     <?php endif; ?>
+                    <?php if(!empty($temple['timings'])): ?>
+                        <p class="temple-feature-card__meta">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            <?= e($temple['timings']) ?>
+                        </p>
+                    <?php endif; ?>
+                    <span class="btn btn-sm btn-primary temple-feature-card__cta">View Details</span>
                 </div>
-            </article>
+            </a>
         <?php endforeach; ?>
+        </div>
     </div>
     <div style="text-align:center; margin-top:var(--space-xl);">
         <a href="/temples" class="btn btn-primary">View All Temples</a>
     </div>
 </section>
 <?php endif; ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var slider = document.querySelector('[data-temple-slider]');
+    if (!slider) return;
+    var slides = Array.prototype.slice.call(slider.querySelectorAll('.temple-feature-card'));
+    if (slides.length < 2) return;
+    var index = 0;
+    setInterval(function () {
+        slides[index].classList.remove('is-active');
+        index = (index + 1) % slides.length;
+        slides[index].classList.add('is-active');
+    }, 3500);
+});
+</script>
 
 <section class="section section--alt">
     <div class="section-header">

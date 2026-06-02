@@ -16,38 +16,40 @@
         </div>
     <?php else: ?>
         <div class="container">
-            <div class="showcase-grid">
+            <div class="temple-feature-list">
                 <?php foreach($items as $item): ?>
-                    <article class="showcase-card reveal">
-                        <div style="background:var(--color-bg-alt); border-radius:var(--radius-md); margin-bottom:var(--space-md); height:180px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                    <article class="showcase-card temple-feature-card reveal">
+                        <a class="temple-feature-card__media" href="/temples/<?= e($item['slug']) ?>" aria-label="View <?= e($item['name']) ?>">
                             <?php if(!empty($item['image_url'])): ?>
-                                <img src="<?= e($item['image_url']) ?>" alt="<?= e($item['name']) ?>" style="width:100%; height:100%; object-fit:cover; border-radius:var(--radius-md);">
+                                <img src="<?= e($item['image_url']) ?>" alt="<?= e($item['name']) ?>" decoding="async">
                             <?php else: ?>
                                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
                             <?php endif; ?>
-                        </div>
-                        <h2><?= e($item['name']) ?></h2>
-                        <p><?= e($item['description']) ?></p>
-                        <?php if(!empty($item['address'])): ?>
-                            <p style="margin-top:var(--space-sm); font-size:0.85rem; color:var(--color-text-muted);">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                                <?= e($item['address']) ?>
-                            </p>
-                        <?php endif; ?>
-                        <?php if(!empty($item['timings'])): ?>
-                            <p style="font-size:0.85rem; color:var(--color-text-muted);">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                <?= e($item['timings']) ?>
-                            </p>
-                        <?php endif; ?>
-                        <div style="margin-top:var(--space-md); display:flex; gap:var(--space-xs); flex-wrap:wrap;">
-                            <a href="/temples/<?= e($item['slug']) ?>" class="btn btn-sm btn-primary">View Details</a>
-                            <?php if(!empty($item['map_link'])): ?>
-                                <a href="<?= e($item['map_link']) ?>" target="_blank" rel="noopener" class="btn btn-sm btn-outline">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                                    Get Directions
-                                </a>
+                        </a>
+                        <div class="temple-feature-card__body">
+                            <h2><?= e($item['name']) ?></h2>
+                            <p><?= e($item['description']) ?></p>
+                            <?php if(!empty($item['address'])): ?>
+                                <p class="temple-feature-card__meta">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                    <?= e($item['address']) ?>
+                                </p>
                             <?php endif; ?>
+                            <?php if(!empty($item['timings'])): ?>
+                                <p class="temple-feature-card__meta">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    <?= e($item['timings']) ?>
+                                </p>
+                            <?php endif; ?>
+                            <div class="temple-feature-card__actions">
+                                <a href="/temples/<?= e($item['slug']) ?>" class="btn btn-sm btn-primary">View Details</a>
+                                <?php if(!empty($item['map_link'])): ?>
+                                    <a href="<?= e($item['map_link']) ?>" target="_blank" rel="noopener" class="btn btn-sm btn-outline">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                        Get Directions
+                                    </a>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </article>
                 <?php endforeach; ?>

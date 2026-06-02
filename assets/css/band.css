@@ -1848,6 +1848,100 @@ tr:hover td { background: var(--color-bg-alt); }
 }
 .temple-scroll::-webkit-scrollbar { height: 8px; }
 .temple-scroll::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.55); border-radius: var(--radius-pill); }
+.temple-carousel {
+    overflow: hidden;
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: var(--space-sm) 0 var(--space-md);
+}
+.temple-carousel-track {
+    position: relative;
+}
+.temple-carousel--single {
+    max-width: min(var(--container-max), calc(100vw - 2rem));
+}
+.temple-carousel--single .temple-feature-card {
+    width: 100%;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    transition: opacity 0.75s ease, visibility 0.75s ease;
+}
+.temple-carousel--single .temple-feature-card.is-active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    position: relative;
+}
+.temple-feature-list {
+    display: grid;
+    gap: var(--space-xl);
+}
+.temple-feature-card {
+    display: grid;
+    grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.1fr);
+    gap: var(--space-xl);
+    align-items: stretch;
+    color: var(--color-ink);
+    text-decoration: none;
+    min-height: 320px;
+}
+.temple-feature-card__media {
+    min-height: 280px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--color-bg-alt);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.temple-feature-card__media img {
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    object-fit: cover;
+    border-radius: 0;
+    margin: 0;
+}
+.temple-feature-card__body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+}
+.temple-feature-card__body h2 {
+    font-family: var(--font-serif);
+    font-size: clamp(1.35rem, 2.2vw, 2rem);
+    margin: 0 0 var(--space-xs);
+}
+.temple-feature-card__body p {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--color-text-muted);
+}
+.temple-feature-card__meta {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-xs);
+    margin: var(--space-sm) 0 0;
+}
+.temple-feature-card__meta svg {
+    flex: 0 0 auto;
+    margin-top: 0.25rem;
+}
+.temple-feature-card__actions {
+    margin-top: var(--space-md);
+    display: flex;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+}
+.temple-feature-card__cta {
+    margin-top: var(--space-md);
+    align-self: flex-start;
+    pointer-events: none;
+}
 .showcase-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-xl); }
  .showcase-card {
      background: var(--color-white);
@@ -2007,6 +2101,15 @@ tr:hover td { background: var(--color-bg-alt); }
 /* ── Scroll Reveal ── */
 .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
 .reveal.revealed { opacity: 1; transform: translateY(0); }
+.temple-carousel--single .temple-feature-card.reveal {
+    opacity: 0;
+    transform: none;
+    transition: opacity 0.75s ease, visibility 0.75s ease;
+}
+.temple-carousel--single .temple-feature-card.reveal.is-active {
+    opacity: 1;
+    transform: none;
+}
 
 /* ── Animations ── */
 @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -2185,6 +2288,14 @@ tr:hover td { background: var(--color-bg-alt); }
      .showcase-grid { grid-template-columns: 1fr; gap: var(--space-md); }
      .temple-scroll { grid-auto-columns: minmax(82vw, 1fr); gap: var(--space-md); padding-left: var(--space-sm); padding-right: var(--space-sm); scroll-snap-type: x mandatory; }
      .showcase-card { border-radius: var(--radius-lg); padding: var(--space-md); }
+     .temple-feature-list { gap: var(--space-md); }
+     .temple-feature-card { grid-template-columns: 1fr; min-height: 0; gap: var(--space-md); }
+     .temple-feature-card__media { min-height: 190px; }
+     .temple-feature-card__media img { min-height: 190px; }
+     .temple-feature-card__body { text-align: center; }
+     .temple-feature-card__meta { justify-content: center; text-align: left; }
+     .temple-feature-card__actions { justify-content: center; }
+     .temple-feature-card__cta { align-self: center; }
      .temple-slide { grid-template-columns: 1fr; min-height: 0; gap: var(--space-md); }
      .temple-slide__media { min-height: 190px; }
      .temple-slide__media img { min-height: 190px; }

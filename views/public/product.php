@@ -124,7 +124,7 @@
                 <?php foreach(array_slice($related, 0, 4) as $item): ?>
                     <article class="product-card reveal">
                         <div class="product-card__image">
-                            <img src="<?= e($item['image_url'] ?? 'https://placehold.co/400x400/fdfbf7/8c7e6d?text='.urlencode($item['name'])) ?>" alt="<?= e($item['name']) ?>" loading="lazy">
+                            <img src="<?= e($item['image_url'] ?? 'https://placehold.co/400x400/fdfbf7/8c7e6d?text='.urlencode($item['name'])) ?>" alt="<?= e($item['name']) ?>" decoding="async">
                         </div>
                         <div class="product-card__body">
                             <h3><?= e($item['name']) ?></h3>
