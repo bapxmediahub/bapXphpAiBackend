@@ -27,49 +27,50 @@
 <?php
 // Inline critical CSS for instant first paint — header, nav, hero, product cards, mobile nav
 $critical = '
-:root{--color-ink:#2c1e14;--color-gold:#d4af37;--color-gold-light:#f1e5ac;--color-maroon:#800000;--color-maroon-deep:#5c0000;--color-bg:#fffdfa;--color-bg-alt:#f8f4ee;--color-border:#e8dcc5;--color-text-muted:#8c7e6d;--color-white:#ffffff;--color-success:#2d8a4e;--color-error:#d64045;--shadow-sm:0 1px 3px rgba(44,30,20,0.06);--shadow-md:0 4px 12px rgba(44,30,20,0.08);--shadow-lg:0 10px 30px rgba(44,30,20,0.1);--radius-md:12px;--radius-lg:16px;--radius-xl:24px;--radius-pill:999px;--space-xs:0.5rem;--space-sm:0.75rem;--space-md:1rem;--space-lg:1.5rem;--space-xl:2rem;--space-2xl:3rem}
+:root{--color-ink:#222222;--color-ink-light:#3f3f3f;--color-gold:#ff385c;--color-gold-light:#ffd1da;--color-maroon:#ff385c;--color-maroon-deep:#e00b41;--color-bg:#ffffff;--color-bg-alt:#f7f7f7;--color-border:#dddddd;--color-border-light:#ebebeb;--color-text-muted:#6a6a6a;--color-white:#ffffff;--color-success:#2d8a4e;--color-error:#d64045;--shadow-sm:0 1px 2px rgba(0,0,0,0.08);--shadow-md:0 2px 8px rgba(0,0,0,0.12);--shadow-lg:0 2px 8px rgba(0,0,0,0.12);--radius-md:14px;--radius-lg:20px;--radius-xl:32px;--radius-pill:999px;--space-xs:0.5rem;--space-sm:0.75rem;--space-md:1rem;--space-lg:1.5rem;--space-xl:2rem;--space-2xl:3rem}
 *,*::before,*::after{box-sizing:border-box;-webkit-font-smoothing:antialiased}
 html{scroll-behavior:smooth}
-body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--color-bg);color:var(--color-ink);line-height:1.7;overflow-x:hidden}
+body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--color-bg);color:var(--color-ink);line-height:1.55;overflow-x:hidden}
 a{color:var(--color-maroon);text-decoration:none}
 img{max-width:100%;height:auto;display:block}
-.site-header{position:sticky;top:0;z-index:100;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:var(--space-lg);padding:var(--space-sm) var(--space-md);background:rgba(255,253,250,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--color-border);transition:box-shadow 0.25s ease}
+.site-header{position:sticky;top:0;z-index:100;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:var(--space-lg);min-height:80px;padding:12px 24px;background:rgba(255,255,255,0.98);border-bottom:1px solid var(--color-border-light);transition:box-shadow 0.25s ease}
 .site-header.scrolled{box-shadow:var(--shadow-md)}
 .brand{display:flex;align-items:center;gap:var(--space-xs);color:var(--color-ink);font-weight:700;font-size:1rem;text-decoration:none}
  .brand img{width:40px;height:40px;border-radius:50%;border:2px solid var(--color-gold);object-fit:cover;box-shadow:0 0 0 1px rgba(255,255,255,0.9) inset}
 nav{display:flex;gap:var(--space-lg);font-size:0;justify-content:center}
-nav a{font-weight:500;color:var(--color-ink);padding:var(--space-xs) 0;font-size:0.9rem;text-decoration:none}
-nav a:hover{color:var(--color-maroon)}
+nav a{position:relative;font-weight:500;color:var(--color-ink);padding:var(--space-xs) 0;font-size:0.9rem;text-decoration:none}
+nav a:hover,nav a[aria-current="page"]{color:var(--color-ink)}
+nav a[aria-current="page"]::after{position:absolute;right:0;bottom:-7px;left:0;height:2px;border-radius:999px;background:var(--color-maroon);content:""}
 .header-actions{display:flex;align-items:center;gap:var(--space-md)}
 .cart-btn{background:transparent;border:0;font-size:1.3rem;cursor:pointer;position:relative;color:var(--color-ink);padding:var(--space-xs);border-radius:var(--radius-md)}
  .cart-count{position:absolute;top:-6px;right:-8px;background:var(--color-maroon);color:var(--color-white);font-size:0.6rem;width:16px;height:16px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:bold}
 .menu-toggle{display:none;border:1px solid var(--color-border);background:var(--color-white);padding:var(--space-xs) var(--space-sm);border-radius:var(--radius-md);cursor:pointer;font-size:1.2rem}
 main{padding-bottom:0}
 .container{max-width:1300px;margin:0 auto;padding:0 var(--space-xl)}
-.section{padding:var(--space-2xl) 0}
+.section{padding:64px 0}
 .section--alt{background:var(--color-bg-alt)}
-.home-hero{position:relative;min-height:60vh;display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2xl);align-items:center;padding:var(--space-2xl) 0;background:linear-gradient(135deg,rgba(44,30,20,0.08),rgba(212,175,55,0.06))}
-.hero-copy h1{font-family:Georgia,serif;font-size:clamp(1.8rem,4vw,2.8rem);line-height:1.2;margin:0 0 var(--space-md);color:var(--color-ink)}
+.home-hero{position:relative;min-height:560px;display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2xl);align-items:center;padding:64px 5vw;background:var(--color-white);border-bottom:1px solid var(--color-border-light)}
+.hero-copy h1{font-family:Inter,system-ui,sans-serif;font-size:1.75rem;line-height:1.2;margin:0 0 var(--space-md);color:var(--color-ink)}
 .lede{font-size:1rem;line-height:1.7;color:var(--color-text-muted);margin-bottom:var(--space-lg)}
- .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-xs);padding:0.75rem 1.5rem;border-radius:8px;font-weight:600;cursor:pointer;border:0;text-decoration:none;font-size:0.85rem;white-space:nowrap;line-height:1.4;transition:all 0.25s ease}
-.btn-primary{background:linear-gradient(135deg,var(--color-maroon),var(--color-maroon-deep));color:var(--color-white);box-shadow:0 4px 15px rgba(128,0,0,0.25)}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(128,0,0,0.35)}
-.btn-outline{background:transparent;border:1.5px solid var(--color-gold);color:var(--color-ink)}
+ .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-xs);min-height:48px;padding:0 24px;border-radius:8px;font-weight:600;cursor:pointer;border:0;text-decoration:none;font-size:0.85rem;white-space:nowrap;line-height:1.4;transition:background 0.2s ease,border-color 0.2s ease}
+.btn-primary{background:var(--color-maroon);color:var(--color-white);box-shadow:none}
+.btn-primary:hover{background:var(--color-maroon-deep)}
+.btn-outline{background:var(--color-white);border:1px solid var(--color-border);color:var(--color-ink)}
 .hero-actions{display:flex;gap:var(--space-md);margin-bottom:var(--space-xl)}
 .section-header{text-align:center;margin-bottom:var(--space-2xl)}
-.section-title{font-family:Georgia,serif;font-size:clamp(1.5rem,3vw,2rem);margin:0;padding:0 0 var(--space-sm)}
-.section-title::before,.section-title::after{content:\' ✧ \';color:var(--color-gold);font-size:1rem}
+.section-title{font-family:Inter,system-ui,sans-serif;font-size:clamp(1.375rem,2.5vw,1.75rem);margin:0;padding:0 0 var(--space-sm)}
+.section-title::before,.section-title::after{display:none}
 .section-header .lede{color:var(--color-text-muted);max-width:500px;margin:var(--space-sm) auto 0;font-size:0.9rem}
 .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:var(--space-xl)}
- .product-card{background:var(--color-white);border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden;transition:all 0.3s ease;box-shadow:var(--shadow-sm)}
-.product-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--color-gold)}
+ .product-card{background:var(--color-white);border:1px solid var(--color-border-light);border-radius:var(--radius-md);overflow:hidden;transition:box-shadow 0.2s ease,border-color 0.2s ease;box-shadow:none}
+.product-card:hover{box-shadow:var(--shadow-md);border-color:var(--color-border)}
 .product-card__image{position:relative;overflow:hidden;aspect-ratio:1}
 .product-card__image img{width:100%;height:100%;object-fit:cover;transition:transform 0.4s ease}
 .product-card:hover .product-card__image img{transform:scale(1.05)}
 .product-card__badge{position:absolute;top:var(--space-sm);left:var(--space-sm);padding:0.2rem 0.6rem;border-radius:var(--radius-pill);font-size:0.65rem;font-weight:700;text-transform:uppercase}
 .product-card__badge--sale{background:var(--color-error);color:var(--color-white)}
 .product-card__body{padding:var(--space-md)}
-.product-card h3{font-family:Georgia,serif;font-size:0.95rem;margin:0 0 var(--space-xs);color:var(--color-ink)}
+.product-card h3{font-family:Inter,system-ui,sans-serif;font-size:0.95rem;margin:0 0 var(--space-xs);color:var(--color-ink)}
 .product-card__desc{font-size:0.8rem;color:var(--color-text-muted);margin-bottom:var(--space-sm);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .product-card__price-row{display:flex;align-items:center;gap:var(--space-xs);margin-bottom:var(--space-sm)}
 .price{font-weight:700;color:var(--color-maroon);font-size:1.1rem}
@@ -81,14 +82,14 @@ main{padding-bottom:0}
 .panel:hover{box-shadow:var(--shadow-md)}
 .astrologer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:var(--space-xl)}
  .astrologer-card{background:var(--color-white);border:1px solid var(--color-border);border-radius:18px;overflow:hidden;transition:all 0.3s ease;box-shadow:var(--shadow-sm)}
-.astrologer-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-xl);border-color:rgba(212,175,55,0.65)}
-.astrologer-card__media{position:relative;aspect-ratio:3/4;overflow:hidden;background:linear-gradient(180deg,rgba(44,30,20,0.02),rgba(44,30,20,0.08)),linear-gradient(135deg,rgba(212,175,55,0.12),rgba(255,255,255,0.2))}
+.astrologer-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-xl);border-color:rgba(255, 56, 92,0.65)}
+.astrologer-card__media{position:relative;aspect-ratio:3/4;overflow:hidden;background:linear-gradient(180deg,rgba(34, 34, 34,0.02),rgba(34, 34, 34,0.08)),linear-gradient(135deg,rgba(255, 56, 92,0.12),rgba(255,255,255,0.2))}
  .astrologer-card__photo{width:100%;height:100%;object-fit:cover;object-position:center top;display:block;transform:scale(1.01)}
 .astrologer-card__media::after{content:\'\';position:absolute;inset:auto 0 0 0;height:42%;background:linear-gradient(180deg,rgba(18,12,8,0),rgba(18,12,8,0.28));pointer-events:none}
-.astrologer-card__media-badge{position:absolute;left:var(--space-sm);bottom:var(--space-sm);z-index:1;padding:0.3rem 0.65rem;border-radius:var(--radius-pill);background:rgba(44,30,20,0.78);color:var(--color-white);font-size:0.64rem;letter-spacing:0.08em;text-transform:uppercase;backdrop-filter:blur(8px)}
+.astrologer-card__media-badge{position:absolute;left:var(--space-sm);bottom:var(--space-sm);z-index:1;padding:0.3rem 0.65rem;border-radius:var(--radius-pill);background:rgba(34, 34, 34,0.78);color:var(--color-white);font-size:0.64rem;letter-spacing:0.08em;text-transform:uppercase;backdrop-filter:blur(8px)}
 .astrologer-card__body--portrait{padding:var(--space-md) var(--space-md) var(--space-sm);display:grid;gap:var(--space-xs)}
 .astrologer-card__title-row{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-sm)}
-.astrologer-card__status{padding:0.22rem 0.55rem;border-radius:var(--radius-pill);background:rgba(212,175,55,0.16);color:var(--color-maroon);font-size:0.64rem;font-weight:700;text-transform:uppercase;white-space:nowrap}
+.astrologer-card__status{padding:0.22rem 0.55rem;border-radius:var(--radius-pill);background:rgba(255, 56, 92,0.16);color:var(--color-maroon);font-size:0.64rem;font-weight:700;text-transform:uppercase;white-space:nowrap}
 .astrologer-card__speciality{margin:0;color:var(--color-text-muted);font-size:0.84rem}
 .astrologer-card__bio{margin:0;color:var(--color-ink);font-size:0.83rem;line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .astrologer-card__meta{display:flex;flex-wrap:wrap;gap:var(--space-xs);font-size:0.72rem;color:var(--color-text-muted)}
@@ -103,7 +104,7 @@ main{padding-bottom:0}
 .btn-message{background:#3b82f6;color:white;border:none;padding:0.5rem 1rem;border-radius:var(--radius-pill);font-weight:600;cursor:pointer;font-size:0.85rem}
  .category-grid{grid-template-columns:repeat(auto-fit,minmax(180px,220px));justify-content:center;gap:var(--space-xl);max-width:760px;margin:0 auto}
  .category-card{cursor:pointer;transition:all 0.3s ease;text-align:center;text-decoration:none;color:var(--color-ink)}
- .category-img-wrap{width:clamp(124px,14vw,178px);height:clamp(124px,14vw,178px);border-radius:50%;overflow:hidden;margin:0 auto var(--space-xs);border:4px solid var(--color-white);background:radial-gradient(circle at 50% 50%,rgba(92,0,0,0.92),rgba(44,30,20,0.96));box-shadow:0 4px 15px rgba(44,30,20,0.1)}
+ .category-img-wrap{width:clamp(124px,14vw,178px);height:clamp(124px,14vw,178px);border-radius:50%;overflow:hidden;margin:0 auto var(--space-xs);border:4px solid var(--color-white);background:radial-gradient(circle at 50% 50%,rgba(224, 11, 65,0.92),rgba(34, 34, 34,0.96));box-shadow:0 4px 15px rgba(34, 34, 34,0.1)}
  .category-img-wrap img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .temple-scroll{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(720px,82vw);gap:var(--space-xl);max-width:1300px;margin:0 auto;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 0 var(--space-md)}
 .temple-slide{display:grid;grid-template-columns:minmax(280px,0.85fr) minmax(320px,1fr);align-items:stretch;gap:var(--space-xl);scroll-snap-align:center;min-height:320px}
@@ -115,16 +116,20 @@ main{padding-bottom:0}
 .nav-grid{display:grid;grid-template-columns:repeat(5,1fr);max-width:480px;margin:0 auto}
 .nav-item{display:flex;flex-direction:column;align-items:center;padding:var(--space-xs) 0;color:var(--color-text-muted);font-size:0.6rem;text-decoration:none;min-height:48px;justify-content:center}
 .nav-item .icon svg{width:20px;height:20px;margin-bottom:2px}
-.site-footer{background:var(--color-ink);color:rgba(255,255,255,0.7);padding:var(--space-2xl) 0 var(--space-md);font-size:0.85rem}
+.astro-search,.astro-filter{min-height:64px;border-radius:var(--radius-pill);background:var(--color-white);border-color:var(--color-border);box-shadow:var(--shadow-sm)}
+.astro-market-card,.astrologer-card,.panel{border-color:var(--color-border-light);border-radius:var(--radius-md);box-shadow:none}
+.astro-market-card:hover,.astrologer-card:hover,.panel:hover{transform:none;border-color:var(--color-border);box-shadow:var(--shadow-md)}
+.support-fab{background:var(--color-maroon);box-shadow:var(--shadow-md)}
+.site-footer{background:var(--color-white);color:var(--color-text-muted);padding:var(--space-2xl) 0 var(--space-md);font-size:0.85rem;border-top:1px solid var(--color-border-light)}
 .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:var(--space-xl);margin-bottom:var(--space-xl)}
-.footer-brand{font-family:Georgia,serif;font-size:1.2rem;color:var(--color-gold);font-weight:600;display:block;margin-bottom:var(--space-xs)}
+.footer-brand{font-family:Inter,system-ui,sans-serif;font-size:1.2rem;color:var(--color-ink);font-weight:600;display:block;margin-bottom:var(--space-xs)}
 .footer-desc{font-size:0.85rem;line-height:1.6;opacity:0.7}
-.footer-heading{font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-gold);margin:0 0 var(--space-sm)}
+.footer-heading{font-size:0.75rem;text-transform:uppercase;letter-spacing:0;color:var(--color-ink);margin:0 0 var(--space-sm)}
 .footer-links{list-style:none;padding:0;margin:0}
 .footer-links li{margin-bottom:var(--space-xs)}
-.footer-links a{color:rgba(255,255,255,0.55);text-decoration:none;font-size:0.85rem}
-.footer-links a:hover{color:var(--color-gold)}
-.footer-bottom{text-align:center;padding-top:var(--space-md);border-top:1px solid rgba(255,255,255,0.08);font-size:0.75rem;color:rgba(255,255,255,0.4)}
+.footer-links a{color:var(--color-text-muted);text-decoration:none;font-size:0.85rem}
+.footer-links a:hover{color:var(--color-ink)}
+.footer-bottom{text-align:center;padding-top:var(--space-md);border-top:1px solid var(--color-border-light);font-size:0.75rem;color:var(--color-text-muted)}
 .flash{padding:var(--space-md);border-radius:var(--radius-md);margin-bottom:var(--space-md);font-size:0.85rem;font-weight:500}
 .flash--success{background:#e8f5ed;color:var(--color-success)}
 .flash--error{background:#fde8e9;color:var(--color-error)}
@@ -176,12 +181,13 @@ nav.open{display:flex}
 .footer-grid{grid-template-columns:1fr}
 .hero-actions{flex-direction:column;align-items:center}
 }
+@media(max-width:743px){.site-header{min-height:64px;padding:8px 12px}.section{padding:48px 0}.home-hero{min-height:auto;padding:48px 16px}.astro-search,.astro-filter{min-height:56px}}
 ';
 echo $critical;
 ?>
 </style>
-<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <link rel="preload" href="/assets/css/band.css?v=<?= filemtime(__DIR__ . '/../../assets/css/band.css') ?>" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="/assets/css/band.css?v=<?= filemtime(__DIR__ . '/../../assets/css/band.css') ?>"></noscript>
 <script type="application/ld+json">
@@ -189,18 +195,19 @@ echo $critical;
 </script>
 </head>
 <body>
+<?php $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/'; ?>
 <header class="site-header" id="site-header">
     <a href="/" class="brand"><img src="/assets/images/logo-small.jpeg" width="52" height="52" alt="Sri Panchami Spiritual logo"><span>Sri Panchami Spiritual</span></a>
     <button class="menu-toggle" type="button" aria-expanded="false" aria-label="Menu">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
     <nav id="primary-nav">
-        <a href="/">Home</a>
-        <a href="/shop">Shop</a>
-        <a href="/consult">Consult</a>
-        <a href="/temples">Temples</a>
-        <a href="/about">About SPS</a>
-        <a href="/contact">Contact</a>
+        <a href="/"<?= $currentPath === '/' ? ' aria-current="page"' : '' ?>>Home</a>
+        <a href="/shop"<?= str_starts_with($currentPath, '/shop') ? ' aria-current="page"' : '' ?>>Shop</a>
+        <a href="/consult"<?= str_starts_with($currentPath, '/consult') ? ' aria-current="page"' : '' ?>>Consult</a>
+        <a href="/temples"<?= str_starts_with($currentPath, '/temples') ? ' aria-current="page"' : '' ?>>Temples</a>
+        <a href="/about"<?= str_starts_with($currentPath, '/about') ? ' aria-current="page"' : '' ?>>About SPS</a>
+        <a href="/contact"<?= str_starts_with($currentPath, '/contact') ? ' aria-current="page"' : '' ?>>Contact</a>
         <?php if(!empty($_SESSION['user'])): ?>
             <?php if(($_SESSION['user']['role'] ?? '') === 'astrologer'): ?>
                 <a href="/astrologer">Astrologer Panel</a>
@@ -220,7 +227,6 @@ echo $critical;
         </a>
     </div>
 </header>
-<?php $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/'; ?>
 <main class="<?= $currentPath === '/' ? 'home-main' : '' ?>">
 <?php if(!empty($_SESSION['flash'])): ?>
     <div class="flash flash--info" style="margin:var(--space-lg) auto;max-width:1300px;padding:0 var(--space-lg)"><?= e($_SESSION['flash']); unset($_SESSION['flash']); ?></div>

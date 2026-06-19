@@ -92,7 +92,7 @@ Module notes:
 ## Stack
 
 - Frontend: PHP-rendered templates in `views/`.
-- Styling: `assets/css/band.css` plus critical inline layout CSS.
+- Styling: `Design.md` is the canonical public UI contract; `assets/css/band.css` plus matching critical inline layout CSS implement it.
 - Backend: PHP controllers, services, and router under `app/`; built to be php json agent ready.
 - Data: JSON files in `storage/data/`, described by `storage/schema/collections.json`; this is the local json-database.
 - Integrations: Razorpay and Google OAuth scaffolding in `integrations/`.
@@ -173,7 +173,7 @@ The built-in skill folder is part of the product, not an external plugin:
 - `.agents/skills/<skill-name>/SKILL.md` for task-specific agent workflows.
 - `AGENTS.md` plus child `AGENTS.md` files for always-on DOX repository instructions.
 
-For a new project, tell the agent to read `AGENTS.md`, `storage/schema/collections.json`, `docs/systematic-map.mmd`, and the matching skill folder first. The ready backend remains stable, while the modifiable frontend and content can change depending on the project.
+For a new project, tell the agent to read `AGENTS.md`, `Design.md` for public UI work, `storage/schema/collections.json`, `docs/systematic-map.mmd`, and the matching skill folder first. The ready backend remains stable, while the modifiable frontend and content can change depending on the project.
 
 ## Agent Development Rules
 

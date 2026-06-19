@@ -12,12 +12,13 @@ Owns CSS, static images, and reusable media assets.
 ## Local Contracts
 
 - Do not add a frontend build step or SPA asset pipeline.
+- `Design.md` is the canonical public visual contract. Keep `assets/css/band.css` and the critical CSS in `views/layouts/app.php` token-compatible so first paint and loaded state match.
 - Product, temple, and astrologer media should stay compatible with the media-library picker/upload flow.
 - Asset paths referenced by JSON data or templates must resolve locally unless intentionally remote.
 
 ## Work Guidance
 
-- Keep CSS aligned with existing PHP templates and layout classes.
+- Keep CSS aligned with existing PHP templates and layout classes. Use the shared design tokens instead of page-local brand colors, gradients, or shadow systems.
 - Avoid unused asset files when replacing images or CSS.
 - Keep client astrologer portraits in one stable card frame across public surfaces; Varahi hero slides use a white frame with one visible image at a time.
 
