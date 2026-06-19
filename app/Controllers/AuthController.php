@@ -53,9 +53,9 @@ final class AuthController extends BaseController {
     $this->redirect('/');
  }
  public function loginPost(): void {
-    $email = trim($_POST['email'] ?? '');
+    $email = trim($_POST['identifier'] ?? $_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
-    if ($email === '' || $password === '') { $this->flash('Email and password required.'); $this->redirect('/login'); }
+    if ($email === '' || $password === '') { $this->flash('Username or email and password required.'); $this->redirect('/login'); }
     $admin = (new EnvService())->adminCredentials();
     if ($admin['email'] !== '' && $admin['password'] !== '' && $email === $admin['email'] && hash_equals($admin['password'], $password)) {
         $_SESSION['user'] = ['sub'=>'env-admin','email'=>$admin['email'],'name'=>$admin['username'] ?: 'Admin','role'=>'admin'];
@@ -65,10 +65,11 @@ final class AuthController extends BaseController {
     $store = new JsonStoreService();
     $users = $store->read('users');
     foreach ($users as $u) {
-        if (($u['email'] ?? '') === $email && !empty($u['password_hash']) && password_verify($password,$u['password_hash'])) {
-            $_SESSION['user'] = ['sub'=>$u['id'],'email'=>$u['email'],'name'=>$u['name'] ?? '','role'=>$u['role'] ?? (!empty($u['is_admin']) ? 'admin' : 'customer')];
+        $matches = strcasecmp((string)($u['email'] ?? ''), $email) === 0 || strcasecmp((string)($u['username'] ?? ''), $email) === 0;
+        if ($matches && !empty($u['password_hash']) && password_verify($password,$u['password_hash'])) {
+            $_SESSION['user'] = ['sub'=>$u['id'],'email'=>$u['email'] ?? '','username'=>$u['username'] ?? '','name'=>$u['name'] ?? '','role'=>$u['role'] ?? (!empty($u['is_admin']) ? 'admin' : 'customer'),'astrologer_slug'=>$u['astrologer_slug'] ?? '','must_change_password'=>(bool)($u['must_change_password'] ?? false)];
             $this->flash('Signed in.');
-            $this->redirect('/');
+            $this->redirect(($u['role'] ?? '') === 'astrologer' ? (!empty($u['must_change_password']) ? '/astrologer/change-password' : '/astrologer') : '/');
         }
     }
     $this->flash('Invalid credentials.');

@@ -202,8 +202,12 @@ echo $critical;
         <a href="/about">About SPS</a>
         <a href="/contact">Contact</a>
         <?php if(!empty($_SESSION['user'])): ?>
-            <a href="/account/bookings">My Sessions</a>
-            <a href="/account/wallet">Wallet</a>
+            <?php if(($_SESSION['user']['role'] ?? '') === 'astrologer'): ?>
+                <a href="/astrologer">Astrologer Panel</a>
+            <?php else: ?>
+                <a href="/account/bookings">My Sessions</a>
+                <a href="/account/wallet">Wallet</a>
+            <?php endif; ?>
             <a href="/logout">Logout</a>
         <?php else: ?>
             <a href="/login">Login</a>

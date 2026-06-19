@@ -10,9 +10,13 @@
       "agent_context": ["id", "email", "name", "role", "wallet_balance"],
       "fields": {
         "id": {"type": "string", "required": true},
-        "email": {"type": "email", "required": true},
+        "email": {"type": "email"},
+        "username": {"type": "string"},
         "name": {"type": "string"},
-        "role": {"type": "enum", "values": ["customer", "admin"]},
+        "role": {"type": "enum", "values": ["customer", "admin", "astrologer"]},
+        "astrologer_slug": {"type": "slug"},
+        "must_change_password": {"type": "boolean"},
+        "password_changed_at": {"type": "datetime"},
         "password_hash": {"type": "secret"}
       }
     },
@@ -42,12 +46,13 @@
       "primary_key": "id",
       "admin_managed": true,
       "media_fields": ["photo_url"],
-      "admin_fields": ["slug", "name", "description", "email", "message_credit_cost", "call_credit_per_second", "credit_to_rupee_rate", "text_session_prm", "call_session_prm", "payout_percentage", "modes", "working_days", "start_time", "end_time", "slot_minutes", "languages", "experience_years", "speciality", "photo_url"],
+      "admin_fields": ["slug", "username", "name", "description", "email", "message_credit_cost", "call_credit_per_second", "credit_to_rupee_rate", "text_session_prm", "call_session_prm", "payout_percentage", "modes", "working_days", "start_time", "end_time", "slot_minutes", "languages", "experience_years", "speciality", "photo_url"],
       "agent_context": ["slug", "name", "speciality", "languages", "availability_status", "message_credit_cost", "call_credit_per_second"],
       "fields": {
         "id": {"type": "string"},
         "slug": {"type": "slug", "required": true},
         "name": {"type": "string", "required": true},
+        "username": {"type": "string", "required": true},
         "description": {"type": "text"},
         "email": {"type": "email"},
         "photo_url": {"type": "local_or_remote_path"},
@@ -99,14 +104,46 @@
       "primary_key": "id",
       "owner_field": "customer_email",
       "admin_managed": true,
-      "agent_context": ["id", "customer_email", "astrologer_slug", "mode", "status", "spent_credits", "created_at", "ended_at"],
+      "agent_context": ["id", "customer_email", "astrologer_slug", "mode", "status", "credits_spent", "created_at", "ended_at"],
       "fields": {
         "id": {"type": "string", "required": true},
         "customer_email": {"type": "email"},
         "astrologer_slug": {"type": "slug"},
         "mode": {"type": "enum", "values": ["message", "call", "text_session", "call_session"]},
-        "status": {"type": "enum", "values": ["requested", "queued", "active", "completed", "cancelled"]},
-        "spent_credits": {"type": "number"}
+        "status": {"type": "enum", "values": ["requested", "queued", "accepted", "active", "completed", "declined", "cancelled"]},
+        "credits_spent": {"type": "number"},
+        "accepted_at": {"type": "datetime"},
+        "started_at": {"type": "datetime"},
+        "ended_at": {"type": "datetime"},
+        "duration_seconds": {"type": "number"},
+        "last_activity_at": {"type": "datetime"}
+      }
+    },
+    "consultation_messages": {
+      "file": "storage/data/consultation_messages.json",
+      "primary_key": "id",
+      "admin_managed": false,
+      "fields": {
+        "id": {"type": "string", "required": true},
+        "appointment_id": {"type": "string", "required": true},
+        "sender_id": {"type": "string", "required": true},
+        "sender_role": {"type": "enum", "values": ["customer", "astrologer"]},
+        "body": {"type": "text", "required": true},
+        "created_at": {"type": "datetime"},
+        "read_at": {"type": "datetime"}
+      }
+    },
+    "consultation_signals": {
+      "file": "storage/data/consultation_signals.json",
+      "primary_key": "id",
+      "admin_managed": false,
+      "fields": {
+        "id": {"type": "string", "required": true},
+        "appointment_id": {"type": "string", "required": true},
+        "sender_id": {"type": "string", "required": true},
+        "type": {"type": "enum", "values": ["offer", "answer", "ice", "hangup"]},
+        "payload": {"type": "json"},
+        "created_at": {"type": "datetime"}
       }
     },
     "wallet_transactions": {

@@ -9,12 +9,12 @@
             <p>Enter the sanctuary of Sri Panchami Spiritual</p>
             <form method="post" action="/login" class="auth-form">
                 <div class="form-group">
-                    <label>Email Address</label>
-                    <input type="email" name="email" required placeholder="your@email.com">
+                    <label>Username or Email</label>
+                    <input type="text" name="identifier" required autocomplete="username" placeholder="Username or email">
                 </div>
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" name="password" required placeholder="••••••••">
+                    <input type="password" name="password" required autocomplete="current-password" placeholder="Password">
                 </div>
                 <button class="btn btn-primary btn-block">Sign In</button>
             </form>

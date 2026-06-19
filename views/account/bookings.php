@@ -46,6 +46,7 @@
                                 <td><?= e((string)($booking['credits_spent'] ?? 0)) ?></td>
                                 <td>
                                     <span class="badge badge--<?= $status === 'confirmed' ? 'success' : ($status === 'payment_pending' ? 'warning' : 'default') ?>"><?= e(ucfirst(str_replace('_', ' ', $status))) ?></span>
+                                    <?php if(!empty($booking['id'])): ?><a class="btn btn-sm btn-ghost" style="margin-top:var(--space-xs)" href="/consultation/<?= e($booking['id']) ?>">Open Room</a><?php endif; ?>
                                 </td>
                                 <td>
                                     <?php if(in_array($status, ['session_ended', 'completed'], true)): ?>

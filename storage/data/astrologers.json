@@ -1,444 +1,401 @@
 [
     {
-        "id": "astro-1",
-        "slug": "pandit-shastri",
-        "name": "Pandit Rajesh Shastri",
-        "description": "Expert in Vedic Astrology and Vastu Shastra with 20+ years of experience in guiding families towards prosperity.",
-        "email": "rajesh@example.com",
-        "text_session_prm": 15,
-        "call_session_prm": 15,
-        "payout_percentage": 60,
+        "id": "astro-client-01",
+        "slug": "abirami-sekar",
+        "username": "abirami.sekar",
+        "name": "ஜோதிட இமயம் திரு. அபிராமி சேகர்",
+        "description": "",
+        "email": "",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
         "modes": [
             "text_session",
             "direct_call"
         ],
-        "working_days": [
-            "monday",
-            "wednesday",
-            "friday"
-        ],
-        "start_time": "09:00",
-        "end_time": "18:00",
-        "slot_minutes": 30,
-        "languages": [
-            "Hindi",
-            "English",
-            "Tamil"
-        ],
-        "experience_years": 20,
-        "speciality": "Kundli Analysis",
-        "photo_url": "/assets/images/astrologers/indian-portrait-male-1.svg",
-        "message_credit_cost": 5,
-        "call_credit_per_second": 0.5,
-        "credit_to_rupee_rate": 0.05
+        "languages": [],
+        "experience_years": "",
+        "speciality": "Astrologer",
+        "photo_url": "/assets/images/astrologers/client/abirami-sekar.jpg",
+        "availability_status": "offline"
     },
     {
-        "id": "astro-2",
-        "slug": "acharya-meena",
-        "name": "Acharya Meena",
-        "description": "Specialist in Nadi Astrology and Spiritual Healing, helping clients find their true purpose and inner peace.",
-        "category": "healing",
-        "email": "meena@example.com",
-        "text_session_prm": 15,
-        "call_session_prm": 15,
-        "payout_percentage": 60,
+        "id": "astro-client-02",
+        "slug": "shrikanth-purushothaman",
+        "username": "shrikanth.purushothaman",
+        "name": "Mr. Shrikanth Purushothaman",
+        "description": "",
+        "email": "",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
         "modes": [
             "text_session",
             "direct_call"
         ],
-        "working_days": [
-            "tuesday",
-            "thursday"
-        ],
-        "start_time": "10:00",
-        "end_time": "16:00",
-        "slot_minutes": 45,
-        "languages": [
-            "English",
-            "Sanskrit",
-            "Tamil"
-        ],
-        "experience_years": 15,
-        "speciality": "Nadi Astrology",
-        "photo_url": "/assets/images/astrologers/indian-portrait-female-1.svg",
-        "message_credit_cost": 5,
-        "call_credit_per_second": 0.5,
-        "credit_to_rupee_rate": 0.05
+        "languages": [],
+        "experience_years": "",
+        "speciality": "Tarot Card Reader, Reiki Healer & Spiritual Guide",
+        "photo_url": "/assets/images/astrologers/client/shrikanth-purushothaman.jpg",
+        "availability_status": "offline"
     },
     {
-        "id": "astro-3",
-        "slug": "swamy-vashishtha",
-        "name": "Swamy Vashishtha",
-        "description": "Deeply versed in the ancient scriptures, providing precise planetary readings and effective remedial measures.",
-        "email": "vashishtha@example.com",
-        "text_session_prm": 15,
-        "call_session_prm": 15,
-        "payout_percentage": 60,
+        "id": "astro-client-03",
+        "slug": "sakthi-dass",
+        "username": "sakthi.dass",
+        "name": "Sakthi Dass",
+        "description": "",
+        "email": "",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
         "modes": [
             "text_session",
             "direct_call"
         ],
-        "working_days": [
-            "monday",
-            "tuesday",
-            "wednesday",
-            "thursday",
-            "friday",
-            "saturday",
-            "sunday"
-        ],
-        "start_time": "08:00",
-        "end_time": "20:00",
-        "slot_minutes": 30,
-        "languages": [
-            "Hindi",
-            "English",
-            "Tamil"
-        ],
-        "experience_years": 25,
-        "speciality": "Planetary Remediation",
-        "photo_url": "/assets/images/astrologers/indian-portrait-male-2.svg",
-        "message_credit_cost": 5,
-        "call_credit_per_second": 0.5,
-        "credit_to_rupee_rate": 0.05
+        "languages": [],
+        "experience_years": "",
+        "speciality": "Astrologer",
+        "photo_url": "/assets/images/astrologers/client/sakthi-dass.jpg",
+        "availability_status": "offline"
     },
     {
-        "id": "astro-4",
-        "slug": "sri-kannan-jyotidar",
-        "name": "Sri Kannan Jyotidar",
-        "description": "Tamil horoscope reader focused on marriage matching, business timing, and family guidance.",
-        "email": "kannan@example.com",
-        "text_session_prm": 15,
-        "call_session_prm": 15,
-        "payout_percentage": 60,
+        "id": "astro-client-04",
+        "slug": "revathi-rajesh-kanna",
+        "username": "revathi.rajesh.kanna",
+        "name": "Revathi Rajesh Kanna",
+        "description": "",
+        "email": "",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
         "modes": [
             "text_session",
             "direct_call"
         ],
-        "working_days": [
-            "monday",
-            "tuesday",
-            "friday",
-            "saturday"
-        ],
-        "start_time": "09:30",
-        "end_time": "18:30",
-        "slot_minutes": 30,
-        "languages": [
-            "Tamil",
-            "English"
-        ],
-        "experience_years": 18,
-        "speciality": "Marriage Matching",
-        "photo_url": "/assets/images/astrologers/indian-portrait-male-1.svg",
-        "message_credit_cost": 5,
-        "call_credit_per_second": 0.5,
-        "credit_to_rupee_rate": 0.05
+        "languages": [],
+        "experience_years": "",
+        "speciality": "Astrology Consultant",
+        "photo_url": "/assets/images/astrologers/client/revathi-rajesh-kanna.jpg",
+        "availability_status": "offline"
     },
     {
-        "id": "astro-5",
-        "slug": "dr-lalitha-raman",
-        "name": "Dr. Lalitha Raman",
-        "description": "Consultant for career, education, and family decision timing using Vedic astrology.",
-        "email": "lalitha@example.com",
-        "text_session_prm": 15,
-        "call_session_prm": 15,
-        "payout_percentage": 60,
+        "id": "astro-client-05",
+        "slug": "perumpalavanan",
+        "username": "perumpalavanan",
+        "name": "சித்த யோகி பெரும்பலவாணன்",
+        "description": "",
+        "email": "",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
         "modes": [
             "text_session",
             "direct_call"
         ],
-        "working_days": [
-            "monday",
-            "wednesday",
-            "thursday",
-            "sunday"
-        ],
-        "start_time": "11:00",
-        "end_time": "19:00",
-        "slot_minutes": 30,
-        "languages": [
-            "Tamil",
-            "English",
-            "Hindi"
-        ],
-        "experience_years": 16,
-        "speciality": "Career Guidance",
-        "photo_url": "/assets/images/astrologers/indian-portrait-female-2.svg",
-        "message_credit_cost": 5,
-        "call_credit_per_second": 0.5,
-        "credit_to_rupee_rate": 0.05
+        "languages": [],
+        "experience_years": "",
+        "speciality": "Siddha Yogi",
+        "photo_url": "/assets/images/astrologers/client/perumpalavanan.jpg",
+        "availability_status": "offline"
     },
     {
-        "id": "astro-6",
-        "slug": "guru-prakash",
-        "name": "Guru Prakash",
-        "description": "Specialist in graha remedies, pooja suggestions, and practical spiritual routines.",
-        "email": "prakash@example.com",
-        "text_session_prm": 15,
-        "call_session_prm": 15,
-        "payout_percentage": 60,
+        "id": "astro-client-06",
+        "slug": "deepa-arulalan",
+        "username": "deepa.arulalan",
+        "name": "Dr. Deepa Arulalan",
+        "description": "",
+        "email": "",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
         "modes": [
             "text_session",
             "direct_call"
         ],
-        "working_days": [
-            "tuesday",
-            "wednesday",
-            "friday",
-            "saturday"
-        ],
-        "start_time": "08:30",
-        "end_time": "17:30",
-        "slot_minutes": 30,
-        "languages": [
-            "Tamil",
-            "Telugu",
-            "English"
-        ],
-        "experience_years": 22,
-        "speciality": "Graha Remedies",
-        "photo_url": "/assets/images/astrologers/indian-portrait-male-2.svg",
-        "message_credit_cost": 5,
-        "call_credit_per_second": 0.5,
-        "credit_to_rupee_rate": 0.05
+        "languages": [],
+        "experience_years": "",
+        "speciality": "Astrologer",
+        "photo_url": "/assets/images/astrologers/client/deepa-arulalan.jpg",
+        "availability_status": "offline"
     },
     {
-        "id": "astro-7",
-        "slug": "acharya-sarada",
-        "name": "Acharya Sarada",
-        "description": "Gentle guidance for family concerns, auspicious dates, and daily worship practices.",
-        "email": "sarada@example.com",
-        "text_session_prm": 15,
-        "call_session_prm": 15,
-        "payout_percentage": 60,
+        "id": "astro-client-07",
+        "slug": "tj-sundarapandian",
+        "username": "tj.sundarapandian",
+        "name": "TJ SundaraPandian",
+        "description": "",
+        "email": "",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
         "modes": [
             "text_session",
             "direct_call"
         ],
-        "working_days": [
-            "monday",
-            "thursday",
-            "friday",
-            "sunday"
-        ],
-        "start_time": "10:00",
-        "end_time": "18:00",
-        "slot_minutes": 30,
-        "languages": [
-            "Tamil",
-            "Malayalam",
-            "English"
-        ],
-        "experience_years": 14,
-        "speciality": "Auspicious Dates",
-        "photo_url": "/assets/images/astrologers/indian-portrait-female-1.svg",
-        "message_credit_cost": 5,
-        "call_credit_per_second": 0.5,
-        "credit_to_rupee_rate": 0.05
+        "languages": [],
+        "experience_years": "",
+        "speciality": "Astrologer",
+        "photo_url": "/assets/images/astrologers/client/tj-sundarapandian.jpg",
+        "availability_status": "offline"
     },
     {
-        "id": "astro-8",
-        "slug": "siddhar-velan",
-        "name": "Siddhar Velan",
-        "description": "Traditional Tamil astrology consultant for health timing, remedies, and temple worship.",
-        "email": "velan@example.com",
-        "text_session_prm": 15,
-        "call_session_prm": 15,
-        "payout_percentage": 60,
+        "id": "astro-client-08",
+        "slug": "aghora-kali-saraswathi-amma",
+        "username": "aghora.kali.saraswathi",
+        "name": "அகோர காளி சரஸ்வதி அம்மா",
+        "description": "",
+        "email": "",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
         "modes": [
             "text_session",
             "direct_call"
         ],
-        "working_days": [
-            "tuesday",
-            "thursday",
-            "saturday"
-        ],
-        "start_time": "07:00",
-        "end_time": "15:00",
-        "slot_minutes": 30,
-        "languages": [
-            "Tamil"
-        ],
-        "experience_years": 27,
-        "speciality": "Temple Remedies",
-        "photo_url": "/assets/images/astrologers/indian-portrait-male-1.svg",
-        "message_credit_cost": 5,
-        "call_credit_per_second": 0.5,
-        "credit_to_rupee_rate": 0.05
+        "languages": [],
+        "experience_years": "",
+        "speciality": "Spiritual Consultant",
+        "photo_url": "/assets/images/astrologers/client/aghora-kali-saraswathi-amma.jpg",
+        "availability_status": "offline"
     },
     {
-        "id": "astro-9",
-        "slug": "jyotishi-anand",
-        "name": "Jyotishi Anand",
-        "description": "Fast, practical answers for business, travel, partnership, and finance questions.",
-        "email": "anand@example.com",
-        "text_session_prm": 15,
-        "call_session_prm": 15,
-        "payout_percentage": 60,
+        "id": "astro-client-09",
+        "slug": "eswari",
+        "username": "eswari",
+        "name": "காதல் ஜோதிடர் ஈஸ்வரி",
+        "description": "",
+        "email": "",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
         "modes": [
             "text_session",
             "direct_call"
         ],
-        "working_days": [
-            "monday",
-            "tuesday",
-            "wednesday",
-            "thursday",
-            "friday"
-        ],
-        "start_time": "12:00",
-        "end_time": "21:00",
-        "slot_minutes": 30,
-        "languages": [
-            "Hindi",
-            "English",
-            "Tamil"
-        ],
-        "experience_years": 12,
-        "speciality": "Business Astrology",
-        "photo_url": "/assets/images/astrologers/indian-portrait-male-2.svg",
-        "message_credit_cost": 5,
-        "call_credit_per_second": 0.5,
-        "credit_to_rupee_rate": 0.05
+        "languages": [],
+        "experience_years": "",
+        "speciality": "Love Astrologer",
+        "photo_url": "/assets/images/astrologers/client/eswari.jpg",
+        "availability_status": "offline"
     },
     {
-        "id": "astro-10",
-        "slug": "acharya-devika",
-        "name": "Acharya Devika",
-        "description": "Regional-language consultations for relationship, education, and childbirth timing guidance.",
-        "email": "devika@example.com",
-        "text_session_prm": 15,
-        "call_session_prm": 15,
-        "payout_percentage": 60,
+        "id": "astro-client-10",
+        "slug": "jayanthi-ravi",
+        "username": "jayanthi.ravi",
+        "name": "Jayanthi Ravi",
+        "description": "",
+        "email": "",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
         "modes": [
             "text_session",
             "direct_call"
         ],
-        "working_days": [
-            "wednesday",
-            "thursday",
-            "friday",
-            "saturday"
-        ],
-        "start_time": "09:00",
-        "end_time": "17:00",
-        "slot_minutes": 30,
-        "languages": [
-            "Tamil",
-            "Kannada",
-            "English"
-        ],
-        "experience_years": 13,
-        "speciality": "Relationship Guidance",
-        "photo_url": "/assets/images/astrologers/indian-portrait-female-2.svg",
-        "message_credit_cost": 5,
-        "call_credit_per_second": 0.5,
-        "credit_to_rupee_rate": 0.05
+        "languages": [],
+        "experience_years": "",
+        "speciality": "Nadi Astrologer",
+        "photo_url": "/assets/images/astrologers/client/jayanthi-ravi.jpg",
+        "availability_status": "offline"
     },
     {
-        "id": "astro-11",
-        "slug": "rishi-narayanan",
-        "name": "Rishi Narayanan",
-        "description": "Senior consultant for dasha analysis, transit reading, and personalized spiritual discipline.",
-        "email": "narayanan@example.com",
-        "text_session_prm": 15,
-        "call_session_prm": 15,
-        "payout_percentage": 60,
+        "id": "astro-client-11",
+        "slug": "sara",
+        "username": "sara",
+        "name": "Sara",
+        "description": "",
+        "email": "",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
         "modes": [
             "text_session",
             "direct_call"
         ],
-        "working_days": [
-            "monday",
-            "wednesday",
-            "saturday",
-            "sunday"
-        ],
-        "start_time": "06:00",
-        "end_time": "14:00",
-        "slot_minutes": 30,
-        "languages": [
-            "Tamil",
-            "Sanskrit",
-            "English"
-        ],
-        "experience_years": 30,
-        "speciality": "Dasha Analysis",
-        "photo_url": "/assets/images/astrologers/indian-portrait-male-1.svg",
-        "message_credit_cost": 5,
-        "call_credit_per_second": 0.5,
-        "credit_to_rupee_rate": 0.05
+        "languages": [],
+        "experience_years": "",
+        "speciality": "Spiritual Healer & Tarot Reader",
+        "photo_url": "/assets/images/astrologers/client/sara.jpg",
+        "availability_status": "offline"
     },
     {
-        "id": "astro-12",
-        "slug": "acharya-kavitha",
-        "name": "Acharya Kavitha",
-        "description": "Friendly text and call consultations for daily life questions, remedies, and gemstone guidance.",
-        "email": "kavitha@example.com",
-        "text_session_prm": 15,
-        "call_session_prm": 15,
-        "payout_percentage": 60,
+        "id": "astro-client-12",
+        "slug": "nr-ranjithkumar",
+        "username": "nr.ranjithkumar",
+        "name": "NR. Ranjithkumar",
+        "description": "",
+        "email": "",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
         "modes": [
             "text_session",
             "direct_call"
         ],
-        "working_days": [
-            "tuesday",
-            "wednesday",
-            "friday",
-            "sunday"
-        ],
-        "start_time": "13:00",
-        "end_time": "21:00",
-        "slot_minutes": 30,
-        "languages": [
-            "Tamil",
-            "Telugu",
-            "Hindi",
-            "English"
-        ],
-        "experience_years": 11,
-        "speciality": "Gemstone Guidance",
-        "photo_url": "/assets/images/astrologers/indian-portrait-female-1.svg",
-        "message_credit_cost": 5,
-        "call_credit_per_second": 0.5,
-        "credit_to_rupee_rate": 0.05
+        "languages": [],
+        "experience_years": "",
+        "speciality": "Astrology Consultant",
+        "photo_url": "/assets/images/astrologers/client/nr-ranjithkumar.jpg",
+        "availability_status": "offline"
     },
     {
-        "id": "astro-13",
-        "slug": "pandit-suresh-iyer",
-        "name": "Pandit Suresh Iyer",
-        "description": "Experienced consultant for horoscope reading, pooja planning, and vastu corrections.",
-        "email": "suresh@example.com",
-        "text_session_prm": 15,
-        "call_session_prm": 15,
-        "payout_percentage": 60,
+        "id": "astro-client-13",
+        "slug": "vastu-thangadurai",
+        "username": "vastu.thangadurai",
+        "name": "Vastu Thangadurai",
+        "description": "",
+        "email": "",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
         "modes": [
             "text_session",
             "direct_call"
         ],
-        "working_days": [
-            "monday",
-            "tuesday",
-            "thursday",
-            "saturday"
-        ],
-        "start_time": "08:00",
-        "end_time": "18:00",
-        "slot_minutes": 30,
-        "languages": [
-            "Tamil",
-            "Malayalam",
-            "Hindi",
-            "English"
-        ],
-        "experience_years": 24,
-        "speciality": "Vastu Corrections",
-        "photo_url": "/assets/images/astrologers/indian-portrait-male-2.svg",
+        "languages": [],
+        "experience_years": "",
+        "speciality": "Vastu Consultant",
+        "photo_url": "/assets/images/astrologers/client/vastu-thangadurai.jpg",
+        "availability_status": "offline"
+    },
+    {
+        "id": "astro-client-14",
+        "slug": "uma-venkat",
+        "username": "uma.venkat",
+        "name": "ALP ஜோதிடர் உமா வெங்கட்",
+        "description": "",
+        "email": "",
         "message_credit_cost": 5,
         "call_credit_per_second": 0.5,
-        "credit_to_rupee_rate": 0.05
+        "modes": [
+            "text_session",
+            "direct_call"
+        ],
+        "languages": [],
+        "experience_years": "",
+        "speciality": "Astrologer",
+        "photo_url": "/assets/images/astrologers/client/uma-venkat.jpg",
+        "availability_status": "offline"
+    },
+    {
+        "id": "astro-client-15",
+        "slug": "sriguru-padma-mahalingam",
+        "username": "sriguru.padma.mahalingam",
+        "name": "ALP Astrologer Dr. Sriguru Padma Mahalingam",
+        "description": "",
+        "email": "",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
+        "modes": [
+            "text_session",
+            "direct_call"
+        ],
+        "languages": [],
+        "experience_years": "",
+        "speciality": "Astrologer",
+        "photo_url": "/assets/images/astrologers/client/sriguru-padma-mahalingam.jpg",
+        "availability_status": "offline"
+    },
+    {
+        "id": "astro-client-16",
+        "slug": "parthiban",
+        "username": "parthiban",
+        "name": "ராஜநாடி ஜோதிடர் கா. பார்த்திபன்",
+        "description": "",
+        "email": "",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
+        "modes": [
+            "text_session",
+            "direct_call"
+        ],
+        "languages": [],
+        "experience_years": "",
+        "speciality": "Raja Nadi Astrologer",
+        "photo_url": "/assets/images/astrologers/client/parthiban.jpg",
+        "availability_status": "offline"
+    },
+    {
+        "id": "astro-client-17",
+        "slug": "ponmudi",
+        "username": "ponmudi",
+        "name": "ஜோதிடர் பொன்முடி",
+        "description": "",
+        "email": "",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
+        "modes": [
+            "text_session",
+            "direct_call"
+        ],
+        "languages": [],
+        "experience_years": "",
+        "speciality": "Astrologer",
+        "photo_url": "/assets/images/astrologers/client/ponmudi.jpg",
+        "availability_status": "offline"
+    },
+    {
+        "id": "astro-client-18",
+        "slug": "palaru-velayutham-swamigal",
+        "username": "palaru.velayutham",
+        "name": "Palaru Velayutham Swamigal",
+        "description": "",
+        "email": "",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
+        "modes": [
+            "text_session",
+            "direct_call"
+        ],
+        "languages": [],
+        "experience_years": "",
+        "speciality": "Spiritual Consultant",
+        "photo_url": "/assets/images/astrologers/client/palaru-velayutham-swamigal.jpg",
+        "availability_status": "offline"
+    },
+    {
+        "id": "astro-client-19",
+        "slug": "vastu-vinayagam",
+        "username": "vastu.vinayagam",
+        "name": "Vastu Vinayagam",
+        "description": "",
+        "email": "",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
+        "modes": [
+            "text_session",
+            "direct_call"
+        ],
+        "languages": [],
+        "experience_years": "",
+        "speciality": "Builder & Vastu Consultant",
+        "photo_url": "/assets/images/astrologers/client/vastu-vinayagam.jpg",
+        "availability_status": "offline"
+    },
+    {
+        "id": "astro-client-20",
+        "slug": "arun-karthik",
+        "username": "arun.karthik",
+        "name": "Financial Astrologer Dr. S. Arun Karthik PhD",
+        "description": "",
+        "email": "",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
+        "modes": [
+            "text_session",
+            "direct_call"
+        ],
+        "languages": [],
+        "experience_years": "",
+        "speciality": "Financial Astrologer",
+        "photo_url": "/assets/images/astrologers/client/arun-karthik.jpg",
+        "availability_status": "offline"
+    },
+    {
+        "id": "astro-client-21",
+        "slug": "dna-astrology-vishal",
+        "username": "dna.astrology.vishal",
+        "name": "DNA Astrology Vishal",
+        "description": "",
+        "email": "",
+        "message_credit_cost": 5,
+        "call_credit_per_second": 0.5,
+        "modes": [
+            "text_session",
+            "direct_call"
+        ],
+        "languages": [],
+        "experience_years": "",
+        "speciality": "Astrologer",
+        "photo_url": "/assets/images/astrologers/client/dna-astrology-vishal.jpg",
+        "availability_status": "offline"
     }
 ]

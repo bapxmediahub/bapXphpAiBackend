@@ -31,5 +31,4 @@ Owns durable documentation and the single systematic project-map artifact.
 ## Child DOX Index
 
 - `pages/`: page-specific behavior notes.
-- `modules/`: module-specific behavior notes.
-
+- `modules/`: module-specific behavior notes, including authenticated consultation communication.

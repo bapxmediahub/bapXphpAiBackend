@@ -22,17 +22,18 @@
             </div>
         </div>
     </div>
-    <div class="hero-deity">
+    <div class="hero-deity" data-varahi-slider>
         <div class="deity-frame">
-            <img src="/assets/images/varahi-amman.png" 
-                 alt="Sri Maha Varahi Amman — Divine deity worshipped at Sri Panchami Spiritual"
-                 width="480" 
-                 height="640"
-                 fetchpriority="high">
-            <div class="deity-glow"></div>
+            <?php for($slide=1;$slide<=10;$slide++): ?>
+                <img class="varahi-slide <?= $slide===1?'is-active':'' ?>" src="/assets/images/hero/varahi/varahi-<?= str_pad((string)$slide,2,'0',STR_PAD_LEFT) ?>.jpg" alt="Sri Maha Varahi Amman devotional image <?= $slide ?>" width="480" height="640" <?= $slide===1?'fetchpriority="high"':'loading="lazy"' ?>>
+            <?php endfor; ?>
+            <div class="hero-slider-controls"><button type="button" data-slider-prev aria-label="Previous image">&#8249;</button><span data-slider-count>1 / 10</span><button type="button" data-slider-next aria-label="Next image">&#8250;</button></div>
         </div>
     </div>
 </section>
+<script>
+(() => { const root=document.querySelector('[data-varahi-slider]'); if(!root)return; const slides=[...root.querySelectorAll('.varahi-slide')],count=root.querySelector('[data-slider-count]'); let index=0,timer; const show=n=>{slides[index].classList.remove('is-active');index=(n+slides.length)%slides.length;slides[index].classList.add('is-active');count.textContent=(index+1)+' / '+slides.length}; const play=()=>{if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;clearInterval(timer);timer=setInterval(()=>show(index+1),5000)};root.querySelector('[data-slider-prev]').onclick=()=>{show(index-1);play()};root.querySelector('[data-slider-next]').onclick=()=>{show(index+1);play()};root.addEventListener('mouseenter',()=>clearInterval(timer));root.addEventListener('mouseleave',play);play(); })();
+</script>
 
 <div class="trust-bar">
     <div class="trust-item">

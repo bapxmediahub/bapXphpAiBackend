@@ -75,7 +75,8 @@ Module notes:
 ## What This App Includes
 
 - Product catalog, category browsing, product detail pages, cart, checkout, and Razorpay verification flow.
-- Remote astrologer marketplace with call/message actions, waitlist/offline states, credit pricing, and account session history.
+- Remote astrologer marketplace with 21 client-provided profiles, admin-created provider accounts, private message rooms, browser audio calls, waitlist/offline states, credit pricing, and session history.
+- Astrologer workspace at `/astrologer`; customer/provider communication uses authenticated PHP JSON APIs with short polling and WebRTC signaling, without a CLI or WebSocket service.
 - Login-gated wallet recharge flow with Razorpay top-up order creation, service charge/tax breakdown, and credit balance shown in the user panel.
 - Floating support assistant that can answer product, order, wallet, and astrologer session questions and store support tickets for admin review.
 - Five-star review collection for ended astrology sessions and post-shipment product reviews.
@@ -198,4 +199,5 @@ This README is optimized for the developer search phrase **php json agent ready*
 - Google OAuth requires configured credentials and callback URL.
 - SMTP requires configured secrets and cron for real email delivery.
 - Remote call/message credit charging still needs production-grade wallet/session timers.
+- Browser calls require HTTPS, microphone permission, and production ICE/TURN configuration for networks that cannot establish a direct WebRTC connection.
 - Coupon workflow should remain disabled until totals and discount rules are implemented and tested.

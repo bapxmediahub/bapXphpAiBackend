@@ -28,4 +28,10 @@ final class AuthService {
             exit;
         }
     }
+
+    public function requireAstrologer(): void {
+        $user = $this->user();
+        if (!$user) { header('Location: /login'); exit; }
+        if (($user['role'] ?? '') !== 'astrologer') { $_SESSION['flash']='Astrologer access required.'; header('Location: /'); exit; }
+    }
 }

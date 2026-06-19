@@ -21,6 +21,7 @@ Owns JSON database files, schema contracts, backups, runtime keys, locks, and wr
 
 - Prefer schema-driven admin/resource changes over template-only field additions.
 - Keep media records aligned with actual uploaded/static media paths.
+- Keep `users`, `astrologers`, `appointments`, `consultation_messages`, and `consultation_signals` aligned when changing provider access or communication workflows.
 - Avoid manual edits to lock files.
 
 ## Verification
@@ -30,4 +31,3 @@ Owns JSON database files, schema contracts, backups, runtime keys, locks, and wr
 - `php tools/validate-project-map.php`
 
 ## Child DOX Index
-

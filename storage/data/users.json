@@ -1,1 +1,212 @@
-[]
+[
+    {
+        "id": "user-astro-01",
+        "email": "",
+        "username": "abirami.sekar",
+        "name": "\u0b9c\u0bcb\u0ba4\u0bbf\u0b9f \u0b87\u0bae\u0baf\u0bae\u0bcd \u0ba4\u0bbf\u0bb0\u0bc1. \u0b85\u0baa\u0bbf\u0bb0\u0bbe\u0bae\u0bbf \u0b9a\u0bc7\u0b95\u0bb0\u0bcd",
+        "role": "astrologer",
+        "astrologer_slug": "abirami-sekar",
+        "must_change_password": true,
+        "password_hash": "$2y$12$HnEUw2EIUmPn6HykTjmOheFgAnet6UoagLdmlKMg4//TDn.h0.8Su"
+    },
+    {
+        "id": "user-astro-02",
+        "email": "",
+        "username": "shrikanth.purushothaman",
+        "name": "Mr. Shrikanth Purushothaman",
+        "role": "astrologer",
+        "astrologer_slug": "shrikanth-purushothaman",
+        "must_change_password": true,
+        "password_hash": "$2y$12$HnEUw2EIUmPn6HykTjmOheFgAnet6UoagLdmlKMg4//TDn.h0.8Su"
+    },
+    {
+        "id": "user-astro-03",
+        "email": "",
+        "username": "sakthi.dass",
+        "name": "Sakthi Dass",
+        "role": "astrologer",
+        "astrologer_slug": "sakthi-dass",
+        "must_change_password": true,
+        "password_hash": "$2y$12$HnEUw2EIUmPn6HykTjmOheFgAnet6UoagLdmlKMg4//TDn.h0.8Su"
+    },
+    {
+        "id": "user-astro-04",
+        "email": "",
+        "username": "revathi.rajesh.kanna",
+        "name": "Revathi Rajesh Kanna",
+        "role": "astrologer",
+        "astrologer_slug": "revathi-rajesh-kanna",
+        "must_change_password": true,
+        "password_hash": "$2y$12$HnEUw2EIUmPn6HykTjmOheFgAnet6UoagLdmlKMg4//TDn.h0.8Su"
+    },
+    {
+        "id": "user-astro-05",
+        "email": "",
+        "username": "perumpalavanan",
+        "name": "\u0b9a\u0bbf\u0ba4\u0bcd\u0ba4 \u0baf\u0bcb\u0b95\u0bbf \u0baa\u0bc6\u0bb0\u0bc1\u0bae\u0bcd\u0baa\u0bb2\u0bb5\u0bbe\u0ba3\u0ba9\u0bcd",
+        "role": "astrologer",
+        "astrologer_slug": "perumpalavanan",
+        "must_change_password": true,
+        "password_hash": "$2y$12$HnEUw2EIUmPn6HykTjmOheFgAnet6UoagLdmlKMg4//TDn.h0.8Su"
+    },
+    {
+        "id": "user-astro-06",
+        "email": "",
+        "username": "deepa.arulalan",
+        "name": "Dr. Deepa Arulalan",
+        "role": "astrologer",
+        "astrologer_slug": "deepa-arulalan",
+        "must_change_password": true,
+        "password_hash": "$2y$12$HnEUw2EIUmPn6HykTjmOheFgAnet6UoagLdmlKMg4//TDn.h0.8Su"
+    },
+    {
+        "id": "user-astro-07",
+        "email": "",
+        "username": "tj.sundarapandian",
+        "name": "TJ SundaraPandian",
+        "role": "astrologer",
+        "astrologer_slug": "tj-sundarapandian",
+        "must_change_password": true,
+        "password_hash": "$2y$12$HnEUw2EIUmPn6HykTjmOheFgAnet6UoagLdmlKMg4//TDn.h0.8Su"
+    },
+    {
+        "id": "user-astro-08",
+        "email": "",
+        "username": "aghora.kali.saraswathi",
+        "name": "\u0b85\u0b95\u0bcb\u0bb0 \u0b95\u0bbe\u0bb3\u0bbf \u0b9a\u0bb0\u0bb8\u0bcd\u0bb5\u0ba4\u0bbf \u0b85\u0bae\u0bcd\u0bae\u0bbe",
+        "role": "astrologer",
+        "astrologer_slug": "aghora-kali-saraswathi-amma",
+        "must_change_password": true,
+        "password_hash": "$2y$12$HnEUw2EIUmPn6HykTjmOheFgAnet6UoagLdmlKMg4//TDn.h0.8Su"
+    },
+    {
+        "id": "user-astro-09",
+        "email": "",
+        "username": "eswari",
+        "name": "\u0b95\u0bbe\u0ba4\u0bb2\u0bcd \u0b9c\u0bcb\u0ba4\u0bbf\u0b9f\u0bb0\u0bcd \u0b88\u0bb8\u0bcd\u0bb5\u0bb0\u0bbf",
+        "role": "astrologer",
+        "astrologer_slug": "eswari",
+        "must_change_password": true,
+        "password_hash": "$2y$12$HnEUw2EIUmPn6HykTjmOheFgAnet6UoagLdmlKMg4//TDn.h0.8Su"
+    },
+    {
+        "id": "user-astro-10",
+        "email": "",
+        "username": "jayanthi.ravi",
+        "name": "Jayanthi Ravi",
+        "role": "astrologer",
+        "astrologer_slug": "jayanthi-ravi",
+        "must_change_password": true,
+        "password_hash": "$2y$12$HnEUw2EIUmPn6HykTjmOheFgAnet6UoagLdmlKMg4//TDn.h0.8Su"
+    },
+    {
+        "id": "user-astro-11",
+        "email": "",
+        "username": "sara",
+        "name": "Sara",
+        "role": "astrologer",
+        "astrologer_slug": "sara",
+        "must_change_password": true,
+        "password_hash": "$2y$12$HnEUw2EIUmPn6HykTjmOheFgAnet6UoagLdmlKMg4//TDn.h0.8Su"
+    },
+    {
+        "id": "user-astro-12",
+        "email": "",
+        "username": "nr.ranjithkumar",
+        "name": "NR. Ranjithkumar",
+        "role": "astrologer",
+        "astrologer_slug": "nr-ranjithkumar",
+        "must_change_password": true,
+        "password_hash": "$2y$12$HnEUw2EIUmPn6HykTjmOheFgAnet6UoagLdmlKMg4//TDn.h0.8Su"
+    },
+    {
+        "id": "user-astro-13",
+        "email": "",
+        "username": "vastu.thangadurai",
+        "name": "Vastu Thangadurai",
+        "role": "astrologer",
+        "astrologer_slug": "vastu-thangadurai",
+        "must_change_password": true,
+        "password_hash": "$2y$12$HnEUw2EIUmPn6HykTjmOheFgAnet6UoagLdmlKMg4//TDn.h0.8Su"
+    },
+    {
+        "id": "user-astro-14",
+        "email": "",
+        "username": "uma.venkat",
+        "name": "ALP \u0b9c\u0bcb\u0ba4\u0bbf\u0b9f\u0bb0\u0bcd \u0b89\u0bae\u0bbe \u0bb5\u0bc6\u0b99\u0bcd\u0b95\u0b9f\u0bcd",
+        "role": "astrologer",
+        "astrologer_slug": "uma-venkat",
+        "must_change_password": true,
+        "password_hash": "$2y$12$HnEUw2EIUmPn6HykTjmOheFgAnet6UoagLdmlKMg4//TDn.h0.8Su"
+    },
+    {
+        "id": "user-astro-15",
+        "email": "",
+        "username": "sriguru.padma.mahalingam",
+        "name": "ALP Astrologer Dr. Sriguru Padma Mahalingam",
+        "role": "astrologer",
+        "astrologer_slug": "sriguru-padma-mahalingam",
+        "must_change_password": true,
+        "password_hash": "$2y$12$HnEUw2EIUmPn6HykTjmOheFgAnet6UoagLdmlKMg4//TDn.h0.8Su"
+    },
+    {
+        "id": "user-astro-16",
+        "email": "",
+        "username": "parthiban",
+        "name": "\u0bb0\u0bbe\u0b9c\u0ba8\u0bbe\u0b9f\u0bbf \u0b9c\u0bcb\u0ba4\u0bbf\u0b9f\u0bb0\u0bcd \u0b95\u0bbe. \u0baa\u0bbe\u0bb0\u0bcd\u0ba4\u0bcd\u0ba4\u0bbf\u0baa\u0ba9\u0bcd",
+        "role": "astrologer",
+        "astrologer_slug": "parthiban",
+        "must_change_password": true,
+        "password_hash": "$2y$12$HnEUw2EIUmPn6HykTjmOheFgAnet6UoagLdmlKMg4//TDn.h0.8Su"
+    },
+    {
+        "id": "user-astro-17",
+        "email": "",
+        "username": "ponmudi",
+        "name": "\u0b9c\u0bcb\u0ba4\u0bbf\u0b9f\u0bb0\u0bcd \u0baa\u0bca\u0ba9\u0bcd\u0bae\u0bc1\u0b9f\u0bbf",
+        "role": "astrologer",
+        "astrologer_slug": "ponmudi",
+        "must_change_password": true,
+        "password_hash": "$2y$12$HnEUw2EIUmPn6HykTjmOheFgAnet6UoagLdmlKMg4//TDn.h0.8Su"
+    },
+    {
+        "id": "user-astro-18",
+        "email": "",
+        "username": "palaru.velayutham",
+        "name": "Palaru Velayutham Swamigal",
+        "role": "astrologer",
+        "astrologer_slug": "palaru-velayutham-swamigal",
+        "must_change_password": true,
+        "password_hash": "$2y$12$HnEUw2EIUmPn6HykTjmOheFgAnet6UoagLdmlKMg4//TDn.h0.8Su"
+    },
+    {
+        "id": "user-astro-19",
+        "email": "",
+        "username": "vastu.vinayagam",
+        "name": "Vastu Vinayagam",
+        "role": "astrologer",
+        "astrologer_slug": "vastu-vinayagam",
+        "must_change_password": true,
+        "password_hash": "$2y$12$HnEUw2EIUmPn6HykTjmOheFgAnet6UoagLdmlKMg4//TDn.h0.8Su"
+    },
+    {
+        "id": "user-astro-20",
+        "email": "",
+        "username": "arun.karthik",
+        "name": "Financial Astrologer Dr. S. Arun Karthik PhD",
+        "role": "astrologer",
+        "astrologer_slug": "arun-karthik",
+        "must_change_password": true,
+        "password_hash": "$2y$12$HnEUw2EIUmPn6HykTjmOheFgAnet6UoagLdmlKMg4//TDn.h0.8Su"
+    },
+    {
+        "id": "user-astro-21",
+        "email": "",
+        "username": "dna.astrology.vishal",
+        "name": "DNA Astrology Vishal",
+        "role": "astrologer",
+        "astrologer_slug": "dna-astrology-vishal",
+        "must_change_password": true,
+        "password_hash": "$2y$12$HnEUw2EIUmPn6HykTjmOheFgAnet6UoagLdmlKMg4//TDn.h0.8Su"
+    }
+]

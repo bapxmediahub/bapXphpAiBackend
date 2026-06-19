@@ -36,7 +36,7 @@ try {
         '/checkout' => 200,
         '/contact' => 200,
         '/consult' => 200,
-        '/consult/pandit-shastri' => 200,
+        '/consult/shrikanth-purushothaman' => 200,
         '/temples' => 200,
         '/sri-panchami-spiritual' => 200,
         '/forgot-password' => 200,

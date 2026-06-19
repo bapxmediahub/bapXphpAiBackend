@@ -30,6 +30,7 @@ This folder contains connected documentation for developers, maintainers, and co
 - [Admin](modules/admin.md)
 - [Auth](modules/auth.md)
 - [Booking](modules/booking.md)
+- [Consultation communication](modules/consultations.md)
 - [Catalog](modules/catalog.md)
 - [Google OAuth](modules/google-oauth.md)
 - [Orders](modules/orders.md)

@@ -17,6 +17,7 @@ Owns PHP runtime behavior: bootstrap, routes, controllers, services, guards, per
 - Extend existing services before introducing a new service.
 - User-specific assistant data must flow through `AgentContextService` or equivalent filtering.
 - Project-map structure belongs in `ProjectMapService::scan()` and `ProjectMapService::renderSystematicMermaid()`.
+- Consultation messages, call signaling, participant authorization, status, and analytics belong in `ConsultationService` and authenticated PHP API controllers.
 
 ## Work Guidance
 
@@ -32,4 +33,3 @@ Owns PHP runtime behavior: bootstrap, routes, controllers, services, guards, per
 - `php tools/validate-project-map.php`
 
 ## Child DOX Index
-

@@ -35,16 +35,15 @@ final class BookingController extends BaseController {
     $this->redirect('/recharge?amount=100');
   }
   $data['credits_spent'] = ($data['queue_status'] ?? '') === 'waitlist' ? 0 : $initialCredits;
-  $data['status'] = ($data['queue_status'] ?? '') === 'waitlist' ? 'waitlist' : 'payment_pending';
+  $data['status'] = ($data['queue_status'] ?? '') === 'waitlist' ? 'queued' : 'requested';
   $data['created_at'] = date('c');
   $data = array_filter($data, fn($v) => $v !== '');
   (new ResourceService('appointments'))->save($data);
-  if ($data['status'] !== 'waitlist') {
+  if ($data['status'] !== 'queued') {
     $wallet->spend($data['customer_email'], $initialCredits, $data['id'], $data['session_type'] . ' session with ' . ($data['astrologer_name'] ?? 'astrologer'));
-    $data['status'] = 'session_started';
     (new ResourceService('appointments'))->save($data);
   }
-  $this->flash($data['status'] === 'waitlist' ? 'Waitlist request saved.' : 'Session started and credits were deducted.');
-  $this->redirect('/account/bookings');
+  $this->flash($data['status'] === 'queued' ? 'Waitlist request saved.' : 'Consultation request created and initial credits were deducted.');
+  $this->redirect('/consultation/' . $data['id']);
  }
 }

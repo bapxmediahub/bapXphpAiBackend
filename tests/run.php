@@ -600,17 +600,38 @@ $tests['account pages expose review forms only for ended sessions and due shippe
     assertTrue(str_contains($ordersView, 'Shipped At'), 'User orders should show shipped time or processing detail');
 };
 
-$tests['astrologer catalog has thirteen editable priced profiles'] = function (): void {
+$tests['astrologer catalog uses all twenty one client profiles'] = function (): void {
     $astrologers = (new JsonStoreService())->read('astrologers');
-    assertSame(13, count($astrologers), 'Astrologer seed data should include the original 3 plus 10 more profiles');
+    assertSame(21, count($astrologers), 'Astrologer seed data should include all client profiles');
     foreach ($astrologers as $astrologer) {
         assertTrue(!empty($astrologer['slug']), 'Every astrologer should have a slug');
-        assertTrue(str_contains($astrologer['photo_url'] ?? '', '/indian-portrait-'), 'Astrologer profile images should use local Indian-style profile artwork');
-        assertSame(15, (int)($astrologer['text_session_prm'] ?? 0), 'Text session PRM should default to 15');
-        assertSame(15, (int)($astrologer['call_session_prm'] ?? 0), 'Call session PRM should default to 15');
+        assertTrue(str_contains($astrologer['photo_url'] ?? '', '/astrologers/client/'), 'Astrologer profile images should use extracted client portraits');
+        assertTrue(is_file(app_path(ltrim($astrologer['photo_url'] ?? '', '/'))), 'Every client portrait path should exist');
         assertSame(5, (int)($astrologer['message_credit_cost'] ?? 0), 'Message session should cost 5 credits per user message');
         assertSame(0.5, (float)($astrologer['call_credit_per_second'] ?? 0), 'Call session should cost 0.5 credits per second');
     }
+};
+
+$tests['astrologer accounts require password change and use username login'] = function (): void {
+    $users=(new JsonStoreService())->read('users');
+    $astrologers=array_values(array_filter($users,fn($user)=>($user['role']??'')==='astrologer'));
+    assertSame(21,count($astrologers),'Every client astrologer should have an account');
+    foreach($astrologers as $user){assertTrue(!empty($user['username']),'Astrologer username is required');assertTrue(!empty($user['must_change_password']),'Initial password change must be required');assertTrue(password_verify('sripanjamiconsult',$user['password_hash']??''),'Initial password hash should verify');}
+    assertTrue(str_contains(file_get_contents(app_path('app/Controllers/AuthController.php')),"['username']"),'Login should accept an astrologer username');
+    $admin=file_get_contents(app_path('app/Controllers/AdminController.php'));
+    assertTrue(str_contains($admin,'AstrologerAccountService'),'Admin astrologer mutations should synchronize provider accounts');
+};
+
+$tests['consultation api exposes message call and status workflows'] = function (): void {
+    $paths=array_column(ProjectMapService::registry()['routes'],'path');
+    foreach(['/consultation/{id}','/api/consultations/{id}/messages','/api/consultations/{id}/signals','/api/consultations/{id}/status','/astrologer'] as $path) assertTrue(in_array($path,$paths,true),"Missing consultation route {$path}");
+    assertTrue(is_file(app_path('storage/data/consultation_messages.json')),'Message collection should exist');
+    assertTrue(is_file(app_path('storage/data/consultation_signals.json')),'Call signaling collection should exist');
+};
+
+$tests['home hero rotates all supplied varahi images'] = function (): void {
+    assertSame(10,count(glob(app_path('assets/images/hero/varahi/varahi-*.jpg'))?:[]),'Hero should include all ten supplied Varahi images');
+    assertTrue(str_contains(file_get_contents(app_path('views/public/home.php')),'data-varahi-slider'),'Home should render the Varahi image slider');
 };
 
 $tests['admin product and astrologer forms expose editable owner fields'] = function (): void {

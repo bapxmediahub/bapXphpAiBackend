@@ -16,13 +16,15 @@ require __DIR__ . '/../app/bootstrap.php';
 $routes = require __DIR__ . '/../app/routes.php';
 $method = $_SERVER['REQUEST_METHOD'];
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$path = str_replace('/api', '', $uri) ?: '/';
+$paths = [$uri, str_replace('/api', '', $uri) ?: '/'];
 
 $matched = false;
 foreach ($routes as $route) {
     if ($route['method'] !== $method) continue;
     $pattern = preg_replace('#\{[^/]+\}#', '([^/]+)', $route['path']);
-    if (preg_match('#^' . $pattern . '$#', $path, $matches)) {
+    $matches = [];
+    foreach ($paths as $path) if (preg_match('#^' . $pattern . '$#', $path, $candidate)) { $matches = $candidate; break; }
+    if ($matches) {
         array_shift($matches);
         [$class, $action] = explode('@', $route['controller']);
         $fqcn = 'App\\Controllers\\' . $class;

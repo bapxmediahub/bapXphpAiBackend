@@ -32,6 +32,15 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/account/orders','name'=>'account.orders','page'=>'account/orders','controller'=>'AccountController@orders','services'=>['AuthService','OrderService']],
             ['method'=>'GET','path'=>'/account/bookings','name'=>'account.bookings','page'=>'account/bookings','controller'=>'AccountController@bookings','services'=>['AuthService','AppointmentService']],
             ['method'=>'GET','path'=>'/account/wallet','name'=>'account.wallet','page'=>'account/wallet','controller'=>'AccountController@wallet','services'=>['AuthService','WalletService']],
+            ['method'=>'GET','path'=>'/consultation/{id}','name'=>'consultation.room','page'=>'account/consultation','controller'=>'ConsultationController@room','services'=>['AuthService','ConsultationService']],
+            ['method'=>'GET','path'=>'/astrologer','name'=>'astrologer.dashboard','page'=>'astrologer/dashboard','controller'=>'AstrologerController@dashboard','services'=>['AuthService','AstrologerService','ConsultationService']],
+            ['method'=>'GET','path'=>'/astrologer/change-password','name'=>'astrologer.password','page'=>'astrologer/change-password','controller'=>'AstrologerController@changePassword','services'=>['AuthService']],
+            ['method'=>'POST','path'=>'/astrologer/change-password','name'=>'astrologer.password.save','page'=>'astrologer/change-password','controller'=>'AstrologerController@savePassword','services'=>['AuthService','JsonStoreService']],
+            ['method'=>'GET','path'=>'/api/consultations/{id}/messages','name'=>'api.consultation.messages','page'=>'account/consultation','controller'=>'ConsultationController@messages','services'=>['AuthService','ConsultationService']],
+            ['method'=>'POST','path'=>'/api/consultations/{id}/messages','name'=>'api.consultation.messages.send','page'=>'account/consultation','controller'=>'ConsultationController@sendMessage','services'=>['AuthService','ConsultationService']],
+            ['method'=>'GET','path'=>'/api/consultations/{id}/signals','name'=>'api.consultation.signals','page'=>'account/consultation','controller'=>'ConsultationController@signals','services'=>['AuthService','ConsultationService']],
+            ['method'=>'POST','path'=>'/api/consultations/{id}/signals','name'=>'api.consultation.signals.send','page'=>'account/consultation','controller'=>'ConsultationController@sendSignal','services'=>['AuthService','ConsultationService']],
+            ['method'=>'POST','path'=>'/api/consultations/{id}/status','name'=>'api.consultation.status','page'=>'account/consultation','controller'=>'ConsultationController@status','services'=>['AuthService','ConsultationService']],
             ['method'=>'GET','path'=>'/recharge','name'=>'wallet.recharge','page'=>'account/wallet','controller'=>'WalletController@show','services'=>['AuthService','WalletService','SecretService']],
             ['method'=>'POST','path'=>'/recharge/create-order','name'=>'wallet.recharge.create-order','page'=>'account/wallet','controller'=>'WalletController@createOrder','services'=>['AuthService','WalletService','SecretService','PaymentService']],
             ['method'=>'POST','path'=>'/recharge/verify','name'=>'wallet.recharge.verify','page'=>'account/wallet','controller'=>'WalletController@verify','services'=>['AuthService','WalletService','SecretService','PaymentService']],
@@ -45,6 +54,8 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/admin/shipping','name'=>'admin.shipping','page'=>'admin/settings','controller'=>'AdminController@shipping','services'=>['ShippingService','SettingsService']],
             ['method'=>'GET','path'=>'/admin/astrologers','name'=>'admin.astrologers','page'=>'admin/resource','controller'=>'AdminController@astrologers','services'=>['AstrologerService','SchemaService']],
             ['method'=>'GET','path'=>'/admin/appointments','name'=>'admin.appointments','page'=>'admin/list','controller'=>'AdminController@appointments','services'=>['AppointmentService']],
+            ['method'=>'GET','path'=>'/admin/astrologer-credentials','name'=>'admin.astrologer-credentials','page'=>'admin/astrologer-credentials','controller'=>'AdminController@astrologerCredentials','services'=>['AstrologerService','JsonStoreService']],
+            ['method'=>'GET','path'=>'/admin/consultation-analytics','name'=>'admin.consultation-analytics','page'=>'admin/consultation-analytics','controller'=>'AdminController@consultationAnalytics','services'=>['ConsultationService']],
             ['method'=>'GET','path'=>'/admin/temples','name'=>'admin.temples','page'=>'admin/resource','controller'=>'AdminController@temples','services'=>['TempleService','SchemaService']],
             ['method'=>'GET','path'=>'/admin/settings','name'=>'admin.settings','page'=>'admin/settings','controller'=>'AdminController@settings','services'=>['SettingsService']],
             ['method'=>'POST','path'=>'/admin/settings/save','name'=>'admin.settings.save','page'=>'admin/settings','controller'=>'AdminController@saveSettings','services'=>['SettingsService']],
@@ -65,8 +76,8 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/admin/categories/save','name'=>'admin.categories.save','page'=>'admin/resource','controller'=>'AdminController@saveCategory','services'=>['ResourceService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/coupons/save','name'=>'admin.coupons.save','page'=>'admin/resource','controller'=>'AdminController@saveCoupon','services'=>['ResourceService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/coupons/delete','name'=>'admin.coupons.delete','page'=>'admin/resource','controller'=>'AdminController@deleteCoupon','services'=>['ResourceService','AuditLogService']],
-            ['method'=>'POST','path'=>'/admin/astrologers/save','name'=>'admin.astrologers.save','page'=>'admin/resource','controller'=>'AdminController@saveAstrologer','services'=>['ResourceService','AuditLogService']],
-            ['method'=>'POST','path'=>'/admin/astrologers/delete','name'=>'admin.astrologers.delete','page'=>'admin/resource','controller'=>'AdminController@deleteAstrologer','services'=>['ResourceService','AuditLogService']],
+            ['method'=>'POST','path'=>'/admin/astrologers/save','name'=>'admin.astrologers.save','page'=>'admin/resource','controller'=>'AdminController@saveAstrologer','services'=>['ResourceService','AstrologerAccountService','AuditLogService']],
+            ['method'=>'POST','path'=>'/admin/astrologers/delete','name'=>'admin.astrologers.delete','page'=>'admin/resource','controller'=>'AdminController@deleteAstrologer','services'=>['ResourceService','AstrologerAccountService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/temples/save','name'=>'admin.temples.save','page'=>'admin/resource','controller'=>'AdminController@saveTemple','services'=>['ResourceService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/temples/delete','name'=>'admin.temples.delete','page'=>'admin/resource','controller'=>'AdminController@deleteTemple','services'=>['ResourceService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/integrations/save','name'=>'admin.integrations.save','page'=>'admin/integrations','controller'=>'AdminController@saveIntegrations','services'=>['SecretService']],
@@ -88,16 +99,16 @@ final class ProjectMapService {
         unset($route);
         return [
             'routes'=>$routes,
-            'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AppointmentService','TempleService','SettingsService','ProjectMapService','JsonStoreService','AuditLogService','ResourceService','SecretService','EnvService','ContactService','ReviewService','PasswordResetService','MailQueueService','WalletService','SupportBotService','MediaService','StoragePermissionService','SchemaService','AgentContextService'],
+            'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AstrologerAccountService','AppointmentService','ConsultationService','TempleService','SettingsService','ProjectMapService','JsonStoreService','AuditLogService','ResourceService','SecretService','EnvService','ContactService','ReviewService','PasswordResetService','MailQueueService','WalletService','SupportBotService','MediaService','StoragePermissionService','SchemaService','AgentContextService'],
             'integrations'=>['GoogleOAuthClient','RazorpayClient'],
-            'collections'=>['users','products','categories','coupons','orders','astrologers','appointments','temples','settings','audit_events','reviews','mail_queue','wallet_transactions','support_tickets','media_files'],
+            'collections'=>['users','products','categories','coupons','orders','astrologers','appointments','consultation_messages','consultation_signals','temples','settings','audit_events','reviews','mail_queue','wallet_transactions','support_tickets','media_files'],
         ];
     }
     public static function validate(array $map): array {
         $missingRouteMappings = array_values(array_filter($map['routes'], fn($r) => empty($r['controller']) || empty($r['page'])));
         $used = array_unique(array_merge(...array_map(fn($r) => $r['services'], $map['routes'])));
         $missingServices = array_values(array_diff($used, $map['services']));
-        return ['missing_route_mappings'=>$missingRouteMappings,'missing_services'=>$missingServices,'missing_collections'=>array_values(array_diff(['users','products','categories','coupons','orders','astrologers','appointments','temples','settings','audit_events','reviews','mail_queue','wallet_transactions','support_tickets','media_files'], $map['collections']))];
+        return ['missing_route_mappings'=>$missingRouteMappings,'missing_services'=>$missingServices,'missing_collections'=>array_values(array_diff(['users','products','categories','coupons','orders','astrologers','appointments','consultation_messages','consultation_signals','temples','settings','audit_events','reviews','mail_queue','wallet_transactions','support_tickets','media_files'], $map['collections']))];
     }
 
     public static function scan(): array {
@@ -319,11 +330,13 @@ final class ProjectMapService {
             'AgentContextService' => ['users', 'orders', 'appointments', 'wallet_transactions', 'support_tickets'],
             'AppointmentService' => ['appointments'],
             'AstrologerService' => ['astrologers'],
+            'AstrologerAccountService' => ['users', 'astrologers'],
+            'ConsultationService' => ['appointments', 'consultation_messages', 'consultation_signals'],
             'AuditLogService' => ['audit_events'],
             'CategoryService' => ['categories'],
             'ContactService' => ['contact_submissions'],
             'CouponService' => ['coupons'],
-            'JsonStoreService' => ['users', 'products', 'orders', 'appointments'],
+            'JsonStoreService' => ['users', 'products', 'orders', 'appointments', 'consultation_messages', 'consultation_signals'],
             'MailQueueService' => ['mail_queue'],
             'MediaService' => ['media_files'],
             'OrderService' => ['orders'],

@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AuditLogService,AuthService,EnvService,MediaService,OrderService,ResourceService,SchemaService,SecretService,SettingsService,StoragePermissionService};
+use App\Services\{AstrologerAccountService,AuditLogService,AuthService,ConsultationService,EnvService,JsonStoreService,MediaService,OrderService,ResourceService,SchemaService,SecretService,SettingsService,StoragePermissionService};
 final class AdminController extends BaseController {
     protected string $layout = 'admin';
     public function __construct() {
@@ -34,8 +34,18 @@ final class AdminController extends BaseController {
     public function shipping(): void{$this->render('admin/settings',['pageTitle' => 'Shipping', 'title' => 'Shipping']);}
     public function astrologers(): void{$this->resource('Astrologers','astrologers',$this->schemaFields('astrologers',['slug','name','description','email','message_credit_cost','call_credit_per_second','credit_to_rupee_rate','text_session_prm','call_session_prm','payout_percentage','modes','working_days','start_time','end_time','slot_minutes','languages','experience_years','speciality','photo_url']));}
     public function saveAstrologer(): void{$this->save('astrologers');}
-    public function deleteAstrologer(): void{$this->delete('astrologers');}
+    public function deleteAstrologer(): void{
+        $id=(string)($_POST['id']??''); $slug=''; foreach((new ResourceService('astrologers'))->all() as $row) if(($row['id']??'')===$id){$slug=(string)($row['slug']??'');break;}
+        (new ResourceService('astrologers'))->delete($id); if($slug!=='')(new AstrologerAccountService())->deleteForSlug($slug); (new AuditLogService())->record('delete','astrologers',$id); $this->flash('Deleted.'); $this->redirect('/admin/astrologers');
+    }
     public function appointments(): void{$this->list('Sessions','appointments');}
+    public function astrologerCredentials(): void{
+        $astrologers=(new ResourceService('astrologers'))->all(); $users=(new JsonStoreService())->read('users'); $bySlug=[];
+        foreach($users as $user) if(($user['role']??'')==='astrologer') $bySlug[$user['astrologer_slug']??'']=$user;
+        $rows=[]; foreach($astrologers as $astrologer){$user=$bySlug[$astrologer['slug']??'']??[];$rows[]=['name'=>$astrologer['name']??'','username'=>$user['username']??$astrologer['username']??'','temporary_password'=>!empty($user['must_change_password'])?AstrologerAccountService::INITIAL_PASSWORD:'','status'=>!empty($user['must_change_password'])?'Password change required':'Password changed'];}
+        $this->render('admin/astrologer-credentials',['pageTitle'=>'Astrologer Credentials','rows'=>$rows]);
+    }
+    public function consultationAnalytics(): void{$this->render('admin/consultation-analytics',['pageTitle'=>'Consultation Analytics','metrics'=>(new ConsultationService())->analytics()]);}
     public function temples(): void{$this->resource('Temples','temples',$this->schemaFields('temples',['name','description','image_url','address','map_url']));}
     public function saveTemple(): void{$this->save('temples');}
     public function deleteTemple(): void{$this->delete('temples');}
@@ -65,8 +75,9 @@ final class AdminController extends BaseController {
         if ($collection === 'astrologers' && $uploaded && empty($data['photo_url'])) $data['photo_url']=$uploaded[0]['path'];
         if ($collection === 'temples' && $uploaded && empty($data['image_url'])) $data['image_url']=$uploaded[0]['path'];
         $record=(new ResourceService($collection))->save($data);
+        if($collection==='astrologers')(new AstrologerAccountService())->sync($record);
         (new AuditLogService())->record('save',$collection,(string)($record['id'] ?? ''),['fields'=>array_keys($data),'uploaded_media'=>count($uploaded)]);
-        $this->flash('Saved.');
+        $this->flash($collection==='astrologers'?'Astrologer profile and login saved.':'Saved.');
         $this->redirect('/admin/'.$collection);
     }
     private function saveProductRecord(): void{

@@ -21,6 +21,7 @@ Owns PHP-rendered public, account, admin, and layout templates.
 
 - Preserve visible copy unless the user asks for copy changes.
 - Use media-library picker/upload flows for product, temple, and astrologer media.
+- Keep customer and astrologer consultation rooms participant-scoped and backed by the existing PHP API endpoints.
 - Remove or wire dead buttons, placeholder cards, duplicated fallbacks, and stale labels before finishing.
 
 ## Verification
@@ -30,4 +31,3 @@ Owns PHP-rendered public, account, admin, and layout templates.
 - Browser workflow for changed pages.
 
 ## Child DOX Index
-

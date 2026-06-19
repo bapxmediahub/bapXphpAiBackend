@@ -25,6 +25,7 @@ This repo is an agent-ready PHP/JSON full-stack product base for small PHP hosti
 - Media: `assets/images/media/` plus `storage/data/media_files.json`.
 - Admin: owner tools for CRUD, media, environment variables, permissions, integrations, audit logs, and project map.
 - Agent context: `AgentContextService` builds safe user-specific JSON for support/model assistants.
+- Consultations: admin-created astrologer accounts use PHP API polling for messages and WebRTC signaling; browser WebRTC carries call audio.
 
 ## Mandatory Read Order
 
@@ -49,6 +50,7 @@ This repo is an agent-ready PHP/JSON full-stack product base for small PHP hosti
 - Extend existing controllers, services, views, storage files, and tools when they already cover the use case. Do not scaffold parallel implementations.
 - When a code change reveals a reusable workflow rule, update the matching project skill under `.agents/skills/<skill-name>/SKILL.md` so future agents inherit the framework behavior. Keep skills business-agnostic.
 - Keep route -> controller -> service -> JSON-store boundaries.
+- Keep consultation communication in authenticated `/api/consultations/*` endpoints backed by `ConsultationService`; do not add a CLI or WebSocket service.
 - Do not add React, CDN React, a SPA fallback, or a second frontend.
 - Admin mutations should be auditable.
 - User-specific assistant context must use `AgentContextService` or equivalent filtering. Never expose all users' JSON data to a customer assistant.
