@@ -10,4 +10,5 @@ description: Use when editing public, account, shop, astrologer, temple, cart, c
 - Templates should consume controller-provided data and existing services, not read JSON storage directly.
 - Match existing theme tokens and classes in `assets/css/band.css`.
 - Use browser WebRTC only for call media and the authenticated consultation APIs for polling messages and signaling.
+- Reuse the marketplace card geometry on home and consult surfaces, render only real profile metadata/reviews, and keep hero slides isolated on a white image frame.
 - Validate with `php -l` for changed templates, `php tests/run.php`, and a browser workflow for changed pages.

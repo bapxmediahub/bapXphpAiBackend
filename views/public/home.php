@@ -10,7 +10,7 @@
         <div class="hero-stats">
             <div>
                 <div class="hero-stat-value"><?= e((string)count($astrologers)) ?></div>
-                <div class="hero-stat-label">Online Astrologers</div>
+                <div class="hero-stat-label">Client Astrologers</div>
             </div>
             <div>
                 <div class="hero-stat-value">Chat + Call</div>
@@ -63,44 +63,32 @@
     <?php if(!empty($astrologers)): ?>
     <div class="astro-carousel" aria-label="Astrologers carousel">
         <div class="astro-carousel-track">
-        <?php foreach(array_values(array_merge($astrologers, $astrologers)) as $index => $astro): ?>
+        <?php foreach(array_values(array_merge($astrologers, $astrologers)) as $astro): ?>
             <?php
-                $states = ['online', 'busy', 'offline'];
-                $state = $states[$index % count($states)];
-                $languageText = implode(', ', array_slice($astro['languages'] ?? ['Tamil'], 0, 2));
+                $availability = $astro['availability_status'] ?? 'offline';
+                $state = $availability === 'available' ? 'online' : (in_array($availability, ['busy', 'waitlist'], true) ? 'busy' : 'offline');
+                $statusLabel = $state === 'online' ? 'Available' : ($state === 'busy' ? 'Waitlist' : 'Offline');
+                $languageText = implode(', ', array_slice(array_values(array_filter($astro['languages'] ?? [])), 0, 2));
+                $experience = trim((string)($astro['experience_years'] ?? ''));
                 $speciality = $astro['speciality'] ?? 'Vedic Astrology';
             ?>
             <article class="astro-market-card astro-market-card--<?= e($state) ?> reveal">
                 <a class="astro-market-photo" href="/consult/<?= e($astro['slug'] ?? '') ?>" aria-label="View <?= e($astro['name'] ?? 'Astrologer') ?>">
                     <img src="<?= e($astro['photo_url'] ?? 'https://placehold.co/800x1000/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($astro['name'] ?? 'Astrologer') ?>" loading="lazy">
                     <span class="astro-status-dot" aria-label="<?= e(ucfirst($state)) ?>"></span>
-                    <span class="astro-rating-pill">4.9 | 500+</span>
+                    <span class="astro-status-label"><?= e($statusLabel) ?></span>
                 </a>
                 <div class="astro-market-info">
-                    <div class="astro-market-title-row">
-                        <a href="/consult/<?= e($astro['slug'] ?? '') ?>" class="astro-market-name"><?= e($astro['name'] ?? 'Astrologer') ?></a>
-                        <button class="astro-follow" type="button">+ Follow</button>
-                    </div>
-                    <p><?= e($languageText) ?></p>
-                    <p><?= e($astro['experience_years'] ?? 'N/A') ?> Years</p>
-                    <p><?= e($speciality) ?></p>
+                    <a href="/consult/<?= e($astro['slug'] ?? '') ?>" class="astro-market-name"><?= e($astro['name'] ?? 'Astrologer') ?></a>
+                    <p class="astro-market-speciality"><?= e($speciality) ?></p>
+                    <?php if($languageText !== '' || $experience !== ''): ?><div class="astro-market-meta"><?php if($languageText !== ''): ?><span><?= e($languageText) ?></span><?php endif; ?><?php if($experience !== ''): ?><span><?= e($experience) ?> years</span><?php endif; ?></div><?php endif; ?>
                 </div>
                 <div class="astro-market-price">
-                    <strong>5 credits/message</strong>
-                    <span>0.5 credits/sec call</span>
+                    <strong><?= e((string)($astro['message_credit_cost'] ?? 5)) ?> credits/message</strong>
+                    <span><?= e((string)($astro['call_credit_per_second'] ?? 0.5)) ?> credits/sec call</span>
                 </div>
                 <div class="astro-market-actions">
-                    <div class="astro-action-row">
-                        <a href="/consult/<?= e($astro['slug'] ?? '') ?>" class="astro-action astro-action--session">Know More</a>
-                        <a href="/consult/<?= e($astro['slug'] ?? '') ?>?mode=direct_call" class="astro-action astro-action--icon astro-action--call" aria-label="Call">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.7 19.7 0 0 1-8.6-3.1 19.1 19.1 0 0 1-5.9-5.9A19.7 19.7 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L8.1 10a16 16 0 0 0 5.9 5.9l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2Z"/></svg>
-                            <span class="sr-only">Call</span>
-                        </a>
-                        <a href="/consult/<?= e($astro['slug'] ?? '') ?>?mode=text_session" class="astro-action astro-action--icon astro-action--chat" aria-label="Message">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 9.2 9.2 0 0 1-3.7-.8L3 21l1.8-5.3A8.2 8.2 0 0 1 4 11.5 8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5Z"/><path d="M8 10h8M8 14h5"/></svg>
-                            <span class="sr-only">Message</span>
-                        </a>
-                    </div>
+                    <a href="/consult/<?= e($astro['slug'] ?? '') ?>" class="astro-action astro-action--session">View Profile</a>
                 </div>
             </article>
         <?php endforeach; ?>

@@ -407,8 +407,11 @@ $tests['astrologer marketplace exposes search and direct session actions'] = fun
     assertTrue(!str_contains($view, 'astro-recharge'), 'Astrologer marketplace should not render a recharge toolbar action');
     assertTrue(!str_contains($view, 'OFFLINE'), 'Unavailable astrologers should show one waitlist action instead of a disabled offline plus call pair');
     assertTrue(substr_count($view, 'astro-action--queue') === 1, 'Unavailable astrologer template should render one waitlist action');
-    foreach (['aria-label="Start message session"', 'aria-label="Start call session"', 'Waitlist', '+ Follow', 'astro-market-top'] as $needle) {
+    foreach (['aria-label="Start message session"', 'aria-label="Start call session"', 'Join Waitlist', 'View Profile', 'astro-status-label'] as $needle) {
         assertTrue(str_contains($view, $needle), "Astrologer marketplace should expose {$needle} actions");
+    }
+    foreach (['+ Follow', 'Flat Deal', "['online', 'busy', 'offline']", '125 + ($index * 247)', "['Tamil']", "'N/A') ?> Years"] as $needle) {
+        assertTrue(!str_contains($view, $needle), "Astrologer marketplace should not render invented or dead content: {$needle}");
     }
     assertTrue(str_contains($view, 'astro-action-row'), 'Message and call icon buttons should sit below each astrologer card content');
     assertTrue(!str_contains($view, 'Check Availability'), 'Astrologer marketplace should not use appointment availability CTA');
@@ -444,11 +447,12 @@ $tests['support assistant widget uses browser session memory and google model se
     assertTrue(!str_contains($service, "upsert('support_tickets'"), 'Support bot chat should not persist browser chat into project JSON files');
 };
 
-$tests['astrologer profile exposes competitor style remote action rating and trust panels'] = function (): void {
+$tests['astrologer profile exposes real remote actions and verified review state'] = function (): void {
     $view = file_get_contents(app_path('views/public/astrologer.php'));
-    foreach (['Flat Deal', 'aria-label="Start message session"', 'aria-label="Start call session"', 'BOOK SESSION', 'Ratings', 'Money Back Guarantee', 'Verified Expert Astrologers', '100% Secure Payments', 'Send gifts'] as $needle) {
+    foreach (['aria-label="Start message session"', 'aria-label="Start call session"', 'BOOK SESSION', 'No verified reviews yet.', 'Private consultation rooms', 'Admin-managed astrologer profiles', '100% Secure Payments'] as $needle) {
         assertTrue(str_contains($view, $needle), "Astrologer profile should expose {$needle}");
     }
+    foreach (['+ Follow', 'Flat Deal', 'Send gifts', 'Money Back Guarantee', 'K B...', '87))'] as $needle) assertTrue(!str_contains($view,$needle), "Astrologer profile should not render dead or fabricated content: {$needle}");
     assertTrue(str_contains($view, '5 credits/message'), 'Astrologer profile should explain message credit cost');
     assertTrue(str_contains($view, '0.5 credits/sec call'), 'Astrologer profile should explain call credit cost');
 };
@@ -457,6 +461,14 @@ $tests['home page rotates all astrologers instead of showing only three fixed ca
     $view = file_get_contents(app_path('views/public/home.php'));
     assertTrue(!str_contains($view, 'array_slice($astrologers, 0, 3)'), 'Home astrology section should not hard-limit to three astrologers');
     assertTrue(str_contains($view, 'astro-carousel-track'), 'Home astrology section should use a carousel track');
+    assertTrue(str_contains($view, 'astro-status-label'), 'Home cards should share the marketplace status contract');
+    foreach(['+ Follow','4.9 | 500+',"['online', 'busy', 'offline']", "['Tamil']", "'N/A') ?> Years"] as $needle) assertTrue(!str_contains($view,$needle), "Home cards should not render invented or dead content: {$needle}");
+};
+
+$tests['astrologer cards use consistent full width portrait frames'] = function (): void {
+    $css=file_get_contents(app_path('assets/css/band.css'));
+    foreach(['aspect-ratio: 1 / 1','object-position: center;','.astro-carousel .astro-market-card','background:var(--color-white)'] as $needle) assertTrue(str_contains($css,$needle),"Astrologer card CSS should include {$needle}");
+    assertTrue(!str_contains($css,'.astro-carousel .astrologer-card'),'Homepage carousel should target the actual marketplace card class');
 };
 
 $tests['home hero uses concise current copy and working cta links'] = function (): void {

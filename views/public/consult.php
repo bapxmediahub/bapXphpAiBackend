@@ -35,8 +35,10 @@
                         <option value="">All</option>
                         <option value="online">Online</option>
                         <option value="busy">Waitlist</option>
+                        <option value="offline">Offline</option>
                     </select>
                 </label>
+                <?php if($filterLanguages): ?>
                 <label class="astro-filter">
                     <span>Language</span>
                     <select id="astro-language-filter">
@@ -46,37 +48,34 @@
                         <?php endforeach; ?>
                     </select>
                 </label>
+                <?php endif; ?>
             </div>
             <div class="astro-market-grid">
-                <?php foreach($items as $index => $item): ?>
+                <?php foreach($items as $item): ?>
                     <?php
-                        $states = ['online', 'busy', 'offline'];
-                        $state = $states[$index % count($states)];
+                        $availability = $item['availability_status'] ?? 'offline';
+                        $state = $availability === 'available' ? 'online' : (in_array($availability, ['busy', 'waitlist'], true) ? 'busy' : 'offline');
+                        $statusLabel = $state === 'online' ? 'Available' : ($state === 'busy' ? 'Waitlist' : 'Offline');
                         $summary = isset($reviews) ? $reviews->summary('astrologer', $item['slug'] ?? '') : ['average' => 0, 'count' => 0];
-                        $rating = $summary['count'] > 0 ? number_format($summary['average'], 1) : number_format(4.9 - (($index % 3) * 0.03), 1);
-                        $orders = $summary['count'] > 0 ? $summary['count'] : 125 + ($index * 247);
-                        $languageText = implode(', ', array_slice($item['languages'] ?? ['Tamil'], 0, 2));
+                        $languageText = implode(', ', array_slice(array_values(array_filter($item['languages'] ?? [])), 0, 2));
+                        $experience = trim((string)($item['experience_years'] ?? ''));
                         $speciality = $item['speciality'] ?? 'Vedic Astrology';
                     ?>
-                    <article class="astro-market-card astro-market-card--<?= e($state) ?> reveal" data-astro-card data-status="<?= e($state === 'online' ? 'online' : 'busy') ?>" data-language="<?= e(strtolower(implode(' ', $item['languages'] ?? []))) ?>" data-search="<?= e(strtolower(($item['name'] ?? '') . ' ' . $languageText . ' ' . $speciality)) ?>">
-                        <div class="astro-market-top">
-                            <button class="astro-follow" type="button">+ Follow</button>
-                        </div>
+                    <article class="astro-market-card astro-market-card--<?= e($state) ?> reveal" data-astro-card data-status="<?= e($state) ?>" data-language="<?= e(strtolower(implode(' ', $item['languages'] ?? []))) ?>" data-search="<?= e(strtolower(($item['name'] ?? '') . ' ' . $languageText . ' ' . $speciality)) ?>">
                         <a class="astro-market-photo" href="/consult/<?= e($item['slug'] ?? '') ?>" aria-label="View <?= e($item['name'] ?? 'Astrologer') ?>">
                             <img src="<?= e($item['photo_url'] ?? 'https://placehold.co/800x1000/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($item['name'] ?? 'Astrologer') ?>" loading="lazy">
                             <span class="astro-status-dot" aria-label="<?= e(ucfirst($state)) ?>"></span>
-                            <span class="astro-rating-pill"><?= e($rating) ?> | <?= e((string)$orders) ?></span>
+                            <span class="astro-status-label"><?= e($statusLabel) ?></span>
+                            <?php if(($summary['count'] ?? 0) > 0): ?><span class="astro-rating-pill"><?= e(number_format((float)$summary['average'], 1)) ?> · <?= e((string)$summary['count']) ?></span><?php endif; ?>
                         </a>
                         <div class="astro-market-info">
                             <a href="/consult/<?= e($item['slug'] ?? '') ?>" class="astro-market-name"><?= e($item['name'] ?? 'Astrologer') ?></a>
-                            <p><?= e($languageText) ?></p>
-                            <p><?= e($item['experience_years'] ?? 'N/A') ?> Years</p>
-                            <p><?= e($speciality) ?></p>
+                            <p class="astro-market-speciality"><?= e($speciality) ?></p>
+                            <?php if($languageText !== '' || $experience !== ''): ?><div class="astro-market-meta"><?php if($languageText !== ''): ?><span><?= e($languageText) ?></span><?php endif; ?><?php if($experience !== ''): ?><span><?= e($experience) ?> years</span><?php endif; ?></div><?php endif; ?>
                         </div>
                         <div class="astro-market-price">
-                            <strong>5 credits/message</strong>
-                            <span>0.5 credits/sec call</span>
-                            <?php if($index % 2 === 0): ?><em>Flat Deal</em><?php endif; ?>
+                            <strong><?= e((string)($item['message_credit_cost'] ?? 5)) ?> credits/message</strong>
+                            <span><?= e((string)($item['call_credit_per_second'] ?? 0.5)) ?> credits/sec call</span>
                         </div>
                         <div class="astro-market-actions">
                             <?php if(!empty($item['slug'])): ?>
@@ -100,12 +99,7 @@
                                         </form>
                                     </div>
                                 <?php else: ?>
-                                    <form class="astro-session-form" action="/appointments/book" method="post">
-                                        <input type="hidden" name="astrologer_slug" value="<?= e($item['slug']) ?>">
-                                        <input type="hidden" name="mode" value="text_session">
-                                        <input type="hidden" name="queue_status" value="waitlist">
-                                        <button type="submit" class="astro-action astro-action--queue">Waitlist</button>
-                                    </form>
+                                    <?php if($state === 'busy'): ?><form class="astro-session-form" action="/appointments/book" method="post"><input type="hidden" name="astrologer_slug" value="<?= e($item['slug']) ?>"><input type="hidden" name="mode" value="text_session"><input type="hidden" name="queue_status" value="waitlist"><button type="submit" class="astro-action astro-action--queue">Join Waitlist</button></form><?php else: ?><a class="astro-action astro-action--session" href="/consult/<?= e($item['slug']) ?>">View Profile</a><?php endif; ?>
                                 <?php endif; ?>
                             <?php endif; ?>
                         </div>
@@ -130,12 +124,12 @@ document.addEventListener('DOMContentLoaded', function () {
     var input = document.getElementById('astro-search-input');
     var status = document.getElementById('astro-status-filter');
     var language = document.getElementById('astro-language-filter');
-    if (!input || !status || !language) return;
+    if (!input || !status) return;
     var cards = Array.prototype.slice.call(document.querySelectorAll('[data-astro-card]'));
     function filterCards() {
         var term = input.value.trim().toLowerCase();
         var statusTerm = status.value;
-        var languageTerm = language.value;
+        var languageTerm = language ? language.value : '';
         cards.forEach(function (card) {
             var searchMatch = term === '' || String(card.dataset.search || '').includes(term);
             var statusMatch = statusTerm === '' || card.dataset.status === statusTerm;
@@ -145,6 +139,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     input.addEventListener('input', filterCards);
     status.addEventListener('change', filterCards);
-    language.addEventListener('change', filterCards);
+    if (language) language.addEventListener('change', filterCards);
 });
 </script>

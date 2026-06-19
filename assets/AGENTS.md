@@ -19,6 +19,7 @@ Owns CSS, static images, and reusable media assets.
 
 - Keep CSS aligned with existing PHP templates and layout classes.
 - Avoid unused asset files when replacing images or CSS.
+- Keep client astrologer portraits in one stable card frame across public surfaces; Varahi hero slides use a white frame with one visible image at a time.
 
 ## Verification
 
@@ -26,4 +27,3 @@ Owns CSS, static images, and reusable media assets.
 - Browser workflow for changed visual surfaces.
 
 ## Child DOX Index
-

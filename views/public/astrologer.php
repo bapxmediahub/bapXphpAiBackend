@@ -7,28 +7,22 @@
             <a href="/consult" class="btn btn-primary">View All Astrologers</a>
         </div>
     <?php else: ?>
+        <?php $profileLanguages=array_values(array_filter($astrologer['languages']??[])); $profileExperience=trim((string)($astrologer['experience_years']??'')); $profileReviewCount=(int)($reviewSummary['count']??0); ?>
         <div class="expert-layout">
             <div class="expert-main">
                 <section class="expert-profile-card reveal">
                     <div class="expert-photo-wrap">
                         <img class="booking-profile__photo" src="<?= e($astrologer['photo_url'] ?? 'https://placehold.co/800x1000/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($astrologer['name']) ?>">
-                        <span class="astro-status-dot" aria-label="Online"></span>
-                        <span class="astro-rating-pill"><?= e((string)(($reviewSummary['count'] ?? 0) > 0 ? $reviewSummary['average'] : 4.9)) ?></span>
+                        <?php if($profileReviewCount>0): ?><span class="astro-rating-pill"><?= e(number_format((float)$reviewSummary['average'],1)) ?> · <?= e((string)$profileReviewCount) ?></span><?php endif; ?>
                     </div>
                     <div class="booking-profile__content">
                         <h1 class="booking-profile__name"><?= e($astrologer['name']) ?></h1>
                         <p class="booking-profile__meta"><?= e($astrologer['speciality'] ?? 'Vedic Astrology') ?></p>
-                        <p class="booking-profile__meta">Languages: <?= e(implode(', ', $astrologer['languages'] ?? [])) ?></p>
-                        <p class="booking-profile__meta"><?= e($astrologer['experience_years'] ?? 'N/A') ?> Years experience</p>
+                        <?php if($profileLanguages): ?><p class="booking-profile__meta">Languages: <?= e(implode(', ', $profileLanguages)) ?></p><?php endif; ?>
+                        <?php if($profileExperience!==''): ?><p class="booking-profile__meta"><?= e($profileExperience) ?> years experience</p><?php endif; ?>
                         <p class="booking-profile__meta">Remote consultation by chat and direct call</p>
                         <p class="expert-credit-line">5 credits/message <span>0.5 credits/sec call</span></p>
                     </div>
-                    <button class="astro-follow" type="button">+ Follow</button>
-                </section>
-
-                <section class="gift-panel reveal">
-                    <h2>Send gifts</h2>
-                    <button type="button">Gift</button>
                 </section>
 
                 <section class="expert-copy-panel reveal">
@@ -42,24 +36,7 @@
                     </p>
                 </section>
 
-                <section class="expert-copy-panel reveal">
-                    <div class="expert-tabs">
-                        <strong>Reviews</strong>
-                        <span>All ratings</span>
-                    </div>
-                    <div class="review-list">
-                        <article>
-                            <strong>K B...</strong>
-                            <span>4.9 rating</span>
-                            <p>Accurate reading and clear guidance.</p>
-                        </article>
-                        <article>
-                            <strong>Anonymous</strong>
-                            <span>4.8 rating</span>
-                            <p>Helpful remote consultation for family decisions.</p>
-                        </article>
-                    </div>
-                </section>
+                <section class="expert-copy-panel reveal"><div class="expert-tabs"><strong>Reviews</strong><span><?= e((string)$profileReviewCount) ?> verified</span></div><p><?= $profileReviewCount>0?'Verified customer rating: '.e(number_format((float)$reviewSummary['average'],1)).' out of 5.':'No verified reviews yet.' ?></p></section>
             </div>
 
             <aside class="expert-side">
@@ -68,7 +45,6 @@
                         <strong>5 credits/message</strong>
                         <span>0.5 credits/sec call</span>
                     </div>
-                    <span class="flat-deal">Flat Deal</span>
                     <div class="expert-action-grid">
                         <div class="astro-action-row">
                             <form class="astro-session-form" action="/appointments/book" method="post">
@@ -93,18 +69,15 @@
                     <p>1 rupee adds 20 credits. Minimum top-up is ₹10. Credits are only for astrologer text and call sessions.</p>
                 </section>
 
-                <section class="ratings-panel reveal">
+                <?php if($profileReviewCount>0): ?><section class="ratings-panel reveal">
                     <h2>Ratings</h2>
-                    <div class="ratings-panel__score"><?= e((string)(($reviewSummary['count'] ?? 0) > 0 ? $reviewSummary['average'] : 4.9)) ?></div>
-                    <p><?= e((string)(($reviewSummary['count'] ?? 0) > 0 ? $reviewSummary['count'] : 87)) ?> ratings</p>
-                    <?php foreach([5 => 92, 4 => 14, 3 => 4, 2 => 0, 1 => 0] as $stars => $width): ?>
-                        <div class="rating-row"><span><?= e((string)$stars) ?></span><i style="width:<?= e((string)$width) ?>%;"></i></div>
-                    <?php endforeach; ?>
-                </section>
+                    <div class="ratings-panel__score"><?= e(number_format((float)$reviewSummary['average'],1)) ?></div>
+                    <p><?= e((string)$profileReviewCount) ?> verified ratings</p>
+                </section><?php endif; ?>
 
                 <section class="trust-panel reveal">
-                    <p>Money Back Guarantee</p>
-                    <p>Verified Expert Astrologers</p>
+                    <p>Private consultation rooms</p>
+                    <p>Admin-managed astrologer profiles</p>
                     <p>100% Secure Payments</p>
                 </section>
 
