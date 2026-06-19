@@ -5,4 +5,8 @@ description: Use when editing public, account, shop, astrologer, temple, cart, c
 
 # PHP Frontend
 
-Follow `.codex/skills/frontend-php/SKILL.md`.
+- Follow root `AGENTS.md`, `views/AGENTS.md`, and `assets/AGENTS.md` for touched paths.
+- Keep UI as PHP-rendered templates plus existing CSS; do not add React, CDN React, SPA shells, or a second frontend.
+- Templates should consume controller-provided data and existing services, not read JSON storage directly.
+- Match existing theme tokens and classes in `assets/css/band.css`.
+- Validate with `php -l` for changed templates, `php tests/run.php`, and a browser workflow for changed pages.

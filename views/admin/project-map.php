@@ -2,9 +2,9 @@
     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-md); flex-wrap:wrap;">
         <div>
             <h2 style="margin:0 0 var(--space-xs);">Project Map</h2>
-            <p style="margin:0;">Generated route, controller, service, and JSON collection registry for this PHP template app.</p>
+            <p style="margin:0;">Generated route, controller, service, view, integration, schema, storage, tool, and gap registry for this PHP template app.</p>
         </div>
-        <a href="/docs/PROJECT_MAP.md" class="btn btn-sm btn-ghost" target="_blank">Open Docs</a>
+        <a href="/docs/systematic-map.mmd" class="btn btn-sm btn-ghost" target="_blank">Open Map</a>
     </div>
 </div>
 

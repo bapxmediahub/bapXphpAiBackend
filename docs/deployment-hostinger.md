@@ -30,6 +30,7 @@ Local validation before merge:
 
 ```bash
 php tests/run.php
+php tools/generate-project-map.php
 php tools/validate-project-map.php
 php tools/smoke-local.php
 ```

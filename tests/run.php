@@ -57,18 +57,20 @@ $tests['repo has agent-readable schema and built-in skills'] = function (): void
     assertTrue((new SchemaService())->adminFields('products') !== [], 'SchemaService should expose admin fields');
     foreach ([
         'AGENTS.md',
-        'CLAUDE.md',
-        '.codex/skills/php-json-backend/SKILL.md',
-        '.codex/skills/backend-json/SKILL.md',
-        '.codex/skills/schema/SKILL.md',
-        '.codex/skills/admin-ui/SKILL.md',
-        '.codex/skills/frontend-php/SKILL.md',
-        '.codex/skills/deployment/SKILL.md',
-        '.codex/skills/docs/SKILL.md',
-        '.claude/skills/php-json-backend/SKILL.md',
+        '.agents/AGENTS.md',
+        '.agents/skills/AGENTS.md',
         '.agents/skills/php-json-backend/SKILL.md',
+        '.agents/skills/backend-json/SKILL.md',
+        '.agents/skills/schema/SKILL.md',
+        '.agents/skills/admin-ui/SKILL.md',
+        '.agents/skills/frontend-php/SKILL.md',
+        '.agents/skills/deployment/SKILL.md',
+        '.agents/skills/docs/SKILL.md',
     ] as $path) {
         assertTrue(is_file(app_path($path)), "Built-in agent instruction file should exist: {$path}");
+    }
+    foreach (['example-Agent.md', 'CLAUDE.md', '.codex', '.claude'] as $path) {
+        assertTrue(!file_exists(app_path($path)), "Obsolete duplicated agent instruction path should not exist: {$path}");
     }
 };
 
@@ -679,7 +681,7 @@ $tests['architecture and deployment docs describe current php template stack'] =
         assertTrue(!str_contains($doc, 'React'), 'Docs should not describe the removed React/CDN architecture');
         assertTrue(!str_contains($doc, 'CDN'), 'Docs should not say the app loads React from a CDN');
     }
-    foreach (['small PHP hosting', 'public_html', 'JSON-backed backend', '.env', 'ADMIN_EMAIL', 'ADMIN_PASSWORD', 'agentic development', 'docs/README.md', 'docs/deployment-hostinger.md', 'example-Agent.md', 'docs/PROJECT_MAP.md'] as $needle) {
+    foreach (['small PHP hosting', 'public_html', 'JSON-backed backend', '.env', 'ADMIN_EMAIL', 'ADMIN_PASSWORD', 'agentic development', 'docs/README.md', 'docs/deployment-hostinger.md', 'AGENTS.md', 'docs/systematic-map.mmd'] as $needle) {
         assertTrue(str_contains($readme, $needle), "README should describe {$needle}");
     }
     assertTrue(is_file(app_path('docs/README.md')), 'Documentation index should exist and be linked from README');
@@ -716,10 +718,20 @@ $tests['legacy duplicate frontend modules are removed from the php template app'
     assertTrue(str_contains($index, 'http_response_code(404)'), 'Unknown routes should return a real 404');
 };
 
+$tests['php 404 page uses themed template classes'] = function (): void {
+    $view = file_get_contents(app_path('views/public/404.php'));
+    $css = file_get_contents(app_path('assets/css/band.css'));
+    foreach (['not-found-page', 'not-found-shell', 'not-found-mark', 'not-found-actions'] as $class) {
+        assertTrue(str_contains($view, $class), "404 view should include {$class}");
+        assertTrue(str_contains($css, '.' . $class), "Theme CSS should style {$class}");
+    }
+    assertTrue(str_contains($view, 'Page not found'), '404 page should keep clear user-facing page-not-found copy');
+};
+
 $tests['documentation has deployment agent instructions and no one-line placeholder pages'] = function (): void {
-    assertTrue(is_file(app_path('example-Agent.md')), 'Agent workflow guide should exist');
-    $agent = file_get_contents(app_path('example-Agent.md'));
-    foreach (['Hostinger', 'Advanced', 'Git', 'Auto Deployment', 'main', 'project map', 'php tests/run.php', 'php tools/smoke-local.php', 'commit'] as $needle) {
+    assertTrue(is_file(app_path('AGENTS.md')), 'Agent operating guide should exist');
+    $agent = file_get_contents(app_path('AGENTS.md'));
+    foreach (['DOX Contract', 'docs/systematic-map.mmd', 'php tests/run.php', 'php tools/generate-project-map.php', 'php tools/smoke-local.php', 'remote `main`'] as $needle) {
         assertTrue(str_contains($agent, $needle), "Agent guide should mention {$needle}");
     }
     foreach (glob(app_path('docs/pages/*.md')) ?: [] as $path) {
@@ -741,6 +753,17 @@ $tests['local smoke tool verifies key routes api and unknown route 404'] = funct
     $status = 0;
     exec('php ' . escapeshellarg($tool) . ' 2>&1', $output, $status);
     assertSame(0, $status, "Local smoke tool should pass:\n" . implode("\n", $output));
+};
+
+$tests['systematic project map is the only generated map artifact'] = function (): void {
+    assertTrue(is_file(app_path('docs/systematic-map.mmd')), 'Single systematic Mermaid map should exist');
+    foreach (['docs/PROJECT_MAP.md', 'docs/project-map.json', 'docs/project-map.mmd'] as $path) {
+        assertTrue(!is_file(app_path($path)), "Old project-map artifact should not exist: {$path}");
+    }
+    $map = file_get_contents(app_path('docs/systematic-map.mmd'));
+    foreach (['PUBLIC Routes', 'AUTH Routes', 'PAYMENT Routes', 'SUPPORT Routes', 'ADMIN Routes', 'Controllers', 'Services', 'Views', 'Integrations', 'Schema Collections', 'Storage Data Files', 'Tools', 'Gaps & Missing Links'] as $needle) {
+        assertTrue(str_contains($map, $needle), "Systematic map should include {$needle}");
+    }
 };
 
 foreach ($tests as $name => $test) {

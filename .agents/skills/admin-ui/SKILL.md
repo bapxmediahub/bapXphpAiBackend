@@ -5,4 +5,8 @@ description: Use when editing owner/admin pages, CRUD forms, media library, envi
 
 # Admin UI
 
-Follow `.codex/skills/admin-ui/SKILL.md`.
+- Follow root `AGENTS.md`, `views/AGENTS.md`, `app/AGENTS.md`, and `storage/AGENTS.md` for touched paths.
+- Keep owner/admin UI PHP-template based.
+- Admin mutations should route through controllers/services and remain auditable.
+- Use schema-driven resource fields and the media library for product, temple, and astrologer media.
+- Validate with `php tests/run.php`; use a browser workflow for changed admin pages.

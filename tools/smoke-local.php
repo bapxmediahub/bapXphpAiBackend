@@ -1,4 +1,11 @@
 <?php
+/**
+ * Local route/API smoke test.
+ *
+ * Starts a disposable PHP built-in server, checks the core public, account,
+ * admin, API, support, and 404 routes, then restores any support-ticket data
+ * touched during the test.
+ */
 require __DIR__ . '/../app/bootstrap.php';
 
 $port = 6200 + random_int(0, 799);
@@ -107,7 +114,7 @@ try {
     if ($unknown['status'] !== 404) {
         $failures[] = "Unknown route expected 404, got {$unknown['status']}";
     }
-    if (!str_contains($unknown['body'], 'Page Not Found')) {
+    if (!str_contains($unknown['body'], 'Page not found')) {
         $failures[] = "Unknown route should render the PHP 404 page";
     }
 } finally {

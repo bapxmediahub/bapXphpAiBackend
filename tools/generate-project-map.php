@@ -1,17 +1,20 @@
 <?php
+/**
+ * Project map generator.
+ *
+ * Writes the single project-map artifact:
+ *   docs/systematic-map.mmd
+ *
+ * The artifact is a comprehensive Mermaid flowchart covering routes,
+ * controllers, services, views, integrations, schema collections, storage
+ * files, tools, and detected gaps.
+ */
 require __DIR__ . '/../app/bootstrap.php';
-$map = App\Services\ProjectMapService::registry();
-file_put_contents(app_path('docs/project-map.json'), json_encode($map, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-$md = "# Project Map\n\n";
-foreach ($map['routes'] as $route) {
-    $services = $route['services'] ? implode(', ', $route['services']) : 'none';
-    $md .= "- `{$route['path']}` → `{$route['controller']}` → {$services}\n";
-}
-file_put_contents(app_path('docs/PROJECT_MAP.md'), $md);
-$mmd = "flowchart LR\n";
-foreach ($map['routes'] as $i => $route) {
-    $routeNode = 'r'.$i;
-    $mmd .= "  {$routeNode}[\"{$route['path']}\"] --> c{$i}[\"{$route['controller']}\"]\n";
-    foreach ($route['services'] as $service) $mmd .= "  c{$i} --> s{$service}[\"{$service}\"]\n";
-}
-file_put_contents(app_path('docs/project-map.mmd'), $mmd);
+
+$path = app_path('docs/systematic-map.mmd');
+$mmd = App\Services\ProjectMapService::renderSystematicMermaid();
+file_put_contents($path, $mmd);
+
+$scan = App\Services\ProjectMapService::scan();
+echo json_encode($scan['summary'], JSON_PRETTY_PRINT) . "\n";
+echo "Wrote docs/systematic-map.mmd (" . strlen($mmd) . " bytes)\n";

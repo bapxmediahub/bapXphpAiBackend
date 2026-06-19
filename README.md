@@ -4,7 +4,7 @@ This repository is a **php json agent ready** full-stack monorepo for developers
 
 It uses PHP templates, PHP controllers, and local JSON storage under `storage/data/`. There is no SPA, no build step, no SQL/Postgres/MySQL requirement, and no separate MCP or external skill repository required.
 
-The project is designed to run from `public_html` on hosts such as Hostinger and to be maintained through Git-based agentic development with tools such as Codex, Claude Code, OpenCode, Antigravity, Hermes, or similar coding agents.
+The project is designed to run from `public_html` on hosts such as Hostinger and to be maintained through Git-based agentic development with repo-local DOX instructions.
 
 ## Project Overview: PHP JSON Agent Ready for Shared Hosting
 
@@ -23,14 +23,14 @@ The backend primitives are repo-native so agents do not rediscover the system ev
 - `AgentContextService` builds safe customer-specific JSON for the support/model assistant.
 - `MediaService` manages reusable uploaded files for products, temples, astrologers, and shared assets.
 - `/admin/environment` edits `.env` and checks/fixes writable storage paths.
-- `AGENTS.md`, `CLAUDE.md`, `.codex/skills/`, `.claude/skills/`, and `.agents/skills/` give built-in instructions for compatible agents.
+- `AGENTS.md` and `.agents/skills/` give built-in instructions for compatible agents.
 
 ## Key Features for PHP JSON Agent Ready Apps
 
 - **php json agent ready backend**: PHP services and controllers use a local JSON database that coding agents can inspect and modify without SQL migrations.
 - **json-database schema contract**: `storage/schema/collections.json` documents collection fields, admin fields, media fields, ownership, and safe AI-agent context.
 - **ai-agent support context**: `AgentContextService` exposes only the logged-in user's orders, sessions, wallet transactions, and safe public site links.
-- **agentic-workflow skills included**: repo-native skills and instructions are included for Codex, Claude Code, OpenCode, Antigravity, Hermes-style agents, and generic folder-based agents.
+- **agentic-workflow skills included**: repo-native DOX instructions and `.agents/skills/` files are included for coding agents.
 - **shared-hosting deployment**: designed for Hostinger-style PHP hosting with `public_html`, writable `storage/`, Git auto-deploy, and no Node build step.
 - **Ready backend, modifiable frontend**: auth, JSON DB, admin, media, support bot, project map, and settings stay stable while `views/` and `assets/css/` can be changed per project.
 - **Small hosting friendly**: no Postgres, MySQL, Redis, queue worker, frontend compiler, or separate MCP server is required.
@@ -41,9 +41,8 @@ Start here when using or building on this repo:
 
 - [Documentation index](docs/README.md): all guides in one place.
 - [Deployment guide](docs/deployment-hostinger.md): Hostinger hPanel, Advanced -> Git, Auto Deployment, branch setup, cron, and Vercel note.
-- [Agent workflow](example-Agent.md): instructions for coding agents working in this repo.
 - [Architecture](docs/architecture.md): PHP template stack, route flow, JSON persistence, and file structure.
-- [Project map](docs/PROJECT_MAP.md): generated route -> controller -> service map.
+- [Systematic project map](docs/systematic-map.mmd): generated route, controller, service, view, schema, storage, tool, integration, and gap map.
 - [JSON storage](docs/json-storage.md): local JSON collections and persistence model.
 - [Agentic monorepo](docs/agentic-monorepo.md): how this repo works as a reusable backend/frontend base for agents.
 - [Schema](docs/schema.md): JSON database schema and agent context contract.
@@ -126,11 +125,12 @@ Run validation:
 
 ```bash
 php tests/run.php
+php tools/generate-project-map.php
 php tools/validate-project-map.php
 php tools/smoke-local.php
 ```
 
-Regenerate project-map docs after route or service changes:
+Regenerate the single project-map artifact after route, service, view, schema, storage, tool, or integration changes:
 
 ```bash
 php tools/generate-project-map.php
@@ -167,25 +167,23 @@ This repo is meant for developers who want a PHP JSON AI agent backend that work
 
 ## Use This Project With Built-In Agent Skills
 
-The built-in skill folders are part of the product, not an external plugin:
+The built-in skill folder is part of the product, not an external plugin:
 
-- `.codex/skills/<skill-name>/SKILL.md` for Codex-style workflows.
-- `.claude/skills/<skill-name>/SKILL.md` for Claude Code-style workflows.
-- `.agents/skills/<skill-name>/SKILL.md` for generic folder-based agents.
-- `AGENTS.md` and `CLAUDE.md` for always-on repository instructions.
-- `example-Agent.md` for the expected agent workflow.
+- `.agents/skills/<skill-name>/SKILL.md` for task-specific agent workflows.
+- `AGENTS.md` plus child `AGENTS.md` files for always-on DOX repository instructions.
 
-For a new project, tell the agent to read `AGENTS.md`, `storage/schema/collections.json`, `docs/PROJECT_MAP.md`, and the matching skill folder first. The ready backend remains stable, while the modifiable frontend and content can change depending on the project.
+For a new project, tell the agent to read `AGENTS.md`, `storage/schema/collections.json`, `docs/systematic-map.mmd`, and the matching skill folder first. The ready backend remains stable, while the modifiable frontend and content can change depending on the project.
 
 ## Agent Development Rules
 
 Agents should:
 
-- Read [AGENTS.md](AGENTS.md), [example-Agent.md](example-Agent.md), and the built-in skill files before changing code.
+- Read [AGENTS.md](AGENTS.md), the nearest child `AGENTS.md`, and the built-in skill files before changing code.
 - Update [storage/schema/collections.json](storage/schema/collections.json) before changing JSON collection shapes.
-- Use [docs/PROJECT_MAP.md](docs/PROJECT_MAP.md) before editing routes/controllers/services.
+- Use [docs/systematic-map.mmd](docs/systematic-map.mmd) before editing routes/controllers/services/views/schema/storage/tools.
 - Test locally and in a browser when changing UI.
 - Run all validation commands before committing.
+- Regenerate and validate the systematic project map before committing or pushing to remote `main`.
 - Commit to the branch connected to hosting only after validation passes.
 
 Agents must not reintroduce a SPA, React/CDN app shell, placeholder pages, or a second frontend.

@@ -2220,6 +2220,66 @@ tr:hover td { background: var(--color-bg-alt); }
     min-width: min(300px, 100%);
 }
 
+/* ── 404 ── */
+.not-found-page {
+    min-height: clamp(520px, 72vh, 760px);
+    display: grid;
+    align-items: center;
+    padding: var(--space-3xl) 0;
+    background:
+        radial-gradient(circle at 18% 20%, rgba(212,175,55,0.14), transparent 28%),
+        linear-gradient(135deg, rgba(128,0,0,0.07), rgba(248,244,238,0.92));
+}
+.not-found-shell {
+    display: grid;
+    grid-template-columns: minmax(180px, 0.42fr) minmax(0, 0.58fr);
+    align-items: center;
+    gap: var(--space-2xl);
+    max-width: 960px;
+    margin: 0 auto;
+    padding: clamp(var(--space-xl), 5vw, var(--space-3xl));
+    border: 1px solid rgba(212,175,55,0.32);
+    border-radius: var(--radius-xl);
+    background: rgba(255,255,255,0.94);
+    box-shadow: var(--shadow-lg);
+}
+.not-found-mark {
+    min-height: 240px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(212,175,55,0.36);
+    background:
+        linear-gradient(145deg, rgba(92,0,0,0.9), rgba(44,30,20,0.92)),
+        url('/assets/images/hero-temple-bg.png') center/cover no-repeat;
+    color: var(--color-gold-light);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+}
+.not-found-mark span {
+    font-family: var(--font-serif);
+    font-size: clamp(3.4rem, 9vw, 6.5rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0;
+}
+.not-found-copy h1 {
+    max-width: 620px;
+    margin: 0 0 var(--space-sm);
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.08;
+    color: var(--color-ink);
+}
+.not-found-copy .lede {
+    max-width: 620px;
+    margin: 0 0 var(--space-xl);
+}
+.not-found-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+}
+
 /* ── Feature Strip ── */
 .feature-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-lg); }
 .feature-strip article { text-align: center; padding: var(--space-lg); }
@@ -2471,6 +2531,11 @@ tr:hover td { background: var(--color-bg-alt); }
      .about-feature-card,
      .page-cta-card { grid-template-columns: 1fr; justify-items: center; text-align: center; padding: var(--space-lg); }
      .about-feature-card { min-height: 0; }
+     .not-found-page { padding: var(--space-xl) 0; }
+     .not-found-shell { grid-template-columns: 1fr; gap: var(--space-lg); text-align: center; padding: var(--space-lg); }
+     .not-found-mark { min-height: 160px; }
+     .not-found-actions { justify-content: center; }
+     .not-found-actions .btn { width: 100%; }
     
     .feature-strip { grid-template-columns: repeat(2, 1fr); gap: var(--space-md); }
     .feature-strip article { padding: var(--space-md); border-radius: var(--radius-lg); }

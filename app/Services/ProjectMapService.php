@@ -99,4 +99,267 @@ final class ProjectMapService {
         $missingServices = array_values(array_diff($used, $map['services']));
         return ['missing_route_mappings'=>$missingRouteMappings,'missing_services'=>$missingServices,'missing_collections'=>array_values(array_diff(['users','products','categories','coupons','orders','astrologers','appointments','temples','settings','audit_events','reviews','mail_queue','wallet_transactions','support_tickets','media_files'], $map['collections']))];
     }
+
+    public static function scan(): array {
+        $map = self::registry();
+        $schema = json_decode((string)file_get_contents(app_path('storage/schema/collections.json')), true);
+        $schemaCollections = array_keys($schema['collections'] ?? []);
+
+        $controllers = self::phpBasenames(app_path('app/Controllers'));
+        $services = self::phpBasenames(app_path('app/Services'));
+        $views = self::viewNames(app_path('views'));
+        $integrations = self::phpBasenames(app_path('integrations'));
+        $tools = self::phpBasenames(app_path('tools'));
+        $storageFiles = self::jsonBasenames(app_path('storage/data'));
+
+        $routeControllers = array_values(array_unique(array_map(
+            fn($route) => explode('@', (string)($route['controller'] ?? ''))[0] ?? '',
+            $map['routes']
+        )));
+        $routeControllers = array_values(array_filter($routeControllers));
+        $routeServices = array_values(array_unique(array_merge(...array_map(fn($route) => $route['services'], $map['routes']))));
+        $routeViews = array_values(array_unique(array_filter(array_map(fn($route) => $route['page'] ?? '', $map['routes']))));
+
+        $gaps = [
+            'missing_route_mappings' => array_values(array_filter($map['routes'], fn($route) => empty($route['controller']) || empty($route['page']))),
+            'missing_controller_files' => array_values(array_diff($routeControllers, $controllers)),
+            'missing_service_files' => array_values(array_diff($routeServices, $services)),
+            'missing_view_files' => array_values(array_diff($routeViews, $views)),
+            'unwired_controllers' => array_values(array_diff($controllers, $routeControllers)),
+            'unwired_services' => array_values(array_diff($services, $routeServices)),
+            'unwired_views' => array_values(array_diff($views, $routeViews)),
+            'schema_without_file' => array_values(array_diff($schemaCollections, $storageFiles)),
+            'file_without_schema' => array_values(array_diff($storageFiles, $schemaCollections)),
+        ];
+
+        return [
+            'routes' => $map['routes'],
+            'controllers' => $controllers,
+            'services' => $services,
+            'views' => $views,
+            'integrations' => $integrations,
+            'schema_collections' => $schemaCollections,
+            'storage_files' => $storageFiles,
+            'tools' => $tools,
+            'gaps' => $gaps,
+            'summary' => [
+                'routes' => count($map['routes']),
+                'controllers' => count($controllers),
+                'services' => count($services),
+                'views' => count($views),
+                'integrations' => count($integrations),
+                'schema_collections' => count($schemaCollections),
+                'storage_files' => count($storageFiles),
+                'tools' => count($tools),
+                'gaps' => array_sum(array_map('count', $gaps)),
+            ],
+        ];
+    }
+
+    public static function renderSystematicMermaid(): string {
+        $scan = self::scan();
+        $lines = [
+            'flowchart LR',
+            '  classDef gap fill:#fee2e2,stroke:#b91c1c,color:#7f1d1d',
+            '  classDef route fill:#e0f2fe,stroke:#0369a1,color:#0c4a6e',
+            '  classDef code fill:#ecfdf5,stroke:#047857,color:#064e3b',
+            '  classDef data fill:#fef3c7,stroke:#b45309,color:#78350f',
+            '  classDef tool fill:#ede9fe,stroke:#6d28d9,color:#3b0764',
+            '',
+        ];
+
+        foreach (['PUBLIC', 'AUTH', 'PAYMENT', 'SUPPORT', 'ADMIN'] as $domain) {
+            $routes = array_values(array_filter($scan['routes'], fn($route) => self::routeDomain($route) === $domain));
+            $lines[] = '  subgraph ROUTES_' . $domain . '["' . $domain . ' Routes"]';
+            foreach ($routes as $route) {
+                $id = self::routeId($route);
+                $lines[] = '    ' . $id . '["' . self::label(($route['method'] ?? 'GET') . ' ' . ($route['path'] ?? '')) . '"]:::route';
+            }
+            $lines[] = '  end';
+            $lines[] = '';
+        }
+
+        $groups = [
+            'CONTROLLERS' => ['Controllers', $scan['controllers'], 'controllerId', 'code'],
+            'SERVICES' => ['Services', $scan['services'], 'serviceId', 'code'],
+            'VIEWS' => ['Views', $scan['views'], 'viewId', 'code'],
+            'INTEGRATIONS' => ['Integrations', $scan['integrations'], 'integrationId', 'code'],
+            'SCHEMA' => ['Schema Collections', $scan['schema_collections'], 'collectionId', 'data'],
+            'STORAGE' => ['Storage Data Files', $scan['storage_files'], 'storageId', 'data'],
+            'TOOLS' => ['Tools', $scan['tools'], 'toolId', 'tool'],
+        ];
+
+        foreach ($groups as $key => [$title, $items, $method, $class]) {
+            $lines[] = '  subgraph ' . $key . '["' . $title . '"]';
+            foreach ($items as $item) {
+                $lines[] = '    ' . self::{$method}($item) . '["' . self::label($item) . '"]:::' . $class;
+            }
+            $lines[] = '  end';
+            $lines[] = '';
+        }
+
+        $gapNodes = [];
+        $lines[] = '  subgraph GAPS["Gaps & Missing Links"]';
+        foreach ($scan['gaps'] as $kind => $items) {
+            foreach ($items as $index => $item) {
+                $label = is_array($item) ? (($item['method'] ?? '') . ' ' . ($item['path'] ?? '') . ' missing mapping') : ($kind . ': ' . $item);
+                $id = 'gap_' . substr(md5($kind . $index . $label), 0, 10);
+                $gapNodes[] = [$kind, $item, $id];
+                $lines[] = '    ' . $id . '["' . self::label($label) . '"]:::gap';
+            }
+        }
+        if ($gapNodes === []) {
+            $lines[] = '    no_gaps["No detected gaps"]:::data';
+        }
+        $lines[] = '  end';
+        $lines[] = '';
+
+        foreach ($scan['routes'] as $route) {
+            $routeId = self::routeId($route);
+            $controller = (string)($route['controller'] ?? '');
+            [$controllerClass] = array_pad(explode('@', $controller), 2, '');
+            if ($controllerClass !== '') {
+                $lines[] = '  ' . $routeId . ' --> ' . self::controllerId($controllerClass);
+            }
+            foreach ($route['services'] ?? [] as $service) {
+                $lines[] = '  ' . self::controllerId($controllerClass) . ' --> ' . self::serviceId($service);
+            }
+            if (!empty($route['page'])) {
+                $lines[] = '  ' . self::controllerId($controllerClass) . ' -. renders .-> ' . self::viewId((string)$route['page']);
+            }
+        }
+
+        foreach (self::serviceCollections() as $service => $collections) {
+            foreach ($collections as $collection) {
+                $lines[] = '  ' . self::serviceId($service) . ' --> ' . self::collectionId($collection);
+            }
+        }
+        foreach ($scan['schema_collections'] as $collection) {
+            if (in_array($collection, $scan['storage_files'], true)) {
+                $lines[] = '  ' . self::collectionId($collection) . ' --> ' . self::storageId($collection);
+            }
+        }
+        foreach ($scan['routes'] as $route) {
+            $controller = (string)($route['controller'] ?? '');
+            [$controllerClass] = array_pad(explode('@', $controller), 2, '');
+            $path = (string)($route['path'] ?? '');
+            if (str_contains($path, 'auth/google')) {
+                $lines[] = '  ' . self::controllerId($controllerClass) . ' --> ' . self::integrationId('GoogleOAuthClient');
+            }
+            if (str_contains($path, 'payment') || str_contains($path, 'checkout') || str_contains($path, 'recharge')) {
+                $lines[] = '  ' . self::serviceId('PaymentService') . ' --> ' . self::integrationId('RazorpayClient');
+            }
+        }
+        if (in_array('generate-project-map', $scan['tools'], true)) {
+            $lines[] = '  ' . self::toolId('generate-project-map') . ' --> systematic_map["docs/systematic-map.mmd"]:::data';
+        }
+        if (in_array('validate-project-map', $scan['tools'], true)) {
+            $lines[] = '  ' . self::toolId('validate-project-map') . ' --> systematic_map';
+        }
+        if (in_array('smoke-local', $scan['tools'], true)) {
+            $lines[] = '  ' . self::toolId('smoke-local') . ' --> ROUTES_PUBLIC';
+            $lines[] = '  ' . self::toolId('smoke-local') . ' --> ROUTES_ADMIN';
+        }
+
+        foreach ($gapNodes as [$kind, $item, $id]) {
+            if (is_string($item)) {
+                if (str_contains($kind, 'service')) {
+                    $lines[] = '  ' . $id . ' -. missing .-> ' . self::serviceId($item);
+                } elseif (str_contains($kind, 'view')) {
+                    $lines[] = '  ' . $id . ' -. missing .-> ' . self::viewId($item);
+                } elseif (str_contains($kind, 'controller')) {
+                    $lines[] = '  ' . $id . ' -. missing .-> ' . self::controllerId($item);
+                } elseif ($kind === 'schema_without_file') {
+                    $lines[] = '  ' . self::collectionId($item) . ' -. missing file .-> ' . $id;
+                } elseif ($kind === 'file_without_schema') {
+                    $lines[] = '  ' . self::storageId($item) . ' -. missing schema .-> ' . $id;
+                }
+            }
+        }
+
+        return implode("\n", $lines) . "\n";
+    }
+
+    private static function phpBasenames(string $dir): array {
+        if (!is_dir($dir)) return [];
+        $files = iterator_to_array(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)));
+        $names = [];
+        foreach ($files as $file) {
+            if ($file->getExtension() === 'php') $names[] = $file->getBasename('.php');
+        }
+        sort($names);
+        return $names;
+    }
+
+    private static function viewNames(string $dir): array {
+        if (!is_dir($dir)) return [];
+        $files = iterator_to_array(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)));
+        $names = [];
+        foreach ($files as $file) {
+            if ($file->getExtension() !== 'php') continue;
+            $relative = str_replace($dir . '/', '', $file->getPathname());
+            $names[] = substr($relative, 0, -4);
+        }
+        sort($names);
+        return $names;
+    }
+
+    private static function jsonBasenames(string $dir): array {
+        if (!is_dir($dir)) return [];
+        $names = [];
+        foreach (glob($dir . '/*.json') ?: [] as $file) {
+            $names[] = basename($file, '.json');
+        }
+        sort($names);
+        return $names;
+    }
+
+    private static function serviceCollections(): array {
+        return [
+            'AgentContextService' => ['users', 'orders', 'appointments', 'wallet_transactions', 'support_tickets'],
+            'AppointmentService' => ['appointments'],
+            'AstrologerService' => ['astrologers'],
+            'AuditLogService' => ['audit_events'],
+            'CategoryService' => ['categories'],
+            'ContactService' => ['contact_submissions'],
+            'CouponService' => ['coupons'],
+            'JsonStoreService' => ['users', 'products', 'orders', 'appointments'],
+            'MailQueueService' => ['mail_queue'],
+            'MediaService' => ['media_files'],
+            'OrderService' => ['orders'],
+            'ProductService' => ['products'],
+            'ResourceService' => ['products', 'categories', 'coupons', 'astrologers', 'temples'],
+            'ReviewService' => ['reviews'],
+            'SettingsService' => ['settings'],
+            'SupportBotService' => ['support_tickets'],
+            'TempleService' => ['temples'],
+            'WalletService' => ['wallet_transactions', 'users'],
+        ];
+    }
+
+    private static function routeDomain(array $route): string {
+        $path = (string)($route['path'] ?? '');
+        if (str_starts_with($path, '/admin')) return 'ADMIN';
+        if (str_starts_with($path, '/support')) return 'SUPPORT';
+        if (str_starts_with($path, '/auth') || in_array($path, ['/login', '/logout', '/register', '/forgot-password', '/reset-password'], true)) return 'AUTH';
+        if (str_starts_with($path, '/cart') || str_starts_with($path, '/checkout') || str_starts_with($path, '/payment') || str_starts_with($path, '/recharge')) return 'PAYMENT';
+        return 'PUBLIC';
+    }
+
+    private static function label(string $value): string {
+        return str_replace(['\\', '"'], ['\\\\', '\"'], $value);
+    }
+
+    private static function nodeId(string $prefix, string $value): string {
+        return $prefix . '_' . substr(md5($value), 0, 12);
+    }
+
+    private static function routeId(array $route): string { return self::nodeId('route', ($route['method'] ?? '') . ' ' . ($route['path'] ?? '')); }
+    private static function controllerId(string $name): string { return self::nodeId('controller', $name); }
+    private static function serviceId(string $name): string { return self::nodeId('service', $name); }
+    private static function viewId(string $name): string { return self::nodeId('view', $name); }
+    private static function integrationId(string $name): string { return self::nodeId('integration', $name); }
+    private static function collectionId(string $name): string { return self::nodeId('collection', $name); }
+    private static function storageId(string $name): string { return self::nodeId('storage', $name); }
+    private static function toolId(string $name): string { return self::nodeId('tool', $name); }
 }

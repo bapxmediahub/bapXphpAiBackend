@@ -1,8 +1,21 @@
 <?php
+/**
+ * Project map validator.
+ *
+ * The single project-map artifact is docs/systematic-map.mmd. This validator
+ * regenerates the Mermaid in memory and compares it byte-for-byte to the
+ * on-disk file. If they differ, regenerate with:
+ *
+ *   php tools/generate-project-map.php
+ */
 require __DIR__ . '/../app/bootstrap.php';
-$map = App\Services\ProjectMapService::registry();
-$validation = App\Services\ProjectMapService::validate($map);
-foreach ($validation as $issues) if ($issues) { fwrite(STDERR, json_encode($validation, JSON_PRETTY_PRINT) . PHP_EOL); exit(1); }
-$expected = json_encode($map, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-if (!is_file(app_path('docs/project-map.json')) || trim(file_get_contents(app_path('docs/project-map.json'))) !== trim($expected)) { fwrite(STDERR, "Generated project map is stale\n"); exit(1); }
+
+$path = app_path('docs/systematic-map.mmd');
+$expected = App\Services\ProjectMapService::renderSystematicMermaid();
+
+if (!is_file($path) || trim((string)file_get_contents($path)) !== trim($expected)) {
+    fwrite(STDERR, "Generated project map is stale. Run php tools/generate-project-map.php and commit docs/systematic-map.mmd.\n");
+    exit(1);
+}
+
 echo "Project map valid\n";

@@ -1,0 +1,614 @@
+flowchart LR
+  classDef gap fill:#fee2e2,stroke:#b91c1c,color:#7f1d1d
+  classDef route fill:#e0f2fe,stroke:#0369a1,color:#0c4a6e
+  classDef code fill:#ecfdf5,stroke:#047857,color:#064e3b
+  classDef data fill:#fef3c7,stroke:#b45309,color:#78350f
+  classDef tool fill:#ede9fe,stroke:#6d28d9,color:#3b0764
+
+  subgraph ROUTES_PUBLIC["PUBLIC Routes"]
+    route_e3b717d5883a["GET /"]:::route
+    route_635162d613cf["GET /about"]:::route
+    route_ce21a56fa9a7["GET /sri-panchami-spiritual"]:::route
+    route_df221e308e08["GET /spiritual"]:::route
+    route_f1167ac0f350["GET /consult"]:::route
+    route_c415a5030f78["GET /consult/{slug}"]:::route
+    route_7f9505b0f987["GET /temples"]:::route
+    route_14cd9d36c55d["GET /temples/{slug}"]:::route
+    route_e627a983a978["GET /shop"]:::route
+    route_3c12328d1184["GET /categories"]:::route
+    route_762fd619926d["GET /product/{slug}"]:::route
+    route_8c80c0301221["GET /contact"]:::route
+    route_5d37c858f706["POST /contact"]:::route
+    route_6e1b2c8ad9df["GET /account/orders"]:::route
+    route_05bd7a95e13b["GET /account/bookings"]:::route
+    route_0203d66cede2["GET /account/wallet"]:::route
+    route_e35f1cf27c3e["POST /appointments/book"]:::route
+    route_ee5462fe50d8["POST /reviews/astrologer"]:::route
+    route_9c8e6425cd02["POST /reviews/product"]:::route
+  end
+
+  subgraph ROUTES_AUTH["AUTH Routes"]
+    route_22374240a33c["GET /login"]:::route
+    route_7d183a0bb001["GET /forgot-password"]:::route
+    route_2679acb1337a["POST /forgot-password"]:::route
+    route_bf1533f65e61["GET /reset-password"]:::route
+    route_292f9c423d3c["POST /reset-password"]:::route
+    route_21ac6cd20118["GET /auth/google"]:::route
+    route_54bc4589bbac["GET /auth/google/callback"]:::route
+    route_bd886de5ac0b["GET /register"]:::route
+    route_3a7ff6514669["POST /register"]:::route
+    route_a650fd67ad7b["POST /login"]:::route
+    route_1d1ca6617c0d["GET /logout"]:::route
+  end
+
+  subgraph ROUTES_PAYMENT["PAYMENT Routes"]
+    route_fb4c7f221e5b["GET /cart"]:::route
+    route_f26b003584ac["GET /checkout"]:::route
+    route_176bd191ff81["GET /recharge"]:::route
+    route_e30eb1f2e0ae["POST /recharge/create-order"]:::route
+    route_a9dfe780ea76["POST /recharge/verify"]:::route
+    route_eca99e09ade9["POST /cart/add"]:::route
+    route_9ba7a8da6f0d["POST /cart/remove"]:::route
+    route_c048d08cf4d9["POST /cart/update"]:::route
+    route_f0c540724dfe["POST /checkout/create-order"]:::route
+    route_3cdaaaae69eb["POST /payment/verify"]:::route
+  end
+
+  subgraph ROUTES_SUPPORT["SUPPORT Routes"]
+    route_5de8a52549bc["POST /support/ask"]:::route
+  end
+
+  subgraph ROUTES_ADMIN["ADMIN Routes"]
+    route_c3f4bffc0fc6["GET /admin"]:::route
+    route_3960f6a49231["GET /admin/products"]:::route
+    route_e95fd00567af["GET /admin/categories"]:::route
+    route_cdc48d6b8f5f["GET /admin/coupons"]:::route
+    route_5e926678ff14["GET /admin/orders"]:::route
+    route_88925401b130["GET /admin/orders/{id}"]:::route
+    route_2b4e3ef8ace9["POST /admin/orders/{id}/status"]:::route
+    route_c7a9a024dd65["GET /admin/shipping"]:::route
+    route_a957673c2bdd["GET /admin/astrologers"]:::route
+    route_3b4bedeac0b9["GET /admin/appointments"]:::route
+    route_a7447dded861["GET /admin/temples"]:::route
+    route_a068f086796c["GET /admin/settings"]:::route
+    route_c2fce1e83e49["POST /admin/settings/save"]:::route
+    route_833047aa65da["POST /admin/settings/admin-credentials"]:::route
+    route_818acb238877["GET /admin/integrations"]:::route
+    route_f679682223bf["GET /admin/backups"]:::route
+    route_e67aaf6f51f8["GET /admin/audit-log"]:::route
+    route_a343d37ef490["GET /admin/contact-submissions"]:::route
+    route_93e1c961f71d["GET /admin/support-tickets"]:::route
+    route_0c88057d061a["GET /admin/media"]:::route
+    route_16d561502e84["POST /admin/media/upload"]:::route
+    route_39e94ed98594["GET /admin/environment"]:::route
+    route_7ff0c7d60a36["POST /admin/environment/save"]:::route
+    route_74e14338f5d2["POST /admin/environment/fix-permissions"]:::route
+    route_e9360697e956["GET /admin/developer/project-map"]:::route
+    route_94124153470a["POST /admin/products/save"]:::route
+    route_608ddd16ca24["POST /admin/products/delete"]:::route
+    route_5bd40ddf2477["POST /admin/categories/save"]:::route
+    route_9cdd4d3072b4["POST /admin/coupons/save"]:::route
+    route_a4ffe236f106["POST /admin/coupons/delete"]:::route
+    route_ebd390f27282["POST /admin/astrologers/save"]:::route
+    route_dc3164561034["POST /admin/astrologers/delete"]:::route
+    route_a2384c26c92f["POST /admin/temples/save"]:::route
+    route_e69af680148c["POST /admin/temples/delete"]:::route
+    route_f6cc7a75f108["POST /admin/integrations/save"]:::route
+  end
+
+  subgraph CONTROLLERS["Controllers"]
+    controller_9968163fcd32["AccountController"]:::code
+    controller_3d37b75c07ec["AdminController"]:::code
+    controller_f3a06e444dad["AuthController"]:::code
+    controller_6f7f176814f0["BaseController"]:::code
+    controller_ebb378258bac["BookingController"]:::code
+    controller_7fda1508bed0["CommerceController"]:::code
+    controller_18ec49ea2cf4["PublicController"]:::code
+    controller_452e47b9a403["ReviewController"]:::code
+    controller_64e608ddc28b["SupportController"]:::code
+    controller_4cc77f3351c6["WalletController"]:::code
+  end
+
+  subgraph SERVICES["Services"]
+    service_b2e5928bb46a["AgentContextService"]:::code
+    service_717a4830bf0e["AppointmentService"]:::code
+    service_ae8ee1aa005a["AstrologerService"]:::code
+    service_e79c019a142b["AuditLogService"]:::code
+    service_f33a1d77b137["AuthService"]:::code
+    service_119321b674bd["CartService"]:::code
+    service_ebacea9031c7["CategoryService"]:::code
+    service_fc0ff5cfd93a["ContactService"]:::code
+    service_c4c5dac5c925["CouponService"]:::code
+    service_01d1cd760b64["EnvService"]:::code
+    service_36e1e06e13b3["JsonStoreService"]:::code
+    service_1a1be05523e3["MailQueueService"]:::code
+    service_75ac00fac97c["MediaService"]:::code
+    service_f751cedec776["OrderService"]:::code
+    service_a0945b05d5db["PasswordResetService"]:::code
+    service_9eeeaab84791["PaymentService"]:::code
+    service_0ab47bcd921f["ProductService"]:::code
+    service_b06ea6dd1537["ProjectMapService"]:::code
+    service_ea89d25425b5["ResourceService"]:::code
+    service_cdae135eb5b5["ReviewService"]:::code
+    service_69598e3405fb["SchemaService"]:::code
+    service_6c9416ef0383["SecretService"]:::code
+    service_fefb1ba2e4f7["SettingsService"]:::code
+    service_58db6f1ab7dc["ShippingService"]:::code
+    service_c5fb81744c52["SmtpMailer"]:::code
+    service_82c10839666c["StoragePermissionService"]:::code
+    service_1bacfc3e3f3b["SupportBotService"]:::code
+    service_c9950f0c49e4["TempleService"]:::code
+    service_df7a87394b21["WalletService"]:::code
+  end
+
+  subgraph VIEWS["Views"]
+    view_bde0b7fa75a6["account/bookings"]:::code
+    view_8bf2f1da4f90["account/orders"]:::code
+    view_eff0f1f428ec["account/wallet"]:::code
+    view_af209260b21b["admin/dashboard"]:::code
+    view_99a0e61b7241["admin/detail"]:::code
+    view_036080adacd9["admin/environment"]:::code
+    view_62fe69fcdef3["admin/integrations"]:::code
+    view_ca3569057adb["admin/list"]:::code
+    view_52965cdd23d8["admin/media"]:::code
+    view_2b32af729a24["admin/project-map"]:::code
+    view_9720267f0400["admin/resource"]:::code
+    view_ccc5b8c17f9f["admin/settings"]:::code
+    view_dae8fcbc86f4["layouts/admin"]:::code
+    view_fd382d366d88["layouts/app"]:::code
+    view_fe7e7ffe6adc["public/404"]:::code
+    view_82254c4e2aa1["public/about"]:::code
+    view_74015889d737["public/astrologer"]:::code
+    view_9ee4574eabfc["public/cart"]:::code
+    view_6b1f93c8d0e4["public/checkout"]:::code
+    view_eb9fd22a15bf["public/consult"]:::code
+    view_89865e74ab9c["public/contact"]:::code
+    view_b8744c438a04["public/forgot-password"]:::code
+    view_17c7f41e5cc8["public/home"]:::code
+    view_a6af926bf361["public/login"]:::code
+    view_747a935d6839["public/product"]:::code
+    view_d6d59690414b["public/register"]:::code
+    view_775af2126c62["public/reset-password"]:::code
+    view_ca8b647f9374["public/shop"]:::code
+    view_8b63b1a03812["public/spiritual"]:::code
+    view_eb7fde4f5646["public/temple"]:::code
+    view_9fad71462848["public/temples"]:::code
+  end
+
+  subgraph INTEGRATIONS["Integrations"]
+    integration_58a89e5d2ef3["GoogleOAuthClient"]:::code
+    integration_1442a65b90de["RazorpayClient"]:::code
+  end
+
+  subgraph SCHEMA["Schema Collections"]
+    collection_9bc65c2abec1["users"]:::data
+    collection_86024cad1e83["products"]:::data
+    collection_c851fb104bb0["astrologers"]:::data
+    collection_fefa79731a13["temples"]:::data
+    collection_12c500ed0b78["orders"]:::data
+    collection_2417b5325520["appointments"]:::data
+    collection_f2ec0991d55d["wallet_transactions"]:::data
+    collection_830b87d9f1ff["support_tickets"]:::data
+    collection_a276577b33a8["media_files"]:::data
+  end
+
+  subgraph STORAGE["Storage Data Files"]
+    storage_2417b5325520["appointments"]:::data
+    storage_c851fb104bb0["astrologers"]:::data
+    storage_32356d16f20c["audit_events"]:::data
+    storage_b0b5ccb4a195["categories"]:::data
+    storage_28882724d375["coupons"]:::data
+    storage_d10fbf039e34["mail_queue"]:::data
+    storage_a276577b33a8["media_files"]:::data
+    storage_12c500ed0b78["orders"]:::data
+    storage_86024cad1e83["products"]:::data
+    storage_74dcb1cec508["reviews"]:::data
+    storage_2e5d8aa3dfa8["settings"]:::data
+    storage_c5809eed0e0b["settings.secrets"]:::data
+    storage_fefa79731a13["temples"]:::data
+    storage_506de2158fd9["test_race"]:::data
+    storage_9bc65c2abec1["users"]:::data
+  end
+
+  subgraph TOOLS["Tools"]
+    tool_891d42e0bd53["generate-project-map"]:::tool
+    tool_63816fb031e2["process-mail-queue"]:::tool
+    tool_6bc5276d6a60["smoke-local"]:::tool
+    tool_506de2158fd9["test_race"]:::tool
+    tool_ffb4fe3c51d9["validate-project-map"]:::tool
+  end
+
+  subgraph GAPS["Gaps & Missing Links"]
+    gap_c5a21a5be4["missing_view_files: admin/contact-submissions"]:::gap
+    gap_5e742cc081["missing_view_files: public/support"]:::gap
+    gap_66de7921f3["unwired_controllers: BaseController"]:::gap
+    gap_a1686fd047["unwired_services: SmtpMailer"]:::gap
+    gap_463bee36b9["unwired_views: layouts/admin"]:::gap
+    gap_146f86659e["unwired_views: layouts/app"]:::gap
+    gap_16b8d6c40a["unwired_views: public/404"]:::gap
+    gap_a5993307b7["schema_without_file: wallet_transactions"]:::gap
+    gap_d571673255["schema_without_file: support_tickets"]:::gap
+    gap_cca1f2f5fc["file_without_schema: audit_events"]:::gap
+    gap_d049b16bd1["file_without_schema: categories"]:::gap
+    gap_5630917500["file_without_schema: coupons"]:::gap
+    gap_1d5de0753e["file_without_schema: mail_queue"]:::gap
+    gap_ff7a58c210["file_without_schema: reviews"]:::gap
+    gap_4ab1a78131["file_without_schema: settings"]:::gap
+    gap_12f998762d["file_without_schema: settings.secrets"]:::gap
+    gap_ab3c7719c7["file_without_schema: test_race"]:::gap
+  end
+
+  route_e3b717d5883a --> controller_18ec49ea2cf4
+  controller_18ec49ea2cf4 --> service_0ab47bcd921f
+  controller_18ec49ea2cf4 --> service_ae8ee1aa005a
+  controller_18ec49ea2cf4 --> service_c9950f0c49e4
+  controller_18ec49ea2cf4 --> service_ebacea9031c7
+  controller_18ec49ea2cf4 -. renders .-> view_17c7f41e5cc8
+  route_635162d613cf --> controller_18ec49ea2cf4
+  controller_18ec49ea2cf4 -. renders .-> view_82254c4e2aa1
+  route_ce21a56fa9a7 --> controller_18ec49ea2cf4
+  controller_18ec49ea2cf4 -. renders .-> view_8b63b1a03812
+  route_df221e308e08 --> controller_18ec49ea2cf4
+  controller_18ec49ea2cf4 -. renders .-> view_8b63b1a03812
+  route_f1167ac0f350 --> controller_18ec49ea2cf4
+  controller_18ec49ea2cf4 --> service_ae8ee1aa005a
+  controller_18ec49ea2cf4 -. renders .-> view_eb9fd22a15bf
+  route_c415a5030f78 --> controller_18ec49ea2cf4
+  controller_18ec49ea2cf4 --> service_ae8ee1aa005a
+  controller_18ec49ea2cf4 -. renders .-> view_74015889d737
+  route_7f9505b0f987 --> controller_18ec49ea2cf4
+  controller_18ec49ea2cf4 --> service_c9950f0c49e4
+  controller_18ec49ea2cf4 -. renders .-> view_9fad71462848
+  route_14cd9d36c55d --> controller_18ec49ea2cf4
+  controller_18ec49ea2cf4 --> service_c9950f0c49e4
+  controller_18ec49ea2cf4 -. renders .-> view_eb7fde4f5646
+  route_e627a983a978 --> controller_18ec49ea2cf4
+  controller_18ec49ea2cf4 --> service_0ab47bcd921f
+  controller_18ec49ea2cf4 --> service_ebacea9031c7
+  controller_18ec49ea2cf4 -. renders .-> view_ca8b647f9374
+  route_3c12328d1184 --> controller_18ec49ea2cf4
+  controller_18ec49ea2cf4 --> service_ebacea9031c7
+  controller_18ec49ea2cf4 -. renders .-> view_ca8b647f9374
+  route_762fd619926d --> controller_18ec49ea2cf4
+  controller_18ec49ea2cf4 --> service_0ab47bcd921f
+  controller_18ec49ea2cf4 -. renders .-> view_747a935d6839
+  route_fb4c7f221e5b --> controller_18ec49ea2cf4
+  controller_18ec49ea2cf4 --> service_119321b674bd
+  controller_18ec49ea2cf4 --> service_0ab47bcd921f
+  controller_18ec49ea2cf4 -. renders .-> view_9ee4574eabfc
+  route_f26b003584ac --> controller_18ec49ea2cf4
+  controller_18ec49ea2cf4 --> service_119321b674bd
+  controller_18ec49ea2cf4 --> service_0ab47bcd921f
+  controller_18ec49ea2cf4 --> service_6c9416ef0383
+  controller_18ec49ea2cf4 -. renders .-> view_6b1f93c8d0e4
+  route_8c80c0301221 --> controller_18ec49ea2cf4
+  controller_18ec49ea2cf4 -. renders .-> view_89865e74ab9c
+  route_5d37c858f706 --> controller_18ec49ea2cf4
+  controller_18ec49ea2cf4 --> service_fc0ff5cfd93a
+  controller_18ec49ea2cf4 -. renders .-> view_89865e74ab9c
+  route_22374240a33c --> controller_18ec49ea2cf4
+  controller_18ec49ea2cf4 --> service_f33a1d77b137
+  controller_18ec49ea2cf4 -. renders .-> view_a6af926bf361
+  route_7d183a0bb001 --> controller_f3a06e444dad
+  controller_f3a06e444dad --> service_a0945b05d5db
+  controller_f3a06e444dad -. renders .-> view_b8744c438a04
+  route_2679acb1337a --> controller_f3a06e444dad
+  controller_f3a06e444dad --> service_a0945b05d5db
+  controller_f3a06e444dad -. renders .-> view_b8744c438a04
+  route_bf1533f65e61 --> controller_f3a06e444dad
+  controller_f3a06e444dad --> service_a0945b05d5db
+  controller_f3a06e444dad -. renders .-> view_775af2126c62
+  route_292f9c423d3c --> controller_f3a06e444dad
+  controller_f3a06e444dad --> service_a0945b05d5db
+  controller_f3a06e444dad -. renders .-> view_775af2126c62
+  route_21ac6cd20118 --> controller_f3a06e444dad
+  controller_f3a06e444dad --> service_6c9416ef0383
+  controller_f3a06e444dad -. renders .-> view_a6af926bf361
+  route_54bc4589bbac --> controller_f3a06e444dad
+  controller_f3a06e444dad --> service_6c9416ef0383
+  controller_f3a06e444dad --> service_36e1e06e13b3
+  controller_f3a06e444dad -. renders .-> view_a6af926bf361
+  route_bd886de5ac0b --> controller_f3a06e444dad
+  controller_f3a06e444dad -. renders .-> view_d6d59690414b
+  route_3a7ff6514669 --> controller_f3a06e444dad
+  controller_f3a06e444dad --> service_36e1e06e13b3
+  controller_f3a06e444dad -. renders .-> view_d6d59690414b
+  route_a650fd67ad7b --> controller_f3a06e444dad
+  controller_f3a06e444dad --> service_36e1e06e13b3
+  controller_f3a06e444dad -. renders .-> view_a6af926bf361
+  route_1d1ca6617c0d --> controller_f3a06e444dad
+  controller_f3a06e444dad --> service_f33a1d77b137
+  controller_f3a06e444dad -. renders .-> view_a6af926bf361
+  route_6e1b2c8ad9df --> controller_9968163fcd32
+  controller_9968163fcd32 --> service_f33a1d77b137
+  controller_9968163fcd32 --> service_f751cedec776
+  controller_9968163fcd32 -. renders .-> view_8bf2f1da4f90
+  route_05bd7a95e13b --> controller_9968163fcd32
+  controller_9968163fcd32 --> service_f33a1d77b137
+  controller_9968163fcd32 --> service_717a4830bf0e
+  controller_9968163fcd32 -. renders .-> view_bde0b7fa75a6
+  route_0203d66cede2 --> controller_9968163fcd32
+  controller_9968163fcd32 --> service_f33a1d77b137
+  controller_9968163fcd32 --> service_df7a87394b21
+  controller_9968163fcd32 -. renders .-> view_eff0f1f428ec
+  route_176bd191ff81 --> controller_4cc77f3351c6
+  controller_4cc77f3351c6 --> service_f33a1d77b137
+  controller_4cc77f3351c6 --> service_df7a87394b21
+  controller_4cc77f3351c6 --> service_6c9416ef0383
+  controller_4cc77f3351c6 -. renders .-> view_eff0f1f428ec
+  route_e30eb1f2e0ae --> controller_4cc77f3351c6
+  controller_4cc77f3351c6 --> service_f33a1d77b137
+  controller_4cc77f3351c6 --> service_df7a87394b21
+  controller_4cc77f3351c6 --> service_6c9416ef0383
+  controller_4cc77f3351c6 --> service_9eeeaab84791
+  controller_4cc77f3351c6 -. renders .-> view_eff0f1f428ec
+  route_a9dfe780ea76 --> controller_4cc77f3351c6
+  controller_4cc77f3351c6 --> service_f33a1d77b137
+  controller_4cc77f3351c6 --> service_df7a87394b21
+  controller_4cc77f3351c6 --> service_6c9416ef0383
+  controller_4cc77f3351c6 --> service_9eeeaab84791
+  controller_4cc77f3351c6 -. renders .-> view_eff0f1f428ec
+  route_c3f4bffc0fc6 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_f751cedec776
+  controller_3d37b75c07ec --> service_717a4830bf0e
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_af209260b21b
+  route_3960f6a49231 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_0ab47bcd921f
+  controller_3d37b75c07ec --> service_69598e3405fb
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_9720267f0400
+  route_e95fd00567af --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_ebacea9031c7
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_9720267f0400
+  route_cdc48d6b8f5f --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_c4c5dac5c925
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_9720267f0400
+  route_5e926678ff14 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_f751cedec776
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_ca3569057adb
+  route_88925401b130 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_f751cedec776
+  controller_3d37b75c07ec --> service_58db6f1ab7dc
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_99a0e61b7241
+  route_2b4e3ef8ace9 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_f751cedec776
+  controller_3d37b75c07ec --> service_1a1be05523e3
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_99a0e61b7241
+  route_c7a9a024dd65 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_58db6f1ab7dc
+  controller_3d37b75c07ec --> service_fefb1ba2e4f7
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_ccc5b8c17f9f
+  route_a957673c2bdd --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_ae8ee1aa005a
+  controller_3d37b75c07ec --> service_69598e3405fb
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_9720267f0400
+  route_3b4bedeac0b9 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_717a4830bf0e
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_ca3569057adb
+  route_a7447dded861 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_c9950f0c49e4
+  controller_3d37b75c07ec --> service_69598e3405fb
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_9720267f0400
+  route_a068f086796c --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_fefb1ba2e4f7
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_ccc5b8c17f9f
+  route_c2fce1e83e49 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_fefb1ba2e4f7
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_ccc5b8c17f9f
+  route_833047aa65da --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_01d1cd760b64
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_ccc5b8c17f9f
+  route_818acb238877 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_fefb1ba2e4f7
+  controller_3d37b75c07ec --> service_9eeeaab84791
+  controller_3d37b75c07ec --> service_6c9416ef0383
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_62fe69fcdef3
+  route_f679682223bf --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_36e1e06e13b3
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_ca3569057adb
+  route_e67aaf6f51f8 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_e79c019a142b
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_ca3569057adb
+  route_a343d37ef490 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_fc0ff5cfd93a
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_29d291016ea8
+  route_93e1c961f71d --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_36e1e06e13b3
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_ca3569057adb
+  route_0c88057d061a --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_75ac00fac97c
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_52965cdd23d8
+  route_16d561502e84 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_75ac00fac97c
+  controller_3d37b75c07ec --> service_e79c019a142b
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_52965cdd23d8
+  route_39e94ed98594 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_01d1cd760b64
+  controller_3d37b75c07ec --> service_82c10839666c
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_036080adacd9
+  route_7ff0c7d60a36 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_01d1cd760b64
+  controller_3d37b75c07ec --> service_e79c019a142b
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_036080adacd9
+  route_74e14338f5d2 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_82c10839666c
+  controller_3d37b75c07ec --> service_e79c019a142b
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_036080adacd9
+  route_e9360697e956 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_b06ea6dd1537
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_2b32af729a24
+  route_94124153470a --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_ea89d25425b5
+  controller_3d37b75c07ec --> service_e79c019a142b
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_9720267f0400
+  route_608ddd16ca24 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_ea89d25425b5
+  controller_3d37b75c07ec --> service_e79c019a142b
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_9720267f0400
+  route_5bd40ddf2477 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_ea89d25425b5
+  controller_3d37b75c07ec --> service_e79c019a142b
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_9720267f0400
+  route_9cdd4d3072b4 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_ea89d25425b5
+  controller_3d37b75c07ec --> service_e79c019a142b
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_9720267f0400
+  route_a4ffe236f106 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_ea89d25425b5
+  controller_3d37b75c07ec --> service_e79c019a142b
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_9720267f0400
+  route_ebd390f27282 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_ea89d25425b5
+  controller_3d37b75c07ec --> service_e79c019a142b
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_9720267f0400
+  route_dc3164561034 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_ea89d25425b5
+  controller_3d37b75c07ec --> service_e79c019a142b
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_9720267f0400
+  route_a2384c26c92f --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_ea89d25425b5
+  controller_3d37b75c07ec --> service_e79c019a142b
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_9720267f0400
+  route_e69af680148c --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_ea89d25425b5
+  controller_3d37b75c07ec --> service_e79c019a142b
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_9720267f0400
+  route_f6cc7a75f108 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_6c9416ef0383
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_62fe69fcdef3
+  route_eca99e09ade9 --> controller_7fda1508bed0
+  controller_7fda1508bed0 --> service_119321b674bd
+  controller_7fda1508bed0 --> service_0ab47bcd921f
+  controller_7fda1508bed0 -. renders .-> view_9ee4574eabfc
+  route_9ba7a8da6f0d --> controller_7fda1508bed0
+  controller_7fda1508bed0 --> service_119321b674bd
+  controller_7fda1508bed0 -. renders .-> view_9ee4574eabfc
+  route_c048d08cf4d9 --> controller_7fda1508bed0
+  controller_7fda1508bed0 --> service_119321b674bd
+  controller_7fda1508bed0 -. renders .-> view_9ee4574eabfc
+  route_f0c540724dfe --> controller_7fda1508bed0
+  controller_7fda1508bed0 --> service_6c9416ef0383
+  controller_7fda1508bed0 --> service_9eeeaab84791
+  controller_7fda1508bed0 -. renders .-> view_6b1f93c8d0e4
+  route_3cdaaaae69eb --> controller_7fda1508bed0
+  controller_7fda1508bed0 --> service_6c9416ef0383
+  controller_7fda1508bed0 --> service_9eeeaab84791
+  controller_7fda1508bed0 --> service_36e1e06e13b3
+  controller_7fda1508bed0 -. renders .-> view_6b1f93c8d0e4
+  route_e35f1cf27c3e --> controller_ebb378258bac
+  controller_ebb378258bac --> service_f33a1d77b137
+  controller_ebb378258bac --> service_ea89d25425b5
+  controller_ebb378258bac --> service_ae8ee1aa005a
+  controller_ebb378258bac -. renders .-> view_74015889d737
+  route_ee5462fe50d8 --> controller_452e47b9a403
+  controller_452e47b9a403 --> service_cdae135eb5b5
+  controller_452e47b9a403 --> service_f33a1d77b137
+  controller_452e47b9a403 -. renders .-> view_bde0b7fa75a6
+  route_9c8e6425cd02 --> controller_452e47b9a403
+  controller_452e47b9a403 --> service_cdae135eb5b5
+  controller_452e47b9a403 --> service_f33a1d77b137
+  controller_452e47b9a403 -. renders .-> view_8bf2f1da4f90
+  route_5de8a52549bc --> controller_64e608ddc28b
+  controller_64e608ddc28b --> service_1bacfc3e3f3b
+  controller_64e608ddc28b --> service_b2e5928bb46a
+  controller_64e608ddc28b -. renders .-> view_54f97aa2b448
+  service_b2e5928bb46a --> collection_9bc65c2abec1
+  service_b2e5928bb46a --> collection_12c500ed0b78
+  service_b2e5928bb46a --> collection_2417b5325520
+  service_b2e5928bb46a --> collection_f2ec0991d55d
+  service_b2e5928bb46a --> collection_830b87d9f1ff
+  service_717a4830bf0e --> collection_2417b5325520
+  service_ae8ee1aa005a --> collection_c851fb104bb0
+  service_e79c019a142b --> collection_32356d16f20c
+  service_ebacea9031c7 --> collection_b0b5ccb4a195
+  service_fc0ff5cfd93a --> collection_2dce077b5527
+  service_c4c5dac5c925 --> collection_28882724d375
+  service_36e1e06e13b3 --> collection_9bc65c2abec1
+  service_36e1e06e13b3 --> collection_86024cad1e83
+  service_36e1e06e13b3 --> collection_12c500ed0b78
+  service_36e1e06e13b3 --> collection_2417b5325520
+  service_1a1be05523e3 --> collection_d10fbf039e34
+  service_75ac00fac97c --> collection_a276577b33a8
+  service_f751cedec776 --> collection_12c500ed0b78
+  service_0ab47bcd921f --> collection_86024cad1e83
+  service_ea89d25425b5 --> collection_86024cad1e83
+  service_ea89d25425b5 --> collection_b0b5ccb4a195
+  service_ea89d25425b5 --> collection_28882724d375
+  service_ea89d25425b5 --> collection_c851fb104bb0
+  service_ea89d25425b5 --> collection_fefa79731a13
+  service_cdae135eb5b5 --> collection_74dcb1cec508
+  service_fefb1ba2e4f7 --> collection_2e5d8aa3dfa8
+  service_1bacfc3e3f3b --> collection_830b87d9f1ff
+  service_c9950f0c49e4 --> collection_fefa79731a13
+  service_df7a87394b21 --> collection_f2ec0991d55d
+  service_df7a87394b21 --> collection_9bc65c2abec1
+  collection_9bc65c2abec1 --> storage_9bc65c2abec1
+  collection_86024cad1e83 --> storage_86024cad1e83
+  collection_c851fb104bb0 --> storage_c851fb104bb0
+  collection_fefa79731a13 --> storage_fefa79731a13
+  collection_12c500ed0b78 --> storage_12c500ed0b78
+  collection_2417b5325520 --> storage_2417b5325520
+  collection_a276577b33a8 --> storage_a276577b33a8
+  service_9eeeaab84791 --> integration_1442a65b90de
+  controller_f3a06e444dad --> integration_58a89e5d2ef3
+  controller_f3a06e444dad --> integration_58a89e5d2ef3
+  service_9eeeaab84791 --> integration_1442a65b90de
+  service_9eeeaab84791 --> integration_1442a65b90de
+  service_9eeeaab84791 --> integration_1442a65b90de
+  service_9eeeaab84791 --> integration_1442a65b90de
+  service_9eeeaab84791 --> integration_1442a65b90de
+  tool_891d42e0bd53 --> systematic_map["docs/systematic-map.mmd"]:::data
+  tool_ffb4fe3c51d9 --> systematic_map
+  tool_6bc5276d6a60 --> ROUTES_PUBLIC
+  tool_6bc5276d6a60 --> ROUTES_ADMIN
+  gap_c5a21a5be4 -. missing .-> view_29d291016ea8
+  gap_5e742cc081 -. missing .-> view_54f97aa2b448
+  gap_66de7921f3 -. missing .-> controller_6f7f176814f0
+  gap_a1686fd047 -. missing .-> service_c5fb81744c52
+  gap_463bee36b9 -. missing .-> view_dae8fcbc86f4
+  gap_146f86659e -. missing .-> view_fd382d366d88
+  gap_16b8d6c40a -. missing .-> view_fe7e7ffe6adc
+  collection_f2ec0991d55d -. missing file .-> gap_a5993307b7
+  collection_830b87d9f1ff -. missing file .-> gap_d571673255
+  storage_32356d16f20c -. missing schema .-> gap_cca1f2f5fc
+  storage_b0b5ccb4a195 -. missing schema .-> gap_d049b16bd1
+  storage_28882724d375 -. missing schema .-> gap_5630917500
+  storage_d10fbf039e34 -. missing schema .-> gap_1d5de0753e
+  storage_74dcb1cec508 -. missing schema .-> gap_ff7a58c210
+  storage_2e5d8aa3dfa8 -. missing schema .-> gap_4ab1a78131
+  storage_c5809eed0e0b -. missing schema .-> gap_12f998762d
+  storage_506de2158fd9 -. missing schema .-> gap_ab3c7719c7
