@@ -465,10 +465,13 @@ $tests['home page rotates all astrologers instead of showing only three fixed ca
     foreach(['+ Follow','4.9 | 500+',"['online', 'busy', 'offline']", "['Tamil']", "'N/A') ?> Years"] as $needle) assertTrue(!str_contains($view,$needle), "Home cards should not render invented or dead content: {$needle}");
 };
 
-$tests['astrologer cards use consistent full width portrait frames'] = function (): void {
+$tests['astrologer cards use consistent face focused portrait frames'] = function (): void {
     $css=file_get_contents(app_path('assets/css/band.css'));
-    foreach(['aspect-ratio: 1 / 1','object-position: center;','.astro-carousel .astro-market-card','background:var(--color-white)'] as $needle) assertTrue(str_contains($css,$needle),"Astrologer card CSS should include {$needle}");
+    foreach(['aspect-ratio: 1;','object-position: center;','.astro-market-photo-frame','.astro-carousel .astro-market-card'] as $needle) assertTrue(str_contains($css,$needle),"Astrologer card CSS should include {$needle}");
     assertTrue(!str_contains($css,'.astro-carousel .astrologer-card'),'Homepage carousel should target the actual marketplace card class');
+    foreach (['views/public/home.php', 'views/public/consult.php'] as $viewPath) {
+        assertTrue(str_contains(file_get_contents(app_path($viewPath)), 'astro-market-photo-frame'), "{$viewPath} should use the clipped portrait frame");
+    }
 };
 
 $tests['home hero uses concise current copy and working cta links'] = function (): void {
@@ -618,7 +621,12 @@ $tests['astrologer catalog uses all twenty one client profiles'] = function (): 
     foreach ($astrologers as $astrologer) {
         assertTrue(!empty($astrologer['slug']), 'Every astrologer should have a slug');
         assertTrue(str_contains($astrologer['photo_url'] ?? '', '/astrologers/client/'), 'Astrologer profile images should use extracted client portraits');
-        assertTrue(is_file(app_path(ltrim($astrologer['photo_url'] ?? '', '/'))), 'Every client portrait path should exist');
+        $portraitPath = app_path(ltrim($astrologer['photo_url'] ?? '', '/'));
+        $sourcePath = app_path('assets/images/astrologers/source/' . $astrologer['slug'] . '.jpg');
+        assertTrue(is_file($portraitPath), 'Every client portrait path should exist');
+        assertTrue(is_file($sourcePath), 'Every client card original should be preserved');
+        assertSame([420, 420], array_slice(getimagesize($portraitPath) ?: [], 0, 2), 'Every public portrait should be a 420px square crop');
+        assertSame([1080, 1080], array_slice(getimagesize($sourcePath) ?: [], 0, 2), 'Every preserved client original should retain its 1080px dimensions');
         assertSame(5, (int)($astrologer['message_credit_cost'] ?? 0), 'Message session should cost 5 credits per user message');
         assertSame(0.5, (float)($astrologer['call_credit_per_second'] ?? 0), 'Call session should cost 0.5 credits per second');
     }

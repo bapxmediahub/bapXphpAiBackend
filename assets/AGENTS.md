@@ -8,6 +8,7 @@ Owns CSS, static images, and reusable media assets.
 
 - `css/`: project styling.
 - `images/`: static product, temple, astrologer, logo, and shared image assets.
+- `images/astrologers/source/`: preserved 1080×1080 client card originals; public face crops live in `images/astrologers/client/`.
 
 ## Local Contracts
 
