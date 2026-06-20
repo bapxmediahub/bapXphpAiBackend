@@ -33,7 +33,7 @@ html{scroll-behavior:smooth}
 body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--color-bg);color:var(--color-ink);line-height:1.55;overflow-x:hidden}
 a{color:var(--color-maroon);text-decoration:none}
 img{max-width:100%;height:auto;display:block}
-.site-header{position:sticky;top:0;z-index:100;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:var(--space-lg);min-height:80px;padding:12px 24px;background:rgba(250,247,240,0.98);border-bottom:1px solid rgba(209,179,104,0.45);transition:box-shadow 0.25s ease}
+.site-header{position:relative;top:auto;z-index:100;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:var(--space-lg);min-height:80px;padding:12px 24px;background:rgba(250,247,240,0.98);border-bottom:1px solid rgba(209,179,104,0.45);transition:box-shadow 0.25s ease}
 .site-header.scrolled{box-shadow:var(--shadow-md)}
 .brand{display:flex;align-items:center;gap:var(--space-xs);color:var(--color-ink);font-weight:700;font-size:1rem;text-decoration:none}
  .brand img{width:40px;height:40px;border-radius:50%;border:2px solid var(--color-gold);object-fit:cover;box-shadow:0 0 0 1px rgba(255,255,255,0.9) inset}
@@ -121,7 +121,8 @@ main{padding-bottom:0}
 .astro-market-grid{row-gap:88px;padding-top:64px}
 .astro-market-card,.astro-market-card:hover{position:relative;min-height:352px;padding-top:78px;overflow:visible;border:1px solid var(--color-gold);border-radius:var(--radius-md);background:var(--color-maroon);color:var(--color-white);box-shadow:0 8px 24px rgba(58,0,3,.16);transform:none}
 .astro-market-photo{position:absolute;top:-64px;left:50%;z-index:2;width:136px;height:136px;aspect-ratio:1;overflow:visible;border:0;border-radius:50%;background:transparent;transform:translateX(-50%)}
-.astro-market-photo img{width:136px;height:136px;border:5px solid var(--color-gold);border-radius:50%;background:var(--color-bg-alt);object-fit:cover;object-position:center;box-shadow:0 5px 16px rgba(36,0,2,.3)}
+.astro-market-photo-frame{position:absolute;inset:0;overflow:hidden;border:5px solid var(--color-gold);border-radius:50%;background:var(--color-bg-alt);box-shadow:0 5px 16px rgba(36,0,2,.3)}
+.astro-market-photo img{width:100%;height:100%;border:0;border-radius:0;background:transparent;object-fit:cover;object-position:center;box-shadow:none;transform:none}
 .astro-market-info{justify-items:center;text-align:center}.astro-market-name{min-height:0;color:var(--color-white)}.astro-market-info p{min-height:0;color:var(--color-gold-light)}
 .astro-market-price{justify-content:center;border-top-color:rgba(209,179,104,.32);text-align:center}.astro-market-price strong{color:var(--color-gold)}.astro-market-price span{color:var(--color-gold-light)}
 .astro-market-actions{min-height:72px;padding:4px 20px 20px}.astro-action-row{gap:12px}.astro-action--icon{width:46px;height:46px;min-height:46px;padding:0;border:1px solid var(--color-gold);border-radius:50%;background:var(--color-gold-light);color:var(--color-maroon)}
@@ -190,7 +191,7 @@ nav.open{display:flex}
 .footer-grid{grid-template-columns:1fr}
 .hero-actions{flex-direction:column;align-items:center}
 }
-@media(max-width:743px){.site-header{min-height:64px;padding:8px 12px}.section{padding:48px 0}.home-hero{min-height:auto;padding:48px 16px}.astro-search,.astro-filter{min-height:56px}.support-fab{top:10px;right:68px;bottom:auto;width:44px;height:44px;z-index:101}}
+@media(max-width:743px){.site-header{min-height:64px;padding:8px 12px}.section{padding:48px 0}.home-hero{min-height:auto;padding:48px 16px}.astro-search,.astro-filter{min-height:56px}.support-fab{position:absolute;top:10px;right:68px;bottom:auto;width:44px;height:44px;z-index:101}}
 ';
 echo $critical;
 ?>
