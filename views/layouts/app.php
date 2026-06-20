@@ -27,20 +27,20 @@
 <?php
 // Inline critical CSS for instant first paint — header, nav, hero, product cards, mobile nav
 $critical = '
-:root{--color-ink:#222222;--color-ink-light:#3f3f3f;--color-gold:#ff385c;--color-gold-light:#ffd1da;--color-maroon:#ff385c;--color-maroon-deep:#e00b41;--color-bg:#ffffff;--color-bg-alt:#f7f7f7;--color-border:#dddddd;--color-border-light:#ebebeb;--color-text-muted:#6a6a6a;--color-white:#ffffff;--color-success:#2d8a4e;--color-error:#d64045;--shadow-sm:0 1px 2px rgba(0,0,0,0.08);--shadow-md:0 2px 8px rgba(0,0,0,0.12);--shadow-lg:0 2px 8px rgba(0,0,0,0.12);--radius-md:14px;--radius-lg:20px;--radius-xl:32px;--radius-pill:999px;--space-xs:0.5rem;--space-sm:0.75rem;--space-md:1rem;--space-lg:1.5rem;--space-xl:2rem;--space-2xl:3rem}
+:root{--color-ink:#222222;--color-ink-light:#3f3f3f;--color-gold:#d1b368;--color-gold-light:#f3e8c9;--color-maroon:#3a0003;--color-maroon-deep:#240002;--color-bg:#faf7f0;--color-bg-alt:#f7f0e4;--color-border:#d8ccb7;--color-border-light:#eadfcd;--color-text-muted:#6a6259;--color-white:#ffffff;--color-success:#2d8a4e;--color-error:#d64045;--shadow-sm:0 1px 2px rgba(0,0,0,0.08);--shadow-md:0 2px 8px rgba(0,0,0,0.12);--shadow-lg:0 2px 8px rgba(0,0,0,0.12);--radius-md:14px;--radius-lg:20px;--radius-xl:32px;--radius-pill:999px;--space-xs:0.5rem;--space-sm:0.75rem;--space-md:1rem;--space-lg:1.5rem;--space-xl:2rem;--space-2xl:3rem}
 *,*::before,*::after{box-sizing:border-box;-webkit-font-smoothing:antialiased}
 html{scroll-behavior:smooth}
 body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--color-bg);color:var(--color-ink);line-height:1.55;overflow-x:hidden}
 a{color:var(--color-maroon);text-decoration:none}
 img{max-width:100%;height:auto;display:block}
-.site-header{position:sticky;top:0;z-index:100;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:var(--space-lg);min-height:80px;padding:12px 24px;background:rgba(255,255,255,0.98);border-bottom:1px solid var(--color-border-light);transition:box-shadow 0.25s ease}
+.site-header{position:sticky;top:0;z-index:100;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:var(--space-lg);min-height:80px;padding:12px 24px;background:rgba(250,247,240,0.98);border-bottom:1px solid rgba(209,179,104,0.45);transition:box-shadow 0.25s ease}
 .site-header.scrolled{box-shadow:var(--shadow-md)}
 .brand{display:flex;align-items:center;gap:var(--space-xs);color:var(--color-ink);font-weight:700;font-size:1rem;text-decoration:none}
  .brand img{width:40px;height:40px;border-radius:50%;border:2px solid var(--color-gold);object-fit:cover;box-shadow:0 0 0 1px rgba(255,255,255,0.9) inset}
 nav{display:flex;gap:var(--space-lg);font-size:0;justify-content:center}
 nav a{position:relative;font-weight:500;color:var(--color-ink);padding:var(--space-xs) 0;font-size:0.9rem;text-decoration:none}
 nav a:hover,nav a[aria-current="page"]{color:var(--color-ink)}
-nav a[aria-current="page"]::after{position:absolute;right:0;bottom:-7px;left:0;height:2px;border-radius:999px;background:var(--color-maroon);content:""}
+nav a[aria-current="page"]::after{position:absolute;right:0;bottom:-7px;left:0;height:2px;border-radius:999px;background:var(--color-gold);content:""}
 .header-actions{display:flex;align-items:center;gap:var(--space-md)}
 .cart-btn{background:transparent;border:0;font-size:1.3rem;cursor:pointer;position:relative;color:var(--color-ink);padding:var(--space-xs);border-radius:var(--radius-md)}
  .cart-count{position:absolute;top:-6px;right:-8px;background:var(--color-maroon);color:var(--color-white);font-size:0.6rem;width:16px;height:16px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:bold}
@@ -49,7 +49,7 @@ main{padding-bottom:0}
 .container{max-width:1300px;margin:0 auto;padding:0 var(--space-xl)}
 .section{padding:64px 0}
 .section--alt{background:var(--color-bg-alt)}
-.home-hero{position:relative;min-height:560px;display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2xl);align-items:center;padding:64px 5vw;background:var(--color-white);border-bottom:1px solid var(--color-border-light)}
+.home-hero{position:relative;min-height:560px;display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2xl);align-items:center;padding:64px 5vw;background:var(--color-bg);border-bottom:1px solid var(--color-border-light)}
 .hero-copy h1{font-family:Inter,system-ui,sans-serif;font-size:1.75rem;line-height:1.2;margin:0 0 var(--space-md);color:var(--color-ink)}
 .lede{font-size:1rem;line-height:1.7;color:var(--color-text-muted);margin-bottom:var(--space-lg)}
  .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-xs);min-height:48px;padding:0 24px;border-radius:8px;font-weight:600;cursor:pointer;border:0;text-decoration:none;font-size:0.85rem;white-space:nowrap;line-height:1.4;transition:background 0.2s ease,border-color 0.2s ease}
@@ -65,6 +65,7 @@ main{padding-bottom:0}
  .product-card{background:var(--color-white);border:1px solid var(--color-border-light);border-radius:var(--radius-md);overflow:hidden;transition:box-shadow 0.2s ease,border-color 0.2s ease;box-shadow:none}
 .product-card:hover{box-shadow:var(--shadow-md);border-color:var(--color-border)}
 .product-card__image{position:relative;overflow:hidden;aspect-ratio:1}
+.product-card__image{background:var(--color-bg-alt)}
 .product-card__image img{width:100%;height:100%;object-fit:cover;transition:transform 0.4s ease}
 .product-card:hover .product-card__image img{transform:scale(1.05)}
 .product-card__badge{position:absolute;top:var(--space-sm);left:var(--space-sm);padding:0.2rem 0.6rem;border-radius:var(--radius-pill);font-size:0.65rem;font-weight:700;text-transform:uppercase}
@@ -82,14 +83,14 @@ main{padding-bottom:0}
 .panel:hover{box-shadow:var(--shadow-md)}
 .astrologer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:var(--space-xl)}
  .astrologer-card{background:var(--color-white);border:1px solid var(--color-border);border-radius:18px;overflow:hidden;transition:all 0.3s ease;box-shadow:var(--shadow-sm)}
-.astrologer-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-xl);border-color:rgba(255, 56, 92,0.65)}
-.astrologer-card__media{position:relative;aspect-ratio:3/4;overflow:hidden;background:linear-gradient(180deg,rgba(34, 34, 34,0.02),rgba(34, 34, 34,0.08)),linear-gradient(135deg,rgba(255, 56, 92,0.12),rgba(255,255,255,0.2))}
+.astrologer-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-xl);border-color:rgba(58, 0, 3,0.65)}
+.astrologer-card__media{position:relative;aspect-ratio:3/4;overflow:hidden;background:linear-gradient(180deg,rgba(34, 34, 34,0.02),rgba(34, 34, 34,0.08)),linear-gradient(135deg,rgba(58, 0, 3,0.12),rgba(255,255,255,0.2))}
  .astrologer-card__photo{width:100%;height:100%;object-fit:cover;object-position:center top;display:block;transform:scale(1.01)}
 .astrologer-card__media::after{content:\'\';position:absolute;inset:auto 0 0 0;height:42%;background:linear-gradient(180deg,rgba(18,12,8,0),rgba(18,12,8,0.28));pointer-events:none}
 .astrologer-card__media-badge{position:absolute;left:var(--space-sm);bottom:var(--space-sm);z-index:1;padding:0.3rem 0.65rem;border-radius:var(--radius-pill);background:rgba(34, 34, 34,0.78);color:var(--color-white);font-size:0.64rem;letter-spacing:0.08em;text-transform:uppercase;backdrop-filter:blur(8px)}
 .astrologer-card__body--portrait{padding:var(--space-md) var(--space-md) var(--space-sm);display:grid;gap:var(--space-xs)}
 .astrologer-card__title-row{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-sm)}
-.astrologer-card__status{padding:0.22rem 0.55rem;border-radius:var(--radius-pill);background:rgba(255, 56, 92,0.16);color:var(--color-maroon);font-size:0.64rem;font-weight:700;text-transform:uppercase;white-space:nowrap}
+.astrologer-card__status{padding:0.22rem 0.55rem;border-radius:var(--radius-pill);background:rgba(58, 0, 3,0.16);color:var(--color-maroon);font-size:0.64rem;font-weight:700;text-transform:uppercase;white-space:nowrap}
 .astrologer-card__speciality{margin:0;color:var(--color-text-muted);font-size:0.84rem}
 .astrologer-card__bio{margin:0;color:var(--color-ink);font-size:0.83rem;line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .astrologer-card__meta{display:flex;flex-wrap:wrap;gap:var(--space-xs);font-size:0.72rem;color:var(--color-text-muted)}
@@ -117,19 +118,27 @@ main{padding-bottom:0}
 .nav-item{display:flex;flex-direction:column;align-items:center;padding:var(--space-xs) 0;color:var(--color-text-muted);font-size:0.6rem;text-decoration:none;min-height:48px;justify-content:center}
 .nav-item .icon svg{width:20px;height:20px;margin-bottom:2px}
 .astro-search,.astro-filter{min-height:64px;border-radius:var(--radius-pill);background:var(--color-white);border-color:var(--color-border);box-shadow:var(--shadow-sm)}
-.astro-market-card,.astrologer-card,.panel{border-color:var(--color-border-light);border-radius:var(--radius-md);box-shadow:none}
-.astro-market-card:hover,.astrologer-card:hover,.panel:hover{transform:none;border-color:var(--color-border);box-shadow:var(--shadow-md)}
+.astro-market-grid{row-gap:88px;padding-top:64px}
+.astro-market-card,.astro-market-card:hover{position:relative;min-height:352px;padding-top:78px;overflow:visible;border:1px solid var(--color-gold);border-radius:var(--radius-md);background:var(--color-maroon);color:var(--color-white);box-shadow:0 8px 24px rgba(58,0,3,.16);transform:none}
+.astro-market-photo{position:absolute;top:-64px;left:50%;z-index:2;width:136px;height:136px;aspect-ratio:1;overflow:visible;border:0;border-radius:50%;background:transparent;transform:translateX(-50%)}
+.astro-market-photo img{width:136px;height:136px;border:5px solid var(--color-gold);border-radius:50%;background:var(--color-bg-alt);object-fit:cover;object-position:center;box-shadow:0 5px 16px rgba(36,0,2,.3)}
+.astro-market-info{justify-items:center;text-align:center}.astro-market-name{min-height:0;color:var(--color-white)}.astro-market-info p{min-height:0;color:var(--color-gold-light)}
+.astro-market-price{justify-content:center;border-top-color:rgba(209,179,104,.32);text-align:center}.astro-market-price strong{color:var(--color-gold)}.astro-market-price span{color:var(--color-gold-light)}
+.astro-market-actions{min-height:72px;padding:4px 20px 20px}.astro-action-row{gap:12px}.astro-action--icon{width:46px;height:46px;min-height:46px;padding:0;border:1px solid var(--color-gold);border-radius:50%;background:var(--color-gold-light);color:var(--color-maroon)}
+.astro-status-label{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+.astrologer-card,.panel{border-color:var(--color-border-light);border-radius:var(--radius-md);box-shadow:none}
+.astrologer-card:hover,.panel:hover{transform:none;border-color:var(--color-border);box-shadow:var(--shadow-md)}
 .support-fab{background:var(--color-maroon);box-shadow:var(--shadow-md)}
-.site-footer{background:var(--color-white);color:var(--color-text-muted);padding:var(--space-2xl) 0 var(--space-md);font-size:0.85rem;border-top:1px solid var(--color-border-light)}
+.site-footer{background:var(--color-maroon);color:var(--color-gold-light);padding:var(--space-2xl) 0 var(--space-md);font-size:0.85rem;border-top:1px solid var(--color-gold)}
 .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:var(--space-xl);margin-bottom:var(--space-xl)}
-.footer-brand{font-family:Inter,system-ui,sans-serif;font-size:1.2rem;color:var(--color-ink);font-weight:600;display:block;margin-bottom:var(--space-xs)}
+.footer-brand{font-family:Inter,system-ui,sans-serif;font-size:1.2rem;color:var(--color-gold);font-weight:600;display:block;margin-bottom:var(--space-xs)}
 .footer-desc{font-size:0.85rem;line-height:1.6;opacity:0.7}
-.footer-heading{font-size:0.75rem;text-transform:uppercase;letter-spacing:0;color:var(--color-ink);margin:0 0 var(--space-sm)}
+.footer-heading{font-size:0.75rem;text-transform:uppercase;letter-spacing:0;color:var(--color-gold);margin:0 0 var(--space-sm)}
 .footer-links{list-style:none;padding:0;margin:0}
 .footer-links li{margin-bottom:var(--space-xs)}
-.footer-links a{color:var(--color-text-muted);text-decoration:none;font-size:0.85rem}
-.footer-links a:hover{color:var(--color-ink)}
-.footer-bottom{text-align:center;padding-top:var(--space-md);border-top:1px solid var(--color-border-light);font-size:0.75rem;color:var(--color-text-muted)}
+.footer-links a{color:var(--color-gold-light);text-decoration:none;font-size:0.85rem}
+.footer-links a:hover{color:var(--color-white)}
+.footer-bottom{text-align:center;padding-top:var(--space-md);border-top:1px solid rgba(209,179,104,0.3);font-size:0.75rem;color:var(--color-gold-light)}
 .flash{padding:var(--space-md);border-radius:var(--radius-md);margin-bottom:var(--space-md);font-size:0.85rem;font-weight:500}
 .flash--success{background:#e8f5ed;color:var(--color-success)}
 .flash--error{background:#fde8e9;color:var(--color-error)}
@@ -181,7 +190,7 @@ nav.open{display:flex}
 .footer-grid{grid-template-columns:1fr}
 .hero-actions{flex-direction:column;align-items:center}
 }
-@media(max-width:743px){.site-header{min-height:64px;padding:8px 12px}.section{padding:48px 0}.home-hero{min-height:auto;padding:48px 16px}.astro-search,.astro-filter{min-height:56px}}
+@media(max-width:743px){.site-header{min-height:64px;padding:8px 12px}.section{padding:48px 0}.home-hero{min-height:auto;padding:48px 16px}.astro-search,.astro-filter{min-height:56px}.support-fab{top:10px;right:68px;bottom:auto;width:44px;height:44px;z-index:101}}
 ';
 echo $critical;
 ?>

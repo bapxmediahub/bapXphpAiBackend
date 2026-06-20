@@ -4,8 +4,8 @@ This is the canonical visual contract for customer-facing pages in `views/` and 
 
 ## Principles
 
-- Keep the interface calm, white, photo-first, and content-led.
-- Use one public brand accent. Decorative spiritual imagery may retain its source colors, but UI chrome must not reintroduce a competing gold, maroon, or gradient theme.
+- Keep the interface calm, warm-neutral, photo-first, and content-led.
+- Use the client-supplied deep maroon and muted gold as the public brand pair. Decorative spiritual imagery may retain its source colors, but UI chrome must not introduce unrelated accent colors.
 - Prefer whitespace, typography, hairline borders, and one restrained shadow tier over decorative panels.
 - Keep the existing PHP templates, routes, forms, and JSON-backed behavior. Design changes must not scaffold a second frontend.
 
@@ -13,9 +13,9 @@ This is the canonical visual contract for customer-facing pages in `views/` and 
 
 ### Color
 
-- Canvas: `#ffffff`
-- Soft surface: `#f7f7f7`
-- Subtle surface: `#f2f2f2`
+- Canvas: `#faf7f0`
+- Soft surface: `#f7f0e4`
+- Subtle surface: `#efe5d3`
 - Primary ink: `#222222`
 - Body ink: `#3f3f3f`
 - Muted ink: `#6a6a6a`
@@ -23,9 +23,10 @@ This is the canonical visual contract for customer-facing pages in `views/` and 
 - Hairline border: `#dddddd`
 - Soft divider: `#ebebeb`
 - Strong border: `#c1c1c1`
-- Brand / primary action: `#ff385c`
-- Brand active: `#e00b41`
-- Brand disabled: `#ffd1da`
+- Brand primary / deep maroon: `#3a0003`
+- Brand primary active: `#240002`
+- Brand secondary / muted gold: `#d1b368`
+- Brand secondary light: `#f3e8c9`
 - Success and error colors are semantic exceptions and must not become general decoration.
 
 ### Typography
@@ -50,12 +51,13 @@ This is the canonical visual contract for customer-facing pages in `views/` and 
 
 - Header: white, approximately `80px` high on desktop, hairline bottom border, compact logo, centered primary navigation, active underline, and right-aligned account/cart actions.
 - Navigation: retain the product's real routes and labels. Do not copy reference-product labels that do not exist in this application.
-- Buttons: primary buttons use solid `#ff385c` with white text. Secondary buttons use white or transparent backgrounds, ink text, and a hairline border. Hover states must not move layout.
+- Buttons: primary buttons use solid `#3a0003` with white text. Secondary buttons use muted gold or warm-neutral backgrounds with maroon text. Hover states must not move layout.
 - Forms: white fields, clear labels, `8px` radius, strong ink focus ring, and no glow effects.
 - Search/filter surfaces: use a single rounded search control or a quiet grouped filter row; keep labels and values readable without card nesting.
-- Cards: image first, consistent crop, compact hierarchy, restrained metadata, and no ornamental overlays. Hover may add the standard shadow but must not translate or scale the card.
+- Product cards: image first, consistent crop, warm-neutral image background, compact hierarchy, and restrained metadata.
+- Astrologer cards: deep-maroon content panel with a circular portrait centered across the top edge, approximately half outside the panel. Message, call, and profile are three equal circular icon controls in one row; unavailable session actions remain visibly disabled while profile stays available.
 - Hero: keep the actual deity imagery visible and correctly framed against white or a soft neutral surface. Text remains compact and left aligned on desktop; slides must show one image at a time.
-- Footer: white or soft neutral with ink text and a hairline top border. Do not use a dark promotional footer.
+- Footer: deep maroon with muted-gold headings and warm-neutral body text, separated from content by a gold hairline.
 
 ## Responsive Rules
 

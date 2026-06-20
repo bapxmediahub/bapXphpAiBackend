@@ -26,6 +26,7 @@ Owns PHP-rendered public, account, admin, and layout templates.
 - Keep customer and astrologer consultation rooms participant-scoped and backed by the existing PHP API endpoints.
 - Remove or wire dead buttons, placeholder cards, duplicated fallbacks, and stale labels before finishing.
 - Astrologer marketplace and homepage cards must use real profile availability, rates, optional metadata, and verified review totals; do not fabricate states, ratings, counts, languages, or experience.
+- Astrologer marketplace and homepage cards share the circular top-overlapping portrait layout and three icon actions. Keep unavailable message/call actions disabled rather than wiring false availability; profile remains navigable.
 
 ## Verification
 

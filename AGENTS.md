@@ -54,7 +54,7 @@ This repo is an agent-ready PHP/JSON full-stack product base for small PHP hosti
 - Keep route -> controller -> service -> JSON-store boundaries.
 - Keep consultation communication in authenticated `/api/consultations/*` endpoints backed by `ConsultationService`; do not add a CLI or WebSocket service.
 - Do not add React, CDN React, a SPA fallback, or a second frontend.
-- Customer-facing UI changes must follow `Design.md`: white canvas, Inter/system sans typography, one `#ff385c` brand accent, stable photo-first cards, restrained borders/shadows, and the documented responsive breakpoints.
+- Customer-facing UI changes must follow `Design.md`: warm-neutral canvas, Inter/system sans typography, `#3A0003` primary maroon, `#D1B368` secondary gold, stable photo-first cards, restrained borders/shadows, and the documented responsive breakpoints.
 - Admin mutations should be auditable.
 - User-specific assistant context must use `AgentContextService` or equivalent filtering. Never expose all users' JSON data to a customer assistant.
 - Product, temple, and astrologer media should use the media library picker/upload flow.

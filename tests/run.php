@@ -405,15 +405,15 @@ $tests['astrologer marketplace exposes search and direct session actions'] = fun
     assertTrue(!str_contains($view, 'Available Balance'), 'Astrologer marketplace should not show account balance; that belongs in the user panel');
     assertTrue(!str_contains($view, 'href="/recharge"'), 'Astrologer marketplace should not show recharge; that belongs in the logged-in user panel');
     assertTrue(!str_contains($view, 'astro-recharge'), 'Astrologer marketplace should not render a recharge toolbar action');
-    assertTrue(!str_contains($view, 'OFFLINE'), 'Unavailable astrologers should show one waitlist action instead of a disabled offline plus call pair');
-    assertTrue(substr_count($view, 'astro-action--queue') === 1, 'Unavailable astrologer template should render one waitlist action');
-    foreach (['aria-label="Start message session"', 'aria-label="Start call session"', 'Join Waitlist', 'View Profile', 'astro-status-label'] as $needle) {
+    assertTrue(substr_count($view, 'astro-action--disabled') >= 2, 'Unavailable astrologers should keep message and call icons visibly disabled');
+    assertTrue(str_contains($view, 'queue_status'), 'Busy astrologers should retain a real message waitlist action');
+    foreach (['aria-label="Start message session"', 'aria-label="Start call session"', 'Join message waitlist', 'View Profile', 'astro-action--profile', 'astro-status-label'] as $needle) {
         assertTrue(str_contains($view, $needle), "Astrologer marketplace should expose {$needle} actions");
     }
     foreach (['+ Follow', 'Flat Deal', "['online', 'busy', 'offline']", '125 + ($index * 247)', "['Tamil']", "'N/A') ?> Years"] as $needle) {
         assertTrue(!str_contains($view, $needle), "Astrologer marketplace should not render invented or dead content: {$needle}");
     }
-    assertTrue(str_contains($view, 'astro-action-row'), 'Message and call icon buttons should sit below each astrologer card content');
+    assertTrue(str_contains($view, 'astro-action-row'), 'Message, call, and profile icon buttons should share one card action row');
     assertTrue(!str_contains($view, 'Check Availability'), 'Astrologer marketplace should not use appointment availability CTA');
 };
 
