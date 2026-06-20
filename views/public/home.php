@@ -74,7 +74,7 @@
             ?>
             <article class="astro-market-card astro-market-card--<?= e($state) ?> reveal">
                 <a class="astro-market-photo" href="/consult/<?= e($astro['slug'] ?? '') ?>" aria-label="View <?= e($astro['name'] ?? 'Astrologer') ?>">
-                    <img src="<?= e($astro['photo_url'] ?? 'https://placehold.co/800x1000/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($astro['name'] ?? 'Astrologer') ?>" loading="lazy">
+                    <span class="astro-market-photo-frame"><img class="astro-market-photo-img astro-market-photo-img--<?= e($astro['slug'] ?? 'default') ?>" src="<?= e($astro['photo_url'] ?? 'https://placehold.co/800x1000/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($astro['name'] ?? 'Astrologer') ?>" loading="lazy"></span>
                     <span class="astro-status-dot" aria-label="<?= e(ucfirst($state)) ?>"></span>
                     <span class="astro-status-label"><?= e($statusLabel) ?></span>
                 </a>

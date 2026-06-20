@@ -49,13 +49,13 @@ This is the canonical visual contract for customer-facing pages in `views/` and 
 
 ## Components
 
-- Header: white, approximately `80px` high on desktop, hairline bottom border, compact logo, centered primary navigation, active underline, and right-aligned account/cart actions.
+- Header: warm-neutral, approximately `80px` high on desktop, non-sticky, with a hairline bottom border, compact logo, centered primary navigation, active underline, and right-aligned account/cart actions. It must not cover overlapping card portraits during scroll.
 - Navigation: retain the product's real routes and labels. Do not copy reference-product labels that do not exist in this application.
 - Buttons: primary buttons use solid `#3a0003` with white text. Secondary buttons use muted gold or warm-neutral backgrounds with maroon text. Hover states must not move layout.
 - Forms: white fields, clear labels, `8px` radius, strong ink focus ring, and no glow effects.
 - Search/filter surfaces: use a single rounded search control or a quiet grouped filter row; keep labels and values readable without card nesting.
 - Product cards: image first, consistent crop, warm-neutral image background, compact hierarchy, and restrained metadata.
-- Astrologer cards: deep-maroon content panel with a circular portrait centered across the top edge, approximately half outside the panel. Message, call, and profile are three equal circular icon controls in one row; unavailable session actions remain visibly disabled while profile stays available.
+- Astrologer cards: deep-maroon content panel with a circular portrait centered across the top edge, approximately half outside the panel. Crop the supplied square portrait around the face and remove its unused red template area from the visible circle; do not render the raw square edge-to-edge. Message, call, and profile are three equal circular icon controls in one row; unavailable session actions remain visibly disabled while profile stays available.
 - Hero: keep the actual deity imagery visible and correctly framed against white or a soft neutral surface. Text remains compact and left aligned on desktop; slides must show one image at a time.
 - Footer: deep maroon with muted-gold headings and warm-neutral body text, separated from content by a gold hairline.
 
@@ -69,5 +69,5 @@ This is the canonical visual contract for customer-facing pages in `views/` and 
 ## Verification
 
 - Check the home page and `/consult` at desktop and mobile widths in a real browser.
-- Confirm image crops, active navigation, focus states, white canvas, card alignment, and footer contrast.
+- Confirm all 21 image crops, active navigation, focus states, warm-neutral canvas, card alignment, and footer contrast.
 - Run the repo's PHP tests, project-map validation, and local smoke test before commit or push.
