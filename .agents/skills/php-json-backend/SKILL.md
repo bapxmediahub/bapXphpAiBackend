@@ -6,6 +6,7 @@ description: Use this skill set when contributing to this PHP/JSON agent-ready m
 # PHP JSON Backend
 
 - Read `AGENTS.md` first, then the closest child `AGENTS.md` for every path you will touch.
+- Reproduce or inspect the behavior and pinpoint its owning map/source path before selecting or creating the implementation issue.
 - Keep JSON storage first and keep route -> controller -> service -> JSON-store boundaries.
 - Use `storage/schema/collections.json` before changing collection shape, admin fields, media fields, seed data, or agent-visible context.
 - Use `docs/systematic-map.mmd` as the single wiring map. Regenerate it with `php tools/generate-project-map.php` and validate with `php tools/validate-project-map.php`.

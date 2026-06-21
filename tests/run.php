@@ -61,7 +61,9 @@ $tests['project map generation ignores runtime secret stores'] = function (): vo
 
 $tests['project map grounds shared navigation in registered get routes'] = function (): void {
     $scan = ProjectMapService::scan();
-    assertTrue(in_array('/contact', $scan['navigation'], true), 'Shared navigation should expose the existing contact route');
+    foreach (['/contact', '/account/orders', '/account/bookings', '/account/wallet'] as $path) {
+        assertTrue(in_array($path, $scan['navigation'], true), "Shared navigation should expose the existing {$path} route");
+    }
     assertSame([], $scan['gaps']['navigation_without_get_route'], 'Every internal shared navigation path should resolve to a registered GET route');
     assertTrue(str_contains(ProjectMapService::renderSystematicMermaid(), 'Navigation Paths'), 'Generated Mermaid should include shared navigation relationships');
     foreach ($scan['gaps'] as $kind => $items) {
@@ -69,10 +71,10 @@ $tests['project map grounds shared navigation in registered get routes'] = funct
     }
 };
 
-$tests['agent workflow is issue tracked and source grounded'] = function (): void {
+$tests['agent workflow diagnoses before issue tracking and stays source grounded'] = function (): void {
     $agents = file_get_contents(app_path('AGENTS.md'));
     $readme = file_get_contents(app_path('README.md'));
-    foreach (['Issue-First Workflow', 'Source-Grounded Work Order', 'Search with `rg`', 'Map validation alone is incomplete'] as $needle) {
+    foreach (['Diagnose, Then Issue', 'reproduce or inspect the reported behavior first', 'pinpoint the owning source before creating an issue', 'Source-Grounded Work Order', 'Search with `rg`', 'Map validation alone is incomplete'] as $needle) {
         assertTrue(str_contains($agents, $needle), "Root AGENTS.md should include {$needle}");
     }
     assertTrue(str_contains($readme, 'authoritative contributor workflow is [AGENTS.md]'), 'README should point to AGENTS.md instead of duplicating its workflow');
@@ -646,6 +648,21 @@ $tests['account pages expose review forms only for ended sessions and due shippe
     assertTrue(str_contains($ordersView, 'star-rating-input'), 'Product review form should show a five-star input');
     assertTrue(str_contains($ordersView, 'Delivery Address'), 'User orders should show delivery address');
     assertTrue(str_contains($ordersView, 'Shipped At'), 'User orders should show shipped time or processing detail');
+};
+
+$tests['authenticated navigation separates global and internal account menus'] = function (): void {
+    $layout = file_get_contents(app_path('views/layouts/app.php'));
+    $accountNav = file_get_contents(app_path('views/account/_nav.php'));
+    assertTrue(str_contains($layout, '>Dashboard</a>') && str_contains($layout, 'href="/logout"'), 'Authenticated global navigation should expose Dashboard and Logout');
+    assertTrue(!str_contains($layout, '>My Sessions</a>') && !str_contains($layout, '>Wallet</a>'), 'Authenticated global navigation should not duplicate internal account destinations');
+    foreach (['/account/orders', '/account/bookings', '/account/wallet', 'Back to Home'] as $needle) {
+        assertTrue(str_contains($accountNav, $needle), "Shared account navigation should include {$needle}");
+    }
+    foreach (['orders.php', 'bookings.php', 'wallet.php'] as $view) {
+        $contents = file_get_contents(app_path('views/account/' . $view));
+        assertTrue(str_contains($contents, "require __DIR__ . '/_nav.php'"), "{$view} should reuse shared account navigation");
+        assertTrue(!str_contains($contents, '<aside class="account-nav">'), "{$view} should not duplicate account navigation markup");
+    }
 };
 
 $tests['astrologer catalog uses all twenty one client profiles'] = function (): void {
