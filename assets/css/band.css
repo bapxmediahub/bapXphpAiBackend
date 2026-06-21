@@ -2849,6 +2849,8 @@ h1, h2, h3, h4, h5, h6,
 body { background: var(--color-bg); }
 
 .site-header {
+    position: relative;
+    top: auto;
     background: rgba(250, 247, 240, 0.98);
     border-bottom-color: rgba(209, 179, 104, 0.45);
 }
@@ -2912,15 +2914,26 @@ body { background: var(--color-bg); }
     transform: translateX(-50%);
 }
 
-.astro-market-photo img {
-    width: 136px;
-    height: 136px;
+.astro-market-photo-frame {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
     border: 5px solid var(--color-gold);
     border-radius: 50%;
     background: var(--color-bg-alt);
+    box-shadow: 0 5px 16px rgba(36, 0, 2, 0.3);
+}
+
+.astro-market-photo img {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
     object-fit: cover;
     object-position: center;
-    box-shadow: 0 5px 16px rgba(36, 0, 2, 0.3);
+    box-shadow: none;
+    transform: none;
 }
 
 .astro-status-dot {
@@ -3036,7 +3049,7 @@ body { background: var(--color-bg); }
     .astro-market-card,
     .astro-market-card:hover { min-height: 332px; padding-top: 66px; }
     .astro-market-photo { top: -54px; width: 116px; height: 116px; }
-    .astro-market-photo img { width: 116px; height: 116px; border-width: 4px; }
+    .astro-market-photo-frame { border-width: 4px; }
     .astro-status-dot { right: 5px; bottom: 9px; }
     .astro-market-info { padding-right: 14px; padding-left: 14px; }
     .astro-market-actions { padding-right: 14px; padding-left: 14px; }
@@ -3044,6 +3057,7 @@ body { background: var(--color-bg); }
     .astro-action--icon { width: 44px; height: 44px; min-height: 44px; padding: 0; }
     .astro-carousel { padding-top: 62px; }
     .support-fab {
+        position: absolute;
         top: 10px;
         right: 68px;
         bottom: auto;
