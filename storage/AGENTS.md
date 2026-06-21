@@ -14,6 +14,7 @@ Owns JSON database files, schema contracts, backups, runtime keys, locks, and wr
 ## Local Contracts
 
 - Update `storage/schema/collections.json` before changing collection shapes, admin fields, media fields, seed data, or agent-visible context.
+- Keep every application collection declared in the schema even when its JSON file is created lazily at first write; test fixtures and runtime secrets are not application collections.
 - Keep persistent data JSON-first unless the user explicitly requests a separate SQL migration.
 - Do not expose secrets or all users' JSON data to customer-facing assistant context.
 

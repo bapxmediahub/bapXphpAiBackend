@@ -4,7 +4,11 @@ final class ProjectMapService {
     private const PROJECT_MAP_EXCLUDED_STORAGE = [
         'adminsecrets',
         'settings.secrets',
+        'test_race',
     ];
+    private const NON_ROUTE_CONTROLLERS = ['BaseController'];
+    private const NON_ROUTE_SERVICES = ['SmtpMailer'];
+    private const SHARED_OR_ERROR_VIEWS = ['layouts/admin', 'layouts/app', 'public/404'];
 
     public static function registry(): array {
         $routes = [
@@ -68,7 +72,7 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/admin/integrations','name'=>'admin.integrations','page'=>'admin/integrations','controller'=>'AdminController@integrations','services'=>['SettingsService','PaymentService','SecretService']],
             ['method'=>'GET','path'=>'/admin/backups','name'=>'admin.backups','page'=>'admin/list','controller'=>'AdminController@backups','services'=>['JsonStoreService']],
             ['method'=>'GET','path'=>'/admin/audit-log','name'=>'admin.audit','page'=>'admin/list','controller'=>'AdminController@audit','services'=>['AuditLogService']],
-            ['method'=>'GET','path'=>'/admin/contact-submissions','name'=>'admin.contact-submissions','page'=>'admin/contact-submissions','controller'=>'AdminController@contactSubmissions','services'=>['ContactService']],
+            ['method'=>'GET','path'=>'/admin/contact-submissions','name'=>'admin.contact-submissions','page'=>'admin/resource','controller'=>'AdminController@contactSubmissions','services'=>['ContactService']],
             ['method'=>'GET','path'=>'/admin/support-tickets','name'=>'admin.support-tickets','page'=>'admin/list','controller'=>'AdminController@supportTickets','services'=>['JsonStoreService']],
             ['method'=>'GET','path'=>'/admin/media','name'=>'admin.media','page'=>'admin/media','controller'=>'AdminController@media','services'=>['MediaService']],
             ['method'=>'POST','path'=>'/admin/media/upload','name'=>'admin.media.upload','page'=>'admin/media','controller'=>'AdminController@uploadMedia','services'=>['MediaService','AuditLogService']],
@@ -94,7 +98,7 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/appointments/book','name'=>'appointments.book','page'=>'public/astrologer','controller'=>'BookingController@book','services'=>['AuthService','ResourceService','AstrologerService']],
             ['method'=>'POST','path'=>'/reviews/astrologer','name'=>'reviews.astrologer','page'=>'account/bookings','controller'=>'ReviewController@saveAstrologer','services'=>['ReviewService']],
             ['method'=>'POST','path'=>'/reviews/product','name'=>'reviews.product','page'=>'account/orders','controller'=>'ReviewController@saveProduct','services'=>['ReviewService']],
-            ['method'=>'POST','path'=>'/support/ask','name'=>'support.ask','page'=>'public/support','controller'=>'SupportController@ask','services'=>['SupportBotService','AgentContextService']],
+            ['method'=>'POST','path'=>'/support/ask','name'=>'support.ask','page'=>null,'response'=>'json','controller'=>'SupportController@ask','services'=>['SupportBotService','AgentContextService']],
         ];
         foreach ($routes as &$route) {
             if ((str_starts_with($route['path'], '/admin') || str_starts_with($route['path'], '/reviews')) && !in_array('AuthService', $route['services'], true)) {
@@ -106,14 +110,14 @@ final class ProjectMapService {
             'routes'=>$routes,
             'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AstrologerAccountService','AppointmentService','ConsultationService','TempleService','SettingsService','ProjectMapService','JsonStoreService','AuditLogService','ResourceService','SecretService','EnvService','ContactService','ReviewService','PasswordResetService','MailQueueService','WalletService','SupportBotService','MediaService','StoragePermissionService','SchemaService','AgentContextService'],
             'integrations'=>['GoogleOAuthClient','RazorpayClient'],
-            'collections'=>['users','products','categories','coupons','orders','astrologers','appointments','consultation_messages','consultation_signals','temples','settings','audit_events','reviews','mail_queue','wallet_transactions','support_tickets','media_files'],
+            'collections'=>['users','products','categories','coupons','orders','astrologers','appointments','consultation_messages','consultation_signals','temples','settings','audit_events','reviews','mail_queue','wallet_transactions','support_tickets','media_files','contact_submissions'],
         ];
     }
     public static function validate(array $map): array {
-        $missingRouteMappings = array_values(array_filter($map['routes'], fn($r) => empty($r['controller']) || empty($r['page'])));
+        $missingRouteMappings = array_values(array_filter($map['routes'], fn($r) => empty($r['controller']) || (empty($r['page']) && empty($r['response']))));
         $used = array_unique(array_merge(...array_map(fn($r) => $r['services'], $map['routes'])));
         $missingServices = array_values(array_diff($used, $map['services']));
-        return ['missing_route_mappings'=>$missingRouteMappings,'missing_services'=>$missingServices,'missing_collections'=>array_values(array_diff(['users','products','categories','coupons','orders','astrologers','appointments','consultation_messages','consultation_signals','temples','settings','audit_events','reviews','mail_queue','wallet_transactions','support_tickets','media_files'], $map['collections']))];
+        return ['missing_route_mappings'=>$missingRouteMappings,'missing_services'=>$missingServices,'missing_collections'=>array_values(array_diff(['users','products','categories','coupons','orders','astrologers','appointments','consultation_messages','consultation_signals','temples','settings','audit_events','reviews','mail_queue','wallet_transactions','support_tickets','media_files','contact_submissions'], $map['collections']))];
     }
 
     public static function scan(): array {
@@ -127,6 +131,11 @@ final class ProjectMapService {
         $integrations = self::phpBasenames(app_path('integrations'));
         $tools = self::phpBasenames(app_path('tools'));
         $storageFiles = self::jsonBasenames(app_path('storage/data'));
+        $navigation = self::internalNavigationPaths(app_path('views/layouts/app.php'));
+        $getRoutePaths = array_values(array_unique(array_map(
+            fn($route) => (string)$route['path'],
+            array_filter($map['routes'], fn($route) => ($route['method'] ?? '') === 'GET')
+        )));
 
         $routeControllers = array_values(array_unique(array_map(
             fn($route) => explode('@', (string)($route['controller'] ?? ''))[0] ?? '',
@@ -137,14 +146,14 @@ final class ProjectMapService {
         $routeViews = array_values(array_unique(array_filter(array_map(fn($route) => $route['page'] ?? '', $map['routes']))));
 
         $gaps = [
-            'missing_route_mappings' => array_values(array_filter($map['routes'], fn($route) => empty($route['controller']) || empty($route['page']))),
+            'missing_route_mappings' => array_values(array_filter($map['routes'], fn($route) => empty($route['controller']) || (empty($route['page']) && empty($route['response'])))),
+            'navigation_without_get_route' => array_values(array_diff($navigation, $getRoutePaths)),
             'missing_controller_files' => array_values(array_diff($routeControllers, $controllers)),
             'missing_service_files' => array_values(array_diff($routeServices, $services)),
             'missing_view_files' => array_values(array_diff($routeViews, $views)),
-            'unwired_controllers' => array_values(array_diff($controllers, $routeControllers)),
-            'unwired_services' => array_values(array_diff($services, $routeServices)),
-            'unwired_views' => array_values(array_diff($views, $routeViews)),
-            'schema_without_file' => array_values(array_diff($schemaCollections, $storageFiles)),
+            'unwired_controllers' => array_values(array_diff($controllers, $routeControllers, self::NON_ROUTE_CONTROLLERS)),
+            'unwired_services' => array_values(array_diff($services, $routeServices, self::NON_ROUTE_SERVICES)),
+            'unwired_views' => array_values(array_diff($views, $routeViews, self::SHARED_OR_ERROR_VIEWS)),
             'file_without_schema' => array_values(array_diff($storageFiles, $schemaCollections)),
         ];
 
@@ -157,6 +166,7 @@ final class ProjectMapService {
             'schema_collections' => $schemaCollections,
             'storage_files' => $storageFiles,
             'tools' => $tools,
+            'navigation' => $navigation,
             'gaps' => $gaps,
             'summary' => [
                 'routes' => count($map['routes']),
@@ -167,6 +177,7 @@ final class ProjectMapService {
                 'schema_collections' => count($schemaCollections),
                 'storage_files' => count($storageFiles),
                 'tools' => count($tools),
+                'navigation' => count($navigation),
                 'gaps' => array_sum(array_map('count', $gaps)),
             ],
         ];
@@ -181,6 +192,7 @@ final class ProjectMapService {
             '  classDef code fill:#ecfdf5,stroke:#047857,color:#064e3b',
             '  classDef data fill:#fef3c7,stroke:#b45309,color:#78350f',
             '  classDef tool fill:#ede9fe,stroke:#6d28d9,color:#3b0764',
+            '  classDef nav fill:#fce7f3,stroke:#be185d,color:#831843',
             '',
         ];
 
@@ -203,6 +215,7 @@ final class ProjectMapService {
             'SCHEMA' => ['Schema Collections', $scan['schema_collections'], 'collectionId', 'data'],
             'STORAGE' => ['Storage Data Files', $scan['storage_files'], 'storageId', 'data'],
             'TOOLS' => ['Tools', $scan['tools'], 'toolId', 'tool'],
+            'NAVIGATION' => ['Navigation Paths', $scan['navigation'], 'navigationId', 'nav'],
         ];
 
         foreach ($groups as $key => [$title, $items, $method, $class]) {
@@ -245,6 +258,15 @@ final class ProjectMapService {
             }
         }
 
+        foreach ($scan['navigation'] as $path) {
+            foreach ($scan['routes'] as $route) {
+                if (($route['method'] ?? '') === 'GET' && ($route['path'] ?? '') === $path) {
+                    $lines[] = '  ' . self::navigationId($path) . ' --> ' . self::routeId($route);
+                    break;
+                }
+            }
+        }
+
         foreach (self::serviceCollections() as $service => $collections) {
             foreach ($collections as $collection) {
                 $lines[] = '  ' . self::serviceId($service) . ' --> ' . self::collectionId($collection);
@@ -276,6 +298,9 @@ final class ProjectMapService {
             $lines[] = '  ' . self::toolId('smoke-local') . ' --> ROUTES_PUBLIC';
             $lines[] = '  ' . self::toolId('smoke-local') . ' --> ROUTES_ADMIN';
         }
+        if (in_array('process-mail-queue', $scan['tools'], true)) {
+            $lines[] = '  ' . self::toolId('process-mail-queue') . ' --> ' . self::serviceId('SmtpMailer');
+        }
 
         foreach ($gapNodes as [$kind, $item, $id]) {
             if (is_string($item)) {
@@ -285,10 +310,10 @@ final class ProjectMapService {
                     $lines[] = '  ' . $id . ' -. missing .-> ' . self::viewId($item);
                 } elseif (str_contains($kind, 'controller')) {
                     $lines[] = '  ' . $id . ' -. missing .-> ' . self::controllerId($item);
-                } elseif ($kind === 'schema_without_file') {
-                    $lines[] = '  ' . self::collectionId($item) . ' -. missing file .-> ' . $id;
                 } elseif ($kind === 'file_without_schema') {
                     $lines[] = '  ' . self::storageId($item) . ' -. missing schema .-> ' . $id;
+                } elseif ($kind === 'navigation_without_get_route') {
+                    $lines[] = '  ' . self::navigationId($item) . ' -. missing route .-> ' . $id;
                 }
             }
         }
@@ -330,6 +355,14 @@ final class ProjectMapService {
         }
         sort($names);
         return $names;
+    }
+
+    private static function internalNavigationPaths(string $layout): array {
+        if (!is_file($layout)) return [];
+        preg_match_all('/href="(\/[a-zA-Z0-9_\/-]*)"/', (string)file_get_contents($layout), $matches);
+        $paths = array_values(array_unique($matches[1] ?? []));
+        sort($paths);
+        return $paths;
     }
 
     private static function serviceCollections(): array {
@@ -382,4 +415,5 @@ final class ProjectMapService {
     private static function collectionId(string $name): string { return self::nodeId('collection', $name); }
     private static function storageId(string $name): string { return self::nodeId('storage', $name); }
     private static function toolId(string $name): string { return self::nodeId('tool', $name); }
+    private static function navigationId(string $path): string { return self::nodeId('navigation', $path); }
 }

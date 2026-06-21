@@ -59,12 +59,31 @@ $tests['project map generation ignores runtime secret stores'] = function (): vo
     }
 };
 
+$tests['project map grounds shared navigation in registered get routes'] = function (): void {
+    $scan = ProjectMapService::scan();
+    assertTrue(in_array('/contact', $scan['navigation'], true), 'Shared navigation should expose the existing contact route');
+    assertSame([], $scan['gaps']['navigation_without_get_route'], 'Every internal shared navigation path should resolve to a registered GET route');
+    assertTrue(str_contains(ProjectMapService::renderSystematicMermaid(), 'Navigation Paths'), 'Generated Mermaid should include shared navigation relationships');
+    foreach ($scan['gaps'] as $kind => $items) {
+        assertSame([], $items, "Systematic map should not report unresolved {$kind} gaps");
+    }
+};
+
+$tests['agent workflow is issue tracked and source grounded'] = function (): void {
+    $agents = file_get_contents(app_path('AGENTS.md'));
+    $readme = file_get_contents(app_path('README.md'));
+    foreach (['Issue-First Workflow', 'Source-Grounded Work Order', 'Search with `rg`', 'Map validation alone is incomplete'] as $needle) {
+        assertTrue(str_contains($agents, $needle), "Root AGENTS.md should include {$needle}");
+    }
+    assertTrue(str_contains($readme, 'authoritative contributor workflow is [AGENTS.md]'), 'README should point to AGENTS.md instead of duplicating its workflow');
+};
+
 $tests['repo has agent-readable schema and built-in skills'] = function (): void {
     $schemaPath = app_path('storage/schema/collections.json');
     assertTrue(is_file($schemaPath), 'JSON schema registry should exist');
     $schema = json_decode(file_get_contents($schemaPath), true);
     assertTrue(is_array($schema), 'JSON schema registry should parse');
-    foreach (['products', 'astrologers', 'temples', 'orders', 'appointments', 'wallet_transactions', 'support_tickets', 'media_files'] as $collection) {
+    foreach (['products', 'categories', 'coupons', 'astrologers', 'temples', 'orders', 'appointments', 'wallet_transactions', 'support_tickets', 'media_files', 'audit_events', 'mail_queue', 'reviews', 'settings', 'contact_submissions'] as $collection) {
         assertTrue(isset($schema['collections'][$collection]), "Schema should define {$collection}");
     }
     assertTrue(in_array('image_urls', $schema['collections']['products']['media_fields'] ?? [], true), 'Product schema should define gallery media field');

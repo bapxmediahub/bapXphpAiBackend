@@ -173,6 +173,103 @@
         "status": {"type": "enum", "values": ["open", "answered", "closed"]}
       }
     },
+    "categories": {
+      "file": "storage/data/categories.json",
+      "primary_key": "id",
+      "admin_managed": true,
+      "media_fields": ["image_url"],
+      "admin_fields": ["slug", "name", "description", "image_url"],
+      "fields": {
+        "id": {"type": "string"},
+        "slug": {"type": "slug", "required": true},
+        "name": {"type": "string", "required": true},
+        "description": {"type": "text"},
+        "image_url": {"type": "local_or_remote_path"}
+      }
+    },
+    "coupons": {
+      "file": "storage/data/coupons.json",
+      "primary_key": "id",
+      "admin_managed": true,
+      "fields": {
+        "id": {"type": "string"},
+        "code": {"type": "string", "required": true},
+        "status": {"type": "enum", "values": ["active", "inactive"]}
+      }
+    },
+    "audit_events": {
+      "file": "storage/data/audit_events.json",
+      "primary_key": "id",
+      "admin_managed": false,
+      "fields": {
+        "id": {"type": "string"},
+        "action": {"type": "string"},
+        "resource": {"type": "string"},
+        "resource_id": {"type": "string"},
+        "meta": {"type": "object"},
+        "created_at": {"type": "datetime"}
+      }
+    },
+    "mail_queue": {
+      "file": "storage/data/mail_queue.json",
+      "primary_key": "id",
+      "admin_managed": false,
+      "fields": {
+        "id": {"type": "string"},
+        "type": {"type": "string"},
+        "to": {"type": "email"},
+        "subject": {"type": "string"},
+        "html": {"type": "text"},
+        "status": {"type": "enum", "values": ["pending", "sent", "failed"]},
+        "available_at": {"type": "datetime"},
+        "meta": {"type": "object"},
+        "created_at": {"type": "datetime"}
+      }
+    },
+    "reviews": {
+      "file": "storage/data/reviews.json",
+      "primary_key": "id",
+      "owner_field": "customer_email",
+      "admin_managed": false,
+      "fields": {
+        "id": {"type": "string"},
+        "target_type": {"type": "enum", "values": ["astrologer", "product"]},
+        "target_slug": {"type": "slug"},
+        "rating": {"type": "number"},
+        "review": {"type": "text"},
+        "customer_email": {"type": "email"},
+        "source_id": {"type": "string"},
+        "created_at": {"type": "datetime"}
+      }
+    },
+    "settings": {
+      "file": "storage/data/settings.json",
+      "primary_key": null,
+      "admin_managed": true,
+      "fields": {
+        "shipping_mode": {"type": "enum", "values": ["free", "flat"]},
+        "flat_rate": {"type": "number"},
+        "currency": {"type": "string"},
+        "timezone": {"type": "string"}
+      }
+    },
+    "contact_submissions": {
+      "file": "storage/data/contact_submissions.json",
+      "primary_key": "id",
+      "owner_field": "email",
+      "admin_managed": true,
+      "admin_fields": ["name", "email", "phone", "subject", "message", "status"],
+      "fields": {
+        "id": {"type": "string"},
+        "name": {"type": "string", "required": true},
+        "email": {"type": "email", "required": true},
+        "phone": {"type": "string"},
+        "subject": {"type": "string"},
+        "message": {"type": "text", "required": true},
+        "status": {"type": "enum", "values": ["new", "read", "closed"]},
+        "created_at": {"type": "datetime"}
+      }
+    },
     "media_files": {
       "file": "storage/data/media_files.json",
       "primary_key": "id",

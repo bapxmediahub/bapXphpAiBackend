@@ -10,5 +10,7 @@ description: Use when editing README, docs, project-map docs, or agent-facing in
 - Do not recreate `docs/PROJECT_MAP.md`, `docs/project-map.json`, or `docs/project-map.mmd`.
 - Regenerate the map with `php tools/generate-project-map.php` after route, service, view, schema, storage, tool, or integration changes.
 - Never hand-edit generated Mermaid. Fix deterministic scan/render inputs, then regenerate through the tool.
+- Use the map like a source index: follow affected nodes to the actual files and verify route, page, schema, storage, and navigation behavior before documenting completion.
+- Search existing docs and code before adding a file; a gap node is not automatic permission to scaffold one.
 - Validate with `php tools/validate-project-map.php`.
 - Keep durable docs concise, current, and aligned with the PHP/JSON shared-hosting architecture.
