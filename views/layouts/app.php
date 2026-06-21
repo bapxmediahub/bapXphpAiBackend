@@ -222,7 +222,7 @@ echo $critical;
             <?php if(($_SESSION['user']['role'] ?? '') === 'astrologer'): ?>
                 <a href="/astrologer"<?= str_starts_with($currentPath, '/astrologer') ? ' aria-current="page"' : '' ?>>Dashboard</a>
             <?php else: ?>
-                <a href="/account/orders"<?= (str_starts_with($currentPath, '/account') || str_starts_with($currentPath, '/recharge')) ? ' aria-current="page"' : '' ?>>Dashboard</a>
+                <a href="/account/dashboard"<?= str_starts_with($currentPath, '/account/dashboard') ? ' aria-current="page"' : '' ?>>Dashboard</a>
             <?php endif; ?>
             <a href="/logout">Logout</a>
         <?php else: ?>

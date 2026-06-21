@@ -6,6 +6,11 @@ final class AccountController extends BaseController {
         (new AuthService())->requireUser();
     }
 
+    public function dashboard(): void { $this->redirect('/account/dashboard/orders'); }
+    public function legacyOrders(): void { $this->redirect('/account/dashboard/orders'); }
+    public function legacyBookings(): void { $this->redirect('/account/dashboard/sessions'); }
+    public function legacyWallet(): void { $this->redirect('/account/dashboard/wallet'); }
+
     public function orders(): void {
         $orders = (new OrderService())->all();
         if (!empty($_SESSION['user']['email'])) {
@@ -22,8 +27,5 @@ final class AccountController extends BaseController {
         }
         $walletBalance = (new WalletService())->balanceFor($_SESSION['user']['email'] ?? '');
         $this->render('account/bookings', compact('bookings', 'walletBalance'));
-    }
-    public function wallet(): void {
-        $this->redirect('/recharge');
     }
 }

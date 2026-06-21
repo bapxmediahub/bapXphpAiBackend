@@ -5,7 +5,7 @@
             <div class="account-wallet-strip">
                 <span>Remaining Balance</span>
                 <strong><?= e((string)($walletBalance ?? 0)) ?> credits</strong>
-                <a href="/recharge" class="btn btn-sm btn-primary">Recharge</a>
+                <a href="/account/dashboard/wallet" class="btn btn-sm btn-primary">Recharge</a>
             </div>
             <h1>My Orders</h1>
             <?php if(empty($orders)): ?>
@@ -41,7 +41,7 @@
                                                 <input type="hidden" name="target_type" value="product">
                                                 <input type="hidden" name="target_slug" value="<?= e($item['slug']) ?>">
                                                 <input type="hidden" name="source_id" value="<?= e($order['id'] ?? '') ?>">
-                                                <input type="hidden" name="redirect" value="/account/orders">
+                                                <input type="hidden" name="redirect" value="/account/dashboard/orders">
                                                 <strong><?= e($item['name'] ?? 'Product') ?></strong>
                                                 <div class="star-rating-input" aria-label="Rate product out of 5">
                                                     <?php for($i=5;$i>=1;$i--): ?>

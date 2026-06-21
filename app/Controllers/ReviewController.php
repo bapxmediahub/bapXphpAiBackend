@@ -21,7 +21,7 @@ final class ReviewController extends BaseController {
         } catch (\Throwable) {
             $this->flash('Unable to save the review. Please try again.');
         }
-        $this->redirect($_POST['redirect'] ?? '/account/bookings');
+        $this->redirect($_POST['redirect'] ?? '/account/dashboard/sessions');
     }
 
     public function saveProduct(): void {
@@ -37,6 +37,6 @@ final class ReviewController extends BaseController {
         } catch (\Throwable) {
             $this->flash('Unable to save the review. Please try again.');
         }
-        $this->redirect($_POST['redirect'] ?? '/account/orders');
+        $this->redirect($_POST['redirect'] ?? '/account/dashboard/orders');
     }
 }

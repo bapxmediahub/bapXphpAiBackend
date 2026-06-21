@@ -61,7 +61,7 @@ $tests['project map generation ignores runtime secret stores'] = function (): vo
 
 $tests['project map grounds shared navigation in registered get routes'] = function (): void {
     $scan = ProjectMapService::scan();
-    foreach (['/contact', '/account/orders', '/account/bookings', '/account/wallet'] as $path) {
+    foreach (['/contact', '/account/dashboard', '/account/dashboard/orders', '/account/dashboard/sessions', '/account/dashboard/wallet'] as $path) {
         assertTrue(in_array($path, $scan['navigation'], true), "Shared navigation should expose the existing {$path} route");
     }
     assertSame([], $scan['gaps']['navigation_without_get_route'], 'Every internal shared navigation path should resolve to a registered GET route');
@@ -455,7 +455,7 @@ $tests['astrologer marketplace exposes search and direct session actions'] = fun
 $tests['wallet recharge is login gated and exposes pricing breakdown'] = function (): void {
     $map = ProjectMapService::registry();
     $paths = array_column($map['routes'], 'path');
-    foreach (['/recharge', '/recharge/create-order', '/recharge/verify', '/account/wallet'] as $path) {
+    foreach (['/account/dashboard/wallet', '/account/dashboard/wallet/create-order', '/account/dashboard/wallet/verify', '/recharge', '/account/wallet'] as $path) {
         assertTrue(in_array($path, $paths, true), "Wallet route {$path} should be registered");
     }
     $view = file_get_contents(app_path('views/account/wallet.php'));
@@ -464,7 +464,7 @@ $tests['wallet recharge is login gated and exposes pricing breakdown'] = functio
     }
     $booking = file_get_contents(app_path('app/Controllers/BookingController.php'));
     assertTrue(str_contains($booking, 'WalletService'), 'Session booking should check wallet balance');
-    assertTrue(str_contains($booking, '/recharge?amount=100'), 'Insufficient session balance should redirect to recharge');
+    assertTrue(str_contains($booking, '/account/dashboard/wallet?amount=100'), 'Insufficient session balance should redirect to dashboard wallet');
 };
 
 $tests['support assistant widget uses browser session memory and google model setting'] = function (): void {
@@ -655,13 +655,26 @@ $tests['authenticated navigation separates global and internal account menus'] =
     $accountNav = file_get_contents(app_path('views/account/_nav.php'));
     assertTrue(str_contains($layout, '>Dashboard</a>') && str_contains($layout, 'href="/logout"'), 'Authenticated global navigation should expose Dashboard and Logout');
     assertTrue(!str_contains($layout, '>My Sessions</a>') && !str_contains($layout, '>Wallet</a>'), 'Authenticated global navigation should not duplicate internal account destinations');
-    foreach (['/account/orders', '/account/bookings', '/account/wallet', 'Back to Home'] as $needle) {
+    assertTrue(str_contains($layout, 'href="/account/dashboard"'), 'Global Dashboard should use the dashboard entry URL');
+    foreach (['/account/dashboard/orders', '/account/dashboard/sessions', '/account/dashboard/wallet', 'Back to Home'] as $needle) {
         assertTrue(str_contains($accountNav, $needle), "Shared account navigation should include {$needle}");
     }
     foreach (['orders.php', 'bookings.php', 'wallet.php'] as $view) {
         $contents = file_get_contents(app_path('views/account/' . $view));
         assertTrue(str_contains($contents, "require __DIR__ . '/_nav.php'"), "{$view} should reuse shared account navigation");
         assertTrue(!str_contains($contents, '<aside class="account-nav">'), "{$view} should not duplicate account navigation markup");
+    }
+};
+
+$tests['legacy account urls redirect into the dashboard namespace'] = function (): void {
+    $account = file_get_contents(app_path('app/Controllers/AccountController.php'));
+    $wallet = file_get_contents(app_path('app/Controllers/WalletController.php'));
+    foreach (['/account/dashboard/orders', '/account/dashboard/sessions', '/account/dashboard/wallet'] as $path) {
+        assertTrue(str_contains($account . $wallet, $path), "Legacy account controllers should redirect to {$path}");
+    }
+    $context = file_get_contents(app_path('app/Services/AgentContextService.php'));
+    foreach (['/account/dashboard/orders', '/account/dashboard/sessions', '/account/dashboard/wallet'] as $path) {
+        assertTrue(str_contains($context, $path), "Agent context should expose canonical dashboard URL {$path}");
     }
 };
 

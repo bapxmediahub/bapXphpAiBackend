@@ -4,6 +4,12 @@ use App\Services\{AuthService,SecretService,WalletService,PaymentService};
 use App\Integrations\Razorpay\RazorpayClient;
 
 final class WalletController extends BaseController {
+    public function legacyShow(): void {
+        (new AuthService())->requireUser();
+        $amount = max(10, (int)($_GET['amount'] ?? 100));
+        $this->redirect('/account/dashboard/wallet?amount=' . $amount);
+    }
+
     public function show(): void {
         (new AuthService())->requireUser();
         $wallet = new WalletService();
