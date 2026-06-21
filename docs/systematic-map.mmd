@@ -228,7 +228,6 @@ flowchart LR
     storage_86024cad1e83["products"]:::data
     storage_74dcb1cec508["reviews"]:::data
     storage_2e5d8aa3dfa8["settings"]:::data
-    storage_c5809eed0e0b["settings.secrets"]:::data
     storage_fefa79731a13["temples"]:::data
     storage_506de2158fd9["test_race"]:::data
     storage_9bc65c2abec1["users"]:::data
@@ -258,8 +257,7 @@ flowchart LR
     gap_1d5de0753e["file_without_schema: mail_queue"]:::gap
     gap_ff7a58c210["file_without_schema: reviews"]:::gap
     gap_4ab1a78131["file_without_schema: settings"]:::gap
-    gap_12f998762d["file_without_schema: settings.secrets"]:::gap
-    gap_ab3c7719c7["file_without_schema: test_race"]:::gap
+    gap_3e28064023["file_without_schema: test_race"]:::gap
   end
 
   route_e3b717d5883a --> controller_18ec49ea2cf4
@@ -690,5 +688,4 @@ flowchart LR
   storage_d10fbf039e34 -. missing schema .-> gap_1d5de0753e
   storage_74dcb1cec508 -. missing schema .-> gap_ff7a58c210
   storage_2e5d8aa3dfa8 -. missing schema .-> gap_4ab1a78131
-  storage_c5809eed0e0b -. missing schema .-> gap_12f998762d
-  storage_506de2158fd9 -. missing schema .-> gap_ab3c7719c7
+  storage_506de2158fd9 -. missing schema .-> gap_3e28064023

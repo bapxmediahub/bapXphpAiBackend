@@ -45,6 +45,20 @@ $tests['project map registry has no missing route mappings'] = function (): void
     assertSame([], $validation['missing_collections'], 'Collections should be declared');
 };
 
+$tests['project map generation ignores runtime secret stores'] = function (): void {
+    $secretPath = app_path('storage/data/settings.secrets.json');
+    $created = !is_file($secretPath);
+    if ($created) file_put_contents($secretPath, '{}');
+
+    try {
+        $scan = ProjectMapService::scan();
+        assertTrue(!in_array('settings.secrets', $scan['storage_files'], true), 'Runtime secret stores must not make generated maps environment-dependent');
+        assertTrue(!str_contains(ProjectMapService::renderSystematicMermaid(), 'settings.secrets'), 'Generated Mermaid must not expose runtime secret stores');
+    } finally {
+        if ($created && is_file($secretPath)) unlink($secretPath);
+    }
+};
+
 $tests['repo has agent-readable schema and built-in skills'] = function (): void {
     $schemaPath = app_path('storage/schema/collections.json');
     assertTrue(is_file($schemaPath), 'JSON schema registry should exist');
