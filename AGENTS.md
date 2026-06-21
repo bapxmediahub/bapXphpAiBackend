@@ -11,7 +11,7 @@ This repo is an agent-ready PHP/JSON full-stack product base for small PHP hosti
 ## DOX Contract
 
 - `AGENTS.md` files are binding work contracts for their subtrees.
-- Before editing, read this root file, identify every expected target path, then read every `AGENTS.md` from the repo root down to each target.
+- Read this root file first. Identify every expected target path, then read every `AGENTS.md` from the repo root down to each target before editing.
 - The nearest `AGENTS.md` controls local details. Parent docs continue to control repo-wide rules; child docs may not weaken this DOX contract.
 - After meaningful edits, re-check changed paths against the DOX chain, update the closest owning `AGENTS.md` when purpose, structure, workflow, artifacts, contracts, or durable preferences changed, and refresh parent Child DOX Index entries when children change.
 - Keep DOX docs concise and operational. Delete stale or contradictory instructions instead of explaining old history.
@@ -28,14 +28,22 @@ This repo is an agent-ready PHP/JSON full-stack product base for small PHP hosti
 - Agent context: `AgentContextService` builds safe user-specific JSON for support/model assistants.
 - Consultations: admin-created astrologer accounts use PHP API polling for messages and WebRTC signaling; browser WebRTC carries call audio.
 
-## Mandatory Read Order
+## Issue-First Workflow
 
-1. `README.md`
-2. `Design.md` for customer-facing UI work.
-3. `storage/schema/collections.json`
-4. `docs/systematic-map.mmd`
-5. The closest applicable `AGENTS.md` files from the DOX chain.
-6. The narrow skill under `.agents/skills/<skill-name>/SKILL.md` that matches the task.
+- For a meaningful code, schema, UI, documentation, or workflow change, search open GitHub issues and create or select the tracking issue before editing when GitHub is available.
+- Put the problem, intended scope, and acceptance checks in the issue. Reference the issue in the branch and PR.
+- Do not create an issue for read-only diagnosis, trivial questions, or when the user explicitly declines issue tracking.
+
+## Source-Grounded Work Order
+
+1. Read this root `AGENTS.md`.
+2. Resolve the GitHub issue when the issue-first rule applies.
+3. Identify target paths and read their complete root-to-leaf `AGENTS.md` chain.
+4. Read the narrow `.agents/skills/<skill-name>/SKILL.md` files that match the task.
+5. Read `docs/systematic-map.mmd` as a generated index, then follow the affected edges to the actual route, controller, service, view/page, schema collection, storage file, integration, tool, and navigation source.
+6. Read `storage/schema/collections.json` for JSON-backed behavior and `Design.md` for customer-facing UI.
+7. Search with `rg` and inspect existing implementations before creating any file, route, service, view, collection, or navigation item.
+8. Implement against primary repository sources. The generated map summarizes relationships; it does not override source files.
 
 ## Project Map
 
@@ -44,6 +52,8 @@ This repo is an agent-ready PHP/JSON full-stack product base for small PHP hosti
 - `tools/generate-project-map.php` regenerates `docs/systematic-map.mmd`.
 - `tools/validate-project-map.php` compares the generated Mermaid to the committed file.
 - Update `ProjectMapService::scan()` and `ProjectMapService::renderSystematicMermaid()` when the map needs new sections, edges, or gap checks.
+- Map validation alone is incomplete. For every affected map path, verify the source route, controller action, service, schema entry, storage collection, rendered page, and shared navigation that actually implement the behavior.
+- Treat gap nodes as investigation prompts, not permission to scaffold a missing file. First determine whether the node is a JSON response, shared layout, runtime-only file, test fixture, or genuinely missing implementation.
 
 ## Rules
 

@@ -14,6 +14,7 @@ Owns durable documentation and the single systematic project-map artifact.
 
 - Do not create `PROJECT_MAP.md`, `project-map.json`, `project-map.mmd`, or parallel map artifacts.
 - Regenerate `systematic-map.mmd` with `php tools/generate-project-map.php`; do not hand-edit generated map output.
+- Treat the map as a derived source index: documentation claims must be checked against the primary files connected by its edges.
 - Keep documentation aligned with the PHP/JSON shared-hosting architecture.
 
 ## Work Guidance

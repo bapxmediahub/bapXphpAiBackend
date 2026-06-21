@@ -10,4 +10,5 @@ description: Use when changing JSON database collections, fields, admin forms, m
 - Keep schema fields aligned with `storage/data/*.json`, admin resource forms, and `AgentContextService`.
 - Provider access changes must align users, astrologers, appointments, consultation messages, and call-signaling collections.
 - Regenerate and validate `docs/systematic-map.mmd` after schema or storage changes.
+- Follow the affected map edges through services and pages, and distinguish lazily created collection files from genuinely undeclared storage before adding files.
 - Validate with `php tests/run.php`.

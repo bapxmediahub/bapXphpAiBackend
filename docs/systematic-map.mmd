@@ -4,6 +4,7 @@ flowchart LR
   classDef code fill:#ecfdf5,stroke:#047857,color:#064e3b
   classDef data fill:#fef3c7,stroke:#b45309,color:#78350f
   classDef tool fill:#ede9fe,stroke:#6d28d9,color:#3b0764
+  classDef nav fill:#fce7f3,stroke:#be185d,color:#831843
 
   subgraph ROUTES_PUBLIC["PUBLIC Routes"]
     route_e3b717d5883a["GET /"]:::route
@@ -211,6 +212,13 @@ flowchart LR
     collection_ce528b00cff4["consultation_signals"]:::data
     collection_f2ec0991d55d["wallet_transactions"]:::data
     collection_830b87d9f1ff["support_tickets"]:::data
+    collection_b0b5ccb4a195["categories"]:::data
+    collection_28882724d375["coupons"]:::data
+    collection_32356d16f20c["audit_events"]:::data
+    collection_d10fbf039e34["mail_queue"]:::data
+    collection_74dcb1cec508["reviews"]:::data
+    collection_2e5d8aa3dfa8["settings"]:::data
+    collection_2dce077b5527["contact_submissions"]:::data
     collection_a276577b33a8["media_files"]:::data
   end
 
@@ -229,7 +237,6 @@ flowchart LR
     storage_74dcb1cec508["reviews"]:::data
     storage_2e5d8aa3dfa8["settings"]:::data
     storage_fefa79731a13["temples"]:::data
-    storage_506de2158fd9["test_race"]:::data
     storage_9bc65c2abec1["users"]:::data
   end
 
@@ -241,23 +248,23 @@ flowchart LR
     tool_ffb4fe3c51d9["validate-project-map"]:::tool
   end
 
+  subgraph NAVIGATION["Navigation Paths"]
+    navigation_6666cd76f969["/"]:::nav
+    navigation_77102f70526b["/about"]:::nav
+    navigation_1d1dbb685c58["/account/bookings"]:::nav
+    navigation_e29e8e747869["/account/wallet"]:::nav
+    navigation_f4b39bc5f477["/astrologer"]:::nav
+    navigation_50e29cf3a75b["/cart"]:::nav
+    navigation_11d613712ee0["/consult"]:::nav
+    navigation_90609cfd31a3["/contact"]:::nav
+    navigation_4146ec82a0f0["/login"]:::nav
+    navigation_436c85952b73["/logout"]:::nav
+    navigation_a4309ff6cdbc["/shop"]:::nav
+    navigation_e15a3ae5ef42["/temples"]:::nav
+  end
+
   subgraph GAPS["Gaps & Missing Links"]
-    gap_c5a21a5be4["missing_view_files: admin/contact-submissions"]:::gap
-    gap_5e742cc081["missing_view_files: public/support"]:::gap
-    gap_66de7921f3["unwired_controllers: BaseController"]:::gap
-    gap_a1686fd047["unwired_services: SmtpMailer"]:::gap
-    gap_463bee36b9["unwired_views: layouts/admin"]:::gap
-    gap_146f86659e["unwired_views: layouts/app"]:::gap
-    gap_16b8d6c40a["unwired_views: public/404"]:::gap
-    gap_a5993307b7["schema_without_file: wallet_transactions"]:::gap
-    gap_d571673255["schema_without_file: support_tickets"]:::gap
-    gap_cca1f2f5fc["file_without_schema: audit_events"]:::gap
-    gap_d049b16bd1["file_without_schema: categories"]:::gap
-    gap_5630917500["file_without_schema: coupons"]:::gap
-    gap_1d5de0753e["file_without_schema: mail_queue"]:::gap
-    gap_ff7a58c210["file_without_schema: reviews"]:::gap
-    gap_4ab1a78131["file_without_schema: settings"]:::gap
-    gap_3e28064023["file_without_schema: test_race"]:::gap
+    no_gaps["No detected gaps"]:::data
   end
 
   route_e3b717d5883a --> controller_18ec49ea2cf4
@@ -495,7 +502,7 @@ flowchart LR
   route_a343d37ef490 --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_fc0ff5cfd93a
   controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_29d291016ea8
+  controller_3d37b75c07ec -. renders .-> view_9720267f0400
   route_93e1c961f71d --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_36e1e06e13b3
   controller_3d37b75c07ec --> service_f33a1d77b137
@@ -614,7 +621,18 @@ flowchart LR
   route_5de8a52549bc --> controller_64e608ddc28b
   controller_64e608ddc28b --> service_1bacfc3e3f3b
   controller_64e608ddc28b --> service_b2e5928bb46a
-  controller_64e608ddc28b -. renders .-> view_54f97aa2b448
+  navigation_6666cd76f969 --> route_e3b717d5883a
+  navigation_77102f70526b --> route_635162d613cf
+  navigation_1d1dbb685c58 --> route_05bd7a95e13b
+  navigation_e29e8e747869 --> route_0203d66cede2
+  navigation_f4b39bc5f477 --> route_6f8c21eb26c2
+  navigation_50e29cf3a75b --> route_fb4c7f221e5b
+  navigation_11d613712ee0 --> route_f1167ac0f350
+  navigation_90609cfd31a3 --> route_8c80c0301221
+  navigation_4146ec82a0f0 --> route_22374240a33c
+  navigation_436c85952b73 --> route_1d1ca6617c0d
+  navigation_a4309ff6cdbc --> route_e627a983a978
+  navigation_e15a3ae5ef42 --> route_7f9505b0f987
   service_b2e5928bb46a --> collection_9bc65c2abec1
   service_b2e5928bb46a --> collection_12c500ed0b78
   service_b2e5928bb46a --> collection_2417b5325520
@@ -660,6 +678,12 @@ flowchart LR
   collection_2417b5325520 --> storage_2417b5325520
   collection_c37815a262b9 --> storage_c37815a262b9
   collection_ce528b00cff4 --> storage_ce528b00cff4
+  collection_b0b5ccb4a195 --> storage_b0b5ccb4a195
+  collection_28882724d375 --> storage_28882724d375
+  collection_32356d16f20c --> storage_32356d16f20c
+  collection_d10fbf039e34 --> storage_d10fbf039e34
+  collection_74dcb1cec508 --> storage_74dcb1cec508
+  collection_2e5d8aa3dfa8 --> storage_2e5d8aa3dfa8
   collection_a276577b33a8 --> storage_a276577b33a8
   service_9eeeaab84791 --> integration_1442a65b90de
   controller_f3a06e444dad --> integration_58a89e5d2ef3
@@ -673,19 +697,4 @@ flowchart LR
   tool_ffb4fe3c51d9 --> systematic_map
   tool_6bc5276d6a60 --> ROUTES_PUBLIC
   tool_6bc5276d6a60 --> ROUTES_ADMIN
-  gap_c5a21a5be4 -. missing .-> view_29d291016ea8
-  gap_5e742cc081 -. missing .-> view_54f97aa2b448
-  gap_66de7921f3 -. missing .-> controller_6f7f176814f0
-  gap_a1686fd047 -. missing .-> service_c5fb81744c52
-  gap_463bee36b9 -. missing .-> view_dae8fcbc86f4
-  gap_146f86659e -. missing .-> view_fd382d366d88
-  gap_16b8d6c40a -. missing .-> view_fe7e7ffe6adc
-  collection_f2ec0991d55d -. missing file .-> gap_a5993307b7
-  collection_830b87d9f1ff -. missing file .-> gap_d571673255
-  storage_32356d16f20c -. missing schema .-> gap_cca1f2f5fc
-  storage_b0b5ccb4a195 -. missing schema .-> gap_d049b16bd1
-  storage_28882724d375 -. missing schema .-> gap_5630917500
-  storage_d10fbf039e34 -. missing schema .-> gap_1d5de0753e
-  storage_74dcb1cec508 -. missing schema .-> gap_ff7a58c210
-  storage_2e5d8aa3dfa8 -. missing schema .-> gap_4ab1a78131
-  storage_506de2158fd9 -. missing schema .-> gap_3e28064023
+  tool_63816fb031e2 --> service_c5fb81744c52

@@ -16,7 +16,7 @@ Owns PHP runtime behavior: bootstrap, routes, controllers, services, guards, per
 - Keep route -> controller -> service -> JSON-store boundaries.
 - Extend existing services before introducing a new service.
 - User-specific assistant data must flow through `AgentContextService` or equivalent filtering.
-- Project-map structure belongs in `ProjectMapService::scan()` and `ProjectMapService::renderSystematicMermaid()`.
+- Project-map structure, including shared navigation-to-route edges, belongs in `ProjectMapService::scan()` and `ProjectMapService::renderSystematicMermaid()`.
 - Project-map scans must be deterministic across clean checkouts and deployments; exclude ignored runtime secret stores from generated artifacts.
 - Consultation messages, call signaling, participant authorization, status, and analytics belong in `ConsultationService` and authenticated PHP API controllers.
 

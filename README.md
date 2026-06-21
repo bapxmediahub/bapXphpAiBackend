@@ -131,12 +131,6 @@ php tools/validate-project-map.php
 php tools/smoke-local.php
 ```
 
-Regenerate the single project-map artifact after route, service, view, schema, storage, tool, or integration changes:
-
-```bash
-php tools/generate-project-map.php
-```
-
 ## Deployment
 
 This repository is intended for Hostinger-style PHP hosting:
@@ -173,21 +167,7 @@ The built-in skill folder is part of the product, not an external plugin:
 - `.agents/skills/<skill-name>/SKILL.md` for task-specific agent workflows.
 - `AGENTS.md` plus child `AGENTS.md` files for always-on DOX repository instructions.
 
-For a new project, tell the agent to read `AGENTS.md`, `Design.md` for public UI work, `storage/schema/collections.json`, `docs/systematic-map.mmd`, and the matching skill folder first. The ready backend remains stable, while the modifiable frontend and content can change depending on the project.
-
-## Agent Development Rules
-
-Agents should:
-
-- Read [AGENTS.md](AGENTS.md), the nearest child `AGENTS.md`, and the built-in skill files before changing code.
-- Update [storage/schema/collections.json](storage/schema/collections.json) before changing JSON collection shapes.
-- Use [docs/systematic-map.mmd](docs/systematic-map.mmd) before editing routes/controllers/services/views/schema/storage/tools.
-- Test locally and in a browser when changing UI.
-- Run all validation commands before committing.
-- Regenerate and validate the systematic project map before committing or pushing to remote `main`.
-- Commit to the branch connected to hosting only after validation passes.
-
-Agents must not reintroduce a SPA, React/CDN app shell, placeholder pages, or a second frontend.
+The authoritative contributor workflow is [AGENTS.md](AGENTS.md). It defines issue tracking, DOX precedence, source-grounded project-map traversal, existing-file discovery, schema/UI gates, and validation. README intentionally does not duplicate those operational rules.
 
 ## Search Indexing Notes
 

@@ -6,7 +6,7 @@ Owns maintenance scripts, project-map generation/validation, local smoke checks,
 
 ## Ownership
 
-- `generate-project-map.php`: writes `docs/systematic-map.mmd`.
+- `generate-project-map.php`: writes `docs/systematic-map.mmd`, including shared navigation-to-route relationships.
 - `validate-project-map.php`: verifies the committed systematic map is fresh.
 - `smoke-local.php`: starts a disposable local PHP server and checks key routes/API behavior.
 - Other scripts must have one clear concern.
@@ -31,4 +31,3 @@ Owns maintenance scripts, project-map generation/validation, local smoke checks,
 - `php tools/smoke-local.php`
 
 ## Child DOX Index
-
