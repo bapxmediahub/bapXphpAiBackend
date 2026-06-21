@@ -1,6 +1,11 @@
 <?php
 namespace App\Services;
 final class ProjectMapService {
+    private const PROJECT_MAP_EXCLUDED_STORAGE = [
+        'adminsecrets',
+        'settings.secrets',
+    ];
+
     public static function registry(): array {
         $routes = [
             ['method'=>'GET','path'=>'/','name'=>'home','page'=>'public/home','controller'=>'PublicController@home','services'=>['ProductService','AstrologerService','TempleService','CategoryService']],
@@ -319,7 +324,9 @@ final class ProjectMapService {
         if (!is_dir($dir)) return [];
         $names = [];
         foreach (glob($dir . '/*.json') ?: [] as $file) {
-            $names[] = basename($file, '.json');
+            $name = basename($file, '.json');
+            if (in_array($name, self::PROJECT_MAP_EXCLUDED_STORAGE, true)) continue;
+            $names[] = $name;
         }
         sort($names);
         return $names;
