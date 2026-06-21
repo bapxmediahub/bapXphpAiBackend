@@ -1,11 +1,6 @@
 <div class="section" style="padding-top:var(--space-xl);">
     <div class="account-layout">
-        <aside class="account-nav">
-            <a href="/account/orders">My Orders</a>
-            <a href="/account/bookings">My Sessions</a>
-            <a href="/account/wallet" class="active">Wallet</a>
-            <a href="/">Back to Home</a>
-        </aside>
+        <?php require __DIR__ . '/_nav.php'; ?>
         <div class="account-content">
             <h1>Wallet Recharge</h1>
             <div class="wallet-panel">

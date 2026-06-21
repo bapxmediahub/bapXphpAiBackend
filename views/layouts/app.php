@@ -220,10 +220,9 @@ echo $critical;
         <a href="/contact"<?= str_starts_with($currentPath, '/contact') ? ' aria-current="page"' : '' ?>>Contact</a>
         <?php if(!empty($_SESSION['user'])): ?>
             <?php if(($_SESSION['user']['role'] ?? '') === 'astrologer'): ?>
-                <a href="/astrologer">Astrologer Panel</a>
+                <a href="/astrologer"<?= str_starts_with($currentPath, '/astrologer') ? ' aria-current="page"' : '' ?>>Dashboard</a>
             <?php else: ?>
-                <a href="/account/bookings">My Sessions</a>
-                <a href="/account/wallet">Wallet</a>
+                <a href="/account/orders"<?= (str_starts_with($currentPath, '/account') || str_starts_with($currentPath, '/recharge')) ? ' aria-current="page"' : '' ?>>Dashboard</a>
             <?php endif; ?>
             <a href="/logout">Logout</a>
         <?php else: ?>

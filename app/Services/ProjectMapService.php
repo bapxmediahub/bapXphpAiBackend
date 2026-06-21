@@ -8,7 +8,7 @@ final class ProjectMapService {
     ];
     private const NON_ROUTE_CONTROLLERS = ['BaseController'];
     private const NON_ROUTE_SERVICES = ['SmtpMailer'];
-    private const SHARED_OR_ERROR_VIEWS = ['layouts/admin', 'layouts/app', 'public/404'];
+    private const SHARED_OR_ERROR_VIEWS = ['account/_nav', 'layouts/admin', 'layouts/app', 'public/404'];
 
     public static function registry(): array {
         $routes = [
@@ -131,7 +131,10 @@ final class ProjectMapService {
         $integrations = self::phpBasenames(app_path('integrations'));
         $tools = self::phpBasenames(app_path('tools'));
         $storageFiles = self::jsonBasenames(app_path('storage/data'));
-        $navigation = self::internalNavigationPaths(app_path('views/layouts/app.php'));
+        $navigation = self::internalNavigationPaths([
+            app_path('views/layouts/app.php'),
+            app_path('views/account/_nav.php'),
+        ]);
         $getRoutePaths = array_values(array_unique(array_map(
             fn($route) => (string)$route['path'],
             array_filter($map['routes'], fn($route) => ($route['method'] ?? '') === 'GET')
@@ -357,10 +360,14 @@ final class ProjectMapService {
         return $names;
     }
 
-    private static function internalNavigationPaths(string $layout): array {
-        if (!is_file($layout)) return [];
-        preg_match_all('/href="(\/[a-zA-Z0-9_\/-]*)"/', (string)file_get_contents($layout), $matches);
-        $paths = array_values(array_unique($matches[1] ?? []));
+    private static function internalNavigationPaths(array $sources): array {
+        $paths = [];
+        foreach ($sources as $source) {
+            if (!is_file($source)) continue;
+            preg_match_all('/href="(\/[a-zA-Z0-9_\/-]*)"/', (string)file_get_contents($source), $matches);
+            $paths = array_merge($paths, $matches[1] ?? []);
+        }
+        $paths = array_values(array_unique($paths));
         sort($paths);
         return $paths;
     }

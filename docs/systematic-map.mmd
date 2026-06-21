@@ -158,6 +158,7 @@ flowchart LR
   end
 
   subgraph VIEWS["Views"]
+    view_17326c025c30["account/_nav"]:::code
     view_bde0b7fa75a6["account/bookings"]:::code
     view_7459f7fdbec2["account/consultation"]:::code
     view_8bf2f1da4f90["account/orders"]:::code
@@ -252,6 +253,7 @@ flowchart LR
     navigation_6666cd76f969["/"]:::nav
     navigation_77102f70526b["/about"]:::nav
     navigation_1d1dbb685c58["/account/bookings"]:::nav
+    navigation_8c21d875a201["/account/orders"]:::nav
     navigation_e29e8e747869["/account/wallet"]:::nav
     navigation_f4b39bc5f477["/astrologer"]:::nav
     navigation_50e29cf3a75b["/cart"]:::nav
@@ -624,6 +626,7 @@ flowchart LR
   navigation_6666cd76f969 --> route_e3b717d5883a
   navigation_77102f70526b --> route_635162d613cf
   navigation_1d1dbb685c58 --> route_05bd7a95e13b
+  navigation_8c21d875a201 --> route_6e1b2c8ad9df
   navigation_e29e8e747869 --> route_0203d66cede2
   navigation_f4b39bc5f477 --> route_6f8c21eb26c2
   navigation_50e29cf3a75b --> route_fb4c7f221e5b

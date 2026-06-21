@@ -51,6 +51,7 @@ This is the canonical visual contract for customer-facing pages in `views/` and 
 
 - Header: warm-neutral, approximately `80px` high on desktop, non-sticky, with a hairline bottom border, compact logo, centered primary navigation, active underline, and right-aligned account/cart actions. It must not cover overlapping card portraits during scroll.
 - Navigation: retain the product's real routes and labels. Do not copy reference-product labels that do not exist in this application.
+- Authenticated navigation: keep global account actions to Dashboard and Logout. Orders, Sessions, Wallet, and Back to Home belong in the internal left-side account menu.
 - Buttons: primary buttons use solid `#3a0003` with white text. Secondary buttons use muted gold or warm-neutral backgrounds with maroon text. Hover states must not move layout.
 - Forms: white fields, clear labels, `8px` radius, strong ink focus ring, and no glow effects.
 - Search/filter surfaces: use a single rounded search control or a quiet grouped filter row; keep labels and values readable without card nesting.

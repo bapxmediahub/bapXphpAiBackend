@@ -28,19 +28,20 @@ This repo is an agent-ready PHP/JSON full-stack product base for small PHP hosti
 - Agent context: `AgentContextService` builds safe user-specific JSON for support/model assistants.
 - Consultations: admin-created astrologer accounts use PHP API polling for messages and WebRTC signaling; browser WebRTC carries call audio.
 
-## Issue-First Workflow
+## Diagnose, Then Issue
 
-- For a meaningful code, schema, UI, documentation, or workflow change, search open GitHub issues and create or select the tracking issue before editing when GitHub is available.
-- Put the problem, intended scope, and acceptance checks in the issue. Reference the issue in the branch and PR.
+- For a meaningful code, schema, UI, documentation, or workflow change, reproduce or inspect the reported behavior first. Trace the affected systematic-map path and pinpoint the owning source before creating an issue.
+- After diagnosis, search open GitHub issues. Select an existing matching issue or create one before editing when GitHub is available.
+- Put reproduction evidence, affected source paths, the pinpointed cause, intended scope, and acceptance checks in the issue. Reference the issue in the branch and PR.
 - Do not create an issue for read-only diagnosis, trivial questions, or when the user explicitly declines issue tracking.
 
 ## Source-Grounded Work Order
 
 1. Read this root `AGENTS.md`.
-2. Resolve the GitHub issue when the issue-first rule applies.
-3. Identify target paths and read their complete root-to-leaf `AGENTS.md` chain.
-4. Read the narrow `.agents/skills/<skill-name>/SKILL.md` files that match the task.
-5. Read `docs/systematic-map.mmd` as a generated index, then follow the affected edges to the actual route, controller, service, view/page, schema collection, storage file, integration, tool, and navigation source.
+2. Read `docs/systematic-map.mmd` as a generated index, follow the affected edges, reproduce the behavior when possible, and pinpoint the owning source.
+3. Search for an existing issue, then select or create the evidence-backed issue when the diagnose-then-issue rule applies.
+4. Identify target paths and read their complete root-to-leaf `AGENTS.md` chain.
+5. Read the narrow `.agents/skills/<skill-name>/SKILL.md` files that match the task.
 6. Read `storage/schema/collections.json` for JSON-backed behavior and `Design.md` for customer-facing UI.
 7. Search with `rg` and inspect existing implementations before creating any file, route, service, view, collection, or navigation item.
 8. Implement against primary repository sources. The generated map summarizes relationships; it does not override source files.
