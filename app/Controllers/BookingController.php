@@ -32,7 +32,7 @@ final class BookingController extends BaseController {
   $wallet = new WalletService();
   if (($data['queue_status'] ?? '') !== 'waitlist' && $wallet->balanceFor($data['customer_email']) < $initialCredits) {
     $this->flash('Please recharge your wallet to start this session.');
-    $this->redirect('/recharge?amount=100');
+    $this->redirect('/account/dashboard/wallet?amount=100');
   }
   $data['credits_spent'] = ($data['queue_status'] ?? '') === 'waitlist' ? 0 : $initialCredits;
   $data['status'] = ($data['queue_status'] ?? '') === 'waitlist' ? 'queued' : 'requested';

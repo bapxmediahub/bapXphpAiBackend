@@ -119,7 +119,7 @@ final class SupportBotService {
             return 'Available services include spiritual product sales, remote astrology call/message consultation requests, wallet recharge for sessions, and temple guidance. Use ' . ($pages['booking_contact_form'] ?? '/contact?subject=astrology#contact-form') . ' to request a consultation booking.';
         }
         if (preg_match('/\b(recharge|wallet|credit|payment)\b/i', $message)) {
-            return 'Wallet recharge is available from ' . ($pages['recharge'] ?? '/recharge') . '. You may need to sign in before payment so credits are added to your account.';
+            return 'Wallet recharge is available from ' . ($pages['recharge'] ?? '/account/dashboard/wallet') . '. You may need to sign in before payment so credits are added to your account.';
         }
         return 'I can help with available products, astrology call/message services, recharge, temple guidance, and consultation booking. For personal order or session history, please sign in first.';
     }

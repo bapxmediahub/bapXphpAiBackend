@@ -2,7 +2,7 @@
 <section class="section consultation-room" data-session-id="<?= e($session['id'] ?? '') ?>" data-user-id="<?= e($currentUser['sub'] ?? '') ?>" data-role="<?= e($currentUser['role'] ?? 'customer') ?>">
     <header class="consultation-room__header">
         <div><span class="eyebrow">Private Consultation</span><h1><?= e($isAstrologer ? ($session['customer_name'] ?? 'Customer') : ($session['astrologer_name'] ?? 'Astrologer')) ?></h1><p id="session-status">Status: <?= e(ucfirst(str_replace('_',' ',(string)($session['status'] ?? 'requested')))) ?></p></div>
-        <a class="btn btn-sm btn-ghost" href="<?= $isAstrologer ? '/astrologer' : '/account/bookings' ?>">Back</a>
+        <a class="btn btn-sm btn-ghost" href="<?= $isAstrologer ? '/astrologer' : '/account/dashboard/sessions' ?>">Back</a>
     </header>
     <div class="consultation-room__grid">
         <div class="panel consultation-chat">
