@@ -1,7 +1,3 @@
-<?php
-$temple = (new \App\Services\TempleService())->findBySlug($slug);
-?>
-
 <?php if(!$temple): ?>
     <div class="section" style="text-align:center; padding:var(--space-4xl) var(--space-md);">
         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" style="margin:0 auto var(--space-md);"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>

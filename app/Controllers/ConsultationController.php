@@ -9,6 +9,7 @@ final class ConsultationController extends BaseController {
         (new AuthService())->requireUser();
         $this->user = $_SESSION['user'] ?? [];
         $this->consultations = new ConsultationService();
+        $this->seoKey = 'account';
     }
     public function room(string $id): void {
         $session = $this->session($id);

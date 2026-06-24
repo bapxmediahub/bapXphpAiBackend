@@ -32,6 +32,9 @@ final class SecretService {
             'google_analytics_id' => (string)(getenv('GOOGLE_ANALYTICS_ID') ?: ''),
             'google_ads_id' => (string)(getenv('GOOGLE_ADS_ID') ?: ''),
             'google_site_verification' => (string)(getenv('GOOGLE_SITE_VERIFICATION') ?: ''),
+            'seo_site_name' => (string)(getenv('SEO_SITE_NAME') ?: ''),
+            'seo_default_og_image' => (string)(getenv('SEO_DEFAULT_OG_IMAGE') ?: ''),
+            'seo_twitter_handle' => (string)(getenv('SEO_TWITTER_HANDLE') ?: ''),
         ];
     }
 }

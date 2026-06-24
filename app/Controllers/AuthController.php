@@ -31,10 +31,11 @@ final class AuthController extends BaseController {
  private function redirectUri(): string { $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http'; return $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'sripanchamispiritual.com') . '/auth/google/callback'; }
  private function post(string $url,array $data): array { $ch=curl_init($url); curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_POST=>true,CURLOPT_POSTFIELDS=>http_build_query($data)]); $body=curl_exec($ch); curl_close($ch); return json_decode($body,true)?:[]; }
  private function get(string $url,string $token): array { $ch=curl_init($url); curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_HTTPHEADER=>['Authorization: Bearer '.$token]]); $body=curl_exec($ch); curl_close($ch); return json_decode($body,true)?:[]; }
- public function register(): void {
-    $this->render('public/register');
- }
- public function registerPost(): void {
+  public function register(): void {
+     $this->seoKey = 'register';
+     $this->render('public/register');
+  }
+  public function registerPost(): void {
     $email = trim($_POST['email'] ?? '');
     $name = trim($_POST['name'] ?? '');
     $password = $_POST['password'] ?? '';
@@ -74,11 +75,12 @@ final class AuthController extends BaseController {
     }
     $this->flash('Invalid credentials.');
     $this->redirect('/login');
- }
- public function forgotPassword(): void {
-    $this->render('public/forgot-password');
- }
- public function forgotPasswordPost(): void {
+  }
+  public function forgotPassword(): void {
+     $this->seoKey = 'forgot-password';
+     $this->render('public/forgot-password');
+  }
+  public function forgotPasswordPost(): void {
     $email = trim($_POST['email'] ?? '');
     if ($email !== '') {
         $token = (new PasswordResetService())->createToken($email);
@@ -89,8 +91,9 @@ final class AuthController extends BaseController {
     $this->flash('If this email is registered, a reset link will be sent.');
     $this->redirect('/forgot-password');
  }
- public function resetPassword(): void {
-    $this->render('public/reset-password', ['token' => $_GET['token'] ?? '']);
+  public function resetPassword(): void {
+     $this->seoKey = 'reset-password';
+     $this->render('public/reset-password', ['token' => $_GET['token'] ?? '']);
  }
  public function resetPasswordPost(): void {
     $token = trim($_POST['token'] ?? '');

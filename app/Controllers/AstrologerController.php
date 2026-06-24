@@ -4,7 +4,7 @@ use App\Services\{AuthService,AstrologerService,ConsultationService,JsonStoreSer
 
 final class AstrologerController extends BaseController {
     private array $user;
-    public function __construct() { (new AuthService())->requireAstrologer(); $this->user=$_SESSION['user']??[]; }
+    public function __construct() { (new AuthService())->requireAstrologer(); $this->user=$_SESSION['user']??[]; $this->seoKey='account'; }
     public function dashboard(): void {
         if (!empty($this->user['must_change_password'])) $this->redirect('/astrologer/change-password');
         $profile=(new AstrologerService())->findBySlug($this->user['astrologer_slug']??'');

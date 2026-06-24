@@ -1,9 +1,11 @@
 <?php
 namespace App\Controllers;
-use App\Services\CartService;
+use App\Services\{CartService,SeoService,SecretService};
 abstract class BaseController {
     protected string $layout = 'app';
     protected bool $isApiRequest = false;
+    protected string $seoKey = 'home';
+    protected array $seoOverrides = [];
     
     protected function redirect(string $path): never { header('Location: ' . $path); exit; }
     protected function flash(string $message): void { $_SESSION['flash'] = $message; }
@@ -20,6 +22,12 @@ abstract class BaseController {
             $this->jsonResponse($data);
             return;
         }
+        $secrets = (new SecretService())->all();
+        $seo = (new SeoService($secrets))->page($this->seoKey, $this->seoOverrides);
+        $data['seo'] = $seo;
+        $data['pageTitle'] = $seo['title'];
+        $data['metaDescription'] = $seo['description'];
+        $data['metaRobots'] = $seo['robots'];
         extract($data);
         $viewFile = app_path('views/' . $view . '.php');
         require app_path('views/layouts/' . $this->layout . '.php');

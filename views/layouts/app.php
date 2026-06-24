@@ -4,24 +4,24 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="format-detection" content="telephone=no">
-<title>Sri Panchami Spiritual – Online Astrology Consultation, Chat, Call & Spiritual Products</title>
-<meta name="description" content="Consult verified astrologers online by private message or direct call. Recharge wallet credits, review session history, and shop spiritual products, rudraksha, pooja items, and sacred jewellery.">
-<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+<title><?= e($pageTitle ?? 'Sri Panchami Spiritual') ?></title>
+<meta name="description" content="<?= e($metaDescription ?? 'Consult verified astrologers online by private message or direct call. Recharge wallet credits and shop spiritual products, rudraksha, pooja items, and sacred jewellery.') ?>">
+<meta name="robots" content="<?= e($metaRobots ?? 'index, follow') ?>">
 <link rel="icon" type="image/svg+xml" href="/assets/images/sps-favicon.svg">
 <link rel="canonical" href="https://<?= e($_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']) ?>">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Sri Panchami Spiritual">
-<meta property="og:title" content="Sri Panchami Spiritual – Online Astrology Consultation, Chat, Call & Spiritual Products">
-<meta property="og:description" content="Consult verified astrologers by private message or direct call, recharge wallet credits, and shop spiritual products online.">
-<meta property="og:url" content="https://<?= e($_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']) ?>">
-<meta property="og:image" content="https://<?= e($_SERVER['HTTP_HOST']) ?>/assets/images/og-image.jpg">
+<meta property="og:type" content="<?= e($seo['og_type'] ?? 'website') ?>">
+<meta property="og:site_name" content="<?= e($seo['og_site_name'] ?? 'Sri Panchami Spiritual') ?>">
+<meta property="og:title" content="<?= e($seo['og_title'] ?? $pageTitle) ?>">
+<meta property="og:description" content="<?= e($seo['og_description'] ?? $metaDescription) ?>">
+<meta property="og:url" content="<?= e($seo['og_url'] ?? 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']) ?>">
+<meta property="og:image" content="<?= e($seo['og_image'] ?? 'https://' . $_SERVER['HTTP_HOST'] . '/assets/images/og-image.jpg') ?>">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="en_IN">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Sri Panchami Spiritual – Online Astrology Consultation">
-<meta name="twitter:description" content="Consult verified astrologers by chat or call, recharge wallet credits, and shop spiritual products online.">
-<meta name="twitter:image" content="https://<?= e($_SERVER['HTTP_HOST']) ?>/assets/images/og-image.jpg">
+<meta name="twitter:title" content="<?= e($seo['twitter_title'] ?? $seo['og_title'] ?? $pageTitle) ?>">
+<meta name="twitter:description" content="<?= e($seo['twitter_description'] ?? $seo['og_description'] ?? $metaDescription) ?>">
+<meta name="twitter:image" content="<?= e($seo['twitter_image'] ?? $seo['og_image'] ?? 'https://' . $_SERVER['HTTP_HOST'] . '/assets/images/og-image.jpg') ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -202,8 +202,9 @@ echo $critical;
 <link rel="preload" href="/assets/css/band.css?v=<?= filemtime(__DIR__ . '/../../assets/css/band.css') ?>" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="/assets/css/band.css?v=<?= filemtime(__DIR__ . '/../../assets/css/band.css') ?>"></noscript>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":["Organization","OnlineStore"],"name":"Sri Panchami Spiritual","description":"Authentic spiritual products, sacred jewellery, expert Vedic astrology consultation, and temple guidance.","url":"https://<?= e($_SERVER['HTTP_HOST']) ?>","telephone":["+919789444037","+919789444038"],"email":"sripanchamispiritual@gmail.com"}
+{"@context":"https://schema.org","@type":["Organization","OnlineStore"],"name":"<?= e($seo['og_site_name'] ?? 'Sri Panchami Spiritual') ?>","description":"Authentic spiritual products, sacred jewellery, expert Vedic astrology consultation, and temple guidance.","url":"https://<?= e($_SERVER['HTTP_HOST']) ?>","telephone":["+919789444037","+919789444038"],"email":"sripanchamispiritual@gmail.com"}
 </script>
+<?php if (!empty($seo['json_ld'])): ?><?= $seo['json_ld'] ?><?php endif; ?>
 <?php
 $__secrets = (new \App\Services\SecretService())->all();
 // Meta Pixel

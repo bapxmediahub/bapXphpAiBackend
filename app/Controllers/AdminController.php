@@ -5,6 +5,7 @@ final class AdminController extends BaseController {
     protected string $layout = 'admin';
     public function __construct() {
         (new AuthService())->requireAdmin();
+        $this->seoKey = 'admin';
     }
 
     public function dashboard(): void{
