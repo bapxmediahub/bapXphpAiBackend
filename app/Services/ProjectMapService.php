@@ -5,6 +5,8 @@ final class ProjectMapService {
         $routes = [
             ['method'=>'GET','path'=>'/','name'=>'home','page'=>'public/home','controller'=>'PublicController@home','services'=>['ProductService','AstrologerService','TempleService','CategoryService']],
             ['method'=>'GET','path'=>'/about','name'=>'about','page'=>'public/about','controller'=>'PublicController@about','services'=>[]],
+            ['method'=>'GET','path'=>'/terms','name'=>'terms','page'=>'public/terms','controller'=>'PublicController@terms','services'=>[]],
+            ['method'=>'GET','path'=>'/privacy','name'=>'privacy','page'=>'public/privacy','controller'=>'PublicController@privacy','services'=>[]],
             ['method'=>'GET','path'=>'/sri-panchami-spiritual','name'=>'spiritual','page'=>'public/spiritual','controller'=>'PublicController@spiritual','services'=>[]],
             ['method'=>'GET','path'=>'/spiritual','name'=>'spiritual.alias','page'=>'public/spiritual','controller'=>'PublicController@spiritual','services'=>[]],
             ['method'=>'GET','path'=>'/consult','name'=>'consult','page'=>'public/consult','controller'=>'PublicController@consult','services'=>['AstrologerService']],
@@ -86,6 +88,8 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/cart/update','name'=>'cart.update','page'=>'public/cart','controller'=>'CommerceController@updateCart','services'=>['CartService']],
             ['method'=>'POST','path'=>'/checkout/create-order','name'=>'checkout.create-order','page'=>'public/checkout','controller'=>'CommerceController@createOrder','services'=>['SecretService','PaymentService']],
             ['method'=>'POST','path'=>'/payment/verify','name'=>'payment.verify','page'=>'public/checkout','controller'=>'CommerceController@verifyPayment','services'=>['SecretService','PaymentService','JsonStoreService']],
+            ['method'=>'POST','path'=>'/create-order','name'=>'api.checkout.create-order','page'=>'public/checkout','controller'=>'CommerceController@createOrder','services'=>['SecretService','PaymentService']],
+            ['method'=>'POST','path'=>'/verify-payment','name'=>'api.payment.verify','page'=>'public/checkout','controller'=>'CommerceController@verifyPayment','services'=>['SecretService','PaymentService','JsonStoreService']],
             ['method'=>'POST','path'=>'/appointments/book','name'=>'appointments.book','page'=>'public/astrologer','controller'=>'BookingController@book','services'=>['AuthService','ResourceService','AstrologerService']],
             ['method'=>'POST','path'=>'/reviews/astrologer','name'=>'reviews.astrologer','page'=>'account/bookings','controller'=>'ReviewController@saveAstrologer','services'=>['ReviewService']],
             ['method'=>'POST','path'=>'/reviews/product','name'=>'reviews.product','page'=>'account/orders','controller'=>'ReviewController@saveProduct','services'=>['ReviewService']],
@@ -100,7 +104,7 @@ final class ProjectMapService {
         return [
             'routes'=>$routes,
             'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AstrologerAccountService','AppointmentService','ConsultationService','TempleService','SettingsService','ProjectMapService','JsonStoreService','AuditLogService','ResourceService','SecretService','EnvService','ContactService','ReviewService','PasswordResetService','MailQueueService','WalletService','SupportBotService','MediaService','StoragePermissionService','SchemaService','AgentContextService'],
-            'integrations'=>['GoogleOAuthClient','RazorpayClient'],
+            'integrations'=>['GoogleOAuthClient','RazorpayClient','StripeClient','MetaPixelClient','GoogleSiteKitClient'],
             'collections'=>['users','products','categories','coupons','orders','astrologers','appointments','consultation_messages','consultation_signals','temples','settings','audit_events','reviews','mail_queue','wallet_transactions','support_tickets','media_files'],
         ];
     }
@@ -355,7 +359,7 @@ final class ProjectMapService {
         if (str_starts_with($path, '/admin')) return 'ADMIN';
         if (str_starts_with($path, '/support')) return 'SUPPORT';
         if (str_starts_with($path, '/auth') || in_array($path, ['/login', '/logout', '/register', '/forgot-password', '/reset-password'], true)) return 'AUTH';
-        if (str_starts_with($path, '/cart') || str_starts_with($path, '/checkout') || str_starts_with($path, '/payment') || str_starts_with($path, '/recharge')) return 'PAYMENT';
+        if (str_starts_with($path, '/cart') || str_starts_with($path, '/checkout') || str_starts_with($path, '/payment') || str_starts_with($path, '/recharge') || in_array($path, ['/create-order', '/verify-payment'], true)) return 'PAYMENT';
         return 'PUBLIC';
     }
 

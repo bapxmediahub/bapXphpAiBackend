@@ -7,6 +7,7 @@
 <title>Sri Panchami Spiritual – Online Astrology Consultation, Chat, Call & Spiritual Products</title>
 <meta name="description" content="Consult verified astrologers online by private message or direct call. Recharge wallet credits, review session history, and shop spiritual products, rudraksha, pooja items, and sacred jewellery.">
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+<link rel="icon" type="image/svg+xml" href="/assets/images/sps-favicon.svg">
 <link rel="canonical" href="https://<?= e($_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']) ?>">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Sri Panchami Spiritual">
@@ -23,11 +24,13 @@
 <meta name="twitter:image" content="https://<?= e($_SERVER['HTTP_HOST']) ?>/assets/images/og-image.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet"></noscript>
 <style>
 <?php
 // Inline critical CSS for instant first paint — header, nav, hero, product cards, mobile nav
 $critical = '
-:root{--color-ink:#222222;--color-ink-light:#3f3f3f;--color-gold:#d1b368;--color-gold-light:#f3e8c9;--color-maroon:#3a0003;--color-maroon-deep:#240002;--color-bg:#faf7f0;--color-bg-alt:#f7f0e4;--color-border:#d8ccb7;--color-border-light:#eadfcd;--color-text-muted:#6a6259;--color-white:#ffffff;--color-success:#2d8a4e;--color-error:#d64045;--shadow-sm:0 1px 2px rgba(0,0,0,0.08);--shadow-md:0 2px 8px rgba(0,0,0,0.12);--shadow-lg:0 2px 8px rgba(0,0,0,0.12);--radius-md:14px;--radius-lg:20px;--radius-xl:32px;--radius-pill:999px;--space-xs:0.5rem;--space-sm:0.75rem;--space-md:1rem;--space-lg:1.5rem;--space-xl:2rem;--space-2xl:3rem}
+:root{--color-ink:#222222;--color-ink-light:#3f3f3f;--color-gold:#d1b368;--color-gold-light:#f3e8c9;--color-gold-dark:#b89440;--color-maroon:#3a0003;--color-maroon-deep:#240002;--color-accent:#7a4a35;--color-accent-light:#a67a64;--color-bg:#faf7f0;--color-bg-alt:#f7f0e4;--color-bg-warm:#f6ede4;--color-border:#d8ccb7;--color-border-light:#eadfcd;--color-text-muted:#6a6259;--color-white:#ffffff;--color-success:#2d8a4e;--color-error:#d64045;--color-rating:#d68641;--font-display:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--font-serif:Georgia,"Times New Roman",serif;--font-accent:"Playfair Display",Georgia,serif;--shadow-sm:0 1px 2px rgba(0,0,0,0.08);--shadow-md:0 2px 8px rgba(0,0,0,0.12);--shadow-lg:0 2px 8px rgba(0,0,0,0.12);--radius-md:14px;--radius-lg:20px;--radius-xl:32px;--radius-pill:999px;--space-xs:0.5rem;--space-sm:0.75rem;--space-md:1rem;--space-lg:1.5rem;--space-xl:2rem;--space-2xl:3rem}
 *,*::before,*::after{box-sizing:border-box;-webkit-font-smoothing:antialiased}
 html{scroll-behavior:smooth}
 body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--color-bg);color:var(--color-ink);line-height:1.55;overflow-x:hidden}
@@ -196,13 +199,54 @@ nav.open{display:flex}
 echo $critical;
 ?>
 </style>
-<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <link rel="preload" href="/assets/css/band.css?v=<?= filemtime(__DIR__ . '/../../assets/css/band.css') ?>" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="/assets/css/band.css?v=<?= filemtime(__DIR__ . '/../../assets/css/band.css') ?>"></noscript>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":["LocalBusiness","Store"],"name":"Sri Panchami Spiritual","description":"Authentic spiritual products, sacred jewellery, expert Vedic astrology consultation, and temple guidance in Chennai, Tamil Nadu.","url":"https://<?= e($_SERVER['HTTP_HOST']) ?>","telephone":["+919789444037","+919789444038"],"email":"sripanchamispiritual@gmail.com","address":{"@type":"PostalAddress","streetAddress":"23, 1st Cross Street Kothari Nagar, Ramapuram","addressLocality":"Chennai","addressRegion":"Tamil Nadu","postalCode":"600089","addressCountry":"IN"},"geo":{"@type":"GeoCoordinates","latitude":"13.0166","longitude":"80.1833"},"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],"opens":"09:00","closes":"19:00"},{"@type":"OpeningHoursSpecification","dayOfWeek":"Sunday","opens":"10:00","closes":"17:00"}],"priceRange":"₹₹"}
+{"@context":"https://schema.org","@type":["Organization","OnlineStore"],"name":"Sri Panchami Spiritual","description":"Authentic spiritual products, sacred jewellery, expert Vedic astrology consultation, and temple guidance.","url":"https://<?= e($_SERVER['HTTP_HOST']) ?>","telephone":["+919789444037","+919789444038"],"email":"sripanchamispiritual@gmail.com"}
 </script>
+<?php
+$__secrets = (new \App\Services\SecretService())->all();
+// Meta Pixel
+$__metaPixelId = $__secrets['meta_pixel_id'] ?? '';
+if ($__metaPixelId !== ''):
+?>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '<?= e($__metaPixelId) ?>');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=<?= e($__metaPixelId) ?>&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<?php endif;
+// Google Site Kit
+$__gaId = $__secrets['google_analytics_id'] ?? '';
+$__adsId = $__secrets['google_ads_id'] ?? '';
+$__gsv = $__secrets['google_site_verification'] ?? '';
+$__gtagSrc = $__gaId ?: $__adsId;
+if ($__gsv !== ''): ?>
+<meta name="google-site-verification" content="<?= e($__gsv) ?>" />
+<?php endif;
+if ($__gtagSrc !== ''): ?>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=<?= e($__gtagSrc) ?>"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+<?php if ($__gaId !== ''): ?>gtag('config', '<?= e($__gaId) ?>');<?php endif; ?>
+<?php if ($__adsId !== ''): ?>gtag('config', '<?= e($__adsId) ?>');<?php endif; ?>
+</script>
+<?php endif; ?>
 </head>
 <body>
 <?php $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/'; ?>
@@ -244,6 +288,7 @@ echo $critical;
 <?php require $viewFile; ?>
 </main>
 
+<?php if (!in_array($currentPath, ['/login', '/register'])): ?>
 <nav class="bottom-nav" id="bottom-nav">
     <div class="nav-grid">
         <a href="/" class="nav-item <?= ($_SERVER['REQUEST_URI'] === '/' ? 'active' : '') ?>">
@@ -268,7 +313,9 @@ echo $critical;
         </a>
     </div>
 </nav>
+<?php endif; ?>
 
+<?php if (!in_array($currentPath, ['/login', '/register'])): ?>
 <button class="support-fab" type="button" aria-controls="support-panel" aria-expanded="false" title="Support">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>
     <span class="sr-only">Support</span>
@@ -287,7 +334,9 @@ echo $critical;
         <button class="btn btn-primary btn-sm">Send</button>
     </form>
 </section>
+<?php endif; ?>
 
+<?php if (!in_array($currentPath, ['/login', '/register'])): ?>
 <footer class="site-footer">
     <div class="container">
         <div class="footer-grid">
@@ -303,6 +352,8 @@ echo $critical;
                     <li><a href="/temples">Temples</a></li>
                     <li><a href="/about">About SPS</a></li>
                     <li><a href="/contact">Contact</a></li>
+                    <li><a href="/terms">Terms</a></li>
+                    <li><a href="/privacy">Privacy</a></li>
                 </ul>
             </div>
             <div>
@@ -317,17 +368,16 @@ echo $critical;
             <div>
                 <h4 class="footer-heading">Contact</h4>
                 <ul class="footer-links">
-                    <li>23, 1st Cross Street Kothari Nagar</li>
-                    <li>Ramapuram, Chennai, Tamil Nadu 600089</li>
                     <li><a href="tel:+919789444037">+91 97894 44037</a></li>
                     <li><a href="tel:+919789444038">+91 97894 44038</a></li>
                     <li><a href="mailto:sripanchamispiritual@gmail.com">sripanchamispiritual@gmail.com</a></li>
                 </ul>
             </div>
         </div>
-        <div class="footer-bottom">&copy; <?= date('Y') ?> Sri Panchami Spiritual &middot; Chennai, Tamil Nadu</div>
+        <div class="footer-bottom">&copy; <?= date('Y') ?> Sri Panchami Spiritual &middot; <a href="/terms">Terms</a> &middot; <a href="/privacy">Privacy</a> &middot; developed with &#10084;&#65039; by <a href="https://www.instagram.com/bapxmediahub/" target="_blank" rel="noopener noreferrer">@bapxmediahub</a></div>
     </div>
 </footer>
+<?php endif; ?>
 <script>
 document.getElementById('site-header').querySelector('.menu-toggle').addEventListener('click',function(){
     var n=document.getElementById('primary-nav');n.classList.toggle('open');

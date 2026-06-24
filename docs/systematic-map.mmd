@@ -8,6 +8,8 @@ flowchart LR
   subgraph ROUTES_PUBLIC["PUBLIC Routes"]
     route_e3b717d5883a["GET /"]:::route
     route_635162d613cf["GET /about"]:::route
+    route_8f45fea80bea["GET /terms"]:::route
+    route_90946be13902["GET /privacy"]:::route
     route_ce21a56fa9a7["GET /sri-panchami-spiritual"]:::route
     route_df221e308e08["GET /spiritual"]:::route
     route_f1167ac0f350["GET /consult"]:::route
@@ -61,6 +63,8 @@ flowchart LR
     route_c048d08cf4d9["POST /cart/update"]:::route
     route_f0c540724dfe["POST /checkout/create-order"]:::route
     route_3cdaaaae69eb["POST /payment/verify"]:::route
+    route_416fde130b00["POST /create-order"]:::route
+    route_c4966e625ffb["POST /verify-payment"]:::route
   end
 
   subgraph ROUTES_SUPPORT["SUPPORT Routes"]
@@ -186,6 +190,7 @@ flowchart LR
     view_b8744c438a04["public/forgot-password"]:::code
     view_17c7f41e5cc8["public/home"]:::code
     view_a6af926bf361["public/login"]:::code
+    view_eb0a08d1b15b["public/privacy"]:::code
     view_747a935d6839["public/product"]:::code
     view_d6d59690414b["public/register"]:::code
     view_775af2126c62["public/reset-password"]:::code
@@ -193,11 +198,15 @@ flowchart LR
     view_8b63b1a03812["public/spiritual"]:::code
     view_eb7fde4f5646["public/temple"]:::code
     view_9fad71462848["public/temples"]:::code
+    view_01c77ef07565["public/terms"]:::code
   end
 
   subgraph INTEGRATIONS["Integrations"]
     integration_58a89e5d2ef3["GoogleOAuthClient"]:::code
+    integration_08255445e22a["GoogleSiteKitClient"]:::code
+    integration_3c1708372fc7["MetaPixelClient"]:::code
     integration_1442a65b90de["RazorpayClient"]:::code
+    integration_063c1f657453["StripeClient"]:::code
   end
 
   subgraph SCHEMA["Schema Collections"]
@@ -270,6 +279,10 @@ flowchart LR
   controller_18ec49ea2cf4 -. renders .-> view_17c7f41e5cc8
   route_635162d613cf --> controller_18ec49ea2cf4
   controller_18ec49ea2cf4 -. renders .-> view_82254c4e2aa1
+  route_8f45fea80bea --> controller_18ec49ea2cf4
+  controller_18ec49ea2cf4 -. renders .-> view_01c77ef07565
+  route_90946be13902 --> controller_18ec49ea2cf4
+  controller_18ec49ea2cf4 -. renders .-> view_eb0a08d1b15b
   route_ce21a56fa9a7 --> controller_18ec49ea2cf4
   controller_18ec49ea2cf4 -. renders .-> view_8b63b1a03812
   route_df221e308e08 --> controller_18ec49ea2cf4
@@ -600,6 +613,15 @@ flowchart LR
   controller_7fda1508bed0 --> service_9eeeaab84791
   controller_7fda1508bed0 --> service_36e1e06e13b3
   controller_7fda1508bed0 -. renders .-> view_6b1f93c8d0e4
+  route_416fde130b00 --> controller_7fda1508bed0
+  controller_7fda1508bed0 --> service_6c9416ef0383
+  controller_7fda1508bed0 --> service_9eeeaab84791
+  controller_7fda1508bed0 -. renders .-> view_6b1f93c8d0e4
+  route_c4966e625ffb --> controller_7fda1508bed0
+  controller_7fda1508bed0 --> service_6c9416ef0383
+  controller_7fda1508bed0 --> service_9eeeaab84791
+  controller_7fda1508bed0 --> service_36e1e06e13b3
+  controller_7fda1508bed0 -. renders .-> view_6b1f93c8d0e4
   route_e35f1cf27c3e --> controller_ebb378258bac
   controller_ebb378258bac --> service_f33a1d77b137
   controller_ebb378258bac --> service_ea89d25425b5
@@ -666,6 +688,7 @@ flowchart LR
   service_9eeeaab84791 --> integration_1442a65b90de
   controller_f3a06e444dad --> integration_58a89e5d2ef3
   controller_f3a06e444dad --> integration_58a89e5d2ef3
+  service_9eeeaab84791 --> integration_1442a65b90de
   service_9eeeaab84791 --> integration_1442a65b90de
   service_9eeeaab84791 --> integration_1442a65b90de
   service_9eeeaab84791 --> integration_1442a65b90de

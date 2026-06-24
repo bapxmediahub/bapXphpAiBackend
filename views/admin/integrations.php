@@ -39,6 +39,31 @@
         <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">The app builds the endpoint automatically from the model: <code>https://generativelanguage.googleapis.com/v1beta/models/<?= e($secrets['support_bot_model']??'gemma-4-31b-it') ?>:generateContent</code>. Google documents API-key authentication with the <code>x-goog-api-key</code> header. Free API access is subject to Google account, region, model, and rate-limit rules; it should not be treated as unlimited.</p>
         <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Privacy mode: <strong>always_purge</strong>. Bot task data and conversation scratch data should be deleted after the support task finishes.</p>
 
+        <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">Meta Pixel (Facebook Ads)</h2>
+        <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">
+            Optional Facebook/Meta Ads conversion tracking and retargeting. Enter your Pixel ID to enable Meta tracking across all pages.
+            <a href="https://www.facebook.com/events_manager/pixel/" target="_blank" rel="noopener">Meta Events Manager</a>
+        </p>
+        <div class="admin-form__row">
+            <label>Meta Pixel ID<input name="meta_pixel_id" value="<?= e($secrets['meta_pixel_id']??'') ?>" placeholder="1234567890"></label>
+        </div>
+        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">The pixel base code and PageView event will be injected into the site head automatically.</p>
+
+        <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">Google Site Kit (Analytics, Ads & Search Console)</h2>
+        <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">
+            Enable Google Analytics 4 for SEO insights, Google Ads for conversion tracking, and Search Console verification. Uses a single gtag.js snippet.
+            <a href="https://analytics.google.com/" target="_blank" rel="noopener">Google Analytics</a> &middot;
+            <a href="https://search.google.com/search-console" target="_blank" rel="noopener">Google Search Console</a>
+        </p>
+        <div class="admin-form__row">
+            <label>GA4 Measurement ID<input name="google_analytics_id" value="<?= e($secrets['google_analytics_id']??'') ?>" placeholder="G-XXXXXXXXXX"></label>
+            <label>Google Ads ID<input name="google_ads_id" value="<?= e($secrets['google_ads_id']??'') ?>" placeholder="AW-XXXXXXXXX"></label>
+        </div>
+        <div class="admin-form__row">
+            <label>Search Console Verification<input name="google_site_verification" value="<?= e($secrets['google_site_verification']??'') ?>" placeholder="google-site-verification=xxxxxxxxxx"></label>
+        </div>
+        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Google Analytics, Ads conversion, and Search Console meta tags are injected into the site head only when configured.</p>
+
         <div class="admin-card" style="background:var(--color-bg-alt); margin-top:var(--space-xl); padding:var(--space-md);">
             <h3 style="font-size:0.9rem; margin:0 0 var(--space-sm);">Platform Scope</h3>
             <p style="margin:0; color:var(--color-text-muted); font-size:0.85rem;">This site is ecommerce plus direct astrology services. It supports product sales, text sessions, and direct call sessions. Video calls, Google Meet, and Google Calendar setup are intentionally skipped.</p>
