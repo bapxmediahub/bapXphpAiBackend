@@ -17,9 +17,9 @@ final class ReviewController extends BaseController {
                 'customer_email' => $_SESSION['user']['email'] ?? ($_POST['customer_email'] ?? ''),
                 'source_id' => $_POST['source_id'] ?? '',
             ]);
-            $this->flash('Thanks. Your astrologer rating was saved.');
+            $this->flash('Thanks. Your astrologer rating was saved.','success');
         } catch (\Throwable) {
-            $this->flash('Unable to save the review. Please try again.');
+            $this->flash('Unable to save the review. Please try again.','error');
         }
         $this->redirect($_POST['redirect'] ?? '/account/bookings');
     }
@@ -33,9 +33,9 @@ final class ReviewController extends BaseController {
                 'customer_email' => $_SESSION['user']['email'] ?? ($_POST['customer_email'] ?? ''),
                 'source_id' => $_POST['source_id'] ?? '',
             ]);
-            $this->flash('Thanks. Your product rating was saved.');
+            $this->flash('Thanks. Your product rating was saved.','success');
         } catch (\Throwable) {
-            $this->flash('Unable to save the review. Please try again.');
+            $this->flash('Unable to save the review. Please try again.','error');
         }
         $this->redirect($_POST['redirect'] ?? '/account/orders');
     }

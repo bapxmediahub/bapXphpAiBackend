@@ -4,34 +4,45 @@ flowchart LR
   classDef code fill:#ecfdf5,stroke:#047857,color:#064e3b
   classDef data fill:#fef3c7,stroke:#b45309,color:#78350f
   classDef tool fill:#ede9fe,stroke:#6d28d9,color:#3b0764
+  classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
+
+  subgraph ARCH["Architecture Overview — 94 routes, 12 controllers, 32 services, 40 views, 17 data files, 5 tools"]
+    arch_routes["> Routes: 94 (Public + Auth + Payment + Admin + Support)"]:::arch
+    arch_ctrl["> Controllers: 12"]:::arch
+    arch_svc["> Services: 32"]:::arch
+    arch_views["> Views: 40"]:::arch
+    arch_data["> Collections: 11 schema | 17 files"]:::arch
+    arch_tools["> Tools: 5"]:::arch
+    arch_gaps["> Gaps: 18"]:::arch
+    arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
+    arch_ctrl -.-> arch_views
+  end
 
   subgraph ROUTES_PUBLIC["PUBLIC Routes"]
-    route_e3b717d5883a["GET /"]:::route
-    route_635162d613cf["GET /about"]:::route
-    route_8f45fea80bea["GET /terms"]:::route
-    route_90946be13902["GET /privacy"]:::route
-    route_ce21a56fa9a7["GET /sri-panchami-spiritual"]:::route
-    route_df221e308e08["GET /spiritual"]:::route
-    route_f1167ac0f350["GET /consult"]:::route
-    route_c415a5030f78["GET /consult/{slug}"]:::route
-    route_7f9505b0f987["GET /temples"]:::route
-    route_14cd9d36c55d["GET /temples/{slug}"]:::route
-    route_e627a983a978["GET /shop"]:::route
-    route_3c12328d1184["GET /categories"]:::route
-    route_762fd619926d["GET /product/{slug}"]:::route
-    route_8c80c0301221["GET /contact"]:::route
-    route_5d37c858f706["POST /contact"]:::route
-    route_6e1b2c8ad9df["GET /account/orders"]:::route
-    route_05bd7a95e13b["GET /account/bookings"]:::route
-    route_0203d66cede2["GET /account/wallet"]:::route
-    route_3db0d2c31b8e["GET /consultation/{id}"]:::route
-    route_6f8c21eb26c2["GET /astrologer"]:::route
-    route_3f6461e98686["GET /astrologer/change-password"]:::route
-    route_c90566c68049["POST /astrologer/change-password"]:::route
-    route_e049e08b4d31["GET /api/consultations/{id}/messages"]:::route
-    route_3ee173eea23d["POST /api/consultations/{id}/messages"]:::route
-    route_137a91056f17["GET /api/consultations/{id}/signals"]:::route
-    route_dcbdd5c79871["POST /api/consultations/{id}/signals"]:::route
+    route_e3b717d5883a["GET / — Home page — hero, categories, featured products, astrologers"]:::route
+    route_635162d613cf["GET /about — About SPS — story, values, CTA"]:::route
+    route_8f45fea80bea["GET /terms — Terms of Service — 15 sections, legal"]:::route
+    route_90946be13902["GET /privacy — Privacy Policy — 14 sections, data handling"]:::route
+    route_f1167ac0f350["GET /consult — Astrologer marketplace — browse and book"]:::route
+    route_c415a5030f78["GET /consult/{slug} — Astrologer profile — book message/call session"]:::route
+    route_7f9505b0f987["GET /temples — Temple listing page"]:::route
+    route_14cd9d36c55d["GET /temples/{slug} — Temple detail page"]:::route
+    route_e627a983a978["GET /shop — Product shop — grid with pill actions"]:::route
+    route_3c12328d1184["GET /categories — Products filtered by category"]:::route
+    route_762fd619926d["GET /product/{slug} — Product detail — gallery, add-to-cart, buy-now"]:::route
+    route_8c80c0301221["GET /contact — Contact form GET"]:::route
+    route_5d37c858f706["POST /contact — Contact form GET"]:::route
+    route_6e1b2c8ad9df["GET /account/orders — My Orders — product reviews"]:::route
+    route_05bd7a95e13b["GET /account/bookings — My Sessions — astrologer bookings"]:::route
+    route_0203d66cede2["GET /account/wallet — Wallet — balance, transactions (redirects to /recharge)"]:::route
+    route_3db0d2c31b8e["GET /consultation/{id} — Consultation room — messaging, WebRTC signaling"]:::route
+    route_6f8c21eb26c2["GET /astrologer — Astrologer dashboard — sessions queue"]:::route
+    route_3f6461e98686["GET /astrologer/change-password — Astrologer forced password change"]:::route
+    route_c90566c68049["POST /astrologer/change-password — Astrologer forced password change"]:::route
+    route_e049e08b4d31["GET /api/consultations/{id}/messages — API — fetch messages"]:::route
+    route_3ee173eea23d["POST /api/consultations/{id}/messages — API — fetch messages"]:::route
+    route_137a91056f17["GET /api/consultations/{id}/signals — API — fetch WebRTC signals"]:::route
+    route_dcbdd5c79871["POST /api/consultations/{id}/signals — API — fetch WebRTC signals"]:::route
     route_f8d4769e9808["POST /api/consultations/{id}/status"]:::route
     route_e35f1cf27c3e["POST /appointments/book"]:::route
     route_ee5462fe50d8["POST /reviews/astrologer"]:::route
@@ -39,32 +50,32 @@ flowchart LR
   end
 
   subgraph ROUTES_AUTH["AUTH Routes"]
-    route_22374240a33c["GET /login"]:::route
-    route_7d183a0bb001["GET /forgot-password"]:::route
-    route_2679acb1337a["POST /forgot-password"]:::route
-    route_bf1533f65e61["GET /reset-password"]:::route
-    route_292f9c423d3c["POST /reset-password"]:::route
-    route_21ac6cd20118["GET /auth/google"]:::route
-    route_54bc4589bbac["GET /auth/google/callback"]:::route
-    route_bd886de5ac0b["GET /register"]:::route
-    route_3a7ff6514669["POST /register"]:::route
-    route_a650fd67ad7b["POST /login"]:::route
-    route_1d1ca6617c0d["GET /logout"]:::route
+    route_22374240a33c["GET /login — Login page — email/username + Google OAuth"]:::route
+    route_7d183a0bb001["GET /forgot-password — Forgot password page"]:::route
+    route_2679acb1337a["POST /forgot-password — Forgot password page"]:::route
+    route_bf1533f65e61["GET /reset-password — Reset password page with token"]:::route
+    route_292f9c423d3c["POST /reset-password — Reset password page with token"]:::route
+    route_21ac6cd20118["GET /auth/google — Google OAuth redirect"]:::route
+    route_54bc4589bbac["GET /auth/google/callback — Google OAuth callback — upsert user"]:::route
+    route_bd886de5ac0b["GET /register — Register page — name, email, password, terms"]:::route
+    route_3a7ff6514669["POST /register — Register page — name, email, password, terms"]:::route
+    route_a650fd67ad7b["POST /login — Login page — email/username + Google OAuth"]:::route
+    route_1d1ca6617c0d["GET /logout — Logout — session destroy, redirect"]:::route
   end
 
   subgraph ROUTES_PAYMENT["PAYMENT Routes"]
-    route_fb4c7f221e5b["GET /cart"]:::route
-    route_f26b003584ac["GET /checkout"]:::route
-    route_176bd191ff81["GET /recharge"]:::route
-    route_e30eb1f2e0ae["POST /recharge/create-order"]:::route
-    route_a9dfe780ea76["POST /recharge/verify"]:::route
-    route_eca99e09ade9["POST /cart/add"]:::route
-    route_9ba7a8da6f0d["POST /cart/remove"]:::route
-    route_c048d08cf4d9["POST /cart/update"]:::route
-    route_f0c540724dfe["POST /checkout/create-order"]:::route
-    route_3cdaaaae69eb["POST /payment/verify"]:::route
-    route_416fde130b00["POST /create-order"]:::route
-    route_c4966e625ffb["POST /verify-payment"]:::route
+    route_fb4c7f221e5b["GET /cart — Cart page — items, qty, totals"]:::route
+    route_f26b003584ac["GET /checkout — Checkout page — address, Razorpay payment"]:::route
+    route_176bd191ff81["GET /recharge — Wallet recharge — buy credits"]:::route
+    route_e30eb1f2e0ae["POST /recharge/create-order — Wallet recharge — Razorpay order creation"]:::route
+    route_a9dfe780ea76["POST /recharge/verify — Wallet recharge — verify payment"]:::route
+    route_eca99e09ade9["POST /cart/add — Cart — add item"]:::route
+    route_9ba7a8da6f0d["POST /cart/remove — Cart — remove item"]:::route
+    route_c048d08cf4d9["POST /cart/update — Cart — update quantity"]:::route
+    route_f0c540724dfe["POST /checkout/create-order — Checkout — create Razorpay order"]:::route
+    route_3cdaaaae69eb["POST /payment/verify — Checkout — verify payment, create order"]:::route
+    route_416fde130b00["POST /create-order — API checkout — Razorpay order"]:::route
+    route_c4966e625ffb["POST /verify-payment — API checkout — verify payment"]:::route
   end
 
   subgraph ROUTES_SUPPORT["SUPPORT Routes"]
@@ -72,36 +83,41 @@ flowchart LR
   end
 
   subgraph ROUTES_ADMIN["ADMIN Routes"]
-    route_c3f4bffc0fc6["GET /admin"]:::route
-    route_3960f6a49231["GET /admin/products"]:::route
-    route_e95fd00567af["GET /admin/categories"]:::route
-    route_cdc48d6b8f5f["GET /admin/coupons"]:::route
-    route_5e926678ff14["GET /admin/orders"]:::route
-    route_88925401b130["GET /admin/orders/{id}"]:::route
+    route_c3f4bffc0fc6["GET /admin — Admin dashboard — counts overview"]:::route
+    route_3960f6a49231["GET /admin/products — Admin — manage products"]:::route
+    route_e95fd00567af["GET /admin/categories — Admin — manage categories"]:::route
+    route_cdc48d6b8f5f["GET /admin/coupons — Admin — manage coupons"]:::route
+    route_5e926678ff14["GET /admin/orders — Admin — order list"]:::route
+    route_88925401b130["GET /admin/orders/{id} — Admin — order detail, status update"]:::route
     route_2b4e3ef8ace9["POST /admin/orders/{id}/status"]:::route
-    route_c7a9a024dd65["GET /admin/shipping"]:::route
-    route_a957673c2bdd["GET /admin/astrologers"]:::route
-    route_3b4bedeac0b9["GET /admin/appointments"]:::route
-    route_8d8d17fb4adc["GET /admin/astrologer-credentials"]:::route
-    route_92dd4d9f6051["GET /admin/consultation-analytics"]:::route
-    route_a7447dded861["GET /admin/temples"]:::route
-    route_a068f086796c["GET /admin/settings"]:::route
+    route_c7a9a024dd65["GET /admin/shipping — Admin — shipping settings"]:::route
+    route_a957673c2bdd["GET /admin/astrologers — Admin — manage astrologers"]:::route
+    route_3b4bedeac0b9["GET /admin/appointments — Admin — session list"]:::route
+    route_8d8d17fb4adc["GET /admin/astrologer-credentials — Admin — astrologer login credentials"]:::route
+    route_92dd4d9f6051["GET /admin/consultation-analytics — Admin — consultation metrics"]:::route
+    route_a7447dded861["GET /admin/temples — Admin — manage temples"]:::route
+    route_a068f086796c["GET /admin/settings — Admin — site settings"]:::route
     route_c2fce1e83e49["POST /admin/settings/save"]:::route
     route_833047aa65da["POST /admin/settings/admin-credentials"]:::route
-    route_818acb238877["GET /admin/integrations"]:::route
-    route_f679682223bf["GET /admin/backups"]:::route
-    route_e67aaf6f51f8["GET /admin/audit-log"]:::route
-    route_a343d37ef490["GET /admin/contact-submissions"]:::route
-    route_93e1c961f71d["GET /admin/support-tickets"]:::route
-    route_0c88057d061a["GET /admin/media"]:::route
+    route_818acb238877["GET /admin/integrations — Admin — API keys, integrations"]:::route
+    route_f679682223bf["GET /admin/backups — Admin — backup list"]:::route
+    route_e67aaf6f51f8["GET /admin/audit-log — Admin — audit log"]:::route
+    route_a343d37ef490["GET /admin/contact-submissions — Admin — contact form entries"]:::route
+    route_4409e3819a27["POST /admin/contact_submissions/save"]:::route
+    route_ce4718c7cfc4["POST /admin/contact_submissions/delete"]:::route
+    route_93e1c961f71d["GET /admin/support-tickets — Admin — support tickets"]:::route
+    route_4115282232ca["GET /admin/appearance — Admin — logo & favicon"]:::route
+    route_c3b94d62a632["POST /admin/appearance/save"]:::route
+    route_0c88057d061a["GET /admin/media — Admin — media library"]:::route
     route_16d561502e84["POST /admin/media/upload"]:::route
-    route_39e94ed98594["GET /admin/environment"]:::route
+    route_39e94ed98594["GET /admin/environment — Admin — .env editor, permissions"]:::route
     route_7ff0c7d60a36["POST /admin/environment/save"]:::route
     route_74e14338f5d2["POST /admin/environment/fix-permissions"]:::route
-    route_e9360697e956["GET /admin/developer/project-map"]:::route
+    route_e9360697e956["GET /admin/developer/project-map — Admin — project map viewer"]:::route
     route_94124153470a["POST /admin/products/save"]:::route
     route_608ddd16ca24["POST /admin/products/delete"]:::route
     route_5bd40ddf2477["POST /admin/categories/save"]:::route
+    route_df55a87c861a["POST /admin/categories/delete"]:::route
     route_9cdd4d3072b4["POST /admin/coupons/save"]:::route
     route_a4ffe236f106["POST /admin/coupons/delete"]:::route
     route_ebd390f27282["POST /admin/astrologers/save"]:::route
@@ -166,7 +182,9 @@ flowchart LR
     view_7459f7fdbec2["account/consultation"]:::code
     view_8bf2f1da4f90["account/orders"]:::code
     view_eff0f1f428ec["account/wallet"]:::code
+    view_17900ac53325["admin/appearance"]:::code
     view_7913e08e07e6["admin/astrologer-credentials"]:::code
+    view_c08844df74a9["admin/astrologer-form"]:::code
     view_860deb20ae6d["admin/consultation-analytics"]:::code
     view_af209260b21b["admin/dashboard"]:::code
     view_99a0e61b7241["admin/detail"]:::code
@@ -174,6 +192,7 @@ flowchart LR
     view_62fe69fcdef3["admin/integrations"]:::code
     view_ca3569057adb["admin/list"]:::code
     view_52965cdd23d8["admin/media"]:::code
+    view_8885ff0b037a["admin/product-form"]:::code
     view_2b32af729a24["admin/project-map"]:::code
     view_9720267f0400["admin/resource"]:::code
     view_ccc5b8c17f9f["admin/settings"]:::code
@@ -196,7 +215,6 @@ flowchart LR
     view_d6d59690414b["public/register"]:::code
     view_775af2126c62["public/reset-password"]:::code
     view_ca8b647f9374["public/shop"]:::code
-    view_8b63b1a03812["public/spiritual"]:::code
     view_eb7fde4f5646["public/temple"]:::code
     view_9fad71462848["public/temples"]:::code
     view_01c77ef07565["public/terms"]:::code
@@ -285,10 +303,6 @@ flowchart LR
   controller_18ec49ea2cf4 -. renders .-> view_01c77ef07565
   route_90946be13902 --> controller_18ec49ea2cf4
   controller_18ec49ea2cf4 -. renders .-> view_eb0a08d1b15b
-  route_ce21a56fa9a7 --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 -. renders .-> view_8b63b1a03812
-  route_df221e308e08 --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 -. renders .-> view_8b63b1a03812
   route_f1167ac0f350 --> controller_18ec49ea2cf4
   controller_18ec49ea2cf4 --> service_ae8ee1aa005a
   controller_18ec49ea2cf4 -. renders .-> view_eb9fd22a15bf
@@ -432,7 +446,7 @@ flowchart LR
   controller_3d37b75c07ec --> service_0ab47bcd921f
   controller_3d37b75c07ec --> service_69598e3405fb
   controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_9720267f0400
+  controller_3d37b75c07ec -. renders .-> view_8885ff0b037a
   route_e95fd00567af --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_ebacea9031c7
   controller_3d37b75c07ec --> service_f33a1d77b137
@@ -464,7 +478,7 @@ flowchart LR
   controller_3d37b75c07ec --> service_ae8ee1aa005a
   controller_3d37b75c07ec --> service_69598e3405fb
   controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_9720267f0400
+  controller_3d37b75c07ec -. renders .-> view_c08844df74a9
   route_3b4bedeac0b9 --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_717a4830bf0e
   controller_3d37b75c07ec --> service_f33a1d77b137
@@ -513,10 +527,29 @@ flowchart LR
   controller_3d37b75c07ec --> service_fc0ff5cfd93a
   controller_3d37b75c07ec --> service_f33a1d77b137
   controller_3d37b75c07ec -. renders .-> view_29d291016ea8
+  route_4409e3819a27 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_ea89d25425b5
+  controller_3d37b75c07ec --> service_e79c019a142b
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_29d291016ea8
+  route_ce4718c7cfc4 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_ea89d25425b5
+  controller_3d37b75c07ec --> service_e79c019a142b
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_29d291016ea8
   route_93e1c961f71d --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_36e1e06e13b3
   controller_3d37b75c07ec --> service_f33a1d77b137
   controller_3d37b75c07ec -. renders .-> view_ca3569057adb
+  route_4115282232ca --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_fefb1ba2e4f7
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_17900ac53325
+  route_c3b94d62a632 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_fefb1ba2e4f7
+  controller_3d37b75c07ec --> service_e79c019a142b
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_17900ac53325
   route_0c88057d061a --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_75ac00fac97c
   controller_3d37b75c07ec --> service_f33a1d77b137
@@ -549,13 +582,18 @@ flowchart LR
   controller_3d37b75c07ec --> service_ea89d25425b5
   controller_3d37b75c07ec --> service_e79c019a142b
   controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_9720267f0400
+  controller_3d37b75c07ec -. renders .-> view_8885ff0b037a
   route_608ddd16ca24 --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_ea89d25425b5
   controller_3d37b75c07ec --> service_e79c019a142b
   controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_9720267f0400
+  controller_3d37b75c07ec -. renders .-> view_8885ff0b037a
   route_5bd40ddf2477 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_ea89d25425b5
+  controller_3d37b75c07ec --> service_e79c019a142b
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_9720267f0400
+  route_df55a87c861a --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_ea89d25425b5
   controller_3d37b75c07ec --> service_e79c019a142b
   controller_3d37b75c07ec --> service_f33a1d77b137
@@ -575,13 +613,13 @@ flowchart LR
   controller_3d37b75c07ec --> service_b99a566f219c
   controller_3d37b75c07ec --> service_e79c019a142b
   controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_9720267f0400
+  controller_3d37b75c07ec -. renders .-> view_c08844df74a9
   route_dc3164561034 --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_ea89d25425b5
   controller_3d37b75c07ec --> service_b99a566f219c
   controller_3d37b75c07ec --> service_e79c019a142b
   controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_9720267f0400
+  controller_3d37b75c07ec -. renders .-> view_c08844df74a9
   route_a2384c26c92f --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_ea89d25425b5
   controller_3d37b75c07ec --> service_e79c019a142b
@@ -688,14 +726,22 @@ flowchart LR
   collection_ce528b00cff4 --> storage_ce528b00cff4
   collection_a276577b33a8 --> storage_a276577b33a8
   service_9eeeaab84791 --> integration_1442a65b90de
+  service_9eeeaab84791 --> integration_063c1f657453
   controller_f3a06e444dad --> integration_58a89e5d2ef3
   controller_f3a06e444dad --> integration_58a89e5d2ef3
   service_9eeeaab84791 --> integration_1442a65b90de
+  service_9eeeaab84791 --> integration_063c1f657453
   service_9eeeaab84791 --> integration_1442a65b90de
+  service_9eeeaab84791 --> integration_063c1f657453
   service_9eeeaab84791 --> integration_1442a65b90de
+  service_9eeeaab84791 --> integration_063c1f657453
   service_9eeeaab84791 --> integration_1442a65b90de
+  service_9eeeaab84791 --> integration_063c1f657453
   service_9eeeaab84791 --> integration_1442a65b90de
+  service_9eeeaab84791 --> integration_063c1f657453
   service_9eeeaab84791 --> integration_1442a65b90de
+  service_9eeeaab84791 --> integration_063c1f657453
+  service_1bacfc3e3f3b --> integration_08255445e22a
   tool_891d42e0bd53 --> systematic_map["docs/systematic-map.mmd"]:::data
   tool_ffb4fe3c51d9 --> systematic_map
   tool_6bc5276d6a60 --> ROUTES_PUBLIC

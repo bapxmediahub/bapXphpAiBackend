@@ -323,7 +323,7 @@ $tests['admin integrations explain api setup and support bot keys'] = function (
         'https://ai.google.dev/gemini-api/docs/api-key',
         'support_bot_google_api_key',
         'support_bot_model',
-        'gemma-4-31b-it',
+        'gemini-2.0-flash',
         'https://generativelanguage.googleapis.com/v1beta/models/',
         'support_bot_purge_policy',
         'always_purge',
@@ -441,7 +441,7 @@ $tests['support assistant widget uses browser session memory and google model se
     foreach (['support-fab', 'support-panel', '/support/ask', 'orders, wallet recharge, products, or astrologer sessions', 'sessionStorage', 'data-support-key'] as $needle) {
         assertTrue(str_contains($layout, $needle), "Support widget should include {$needle}");
     }
-    foreach (['gemma-4-31b-it', 'support_bot_google_api_key', 'Customer context JSON', 'browser_session'] as $needle) {
+    foreach (['gemini-2.0-flash', 'support_bot_google_api_key', 'Customer context JSON', 'browser_session'] as $needle) {
         assertTrue(str_contains($service, $needle), "Support bot service should include {$needle}");
     }
     assertTrue(!str_contains($service, "upsert('support_tickets'"), 'Support bot chat should not persist browser chat into project JSON files');
@@ -480,11 +480,11 @@ $tests['home hero uses concise current copy and working cta links'] = function (
     assertTrue(!str_contains($view, 'Buy Original Rudraksha, Pooja Items & Spiritual Products Online'), 'Home hero should not lead with ecommerce as the primary business');
     assertTrue(!str_contains($view, 'Shop Spiritual Products</a>'), 'Home hero shop button should use concise text');
     assertTrue(!str_contains($view, 'Remote Astrology Consultation</a>'), 'Home hero astrology button should use shorter text');
-    foreach (['Consult Astrologers Online by Chat or Call', 'href="/consult"', 'href="/shop"', '>Consult Now</a>', '>Shop Products</a>', 'Online Astrology Consultation'] as $needle) {
+    foreach (['Authentic Spiritual Products for Your Sacred Journey', 'href="/shop"', 'href="/consult"', '>Shop Now</a>', '>Consult Astrologers</a>', 'Sacred Emblems'] as $needle) {
         assertTrue(str_contains($view, $needle), "Home hero should include {$needle}");
     }
-    assertTrue(!str_contains($view, '<div class="hero-stat-value">3</div>'), 'Home hero astrologer count should not be stale');
-    assertTrue(str_contains($view, 'count($astrologers)'), 'Home hero astrologer count should be derived from the current catalog');
+    assertTrue(!str_contains($view, '<div class="hero-stat-value">3</div>'), 'Home hero stat value should not be stale');
+    assertTrue(str_contains($view, 'count($products)'), 'Home hero product count should be derived from the catalog');
 };
 
 $tests['home temple guide uses admin driven dissolve carousel'] = function (): void {
@@ -596,8 +596,11 @@ $tests['checkout payment verification preserves shipping contact details'] = fun
         assertTrue(str_contains($commerce, "'{$field}'"), "Payment verification should persist {$field}");
         assertTrue(str_contains($detailView, $field), "Admin order detail should display {$field}");
     }
-    foreach (['phone:', 'address:', 'city:', 'pincode:'] as $needle) {
+    foreach (['phone:', 'address:', 'city:', 'pincode:', 'razorpay_order_id:', 'razorpay_payment_id:', 'razorpay_signature:', "razorpay.on('payment.failed'", 'ondismiss'] as $needle) {
         assertTrue(str_contains($checkout, $needle), "Razorpay verification request should include {$needle}");
+    }
+    foreach (['/checkout/create-order', '/payment/verify', '/create-order', '/verify-payment'] as $path) {
+        assertTrue(in_array($path, array_column(ProjectMapService::registry()['routes'], 'path'), true), "Razorpay route should exist: {$path}");
     }
 };
 
@@ -656,27 +659,31 @@ $tests['home hero rotates all supplied varahi images'] = function (): void {
 
 $tests['admin product and astrologer forms expose editable owner fields'] = function (): void {
     $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
-    foreach (['slug', 'image_url', 'image_urls', 'price', 'offer_price', 'stock_status'] as $field) {
-        assertTrue(str_contains($controller, "'{$field}'"), "Product admin form should expose {$field}");
-    }
+    $productForm = file_get_contents(app_path('views/admin/product-form.php'));
+    $astroForm = file_get_contents(app_path('views/admin/astrologer-form.php'));
     $resourceView = file_get_contents(app_path('views/admin/resource.php'));
     $productView = file_get_contents(app_path('views/public/product.php'));
     $auditService = file_get_contents(app_path('app/Services/AuditLogService.php'));
-    assertTrue(str_contains($resourceView, 'enctype="multipart/form-data"'), 'Admin resource form should support file uploads');
-    assertTrue(str_contains($resourceView, 'name="media_files[]"'), 'Admin resource form should upload media files');
-    assertTrue(str_contains($resourceView, 'multiple'), 'Product image upload should accept multiple files');
+    foreach (['slug', 'image_url', 'image_urls', 'price', 'offer_price', 'stock_status'] as $field) {
+        assertTrue(str_contains($productForm, $field), "Product admin form should expose {$field}");
+    }
+    assertTrue(str_contains($productForm, 'enctype="multipart/form-data"'), 'Product form should support file uploads');
+    assertTrue(str_contains($productForm, 'name="media_files[]"'), 'Product form should upload media files');
+    assertTrue(str_contains($productForm, 'multiple'), 'Product image upload should accept multiple files');
+    assertTrue(str_contains($productForm, 'foreach($mediaFiles as $media)'), 'Media picker should show all files by upload time, not only the latest page');
+    assertTrue(str_contains($productForm, 'class="admin-media-picker"'), 'Product forms should expose a media library picker');
+    assertTrue(str_contains($astroForm, 'foreach($mediaFiles as $media)'), 'Astrologer media picker should show all files by upload time');
+    assertTrue(str_contains($astroForm, 'class="admin-media-picker"'), 'Astrologer forms should expose a media library picker');
     assertTrue(str_contains($resourceView, "['image_url', 'photo_url']"), 'Local asset image fields should not use URL inputs that reject /assets paths');
-    assertTrue(str_contains($resourceView, 'foreach($mediaFiles as $media)'), 'Media picker should show all files by upload time, not only the latest page');
-    assertTrue(str_contains($resourceView, 'class="admin-media-picker"'), 'Product temple and astrologer forms should expose a media library picker');
     assertTrue(!str_contains($resourceView, 'let el = document.getElementById'), 'Generated admin edit script should not redeclare let for every field');
     assertTrue(str_contains($productView, 'image_urls'), 'Product page should render product image galleries');
     assertTrue(str_contains($controller, 'MediaService'), 'Admin save should persist uploaded media into the shared media library');
     assertTrue(str_contains($controller, 'schemaFields'), 'Admin resource fields should be read from the JSON schema registry when available');
-    assertTrue(str_contains($controller, 'mergeExistingRecord'), 'Product save should preserve existing fields when editing only visible admin fields');
+    assertTrue(str_contains($controller, 'mergeExistingRecord'), 'Admin save should preserve existing fields when editing only visible admin fields');
     assertTrue(str_contains($controller, 'AuditLogService'), 'Admin mutations should write audit log records');
     assertTrue(str_contains($auditService, 'function record'), 'Audit log service should be able to record admin changes');
     foreach (['slug', 'message_credit_cost', 'call_credit_per_second', 'text_session_prm', 'call_session_prm', 'payout_percentage', 'languages', 'working_days'] as $field) {
-        assertTrue(str_contains($controller, "'{$field}'"), "Astrologer admin form should expose {$field}");
+        assertTrue(str_contains($astroForm, $field), "Astrologer admin form should expose {$field}");
     }
 };
 

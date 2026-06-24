@@ -7,7 +7,13 @@
 <title><?= e($pageTitle ?? 'Sri Panchami Spiritual') ?></title>
 <meta name="description" content="<?= e($metaDescription ?? 'Consult verified astrologers online by private message or direct call. Recharge wallet credits and shop spiritual products, rudraksha, pooja items, and sacred jewellery.') ?>">
 <meta name="robots" content="<?= e($metaRobots ?? 'index, follow') ?>">
-<link rel="icon" type="image/svg+xml" href="/assets/images/sps-favicon.svg">
+<?php
+$__settings = (new \App\Services\SettingsService())->public();
+$__logo = $__settings['logo_url'] ?? '/assets/images/logo-small.jpeg';
+$__favicon = $__settings['favicon_url'] ?? '/assets/images/sps-favicon.svg';
+$__faviconMime = str_contains($__favicon,'.svg') ? 'image/svg+xml' : 'image/png';
+?>
+<link rel="icon" type="<?= e($__faviconMime) ?>" href="<?= e($__favicon) ?>">
 <link rel="canonical" href="https://<?= e($_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']) ?>">
 <meta property="og:type" content="<?= e($seo['og_type'] ?? 'website') ?>">
 <meta property="og:site_name" content="<?= e($seo['og_site_name'] ?? 'Sri Panchami Spiritual') ?>">
@@ -52,7 +58,7 @@ main{padding-bottom:0}
 .container{max-width:1300px;margin:0 auto;padding:0 var(--space-xl)}
 .section{padding:64px 0}
 .section--alt{background:var(--color-bg-alt)}
-.home-hero{position:relative;min-height:560px;display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2xl);align-items:center;padding:64px 5vw;background:var(--color-bg);border-bottom:1px solid var(--color-border-light)}
+.home-hero{position:relative;min-height:90vh;padding:64px 5vw;background:var(--color-maroon-deep);color:var(--color-white);overflow:hidden}
 .hero-copy h1{font-family:Inter,system-ui,sans-serif;font-size:1.75rem;line-height:1.2;margin:0 0 var(--space-md);color:var(--color-ink)}
 .lede{font-size:1rem;line-height:1.7;color:var(--color-text-muted);margin-bottom:var(--space-lg)}
  .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-xs);min-height:48px;padding:0 24px;border-radius:8px;font-weight:600;cursor:pointer;border:0;text-decoration:none;font-size:0.85rem;white-space:nowrap;line-height:1.4;transition:background 0.2s ease,border-color 0.2s ease}
@@ -252,7 +258,7 @@ gtag('js', new Date());
 <body>
 <?php $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/'; ?>
 <header class="site-header" id="site-header">
-    <a href="/" class="brand"><img src="/assets/images/logo-small.jpeg" width="52" height="52" alt="Sri Panchami Spiritual logo"><span>Sri Panchami Spiritual</span></a>
+    <a href="/" class="brand"><img src="<?= e($__logo) ?>" width="52" height="52" alt="Sri Panchami Spiritual logo"><span>Sri Panchami Spiritual</span></a>
     <button class="menu-toggle" type="button" aria-expanded="false" aria-label="Menu">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
@@ -283,8 +289,14 @@ gtag('js', new Date());
     </div>
 </header>
 <main class="<?= $currentPath === '/' ? 'home-main' : '' ?>">
-<?php if(!empty($_SESSION['flash'])): ?>
-    <div class="flash flash--info" style="margin:var(--space-lg) auto;max-width:1300px;padding:0 var(--space-lg)"><?= e($_SESSION['flash']); unset($_SESSION['flash']); ?></div>
+<?php
+$__flash = $_SESSION['flash'] ?? null;
+if ($__flash):
+    $__msg = is_array($__flash) ? $__flash['message'] : $__flash;
+    $__type = is_array($__flash) ? ($__flash['type'] ?? 'info') : 'info';
+    unset($_SESSION['flash']);
+?>
+<script>document.addEventListener('DOMContentLoaded',function(){showToast(<?= json_encode($__msg) ?>,<?= json_encode($__type) ?>);});</script>
 <?php endif; ?>
 <?php require $viewFile; ?>
 </main>
@@ -326,7 +338,7 @@ gtag('js', new Date());
         <strong>Support</strong>
         <button type="button" class="support-panel__close" aria-label="Close support">×</button>
     </div>
-    <div class="support-panel__body" id="support-log">
+    <div class="support-panel__body" id="support-log" aria-live="polite">
         <p>Ask about your orders, wallet recharge, products, or astrologer sessions.</p>
         <?php if(empty($_SESSION['user'])): ?><p>Sign in to ask about your personal order or session data.</p><?php endif; ?>
     </div>
@@ -403,6 +415,8 @@ supportLoadLog();
 supportFab.addEventListener('click',function(){supportToggle(supportPanel.hidden);});
 supportClose.addEventListener('click',function(){supportToggle(false);});
 supportForm.addEventListener('submit',async function(e){e.preventDefault();var data=new FormData(supportForm),msg=data.get('message');supportLog.insertAdjacentHTML('beforeend','<p><strong>You:</strong> '+supportEscape(msg)+'</p>');supportSaveLog();supportForm.reset();try{var r=await fetch('/support/ask',{method:'POST',body:data});var j=await r.json();supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> '+supportEscape(j.reply||j.error||'Unable to answer right now.')+'</p>');}catch(err){supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> Unable to answer right now.</p>');}supportSaveLog();supportLog.scrollTop=supportLog.scrollHeight;});
+function showToast(msg,type){type=type||'info';var c=document.getElementById('toast-container');if(!c){c=document.createElement('div');c.id='toast-container';document.body.appendChild(c);}var t=document.createElement('div');t.className='toast toast--'+type;var icons={success:'✓',error:'✕',warning:'⚠',info:'ℹ'};t.innerHTML='<span class="toast__icon">'+(icons[type]||'ℹ')+'</span><span class="toast__text">'+msg+'</span><button class="toast__close" aria-label="Dismiss">&times;</button>';t.querySelector('.toast__close').addEventListener('click',function(e){e.stopPropagation();dismiss(t);});t.addEventListener('click',function(){dismiss(t);});c.appendChild(t);var timer=setTimeout(function(){dismiss(t);},4000);function dismiss(el){if(el.classList.contains('toast--out'))return;el.classList.add('toast--out');clearTimeout(timer);setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},250);}}
 </script>
+<div id="toast-container" role="alert" aria-live="polite"></div>
 </body>
 </html>

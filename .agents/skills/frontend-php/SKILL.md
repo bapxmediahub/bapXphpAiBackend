@@ -13,4 +13,4 @@ description: Use when editing public, account, shop, astrologer, temple, cart, c
 - Preserve the product's real routes and content. Apply the design system surgically instead of copying reference-product labels or scaffolding parallel components.
 - Use browser WebRTC only for call media and the authenticated consultation APIs for polling messages and signaling.
 - Reuse the circular top-overlapping marketplace card geometry, face-focused clipped portrait frame, and message/call/profile icon row on home and consult surfaces. Render only real profile metadata/reviews, and keep hero slides isolated on a warm-neutral image frame.
-- Validate with `php -l` for changed templates, `php tests/run.php`, and a browser workflow for changed pages.
+- Validate with `php -l` for changed templates, `php tests/run.php`, and a browser workflow for changed pages. Codex agents should use `Browser:control-in-app-browser` for local UI checks when available; standalone Playwright is only a fallback for agents or environments without the Browser plugin.

@@ -33,10 +33,10 @@
         </p>
         <div class="admin-form__row">
             <label>Google API Key<input name="support_bot_google_api_key" value="<?= e($secrets['support_bot_google_api_key']??'') ?>" placeholder="AIza..."></label>
-            <label>Model<input name="support_bot_model" value="<?= e($secrets['support_bot_model']??'gemma-4-31b-it') ?>" placeholder="gemma-4-31b-it"></label>
+            <label>Model<input name="support_bot_model" value="<?= e($secrets['support_bot_model']??'gemini-2.0-flash') ?>" placeholder="gemini-2.0-flash"></label>
         </div>
         <input type="hidden" name="support_bot_purge_policy" value="always_purge">
-        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">The app builds the endpoint automatically from the model: <code>https://generativelanguage.googleapis.com/v1beta/models/<?= e($secrets['support_bot_model']??'gemma-4-31b-it') ?>:generateContent</code>. Google documents API-key authentication with the <code>x-goog-api-key</code> header. Free API access is subject to Google account, region, model, and rate-limit rules; it should not be treated as unlimited.</p>
+        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">The app builds the endpoint automatically from the model: <code>https://generativelanguage.googleapis.com/v1beta/models/<?= e($secrets['support_bot_model']??'gemini-2.0-flash') ?>:generateContent</code>. Google documents API-key authentication with the <code>x-goog-api-key</code> header. Free API access is subject to Google account, region, model, and rate-limit rules; it should not be treated as unlimited.</p>
         <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Privacy mode: <strong>always_purge</strong>. Bot task data and conversation scratch data should be deleted after the support task finishes.</p>
 
         <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">Meta Pixel (Facebook Ads)</h2>

@@ -5,7 +5,7 @@
                 <span>404</span>
             </div>
             <div class="not-found-copy">
-                <span class="eyebrow">Page not found</span>
+                <span class="eyebrow serif-accent">Page not found</span>
                 <h1>The path you opened is not available.</h1>
                 <p class="lede">Return to the spiritual store, browse consultations, or contact Sri Panchami Spiritual for help finding the right page.</p>
                 <div class="not-found-actions">

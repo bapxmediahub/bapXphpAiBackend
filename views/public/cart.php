@@ -3,12 +3,7 @@
          <nav style="font-size:0.8rem; color:var(--color-text-muted);">
              <a href="/shop" style="color:var(--color-text-muted);">Shop</a> / <span style="color:var(--color-ink);">Cart</span>
          </nav>
-     </div>
-     <?php if(!empty($_SESSION['flash'])): ?>
-         <div class="container container--narrow">
-             <div class="flash flash--success" style="margin-bottom:var(--space-lg);">✓ <?= e($_SESSION['flash']); unset($_SESSION['flash']); ?></div>
-         </div>
-     <?php endif; ?>
+    </div>
 
     <?php if(empty($items)): ?>
         <div class="container container--narrow" style="text-align:center; padding:var(--space-4xl) 0;">
@@ -23,7 +18,7 @@
                  <div class="cart-items">
                      <?php foreach($items as $i => $item): $lineTotal = ($item['offer_price'] ?: $item['price'] ?: 0) * $item['qty']; ?>
                          <div class="cart-item reveal" style="animation-delay:<?= $i * 0.05 ?>s">
-                             <a href="/product/<?= e($item['slug']) ?>"><img class="cart-item__img" src="<?= e($item['image_url'] ?? 'https://placehold.co/100x100/fdfbf7/8c7e6d?text=Item') ?>" alt="<?= e($item['name']) ?>"></a>
+                             <a href="/product/<?= e($item['slug']) ?>"><img class="cart-item__img" src="<?= e($item['image_url'] ?? placeholder_img($item['name'])) ?>" alt="<?= e($item['name']) ?>"></a>
                              <div>
                                  <h3 class="cart-item__name"><a href="/product/<?= e($item['slug']) ?>"><?= e($item['name']) ?></a></h3>
                                  <p class="cart-item__meta"><?= e($item['category'] ?? 'Spiritual Product') ?></p>

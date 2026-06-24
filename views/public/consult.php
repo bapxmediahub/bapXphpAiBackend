@@ -63,7 +63,7 @@
                     ?>
                     <article class="astro-market-card astro-market-card--<?= e($state) ?> reveal" data-astro-card data-status="<?= e($state) ?>" data-language="<?= e(strtolower(implode(' ', $item['languages'] ?? []))) ?>" data-search="<?= e(strtolower(($item['name'] ?? '') . ' ' . $languageText . ' ' . $speciality)) ?>">
                         <a class="astro-market-photo" href="/consult/<?= e($item['slug'] ?? '') ?>" aria-label="View <?= e($item['name'] ?? 'Astrologer') ?>">
-                            <span class="astro-market-photo-frame"><img class="astro-market-photo-img astro-market-photo-img--<?= e($item['slug'] ?? 'default') ?>" src="<?= e($item['photo_url'] ?? 'https://placehold.co/800x1000/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($item['name'] ?? 'Astrologer') ?>" loading="lazy"></span>
+                            <span class="astro-market-photo-frame"><img class="astro-market-photo-img astro-market-photo-img--<?= e($item['slug'] ?? 'default') ?>" src="<?= e($item['photo_url'] ?? placeholder_img($item['name'] ?? 'Astrologer')) ?>" alt="<?= e($item['name'] ?? 'Astrologer') ?>" loading="lazy"></span>
                             <span class="astro-status-dot" aria-label="<?= e(ucfirst($state)) ?>"></span>
                             <span class="astro-status-label"><?= e($statusLabel) ?></span>
                             <?php if(($summary['count'] ?? 0) > 0): ?><span class="astro-rating-pill"><?= e(number_format((float)$summary['average'], 1)) ?> · <?= e((string)$summary['count']) ?></span><?php endif; ?>

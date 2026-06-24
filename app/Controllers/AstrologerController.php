@@ -14,9 +14,9 @@ final class AstrologerController extends BaseController {
     public function changePassword(): void { $this->render('astrologer/change-password'); }
     public function savePassword(): void {
         $password=(string)($_POST['password']??''); $confirm=(string)($_POST['password_confirm']??'');
-        if(strlen($password)<10||$password!==$confirm){$this->flash('Use at least 10 characters and confirm the same password.');$this->redirect('/astrologer/change-password');}
+        if(strlen($password)<10||$password!==$confirm){$this->flash('Use at least 10 characters and confirm the same password.','warning');$this->redirect('/astrologer/change-password');}
         $store=new JsonStoreService(); $users=$store->read('users');
         foreach($users as &$user) if(($user['id']??'')===($this->user['sub']??'')){ $user['password_hash']=password_hash($password,PASSWORD_DEFAULT);$user['must_change_password']=false;$user['password_changed_at']=date('c'); $_SESSION['user']['must_change_password']=false; break; }
-        unset($user); $store->write('users',$users); $this->flash('Password changed.'); $this->redirect('/astrologer');
+        unset($user); $store->write('users',$users); $this->flash('Password changed.','success'); $this->redirect('/astrologer');
     }
 }

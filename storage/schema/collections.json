@@ -17,7 +17,8 @@
         "astrologer_slug": {"type": "slug"},
         "must_change_password": {"type": "boolean"},
         "password_changed_at": {"type": "datetime"},
-        "password_hash": {"type": "secret"}
+        "password_hash": {"type": "secret"},
+        "accepted_terms_at": {"type": "datetime"}
       }
     },
     "products": {
@@ -45,8 +46,8 @@
       "file": "storage/data/astrologers.json",
       "primary_key": "id",
       "admin_managed": true,
-      "media_fields": ["photo_url"],
-      "admin_fields": ["slug", "username", "name", "description", "email", "message_credit_cost", "call_credit_per_second", "credit_to_rupee_rate", "text_session_prm", "call_session_prm", "payout_percentage", "modes", "working_days", "start_time", "end_time", "slot_minutes", "languages", "experience_years", "speciality", "photo_url"],
+      "media_fields": ["photo_url", "photo_urls"],
+      "admin_fields": ["slug", "username", "name", "description", "email", "message_credit_cost", "call_credit_per_second", "credit_to_rupee_rate", "text_session_prm", "call_session_prm", "payout_percentage", "modes", "working_days", "start_time", "end_time", "slot_minutes", "languages", "experience_years", "speciality", "photo_url", "photo_urls"],
       "agent_context": ["slug", "name", "speciality", "languages", "availability_status", "message_credit_cost", "call_credit_per_second"],
       "fields": {
         "id": {"type": "string"},
@@ -56,6 +57,7 @@
         "description": {"type": "text"},
         "email": {"type": "email"},
         "photo_url": {"type": "local_or_remote_path"},
+        "photo_urls": {"type": "array", "items": "local_or_remote_path"},
         "availability_status": {"type": "enum", "values": ["available", "busy", "offline", "waitlist"]},
         "message_credit_cost": {"type": "number"},
         "call_credit_per_second": {"type": "number"},

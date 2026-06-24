@@ -7,8 +7,7 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/about','name'=>'about','page'=>'public/about','controller'=>'PublicController@about','services'=>[]],
             ['method'=>'GET','path'=>'/terms','name'=>'terms','page'=>'public/terms','controller'=>'PublicController@terms','services'=>[]],
             ['method'=>'GET','path'=>'/privacy','name'=>'privacy','page'=>'public/privacy','controller'=>'PublicController@privacy','services'=>[]],
-            ['method'=>'GET','path'=>'/sri-panchami-spiritual','name'=>'spiritual','page'=>'public/spiritual','controller'=>'PublicController@spiritual','services'=>[]],
-            ['method'=>'GET','path'=>'/spiritual','name'=>'spiritual.alias','page'=>'public/spiritual','controller'=>'PublicController@spiritual','services'=>[]],
+
             ['method'=>'GET','path'=>'/consult','name'=>'consult','page'=>'public/consult','controller'=>'PublicController@consult','services'=>['AstrologerService']],
             ['method'=>'GET','path'=>'/consult/{slug}','name'=>'consult.show','page'=>'public/astrologer','controller'=>'PublicController@consultant','services'=>['AstrologerService']],
             ['method'=>'GET','path'=>'/temples','name'=>'temples','page'=>'public/temples','controller'=>'PublicController@temples','services'=>['TempleService']],
@@ -47,14 +46,14 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/recharge/create-order','name'=>'wallet.recharge.create-order','page'=>'account/wallet','controller'=>'WalletController@createOrder','services'=>['AuthService','WalletService','SecretService','PaymentService']],
             ['method'=>'POST','path'=>'/recharge/verify','name'=>'wallet.recharge.verify','page'=>'account/wallet','controller'=>'WalletController@verify','services'=>['AuthService','WalletService','SecretService','PaymentService']],
             ['method'=>'GET','path'=>'/admin','name'=>'admin.dashboard','page'=>'admin/dashboard','controller'=>'AdminController@dashboard','services'=>['OrderService','AppointmentService']],
-            ['method'=>'GET','path'=>'/admin/products','name'=>'admin.products','page'=>'admin/resource','controller'=>'AdminController@products','services'=>['ProductService','SchemaService']],
+            ['method'=>'GET','path'=>'/admin/products','name'=>'admin.products','page'=>'admin/product-form','controller'=>'AdminController@products','services'=>['ProductService','SchemaService']],
             ['method'=>'GET','path'=>'/admin/categories','name'=>'admin.categories','page'=>'admin/resource','controller'=>'AdminController@categories','services'=>['CategoryService']],
             ['method'=>'GET','path'=>'/admin/coupons','name'=>'admin.coupons','page'=>'admin/resource','controller'=>'AdminController@coupons','services'=>['CouponService']],
             ['method'=>'GET','path'=>'/admin/orders','name'=>'admin.orders','page'=>'admin/list','controller'=>'AdminController@orders','services'=>['OrderService']],
             ['method'=>'GET','path'=>'/admin/orders/{id}','name'=>'admin.order.show','page'=>'admin/detail','controller'=>'AdminController@order','services'=>['OrderService','ShippingService']],
             ['method'=>'POST','path'=>'/admin/orders/{id}/status','name'=>'admin.order.status','page'=>'admin/detail','controller'=>'AdminController@saveOrderStatus','services'=>['OrderService','MailQueueService']],
             ['method'=>'GET','path'=>'/admin/shipping','name'=>'admin.shipping','page'=>'admin/settings','controller'=>'AdminController@shipping','services'=>['ShippingService','SettingsService']],
-            ['method'=>'GET','path'=>'/admin/astrologers','name'=>'admin.astrologers','page'=>'admin/resource','controller'=>'AdminController@astrologers','services'=>['AstrologerService','SchemaService']],
+            ['method'=>'GET','path'=>'/admin/astrologers','name'=>'admin.astrologers','page'=>'admin/astrologer-form','controller'=>'AdminController@astrologers','services'=>['AstrologerService','SchemaService']],
             ['method'=>'GET','path'=>'/admin/appointments','name'=>'admin.appointments','page'=>'admin/list','controller'=>'AdminController@appointments','services'=>['AppointmentService']],
             ['method'=>'GET','path'=>'/admin/astrologer-credentials','name'=>'admin.astrologer-credentials','page'=>'admin/astrologer-credentials','controller'=>'AdminController@astrologerCredentials','services'=>['AstrologerService','JsonStoreService']],
             ['method'=>'GET','path'=>'/admin/consultation-analytics','name'=>'admin.consultation-analytics','page'=>'admin/consultation-analytics','controller'=>'AdminController@consultationAnalytics','services'=>['ConsultationService']],
@@ -66,20 +65,25 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/admin/backups','name'=>'admin.backups','page'=>'admin/list','controller'=>'AdminController@backups','services'=>['JsonStoreService']],
             ['method'=>'GET','path'=>'/admin/audit-log','name'=>'admin.audit','page'=>'admin/list','controller'=>'AdminController@audit','services'=>['AuditLogService']],
             ['method'=>'GET','path'=>'/admin/contact-submissions','name'=>'admin.contact-submissions','page'=>'admin/contact-submissions','controller'=>'AdminController@contactSubmissions','services'=>['ContactService']],
+            ['method'=>'POST','path'=>'/admin/contact_submissions/save','name'=>'admin.contact-submissions.save','page'=>'admin/contact-submissions','controller'=>'AdminController@saveContactSubmission','services'=>['ResourceService','AuditLogService']],
+            ['method'=>'POST','path'=>'/admin/contact_submissions/delete','name'=>'admin.contact-submissions.delete','page'=>'admin/contact-submissions','controller'=>'AdminController@deleteContactSubmission','services'=>['ResourceService','AuditLogService']],
             ['method'=>'GET','path'=>'/admin/support-tickets','name'=>'admin.support-tickets','page'=>'admin/list','controller'=>'AdminController@supportTickets','services'=>['JsonStoreService']],
+            ['method'=>'GET','path'=>'/admin/appearance','name'=>'admin.appearance','page'=>'admin/appearance','controller'=>'AdminController@appearance','services'=>['SettingsService']],
+            ['method'=>'POST','path'=>'/admin/appearance/save','name'=>'admin.appearance.save','page'=>'admin/appearance','controller'=>'AdminController@saveAppearance','services'=>['SettingsService','AuditLogService']],
             ['method'=>'GET','path'=>'/admin/media','name'=>'admin.media','page'=>'admin/media','controller'=>'AdminController@media','services'=>['MediaService']],
             ['method'=>'POST','path'=>'/admin/media/upload','name'=>'admin.media.upload','page'=>'admin/media','controller'=>'AdminController@uploadMedia','services'=>['MediaService','AuditLogService']],
             ['method'=>'GET','path'=>'/admin/environment','name'=>'admin.environment','page'=>'admin/environment','controller'=>'AdminController@environment','services'=>['EnvService','StoragePermissionService']],
             ['method'=>'POST','path'=>'/admin/environment/save','name'=>'admin.environment.save','page'=>'admin/environment','controller'=>'AdminController@saveEnvironment','services'=>['EnvService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/environment/fix-permissions','name'=>'admin.environment.fix-permissions','page'=>'admin/environment','controller'=>'AdminController@fixPermissions','services'=>['StoragePermissionService','AuditLogService']],
             ['method'=>'GET','path'=>'/admin/developer/project-map','name'=>'admin.project-map','page'=>'admin/project-map','controller'=>'AdminController@projectMap','services'=>['ProjectMapService']],
-            ['method'=>'POST','path'=>'/admin/products/save','name'=>'admin.products.save','page'=>'admin/resource','controller'=>'AdminController@saveProduct','services'=>['ResourceService','AuditLogService']],
-            ['method'=>'POST','path'=>'/admin/products/delete','name'=>'admin.products.delete','page'=>'admin/resource','controller'=>'AdminController@deleteProduct','services'=>['ResourceService','AuditLogService']],
+            ['method'=>'POST','path'=>'/admin/products/save','name'=>'admin.products.save','page'=>'admin/product-form','controller'=>'AdminController@saveProduct','services'=>['ResourceService','AuditLogService']],
+            ['method'=>'POST','path'=>'/admin/products/delete','name'=>'admin.products.delete','page'=>'admin/product-form','controller'=>'AdminController@deleteProduct','services'=>['ResourceService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/categories/save','name'=>'admin.categories.save','page'=>'admin/resource','controller'=>'AdminController@saveCategory','services'=>['ResourceService','AuditLogService']],
+            ['method'=>'POST','path'=>'/admin/categories/delete','name'=>'admin.categories.delete','page'=>'admin/resource','controller'=>'AdminController@deleteCategory','services'=>['ResourceService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/coupons/save','name'=>'admin.coupons.save','page'=>'admin/resource','controller'=>'AdminController@saveCoupon','services'=>['ResourceService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/coupons/delete','name'=>'admin.coupons.delete','page'=>'admin/resource','controller'=>'AdminController@deleteCoupon','services'=>['ResourceService','AuditLogService']],
-            ['method'=>'POST','path'=>'/admin/astrologers/save','name'=>'admin.astrologers.save','page'=>'admin/resource','controller'=>'AdminController@saveAstrologer','services'=>['ResourceService','AstrologerAccountService','AuditLogService']],
-            ['method'=>'POST','path'=>'/admin/astrologers/delete','name'=>'admin.astrologers.delete','page'=>'admin/resource','controller'=>'AdminController@deleteAstrologer','services'=>['ResourceService','AstrologerAccountService','AuditLogService']],
+            ['method'=>'POST','path'=>'/admin/astrologers/save','name'=>'admin.astrologers.save','page'=>'admin/astrologer-form','controller'=>'AdminController@saveAstrologer','services'=>['ResourceService','AstrologerAccountService','AuditLogService']],
+            ['method'=>'POST','path'=>'/admin/astrologers/delete','name'=>'admin.astrologers.delete','page'=>'admin/astrologer-form','controller'=>'AdminController@deleteAstrologer','services'=>['ResourceService','AstrologerAccountService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/temples/save','name'=>'admin.temples.save','page'=>'admin/resource','controller'=>'AdminController@saveTemple','services'=>['ResourceService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/temples/delete','name'=>'admin.temples.delete','page'=>'admin/resource','controller'=>'AdminController@deleteTemple','services'=>['ResourceService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/integrations/save','name'=>'admin.integrations.save','page'=>'admin/integrations','controller'=>'AdminController@saveIntegrations','services'=>['SecretService']],
@@ -171,6 +175,106 @@ final class ProjectMapService {
         ];
     }
 
+    private static function routeDesc(string $path): string {
+        $descs = [
+            '/'                => 'Home page — hero, categories, featured products, astrologers',
+            '/about'           => 'About SPS — story, values, CTA',
+            '/terms'           => 'Terms of Service — 15 sections, legal',
+            '/privacy'         => 'Privacy Policy — 14 sections, data handling',
+            '/consult'         => 'Astrologer marketplace — browse and book',
+            '/consult/{slug}'  => 'Astrologer profile — book message/call session',
+            '/temples'         => 'Temple listing page',
+            '/temples/{slug}'  => 'Temple detail page',
+            '/shop'            => 'Product shop — grid with pill actions',
+            '/categories'      => 'Products filtered by category',
+            '/product/{slug}'  => 'Product detail — gallery, add-to-cart, buy-now',
+            '/contact'         => 'Contact form GET',
+            '/contact|POST'    => 'Contact form POST submission',
+            '/login'           => 'Login page — email/username + Google OAuth',
+            '/logout'          => 'Logout — session destroy, redirect',
+            '/register'        => 'Register page — name, email, password, terms',
+            '/register|POST'   => 'Register POST — create user, accept terms',
+            '/login|POST'      => 'Login POST — authenticate, session start',
+            '/forgot-password' => 'Forgot password page',
+            '/forgot-password|POST' => 'Forgot password POST — generate reset token',
+            '/reset-password'  => 'Reset password page with token',
+            '/reset-password|POST'  => 'Reset password POST — update hash',
+            '/auth/google'     => 'Google OAuth redirect',
+            '/auth/google/callback' => 'Google OAuth callback — upsert user',
+            '/cart'            => 'Cart page — items, qty, totals',
+            '/checkout'        => 'Checkout page — address, Razorpay payment',
+            '/recharge'        => 'Wallet recharge — buy credits',
+            '/recharge/create-order' => 'Wallet recharge — Razorpay order creation',
+            '/recharge/verify' => 'Wallet recharge — verify payment',
+            '/cart/add'        => 'Cart — add item',
+            '/cart/remove'     => 'Cart — remove item',
+            '/cart/update'     => 'Cart — update quantity',
+            '/checkout/create-order' => 'Checkout — create Razorpay order',
+            '/payment/verify'  => 'Checkout — verify payment, create order',
+            '/create-order'    => 'API checkout — Razorpay order',
+            '/verify-payment'  => 'API checkout — verify payment',
+            '/account/orders'  => 'My Orders — product reviews',
+            '/account/bookings' => 'My Sessions — astrologer bookings',
+            '/account/wallet'  => 'Wallet — balance, transactions (redirects to /recharge)',
+            '/consultation/{id}' => 'Consultation room — messaging, WebRTC signaling',
+            '/astrologer'      => 'Astrologer dashboard — sessions queue',
+            '/astrologer/change-password' => 'Astrologer forced password change',
+            '/api/consultations/{id}/messages' => 'API — fetch messages',
+            '/api/consultations/{id}/messages|POST' => 'API — send message',
+            '/api/consultations/{id}/signals' => 'API — fetch WebRTC signals',
+            '/api/consultations/{id}/signals|POST' => 'API — send WebRTC signal',
+            '/api/consultations/{id}/status|POST' => 'API — update appointment status',
+            '/appointments/book|POST' => 'Book astrologer appointment',
+            '/reviews/astrologer|POST' => 'Submit astrologer review',
+            '/reviews/product|POST'    => 'Submit product review',
+            '/support/ask|POST' => 'Support bot — AI-powered Q&A',
+            '/admin'            => 'Admin dashboard — counts overview',
+            '/admin/products'   => 'Admin — manage products',
+            '/admin/categories' => 'Admin — manage categories',
+            '/admin/coupons'    => 'Admin — manage coupons',
+            '/admin/orders'     => 'Admin — order list',
+            '/admin/orders/{id}' => 'Admin — order detail, status update',
+            '/admin/orders/{id}/status|POST' => 'Admin — update order status + email',
+            '/admin/shipping'   => 'Admin — shipping settings',
+            '/admin/astrologers' => 'Admin — manage astrologers',
+            '/admin/appointments' => 'Admin — session list',
+            '/admin/astrologer-credentials' => 'Admin — astrologer login credentials',
+            '/admin/consultation-analytics' => 'Admin — consultation metrics',
+            '/admin/temples'    => 'Admin — manage temples',
+            '/admin/settings'   => 'Admin — site settings',
+            '/admin/settings/save|POST' => 'Admin — save settings',
+            '/admin/settings/admin-credentials|POST' => 'Admin — save admin login',
+            '/admin/integrations' => 'Admin — API keys, integrations',
+            '/admin/backups'    => 'Admin — backup list',
+            '/admin/audit-log'  => 'Admin — audit log',
+            '/admin/contact-submissions' => 'Admin — contact form entries',
+            '/admin/contact_submissions/save|POST' => 'Admin — save contact submission',
+            '/admin/contact_submissions/delete|POST' => 'Admin — delete contact submission',
+            '/admin/support-tickets' => 'Admin — support tickets',
+            '/admin/appearance' => 'Admin — logo & favicon',
+            '/admin/appearance/save|POST' => 'Admin — save logo/favicon',
+            '/admin/media'      => 'Admin — media library',
+            '/admin/media/upload|POST' => 'Admin — upload media',
+            '/admin/environment' => 'Admin — .env editor, permissions',
+            '/admin/environment/save|POST' => 'Admin — save .env',
+            '/admin/environment/fix-permissions|POST' => 'Admin — fix storage permissions',
+            '/admin/developer/project-map' => 'Admin — project map viewer',
+            '/admin/products/save|POST' => 'Admin — create/update product',
+            '/admin/products/delete|POST' => 'Admin — delete product',
+            '/admin/categories/save|POST' => 'Admin — create/update category',
+            '/admin/categories/delete|POST' => 'Admin — delete category',
+            '/admin/coupons/save|POST' => 'Admin — create/update coupon',
+            '/admin/coupons/delete|POST' => 'Admin — delete coupon',
+            '/admin/astrologers/save|POST' => 'Admin — create/update astrologer',
+            '/admin/astrologers/delete|POST' => 'Admin — delete astrologer',
+            '/admin/temples/save|POST' => 'Admin — create/update temple',
+            '/admin/temples/delete|POST' => 'Admin — delete temple',
+            '/admin/integrations/save|POST' => 'Admin — save integration secrets',
+        ];
+        $methodPath = $path;
+        return $descs[$methodPath] ?? '';
+    }
+
     public static function renderSystematicMermaid(): string {
         $scan = self::scan();
         $lines = [
@@ -180,15 +284,33 @@ final class ProjectMapService {
             '  classDef code fill:#ecfdf5,stroke:#047857,color:#064e3b',
             '  classDef data fill:#fef3c7,stroke:#b45309,color:#78350f',
             '  classDef tool fill:#ede9fe,stroke:#6d28d9,color:#3b0764',
+            '  classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b',
             '',
         ];
+
+        $summary = $scan['summary'];
+        $lines[] = '  subgraph ARCH["Architecture Overview — ' . $summary['routes'] . ' routes, ' . $summary['controllers'] . ' controllers, ' . $summary['services'] . ' services, ' . $summary['views'] . ' views, ' . $summary['storage_files'] . ' data files, ' . $summary['tools'] . ' tools"]';
+        $lines[] = '    arch_routes["> Routes: ' . $summary['routes'] . ' (Public + Auth + Payment + Admin + Support)"]:::arch';
+        $lines[] = '    arch_ctrl["> Controllers: ' . $summary['controllers'] . '"]:::arch';
+        $lines[] = '    arch_svc["> Services: ' . $summary['services'] . '"]:::arch';
+        $lines[] = '    arch_views["> Views: ' . $summary['views'] . '"]:::arch';
+        $lines[] = '    arch_data["> Collections: ' . $summary['schema_collections'] . ' schema | ' . $summary['storage_files'] . ' files"]:::arch';
+        $lines[] = '    arch_tools["> Tools: ' . $summary['tools'] . '"]:::arch';
+        $lines[] = '    arch_gaps["> Gaps: ' . $summary['gaps'] . '"]:::arch';
+        $lines[] = '    arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data';
+        $lines[] = '    arch_ctrl -.-> arch_views';
+        $lines[] = '  end';
+        $lines[] = '';
 
         foreach (['PUBLIC', 'AUTH', 'PAYMENT', 'SUPPORT', 'ADMIN'] as $domain) {
             $routes = array_values(array_filter($scan['routes'], fn($route) => self::routeDomain($route) === $domain));
             $lines[] = '  subgraph ROUTES_' . $domain . '["' . $domain . ' Routes"]';
             foreach ($routes as $route) {
                 $id = self::routeId($route);
-                $lines[] = '    ' . $id . '["' . self::label(($route['method'] ?? 'GET') . ' ' . ($route['path'] ?? '')) . '"]:::route';
+                $mp = ($route['method'] ?? 'GET') . ' ' . ($route['path'] ?? '');
+                $desc = self::routeDesc($route['path'] ?? '');
+                $label = $desc ? $mp . ' — ' . $desc : $mp;
+                $lines[] = '    ' . $id . '["' . self::label($label) . '"]:::route';
             }
             $lines[] = '  end';
             $lines[] = '';
@@ -263,8 +385,10 @@ final class ProjectMapService {
             }
             if (str_contains($path, 'payment') || str_contains($path, 'checkout') || str_contains($path, 'recharge')) {
                 $lines[] = '  ' . self::serviceId('PaymentService') . ' --> ' . self::integrationId('RazorpayClient');
+                $lines[] = '  ' . self::serviceId('PaymentService') . ' --> ' . self::integrationId('StripeClient');
             }
         }
+        $lines[] = '  ' . self::serviceId('SupportBotService') . ' --> ' . self::integrationId('GoogleSiteKitClient');
         if (in_array('generate-project-map', $scan['tools'], true)) {
             $lines[] = '  ' . self::toolId('generate-project-map') . ' --> systematic_map["docs/systematic-map.mmd"]:::data';
         }

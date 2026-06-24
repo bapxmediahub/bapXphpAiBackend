@@ -10,4 +10,5 @@ description: Use when editing PHP controllers, services, JSON persistence, auth,
 - Use `JsonStoreService`, `ResourceService`, and existing services instead of ad hoc storage writes.
 - Keep assistant/customer context filtered through `AgentContextService` or equivalent user-specific filtering.
 - Implement consultation messaging and WebRTC signaling through authenticated PHP JSON APIs and `ConsultationService`; do not introduce a persistent WebSocket or CLI service.
+- For shared-hosting payment integrations, keep gateway clients as small `integrations/` wrappers, source secrets through `SecretService` or hosting environment variables, and verify signatures server-side before mutating JSON orders or wallet balances.
 - Validate changed PHP with `php -l`, then run `php tests/run.php`.

@@ -23,7 +23,7 @@ final class AuthService {
             exit;
         }
         if (($user['role'] ?? '') !== 'admin' && empty($user['is_admin'])) {
-            $_SESSION['flash'] = 'Admin access required.';
+            $_SESSION['flash'] = ['message' => 'Admin access required.', 'type' => 'warning'];
             header('Location: /');
             exit;
         }
@@ -32,6 +32,6 @@ final class AuthService {
     public function requireAstrologer(): void {
         $user = $this->user();
         if (!$user) { header('Location: /login'); exit; }
-        if (($user['role'] ?? '') !== 'astrologer') { $_SESSION['flash']='Astrologer access required.'; header('Location: /'); exit; }
+        if (($user['role'] ?? '') !== 'astrologer') { $_SESSION['flash']=['message'=>'Astrologer access required.','type'=>'warning']; header('Location: /'); exit; }
     }
 }

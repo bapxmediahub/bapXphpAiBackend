@@ -24,6 +24,12 @@
                     <label>Confirm Password</label>
                     <input type="password" name="password_confirm" required placeholder="••••••••" minlength="6">
                 </div>
+                <div class="form-group form-check">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="accept_terms" required>
+                        <span>I accept the <a href="/terms" target="_blank">Terms of Service</a> and <a href="/privacy" target="_blank">Privacy Policy</a></span>
+                    </label>
+                </div>
                 <button class="btn btn-primary btn-block">Create Account</button>
             </form>
             <div class="auth-divider">or</div>

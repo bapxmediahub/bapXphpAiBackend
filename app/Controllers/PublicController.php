@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{ProductService,AstrologerService,TempleService,CategoryService,SecretService,ContactService,ReviewService};
+use App\Services\{ProductService,AstrologerService,TempleService,CategoryService,SecretService,SeoService,ContactService,ReviewService};
 final class PublicController extends BaseController {
     
     protected function detectApiRequest(): void {
@@ -35,12 +35,6 @@ final class PublicController extends BaseController {
         $this->detectApiRequest();
         $this->seoKey = 'privacy';
         $this->render('public/privacy'); 
-    }
-    
-    public function spiritual(): void { 
-        $this->detectApiRequest();
-        $this->seoKey = 'spiritual';
-        $this->render('public/spiritual'); 
     }
     
     public function consult(): void {
@@ -133,10 +127,12 @@ final class PublicController extends BaseController {
             $related = array_values(array_filter($all, fn($p) => ($p['slug'] ?? '') !== $slug));
             $this->seoKey = 'product';
             $price = $product['offer_price'] ?? $product['price'] ?? 0;
+            $schema = (new SeoService((new SecretService())->all()))->productSchema($product);
             $this->seoOverrides = [
                 'title' => ($product['name'] ?? 'Product') . ' – Buy Online at Sri Panchami Spiritual',
                 'description' => 'Buy ' . ($product['name'] ?? 'this product') . ' online at Sri Panchami Spiritual. ' . ($product['description'] ?? '') . ' Price: ₹' . $price . '. Authentic spiritual product with fast shipping.',
                 'og_image' => $product['image_url'] ?? '',
+                'json_ld' => '<script type="application/ld+json">' . json_encode($schema) . '</script>',
             ];
         }
         $reviewSummary = (new ReviewService())->summary('product', $slug);

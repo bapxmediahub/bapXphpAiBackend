@@ -1,13 +1,15 @@
 <section class="section">
     <div class="shop-layout">
         <aside class="shop-sidebar">
-            <div class="shop-filters">
-                <h3>Categories</h3>
-                <div class="filter-group">
-                    <a href="/shop" class="filter-chip <?= ($category ?? '') === '' ? 'active' : '' ?>">All</a>
-                    <?php foreach($categories as $cat): ?>
-                        <a href="/shop?category=<?= e($cat['slug'] ?? '') ?>" class="filter-chip <?= ($category === ($cat['slug'] ?? '')) ? 'active' : '' ?>"><?= e($cat['name'] ?? 'Category') ?></a>
-                    <?php endforeach; ?>
+            <div class="shop-sidebar-card">
+                <div class="shop-filters">
+                    <h3>Categories</h3>
+                    <div class="filter-group">
+                        <a href="/shop" class="filter-chip <?= ($category ?? '') === '' ? 'active' : '' ?>">All</a>
+                        <?php foreach($categories as $cat): ?>
+                            <a href="/shop?category=<?= e($cat['slug'] ?? '') ?>" class="filter-chip <?= ($category === ($cat['slug'] ?? '')) ? 'active' : '' ?>"><?= e($cat['name'] ?? 'Category') ?></a>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -28,7 +30,7 @@
                         <?php $hasOffer = !empty($item['offer_price']) && $item['offer_price'] < $item['price']; ?>
                         <article class="product-card reveal">
                             <div class="product-card__image">
-                                <img src="<?= e($item['image_url'] ?? 'https://placehold.co/400x400/fdfbf7/8c7e6d?text='.urlencode($item['name'])) ?>" alt="<?= e($item['name']) ?>" decoding="async">
+                                <img src="<?= e($item['image_url'] ?? placeholder_img($item['name'])) ?>" alt="<?= e($item['name']) ?>" decoding="async">
                                 <?php if($hasOffer): ?>
                                     <span class="product-card__badge product-card__badge--sale">Sale</span>
                                 <?php endif; ?>
@@ -48,12 +50,18 @@
                                     <?php endif; ?>
                                 </div>
                                  <div class="product-card__actions">
-                                     <a href="/product/<?= e($item['slug']) ?>" class="btn btn-sm btn-ghost">View</a>
-                                     <form method="post" action="/cart/add" style="flex:1;">
+                                     <a href="/product/<?= e($item['slug']) ?>" class="btn btn-sm btn-ghost">View →</a>
+                                     <form method="post" action="/cart/add" class="product-card__form">
+                                         <div class="qty-input qty-input--sm">
+                                             <button type="button" onclick="var i=this.parentElement.querySelector('input[type=number]'); i.stepDown(); i.dispatchEvent(new Event('change'));">−</button>
+                                             <input type="number" name="qty" value="1" min="1" max="99" required>
+                                             <button type="button" onclick="var i=this.parentElement.querySelector('input[type=number]'); i.stepUp(); i.dispatchEvent(new Event('change'));">+</button>
+                                         </div>
                                          <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
-                                         <input type="hidden" name="qty" value="1">
                                          <input type="hidden" name="redirect" value="/shop">
-                                         <button class="btn btn-sm btn-primary" style="width:100%;">Add to Cart</button>
+                                         <button class="btn-cart-circle" aria-label="Add to Cart">
+                                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                                         </button>
                                      </form>
                                  </div>
                             </div>

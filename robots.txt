@@ -1,0 +1,15 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /account/
+Disallow: /api/
+Disallow: /astrologer/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /logout
+Disallow: /recharge
+
+Sitemap: https://sripanchamispiritual.com/sitemap.xml

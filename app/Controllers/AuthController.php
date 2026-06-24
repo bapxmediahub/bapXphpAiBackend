@@ -4,7 +4,7 @@ use App\Services\{EnvService,SecretService,JsonStoreService,PasswordResetService
 use App\Integrations\GoogleOAuth\GoogleOAuthClient;
 final class AuthController extends BaseController {
  public function googleRedirect(): void {
-  $s=(new SecretService())->all(); if(empty($s['google_client_id'])||empty($s['google_client_secret'])){$this->flash('Google login is not configured yet.');$this->redirect('/login');}
+  $s=(new SecretService())->all(); if(empty($s['google_client_id'])||empty($s['google_client_secret'])){$this->flash('Google login is not configured yet.','warning');$this->redirect('/login');}
   $state=bin2hex(random_bytes(16)); $_SESSION['oauth_state']=$state;
   $url=(new GoogleOAuthClient($s['google_client_id'],$s['google_client_secret']))->authorizationUrl($this->redirectUri(),$state); $this->redirect($url);
  }
@@ -25,7 +25,7 @@ final class AuthController extends BaseController {
   }
   session_destroy();
   session_start();
-  $this->flash('You are signed out.');
+  $this->flash('You are signed out.','info');
   $this->redirect('/login');
  }
  private function redirectUri(): string { $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http'; return $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'sripanchamispiritual.com') . '/auth/google/callback'; }
@@ -40,27 +40,28 @@ final class AuthController extends BaseController {
     $name = trim($_POST['name'] ?? '');
     $password = $_POST['password'] ?? '';
     $confirm = $_POST['password_confirm'] ?? '';
-    if ($password === '' || $email === '' || $name === '') { $this->flash('All fields are required.'); $this->redirect('/register'); }
-    if ($password !== $confirm) { $this->flash('Passwords do not match.'); $this->redirect('/register'); }
+    if ($password === '' || $email === '' || $name === '') { $this->flash('All fields are required.','error'); $this->redirect('/register'); }
+    if ($password !== $confirm) { $this->flash('Passwords do not match.','error'); $this->redirect('/register'); }
+    if (empty($_POST['accept_terms'])) { $this->flash('You must accept the Terms of Service and Privacy Policy to register.','error'); $this->redirect('/register'); }
     $store = new JsonStoreService();
     $users = $store->read('users');
-    foreach ($users as $u) { if (($u['email'] ?? '') === $email) { $this->flash('Email already registered.'); $this->redirect('/login'); } }
+    foreach ($users as $u) { if (($u['email'] ?? '') === $email) { $this->flash('Email already registered.','error'); $this->redirect('/login'); } }
     $id = bin2hex(random_bytes(8));
     $role = 'customer';
-    $record = ['id'=>$id,'email'=>$email,'name'=>$name,'role'=>$role,'password_hash'=>password_hash($password,PASSWORD_DEFAULT)];
+    $record = ['id'=>$id,'email'=>$email,'name'=>$name,'role'=>$role,'password_hash'=>password_hash($password,PASSWORD_DEFAULT),'accepted_terms_at'=>date('c')];
     $store->upsert('users',$record,'id');
     $_SESSION['user'] = ['sub'=>$id,'email'=>$email,'name'=>$name,'role'=>$role];
-    $this->flash('Registered and signed in.');
+    $this->flash('Registered and signed in.','success');
     $this->redirect('/');
  }
  public function loginPost(): void {
     $email = trim($_POST['identifier'] ?? $_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
-    if ($email === '' || $password === '') { $this->flash('Username or email and password required.'); $this->redirect('/login'); }
+    if ($email === '' || $password === '') { $this->flash('Username or email and password required.','error'); $this->redirect('/login'); }
     $admin = (new EnvService())->adminCredentials();
     if ($admin['email'] !== '' && $admin['password'] !== '' && $email === $admin['email'] && hash_equals($admin['password'], $password)) {
         $_SESSION['user'] = ['sub'=>'env-admin','email'=>$admin['email'],'name'=>$admin['username'] ?: 'Admin','role'=>'admin'];
-        $this->flash('Signed in.');
+        $this->flash('Signed in.','success');
         $this->redirect('/admin');
     }
     $store = new JsonStoreService();
@@ -69,11 +70,11 @@ final class AuthController extends BaseController {
         $matches = strcasecmp((string)($u['email'] ?? ''), $email) === 0 || strcasecmp((string)($u['username'] ?? ''), $email) === 0;
         if ($matches && !empty($u['password_hash']) && password_verify($password,$u['password_hash'])) {
             $_SESSION['user'] = ['sub'=>$u['id'],'email'=>$u['email'] ?? '','username'=>$u['username'] ?? '','name'=>$u['name'] ?? '','role'=>$u['role'] ?? (!empty($u['is_admin']) ? 'admin' : 'customer'),'astrologer_slug'=>$u['astrologer_slug'] ?? '','must_change_password'=>(bool)($u['must_change_password'] ?? false)];
-            $this->flash('Signed in.');
+            $this->flash('Signed in.','success');
             $this->redirect(($u['role'] ?? '') === 'astrologer' ? (!empty($u['must_change_password']) ? '/astrologer/change-password' : '/astrologer') : '/');
         }
     }
-    $this->flash('Invalid credentials.');
+    $this->flash('Invalid credentials.','error');
     $this->redirect('/login');
   }
   public function forgotPassword(): void {
@@ -88,7 +89,7 @@ final class AuthController extends BaseController {
             $_SESSION['last_reset_link'] = '/reset-password?token=' . urlencode($token);
         }
     }
-    $this->flash('If this email is registered, a reset link will be sent.');
+    $this->flash('If this email is registered, a reset link will be sent.','info');
     $this->redirect('/forgot-password');
  }
   public function resetPassword(): void {
@@ -100,14 +101,14 @@ final class AuthController extends BaseController {
     $password = $_POST['password'] ?? '';
     $confirm = $_POST['password_confirm'] ?? '';
     if ($password === '' || $password !== $confirm) {
-        $this->flash('Passwords do not match.');
+        $this->flash('Passwords do not match.','error');
         $this->redirect('/reset-password?token=' . urlencode($token));
     }
     if ((new PasswordResetService())->resetPassword($token, $password)) {
-        $this->flash('Password updated. Please sign in.');
+        $this->flash('Password updated. Please sign in.','success');
         $this->redirect('/login');
     }
-    $this->flash('Reset link is invalid or expired.');
+    $this->flash('Reset link is invalid or expired.','error');
     $this->redirect('/forgot-password');
  }
 }

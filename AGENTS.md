@@ -73,7 +73,7 @@ php tools/validate-project-map.php
 php tools/smoke-local.php
 ```
 
-For UI changes, also use a browser workflow. Click the changed page like a user and verify the visible result.
+For UI changes, also use a browser workflow. Codex agents must use `Browser:control-in-app-browser` for localhost and in-app browser verification when the Browser plugin is available. Standalone Playwright is only a fallback for agents or environments that do not have the Browser plugin. Click the changed page like a user and verify the visible result.
 
 Before finishing, search the touched workflow for placeholders, dead buttons, duplicated fallbacks, stale labels, and incomplete wiring. Remove or wire them instead of leaving non-working UI.
 

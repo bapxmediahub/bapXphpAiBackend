@@ -74,8 +74,8 @@ try {
 
     $paymentPost = httpRequest($base . '/payment/verify', 'POST', 'order_id=&payment_id=&signature=');
     echo "{$paymentPost['status']} POST /payment/verify\n";
-    if ($paymentPost['status'] !== 200 || !str_contains($paymentPost['body'], 'verified')) {
-        $failures[] = "POST /payment/verify should return JSON verification status through PHP routing";
+    if ($paymentPost['status'] !== 400 || !str_contains($paymentPost['body'], 'verified')) {
+        $failures[] = "POST /payment/verify should reject missing Razorpay verification fields with JSON";
     }
 
     $supportPost = httpRequest($base . '/support/ask', 'POST', 'message=Where%20is%20my%20order%3F');
