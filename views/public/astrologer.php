@@ -12,7 +12,7 @@
             <div class="expert-main">
                 <section class="expert-profile-card reveal">
                     <div class="expert-photo-wrap">
-                        <img class="booking-profile__photo" src="<?= e($astrologer['photo_url'] ?? 'https://placehold.co/800x1000/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($astrologer['name']) ?>">
+                        <img class="booking-profile__photo" src="<?= e($astrologer['photo_url'] ?? placeholder_img($astrologer['name'])) ?>" alt="<?= e($astrologer['name']) ?>">
                         <?php if($profileReviewCount>0): ?><span class="astro-rating-pill"><?= e(number_format((float)$reviewSummary['average'],1)) ?> · <?= e((string)$profileReviewCount) ?></span><?php endif; ?>
                     </div>
                     <div class="booking-profile__content">
@@ -83,11 +83,7 @@
 
                 <section class="consultation-panel__contact reveal">
                     <h3 style="font-family:var(--font-serif); margin:0 0 var(--space-xs);">Contact Sri Panchami Spiritual</h3>
-                    <p style="margin:0 0 var(--space-sm); color:var(--color-text-muted); font-size:0.9rem;">For ritual requests, store visit and support-assisted sessions.</p>
-                    <p style="margin:0; color:var(--color-text-muted); font-size:0.9rem;">
-                        23, 1st Cross Street Kothari Nagar<br>
-                        Ramapuram, Chennai, Tamil Nadu 600089
-                    </p>
+                    <p style="margin:0 0 var(--space-sm); color:var(--color-text-muted); font-size:0.9rem;">For ritual requests and support-assisted sessions.</p>
                 </section>
             </aside>
         </div>

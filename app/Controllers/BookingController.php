@@ -7,14 +7,14 @@ final class BookingController extends BaseController {
   $data = $_POST;
   $astrologer = (new AstrologerService())->findBySlug($data['astrologer_slug'] ?? '');
   if (!$astrologer) {
-    $this->flash('Astrologer not found.');
+    $this->flash('Astrologer not found.','error');
     $this->redirect('/consult');
   }
   $user = $_SESSION['user'] ?? [];
   $data['customer_name'] = trim($data['customer_name'] ?? $user['name'] ?? '');
   $data['customer_email'] = trim($data['customer_email'] ?? $user['email'] ?? '');
   if (empty($data['customer_name']) || empty($data['customer_email'])) {
-    $this->flash('Please provide your name and email to start this remote session.');
+    $this->flash('Please provide your name and email to start this remote session.','warning');
     $this->redirect('/consult/' . ($astrologer['slug'] ?? ''));
   }
   $mode = in_array(($data['mode'] ?? 'direct_call'), ['text_session', 'direct_call'], true) ? $data['mode'] : 'direct_call';
@@ -31,8 +31,8 @@ final class BookingController extends BaseController {
   $initialCredits = $mode === 'text_session' ? (int)($astrologer['message_credit_cost'] ?? 5) : max(1, (int)ceil(((float)($astrologer['call_credit_per_second'] ?? 0.5)) * 60));
   $wallet = new WalletService();
   if (($data['queue_status'] ?? '') !== 'waitlist' && $wallet->balanceFor($data['customer_email']) < $initialCredits) {
-    $this->flash('Please recharge your wallet to start this session.');
-    $this->redirect('/account/dashboard/wallet?amount=100');
+    $this->flash('Please recharge your wallet to start this session.','warning');
+    $this->redirect('/recharge?amount=100');
   }
   $data['credits_spent'] = ($data['queue_status'] ?? '') === 'waitlist' ? 0 : $initialCredits;
   $data['status'] = ($data['queue_status'] ?? '') === 'waitlist' ? 'queued' : 'requested';
@@ -43,7 +43,7 @@ final class BookingController extends BaseController {
     $wallet->spend($data['customer_email'], $initialCredits, $data['id'], $data['session_type'] . ' session with ' . ($data['astrologer_name'] ?? 'astrologer'));
     (new ResourceService('appointments'))->save($data);
   }
-  $this->flash($data['status'] === 'queued' ? 'Waitlist request saved.' : 'Consultation request created and initial credits were deducted.');
+  $this->flash($data['status'] === 'queued' ? 'Waitlist request saved.' : 'Consultation request created and initial credits were deducted.', $data['status'] === 'queued' ? 'info' : 'success');
   $this->redirect('/consultation/' . $data['id']);
  }
 }

@@ -33,11 +33,49 @@
         </p>
         <div class="admin-form__row">
             <label>Google API Key<input name="support_bot_google_api_key" value="<?= e($secrets['support_bot_google_api_key']??'') ?>" placeholder="AIza..."></label>
-            <label>Model<input name="support_bot_model" value="<?= e($secrets['support_bot_model']??'gemma-4-31b-it') ?>" placeholder="gemma-4-31b-it"></label>
+            <label>Model<input name="support_bot_model" value="<?= e($secrets['support_bot_model']??'gemini-2.0-flash') ?>" placeholder="gemini-2.0-flash"></label>
         </div>
         <input type="hidden" name="support_bot_purge_policy" value="always_purge">
-        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">The app builds the endpoint automatically from the model: <code>https://generativelanguage.googleapis.com/v1beta/models/<?= e($secrets['support_bot_model']??'gemma-4-31b-it') ?>:generateContent</code>. Google documents API-key authentication with the <code>x-goog-api-key</code> header. Free API access is subject to Google account, region, model, and rate-limit rules; it should not be treated as unlimited.</p>
+        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">The app builds the endpoint automatically from the model: <code>https://generativelanguage.googleapis.com/v1beta/models/<?= e($secrets['support_bot_model']??'gemini-2.0-flash') ?>:generateContent</code>. Google documents API-key authentication with the <code>x-goog-api-key</code> header. Free API access is subject to Google account, region, model, and rate-limit rules; it should not be treated as unlimited.</p>
         <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Privacy mode: <strong>always_purge</strong>. Bot task data and conversation scratch data should be deleted after the support task finishes.</p>
+
+        <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">Meta Pixel (Facebook Ads)</h2>
+        <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">
+            Optional Facebook/Meta Ads conversion tracking and retargeting. Enter your Pixel ID to enable Meta tracking across all pages.
+            <a href="https://www.facebook.com/events_manager/pixel/" target="_blank" rel="noopener">Meta Events Manager</a>
+        </p>
+        <div class="admin-form__row">
+            <label>Meta Pixel ID<input name="meta_pixel_id" value="<?= e($secrets['meta_pixel_id']??'') ?>" placeholder="1234567890"></label>
+        </div>
+        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">The pixel base code and PageView event will be injected into the site head automatically.</p>
+
+        <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">Google Site Kit (Analytics, Ads & Search Console)</h2>
+        <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">
+            Enable Google Analytics 4 for SEO insights, Google Ads for conversion tracking, and Search Console verification. Uses a single gtag.js snippet.
+            <a href="https://analytics.google.com/" target="_blank" rel="noopener">Google Analytics</a> &middot;
+            <a href="https://search.google.com/search-console" target="_blank" rel="noopener">Google Search Console</a>
+        </p>
+        <div class="admin-form__row">
+            <label>GA4 Measurement ID<input name="google_analytics_id" value="<?= e($secrets['google_analytics_id']??'') ?>" placeholder="G-XXXXXXXXXX"></label>
+            <label>Google Ads ID<input name="google_ads_id" value="<?= e($secrets['google_ads_id']??'') ?>" placeholder="AW-XXXXXXXXX"></label>
+        </div>
+        <div class="admin-form__row">
+            <label>Search Console Verification<input name="google_site_verification" value="<?= e($secrets['google_site_verification']??'') ?>" placeholder="google-site-verification=xxxxxxxxxx"></label>
+        </div>
+        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Google Analytics, Ads conversion, and Search Console meta tags are injected into the site head only when configured.</p>
+
+        <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">SEO Defaults</h2>
+        <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">
+            Configure default SEO metadata used across all pages. These can be overridden per page automatically by the SEO service.
+        </p>
+        <div class="admin-form__row">
+            <label>Site Name<input name="seo_site_name" value="<?= e($secrets['seo_site_name']??'') ?>" placeholder="Sri Panchami Spiritual"></label>
+            <label>Twitter Handle<input name="seo_twitter_handle" value="<?= e($secrets['seo_twitter_handle']??'') ?>" placeholder="@sps"></label>
+        </div>
+        <div class="admin-form__row">
+            <label>Default OG Image URL<input name="seo_default_og_image" value="<?= e($secrets['seo_default_og_image']??'') ?>" placeholder="https://example.com/og-image.jpg"></label>
+        </div>
+        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Each public page automatically gets a unique title, description, and OG tags. Site Name is used in JSON-LD structured data and page titles.</p>
 
         <div class="admin-card" style="background:var(--color-bg-alt); margin-top:var(--space-xl); padding:var(--space-md);">
             <h3 style="font-size:0.9rem; margin:0 0 var(--space-sm);">Platform Scope</h3>

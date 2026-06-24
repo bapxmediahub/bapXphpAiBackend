@@ -50,18 +50,90 @@
                         <button id="pay-now" class="btn btn-primary btn-block btn-lg">Pay ₹<?= e((string)$total) ?> with Razorpay</button>
                         <p style="margin:var(--space-sm) 0 0; color:var(--color-text-muted); font-size:0.85rem;">Ecommerce orders use direct card or UPI payments only. Consultation credits cannot be used for products, and cash on delivery is not available.</p>
                         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-                        <script>document.getElementById('pay-now').onclick=async()=>{const form=document.querySelector('.checkout-form');if(!form.querySelector('[name="name"]').reportValidity()||!form.querySelector('[name="email"]').reportValidity()||!form.querySelector('[name="phone"]').reportValidity()||!form.querySelector('[name="address"]').reportValidity()||!form.querySelector('[name="city"]').reportValidity()||!form.querySelector('[name="pincode"]').reportValidity())return;const r=await fetch('/checkout/create-order',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'amount=<?= $total*100 ?>'});const order=await r.json();new Razorpay({key:'<?= e($secrets['razorpay_key_id']) ?>',amount:order.amount,currency:'INR',order_id:order.id,name:'Sri Panchami Spiritual',handler:async(resp)=>{const body=new URLSearchParams({order_id:order.id,payment_id:resp.razorpay_payment_id,signature:resp.razorpay_signature,name:form.querySelector('[name="name"]').value,email:form.querySelector('[name="email"]').value,phone:form.querySelector('[name="phone"]').value,address:form.querySelector('[name="address"]').value,city:form.querySelector('[name="city"]').value,pincode:form.querySelector('[name="pincode"]').value});const vr=await fetch('/payment/verify',{method:'POST',body});const result=await vr.json();alert(result.verified?'Order placed! Thank you.':'Verification failed. Contact support.');if(result.verified)window.location.href='/account/dashboard/orders';}}).open();};</script>
+                        <script>
+                        (() => {
+                            const button = document.getElementById('pay-now');
+                            const form = document.querySelector('.checkout-form');
+                            button.addEventListener('click', async () => {
+                                const fields = ['name', 'email', 'phone', 'address', 'city', 'pincode'];
+                                for (const field of fields) {
+                                    if (!form.querySelector(`[name="${field}"]`).reportValidity()) return;
+                                }
+                                button.disabled = true;
+                                showToast('Opening secure Razorpay checkout...', 'info');
+                                try {
+                                    const response = await fetch('/checkout/create-order', {
+                                        method: 'POST',
+                                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                                        body: new URLSearchParams({amount: '<?= (int)($total * 100) ?>'})
+                                    });
+                                    const order = await response.json();
+                                    if (!response.ok || order.error) {
+                                        throw new Error(order.error || 'Unable to create Razorpay order.');
+                                    }
+                                    const razorpay = new Razorpay({
+                                        key: '<?= e($secrets['razorpay_key_id']) ?>',
+                                        amount: order.amount,
+                                        currency: order.currency || 'INR',
+                                        order_id: order.order_id,
+                                        name: 'Sri Panchami Spiritual',
+                                        description: 'Product order payment',
+                                        theme: {color: '#3A0003'},
+                                        prefill: {
+                                            name: form.querySelector('[name="name"]').value,
+                                            email: form.querySelector('[name="email"]').value,
+                                            contact: form.querySelector('[name="phone"]').value
+                                        },
+                                        modal: {
+                                            ondismiss: () => {
+                                                button.disabled = false;
+                                                showToast('Payment was cancelled before completion.', 'info');
+                                            }
+                                        },
+                                        handler: async (resp) => {
+                                            showToast('Verifying payment...', 'info');
+                                            const body = new URLSearchParams({
+                                                razorpay_order_id: order.order_id,
+                                                razorpay_payment_id: resp.razorpay_payment_id,
+                                                razorpay_signature: resp.razorpay_signature,
+                                                name: form.querySelector('[name="name"]').value,
+                                                email: form.querySelector('[name="email"]').value,
+                                                phone: form.querySelector('[name="phone"]').value,
+                                                address: form.querySelector('[name="address"]').value,
+                                                city: form.querySelector('[name="city"]').value,
+                                                pincode: form.querySelector('[name="pincode"]').value
+                                            });
+                                            const verifyResponse = await fetch('/payment/verify', {method: 'POST', body});
+                                            const result = await verifyResponse.json();
+                                            if (!verifyResponse.ok || !result.verified) {
+                                                throw new Error(result.error || 'Payment verification failed.');
+                                            }
+                                            showToast('Order placed. Redirecting to your orders...', 'success');
+                                            window.location.href = '/account/orders';
+                                        }
+                                    });
+                                    razorpay.on('payment.failed', (event) => {
+                                        button.disabled = false;
+                                        const reason = event.error && event.error.description ? event.error.description : 'Payment failed. Please try again.';
+                                        showToast(reason, 'error');
+                                    });
+                                    razorpay.open();
+                                } catch (error) {
+                                    button.disabled = false;
+                                    showToast(error.message || 'Payment could not be started.', 'error');
+                                }
+                            });
+                        })();
+                        </script>
                     <?php else: ?>
-                        <div class="flash flash--info" style="margin:0;">
-                            Razorpay is not configured yet. Please contact the administrator.
-                        </div>
+                        <script>document.addEventListener('DOMContentLoaded',function(){showToast('Razorpay is not configured yet. Please contact the administrator.','warning');});</script>
                     <?php endif; ?>
                 </div>
                 <div class="checkout-summary reveal">
                     <h2>Order Review</h2>
                     <?php foreach($items as $item): ?>
                         <div class="checkout-item">
-                            <img class="checkout-item__img" src="<?= e($item['product']['image_url'] ?? 'https://placehold.co/60x60/fdfbf7/8c7e6d?text=Item') ?>" alt="<?= e($item['product']['name']) ?>">
+                            <img class="checkout-item__img" src="<?= e($item['product']['image_url'] ?? placeholder_img($item['product']['name'])) ?>" alt="<?= e($item['product']['name']) ?>">
                             <div>
                                 <div class="checkout-item__name"><?= e($item['product']['name']) ?></div>
                                 <div class="checkout-item__meta">Qty: <?= e((string)$item['qty']) ?></div>

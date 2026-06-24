@@ -1,9 +1,50 @@
 <section class="section">
     <div class="container container--narrow">
         <div style="text-align:center; margin-bottom:var(--space-2xl);">
-            <span class="eyebrow">Contact</span>
+            <span class="eyebrow serif-accent">Contact</span>
             <h1 class="section-title" style="margin-bottom:var(--space-sm);">Sri Panchami Spiritual</h1>
             <p class="lede" style="margin:0 auto;">Shop spiritual products online. For astrology guidance, use Consult for regular sessions or contact us for VIP direct astrology visits.</p>
+        </div>
+        <div class="contact-form-card reveal" id="contact-form" style="scroll-margin-top:110px;">
+            <h2 style="font-family:var(--font-serif); text-align:center; margin:0 0 var(--space-sm);">Send a Consultation Request</h2>
+            <p style="text-align:center; color:var(--color-text-muted); margin:0 auto var(--space-lg); max-width:620px;">Use this form for remote astrology call/message requests, product questions, temple guidance, or store support.</p>
+            <?php if(!empty($success)): ?>
+                <script>document.addEventListener('DOMContentLoaded',function(){showToast('Thank you. Sri Panchami Spiritual will contact you soon.','success');});</script>
+            <?php endif; ?>
+            <form method="post" action="/contact" class="contact-form" style="max-width:720px; margin:0 auto;">
+                <div class="contact-form__row">
+                    <div class="form-group">
+                        <label for="contact-name">Name</label>
+                        <input id="contact-name" type="text" name="name" required placeholder="Your name">
+                    </div>
+                    <div class="form-group">
+                        <label for="contact-email">Email</label>
+                        <input id="contact-email" type="email" name="email" required placeholder="your@email.com">
+                    </div>
+                </div>
+                <div class="contact-form__row">
+                    <div class="form-group">
+                        <label for="contact-phone">Phone</label>
+                        <input id="contact-phone" type="tel" name="phone" placeholder="+91 XXXXX XXXXX">
+                    </div>
+                    <div class="form-group">
+                        <label for="contact-subject">Subject</label>
+                        <select id="contact-subject" name="subject" required>
+                            <option value="">Select a subject</option>
+                            <option value="astrology" <?= (($subject ?? '') === 'astrology') ? 'selected' : '' ?>>Astrology Consultation</option>
+                            <option value="product">Product Inquiry</option>
+                            <option value="temple">Temple Guidance</option>
+                            <option value="order">Order Support</option>
+                            <option value="general">General Question</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="contact-message">Message</label>
+                    <textarea id="contact-message" name="message" rows="5" required placeholder="Tell us what guidance or support you need"></textarea>
+                </div>
+                <button class="btn btn-primary btn-block" type="submit">Send Request</button>
+            </form>
         </div>
         <div class="contact-info-grid">
             <div class="contact-card reveal">
@@ -47,47 +88,6 @@
                 </div>
             </div>
         </div>
-        <div class="admin-card reveal" id="contact-form" style="margin-top:var(--space-xl); scroll-margin-top:110px;">
-            <h2 style="font-family:var(--font-serif); text-align:center; margin:0 0 var(--space-sm);">Send a Consultation Request</h2>
-            <p style="text-align:center; color:var(--color-text-muted); margin:0 auto var(--space-lg); max-width:620px;">Use this form for remote astrology call/message requests, product questions, temple guidance, or store support.</p>
-            <?php if(!empty($success)): ?>
-                <div class="flash flash--success">Thank you. Sri Panchami Spiritual will contact you soon.</div>
-            <?php endif; ?>
-            <form method="post" action="/contact" class="admin-form" style="max-width:720px; margin:0 auto;">
-                <div class="admin-form__row">
-                    <div class="form-group">
-                        <label for="contact-name">Name</label>
-                        <input id="contact-name" type="text" name="name" required placeholder="Your name">
-                    </div>
-                    <div class="form-group">
-                        <label for="contact-email">Email</label>
-                        <input id="contact-email" type="email" name="email" required placeholder="your@email.com">
-                    </div>
-                </div>
-                <div class="admin-form__row">
-                    <div class="form-group">
-                        <label for="contact-phone">Phone</label>
-                        <input id="contact-phone" type="tel" name="phone" placeholder="+91 XXXXX XXXXX">
-                    </div>
-                    <div class="form-group">
-                        <label for="contact-subject">Subject</label>
-                        <select id="contact-subject" name="subject" required>
-                            <option value="">Select a subject</option>
-                            <option value="astrology" <?= (($subject ?? '') === 'astrology') ? 'selected' : '' ?>>Astrology Consultation</option>
-                            <option value="product">Product Inquiry</option>
-                            <option value="temple">Temple Guidance</option>
-                            <option value="order">Order Support</option>
-                            <option value="general">General Question</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="contact-message">Message</label>
-                    <textarea id="contact-message" name="message" rows="5" required placeholder="Tell us what guidance or support you need"></textarea>
-                </div>
-                <button class="btn btn-primary btn-block" type="submit">Send Request</button>
-            </form>
-        </div>
     </div>
 </section>
 
@@ -96,7 +96,7 @@
     "@context": "https://schema.org",
     "@type": "ContactPage",
     "name": "Contact Sri Panchami Spiritual",
-    "description": "Contact Sri Panchami Spiritual in Chennai for spiritual products, astrology consultation, and pooja services.",
+    "description": "Contact Sri Panchami Spiritual for spiritual products, astrology consultation, and pooja services.",
     "url": "https://sripanchamispiritual.com/contact"
 }
 </script>

@@ -1,38 +1,70 @@
 <section class="home-hero">
-    <div class="hero-copy">
-        <span class="eyebrow">Live Astrology · Chat and Call Consultation</span>
-        <h1>Consult Astrologers Online by Chat or Call</h1>
-        <p class="lede">Start private message or direct call sessions with verified astrologers. Recharge credits, view session history, and shop spiritual products when you need remedies or sacred items.</p>
-        <div class="hero-actions">
-            <a href="/consult" class="btn btn-primary">Consult Now</a>
-            <a href="/shop" class="btn btn-outline">Shop Products</a>
+    <div class="container home-hero-inner">
+        <div class="hero-copy">
+            <span class="eyebrow">Sacred Emblems · Spiritual Jewelry · Pooja Idols</span>
+            <h1>Authentic Spiritual Products for Your Sacred Journey</h1>
+            <p class="lede">Discover sacred rudraksha, pooja items, spiritual jewellery, and temple idols. Free shipping across India on every order.</p>
+            <div class="hero-actions">
+                <a href="/shop" class="btn btn-primary">Shop Now</a>
+                <a href="/consult" class="btn btn-outline">Consult Astrologers</a>
+            </div>
+            <div class="hero-stats">
+                <div>
+                    <div class="hero-stat-value"><?= e((string)count($products)) ?></div>
+                    <div class="hero-stat-label">Products</div>
+                </div>
+                <div>
+                    <div class="hero-stat-value"><?= e((string)count($categories)) ?></div>
+                    <div class="hero-stat-label">Categories</div>
+                </div>
+                <div>
+                    <div class="hero-stat-value">Free</div>
+                    <div class="hero-stat-label">Shipping</div>
+                </div>
+            </div>
         </div>
-        <div class="hero-stats">
-            <div>
-                <div class="hero-stat-value"><?= e((string)count($astrologers)) ?></div>
-                <div class="hero-stat-label">Client Astrologers</div>
+        <div class="hero-deity" data-varahi-slider>
+            <div class="deity-frame">
+                <?php for($slide=1;$slide<=10;$slide++): ?>
+                    <img class="varahi-slide <?= $slide===1?'is-active':'' ?>" src="/assets/images/hero/varahi/varahi-<?= str_pad((string)$slide,2,'0',STR_PAD_LEFT) ?>.png" alt="Sri Maha Varahi Amman devotional image <?= $slide ?>" width="480" height="640" <?= $slide===1?'fetchpriority="high"':'loading="lazy"' ?>>
+                <?php endfor; ?>
             </div>
-            <div>
-                <div class="hero-stat-value">Chat + Call</div>
-                <div class="hero-stat-label">Remote Sessions</div>
+            <div class="varahi-dots" role="tablist" aria-label="Varahi slides">
+                <?php for($dot=1;$dot<=10;$dot++): ?>
+                    <button class="varahi-dot <?= $dot===1?'is-active':'' ?>" type="button" role="tab" aria-label="Slide <?= $dot ?>" <?= $dot===1?'aria-current="true"':'aria-current="false"' ?> data-slide="<?= $dot-1 ?>"></button>
+                <?php endfor; ?>
             </div>
-            <div>
-                <div class="hero-stat-value">Credits</div>
-                <div class="hero-stat-label">Wallet Based</div>
-            </div>
-        </div>
-    </div>
-    <div class="hero-deity" data-varahi-slider>
-        <div class="deity-frame">
-            <?php for($slide=1;$slide<=10;$slide++): ?>
-                <img class="varahi-slide <?= $slide===1?'is-active':'' ?>" src="/assets/images/hero/varahi/varahi-<?= str_pad((string)$slide,2,'0',STR_PAD_LEFT) ?>.jpg" alt="Sri Maha Varahi Amman devotional image <?= $slide ?>" width="480" height="640" <?= $slide===1?'fetchpriority="high"':'loading="lazy"' ?>>
-            <?php endfor; ?>
-            <div class="hero-slider-controls"><button type="button" data-slider-prev aria-label="Previous image">&#8249;</button><span data-slider-count>1 / 10</span><button type="button" data-slider-next aria-label="Next image">&#8250;</button></div>
         </div>
     </div>
 </section>
 <script>
-(() => { const root=document.querySelector('[data-varahi-slider]'); if(!root)return; const slides=[...root.querySelectorAll('.varahi-slide')],count=root.querySelector('[data-slider-count]'); let index=0,timer; const show=n=>{slides[index].classList.remove('is-active');index=(n+slides.length)%slides.length;slides[index].classList.add('is-active');count.textContent=(index+1)+' / '+slides.length}; const play=()=>{if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;clearInterval(timer);timer=setInterval(()=>show(index+1),5000)};root.querySelector('[data-slider-prev]').onclick=()=>{show(index-1);play()};root.querySelector('[data-slider-next]').onclick=()=>{show(index+1);play()};root.addEventListener('mouseenter',()=>clearInterval(timer));root.addEventListener('mouseleave',play);play(); })();
+(() => {
+    const root = document.querySelector('[data-varahi-slider]');
+    if (!root) return;
+    const slides = [...root.querySelectorAll('.varahi-slide')];
+    const dots = [...root.querySelectorAll('.varahi-dot')];
+    let index = 0, timer;
+    const show = n => {
+        slides[index].classList.remove('is-active');
+        dots[index].classList.remove('is-active');
+        dots[index].setAttribute('aria-current', 'false');
+        index = (n + slides.length) % slides.length;
+        slides[index].classList.add('is-active');
+        dots[index].classList.add('is-active');
+        dots[index].setAttribute('aria-current', 'true');
+    };
+    const play = () => {
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        clearInterval(timer);
+        timer = setInterval(() => show(index + 1), 5000);
+    };
+    dots.forEach(d => {
+        d.addEventListener('click', () => { show(parseInt(d.dataset.slide)); play(); });
+    });
+    root.addEventListener('mouseenter', () => clearInterval(timer));
+    root.addEventListener('mouseleave', play);
+    play();
+})();
 </script>
 
 <div class="trust-bar">
@@ -54,9 +86,76 @@
     </div>
 </div>
 
-<section class="section">
+<section class="category-section section">
     <div class="section-header">
-        <span class="eyebrow">Guidance · Clarity · Remedies</span>
+        <h2 class="section-title">Shop by Category</h2>
+        <p class="lede">Curated collections of authentic spiritual products for every need — from rudraksha malas to complete pooja kits</p>
+    </div>
+    <div class="category-grid">
+        <?php foreach($categories as $cat): ?>
+            <a class="category-card" href="/shop?category=<?= e($cat['slug']) ?>">
+                <div class="category-img-wrap">
+                    <img src="<?= e($cat['image_url'] ?? placeholder_img($cat['name'])) ?>" alt="Buy <?= e($cat['name']) ?> online in Chennai" decoding="async">
+                </div>
+                <h3><?= e($cat['name']) ?></h3>
+                <p><?= e($cat['description']) ?></p>
+            </a>
+        <?php endforeach; ?>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-xl); flex-wrap:wrap; gap:var(--space-sm);">
+            <h2 class="section-title" style="margin:0;">Most Liked By People</h2>
+            <a href="/shop" class="btn btn-sm btn-ghost">View Shop</a>
+        </div>
+        <div class="product-grid">
+        <?php foreach(array_slice($products, 0, min(4, count($products))) as $item): ?>
+            <?php $hasOffer = !empty($item['offer_price']) && $item['offer_price'] < $item['price']; ?>
+            <article class="product-card reveal">
+                <div class="product-card__image">
+                    <img src="<?= e($item['image_url'] ?? placeholder_img($item['name'])) ?>" alt="<?= e($item['name']) ?> — Buy online at Sri Panchami Spiritual, Chennai" decoding="async">
+                    <?php if($hasOffer): ?>
+                        <span class="product-card__badge product-card__badge--sale">Sale</span>
+                    <?php endif; ?>
+                </div>
+                <div class="product-card__body">
+                    <h3><?= e($item['name']) ?></h3>
+                    <p class="product-card__desc"><?= e($item['description']) ?></p>
+                    <div class="product-card__price-row">
+                        <span class="price">₹<?= e((string)($item['offer_price'] ?: $item['price'] ?: 0)) ?></span>
+                        <?php if($hasOffer): ?>
+                            <span class="old-price">₹<?= e($item['price']) ?></span>
+                            <?php $pct = round((1 - $item['offer_price'] / $item['price']) * 100); ?>
+                            <span class="discount-pct">-<?= $pct ?>%</span>
+                        <?php endif; ?>
+                    </div>
+                     <div class="product-card__actions">
+                         <a href="/product/<?= e($item['slug']) ?>" class="btn btn-sm btn-ghost">View →</a>
+                         <form method="post" action="/cart/add" class="product-card__form">
+                             <div class="qty-input qty-input--sm">
+                                 <button type="button" onclick="var i=this.parentElement.querySelector('input[type=number]'); i.stepDown(); i.dispatchEvent(new Event('change'));">−</button>
+                                 <input type="number" name="qty" value="1" min="1" max="99" required>
+                                 <button type="button" onclick="var i=this.parentElement.querySelector('input[type=number]'); i.stepUp(); i.dispatchEvent(new Event('change'));">+</button>
+                             </div>
+                             <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
+                             <input type="hidden" name="redirect" value="/">
+                             <button class="btn-cart-circle" aria-label="Add to Cart">
+                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                             </button>
+                         </form>
+                     </div>
+                </div>
+            </article>
+        <?php endforeach; ?>
+    </div>
+    </div>
+</section>
+
+<section class="section section--full">
+    <div class="section-header">
+        <span class="eyebrow serif-accent">Guidance · Clarity · Remedies</span>
         <h2 class="section-title">Online Astrology Consultation</h2>
         <p class="lede">Consult experienced Vedic astrologers by private message or direct call for kundli matching, horoscope reading, career guidance, and personalized remedies.</p>
     </div>
@@ -74,7 +173,7 @@
             ?>
             <article class="astro-market-card astro-market-card--<?= e($state) ?> reveal">
                 <a class="astro-market-photo" href="/consult/<?= e($astro['slug'] ?? '') ?>" aria-label="View <?= e($astro['name'] ?? 'Astrologer') ?>">
-                    <span class="astro-market-photo-frame"><img class="astro-market-photo-img astro-market-photo-img--<?= e($astro['slug'] ?? 'default') ?>" src="<?= e($astro['photo_url'] ?? 'https://placehold.co/800x1000/fdfbf7/d4af37?text=Guru') ?>" alt="<?= e($astro['name'] ?? 'Astrologer') ?>" loading="lazy"></span>
+                    <span class="astro-market-photo-frame"><img class="astro-market-photo-img astro-market-photo-img--<?= e($astro['slug'] ?? 'default') ?>" src="<?= e($astro['photo_url'] ?? placeholder_img($astro['name'] ?? 'Astrologer')) ?>" alt="<?= e($astro['name'] ?? 'Astrologer') ?>" loading="lazy"></span>
                     <span class="astro-status-dot" aria-label="<?= e(ucfirst($state)) ?>"></span>
                     <span class="astro-status-label"><?= e($statusLabel) ?></span>
                 </a>
@@ -140,69 +239,10 @@
     </div>
 </section>
 
-<section class="category-section section">
-    <div class="section-header">
-        <h2 class="section-title">Shop by Category</h2>
-        <p class="lede">Curated collections of authentic spiritual products for every need — from rudraksha malas to complete pooja kits</p>
-    </div>
-    <div class="category-grid">
-        <?php foreach($categories as $cat): ?>
-            <a class="category-card" href="/shop?category=<?= e($cat['slug']) ?>">
-                <div class="category-img-wrap">
-                    <img src="<?= e($cat['image_url'] ?? 'https://placehold.co/120x120/fdfbf7/d4af37?text='.urlencode($cat['name'])) ?>" alt="Buy <?= e($cat['name']) ?> online in Chennai" decoding="async">
-                </div>
-                <h3><?= e($cat['name']) ?></h3>
-                <p><?= e($cat['description']) ?></p>
-            </a>
-        <?php endforeach; ?>
-    </div>
-</section>
-
-<section class="section">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-xl); flex-wrap:wrap; gap:var(--space-sm);">
-        <h2 class="section-title" style="margin:0;">Featured Spiritual Products</h2>
-        <a href="/shop" class="btn btn-sm btn-ghost">View All Products</a>
-    </div>
-    <div class="product-grid">
-        <?php foreach(array_slice($products, 0, min(5, count($products))) as $item): ?>
-            <?php $hasOffer = !empty($item['offer_price']) && $item['offer_price'] < $item['price']; ?>
-            <article class="product-card reveal">
-                <div class="product-card__image">
-                    <img src="<?= e($item['image_url'] ?? 'https://placehold.co/400x400/fdfbf7/8c7e6d?text='.urlencode($item['name'])) ?>" alt="<?= e($item['name']) ?> — Buy online at Sri Panchami Spiritual, Chennai" decoding="async">
-                    <?php if($hasOffer): ?>
-                        <span class="product-card__badge product-card__badge--sale">Sale</span>
-                    <?php endif; ?>
-                </div>
-                <div class="product-card__body">
-                    <h3><?= e($item['name']) ?></h3>
-                    <p class="product-card__desc"><?= e($item['description']) ?></p>
-                    <div class="product-card__price-row">
-                        <span class="price">₹<?= e((string)($item['offer_price'] ?: $item['price'] ?: 0)) ?></span>
-                        <?php if($hasOffer): ?>
-                            <span class="old-price">₹<?= e($item['price']) ?></span>
-                            <?php $pct = round((1 - $item['offer_price'] / $item['price']) * 100); ?>
-                            <span class="discount-pct">-<?= $pct ?>%</span>
-                        <?php endif; ?>
-                    </div>
-                     <div class="product-card__actions">
-                         <a href="/product/<?= e($item['slug']) ?>" class="btn btn-sm btn-ghost">View</a>
-                         <form method="post" action="/cart/add" style="flex:1;">
-                             <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
-                             <input type="hidden" name="qty" value="1">
-                             <input type="hidden" name="redirect" value="/">
-                             <button class="btn btn-sm btn-primary" style="width:100%;">Add to Cart</button>
-                         </form>
-                     </div>
-                </div>
-            </article>
-        <?php endforeach; ?>
-    </div>
-</section>
-
 <?php if(!empty($temples)): ?>
 <section class="section section--alt">
     <div class="section-header">
-        <span class="eyebrow">Sacred Spaces · Divine Energy</span>
+        <span class="eyebrow serif-accent">Sacred Spaces · Divine Energy</span>
         <h2 class="section-title">Panchami Temples Guide</h2>
         <p class="lede">Explore temple guides for divine blessings, traditional pooja details, and spiritual routes around Chennai. <a href="/temples">Click here</a></p>
     </div>
@@ -256,27 +296,41 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-<section class="section section--alt">
-    <div class="section-header">
-        <h2 class="section-title">Why Choose Sri Panchami Spiritual</h2>
-        <p class="lede">Chennai's trusted destination for authentic spiritual products and expert astrology guidance</p>
-    </div>
-    <div class="feature-strip">
-        <article class="panel reveal">
-            <h3>100% Authentic Products</h3>
-            <p>Every item sourced with devotion and verified for genuineness</p>
+<section class="section section--warm">
+    <div class="container">
+        <div class="section-header">
+            <span class="eyebrow serif-accent">Why Sri Panchami Spiritual</span>
+            <h2 class="section-title">Faith · Trust · Tradition</h2>
+            <p class="lede">Rooted in devotion, committed to authenticity — every product and service reflects our reverence for India's spiritual heritage.</p>
+        </div>
+        <div class="value-strip">
+            <article class="value-card reveal">
+            <div class="value-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            </div>
+            <h3>Authenticity</h3>
+            <p>Every item sourced with devotion — authentic rudraksha, pure pooja essentials, and sacred jewellery verified for spiritual genuineness.</p>
         </article>
-        <article class="panel reveal">
-            <h3>Expert Astrologers</h3>
-            <p>Experienced Vedic astrologers with proven track record</p>
+        <article class="value-card reveal">
+            <div class="value-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <h3>Spiritual Growth</h3>
+            <p>Our products are more than offerings — they are symbols of faith that help keep alive the divine traditions connecting every devotee with spirituality.</p>
         </article>
-        <article class="panel reveal">
-            <h3>Secure Payments</h3>
-            <p>Safe payments via Razorpay with bank-grade encryption</p>
+        <article class="value-card reveal">
+            <div class="value-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h3>Devotion</h3>
+            <p>Crafted with reverence, our products support sacred rituals and deepen your connection with the divine through every offering.</p>
         </article>
-        <article class="panel reveal">
-            <h3>Free Shipping</h3>
-            <p>Quick and careful delivery across India</p>
+        <article class="value-card reveal">
+            <div class="value-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            </div>
+            <h3>Community</h3>
+            <p>Fostering belonging and connection through shared spiritual experiences — bringing temples, traditions, and devotees closer together.</p>
         </article>
     </div>
     <div class="page-cta-card reveal">
@@ -286,6 +340,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <p>Use the contact form for astrology sessions, product questions, temple guidance, or VIP direct astrology visit requests.</p>
         </div>
         <a class="btn btn-primary page-cta-card__button" href="/contact#contact-form">Let’s Get Connected →</a>
+    </div>
     </div>
 </section>
 
@@ -300,7 +355,7 @@ document.addEventListener('DOMContentLoaded', function () {
             "name": "Where can I buy original rudraksha online in Chennai?",
             "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Sri Panchami Spiritual offers certified original rudraksha beads and malas online with free shipping across India. Visit our shop at 23, 1st Cross Street Kothari Nagar, Ramapuram, Chennai or order online."
+                "text": "Sri Panchami Spiritual offers certified original rudraksha beads and malas online with free shipping across India. Order online through our web store."
             }
         },
         {

@@ -5,11 +5,12 @@
         "name": "Sri Karuppasamy Pendant",
         "description": "A finely designed devotional pendant showing Sri Karuppasamy seated on a majestic horse, representing courage, protection, justice, and spiritual authority.",
         "category": "sacred-emblems",
-        "price": 499,
-        "offer_price": 499,
+        "price": "499",
+        "offer_price": "499",
         "image_url": "/assets/images/products/karuppasami-dollar-front.png",
         "image_urls": [
-            "/assets/images/products/karuppasami-dollar-front.png"
+            "/assets/images/products/karuppasami-dollar-front.png",
+            "/assets/images/media/2026/06/karuppasami-dollar-back-png-38db6232.png"
         ],
         "stock_status": "in_stock",
         "highlights": [

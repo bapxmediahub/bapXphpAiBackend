@@ -8,6 +8,8 @@ Owns third-party client wrappers for payment, OAuth, and future external service
 
 - `google-oauth/`: Google OAuth client code.
 - `razorpay/`: Razorpay client code.
+- `meta-pixel/`: Meta/Facebook Pixel client code.
+- `google-site-kit/`: Google Site Kit (Analytics, Ads, Search Console) client code.
 
 ## Local Contracts
 

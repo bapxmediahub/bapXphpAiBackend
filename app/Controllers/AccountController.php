@@ -4,6 +4,7 @@ use App\Services\{AppointmentService,AuthService,OrderService,ReviewService,Wall
 final class AccountController extends BaseController {
     public function __construct() {
         (new AuthService())->requireUser();
+        $this->seoKey = 'account';
     }
 
     public function dashboard(): void { $this->redirect('/account/dashboard/orders'); }

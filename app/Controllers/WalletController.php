@@ -12,6 +12,7 @@ final class WalletController extends BaseController {
 
     public function show(): void {
         (new AuthService())->requireUser();
+        $this->seoKey = 'account';
         $wallet = new WalletService();
         $email = $_SESSION['user']['email'] ?? '';
         $balance = $wallet->balanceFor($email);

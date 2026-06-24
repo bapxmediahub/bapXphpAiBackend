@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin — Sri Panchami Spiritual</title>
+<title><?= e($pageTitle ?? 'Admin') ?> — Sri Panchami Spiritual</title>
+<meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,13 +15,18 @@
 .admin-sidebar__brand { padding: var(--space-lg); border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: var(--space-2xs); }
 .admin-sidebar__brand span { font-family: var(--font-serif); font-size: 1.05rem; color: var(--color-gold); font-weight: 600; }
 .admin-sidebar__brand small { font-size: 0.7rem; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.1em; }
-.admin-sidebar .admin-sidebar__nav { display: flex; flex: 1; flex-direction: column; position: static; inset: auto; background: transparent; box-shadow: none; border: 0; padding: var(--space-sm) 0; }
-.admin-sidebar__section { padding: var(--space-md) var(--space-lg) var(--space-xs); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(255,255,255,0.25); font-weight: 600; }
-.admin-sidebar__nav a { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-lg); color: rgba(255,255,255,0.55); font-size: 0.85rem; transition: all var(--transition-base); border-left: 3px solid transparent; }
-.admin-sidebar__nav a:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.85); }
-.admin-sidebar__nav a.active { background: rgba(212,175,55,0.08); color: var(--color-gold); border-left-color: var(--color-gold); }
-.admin-sidebar__nav a svg { flex-shrink: 0; opacity: 0.7; }
-.admin-sidebar__nav a.active svg { opacity: 1; }
+.admin-sidebar .admin-sidebar__nav { display: flex; flex: 1; flex-direction: column; position: static; inset: auto; background: transparent; box-shadow: none; border: 0; padding: var(--space-xs) 0; }
+.admin-nav-top, .admin-nav-toggle { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-lg); color: rgba(255,255,255,0.55); font-size: 0.85rem; transition: all var(--transition-base); border-left: 3px solid transparent; cursor: pointer; background: none; border-right: 0; border-top: 0; border-bottom: 0; width: 100%; text-align: left; font-family: inherit; }
+.admin-nav-top:hover, .admin-nav-toggle:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.85); }
+.admin-nav-top.active { background: rgba(212,175,55,0.08); color: var(--color-gold); border-left-color: var(--color-gold); }
+.admin-nav-top svg, .admin-nav-toggle svg { flex-shrink: 0; opacity: 0.7; }
+.admin-nav-top.active svg { opacity: 1; }
+.admin-nav-chevron { margin-left: auto; transition: transform var(--transition-base); }
+.admin-nav-toggle[aria-expanded="false"] .admin-nav-chevron { transform: rotate(-90deg); }
+.admin-submenu { display: flex; flex-direction: column; }
+.admin-submenu a { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-xs) var(--space-lg) var(--space-xs) calc(var(--space-lg) + 24px); color: rgba(255,255,255,0.4); font-size: 0.82rem; transition: all var(--transition-base); border-left: 3px solid transparent; }
+.admin-submenu a:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.75); }
+.admin-submenu a.active { background: rgba(212,175,55,0.06); color: var(--color-gold); border-left-color: var(--color-gold); }
 .admin-sidebar__footer { padding: var(--space-md) var(--space-lg); border-top: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: var(--space-xs); }
 .admin-sidebar__footer a { display: flex; align-items: center; gap: var(--space-sm); font-size: 0.8rem; color: rgba(255,255,255,0.4); transition: color var(--transition-base); }
 .admin-sidebar__footer a:hover { color: var(--color-error); }
@@ -46,88 +52,66 @@
             <span>Sri Panchami Spiritual</span>
             <small>Admin Panel</small>
         </div>
-        <nav class="admin-sidebar__nav">
-            <div class="admin-sidebar__section">Main</div>
-            <a href="/admin" class="<?= ($_SERVER['REQUEST_URI'] === '/admin' ? 'active' : '') ?>">
+        <nav class="admin-sidebar__nav" id="admin-nav">
+            <a href="/admin" class="admin-nav-top <?= ($_SERVER['REQUEST_URI'] === '/admin' ? 'active' : '') ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                 Dashboard
             </a>
-            <div class="admin-sidebar__section">Catalog</div>
-            <a href="/admin/products" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/products') === 0 ? 'active' : '') ?>">
+            <button type="button" class="admin-nav-toggle" data-target="menu-catalog" aria-expanded="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-                Products
-            </a>
-            <a href="/admin/categories" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/categories') === 0 ? 'active' : '') ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                Categories
-            </a>
-            <a href="/admin/coupons" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/coupons') === 0 ? 'active' : '') ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                Coupons
-            </a>
-            <div class="admin-sidebar__section">Services</div>
-            <a href="/admin/astrologers" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/astrologers') === 0 ? 'active' : '') ?>">
+                Catalog
+                <svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="admin-submenu" id="menu-catalog">
+                <a href="/admin/products" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/products') === 0 ? 'active' : '') ?>">Products</a>
+                <a href="/admin/categories" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/categories') === 0 ? 'active' : '') ?>">Categories</a>
+                <a href="/admin/coupons" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/coupons') === 0 ? 'active' : '') ?>">Coupons</a>
+            </div>
+            <button type="button" class="admin-nav-toggle" data-target="menu-services" aria-expanded="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20"/><path d="M2 12h20"/></svg>
-                Astrologers
-            </a>
-            <a href="/admin/appointments" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/appointments') === 0 ? 'active' : '') ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                Sessions
-            </a>
-            <a href="/admin/astrologer-credentials" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/astrologer-credentials') === 0 ? 'active' : '') ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                Login IDs
-            </a>
-            <a href="/admin/consultation-analytics" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/consultation-analytics') === 0 ? 'active' : '') ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>
-                Analytics
-            </a>
-            <a href="/admin/temples" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/temples') === 0 ? 'active' : '') ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
-                Temples
-            </a>
-            <div class="admin-sidebar__section">Operations</div>
-            <a href="/admin/orders" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/orders') === 0 ? 'active' : '') ?>">
+                Services
+                <svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="admin-submenu" id="menu-services">
+                <a href="/admin/astrologers" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/astrologers') === 0 ? 'active' : '') ?>">Astrologers</a>
+                <a href="/admin/appointments" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/appointments') === 0 ? 'active' : '') ?>">Sessions</a>
+                <a href="/admin/astrologer-credentials" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/astrologer-credentials') === 0 ? 'active' : '') ?>">Login IDs</a>
+                <a href="/admin/consultation-analytics" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/consultation-analytics') === 0 ? 'active' : '') ?>">Analytics</a>
+                <a href="/admin/temples" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/temples') === 0 ? 'active' : '') ?>">Temples</a>
+            </div>
+            <button type="button" class="admin-nav-toggle" data-target="menu-commerce" aria-expanded="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-                Orders
-            </a>
-            <a href="/admin/contact-submissions" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/contact-submissions') === 0 ? 'active' : '') ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a4 4 0 01-4 4H7l-4 4V7a4 4 0 014-4h10a4 4 0 014 4z"/></svg>
-                Contacts
-            </a>
-            <a href="/admin/support-tickets" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/support-tickets') === 0 ? 'active' : '') ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>
-                Support
-            </a>
-            <a href="/admin/media" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/media') === 0 ? 'active' : '') ?>">
+                Commerce
+                <svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="admin-submenu" id="menu-commerce">
+                <a href="/admin/orders" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/orders') === 0 ? 'active' : '') ?>">Orders</a>
+                <a href="/admin/shipping" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/shipping') === 0 ? 'active' : '') ?>">Shipping</a>
+                <a href="/admin/contact-submissions" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/contact-submissions') === 0 ? 'active' : '') ?>">Contacts</a>
+                <a href="/admin/support-tickets" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/support-tickets') === 0 ? 'active' : '') ?>">Support</a>
+            </div>
+            <button type="button" class="admin-nav-toggle" data-target="menu-appearance" aria-expanded="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                Media
-            </a>
-            <a href="/admin/environment" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/environment') === 0 ? 'active' : '') ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                Environment
-            </a>
-            <a href="/admin/settings" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/settings') === 0 ? 'active' : '') ?>">
+                Appearance
+                <svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="admin-submenu" id="menu-appearance">
+                <a href="/admin/media" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/media') === 0 ? 'active' : '') ?>">Media Library</a>
+                <a href="/admin/appearance" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/appearance') === 0 ? 'active' : '') ?>">Logo & Favicon</a>
+            </div>
+            <button type="button" class="admin-nav-toggle" data-target="menu-settings" aria-expanded="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
                 Settings
-            </a>
-            <a href="/admin/integrations" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/integrations') === 0 ? 'active' : '') ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/><circle cx="12" cy="16" r="1"/></svg>
-                Integrations
-            </a>
-            <a href="/admin/shipping" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/shipping') === 0 ? 'active' : '') ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-                Shipping
-            </a>
-            <a href="/admin/backups" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/backups') === 0 ? 'active' : '') ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Backups
-            </a>
-            <a href="/admin/audit-log" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/audit-log') === 0 ? 'active' : '') ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-                Audit Log
-            </a>
-            <a href="/admin/developer/project-map" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/developer/project-map') === 0 ? 'active' : '') ?>">
+                <svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="admin-submenu" id="menu-settings">
+                <a href="/admin/environment" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/environment') === 0 ? 'active' : '') ?>">Environment</a>
+                <a href="/admin/integrations" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/integrations') === 0 ? 'active' : '') ?>">Integrations</a>
+                <a href="/admin/settings" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/settings') === 0 ? 'active' : '') ?>">Site Settings</a>
+                <a href="/admin/backups" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/backups') === 0 ? 'active' : '') ?>">Backups</a>
+                <a href="/admin/audit-log" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/audit-log') === 0 ? 'active' : '') ?>">Audit Log</a>
+            </div>
+            <a href="/admin/developer/project-map" class="admin-nav-top <?= (strpos($_SERVER['REQUEST_URI'], '/admin/developer/project-map') === 0 ? 'active' : '') ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h6v6H3zM15 3h6v6h-6zM9 15h6v6H9z"/><path d="M6 9v3h6v3M18 9v3h-6"/></svg>
                 Project Map
             </a>
@@ -160,15 +144,52 @@
                 </a>
             </div>
         </div>
+        <div class="admin-breadcrumb" style="padding:var(--space-xs) var(--space-xl); font-size:0.78rem; color:var(--color-text-muted); background:var(--color-white); border-bottom:1px solid var(--color-border); display:flex; gap:var(--space-xs); align-items:center;">
+            <a href="/admin" style="color:var(--color-text-muted);">Dashboard</a>
+            <?php
+            $__path = parse_url($_SERVER['REQUEST_URI'] ?? '/admin', PHP_URL_PATH);
+            $__segments = array_values(array_filter(explode('/', $__path)));
+            $__crumb = '';
+            $__labelMap = [
+                'products'=>'Products','categories'=>'Categories','coupons'=>'Coupons',
+                'orders'=>'Orders','shipping'=>'Shipping','astrologers'=>'Astrologers',
+                'appointments'=>'Sessions','astrologer-credentials'=>'Login IDs',
+                'consultation-analytics'=>'Analytics','temples'=>'Temples',
+                'settings'=>'Site Settings','integrations'=>'Integrations',
+                'backups'=>'Backups','audit-log'=>'Audit Log',
+                'contact-submissions'=>'Contacts','support-tickets'=>'Support',
+                'appearance'=>'Logo & Favicon','media'=>'Media Library',
+                'environment'=>'Environment','developer'=>'Developer',
+                'project-map'=>'Project Map','contact_submissions'=>'Contacts',
+            ];
+            foreach ($__segments as $__i => $__seg):
+                if ($__seg === 'admin' && $__i === 0) continue;
+                $__crumb .= '/' . $__seg;
+                $__label = $__labelMap[$__seg] ?? ucwords(str_replace(['-','_'], ' ', $__seg));
+                if ($__i === count($__segments) - 1):
+            ?>
+                <span style="color:var(--color-ink); font-weight:500;"><?= e($__label) ?></span>
+            <?php else: ?>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                <a href="<?= e($__crumb) ?>" style="color:var(--color-text-muted);"><?= e($__label) ?></a>
+            <?php endif; endforeach; ?>
+        </div>
         <div class="admin-body">
-        <?php if(!empty($_SESSION['flash'])): ?>
-            <div class="flash flash--success" style="margin-bottom:var(--space-lg);"><?= e($_SESSION['flash']); unset($_SESSION['flash']); ?></div>
+        <?php
+        $__flash = $_SESSION['flash'] ?? null;
+        if ($__flash):
+            $__msg = is_array($__flash) ? $__flash['message'] : $__flash;
+            $__type = is_array($__flash) ? ($__flash['type'] ?? 'info') : 'info';
+            unset($_SESSION['flash']);
+        ?>
+        <script>document.addEventListener('DOMContentLoaded',function(){showToast(<?= json_encode($__msg) ?>,<?= json_encode($__type) ?>);});</script>
         <?php endif; ?>
         <?php require $viewFile; ?>
         </div>
     </main>
 </div>
 <script>
+function showToast(msg,type){type=type||'info';var c=document.getElementById('toast-container');if(!c){c=document.createElement('div');c.id='toast-container';document.body.appendChild(c);}var t=document.createElement('div');t.className='toast toast--'+type;var icons={success:'✓',error:'✕',warning:'⚠',info:'ℹ'};t.innerHTML='<span class="toast__icon">'+(icons[type]||'ℹ')+'</span><span class="toast__text">'+msg+'</span><button class="toast__close" aria-label="Dismiss">&times;</button>';t.querySelector('.toast__close').addEventListener('click',function(e){e.stopPropagation();dismiss(t);});t.addEventListener('click',function(){dismiss(t);});c.appendChild(t);var timer=setTimeout(function(){dismiss(t);},4000);function dismiss(el){if(el.classList.contains('toast--out'))return;el.classList.add('toast--out');clearTimeout(timer);setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},250);}}
 const sidebar = document.getElementById('admin-sidebar');
 const toggle = document.getElementById('sidebarToggle');
 if (toggle) {
@@ -179,6 +200,9 @@ if (toggle) {
         }
     });
 }
+document.querySelectorAll('.admin-nav-toggle').forEach(function(btn){btn.addEventListener('click',function(){var target=document.getElementById(btn.dataset.target);if(!target)return;var expanded=btn.getAttribute('aria-expanded')==='true';btn.setAttribute('aria-expanded',String(!expanded));target.style.display=expanded?'none':'';});});
+document.querySelectorAll('.table-wrap').forEach(function(wrap){var table=wrap.querySelector('table');if(!table||table.querySelector('.admin-search-added'))return;var search=document.createElement('input');search.type='text';search.placeholder='Search\u2026';search.style.cssText='width:100%;max-width:320px;margin-bottom:var(--space-sm);padding:0.5rem 0.75rem;font-size:0.85rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-white);';wrap.parentNode.insertBefore(search,wrap);search.addEventListener('input',function(){var q=this.value.toLowerCase().trim();table.querySelectorAll('tbody tr').forEach(function(row){if(!q||row.textContent.toLowerCase().includes(q)){row.style.display=''}else{row.style.display='none'}});});table.classList.add('admin-search-added');});
 </script>
+<div id="toast-container"></div>
 </body>
 </html>

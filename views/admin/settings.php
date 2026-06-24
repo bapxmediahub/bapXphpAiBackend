@@ -18,7 +18,7 @@
         </div>
         <div class="form-group">
             <label>Admin Password</label>
-            <input type="password" name="admin_password" value="<?= e($adminCredentials['password'] ?? '') ?>" autocomplete="new-password" required>
+            <input type="password" name="admin_password" placeholder="Leave blank to keep current password" autocomplete="new-password">
         </div>
         <button class="btn btn-primary btn-sm">Save Admin Login</button>
     </form>
