@@ -89,6 +89,8 @@
                 <a href="/admin/shipping" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/shipping') === 0 ? 'active' : '') ?>">Shipping</a>
                 <a href="/admin/contact-submissions" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/contact-submissions') === 0 ? 'active' : '') ?>">Contacts</a>
                 <a href="/admin/support-tickets" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/support-tickets') === 0 ? 'active' : '') ?>">Support</a>
+                <a href="/admin/email-inbox" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/email-inbox') === 0 ? 'active' : '') ?>">Email Inbox</a>
+                <a href="/admin/email-outbox" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/email-outbox') === 0 ? 'active' : '') ?>">Email Outbox</a>
             </div>
             <button type="button" class="admin-nav-toggle" data-target="menu-appearance" aria-expanded="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
@@ -158,6 +160,7 @@
                 'settings'=>'Site Settings','integrations'=>'Integrations',
                 'backups'=>'Backups','audit-log'=>'Audit Log',
                 'contact-submissions'=>'Contacts','support-tickets'=>'Support',
+                'email-inbox'=>'Email Inbox','email-outbox'=>'Email Outbox',
                 'appearance'=>'Logo & Favicon','media'=>'Media Library',
                 'environment'=>'Environment','developer'=>'Developer',
                 'project-map'=>'Project Map','contact_submissions'=>'Contacts',

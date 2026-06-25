@@ -29,4 +29,6 @@ final class AccountController extends BaseController {
         $walletBalance = (new WalletService())->balanceFor($_SESSION['user']['email'] ?? '');
         $this->render('account/bookings', compact('bookings', 'walletBalance'));
     }
+
+    public function wallet(): void { $this->legacyWallet(); }
 }

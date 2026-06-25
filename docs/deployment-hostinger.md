@@ -3,7 +3,7 @@
 ## Deployment Steps
 
 1. Upload the current `main` build to `/public_html` with Git or FTP.
-2. Keep `index.php`, `.htaccess`, `api/`, `app/`, `assets/`, `integrations/`, `storage/`, `tools/`, and `views/` together.
+2. Keep `.env`, `index.php`, `.htaccess`, `api/`, `app/`, `assets/`, `integrations/`, `storage/`, `tools/`, and `views/` together.
 3. Set `storage/` and `storage/data/` writable by PHP.
 4. Configure integration secrets from the admin integrations page after deployment.
 5. Set a Hostinger cron job for queued mail after SMTP is configured:
@@ -19,6 +19,8 @@ php /home/ACCOUNT/public_html/tools/process-mail-queue.php
 Hostinger hPanel supports Git deployment from GitHub using OAuth. In the Hostinger website management dashboard, open the website, go to **Advanced** -> **Git**, connect the GitHub repository, choose the branch to deploy, and set the install path to `/public_html` or leave it blank when Hostinger maps the repository to the account root. Use `main` for production unless you intentionally host a staging branch.
 
 After the repository is connected, enable **Auto Deployment** for the selected Branch. Hostinger gives a webhook URL for automatic deployments, and updates merged into the deployment branch can trigger a new deploy. Keep `storage/data/` writable and back it up before deploys because this project stores runtime data in JSON files on the host.
+
+The root `.env` file is a deployable repo file for this project. Commit the branch-specific `APP_URL`, `ADMIN_USERNAME`, `ADMIN_EMAIL`, and bootstrap `ADMIN_PASSWORD` so a fresh Hostinger deploy can load the website and admin login. Keep generated runtime files out of Git: `storage/runtime-key.php`, `storage/data/settings.secrets.json`, `storage/data/*.lock`, logs, and backups remain host-local.
 
 Recommended branch setup:
 
@@ -58,6 +60,7 @@ This application is built for normal PHP hosting, not Vercel. Vercel's official 
 
 ```text
 /public_html/
+  .env
   .htaccess
   index.php
   api/

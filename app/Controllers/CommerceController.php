@@ -55,7 +55,7 @@ final class CommerceController extends BaseController {
     public function createOrder(): void {
         $secrets = (new SecretService())->all();
         if (empty($secrets['razorpay_key_id']) || empty($secrets['razorpay_key_secret'])) {
-            $this->jsonResponse(['error' => 'Razorpay is not configured yet.'], 401);
+            $this->jsonResponse(['error' => 'Razorpay ' . ($secrets['razorpay_mode'] ?? 'selected') . ' mode is not configured yet.'], 401);
         }
         $items = $this->resolveCartItems();
         $cartAmount = $this->cartTotal($items) * 100;
@@ -79,6 +79,9 @@ final class CommerceController extends BaseController {
     }
     public function verifyPayment(): void {
         $secrets = (new SecretService())->all();
+        if (empty($secrets['razorpay_key_secret'])) {
+            $this->jsonResponse(['verified' => false, 'error' => 'Razorpay ' . ($secrets['razorpay_mode'] ?? 'selected') . ' mode is not configured yet.'], 400);
+        }
         $orderId = (string)($_POST['razorpay_order_id'] ?? $_POST['order_id'] ?? '');
         $paymentId = (string)($_POST['razorpay_payment_id'] ?? $_POST['payment_id'] ?? '');
         $signature = (string)($_POST['razorpay_signature'] ?? $_POST['signature'] ?? '');

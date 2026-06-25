@@ -1,10 +1,17 @@
 <?php
 namespace App\Services;
 final class ProjectMapService {
+    private const RUNTIME_JSON_STORES = [
+        'settings.secrets',
+        'test_race',
+    ];
+
     public static function registry(): array {
         $routes = [
             ['method'=>'GET','path'=>'/','name'=>'home','page'=>'public/home','controller'=>'PublicController@home','services'=>['ProductService','AstrologerService','TempleService','CategoryService']],
             ['method'=>'GET','path'=>'/about','name'=>'about','page'=>'public/about','controller'=>'PublicController@about','services'=>[]],
+            ['method'=>'GET','path'=>'/sri-panchami-spiritual','name'=>'spiritual','page'=>'public/spiritual','controller'=>'PublicController@spiritual','services'=>[]],
+            ['method'=>'GET','path'=>'/spiritual','name'=>'spiritual.short','page'=>'public/spiritual','controller'=>'PublicController@spiritual','services'=>[]],
             ['method'=>'GET','path'=>'/terms','name'=>'terms','page'=>'public/terms','controller'=>'PublicController@terms','services'=>[]],
             ['method'=>'GET','path'=>'/privacy','name'=>'privacy','page'=>'public/privacy','controller'=>'PublicController@privacy','services'=>[]],
 
@@ -30,9 +37,15 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/register','name'=>'register.post','page'=>'public/register','controller'=>'AuthController@registerPost','services'=>['JsonStoreService']],
             ['method'=>'POST','path'=>'/login','name'=>'login.post','page'=>'public/login','controller'=>'AuthController@loginPost','services'=>['JsonStoreService']],
             ['method'=>'GET','path'=>'/logout','name'=>'logout','page'=>'public/login','controller'=>'AuthController@logout','services'=>['AuthService']],
-            ['method'=>'GET','path'=>'/account/orders','name'=>'account.orders','page'=>'account/orders','controller'=>'AccountController@orders','services'=>['AuthService','OrderService']],
-            ['method'=>'GET','path'=>'/account/bookings','name'=>'account.bookings','page'=>'account/bookings','controller'=>'AccountController@bookings','services'=>['AuthService','AppointmentService']],
-            ['method'=>'GET','path'=>'/account/wallet','name'=>'account.wallet','page'=>'account/wallet','controller'=>'AccountController@wallet','services'=>['AuthService','WalletService']],
+            ['method'=>'GET','path'=>'/account/dashboard','name'=>'account.dashboard','page'=>'account/orders','controller'=>'AccountController@dashboard','services'=>['AuthService']],
+            ['method'=>'GET','path'=>'/account/dashboard/orders','name'=>'account.dashboard.orders','page'=>'account/orders','controller'=>'AccountController@orders','services'=>['AuthService','OrderService','ReviewService','WalletService']],
+            ['method'=>'GET','path'=>'/account/dashboard/sessions','name'=>'account.dashboard.sessions','page'=>'account/bookings','controller'=>'AccountController@bookings','services'=>['AuthService','AppointmentService','WalletService']],
+            ['method'=>'GET','path'=>'/account/dashboard/wallet','name'=>'account.dashboard.wallet','page'=>'account/wallet','controller'=>'WalletController@show','services'=>['AuthService','WalletService','SecretService']],
+            ['method'=>'POST','path'=>'/account/dashboard/wallet/create-order','name'=>'account.dashboard.wallet.create-order','page'=>'account/wallet','controller'=>'WalletController@createOrder','services'=>['AuthService','WalletService','SecretService','PaymentService']],
+            ['method'=>'POST','path'=>'/account/dashboard/wallet/verify','name'=>'account.dashboard.wallet.verify','page'=>'account/wallet','controller'=>'WalletController@verify','services'=>['AuthService','WalletService','SecretService','PaymentService']],
+            ['method'=>'GET','path'=>'/account/orders','name'=>'account.orders.legacy','page'=>'account/orders','controller'=>'AccountController@legacyOrders','services'=>['AuthService']],
+            ['method'=>'GET','path'=>'/account/bookings','name'=>'account.bookings.legacy','page'=>'account/bookings','controller'=>'AccountController@legacyBookings','services'=>['AuthService']],
+            ['method'=>'GET','path'=>'/account/wallet','name'=>'account.wallet.legacy','page'=>'account/wallet','controller'=>'AccountController@legacyWallet','services'=>['AuthService']],
             ['method'=>'GET','path'=>'/consultation/{id}','name'=>'consultation.room','page'=>'account/consultation','controller'=>'ConsultationController@room','services'=>['AuthService','ConsultationService']],
             ['method'=>'GET','path'=>'/astrologer','name'=>'astrologer.dashboard','page'=>'astrologer/dashboard','controller'=>'AstrologerController@dashboard','services'=>['AuthService','AstrologerService','ConsultationService']],
             ['method'=>'GET','path'=>'/astrologer/change-password','name'=>'astrologer.password','page'=>'astrologer/change-password','controller'=>'AstrologerController@changePassword','services'=>['AuthService']],
@@ -42,7 +55,7 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/api/consultations/{id}/signals','name'=>'api.consultation.signals','page'=>'account/consultation','controller'=>'ConsultationController@signals','services'=>['AuthService','ConsultationService']],
             ['method'=>'POST','path'=>'/api/consultations/{id}/signals','name'=>'api.consultation.signals.send','page'=>'account/consultation','controller'=>'ConsultationController@sendSignal','services'=>['AuthService','ConsultationService']],
             ['method'=>'POST','path'=>'/api/consultations/{id}/status','name'=>'api.consultation.status','page'=>'account/consultation','controller'=>'ConsultationController@status','services'=>['AuthService','ConsultationService']],
-            ['method'=>'GET','path'=>'/recharge','name'=>'wallet.recharge','page'=>'account/wallet','controller'=>'WalletController@show','services'=>['AuthService','WalletService','SecretService']],
+            ['method'=>'GET','path'=>'/recharge','name'=>'wallet.recharge.legacy','page'=>'account/wallet','controller'=>'WalletController@legacyShow','services'=>['AuthService']],
             ['method'=>'POST','path'=>'/recharge/create-order','name'=>'wallet.recharge.create-order','page'=>'account/wallet','controller'=>'WalletController@createOrder','services'=>['AuthService','WalletService','SecretService','PaymentService']],
             ['method'=>'POST','path'=>'/recharge/verify','name'=>'wallet.recharge.verify','page'=>'account/wallet','controller'=>'WalletController@verify','services'=>['AuthService','WalletService','SecretService','PaymentService']],
             ['method'=>'GET','path'=>'/admin','name'=>'admin.dashboard','page'=>'admin/dashboard','controller'=>'AdminController@dashboard','services'=>['OrderService','AppointmentService']],
@@ -138,15 +151,25 @@ final class ProjectMapService {
         $routeControllers = array_values(array_filter($routeControllers));
         $routeServices = array_values(array_unique(array_merge(...array_map(fn($route) => $route['services'], $map['routes']))));
         $routeViews = array_values(array_unique(array_filter(array_map(fn($route) => $route['page'] ?? '', $map['routes']))));
+        $navigation = self::navigationPaths();
+        $getRoutePaths = array_values(array_unique(array_map(
+            fn($route) => (string)$route['path'],
+            array_filter($map['routes'], fn($route) => ($route['method'] ?? 'GET') === 'GET')
+        )));
+
+        $sharedControllers = ['BaseController'];
+        $sharedServices = ['SeoService', 'SmtpMailer'];
+        $sharedViews = ['account/_nav', 'layouts/admin', 'layouts/app', 'public/404'];
 
         $gaps = [
             'missing_route_mappings' => array_values(array_filter($map['routes'], fn($route) => empty($route['controller']) || empty($route['page']))),
             'missing_controller_files' => array_values(array_diff($routeControllers, $controllers)),
             'missing_service_files' => array_values(array_diff($routeServices, $services)),
             'missing_view_files' => array_values(array_diff($routeViews, $views)),
-            'unwired_controllers' => array_values(array_diff($controllers, $routeControllers)),
-            'unwired_services' => array_values(array_diff($services, $routeServices)),
-            'unwired_views' => array_values(array_diff($views, $routeViews)),
+            'navigation_without_get_route' => array_values(array_diff($navigation, $getRoutePaths)),
+            'unwired_controllers' => array_values(array_diff($controllers, $routeControllers, $sharedControllers)),
+            'unwired_services' => array_values(array_diff($services, $routeServices, $sharedServices)),
+            'unwired_views' => array_values(array_diff($views, $routeViews, $sharedViews)),
             'schema_without_file' => array_values(array_diff($schemaCollections, $storageFiles)),
             'file_without_schema' => array_values(array_diff($storageFiles, $schemaCollections)),
         ];
@@ -156,6 +179,7 @@ final class ProjectMapService {
             'controllers' => $controllers,
             'services' => $services,
             'views' => $views,
+            'navigation' => $navigation,
             'integrations' => $integrations,
             'schema_collections' => $schemaCollections,
             'storage_files' => $storageFiles,
@@ -179,6 +203,8 @@ final class ProjectMapService {
         $descs = [
             '/'                => 'Home page — hero, categories, featured products, astrologers',
             '/about'           => 'About SPS — story, values, CTA',
+            '/sri-panchami-spiritual' => 'Sri Panchami Spiritual landing page',
+            '/spiritual'        => 'Short spiritual landing redirect-equivalent page',
             '/terms'           => 'Terms of Service — 15 sections, legal',
             '/privacy'         => 'Privacy Policy — 14 sections, data handling',
             '/consult'         => 'Astrologer marketplace — browse and book',
@@ -213,9 +239,15 @@ final class ProjectMapService {
             '/payment/verify'  => 'Checkout — verify payment, create order',
             '/create-order'    => 'API checkout — Razorpay order',
             '/verify-payment'  => 'API checkout — verify payment',
-            '/account/orders'  => 'My Orders — product reviews',
-            '/account/bookings' => 'My Sessions — astrologer bookings',
-            '/account/wallet'  => 'Wallet — balance, transactions (redirects to /recharge)',
+            '/account/dashboard' => 'Account dashboard entry — redirects to orders',
+            '/account/dashboard/orders' => 'My Orders — product reviews',
+            '/account/dashboard/sessions' => 'My Sessions — astrologer bookings',
+            '/account/dashboard/wallet' => 'Wallet — balance, recharge, transactions',
+            '/account/dashboard/wallet/create-order' => 'Wallet recharge — Razorpay order creation',
+            '/account/dashboard/wallet/verify' => 'Wallet recharge — verify payment',
+            '/account/orders'  => 'Legacy account orders redirect',
+            '/account/bookings' => 'Legacy account sessions redirect',
+            '/account/wallet'  => 'Legacy wallet redirect',
             '/consultation/{id}' => 'Consultation room — messaging, WebRTC signaling',
             '/astrologer'      => 'Astrologer dashboard — sessions queue',
             '/astrologer/change-password' => 'Astrologer forced password change',
@@ -285,6 +317,7 @@ final class ProjectMapService {
             '  classDef data fill:#fef3c7,stroke:#b45309,color:#78350f',
             '  classDef tool fill:#ede9fe,stroke:#6d28d9,color:#3b0764',
             '  classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b',
+            '  classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12',
             '',
         ];
 
@@ -315,6 +348,13 @@ final class ProjectMapService {
             $lines[] = '  end';
             $lines[] = '';
         }
+
+        $lines[] = '  subgraph NAVIGATION["Navigation Paths"]';
+        foreach ($scan['navigation'] as $path) {
+            $lines[] = '    ' . self::navId($path) . '["' . self::label($path) . '"]:::nav';
+        }
+        $lines[] = '  end';
+        $lines[] = '';
 
         $groups = [
             'CONTROLLERS' => ['Controllers', $scan['controllers'], 'controllerId', 'code'],
@@ -365,6 +405,22 @@ final class ProjectMapService {
                 $lines[] = '  ' . self::controllerId($controllerClass) . ' -. renders .-> ' . self::viewId((string)$route['page']);
             }
         }
+
+        $routeByGetPath = [];
+        foreach ($scan['routes'] as $route) {
+            if (($route['method'] ?? 'GET') === 'GET') $routeByGetPath[(string)$route['path']] = $route;
+        }
+        foreach ($scan['navigation'] as $path) {
+            if (isset($routeByGetPath[$path])) {
+                $lines[] = '  ' . self::navId($path) . ' --> ' . self::routeId($routeByGetPath[$path]);
+            }
+        }
+
+        foreach ($scan['controllers'] as $controller) {
+            if ($controller !== 'BaseController') $lines[] = '  ' . self::controllerId($controller) . ' --> ' . self::controllerId('BaseController');
+        }
+        $lines[] = '  ' . self::controllerId('BaseController') . ' --> ' . self::serviceId('SeoService');
+        $lines[] = '  ' . self::toolId('process-mail-queue') . ' --> ' . self::serviceId('SmtpMailer');
 
         foreach (self::serviceCollections() as $service => $collections) {
             foreach ($collections as $collection) {
@@ -447,7 +503,9 @@ final class ProjectMapService {
         if (!is_dir($dir)) return [];
         $names = [];
         foreach (glob($dir . '/*.json') ?: [] as $file) {
-            $names[] = basename($file, '.json');
+            $name = basename($file, '.json');
+            if (in_array($name, self::RUNTIME_JSON_STORES, true)) continue;
+            $names[] = $name;
         }
         sort($names);
         return $names;
@@ -478,6 +536,16 @@ final class ProjectMapService {
         ];
     }
 
+    private static function navigationPaths(): array {
+        return [
+            '/contact',
+            '/account/dashboard',
+            '/account/dashboard/orders',
+            '/account/dashboard/sessions',
+            '/account/dashboard/wallet',
+        ];
+    }
+
     private static function routeDomain(array $route): string {
         $path = (string)($route['path'] ?? '');
         if (str_starts_with($path, '/admin')) return 'ADMIN';
@@ -503,4 +571,5 @@ final class ProjectMapService {
     private static function collectionId(string $name): string { return self::nodeId('collection', $name); }
     private static function storageId(string $name): string { return self::nodeId('storage', $name); }
     private static function toolId(string $name): string { return self::nodeId('tool', $name); }
+    private static function navId(string $name): string { return self::nodeId('nav', $name); }
 }

@@ -20,7 +20,9 @@ final class MailQueueService {
             'meta' => $meta,
             'created_at' => date('c'),
         ];
-        return $this->store->upsert('mail_queue', $record);
+        $saved = $this->store->upsert('mail_queue', $record);
+        (new MailStorageService($this->store))->recordQueuedOutbox($saved);
+        return $saved;
     }
 
     public function enqueuePaymentConfirmation(array $order): ?array {
@@ -78,9 +80,20 @@ final class MailQueueService {
             try {
                 $mailer->send((string)$record['to'], (string)$record['subject'], (string)$record['html']);
                 $this->markSent((string)$record['id']);
+                (new MailStorageService($this->store))->updateOutboxForQueue((string)$record['id'], 'sent', [
+                    'from_email' => $mailer->fromEmail(),
+                    'transport' => $mailer->transport(),
+                    'sent_at' => date('c'),
+                ]);
                 $sent++;
             } catch (\Throwable $error) {
                 $this->markFailed((string)$record['id'], $error->getMessage());
+                (new MailStorageService($this->store))->updateOutboxForQueue((string)$record['id'], 'failed', [
+                    'from_email' => $mailer->fromEmail(),
+                    'transport' => $mailer->transport(),
+                    'last_error' => $error->getMessage(),
+                    'failed_at' => date('c'),
+                ]);
             }
         }
         return $sent;

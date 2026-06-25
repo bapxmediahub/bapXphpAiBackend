@@ -6,14 +6,29 @@
     <form method="post" action="/admin/integrations/save" class="admin-form">
         <h2 style="font-size:1rem; margin:0 0 var(--space-sm);">Razorpay Payments</h2>
         <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">
-            Add the live Key ID and Key Secret from Razorpay Dashboard. Use this for ecommerce payments and credit top-ups.
+            Add test and live keys from Razorpay Dashboard, then choose which mode checkout and wallet top-ups should use.
             <a href="https://razorpay.com/docs/payments/dashboard/account-settings/api-keys/" target="_blank" rel="noopener">Razorpay API key guide</a>
         </p>
         <div class="admin-form__row">
-            <label>Razorpay Key ID<input name="razorpay_key_id" value="<?= e($secrets['razorpay_key_id']??'') ?>" placeholder="rzp_live_xxxx"></label>
-            <label>Razorpay Key Secret<input name="razorpay_key_secret" value="<?= e($secrets['razorpay_key_secret']??'') ?>" placeholder="Paste live key secret"></label>
+            <label>Razorpay Mode
+                <select name="razorpay_mode">
+                    <option value="test" <?= (($secrets['razorpay_mode']??'test') === 'test') ? 'selected' : '' ?>>Test mode</option>
+                    <option value="live" <?= (($secrets['razorpay_mode']??'test') === 'live') ? 'selected' : '' ?>>Live mode</option>
+                </select>
+            </label>
+            <label>Active Key ID
+                <input value="<?= e($secrets['razorpay_key_id']??'') ?>" readonly placeholder="Selected mode key id">
+            </label>
         </div>
-        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Keep test keys for testing only. Switch to live keys before accepting real customer payments.</p>
+        <div class="admin-form__row">
+            <label>Test Key ID<input name="razorpay_test_key_id" value="<?= e($secrets['razorpay_test_key_id']??'') ?>" placeholder="rzp_test_xxxx"></label>
+            <label>Test Key Secret<input name="razorpay_test_key_secret" value="<?= e($secrets['razorpay_test_key_secret']??'') ?>" placeholder="Paste test key secret"></label>
+        </div>
+        <div class="admin-form__row">
+            <label>Live Key ID<input name="razorpay_live_key_id" value="<?= e($secrets['razorpay_live_key_id']??'') ?>" placeholder="rzp_live_xxxx"></label>
+            <label>Live Key Secret<input name="razorpay_live_key_secret" value="<?= e($secrets['razorpay_live_key_secret']??'') ?>" placeholder="Paste live key secret"></label>
+        </div>
+        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Test mode uses test keys for trial payments. Switch to live mode only when production keys are saved and real customer payments are ready.</p>
 
         <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">Google Login</h2>
         <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">

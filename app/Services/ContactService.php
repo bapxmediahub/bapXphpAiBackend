@@ -27,6 +27,7 @@ final class ContactService {
         $data['created_at'] = $data['created_at'] ?? time();
         $data['status'] = $data['status'] ?? 'new';
         $this->store->upsert('contact_submissions', $data);
+        (new MailStorageService($this->store))->recordInboxFromContact($data);
         return $id;
     }
 

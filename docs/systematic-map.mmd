@@ -6,14 +6,14 @@ flowchart LR
   classDef tool fill:#ede9fe,stroke:#6d28d9,color:#3b0764
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
 
-  subgraph ARCH["Architecture Overview — 94 routes, 12 controllers, 32 services, 40 views, 17 data files, 5 tools"]
+  subgraph ARCH["Architecture Overview — 94 routes, 12 controllers, 32 services, 41 views, 15 data files, 5 tools"]
     arch_routes["> Routes: 94 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
     arch_svc["> Services: 32"]:::arch
-    arch_views["> Views: 40"]:::arch
-    arch_data["> Collections: 11 schema | 17 files"]:::arch
+    arch_views["> Views: 41"]:::arch
+    arch_data["> Collections: 18 schema | 15 files"]:::arch
     arch_tools["> Tools: 5"]:::arch
-    arch_gaps["> Gaps: 18"]:::arch
+    arch_gaps["> Gaps: 12"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -178,6 +178,7 @@ flowchart LR
   end
 
   subgraph VIEWS["Views"]
+    view_17326c025c30["account/_nav"]:::code
     view_bde0b7fa75a6["account/bookings"]:::code
     view_7459f7fdbec2["account/consultation"]:::code
     view_8bf2f1da4f90["account/orders"]:::code
@@ -239,6 +240,13 @@ flowchart LR
     collection_ce528b00cff4["consultation_signals"]:::data
     collection_f2ec0991d55d["wallet_transactions"]:::data
     collection_830b87d9f1ff["support_tickets"]:::data
+    collection_b0b5ccb4a195["categories"]:::data
+    collection_28882724d375["coupons"]:::data
+    collection_32356d16f20c["audit_events"]:::data
+    collection_d10fbf039e34["mail_queue"]:::data
+    collection_74dcb1cec508["reviews"]:::data
+    collection_2e5d8aa3dfa8["settings"]:::data
+    collection_2dce077b5527["contact_submissions"]:::data
     collection_a276577b33a8["media_files"]:::data
   end
 
@@ -256,9 +264,7 @@ flowchart LR
     storage_86024cad1e83["products"]:::data
     storage_74dcb1cec508["reviews"]:::data
     storage_2e5d8aa3dfa8["settings"]:::data
-    storage_c5809eed0e0b["settings.secrets"]:::data
     storage_fefa79731a13["temples"]:::data
-    storage_506de2158fd9["test_race"]:::data
     storage_9bc65c2abec1["users"]:::data
   end
 
@@ -276,19 +282,13 @@ flowchart LR
     gap_66de7921f3["unwired_controllers: BaseController"]:::gap
     gap_e7e866bbe4["unwired_services: SeoService"]:::gap
     gap_bf2f22f5c3["unwired_services: SmtpMailer"]:::gap
-    gap_463bee36b9["unwired_views: layouts/admin"]:::gap
-    gap_146f86659e["unwired_views: layouts/app"]:::gap
-    gap_16b8d6c40a["unwired_views: public/404"]:::gap
+    gap_dc96a72744["unwired_views: account/_nav"]:::gap
+    gap_e7dfb3eecf["unwired_views: layouts/admin"]:::gap
+    gap_74c1a32b74["unwired_views: layouts/app"]:::gap
+    gap_3c4f4f8a09["unwired_views: public/404"]:::gap
     gap_a5993307b7["schema_without_file: wallet_transactions"]:::gap
     gap_d571673255["schema_without_file: support_tickets"]:::gap
-    gap_cca1f2f5fc["file_without_schema: audit_events"]:::gap
-    gap_d049b16bd1["file_without_schema: categories"]:::gap
-    gap_5630917500["file_without_schema: coupons"]:::gap
-    gap_1d5de0753e["file_without_schema: mail_queue"]:::gap
-    gap_ff7a58c210["file_without_schema: reviews"]:::gap
-    gap_4ab1a78131["file_without_schema: settings"]:::gap
-    gap_12f998762d["file_without_schema: settings.secrets"]:::gap
-    gap_ab3c7719c7["file_without_schema: test_race"]:::gap
+    gap_0c66c9363b["schema_without_file: contact_submissions"]:::gap
   end
 
   route_e3b717d5883a --> controller_18ec49ea2cf4
@@ -724,6 +724,12 @@ flowchart LR
   collection_2417b5325520 --> storage_2417b5325520
   collection_c37815a262b9 --> storage_c37815a262b9
   collection_ce528b00cff4 --> storage_ce528b00cff4
+  collection_b0b5ccb4a195 --> storage_b0b5ccb4a195
+  collection_28882724d375 --> storage_28882724d375
+  collection_32356d16f20c --> storage_32356d16f20c
+  collection_d10fbf039e34 --> storage_d10fbf039e34
+  collection_74dcb1cec508 --> storage_74dcb1cec508
+  collection_2e5d8aa3dfa8 --> storage_2e5d8aa3dfa8
   collection_a276577b33a8 --> storage_a276577b33a8
   service_9eeeaab84791 --> integration_1442a65b90de
   service_9eeeaab84791 --> integration_063c1f657453
@@ -751,16 +757,10 @@ flowchart LR
   gap_66de7921f3 -. missing .-> controller_6f7f176814f0
   gap_e7e866bbe4 -. missing .-> service_3fc704b15e1b
   gap_bf2f22f5c3 -. missing .-> service_c5fb81744c52
-  gap_463bee36b9 -. missing .-> view_dae8fcbc86f4
-  gap_146f86659e -. missing .-> view_fd382d366d88
-  gap_16b8d6c40a -. missing .-> view_fe7e7ffe6adc
+  gap_dc96a72744 -. missing .-> view_17326c025c30
+  gap_e7dfb3eecf -. missing .-> view_dae8fcbc86f4
+  gap_74c1a32b74 -. missing .-> view_fd382d366d88
+  gap_3c4f4f8a09 -. missing .-> view_fe7e7ffe6adc
   collection_f2ec0991d55d -. missing file .-> gap_a5993307b7
   collection_830b87d9f1ff -. missing file .-> gap_d571673255
-  storage_32356d16f20c -. missing schema .-> gap_cca1f2f5fc
-  storage_b0b5ccb4a195 -. missing schema .-> gap_d049b16bd1
-  storage_28882724d375 -. missing schema .-> gap_5630917500
-  storage_d10fbf039e34 -. missing schema .-> gap_1d5de0753e
-  storage_74dcb1cec508 -. missing schema .-> gap_ff7a58c210
-  storage_2e5d8aa3dfa8 -. missing schema .-> gap_4ab1a78131
-  storage_c5809eed0e0b -. missing schema .-> gap_12f998762d
-  storage_506de2158fd9 -. missing schema .-> gap_ab3c7719c7
+  collection_2dce077b5527 -. missing file .-> gap_0c66c9363b

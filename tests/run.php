@@ -7,6 +7,7 @@ use App\Services\PaymentService;
 use App\Services\ProjectMapService;
 use App\Services\ReviewService;
 use App\Services\SchemaService;
+use App\Services\SecretService;
 
 function assertTrue(bool $condition, string $message): void {
     if (!$condition) {
@@ -354,6 +355,12 @@ $tests['admin integrations explain api setup and support bot keys'] = function (
     $view = file_get_contents(app_path('views/admin/integrations.php'));
     foreach ([
         'https://razorpay.com/docs/payments/dashboard/account-settings/api-keys/',
+        'name="razorpay_mode"',
+        'name="razorpay_test_key_id"',
+        'name="razorpay_test_key_secret"',
+        'name="razorpay_live_key_id"',
+        'name="razorpay_live_key_secret"',
+        'Active Key ID',
         'https://console.cloud.google.com/apis/credentials',
         'https://ai.google.dev/gemini-api/docs/api-key',
         'support_bot_google_api_key',
@@ -366,6 +373,39 @@ $tests['admin integrations explain api setup and support bot keys'] = function (
         assertTrue(str_contains($view, $needle), "Integrations page should include {$needle}");
     }
     assertTrue(!str_contains($view, 'name="support_bot_google_api_endpoint"'), 'Admin should not need to enter the Google API endpoint manually');
+};
+
+$tests['razorpay secrets support test and live modes'] = function (): void {
+    $method = new ReflectionMethod(SecretService::class, 'normalize');
+    $service = new SecretService();
+
+    $test = $method->invoke($service, [
+        'razorpay_mode' => 'test',
+        'razorpay_test_key_id' => 'rzp_test_example',
+        'razorpay_test_key_secret' => 'test_secret',
+        'razorpay_live_key_id' => 'rzp_live_example',
+        'razorpay_live_key_secret' => 'live_secret',
+    ]);
+    assertSame('test', $test['razorpay_mode'], 'Razorpay test mode should be retained');
+    assertSame('rzp_test_example', $test['razorpay_key_id'], 'Active key id should come from test mode');
+    assertSame('test_secret', $test['razorpay_key_secret'], 'Active key secret should come from test mode');
+
+    $live = $method->invoke($service, [
+        'razorpay_mode' => 'live',
+        'razorpay_test_key_id' => 'rzp_test_example',
+        'razorpay_test_key_secret' => 'test_secret',
+        'razorpay_live_key_id' => 'rzp_live_example',
+        'razorpay_live_key_secret' => 'live_secret',
+    ]);
+    assertSame('rzp_live_example', $live['razorpay_key_id'], 'Active key id should come from live mode');
+    assertSame('live_secret', $live['razorpay_key_secret'], 'Active key secret should come from live mode');
+
+    $legacy = $method->invoke($service, [
+        'razorpay_key_id' => 'rzp_test_legacy',
+        'razorpay_key_secret' => 'legacy_secret',
+    ]);
+    assertSame('test', $legacy['razorpay_mode'], 'Legacy test key ids should infer test mode');
+    assertSame('rzp_test_legacy', $legacy['razorpay_test_key_id'], 'Legacy key id should migrate into the inferred mode');
 };
 
 $tests['admin settings form persists shipping settings instead of rendering a dead form'] = function (): void {
@@ -716,7 +756,7 @@ $tests['consultation api exposes message call and status workflows'] = function 
 };
 
 $tests['home hero rotates all supplied varahi images'] = function (): void {
-    assertSame(10,count(glob(app_path('assets/images/hero/varahi/varahi-*.jpg'))?:[]),'Hero should include all ten supplied Varahi images');
+    assertSame(10,count(glob(app_path('assets/images/hero/varahi/varahi-*.png'))?:[]),'Hero should include all ten supplied Varahi images');
     assertTrue(str_contains(file_get_contents(app_path('views/public/home.php')),'data-varahi-slider'),'Home should render the Varahi image slider');
 };
 

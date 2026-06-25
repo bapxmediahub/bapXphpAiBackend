@@ -228,6 +228,43 @@
         "created_at": {"type": "datetime"}
       }
     },
+    "mail_inbox": {
+      "file": "storage/data/mail_inbox.json",
+      "primary_key": "id",
+      "admin_managed": false,
+      "fields": {
+        "id": {"type": "string"},
+        "from_email": {"type": "email"},
+        "from_name": {"type": "string"},
+        "to_email": {"type": "string"},
+        "subject": {"type": "string"},
+        "body": {"type": "text"},
+        "status": {"type": "enum", "values": ["unread", "read", "archived"]},
+        "source": {"type": "string"},
+        "source_id": {"type": "string"},
+        "created_at": {"type": "datetime"}
+      }
+    },
+    "mail_outbox": {
+      "file": "storage/data/mail_outbox.json",
+      "primary_key": "id",
+      "admin_managed": false,
+      "fields": {
+        "id": {"type": "string"},
+        "queue_id": {"type": "string"},
+        "to_email": {"type": "email"},
+        "from_email": {"type": "email"},
+        "subject": {"type": "string"},
+        "body": {"type": "text"},
+        "status": {"type": "enum", "values": ["pending", "sent", "failed"]},
+        "transport": {"type": "enum", "values": ["queued", "php_mail", "smtp"]},
+        "source": {"type": "string"},
+        "source_id": {"type": "string"},
+        "created_at": {"type": "datetime"},
+        "sent_at": {"type": "datetime"},
+        "last_error": {"type": "text"}
+      }
+    },
     "reviews": {
       "file": "storage/data/reviews.json",
       "primary_key": "id",

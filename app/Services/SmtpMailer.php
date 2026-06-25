@@ -5,16 +5,36 @@ final class SmtpMailer {
     public function __construct(private array $settings) {}
 
     public function configured(): bool {
+        return $this->smtpConfigured() || $this->phpMailConfigured();
+    }
+
+    public function fromEmail(): string {
+        $from = trim((string)($this->settings['mail_from_email'] ?? ''));
+        if ($from !== '') return $from;
+        $from = trim((string)($this->settings['smtp_from_email'] ?? ''));
+        if ($from !== '') return $from;
+        return 'noreply@' . $this->mailDomain();
+    }
+
+    public function transport(): string {
+        return $this->smtpConfigured() ? 'smtp' : 'php_mail';
+    }
+
+    private function smtpConfigured(): bool {
         return !empty($this->settings['smtp_host'])
             && !empty($this->settings['smtp_port'])
             && !empty($this->settings['smtp_username'])
             && !empty($this->settings['smtp_password'])
-            && !empty($this->settings['smtp_from_email']);
+            && $this->fromEmail() !== '';
+    }
+
+    private function phpMailConfigured(): bool {
+        return function_exists('mail') && $this->fromEmail() !== '';
     }
 
     public function buildMessage(string $to, string $subject, string $html): string {
-        $fromEmail = $this->settings['smtp_from_email'] ?? $this->settings['smtp_username'] ?? '';
-        $fromName = trim((string)($this->settings['smtp_from_name'] ?? 'Sri Panchami Spiritual'));
+        $fromEmail = $this->fromEmail();
+        $fromName = $this->fromName();
         $replyTo = trim((string)($this->settings['admin_notification_email'] ?? $fromEmail));
         $boundary = 'sps_' . bin2hex(random_bytes(12));
         $plain = trim(strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", $html)));
@@ -37,7 +57,11 @@ final class SmtpMailer {
 
     public function send(string $to, string $subject, string $html): void {
         if (!$this->configured()) {
-            throw new \RuntimeException('SMTP is not configured.');
+            throw new \RuntimeException('Email delivery is not configured.');
+        }
+        if (!$this->smtpConfigured()) {
+            $this->sendWithPhpMail($to, $subject, $html);
+            return;
         }
         $host = (string)$this->settings['smtp_host'];
         $port = (int)$this->settings['smtp_port'];
@@ -60,7 +84,7 @@ final class SmtpMailer {
         $this->command($socket, 'AUTH LOGIN', [334]);
         $this->command($socket, base64_encode((string)$this->settings['smtp_username']), [334]);
         $this->command($socket, base64_encode((string)$this->settings['smtp_password']), [235]);
-        $from = (string)$this->settings['smtp_from_email'];
+        $from = $this->fromEmail();
         $this->command($socket, 'MAIL FROM:<' . $from . '>', [250]);
         $this->command($socket, 'RCPT TO:<' . $to . '>', [250, 251]);
         $this->command($socket, 'DATA', [354]);
@@ -72,6 +96,43 @@ final class SmtpMailer {
 
     private function formatAddress(string $email, string $name): string {
         return $name !== '' ? $name . ' <' . $email . '>' : $email;
+    }
+
+    private function sendWithPhpMail(string $to, string $subject, string $html): void {
+        $fromEmail = $this->fromEmail();
+        $fromName = $this->fromName();
+        $headers = [
+            'MIME-Version: 1.0',
+            'Content-Type: text/html; charset=UTF-8',
+            'From: ' . $this->formatAddress($fromEmail, $fromName),
+            'Reply-To: ' . trim((string)($this->settings['admin_notification_email'] ?? $fromEmail)),
+            'X-Mailer: PHP/' . PHP_VERSION,
+        ];
+        $ok = @mail($to, $subject, $html, implode("\r\n", $headers), '-f' . $fromEmail);
+        if (!$ok) {
+            throw new \RuntimeException('PHP mail() delivery failed.');
+        }
+    }
+
+    private function fromName(): string {
+        return trim((string)($this->settings['mail_from_name'] ?? $this->settings['smtp_from_name'] ?? 'Sri Panchami Spiritual'));
+    }
+
+    private function mailDomain(): string {
+        $domain = trim((string)($this->settings['mail_from_domain'] ?? ''));
+        if ($domain !== '') return $this->cleanDomain($domain);
+        $appUrl = (string)(getenv('APP_URL') ?: '');
+        $host = parse_url($appUrl, PHP_URL_HOST);
+        if ($host && !str_contains($host, 'example')) return $this->cleanDomain($host);
+        $adminEmail = (string)(getenv('ADMIN_EMAIL') ?: '');
+        if (str_contains($adminEmail, '@')) return $this->cleanDomain(substr(strrchr($adminEmail, '@'), 1));
+        $httpHost = (string)($_SERVER['HTTP_HOST'] ?? 'localhost.example');
+        return $this->cleanDomain($httpHost);
+    }
+
+    private function cleanDomain(string $domain): string {
+        $domain = strtolower(trim(preg_replace('/:\d+$/', '', $domain) ?? ''));
+        return $domain !== '' ? $domain : 'localhost.example';
     }
 
     private function command($socket, string $command, array $codes): string {

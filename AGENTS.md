@@ -86,6 +86,8 @@ php tools/smoke-local.php
 
 For UI changes, also use a browser workflow. Codex agents must use `Browser:control-in-app-browser` for localhost and in-app browser verification when the Browser plugin is available. Standalone Playwright is only a fallback for agents or environments that do not have the Browser plugin. Click the changed page like a user and verify the visible result.
 
+Local browser validation must use this project's single dev-server port: `127.0.0.1:6020`. If `6020` is already listening, inspect and reuse that running project server; do not start another copy on `6021` or any alternate port unless the user explicitly authorizes it.
+
 Before finishing, search the touched workflow for placeholders, dead buttons, duplicated fallbacks, stale labels, and incomplete wiring. Remove or wire them instead of leaving non-working UI.
 
 ## Child DOX Index

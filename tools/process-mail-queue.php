@@ -8,7 +8,7 @@ use App\Services\SmtpMailer;
 $secrets = (new SecretService())->all();
 $mailer = new SmtpMailer($secrets);
 if (!$mailer->configured()) {
-    fwrite(STDERR, "SMTP is not configured.\n");
+    fwrite(STDERR, "Email delivery is not configured.\n");
     exit(1);
 }
 

@@ -24,6 +24,12 @@ final class PublicController extends BaseController {
         $this->seoKey = 'about';
         $this->render('public/about'); 
     }
+
+    public function spiritual(): void {
+        $this->detectApiRequest();
+        $this->seoKey = 'spiritual';
+        $this->render('public/spiritual');
+    }
     
     public function terms(): void { 
         $this->detectApiRequest();

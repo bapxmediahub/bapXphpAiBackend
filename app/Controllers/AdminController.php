@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AstrologerAccountService,AuditLogService,AuthService,ConsultationService,EnvService,JsonStoreService,MediaService,OrderService,ResourceService,SchemaService,SecretService,SettingsService,StoragePermissionService};
+use App\Services\{AstrologerAccountService,AuditLogService,AuthService,ConsultationService,EnvService,JsonStoreService,MailStorageService,MediaService,OrderService,ResourceService,SchemaService,SecretService,SettingsService,StoragePermissionService};
 final class AdminController extends BaseController {
     protected string $layout = 'admin';
     public function __construct() {
@@ -89,6 +89,8 @@ final class AdminController extends BaseController {
     public function saveContactSubmission(): void{$this->save('contact_submissions');}
     public function deleteContactSubmission(): void{$this->delete('contact_submissions');}
     public function supportTickets(): void{$this->list('Support Tickets','support_tickets');}
+    public function emailInbox(): void{$this->render('admin/mailbox',['pageTitle'=>'Email Inbox','title'=>'Email Inbox','box'=>'inbox','items'=>(new MailStorageService())->inbox()]);}
+    public function emailOutbox(): void{$this->render('admin/mailbox',['pageTitle'=>'Email Outbox','title'=>'Email Outbox','box'=>'outbox','items'=>(new MailStorageService())->outbox()]);}
     public function media(): void{$this->render('admin/media',['pageTitle'=>'Media Library','items'=>(new MediaService())->all()]);}
     public function uploadMedia(): void{$uploaded=(new MediaService())->upload($_FILES['media_files'] ?? [], $_POST['context'] ?? 'shared'); (new AuditLogService())->record('upload','media','',['count'=>count($uploaded),'context'=>$_POST['context'] ?? 'shared']); $this->flash(count($uploaded).' media file'.(count($uploaded) === 1 ? '' : 's').' uploaded.','success'); $this->redirect('/admin/media');}
     public function environment(): void{$this->render('admin/environment',['pageTitle'=>'Environment','envRaw'=>(new EnvService())->raw(),'permissions'=>(new StoragePermissionService())->status()]);}

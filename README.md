@@ -102,7 +102,7 @@ There is intentionally no SPA fallback. Unknown routes return the PHP 404 page.
 
 ## Environment Setup
 
-Copy `.env.example` to `.env`, then edit `.env` before using the app:
+This repository tracks the root `.env` file because shared-hosting Git auto-deploy needs the app URL and admin bootstrap credentials on the remote branch. Start from `.env.example` when creating a new install, then edit `.env` before using the app:
 
 ```dotenv
 APP_NAME="Your App Name"
@@ -112,7 +112,7 @@ ADMIN_EMAIL=admin@your-domain.example
 ADMIN_PASSWORD=ChangeThisAdmin123!
 ```
 
-After first login, change admin credentials in `/admin/settings`.
+After first login, change admin credentials in `/admin/settings` and commit the deployable `.env` changes needed by the target branch. Runtime-only secret stores such as `storage/runtime-key.php`, `storage/data/settings.secrets.json`, lock files, logs, and backups stay ignored.
 
 ## Local Development
 
@@ -154,7 +154,7 @@ Full details are in [docs/deployment-hostinger.md](docs/deployment-hostinger.md)
 This repo is meant for developers who want a PHP JSON AI agent backend that works on ordinary shared-hosting plans:
 
 1. Fork or clone the repository.
-2. Edit `.env` for the new domain, admin email, and admin password.
+2. Edit and commit `.env` for the new domain, admin email, and admin password.
 3. Update `storage/schema/collections.json` only when the JSON database shape changes.
 4. Change `views/`, `assets/css/`, and `storage/data/*.json` for the customer/project use case.
 5. Push to the branch connected to Hostinger Git auto-deploy or another PHP host.
