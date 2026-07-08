@@ -30,6 +30,16 @@
         </div>
         <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Test mode uses test keys for trial payments. Switch to live mode only when production keys are saved and real customer payments are ready.</p>
 
+        <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">Stripe Payments</h2>
+        <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">
+            Optional Stripe payment gateway. Enter your Stripe secret key to enable Stripe as an alternative payment method.
+            <a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener">Stripe Dashboard</a>
+        </p>
+        <div class="admin-form__row">
+            <label>Stripe Secret Key<input type="password" name="stripe_secret_key" value="<?= e($secrets['stripe_secret_key']??'') ?>" placeholder="sk_live_xxxx or sk_test_xxxx" autocomplete="new-password"></label>
+        </div>
+        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Stripe is available as an alternative to Razorpay. The secret key is stored encrypted and never kept in <code>.env</code>.</p>
+
         <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">Google Login</h2>
         <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">
             Optional customer login. Create an OAuth client in Google Cloud and add this callback URL: <code><?= e(((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'your-domain.com') . '/auth/google/callback') ?></code>.
