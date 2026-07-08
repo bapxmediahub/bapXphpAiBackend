@@ -26,4 +26,22 @@ function placeholder_img(string $label = ''): string {
     return 'data:image/svg+xml,' . rawurlencode($svg);
 }
 
+function webp_src(string $src): string {
+    if (str_starts_with($src, 'data:') || str_contains($src, '.webp')) return $src;
+    $webpPath = preg_replace('/\.(png|jpg|jpeg)$/i', '.webp', $src);
+    $filePath = app_path($webpPath);
+    if (is_file($filePath)) return $webpPath;
+    return $src;
+}
+
+function img_tag(string $src, string $alt = '', array $attrs = []): string {
+    $attrStr = '';
+    foreach ($attrs as $k => $v) $attrStr .= ' ' . $k . '="' . htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8') . '"';
+    $webp = webp_src($src);
+    if ($webp !== $src) {
+        return '<picture><source srcset="' . htmlspecialchars($webp, ENT_QUOTES, 'UTF-8') . '" type="image/webp"><img src="' . htmlspecialchars($src, ENT_QUOTES, 'UTF-8') . '" alt="' . htmlspecialchars($alt, ENT_QUOTES, 'UTF-8') . '"' . $attrStr . '></picture>';
+    }
+    return '<img src="' . htmlspecialchars($src, ENT_QUOTES, 'UTF-8') . '" alt="' . htmlspecialchars($alt, ENT_QUOTES, 'UTF-8') . '"' . $attrStr . '>';
+}
+
 \App\Services\EnvService::load();
