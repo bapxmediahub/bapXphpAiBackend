@@ -20,7 +20,7 @@ Hostinger hPanel supports Git deployment from GitHub using OAuth. In the Hosting
 
 After the repository is connected, enable **Auto Deployment** for the selected Branch. Hostinger gives a webhook URL for automatic deployments, and updates merged into the deployment branch can trigger a new deploy. Keep `storage/data/` writable and back it up before deploys because this project stores runtime data in JSON files on the host.
 
-The root `.env` file holds only `APP_NAME` and `APP_URL` and is deployable via Git. Commit branch-specific values so a fresh Hostinger deploy can serve the site. Admin credentials are set through **Admin → Settings**. All API secrets (Razorpay, SMTP, Google OAuth, support bot) are set through **Admin → Integrations** and stored in `storage/data/settings.secrets.json` — never in `.env`. Keep generated runtime files out of Git: `storage/runtime-key.php`, `storage/data/settings.secrets.json`, `storage/data/*.lock`, logs, and backups remain host-local.
+The root `.env` file holds only `APP_NAME` and `APP_URL` and is deployable via Git. Commit branch-specific values so a fresh Hostinger deploy can serve the site. **Never put secrets in `.env`.** Admin credentials are set through **Admin → Settings**. All API secrets (Razorpay, SMTP, Google OAuth, support bot) are set through **Admin → Integrations** and stored in `storage/data/secrets.json` — never in `.env`. Keep generated runtime files out of Git: `storage/runtime-key.php`, `storage/data/secrets.json`, `storage/data/*.lock`, logs, and backups remain host-local.
 
 Recommended branch setup:
 
@@ -80,5 +80,5 @@ This application is built for normal PHP hosting, not Vercel. Vercel's official 
 - Data not saving: check `storage/data/` permissions.
 - Admin blocked: confirm the existing admin user in `storage/data/users.json` has `role: "admin"`.
 - Razorpay disabled: add live key ID and secret in admin integrations.
-- Google login disabled: add Google OAuth client ID, secret, and callback URL.
+- Google login not working: verify the Google Cloud Console has the correct callback URL (`https://sripanchamispiritual.com/auth/google/callback`).
 - Emails not sending: configure SMTP secrets and run `tools/process-mail-queue.php` from cron.

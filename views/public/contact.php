@@ -6,8 +6,8 @@
             <p class="lede" style="margin:0 auto;">Shop spiritual products online. For astrology guidance, use Consult for regular sessions or contact us for VIP direct astrology visits.</p>
         </div>
         <div class="contact-form-card reveal" id="contact-form" style="scroll-margin-top:110px;">
-            <h2 style="font-family:var(--font-serif); text-align:center; margin:0 0 var(--space-sm);">Send a Consultation Request</h2>
-            <p style="text-align:center; color:var(--color-text-muted); margin:0 auto var(--space-lg); max-width:620px;">Use this form for remote astrology call/message requests, product questions, temple guidance, or store support.</p>
+            <h2 style="font-family:var(--font-serif); text-align:center; margin:0 0 var(--space-sm);">Contact Us</h2>
+            <p style="text-align:center; color:var(--color-text-muted); margin:0 auto var(--space-lg); max-width:620px;">Use this form for astrology consultation requests, product questions, temple guidance, or store support.</p>
             <?php if(!empty($success)): ?>
                 <script>document.addEventListener('DOMContentLoaded',function(){showToast('Thank you. Sri Panchami Spiritual will contact you soon.','success');});</script>
             <?php endif; ?>

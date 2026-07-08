@@ -2,7 +2,7 @@
 namespace App\Services;
 
 final class AuditLogService {
-    public function __construct(private JsonStoreService $store = new JsonStoreService()) {}
+    public function __construct(private DatabaseService $store = new DatabaseService()) {}
 
     public function all(): array {
         return array_reverse($this->store->read('audit_events'));

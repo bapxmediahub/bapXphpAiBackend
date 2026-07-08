@@ -34,7 +34,6 @@ final class BlogController extends BaseController
 
         if ($markdown === null) {
             $this->renderNotFound();
-            return;
         }
 
         $index = $docService->fetchIndex();

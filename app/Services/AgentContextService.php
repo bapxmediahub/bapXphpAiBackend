@@ -2,7 +2,7 @@
 namespace App\Services;
 
 final class AgentContextService {
-    public function __construct(private JsonStoreService $store = new JsonStoreService(), private SchemaService $schema = new SchemaService()) {}
+    public function __construct(private DatabaseService $store = new DatabaseService(), private SchemaService $schema = new SchemaService()) {}
 
     public function forUserEmail(string $email): array {
         $email = strtolower(trim($email));

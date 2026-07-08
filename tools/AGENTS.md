@@ -11,6 +11,8 @@ Owns maintenance scripts, project-map generation/validation, local smoke checks,
 - `validate-project-map.php`: verifies the committed systematic map is fresh.
 - `refresh-blog-cache.php`: fetches and caches GitHub-sourced blog/documents.
 - `smoke-local.php`: starts a disposable local PHP server and checks key routes/API behavior.
+- `blog-read.php` / `blog-write.php`: CLI blog post read and interactive create/edit tools.
+- `product-read.php` / `product-write.php`: CLI product read and interactive create/edit tools.
 - **`bapXphp`**: the primary project management CLI (bash). Entry point for agents and developers.
 - Other scripts must have one clear concern.
 
@@ -19,49 +21,38 @@ Owns maintenance scripts, project-map generation/validation, local smoke checks,
 - One tool per concern. Extend an existing tool when it already owns the workflow.
 - The project map has one artifact: `docs/systematic-map.mmd`. `docs/KnowledgeMap.mmd` is a separate generated documentation mindmap, not a parallel project map.
 - Tool output should be deterministic enough for CI and agent verification.
-- **bapXphp** is the agent's first command. Run `bash tools/bapXphp help` or `bash tools/bapXphp understand` on session start.
-- bapXphp db commands are MySQL-only (no JSON fallback). Exit with error if MySQL unreachable.
+- **bapXphp** is the agent's first command. Use it for ALL project operations. Never edit content files directly.
+- bapXphp db commands connect to MySQL directly (no SSH tunnel). Exit with error if MySQL unreachable.
+- `bapXphp db sync` handles single-object JSON files (e.g. `secrets.json`, `settings.json`) by wrapping them in a single-record array.
 - `bapXphp docsmap` runs `tools/generate-docs-map.php` to regenerate `docs/KnowledgeMap.mmd`.
 - `bapXphp bloggen` runs `tools/refresh-blog-cache.php` to refresh GitHub-sourced blog cache.
+- Use `bapXphp read blog <slug>` and `bapXphp write blog [slug]` for all blog post operations.
 
 ## bapXphp — Agent Quick Start
 
 ```bash
-bash tools/bapXphp understand     # full project overview
-bash tools/bapXphp context        # quick session orientation
-bash tools/bapXphp db query products --limit 5   # query data (MySQL only)
-bash tools/bapXphp db find orders ord_123        # find record (MySQL only)
-bash tools/bapXphp docsmap        # regenerate KnowledgeMap.mmd
-bash tools/bapXphp bloggen        # refresh blog cache from GitHub
-bash tools/bapXphp check          # full validation chain
+bapXphp understand     # full project overview
+bapXphp context        # quick session orientation
+bapXphp db query products --limit 5   # query data (MySQL only)
+bapXphp db find orders ord_123        # find record (MySQL only)
+bapXphp docsmap        # regenerate KnowledgeMap.mmd
+bapXphp bloggen        # refresh blog cache from GitHub
+bapXphp check          # full validation chain
 ```
-
-## SSH/MySQL Production Credentials
-
-Connect to production for deploy, SQL queries, or SSH commands:
-
-- **SSH**: `ssh -p 65002 u907253411@82.25.106.244` password `SPsprituals2026#`
-- **MySQL tunnel**: `bapXphp db tunnel` → then query at `127.0.0.1:3307`
-- **MySQL direct**: `srv1877.hstgr.io` (firewalled — use tunnel)
-- **DB name**: `u907253411_db_name_sps`
-- **DB user**: `u907253411_db_user_sps` / pass `SPsprituals2026#`
-- **Git remote**: `origin` → `main` branch; already authenticated on production server
-- **Production path**: `~/domains/sripanchamispiritual.com`
-- **Deploy**: `bapXphp deploy` (git push + remote pull)
 
 ## Work Guidance
 
-- Keep tools runnable from the repo root with `php tools/name.php` or `bash tools/bapXphp`.
-- Do not bake customer-specific remote production URLs into local tools (exception: bapXphp remote config).
+- Keep tools runnable from the repo root with `bapXphp <command>`.
+- Do not bake customer-specific remote production URLs into local tools.
 - Smoke checks should verify real routes in this repo, not copied routes from another project.
-- `bapXphp` config is read from env vars (`BAPX_SSH_HOST`, `BAPX_MYSQL_DB`, etc.) — set them in `.env` or shell profile.
+- `bapXphp` config is read from env vars (`BAPX_MYSQL_HOST`, `BAPX_MYSQL_DB`, etc.) — set them in `.env` or shell profile. `.env` only holds APP_NAME, APP_URL, and optional BAPX_* env vars — never secrets.
 
 ## Verification
 
 - `php -l tools/changed-tool.php`
-- `bash tools/bapXphp help` (verify all commands listed)
-- `php tools/generate-project-map.php`
-- `php tools/validate-project-map.php`
-- `php tools/smoke-local.php`
+- `bapXphp help`
+- `bapXphp map:gen`
+- `bapXphp map:val`
+- `bapXphp smoke`
 
 ## Child DOX Index

@@ -13,7 +13,7 @@ final class ConsultationController extends BaseController {
     }
     public function room(string $id): void {
         $session=$this->consultations->findAccessible($id,$this->user);
-        if(!$session){ \App\Controllers\Router::renderNotFound(); return; }
+        if(!$session){ $this->renderNotFound(); }
         $this->render('account/consultation', ['session'=>$session, 'messages'=>$this->consultations->messages($id), 'currentUser'=>$this->user]);
     }
     public function messages(string $id): void { $this->session($id); $this->jsonResponse(['messages'=>$this->consultations->messages($id, (string)($_GET['after'] ?? ''))]); }

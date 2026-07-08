@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{EnvService,SecretService,JsonStoreService,PasswordResetService};
+use App\Services\{EnvService,SecretService,DatabaseService,PasswordResetService};
 use App\Integrations\GoogleOAuth\GoogleOAuthClient;
 final class AuthController extends BaseController {
  public function googleRedirect(): void {
@@ -8,15 +8,19 @@ final class AuthController extends BaseController {
   $state=bin2hex(random_bytes(16)); $_SESSION['oauth_state']=$state;
   $url=(new GoogleOAuthClient($s['google_client_id'],$s['google_client_secret']))->authorizationUrl($this->redirectUri(),$state); $this->redirect($url);
  }
- public function callback(): void {
-  if(($_GET['state']??'')!==($_SESSION['oauth_state']??'')) throw new \RuntimeException('Invalid OAuth state');
-  $s=(new SecretService())->all(); $token=$this->post('https://oauth2.googleapis.com/token',['code'=>$_GET['code']??'','client_id'=>$s['google_client_id'],'client_secret'=>$s['google_client_secret'],'redirect_uri'=>$this->redirectUri(),'grant_type'=>'authorization_code']);
-  $user=$this->get('https://openidconnect.googleapis.com/v1/userinfo',$token['access_token']);
-  $store=new JsonStoreService(); $users=$store->read('users'); $role = 'customer';
-  foreach ($users as $u) { if (($u['id'] ?? '') === ($user['sub'] ?? '') || (($u['email'] ?? '') !== '' && ($u['email'] ?? '') === ($user['email'] ?? ''))) { $role=$u['role'] ?? (!empty($u['is_admin']) ? 'admin' : 'customer'); break; } }
-  $_SESSION['user']=['sub'=>$user['sub'],'email'=>$user['email'],'name'=>$user['name']??'','picture'=>$user['picture']??'','role'=>$role];
-  $store->upsert('users',['id'=>$user['sub'],'email'=>$user['email'],'name'=>$user['name']??'','picture'=>$user['picture']??'','role'=>$role]); $this->redirect('/');
- }
+  public function callback(): void {
+   if(($_GET['state']??'')!==($_SESSION['oauth_state']??'')) throw new \RuntimeException('Invalid OAuth state');
+   $s=(new SecretService())->all(); $token=$this->post('https://oauth2.googleapis.com/token',['code'=>$_GET['code']??'','client_id'=>$s['google_client_id'],'client_secret'=>$s['google_client_secret'],'redirect_uri'=>$this->redirectUri(),'grant_type'=>'authorization_code']);
+   $user=$this->get('https://openidconnect.googleapis.com/v1/userinfo',$token['access_token']);
+    $store=new DatabaseService(); $users=$store->read('users'); $role = 'customer'; $astrologerSlug = ''; $mustChange = false;
+   foreach ($users as $u) { if (($u['id'] ?? '') === ($user['sub'] ?? '') || (($u['email'] ?? '') !== '' && ($u['email'] ?? '') === ($user['email'] ?? ''))) { $role=$u['role'] ?? (!empty($u['is_admin']) ? 'admin' : 'customer'); $astrologerSlug=$u['astrologer_slug'] ?? ''; $mustChange=(bool)($u['must_change_password'] ?? false); break; } }
+    session_regenerate_id(true);
+    $_SESSION['user']=['sub'=>$user['sub'],'email'=>$user['email'],'name'=>$user['name']??'','picture'=>$user['picture']??'','role'=>$role,'astrologer_slug'=>$astrologerSlug];
+    $store->upsert('users',['id'=>$user['sub'],'email'=>$user['email'],'name'=>$user['name']??'','picture'=>$user['picture']??'','role'=>$role]);
+   if ($role === 'admin') { $this->redirect('/admin'); return; }
+   if ($role === 'astrologer') { $this->redirect($mustChange ? '/astrologer/change-password' : '/astrologer'); return; }
+   $this->redirect('/');
+  }
  public function logout(): void {
   $_SESSION = [];
   if (ini_get('session.use_cookies')) {
@@ -33,7 +37,10 @@ final class AuthController extends BaseController {
  private function get(string $url,string $token): array { $ch=curl_init($url); curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_HTTPHEADER=>['Authorization: Bearer '.$token]]); $body=curl_exec($ch); curl_close($ch); return json_decode($body,true)?:[]; }
   public function register(): void {
      $this->seoKey = 'register';
-     $this->render('public/register');
+     $secrets = (new \App\Services\SecretService())->all();
+     $this->render('public/register', [
+         'googleAuthEnabled' => !empty($secrets['google_client_id']) && !empty($secrets['google_client_secret']),
+     ]);
   }
   public function registerPost(): void {
     $email = trim($_POST['email'] ?? '');
@@ -43,13 +50,14 @@ final class AuthController extends BaseController {
     if ($password === '' || $email === '' || $name === '') { $this->flash('All fields are required.','error'); $this->redirect('/register'); }
     if ($password !== $confirm) { $this->flash('Passwords do not match.','error'); $this->redirect('/register'); }
     if (empty($_POST['accept_terms'])) { $this->flash('You must accept the Terms of Service and Privacy Policy to register.','error'); $this->redirect('/register'); }
-    $store = new JsonStoreService();
+    $store = new DatabaseService();
     $users = $store->read('users');
     foreach ($users as $u) { if (($u['email'] ?? '') === $email) { $this->flash('Email already registered.','error'); $this->redirect('/login'); } }
     $id = bin2hex(random_bytes(8));
     $role = 'customer';
     $record = ['id'=>$id,'email'=>$email,'name'=>$name,'role'=>$role,'password_hash'=>password_hash($password,PASSWORD_DEFAULT),'accepted_terms_at'=>date('c')];
     $store->upsert('users',$record,'id');
+    session_regenerate_id(true);
     $_SESSION['user'] = ['sub'=>$id,'email'=>$email,'name'=>$name,'role'=>$role];
     $this->flash('Registered and signed in.','success');
     $this->redirect('/');
@@ -60,15 +68,17 @@ final class AuthController extends BaseController {
     if ($email === '' || $password === '') { $this->flash('Username or email and password required.','error'); $this->redirect('/login'); }
     $admin = (new EnvService())->adminCredentials();
     if ($admin['email'] !== '' && $admin['password'] !== '' && $email === $admin['email'] && hash_equals($admin['password'], $password)) {
+        session_regenerate_id(true);
         $_SESSION['user'] = ['sub'=>'env-admin','email'=>$admin['email'],'name'=>$admin['username'] ?: 'Admin','role'=>'admin'];
         $this->flash('Signed in.','success');
         $this->redirect('/admin');
     }
-    $store = new JsonStoreService();
+    $store = new DatabaseService();
     $users = $store->read('users');
     foreach ($users as $u) {
         $matches = strcasecmp((string)($u['email'] ?? ''), $email) === 0 || strcasecmp((string)($u['username'] ?? ''), $email) === 0;
         if ($matches && !empty($u['password_hash']) && password_verify($password,$u['password_hash'])) {
+            session_regenerate_id(true);
             $_SESSION['user'] = ['sub'=>$u['id'],'email'=>$u['email'] ?? '','username'=>$u['username'] ?? '','name'=>$u['name'] ?? '','role'=>$u['role'] ?? (!empty($u['is_admin']) ? 'admin' : 'customer'),'astrologer_slug'=>$u['astrologer_slug'] ?? '','must_change_password'=>(bool)($u['must_change_password'] ?? false)];
             $this->flash('Signed in.','success');
             $this->redirect(($u['role'] ?? '') === 'astrologer' ? (!empty($u['must_change_password']) ? '/astrologer/change-password' : '/astrologer') : '/');
@@ -86,12 +96,15 @@ final class AuthController extends BaseController {
     if ($email !== '') {
         $token = (new PasswordResetService())->createToken($email);
         if ($token) {
-            $_SESSION['last_reset_link'] = '/reset-password?token=' . urlencode($token);
+            $link = rtrim((string)(getenv('APP_URL') ?: ''), '/') . '/reset-password?token=' . urlencode($token);
+            $_SESSION['last_reset_link'] = $link;
+            $this->flash('Password reset link: ' . $link, 'info');
         }
+    } else {
+        $this->flash('If this email is registered, a reset link will be sent.','info');
     }
-    $this->flash('If this email is registered, a reset link will be sent.','info');
     $this->redirect('/forgot-password');
- }
+  }
   public function resetPassword(): void {
      $this->seoKey = 'reset-password';
      $this->render('public/reset-password', ['token' => $_GET['token'] ?? '']);

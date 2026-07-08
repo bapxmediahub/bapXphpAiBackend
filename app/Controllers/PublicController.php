@@ -182,6 +182,9 @@ final class PublicController extends BaseController {
     public function login(): void { 
         $this->detectApiRequest();
         $this->seoKey = 'login';
-        $this->render('public/login'); 
+        $secrets = (new \App\Services\SecretService())->all();
+        $this->render('public/login', [
+            'googleAuthEnabled' => !empty($secrets['google_client_id']) && !empty($secrets['google_client_secret']),
+        ]); 
     }
 }

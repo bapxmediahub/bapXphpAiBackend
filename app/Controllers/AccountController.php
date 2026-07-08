@@ -13,20 +13,26 @@ final class AccountController extends BaseController {
     public function legacyWallet(): void { $this->redirect('/account/dashboard/wallet'); }
 
     public function orders(): void {
+        $userEmail = $_SESSION['user']['email'] ?? '';
         $orders = (new OrderService())->all();
-        if (!empty($_SESSION['user']['email'])) {
-            $orders = array_values(array_filter($orders, fn($order) => ($order['customer_email'] ?? '') === $_SESSION['user']['email']));
+        if ($userEmail !== '') {
+            $orders = array_values(array_filter($orders, fn($order) => ($order['customer_email'] ?? '') === $userEmail));
+        } else {
+            $orders = [];
         }
         $reviewService = new ReviewService();
-        $walletBalance = (new WalletService())->balanceFor($_SESSION['user']['email'] ?? '');
+        $walletBalance = (new WalletService())->balanceFor($userEmail);
         $this->render('account/orders', compact('orders', 'reviewService', 'walletBalance'));
     }
     public function bookings(): void {
+        $userEmail = $_SESSION['user']['email'] ?? '';
         $bookings = (new AppointmentService())->all();
-        if (!empty($_SESSION['user']['email'])) {
-            $bookings = array_values(array_filter($bookings, fn($booking) => ($booking['customer_email'] ?? '') === $_SESSION['user']['email']));
+        if ($userEmail !== '') {
+            $bookings = array_values(array_filter($bookings, fn($booking) => ($booking['customer_email'] ?? '') === $userEmail));
+        } else {
+            $bookings = [];
         }
-        $walletBalance = (new WalletService())->balanceFor($_SESSION['user']['email'] ?? '');
+        $walletBalance = (new WalletService())->balanceFor($userEmail);
         $this->render('account/bookings', compact('bookings', 'walletBalance'));
     }
 

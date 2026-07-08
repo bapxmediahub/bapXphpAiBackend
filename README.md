@@ -1,181 +1,178 @@
 # PHP JSON Agent Ready Backend and Full-Stack Platform
 
-This repository is a **php json agent ready** full-stack monorepo for developers who want a deployable PHP backend, local JSON database, built-in AI-agent instructions, and a modifiable PHP template frontend for small PHP hosting and shared-hosting projects. bapXphpAiBackend is the current customer-facing use case, but the JSON-backed backend is intentionally built as an agent-readable product base: auth, JSON database schema, media storage, admin control panel, environment editor, permissions, audit logs, support assistant context, ecommerce, wallet, reviews, and deployment docs live in one repo.
+This repository is a **PHP/MySQL agent-ready** full-stack product base for small PHP hosting (Hostinger, cPanel, etc. with `public_html`). It ships with auth, admin CRUD, ecommerce, astrologer marketplace, wallet, reviews, media library, blog, support assistant, mail queue, and built-in AI-agent instructions.
 
-It uses PHP templates, PHP controllers, and local JSON storage under `storage/data/`. There is no SPA, no build step, no SQL/Postgres/MySQL requirement, and no separate MCP or external skill repository required.
+**All project operations go through the `bapXphp` CLI.** Never edit content files directly.
 
-The project is designed to run from `public_html` on hosts such as Hostinger and to be maintained through Git-based agentic development with repo-local DOX instructions.
+Add the project root to your PATH so `bapXphp` works from anywhere:
 
-## Project Overview: PHP JSON Agent Ready for Shared Hosting
+```bash
+echo 'export PATH="$PATH:'$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)'"' >> ~/.zshrc
+source ~/.zshrc
+```
 
-The goal is to provide a **php json agent ready** backend that can be reused for many small business, ecommerce, booking, CRM, spiritual-service, or support-assistant projects. The backend should need only light schema and content changes while the frontend can be redesigned per customer.
+---
 
-Developers searching for a PHP JSON backend, json-database starter, ai-agent app base, agentic-workflow repo, or shared-hosting full-stack template can use this as a working product instead of rebuilding auth, admin CRUD, media upload, JSON persistence, environment settings, project maps, and agent instructions from scratch.
+## Quick Start
 
-## Agentic Backend Concept
-
-The backend primitives are repo-native so agents do not rediscover the system every turn:
-
-- `storage/data/*.json` is the database.
-- `storage/schema/collections.json` is the database schema and admin/agent contract.
-- `app/Services/*Service.php` are backend primitives.
-- `ProjectMapService` generates route -> controller -> service docs.
-- `AgentContextService` builds safe customer-specific JSON for the support/model assistant.
-- `MediaService` manages reusable uploaded files for products, temples, astrologers, and shared assets.
-- `/admin/environment` edits bootstrap `.env` (APP_URL, APP_NAME) and checks/fixes writable storage paths. All secrets (Razorpay, SMTP, Google OAuth, admin credentials) are set through **Admin → Integrations** or **Admin → Settings**, not `.env`.
-- `AGENTS.md` and `.agents/skills/` give built-in instructions for compatible agents.
-
-## Key Features for PHP JSON Agent Ready Apps
-
-- **php json agent ready backend**: PHP services and controllers use a local JSON database that coding agents can inspect and modify without SQL migrations.
-- **json-database schema contract**: `storage/schema/collections.json` documents collection fields, admin fields, media fields, ownership, and safe AI-agent context.
-- **ai-agent support context**: `AgentContextService` exposes only the logged-in user's orders, sessions, wallet transactions, and safe public site links.
-- **agentic-workflow skills included**: repo-native DOX instructions and `.agents/skills/` files are included for coding agents.
-- **shared-hosting deployment**: designed for Hostinger-style PHP hosting with `public_html`, writable `storage/`, Git auto-deploy, and no Node build step.
-- **Ready backend, modifiable frontend**: auth, JSON DB, admin, media, support bot, project map, and settings stay stable while `views/` and `assets/css/` can be changed per project.
-- **Small hosting friendly**: no Postgres, MySQL, Redis, queue worker, frontend compiler, or separate MCP server is required.
-
-## Documentation
-
-Start here when using or building on this repo:
-
-- [Documentation index](docs/README.md): all guides in one place.
-- [Deployment guide](docs/deployment-hostinger.md): Hostinger hPanel, Advanced -> Git, Auto Deployment, branch setup, cron, and Vercel note.
-- [Architecture](docs/architecture.md): PHP template stack, route flow, JSON persistence, and file structure.
-- [Systematic project map](docs/systematic-map.mmd): generated route, controller, service, view, schema, storage, tool, integration, and gap map.
-- [JSON storage](docs/json-storage.md): local JSON collections and persistence model.
-- [Agentic monorepo](docs/agentic-monorepo.md): how this repo works as a reusable backend/frontend base for agents.
-- [Schema](docs/schema.md): JSON database schema and agent context contract.
-- [Admin guide](docs/admin-guide.md): owner/admin surfaces.
-- [Product list](docs/product-list.md): current catalog notes.
-
-Page notes:
-
-- [Home](docs/pages/home.md)
-- [Shop](docs/pages/shop.md)
-- [Checkout](docs/pages/checkout.md)
-- [Consult](docs/pages/consult.md)
-- [Temples](docs/pages/temples.md)
-- [About](docs/pages/about.md)
-- [Admin dashboard](docs/pages/admin-dashboard.md)
-- [Integrations](docs/pages/integrations.md)
-- [Project map page](docs/pages/project-map.md)
-
-Module notes:
-
-- [Admin](docs/modules/admin.md)
-- [Auth](docs/modules/auth.md)
-- [Booking](docs/modules/booking.md)
-- [Catalog](docs/modules/catalog.md)
-- [Google OAuth](docs/modules/google-oauth.md)
-- [Orders](docs/modules/orders.md)
-- [Razorpay](docs/modules/razorpay.md)
-- [Temples](docs/modules/temples.md)
-
-## What This App Includes
-
-- Product catalog, category browsing, product detail pages, cart, checkout, and Razorpay verification flow.
-- Remote astrologer marketplace with 21 client-provided profiles, admin-created provider accounts, private message rooms, browser audio calls, waitlist/offline states, credit pricing, and session history.
-- Astrologer workspace at `/astrologer`; customer/provider communication uses authenticated PHP JSON APIs with short polling and WebRTC signaling, without a CLI or WebSocket service.
-- Login-gated wallet recharge flow with Razorpay top-up order creation, service charge/tax breakdown, and credit balance shown in the user panel.
-- Floating support assistant that can answer product, order, wallet, and astrologer session questions and store support tickets for admin review.
-- Five-star review collection for ended astrology sessions and post-shipment product reviews.
-- Temple listing and detail pages.
-- Contact and consultation request form.
-- Customer account order/session views.
-- Owner admin for products, categories, coupons, astrologers, remote session requests, temples, orders, contact submissions, settings, integrations, backups, audit logs, and project map.
-- Media library for product, temple, astrologer, and shared uploads with explicit picker selection from all files sorted by upload time.
-- Environment editor and storage permission checker/fixer in admin.
-- Mail queue for payment confirmation, shipment notification, and delayed product review request emails.
-- Admin credentials configurable through Admin → Settings. All API secrets through Admin → Integrations. `.env` only holds APP_NAME and APP_URL.
-
-## Stack
-
-- Frontend: PHP-rendered templates in `views/`.
-- Styling: `Design.md` is the canonical public UI contract; `assets/css/band.css` plus matching critical inline layout CSS implement it.
-- Backend: PHP controllers, services, and router under `app/`; built to be php json agent ready.
-- Data: JSON files in `storage/data/`, described by `storage/schema/collections.json`; this is the local json-database.
-- Integrations: Razorpay and Google OAuth scaffolding in `integrations/`.
-- Deployment target: PHP hosting with `public_html`.
-
-There is intentionally no SPA fallback. Unknown routes return the PHP 404 page.
+```bash
+bapXphp help           # Full command reference
+bapXphp understand     # Project overview
+bapXphp serve          # Start dev server at 127.0.0.1:6020
+```
 
 ## Environment Setup
-
-The root `.env` file holds only `APP_NAME` and `APP_URL` — used by Git auto-deploy on shared hosting to set the site name and domain. Start from `.env.example`:
 
 ```dotenv
 APP_NAME="Your App Name"
 APP_URL=https://your-domain.example
 ```
 
-All secrets (Razorpay, SMTP, Google OAuth, Meta Pixel, support bot, **admin credentials**) go through **Admin → Integrations** or **Admin → Settings**, stored in `storage/data/settings.secrets.json` and `storage/data/settings.json` — never in `.env`. Runtime-only files such as `storage/runtime-key.php`, lock files, logs, and backups stay gitignored.
+**`.env` holds only `APP_NAME` and `APP_URL` — nothing else.** Never put secrets, API keys, credentials, or tokens in `.env`. All secrets are stored in the remote MySQL database and managed through **Admin → Integrations** or **Admin → Settings**.
 
-## Local Development
+---
 
-Run the app:
+## All bapXphp Commands
 
-```bash
-php -S 127.0.0.1:6020 index.php
-```
+### Orientation
+| Command | Description |
+|---------|-------------|
+| `bapXphp help` | Full command reference |
+| `bapXphp understand` | Project overview: schema, commits, issues, PRs, skills, AGENTS.md |
+| `bapXphp context` | Quick session: branch, pending changes, last test result |
 
-Run validation:
+### Development
+| Command | Description |
+|---------|-------------|
+| `bapXphp test` | Run PHP test suite |
+| `bapXphp lint [path]` | PHP syntax check (`php -l`) |
+| `bapXphp check` | Full validation: lint → test → map:gen → map:val → smoke |
+| `bapXphp serve` | Start dev server on `127.0.0.1:6020` |
+| `bapXphp smoke` | Run local smoke tests against dev server |
 
-```bash
-php tests/run.php
-php tools/generate-project-map.php
-php tools/validate-project-map.php
-php tools/smoke-local.php
-```
+### Schema (collections.php)
+| Command | Description |
+|---------|-------------|
+| `bapXphp schema list` | List all collections with field counts |
+| `bapXphp schema show <col>` | Show full schema: fields, types, constraints |
+| `bapXphp add <field>:<type> [opts] under <collection>` | Add a field to a collection |
+| `bapXphp remove <field> under <collection>` | Remove a field from a collection |
 
-## Deployment
+### Read / Write Content (CRUD — use these, never edit files directly)
 
-This repository is intended for Hostinger-style PHP hosting:
+| Command | Description |
+|---------|-------------|
+| `bapXphp read blog` | List all blog posts |
+| `bapXphp read blog <slug>` | Read a blog post with YAML frontmatter |
+| `bapXphp write blog` | Create a new blog post (interactive — auto-slug, auto-timestamp, auto-URL) |
+| `bapXphp write blog <slug>` | Edit an existing blog post |
+| `bapXphp read product` | List all products |
+| `bapXphp read product <slug>` | Read a product with all fields |
+| `bapXphp write product` | Create a new product (interactive) |
+| `bapXphp write product <slug>` | Edit an existing product |
 
-1. Connect the GitHub repo in Hostinger hPanel under **Advanced** -> **Git**.
-2. Select the production branch, normally `main`.
-3. Set the install path to `/public_html` when required.
-4. Enable **Auto Deployment** for that branch.
-5. Keep `storage/` and `storage/data/` writable by PHP.
-6. Configure Razorpay, Google OAuth, and SMTP from Admin Integrations.
-7. Add cron for queued mail:
+### Project Map
+| Command | Description |
+|---------|-------------|
+| `bapXphp map` | View the generated project map |
+| `bapXphp map:gen` | Regenerate `docs/systematic-map.mmd` from source |
+| `bapXphp map:val` | Validate the project map is up to date |
 
-```bash
-php /home/ACCOUNT/public_html/tools/process-mail-queue.php
-```
+### Skills & Routes
+| Command | Description |
+|---------|-------------|
+| `bapXphp skills` | List available agent skills with descriptions |
+| `bapXphp route:list` | List all registered routes with controllers |
 
-Full details are in [docs/deployment-hostinger.md](docs/deployment-hostinger.md).
+### Tool Management
+| Command | Description |
+|---------|-------------|
+| `bapXphp tool list` | List all PHP tools in `tools/` |
+| `bapXphp tool add <file>` | Create a new PHP tool with nano editor |
 
-## Deploy This PHP JSON AI Agent on Shared Hosting
+### Git
+| Command | Description |
+|---------|-------------|
+| `bapXphp status` | Git status + recent commits |
+| `bapXphp logs` | Tail recent error logs from `storage/logs/` |
 
-This repo is meant for developers who want a PHP JSON AI agent backend that works on ordinary shared-hosting plans:
+### GitHub
+| Command | Description |
+|---------|-------------|
+| `bapXphp issue` | Create a GitHub issue (interactive via `gh`) |
+| `bapXphp pr` | Create a GitHub PR (interactive) |
+| `bapXphp merge` | Merge a GitHub PR (interactive) |
 
-1. Fork or clone the repository.
-2. Edit `.env` with the domain and app name.
-3. Configure admin credentials in **Admin → Settings** and API secrets (Razorpay, SMTP, Google OAuth) in **Admin → Integrations** after first login.
-4. Update `storage/schema/collections.json` only when the JSON database shape changes.
-5. Change `views/`, `assets/css/`, and `storage/data/*.json` for the customer/project use case.
-6. Push to the branch connected to Hostinger Git auto-deploy or another PHP host.
-7. Use the built-in skills so future agents follow the backend map instead of rediscovering the project.
+### Mail & Images
+| Command | Description |
+|---------|-------------|
+| `bapXphp mail:process` | Process pending mail queue |
+| `bapXphp images:optimize` | Convert/resize images to WebP |
 
-## Use This Project With Built-In Agent Skills
+### Database (MySQL direct — no SSH needed)
+| Command | Description |
+|---------|-------------|
+| `bapXphp db tables` | List all MySQL tables |
+| `bapXphp db describe <table>` | Describe MySQL table columns |
+| `bapXphp db list` | List all schema collections |
+| `bapXphp db show <collection>` | Show collection fields and types |
+| `bapXphp db query <collection> [--where 'f=v'] [--limit N] [--id id] [--owner email]` | Query records from MySQL |
+| `bapXphp db find <collection> <id>` | Find a record by ID |
+| `bapXphp db raw <sql>` | Execute raw SQL |
+| `bapXphp db init` | Create MySQL tables from `collections.php` schema |
+| `bapXphp db sync` | Create MySQL tables from schema (seed data lives in MySQL) |
 
-The built-in skill folder is part of the product, not an external plugin:
+### Blog & Docs
+| Command | Description |
+|---------|-------------|
+| `bapXphp docsmap` | Regenerate `docs/KnowledgeMap.mmd` from docs, AGENTS.md, and skills |
+| `bapXphp bloggen` | Regenerate blog cache from GitHub markdown sources |
 
-- `.agents/skills/<skill-name>/SKILL.md` for task-specific agent workflows.
-- `AGENTS.md` plus child `AGENTS.md` files for always-on DOX repository instructions.
+### Validation (shortcut)
+| Command | Description |
+|---------|-------------|
+| `bapXphp check` | Full chain: lint → test → map:gen → map:val → smoke |
 
-The authoritative contributor workflow is [AGENTS.md](AGENTS.md). It defines issue tracking, DOX precedence, source-grounded project-map traversal, existing-file discovery, schema/UI gates, and validation. README intentionally does not duplicate those operational rules.
+---
 
-## Search Indexing Notes
+## What This App Includes
 
-This README is optimized for the developer search phrase **php json agent ready** and supporting keywords such as php, json-database, ai-agent, agentic-workflow, and shared-hosting. GitHub search indexing is not instant; after a public repository update, allow 24-72 hours before checking ranking for the exact phrase `php json agent ready`.
+- **Product catalog** with 7 products across 3 categories (sacred-emblems, jewelry, pooja-idols)
+- **Astrologer marketplace** with 21 client-provided profiles, admin-created accounts, private messaging, browser audio calls, credit pricing, and session history
+- **Wallet system** with Razorpay recharge, service charge/tax breakdown, credit balance
+- **Support assistant** AI agent that answers product, order, wallet, and session questions
+- **Reviews** for products and astrology sessions
+- **Temple listing** with addresses, timings, maps
+- **Contact/consultation request** forms
+- **Customer account** with order history, session view, wallet
+- **Owner admin** for products, categories, coupons, astrologers, orders, temples, settings, integrations, backups, audit logs, blog, media library, email inbox/outbox, support tickets, contact submissions, project map
+- **Blog** with YAML frontmatter posts in `content/blog/posts/`
+- **Mail queue** for payment confirmations, shipment notifications, review requests
+- **Media library** with upload, context tagging, metadata in `content/blog/posts/` and `storage/media.yaml`
 
-## Current Known Gaps
+## Architecture
 
-- Razorpay live payment requires production keys and live payment verification.
-- Google OAuth requires configured credentials and callback URL.
-- SMTP requires configured secrets and cron for real email delivery.
-- Remote call/message credit charging still needs production-grade wallet/session timers.
-- Browser calls require HTTPS, microphone permission, and production ICE/TURN configuration for networks that cannot establish a direct WebRTC connection.
-- Coupon workflow should remain disabled until totals and discount rules are implemented and tested.
+- **Frontend**: PHP templates in `views/` themed to `Design.md` tokens
+- **Backend**: PHP controllers and services in `app/` using `DatabaseService` (MySQL PDO wrapper)
+- **Database**: MySQL is the primary runtime store. `config/database.php` holds connection config
+- **Schema**: `storage/schema/collections.php` is the canonical schema contract
+- **Blog**: YAML frontmatter `.md` files in `content/blog/posts/`
+- **Media**: metadata in `storage/media.yaml` (not MySQL)
+- **Secrets**: stored in MySQL `secrets` table, edited through **Admin → Integrations**
+- **No SPA**: unknown routes return the PHP 404 page
+
+## Documentation
+
+- [AGENTS.md](AGENTS.md) — binding DOX workflow for agentic development
+- [docs/README.md](docs/README.md) — full documentation index
+- [docs/deployment-hostinger.md](docs/deployment-hostinger.md) — Hostinger Git auto-deploy
+- [docs/systematic-map.mmd](docs/systematic-map.mmd) — generated route/controller/service map
+
+## Stack
+
+- PHP 8.x with PDO MySQL
+- MySQL (runtime data store)
+- PHP-rendered templates
+- Razorpay payment integration
+- Google OAuth scaffolding
+- No build step, no Node, no Postgres, no Redis

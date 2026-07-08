@@ -22,13 +22,7 @@ final class GitHubDocService
 
     public function getBaseUrl(): string
     {
-        $settingsFile = dirname(__DIR__, 2) . '/storage/data/settings.json';
-        if (is_file($settingsFile)) {
-            $settings = json_decode(file_get_contents($settingsFile), true);
-            if (!empty($settings[0]['blog_source_url'])) {
-                return rtrim($settings[0]['blog_source_url'], '/');
-            }
-        }
+        $settingsDir = dirname(__DIR__, 2) . '/config/database.php';
         return self::DEFAULT_BASE_URL;
     }
 

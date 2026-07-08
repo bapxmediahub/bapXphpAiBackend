@@ -23,7 +23,7 @@ set -euo pipefail
 #   bapXphp map:gen                 — regenerate project map from source
 #   bapXphp map:val                 — validate map is up-to-date
 #
-# ── Schema (collections.json) ───────────────────────────────────
+# ── Schema (collections.php) ───────────────────────────────────
 #   bapXphp schema list             — list all collections with field counts
 #   bapXphp schema show <col>       — show full collection schema (fields, types, constraints)
 #   bapXphp add <field>:<type> [opts] under <collection>
@@ -53,49 +53,42 @@ set -euo pipefail
 #   bapXphp mail:process            — process pending mail queue
 #   bapXphp images:optimize         — convert/resize images to WebP
 #
-# ── Database (MySQL only) ────────────────────────────────────────
-#   bapXphp db tables               — list all MySQL tables (from live DB via SSH tunnel)
+# ── Database (MySQL direct) ──────────────────────────────────────
+#   bapXphp db tables               — list all MySQL tables
 #   bapXphp db describe <table>     — describe MySQL table columns
-#   bapXphp db list                 — list all schema collections (from collections.json)
+#   bapXphp db list                 — list all schema collections (from collections.php)
 #   bapXphp db show <collection>    — show schema collection fields & types
 #   bapXphp db query <collection> [--where "field=value"] [--limit N] [--id id] [--owner email]
-#                                   — query records from MySQL (no JSON fallback)
+#                                   — query records from MySQL
 #   bapXphp db find <collection> <id>
 #                                   — shorthand: find record by ID
-#   bapXphp db raw <sql>            — execute raw SQL on remote MySQL
-#   bapXphp db init                 — create MySQL tables from collections.json schema
-#   bapXphp db sync                 — push JSON data files → MySQL tables
-#   bapXphp db tunnel               — open SSH tunnel to remote MySQL
+#   bapXphp db raw <sql>            — execute raw SQL on MySQL
+#   bapXphp db init                 — create MySQL tables from collections.php schema
+#   bapXphp db sync                 — pull MySQL data → seed YAML files (currently: db init only)
 #
 # ── Blog & Docs ──────────────────────────────────────────────────
 #   bapXphp docsmap                 — regenerate KnowledgeMap.mmd from docs/ + AGENTS.md + skills
 #   bapXphp bloggen                 — regenerate blog cache from GitHub markdown sources
 #
-# ── Deploy & SSH ────────────────────────────────────────────────
-#   bapXphp deploy                  — git push + remote pull (deploy to production)
-#   bapXphp ssh                     — SSH into production server
+# ── Read / Write Content ────────────────────────────────────────
+#   bapXphp read blog [slug]        — read blog post (list all if no slug)
+#   bapXphp write blog [slug]       — create/edit blog post with auto-slug/date/URL
+#   bapXphp read product [slug]     — read product (list all if no slug)
+#   bapXphp write product [slug]    — create/edit product interactively
 #
 # ── Backward compatibility aliases ──────────────────────────────
-#   bapXphp mysql:tunnel  → bapXphp db tunnel
 #   bapXphp mysql:query   → bapXphp db raw
 #   bapXphp mysql:import  → bapXphp db sync
 # ═══════════════════════════════════════════════════════════════
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# ── Remote config (override via env vars) ─────────────────────
-SSH_HOST="${BAPX_SSH_HOST:-82.25.106.244}"
-SSH_PORT="${BAPX_SSH_PORT:-65002}"
-SSH_USER="${BAPX_SSH_USER:-u907253411}"
-SSH_PASS="${BAPX_SSH_PASS:-SPsprituals2026#}"
-MYSQL_TUNNEL_PORT="${BAPX_MYSQL_TUNNEL_PORT:-3307}"
 MYSQL_HOST="${BAPX_MYSQL_HOST:-srv1877.hstgr.io}"
 MYSQL_PORT="${BAPX_MYSQL_PORT:-3306}"
 MYSQL_DB="${BAPX_MYSQL_DB:-u907253411_db_name_sps}"
 MYSQL_USER="${BAPX_MYSQL_USER:-u907253411_db_user_sps}"
 MYSQL_PASS="${BAPX_MYSQL_PASS:-SPsprituals2026#}"
-
-SCHEMA_FILE="$ROOT/storage/schema/collections.json"
+SCHEMA_FILE="$ROOT/storage/schema/collections.php"
 
 # ── Colors ─────────────────────────────────────────────────────
 R='\033[0;31m'; G='\033[0;32m'; Y='\033[1;33m'; C='\033[0;36m'; B='\033[1m'; N='\033[0m'
@@ -115,27 +108,15 @@ require_gh()  { command -v gh >/dev/null 2>&1 || die "GitHub CLI (gh) is not ins
 
 schema_path() { echo "$SCHEMA_FILE"; }
 
-# Test if remote SSH is reachable
-ssh_reachable() {
-  nc -z -w5 "$SSH_HOST" "$SSH_PORT" 2>/dev/null
-}
-
-# Run a command on remote via SSH (expects sshpass or manual ssh)
-remote_sh() {
-  if command -v sshpass >/dev/null 2>&1; then
-    sshpass -p "$SSH_PASS" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -p "$SSH_PORT" "${SSH_USER}@${SSH_HOST}" "$*" 2>/dev/null
-  else
-    ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -p "$SSH_PORT" "${SSH_USER}@${SSH_HOST}" "$*" 2>/dev/null
-  fi
-}
-
 # ── Commands ───────────────────────────────────────────────────
 
 cmd_help() {
   awk '
-    /^# ═+$/ { c++; if (c == 2) { capturing = 1; next } if (c == 3) { exit } }
+    /^# [═╬]/ { c++; if (c == 2) { capturing = 1; next } if (c == 3) { exit } }
     capturing { sub(/^# ?/, ""); print }
   ' "${BASH_SOURCE[0]}"
+  echo ""
+  echo "Run 'bapXphp <command>' for command-specific help."
 }
 
 # ── understand ─────────────────────────────────────────────────
@@ -198,11 +179,11 @@ cmd_understand() {
   if [ -f "$SCHEMA_FILE" ]; then
     printf "${B}── Schema Collections ──────────────────────${N}\n"
     php -r "
-      \$s = json_decode(file_get_contents('$SCHEMA_FILE'), true);
+      \$s = require '$SCHEMA_FILE';
       foreach (\$s['collections'] ?? [] as \$name => \$col) {
         echo \"  ${B}\${name}${N}\n\";
-        echo \"    file:    \" . (\$col['file'] ?? '-') . \"\n\";
-    echo \"    pkey:    \" . (\$col['primary_key'] ?? '-') . \"\n\";
+        echo \"    table:   \" . preg_replace('/[^a-z_]/', '', \$name) . \"\n\";
+    echo \"    pkey:    \" . (\$col['primary_key'] ?? 'id') . \"\n\";
     echo \"    managed: \" . ((\$col['admin_managed'] ?? false) ? 'admin' : 'runtime') . \"\n\";
         if (\$col['admin_fields'] ?? []) echo \"    a_fields: \" . implode(', ', \$col['admin_fields']) . \"\n\";
         if (\$col['media_fields'] ?? []) echo \"    m_fields: \" . implode(', ', \$col['media_fields']) . \"\n\";
@@ -249,7 +230,6 @@ cmd_understand() {
   printf "  ${C}bapXphp serve${N}       php -S 127.0.0.1:6020 index.php\n"
   printf "  ${C}bapXphp check${N}       lint → test → map:gen → map:val → smoke\n"
   printf "  ${C}bapXphp db query <col>${N}  --where 'field=val' --limit 10\n"
-  printf "  ${C}bapXphp db tunnel${N}   SSH tunnel → remote MySQL\n"
   printf "  ${C}bapXphp db init${N}     create MySQL tables from schema\n"
   printf "  ${C}bapXphp db sync${N}     push JSON → MySQL\n"
   printf "  ${C}bapXphp understand${N}  Full project overview\n"
@@ -286,12 +266,11 @@ cmd_schema() {
 cmd_schema_list() {
   [ -f "$SCHEMA_FILE" ] || die "Schema file not found: $SCHEMA_FILE"
   php -r "
-    \$s = json_decode(file_get_contents('$SCHEMA_FILE'), true);
+    \$s = require '$SCHEMA_FILE';
     echo \"Collections (\" . count(\$s['collections'] ?? []) . \"):\n\";
     foreach (\$s['collections'] ?? [] as \$name => \$col) {
       \$c = count(\$col['fields'] ?? []);
-      \$f = \$col['file'] ?? '-';
-      echo \"  \$name  (\$c fields, \$f)\n\";
+      echo \"  \$name  (\$c fields)\n\";
     }
   "
 }
@@ -301,12 +280,12 @@ cmd_schema_show() {
   [ -z "$collection" ] && die "Usage: bapXphp schema show <collection>"
   [ -f "$SCHEMA_FILE" ] || die "Schema file not found: $SCHEMA_FILE"
   php -r "
-    \$s = json_decode(file_get_contents('$SCHEMA_FILE'), true);
+    \$s = require '$SCHEMA_FILE';
     \$col = \$s['collections']['$collection'] ?? null;
     if (!\$col) { fprintf(STDERR, \"Collection '$collection' not found\n\"); exit(1); }
     echo \"Collection: $collection\n\";
-    echo \"File:       \" . (\$col['file'] ?? '-') . \"\n\";
-    echo \"PKey:       \" . (\$col['primary_key'] ?? '-') . \"\n\";
+    echo \"Table:      \" . preg_replace('/[^a-z_]/', '', \$col['name'] ?? '$collection') . \"\n\";
+    echo \"PKey:       \" . (\$col['primary_key'] ?? 'id') . \"\n\";
     echo \"Managed:    \" . (\$col['admin_managed'] ? 'admin' : 'runtime') . \"\n\";
     if (\$col['admin_fields'] ?? []) echo \"Admin flds: \" . implode(', ', \$col['admin_fields']) . \"\n\";
     if (\$col['media_fields'] ?? []) echo \"Media flds: \" . implode(', ', \$col['media_fields']) . \"\n\";
@@ -360,7 +339,7 @@ cmd_add() {
 
   php -r "
     \$path = '$SCHEMA_FILE';
-    \$s = json_decode(file_get_contents(\$path), true);
+    \$s = require \$path;
     if (!isset(\$s['collections']['$collection'])) {
       fprintf(STDERR, \"Collection '$collection' not found\n\"); exit(1);
     }
@@ -372,7 +351,7 @@ cmd_add() {
     if ('$enum_values' !== '') \$def['values'] = explode(',', '$enum_values');
     if ('$items_type' !== '') \$def['items'] = '$items_type';
     \$s['collections']['$collection']['fields']['$field_name'] = \$def;
-    file_put_contents(\$path, json_encode(\$s, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . \"\n\");
+    file_put_contents(\$path, '<?php return ' . var_export(\$s, true) . ';' . PHP_EOL);
     echo \"Added $field_name: $field_type to $collection\n\";
   "
 }
@@ -397,7 +376,7 @@ cmd_remove() {
 
   php -r "
     \$path = '$SCHEMA_FILE';
-    \$s = json_decode(file_get_contents(\$path), true);
+    \$s = require \$path;
     if (!isset(\$s['collections']['$collection'])) {
       fprintf(STDERR, \"Collection '$collection' not found\n\"); exit(1);
     }
@@ -416,7 +395,7 @@ cmd_remove() {
         if (empty(\$s['collections']['$collection'][\$key])) unset(\$s['collections']['$collection'][\$key]);
       }
     }
-    file_put_contents(\$path, json_encode(\$s, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . \"\n\");
+    file_put_contents(\$path, '<?php return ' . var_export(\$s, true) . ';' . PHP_EOL);
     echo \"Removed $field_name from $collection\n\";
   "
 }
@@ -663,17 +642,13 @@ cmd_images_optimize() {
 }
 
 # ═══════════════════════════════════════════════════════════════
-# Database Commands (db) — MySQL via SSH tunnel + JSON fallback
+# Database Commands (db) — MySQL direct connection
+# Subcommands: tables, describe, list, show, query, find, raw, init, sync
 # ═══════════════════════════════════════════════════════════════
 # The `db` command suite lets the agent query and inspect project data
-# the same way it accesses JSON collections. When the SSH tunnel to
-# the production MySQL is active, all queries hit the live database.
-# When the tunnel is inactive, `db query` falls back to reading from
-# the local JSON files in storage/data/.
+# from MySQL. All queries hit the live database.
 #
-# Connection priority: SSH tunnel (127.0.0.1:3307) → direct remote → JSON files
-#
-# See the collections.json schema for the authoritative field definitions.
+# See the collections.php schema for the authoritative field definitions.
 # JSON collection name == MySQL table name (underscored).
 #
 # MySQL schema per table:
@@ -687,7 +662,7 @@ cmd_images_optimize() {
 
 # ── db <command> ───────────────────────────────────────────────
 # Entry point: bapXphp db <subcommand> [args]
-# Subcommands: tables, describe, list, show, query, find, raw, init, sync, tunnel
+# Subcommands: tables, describe, list, show, query, find, raw, init, sync
 cmd_db() {
   local action="${1:-help}"
   shift 2>/dev/null || true
@@ -698,64 +673,42 @@ cmd_db() {
     query)            cmd_db_query "$@" ;;
     find)             cmd_db_find "$1" "$2" ;;
     raw|sql)          cmd_db_raw "$*" ;;
+    pma)              shift; cmd_db_pma "$*" ;;
     init)             cmd_db_init ;;
     sync|import)      cmd_db_sync ;;
-    tunnel)           cmd_db_tunnel ;;
     help|*)           cmd_db_help ;;
   esac
 }
 
 cmd_db_help() {
-  echo "Database commands — query MySQL (via SSH tunnel) or fall back to JSON files."
+  echo "Database commands — query MySQL directly (falls back to phpMyAdmin web proxy when rate-limited)."
   echo ""
-  echo "  bapXphp db tables              — list MySQL tables from remote DB"
+  echo "  bapXphp db tables              — list MySQL tables"
   echo "  bapXphp db describe <table>    — describe MySQL table columns"
   echo "  bapXphp db list                — list all collections from schema"
   echo "  bapXphp db show <collection>   — show schema collection fields"
   echo "  bapXphp db query <collection> [--where 'f=v'] [--limit N] [--id id]"
   echo "  bapXphp db find <collection> <id>  — find record by ID"
-  echo "  bapXphp db raw <sql>           — execute raw SQL on remote MySQL"
-  echo "  bapXphp db init                — create MySQL tables from collections.json"
+  echo "  bapXphp db raw <sql>           — execute raw SQL on MySQL (auto-fallback to web proxy)"
+  echo "  bapXphp db pma <sql>           — execute SQL via phpMyAdmin web proxy (always web)"
+  echo "  bapXphp db pma --table-stats   — show live row counts from remote DB"
+  echo "  bapXphp db pma --export        — export full DB as SQL"
+  echo "  bapXphp db init                — create MySQL tables from collections.php"
   echo "  bapXphp db sync                — push JSON data files → MySQL tables"
-  echo "  bapXphp db tunnel              — open SSH tunnel to remote MySQL"
   echo ""
-  echo "Connection: tunnel (127.0.0.1:3307) → direct (remote) → JSON fallback"
-  echo "Config env vars: BAPX_SSH_HOST, BAPX_MYSQL_HOST, BAPX_MYSQL_DB, BAPX_MYSQL_USER, BAPX_MYSQL_PASS"
-}
-
-# ── db tunnel — Open SSH tunnel to remote MySQL ─────────────────
-# Creates a local tunnel: 127.0.0.1:3307 → srv1877.hstgr.io:3306
-# Requires sshpass. After opening, MySQL is accessible at localhost:3307.
-cmd_db_tunnel() {
-  echo "Opening SSH tunnel to $SSH_HOST:$SSH_PORT"
-  echo "  → localhost:$MYSQL_TUNNEL_PORT → $MYSQL_HOST:$MYSQL_PORT"
-  echo ""
-
-  if command -v sshpass >/dev/null 2>&1; then
-    sshpass -p "$SSH_PASS" ssh -o StrictHostKeyChecking=no -f -L "${MYSQL_TUNNEL_PORT}:${MYSQL_HOST}:${MYSQL_PORT}" \
-      -p "$SSH_PORT" "${SSH_USER}@${SSH_HOST}" -N 2>&1 || {
-      warn "Tunnel failed. Server may be unreachable."
-      exit 1
-    }
-    ok "Tunnel open. MySQL ready:"
-    echo "  mysql -h 127.0.0.1 -P $MYSQL_TUNNEL_PORT -u $MYSQL_USER -p$MYSQL_PASS $MYSQL_DB"
-  else
-    warn "sshpass not found. Install: brew install hudochenkov/sshpass/sshpass"
-    echo ""
-    echo "Or run manually:"
-    echo "  ssh -p $SSH_PORT -L ${MYSQL_TUNNEL_PORT}:${MYSQL_HOST}:${MYSQL_PORT} ${SSH_USER}@${SSH_HOST}"
-    exit 1
-  fi
+  echo "Config env vars: BAPX_MYSQL_HOST, BAPX_MYSQL_DB, BAPX_MYSQL_USER, BAPX_MYSQL_PASS"
 }
 
 # ── db tables — List MySQL tables ───────────────────────────────
-# Connects to MySQL (tunnel or direct) and runs SHOW TABLES.
+# Connects to MySQL and runs SHOW TABLES.
 cmd_db_tables() {
   cmd_db_raw "SHOW TABLES" 2>/dev/null || {
-    warn "MySQL not reachable (start tunnel: bapXphp db tunnel)"
-    warn "Showing schema collections instead:"
-    cmd_schema_list
-    return 1
+    warn "MySQL not reachable, trying phpMyAdmin proxy..."
+    cmd_db_pma "SHOW TABLES" 2>/dev/null || {
+      warn "phpMyAdmin also unavailable. Showing schema collections:"
+      cmd_schema_list
+      return 1
+    }
   }
 }
 
@@ -771,14 +724,14 @@ cmd_db_describe() {
 }
 
 # ── db list — List collections from schema ──────────────────────
-# Reads collections.json and lists all known collections (independent of MySQL).
+# Reads collections.php and lists all known collections (independent of MySQL).
 cmd_db_list() {
   echo "Schema collections (from $SCHEMA_FILE):"
   cmd_schema_list
 }
 
 # ── db show <collection> — Show schema collection fields ────────
-# Reads collections.json and shows full field definitions for a collection.
+# Reads collections.php and shows full field definitions for a collection.
 cmd_db_show() {
   cmd_schema_show "$1"
 }
@@ -811,17 +764,12 @@ cmd_db_query() {
   collection="${args[0]:-}"
   [ -z "$collection" ] && die "Usage: bapXphp db query <collection> [--where 'f=v'] [--id id] [--owner email] [--limit N]"
 
-  # ── Try MySQL first (tunnel → direct) ──
+  # ── Try MySQL direct ──
   php -r "
     \$table = preg_replace('/[^a-z_]/', '', '$collection');
-    \$dsns = [
-      'mysql:host=127.0.0.1;port=$MYSQL_TUNNEL_PORT;dbname=$MYSQL_DB;charset=utf8mb4',
-      'mysql:host=$MYSQL_HOST;port=$MYSQL_PORT;dbname=$MYSQL_DB;charset=utf8mb4',
-    ];
+    \$dsn = 'mysql:host=$MYSQL_HOST;port=$MYSQL_PORT;dbname=$MYSQL_DB;charset=utf8mb4';
     \$pdo = null;
-    foreach (\$dsns as \$dsn) {
-      try { \$pdo = new PDO(\$dsn, '$MYSQL_USER', '$MYSQL_PASS', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_TIMEOUT => 3]); break; } catch (Exception \$e) {}
-    }
+    try { \$pdo = new PDO(\$dsn, '$MYSQL_USER', '$MYSQL_PASS', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_TIMEOUT => 5]); } catch (Exception \$e) {}
 
     if (!\$pdo) { exit(1); }
 
@@ -860,7 +808,7 @@ cmd_db_query() {
         echo json_encode(\$data, JSON_UNESCAPED_UNICODE) . \"\n\";
       } else {
         echo \"  ID:   \" . (\$data['id'] ?? \$row['id']) . \"\n\";
-        echo \"  File: \$table.json\" . \"\n\";
+        echo \"  Table: \$table\" . \"\n\";
         foreach (\$data as \$k => \$v) {
           if (\$k === 'id') continue;
           \$val = is_array(\$v) ? json_encode(\$v) : \$v;
@@ -872,7 +820,7 @@ cmd_db_query() {
   " && return
 
   # ── MySQL only — die if unreachable ──
-  die "MySQL unreachable. Start tunnel: bapXphp db tunnel"
+  die "MySQL unreachable. Check config/database.php."
 }
 
 # ── db find <collection> <id> ───────────────────────────────────
@@ -884,28 +832,29 @@ cmd_db_find() {
   cmd_db_query "$collection" --id "$id"
 }
 
-# ── db raw <sql> — Execute raw SQL on remote MySQL ──────────────
-# Connects to MySQL (tunnel first, then direct) and executes arbitrary SQL.
+# ── db raw <sql> — Execute raw SQL on MySQL ──────────────────────
+# Connects to MySQL and executes arbitrary SQL.
 # Results are output as JSON lines.
+# Falls back to phpMyAdmin web proxy when direct MySQL is rate-limited.
 cmd_db_raw() {
   local sql="$*"
   [ -z "$sql" ] && die "Usage: bapXphp db raw \"SELECT ...\""
 
-  php -r "
-    \$dsns = [
-      'tunnel' => 'mysql:host=127.0.0.1;port=$MYSQL_TUNNEL_PORT;dbname=$MYSQL_DB;charset=utf8mb4',
-      'direct' => 'mysql:host=$MYSQL_HOST;port=$MYSQL_PORT;dbname=$MYSQL_DB;charset=utf8mb4',
-    ];
+  BAPX_SQL="$sql" php -r "
+    \$dsn = 'mysql:host=$MYSQL_HOST;port=$MYSQL_PORT;dbname=$MYSQL_DB;charset=utf8mb4';
     \$pdo = null;
-    foreach (\$dsns as \$dsn) {
-      try {
-        \$pdo = new PDO(\$dsn, '$MYSQL_USER', '$MYSQL_PASS', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_TIMEOUT => 5]);
-        break;
-      } catch (Exception \$e) {}
+    try {
+      \$pdo = new PDO(\$dsn, '$MYSQL_USER', '$MYSQL_PASS', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_TIMEOUT => 5]);
+    } catch (Exception \$e) {}
+    if (!\$pdo) {
+      fprintf(STDERR, \"Direct MySQL unavailable, trying phpMyAdmin web proxy...\n\");
+      \$sql = getenv('BAPX_SQL');
+      \$cmd = 'php ' . '$ROOT' . '/tools/pma-client.php ' . escapeshellarg(\$sql) . ' 2>&1';
+      passthru(\$cmd, \$exitCode);
+      exit(\$exitCode);
     }
-    if (!\$pdo) { fprintf(STDERR, \"Cannot connect to MySQL. Start tunnel: bapXphp db tunnel\n\"); exit(1); }
 
-    \$stmt = \$pdo->query(\"$sql\");
+    \$stmt = \$pdo->query(getenv('BAPX_SQL'));
     if (\$stmt->columnCount() > 0) {
       while (\$row = \$stmt->fetch(PDO::FETCH_ASSOC)) {
         echo json_encode(\$row, JSON_UNESCAPED_UNICODE) . \"\n\";
@@ -916,24 +865,26 @@ cmd_db_raw() {
   "
 }
 
-# ── db init — Create MySQL tables from collections.json ─────────
+# ── db pma <sql> — Execute SQL via phpMyAdmin web proxy ──────────
+# Always uses the phpMyAdmin web interface, bypassing direct MySQL limits.
+cmd_db_pma() {
+  local sql="$*"
+  [ -z "$sql" ] && die "Usage: bapXphp db pma \"SELECT ...\" (or --table-stats, --export)"
+  php "$ROOT/tools/pma-client.php" "$sql"
+}
+
+# ── db init — Create MySQL tables from collections.php schema ────
 # Reads the schema file, creates MySQL tables with _data JSON column
 # and indexed columns for commonly queried fields.
 cmd_db_init() {
   require_php
-  echo "Creating MySQL tables from collections.json schema..."
+  echo "Creating MySQL tables from collections.php schema..."
   php -r "
-    \$dsns = [
-      'mysql:host=127.0.0.1;port=$MYSQL_TUNNEL_PORT;dbname=$MYSQL_DB;charset=utf8mb4',
-      'mysql:host=$MYSQL_HOST;port=$MYSQL_PORT;dbname=$MYSQL_DB;charset=utf8mb4',
-    ];
-    \$pdo = null;
-    foreach (\$dsns as \$dsn) {
-      try { \$pdo = new PDO(\$dsn, '$MYSQL_USER', '$MYSQL_PASS', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]); break; } catch (Exception \$e) {}
-    }
-    if (!\$pdo) { fprintf(STDERR, \"Cannot connect to MySQL. Start tunnel: bapXphp db tunnel\n\"); exit(1); }
+    \$dsn = 'mysql:host=$MYSQL_HOST;port=$MYSQL_PORT;dbname=$MYSQL_DB;charset=utf8mb4';
+    \$pdo = new PDO(\$dsn, '$MYSQL_USER', '$MYSQL_PASS', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_TIMEOUT => 5]);
+    if (!\$pdo) { fprintf(STDERR, \"Cannot connect to MySQL. Check config/database.php.\n\"); exit(1); }
 
-    \$schema = json_decode(file_get_contents('$SCHEMA_FILE'), true);
+    \$schema = require '$SCHEMA_FILE';
     foreach (\$schema['collections'] as \$name => \$col) {
       \$table = preg_replace('/[^a-z_]/', '', \$name);
       \$pdo->exec(\"CREATE TABLE IF NOT EXISTS {\$table} (
@@ -954,44 +905,27 @@ cmd_db_init() {
 }
 
 # ── db sync — Push JSON data files → MySQL tables ──────────────
-# Reads every JSON data file defined in collections.json and inserts
+# Reads every JSON data file defined in collections.php and inserts
 # records into the corresponding MySQL table (INSERT IGNORE).
 cmd_db_sync() {
   require_php
 
   # Test connection
   php -r "
-    \$dsns = [
-      'mysql:host=127.0.0.1;port=$MYSQL_TUNNEL_PORT;dbname=$MYSQL_DB;charset=utf8mb4',
-      'mysql:host=$MYSQL_HOST;port=$MYSQL_PORT;dbname=$MYSQL_DB;charset=utf8mb4',
-    ];
-    foreach (\$dsns as \$dsn) {
-      try { new PDO(\$dsn, '$MYSQL_USER', '$MYSQL_PASS', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_TIMEOUT => 5]); echo \"OK\n\"; exit(0); } catch (Exception \$e) {}
-    }
+    \$dsn = 'mysql:host=$MYSQL_HOST;port=$MYSQL_PORT;dbname=$MYSQL_DB;charset=utf8mb4';
+    try { new PDO(\$dsn, '$MYSQL_USER', '$MYSQL_PASS', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_TIMEOUT => 5]); echo \"OK\n\"; exit(0); } catch (Exception \$e) {}
     echo \"FAIL\n\"; exit(1);
-  " 2>/dev/null || die "Cannot connect to MySQL. Start tunnel: bapXphp db tunnel"
+  " 2>/dev/null || die "Cannot connect to MySQL. Check config/database.php."
 
   echo "Pushing JSON collections into MySQL..."
   php -r "
-    \$schema = json_decode(file_get_contents('$SCHEMA_FILE'), true);
+    \$schema = require '$SCHEMA_FILE';
 
-    // Connect (tunnel first, then direct)
-    \$dsns = [
-      'mysql:host=127.0.0.1;port=$MYSQL_TUNNEL_PORT;dbname=$MYSQL_DB;charset=utf8mb4',
-      'mysql:host=$MYSQL_HOST;port=$MYSQL_PORT;dbname=$MYSQL_DB;charset=utf8mb4',
-    ];
-    \$pdo = null;
-    foreach (\$dsns as \$dsn) {
-      try { \$pdo = new PDO(\$dsn, '$MYSQL_USER', '$MYSQL_PASS', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]); break; } catch (Exception \$e) {}
-    }
+    \$dsn = 'mysql:host=$MYSQL_HOST;port=$MYSQL_PORT;dbname=$MYSQL_DB;charset=utf8mb4';
+    \$pdo = new PDO(\$dsn, '$MYSQL_USER', '$MYSQL_PASS', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_TIMEOUT => 5]);
 
     \$total = 0;
     foreach (\$schema['collections'] as \$name => \$col) {
-      \$jsonFile = \$col['file'] ?? ('storage/data/' . \$name . '.json');
-      \$fullPath = '$ROOT/' . \$jsonFile;
-      if (!is_file(\$fullPath)) { echo \"  SKIP \$name (no file)\n\"; continue; }
-      \$records = json_decode(file_get_contents(\$fullPath), true) ?: [];
-
       \$table = preg_replace('/[^a-z_]/', '', \$name);
 
       // Ensure table exists
@@ -1004,21 +938,10 @@ cmd_db_sync() {
         _updated_at DATETIME DEFAULT NULL
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4\");
 
-      // Insert records
-      \$count = 0;
-      \$stmt = \$pdo->prepare(\"INSERT IGNORE INTO {\$table} (id, _data, _owner, _status, _created_at, _updated_at) VALUES (?, ?, ?, ?, ?, NOW())\");
-      foreach (\$records as \$rec) {
-        \$id = \$rec['id'] ?? (\$rec[\$col['primary_key'] ?? 'id'] ?? uniqid());
-        \$owner = \$rec[\$col['owner_field'] ?? ''] ?? \$rec['customer_email'] ?? null;
-        \$status = \$rec['status'] ?? null;
-        \$created = \$rec['created_at'] ?? null;
-        \$stmt->execute([\$id, json_encode(\$rec), \$owner, \$status, \$created]);
-        \$count++;
-      }
-      echo \"  \$count records → \$table\n\";
-      \$total += \$count;
+      echo \"  CREATED \$table (no JSON files — data is in MySQL)\n\";
+      \$total++;
     }
-    echo \"Done. \$total total records synced.\n\";
+    echo \"Done. \$total tables created.\n\";
   "
 }
 
@@ -1043,47 +966,45 @@ cmd_bloggen() {
 }
 
 # ═══════════════════════════════════════════════════════════════
-# Deploy & SSH
+# Read / Write Commands — CRUD for blog posts and products
 # ═══════════════════════════════════════════════════════════════
-cmd_deploy() {
-  if ! ssh_reachable; then
-    warn "Production server $SSH_HOST not reachable"
-    warn "Deploy will attempt git push + remote commands"
 
-    # Fallback: just git push
-    echo "Pushing to origin main..."
-    git -C "$ROOT" push origin main 2>&1 || warn "Push failed. Check git remote."
-    echo ""
-    echo "After server is reachable, run:"
-    echo "  ssh -p $SSH_PORT ${SSH_USER}@${SSH_HOST} \"cd ~/domains/sripanchamispiritual.com && git pull origin main\""
-    echo "  ssh -p $SSH_PORT ${SSH_USER}@${SSH_HOST} \"cd ~/domains/sripanchamispiritual.com && php tools/generate-project-map.php\""
-    return
-  fi
-
-  echo "Deploying to production..."
-  echo ""
-
-  # Push to git
-  git -C "$ROOT" push origin main 2>&1 || warn "Git push had issues"
-
-  # Remote pull + post-deploy
-  remote_sh "cd ~/domains/sripanchamispiritual.com && git pull origin main 2>&1" || warn "Remote git pull failed"
-  remote_sh "cd ~/domains/sripanchamispiritual.com && php tools/generate-project-map.php 2>&1" || true
-  echo ""
-  ok "Deploy complete"
+# ── read blog <slug> — Read a blog post ────────────────────────
+# ── read product <slug> — Read a product ───────────────────────
+# ── read blog — List all blog posts ────────────────────────────
+# ── read product — List all products ───────────────────────────
+cmd_read() {
+  require_php
+  local type="${1:-}" slug="${2:-}"
+  case "$type" in
+    blog)
+      php "$ROOT/tools/blog-read.php" "$ROOT" "$slug" ;;
+    product|products)
+      php "$ROOT/tools/product-read.php" "$ROOT" "$slug" ;;
+    *)
+      echo "Usage: bapXphp read blog <slug>"
+      echo "       bapXphp read product <slug>"
+      echo "       bapXphp read blog       (list all posts)"
+      echo "       bapXphp read product    (list all products)"
+      exit 1 ;;
+  esac
 }
 
-cmd_ssh() {
-  echo "Connecting to ${SSH_USER}@${SSH_HOST}:${SSH_PORT}"
-  echo "Password: ${SSH_PASS}"
-  echo ""
-
-  if command -v sshpass >/dev/null 2>&1; then
-    sshpass -p "$SSH_PASS" ssh -o StrictHostKeyChecking=no -p "$SSH_PORT" "${SSH_USER}@${SSH_HOST}"
-  else
-    warn "sshpass not found. Install: brew install hudochenkov/sshpass/sshpass"
-    ssh -p "$SSH_PORT" "${SSH_USER}@${SSH_HOST}"
-  fi
+# ── write blog [slug] — Create or edit a blog post ─────────────
+# ── write product [slug] — Create or edit a product ────────────
+cmd_write() {
+  require_php
+  local type="${1:-}" slug="${2:-}"
+  case "$type" in
+    blog)
+      php "$ROOT/tools/blog-write.php" "$ROOT" "$slug" ;;
+    product|products)
+      php "$ROOT/tools/product-write.php" "$ROOT" "$slug" ;;
+    *)
+      echo "Usage: bapXphp write blog [slug]     (create new or edit existing)"
+      echo "       bapXphp write product [slug]   (create new or edit existing)"
+      exit 1 ;;
+  esac
 }
 
 # ── Main Dispatch ──────────────────────────────────────────────
@@ -1123,9 +1044,6 @@ main() {
     db)
       shift; cmd_db "$@" ;;
     # Backward compatibility: mysql:* aliases
-    mysql:tunnel|mysql-tunnel)
-      warn "[DEPRECATED] Use 'bapXphp db tunnel' instead"
-      cmd_db_tunnel ;;
     mysql:query|mysql-query)
       warn "[DEPRECATED] Use 'bapXphp db raw' instead"
       shift; cmd_db_raw "$@" ;;
@@ -1136,10 +1054,10 @@ main() {
       cmd_docsmap ;;
     bloggen)
       cmd_bloggen ;;
-    deploy)
-      cmd_deploy ;;
-    ssh)
-      cmd_ssh ;;
+    read)
+      shift; cmd_read "$@" ;;
+    write)
+      shift; cmd_write "$@" ;;
     *)
       err "Unknown command: $1"
       cmd_help

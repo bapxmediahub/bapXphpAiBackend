@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AstrologerAccountService,AuditLogService,AuthService,ConsultationService,EnvService,JsonStoreService,MailStorageService,MediaService,OrderService,ResourceService,SchemaService,SecretService,SettingsService,StoragePermissionService};
+use App\Services\{AstrologerAccountService,AuditLogService,AuthService,ConsultationService,EnvService,DatabaseService,MailStorageService,MediaService,OrderService,ResourceService,SchemaService,SecretService,SettingsService,StoragePermissionService};
 final class AdminController extends BaseController {
     protected string $layout = 'admin';
     public function __construct() {
@@ -46,7 +46,7 @@ final class AdminController extends BaseController {
     }
     public function appointments(): void{$this->list('Sessions','appointments');}
     public function astrologerCredentials(): void{
-        $astrologers=(new ResourceService('astrologers'))->all(); $users=(new JsonStoreService())->read('users'); $bySlug=[];
+        $astrologers=(new ResourceService('astrologers'))->all(); $users=(new DatabaseService())->read('users'); $bySlug=[];
         foreach($users as $user) if(($user['role']??'')==='astrologer') $bySlug[$user['astrologer_slug']??'']=$user;
         $rows=[]; foreach($astrologers as $astrologer){$user=$bySlug[$astrologer['slug']??'']??[];$rows[]=['name'=>$astrologer['name']??'','username'=>$user['username']??$astrologer['username']??'','temporary_password'=>!empty($user['must_change_password'])?AstrologerAccountService::INITIAL_PASSWORD:'','status'=>!empty($user['must_change_password'])?'Password change required':'Password changed'];}
         $this->render('admin/astrologer-credentials',['pageTitle'=>'Astrologer Credentials','rows'=>$rows]);
@@ -97,6 +97,26 @@ final class AdminController extends BaseController {
     public function saveEnvironment(): void{(new EnvService())->saveRaw((string)($_POST['env_raw'] ?? '')); (new AuditLogService())->record('save','environment','.env',['keys'=>array_keys(EnvService::readFile(app_path('.env')))]); $this->flash('Environment saved.','success'); $this->redirect('/admin/environment');}
     public function fixPermissions(): void{(new StoragePermissionService())->fix(); (new AuditLogService())->record('fix','permissions','storage'); $this->flash('Storage permissions checked and updated where PHP is allowed.','success'); $this->redirect('/admin/environment');}
     public function projectMap(): void{$this->render('admin/project-map',['pageTitle' => 'Project Map', 'map'=>\App\Services\ProjectMapService::registry(),'validation'=>\App\Services\ProjectMapService::validate(\App\Services\ProjectMapService::registry())]);}
+    public function blog(): void{
+        $blog = new \App\Services\BlogService();
+        $this->render('admin/blog',['pageTitle'=>'Blog','title'=>'Blog Posts','posts'=>$blog->all(),'categories'=>$blog->categories()]);
+    }
+    public function saveBlog(): void{
+        $blog = new \App\Services\BlogService();
+        $blog->save($_POST);
+        (new AuditLogService())->record('save','blog',$_POST['slug'] ?? '');
+        $this->flash('Blog post saved.','success');
+        $this->redirect('/admin/blog');
+    }
+    public function deleteBlog(): void{
+        $slug = (string)($_POST['slug'] ?? '');
+        if ($slug !== '') {
+            (new \App\Services\BlogService())->delete($slug);
+            (new AuditLogService())->record('delete','blog',$slug);
+        }
+        $this->flash('Blog post deleted.','info');
+        $this->redirect('/admin/blog');
+    }
     private function list(string $title, ?string $collection = null): void{$this->render('admin/list',['pageTitle' => $title, 'title' => $title, 'collection' => $collection, 'items'=>$collection ? (new ResourceService($collection))->all() : []]);}
     private function resource(string $title,string $collection,array $fields): void{$this->render('admin/resource',['pageTitle' => $title, 'title' => $title, 'collection' => $collection, 'fields' => $fields, 'items'=>(new ResourceService($collection))->all(), 'mediaFiles'=>$this->mediaFor($collection)]);}
     private function save(string $collection): void{

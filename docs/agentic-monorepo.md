@@ -6,7 +6,7 @@ This repo packages the backend and frontend together for small PHP hosting. The 
 
 JSON storage is intentional. It keeps the database readable by humans and coding agents, avoids hidden SQL schema state, and works on shared PHP hosting without a database server. The JSON files are not random data dumps; they are governed by:
 
-- `storage/schema/collections.json`
+- `storage/schema/collections.php`
 - `JsonStoreService` atomic writes
 - admin CRUD forms
 - audit logging

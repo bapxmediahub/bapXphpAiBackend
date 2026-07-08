@@ -3,9 +3,9 @@ namespace App\Services;
 
 final class SchemaService {
     public function all(): array {
-        $path = app_path('storage/schema/collections.json');
+        $path = app_path('storage/schema/collections.php');
         if (!is_file($path)) return ['version'=>0, 'collections'=>[]];
-        return json_decode(file_get_contents($path) ?: '{}', true) ?: ['version'=>0, 'collections'=>[]];
+        return require $path;
     }
 
     public function collection(string $name): array {

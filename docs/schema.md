@@ -1,6 +1,6 @@
 # JSON Schema Registry
 
-`storage/schema/collections.json` is the database schema for this PHP/JSON backend.
+`storage/schema/collections.php` is the database schema for this PHP/MySQL backend.
 
 Use it before changing:
 

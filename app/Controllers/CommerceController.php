@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{CartService,ProductService,SecretService,PaymentService,JsonStoreService,MailQueueService};
+use App\Services\{CartService,ProductService,SecretService,PaymentService,DatabaseService,MailQueueService};
 use App\Integrations\Razorpay\RazorpayClient;
 final class CommerceController extends BaseController {
     public function addToCart(): void {
@@ -61,7 +61,7 @@ final class CommerceController extends BaseController {
         if (empty($items)) {
             $this->jsonResponse(['error' => 'Cart is empty or products are unavailable.'], 400);
         }
-        $store = new JsonStoreService();
+        $store = new DatabaseService();
         $products = [];
         foreach ($store->read('products') as $p) { $products[$p['slug'] ?? ''] = $p; }
         foreach ($items as $item) {
@@ -113,7 +113,7 @@ final class CommerceController extends BaseController {
         if (empty($items)) {
             $this->jsonResponse(['verified' => false, 'error' => 'Cart is empty.'], 400);
         }
-        $existingOrders = (new JsonStoreService())->read('orders');
+        $existingOrders = (new DatabaseService())->read('orders');
         foreach ($existingOrders as $existing) {
             if (($existing['payment_id'] ?? '') === $paymentId) {
                 $this->jsonResponse(['verified' => false, 'error' => 'Payment already processed.'], 400);
@@ -137,7 +137,7 @@ final class CommerceController extends BaseController {
             'review_request_after_at' => null,
             'created_at' => date('c'),
         ];
-        (new JsonStoreService())->upsert('orders', $order);
+        (new DatabaseService())->upsert('orders', $order);
         (new MailQueueService())->enqueuePaymentConfirmation($order);
         $_SESSION['cart'] = [];
         $this->jsonResponse(['verified' => true, 'order_id' => $order['id']]);

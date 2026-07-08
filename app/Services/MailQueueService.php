@@ -2,7 +2,7 @@
 namespace App\Services;
 
 final class MailQueueService {
-    public function __construct(private JsonStoreService $store = new JsonStoreService()) {}
+    public function __construct(private DatabaseService|JsonStoreService $store = new DatabaseService()) {}
 
     public function all(): array {
         return $this->store->read('mail_queue');

@@ -2,7 +2,7 @@
 namespace App\Services;
 
 final class ConsultationService {
-    public function __construct(private JsonStoreService $store = new JsonStoreService()) {}
+    public function __construct(private DatabaseService $store = new DatabaseService()) {}
 
     public function sessionsFor(array $user): array {
         $items = $this->store->read('appointments');

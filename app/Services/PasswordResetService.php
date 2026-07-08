@@ -2,7 +2,7 @@
 namespace App\Services;
 
 final class PasswordResetService {
-    public function __construct(private JsonStoreService $store = new JsonStoreService()) {}
+    public function __construct(private DatabaseService $store = new DatabaseService()) {}
 
     public function createToken(string $email, ?\DateTimeImmutable $now = null): ?string {
         $now ??= new \DateTimeImmutable();

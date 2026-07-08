@@ -17,6 +17,7 @@ This folder contains connected documentation for developers, maintainers, and co
 
 - [Home](pages/home.md)
 - [Shop](pages/shop.md)
+- [Blog](pages/blog.md)
 - [Checkout](pages/checkout.md)
 - [Consult](pages/consult.md)
 - [Temples](pages/temples.md)
@@ -34,6 +35,7 @@ This folder contains connected documentation for developers, maintainers, and co
 - [Catalog](modules/catalog.md)
 - [Google OAuth](modules/google-oauth.md)
 - [Orders](modules/orders.md)
+- [PWA](modules/pwa.md)
 - [Razorpay](modules/razorpay.md)
 - [Temples](modules/temples.md)
 
@@ -43,5 +45,6 @@ This folder contains connected documentation for developers, maintainers, and co
 - Regenerate it after route, service, view, schema, storage, tool, or integration changes:
 
 ```bash
-php tools/generate-project-map.php
+bapXphp map:gen
+bapXphp map:val
 ```

@@ -17,7 +17,7 @@
 ## Data Persistence
 
 - JSON file storage lives in `storage/data/`.
-- JSON collection schema lives in `storage/schema/collections.json`.
+- Collection schema lives in `storage/schema/collections.php`. Data is stored in MySQL tables (not JSON files).
 - `JsonStoreService` uses lock files and atomic writes for persistence.
 - No SQL/MySQL database is required for the current application.
 - `AgentContextService` builds safe user-specific context for the support/model assistant.

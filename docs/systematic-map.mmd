@@ -7,14 +7,14 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 108 routes, 12 controllers, 39 services, 47 views, 21 data files, 8 tools"]
-    arch_routes["> Routes: 108 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 111 routes, 12 controllers, 39 services, 47 views, 0 data files, 13 tools"]
+    arch_routes["> Routes: 111 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
     arch_svc["> Services: 39"]:::arch
     arch_views["> Views: 47"]:::arch
-    arch_data["> Collections: 21 schema | 21 files"]:::arch
-    arch_tools["> Tools: 8"]:::arch
-    arch_gaps["> Gaps: 3"]:::arch
+    arch_data["> Collections: 21 schema | 0 files"]:::arch
+    arch_tools["> Tools: 13"]:::arch
+    arch_gaps["> Gaps: 0"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -140,6 +140,9 @@ flowchart LR
     route_a2384c26c92f["POST /admin/temples/save — Admin — create/update temple"]:::route
     route_e69af680148c["POST /admin/temples/delete — Admin — delete temple"]:::route
     route_f6cc7a75f108["POST /admin/integrations/save — Admin — save integration secrets"]:::route
+    route_ee5a5224937e["GET /admin/blog"]:::route
+    route_1ae4a2a08143["POST /admin/blog/save"]:::route
+    route_6412bc37bc92["POST /admin/blog/delete"]:::route
   end
 
   subgraph NAVIGATION["Navigation Paths"]
@@ -289,35 +292,16 @@ flowchart LR
     collection_7de38f3c3d3b["secrets"]:::data
   end
 
-  subgraph STORAGE["Storage Data Files"]
-    storage_2417b5325520["appointments"]:::data
-    storage_c851fb104bb0["astrologers"]:::data
-    storage_32356d16f20c["audit_events"]:::data
-    storage_b0b5ccb4a195["categories"]:::data
-    storage_c37815a262b9["consultation_messages"]:::data
-    storage_ce528b00cff4["consultation_signals"]:::data
-    storage_2dce077b5527["contact_submissions"]:::data
-    storage_28882724d375["coupons"]:::data
-    storage_b0d96590d438["mail_inbox"]:::data
-    storage_9fa47bff6beb["mail_outbox"]:::data
-    storage_d10fbf039e34["mail_queue"]:::data
-    storage_a276577b33a8["media_files"]:::data
-    storage_12c500ed0b78["orders"]:::data
-    storage_86024cad1e83["products"]:::data
-    storage_74dcb1cec508["reviews"]:::data
-    storage_7de38f3c3d3b["secrets"]:::data
-    storage_2e5d8aa3dfa8["settings"]:::data
-    storage_830b87d9f1ff["support_tickets"]:::data
-    storage_fefa79731a13["temples"]:::data
-    storage_9bc65c2abec1["users"]:::data
-    storage_f2ec0991d55d["wallet_transactions"]:::data
-  end
-
   subgraph TOOLS["Tools"]
+    tool_fbc45397571b["blog-read"]:::tool
+    tool_519ad2e88fb9["blog-write"]:::tool
     tool_1913548b93c6["generate-docs-map"]:::tool
     tool_891d42e0bd53["generate-project-map"]:::tool
     tool_42d1d6670e62["optimize-images"]:::tool
+    tool_a88dee51947d["pma-client"]:::tool
     tool_63816fb031e2["process-mail-queue"]:::tool
+    tool_390ffcf572b3["product-read"]:::tool
+    tool_09f89263cf83["product-write"]:::tool
     tool_33987b50a45d["refresh-blog-cache"]:::tool
     tool_6bc5276d6a60["smoke-local"]:::tool
     tool_506de2158fd9["test_race"]:::tool
@@ -325,9 +309,7 @@ flowchart LR
   end
 
   subgraph GAPS["Gaps & Missing Links"]
-    gap_6a7117fad9["unwired_services: BlogService"]:::gap
-    gap_ff90a40886["unwired_services: DatabaseService"]:::gap
-    gap_8c7c891385["unwired_views: admin/blog"]:::gap
+    no_gaps["No detected gaps"]:::data
   end
 
   route_e3b717d5883a --> controller_18ec49ea2cf4
@@ -402,15 +384,15 @@ flowchart LR
   controller_f3a06e444dad -. renders .-> view_a6af926bf361
   route_54bc4589bbac --> controller_f3a06e444dad
   controller_f3a06e444dad --> service_6c9416ef0383
-  controller_f3a06e444dad --> service_36e1e06e13b3
+  controller_f3a06e444dad --> service_66daa9bdc2c1
   controller_f3a06e444dad -. renders .-> view_a6af926bf361
   route_bd886de5ac0b --> controller_f3a06e444dad
   controller_f3a06e444dad -. renders .-> view_d6d59690414b
   route_3a7ff6514669 --> controller_f3a06e444dad
-  controller_f3a06e444dad --> service_36e1e06e13b3
+  controller_f3a06e444dad --> service_66daa9bdc2c1
   controller_f3a06e444dad -. renders .-> view_d6d59690414b
   route_a650fd67ad7b --> controller_f3a06e444dad
-  controller_f3a06e444dad --> service_36e1e06e13b3
+  controller_f3a06e444dad --> service_66daa9bdc2c1
   controller_f3a06e444dad -. renders .-> view_a6af926bf361
   route_1d1ca6617c0d --> controller_f3a06e444dad
   controller_f3a06e444dad --> service_f33a1d77b137
@@ -469,7 +451,7 @@ flowchart LR
   controller_e11bcfbdf300 -. renders .-> view_8b5e0862241b
   route_c90566c68049 --> controller_e11bcfbdf300
   controller_e11bcfbdf300 --> service_f33a1d77b137
-  controller_e11bcfbdf300 --> service_36e1e06e13b3
+  controller_e11bcfbdf300 --> service_66daa9bdc2c1
   controller_e11bcfbdf300 -. renders .-> view_8b5e0862241b
   route_e049e08b4d31 --> controller_50eaea84bd1d
   controller_50eaea84bd1d --> service_f33a1d77b137
@@ -554,7 +536,7 @@ flowchart LR
   controller_3d37b75c07ec -. renders .-> view_ca3569057adb
   route_8d8d17fb4adc --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_ae8ee1aa005a
-  controller_3d37b75c07ec --> service_36e1e06e13b3
+  controller_3d37b75c07ec --> service_66daa9bdc2c1
   controller_3d37b75c07ec --> service_f33a1d77b137
   controller_3d37b75c07ec -. renders .-> view_7913e08e07e6
   route_92dd4d9f6051 --> controller_3d37b75c07ec
@@ -585,7 +567,7 @@ flowchart LR
   controller_3d37b75c07ec --> service_f33a1d77b137
   controller_3d37b75c07ec -. renders .-> view_62fe69fcdef3
   route_f679682223bf --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_36e1e06e13b3
+  controller_3d37b75c07ec --> service_66daa9bdc2c1
   controller_3d37b75c07ec --> service_f33a1d77b137
   controller_3d37b75c07ec -. renders .-> view_ca3569057adb
   route_e67aaf6f51f8 --> controller_3d37b75c07ec
@@ -615,7 +597,7 @@ flowchart LR
   controller_3d37b75c07ec --> service_f33a1d77b137
   controller_3d37b75c07ec -. renders .-> view_89a7dcb95b04
   route_93e1c961f71d --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_36e1e06e13b3
+  controller_3d37b75c07ec --> service_66daa9bdc2c1
   controller_3d37b75c07ec --> service_f33a1d77b137
   controller_3d37b75c07ec -. renders .-> view_ca3569057adb
   route_4115282232ca --> controller_3d37b75c07ec
@@ -728,7 +710,7 @@ flowchart LR
   route_3cdaaaae69eb --> controller_7fda1508bed0
   controller_7fda1508bed0 --> service_6c9416ef0383
   controller_7fda1508bed0 --> service_9eeeaab84791
-  controller_7fda1508bed0 --> service_36e1e06e13b3
+  controller_7fda1508bed0 --> service_66daa9bdc2c1
   controller_7fda1508bed0 -. renders .-> view_6b1f93c8d0e4
   route_416fde130b00 --> controller_7fda1508bed0
   controller_7fda1508bed0 --> service_6c9416ef0383
@@ -737,7 +719,7 @@ flowchart LR
   route_c4966e625ffb --> controller_7fda1508bed0
   controller_7fda1508bed0 --> service_6c9416ef0383
   controller_7fda1508bed0 --> service_9eeeaab84791
-  controller_7fda1508bed0 --> service_36e1e06e13b3
+  controller_7fda1508bed0 --> service_66daa9bdc2c1
   controller_7fda1508bed0 -. renders .-> view_6b1f93c8d0e4
   route_0e14c4ef1380 --> controller_50eaea84bd1d
   controller_50eaea84bd1d --> service_f33a1d77b137
@@ -761,17 +743,31 @@ flowchart LR
   controller_64e608ddc28b --> service_b2e5928bb46a
   controller_64e608ddc28b -. renders .-> view_54f97aa2b448
   route_6e62aa059570 --> controller_f21ef7cdb1a4
-  controller_f21ef7cdb1a4 --> service_88bb58d7e6e8
+  controller_f21ef7cdb1a4 --> service_a59832354e11
   controller_f21ef7cdb1a4 --> service_dc8af4c619cd
   controller_f21ef7cdb1a4 -. renders .-> view_c8dddc6d8f3e
   route_b8738856284a --> controller_f21ef7cdb1a4
-  controller_f21ef7cdb1a4 --> service_88bb58d7e6e8
+  controller_f21ef7cdb1a4 --> service_a59832354e11
   controller_f21ef7cdb1a4 --> service_dc8af4c619cd
   controller_f21ef7cdb1a4 -. renders .-> view_4febaa319900
   route_3c268a290f60 --> controller_f21ef7cdb1a4
-  controller_f21ef7cdb1a4 --> service_88bb58d7e6e8
+  controller_f21ef7cdb1a4 --> service_a59832354e11
   controller_f21ef7cdb1a4 --> service_dc8af4c619cd
   controller_f21ef7cdb1a4 -. renders .-> view_c8dddc6d8f3e
+  route_ee5a5224937e --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_a59832354e11
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_e13f2d1caf99
+  route_1ae4a2a08143 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_a59832354e11
+  controller_3d37b75c07ec --> service_e79c019a142b
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_e13f2d1caf99
+  route_6412bc37bc92 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_a59832354e11
+  controller_3d37b75c07ec --> service_e79c019a142b
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_e13f2d1caf99
   nav_90609cfd31a3 --> route_8c80c0301221
   nav_1abee342ae87 --> route_6ce84be0a21c
   nav_41fb19b5f30b --> route_b2c44d359fd8
@@ -806,12 +802,13 @@ flowchart LR
   service_ebacea9031c7 --> collection_b0b5ccb4a195
   service_fc0ff5cfd93a --> collection_2dce077b5527
   service_c4c5dac5c925 --> collection_28882724d375
-  service_36e1e06e13b3 --> collection_9bc65c2abec1
-  service_36e1e06e13b3 --> collection_86024cad1e83
-  service_36e1e06e13b3 --> collection_12c500ed0b78
-  service_36e1e06e13b3 --> collection_2417b5325520
-  service_36e1e06e13b3 --> collection_c37815a262b9
-  service_36e1e06e13b3 --> collection_ce528b00cff4
+  service_66daa9bdc2c1 --> collection_9bc65c2abec1
+  service_66daa9bdc2c1 --> collection_86024cad1e83
+  service_66daa9bdc2c1 --> collection_12c500ed0b78
+  service_66daa9bdc2c1 --> collection_2417b5325520
+  service_66daa9bdc2c1 --> collection_c37815a262b9
+  service_66daa9bdc2c1 --> collection_ce528b00cff4
+  service_36e1e06e13b3 --> collection_7be8cd817cfe
   service_1a1be05523e3 --> collection_d10fbf039e34
   service_75ac00fac97c --> collection_a276577b33a8
   service_f751cedec776 --> collection_12c500ed0b78
@@ -827,27 +824,6 @@ flowchart LR
   service_c9950f0c49e4 --> collection_fefa79731a13
   service_df7a87394b21 --> collection_f2ec0991d55d
   service_df7a87394b21 --> collection_9bc65c2abec1
-  collection_9bc65c2abec1 --> storage_9bc65c2abec1
-  collection_86024cad1e83 --> storage_86024cad1e83
-  collection_c851fb104bb0 --> storage_c851fb104bb0
-  collection_fefa79731a13 --> storage_fefa79731a13
-  collection_12c500ed0b78 --> storage_12c500ed0b78
-  collection_2417b5325520 --> storage_2417b5325520
-  collection_c37815a262b9 --> storage_c37815a262b9
-  collection_ce528b00cff4 --> storage_ce528b00cff4
-  collection_f2ec0991d55d --> storage_f2ec0991d55d
-  collection_830b87d9f1ff --> storage_830b87d9f1ff
-  collection_b0b5ccb4a195 --> storage_b0b5ccb4a195
-  collection_28882724d375 --> storage_28882724d375
-  collection_32356d16f20c --> storage_32356d16f20c
-  collection_d10fbf039e34 --> storage_d10fbf039e34
-  collection_b0d96590d438 --> storage_b0d96590d438
-  collection_9fa47bff6beb --> storage_9fa47bff6beb
-  collection_74dcb1cec508 --> storage_74dcb1cec508
-  collection_2e5d8aa3dfa8 --> storage_2e5d8aa3dfa8
-  collection_2dce077b5527 --> storage_2dce077b5527
-  collection_a276577b33a8 --> storage_a276577b33a8
-  collection_7de38f3c3d3b --> storage_7de38f3c3d3b
   service_9eeeaab84791 --> integration_1442a65b90de
   service_9eeeaab84791 --> integration_063c1f657453
   controller_f3a06e444dad --> integration_58a89e5d2ef3
@@ -869,6 +845,3 @@ flowchart LR
   tool_ffb4fe3c51d9 --> systematic_map
   tool_6bc5276d6a60 --> ROUTES_PUBLIC
   tool_6bc5276d6a60 --> ROUTES_ADMIN
-  gap_6a7117fad9 -. missing .-> service_a59832354e11
-  gap_ff90a40886 -. missing .-> service_66daa9bdc2c1
-  gap_8c7c891385 -. missing .-> view_e13f2d1caf99

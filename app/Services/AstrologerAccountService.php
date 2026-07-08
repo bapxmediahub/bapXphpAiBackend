@@ -3,7 +3,7 @@ namespace App\Services;
 
 final class AstrologerAccountService {
     public const INITIAL_PASSWORD = 'sripanjamiconsult';
-    public function __construct(private JsonStoreService $store = new JsonStoreService()) {}
+    public function __construct(private DatabaseService $store = new DatabaseService()) {}
 
     public function sync(array $profile): array {
         $slug=(string)($profile['slug']??'');

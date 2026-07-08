@@ -4,7 +4,7 @@ namespace App\Services;
 final class SupportBotService {
     public function __construct(
         private SecretService $secrets = new SecretService(),
-        private JsonStoreService $store = new JsonStoreService(),
+        private DatabaseService $store = new DatabaseService(),
         private AgentContextService $agentContext = new AgentContextService()
     ) {}
 

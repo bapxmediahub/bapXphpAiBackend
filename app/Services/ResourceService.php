@@ -1,7 +1,7 @@
 <?php
 namespace App\Services;
 final class ResourceService {
-    public function __construct(private string $collection, private JsonStoreService $store = new JsonStoreService()) {}
+    public function __construct(private string $collection, private DatabaseService $store = new DatabaseService()) {}
     public function all(): array { return $this->store->read($this->collection); }
     public function save(array $record): array {
         $record['id'] ??= bin2hex(random_bytes(8));

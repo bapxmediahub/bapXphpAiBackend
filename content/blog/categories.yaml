@@ -1,0 +1,10 @@
+categories:
+  - slug: news
+    name: News & Updates
+    description: Platform news, feature releases, and announcements
+  - slug: spirituality
+    name: Spirituality
+    description: Spiritual guidance, practices, and wisdom
+  - slug: astrology
+    name: Astrology
+    description: Vedic astrology insights and consultations

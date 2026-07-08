@@ -2,7 +2,7 @@
 namespace App\Services;
 
 final class WalletService {
-    public function __construct(private JsonStoreService $store = new JsonStoreService()) {}
+    public function __construct(private DatabaseService $store = new DatabaseService()) {}
 
     public function balanceFor(string $email): int {
         $email = strtolower(trim($email));

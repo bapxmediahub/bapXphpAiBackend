@@ -11,7 +11,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-require __DIR__ . '/../app/bootstrap.php';
+try {
+    require __DIR__ . '/../app/bootstrap.php';
+} catch (\Throwable $e) {
+    http_response_code(503);
+    echo json_encode(['error' => 'Service temporarily unavailable', 'detail' => $e->getMessage()]);
+    exit;
+}
 
 $routes = require __DIR__ . '/../app/routes.php';
 $method = $_SERVER['REQUEST_METHOD'];
@@ -28,8 +34,13 @@ foreach ($routes as $route) {
         array_shift($matches);
         [$class, $action] = explode('@', $route['controller']);
         $fqcn = 'App\\Controllers\\' . $class;
-        $controller = new $fqcn();
-        $controller->{$action}(...$matches);
+        try {
+            $controller = new $fqcn();
+            $controller->{$action}(...$matches);
+        } catch (\Throwable $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Internal error', 'detail' => $e->getMessage()]);
+        }
         $matched = true;
         break;
     }

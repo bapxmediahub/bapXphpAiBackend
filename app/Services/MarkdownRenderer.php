@@ -32,7 +32,7 @@ final class MarkdownRenderer
             $text = trim($m[2]);
             $id = 'heading-' . preg_replace('/[^a-z0-9]+/i', '-', strtolower($text));
             $id = trim($id, '-');
-            return '<h' . $level . ' id="' . $id . '">' . $text . '</h' . $level . '>';
+            return '<h' . $level . ' id="' . $id . '">' . e($text) . '</h' . $level . '>';
         }, $html);
     }
 
@@ -50,7 +50,7 @@ final class MarkdownRenderer
                 if ($i === 0) {
                     $item = preg_replace('/^[-*+]\s+/', '', $item);
                 }
-                $lis .= '<li>' . trim($item) . '</li>';
+                $lis .= '<li>' . e(trim($item)) . '</li>';
             }
             return '<ul>' . $lis . '</ul>';
         }, $html);
@@ -66,7 +66,7 @@ final class MarkdownRenderer
                 if ($i === 0) {
                     $item = preg_replace('/^\d+\.\s+/', '', $item);
                 }
-                $lis .= '<li>' . trim($item) . '</li>';
+                $lis .= '<li>' . e(trim($item)) . '</li>';
             }
             return '<ol>' . $lis . '</ol>';
         }, $html);

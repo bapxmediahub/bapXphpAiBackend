@@ -27,10 +27,10 @@ Owns durable documentation and the single systematic project-map artifact.
 
 ## Verification
 
-- `php tools/generate-project-map.php`
-- `php tools/validate-project-map.php`
-- `bash tools/bapXphp docsmap` or `php tools/generate-docs-map.php` when AGENTS.md, skills, or docs change.
-- `php tests/run.php` when README or agent workflow text changes.
+- `bapXphp map:gen`
+- `bapXphp map:val`
+- `bapXphp docsmap`
+- `bapXphp test`
 
 ## Child DOX Index
 

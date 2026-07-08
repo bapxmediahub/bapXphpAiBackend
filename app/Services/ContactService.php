@@ -2,10 +2,10 @@
 namespace App\Services;
 
 final class ContactService {
-    private JsonStoreService $store;
+    private DatabaseService|JsonStoreService $store;
 
-    public function __construct(?JsonStoreService $store = null) {
-        $this->store = $store ?? new JsonStoreService();
+    public function __construct(DatabaseService|JsonStoreService|null $store = null) {
+        $this->store = $store ?? new DatabaseService();
     }
 
     public function all(): array {
