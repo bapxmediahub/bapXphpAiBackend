@@ -6,8 +6,18 @@ final class DatabaseService {
     private function db(): \PDO {
         if ($this->pdo === null) {
             $cfg = require app_path('config/database.php');
+            
+            // Fast connect pre-check to prevent 30-second blocking hangs on unreachable MySQL host
+            $errno = 0;
+            $errstr = '';
+            $fp = @fsockopen($cfg['host'], (int)$cfg['port'], $errno, $errstr, 1);
+            if (!$fp) {
+                throw new \RuntimeException("MySQL server {$cfg['host']}:{$cfg['port']} is unreachable: {$errstr}");
+            }
+            fclose($fp);
+
             $dsn = 'mysql:host=' . $cfg['host'] . ';port=' . $cfg['port'] . ';dbname=' . $cfg['dbname'] . ';charset=utf8mb4';
-                $this->pdo = new \PDO($dsn, $cfg['user'], $cfg['pass'], [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION]);
+            $this->pdo = new \PDO($dsn, $cfg['user'], $cfg['pass'], [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, \PDO::ATTR_TIMEOUT => 2]);
             if (!$this->pdo) throw new \RuntimeException('Cannot connect to MySQL. Check config/database.php or env vars.');
         }
         return $this->pdo;
