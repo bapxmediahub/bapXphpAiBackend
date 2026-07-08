@@ -4,14 +4,9 @@ use App\Services\{EnvService,SecretService,DatabaseService,PasswordResetService}
 use App\Integrations\GoogleOAuth\GoogleOAuthClient;
 final class AuthController extends BaseController {
   public function googleRedirect(): void {
-    file_put_contents('storage/data/google_auth_debug.log', date('Y-m-d H:i:s') . " - Starting googleRedirect\n", FILE_APPEND);
-    $s=(new SecretService())->all(); 
-    file_put_contents('storage/data/google_auth_debug.log', date('Y-m-d H:i:s') . " - Secrets: " . json_encode($s) . "\n", FILE_APPEND);
-    if(empty($s['google_client_id'])||empty($s['google_client_secret'])){$this->flash('Google login is not configured yet.','warning');$this->redirect('/login');}
-    $state=bin2hex(random_bytes(16)); $_SESSION['oauth_state']=$state;
-    $url=(new GoogleOAuthClient($s['google_client_id'],$s['google_client_secret']))->authorizationUrl($this->redirectUri(),$state); 
-    file_put_contents('storage/data/google_auth_debug.log', date('Y-m-d H:i:s') . " - Redirect URL: $url\n", FILE_APPEND);
-    $this->redirect($url);
+  $s=(new SecretService())->all(); if(empty($s['google_client_id'])||empty($s['google_client_secret'])){$this->flash('Google login is not configured yet.','warning');$this->redirect('/login');}
+  $state=bin2hex(random_bytes(16)); $_SESSION['oauth_state']=$state;
+  $url=(new GoogleOAuthClient($s['google_client_id'],$s['google_client_secret']))->authorizationUrl($this->redirectUri(),$state); $this->redirect($url);
   }
   public function callback(): void {
    if(($_GET['state']??'')!==($_SESSION['oauth_state']??'')) throw new \RuntimeException('Invalid OAuth state');
