@@ -1,7 +1,5 @@
 !.env.example
 
-/storage/runtime-key.php
-/storage/data/settings.secrets.json
 /storage/logs/*.log
 /storage/backups/*
 !/storage/backups/.gitkeep
