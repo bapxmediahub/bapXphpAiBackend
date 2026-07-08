@@ -43,11 +43,9 @@ final class ConsultationService {
     }
 
     public function signals(string $appointmentId, string $after = ''): array {
-        $signals = array_values(array_filter($this->store->read('consultation_signals'), function($row) use ($appointmentId, $after) {
-            return ($row['appointment_id'] ?? '') === $appointmentId && ($after === '' || strcmp((string)($row['created_at'] ?? ''), $after) > 0);
-        }));
-        usort($signals, fn($a, $b) => strcmp((string)($a['created_at'] ?? ''), (string)($b['created_at'] ?? '')));
-        return $signals;
+        $sql = "SELECT * FROM consultation_signals WHERE JSON_UNQUOTE(JSON_EXTRACT(_data, '$.appointment_id')) = ? AND (_created_at > ? OR ? = '') ORDER BY _created_at ASC";
+        $rows = $this->store->query($sql, [$appointmentId, $after, $after]);
+        return array_map(fn($r) => array_merge(json_decode($r['_data'] ?? '{}', true) ?: [], ['id' => $r['id']]), $rows);
     }
 
     public function sendSignal(array $session, array $user, string $type, array $payload): array {
