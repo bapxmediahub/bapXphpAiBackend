@@ -1,4 +1,4 @@
-<section class="section astrologers-page" style="padding-top:var(--space-xl);">
+<section class="section astrologers-page">
     <div class="container astrologers-hero">
         <div style="text-align:center;">
             <span class="eyebrow">Expert Guidance · Call and Message Only</span>

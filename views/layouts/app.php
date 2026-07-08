@@ -77,7 +77,7 @@ main{padding-bottom:0}
 .section-title{font-family:Inter,system-ui,sans-serif;font-size:clamp(1.375rem,2.5vw,1.75rem);margin:0;padding:0 0 var(--space-sm)}
 .section-title::before,.section-title::after{display:none}
 .section-header .lede{color:var(--color-text-muted);max-width:500px;margin:var(--space-sm) auto 0;font-size:0.9rem}
-.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:var(--space-xl)}
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:var(--space-xl)}
  .product-card{background:var(--color-white);border:1px solid var(--color-border-light);border-radius:var(--radius-md);overflow:hidden;transition:box-shadow 0.2s ease,border-color 0.2s ease;box-shadow:none}
 .product-card:hover{box-shadow:var(--shadow-md);border-color:var(--color-border)}
 .product-card__image{position:relative;overflow:hidden;aspect-ratio:1}
@@ -385,7 +385,7 @@ if ($__flash):
                 </ul>
             </div>
             <div>
-                <h4 class="footer-heading">Contact</h4>
+                <h4 class="footer-heading">Customer Support</h4>
                 <ul class="footer-links">
                     <li><a href="tel:+919789444037">+91 97894 44037</a></li>
                     <li><a href="tel:+919789444038">+91 97894 44038</a></li>

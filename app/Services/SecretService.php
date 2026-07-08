@@ -40,6 +40,7 @@ final class SecretService {
             'seo_site_name' => (string)(getenv('SEO_SITE_NAME') ?: ''),
             'seo_default_og_image' => (string)(getenv('SEO_DEFAULT_OG_IMAGE') ?: ''),
             'seo_twitter_handle' => (string)(getenv('SEO_TWITTER_HANDLE') ?: ''),
+            'stripe_secret_key' => (string)(getenv('STRIPE_SECRET_KEY') ?: ''),
         ];
     }
 
