@@ -24,7 +24,16 @@ if (!is_resource($process)) {
 $failures = [];
 
 try {
-    waitForServer($base);
+    try {
+        waitForServer($base);
+    } catch (RuntimeException $e) {
+        $err = '';
+        if (isset($pipes[2]) && is_resource($pipes[2])) {
+            stream_set_blocking($pipes[2], false);
+            $err = stream_get_contents($pipes[2]);
+        }
+        throw new RuntimeException($e->getMessage() . ($err ? "\nPHP Server Stderr:\n" . $err : ''));
+    }
     foreach ([
         '/' => 200,
         '/shop' => 200,
@@ -138,7 +147,7 @@ echo "PASS local smoke\n";
 function waitForServer(string $base): void {
     $deadline = microtime(true) + 8;
     do {
-        $response = @httpRequest($base . '/');
+        $response = @httpRequest($base . '/robots.txt');
         if (($response['status'] ?? 0) > 0) return;
         usleep(100000);
     } while (microtime(true) < $deadline);

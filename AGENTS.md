@@ -149,3 +149,19 @@ Before finishing, search the touched workflow for placeholders, dead buttons, du
 - `tools/AGENTS.md`: maintenance scripts, project-map generation/validation, local smoke checks, and mail queue tooling.
 - `tests/AGENTS.md`: PHP regression tests and test fixtures.
 - `assets/AGENTS.md`: CSS and static image/media assets.
+
+# CRITICAL RULE: ZERO-CODE INITIATION
+
+You are forbidden from writing code or creating files upon receiving a new prompt.
+Before proposing any code change, you MUST execute:
+`bapXphp map` AND `bapXphp schema list`
+
+## AUTOMATED ISSUE & DEPLOYMENT WORKFLOW (GH-CLI)
+
+Immediately after inspecting the map and schema list, you must process the task completely through GitHub via the command line interface without requiring step-by-step user confirmation:
+
+1. **Investigate & Diagnose:** Track down the code footprints. Identify the exact file name, page context, and specific line numbers causing the bug or holding back the feature.
+2. **File the Issue:** Use `gh issue create` to open a clear issue, bug report, or feature ticket. You MUST explicitly embed the exact line references and file paths directly into the GitHub issue body so that future agent instances or humans have immediate grounding.
+3. **Isolate and Execute:** Branch out, perform the micro-targeted code alterations, and run `bapXphp check` to ensure zero regressions.
+4. **Automated Merging:** Commit the clean updates, push the branch, run `gh pr create` to target `main`, and execute `gh pr merge --merge --delete-branch` to push the features straight to live.
+5. **Channel Communication to GitHub:** Do not broadcast intermediate debugging steps or structural logs to the terminal prompt. All technical updates, state transitions, and implementation details belong inside the GitHub repository issue comments.
