@@ -6,3 +6,4 @@
 
 /storage/data/*.lock
 tmp/
+.env.mysql

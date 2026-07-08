@@ -52,7 +52,7 @@ Official references: [NotebookLM chat and citations](https://support.google.com/
 Agent-native backend platforms expose database, auth, storage, deployments, logs, and model access as inspectable primitives. This repo follows the same idea for smaller PHP hosting, but keeps the primitives inside the monorepo:
 
 - Database: JSON collections and schema files
-- Auth: PHP services and `.env` config
+- Auth: PHP services with admin credentials in settings (Admin → Settings) and API secrets in encrypted store (Admin → Integrations)
 - Storage: local media library
 - Deployment: Hostinger Git auto-deploy
 - Model context: `AgentContextService`

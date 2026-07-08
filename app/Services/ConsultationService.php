@@ -26,7 +26,7 @@ final class ConsultationService {
 
     public function sendMessage(array $session, array $user, string $body): array {
         $body = trim($body);
-        if ($body === '' || strlen($body) > 6000) throw new \InvalidArgumentException('Message must contain 1 to 2000 characters.');
+        if ($body === '' || mb_strlen($body) > 2000) throw new \InvalidArgumentException('Message must contain 1 to 2000 characters.');
         $message = [
             'id' => bin2hex(random_bytes(8)),
             'appointment_id' => $session['id'],

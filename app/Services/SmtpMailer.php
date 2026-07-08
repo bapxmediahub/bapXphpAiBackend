@@ -124,7 +124,9 @@ final class SmtpMailer {
         $appUrl = (string)(getenv('APP_URL') ?: '');
         $host = parse_url($appUrl, PHP_URL_HOST);
         if ($host && !str_contains($host, 'example')) return $this->cleanDomain($host);
-        $adminEmail = (string)(getenv('ADMIN_EMAIL') ?: '');
+        $siteSettings = (new SettingsService())->admin();
+        $adminEmail = (string)($siteSettings['admin_email'] ?? '');
+        if ($adminEmail === '') $adminEmail = (string)(getenv('ADMIN_EMAIL') ?: '');
         if (str_contains($adminEmail, '@')) return $this->cleanDomain(substr(strrchr($adminEmail, '@'), 1));
         $httpHost = (string)($_SERVER['HTTP_HOST'] ?? 'localhost.example');
         return $this->cleanDomain($httpHost);

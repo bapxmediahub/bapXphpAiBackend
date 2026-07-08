@@ -58,6 +58,19 @@ final class CommerceController extends BaseController {
             $this->jsonResponse(['error' => 'Razorpay ' . ($secrets['razorpay_mode'] ?? 'selected') . ' mode is not configured yet.'], 401);
         }
         $items = $this->resolveCartItems();
+        if (empty($items)) {
+            $this->jsonResponse(['error' => 'Cart is empty or products are unavailable.'], 400);
+        }
+        $store = new JsonStoreService();
+        $products = [];
+        foreach ($store->read('products') as $p) { $products[$p['slug'] ?? ''] = $p; }
+        foreach ($items as $item) {
+            $product = $products[$item['slug']] ?? null;
+            $status = $product['stock_status'] ?? '';
+            if (!in_array($status, ['in_stock', 'active'], true)) {
+                $this->jsonResponse(['error' => e($item['name']) . ' is currently unavailable.'], 400);
+            }
+        }
         $cartAmount = $this->cartTotal($items) * 100;
         $amount = $cartAmount > 0 ? $cartAmount : (int)($_POST['amount'] ?? 0);
         if ($amount < 100) {
@@ -97,6 +110,15 @@ final class CommerceController extends BaseController {
             $this->jsonResponse(['verified' => false, 'error' => 'Payment signature mismatch.'], 400);
         }
         $items = $this->resolveCartItems();
+        if (empty($items)) {
+            $this->jsonResponse(['verified' => false, 'error' => 'Cart is empty.'], 400);
+        }
+        $existingOrders = (new JsonStoreService())->read('orders');
+        foreach ($existingOrders as $existing) {
+            if (($existing['payment_id'] ?? '') === $paymentId) {
+                $this->jsonResponse(['verified' => false, 'error' => 'Payment already processed.'], 400);
+            }
+        }
         $total = $this->cartTotal($items);
         $order = [
             'id' => bin2hex(random_bytes(8)),

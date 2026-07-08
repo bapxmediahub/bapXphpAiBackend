@@ -109,12 +109,15 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/payment/verify','name'=>'payment.verify','page'=>'public/checkout','controller'=>'CommerceController@verifyPayment','services'=>['SecretService','PaymentService','JsonStoreService']],
             ['method'=>'POST','path'=>'/create-order','name'=>'api.checkout.create-order','page'=>'public/checkout','controller'=>'CommerceController@createOrder','services'=>['SecretService','PaymentService']],
             ['method'=>'POST','path'=>'/verify-payment','name'=>'api.payment.verify','page'=>'public/checkout','controller'=>'CommerceController@verifyPayment','services'=>['SecretService','PaymentService','JsonStoreService']],
-            ['method'=>'POST','path'=>'/appointments/book','name'=>'appointments.book','page'=>'public/astrologer','controller'=>'BookingController@book','services'=>['AuthService','ResourceService','AstrologerService']],
+            ['method'=>'POST','path'=>'/consultation/initiate','name'=>'consultation.initiate','page'=>'public/astrologer','controller'=>'ConsultationController@initiate','services'=>['AuthService','AstrologerService','WalletService','ResourceService']],
             ['method'=>'POST','path'=>'/reviews/astrologer','name'=>'reviews.astrologer','page'=>'account/bookings','controller'=>'ReviewController@saveAstrologer','services'=>['ReviewService']],
             ['method'=>'POST','path'=>'/reviews/product','name'=>'reviews.product','page'=>'account/orders','controller'=>'ReviewController@saveProduct','services'=>['ReviewService']],
             ['method'=>'GET','path'=>'/support','name'=>'support.page','page'=>'public/support','controller'=>'SupportController@page','services'=>['SeoService']],
             ['method'=>'POST','path'=>'/support/ask','name'=>'support.ask','page'=>'public/support','controller'=>'SupportController@ask','services'=>['SupportBotService','AgentContextService']],
 
+            ['method'=>'GET','path'=>'/blog','name'=>'blog.index','page'=>'public/blog','controller'=>'BlogController@index','services'=>['GitHubDocService','MarkdownRenderer']],
+            ['method'=>'GET','path'=>'/blog/{slug}','name'=>'blog.show','page'=>'public/blog-post','controller'=>'BlogController@show','services'=>['GitHubDocService','MarkdownRenderer']],
+            ['method'=>'GET','path'=>'/blog/category/{slug}','name'=>'blog.category','page'=>'public/blog','controller'=>'BlogController@category','services'=>['GitHubDocService','MarkdownRenderer']],
         ];
         foreach ($routes as &$route) {
             if ((str_starts_with($route['path'], '/admin') || str_starts_with($route['path'], '/reviews')) && !in_array('AuthService', $route['services'], true) && !str_starts_with($route['path'], '/admin/sw.js') && !str_starts_with($route['path'], '/admin/manifest.json')) {
@@ -124,7 +127,7 @@ final class ProjectMapService {
         unset($route);
         return [
             'routes'=>$routes,
-            'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AstrologerAccountService','AppointmentService','ConsultationService','TempleService','SettingsService','ProjectMapService','JsonStoreService','AuditLogService','ResourceService','SecretService','EnvService','ContactService','ReviewService','PasswordResetService','MailQueueService','MailStorageService','WalletService','SupportBotService','MediaService','StoragePermissionService','SchemaService','AgentContextService','SeoService','ImageOptimizerService'],
+            'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AstrologerAccountService','AppointmentService','ConsultationService','TempleService','SettingsService','ProjectMapService','JsonStoreService','AuditLogService','ResourceService','SecretService','EnvService','ContactService','ReviewService','PasswordResetService','MailQueueService','MailStorageService','WalletService','SupportBotService','MediaService','StoragePermissionService','SchemaService','AgentContextService','SeoService','ImageOptimizerService','GitHubDocService','MarkdownRenderer'],
             'integrations'=>['GoogleOAuthClient','RazorpayClient','StripeClient','MetaPixelClient','GoogleSiteKitClient'],
             'collections'=>['users','products','categories','coupons','orders','astrologers','appointments','consultation_messages','consultation_signals','temples','settings','audit_events','reviews','mail_queue','wallet_transactions','support_tickets','media_files'],
         ];
@@ -162,7 +165,7 @@ final class ProjectMapService {
         )));
 
         $sharedControllers = ['BaseController'];
-        $sharedServices = ['SeoService', 'SmtpMailer', 'ImageOptimizerService'];
+        $sharedServices = ['SeoService', 'SmtpMailer', 'ImageOptimizerService', 'DocsMapService'];
         $sharedViews = ['account/_nav', 'layouts/admin', 'layouts/app', 'public/404'];
 
         $gaps = [
@@ -203,8 +206,12 @@ final class ProjectMapService {
         ];
     }
 
-    private static function routeDesc(string $path): string {
+    private static function routeDesc(string $path, string $method = 'GET'): string {
+        $methodPath = $path . '|' . $method;
         $descs = [
+            '/blog'           => 'Blog listing — all posts with category filters',
+            '/blog/{slug}'    => 'Blog post — rendered from GitHub-sourced markdown',
+            '/blog/category/{slug}' => 'Blog listing filtered by category',
             '/'                => 'Home page — hero, categories, featured products, astrologers',
             '/about'           => 'About SPS — story, values, CTA',
             '/sri-panchami-spiritual' => 'Sri Panchami Spiritual landing page',
@@ -260,7 +267,7 @@ final class ProjectMapService {
             '/api/consultations/{id}/signals' => 'API — fetch WebRTC signals',
             '/api/consultations/{id}/signals|POST' => 'API — send WebRTC signal',
             '/api/consultations/{id}/status|POST' => 'API — update appointment status',
-            '/appointments/book|POST' => 'Book astrologer appointment',
+            '/consultation/initiate|POST' => 'Initiate consultation session — create appointment, deduct credits, redirect to room',
             '/reviews/astrologer|POST' => 'Submit astrologer review',
             '/reviews/product|POST'    => 'Submit product review',
             '/support/ask|POST' => 'Support bot — AI-powered Q&A',
@@ -307,8 +314,9 @@ final class ProjectMapService {
             '/admin/temples/delete|POST' => 'Admin — delete temple',
             '/admin/integrations/save|POST' => 'Admin — save integration secrets',
         ];
-        $methodPath = $path;
-        return $descs[$methodPath] ?? '';
+        if (isset($descs[$methodPath])) return $descs[$methodPath];
+        if (isset($descs[$path])) return $descs[$path];
+        return '';
     }
 
     public static function renderSystematicMermaid(): string {
@@ -345,7 +353,7 @@ final class ProjectMapService {
             foreach ($routes as $route) {
                 $id = self::routeId($route);
                 $mp = ($route['method'] ?? 'GET') . ' ' . ($route['path'] ?? '');
-                $desc = self::routeDesc($route['path'] ?? '');
+                $desc = self::routeDesc($route['path'] ?? '', $route['method'] ?? 'GET');
                 $label = $desc ? $mp . ' — ' . $desc : $mp;
                 $lines[] = '    ' . $id . '["' . self::label($label) . '"]:::route';
             }

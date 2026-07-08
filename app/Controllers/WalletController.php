@@ -24,7 +24,8 @@ final class WalletController extends BaseController {
     public function createOrder(): void {
         (new AuthService())->requireUser();
         $secrets = (new SecretService())->all();
-        $quote = (new WalletService())->quoteTopUp((int)($_POST['amount_rupees'] ?? 0));
+        $amountRupees = (int)($_POST['amount_rupees'] ?? 0);
+        $quote = (new WalletService())->quoteTopUp($amountRupees);
         if (empty($secrets['razorpay_key_id']) || empty($secrets['razorpay_key_secret'])) {
             $this->jsonResponse(['error' => 'Razorpay ' . ($secrets['razorpay_mode'] ?? 'selected') . ' mode is not configured yet.'], 400);
         }
@@ -34,6 +35,7 @@ final class WalletController extends BaseController {
             $status = $exception->getCode() === 401 ? 401 : 500;
             $this->jsonResponse(['error' => $exception->getMessage()], $status);
         }
+        $_SESSION['_wallet_pending'][$order['id'] ?? ''] = ['amount_rupees' => $amountRupees, 'total_paise' => $quote['total_paise']];
         $this->jsonResponse([
             'id' => $order['id'] ?? '',
             'order_id' => $order['id'] ?? '',
@@ -56,10 +58,11 @@ final class WalletController extends BaseController {
             $this->jsonResponse(['verified' => false, 'error' => 'Missing Razorpay payment verification fields.'], 400);
         }
         $ok = (new PaymentService($secrets['razorpay_key_secret'] ?? ''))->verifySignature($orderId, $paymentId, $signature);
-        if ($ok) {
-            $quote = (new WalletService())->quoteTopUp((int)($_POST['amount_rupees'] ?? 0));
-            (new WalletService())->addTopUp($_SESSION['user']['email'] ?? '', $quote, $paymentId);
+        if (!$ok) {
+            $this->jsonResponse(['verified' => false, 'error' => 'Payment signature mismatch.'], 400);
         }
-        $this->jsonResponse(['verified' => $ok]);
+        $quote = (new WalletService())->quoteTopUp((int)($_POST['amount_rupees'] ?? 0));
+        (new WalletService())->addTopUp($_SESSION['user']['email'] ?? '', $quote, $paymentId);
+        $this->jsonResponse(['verified' => true]);
     }
 }
