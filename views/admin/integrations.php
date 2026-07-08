@@ -1,6 +1,6 @@
 <div class="admin-card" style="border-left:4px solid var(--color-gold); margin-bottom:var(--space-lg);">
     <h2 style="font-size:1rem; margin:0 0 var(--space-sm);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> API Setup</h2>
-    <p style="margin:0; color:var(--color-text-muted); font-size:0.9rem;">These settings are for the website owner only. Customers will only see shop, booking, text session, and direct call session screens.</p>
+    <p style="margin:0; color:var(--color-text-muted); font-size:0.9rem;">These settings are for the website owner only. Customers will only see shop, booking, text session, and direct call session screens. All site secrets (payments, email, analytics, and AI) are stored encrypted in the project secret store and managed from this page &mdash; they are never kept in <code>.env</code>.</p>
 </div>
 <div class="admin-card">
     <form method="post" action="/admin/integrations/save" class="admin-form">
