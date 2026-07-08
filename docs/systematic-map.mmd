@@ -7,14 +7,14 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 108 routes, 12 controllers, 37 services, 46 views, 20 data files, 8 tools"]
+  subgraph ARCH["Architecture Overview — 108 routes, 12 controllers, 39 services, 47 views, 21 data files, 8 tools"]
     arch_routes["> Routes: 108 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
-    arch_svc["> Services: 37"]:::arch
-    arch_views["> Views: 46"]:::arch
-    arch_data["> Collections: 20 schema | 20 files"]:::arch
+    arch_svc["> Services: 39"]:::arch
+    arch_views["> Views: 47"]:::arch
+    arch_data["> Collections: 21 schema | 21 files"]:::arch
     arch_tools["> Tools: 8"]:::arch
-    arch_gaps["> Gaps: 0"]:::arch
+    arch_gaps["> Gaps: 3"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -172,11 +172,13 @@ flowchart LR
     service_ae8ee1aa005a["AstrologerService"]:::code
     service_e79c019a142b["AuditLogService"]:::code
     service_f33a1d77b137["AuthService"]:::code
+    service_a59832354e11["BlogService"]:::code
     service_119321b674bd["CartService"]:::code
     service_ebacea9031c7["CategoryService"]:::code
     service_0d961cbe684b["ConsultationService"]:::code
     service_fc0ff5cfd93a["ContactService"]:::code
     service_c4c5dac5c925["CouponService"]:::code
+    service_66daa9bdc2c1["DatabaseService"]:::code
     service_ef752c9bb64e["DocsMapService"]:::code
     service_01d1cd760b64["EnvService"]:::code
     service_88bb58d7e6e8["GitHubDocService"]:::code
@@ -214,6 +216,7 @@ flowchart LR
     view_17900ac53325["admin/appearance"]:::code
     view_7913e08e07e6["admin/astrologer-credentials"]:::code
     view_c08844df74a9["admin/astrologer-form"]:::code
+    view_e13f2d1caf99["admin/blog"]:::code
     view_860deb20ae6d["admin/consultation-analytics"]:::code
     view_af209260b21b["admin/dashboard"]:::code
     view_99a0e61b7241["admin/detail"]:::code
@@ -283,6 +286,7 @@ flowchart LR
     collection_2e5d8aa3dfa8["settings"]:::data
     collection_2dce077b5527["contact_submissions"]:::data
     collection_a276577b33a8["media_files"]:::data
+    collection_7de38f3c3d3b["secrets"]:::data
   end
 
   subgraph STORAGE["Storage Data Files"]
@@ -301,6 +305,7 @@ flowchart LR
     storage_12c500ed0b78["orders"]:::data
     storage_86024cad1e83["products"]:::data
     storage_74dcb1cec508["reviews"]:::data
+    storage_7de38f3c3d3b["secrets"]:::data
     storage_2e5d8aa3dfa8["settings"]:::data
     storage_830b87d9f1ff["support_tickets"]:::data
     storage_fefa79731a13["temples"]:::data
@@ -320,7 +325,9 @@ flowchart LR
   end
 
   subgraph GAPS["Gaps & Missing Links"]
-    no_gaps["No detected gaps"]:::data
+    gap_6a7117fad9["unwired_services: BlogService"]:::gap
+    gap_ff90a40886["unwired_services: DatabaseService"]:::gap
+    gap_8c7c891385["unwired_views: admin/blog"]:::gap
   end
 
   route_e3b717d5883a --> controller_18ec49ea2cf4
@@ -840,6 +847,7 @@ flowchart LR
   collection_2e5d8aa3dfa8 --> storage_2e5d8aa3dfa8
   collection_2dce077b5527 --> storage_2dce077b5527
   collection_a276577b33a8 --> storage_a276577b33a8
+  collection_7de38f3c3d3b --> storage_7de38f3c3d3b
   service_9eeeaab84791 --> integration_1442a65b90de
   service_9eeeaab84791 --> integration_063c1f657453
   controller_f3a06e444dad --> integration_58a89e5d2ef3
@@ -861,3 +869,6 @@ flowchart LR
   tool_ffb4fe3c51d9 --> systematic_map
   tool_6bc5276d6a60 --> ROUTES_PUBLIC
   tool_6bc5276d6a60 --> ROUTES_ADMIN
+  gap_6a7117fad9 -. missing .-> service_a59832354e11
+  gap_ff90a40886 -. missing .-> service_66daa9bdc2c1
+  gap_8c7c891385 -. missing .-> view_e13f2d1caf99
