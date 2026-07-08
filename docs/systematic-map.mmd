@@ -7,10 +7,10 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 111 routes, 12 controllers, 39 services, 47 views, 0 data files, 13 tools"]
+  subgraph ARCH["Architecture Overview — 111 routes, 12 controllers, 38 services, 47 views, 0 data files, 13 tools"]
     arch_routes["> Routes: 111 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
-    arch_svc["> Services: 39"]:::arch
+    arch_svc["> Services: 38"]:::arch
     arch_views["> Views: 47"]:::arch
     arch_data["> Collections: 21 schema | 0 files"]:::arch
     arch_tools["> Tools: 13"]:::arch
@@ -186,7 +186,6 @@ flowchart LR
     service_01d1cd760b64["EnvService"]:::code
     service_88bb58d7e6e8["GitHubDocService"]:::code
     service_b30981b6449c["ImageOptimizerService"]:::code
-    service_36e1e06e13b3["JsonStoreService"]:::code
     service_1a1be05523e3["MailQueueService"]:::code
     service_bf9fe918ea27["MailStorageService"]:::code
     service_dc8af4c619cd["MarkdownRenderer"]:::code
@@ -808,7 +807,7 @@ flowchart LR
   service_66daa9bdc2c1 --> collection_2417b5325520
   service_66daa9bdc2c1 --> collection_c37815a262b9
   service_66daa9bdc2c1 --> collection_ce528b00cff4
-  service_36e1e06e13b3 --> collection_7be8cd817cfe
+  service_66daa9bdc2c1 --> collection_7be8cd817cfe
   service_1a1be05523e3 --> collection_d10fbf039e34
   service_75ac00fac97c --> collection_a276577b33a8
   service_f751cedec776 --> collection_12c500ed0b78

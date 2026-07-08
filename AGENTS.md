@@ -63,7 +63,7 @@ This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP
 - Update `storage/schema/collections.php` before changing a collection shape, admin fields, media fields, seed data, or agent-visible context.
 - Extend existing controllers, services, views, storage files, and tools when they already cover the use case. Do not scaffold parallel implementations.
 - When a code change reveals a reusable workflow rule, update the matching project skill under `.agents/skills/<skill-name>/SKILL.md` so future agents inherit the framework behavior. Keep skills business-agnostic.
-- Keep route -> controller -> service -> MySQL-store boundaries via `DatabaseService`. Do not use `JsonStoreService` in runtime code.
+- Keep route -> controller -> service -> MySQL-store boundaries via `DatabaseService`. `JsonStoreService` has been removed from the codebase.
 - Do not add React, CDN React, a SPA fallback, or a second frontend.
 - Customer-facing UI changes must follow `Design.md`: warm-neutral canvas, Inter/system sans typography, `#3A0003` primary maroon, `#D1B368` secondary gold, stable photo-first cards, restrained borders/shadows, and the documented responsive breakpoints.
 - Admin mutations should be auditable via `AuditLogService`.

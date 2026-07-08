@@ -3,7 +3,7 @@ namespace App\Services;
 
 final class OrderService {
     public function __construct(
-        private DatabaseService|JsonStoreService $store = new DatabaseService(),
+        private DatabaseService $store = new DatabaseService(),
         private ?MailQueueService $mailQueue = null
     ) {
         $this->mailQueue ??= new MailQueueService($this->store);

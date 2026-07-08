@@ -129,7 +129,7 @@ final class ProjectMapService {
         unset($route);
         return [
             'routes'=>$routes,
-            'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AstrologerAccountService','AppointmentService','ConsultationService','TempleService','SettingsService','ProjectMapService','DatabaseService','JsonStoreService','AuditLogService','ResourceService','SecretService','EnvService','ContactService','ReviewService','PasswordResetService','MailQueueService','MailStorageService','WalletService','SupportBotService','MediaService','StoragePermissionService','SchemaService','AgentContextService','SeoService','ImageOptimizerService','GitHubDocService','MarkdownRenderer','BlogService'],
+            'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AstrologerAccountService','AppointmentService','ConsultationService','TempleService','SettingsService','ProjectMapService','DatabaseService','AuditLogService','ResourceService','SecretService','EnvService','ContactService','ReviewService','PasswordResetService','MailQueueService','MailStorageService','WalletService','SupportBotService','MediaService','StoragePermissionService','SchemaService','AgentContextService','SeoService','ImageOptimizerService','GitHubDocService','MarkdownRenderer','BlogService'],
             'integrations'=>['GoogleOAuthClient','RazorpayClient','StripeClient','MetaPixelClient','GoogleSiteKitClient'],
             'collections'=>['users','products','categories','coupons','orders','astrologers','appointments','consultation_messages','consultation_signals','temples','settings','audit_events','reviews','mail_queue','wallet_transactions','support_tickets','media_files'],
         ];
@@ -167,7 +167,7 @@ final class ProjectMapService {
         )));
 
         $sharedControllers = ['BaseController'];
-        $sharedServices = ['SeoService', 'SmtpMailer', 'ImageOptimizerService', 'DocsMapService', 'GitHubDocService', 'JsonStoreService'];
+        $sharedServices = ['SeoService', 'SmtpMailer', 'ImageOptimizerService', 'DocsMapService', 'GitHubDocService'];
         $sharedViews = ['account/_nav', 'layouts/admin', 'layouts/app', 'public/404'];
 
         $gaps = [
@@ -531,8 +531,7 @@ final class ProjectMapService {
             'CategoryService' => ['categories'],
             'ContactService' => ['contact_submissions'],
             'CouponService' => ['coupons'],
-            'DatabaseService' => ['users', 'products', 'orders', 'appointments', 'consultation_messages', 'consultation_signals'],
-            'JsonStoreService' => ['test_fixtures'],
+            'DatabaseService' => ['users', 'products', 'orders', 'appointments', 'consultation_messages', 'consultation_signals', 'test_fixtures'],
             'MailQueueService' => ['mail_queue'],
             'MediaService' => ['media_files'],
             'OrderService' => ['orders'],

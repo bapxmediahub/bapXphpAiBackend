@@ -2,7 +2,7 @@
 namespace App\Services;
 
 final class MailStorageService {
-    public function __construct(private DatabaseService|JsonStoreService $store = new DatabaseService()) {}
+    public function __construct(private DatabaseService $store = new DatabaseService()) {}
 
     public function inbox(): array {
         return $this->sorted('mail_inbox');

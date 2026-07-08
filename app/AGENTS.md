@@ -24,8 +24,8 @@ Owns PHP runtime behavior: bootstrap, routes, controllers, services, guards, per
 
 - Read `storage/schema/collections.php` before changing JSON-backed behavior.
 - Keep admin mutations auditable through `AuditLogService` when data changes.
-- Do not bypass `SecretService`, `EnvService`, or `JsonStoreService` with ad hoc file writes.
-- Secrets (payment keys, SMTP credentials, API keys, SEO defaults) are stored encrypted in `secrets.json` and are admin-editable through **Admin → Integrations**; never put secrets in `.env`. `.env` only holds APP_NAME and APP_URL. This is a flat-file JSON backend, so secrets are first-class admin-managed data.
+- Do not bypass `SecretService` or `EnvService` with ad hoc file writes.
+- Secrets (payment keys, SMTP credentials, API keys, SEO defaults) are stored in MySQL `secrets` table and are admin-editable through **Admin → Integrations**; never put secrets in `.env`. System env vars serve as fallback for critical credentials.
 - Unknown routes render the themed `views/public/404.php` through `Router::renderNotFound()` and the `index.php` 404 branch; keep that view and its layout variables (`$pageTitle`, `$seo`, `$metaDescription`, `$metaRobots`, `$viewFile`) in sync so the 404 stays styled.
 - Admin mail surfaces live at `/admin/email-inbox` and `/admin/email-outbox` (rendered by `AdminController::emailInbox`/`emailOutbox` via `MailStorageService`); keep those routes wired so the admin sidebar links stay live.
 

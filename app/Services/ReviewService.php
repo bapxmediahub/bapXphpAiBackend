@@ -2,7 +2,7 @@
 namespace App\Services;
 
 final class ReviewService {
-    public function __construct(private DatabaseService|JsonStoreService $store = new DatabaseService()) {}
+    public function __construct(private DatabaseService $store = new DatabaseService()) {}
 
     public function saveAstrologerReview(array $data): array {
         return $this->save('astrologer', $data);
