@@ -45,6 +45,14 @@ final class EnvService {
     }
 
     public function adminCredentials(): array {
+        $settings = (new SettingsService())->admin();
+        if (!empty($settings['admin_email'])) {
+            return [
+                'username' => $settings['admin_username'] ?? '',
+                'email' => $settings['admin_email'] ?? '',
+                'password' => $settings['admin_password'] ?? '',
+            ];
+        }
         return [
             'username' => getenv('ADMIN_USERNAME') ?: '',
             'email' => getenv('ADMIN_EMAIL') ?: '',
@@ -53,24 +61,19 @@ final class EnvService {
     }
 
     public function saveAdminCredentials(array $data): void {
-        $path = app_path(self::PATH);
-        $values = self::readFile($path);
-        foreach (['ADMIN_USERNAME' => 'admin_username', 'ADMIN_EMAIL' => 'admin_email'] as $envKey => $postKey) {
-            $value = trim((string)($data[$postKey] ?? ''));
-            if ($value !== '') $values[$envKey] = $value;
+        $settings = (new SettingsService())->public();
+        foreach (['admin_username', 'admin_email'] as $key) {
+            $value = trim((string)($data[$key] ?? ''));
+            if ($value !== '') $settings[$key] = $value;
         }
         $password = (string)($data['admin_password'] ?? '');
-        if ($password !== '') $values['ADMIN_PASSWORD'] = $password;
-        $this->writeFile($path, $values);
-        self::load($path, true);
+        if ($password !== '') $settings['admin_password'] = $password;
+        (new SettingsService())->savePublic($settings);
     }
 
     private function writeFile(string $path, array $values): void {
-        $ordered = ['APP_NAME', 'APP_URL', 'ADMIN_USERNAME', 'ADMIN_EMAIL', 'ADMIN_PASSWORD'];
-        $lines = [
-            '# Sri Panchami Spiritual local hosting environment',
-            '# Edit these values before using the product in production.',
-        ];
+        $ordered = ['APP_NAME', 'APP_URL'];
+        $lines = [];
         foreach ($ordered as $key) {
             if (array_key_exists($key, $values)) {
                 $lines[] = $key . '=' . $this->encode((string)$values[$key]);

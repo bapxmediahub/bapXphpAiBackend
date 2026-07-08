@@ -81,7 +81,7 @@
                             <?php if(!empty($item['slug'])): ?>
                                 <div class="astro-action-row">
                                     <?php if($state === 'online'): ?>
-                                        <form class="astro-session-form" action="/appointments/book" method="post">
+                                        <form class="astro-session-form" action="/consultation/initiate" method="post">
                                             <input type="hidden" name="astrologer_slug" value="<?= e($item['slug']) ?>">
                                             <input type="hidden" name="mode" value="text_session">
                                             <button type="submit" class="astro-action astro-action--icon astro-action--chat" aria-label="Start message session" title="Message">
@@ -89,7 +89,7 @@
                                             <span class="sr-only">Message</span>
                                             </button>
                                         </form>
-                                        <form class="astro-session-form" action="/appointments/book" method="post">
+                                        <form class="astro-session-form" action="/consultation/initiate" method="post">
                                             <input type="hidden" name="astrologer_slug" value="<?= e($item['slug']) ?>">
                                             <input type="hidden" name="mode" value="direct_call">
                                             <button type="submit" class="astro-action astro-action--icon astro-action--call" aria-label="Start call session" title="Call">
@@ -98,7 +98,7 @@
                                             </button>
                                         </form>
                                     <?php elseif($state === 'busy'): ?>
-                                        <form class="astro-session-form" action="/appointments/book" method="post">
+                                        <form class="astro-session-form" action="/consultation/initiate" method="post">
                                             <input type="hidden" name="astrologer_slug" value="<?= e($item['slug']) ?>">
                                             <input type="hidden" name="mode" value="text_session">
                                             <input type="hidden" name="queue_status" value="waitlist">

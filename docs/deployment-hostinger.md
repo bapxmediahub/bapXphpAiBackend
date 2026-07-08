@@ -20,7 +20,7 @@ Hostinger hPanel supports Git deployment from GitHub using OAuth. In the Hosting
 
 After the repository is connected, enable **Auto Deployment** for the selected Branch. Hostinger gives a webhook URL for automatic deployments, and updates merged into the deployment branch can trigger a new deploy. Keep `storage/data/` writable and back it up before deploys because this project stores runtime data in JSON files on the host.
 
-The root `.env` file is a deployable repo file for this project. Commit the branch-specific `APP_URL`, `ADMIN_USERNAME`, `ADMIN_EMAIL`, and bootstrap `ADMIN_PASSWORD` so a fresh Hostinger deploy can load the website and admin login. Keep generated runtime files out of Git: `storage/runtime-key.php`, `storage/data/settings.secrets.json`, `storage/data/*.lock`, logs, and backups remain host-local.
+The root `.env` file holds only `APP_NAME` and `APP_URL` and is deployable via Git. Commit branch-specific values so a fresh Hostinger deploy can serve the site. Admin credentials are set through **Admin → Settings**. All API secrets (Razorpay, SMTP, Google OAuth, support bot) are set through **Admin → Integrations** and stored in `storage/data/settings.secrets.json` — never in `.env`. Keep generated runtime files out of Git: `storage/runtime-key.php`, `storage/data/settings.secrets.json`, `storage/data/*.lock`, logs, and backups remain host-local.
 
 Recommended branch setup:
 

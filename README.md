@@ -22,7 +22,7 @@ The backend primitives are repo-native so agents do not rediscover the system ev
 - `ProjectMapService` generates route -> controller -> service docs.
 - `AgentContextService` builds safe customer-specific JSON for the support/model assistant.
 - `MediaService` manages reusable uploaded files for products, temples, astrologers, and shared assets.
-- `/admin/environment` edits `.env` and checks/fixes writable storage paths.
+- `/admin/environment` edits bootstrap `.env` (APP_URL, APP_NAME) and checks/fixes writable storage paths. All secrets (Razorpay, SMTP, Google OAuth, admin credentials) are set through **Admin → Integrations** or **Admin → Settings**, not `.env`.
 - `AGENTS.md` and `.agents/skills/` give built-in instructions for compatible agents.
 
 ## Key Features for PHP JSON Agent Ready Apps
@@ -87,7 +87,7 @@ Module notes:
 - Media library for product, temple, astrologer, and shared uploads with explicit picker selection from all files sorted by upload time.
 - Environment editor and storage permission checker/fixer in admin.
 - Mail queue for payment confirmation, shipment notification, and delayed product review request emails.
-- `.env` admin login support with editable admin credentials from Admin Settings.
+- Admin credentials configurable through Admin → Settings. All API secrets through Admin → Integrations. `.env` only holds APP_NAME and APP_URL.
 
 ## Stack
 
@@ -102,17 +102,14 @@ There is intentionally no SPA fallback. Unknown routes return the PHP 404 page.
 
 ## Environment Setup
 
-This repository tracks the root `.env` file because shared-hosting Git auto-deploy needs the app URL and admin bootstrap credentials on the remote branch. Start from `.env.example` when creating a new install, then edit `.env` before using the app:
+The root `.env` file holds only `APP_NAME` and `APP_URL` — used by Git auto-deploy on shared hosting to set the site name and domain. Start from `.env.example`:
 
 ```dotenv
 APP_NAME="Your App Name"
 APP_URL=https://your-domain.example
-ADMIN_USERNAME=admin
-ADMIN_EMAIL=admin@your-domain.example
-ADMIN_PASSWORD=ChangeThisAdmin123!
 ```
 
-After first login, change admin credentials in `/admin/settings` and commit the deployable `.env` changes needed by the target branch. Runtime-only secret stores such as `storage/runtime-key.php`, `storage/data/settings.secrets.json`, lock files, logs, and backups stay ignored.
+All secrets (Razorpay, SMTP, Google OAuth, Meta Pixel, support bot, **admin credentials**) go through **Admin → Integrations** or **Admin → Settings**, stored in `storage/data/settings.secrets.json` and `storage/data/settings.json` — never in `.env`. Runtime-only files such as `storage/runtime-key.php`, lock files, logs, and backups stay gitignored.
 
 ## Local Development
 
@@ -154,11 +151,12 @@ Full details are in [docs/deployment-hostinger.md](docs/deployment-hostinger.md)
 This repo is meant for developers who want a PHP JSON AI agent backend that works on ordinary shared-hosting plans:
 
 1. Fork or clone the repository.
-2. Edit and commit `.env` for the new domain, admin email, and admin password.
-3. Update `storage/schema/collections.json` only when the JSON database shape changes.
-4. Change `views/`, `assets/css/`, and `storage/data/*.json` for the customer/project use case.
-5. Push to the branch connected to Hostinger Git auto-deploy or another PHP host.
-6. Use the built-in skills so future agents follow the backend map instead of rediscovering the project.
+2. Edit `.env` with the domain and app name.
+3. Configure admin credentials in **Admin → Settings** and API secrets (Razorpay, SMTP, Google OAuth) in **Admin → Integrations** after first login.
+4. Update `storage/schema/collections.json` only when the JSON database shape changes.
+5. Change `views/`, `assets/css/`, and `storage/data/*.json` for the customer/project use case.
+6. Push to the branch connected to Hostinger Git auto-deploy or another PHP host.
+7. Use the built-in skills so future agents follow the backend map instead of rediscovering the project.
 
 ## Use This Project With Built-In Agent Skills
 

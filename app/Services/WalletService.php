@@ -34,7 +34,7 @@ final class WalletService {
         return $this->store->upsert('wallet_transactions', [
             'id' => bin2hex(random_bytes(8)),
             'customer_email' => strtolower(trim($email)),
-            'type' => 'topup',
+            'type' => 'recharge',
             'credits' => (int)($quote['credits'] ?? 0),
             'amount_rupees' => (int)($quote['amount_rupees'] ?? 0),
             'service_charge' => (int)($quote['service_charge'] ?? 0),
@@ -53,7 +53,7 @@ final class WalletService {
         return $this->store->upsert('wallet_transactions', [
             'id' => bin2hex(random_bytes(8)),
             'customer_email' => strtolower(trim($email)),
-            'type' => 'spend',
+            'type' => 'debit',
             'credits' => -$credits,
             'source_id' => $sourceId,
             'note' => $note,

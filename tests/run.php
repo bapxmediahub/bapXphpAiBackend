@@ -128,7 +128,7 @@ $tests['public and api routes cover spiritual and category pages without fallbac
     assertTrue(in_array('/forgot-password', $paths, true), 'Login forgot-password link should have a GET route');
     assertTrue(in_array('/reset-password', $paths, true), 'Password reset page should have a GET route');
     assertTrue(str_contains($index, "'/logout'"), 'Logout should dispatch through PHP routes so the session is actually destroyed');
-    assertTrue(str_contains($index, "'/appointments'"), 'Appointment POST actions should dispatch through PHP routes instead of SPA fallback');
+    assertTrue(str_contains($index, "'/consultation'"), 'Consultation POST actions should dispatch through PHP routes instead of SPA fallback');
     assertTrue(str_contains($index, "'/payment'"), 'Payment verification POST actions should dispatch through PHP routes instead of SPA fallback');
 };
 
@@ -236,23 +236,21 @@ $tests['public registration never bootstraps admin on a live site'] = function (
     assertTrue(str_contains($controller, "\$u['role']"), 'Email/password login should preserve an existing stored admin role and password');
 };
 
-$tests['env file defines editable local admin credentials'] = function (): void {
+$tests['env file defines APP_NAME and APP_URL only'] = function (): void {
     $exampleEnvPath = app_path('.env.example');
     assertTrue(is_file($exampleEnvPath), '.env.example should exist for safe setup documentation');
     $exampleEnv = EnvService::readFile($exampleEnvPath);
-    foreach (['APP_NAME', 'APP_URL', 'ADMIN_USERNAME', 'ADMIN_EMAIL', 'ADMIN_PASSWORD'] as $key) {
+    foreach (['APP_NAME', 'APP_URL'] as $key) {
         assertTrue(($exampleEnv[$key] ?? '') !== '', ".env.example should define {$key}");
     }
-
+    assertTrue(!isset($exampleEnv['ADMIN_USERNAME']), '.env.example should not contain ADMIN_USERNAME');
     $envPath = app_path('.env');
     assertTrue(is_file($envPath), '.env should exist for small PHP hosting setup');
     $env = EnvService::readFile($envPath);
-    foreach (['ADMIN_USERNAME', 'ADMIN_EMAIL', 'ADMIN_PASSWORD'] as $key) {
-        assertTrue(($env[$key] ?? '') !== '', ".env should define {$key}");
-    }
+    assertTrue(!isset($env['ADMIN_PASSWORD']), '.env should not contain ADMIN_PASSWORD');
     $auth = file_get_contents(app_path('app/Controllers/AuthController.php'));
-    assertTrue(str_contains($auth, 'adminCredentials'), 'Login should check .env admin credentials');
-    assertTrue(str_contains($auth, "'role'=>'admin'"), 'Successful .env admin login should create an admin session');
+    assertTrue(str_contains($auth, 'adminCredentials'), 'Login should check admin credentials from settings');
+    assertTrue(str_contains($auth, "'role'=>'admin'"), 'Successful admin login should create an admin session');
 };
 
 $tests['admin settings can update env admin credentials'] = function (): void {
@@ -263,7 +261,7 @@ $tests['admin settings can update env admin credentials'] = function (): void {
     foreach (['name="admin_username"', 'name="admin_email"', 'name="admin_password"', 'action="/admin/settings/admin-credentials"'] as $needle) {
         assertTrue(str_contains($view, $needle), "Admin settings should expose {$needle}");
     }
-    assertTrue(str_contains($controller, 'saveAdminCredentials'), 'Admin controller should save admin .env credentials');
+    assertTrue(str_contains($controller, 'saveAdminCredentials'), 'Admin controller should save admin credentials');
     assertTrue(in_array('/admin/settings/admin-credentials', $paths, true), 'Route registry should include admin credential save route');
 };
 
@@ -431,12 +429,12 @@ $tests['admin list and order detail pages render real data surfaces instead of p
     assertTrue(str_contains($controller, "'orders'"), 'Admin orders action should pass orders collection data');
 };
 
-$tests['bookings use direct platform sessions without google meet or calendar'] = function (): void {
-    $booking = file_get_contents(app_path('app/Controllers/BookingController.php'));
+$tests['consultations use direct platform sessions without google meet or calendar'] = function (): void {
+    $consultController = file_get_contents(app_path('app/Controllers/ConsultationController.php'));
     $oauth = file_get_contents(app_path('integrations/google-oauth/GoogleOAuthClient.php'));
     $map = ProjectMapService::registry();
     $services = array_unique(array_merge(...array_map(fn($route) => $route['services'], $map['routes'])));
-    assertTrue(!str_contains($booking, 'meet.google.com'), 'Bookings should not generate Google Meet links');
+    assertTrue(!str_contains($consultController, 'meet.google.com'), 'Consultations should not generate Google Meet links');
     assertTrue(!str_contains($oauth, 'calendar.events'), 'Google login should not request Calendar permissions');
     assertTrue(!is_file(app_path('app/Services/CalendarService.php')), 'CalendarService source should be removed');
     assertTrue(!is_file(app_path('integrations/google-calendar/GoogleCalendarClient.php')), 'Google Calendar integration source should be removed');
@@ -445,18 +443,17 @@ $tests['bookings use direct platform sessions without google meet or calendar'] 
 };
 
 $tests['remote astrology sessions do not use appointment slots and show per session spend'] = function (): void {
-    $booking = file_get_contents(app_path('app/Controllers/BookingController.php'));
+    $initiate = file_get_contents(app_path('app/Controllers/ConsultationController.php'));
     $bookingsView = file_get_contents(app_path('views/account/bookings.php'));
     $astrologersView = file_get_contents(app_path('views/public/consult.php'));
     $profileView = file_get_contents(app_path('views/public/astrologer.php'));
-    assertTrue(!str_contains($booking, 'slotsForDate'), 'Remote sessions should not validate appointment date/time slots');
-    assertTrue(str_contains($booking, 'credits_spent'), 'Remote session records should track credits spent per call/message session');
+    assertTrue(str_contains($initiate, 'credits_spent'), 'Remote session records should track credits spent per call/message session');
     assertTrue(str_contains($bookingsView, 'Credits Spent'), 'User session panel should show per-session credits spent');
     assertTrue(str_contains($bookingsView, 'Session Type'), 'User session panel should show call/message session type');
     assertTrue(!str_contains($astrologersView, 'JOIN Q'), 'Busy astrologer action should not say JOIN Q');
     assertTrue(str_contains($astrologersView, 'Waitlist'), 'Busy astrologer action should say Waitlist');
-    assertTrue(str_contains($astrologersView, 'action="/appointments/book"'), 'Astrologer listing call/message actions should create remote session requests');
-    assertTrue(str_contains($profileView, 'action="/appointments/book"'), 'Astrologer profile call/message actions should create remote session requests');
+    assertTrue(str_contains($astrologersView, 'action="/consultation/initiate"'), 'Astrologer listing call/message actions should use initiate route');
+    assertTrue(str_contains($profileView, 'action="/consultation/initiate"'), 'Astrologer profile call/message actions should use initiate route');
 };
 
 $tests['astrologer profile uses remote consultation contact panel instead of appointment slot forms'] = function (): void {
@@ -464,7 +461,7 @@ $tests['astrologer profile uses remote consultation contact panel instead of app
     assertTrue(!str_contains($view, 'slot-picker'), 'Astrologer profile should not render appointment slot picker UI');
     assertTrue(!str_contains($view, 'Available Slots'), 'Astrologer profile should not show cinema-style appointment slots');
     assertTrue(!str_contains($view, 'name="date"') && !str_contains($view, 'name="time"'), 'Astrologer profile should not post dated slot booking fields');
-    assertTrue(str_contains($view, 'action="/appointments/book"'), 'Astrologer profile should post remote call/message session requests');
+    assertTrue(str_contains($view, 'action="/consultation/initiate"'), 'Astrologer profile should post remote call/message session requests');
     assertTrue(str_contains($view, '/contact'), 'Astrologer profile should direct consultation requests to the contact page');
     assertTrue(str_contains($view, 'Remote Call') || str_contains($view, 'Remote consultation'), 'Astrologer profile should describe remote call/message consultation');
 };
@@ -502,9 +499,9 @@ $tests['wallet recharge is login gated and exposes pricing breakdown'] = functio
     foreach (['Remaining Balance', 'Recharge Amount', 'Service charge', 'GST/tax estimate', 'Pay with Razorpay', 'Razorpay is not configured yet'] as $needle) {
         assertTrue(str_contains($view, $needle), "Wallet page should include {$needle}");
     }
-    $booking = file_get_contents(app_path('app/Controllers/BookingController.php'));
-    assertTrue(str_contains($booking, 'WalletService'), 'Session booking should check wallet balance');
-    assertTrue(str_contains($booking, '/account/dashboard/wallet?amount=100'), 'Insufficient session balance should redirect to dashboard wallet');
+    $initiate = file_get_contents(app_path('app/Controllers/ConsultationController.php'));
+    assertTrue(str_contains($initiate, 'WalletService'), 'Session initiation should check wallet balance');
+    assertTrue(str_contains($initiate, '/account/dashboard/wallet?amount=100'), 'Insufficient session balance should redirect to dashboard wallet');
 };
 
 $tests['support assistant widget uses browser session memory and google model setting'] = function (): void {
@@ -832,7 +829,7 @@ $tests['architecture and deployment docs describe current php template stack'] =
         assertTrue(!str_contains($doc, 'React'), 'Docs should not describe the removed React/CDN architecture');
         assertTrue(!str_contains($doc, 'CDN'), 'Docs should not say the app loads React from a CDN');
     }
-    foreach (['small PHP hosting', 'public_html', 'JSON-backed backend', '.env', 'ADMIN_EMAIL', 'ADMIN_PASSWORD', 'agentic development', 'docs/README.md', 'docs/deployment-hostinger.md', 'AGENTS.md', 'docs/systematic-map.mmd'] as $needle) {
+    foreach (['small PHP hosting', 'public_html', 'JSON-backed backend', '.env', 'APP_NAME', 'APP_URL', 'Admin → Settings', 'Admin → Integrations', 'agentic development', 'docs/README.md', 'docs/deployment-hostinger.md', 'AGENTS.md', 'docs/systematic-map.mmd'] as $needle) {
         assertTrue(str_contains($readme, $needle), "README should describe {$needle}");
     }
     assertTrue(is_file(app_path('docs/README.md')), 'Documentation index should exist and be linked from README');
@@ -906,14 +903,19 @@ $tests['local smoke tool verifies key routes api and unknown route 404'] = funct
     assertSame(0, $status, "Local smoke tool should pass:\n" . implode("\n", $output));
 };
 
-$tests['systematic project map is the only generated map artifact'] = function (): void {
-    assertTrue(is_file(app_path('docs/systematic-map.mmd')), 'Single systematic Mermaid map should exist');
+$tests['systematic project map and KnowledgeMap are the only generated map artifacts'] = function (): void {
+    assertTrue(is_file(app_path('docs/systematic-map.mmd')), 'Systematic Mermaid map should exist');
+    assertTrue(is_file(app_path('docs/KnowledgeMap.mmd')), 'KnowledgeMap.mmd should exist');
     foreach (['docs/PROJECT_MAP.md', 'docs/project-map.json', 'docs/project-map.mmd'] as $path) {
         assertTrue(!is_file(app_path($path)), "Old project-map artifact should not exist: {$path}");
     }
     $map = file_get_contents(app_path('docs/systematic-map.mmd'));
     foreach (['PUBLIC Routes', 'AUTH Routes', 'PAYMENT Routes', 'SUPPORT Routes', 'ADMIN Routes', 'Controllers', 'Services', 'Views', 'Integrations', 'Schema Collections', 'Storage Data Files', 'Tools', 'Gaps & Missing Links'] as $needle) {
         assertTrue(str_contains($map, $needle), "Systematic map should include {$needle}");
+    }
+    $kmap = file_get_contents(app_path('docs/KnowledgeMap.mmd'));
+    foreach (['CLI (bapXphp)', 'Agent Skills', 'Blog & Content', 'Application Architecture', 'Data Layer'] as $needle) {
+        assertTrue(str_contains($kmap, $needle), "KnowledgeMap should include {$needle}");
     }
 };
 

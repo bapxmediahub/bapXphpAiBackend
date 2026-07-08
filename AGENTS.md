@@ -6,7 +6,7 @@ alwaysApply: true
 
 # Agent Operating Guide
 
-This repo is an agent-ready PHP/JSON full-stack product base for small PHP hosting. It is not a SPA, not a SQL app, and not a separate MCP/skill server. The backend primitives live in this monorepo.
+This repo is an agent-ready PHP/JSON full-stack product base for small PHP hosting. It is not a SPA, not a separate MCP/skill server. The backend primitives live in this monorepo. JSON is the canonical data format; MySQL is the query backend for CLI operations.
 
 ## DOX Contract
 
@@ -21,7 +21,7 @@ This repo is an agent-ready PHP/JSON full-stack product base for small PHP hosti
 - Design system: `Design.md` is the canonical contract for customer-facing UI tokens, typography, geometry, components, and responsive behavior.
 - Frontend: PHP templates in `views/`.
 - Backend: PHP controllers and services in `app/`.
-- Database: JSON collections in `storage/data/`.
+- Database: JSON collections in `storage/data/` (canonical). MySQL is the query backend for `bapXphp db` CLI operations; JSON files are synced to MySQL tables.
 - Schema: `storage/schema/collections.json`.
 - Media: `assets/images/media/` plus `storage/data/media_files.json`.
 - Admin: owner tools for CRUD, media, environment variables, permissions, integrations, audit logs, and project map.
@@ -30,7 +30,7 @@ This repo is an agent-ready PHP/JSON full-stack product base for small PHP hosti
 
 ## Diagnose, Then Issue
 
-- For a meaningful code, schema, UI, documentation, or workflow change, reproduce or inspect the reported behavior first. Trace the affected systematic-map path and pinpoint the owning source before creating an issue.
+- For a meaningful code, schema, UI, documentation, or workflow change, reproduce or inspect the reported behavior first. Trace the affected systematic-map path and pinpoint the owning source before creating an issue. For documentation/AGENTS.md changes, also consult `docs/KnowledgeMap.mmd`.
 - After diagnosis, search open GitHub issues. Select an existing matching issue or create one before editing when GitHub is available.
 - Put reproduction evidence, affected source paths, the pinpointed cause, intended scope, and acceptance checks in the issue. Reference the issue in the branch and PR.
 - Do not create an issue for read-only diagnosis, trivial questions, or when the user explicitly declines issue tracking.
@@ -48,9 +48,10 @@ This repo is an agent-ready PHP/JSON full-stack product base for small PHP hosti
 
 ## Project Map
 
-- `docs/systematic-map.mmd` is the only project-map artifact.
-- Do not create `docs/PROJECT_MAP.md`, `docs/project-map.json`, `docs/project-map.mmd`, or parallel map generators.
+- `docs/systematic-map.mmd` is the single project-map artifact (routes/controllers/services wiring). `docs/KnowledgeMap.mmd` is a separate generated documentation mindmap.
+- Do not create `docs/PROJECT_MAP.md`, `docs/project-map.json`, `docs/project-map.mmd`, or parallel map generators (exception: `generate-docs-map.php` is the KnowledgeMap generator, not a parallel project map).
 - `tools/generate-project-map.php` regenerates `docs/systematic-map.mmd`.
+- `tools/generate-docs-map.php` regenerates `docs/KnowledgeMap.mmd`.
 - `tools/validate-project-map.php` compares the generated Mermaid to the committed file.
 - Update `ProjectMapService::scan()` and `ProjectMapService::renderSystematicMermaid()` when the map needs new sections, edges, or gap checks.
 - Map validation alone is incomplete. For every affected map path, verify the source route, controller action, service, schema entry, storage collection, rendered page, and shared navigation that actually implement the behavior.
@@ -58,7 +59,7 @@ This repo is an agent-ready PHP/JSON full-stack product base for small PHP hosti
 
 ## Rules
 
-- Keep JSON storage first. Do not introduce SQL/Postgres/MySQL unless the user explicitly asks for a separate migration.
+- Keep JSON storage first. MySQL is the query backend for `bapXphp db` CLI operations; JSON files are synced to MySQL tables.
 - Update `storage/schema/collections.json` before changing a collection shape, admin fields, media fields, seed data, or agent-visible context.
 - Extend existing controllers, services, views, storage files, and tools when they already cover the use case. Do not scaffold parallel implementations.
 - When a code change reveals a reusable workflow rule, update the matching project skill under `.agents/skills/<skill-name>/SKILL.md` so future agents inherit the framework behavior. Keep skills business-agnostic.
@@ -84,6 +85,12 @@ php tools/validate-project-map.php
 php tools/smoke-local.php
 ```
 
+For doc/AGENTS/skill changes, also regenerate the KnowledgeMap:
+
+```bash
+bash tools/bapXphp docsmap
+```
+
 For UI changes, also use a browser workflow. Codex agents must use `Browser:control-in-app-browser` for localhost and in-app browser verification when the Browser plugin is available. Standalone Playwright is only a fallback for agents or environments that do not have the Browser plugin. Click the changed page like a user and verify the visible result.
 
 Local browser validation must use this project's single dev-server port: `127.0.0.1:6020`. If `6020` is already listening, inspect and reuse that running project server; do not start another copy on `6021` or any alternate port unless the user explicitly authorizes it.
@@ -97,7 +104,7 @@ Before finishing, search the touched workflow for placeholders, dead buttons, du
 - `.agents/AGENTS.md`: repo-owned agent skills and skill contracts.
 - `views/AGENTS.md`: PHP-rendered public, account, admin, and layout templates.
 - `storage/AGENTS.md`: JSON data, schema contracts, writable runtime files, and backups.
-- `docs/AGENTS.md`: durable documentation and the single systematic project map.
+- `docs/AGENTS.md`: durable documentation and the systematic project map and KnowledgeMap.
 - `integrations/AGENTS.md`: third-party integration client wrappers.
 - `tools/AGENTS.md`: maintenance scripts, project-map generation/validation, local smoke checks, and mail queue tooling.
 - `tests/AGENTS.md`: PHP regression tests and test fixtures.

@@ -57,7 +57,7 @@ final class AdminController extends BaseController {
     public function deleteTemple(): void{$this->delete('temples');}
     public function settings(): void{$this->render('admin/settings',['pageTitle' => 'Settings', 'title' => 'Site Settings', 'settings'=>(new SettingsService())->public(), 'adminCredentials'=>(new EnvService())->adminCredentials()]);}
     public function saveSettings(): void{(new SettingsService())->savePublic(['shipping_mode'=>$_POST['shipping_mode'] ?? 'free','flat_rate'=>max(0,(float)($_POST['flat_rate'] ?? 0)),'currency'=>$_POST['currency'] ?? 'INR','timezone'=>$_POST['timezone'] ?? 'Asia/Kolkata']); $this->flash('Settings saved.','success'); $this->redirect('/admin/settings');}
-    public function saveAdminCredentials(): void{(new EnvService())->saveAdminCredentials($_POST); $this->flash('Admin credentials saved to .env.','success'); $this->redirect('/admin/settings');}
+    public function saveAdminCredentials(): void{(new EnvService())->saveAdminCredentials($_POST); $this->flash('Admin credentials saved.','success'); $this->redirect('/admin/settings');}
     public function integrations(): void{$this->render('admin/integrations',['pageTitle' => 'Integrations', 'secrets'=>(new SecretService())->all()]);}
     public function saveIntegrations(): void{(new SecretService())->save($_POST); $this->flash('Integration settings saved.','success'); $this->redirect('/admin/integrations');}
     public function appearance(): void{

@@ -7,6 +7,7 @@ description: Use when editing PHP controllers, services, JSON persistence, auth,
 
 - Follow root `AGENTS.md`, then the nearest child `AGENTS.md` for every touched path.
 - Keep route -> controller -> service -> JSON-store boundaries.
+- JSON is the canonical data format; MySQL is the query backend for `bapXphp db` CLI. JSON files are synced to MySQL tables via `bapXphp db sync`.
 - Use `JsonStoreService`, `ResourceService`, and existing services instead of ad hoc storage writes.
 - Keep assistant/customer context filtered through `AgentContextService` or equivalent user-specific filtering.
 - Implement consultation messaging and WebRTC signaling through authenticated PHP JSON APIs and `ConsultationService`; do not introduce a persistent WebSocket or CLI service.
