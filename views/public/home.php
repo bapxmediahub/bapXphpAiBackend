@@ -26,7 +26,7 @@
         <div class="hero-deity" data-varahi-slider>
             <div class="deity-frame">
                 <?php for($slide=1;$slide<=10;$slide++): ?>
-                    <img class="varahi-slide <?= $slide===1?'is-active':'' ?>" src="/assets/images/hero/varahi/varahi-<?= str_pad((string)$slide,2,'0',STR_PAD_LEFT) ?>.png" alt="Sri Maha Varahi Amman devotional image <?= $slide ?>" width="480" height="640" <?= $slide===1?'fetchpriority="high"':'loading="lazy"' ?>>
+                    <img class="varahi-slide <?= $slide===1?'is-active':'' ?>" src="/assets/images/hero/varahi/varahi-<?= str_pad((string)$slide,2,'0',STR_PAD_LEFT) ?>.webp" alt="Sri Maha Varahi Amman devotional image <?= $slide ?>" width="480" height="640" <?= $slide===1?'fetchpriority="high"':'loading="lazy"' ?>>
                 <?php endfor; ?>
             </div>
             <div class="varahi-dots" role="tablist" aria-label="Varahi slides">
@@ -115,7 +115,7 @@
             <?php $hasOffer = !empty($item['offer_price']) && $item['offer_price'] < $item['price']; ?>
             <article class="product-card reveal">
                 <div class="product-card__image">
-                    <img src="<?= e($item['image_url'] ?? placeholder_img($item['name'])) ?>" alt="<?= e($item['name']) ?> — Buy online at Sri Panchami Spiritual, Chennai" decoding="async">
+                    <img src="<?= e(webp_src($item['image_url'] ?? placeholder_img($item['name']))) ?>" alt="<?= e($item['name']) ?> — Buy online at Sri Panchami Spiritual, Chennai" decoding="async">
                     <?php if($hasOffer): ?>
                         <span class="product-card__badge product-card__badge--sale">Sale</span>
                     <?php endif; ?>
@@ -173,7 +173,7 @@
             ?>
             <article class="astro-market-card astro-market-card--<?= e($state) ?> reveal">
                 <a class="astro-market-photo" href="/consult/<?= e($astro['slug'] ?? '') ?>" aria-label="View <?= e($astro['name'] ?? 'Astrologer') ?>">
-                    <span class="astro-market-photo-frame"><img class="astro-market-photo-img astro-market-photo-img--<?= e($astro['slug'] ?? 'default') ?>" src="<?= e($astro['photo_url'] ?? placeholder_img($astro['name'] ?? 'Astrologer')) ?>" alt="<?= e($astro['name'] ?? 'Astrologer') ?>" loading="lazy"></span>
+                    <span class="astro-market-photo-frame"><img class="astro-market-photo-img astro-market-photo-img--<?= e($astro['slug'] ?? 'default') ?>" src="<?= e(webp_src($astro['photo_url'] ?? placeholder_img($astro['name'] ?? 'Astrologer'))) ?>" alt="<?= e($astro['name'] ?? 'Astrologer') ?>" loading="lazy"></span>
                     <span class="astro-status-dot" aria-label="<?= e(ucfirst($state)) ?>"></span>
                     <span class="astro-status-label"><?= e($statusLabel) ?></span>
                 </a>
@@ -252,7 +252,7 @@
             <a class="showcase-card temple-feature-card reveal <?= $index === 0 ? 'is-active' : '' ?>" href="/temples/<?= e($temple['slug'] ?? '') ?>" aria-label="View <?= e($temple['name'] ?? 'Temple') ?>">
                 <div class="temple-feature-card__media">
                     <?php if(!empty($temple['image_url'])): ?>
-                        <img src="<?= e($temple['image_url']) ?>" alt="<?= e($temple['name']) ?> — Temple guide at Sri Panchami Spiritual, Chennai" decoding="async">
+                        <img src="<?= e(webp_src($temple['image_url'])) ?>" alt="<?= e($temple['name']) ?> — Temple guide at Sri Panchami Spiritual, Chennai" decoding="async">
                     <?php else: ?>
                         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
                     <?php endif; ?>

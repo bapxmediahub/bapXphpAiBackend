@@ -5,3 +5,4 @@
 !/storage/backups/.gitkeep
 
 /storage/data/*.lock
+tmp/

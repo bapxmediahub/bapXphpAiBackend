@@ -4,7 +4,10 @@ namespace App\Services;
 final class MediaService {
     private array $allowed = ['jpg'=>'image/jpeg','jpeg'=>'image/jpeg','png'=>'image/png','webp'=>'image/webp','gif'=>'image/gif'];
 
-    public function __construct(private JsonStoreService $store = new JsonStoreService()) {}
+    public function __construct(
+        private JsonStoreService $store = new JsonStoreService(),
+        private ImageOptimizerService $optimizer = new ImageOptimizerService()
+    ) {}
 
     public function all(?string $context = null): array {
         $records = $this->store->read('media_files');
@@ -35,16 +38,32 @@ final class MediaService {
             if ($mime !== '' && $mime !== $this->allowed[$ext]) continue;
             $base = strtolower(trim(preg_replace('/[^a-z0-9]+/i', '-', pathinfo((string)$original, PATHINFO_FILENAME)), '-')) ?: 'media';
             $filename = $base . '-' . bin2hex(random_bytes(4)) . '.' . $ext;
-            if (!move_uploaded_file($tmp, $dir . '/' . $filename)) continue;
-            $record = [
-                'id' => bin2hex(random_bytes(8)),
-                'filename' => $filename,
-                'original_name' => (string)$original,
-                'path' => '/' . $folder . '/' . $filename,
-                'context' => $context,
-                'mime' => $this->allowed[$ext],
-                'created_at' => date('c'),
-            ];
+            $destPath = $dir . '/' . $filename;
+            if (!move_uploaded_file($tmp, $destPath)) continue;
+            $webpPath = $this->optimizer->optimize($destPath, $dir, ['max_width' => 1920, 'max_height' => 1920, 'quality' => 80]);
+            if ($webpPath && is_file($webpPath)) {
+                unlink($destPath);
+                $webpFilename = basename($webpPath);
+                $record = [
+                    'id' => bin2hex(random_bytes(8)),
+                    'filename' => $webpFilename,
+                    'original_name' => (string)$original,
+                    'path' => '/' . $folder . '/' . $webpFilename,
+                    'context' => $context,
+                    'mime' => 'image/webp',
+                    'created_at' => date('c'),
+                ];
+            } else {
+                $record = [
+                    'id' => bin2hex(random_bytes(8)),
+                    'filename' => $filename,
+                    'original_name' => (string)$original,
+                    'path' => '/' . $folder . '/' . $filename,
+                    'context' => $context,
+                    'mime' => $this->allowed[$ext],
+                    'created_at' => date('c'),
+                ];
+            }
             $records[] = $record;
             $uploaded[] = $record;
         }

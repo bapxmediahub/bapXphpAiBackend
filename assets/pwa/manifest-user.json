@@ -1,0 +1,16 @@
+{
+  "name": "Sri Panchami Spiritual",
+  "short_name": "SPS",
+  "description": "Authentic spiritual products, online astrology consultation, and temple guides.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#faf7f0",
+  "theme_color": "#3a0003",
+  "categories": ["shopping", "lifestyle", "spirituality"],
+  "icons": [
+    { "src": "/assets/images/logo-square.jpeg", "sizes": "192x192", "type": "image/jpeg" },
+    { "src": "/assets/images/logo.jpeg", "sizes": "512x512", "type": "image/jpeg" }
+  ]
+}

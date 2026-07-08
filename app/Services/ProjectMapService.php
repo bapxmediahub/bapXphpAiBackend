@@ -114,16 +114,17 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/reviews/product','name'=>'reviews.product','page'=>'account/orders','controller'=>'ReviewController@saveProduct','services'=>['ReviewService']],
             ['method'=>'GET','path'=>'/support','name'=>'support.page','page'=>'public/support','controller'=>'SupportController@page','services'=>['SeoService']],
             ['method'=>'POST','path'=>'/support/ask','name'=>'support.ask','page'=>'public/support','controller'=>'SupportController@ask','services'=>['SupportBotService','AgentContextService']],
+
         ];
         foreach ($routes as &$route) {
-            if ((str_starts_with($route['path'], '/admin') || str_starts_with($route['path'], '/reviews')) && !in_array('AuthService', $route['services'], true)) {
+            if ((str_starts_with($route['path'], '/admin') || str_starts_with($route['path'], '/reviews')) && !in_array('AuthService', $route['services'], true) && !str_starts_with($route['path'], '/admin/sw.js') && !str_starts_with($route['path'], '/admin/manifest.json')) {
                 $route['services'][] = 'AuthService';
             }
         }
         unset($route);
         return [
             'routes'=>$routes,
-            'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AstrologerAccountService','AppointmentService','ConsultationService','TempleService','SettingsService','ProjectMapService','JsonStoreService','AuditLogService','ResourceService','SecretService','EnvService','ContactService','ReviewService','PasswordResetService','MailQueueService','MailStorageService','WalletService','SupportBotService','MediaService','StoragePermissionService','SchemaService','AgentContextService','SeoService'],
+            'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AstrologerAccountService','AppointmentService','ConsultationService','TempleService','SettingsService','ProjectMapService','JsonStoreService','AuditLogService','ResourceService','SecretService','EnvService','ContactService','ReviewService','PasswordResetService','MailQueueService','MailStorageService','WalletService','SupportBotService','MediaService','StoragePermissionService','SchemaService','AgentContextService','SeoService','ImageOptimizerService'],
             'integrations'=>['GoogleOAuthClient','RazorpayClient','StripeClient','MetaPixelClient','GoogleSiteKitClient'],
             'collections'=>['users','products','categories','coupons','orders','astrologers','appointments','consultation_messages','consultation_signals','temples','settings','audit_events','reviews','mail_queue','wallet_transactions','support_tickets','media_files'],
         ];
@@ -161,7 +162,7 @@ final class ProjectMapService {
         )));
 
         $sharedControllers = ['BaseController'];
-        $sharedServices = ['SeoService', 'SmtpMailer'];
+        $sharedServices = ['SeoService', 'SmtpMailer', 'ImageOptimizerService'];
         $sharedViews = ['account/_nav', 'layouts/admin', 'layouts/app', 'public/404'];
 
         $gaps = [

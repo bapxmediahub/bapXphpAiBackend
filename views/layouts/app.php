@@ -14,6 +14,13 @@ $__favicon = $__settings['favicon_url'] ?? '/assets/images/sps-favicon.svg';
 $__faviconMime = str_contains($__favicon,'.svg') ? 'image/svg+xml' : 'image/png';
 ?>
 <link rel="icon" type="<?= e($__faviconMime) ?>" href="<?= e($__favicon) ?>">
+<?php $__pwaPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/'; $__isAstrologer = str_starts_with($__pwaPath, '/astrologer'); ?>
+<link rel="manifest" href="<?= $__isAstrologer ? '/astrologer/manifest.json' : '/manifest.json' ?>">
+<meta name="theme-color" content="#3a0003">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="<?= $__isAstrologer ? 'SPS Consultant' : 'Sri Panchami Spiritual' ?>">
+<link rel="apple-touch-icon" href="/assets/images/logo-square.jpeg">
 <link rel="canonical" href="https://<?= e($_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']) ?>">
 <meta property="og:type" content="<?= e($seo['og_type'] ?? 'website') ?>">
 <meta property="og:site_name" content="<?= e($seo['og_site_name'] ?? 'Sri Panchami Spiritual') ?>">
@@ -391,6 +398,11 @@ if ($__flash):
 </footer>
 <?php endif; ?>
 <script>
+if ('serviceWorker' in navigator) {
+    var swPath = <?= json_encode($__isAstrologer ? '/astrologer/sw.js' : '/sw.js') ?>;
+    var swScope = <?= json_encode($__isAstrologer ? '/astrologer/' : '/') ?>;
+    navigator.serviceWorker.register(swPath, { scope: swScope }).catch(function(){});
+}
 document.getElementById('site-header').querySelector('.menu-toggle').addEventListener('click',function(){
     var n=document.getElementById('primary-nav');n.classList.toggle('open');
     this.setAttribute('aria-expanded',n.classList.contains('open')?'true':'false');

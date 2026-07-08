@@ -7,13 +7,13 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 105 routes, 12 controllers, 33 services, 44 views, 20 data files, 5 tools"]
+  subgraph ARCH["Architecture Overview — 105 routes, 12 controllers, 34 services, 44 views, 20 data files, 6 tools"]
     arch_routes["> Routes: 105 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
-    arch_svc["> Services: 33"]:::arch
+    arch_svc["> Services: 34"]:::arch
     arch_views["> Views: 44"]:::arch
     arch_data["> Collections: 20 schema | 20 files"]:::arch
-    arch_tools["> Tools: 5"]:::arch
+    arch_tools["> Tools: 6"]:::arch
     arch_gaps["> Gaps: 0"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
@@ -175,6 +175,7 @@ flowchart LR
     service_fc0ff5cfd93a["ContactService"]:::code
     service_c4c5dac5c925["CouponService"]:::code
     service_01d1cd760b64["EnvService"]:::code
+    service_b30981b6449c["ImageOptimizerService"]:::code
     service_36e1e06e13b3["JsonStoreService"]:::code
     service_1a1be05523e3["MailQueueService"]:::code
     service_bf9fe918ea27["MailStorageService"]:::code
@@ -301,6 +302,7 @@ flowchart LR
 
   subgraph TOOLS["Tools"]
     tool_891d42e0bd53["generate-project-map"]:::tool
+    tool_42d1d6670e62["optimize-images"]:::tool
     tool_63816fb031e2["process-mail-queue"]:::tool
     tool_6bc5276d6a60["smoke-local"]:::tool
     tool_506de2158fd9["test_race"]:::tool
