@@ -5,15 +5,16 @@ flowchart LR
   classDef data fill:#fef3c7,stroke:#b45309,color:#78350f
   classDef tool fill:#ede9fe,stroke:#6d28d9,color:#3b0764
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
+  classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 94 routes, 12 controllers, 32 services, 41 views, 15 data files, 5 tools"]
-    arch_routes["> Routes: 94 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 105 routes, 12 controllers, 33 services, 44 views, 20 data files, 5 tools"]
+    arch_routes["> Routes: 105 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
-    arch_svc["> Services: 32"]:::arch
-    arch_views["> Views: 41"]:::arch
-    arch_data["> Collections: 18 schema | 15 files"]:::arch
+    arch_svc["> Services: 33"]:::arch
+    arch_views["> Views: 44"]:::arch
+    arch_data["> Collections: 20 schema | 20 files"]:::arch
     arch_tools["> Tools: 5"]:::arch
-    arch_gaps["> Gaps: 12"]:::arch
+    arch_gaps["> Gaps: 0"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -21,6 +22,8 @@ flowchart LR
   subgraph ROUTES_PUBLIC["PUBLIC Routes"]
     route_e3b717d5883a["GET / — Home page — hero, categories, featured products, astrologers"]:::route
     route_635162d613cf["GET /about — About SPS — story, values, CTA"]:::route
+    route_ce21a56fa9a7["GET /sri-panchami-spiritual — Sri Panchami Spiritual landing page"]:::route
+    route_df221e308e08["GET /spiritual — Short spiritual landing redirect-equivalent page"]:::route
     route_8f45fea80bea["GET /terms — Terms of Service — 15 sections, legal"]:::route
     route_90946be13902["GET /privacy — Privacy Policy — 14 sections, data handling"]:::route
     route_f1167ac0f350["GET /consult — Astrologer marketplace — browse and book"]:::route
@@ -32,9 +35,15 @@ flowchart LR
     route_762fd619926d["GET /product/{slug} — Product detail — gallery, add-to-cart, buy-now"]:::route
     route_8c80c0301221["GET /contact — Contact form GET"]:::route
     route_5d37c858f706["POST /contact — Contact form GET"]:::route
-    route_6e1b2c8ad9df["GET /account/orders — My Orders — product reviews"]:::route
-    route_05bd7a95e13b["GET /account/bookings — My Sessions — astrologer bookings"]:::route
-    route_0203d66cede2["GET /account/wallet — Wallet — balance, transactions (redirects to /recharge)"]:::route
+    route_6ce84be0a21c["GET /account/dashboard — Account dashboard entry — redirects to orders"]:::route
+    route_b2c44d359fd8["GET /account/dashboard/orders — My Orders — product reviews"]:::route
+    route_53bc246f9b4e["GET /account/dashboard/sessions — My Sessions — astrologer bookings"]:::route
+    route_2df10eba399a["GET /account/dashboard/wallet — Wallet — balance, recharge, transactions"]:::route
+    route_d228d36539bf["POST /account/dashboard/wallet/create-order — Wallet recharge — Razorpay order creation"]:::route
+    route_e6bdc04bc8ff["POST /account/dashboard/wallet/verify — Wallet recharge — verify payment"]:::route
+    route_6e1b2c8ad9df["GET /account/orders — Legacy account orders redirect"]:::route
+    route_05bd7a95e13b["GET /account/bookings — Legacy account sessions redirect"]:::route
+    route_0203d66cede2["GET /account/wallet — Legacy wallet redirect"]:::route
     route_3db0d2c31b8e["GET /consultation/{id} — Consultation room — messaging, WebRTC signaling"]:::route
     route_6f8c21eb26c2["GET /astrologer — Astrologer dashboard — sessions queue"]:::route
     route_3f6461e98686["GET /astrologer/change-password — Astrologer forced password change"]:::route
@@ -79,6 +88,7 @@ flowchart LR
   end
 
   subgraph ROUTES_SUPPORT["SUPPORT Routes"]
+    route_f93276b968be["GET /support"]:::route
     route_5de8a52549bc["POST /support/ask"]:::route
   end
 
@@ -105,6 +115,8 @@ flowchart LR
     route_a343d37ef490["GET /admin/contact-submissions — Admin — contact form entries"]:::route
     route_4409e3819a27["POST /admin/contact_submissions/save"]:::route
     route_ce4718c7cfc4["POST /admin/contact_submissions/delete"]:::route
+    route_427d0f3e1215["GET /admin/email-inbox"]:::route
+    route_94db05b769d5["GET /admin/email-outbox"]:::route
     route_93e1c961f71d["GET /admin/support-tickets — Admin — support tickets"]:::route
     route_4115282232ca["GET /admin/appearance — Admin — logo & favicon"]:::route
     route_c3b94d62a632["POST /admin/appearance/save"]:::route
@@ -125,6 +137,14 @@ flowchart LR
     route_a2384c26c92f["POST /admin/temples/save"]:::route
     route_e69af680148c["POST /admin/temples/delete"]:::route
     route_f6cc7a75f108["POST /admin/integrations/save"]:::route
+  end
+
+  subgraph NAVIGATION["Navigation Paths"]
+    nav_90609cfd31a3["/contact"]:::nav
+    nav_1abee342ae87["/account/dashboard"]:::nav
+    nav_41fb19b5f30b["/account/dashboard/orders"]:::nav
+    nav_06442c376c88["/account/dashboard/sessions"]:::nav
+    nav_da1c3b4f3293["/account/dashboard/wallet"]:::nav
   end
 
   subgraph CONTROLLERS["Controllers"]
@@ -157,6 +177,7 @@ flowchart LR
     service_01d1cd760b64["EnvService"]:::code
     service_36e1e06e13b3["JsonStoreService"]:::code
     service_1a1be05523e3["MailQueueService"]:::code
+    service_bf9fe918ea27["MailStorageService"]:::code
     service_75ac00fac97c["MediaService"]:::code
     service_f751cedec776["OrderService"]:::code
     service_a0945b05d5db["PasswordResetService"]:::code
@@ -192,6 +213,7 @@ flowchart LR
     view_036080adacd9["admin/environment"]:::code
     view_62fe69fcdef3["admin/integrations"]:::code
     view_ca3569057adb["admin/list"]:::code
+    view_89a7dcb95b04["admin/mailbox"]:::code
     view_52965cdd23d8["admin/media"]:::code
     view_8885ff0b037a["admin/product-form"]:::code
     view_2b32af729a24["admin/project-map"]:::code
@@ -216,6 +238,8 @@ flowchart LR
     view_d6d59690414b["public/register"]:::code
     view_775af2126c62["public/reset-password"]:::code
     view_ca8b647f9374["public/shop"]:::code
+    view_8b63b1a03812["public/spiritual"]:::code
+    view_54f97aa2b448["public/support"]:::code
     view_eb7fde4f5646["public/temple"]:::code
     view_9fad71462848["public/temples"]:::code
     view_01c77ef07565["public/terms"]:::code
@@ -244,6 +268,8 @@ flowchart LR
     collection_28882724d375["coupons"]:::data
     collection_32356d16f20c["audit_events"]:::data
     collection_d10fbf039e34["mail_queue"]:::data
+    collection_b0d96590d438["mail_inbox"]:::data
+    collection_9fa47bff6beb["mail_outbox"]:::data
     collection_74dcb1cec508["reviews"]:::data
     collection_2e5d8aa3dfa8["settings"]:::data
     collection_2dce077b5527["contact_submissions"]:::data
@@ -257,15 +283,20 @@ flowchart LR
     storage_b0b5ccb4a195["categories"]:::data
     storage_c37815a262b9["consultation_messages"]:::data
     storage_ce528b00cff4["consultation_signals"]:::data
+    storage_2dce077b5527["contact_submissions"]:::data
     storage_28882724d375["coupons"]:::data
+    storage_b0d96590d438["mail_inbox"]:::data
+    storage_9fa47bff6beb["mail_outbox"]:::data
     storage_d10fbf039e34["mail_queue"]:::data
     storage_a276577b33a8["media_files"]:::data
     storage_12c500ed0b78["orders"]:::data
     storage_86024cad1e83["products"]:::data
     storage_74dcb1cec508["reviews"]:::data
     storage_2e5d8aa3dfa8["settings"]:::data
+    storage_830b87d9f1ff["support_tickets"]:::data
     storage_fefa79731a13["temples"]:::data
     storage_9bc65c2abec1["users"]:::data
+    storage_f2ec0991d55d["wallet_transactions"]:::data
   end
 
   subgraph TOOLS["Tools"]
@@ -277,18 +308,7 @@ flowchart LR
   end
 
   subgraph GAPS["Gaps & Missing Links"]
-    gap_c5a21a5be4["missing_view_files: admin/contact-submissions"]:::gap
-    gap_5e742cc081["missing_view_files: public/support"]:::gap
-    gap_66de7921f3["unwired_controllers: BaseController"]:::gap
-    gap_e7e866bbe4["unwired_services: SeoService"]:::gap
-    gap_bf2f22f5c3["unwired_services: SmtpMailer"]:::gap
-    gap_dc96a72744["unwired_views: account/_nav"]:::gap
-    gap_e7dfb3eecf["unwired_views: layouts/admin"]:::gap
-    gap_74c1a32b74["unwired_views: layouts/app"]:::gap
-    gap_3c4f4f8a09["unwired_views: public/404"]:::gap
-    gap_a5993307b7["schema_without_file: wallet_transactions"]:::gap
-    gap_d571673255["schema_without_file: support_tickets"]:::gap
-    gap_0c66c9363b["schema_without_file: contact_submissions"]:::gap
+    no_gaps["No detected gaps"]:::data
   end
 
   route_e3b717d5883a --> controller_18ec49ea2cf4
@@ -299,6 +319,10 @@ flowchart LR
   controller_18ec49ea2cf4 -. renders .-> view_17c7f41e5cc8
   route_635162d613cf --> controller_18ec49ea2cf4
   controller_18ec49ea2cf4 -. renders .-> view_82254c4e2aa1
+  route_ce21a56fa9a7 --> controller_18ec49ea2cf4
+  controller_18ec49ea2cf4 -. renders .-> view_8b63b1a03812
+  route_df221e308e08 --> controller_18ec49ea2cf4
+  controller_18ec49ea2cf4 -. renders .-> view_8b63b1a03812
   route_8f45fea80bea --> controller_18ec49ea2cf4
   controller_18ec49ea2cf4 -. renders .-> view_01c77ef07565
   route_90946be13902 --> controller_18ec49ea2cf4
@@ -372,17 +396,45 @@ flowchart LR
   route_1d1ca6617c0d --> controller_f3a06e444dad
   controller_f3a06e444dad --> service_f33a1d77b137
   controller_f3a06e444dad -. renders .-> view_a6af926bf361
-  route_6e1b2c8ad9df --> controller_9968163fcd32
+  route_6ce84be0a21c --> controller_9968163fcd32
+  controller_9968163fcd32 --> service_f33a1d77b137
+  controller_9968163fcd32 -. renders .-> view_8bf2f1da4f90
+  route_b2c44d359fd8 --> controller_9968163fcd32
   controller_9968163fcd32 --> service_f33a1d77b137
   controller_9968163fcd32 --> service_f751cedec776
+  controller_9968163fcd32 --> service_cdae135eb5b5
+  controller_9968163fcd32 --> service_df7a87394b21
+  controller_9968163fcd32 -. renders .-> view_8bf2f1da4f90
+  route_53bc246f9b4e --> controller_9968163fcd32
+  controller_9968163fcd32 --> service_f33a1d77b137
+  controller_9968163fcd32 --> service_717a4830bf0e
+  controller_9968163fcd32 --> service_df7a87394b21
+  controller_9968163fcd32 -. renders .-> view_bde0b7fa75a6
+  route_2df10eba399a --> controller_4cc77f3351c6
+  controller_4cc77f3351c6 --> service_f33a1d77b137
+  controller_4cc77f3351c6 --> service_df7a87394b21
+  controller_4cc77f3351c6 --> service_6c9416ef0383
+  controller_4cc77f3351c6 -. renders .-> view_eff0f1f428ec
+  route_d228d36539bf --> controller_4cc77f3351c6
+  controller_4cc77f3351c6 --> service_f33a1d77b137
+  controller_4cc77f3351c6 --> service_df7a87394b21
+  controller_4cc77f3351c6 --> service_6c9416ef0383
+  controller_4cc77f3351c6 --> service_9eeeaab84791
+  controller_4cc77f3351c6 -. renders .-> view_eff0f1f428ec
+  route_e6bdc04bc8ff --> controller_4cc77f3351c6
+  controller_4cc77f3351c6 --> service_f33a1d77b137
+  controller_4cc77f3351c6 --> service_df7a87394b21
+  controller_4cc77f3351c6 --> service_6c9416ef0383
+  controller_4cc77f3351c6 --> service_9eeeaab84791
+  controller_4cc77f3351c6 -. renders .-> view_eff0f1f428ec
+  route_6e1b2c8ad9df --> controller_9968163fcd32
+  controller_9968163fcd32 --> service_f33a1d77b137
   controller_9968163fcd32 -. renders .-> view_8bf2f1da4f90
   route_05bd7a95e13b --> controller_9968163fcd32
   controller_9968163fcd32 --> service_f33a1d77b137
-  controller_9968163fcd32 --> service_717a4830bf0e
   controller_9968163fcd32 -. renders .-> view_bde0b7fa75a6
   route_0203d66cede2 --> controller_9968163fcd32
   controller_9968163fcd32 --> service_f33a1d77b137
-  controller_9968163fcd32 --> service_df7a87394b21
   controller_9968163fcd32 -. renders .-> view_eff0f1f428ec
   route_3db0d2c31b8e --> controller_50eaea84bd1d
   controller_50eaea84bd1d --> service_f33a1d77b137
@@ -422,8 +474,6 @@ flowchart LR
   controller_50eaea84bd1d -. renders .-> view_7459f7fdbec2
   route_176bd191ff81 --> controller_4cc77f3351c6
   controller_4cc77f3351c6 --> service_f33a1d77b137
-  controller_4cc77f3351c6 --> service_df7a87394b21
-  controller_4cc77f3351c6 --> service_6c9416ef0383
   controller_4cc77f3351c6 -. renders .-> view_eff0f1f428ec
   route_e30eb1f2e0ae --> controller_4cc77f3351c6
   controller_4cc77f3351c6 --> service_f33a1d77b137
@@ -526,17 +576,25 @@ flowchart LR
   route_a343d37ef490 --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_fc0ff5cfd93a
   controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_29d291016ea8
+  controller_3d37b75c07ec -. renders .-> view_9720267f0400
   route_4409e3819a27 --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_ea89d25425b5
   controller_3d37b75c07ec --> service_e79c019a142b
   controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_29d291016ea8
+  controller_3d37b75c07ec -. renders .-> view_9720267f0400
   route_ce4718c7cfc4 --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_ea89d25425b5
   controller_3d37b75c07ec --> service_e79c019a142b
   controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_29d291016ea8
+  controller_3d37b75c07ec -. renders .-> view_9720267f0400
+  route_427d0f3e1215 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_bf9fe918ea27
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_89a7dcb95b04
+  route_94db05b769d5 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_bf9fe918ea27
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_89a7dcb95b04
   route_93e1c961f71d --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_36e1e06e13b3
   controller_3d37b75c07ec --> service_f33a1d77b137
@@ -675,10 +733,31 @@ flowchart LR
   controller_452e47b9a403 --> service_cdae135eb5b5
   controller_452e47b9a403 --> service_f33a1d77b137
   controller_452e47b9a403 -. renders .-> view_8bf2f1da4f90
+  route_f93276b968be --> controller_64e608ddc28b
+  controller_64e608ddc28b --> service_3fc704b15e1b
+  controller_64e608ddc28b -. renders .-> view_54f97aa2b448
   route_5de8a52549bc --> controller_64e608ddc28b
   controller_64e608ddc28b --> service_1bacfc3e3f3b
   controller_64e608ddc28b --> service_b2e5928bb46a
   controller_64e608ddc28b -. renders .-> view_54f97aa2b448
+  nav_90609cfd31a3 --> route_8c80c0301221
+  nav_1abee342ae87 --> route_6ce84be0a21c
+  nav_41fb19b5f30b --> route_b2c44d359fd8
+  nav_06442c376c88 --> route_53bc246f9b4e
+  nav_da1c3b4f3293 --> route_2df10eba399a
+  controller_9968163fcd32 --> controller_6f7f176814f0
+  controller_3d37b75c07ec --> controller_6f7f176814f0
+  controller_e11bcfbdf300 --> controller_6f7f176814f0
+  controller_f3a06e444dad --> controller_6f7f176814f0
+  controller_ebb378258bac --> controller_6f7f176814f0
+  controller_7fda1508bed0 --> controller_6f7f176814f0
+  controller_50eaea84bd1d --> controller_6f7f176814f0
+  controller_18ec49ea2cf4 --> controller_6f7f176814f0
+  controller_452e47b9a403 --> controller_6f7f176814f0
+  controller_64e608ddc28b --> controller_6f7f176814f0
+  controller_4cc77f3351c6 --> controller_6f7f176814f0
+  controller_6f7f176814f0 --> service_3fc704b15e1b
+  tool_63816fb031e2 --> service_c5fb81744c52
   service_b2e5928bb46a --> collection_9bc65c2abec1
   service_b2e5928bb46a --> collection_12c500ed0b78
   service_b2e5928bb46a --> collection_2417b5325520
@@ -724,12 +803,17 @@ flowchart LR
   collection_2417b5325520 --> storage_2417b5325520
   collection_c37815a262b9 --> storage_c37815a262b9
   collection_ce528b00cff4 --> storage_ce528b00cff4
+  collection_f2ec0991d55d --> storage_f2ec0991d55d
+  collection_830b87d9f1ff --> storage_830b87d9f1ff
   collection_b0b5ccb4a195 --> storage_b0b5ccb4a195
   collection_28882724d375 --> storage_28882724d375
   collection_32356d16f20c --> storage_32356d16f20c
   collection_d10fbf039e34 --> storage_d10fbf039e34
+  collection_b0d96590d438 --> storage_b0d96590d438
+  collection_9fa47bff6beb --> storage_9fa47bff6beb
   collection_74dcb1cec508 --> storage_74dcb1cec508
   collection_2e5d8aa3dfa8 --> storage_2e5d8aa3dfa8
+  collection_2dce077b5527 --> storage_2dce077b5527
   collection_a276577b33a8 --> storage_a276577b33a8
   service_9eeeaab84791 --> integration_1442a65b90de
   service_9eeeaab84791 --> integration_063c1f657453
@@ -752,15 +836,3 @@ flowchart LR
   tool_ffb4fe3c51d9 --> systematic_map
   tool_6bc5276d6a60 --> ROUTES_PUBLIC
   tool_6bc5276d6a60 --> ROUTES_ADMIN
-  gap_c5a21a5be4 -. missing .-> view_29d291016ea8
-  gap_5e742cc081 -. missing .-> view_54f97aa2b448
-  gap_66de7921f3 -. missing .-> controller_6f7f176814f0
-  gap_e7e866bbe4 -. missing .-> service_3fc704b15e1b
-  gap_bf2f22f5c3 -. missing .-> service_c5fb81744c52
-  gap_dc96a72744 -. missing .-> view_17326c025c30
-  gap_e7dfb3eecf -. missing .-> view_dae8fcbc86f4
-  gap_74c1a32b74 -. missing .-> view_fd382d366d88
-  gap_3c4f4f8a09 -. missing .-> view_fe7e7ffe6adc
-  collection_f2ec0991d55d -. missing file .-> gap_a5993307b7
-  collection_830b87d9f1ff -. missing file .-> gap_d571673255
-  collection_2dce077b5527 -. missing file .-> gap_0c66c9363b

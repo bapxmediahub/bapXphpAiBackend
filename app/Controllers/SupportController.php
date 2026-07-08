@@ -3,6 +3,11 @@ namespace App\Controllers;
 use App\Services\{AuthService,SupportBotService};
 
 final class SupportController extends BaseController {
+    public function page(): void {
+        $this->seoKey = 'support';
+        $this->render('public/support', []);
+    }
+
     public function ask(): void {
         try {
             $user = (new AuthService())->user();

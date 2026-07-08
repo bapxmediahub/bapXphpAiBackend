@@ -25,6 +25,8 @@ Owns PHP runtime behavior: bootstrap, routes, controllers, services, guards, per
 - Read `storage/schema/collections.json` before changing JSON-backed behavior.
 - Keep admin mutations auditable through `AuditLogService` when data changes.
 - Do not bypass `SecretService`, `EnvService`, or `JsonStoreService` with ad hoc file writes.
+- Unknown routes render the themed `views/public/404.php` through `Router::renderNotFound()` and the `index.php` 404 branch; keep that view and its layout variables (`$pageTitle`, `$seo`, `$metaDescription`, `$metaRobots`, `$viewFile`) in sync so the 404 stays styled.
+- Admin mail surfaces live at `/admin/email-inbox` and `/admin/email-outbox` (rendered by `AdminController::emailInbox`/`emailOutbox` via `MailStorageService`); keep those routes wired so the admin sidebar links stay live.
 
 ## Verification
 

@@ -92,6 +92,33 @@
         </div>
         <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Each public page automatically gets a unique title, description, and OG tags. Site Name is used in JSON-LD structured data and page titles.</p>
 
+        <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">Outbound Email (SMTP)</h2>
+        <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">
+            Transactional email (order confirmations, shipment, review requests) is sent through SMTP when configured. Credentials are stored encrypted in the project secret store and are never read from <code>.env</code>. Leave blank to fall back to PHP <code>mail()</code> with a domain-local <code>noreply@</code> sender.
+        </p>
+        <div class="admin-form__row">
+            <label>SMTP Host<input name="smtp_host" value="<?= e($secrets['smtp_host']??'') ?>" placeholder="smtp.hostinger.com"></label>
+            <label>SMTP Port<input name="smtp_port" value="<?= e($secrets['smtp_port']??'') ?>" placeholder="465"></label>
+        </div>
+        <div class="admin-form__row">
+            <label>Encryption
+                <select name="smtp_encryption">
+                    <option value="ssl" <?= (($secrets['smtp_encryption']??'ssl') === 'ssl') ? 'selected' : '' ?>>SSL (465)</option>
+                    <option value="tls" <?= (($secrets['smtp_encryption']??'ssl') === 'tls') ? 'selected' : '' ?>>TLS / STARTTLS (587)</option>
+                </select>
+            </label>
+            <label>SMTP Username<input name="smtp_username" value="<?= e($secrets['smtp_username']??'') ?>" placeholder="support@your-domain.com"></label>
+        </div>
+        <div class="admin-form__row">
+            <label>SMTP Password<input type="password" name="smtp_password" value="<?= e($secrets['smtp_password']??'') ?>" placeholder="SMTP password" autocomplete="new-password"></label>
+            <label>From Email<input name="mail_from_email" value="<?= e($secrets['mail_from_email']??'') ?>" placeholder="support@your-domain.com"></label>
+        </div>
+        <div class="admin-form__row">
+            <label>From Name<input name="mail_from_name" value="<?= e($secrets['mail_from_name']??'Sri Panchami Spiritual') ?>" placeholder="Sri Panchami Spiritual"></label>
+            <label>Admin Notification Email<input name="admin_notification_email" value="<?= e($secrets['admin_notification_email']??'') ?>" placeholder="admin@your-domain.com"></label>
+        </div>
+        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Use the mailbox created in your hosting control panel (for example Hostinger: <code>smtp.hostinger.com</code>, ports 465 SSL or 587 TLS, authentication required). The cron job <code>tools/process-mail-queue.php</code> reads these settings from the secret store.</p>
+
         <div class="admin-card" style="background:var(--color-bg-alt); margin-top:var(--space-xl); padding:var(--space-md);">
             <h3 style="font-size:0.9rem; margin:0 0 var(--space-sm);">Platform Scope</h3>
             <p style="margin:0; color:var(--color-text-muted); font-size:0.85rem;">This site is ecommerce plus direct astrology services. It supports product sales, text sessions, and direct call sessions. Video calls, Google Meet, and Google Calendar setup are intentionally skipped.</p>

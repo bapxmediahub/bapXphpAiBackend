@@ -28,9 +28,19 @@ final class WalletController extends BaseController {
         if (empty($secrets['razorpay_key_id']) || empty($secrets['razorpay_key_secret'])) {
             $this->jsonResponse(['error' => 'Razorpay ' . ($secrets['razorpay_mode'] ?? 'selected') . ' mode is not configured yet.'], 400);
         }
-        $order = (new RazorpayClient($secrets['razorpay_key_id'], $secrets['razorpay_key_secret']))->createOrder($quote['total_paise'], 'wallet_' . bin2hex(random_bytes(5)));
-        $order['quote'] = $quote;
-        $this->jsonResponse($order);
+        try {
+            $order = (new RazorpayClient($secrets['razorpay_key_id'], $secrets['razorpay_key_secret']))->createOrder($quote['total_paise'], 'wallet_' . bin2hex(random_bytes(5)));
+        } catch (\RuntimeException $exception) {
+            $status = $exception->getCode() === 401 ? 401 : 500;
+            $this->jsonResponse(['error' => $exception->getMessage()], $status);
+        }
+        $this->jsonResponse([
+            'id' => $order['id'] ?? '',
+            'order_id' => $order['id'] ?? '',
+            'amount' => (int)($order['amount'] ?? $quote['total_paise']),
+            'currency' => (string)($order['currency'] ?? 'INR'),
+            'quote' => $quote,
+        ]);
     }
 
     public function verify(): void {
@@ -39,10 +49,16 @@ final class WalletController extends BaseController {
         if (empty($secrets['razorpay_key_secret'])) {
             $this->jsonResponse(['verified' => false, 'error' => 'Razorpay ' . ($secrets['razorpay_mode'] ?? 'selected') . ' mode is not configured yet.'], 400);
         }
-        $ok = (new PaymentService($secrets['razorpay_key_secret'] ?? ''))->verifySignature($_POST['order_id'] ?? '', $_POST['payment_id'] ?? '', $_POST['signature'] ?? '');
+        $orderId = (string)($_POST['razorpay_order_id'] ?? $_POST['order_id'] ?? '');
+        $paymentId = (string)($_POST['razorpay_payment_id'] ?? $_POST['payment_id'] ?? '');
+        $signature = (string)($_POST['razorpay_signature'] ?? $_POST['signature'] ?? '');
+        if ($orderId === '' || $paymentId === '' || $signature === '') {
+            $this->jsonResponse(['verified' => false, 'error' => 'Missing Razorpay payment verification fields.'], 400);
+        }
+        $ok = (new PaymentService($secrets['razorpay_key_secret'] ?? ''))->verifySignature($orderId, $paymentId, $signature);
         if ($ok) {
             $quote = (new WalletService())->quoteTopUp((int)($_POST['amount_rupees'] ?? 0));
-            (new WalletService())->addTopUp($_SESSION['user']['email'] ?? '', $quote, $_POST['payment_id'] ?? '');
+            (new WalletService())->addTopUp($_SESSION['user']['email'] ?? '', $quote, $paymentId);
         }
         $this->jsonResponse(['verified' => $ok]);
     }
