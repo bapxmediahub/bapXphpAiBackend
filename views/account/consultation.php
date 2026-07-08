@@ -8,7 +8,7 @@
         <div class="panel consultation-chat">
             <div class="consultation-chat__messages" id="message-list" aria-live="polite">
                 <?php foreach($messages as $message): ?>
-                    <article class="chat-message <?= ($message['sender_id']??'')===($currentUser['sub']??'')?'is-own':'' ?>" data-created="<?= e($message['created_at']??'') ?>"><strong><?= e($message['sender_name']??ucfirst($message['sender_role']??'User')) ?></strong><p><?= e($message['body']??'') ?></p><small><?= e(substr((string)($message['created_at']??''),11,5)) ?></small></article>
+                    <article class="chat-message <?= ($message['sender_id']??'')===($currentUser['sub']??'')?'is-own':'' ?>" data-message-id="<?= e($message['id']??'') ?>" data-created="<?= e($message['created_at']??'') ?>"><strong><?= e($message['sender_name']??ucfirst($message['sender_role']??'User')) ?></strong><p><?= e($message['body']??'') ?></p><small><?= e(substr((string)($message['created_at']??''),11,5)) ?></small></article>
                 <?php endforeach; ?>
             </div>
             <form id="message-form" class="consultation-chat__composer"><label class="sr-only" for="message-body">Message</label><textarea id="message-body" maxlength="2000" rows="2" placeholder="Write a private message" required></textarea><button class="btn btn-primary" aria-label="Send message">Send</button></form>
@@ -27,7 +27,7 @@
 (() => {
  const root=document.querySelector('.consultation-room'), id=root.dataset.sessionId, userId=root.dataset.userId;
  const list=document.getElementById('message-list'), form=document.getElementById('message-form'), body=document.getElementById('message-body');
- let messageAfter=list.lastElementChild?.dataset.created||'', signalAfter='', pc=null, localStream=null;
+  let messageAfter=list.lastElementChild?.dataset.created||'', signalAfter='', pc=null, localStream=null, iceQueue=[];
  const api=(suffix,options={})=>fetch('/api/consultations/'+id+suffix,{headers:{'Content-Type':'application/json'},...options}).then(async r=>{const data=await r.json();if(!r.ok)throw new Error(data.error||'Request failed');return data});
  const addMessage=m=>{if(document.querySelector('[data-message-id="'+m.id+'"]'))return;const a=document.createElement('article');a.className='chat-message '+(m.sender_id===userId?'is-own':'');a.dataset.messageId=m.id;a.dataset.created=m.created_at;a.innerHTML='<strong></strong><p></p><small></small>';a.querySelector('strong').textContent=m.sender_name||m.sender_role;a.querySelector('p').textContent=m.body;a.querySelector('small').textContent=(m.created_at||'').slice(11,16);list.appendChild(a);list.scrollTop=list.scrollHeight;messageAfter=m.created_at||messageAfter};
   form.addEventListener('submit',async e=>{e.preventDefault();const value=body.value.trim();if(!value)return;body.disabled=true;try{const d=await api('/messages',{method:'POST',body:JSON.stringify({body:value})});addMessage(d.message);body.value=''}catch(e){showToast(e.message,'error')}finally{body.disabled=false;body.focus()}});

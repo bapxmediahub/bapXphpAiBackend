@@ -51,12 +51,14 @@ final class EnvService {
                 'username' => $settings['admin_username'] ?? '',
                 'email' => $settings['admin_email'] ?? '',
                 'password' => $settings['admin_password'] ?? '',
+                'source' => 'settings',
             ];
         }
         return [
             'username' => getenv('ADMIN_USERNAME') ?: '',
             'email' => getenv('ADMIN_EMAIL') ?: '',
             'password' => getenv('ADMIN_PASSWORD') ?: '',
+            'source' => 'env',
         ];
     }
 
@@ -67,7 +69,7 @@ final class EnvService {
             if ($value !== '') $settings[$key] = $value;
         }
         $password = (string)($data['admin_password'] ?? '');
-        if ($password !== '') $settings['admin_password'] = $password;
+        if ($password !== '') $settings['admin_password'] = password_hash($password, PASSWORD_BCRYPT);
         (new SettingsService())->savePublic($settings);
     }
 

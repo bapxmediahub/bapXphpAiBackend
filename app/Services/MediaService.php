@@ -44,7 +44,7 @@ final class MediaService {
             if (!move_uploaded_file($tmp, $destPath)) continue;
             $webpPath = $this->optimizer->optimize($destPath, $dir, ['max_width' => 1920, 'max_height' => 1920, 'quality' => 80]);
             if ($webpPath && is_file($webpPath)) {
-                unlink($destPath);
+                if ($webpPath !== $destPath) unlink($destPath);
                 $webpFilename = basename($webpPath);
                 $record = [
                     'id' => bin2hex(random_bytes(8)),

@@ -35,7 +35,16 @@ final class WalletController extends BaseController {
             $status = $exception->getCode() === 401 ? 401 : 500;
             $this->jsonResponse(['error' => $exception->getMessage()], $status);
         }
-        $_SESSION['_wallet_pending'][$order['id'] ?? ''] = ['amount_rupees' => $amountRupees, 'total_paise' => $quote['total_paise']];
+        (new DatabaseService())->upsert('wallet_transactions', [
+            'id' => bin2hex(random_bytes(8)),
+            'customer_email' => $_SESSION['user']['email'] ?? '',
+            'type' => 'recharge',
+            'amount_rupees' => $amountRupees,
+            'total_rupees' => $quote['total_paise'] / 100,
+            'source_id' => $order['id'] ?? '',
+            'status' => 'pending',
+            'created_at' => date('c'),
+        ]);
         $this->jsonResponse([
             'id' => $order['id'] ?? '',
             'order_id' => $order['id'] ?? '',
@@ -61,8 +70,14 @@ final class WalletController extends BaseController {
         if (!$ok) {
             $this->jsonResponse(['verified' => false, 'error' => 'Payment signature mismatch.'], 400);
         }
-        $quote = (new WalletService())->quoteTopUp((int)($_POST['amount_rupees'] ?? 0));
-        (new WalletService())->addTopUp($_SESSION['user']['email'] ?? '', $quote, $paymentId);
+        $db = new DatabaseService();
+        $pendingTx = $db->find('wallet_transactions', $orderId, 'source_id');
+        if (!$pendingTx || ($pendingTx['status'] ?? '') !== 'pending') {
+            $this->jsonResponse(['verified' => false, 'error' => 'Transaction not found or already processed.'], 400);
+        }
+        $amountRupees = (int)($pendingTx['amount_rupees'] ?? 0);
+        $quote = (new WalletService())->quoteTopUp($amountRupees);
+        (new WalletService())->addTopUp($_SESSION['user']['email'] ?? '', $quote, $paymentId, 'confirmed', $pendingTx['id']);
         $this->jsonResponse(['verified' => true]);
     }
 }

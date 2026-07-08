@@ -30,9 +30,9 @@ final class WalletService {
         ];
     }
 
-    public function addTopUp(string $email, array $quote, string $paymentId = '', string $status = 'confirmed'): array {
+    public function addTopUp(string $email, array $quote, string $paymentId = '', string $status = 'confirmed', ?string $id = null): array {
         return $this->store->upsert('wallet_transactions', [
-            'id' => bin2hex(random_bytes(8)),
+            'id' => $id ?? bin2hex(random_bytes(8)),
             'customer_email' => strtolower(trim($email)),
             'type' => 'recharge',
             'credits' => (int)($quote['credits'] ?? 0),

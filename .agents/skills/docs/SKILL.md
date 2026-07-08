@@ -9,7 +9,7 @@ description: Use when editing README, docs, project-map docs, or agent-facing in
 - `docs/systematic-map.mmd` is the single project wiring map artifact. `docs/KnowledgeMap.mmd` is a separate documentation mindmap.
 - Do not recreate `docs/PROJECT_MAP.md`, `docs/project-map.json`, or `docs/project-map.mmd`.
 - Regenerate the systematic map with `php tools/generate-project-map.php` after route, service, view, schema, storage, tool, or integration changes.
-- Regenerate the KnowledgeMap with `bash tools/bapXphp docsmap` or `php tools/generate-docs-map.php` after AGENTS.md, skill, or documentation changes.
+- Regenerate the KnowledgeMap with `bash bapXphp docsmap` or `php tools/generate-docs-map.php` after AGENTS.md, skill, or documentation changes.
 - Never hand-edit generated Mermaid. Fix deterministic scan/render inputs, then regenerate through the tool.
 - Use the map like a source index: follow affected nodes to the actual files and verify route, page, schema, storage, and navigation behavior before documenting completion.
 - Search existing docs and code before adding a file; a gap node is not automatic permission to scaffold one.

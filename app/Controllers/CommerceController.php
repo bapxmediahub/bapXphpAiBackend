@@ -83,6 +83,20 @@ final class CommerceController extends BaseController {
             $status = $exception->getCode() === 401 ? 401 : 500;
             $this->jsonResponse(['error' => $exception->getMessage()], $status);
         }
+        $store->upsert('orders', [
+            'id' => bin2hex(random_bytes(8)),
+            'status' => 'pending',
+            'total' => $amount / 100,
+            'customer_email' => $_SESSION['user']['email'] ?? ($_POST['email'] ?? 'guest'),
+            'customer_name' => trim((string)($_POST['name'] ?? ($_SESSION['user']['name'] ?? ''))),
+            'customer_phone' => trim((string)($_POST['phone'] ?? '')),
+            'shipping_address' => trim((string)($_POST['address'] ?? '')),
+            'shipping_city' => trim((string)($_POST['city'] ?? '')),
+            'shipping_pincode' => trim((string)($_POST['pincode'] ?? '')),
+            'items' => array_map(fn($i) => ['slug' => $i['slug'], 'name' => $i['name'], 'qty' => $i['qty'], 'line_total' => $i['line_total']], $items),
+            'razorpay_order_id' => $order['id'] ?? '',
+            'created_at' => date('c'),
+        ]);
         $this->jsonResponse([
             'id' => $order['id'] ?? '',
             'order_id' => $order['id'] ?? '',
@@ -109,35 +123,23 @@ final class CommerceController extends BaseController {
         if (!$ok) {
             $this->jsonResponse(['verified' => false, 'error' => 'Payment signature mismatch.'], 400);
         }
-        $items = $this->resolveCartItems();
-        if (empty($items)) {
-            $this->jsonResponse(['verified' => false, 'error' => 'Cart is empty.'], 400);
+        $db = new DatabaseService();
+        $pendingOrder = $db->find('orders', $orderId, 'razorpay_order_id');
+        if (!$pendingOrder || ($pendingOrder['status'] ?? '') !== 'pending') {
+            $this->jsonResponse(['verified' => false, 'error' => 'Order not found or already processed.'], 400);
         }
-        $existingOrders = (new DatabaseService())->read('orders');
+        $existingOrders = $db->read('orders');
         foreach ($existingOrders as $existing) {
-            if (($existing['payment_id'] ?? '') === $paymentId) {
+            if (($existing['payment_id'] ?? '') === $paymentId && ($existing['id'] ?? '') !== ($pendingOrder['id'] ?? '')) {
                 $this->jsonResponse(['verified' => false, 'error' => 'Payment already processed.'], 400);
             }
         }
-        $total = $this->cartTotal($items);
-        $order = [
-            'id' => bin2hex(random_bytes(8)),
+        $order = array_merge($pendingOrder, [
             'status' => 'confirmed',
-            'total' => $total,
-            'customer_email' => $_SESSION['user']['email'] ?? ($_POST['email'] ?? 'guest'),
-            'customer_name' => trim((string)($_POST['name'] ?? ($_SESSION['user']['name'] ?? ''))),
-            'customer_phone' => trim((string)($_POST['phone'] ?? '')),
-            'shipping_address' => trim((string)($_POST['address'] ?? '')),
-            'shipping_city' => trim((string)($_POST['city'] ?? '')),
-            'shipping_pincode' => trim((string)($_POST['pincode'] ?? '')),
-            'items' => array_map(fn($i) => ['slug' => $i['slug'], 'name' => $i['name'], 'qty' => $i['qty'], 'line_total' => $i['line_total']], $items),
-            'razorpay_order_id' => $orderId,
             'payment_id' => $paymentId,
             'payment_email_status' => 'pending',
-            'review_request_after_at' => null,
-            'created_at' => date('c'),
-        ];
-        (new DatabaseService())->upsert('orders', $order);
+        ]);
+        $db->upsert('orders', $order);
         (new MailQueueService())->enqueuePaymentConfirmation($order);
         $_SESSION['cart'] = [];
         $this->jsonResponse(['verified' => true, 'order_id' => $order['id']]);

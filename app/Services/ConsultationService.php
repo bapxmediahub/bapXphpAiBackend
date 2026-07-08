@@ -43,9 +43,11 @@ final class ConsultationService {
     }
 
     public function signals(string $appointmentId, string $after = ''): array {
-        return array_values(array_filter($this->store->read('consultation_signals'), function($row) use ($appointmentId, $after) {
+        $signals = array_values(array_filter($this->store->read('consultation_signals'), function($row) use ($appointmentId, $after) {
             return ($row['appointment_id'] ?? '') === $appointmentId && ($after === '' || strcmp((string)($row['created_at'] ?? ''), $after) > 0);
         }));
+        usort($signals, fn($a, $b) => strcmp((string)($a['created_at'] ?? ''), (string)($b['created_at'] ?? '')));
+        return $signals;
     }
 
     public function sendSignal(array $session, array $user, string $type, array $payload): array {

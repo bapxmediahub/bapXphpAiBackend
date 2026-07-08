@@ -36,6 +36,10 @@ final class ImageOptimizerService {
 
         if ($ratio < 1) {
             $dst = imagecreatetruecolor($dstW, $dstH);
+            imagealphablending($dst, false);
+            imagesavealpha($dst, true);
+            $transparent = imagecolorallocatealpha($dst, 0, 0, 0, 127);
+            imagefill($dst, 0, 0, $transparent);
             imagecopyresampled($dst, $src, 0, 0, 0, 0, $dstW, $dstH, $srcW, $srcH);
         } else {
             $dst = $src;

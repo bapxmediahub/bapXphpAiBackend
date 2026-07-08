@@ -3,11 +3,16 @@ namespace App\Controllers;
 use App\Services\{EnvService,SecretService,DatabaseService,PasswordResetService};
 use App\Integrations\GoogleOAuth\GoogleOAuthClient;
 final class AuthController extends BaseController {
- public function googleRedirect(): void {
-  $s=(new SecretService())->all(); if(empty($s['google_client_id'])||empty($s['google_client_secret'])){$this->flash('Google login is not configured yet.','warning');$this->redirect('/login');}
-  $state=bin2hex(random_bytes(16)); $_SESSION['oauth_state']=$state;
-  $url=(new GoogleOAuthClient($s['google_client_id'],$s['google_client_secret']))->authorizationUrl($this->redirectUri(),$state); $this->redirect($url);
- }
+  public function googleRedirect(): void {
+    file_put_contents('storage/data/google_auth_debug.log', date('Y-m-d H:i:s') . " - Starting googleRedirect\n", FILE_APPEND);
+    $s=(new SecretService())->all(); 
+    file_put_contents('storage/data/google_auth_debug.log', date('Y-m-d H:i:s') . " - Secrets: " . json_encode($s) . "\n", FILE_APPEND);
+    if(empty($s['google_client_id'])||empty($s['google_client_secret'])){$this->flash('Google login is not configured yet.','warning');$this->redirect('/login');}
+    $state=bin2hex(random_bytes(16)); $_SESSION['oauth_state']=$state;
+    $url=(new GoogleOAuthClient($s['google_client_id'],$s['google_client_secret']))->authorizationUrl($this->redirectUri(),$state); 
+    file_put_contents('storage/data/google_auth_debug.log', date('Y-m-d H:i:s') . " - Redirect URL: $url\n", FILE_APPEND);
+    $this->redirect($url);
+  }
   public function callback(): void {
    if(($_GET['state']??'')!==($_SESSION['oauth_state']??'')) throw new \RuntimeException('Invalid OAuth state');
    $s=(new SecretService())->all(); $token=$this->post('https://oauth2.googleapis.com/token',['code'=>$_GET['code']??'','client_id'=>$s['google_client_id'],'client_secret'=>$s['google_client_secret'],'redirect_uri'=>$this->redirectUri(),'grant_type'=>'authorization_code']);
@@ -67,11 +72,16 @@ final class AuthController extends BaseController {
     $password = $_POST['password'] ?? '';
     if ($email === '' || $password === '') { $this->flash('Username or email and password required.','error'); $this->redirect('/login'); }
     $admin = (new EnvService())->adminCredentials();
-    if ($admin['email'] !== '' && $admin['password'] !== '' && $email === $admin['email'] && hash_equals($admin['password'], $password)) {
-        session_regenerate_id(true);
-        $_SESSION['user'] = ['sub'=>'env-admin','email'=>$admin['email'],'name'=>$admin['username'] ?: 'Admin','role'=>'admin'];
-        $this->flash('Signed in.','success');
-        $this->redirect('/admin');
+    if ($admin['email'] !== '' && $admin['password'] !== '' && $email === $admin['email']) {
+        if (password_verify($password, $admin['password']) || hash_equals($admin['password'], $password)) {
+            if (hash_equals($admin['password'], $password) && ($admin['source'] ?? '') === 'settings') {
+                (new EnvService())->saveAdminCredentials(['admin_password' => $password]);
+            }
+            session_regenerate_id(true);
+            $_SESSION['user'] = ['sub'=>'env-admin','email'=>$admin['email'],'name'=>$admin['username'] ?: 'Admin','role'=>'admin'];
+            $this->flash('Signed in.','success');
+            $this->redirect('/admin');
+        }
     }
     $store = new DatabaseService();
     $users = $store->read('users');
