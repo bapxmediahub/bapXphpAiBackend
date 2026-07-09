@@ -8,6 +8,8 @@
             <h1>Sign In</h1>
             <p>Enter the sanctuary of Sri Panchami Spiritual</p>
             <form method="post" action="/login" class="auth-form">
+                <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
+                <input type="hidden" name="_csrf" value="<?= $csrf ?>">
                 <div class="form-group">
                     <label>Username or Email</label>
                     <input type="text" name="identifier" required autocomplete="username" placeholder="Username or email">

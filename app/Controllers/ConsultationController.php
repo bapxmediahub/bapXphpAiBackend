@@ -47,6 +47,14 @@ final class ConsultationController extends BaseController {
     }
     public function initiate(): void {
         (new AuthService())->requireUser();
+        $this->validateCsrf();
+        $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        $limiter = new \App\Services\RateLimiter();
+        if (!$limiter->check('consult-initiate:' . $ip, 5, 60)) {
+            $this->flash('Too many requests. Please try again later.', 'error');
+            $this->redirect('/consult');
+        }
+        $limiter->hit('consult-initiate:' . $ip);
         $slug=trim($_POST['astrologer_slug']??'');
         $mode=trim($_POST['mode']??'');
         $isWaitlist=(trim($_POST['queue_status']??'')==='waitlist');

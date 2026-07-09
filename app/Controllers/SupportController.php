@@ -9,6 +9,13 @@ final class SupportController extends BaseController {
     }
 
     public function ask(): void {
+        $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        $limiter = new \App\Services\RateLimiter();
+        if (!$limiter->check('support:' . $ip, 10, 60)) {
+            $this->jsonResponse(['error' => 'Too many requests. Please try again later.'], 429);
+            return;
+        }
+        $limiter->hit('support:' . $ip);
         try {
             $user = (new AuthService())->user();
             $answer = (new SupportBotService())->answer($_POST['message'] ?? '', $user);

@@ -48,6 +48,8 @@ final class AuthController extends BaseController {
      ]);
   }
   public function registerPost(): void {
+    $this->validateCsrf();
+    $this->checkRateLimit('register', 3, 300);
     $email = trim($_POST['email'] ?? '');
     $name = trim($_POST['name'] ?? '');
     $password = $_POST['password'] ?? '';
@@ -68,7 +70,9 @@ final class AuthController extends BaseController {
     $this->flash('Registered and signed in.','success');
     $this->redirect('/');
  }
- public function loginPost(): void {
+  public function loginPost(): void {
+    $this->validateCsrf();
+    $this->checkRateLimit('login', 5, 60);
     $email = trim($_POST['identifier'] ?? $_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     if ($email === '' || $password === '') { $this->flash('Username or email and password required.','error'); $this->redirect('/login'); }
@@ -104,6 +108,8 @@ final class AuthController extends BaseController {
      $this->render('public/forgot-password');
   }
   public function forgotPasswordPost(): void {
+    $this->validateCsrf();
+    $this->checkRateLimit('forgot-password', 3, 120);
     $email = trim($_POST['email'] ?? '');
     if ($email !== '') {
         $token = (new PasswordResetService())->createToken($email);
@@ -121,7 +127,9 @@ final class AuthController extends BaseController {
      $this->seoKey = 'reset-password';
      $this->render('public/reset-password', ['token' => $_GET['token'] ?? '']);
  }
- public function resetPasswordPost(): void {
+  public function resetPasswordPost(): void {
+    $this->validateCsrf();
+    $this->checkRateLimit('reset-password', 3, 120);
     $token = trim($_POST['token'] ?? '');
     $password = $_POST['password'] ?? '';
     $confirm = $_POST['password_confirm'] ?? '';

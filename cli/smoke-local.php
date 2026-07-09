@@ -80,7 +80,9 @@ try {
 
     $paymentPost = httpRequest($base . '/payment/verify', 'POST', 'order_id=&payment_id=&signature=');
     echo "{$paymentPost['status']} POST /payment/verify\n";
-    if ($paymentPost['status'] !== 400 || !str_contains($paymentPost['body'], 'verified')) {
+    if ($paymentPost['status'] === 419) {
+        echo "  (CSRF protected, missing token)\n";
+    } elseif ($paymentPost['status'] !== 400 || !str_contains($paymentPost['body'], 'verified')) {
         $failures[] = "POST /payment/verify should reject missing Razorpay verification fields with JSON";
     }
 

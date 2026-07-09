@@ -166,6 +166,8 @@ final class PublicController extends BaseController {
         $success = false;
         $subject = $_GET['subject'] ?? '';
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->validateCsrf();
+            $this->checkRateLimit('contact', 3, 120);
             $contactService = new ContactService();
             $contactService->save([
                 'name' => $_POST['name'] ?? '',

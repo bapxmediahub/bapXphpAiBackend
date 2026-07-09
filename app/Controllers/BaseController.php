@@ -10,6 +10,31 @@ abstract class BaseController {
     protected function redirect(string $path): never { header('Location: ' . $path); exit; }
     protected function flash(string $message, string $type = 'info'): void { $_SESSION['flash'] = ['message' => $message, 'type' => $type]; }
 
+    protected function validateCsrf(): void {
+        $token = $_POST['_csrf'] ?? '';
+        $expected = $_SESSION['csrf_token'] ?? '';
+        if ($token === '' || !hash_equals($expected, $token)) {
+            if ($this->isApiRequest || strpos($_SERVER['REQUEST_URI'] ?? '', '/api/') === 0 || ($_SERVER['CONTENT_TYPE'] ?? '') === 'application/json') {
+                $this->jsonResponse(['error' => 'Security token invalid.'], 419);
+            }
+            $this->flash('Security token invalid. Please try again.', 'error');
+            $this->redirect($_SERVER['HTTP_REFERER'] ?? '/');
+        }
+    }
+
+    protected function checkRateLimit(string $action, int $maxAttempts = 5, int $windowSeconds = 60): bool {
+        $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        $key = $action . ':' . $ip;
+        $limiter = new \App\Services\RateLimiter();
+        if (!$limiter->check($key, $maxAttempts, $windowSeconds)) {
+            $this->flash('Too many attempts. Please try again later.', 'error');
+            $this->redirect($_SERVER['HTTP_REFERER'] ?? '/');
+            return false;
+        }
+        $limiter->hit($key);
+        return true;
+    }
+
     protected function detectApiRequest(): void {
         $this->isApiRequest = strpos($_SERVER['REQUEST_URI'], '/api/') === 0;
     }

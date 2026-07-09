@@ -8,6 +8,8 @@
             <h1>Reset Password</h1>
             <p>Create a new secure password</p>
             <form method="post" action="/reset-password" class="auth-form">
+                <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
+                <input type="hidden" name="_csrf" value="<?= $csrf ?>">
                 <input type="hidden" name="token" value="<?= e($token ?? '') ?>">
                 <div class="form-group">
                     <label>New Password</label>

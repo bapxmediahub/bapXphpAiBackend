@@ -61,6 +61,8 @@ final class CommerceController extends BaseController {
         $this->redirect('/cart');
     }
     public function createOrder(): void {
+        $this->isApiRequest = true;
+        $this->validateCsrf();
         $secrets = (new SecretService())->all();
         if (empty($secrets['razorpay_key_id']) || empty($secrets['razorpay_key_secret'])) {
             $this->jsonResponse(['error' => 'Razorpay ' . ($secrets['razorpay_mode'] ?? 'selected') . ' mode is not configured yet.'], 401);
@@ -79,7 +81,26 @@ final class CommerceController extends BaseController {
                 $this->jsonResponse(['error' => e($item['name']) . ' is currently unavailable.'], 400);
             }
         }
-        $cartAmount = $this->cartTotal($items) * 100;
+        $discount = 0;
+        $couponCode = trim($_POST['coupon_code'] ?? '');
+        if ($couponCode !== '') {
+            $coupons = $store->read('coupons');
+            foreach ($coupons as $c) {
+                if (strcasecmp($c['code'] ?? '', $couponCode) === 0) {
+                    if (($c['active'] ?? false) || ($c['status'] ?? '') === 'active') {
+                        $discountValue = (float)($c['discount_value'] ?? 0);
+                        if (($c['discount_type'] ?? '') === 'percentage') {
+                            $discount = min($this->cartTotal($items) * $discountValue / 100, $discountValue);
+                        } else {
+                            $discount = $discountValue;
+                        }
+                        $discount = min($discount, $this->cartTotal($items));
+                    }
+                    break;
+                }
+            }
+        }
+        $cartAmount = max(0, $this->cartTotal($items) - $discount) * 100;
         $amount = $cartAmount > 0 ? $cartAmount : (int)($_POST['amount'] ?? 0);
         if ($amount < 100) {
             $this->jsonResponse(['error' => 'Amount must be at least 100 paise.'], 400);
@@ -112,16 +133,10 @@ final class CommerceController extends BaseController {
             'currency' => (string)($order['currency'] ?? 'INR'),
         ]);
     }
-    private function validateCsrf(): void {
-        $token = $_POST['_csrf'] ?? '';
-        $expected = $_SESSION['csrf_token'] ?? '';
-        if ($token === '' || !hash_equals($expected, $token)) {
-            $this->flash('Security token invalid. Please try again.', 'error');
-            $this->redirect($_SERVER['HTTP_REFERER'] ?? '/');
-            exit;
-        }
-    }
+
     public function verifyPayment(): void {
+        $this->isApiRequest = true;
+        $this->validateCsrf();
         $secrets = (new SecretService())->all();
         if (empty($secrets['razorpay_key_secret'])) {
             $this->jsonResponse(['verified' => false, 'error' => 'Razorpay ' . ($secrets['razorpay_mode'] ?? 'selected') . ' mode is not configured yet.'], 400);
@@ -144,6 +159,16 @@ final class CommerceController extends BaseController {
         $pendingOrder = $db->find('orders', $orderId, 'razorpay_order_id');
         if (!$pendingOrder || ($pendingOrder['status'] ?? '') !== 'pending') {
             $this->jsonResponse(['verified' => false, 'error' => 'Order not found or already processed.'], 400);
+        }
+        $orderItems = $pendingOrder['items'] ?? [];
+        $products = [];
+        foreach ($db->read('products') as $p) { $products[$p['slug'] ?? ''] = $p; }
+        foreach ($orderItems as $oi) {
+            $product = $products[$oi['slug'] ?? ''] ?? null;
+            $status = $product['stock_status'] ?? '';
+            if (!in_array($status, ['in_stock', 'active'], true)) {
+                $this->jsonResponse(['verified' => false, 'error' => ($oi['name'] ?? 'A product') . ' is no longer available.'], 400);
+            }
         }
         $existingOrders = $db->read('orders');
         foreach ($existingOrders as $existing) {
