@@ -4,10 +4,16 @@ use App\Services\{CartService,ProductService,SecretService,PaymentService,Databa
 use App\Integrations\Razorpay\RazorpayClient;
 final class CommerceController extends BaseController {
     public function addToCart(): void {
+        $this->validateCsrf();
         $slug = trim($_POST['slug'] ?? '');
-        $qty = max(1, (int)($_POST['qty'] ?? 1));
+        $qty = max(1, min(99, (int)($_POST['qty'] ?? 1)));
         if ($slug === '') {
             $this->flash('Invalid product.','error');
+            $this->redirect('/shop');
+        }
+        $product = (new ProductService())->findBySlug($slug);
+        if (!$product || ($product['stock_status'] ?? '') !== 'in_stock') {
+            $this->flash('This product is currently out of stock.', 'error');
             $this->redirect('/shop');
         }
         if (empty($_SESSION['cart'])) $_SESSION['cart'] = [];
@@ -28,6 +34,7 @@ final class CommerceController extends BaseController {
         $this->redirect($redirect);
     }
     public function removeFromCart(): void {
+        $this->validateCsrf();
         $slug = trim($_POST['slug'] ?? '');
         if (!empty($_SESSION['cart'])) {
             $_SESSION['cart'] = array_values(array_filter($_SESSION['cart'], fn($item) => ($item['slug'] ?? '') !== $slug));
@@ -35,6 +42,7 @@ final class CommerceController extends BaseController {
         $this->redirect('/cart');
     }
     public function updateCart(): void {
+        $this->validateCsrf();
         $slug = trim($_POST['slug'] ?? '');
         $action = $_POST['action'] ?? '';
         if (!empty($_SESSION['cart'])) {
@@ -103,6 +111,15 @@ final class CommerceController extends BaseController {
             'amount' => (int)($order['amount'] ?? $amount),
             'currency' => (string)($order['currency'] ?? 'INR'),
         ]);
+    }
+    private function validateCsrf(): void {
+        $token = $_POST['_csrf'] ?? '';
+        $expected = $_SESSION['csrf_token'] ?? '';
+        if ($token === '' || !hash_equals($expected, $token)) {
+            $this->flash('Security token invalid. Please try again.', 'error');
+            $this->redirect($_SERVER['HTTP_REFERER'] ?? '/');
+            exit;
+        }
     }
     public function verifyPayment(): void {
         $secrets = (new SecretService())->all();

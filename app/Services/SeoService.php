@@ -152,6 +152,24 @@ final class SeoService {
                 'og_type' => 'website',
                 'robots' => 'noindex, nofollow',
             ],
+            'blog' => [
+                'title' => 'Blog & Updates – ' . $brand,
+                'description' => 'Read the latest blog posts, feature updates, and spiritual guides from ' . $brand . '.',
+                'og_type' => 'website',
+                'robots' => 'index, follow',
+            ],
+            'blog.post' => [
+                'title' => 'Blog Post – ' . $brand,
+                'description' => 'Read articles, guides, and updates from ' . $brand . '.',
+                'og_type' => 'article',
+                'robots' => 'index, follow',
+            ],
+            'blog.category' => [
+                'title' => 'Blog Category – ' . $brand,
+                'description' => 'Browse blog articles by category at ' . $brand . '.',
+                'og_type' => 'website',
+                'robots' => 'index, follow',
+            ],
             'admin' => [
                 'title' => 'Admin Panel – ' . $brand,
                 'description' => '',

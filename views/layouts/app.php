@@ -264,6 +264,7 @@ gtag('js', new Date());
 </head>
 <body>
 <?php $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/'; ?>
+<?php $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
 <header class="site-header" id="site-header">
     <a href="/" class="brand"><img src="<?= e($__logo) ?>" width="52" height="52" alt="Sri Panchami Spiritual logo"><span>Sri Panchami Spiritual</span></a>
     <button class="menu-toggle" type="button" aria-expanded="false" aria-label="Menu">
@@ -274,6 +275,7 @@ gtag('js', new Date());
         <a href="/shop"<?= str_starts_with($currentPath, '/shop') ? ' aria-current="page"' : '' ?>>Shop</a>
         <a href="/consult"<?= str_starts_with($currentPath, '/consult') ? ' aria-current="page"' : '' ?>>Consult</a>
         <a href="/temples"<?= str_starts_with($currentPath, '/temples') ? ' aria-current="page"' : '' ?>>Temples</a>
+        <a href="/blog"<?= str_starts_with($currentPath, '/blog') ? ' aria-current="page"' : '' ?>>Blog</a>
         <a href="/about"<?= str_starts_with($currentPath, '/about') ? ' aria-current="page"' : '' ?>>About SPS</a>
         <a href="/contact"<?= str_starts_with($currentPath, '/contact') ? ' aria-current="page"' : '' ?>>Contact</a>
         <?php if(!empty($_SESSION['user'])): ?>
@@ -326,6 +328,10 @@ if ($__flash):
             <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
             <span>Temples</span>
         </a>
+        <a href="/blog" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/blog') === 0 ? 'active' : '') ?>">
+            <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <span>Blog</span>
+        </a>
         <a href="/cart" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/cart') === 0 ? 'active' : '') ?>">
             <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
             <span>Cart</span>
@@ -370,6 +376,7 @@ if ($__flash):
                     <li><a href="/consult">Consult</a></li>
                     <li><a href="/temples">Temples</a></li>
                     <li><a href="/about">About SPS</a></li>
+                    <li><a href="/blog">Blog</a></li>
                     <li><a href="/contact">Contact</a></li>
                     <li><a href="/terms">Terms</a></li>
                     <li><a href="/privacy">Privacy</a></li>
@@ -380,6 +387,7 @@ if ($__flash):
                 <ul class="footer-links">
                     <li><a href="/consult">Consult</a></li>
                     <li><a href="/temples">Temples</a></li>
+                    <li><a href="/blog">Blog</a></li>
                     <li><a href="/about">About SPS</a></li>
                     <li><a href="/contact">Contact</a></li>
                 </ul>

@@ -1,7 +1,7 @@
 <?php
 namespace App\Controllers;
 
-use App\Services\GitHubDocService;
+use App\Services\BlogService;
 use App\Services\MarkdownRenderer;
 
 final class BlogController extends BaseController
@@ -10,14 +10,10 @@ final class BlogController extends BaseController
     {
         $this->detectApiRequest();
         $this->seoKey = 'blog';
-        $this->seoOverrides = [
-            'title' => 'Blog & Updates',
-            'description' => 'Read the latest blog posts, feature updates, and release notes from Sri Panchami Spiritual.',
-        ];
 
-        $docService = new GitHubDocService();
-        $posts = $docService->fetchIndex();
-        $categories = $docService->fetchCategories();
+        $blogService = new BlogService();
+        $posts = $blogService->all();
+        $categories = $blogService->categories();
 
         $this->render('public/blog', [
             'posts' => $posts,
@@ -29,35 +25,26 @@ final class BlogController extends BaseController
     public function show(string $slug): void
     {
         $this->detectApiRequest();
-        $docService = new GitHubDocService();
-        $markdown = $docService->fetchPost($slug);
+        $blogService = new BlogService();
+        $post = $blogService->find($slug);
 
-        if ($markdown === null) {
+        if ($post === null) {
             $this->renderNotFound();
         }
 
-        $index = $docService->fetchIndex();
-        $meta = [];
-        foreach ($index as $post) {
-            if (($post['slug'] ?? '') === $slug) {
-                $meta = $post;
-                break;
-            }
-        }
+        $markdown = new MarkdownRenderer();
+        $content = $markdown->render($post['body'] ?? '');
 
-        $renderer = new MarkdownRenderer();
-        $content = $renderer->render($markdown);
-
-        $title = $meta['title'] ?? ucfirst(str_replace('-', ' ', $slug));
+        $title = $post['title'] ?? ucfirst(str_replace('-', ' ', $slug));
         $this->seoKey = 'blog.post';
         $this->seoOverrides = [
             'title' => $title,
-            'description' => $meta['excerpt'] ?? 'Read ' . $title,
+            'description' => $post['excerpt'] ?? 'Read ' . $title,
         ];
 
         $this->render('public/blog-post', [
             'content' => $content,
-            'meta' => $meta,
+            'meta' => $post,
             'slug' => $slug,
         ]);
     }
@@ -67,9 +54,9 @@ final class BlogController extends BaseController
         $this->detectApiRequest();
         $this->seoKey = 'blog.category';
 
-        $docService = new GitHubDocService();
-        $posts = $docService->fetchIndex();
-        $categories = $docService->fetchCategories();
+        $blogService = new BlogService();
+        $posts = $blogService->all();
+        $categories = $blogService->categories();
 
         $filtered = array_values(array_filter($posts, fn($p) => ($p['category'] ?? '') === $slug));
 

@@ -25,17 +25,21 @@
                                  <div class="cart-item__price--mobile">₹<?= e((string)$lineTotal) ?></div>
                              </div>
                              <div class="cart-item__qty">
-                                 <form method="post" action="/cart/update" style="display:flex; align-items:center; gap:4px;">
-                                     <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
-                                     <button type="submit" name="action" value="dec" class="btn btn-sm btn-outline" <?= $item['qty'] <= 1 ? 'disabled' : '' ?>>−</button>
-                                     <span class="cart-item__qty-val"><?= e((string)$item['qty']) ?></span>
-                                     <button type="submit" name="action" value="inc" class="btn btn-sm btn-outline">+</button>
-                                 </form>
+<form method="post" action="/cart/update" style="display:flex; align-items:center; gap:4px;">
+                                         <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
+                                         <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
+                                         <input type="hidden" name="_csrf" value="<?= $csrf ?>">
+                                         <button type="submit" name="action" value="dec" class="btn btn-sm btn-outline" <?= $item['qty'] <= 1 ? 'disabled' : '' ?>>−</button>
+                                         <span class="cart-item__qty-val"><?= e((string)$item['qty']) ?></span>
+                                         <button type="submit" name="action" value="inc" class="btn btn-sm btn-outline">+</button>
+                                     </form>
                              </div>
                              <div class="cart-item__price">₹<?= e((string)$lineTotal) ?></div>
-                             <form method="post" action="/cart/remove" class="cart-item__remove-wrap">
-                                 <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
-                                 <button class="cart-item__remove" title="Remove" aria-label="Remove <?= e($item['name']) ?> from cart">
+<form method="post" action="/cart/remove" class="cart-item__remove-wrap">
+                                  <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
+                                  <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
+                                  <input type="hidden" name="_csrf" value="<?= $csrf ?>">
+                                  <button class="cart-item__remove" title="Remove" aria-label="Remove <?= e($item['name']) ?> from cart">
                                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
                                  </button>
                              </form>
