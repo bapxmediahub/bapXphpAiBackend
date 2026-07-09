@@ -54,37 +54,84 @@
                     </div>
                     <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
                     <input type="hidden" id="csrf-token" value="<?= $csrf ?>">
+                    <div id="payment-method-toggle" style="margin-bottom:var(--space-md); <?= empty($secrets['razorpay_key_id']) ? '' : '' ?>">
+                        <label style="display:inline-flex; align-items:center; gap:var(--space-sm); margin-right:var(--space-lg); cursor:pointer;">
+                            <input type="radio" name="payment_method" value="razorpay" checked onchange="togglePaymentMethod()"> Pay with Razorpay
+                        </label>
+                        <?php if (!empty($secrets['stripe_secret_key'])): ?>
+                        <label style="display:inline-flex; align-items:center; gap:var(--space-sm); cursor:pointer;">
+                            <input type="radio" name="payment_method" value="stripe" onchange="togglePaymentMethod()"> Pay with Stripe
+                        </label>
+                        <?php endif; ?>
+                    </div>
                     <?php if(!empty($secrets['razorpay_key_id'])): ?>
-                        <button id="pay-now" class="btn btn-primary btn-block btn-lg">Pay ₹<?= e((string)$total) ?> with Razorpay</button>
+                        <button id="pay-now" class="btn btn-primary btn-block btn-lg">Pay ₹<?= e((string)$total) ?></button>
                         <p style="margin:var(--space-sm) 0 0; color:var(--color-text-muted); font-size:0.85rem;">Ecommerce orders use direct card or UPI payments only. Consultation credits cannot be used for products, and cash on delivery is not available.</p>
                         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
                         <script>
+                        function togglePaymentMethod() {
+                            var method = document.querySelector('input[name="payment_method"]:checked');
+                            if (!method) return;
+                            var btn = document.getElementById('pay-now');
+                            if (method.value === 'stripe') {
+                                btn.textContent = 'Pay ₹<?= e((string)$total) ?> with Stripe';
+                            } else {
+                                btn.textContent = 'Pay ₹<?= e((string)$total) ?> with Razorpay';
+                            }
+                        }
                         (() => {
                             const button = document.getElementById('pay-now');
                             const form = document.querySelector('.checkout-form');
                             button.addEventListener('click', async () => {
+                                const method = document.querySelector('input[name="payment_method"]:checked');
+                                const paymentMethod = method ? method.value : 'razorpay';
                                 const fields = ['name', 'email', 'phone', 'address', 'city', 'pincode'];
                                 for (const field of fields) {
                                     if (!form.querySelector(`[name="${field}"]`).reportValidity()) return;
                                 }
                                 button.disabled = true;
-                                showToast('Opening secure Razorpay checkout...', 'info');
                                 const csrf = document.getElementById('csrf-token').value;
+                                const bodyParams = {
+                                    _csrf: csrf,
+                                    payment_method: paymentMethod,
+                                    coupon_code: document.getElementById('coupon-code').value,
+                                    amount: '<?= (int)($total * 100) ?>',
+                                    name: form.querySelector('[name="name"]').value,
+                                    email: form.querySelector('[name="email"]').value,
+                                    phone: form.querySelector('[name="phone"]').value,
+                                    address: form.querySelector('[name="address"]').value,
+                                    city: form.querySelector('[name="city"]').value,
+                                    pincode: form.querySelector('[name="pincode"]').value
+                                };
+                                if (paymentMethod === 'stripe') {
+                                    showToast('Opening secure Stripe checkout...', 'info');
+                                    try {
+                                        const response = await fetch('/checkout/create-order', {
+                                            method: 'POST',
+                                            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                                            body: new URLSearchParams(bodyParams)
+                                        });
+                                        const result = await response.json();
+                                        if (!response.ok || result.error) {
+                                            throw new Error(result.error || 'Unable to create Stripe checkout session.');
+                                        }
+                                        if (result.stripe_url) {
+                                            window.location.href = result.stripe_url;
+                                        } else {
+                                            throw new Error('No checkout URL returned.');
+                                        }
+                                    } catch (error) {
+                                        button.disabled = false;
+                                        showToast(error.message || 'Payment could not be started.', 'error');
+                                    }
+                                    return;
+                                }
+                                showToast('Opening secure Razorpay checkout...', 'info');
                                 try {
                                     const response = await fetch('/checkout/create-order', {
                                         method: 'POST',
                                         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                                        body: new URLSearchParams({
-                                            _csrf: csrf,
-                                            coupon_code: document.getElementById('coupon-code').value,
-                                            amount: '<?= (int)($total * 100) ?>',
-                                            name: form.querySelector('[name="name"]').value,
-                                            email: form.querySelector('[name="email"]').value,
-                                            phone: form.querySelector('[name="phone"]').value,
-                                            address: form.querySelector('[name="address"]').value,
-                                            city: form.querySelector('[name="city"]').value,
-                                            pincode: form.querySelector('[name="pincode"]').value
-                                        })
+                                        body: new URLSearchParams(bodyParams)
                                     });
                                     const order = await response.json();
                                     if (!response.ok || order.error) {
