@@ -118,6 +118,7 @@ final class PublicController extends BaseController {
         $categories = (new CategoryService())->all();
         if ($this->isApiRequest) {
             $this->jsonResponse($categories);
+            return;
         }
         $this->seoKey = 'shop';
         $this->render('public/shop', ['items' => (new ProductService())->all(), 'categories' => $categories, 'category' => '']);
