@@ -7,11 +7,11 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 112 routes, 13 controllers, 38 services, 47 views, 0 data files, 13 tools"]
-    arch_routes["> Routes: 112 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 113 routes, 13 controllers, 38 services, 48 views, 0 data files, 13 tools"]
+    arch_routes["> Routes: 113 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 13"]:::arch
     arch_svc["> Services: 38"]:::arch
-    arch_views["> Views: 47"]:::arch
+    arch_views["> Views: 48"]:::arch
     arch_data["> Collections: 21 schema | 0 files"]:::arch
     arch_tools["> Tools: 13"]:::arch
     arch_gaps["> Gaps: 0"]:::arch
@@ -56,6 +56,7 @@ flowchart LR
     route_0e14c4ef1380["POST /consultation/initiate — Initiate consultation session — create appointment, deduct credits, redirect to room"]:::route
     route_ee5462fe50d8["POST /reviews/astrologer — Submit astrologer review"]:::route
     route_9c8e6425cd02["POST /reviews/product — Submit product review"]:::route
+    route_93b329f29ece["GET /docs — Documentation landing — blog categories overview"]:::route
     route_98607742961f["POST /remotedb"]:::route
     route_6e62aa059570["GET /blog — Blog listing — all posts with category filters"]:::route
     route_b8738856284a["GET /blog/{slug} — Blog post — rendered from GitHub-sourced markdown"]:::route
@@ -246,6 +247,7 @@ flowchart LR
     view_6b1f93c8d0e4["public/checkout"]:::code
     view_eb9fd22a15bf["public/consult"]:::code
     view_89865e74ab9c["public/contact"]:::code
+    view_fad3b39b568b["public/docs"]:::code
     view_b8744c438a04["public/forgot-password"]:::code
     view_17c7f41e5cc8["public/home"]:::code
     view_a6af926bf361["public/login"]:::code
@@ -743,6 +745,8 @@ flowchart LR
   controller_64e608ddc28b --> service_1bacfc3e3f3b
   controller_64e608ddc28b --> service_b2e5928bb46a
   controller_64e608ddc28b -. renders .-> view_54f97aa2b448
+  route_93b329f29ece --> controller_18ec49ea2cf4
+  controller_18ec49ea2cf4 -. renders .-> view_fad3b39b568b
   route_98607742961f --> controller_2702fc6f256e
   controller_2702fc6f256e --> service_66daa9bdc2c1
   controller_2702fc6f256e --> service_6c9416ef0383
