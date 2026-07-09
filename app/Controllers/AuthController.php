@@ -19,7 +19,8 @@ final class AuthController extends BaseController {
     unset($_SESSION['oauth_state']);
     session_regenerate_id(true);
     $_SESSION['user']=['sub'=>$user['sub'],'email'=>$user['email'],'name'=>$user['name']??'','picture'=>$user['picture']??'','role'=>$role,'astrologer_slug'=>$astrologerSlug];
-    $store->upsert('users',['id'=>$user['sub'],'email'=>$user['email'],'name'=>$user['name']??'','picture'=>$user['picture']??'','role'=>$role]);
+    try { $store->upsert('users',['id'=>$user['sub'],'email'=>$user['email'],'name'=>$user['name']??'','picture'=>$user['picture']??'','role'=>$role]); } catch (\Throwable) {}
+    $this->flash('Signed in.','success');
    if ($role === 'admin') { $this->redirect('/admin'); return; }
    if ($role === 'astrologer') { $this->redirect($mustChange ? '/astrologer/change-password' : '/astrologer'); return; }
    $this->redirect('/');
