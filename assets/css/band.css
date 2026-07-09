@@ -782,6 +782,35 @@ nav a:hover { color: var(--color-maroon); }
 .product-card__actions { display: flex; gap: 6px; align-items: center; }
 .product-card__actions .btn-ghost { padding: 0 0.7rem; flex: none; height: 30px; min-height: 30px; border-radius: 999px; font-size: 0.8rem; border-width: 1.5px; text-transform: none; letter-spacing: 0; position: static; overflow: visible; }
 .product-card__actions .product-card__form { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.product-card__stepper {
+    height: 30px;
+    min-height: 30px;
+    border: 1.5px solid var(--color-gold);
+    background: var(--color-gold-light);
+    border-radius: 999px;
+    overflow: hidden;
+}
+.product-card__stepper form { display: flex; height: 100%; margin: 0; }
+.product-card__stepper button {
+    width: 30px;
+    height: 100%;
+    border: 0;
+    background: transparent;
+    color: var(--color-maroon);
+    cursor: pointer;
+    font-size: 0.9rem;
+    line-height: 1;
+    padding: 0;
+}
+.product-card__stepper button:hover:not(:disabled) { background: var(--color-gold); }
+.product-card__stepper button:disabled { color: var(--color-text-light); cursor: default; opacity: 0.55; }
+.qty-input__value {
+    min-width: 22px;
+    color: var(--color-maroon);
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-align: center;
+}
 
 /* ── Shop Page ── */
 .shop-layout {

@@ -7,11 +7,11 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 113 routes, 13 controllers, 38 services, 48 views, 0 data files, 14 tools"]
-    arch_routes["> Routes: 113 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 112 routes, 13 controllers, 39 services, 49 views, 0 data files, 14 tools"]
+    arch_routes["> Routes: 112 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 13"]:::arch
-    arch_svc["> Services: 38"]:::arch
-    arch_views["> Views: 48"]:::arch
+    arch_svc["> Services: 39"]:::arch
+    arch_views["> Views: 49"]:::arch
     arch_data["> Collections: 21 schema | 0 files"]:::arch
     arch_tools["> Tools: 14"]:::arch
     arch_gaps["> Gaps: 0"]:::arch
@@ -53,6 +53,7 @@ flowchart LR
     route_137a91056f17["GET /api/consultations/{id}/signals — API — fetch WebRTC signals"]:::route
     route_dcbdd5c79871["POST /api/consultations/{id}/signals — API — send WebRTC signal"]:::route
     route_f8d4769e9808["POST /api/consultations/{id}/status — API — update appointment status"]:::route
+    route_ef4580defcc8["POST /api/consultations/{id}/bill-time"]:::route
     route_0e14c4ef1380["POST /consultation/initiate — Initiate consultation session — create appointment, deduct credits, redirect to room"]:::route
     route_ee5462fe50d8["POST /reviews/astrologer — Submit astrologer review"]:::route
     route_9c8e6425cd02["POST /reviews/product — Submit product review"]:::route
@@ -127,8 +128,6 @@ flowchart LR
     route_c3b94d62a632["POST /admin/appearance/save — Admin — save logo/favicon"]:::route
     route_0c88057d061a["GET /admin/media — Admin — media library"]:::route
     route_16d561502e84["POST /admin/media/upload — Admin — upload media"]:::route
-    route_39e94ed98594["GET /admin/environment — Admin — .env editor, permissions"]:::route
-    route_7ff0c7d60a36["POST /admin/environment/save — Admin — save .env"]:::route
     route_74e14338f5d2["POST /admin/environment/fix-permissions — Admin — fix storage permissions"]:::route
     route_e9360697e956["GET /admin/developer/project-map — Admin — project map viewer"]:::route
     route_94124153470a["POST /admin/products/save — Admin — create/update product"]:::route
@@ -198,6 +197,7 @@ flowchart LR
     service_9eeeaab84791["PaymentService"]:::code
     service_0ab47bcd921f["ProductService"]:::code
     service_b06ea6dd1537["ProjectMapService"]:::code
+    service_123fd32324c8["RateLimiter"]:::code
     service_ea89d25425b5["ResourceService"]:::code
     service_cdae135eb5b5["ReviewService"]:::code
     service_69598e3405fb["SchemaService"]:::code
@@ -244,6 +244,7 @@ flowchart LR
     view_c8dddc6d8f3e["public/blog"]:::code
     view_4febaa319900["public/blog-post"]:::code
     view_9ee4574eabfc["public/cart"]:::code
+    view_928f31a825c9["public/categories"]:::code
     view_6b1f93c8d0e4["public/checkout"]:::code
     view_eb9fd22a15bf["public/consult"]:::code
     view_89865e74ab9c["public/contact"]:::code
@@ -350,7 +351,7 @@ flowchart LR
   controller_18ec49ea2cf4 -. renders .-> view_ca8b647f9374
   route_3c12328d1184 --> controller_18ec49ea2cf4
   controller_18ec49ea2cf4 --> service_ebacea9031c7
-  controller_18ec49ea2cf4 -. renders .-> view_ca8b647f9374
+  controller_18ec49ea2cf4 -. renders .-> view_928f31a825c9
   route_762fd619926d --> controller_18ec49ea2cf4
   controller_18ec49ea2cf4 --> service_0ab47bcd921f
   controller_18ec49ea2cf4 -. renders .-> view_747a935d6839
@@ -476,6 +477,11 @@ flowchart LR
   route_f8d4769e9808 --> controller_50eaea84bd1d
   controller_50eaea84bd1d --> service_f33a1d77b137
   controller_50eaea84bd1d --> service_0d961cbe684b
+  controller_50eaea84bd1d -. renders .-> view_7459f7fdbec2
+  route_ef4580defcc8 --> controller_50eaea84bd1d
+  controller_50eaea84bd1d --> service_f33a1d77b137
+  controller_50eaea84bd1d --> service_0d961cbe684b
+  controller_50eaea84bd1d --> service_df7a87394b21
   controller_50eaea84bd1d -. renders .-> view_7459f7fdbec2
   route_176bd191ff81 --> controller_4cc77f3351c6
   controller_4cc77f3351c6 --> service_f33a1d77b137
@@ -622,16 +628,6 @@ flowchart LR
   controller_3d37b75c07ec --> service_e79c019a142b
   controller_3d37b75c07ec --> service_f33a1d77b137
   controller_3d37b75c07ec -. renders .-> view_52965cdd23d8
-  route_39e94ed98594 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_01d1cd760b64
-  controller_3d37b75c07ec --> service_82c10839666c
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_036080adacd9
-  route_7ff0c7d60a36 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_01d1cd760b64
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_036080adacd9
   route_74e14338f5d2 --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_82c10839666c
   controller_3d37b75c07ec --> service_e79c019a142b

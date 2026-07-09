@@ -52,27 +52,44 @@
                             <input type="text" id="coupon-code" name="coupon_code" placeholder="Enter coupon code" style="flex:1;">
                         </div>
                     </div>
-                    <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
+                    <?php
+                        $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16));
+                        $hasRazorpay = !empty($secrets['razorpay_key_id']);
+                        $hasStripe = !empty($secrets['stripe_secret_key']);
+                        $hasPaymentGateway = $hasRazorpay || $hasStripe;
+                        $defaultPaymentMethod = $hasRazorpay ? 'razorpay' : 'stripe';
+                    ?>
                     <input type="hidden" id="csrf-token" value="<?= $csrf ?>">
-                    <div id="payment-method-toggle" style="margin-bottom:var(--space-md); <?= empty($secrets['razorpay_key_id']) ? '' : '' ?>">
+                    <?php if($hasPaymentGateway): ?>
+                    <div id="payment-method-toggle" style="margin-bottom:var(--space-md);">
+                        <?php if ($hasRazorpay): ?>
                         <label style="display:inline-flex; align-items:center; gap:var(--space-sm); margin-right:var(--space-lg); cursor:pointer;">
-                            <input type="radio" name="payment_method" value="razorpay" checked onchange="togglePaymentMethod()"> Pay with Razorpay
+                            <input type="radio" name="payment_method" value="razorpay" <?= $defaultPaymentMethod === 'razorpay' ? 'checked' : '' ?> onchange="togglePaymentMethod()"> Pay with Razorpay
                         </label>
-                        <?php if (!empty($secrets['stripe_secret_key'])): ?>
+                        <?php endif; ?>
+                        <?php if ($hasStripe): ?>
                         <label style="display:inline-flex; align-items:center; gap:var(--space-sm); cursor:pointer;">
-                            <input type="radio" name="payment_method" value="stripe" onchange="togglePaymentMethod()"> Pay with Stripe
+                            <input type="radio" name="payment_method" value="stripe" <?= $defaultPaymentMethod === 'stripe' ? 'checked' : '' ?> onchange="togglePaymentMethod()"> Pay with Stripe
                         </label>
                         <?php endif; ?>
                     </div>
-                    <?php if(!empty($secrets['razorpay_key_id'])): ?>
+                    <?php endif; ?>
+                    <?php if($hasPaymentGateway): ?>
                         <button id="pay-now" class="btn btn-primary btn-block btn-lg">Pay ₹<?= e((string)$total) ?></button>
                         <p style="margin:var(--space-sm) 0 0; color:var(--color-text-muted); font-size:0.85rem;">Ecommerce orders use direct card or UPI payments only. Consultation credits cannot be used for products, and cash on delivery is not available.</p>
+                        <?php if($hasRazorpay): ?>
                         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+                        <?php endif; ?>
                         <script>
+                        const checkoutGateways = {
+                            razorpay: <?= $hasRazorpay ? 'true' : 'false' ?>,
+                            stripe: <?= $hasStripe ? 'true' : 'false' ?>
+                        };
                         function togglePaymentMethod() {
                             var method = document.querySelector('input[name="payment_method"]:checked');
                             if (!method) return;
                             var btn = document.getElementById('pay-now');
+                            if (!btn) return;
                             if (method.value === 'stripe') {
                                 btn.textContent = 'Pay ₹<?= e((string)$total) ?> with Stripe';
                             } else {
@@ -124,6 +141,11 @@
                                         button.disabled = false;
                                         showToast(error.message || 'Payment could not be started.', 'error');
                                     }
+                                    return;
+                                }
+                                if (!checkoutGateways.razorpay || typeof Razorpay === 'undefined') {
+                                    button.disabled = false;
+                                    showToast('Razorpay is not configured yet. Choose another payment method or contact the administrator.', 'error');
                                     return;
                                 }
                                 showToast('Opening secure Razorpay checkout...', 'info');
@@ -191,9 +213,10 @@
                                 }
                             });
                         })();
+                        togglePaymentMethod();
                         </script>
                     <?php else: ?>
-                        <script>document.addEventListener('DOMContentLoaded',function(){showToast('Razorpay is not configured yet. Please contact the administrator.','warning');});</script>
+                        <script>document.addEventListener('DOMContentLoaded',function(){showToast('No payment gateway is configured yet. Please contact the administrator.','warning');});</script>
                     <?php endif; ?>
                 </div>
                 <div class="checkout-summary reveal">

@@ -50,16 +50,21 @@ final class CommerceController extends BaseController {
             foreach ($_SESSION['cart'] as &$item) {
                 if (($item['slug'] ?? '') === $slug) {
                     if ($action === 'inc') {
-                        $item['qty'] = (int)($item['qty'] ?? 1) + 1;
+                        $item['qty'] = min(99, (int)($item['qty'] ?? 1) + 1);
                     } elseif ($action === 'dec') {
-                        $item['qty'] = max(1, (int)($item['qty'] ?? 1) - 1);
+                        $item['qty'] = max(0, (int)($item['qty'] ?? 1) - 1);
                     }
                     break;
                 }
             }
             unset($item);
+            $_SESSION['cart'] = array_values(array_filter(
+                $_SESSION['cart'],
+                fn($item) => (int)($item['qty'] ?? 0) > 0
+            ));
         }
-        $this->redirect('/cart');
+        $redirect = $_POST['redirect'] ?? '/cart';
+        $this->redirect($redirect);
     }
     public function createOrder(): void {
         $this->isApiRequest = true;

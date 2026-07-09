@@ -2,17 +2,19 @@
 
 ## Deployment Steps
 
-1. Upload the current `main` build to `/public_html` with Git or FTP.
-2. Keep `.env`, `index.php`, `.htaccess`, `api/`, `app/`, `assets/`, `integrations/`, `storage/`, `cli/`, and `views/` together.
-3. Set `storage/` and `storage/data/` writable by PHP.
-4. Configure integration secrets from the admin integrations page after deployment.
-5. Set a Hostinger cron job for queued mail after SMTP is configured:
+1. In Hostinger hPanel, open **Advanced → Git** and connect the GitHub repository to `/public_html`.
+2. Enable **Auto Deployment** for the production **Branch** (`main`) so merged commits deploy automatically.
+3. Upload the current `main` build to `/public_html` with Git or FTP when doing a manual recovery deploy.
+4. Keep `.env`, `index.php`, `.htaccess`, `api/`, `app/`, `assets/`, `integrations/`, `storage/`, `cli/`, and `views/` together.
+5. Set `storage/` and `storage/data/` writable by PHP.
+6. Configure integration secrets from the admin integrations page after deployment.
+7. Set a Hostinger cron job for queued mail after SMTP is configured:
 
 ```bash
 php /home/ACCOUNT/public_html/cli/process-mail-queue.php
 ```
 
-6. Smoke test public pages, account redirects, admin login, API endpoints, checkout configuration, and the mail queue.
+8. Smoke test public pages, account redirects, admin login, API endpoints, checkout configuration, and the mail queue.
 
 One-time Git auto-deploy from `main` is configured — commits to GitHub main deploy automatically. Merge only after local validation passes:
 
