@@ -7,14 +7,14 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 111 routes, 13 controllers, 38 services, 47 views, 0 data files, 13 tools"]
-    arch_routes["> Routes: 111 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 112 routes, 13 controllers, 38 services, 47 views, 0 data files, 13 tools"]
+    arch_routes["> Routes: 112 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 13"]:::arch
     arch_svc["> Services: 38"]:::arch
     arch_views["> Views: 47"]:::arch
     arch_data["> Collections: 21 schema | 0 files"]:::arch
     arch_tools["> Tools: 13"]:::arch
-    arch_gaps["> Gaps: 1"]:::arch
+    arch_gaps["> Gaps: 0"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -56,6 +56,7 @@ flowchart LR
     route_0e14c4ef1380["POST /consultation/initiate — Initiate consultation session — create appointment, deduct credits, redirect to room"]:::route
     route_ee5462fe50d8["POST /reviews/astrologer — Submit astrologer review"]:::route
     route_9c8e6425cd02["POST /reviews/product — Submit product review"]:::route
+    route_98607742961f["POST /remotedb"]:::route
     route_6e62aa059570["GET /blog — Blog listing — all posts with category filters"]:::route
     route_b8738856284a["GET /blog/{slug} — Blog post — rendered from GitHub-sourced markdown"]:::route
     route_3c268a290f60["GET /blog/category/{slug} — Blog listing filtered by category"]:::route
@@ -309,7 +310,7 @@ flowchart LR
   end
 
   subgraph GAPS["Gaps & Missing Links"]
-    gap_ec9db376b1["unwired_controllers: RemoteDbController"]:::gap
+    no_gaps["No detected gaps"]:::data
   end
 
   route_e3b717d5883a --> controller_18ec49ea2cf4
@@ -742,6 +743,10 @@ flowchart LR
   controller_64e608ddc28b --> service_1bacfc3e3f3b
   controller_64e608ddc28b --> service_b2e5928bb46a
   controller_64e608ddc28b -. renders .-> view_54f97aa2b448
+  route_98607742961f --> controller_2702fc6f256e
+  controller_2702fc6f256e --> service_66daa9bdc2c1
+  controller_2702fc6f256e --> service_6c9416ef0383
+  controller_2702fc6f256e -. renders .-> view_fe7e7ffe6adc
   route_6e62aa059570 --> controller_f21ef7cdb1a4
   controller_f21ef7cdb1a4 --> service_a59832354e11
   controller_f21ef7cdb1a4 --> service_dc8af4c619cd
@@ -846,4 +851,3 @@ flowchart LR
   tool_ffb4fe3c51d9 --> systematic_map
   tool_6bc5276d6a60 --> ROUTES_PUBLIC
   tool_6bc5276d6a60 --> ROUTES_ADMIN
-  gap_ec9db376b1 -. missing .-> controller_2702fc6f256e
