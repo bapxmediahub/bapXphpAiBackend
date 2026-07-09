@@ -72,6 +72,14 @@ if ($uri === '/admin/sw.js' || $uri === '/astrologer/sw.js') {
     exit;
 }
 
+// Remote DB query endpoint
+header('Content-Type: application/json');
+if ($uri === '/remotedb') {
+    require __DIR__ . '/app/bootstrap.php';
+    (new \App\Controllers\RemoteDbController())();
+    exit;
+}
+
 // API routes - JSON only
 if (strpos($uri, '/api/') === 0) {
     require __DIR__ . '/api/index.php';
