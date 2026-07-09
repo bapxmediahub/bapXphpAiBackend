@@ -148,3 +148,33 @@ Manage agent skills (specialized instructions and tools) from GitHub repositorie
 ### Other Utilities
 - `gh config set <key> <value>`: Configure `gh` settings.
 - `gh alias set <name> <command>`: Create a shortcut for a command.
+
+## Remote Database Query Endpoint
+
+### `/remotedb`
+
+A secure API endpoint for running read-only SQL queries against the live database.
+
+**Endpoint:** `POST https://yoursite.com/remotedb`
+
+**Request:**
+```bash
+curl -X POST https://yoursite.com/remotedb \
+  -H "Content-Type: application/json" \
+  -d '{"token":"YOUR_TOKEN","query":"SELECT * FROM products LIMIT 10"}'
+```
+
+**Response:**
+```json
+{"success": true, "data": [...]}
+```
+
+**Security:**
+- Only `SELECT`, `SHOW`, `DESCRIBE`, `EXPLAIN` queries allowed.
+- Token stored in `secrets.remote_db_token`.
+- Generate token: `openssl rand -hex 32`
+
+**Usage:**
+- Useful when `bapXphp db` cannot connect via direct MySQL.
+- Set token in Admin → Integrations or via DB update.
+- Use for debugging and data exploration in production.

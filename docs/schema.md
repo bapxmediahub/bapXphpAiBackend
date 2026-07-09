@@ -25,3 +25,42 @@ Use it before changing:
 ## Agent Rule
 
 When a data shape changes, update schema first, then code, then docs/tests. Do not infer new JSON fields only from templates or PHP arrays.
+
+## Remote Database Query Endpoint
+
+### `/remotedb`
+
+A secure API endpoint for running read-only SQL queries remotely. Useful for the `bapXphp` CLI to query the live database from a development environment.
+
+**Endpoint:** `POST https://yoursite.com/remotedb`
+
+**Request Body:**
+```json
+{
+  "token": "your-secret-token",
+  "query": "SELECT * FROM products LIMIT 10",
+  "params": []
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [...]
+}
+```
+
+**Security:**
+- Only `SELECT`, `SHOW`, `DESCRIBE`, and `EXPLAIN` queries are allowed.
+- Authentication via `remote_db_token` stored in the `secrets` table.
+- Set the token via Admin → Secrets or `bapXphp db raw "UPDATE secrets SET remote_db_token = 'your-token' WHERE id = 'secrets-primary'"`.
+
+**Client Token:**
+Generate a secure token:
+```bash
+openssl rand -hex 32
+```
+
+**Usage with bapXphp:**
+The endpoint allows remote DB access when direct MySQL connection is unavailable. Use it for debugging or data exploration in production.
