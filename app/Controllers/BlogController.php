@@ -30,6 +30,7 @@ final class BlogController extends BaseController
 
         if ($post === null) {
             $this->renderNotFound();
+            return;
         }
 
         $content = $post['html'] ?? '';
