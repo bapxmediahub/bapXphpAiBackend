@@ -42,7 +42,7 @@ This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP
 3. Search for an existing issue, then select or create the evidence-backed issue when the diagnose-then-issue rule applies.
 4. Identify target paths and read their complete root-to-leaf `AGENTS.md` chain.
 5. Read the narrow `.agents/skills/<skill-name>/SKILL.md` files that match the task.
-6. Read `storage/schema/collections.php` for JSON-backed behavior and `Design.md` for customer-facing UI.
+6. Read `storage/schema/collections.php` for schema definitions and `Design.md` for customer-facing UI.
 7. Search with `rg` and inspect existing implementations before creating any file, route, service, view, collection, or navigation item.
 8. Implement against primary repository sources. The generated map summarizes relationships; it does not override source files.
 
@@ -59,7 +59,7 @@ This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP
 
 ## Rules
 
-- Keep JSON storage first. MySQL is the query backend for `bapXphp db` CLI operations; JSON files are synced to MySQL tables.
+- MySQL is the primary runtime store. JSON files in `storage/data/` are used only for one-time seeding via `bapXphp db sync`.
 - Update `storage/schema/collections.php` before changing a collection shape, admin fields, media fields, seed data, or agent-visible context.
 - Extend existing controllers, services, views, storage files, and tools when they already cover the use case. Do not scaffold parallel implementations.
 - When a code change reveals a reusable workflow rule, update the matching project skill under `.agents/skills/<skill-name>/SKILL.md` so future agents inherit the framework behavior. Keep skills business-agnostic.

@@ -1,6 +1,6 @@
 # Catalog Module
 
-Owns product, category, temple, and astrologer catalog reads from JSON storage.
+Owns product, category, temple, and astrologer catalog reads from MySQL via DatabaseService.
 
 Main files: `ProductService.php`, `CategoryService.php`, `TempleService.php`, `AstrologerService.php`, `storage/data/*.json`.
 

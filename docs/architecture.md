@@ -16,10 +16,11 @@
 
 ## Data Persistence
 
-- JSON file storage lives in `storage/data/`.
+- MySQL is the primary runtime data store, accessed through `DatabaseService`.
 - Collection schema lives in `storage/schema/collections.php`. Data is stored in MySQL tables (not JSON files).
-- `JsonStoreService` uses lock files and atomic writes for persistence.
-- No SQL/MySQL database is required for the current application.
+- On local dev without MySQL, `DatabaseService::isRemote()` proxies queries to a production `/remotedb` endpoint.
+- Blog posts are file-based: `content/blog/posts/*.md` with YAML frontmatter.
+- Media metadata lives in `storage/media.yaml` (not MySQL).
 - `AgentContextService` builds safe user-specific context for the support/model assistant.
 
 ## Current Data Flow
@@ -27,7 +28,7 @@
 1. `index.php` routes public, account, review, and admin paths into the PHP router.
 2. Controllers load data through services and render templates.
 3. Customer forms post back to PHP controllers for cart, checkout, contact, reviews, and account flows.
-4. Admin forms update JSON-backed resources through services.
+4. Admin forms update MySQL-backed resources through services.
 5. API clients use `/api/*` for JSON catalog data.
 
 ## File Structure
@@ -36,14 +37,15 @@
 api/                    PHP API entry point
 app/
   Controllers/          Page and form controllers
-  Services/             Business logic and JSON persistence
+  Services/             Business logic and MySQL persistence
   Router.php            Route dispatcher
 assets/
   css/                  Shared stylesheets
-docs/                   Project, module, and deployment docs
-storage/data/           JSON collections
-storage/schema/         JSON database schema
 cli/                    bapXphp CLI entry point and helper scripts
+content/blog/posts/     Blog post markdown files
+docs/                   Project, module, and deployment docs
+storage/schema/         MySQL schema contract (collections.php)
+storage/data/           Optional JSON seed files (one-time sync only)
 views/
   public/               Customer-facing PHP templates
   account/              Signed-in customer pages

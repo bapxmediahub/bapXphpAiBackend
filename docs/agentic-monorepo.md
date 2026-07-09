@@ -1,24 +1,22 @@
-# Agentic PHP/JSON Monorepo
+# Agentic PHP/MySQL Monorepo
 
 This repo packages the backend and frontend together for small PHP hosting. The current public use case is Sri Panchami Spiritual, but the backend is reusable for other customer projects.
 
-## Why JSON
+## Data Architecture
 
-JSON storage is intentional. It keeps the database readable by humans and coding agents, avoids hidden SQL schema state, and works on shared PHP hosting without a database server. The JSON files are not random data dumps; they are governed by:
+MySQL is the primary runtime data store. All dynamic data — users, products, astrologers, orders, appointments, consultations, wallet transactions, reviews, settings, secrets — lives in MySQL tables and is accessed via `DatabaseService`.
 
-- `storage/schema/collections.php`
-- `JsonStoreService` atomic writes
-- admin CRUD forms
-- audit logging
-- media library records
-- project-map documentation
-- agent-facing skills in the repo
+File-based storage is used only for:
+- Blog posts: `content/blog/posts/*.md` with YAML frontmatter
+- Blog categories: `content/blog/categories.yaml`
+- Media metadata: `storage/media.yaml`
+- One-time seeding: JSON files in `storage/data/` synced to MySQL via `bapXphp db sync`
 
 ## Backend Primitives
 
 - Auth and roles
-- JSON collections
-- Schema registry
+- MySQL-backed collections via DatabaseService
+- Schema registry (collections.php)
 - Admin CRUD
 - Media uploads and picker
 - Environment editor
@@ -51,9 +49,9 @@ Official references: [NotebookLM chat and citations](https://support.google.com/
 
 Agent-native backend platforms expose database, auth, storage, deployments, logs, and model access as inspectable primitives. This repo follows the same idea for smaller PHP hosting, but keeps the primitives inside the monorepo:
 
-- Database: JSON collections and schema files
+- Database: MySQL tables via DatabaseService; JSON for one-time seed data
 - Auth: PHP services with admin credentials in settings (Admin → Settings) and API secrets in encrypted store (Admin → Integrations)
 - Storage: local media library
 - Deployment: Hostinger Git auto-deploy
 - Model context: `AgentContextService`
-- Logs/audit: JSON audit events and admin pages
+- Logs/audit: MySQL audit events via AuditLogService and admin pages

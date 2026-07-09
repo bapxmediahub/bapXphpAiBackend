@@ -1,6 +1,6 @@
 <div class="admin-card">
     <h2 style="font-size:1.1rem; margin:0 0 var(--space-md);"><?= e($title) ?></h2>
-    <p style="color:var(--color-text-muted); margin:0 0 var(--space-lg);">View <?= e(strtolower($title)) ?> records from JSON storage.</p>
+    <p style="color:var(--color-text-muted); margin:0 0 var(--space-lg);">View <?= e(strtolower($title)) ?> records.</p>
     <div class="table-wrap">
         <table>
             <thead><tr><th>ID</th><th>Status</th><th>Details</th><th>Created</th></tr></thead>

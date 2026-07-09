@@ -2,22 +2,22 @@
 
 ## Purpose
 
-Owns JSON database files, schema contracts, backups, runtime keys, locks, and writable runtime state.
+Owns the MySQL schema contract (collections.php), optional JSON seed files, backups, runtime keys, locks, and writable runtime state.
 
 ## Ownership
 
 - `schema/collections.php`: source of truth for collection shape, admin fields, media fields, ownership, and agent-visible context.
-- `data/*.json`: JSON collections and admin/runtime data.
+- `data/*.json`: JSON seed files for one-time `bapXphp db sync` (not used at runtime).
 - `backups/`: backup output.
 - Runtime files such as locks and keys are operational state.
 
 ## Local Contracts
 
 - Update `storage/schema/collections.php` before changing collection shapes, admin fields, media fields, seed data, or agent-visible context.
-- Keep every application collection declared in the schema even when its JSON file is created lazily at first write; test fixtures and runtime secrets are not application collections.
-- Keep persistent data JSON-first unless the user explicitly requests a separate SQL migration.
+- Keep every application collection declared in collections.php; test fixtures and runtime secrets are not application collections.
+- Keep persistent data in MySQL (via DatabaseService). JSON seed files are only for one-time `bapXphp db sync`.
 - `storage/data/secrets.json` contains encrypted API secrets (Razorpay, Stripe, Google OAuth, SMTP, etc.). Never expose secrets to customer-facing assistant context.
-- Do not expose secrets or all users' JSON data to customer-facing assistant context.
+- Do not expose secrets or all users' data to customer-facing assistant context.
 - When adding a new secrets field, update `SecretService.php` and the admin integrations form.
 - The `secrets` collection is synced to MySQL via `bapXphp db sync` as a single-object JSON file (wrapped in array for sync).
 

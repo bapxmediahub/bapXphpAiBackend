@@ -7,13 +7,13 @@ Owns PHP runtime behavior: bootstrap, routes, controllers, services, guards, per
 ## Ownership
 
 - `Controllers/`: route actions and request/response flow.
-- `Services/`: business logic, JSON-store access, integrations, schema helpers, environment helpers, and agent context.
+- `Services/`: business logic, DatabaseService access, integrations, schema helpers, environment helpers, and agent context.
 - `routes.php`: route registry consumed by the app and project map.
 - `bootstrap.php`: runtime bootstrapping and shared helpers.
 
 ## Local Contracts
 
-- Keep route -> controller -> service -> JSON-store boundaries.
+- Keep route -> controller -> service -> MySQL-store boundaries via DatabaseService.
 - Extend existing services before introducing a new service.
 - User-specific assistant data must flow through `AgentContextService` or equivalent filtering.
 - Project-map structure, including global and internal navigation-to-route edges, belongs in `ProjectMapService::scan()` and `ProjectMapService::renderSystematicMermaid()`.
@@ -22,7 +22,7 @@ Owns PHP runtime behavior: bootstrap, routes, controllers, services, guards, per
 
 ## Work Guidance
 
-- Read `storage/schema/collections.php` before changing JSON-backed behavior.
+- Read `storage/schema/collections.php` before changing schema-backed behavior.
 - Keep admin mutations auditable through `AuditLogService` when data changes.
 - Do not bypass `SecretService` or `EnvService` with ad hoc file writes.
 - Secrets (payment keys, SMTP credentials, API keys, SEO defaults) are stored in MySQL `secrets` table and are admin-editable through **Admin → Integrations**; never put secrets in `.env`. System env vars serve as fallback for critical credentials.
