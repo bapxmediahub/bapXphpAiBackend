@@ -164,7 +164,7 @@ $tests['public catalog card images are not lazy deferred'] = function (): void {
 
 $tests['php source files have valid syntax'] = function (): void {
     $root = app_path();
-    $paths = ['app', 'api', 'integrations', 'tests', 'tools', 'views', 'index.php'];
+    $paths = ['app', 'api', 'integrations', 'tests', 'cli', 'views', 'index.php'];
     foreach ($paths as $relative) {
         $path = app_path($relative);
         $files = is_file($path)
@@ -578,7 +578,7 @@ $tests['mail queue exposes due messages and processor script for cron delivery']
     $queue = new \App\Services\MailQueueService();
     assertTrue(method_exists($queue, 'due'), 'MailQueueService should have due method');
     assertTrue(method_exists($queue, 'enqueue'), 'MailQueueService should have enqueue method');
-    assertTrue(is_file(app_path('tools/process-mail-queue.php')), 'Mail queue should have a cron-friendly processor script');
+    assertTrue(is_file(app_path('cli/process-mail-queue.php')), 'Mail queue should have a cron-friendly processor script');
 };
 
 $tests['order shipping workflow sets review date and queues customer emails'] = function (): void {
@@ -813,7 +813,7 @@ $tests['documentation has deployment agent instructions and no one-line placehol
 };
 
 $tests['local smoke tool verifies key routes api and unknown route 404'] = function (): void {
-    $tool = app_path('tools/smoke-local.php');
+    $tool = app_path('cli/smoke-local.php');
     assertTrue(is_file($tool), 'Local route/API smoke tool should exist');
     $output = [];
     $status = 0;

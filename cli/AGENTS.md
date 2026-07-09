@@ -1,11 +1,12 @@
-# Tools DOX
+# CLI DOX
 
 ## Purpose
 
-Owns maintenance scripts, project-map generation/validation, local smoke checks, mail queue tooling, and the bapXphp project management CLI.
+Owns the bapXphp project CLI entry point and all PHP helper scripts for project-map generation/validation, local smoke checks, mail queue processing, blog/product CRUD, and maintenance operations.
 
 ## Ownership
 
+- **`bapXphp`**: the primary project management CLI (bash). Entry point for agents and developers.
 - `generate-project-map.php`: writes `docs/systematic-map.mmd`, including shared navigation-to-route relationships.
 - `generate-docs-map.php`: writes `docs/KnowledgeMap.mmd` (documentation mindmap).
 - `validate-project-map.php`: verifies the committed systematic map is fresh.
@@ -13,7 +14,6 @@ Owns maintenance scripts, project-map generation/validation, local smoke checks,
 - `smoke-local.php`: starts a disposable local PHP server and checks key routes/API behavior.
 - `blog-read.php` / `blog-write.php`: CLI blog post read and interactive create/edit tools.
 - `product-read.php` / `product-write.php`: CLI product read and interactive create/edit tools.
-- **`bapXphp`**: the primary project management CLI (bash). Entry point for agents and developers.
 - Other scripts must have one clear concern.
 
 ## Local Contracts
@@ -24,8 +24,8 @@ Owns maintenance scripts, project-map generation/validation, local smoke checks,
 - **bapXphp** is the agent's first command. Use it for ALL project operations. Never edit content files directly.
 - bapXphp db commands connect to MySQL directly (no SSH tunnel). Exit with error if MySQL unreachable.
 - `bapXphp db sync` handles single-object JSON files (e.g. `secrets.json`, `settings.json`) by wrapping them in a single-record array.
-- `bapXphp docsmap` runs `tools/generate-docs-map.php` to regenerate `docs/KnowledgeMap.mmd`.
-- `bapXphp bloggen` runs `tools/refresh-blog-cache.php` to refresh GitHub-sourced blog cache.
+- `bapXphp docsmap` runs `cli/generate-docs-map.php` to regenerate `docs/KnowledgeMap.mmd`.
+- `bapXphp bloggen` runs `cli/refresh-blog-cache.php` to refresh GitHub-sourced blog cache.
 - Use `bapXphp read blog <slug>` and `bapXphp write blog [slug]` for all blog post operations.
 
 ## bapXphp — Agent Quick Start
@@ -49,10 +49,8 @@ bapXphp check          # full validation chain
 
 ## Verification
 
-- `php -l tools/changed-tool.php`
+- `php -l cli/changed-tool.php`
 - `bapXphp help`
 - `bapXphp map:gen`
 - `bapXphp map:val`
 - `bapXphp smoke`
-
-## Child DOX Index

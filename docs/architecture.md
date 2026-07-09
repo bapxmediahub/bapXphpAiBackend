@@ -43,7 +43,7 @@ assets/
 docs/                   Project, module, and deployment docs
 storage/data/           JSON collections
 storage/schema/         JSON database schema
-tools/                  Validation, project-map, and queue scripts
+cli/                    bapXphp CLI entry point and helper scripts
 views/
   public/               Customer-facing PHP templates
   account/              Signed-in customer pages

@@ -87,7 +87,7 @@ APP_URL=https://your-domain.example
 ### Tool Management
 | Command | Description |
 |---------|-------------|
-| `bapXphp tool list` | List all PHP tools in `tools/` |
+| `bapXphp tool list` | List all PHP tools in `cli/` |
 | `bapXphp tool add <file>` | Create a new PHP tool with nano editor |
 
 ### Git

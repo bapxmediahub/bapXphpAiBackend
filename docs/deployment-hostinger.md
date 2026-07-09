@@ -3,13 +3,13 @@
 ## Deployment Steps
 
 1. Upload the current `main` build to `/public_html` with Git or FTP.
-2. Keep `.env`, `index.php`, `.htaccess`, `api/`, `app/`, `assets/`, `integrations/`, `storage/`, `tools/`, and `views/` together.
+2. Keep `.env`, `index.php`, `.htaccess`, `api/`, `app/`, `assets/`, `integrations/`, `storage/`, `cli/`, and `views/` together.
 3. Set `storage/` and `storage/data/` writable by PHP.
 4. Configure integration secrets from the admin integrations page after deployment.
 5. Set a Hostinger cron job for queued mail after SMTP is configured:
 
 ```bash
-php /home/ACCOUNT/public_html/tools/process-mail-queue.php
+php /home/ACCOUNT/public_html/cli/process-mail-queue.php
 ```
 
 6. Smoke test public pages, account redirects, admin login, API endpoints, checkout configuration, and the mail queue.
@@ -32,9 +32,9 @@ Local validation before merge:
 
 ```bash
 php tests/run.php
-php tools/generate-project-map.php
-php tools/validate-project-map.php
-php tools/smoke-local.php
+php cli/generate-project-map.php
+php cli/validate-project-map.php
+php cli/smoke-local.php
 ```
 
 ## Vercel
@@ -54,7 +54,7 @@ This application is built for normal PHP hosting, not Vercel. Vercel's official 
 - Backend: PHP controllers, services, and JSON API endpoints.
 - Database: JSON files in `storage/data/`.
 - Build step: none.
-- Email: queued in JSON and sent by `tools/process-mail-queue.php` when SMTP secrets are configured.
+- Email: queued in JSON and sent by `cli/process-mail-queue.php` when SMTP secrets are configured.
 
 ## Directory Structure on Hostinger
 
@@ -70,7 +70,7 @@ This application is built for normal PHP hosting, not Vercel. Vercel's official 
   integrations/
   storage/
     data/
-  tools/
+  cli/
   views/
 ```
 
@@ -81,4 +81,4 @@ This application is built for normal PHP hosting, not Vercel. Vercel's official 
 - Admin blocked: confirm the existing admin user in `storage/data/users.json` has `role: "admin"`.
 - Razorpay disabled: add live key ID and secret in admin integrations.
 - Google login not working: verify the Google Cloud Console has the correct callback URL (`https://sripanchamispiritual.com/auth/google/callback`).
-- Emails not sending: configure SMTP secrets and run `tools/process-mail-queue.php` from cron.
+- Emails not sending: configure SMTP secrets and run `cli/process-mail-queue.php` from cron.

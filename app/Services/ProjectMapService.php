@@ -152,8 +152,8 @@ final class ProjectMapService {
         $services = self::phpBasenames(app_path('app/Services'));
         $views = self::viewNames(app_path('views'));
         $integrations = self::phpBasenames(app_path('integrations'));
-        $tools = self::phpBasenames(app_path('tools'));
-        if (is_file(app_path('bapXphp'))) $tools[] = 'bapXphp';
+        $tools = self::phpBasenames(app_path('cli'));
+        if (is_file(app_path('cli/bapXphp'))) $tools[] = 'bapXphp';
         $storageFiles = self::jsonBasenames(app_path('storage/data'));
 
         $routeControllers = array_values(array_unique(array_map(

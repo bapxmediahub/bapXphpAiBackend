@@ -4,7 +4,7 @@
 $root = $argv[1] ?? __DIR__ . '/..';
 $slug = $argv[2] ?? '';
 if ($slug === '') {
-    echo "Usage: php tools/blog-read.php <slug>\n";
+    echo "Usage: php cli/blog-read.php <slug>\n";
     echo "  Lists all posts if no slug given\n\n";
     $dir = $root . '/content/blog/posts';
     if (!is_dir($dir)) { echo "No blog posts directory.\n"; exit(1); }
@@ -24,7 +24,7 @@ if ($slug === '') {
 $file = $root . "/content/blog/posts/{$slug}.md";
 if (!is_file($file)) {
     echo "Blog post not found: {$slug}.md\n";
-    echo "Use: php tools/blog-read.php <slug>\n";
+    echo "Use: php cli/blog-read.php <slug>\n";
     exit(1);
 }
 

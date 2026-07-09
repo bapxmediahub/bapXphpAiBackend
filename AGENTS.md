@@ -50,9 +50,9 @@ This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP
 
 - `docs/systematic-map.mmd` is the single project-map artifact (routes/controllers/services wiring). `docs/KnowledgeMap.mmd` is a separate generated documentation mindmap.
 - Do not create `docs/PROJECT_MAP.md`, `docs/project-map.json`, `docs/project-map.mmd`, or parallel map generators (exception: `generate-docs-map.php` is the KnowledgeMap generator, not a parallel project map).
-- `tools/generate-project-map.php` regenerates `docs/systematic-map.mmd`.
-- `tools/generate-docs-map.php` regenerates `docs/KnowledgeMap.mmd`.
-- `tools/validate-project-map.php` compares the generated Mermaid to the committed file.
+- `cli/generate-project-map.php` regenerates `docs/systematic-map.mmd`.
+- `cli/generate-docs-map.php` regenerates `docs/KnowledgeMap.mmd`.
+- `cli/validate-project-map.php` compares the generated Mermaid to the committed file.
 - Update `ProjectMapService::scan()` and `ProjectMapService::renderSystematicMermaid()` when the map needs new sections, edges, or gap checks.
 - Map validation alone is incomplete. For every affected map path, verify the source route, controller action, service, schema entry, storage collection, rendered page, and shared navigation that actually implement the behavior.
 - Treat gap nodes as investigation prompts, not permission to scaffold a missing file. First determine whether the node is a JSON response, shared layout, runtime-only file, test fixture, or genuinely missing implementation.
@@ -146,7 +146,7 @@ Before finishing, search the touched workflow for placeholders, dead buttons, du
 - `storage/AGENTS.md`: JSON data, schema contracts, writable runtime files, and backups.
 - `docs/AGENTS.md`: durable documentation and the systematic project map and KnowledgeMap.
 - `integrations/AGENTS.md`: third-party integration client wrappers.
-- `tools/AGENTS.md`: maintenance scripts, project-map generation/validation, local smoke checks, and mail queue tooling.
+- `cli/AGENTS.md`: maintenance scripts, project-map generation/validation, local smoke checks, and mail queue tooling.
 - `tests/AGENTS.md`: PHP regression tests and test fixtures.
 - `assets/AGENTS.md`: CSS and static image/media assets.
 

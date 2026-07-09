@@ -28,7 +28,7 @@ if ($slug === '') {
         $name = $p['name'] ?? $p['slug'] ?? 'untitled';
         printf("  %-30s ₹%-8s  %s\n", $name, $price, $p['slug'] ?? '');
     }
-    echo "\nUse: php tools/product-read.php <slug>\n";
+    echo "\nUse: php cli/product-read.php <slug>\n";
     exit(0);
 }
 
@@ -43,7 +43,7 @@ if (!$json) {
 }
 if (!$json) {
     echo "Product not found: {$slug}\n";
-    echo "Use: php tools/product-read.php <slug>\n";
+    echo "Use: php cli/product-read.php <slug>\n";
     exit(1);
 }
 $found = json_decode($json, true);
