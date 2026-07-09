@@ -81,7 +81,11 @@ set -euo pipefail
 #   bapXphp mysql:import  → bapXphp db sync
 # ═══════════════════════════════════════════════════════════════
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BAPX_SRC="${BASH_SOURCE[0]}"
+if [ -L "$BAPX_SRC" ]; then
+  BAPX_SRC="$(readlink "$BAPX_SRC")"
+fi
+ROOT="$(cd "$(dirname "$BAPX_SRC")" && pwd)"
 
 # Load and export env vars from .env to make them available in the CLI and sub-commands
 if [ -f "$ROOT/.env" ]; then
@@ -543,11 +547,7 @@ cmd_smoke() {
 # ── Map Commands ───────────────────────────────────────────────
 cmd_map() {
   if [ -f "$ROOT/docs/systematic-map.mmd" ]; then
-    if command -v glow >/dev/null 2>&1; then
-      glow "$ROOT/docs/systematic-map.mmd"
-    else
-      less "$ROOT/docs/systematic-map.mmd"
-    fi
+    cat "$ROOT/docs/systematic-map.mmd"
   else
     warn "Project map not found. Run: bapXphp map:gen"
   fi
