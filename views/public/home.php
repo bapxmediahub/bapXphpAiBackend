@@ -139,9 +139,11 @@
                                  <input type="number" name="qty" value="1" min="1" max="99" required>
                                  <button type="button" onclick="var i=this.parentElement.querySelector('input[type=number]'); i.stepUp(); i.dispatchEvent(new Event('change'));">+</button>
                              </div>
-                             <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
-                             <input type="hidden" name="redirect" value="/">
-                              <button type="submit" class="btn-cart-circle" aria-label="Add to Cart">+</button>
+                              <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
+                              <input type="hidden" name="redirect" value="/">
+                              <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
+                              <input type="hidden" name="_csrf" value="<?= $csrf ?>">
+                               <button type="submit" class="btn-cart-circle" aria-label="Add to Cart">+</button>
                          </form>
                      </div>
                 </div>

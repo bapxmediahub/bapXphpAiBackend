@@ -87,6 +87,12 @@ if (strpos($uri, '/api/') === 0) {
     exit;
 }
 
+// Trailing slash redirect for web routes (prevents 404s on /docs/ etc.)
+if ($uri !== null && $uri !== '/' && str_ends_with($uri, '/')) {
+    header('Location: ' . rtrim($uri, '/') . (!empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : ''));
+    exit;
+}
+
 // PHP routes (admin + public pages)
 $phpRoutes = ['/','/shop','/shop/','/product','/cart','/checkout','/payment','/recharge','/support','/about','/contact','/temples','/consult','/consultation','/astrologer','/auth','/login','/logout','/register','/forgot-password','/reset-password','/account','/reviews','/sri-panchami-spiritual','/spiritual','/categories','/terms','/privacy','/blog','/docs'];
 $isPhpRoute = false;

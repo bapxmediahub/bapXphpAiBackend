@@ -2,7 +2,7 @@
 namespace App\Controllers;
 use App\Services\{CartService,ProductService,SecretService,PaymentService,DatabaseService,MailQueueService};
 use App\Integrations\Razorpay\RazorpayClient;
-// TODO: Wire integrations/stripe/StripeClient as alternative payment gateway when stripe_secret_key is configured
+use App\Integrations\Stripe\StripeClient;
 final class CommerceController extends BaseController {
     public function addToCart(): void {
         $this->validateCsrf();
@@ -65,9 +65,6 @@ final class CommerceController extends BaseController {
         $this->isApiRequest = true;
         $this->validateCsrf();
         $secrets = (new SecretService())->all();
-        if (empty($secrets['razorpay_key_id']) || empty($secrets['razorpay_key_secret'])) {
-            $this->jsonResponse(['error' => 'Razorpay ' . ($secrets['razorpay_mode'] ?? 'selected') . ' mode is not configured yet.'], 401);
-        }
         $items = $this->resolveCartItems();
         if (empty($items)) {
             $this->jsonResponse(['error' => 'Cart is empty or products are unavailable.'], 400);
@@ -81,6 +78,49 @@ final class CommerceController extends BaseController {
             if (!in_array($status, ['in_stock', 'active'], true)) {
                 $this->jsonResponse(['error' => e($item['name']) . ' is currently unavailable.'], 400);
             }
+        }
+        $paymentMethod = trim($_POST['payment_method'] ?? 'razorpay');
+        if ($paymentMethod === 'stripe') {
+            if (empty($secrets['stripe_secret_key'])) {
+                $this->jsonResponse(['error' => 'Stripe payment gateway is not configured.'], 401);
+            }
+            $cartTotal = $this->cartTotal($items);
+            $lineItems = [[
+                'name' => 'Sri Panchami Spiritual Order',
+                'amount' => (int)round($cartTotal * 100),
+                'quantity' => 1,
+            ]];
+            $successUrl = rtrim((string)($_ENV['APP_URL'] ?? 'https://' . ($_SERVER['HTTP_HOST'] ?? 'localhost')), '/') . '/account/orders?stripe_session_id={CHECKOUT_SESSION_ID}';
+            $cancelUrl = rtrim((string)($_ENV['APP_URL'] ?? 'https://' . ($_SERVER['HTTP_HOST'] ?? 'localhost')), '/') . '/checkout';
+            try {
+                $stripeSession = (new StripeClient($secrets['stripe_secret_key']))->createCheckoutSession($lineItems, $successUrl, $cancelUrl);
+            } catch (\RuntimeException $exception) {
+                $status = $exception->getCode() === 401 ? 401 : 500;
+                $this->jsonResponse(['error' => $exception->getMessage()], $status);
+            }
+            $orderId = bin2hex(random_bytes(8));
+            $store->upsert('orders', [
+                'id' => $orderId,
+                'status' => 'pending',
+                'total' => $cartTotal,
+                'customer_email' => $_SESSION['user']['email'] ?? ($_POST['email'] ?? 'guest'),
+                'customer_name' => trim((string)($_POST['name'] ?? ($_SESSION['user']['name'] ?? ''))),
+                'customer_phone' => trim((string)($_POST['phone'] ?? '')),
+                'shipping_address' => trim((string)($_POST['address'] ?? '')),
+                'shipping_city' => trim((string)($_POST['city'] ?? '')),
+                'shipping_pincode' => trim((string)($_POST['pincode'] ?? '')),
+                'items' => array_map(fn($i) => ['slug' => $i['slug'], 'name' => $i['name'], 'qty' => $i['qty'], 'line_total' => $i['line_total']], $items),
+                'stripe_session_id' => $stripeSession['id'] ?? '',
+                'created_at' => date('c'),
+            ]);
+            $this->jsonResponse([
+                'stripe_url' => $stripeSession['url'] ?? '',
+                'order_id' => $orderId,
+            ]);
+            return;
+        }
+        if (empty($secrets['razorpay_key_id']) || empty($secrets['razorpay_key_secret'])) {
+            $this->jsonResponse(['error' => 'Razorpay ' . ($secrets['razorpay_mode'] ?? 'selected') . ' mode is not configured yet.'], 401);
         }
         $discount = 0;
         $couponCode = trim($_POST['coupon_code'] ?? '');
