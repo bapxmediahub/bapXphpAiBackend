@@ -5,11 +5,12 @@ use App\Integrations\GoogleOAuth\GoogleOAuthClient;
 final class AuthController extends BaseController {
   public function googleRedirect(): void {
   $s=(new SecretService())->all(); if(empty($s['google_client_id'])||empty($s['google_client_secret'])){$this->flash('Google login is not configured yet.','warning');$this->redirect('/login');}
-  $state=bin2hex(random_bytes(16)); $_SESSION['oauth_state']=$state;
+  $state=bin2hex(random_bytes(16)); $_SESSION['oauth_state']=$state; $_SESSION['oauth_state_created_at']=time();
   $url=(new GoogleOAuthClient($s['google_client_id'],$s['google_client_secret']))->authorizationUrl($this->redirectUri(),$state); $this->redirect($url);
   }
   public function callback(): void {
-   if(($_GET['state']??'')!==($_SESSION['oauth_state']??'')){$this->flash('Invalid OAuth state. Please try again.','error');$this->redirect('/login');}
+    if(($_GET['state']??'')!==($_SESSION['oauth_state']??'')){$this->flash('Invalid OAuth state. Please try again.','error');$this->redirect('/login');}
+    if(($_SESSION['oauth_state_created_at']??0)<time()-600){unset($_SESSION['oauth_state'],$_SESSION['oauth_state_created_at']);$this->flash('OAuth state expired. Please try again.','error');$this->redirect('/login');}
    $s=(new SecretService())->all(); $token=$this->post('https://oauth2.googleapis.com/token',['code'=>$_GET['code']??'','client_id'=>$s['google_client_id'],'client_secret'=>$s['google_client_secret'],'redirect_uri'=>$this->redirectUri(),'grant_type'=>'authorization_code']);
    if(!empty($token['error'])||empty($token['access_token'])){$this->flash('Google login failed. Please try again.','error');$this->redirect('/login');}
    $user=$this->get('https://openidconnect.googleapis.com/v1/userinfo',$token['access_token']);
@@ -52,6 +53,7 @@ final class AuthController extends BaseController {
     $password = $_POST['password'] ?? '';
     $confirm = $_POST['password_confirm'] ?? '';
     if ($password === '' || $email === '' || $name === '') { $this->flash('All fields are required.','error'); $this->redirect('/register'); }
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) { $this->flash('Invalid email address.','error'); $this->redirect('/register'); }
     if ($password !== $confirm) { $this->flash('Passwords do not match.','error'); $this->redirect('/register'); }
     if (empty($_POST['accept_terms'])) { $this->flash('You must accept the Terms of Service and Privacy Policy to register.','error'); $this->redirect('/register'); }
     $store = new DatabaseService();
@@ -94,6 +96,7 @@ final class AuthController extends BaseController {
         }
     }
     $this->flash('Invalid credentials.','error');
+    error_log(sprintf('Failed login attempt for %s from %s', $email, $_SERVER['REMOTE_ADDR'] ?? 'unknown'));
     $this->redirect('/login');
   }
   public function forgotPassword(): void {

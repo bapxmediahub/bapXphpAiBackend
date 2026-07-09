@@ -121,7 +121,7 @@ final class PublicController extends BaseController {
             return;
         }
         $this->seoKey = 'shop';
-        $this->render('public/shop', ['items' => (new ProductService())->all(), 'categories' => $categories, 'category' => '']);
+        $this->render('public/categories', ['items' => (new ProductService())->all(), 'categories' => $categories, 'category' => '']);
     }
     
     public function product(string $slug): void {

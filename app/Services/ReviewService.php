@@ -33,19 +33,60 @@ final class ReviewService {
 
     private function save(string $targetType, array $data): array {
         $rating = max(1, min(5, (int)($data['rating'] ?? 0)));
+        $targetSlug = trim((string)($data['target_slug'] ?? ''));
+        $customerEmail = trim((string)($data['customer_email'] ?? ''));
+        $sourceId = trim((string)($data['source_id'] ?? ''));
+        if ($targetSlug === '') {
+            throw new \InvalidArgumentException('Review target is required.');
+        }
+        if ($sourceId === '') {
+            throw new \InvalidArgumentException('Review source is required.');
+        }
+        if (!$this->verifyPurchase($targetType, $targetSlug, $customerEmail, $sourceId)) {
+            throw new \RuntimeException('Purchase verification failed. You must have a completed booking or order to review.');
+        }
+        $existing = $this->findDuplicate($targetSlug, $customerEmail, $sourceId);
+        if ($existing) {
+            throw new \RuntimeException('You have already submitted a review for this item.');
+        }
         $record = [
             'id' => $data['id'] ?? bin2hex(random_bytes(8)),
             'target_type' => $targetType,
-            'target_slug' => trim((string)($data['target_slug'] ?? '')),
+            'target_slug' => $targetSlug,
             'rating' => $rating,
             'review' => trim((string)($data['review'] ?? '')),
-            'customer_email' => trim((string)($data['customer_email'] ?? '')),
-            'source_id' => trim((string)($data['source_id'] ?? '')),
+            'customer_email' => $customerEmail,
+            'source_id' => $sourceId,
             'created_at' => date('c'),
         ];
-        if ($record['target_slug'] === '') {
-            throw new \InvalidArgumentException('Review target is required.');
-        }
         return $this->store->upsert('reviews', $record);
+    }
+
+    private function verifyPurchase(string $targetType, string $targetSlug, string $customerEmail, string $sourceId): bool {
+        if ($targetType === 'astrologer') {
+            foreach ($this->store->read('appointments') as $a) {
+                if (($a['id'] ?? '') === $sourceId && ($a['customer_email'] ?? '') === $customerEmail && ($a['astrologer_slug'] ?? '') === $targetSlug) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        foreach ($this->store->read('orders') as $o) {
+            if (($o['id'] ?? '') === $sourceId && ($o['customer_email'] ?? '') === $customerEmail) {
+                foreach ($o['items'] ?? [] as $item) {
+                    if (($item['slug'] ?? '') === $targetSlug) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private function findDuplicate(string $targetSlug, string $customerEmail, string $sourceId): ?array {
+        foreach ($this->store->read('reviews') as $r) {
+            if (($r['target_slug'] ?? '') === $targetSlug && ($r['customer_email'] ?? '') === $customerEmail && ($r['source_id'] ?? '') === $sourceId) {
+                return $r;
+            }
+        }
+        return null;
     }
 }

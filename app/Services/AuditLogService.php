@@ -19,7 +19,7 @@ final class AuditLogService {
             'status' => 'recorded',
             'actor_email' => $actor['email'] ?? 'system',
             'actor_name' => $actor['name'] ?? '',
-            'details' => $details,
+            'meta' => $details,
             'created_at' => date('c'),
         ];
         $records = $this->store->read('audit_events');

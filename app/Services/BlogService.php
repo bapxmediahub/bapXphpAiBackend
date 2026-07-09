@@ -24,7 +24,8 @@ final class BlogService {
     }
     public function categories(): array {
         if (!is_file($this->categoriesFile)) return [];
-        $yaml = file_get_contents($this->categoriesFile);
+        $yaml = @file_get_contents($this->categoriesFile);
+        if ($yaml === false || $yaml === '') return [];
         return $this->parseYamlList($yaml);
     }
     public function save(array $data): array {

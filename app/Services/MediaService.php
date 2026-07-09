@@ -74,13 +74,22 @@ final class MediaService {
     }
 
     public function delete(string $id): void {
-        $records = array_values(array_filter($this->readYaml(), fn($r) => ($r['id'] ?? '') !== $id));
+        $filePath = '';
+        $records = array_values(array_filter($this->readYaml(), function($r) use ($id, &$filePath) {
+            if (($r['id'] ?? '') === $id) { $filePath = $r['path'] ?? ''; return false; }
+            return true;
+        }));
+        if ($filePath !== '') {
+            $fullPath = app_path(ltrim($filePath, '/'));
+            if (is_file($fullPath)) @unlink($fullPath);
+        }
         $this->writeYaml($records);
     }
 
     private function readYaml(): array {
         if (!is_file($this->yamlFile)) return [];
-        $yaml = file_get_contents($this->yamlFile);
+        $yaml = @file_get_contents($this->yamlFile);
+        if ($yaml === false || $yaml === '') return [];
         $items = [];
         $current = null;
         foreach (explode("\n", $yaml) as $line) {
