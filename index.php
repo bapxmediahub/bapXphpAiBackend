@@ -99,12 +99,20 @@ foreach ($phpRoutes as $route) {
 
 if (strpos($uri, '/admin') === 0 || $isPhpRoute) {
     require __DIR__ . '/app/bootstrap.php';
+    header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+    header('X-Content-Type-Options: nosniff');
+    header('X-Frame-Options: DENY');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
     $router = new App\Router(require __DIR__ . '/app/routes.php');
     $router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
     exit;
 }
 
 http_response_code(404);
+header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('Referrer-Policy: strict-origin-when-cross-origin');
 require __DIR__ . '/app/bootstrap.php';
 $secrets = (new App\Services\SecretService())->all();
 $seo = (new App\Services\SeoService($secrets))->page('404', [
