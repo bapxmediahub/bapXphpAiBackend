@@ -144,6 +144,21 @@ $tests['cart does not expose unfinished coupon placeholder ui'] = function (): v
     $view = file_get_contents(app_path('views/public/cart.php'));
     assertTrue(!str_contains($view, 'Coupon feature coming soon'), 'Cart should not ship a coupon coming-soon alert');
     assertTrue(!str_contains($view, 'id="coupon-input"'), 'Cart should not expose inactive coupon input');
+    assertTrue(!str_contains($view, '$item[\'qty\'] <= 1 ? \'disabled\''), 'Cart decrement should be able to remove the last unit');
+};
+
+$tests['product cards use zero based cart steppers without duplicate add buttons'] = function (): void {
+    foreach (['views/public/shop.php', 'views/public/home.php', 'views/public/product.php'] as $path) {
+        $view = file_get_contents(app_path($path));
+        assertTrue(str_contains($view, 'product-card__stepper'), "{$path} should render the compact card cart stepper");
+        assertTrue(str_contains($view, 'value="dec"'), "{$path} should let product cards decrement cart quantity");
+        assertTrue(str_contains($view, 'value="1"'), "{$path} should increment product cards by one click");
+        assertTrue(!str_contains($view, 'btn-cart-circle" aria-label="Add to Cart"'), "{$path} should not render a separate circular add-to-cart button");
+    }
+    $shop = file_get_contents(app_path('views/public/shop.php'));
+    assertTrue(str_contains($shop, '$itemQty = $cartQuantities'), 'Shop cards should show zero when the item is absent from the session cart');
+    $commerce = file_get_contents(app_path('app/Controllers/CommerceController.php'));
+    assertTrue(str_contains($commerce, 'max(0') && str_contains($commerce, "fn(\$item) => (int)(\$item['qty'] ?? 0) > 0"), 'Cart decrement should remove an item at zero quantity');
 };
 
 $tests['shop supports plain vertical filters and multi category products'] = function (): void {
@@ -211,6 +226,15 @@ $tests['private account admin and review endpoints enforce authentication guards
             assertTrue(in_array('AuthService', $route['services'], true), "{$route['path']} should declare AuthService in the project map");
         }
     }
+};
+
+$tests['public service worker does not cache dynamic commerce pages first'] = function (): void {
+    $sw = file_get_contents(app_path('assets/pwa/sw-user.js'));
+    assertTrue(str_contains($sw, "const CACHE = 'sps-user-v2'"), 'Public service worker cache should be versioned after navigation caching changes');
+    assertTrue(!str_contains($sw, "['/','/shop','/consult','/login']"), 'Public service worker should not precache dynamic PHP pages');
+    assertTrue(str_contains($sw, "e.request.mode === 'navigate'"), 'Public service worker should handle navigations explicitly');
+    assertTrue(str_contains($sw, "fetch(e.request).catch"), 'Public navigations should be network-first to avoid stale shop/cart/checkout UI');
+    assertTrue(str_contains($sw, "css|js|webp|png|jpg|jpeg|svg|ico|woff2?"), 'Public service worker should only runtime-cache static assets');
 };
 
 $tests['public registration never bootstraps admin on a live site'] = function (): void {
@@ -607,6 +631,9 @@ $tests['checkout payment verification preserves shipping contact details'] = fun
     foreach (['/checkout/create-order', '/payment/verify', '/create-order', '/verify-payment'] as $path) {
         assertTrue(in_array($path, array_column(ProjectMapService::registry()['routes'], 'path'), true), "Razorpay route should exist: {$path}");
     }
+    assertTrue(str_contains($checkout, '$hasPaymentGateway = $hasRazorpay || $hasStripe'), 'Checkout payment CTA should render when any supported gateway is configured');
+    assertTrue(str_contains($checkout, '$defaultPaymentMethod = $hasRazorpay ? \'razorpay\' : \'stripe\''), 'Checkout should select Stripe when it is the only configured gateway');
+    assertTrue(str_contains($checkout, 'typeof Razorpay === \'undefined\''), 'Checkout should not try to open Razorpay when its script is unavailable');
 };
 
 $tests['account pages expose review forms only for ended sessions and due shipped products'] = function (): void {

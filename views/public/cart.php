@@ -27,11 +27,17 @@
                              <div class="cart-item__qty">
 <form method="post" action="/cart/update" style="display:flex; align-items:center; gap:4px;">
                                          <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
+                                         <input type="hidden" name="action" value="dec">
                                          <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
                                          <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                                         <button type="submit" name="action" value="dec" class="btn btn-sm btn-outline" <?= $item['qty'] <= 1 ? 'disabled' : '' ?>>−</button>
-                                         <span class="cart-item__qty-val"><?= e((string)$item['qty']) ?></span>
-                                         <button type="submit" name="action" value="inc" class="btn btn-sm btn-outline">+</button>
+                                         <button type="submit" class="btn btn-sm btn-outline">−</button>
+                                     </form>
+                                     <span class="cart-item__qty-val"><?= e((string)$item['qty']) ?></span>
+                                     <form method="post" action="/cart/update" style="display:flex; align-items:center; gap:4px;">
+                                         <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
+                                         <input type="hidden" name="action" value="inc">
+                                         <input type="hidden" name="_csrf" value="<?= $csrf ?>">
+                                         <button type="submit" class="btn btn-sm btn-outline">+</button>
                                      </form>
                              </div>
                              <div class="cart-item__price">₹<?= e((string)$lineTotal) ?></div>

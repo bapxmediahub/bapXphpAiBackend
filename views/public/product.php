@@ -126,6 +126,13 @@
             </div>
         </div>
         <?php if (!empty($related) && is_array($related)): ?>
+        <?php
+            $cartQuantities = [];
+            foreach ($_SESSION['cart'] ?? [] as $cartItem) {
+                $cartQuantities[(string)($cartItem['slug'] ?? '')] = (int)($cartItem['qty'] ?? 0);
+            }
+            $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16));
+        ?>
         <div class="container" style="margin-top:var(--space-4xl);">
             <h2 class="section-title" style="font-size:1.5rem; margin-bottom:var(--space-xl);">Related Products</h2>
             <div class="product-grid">
@@ -142,20 +149,26 @@
                                     <span class="old-price">₹<?= e($item['price']) ?></span>
                                 <?php endif; ?>
                             </div>
+                            <?php $itemQty = $cartQuantities[(string)($item['slug'] ?? '')] ?? 0; ?>
                             <div class="product-card__actions">
                                 <a href="/product/<?= e($item['slug']) ?>" class="btn btn-sm btn-ghost">View →</a>
-<form method="post" action="/cart/add" class="product-card__form">
-                                     <div class="qty-input qty-input--sm">
-                                         <button type="button" onclick="var i=this.parentElement.querySelector('input[type=number]'); i.stepDown(); i.dispatchEvent(new Event('change'));">−</button>
-                                         <input type="number" name="qty" value="1" min="1" max="99" required>
-                                         <button type="button" onclick="var i=this.parentElement.querySelector('input[type=number]'); i.stepUp(); i.dispatchEvent(new Event('change'));">+</button>
-                                     </div>
-                                     <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
-                                     <input type="hidden" name="redirect" value="/product/<?= e($product['slug']) ?>">
-                                     <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
-                                     <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                                     <button type="submit" class="btn-cart-circle" aria-label="Add to Cart">+</button>
-                                </form>
+                                <div class="product-card__form product-card__stepper" aria-label="<?= e($item['name']) ?> cart quantity">
+                                    <form method="post" action="/cart/update">
+                                        <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
+                                        <input type="hidden" name="action" value="dec">
+                                        <input type="hidden" name="redirect" value="/product/<?= e($product['slug']) ?>">
+                                        <input type="hidden" name="_csrf" value="<?= $csrf ?>">
+                                        <button type="submit" aria-label="Remove one <?= e($item['name']) ?>" <?= $itemQty <= 0 ? 'disabled' : '' ?>>−</button>
+                                    </form>
+                                    <span class="qty-input__value"><?= e((string)$itemQty) ?></span>
+                                    <form method="post" action="/cart/add">
+                                        <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
+                                        <input type="hidden" name="qty" value="1">
+                                        <input type="hidden" name="redirect" value="/product/<?= e($product['slug']) ?>">
+                                        <input type="hidden" name="_csrf" value="<?= $csrf ?>">
+                                        <button type="submit" aria-label="Add one <?= e($item['name']) ?>">+</button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </article>
