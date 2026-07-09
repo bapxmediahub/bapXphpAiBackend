@@ -81,8 +81,8 @@ final class PublicController extends BaseController {
     public function shop(): void {
         $this->detectApiRequest();
         $category = $_GET['category'] ?? '';
-        $categories = (new CategoryService())->all();
-        $items = (new ProductService())->all();
+        try { $categories = (new CategoryService())->all(); } catch (\Throwable $e) { $categories = []; }
+        try { $items = (new ProductService())->all(); } catch (\Throwable $e) { $items = []; }
         $this->seoKey = 'shop';
         if ($category) {
             $items = array_values(array_filter($items, function ($item) use ($category) {
