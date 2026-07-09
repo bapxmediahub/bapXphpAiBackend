@@ -1,7 +1,7 @@
 # Catalog Module
 
-Owns product, category, temple, and astrologer catalog reads from MySQL-backed services.
+Owns product, category, temple, and astrologer catalog reads from JSON storage.
 
-Main files: `ProductService.php`, `CategoryService.php`, `TempleService.php`, `AstrologerService.php`.
+Main files: `ProductService.php`, `CategoryService.php`, `TempleService.php`, `AstrologerService.php`, `storage/data/*.json`.
 
 Key checks: configured image paths exist locally, slugs resolve to detail pages, and admin resource forms can edit catalog fields.

@@ -1,53 +1,41 @@
-# Data Storage
+# JSON Storage
 
-MySQL is the primary runtime data store. `DatabaseService` manages all persistence through the MySQL `DatabaseService` connection or the `/remotedb` HTTP proxy fallback in local dev.
+Collections are stored separately in `storage/data`. Writes use lock files plus temporary files and atomic rename to reduce corruption risk.
+
+The collection schema lives in `storage/schema/collections.php`. Agents should treat that file as the database contract before changing MySQL table shapes or admin forms.
+Data is now stored in MySQL tables directly, not in JSON files.
 
 ## Collections
+- `products.json` - Product catalog
+- `categories.json` - Product categories
+- `orders.json` - Customer orders
+- `users.json` - User accounts (customers, admins, astrologers)
+- `appointments.json` - Remote astrologer call/message session requests
+- `consultation_messages.json` - Chat messages within active sessions
+- `consultation_signals.json` - WebRTC signaling for call sessions
+- `astrologers.json` - Astrologer profiles
+- `temples.json` - Temple information
+- `coupons.json` - Discount coupons
+- `contact_submissions.json` - Contact form submissions
+- `settings.json` - Site settings and admin credentials
+- `secrets.json` - Encrypted API secrets (Razorpay, SMTP, Google OAuth, Stripe, Meta Pixel, Support Bot)
+- `audit_events.json` - Admin audit log
+- `reviews.json` - Product and astrologer reviews
+- `mail_queue.json` - Queued transactional emails
+- `mail_inbox.json` - Inbound email records
+- `mail_outbox.json` - Outbound email records
+- `wallet_transactions.json` - Customer credit top-ups and session spends
+- `support_tickets.json` - Support assistant questions and replies
+- `media_files.json` - Uploaded media library records
 
-Tables are defined in `storage/schema/collections.php`. Each collection maps to a MySQL table:
+## MySQL Sync
 
-- `products` - Product catalog
-- `categories` - Product categories
-- `orders` - Customer orders
-- `users` - User accounts (customers, admins, astrologers)
-- `appointments` - Remote astrologer call/message session requests
-- `consultation_messages` - Chat messages within active sessions
-- `consultation_signals` - WebRTC signaling for call sessions
-- `astrologers` - Astrologer profiles
-- `temples` - Temple information
-- `coupons` - Discount coupons
-- `contact_submissions` - Contact form submissions
-- `settings` - Site settings and admin credentials
-- `secrets` - API secrets (Razorpay, SMTP, Google OAuth, Stripe, Meta Pixel, Support Bot)
-- `audit_events` - Admin audit log
-- `reviews` - Product and astrologer reviews
-- `mail_queue` - Queued transactional emails
-- `mail_inbox` - Inbound email records
-- `mail_outbox` - Outbound email records
-- `wallet_transactions` - Customer credit top-ups and session spends
-- `support_tickets` - Support assistant questions and replies
-- `media_files` - Uploaded media library records
-
-## Schema
-
-The collection schema contract lives in `storage/schema/collections.php`. Agents should treat that file as the authoritative contract before changing MySQL table shapes or admin forms.
-
-## CLI
+JSON is canonical. MySQL is the query backend for `bapXphp db` CLI operations. Push JSON → MySQL:
 
 ```bash
+bapXphp db tunnel   # Open SSH tunnel
 bapXphp db init     # Create tables from collections.php
-bapXphp db sync     # Push seed JSON data into MySQL
-bapXphp db query    # Query MySQL tables
+bapXphp db sync     # Push all JSON data into MySQL
 ```
 
-## Local Dev / Remote Fallback
-
-When the MySQL host (`localhost` on Hostinger) is unreachable (e.g., from a local development machine), `DatabaseService` automatically falls back to the `/remotedb` HTTP proxy:
-
-```bash
-curl -X POST https://sripanchamispiritual.com/remotedb \
-  -H "Content-Type: application/json" \
-  -d '{"token":"<remote_db_token>","query":"SELECT * FROM products LIMIT 5"}'
-```
-
-The `remote_db_token` is stored in the MySQL `secrets` table and also hardcoded as a fallback in `config/database.php`. Write operations (`write`, `upsert`, `delete`) throw in remote proxy mode.
+All 21 collections (including encrypted `secrets`) are synced to MySQL with the same structure: `id PK`, `_data JSON`, `_owner`, `_status`, `_created_at`, `_updated_at`.

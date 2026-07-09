@@ -1,5 +1,5 @@
 ---
-description: Repository instructions for agents working on this PHP/MySQL/YAML full-stack monorepo.
+description: Repository instructions for agents working on this PHP/JSON full-stack monorepo.
 globs: *
 alwaysApply: true
 ---
@@ -59,7 +59,7 @@ This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP
 
 ## Rules
 
-- Keep MySQL primary. JSON files are used only for one-time seeding via `bapXphp db sync`.
+- Keep JSON storage first. MySQL is the query backend for `bapXphp db` CLI operations; JSON files are synced to MySQL tables.
 - Update `storage/schema/collections.php` before changing a collection shape, admin fields, media fields, seed data, or agent-visible context.
 - Extend existing controllers, services, views, storage files, and tools when they already cover the use case. Do not scaffold parallel implementations.
 - When a code change reveals a reusable workflow rule, update the matching project skill under `.agents/skills/<skill-name>/SKILL.md` so future agents inherit the framework behavior. Keep skills business-agnostic.
@@ -143,7 +143,7 @@ Before finishing, search the touched workflow for placeholders, dead buttons, du
 - `api/AGENTS.md`: JSON API entrypoint behavior.
 - `.agents/AGENTS.md`: repo-owned agent skills and skill contracts.
 - `views/AGENTS.md`: PHP-rendered public, account, admin, and layout templates.
-- `storage/AGENTS.md`: collection schema contracts, media metadata, backups, and runtime state.
+- `storage/AGENTS.md`: JSON data, schema contracts, writable runtime files, and backups.
 - `docs/AGENTS.md`: durable documentation and the systematic project map and KnowledgeMap.
 - `integrations/AGENTS.md`: third-party integration client wrappers.
 - `tools/AGENTS.md`: maintenance scripts, project-map generation/validation, local smoke checks, and mail queue tooling.

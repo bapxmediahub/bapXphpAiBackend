@@ -1,14 +1,14 @@
 ---
 name: php-json-backend
-description: Use this skill set when contributing to this PHP/MySQL agent-ready monorepo.
+description: Use this skill set when contributing to this PHP/JSON agent-ready monorepo.
 ---
 
 # PHP JSON Backend
 
 - Read `AGENTS.md` first, then the closest child `AGENTS.md` for every path you will touch.
 - Reproduce or inspect the behavior and pinpoint its owning map/source path before selecting or creating the implementation issue.
-- Keep route -> controller -> service -> MySQL-store boundaries via `DatabaseService`.
-- MySQL is the primary runtime data store. `bapXphp db` CLI manages the DB (init, sync, query). JSON files in `storage/data/` are used only for one-time seeding via `bapXphp db sync`.
+- Keep JSON storage first and keep route -> controller -> service -> JSON-store boundaries.
+- JSON is the canonical data format; MySQL is the query backend for `bapXphp db` CLI operations. JSON files are synced to MySQL tables.
 - Use `storage/schema/collections.php` before changing collection shape, admin fields, media fields, seed data, or agent-visible context.
 - Use `docs/systematic-map.mmd` as the single wiring map. Regenerate it with `php tools/generate-project-map.php` and validate with `php tools/validate-project-map.php`.
 - For documentation/AGENTS.md changes, also consult `docs/KnowledgeMap.mmd` and regenerate it with `bash bapXphp docsmap`.

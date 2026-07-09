@@ -11,7 +11,7 @@ Main files: `AuthController.php`, `AuthService.php`, `EnvService.php`, `PublicCo
   - **admin** → `/admin`
   - **astrologer** → `/astrologer` (or `/astrologer/change-password` if forced)
   - **customer** → `/` (home)
-- Admin credentials checked from MySQL `settings` table (admin_email/admin_password), then falls back to `users` table.
+- Admin credentials checked first from `settings.json` (admin_email/admin_password), then falls back to JSON `users` collection.
 
 ## Google OAuth
 

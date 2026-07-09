@@ -16,10 +16,10 @@
 
 ## Data Persistence
 
-- MySQL is the primary runtime data store. `DatabaseService` manages all persistence.
-- Collection schema lives in `storage/schema/collections.php`. Data is stored in MySQL tables.
-- JSON files in `storage/data/` are used only for one-time seeding via `bapXphp db sync`.
-- Local development falls back to the `/remotedb` HTTP proxy when direct MySQL is unreachable.
+- JSON file storage lives in `storage/data/`.
+- Collection schema lives in `storage/schema/collections.php`. Data is stored in MySQL tables (not JSON files).
+- `JsonStoreService` uses lock files and atomic writes for persistence.
+- No SQL/MySQL database is required for the current application.
 - `AgentContextService` builds safe user-specific context for the support/model assistant.
 
 ## Current Data Flow
@@ -27,7 +27,7 @@
 1. `index.php` routes public, account, review, and admin paths into the PHP router.
 2. Controllers load data through services and render templates.
 3. Customer forms post back to PHP controllers for cart, checkout, contact, reviews, and account flows.
-    4. Admin forms update MySQL-backed resources through services.
+4. Admin forms update JSON-backed resources through services.
 5. API clients use `/api/*` for JSON catalog data.
 
 ## File Structure
@@ -36,12 +36,13 @@
 api/                    PHP API entry point
 app/
   Controllers/          Page and form controllers
-  Services/             Business logic and persistence
+  Services/             Business logic and JSON persistence
   Router.php            Route dispatcher
 assets/
   css/                  Shared stylesheets
 docs/                   Project, module, and deployment docs
-storage/schema/         Database schema contracts
+storage/data/           JSON collections
+storage/schema/         JSON database schema
 tools/                  Validation, project-map, and queue scripts
 views/
   public/               Customer-facing PHP templates
