@@ -14,9 +14,13 @@ final class DatabaseService {
             CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => $payload,
             CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-            CURLOPT_TIMEOUT => 10,
+            CURLOPT_CONNECTTIMEOUT => 3,
+            CURLOPT_TIMEOUT => 5,
         ]);
         $body = curl_exec($ch);
+        if ($body === false) {
+            throw new \RuntimeException('Remote DB unreachable: ' . curl_error($ch));
+        }
         $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if ($code !== 200) {
             $err = json_decode($body, true);

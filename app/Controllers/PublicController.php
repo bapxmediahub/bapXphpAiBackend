@@ -6,11 +6,14 @@ final class PublicController extends BaseController {
     public function home(): void {
         $this->detectApiRequest();
         $this->seoKey = 'home';
-        $categories = (new CategoryService())->all();
+        try { $categories = (new CategoryService())->all(); } catch (\Throwable $e) { $categories = []; }
+        try { $products = (new ProductService())->all(); } catch (\Throwable $e) { $products = []; }
+        try { $astrologers = (new AstrologerService())->all(); } catch (\Throwable $e) { $astrologers = []; }
+        try { $temples = (new TempleService())->all(); } catch (\Throwable $e) { $temples = []; }
         $this->render('public/home', [
-            'products' => (new ProductService())->all(),
-            'astrologers' => (new AstrologerService())->all(),
-            'temples' => (new TempleService())->all(),
+            'products' => $products,
+            'astrologers' => $astrologers,
+            'temples' => $temples,
             'categories' => $categories,
         ]);
     }
