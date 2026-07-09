@@ -19,7 +19,8 @@ final class SecretService {
     public function save(array $values): void {
         $db = new DatabaseService();
         $record = $this->normalize($values);
-        $db->write('secrets', [$record]);
+        $record['id'] = 'app_secrets';
+        $db->upsert('secrets', $record, 'id');
     }
     public function saveSecret(string $key, string $value): void {
         $all = $this->all();
