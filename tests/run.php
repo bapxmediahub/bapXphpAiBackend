@@ -829,22 +829,6 @@ $tests['local smoke tool verifies key routes api and unknown route 404'] = funct
     }
 };
 
-$tests['database isRemote falls back to local mysql before remote'] = function (): void {
-    $ds = file_get_contents(app_path('app/Services/DatabaseService.php'));
-    assertTrue(str_contains($ds, 'try { $this->db(); } catch'), 'isRemote should attempt local MySQL before falling back to remote');
-    assertTrue(str_contains($ds, 'return $this->pdo === null && !empty($this->cfg[\'remote_url\'])'), 'isRemote should only return true when PDO is null AND remote_url is set');
-    assertTrue(str_contains($ds, 'public function isRemoteProxy(): bool { return $this->isRemote(); }'), 'isRemoteProxy should expose isRemote for testing');
-    // Verify the call order: isRemote is checked before db() in query/read/find
-    $lines = explode("\n", $ds);
-    $inQuery = false; $beforeDb = false;
-    foreach ($lines as $line) {
-        if (str_contains($line, 'public function query')) $inQuery = true;
-        if ($inQuery && str_contains($line, 'function db()')) break;
-        if ($inQuery && str_contains($line, 'isRemote')) $beforeDb = true;
-    }
-    assertTrue($beforeDb, 'query should check isRemote before calling db()');
-};
-
 $tests['systematic project map and KnowledgeMap are the only generated map artifacts'] = function (): void {
     assertTrue(is_file(app_path('docs/systematic-map.mmd')), 'Systematic Mermaid map should exist');
     assertTrue(is_file(app_path('docs/KnowledgeMap.mmd')), 'KnowledgeMap.mmd should exist');

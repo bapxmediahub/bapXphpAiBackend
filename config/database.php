@@ -9,5 +9,4 @@ return [
     'dbname' => $env['BAPX_MYSQL_DB'] ?: 'u907253411_db_name_sps',
     'user' => $env['BAPX_MYSQL_USER'] ?: 'u907253411_db_user_sps',
     'pass' => $env['BAPX_MYSQL_PASS'] ?: '',
-    'remote_url' => 'https://sripanchamispiritual.com/remotedb',
 ];
