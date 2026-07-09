@@ -1,7 +1,8 @@
 Options -Indexes
 RewriteEngine On
 
-# Block access to sensitive directories
+# Block access to sensitive directories (allow /docs route through to index.php)
+RewriteRule ^docs/?$ index.php [QSA,L]
 RewriteRule ^(app|integrations|storage|tools|tests|docs)/ - [F,L]
 
 # API routes
