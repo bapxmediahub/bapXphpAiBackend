@@ -14,21 +14,7 @@ php /home/ACCOUNT/public_html/cli/process-mail-queue.php
 
 6. Smoke test public pages, account redirects, admin login, API endpoints, checkout configuration, and the mail queue.
 
-## Hostinger Website Management Dashboard Git Auto Deployment
-
-Hostinger hPanel supports Git deployment from GitHub using OAuth. In the Hostinger website management dashboard, open the website, go to **Advanced** -> **Git**, connect the GitHub repository, choose the branch to deploy, and set the install path to `/public_html` or leave it blank when Hostinger maps the repository to the account root. Use `main` for production unless you intentionally host a staging branch.
-
-After the repository is connected, enable **Auto Deployment** for the selected Branch. Hostinger gives a webhook URL for automatic deployments, and updates merged into the deployment branch can trigger a new deploy. Keep `storage/data/` writable for one-time seeding files.
-
-The root `.env` file holds only `APP_NAME` and `APP_URL` and is deployable via Git. Commit branch-specific values so a fresh Hostinger deploy can serve the site. **Never put secrets in `.env`.** Admin credentials are set through **Admin → Settings**. All API secrets (Razorpay, SMTP, Google OAuth, support bot) are set through **Admin → Integrations** and stored in `storage/data/secrets.json` — never in `.env`. Keep generated runtime files out of Git: `storage/runtime-key.php`, `storage/data/secrets.json`, `storage/data/*.lock`, logs, and backups remain host-local.
-
-Recommended branch setup:
-
-- `main`: production branch connected to Hostinger auto deploy.
-- `codex/*` or feature branches: local/agent development branches.
-- Merge only after local validation passes.
-
-Local validation before merge:
+One-time Git auto-deploy from `main` is configured — commits to GitHub main deploy automatically. Merge only after local validation passes:
 
 ```bash
 php tests/run.php
