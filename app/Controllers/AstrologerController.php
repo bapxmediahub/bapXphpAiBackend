@@ -13,6 +13,7 @@ final class AstrologerController extends BaseController {
     }
     public function changePassword(): void { $this->render('astrologer/change-password'); }
     public function savePassword(): void {
+        $this->validateCsrf();
         $password=(string)($_POST['password']??''); $confirm=(string)($_POST['password_confirm']??'');
         if(strlen($password)<10||$password!==$confirm){$this->flash('Use at least 10 characters and confirm the same password.','warning');$this->redirect('/astrologer/change-password');}
         $store=new DatabaseService(); $users=$store->read('users');

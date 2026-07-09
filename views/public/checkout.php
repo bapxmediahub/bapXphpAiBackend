@@ -46,6 +46,14 @@
                             </div>
                         </div>
                     </div>
+                    <div class="form-group" style="margin-top:var(--space-md);">
+                        <label>Coupon Code</label>
+                        <div style="display:flex; gap:var(--space-sm);">
+                            <input type="text" id="coupon-code" name="coupon_code" placeholder="Enter coupon code" style="flex:1;">
+                        </div>
+                    </div>
+                    <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
+                    <input type="hidden" id="csrf-token" value="<?= $csrf ?>">
                     <?php if(!empty($secrets['razorpay_key_id'])): ?>
                         <button id="pay-now" class="btn btn-primary btn-block btn-lg">Pay ₹<?= e((string)$total) ?> with Razorpay</button>
                         <p style="margin:var(--space-sm) 0 0; color:var(--color-text-muted); font-size:0.85rem;">Ecommerce orders use direct card or UPI payments only. Consultation credits cannot be used for products, and cash on delivery is not available.</p>
@@ -61,11 +69,14 @@
                                 }
                                 button.disabled = true;
                                 showToast('Opening secure Razorpay checkout...', 'info');
+                                const csrf = document.getElementById('csrf-token').value;
                                 try {
                                     const response = await fetch('/checkout/create-order', {
                                         method: 'POST',
                                         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                                         body: new URLSearchParams({
+                                            _csrf: csrf,
+                                            coupon_code: document.getElementById('coupon-code').value,
                                             amount: '<?= (int)($total * 100) ?>',
                                             name: form.querySelector('[name="name"]').value,
                                             email: form.querySelector('[name="email"]').value,
@@ -101,6 +112,7 @@
                                         handler: async (resp) => {
                                             showToast('Verifying payment...', 'info');
                                             const body = new URLSearchParams({
+                                                _csrf: csrf,
                                                 razorpay_order_id: order.order_id,
                                                 razorpay_payment_id: resp.razorpay_payment_id,
                                                 razorpay_signature: resp.razorpay_signature,

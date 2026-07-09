@@ -9,6 +9,7 @@ final class ReviewController extends BaseController {
     }
 
     public function saveAstrologer(): void {
+        $this->validateCsrf();
         try {
             (new ReviewService())->saveAstrologerReview([
                 'target_slug' => $_POST['target_slug'] ?? '',
@@ -25,6 +26,7 @@ final class ReviewController extends BaseController {
     }
 
     public function saveProduct(): void {
+        $this->validateCsrf();
         try {
             (new ReviewService())->saveProductReview([
                 'target_slug' => $_POST['target_slug'] ?? '',

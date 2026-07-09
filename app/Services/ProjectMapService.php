@@ -170,7 +170,7 @@ final class ProjectMapService {
         )));
 
         $sharedControllers = ['BaseController'];
-        $sharedServices = ['SeoService', 'SmtpMailer', 'ImageOptimizerService', 'DocsMapService', 'GitHubDocService'];
+        $sharedServices = ['SeoService', 'SmtpMailer', 'ImageOptimizerService', 'DocsMapService', 'GitHubDocService', 'RateLimiter'];
         $sharedViews = ['account/_nav', 'layouts/admin', 'layouts/app', 'public/404'];
 
         $gaps = [

@@ -12,6 +12,8 @@
                 <script>document.addEventListener('DOMContentLoaded',function(){showToast('Thank you. Sri Panchami Spiritual will contact you soon.','success');});</script>
             <?php endif; ?>
             <form method="post" action="/contact" class="contact-form" style="max-width:720px; margin:0 auto;">
+                <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
+                <input type="hidden" name="_csrf" value="<?= $csrf ?>">
                 <div class="contact-form__row">
                     <div class="form-group">
                         <label for="contact-name">Name</label>

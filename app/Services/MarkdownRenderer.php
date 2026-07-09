@@ -13,7 +13,13 @@ final class MarkdownRenderer
         $html = $this->renderOrderedLists($html);
         $html = $this->renderInlineFormatting($html);
         $html = $this->renderParagraphs($html);
+        $html = $this->sanitize($html);
         return $html;
+    }
+
+    private function sanitize(string $html): string
+    {
+        return strip_tags($html, '<p><br><strong><em><b><i><u><s><ol><ul><li><h1><h2><h3><h4><h5><h6><pre><code><blockquote><hr><a><img><table><thead><tbody><tr><th><td><div><span><sub><sup><del><ins><mark><figure><figcaption><cite><q><dl><dt><dd><abbr><address>');
     }
 
     private function renderCodeBlocks(string $html): string

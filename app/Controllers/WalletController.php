@@ -23,6 +23,8 @@ final class WalletController extends BaseController {
 
     public function createOrder(): void {
         (new AuthService())->requireUser();
+        $this->isApiRequest = true;
+        $this->validateCsrf();
         $secrets = (new SecretService())->all();
         $amountRupees = (int)($_POST['amount_rupees'] ?? 0);
         $quote = (new WalletService())->quoteTopUp($amountRupees);
@@ -56,6 +58,8 @@ final class WalletController extends BaseController {
 
     public function verify(): void {
         (new AuthService())->requireUser();
+        $this->isApiRequest = true;
+        $this->validateCsrf();
         $secrets = (new SecretService())->all();
         if (empty($secrets['razorpay_key_secret'])) {
             $this->jsonResponse(['verified' => false, 'error' => 'Razorpay ' . ($secrets['razorpay_mode'] ?? 'selected') . ' mode is not configured yet.'], 400);
