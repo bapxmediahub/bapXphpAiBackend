@@ -1,7 +1,7 @@
 <?php
 /**
  * Batch image optimizer — WebP conversion + resize
- * Usage: php tools/optimize-images.php [--dry-run] [--force]
+ * Usage: php cli/optimize-images.php [--dry-run] [--force]
  */
 
 $dryRun = in_array('--dry-run', $argv ?? []);

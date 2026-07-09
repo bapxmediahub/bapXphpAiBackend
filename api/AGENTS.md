@@ -20,7 +20,7 @@ Owns the JSON API entrypoint used by local smoke checks and lightweight frontend
 ## Verification
 
 - `php -l api/index.php`
-- `php tools/smoke-local.php`
+- `php cli/smoke-local.php`
 - `php tests/run.php`
 
 ## Child DOX Index

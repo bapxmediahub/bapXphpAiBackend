@@ -127,7 +127,7 @@
             <label>From Name<input name="mail_from_name" value="<?= e($secrets['mail_from_name']??'Sri Panchami Spiritual') ?>" placeholder="Sri Panchami Spiritual"></label>
             <label>Admin Notification Email<input name="admin_notification_email" value="<?= e($secrets['admin_notification_email']??'') ?>" placeholder="admin@your-domain.com"></label>
         </div>
-        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Use the mailbox created in your hosting control panel (for example Hostinger: <code>smtp.hostinger.com</code>, ports 465 SSL or 587 TLS, authentication required). The cron job <code>tools/process-mail-queue.php</code> reads these settings from the secret store.</p>
+        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Use the mailbox created in your hosting control panel (for example Hostinger: <code>smtp.hostinger.com</code>, ports 465 SSL or 587 TLS, authentication required). The cron job <code>cli/process-mail-queue.php</code> reads these settings from the secret store.</p>
 
         <div class="admin-card" style="background:var(--color-bg-alt); margin-top:var(--space-xl); padding:var(--space-md);">
             <h3 style="font-size:0.9rem; margin:0 0 var(--space-sm);">Platform Scope</h3>

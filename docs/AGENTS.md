@@ -7,15 +7,15 @@ Owns durable documentation and the single systematic project-map artifact.
 ## Ownership
 
 - `systematic-map.mmd`: the single generated project-map artifact (routes, controllers, services, views).
-- `KnowledgeMap.mmd`: generated mindmap of docs, AGENTS.md files, CLI commands, skills, and architecture (regenerated via `bapXphp docsmap` or `php tools/generate-docs-map.php`).
+- `KnowledgeMap.mmd`: generated mindmap of docs, AGENTS.md files, CLI commands, skills, and architecture (regenerated via `bapXphp docsmap` or `php cli/generate-docs-map.php`).
 - `README.md` files and topic docs: human and agent-facing project guidance.
 - Page and module docs: concise behavior notes for existing surfaces.
 
 ## Local Contracts
 
 - Do not create `PROJECT_MAP.md`, `project-map.json`, `project-map.mmd`, or parallel map artifacts (exception: `KnowledgeMap.mmd` is a separate generated artifact, not a parallel project map).
-- Regenerate `systematic-map.mmd` with `php tools/generate-project-map.php`; do not hand-edit generated map output.
-- Regenerate `KnowledgeMap.mmd` with `bash bapXphp docsmap` or `php tools/generate-docs-map.php`.
+- Regenerate `systematic-map.mmd` with `php cli/generate-project-map.php`; do not hand-edit generated map output.
+- Regenerate `KnowledgeMap.mmd` with `bash bapXphp docsmap` or `php cli/generate-docs-map.php`.
 - Treat the map as a derived source index: documentation claims must be checked against the primary files connected by its edges.
 - Keep documentation aligned with the PHP/JSON shared-hosting architecture.
 

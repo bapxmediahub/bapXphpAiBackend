@@ -33,7 +33,7 @@ Owns PHP runtime behavior: bootstrap, routes, controllers, services, guards, per
 
 - `php -l path/to/changed.php`
 - `php tests/run.php`
-- `php tools/generate-project-map.php`
-- `php tools/validate-project-map.php`
+- `php cli/generate-project-map.php`
 
+- `php cli/validate-project-map.php`
 ## Child DOX Index

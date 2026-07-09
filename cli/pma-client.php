@@ -5,10 +5,10 @@
  * Uses the Playwright browser (already logged in) to execute SQL via JavaScript.
  *
  * Usage:
- *   php tools/pma-client.php "SELECT COUNT(*) FROM products"
- *   php tools/pma-client.php --table-stats
- *   php tools/pma-client.php --export
- *   php tools/pma-client.php --login   # interactive: log into phpMyAdmin via browser
+ *   php cli/pma-client.php "SELECT COUNT(*) FROM products"
+ *   php cli/pma-client.php --table-stats
+ *   php cli/pma-client.php --export
+ *   php cli/pma-client.php --login   # interactive: log into phpMyAdmin via browser
  */
 
 // ── Config ──
@@ -178,10 +178,10 @@ if ($cmd === '--table-stats') {
 $sql = $cmd ?: trim(file_get_contents('php://stdin'));
 if (!$sql) {
     echo "Usage:\n";
-    echo "  php tools/pma-client.php \"SELECT * FROM products\"\n";
-    echo "  php tools/pma-client.php --table-stats\n";
-    echo "  php tools/pma-client.php --export\n";
-    echo "  php tools/pma-client.php --login\n";
+    echo "  php cli/pma-client.php \"SELECT * FROM products\"\n";
+    echo "  php cli/pma-client.php --table-stats\n";
+    echo "  php cli/pma-client.php --export\n";
+    echo "  php cli/pma-client.php --login\n";
     exit(1);
 }
 

@@ -28,7 +28,7 @@ Owns third-party client wrappers for payment, OAuth, and future external service
 
 - `php -l integrations/path/to/changed.php`
 - `php tests/run.php`
-- `php tools/smoke-local.php` when route behavior changes.
+- `php cli/smoke-local.php` when route behavior changes.
 
 ## Child DOX Index
 
