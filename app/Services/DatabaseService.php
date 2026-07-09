@@ -18,7 +18,6 @@ final class DatabaseService {
         ]);
         $body = curl_exec($ch);
         $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
         if ($code !== 200) {
             $err = json_decode($body, true);
             throw new \RuntimeException('Remote DB error: ' . ($err['error'] ?? $body));

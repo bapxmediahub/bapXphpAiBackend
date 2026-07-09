@@ -56,6 +56,7 @@ final class SecretService {
             'support_bot_google_api_key' => (string)(getenv('SUPPORT_BOT_GOOGLE_API_KEY') ?: ''),
             'support_bot_model' => (string)(getenv('SUPPORT_BOT_MODEL') ?: ''),
             'support_bot_purge_policy' => (string)(getenv('SUPPORT_BOT_PURGE_POLICY') ?: ''),
+            'remote_db_token' => (string)(getenv('BAPX_REMOTE_DB_TOKEN') ?: ''),
         ];
     }
     private function normalize(array $values): array {
