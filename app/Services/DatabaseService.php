@@ -8,14 +8,15 @@ final class DatabaseService {
     }
     
     private function remoteCall(string $sql, array $params = []): array {
+        if (php_sapi_name() === 'cli-server') { return []; }
         $payload = json_encode(['query' => $sql, 'params' => $params, 'token' => $this->cfg['remote_fallback_token']]);
         $ch = curl_init($this->cfg['remote_fallback_url']);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => $payload,
             CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-            CURLOPT_CONNECTTIMEOUT => 3,
-            CURLOPT_TIMEOUT => 5,
+            CURLOPT_CONNECTTIMEOUT => 2,
+            CURLOPT_TIMEOUT => 3,
         ]);
         $body = curl_exec($ch);
         if ($body === false) {
