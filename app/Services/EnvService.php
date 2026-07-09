@@ -40,8 +40,25 @@ final class EnvService {
     public function saveRaw(string $contents): void {
         $path = app_path(self::PATH);
         $normalized = str_replace(["\r\n", "\r"], "\n", $contents);
-        file_put_contents($path, rtrim($normalized) . "\n", LOCK_EX);
+        $values = self::readFileFromString($normalized);
+        $this->writeFile($path, $values);
         self::load($path, true);
+    }
+
+    private static function readFileFromString(string $contents): array {
+        $values = [];
+        foreach (explode("\n", $contents) as $line) {
+            $line = trim($line);
+            if ($line === '' || str_starts_with($line, '#') || !str_contains($line, '=')) continue;
+            [$key, $value] = explode('=', $line, 2);
+            $key = trim($key);
+            $value = trim($value);
+            if ((str_starts_with($value, '"') && str_ends_with($value, '"')) || (str_starts_with($value, "'") && str_ends_with($value, "'"))) {
+                $value = substr($value, 1, -1);
+            }
+            $values[$key] = $value;
+        }
+        return $values;
     }
 
     public function adminCredentials(): array {

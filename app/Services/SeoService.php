@@ -4,12 +4,15 @@ final class SeoService {
     private string $siteName;
     private string $defaultOgImage;
     private string $twitterHandle;
+    private array $telephone;
 
     public function __construct(array $secrets = []) {
         $envName = getenv('APP_NAME') ?: 'Sri Panchami Spiritual';
         $this->siteName = $secrets['seo_site_name'] ?? $envName;
         $this->defaultOgImage = $secrets['seo_default_og_image'] ?? 'https://' . ($_SERVER['HTTP_HOST'] ?? 'sripanchamispiritual.com') . '/assets/images/og-image.jpg';
         $this->twitterHandle = $secrets['seo_twitter_handle'] ?? '';
+        $phone = $secrets['phone'] ?? getenv('CONTACT_PHONE') ?: '';
+        $this->telephone = $phone !== '' ? [$phone] : ['+919789444037', '+919789444038'];
     }
 
     public function page(string $key, array $overrides = []): array {
@@ -196,7 +199,7 @@ final class SeoService {
             'name' => $this->siteName,
             'description' => 'Authentic spiritual products, sacred jewellery, expert Vedic astrology consultation, and temple guidance.',
             'url' => $this->pageUrl(''),
-            'telephone' => ['+919789444037', '+919789444038'],
+            'telephone' => $this->telephone,
             'email' => 'sripanchamispiritual@gmail.com',
         ];
     }

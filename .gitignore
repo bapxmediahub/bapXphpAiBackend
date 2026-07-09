@@ -10,3 +10,4 @@ tmp/
 .env.mysql
 .playwright-mcp/
 .playwright-cli/
+/content/blog/cache/

@@ -64,13 +64,14 @@ final class DatabaseService {
         try {
             $clean = preg_replace('/[^a-z_]/', '', $table);
             $this->db()->exec("TRUNCATE TABLE {$clean}");
-            $stmt = $this->db()->prepare("INSERT INTO {$clean} (id, _data, _owner, _status, _created_at, _updated_at) VALUES (?, ?, ?, ?, ?, NOW())");
+            $stmt = $this->db()->prepare("INSERT INTO {$clean} (id, _data, _owner, _status, _created_at, _updated_at) VALUES (?, ?, ?, ?, ?, ?)");
             foreach ($records as $rec) {
                 $id = $rec['id'] ?? bin2hex(random_bytes(8));
                 $owner = $rec['customer_email'] ?? $rec['email'] ?? $rec['user_id'] ?? null;
                 $status = $rec['status'] ?? null;
-                $created = $rec['created_at'] ?? date('Y-m-d H:i:s');
-                $stmt->execute([$id, json_encode($rec), $owner, $status, $created]);
+                $created = $rec['created_at'] ?? date('c');
+                $updated = $rec['updated_at'] ?? $created;
+                $stmt->execute([$id, json_encode($rec), $owner, $status, $created, $updated]);
             }
             $this->db()->commit();
         } catch (\Throwable $e) {
@@ -87,14 +88,16 @@ final class DatabaseService {
             $merged = array_merge($existing, $record);
             $owner = $merged['customer_email'] ?? $merged['email'] ?? $merged['user_id'] ?? null;
             $status = $merged['status'] ?? null;
-            $stmt = $this->db()->prepare("UPDATE {$clean} SET _data = ?, _owner = ?, _status = ?, _updated_at = NOW() WHERE id = ?");
-            $stmt->execute([json_encode($merged), $owner, $status, $id]);
+            $updated = $merged['updated_at'] ?? date('c');
+            $stmt = $this->db()->prepare("UPDATE {$clean} SET _data = ?, _owner = ?, _status = ?, _updated_at = ? WHERE id = ?");
+            $stmt->execute([json_encode($merged), $owner, $status, $updated, $id]);
         } else {
             $owner = $record['customer_email'] ?? $record['email'] ?? $record['user_id'] ?? null;
             $status = $record['status'] ?? null;
-            $created = $record['created_at'] ?? date('Y-m-d H:i:s');
-            $stmt = $this->db()->prepare("INSERT INTO {$clean} (id, _data, _owner, _status, _created_at, _updated_at) VALUES (?, ?, ?, ?, ?, NOW())");
-            $stmt->execute([$id, json_encode($record), $owner, $status, $created]);
+            $created = $record['created_at'] ?? date('c');
+            $updated = $record['updated_at'] ?? $created;
+            $stmt = $this->db()->prepare("INSERT INTO {$clean} (id, _data, _owner, _status, _created_at, _updated_at) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$id, json_encode($record), $owner, $status, $created, $updated]);
         }
         return $record;
     }

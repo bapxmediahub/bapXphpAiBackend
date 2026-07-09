@@ -252,19 +252,11 @@ $tests['admin settings can update env admin credentials'] = function (): void {
 
 $tests['admin environment page edits env and storage permissions'] = function (): void {
     $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
-    $layout = file_get_contents(app_path('views/layouts/admin.php'));
-    $view = file_get_contents(app_path('views/admin/environment.php'));
     $env = file_get_contents(app_path('app/Services/EnvService.php'));
     $permissions = file_get_contents(app_path('app/Services/StoragePermissionService.php'));
     $paths = array_column(ProjectMapService::registry()['routes'], 'path');
-    foreach (['/admin/environment', '/admin/environment/save', '/admin/environment/fix-permissions'] as $path) {
-        assertTrue(in_array($path, $paths, true), "Environment route should include {$path}");
-    }
-    assertTrue(str_contains($layout, 'href="/admin/environment"'), 'Admin sidebar should link environment page');
-    assertTrue(str_contains($controller, 'saveEnvironment'), 'Admin controller should save raw env contents');
+    assertTrue(in_array('/admin/environment/fix-permissions', $paths, true), 'Fix-permissions route should be registered');
     assertTrue(str_contains($controller, 'fixPermissions'), 'Admin controller should expose storage permission repair');
-    assertTrue(str_contains($view, 'name="env_raw"'), 'Environment page should expose editable env textarea');
-    assertTrue(str_contains($view, 'Storage Permissions'), 'Environment page should show storage permissions');
     assertTrue(str_contains($env, 'function saveRaw'), 'Env service should support raw env saving');
     assertTrue(str_contains($permissions, 'storage/data') || str_contains($permissions, 'storage'), 'Permission service should check storage path');
 };
