@@ -61,7 +61,7 @@
                     <span class="price">₹<?= e((string)($product['offer_price'] ?: $product['price'] ?: 0)) ?></span>
                     <?php if($hasOffer): ?>
                         <span class="old-price">₹<?= e($product['price']) ?></span>
-                        <?php $pct = round((1 - $product['offer_price'] / $product['price']) * 100); ?>
+                        <?php $pct = round((1 - $product['offer_price'] / ($product['price'] ?: 1)) * 100); ?>
                         <span class="badge badge--success">Save <?= $pct ?>%</span>
                     <?php endif; ?>
                 </div>
