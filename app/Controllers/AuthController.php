@@ -19,12 +19,13 @@ final class AuthController extends BaseController {
    foreach ($users as $u) { if (($u['id'] ?? '') === ($user['sub'] ?? '') || (($u['email'] ?? '') !== '' && ($u['email'] ?? '') === ($user['email'] ?? ''))) { $role=$u['role'] ?? (!empty($u['is_admin']) ? 'admin' : 'customer'); $astrologerSlug=$u['astrologer_slug'] ?? ''; $mustChange=(bool)($u['must_change_password'] ?? false); break; } }
     unset($_SESSION['oauth_state']);
     session_regenerate_id(true);
-    $_SESSION['user']=['sub'=>$user['sub'],'email'=>$user['email'],'name'=>$user['name']??'','picture'=>$user['picture']??'','role'=>$role,'astrologer_slug'=>$astrologerSlug];
+    $_SESSION['user']=['sub'=>$user['sub'],'email'=>$user['email'],'name'=>$user['name']??'','username'=>explode('@',$user['email'])[0],'picture'=>$user['picture']??'','role'=>$role,'astrologer_slug'=>$astrologerSlug];
     try { $store->upsert('users',['id'=>$user['sub'],'email'=>$user['email'],'name'=>$user['name']??'','picture'=>$user['picture']??'','role'=>$role]); } catch (\Throwable) {}
     $this->flash('Signed in.','success');
+    session_write_close();
    if ($role === 'admin') { $this->redirect('/admin'); return; }
    if ($role === 'astrologer') { $this->redirect($mustChange ? '/astrologer/change-password' : '/astrologer'); return; }
-   $this->redirect('/');
+    $this->redirect('/account/dashboard');
   }
  public function logout(): void {
   $_SESSION = [];
@@ -96,7 +97,8 @@ final class AuthController extends BaseController {
             session_regenerate_id(true);
             $_SESSION['user'] = ['sub'=>$u['id'],'email'=>$u['email'] ?? '','username'=>$u['username'] ?? '','name'=>$u['name'] ?? '','role'=>$u['role'] ?? (!empty($u['is_admin']) ? 'admin' : 'customer'),'astrologer_slug'=>$u['astrologer_slug'] ?? '','must_change_password'=>(bool)($u['must_change_password'] ?? false)];
             $this->flash('Signed in.','success');
-            $this->redirect(($u['role'] ?? '') === 'astrologer' ? (!empty($u['must_change_password']) ? '/astrologer/change-password' : '/astrologer') : '/');
+            session_write_close();
+            $this->redirect(($u['role'] ?? '') === 'astrologer' ? (!empty($u['must_change_password']) ? '/astrologer/change-password' : '/astrologer') : (($u['role'] ?? '') === 'customer' ? '/account/dashboard' : '/'));
         }
     }
     $this->flash('Invalid credentials.','error');
