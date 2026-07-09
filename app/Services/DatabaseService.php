@@ -42,7 +42,12 @@ final class DatabaseService {
         return $this->pdo;
     }
     
-    private function isRemote(): bool { return $this->pdo === null && !empty($this->cfg['remote_url']); }
+    private function isRemote(): bool {
+        if ($this->pdo === null) {
+            try { $this->db(); } catch (\Throwable) {}
+        }
+        return $this->pdo === null && !empty($this->cfg['remote_url']);
+    }
     
     public function read(string $table): array {
         if ($this->isRemote()) {
