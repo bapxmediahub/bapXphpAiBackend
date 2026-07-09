@@ -15,7 +15,7 @@ Owns PHP-rendered public, account, admin, and layout templates.
 
 - Keep the frontend PHP-template based. Do not add React, CDN React, SPA shells, or a second frontend.
 - Follow root `Design.md` for every customer-facing template; preserve real product routes and content while applying its tokens, hierarchy, geometry, and responsive rules.
-- Templates should consume controller-provided data and service-backed JSON data, not read storage directly.
+- Templates should consume controller-provided data and service-backed data, not read storage directly.
 - Forms that mutate admin data must map to auditable controller actions.
 
 ## Work Guidance

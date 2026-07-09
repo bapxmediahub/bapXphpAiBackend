@@ -2,22 +2,14 @@
 
 This repo packages the backend and frontend together for small PHP hosting. The current public use case is Sri Panchami Spiritual, but the backend is reusable for other customer projects.
 
-## Why JSON
+## Why MySQL
 
-JSON storage is intentional. It keeps the database readable by humans and coding agents, avoids hidden SQL schema state, and works on shared PHP hosting without a database server. The JSON files are not random data dumps; they are governed by:
-
-- `storage/schema/collections.php`
-- `JsonStoreService` atomic writes
-- admin CRUD forms
-- audit logging
-- media library records
-- project-map documentation
-- agent-facing skills in the repo
+MySQL is the primary runtime data store. The schema is governed by `storage/schema/collections.php` and managed through `DatabaseService`. JSON files in `storage/data/` are used only for one-time seeding via `bapXphp db sync`. This keeps the database inspectable while using Hostinger's built-in MySQL for runtime persistence.
 
 ## Backend Primitives
 
 - Auth and roles
-- JSON collections
+- MySQL tables (via `DatabaseService`)
 - Schema registry
 - Admin CRUD
 - Media uploads and picker
@@ -51,9 +43,9 @@ Official references: [NotebookLM chat and citations](https://support.google.com/
 
 Agent-native backend platforms expose database, auth, storage, deployments, logs, and model access as inspectable primitives. This repo follows the same idea for smaller PHP hosting, but keeps the primitives inside the monorepo:
 
-- Database: JSON collections and schema files
+- Database: MySQL tables and schema contracts
 - Auth: PHP services with admin credentials in settings (Admin → Settings) and API secrets in encrypted store (Admin → Integrations)
 - Storage: local media library
 - Deployment: Hostinger Git auto-deploy
 - Model context: `AgentContextService`
-- Logs/audit: JSON audit events and admin pages
+- Logs/audit: MySQL `audit_events` table and admin pages
