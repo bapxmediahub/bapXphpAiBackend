@@ -1,3 +1,40 @@
+<?php
+    $schemaUrl = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'sripanchamispiritual.com') . '/blog/' . ($slug ?? '');
+    $schemaImage = $meta['og_image'] ?? $meta['image'] ?? ($seo['og_image'] ?? '');
+    $schema = [
+        '@context' => 'https://schema.org',
+        '@graph' => [
+            [
+                '@type' => 'BreadcrumbList',
+                'itemListElement' => [
+                    ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'sripanchamispiritual.com')],
+                    ['@type' => 'ListItem', 'position' => 2, 'name' => 'Blog', 'item' => $schemaUrl . '/blog'],
+                    ['@type' => 'ListItem', 'position' => 3, 'name' => $meta['title'] ?? 'Post', 'item' => $schemaUrl],
+                ],
+            ],
+            [
+                '@type' => 'Article',
+                'headline' => $meta['title'] ?? '',
+                'description' => $meta['seo_description'] ?? $meta['excerpt'] ?? '',
+                'image' => $schemaImage ?: undefined,
+                'datePublished' => $meta['published_at'] ?? '',
+                'dateModified' => $meta['updated_at'] ?? $meta['published_at'] ?? '',
+                'author' => [
+                    '@type' => 'Person',
+                    'name' => $meta['author'] ?? 'Sri Panchami Spiritual',
+                ],
+                'publisher' => [
+                    '@type' => 'Organization',
+                    'name' => 'Sri Panchami Spiritual',
+                ],
+                'mainEntityOfPage' => $schemaUrl,
+            ],
+        ],
+    ];
+    // Filter out undefined values
+    $schema['@graph'][1] = array_filter($schema['@graph'][1], fn($v) => $v !== 'undefined');
+?>
+<script type="application/ld+json"><?= json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?></script>
 <section class="blog-post-page">
   <div class="container">
     <nav class="breadcrumbs">

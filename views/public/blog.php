@@ -27,7 +27,16 @@
             <?php endif; ?>
             <div class="blog-card__body">
               <?php if (!empty($post['category'])): ?>
-                <span class="blog-card__category"><?= e($post['category']) ?></span>
+                <span class="blog-card__category"><?php
+                    $catName = '';
+                    foreach ($categories as $cat) {
+                        if (($cat['slug'] ?? '') === ($post['category'] ?? '')) {
+                            $catName = $cat['name'] ?? '';
+                            break;
+                        }
+                    }
+                    e($catName ?: $post['category']);
+                ?></span>
               <?php endif; ?>
               <h2 class="blog-card__title">
                 <a href="/blog/<?= e($post['slug'] ?? '') ?>"><?= e($post['title'] ?? '') ?></a>

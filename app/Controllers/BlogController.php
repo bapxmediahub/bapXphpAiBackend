@@ -32,14 +32,14 @@ final class BlogController extends BaseController
             $this->renderNotFound();
         }
 
-        $markdown = new MarkdownRenderer();
-        $content = $markdown->render($post['body'] ?? '');
+        $content = $post['html'] ?? '';
 
-        $title = $post['title'] ?? ucfirst(str_replace('-', ' ', $slug));
+        $title = $post['seo_title'] ?? $post['title'] ?? ucfirst(str_replace('-', ' ', $slug));
         $this->seoKey = 'blog.post';
         $this->seoOverrides = [
             'title' => $title,
-            'description' => $post['excerpt'] ?? 'Read ' . $title,
+            'description' => $post['seo_description'] ?? $post['excerpt'] ?? 'Read ' . $title,
+            'og_image' => $post['og_image'] ?? null,
         ];
 
         $this->render('public/blog-post', [
