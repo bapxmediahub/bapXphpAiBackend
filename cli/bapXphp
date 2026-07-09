@@ -786,7 +786,7 @@ cmd_db_query() {
   local resp
   resp=$(curl -s --max-time 15 -X POST https://sripanchamispiritual.com/remotedb \
     -H "Content-Type: application/json" \
-    -d "$(printf '{"query":"%s"}' "$sql")" 2>&1) || { die "Remote DB unreachable."; }
+    -d "$(php -r 'echo json_encode(["query" => $argv[1]]);' "$sql")" 2>&1) || { die "Remote DB unreachable."; }
   local data
   data=$(echo "$resp" | php -r '$r=json_decode(file_get_contents("php://stdin"),true);foreach(($r["data"]??[]) as $row){$d=json_decode($row["_data"]??"{}",true)?:[];$d["id"]=$row["id"]??"";echo json_encode($d,JSON_UNESCAPED_UNICODE)."\n";}')
   [ -z "$data" ] && { echo "No records found in $collection."; return; }
@@ -829,7 +829,7 @@ cmd_db_raw() {
 
   curl -s --max-time 15 -X POST https://sripanchamispiritual.com/remotedb \
     -H "Content-Type: application/json" \
-    -d "$(printf '{"query":"%s"}' "$sql")" 2>&1 \
+    -d "$(php -r 'echo json_encode(["query" => $argv[1]]);' "$sql")" 2>&1 \
     | php -r '
       $r = json_decode(file_get_contents("php://stdin"), true);
       if (!empty($r["error"])) { fprintf(STDERR, "Error: %s\n", $r["error"]); exit(1); }
