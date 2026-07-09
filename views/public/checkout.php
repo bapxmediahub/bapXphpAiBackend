@@ -20,29 +20,29 @@
                         <div class="checkout-form__row">
                             <div class="form-group">
                                 <label>Full Name</label>
-                                <input type="text" name="name" value="<?= e($_SESSION['user']['name'] ?? '') ?>" placeholder="Your full name" required>
+                                <input type="text" id="checkout-name" name="name" value="<?= e($_SESSION['user']['name'] ?? '') ?>" placeholder="Your full name" required>
                             </div>
                             <div class="form-group">
                                 <label>Email</label>
-                                <input type="email" name="email" value="<?= e($_SESSION['user']['email'] ?? '') ?>" placeholder="your@email.com" required>
+                                <input type="email" id="checkout-email" name="email" value="<?= e($_SESSION['user']['email'] ?? '') ?>" placeholder="your@email.com" required>
                             </div>
                         </div>
                         <div class="form-group" style="margin-top:var(--space-md);">
                             <label>Phone</label>
-                            <input type="tel" name="phone" placeholder="+91 XXXXX XXXXX" required>
+                            <input type="tel" id="checkout-phone" name="phone" placeholder="+91 XXXXX XXXXX" required>
                         </div>
                         <div class="form-group" style="margin-top:var(--space-md);">
                             <label>Address</label>
-                            <textarea name="address" placeholder="Door no, Street, Area" required rows="2"></textarea>
+                            <textarea id="checkout-address" name="address" placeholder="Door no, Street, Area" required rows="2"></textarea>
                         </div>
                         <div class="checkout-form__row" style="margin-top:var(--space-md);">
                             <div class="form-group">
                                 <label>City</label>
-                                <input type="text" name="city" placeholder="City" required>
+                                <input type="text" id="checkout-city" name="city" placeholder="City" required>
                             </div>
                             <div class="form-group">
                                 <label>PIN Code</label>
-                                <input type="text" name="pincode" placeholder="600001" required>
+                                <input type="text" id="checkout-pincode" name="pincode" placeholder="600001" required>
                             </div>
                         </div>
                     </div>
@@ -65,7 +65,15 @@
                                     const response = await fetch('/checkout/create-order', {
                                         method: 'POST',
                                         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                                        body: new URLSearchParams({amount: '<?= (int)($total * 100) ?>'})
+                                        body: new URLSearchParams({
+                                            amount: '<?= (int)($total * 100) ?>',
+                                            name: form.querySelector('[name="name"]').value,
+                                            email: form.querySelector('[name="email"]').value,
+                                            phone: form.querySelector('[name="phone"]').value,
+                                            address: form.querySelector('[name="address"]').value,
+                                            city: form.querySelector('[name="city"]').value,
+                                            pincode: form.querySelector('[name="pincode"]').value
+                                        })
                                     });
                                     const order = await response.json();
                                     if (!response.ok || order.error) {

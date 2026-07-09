@@ -9,6 +9,10 @@ abstract class BaseController {
     
     protected function redirect(string $path): never { header('Location: ' . $path); exit; }
     protected function flash(string $message, string $type = 'info'): void { $_SESSION['flash'] = ['message' => $message, 'type' => $type]; }
+
+    protected function detectApiRequest(): void {
+        $this->isApiRequest = strpos($_SERVER['REQUEST_URI'], '/api/') === 0;
+    }
     
     protected function jsonResponse(array $data, int $status = 200): void {
         http_response_code($status);

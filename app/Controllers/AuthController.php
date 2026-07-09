@@ -9,11 +9,14 @@ final class AuthController extends BaseController {
   $url=(new GoogleOAuthClient($s['google_client_id'],$s['google_client_secret']))->authorizationUrl($this->redirectUri(),$state); $this->redirect($url);
   }
   public function callback(): void {
-   if(($_GET['state']??'')!==($_SESSION['oauth_state']??'')) throw new \RuntimeException('Invalid OAuth state');
+   if(($_GET['state']??'')!==($_SESSION['oauth_state']??'')){$this->flash('Invalid OAuth state. Please try again.','error');$this->redirect('/login');}
    $s=(new SecretService())->all(); $token=$this->post('https://oauth2.googleapis.com/token',['code'=>$_GET['code']??'','client_id'=>$s['google_client_id'],'client_secret'=>$s['google_client_secret'],'redirect_uri'=>$this->redirectUri(),'grant_type'=>'authorization_code']);
+   if(!empty($token['error'])||empty($token['access_token'])){$this->flash('Google login failed. Please try again.','error');$this->redirect('/login');}
    $user=$this->get('https://openidconnect.googleapis.com/v1/userinfo',$token['access_token']);
+   if(empty($user)){$this->flash('Failed to fetch your profile from Google. Please try again.','error');$this->redirect('/login');}
     $store=new DatabaseService(); $users=$store->read('users'); $role = 'customer'; $astrologerSlug = ''; $mustChange = false;
    foreach ($users as $u) { if (($u['id'] ?? '') === ($user['sub'] ?? '') || (($u['email'] ?? '') !== '' && ($u['email'] ?? '') === ($user['email'] ?? ''))) { $role=$u['role'] ?? (!empty($u['is_admin']) ? 'admin' : 'customer'); $astrologerSlug=$u['astrologer_slug'] ?? ''; $mustChange=(bool)($u['must_change_password'] ?? false); break; } }
+    unset($_SESSION['oauth_state']);
     session_regenerate_id(true);
     $_SESSION['user']=['sub'=>$user['sub'],'email'=>$user['email'],'name'=>$user['name']??'','picture'=>$user['picture']??'','role'=>$role,'astrologer_slug'=>$astrologerSlug];
     $store->upsert('users',['id'=>$user['sub'],'email'=>$user['email'],'name'=>$user['name']??'','picture'=>$user['picture']??'','role'=>$role]);
@@ -33,8 +36,8 @@ final class AuthController extends BaseController {
   $this->redirect('/login');
  }
  private function redirectUri(): string { $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http'; return $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'sripanchamispiritual.com') . '/auth/google/callback'; }
- private function post(string $url,array $data): array { $ch=curl_init($url); curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_POST=>true,CURLOPT_POSTFIELDS=>http_build_query($data)]); $body=curl_exec($ch); curl_close($ch); return json_decode($body,true)?:[]; }
- private function get(string $url,string $token): array { $ch=curl_init($url); curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_HTTPHEADER=>['Authorization: Bearer '.$token]]); $body=curl_exec($ch); curl_close($ch); return json_decode($body,true)?:[]; }
+ private function post(string $url,array $data): array { $ch=curl_init($url); curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_POST=>true,CURLOPT_POSTFIELDS=>http_build_query($data),CURLOPT_TIMEOUT=>10]); $body=curl_exec($ch); curl_close($ch); return json_decode($body,true)?:[]; }
+ private function get(string $url,string $token): array { $ch=curl_init($url); curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_HTTPHEADER=>['Authorization: Bearer '.$token],CURLOPT_TIMEOUT=>10]); $body=curl_exec($ch); curl_close($ch); return json_decode($body,true)?:[]; }
   public function register(): void {
      $this->seoKey = 'register';
      $secrets = (new \App\Services\SecretService())->all();

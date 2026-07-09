@@ -3,10 +3,6 @@ namespace App\Controllers;
 use App\Services\{ProductService,AstrologerService,TempleService,CategoryService,SecretService,SeoService,ContactService,ReviewService};
 final class PublicController extends BaseController {
     
-    protected function detectApiRequest(): void {
-        $this->isApiRequest = strpos($_SERVER['REQUEST_URI'], '/api/') === 0;
-    }
-    
     public function home(): void {
         $this->detectApiRequest();
         $this->seoKey = 'home';

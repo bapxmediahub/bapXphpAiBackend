@@ -51,15 +51,17 @@
                                 </div>
                                  <div class="product-card__actions">
                                      <a href="/product/<?= e($item['slug']) ?>" class="btn btn-sm btn-ghost">View →</a>
-                                     <form method="post" action="/cart/add" class="product-card__form">
-                                         <div class="qty-input qty-input--sm">
-                                             <button type="button" onclick="var i=this.parentElement.querySelector('input[type=number]'); i.stepDown(); i.dispatchEvent(new Event('change'));">−</button>
-                                             <input type="number" name="qty" value="1" min="1" max="99" required>
-                                             <button type="button" onclick="var i=this.parentElement.querySelector('input[type=number]'); i.stepUp(); i.dispatchEvent(new Event('change'));">+</button>
-                                         </div>
-                                         <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
-                                         <input type="hidden" name="redirect" value="/shop">
-                                         <button class="btn-cart-circle" aria-label="Add to Cart">
+<form method="post" action="/cart/add" class="product-card__form">
+                                          <div class="qty-input qty-input--sm">
+                                              <button type="button" onclick="var i=this.parentElement.querySelector('input[type=number]'); i.stepDown(); i.dispatchEvent(new Event('change'));">−</button>
+                                              <input type="number" name="qty" value="1" min="1" max="99" required>
+                                              <button type="button" onclick="var i=this.parentElement.querySelector('input[type=number]'); i.stepUp(); i.dispatchEvent(new Event('change'));">+</button>
+                                          </div>
+                                          <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
+                                          <input type="hidden" name="redirect" value="/shop">
+                                          <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
+                                          <input type="hidden" name="_csrf" value="<?= $csrf ?>">
+                                          <button type="button" class="btn-cart-circle" aria-label="Add to Cart">
                                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
                                          </button>
                                      </form>
