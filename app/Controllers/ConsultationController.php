@@ -14,7 +14,12 @@ final class ConsultationController extends BaseController {
     public function room(string $id): void {
         $session=$this->consultations->findAccessible($id,$this->user);
         if(!$session){ $this->renderNotFound(); }
-        $this->render('account/consultation', ['session'=>$session, 'messages'=>$this->consultations->messages($id), 'currentUser'=>$this->user]);
+        $secrets=(new SecretService())->all();
+        $iceServers=[['urls'=>'stun:stun.l.google.com:19302']];
+        if(!empty($secrets['turn_server_url']) && !empty($secrets['turn_username']) && !empty($secrets['turn_credential'])) {
+            $iceServers[]=['urls'=>$secrets['turn_server_url'],'username'=>$secrets['turn_username'],'credential'=>$secrets['turn_credential']];
+        }
+        $this->render('account/consultation', ['session'=>$session, 'messages'=>$this->consultations->messages($id), 'currentUser'=>$this->user, 'iceServers'=>$iceServers]);
     }
     public function messages(string $id): void { $this->session($id); $this->jsonResponse(['messages'=>$this->consultations->messages($id, (string)($_GET['after'] ?? ''))]); }
     public function sendMessage(string $id): void {
@@ -23,7 +28,7 @@ final class ConsultationController extends BaseController {
         catch (\InvalidArgumentException $e) { $this->jsonResponse(['error'=>$e->getMessage()],422); }
     }
     public function signals(string $id): void {
-        $this->session($id); $signals=$this->consultations->signals($id,(string)($_GET['after'] ?? ''));
+        $this->session($id); $signals=$this->consultations->signals($id,(string)($_GET['after'] ?? ''),(string)($_GET['after_id'] ?? ''));
         $signals=array_values(array_filter($signals,fn($row)=>($row['sender_id']??'')!==($this->user['sub']??'')));
         $this->jsonResponse(['signals'=>$signals]);
     }
@@ -45,6 +50,15 @@ final class ConsultationController extends BaseController {
         try { $updated=$this->consultations->updateStatus($session,$status); $this->jsonResponse(['session'=>$updated]); }
         catch (\InvalidArgumentException $e) { $this->jsonResponse(['error'=>$e->getMessage()],422); }
     }
+    public function billCallTime(string $id): void {
+        $session=$this->session($id);
+        if(($session['status']??'')!=='active'){$this->jsonResponse(['error'=>'Session not active.'],400);}
+        $email=strtolower(trim($this->user['email']??''));
+        if(!$email){$this->jsonResponse(['error'=>'User email not found.'],400);}
+        try{$result=$this->consultations->billCallTime($id,$email);$this->jsonResponse($result);}
+        catch(\RuntimeException $e){$this->jsonResponse(['error'=>$e->getMessage()],400);}
+    }
+
     public function initiate(): void {
         (new AuthService())->requireUser();
         $this->validateCsrf();

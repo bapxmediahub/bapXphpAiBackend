@@ -42,10 +42,11 @@ final class ConsultationService {
         return $message;
     }
 
-    public function signals(string $appointmentId, string $after = ''): array {
-        $sql = "SELECT * FROM consultation_signals WHERE JSON_UNQUOTE(JSON_EXTRACT(_data, '$.appointment_id')) = ? AND (_created_at > ? OR ? = '') ORDER BY _created_at ASC";
-        $rows = $this->store->query($sql, [$appointmentId, $after, $after]);
-        return array_map(fn($r) => array_merge(json_decode($r['_data'] ?? '{}', true) ?: [], ['id' => $r['id']]), $rows);
+    public function signals(string $appointmentId, string $after = '', string $afterId = ''): array {
+        $sql = "SELECT * FROM consultation_signals WHERE JSON_UNQUOTE(JSON_EXTRACT(_data, '$.appointment_id')) = ? AND (_created_at > ? OR (_created_at = ? AND id > ?) OR ? = '') ORDER BY _created_at ASC, id ASC";
+        $rows = $this->store->query($sql, [$appointmentId, $after, $after, $afterId, $after]);
+        $results = array_map(fn($r) => array_merge(json_decode($r['_data'] ?? '{}', true) ?: [], ['id' => $r['id']]), $rows);
+        return $results;
     }
 
     public function sendSignal(array $session, array $user, string $type, array $payload): array {
@@ -70,6 +71,36 @@ final class ConsultationService {
             $this->store->write('consultation_signals', $signals);
         }
         return (new ResourceService('appointments'))->save($session);
+    }
+
+    public function billCallTime(string $appointmentId, string $email): array {
+        $session = null;
+        foreach ($this->store->read('appointments') as $row) {
+            if (($row['id'] ?? '') === $appointmentId) { $session = $row; break; }
+        }
+        if (!$session || ($session['status'] ?? '') !== 'active') {
+            throw new \RuntimeException('Session not active.');
+        }
+        $billingInterval = 30;
+        $lastBilled = $session['billing_last_at'] ?? $session['started_at'] ?? $session['created_at'] ?? date('c');
+        $elapsed = max(0, time() - strtotime($lastBilled));
+        if ($elapsed < $billingInterval) {
+            return ['billed' => false, 'elapsed' => $elapsed, 'credits' => 0];
+        }
+        $astrologerSlug = $session['astrologer_slug'] ?? '';
+        $creditRate = 0.5;
+        foreach ($this->store->read('astrologers') as $a) {
+            if (($a['slug'] ?? '') === $astrologerSlug) {
+                $creditRate = (float)($a['call_credit_per_second'] ?? 0.5);
+                break;
+            }
+        }
+        $creditsToBill = max(1, (int)ceil($elapsed * $creditRate));
+        (new WalletService())->spend($email, $creditsToBill, $appointmentId, 'Call time billing (' . $elapsed . 's)');
+        $session['billing_last_at'] = date('c');
+        $session['credits_spent'] = (int)($session['credits_spent'] ?? 0) + $creditsToBill;
+        (new ResourceService('appointments'))->save($session);
+        return ['billed' => true, 'elapsed' => $elapsed, 'credits' => $creditsToBill];
     }
 
     public function analytics(): array {

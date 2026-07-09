@@ -2,6 +2,7 @@
 namespace App\Controllers;
 use App\Services\{CartService,ProductService,SecretService,PaymentService,DatabaseService,MailQueueService};
 use App\Integrations\Razorpay\RazorpayClient;
+// TODO: Wire integrations/stripe/StripeClient as alternative payment gateway when stripe_secret_key is configured
 final class CommerceController extends BaseController {
     public function addToCart(): void {
         $this->validateCsrf();
@@ -159,6 +160,17 @@ final class CommerceController extends BaseController {
         $pendingOrder = $db->find('orders', $orderId, 'razorpay_order_id');
         if (!$pendingOrder || ($pendingOrder['status'] ?? '') !== 'pending') {
             $this->jsonResponse(['verified' => false, 'error' => 'Order not found or already processed.'], 400);
+        }
+        $razorpay = new RazorpayClient($secrets['razorpay_key_id'], $secrets['razorpay_key_secret']);
+        try {
+            $payment = $razorpay->fetchPayment($paymentId);
+        } catch (\RuntimeException $e) {
+            $this->jsonResponse(['verified' => false, 'error' => 'Failed to verify payment with gateway.'], 502);
+        }
+        $expectedPaise = (int)round(((float)($pendingOrder['total'] ?? 0)) * 100);
+        $actualPaise = (int)($payment['amount'] ?? 0);
+        if ($actualPaise !== $expectedPaise || (string)($payment['order_id'] ?? '') !== $orderId) {
+            $this->jsonResponse(['verified' => false, 'error' => 'Payment amount mismatch.'], 400);
         }
         $orderItems = $pendingOrder['items'] ?? [];
         $products = [];

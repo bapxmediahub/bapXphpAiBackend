@@ -58,6 +58,9 @@ final class SecretService {
             'support_bot_model' => (string)(getenv('SUPPORT_BOT_MODEL') ?: ''),
             'support_bot_purge_policy' => (string)(getenv('SUPPORT_BOT_PURGE_POLICY') ?: ''),
             'remote_db_token' => (string)(getenv('BAPX_REMOTE_DB_TOKEN') ?: ''),
+            'turn_server_url' => (string)(getenv('TURN_SERVER_URL') ?: ''),
+            'turn_username' => (string)(getenv('TURN_USERNAME') ?: ''),
+            'turn_credential' => (string)(getenv('TURN_CREDENTIAL') ?: ''),
         ];
     }
     private function normalize(array $values): array {

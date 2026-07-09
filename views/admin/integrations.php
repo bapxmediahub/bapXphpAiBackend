@@ -64,6 +64,19 @@
         <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">The app builds the endpoint automatically from the model: <code>https://generativelanguage.googleapis.com/v1beta/models/<?= e($secrets['support_bot_model']??'gemini-2.0-flash') ?>:generateContent</code>. Google documents API-key authentication with the <code>x-goog-api-key</code> header. Free API access is subject to Google account, region, model, and rate-limit rules; it should not be treated as unlimited.</p>
         <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Privacy mode: <strong>always_purge</strong>. Bot task data and conversation scratch data should be deleted after the support task finishes.</p>
 
+        <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">WebRTC TURN Server</h2>
+        <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">
+            Optional TURN server for WebRTC call connectivity when peer-to-peer STUN fails (firewall/NAT). Run a coturn server and enter its credentials here.
+        </p>
+        <div class="admin-form__row">
+            <label>TURN Server URL<input name="turn_server_url" value="<?= e($secrets['turn_server_url']??'') ?>" placeholder="turn:example.com:3478"></label>
+            <label>TURN Username<input name="turn_username" value="<?= e($secrets['turn_username']??'') ?>" placeholder="turnuser"></label>
+        </div>
+        <div class="admin-form__row">
+            <label>TURN Credential<input type="password" name="turn_credential" value="<?= e($secrets['turn_credential']??'') ?>" placeholder="TURN shared secret" autocomplete="new-password"></label>
+        </div>
+        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">When configured, the TURN server is added to ICE servers for all WebRTC calls. Leave blank to use STUN only.</p>
+
         <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">Meta Pixel (Facebook Ads)</h2>
         <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">
             Optional Facebook/Meta Ads conversion tracking and retargeting. Enter your Pixel ID to enable Meta tracking across all pages.

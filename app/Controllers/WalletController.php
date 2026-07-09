@@ -79,6 +79,17 @@ final class WalletController extends BaseController {
         if (!$pendingTx || ($pendingTx['status'] ?? '') !== 'pending') {
             $this->jsonResponse(['verified' => false, 'error' => 'Transaction not found or already processed.'], 400);
         }
+        $razorpay = new RazorpayClient($secrets['razorpay_key_id'], $secrets['razorpay_key_secret']);
+        try {
+            $payment = $razorpay->fetchPayment($paymentId);
+        } catch (\RuntimeException $e) {
+            $this->jsonResponse(['verified' => false, 'error' => 'Failed to verify payment with gateway.'], 502);
+        }
+        $expectedPaise = (int)round(((float)($pendingTx['total_rupees'] ?? 0)) * 100);
+        $actualPaise = (int)($payment['amount'] ?? 0);
+        if ($actualPaise !== $expectedPaise || (string)($payment['order_id'] ?? '') !== $orderId) {
+            $this->jsonResponse(['verified' => false, 'error' => 'Payment amount mismatch — expected ' . $expectedPaise . ' paise, got ' . $actualPaise . '.'], 400);
+        }
         $amountRupees = (int)($pendingTx['amount_rupees'] ?? 0);
         $quote = (new WalletService())->quoteTopUp($amountRupees);
         (new WalletService())->addTopUp($_SESSION['user']['email'] ?? '', $quote, $paymentId, 'confirmed', $pendingTx['id']);
