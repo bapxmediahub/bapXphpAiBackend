@@ -877,6 +877,11 @@ cmd_db_init() {
         INDEX idx_created (_created_at)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci\");
       echo \"  CREATED TABLE \$table\n\";
+      if (\$name === 'consultation_signals') {
+        try { \$pdo->exec(\"ALTER TABLE consultation_signals ADD COLUMN appointment_id VARCHAR(36) GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(_data, '$.appointment_id'))) STORED\"); } catch (\PDOException \$e) {}
+        try { \$pdo->exec(\"CREATE INDEX idx_signals_appointment_id ON consultation_signals (appointment_id)\"); } catch (\PDOException \$e) {}
+        echo \"  INDEXED consultation_signals.appointment_id\n\";
+      }
     }
     echo \"Done. \" . count(\$schema['collections']) . \" tables created.\n\";
   "
@@ -917,6 +922,10 @@ cmd_db_sync() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4\");
 
       echo \"  CREATED \$table (no JSON files — data is in MySQL)\n\";
+      if (\$name === 'consultation_signals') {
+        try { \$pdo->exec(\"ALTER TABLE consultation_signals ADD COLUMN appointment_id VARCHAR(36) GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(_data, '$.appointment_id'))) STORED\"); } catch (\PDOException \$e) {}
+        try { \$pdo->exec(\"CREATE INDEX idx_signals_appointment_id ON consultation_signals (appointment_id)\"); } catch (\PDOException \$e) {}
+      }
       \$total++;
     }
     echo \"Done. \$total tables created.\n\";
