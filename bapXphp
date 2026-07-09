@@ -778,63 +778,38 @@ cmd_db_query() {
   collection="${args[0]:-}"
   [ -z "$collection" ] && die "Usage: bapXphp db query <collection> [--where 'f=v'] [--id id] [--owner email] [--limit N]"
 
-  # ── Try MySQL direct ──
-  php -r "
-    \$table = preg_replace('/[^a-z_]/', '', '$collection');
-    \$dsn = 'mysql:host=$MYSQL_HOST;port=$MYSQL_PORT;dbname=$MYSQL_DB;charset=utf8mb4';
-    \$pdo = null;
-    try { \$pdo = new PDO(\$dsn, '$MYSQL_USER', '$MYSQL_PASS', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_TIMEOUT => 5]); } catch (Exception \$e) {}
-
-    if (!\$pdo) { exit(1); }
-
-    \$sql = \"SELECT * FROM \`{\$table}\` WHERE 1=1\";
-    \$params = [];
-
-    if ('$id_val') {
-      \$sql .= ' AND id = ?';
-      \$params[] = '$id_val';
-    }
-    if ('$owner_val') {
-      \$sql .= ' AND _owner = ?';
-      \$params[] = '$owner_val';
-    }
-    if ('$where' && strpos('$where', '=') !== false) {
-      list(\$wf, \$wv) = explode('=', '$where', 2);
-      \$wf = trim(\$wf); \$wv = trim(\$wv);
-      \$sql .= ' AND _data LIKE ?';
-      \$params[] = '%\"' . \$wf . '\":\"' . \$wv . '\"%';
-    }
-
-    \$sql .= ' LIMIT ' . (int)'$limit';
-    \$stmt = \$pdo->prepare(\$sql);
-    \$stmt->execute(\$params);
-    \$rows = \$stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    if (count(\$rows) === 0) {
-      echo \"No records found in \$table.\n\";
-      exit(0);
-    }
-
-    echo \"Found \" . count(\$rows) . \" records in \$table:\n\n\";
-    foreach (\$rows as \$row) {
-      \$data = json_decode(\$row['_data'], true) ?: [];
-      if ('$json_output' === 'true') {
-        echo json_encode(\$data, JSON_UNESCAPED_UNICODE) . \"\n\";
-      } else {
-        echo \"  ID:   \" . (\$data['id'] ?? \$row['id']) . \"\n\";
-        echo \"  Table: \$table\" . \"\n\";
-        foreach (\$data as \$k => \$v) {
+  # ── Query via remote DB endpoint ──
+  local sql="SELECT * FROM $collection"
+  [ -n "$id_val" ] && sql="$sql WHERE id = '$id_val'"
+  [ -n "$owner_val" ] && sql="$sql AND _owner = '$owner_val'"
+  [ -n "$limit" ] && sql="$sql LIMIT $limit"
+  local resp
+  resp=$(curl -s --max-time 15 -X POST https://sripanchamispiritual.com/remotedb \
+    -H "Content-Type: application/json" \
+    -d "$(printf '{"query":"%s"}' "$sql")" 2>&1) || { die "Remote DB unreachable."; }
+  local data
+  data=$(echo "$resp" | php -r '$r=json_decode(file_get_contents("php://stdin"),true);foreach(($r["data"]??[]) as $row){$d=json_decode($row["_data"]??"{}",true)?:[];$d["id"]=$row["id"]??"";echo json_encode($d,JSON_UNESCAPED_UNICODE)."\n";}')
+  [ -z "$data" ] && { echo "No records found in $collection."; return; }
+  local count
+  count=$(echo "$data" | wc -l | tr -d ' ')
+  echo "Found $count records in $collection:"
+  echo ""
+  if [ "$json_output" = "true" ]; then
+    echo "$data"
+  else
+    echo "$data" | while IFS= read -r line; do
+      php -r "
+        \$d = json_decode('$line', true) ?: [];
+        echo '  ID:   ' . (\$d['id'] ?? '') . PHP_EOL;
+        foreach (\$d as \$k => \$v) {
           if (\$k === 'id') continue;
           \$val = is_array(\$v) ? json_encode(\$v) : \$v;
           echo \"  \$k: \$val\n\";
         }
         echo \"  ---\n\";
-      }
-    }
-  " && return
-
-  # ── MySQL only — die if unreachable ──
-  die "MySQL unreachable. Check config/database.php."
+      "
+    done
+  fi
 }
 
 # ── db find <collection> <id> ───────────────────────────────────
@@ -846,37 +821,26 @@ cmd_db_find() {
   cmd_db_query "$collection" --id "$id"
 }
 
-# ── db raw <sql> — Execute raw SQL on MySQL ──────────────────────
-# Connects to MySQL and executes arbitrary SQL.
-# Results are output as JSON lines.
-# Falls back to phpMyAdmin web proxy when direct MySQL is rate-limited.
+# ── db raw <sql> — Execute raw SQL via remote endpoint ─────────────
+# POSTs the SQL to the remote DB endpoint and outputs JSON lines.
 cmd_db_raw() {
   local sql="$*"
   [ -z "$sql" ] && die "Usage: bapXphp db raw \"SELECT ...\""
 
-  BAPX_SQL="$sql" php -r "
-    \$dsn = 'mysql:host=$MYSQL_HOST;port=$MYSQL_PORT;dbname=$MYSQL_DB;charset=utf8mb4';
-    \$pdo = null;
-    try {
-      \$pdo = new PDO(\$dsn, '$MYSQL_USER', '$MYSQL_PASS', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_TIMEOUT => 5]);
-    } catch (Exception \$e) {}
-    if (!\$pdo) {
-      fprintf(STDERR, \"Direct MySQL unavailable, trying phpMyAdmin web proxy...\n\");
-      \$sql = getenv('BAPX_SQL');
-      \$cmd = 'php ' . '$ROOT' . '/tools/pma-client.php ' . escapeshellarg(\$sql) . ' 2>&1';
-      passthru(\$cmd, \$exitCode);
-      exit(\$exitCode);
-    }
-
-    \$stmt = \$pdo->query(getenv('BAPX_SQL'));
-    if (\$stmt->columnCount() > 0) {
-      while (\$row = \$stmt->fetch(PDO::FETCH_ASSOC)) {
-        echo json_encode(\$row, JSON_UNESCAPED_UNICODE) . \"\n\";
+  curl -s --max-time 15 -X POST https://sripanchamispiritual.com/remotedb \
+    -H "Content-Type: application/json" \
+    -d "$(printf '{"query":"%s"}' "$sql")" 2>&1 \
+    | php -r '
+      $r = json_decode(file_get_contents("php://stdin"), true);
+      if (!empty($r["error"])) { fprintf(STDERR, "Error: %s\n", $r["error"]); exit(1); }
+      $data = $r["data"] ?? [];
+      if (empty($data)) { echo "No results.\n"; exit(0); }
+      foreach ($data as $row) {
+        $decoded = json_decode($row["_data"] ?? "{}", true) ?: [];
+        $decoded["id"] = $row["id"] ?? "";
+        echo json_encode($decoded, JSON_UNESCAPED_UNICODE) . "\n";
       }
-    } else {
-      echo \"Query executed. Rows affected: \" . \$stmt->rowCount() . \"\n\";
-    }
-  "
+    '
 }
 
 # ── db pma <sql> — Execute SQL via phpMyAdmin web proxy ──────────

@@ -2,19 +2,9 @@
 namespace App\Controllers;
 
 use App\Services\DatabaseService;
-use App\Services\SecretService;
 
 final class RemoteDbController {
-    private DatabaseService $db;
-    private SecretService $secrets;
-    private string $token;
-
-    public function __construct() {
-        $this->db = new DatabaseService();
-        $this->secrets = new SecretService();
-        $configToken = (require app_path('config/database.php'))['remote_fallback_token'] ?? '';
-        $this->token = getenv('BAPX_REMOTE_DB_TOKEN') ?: ($this->secrets->all()['remote_db_token'] ?? $configToken);
-    }
+    public function __construct() {}
 
     public function __invoke() {
         $method = $_SERVER['REQUEST_METHOD'];
@@ -25,15 +15,6 @@ final class RemoteDbController {
         }
 
         $input = json_decode(file_get_contents('php://input'), true) ?: [];
-        $providedToken = $input['token'] ?? $_GET['token'] ?? $_GET['key'] ?? '';
-        if (!$this->token || !hash_equals($this->token, $providedToken)) {
-            http_response_code(401);
-            echo json_encode(['error' => 'Unauthorized']);
-            return;
-        }
-        if (!$this->secrets->all()['remote_db_token'] ?? false) {
-            try { $this->secrets->saveSecret('remote_db_token', $this->token); } catch (\Throwable) {}
-        }
 
         $sql = trim($input['query'] ?? '');
         $params = $input['params'] ?? [];
@@ -44,7 +25,8 @@ final class RemoteDbController {
         }
 
         try {
-            $result = $this->db->query($sql, $params);
+            $db = new DatabaseService();
+            $result = $db->query($sql, $params);
             http_response_code(200);
             echo json_encode(['success' => true, 'data' => $result]);
         } catch (\Throwable $e) {

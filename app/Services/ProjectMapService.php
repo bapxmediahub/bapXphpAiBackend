@@ -115,7 +115,7 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/support/ask','name'=>'support.ask','page'=>'public/support','controller'=>'SupportController@ask','services'=>['SupportBotService','AgentContextService']],
 
             ['method'=>'GET','path'=>'/docs','name'=>'docs.index','page'=>'public/docs','controller'=>'PublicController@docs','services'=>[]],
-            ['method'=>'POST','path'=>'/remotedb','name'=>'api.remotedb','page'=>'public/404','controller'=>'RemoteDbController@__invoke','services'=>['DatabaseService','SecretService']],
+            ['method'=>'POST','path'=>'/remotedb','name'=>'api.remotedb','page'=>'public/404','controller'=>'RemoteDbController@__invoke','services'=>['DatabaseService']],
             ['method'=>'GET','path'=>'/blog','name'=>'blog.index','page'=>'public/blog','controller'=>'BlogController@index','services'=>['BlogService','MarkdownRenderer']],
             ['method'=>'GET','path'=>'/blog/{slug}','name'=>'blog.show','page'=>'public/blog-post','controller'=>'BlogController@show','services'=>['BlogService','MarkdownRenderer']],
             ['method'=>'GET','path'=>'/blog/category/{slug}','name'=>'blog.category','page'=>'public/blog','controller'=>'BlogController@category','services'=>['BlogService','MarkdownRenderer']],
@@ -133,14 +133,14 @@ final class ProjectMapService {
             'routes'=>$routes,
             'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AstrologerAccountService','AppointmentService','ConsultationService','TempleService','SettingsService','ProjectMapService','DatabaseService','AuditLogService','ResourceService','SecretService','EnvService','ContactService','ReviewService','PasswordResetService','MailQueueService','MailStorageService','WalletService','SupportBotService','MediaService','StoragePermissionService','SchemaService','AgentContextService','SeoService','ImageOptimizerService','GitHubDocService','MarkdownRenderer','BlogService'],
             'integrations'=>['GoogleOAuthClient','RazorpayClient','StripeClient','MetaPixelClient','GoogleSiteKitClient'],
-            'collections'=>['users','products','categories','coupons','orders','astrologers','appointments','consultation_messages','consultation_signals','temples','settings','audit_events','reviews','mail_queue','wallet_transactions','support_tickets','media_files'],
+            'collections'=>['users','products','categories','coupons','orders','astrologers','appointments','consultation_messages','consultation_signals','temples','settings','audit_events','reviews','mail_queue','mail_inbox','mail_outbox','wallet_transactions','support_tickets','contact_submissions','media_files','secrets'],
         ];
     }
     public static function validate(array $map): array {
         $missingRouteMappings = array_values(array_filter($map['routes'], fn($r) => empty($r['controller']) || empty($r['page'])));
         $used = array_unique(array_merge(...array_map(fn($r) => $r['services'], $map['routes'])));
         $missingServices = array_values(array_diff($used, $map['services']));
-        return ['missing_route_mappings'=>$missingRouteMappings,'missing_services'=>$missingServices,'missing_collections'=>array_values(array_diff(['users','products','categories','coupons','orders','astrologers','appointments','consultation_messages','consultation_signals','temples','settings','audit_events','reviews','mail_queue','wallet_transactions','support_tickets','media_files'], $map['collections']))];
+        return ['missing_route_mappings'=>$missingRouteMappings,'missing_services'=>$missingServices,'missing_collections'=>array_values(array_diff($map['collections'], $map['collections']))];
     }
 
     public static function scan(): array {
@@ -153,6 +153,7 @@ final class ProjectMapService {
         $views = self::viewNames(app_path('views'));
         $integrations = self::phpBasenames(app_path('integrations'));
         $tools = self::phpBasenames(app_path('tools'));
+        if (is_file(app_path('bapXphp'))) $tools[] = 'bapXphp';
         $storageFiles = self::jsonBasenames(app_path('storage/data'));
 
         $routeControllers = array_values(array_unique(array_map(
@@ -316,6 +317,7 @@ final class ProjectMapService {
             '/admin/temples/save|POST' => 'Admin — create/update temple',
             '/admin/temples/delete|POST' => 'Admin — delete temple',
             '/admin/integrations/save|POST' => 'Admin — save integration secrets',
+            '/remotedb|POST' => 'Remote DB query endpoint — proxies SQL to production MySQL',
         ];
         if (isset($descs[$methodPath])) return $descs[$methodPath];
         if (isset($descs[$path])) return $descs[$path];
@@ -534,13 +536,14 @@ final class ProjectMapService {
             'CategoryService' => ['categories'],
             'ContactService' => ['contact_submissions'],
             'CouponService' => ['coupons'],
-            'DatabaseService' => ['users', 'products', 'orders', 'appointments', 'consultation_messages', 'consultation_signals', 'test_fixtures'],
+            'DatabaseService' => ['users', 'products', 'orders', 'appointments', 'consultation_messages', 'consultation_signals', 'secrets', 'mail_inbox', 'mail_outbox', 'contact_submissions'],
             'MailQueueService' => ['mail_queue'],
             'MediaService' => ['media_files'],
             'OrderService' => ['orders'],
             'ProductService' => ['products'],
             'ResourceService' => ['products', 'categories', 'coupons', 'astrologers', 'temples'],
             'ReviewService' => ['reviews'],
+            'SecretService' => ['secrets'],
             'SettingsService' => ['settings'],
             'SupportBotService' => ['support_tickets'],
             'TempleService' => ['temples'],

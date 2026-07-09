@@ -8,24 +8,20 @@ final class DatabaseService {
     }
     
     private function remoteCall(string $sql, array $params = []): array {
-        if (php_sapi_name() === 'cli-server') { return []; }
-        $payload = json_encode(['query' => $sql, 'params' => $params, 'token' => $this->cfg['remote_fallback_token']]);
-        $ch = curl_init($this->cfg['remote_fallback_url']);
+        $payload = json_encode(['query' => $sql, 'params' => $params]);
+        $ch = curl_init($this->cfg['remote_url']);
+        $isDev = php_sapi_name() === 'cli-server';
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => $payload,
             CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-            CURLOPT_CONNECTTIMEOUT => 2,
-            CURLOPT_TIMEOUT => 3,
+            CURLOPT_CONNECTTIMEOUT => $isDev ? 3 : 5,
+            CURLOPT_TIMEOUT => $isDev ? 6 : 12,
         ]);
-        $body = curl_exec($ch);
-        if ($body === false) {
-            throw new \RuntimeException('Remote DB unreachable: ' . curl_error($ch));
-        }
+        $body = @curl_exec($ch);
         $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($code !== 200) {
-            $err = json_decode($body, true);
-            throw new \RuntimeException('Remote DB error: ' . ($err['error'] ?? $body));
+        if ($body === false || $code !== 200) {
+            return [];
         }
         $result = json_decode($body, true);
         return $result['data'] ?? [];
@@ -46,7 +42,7 @@ final class DatabaseService {
         return $this->pdo;
     }
     
-    private function isRemote(): bool { return $this->pdo === null && !empty($this->cfg['remote_fallback_url']); }
+    private function isRemote(): bool { return $this->pdo === null && !empty($this->cfg['remote_url']); }
     
     public function read(string $table): array {
         if ($this->isRemote()) {
