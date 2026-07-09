@@ -114,6 +114,7 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/support','name'=>'support.page','page'=>'public/support','controller'=>'SupportController@page','services'=>['SeoService']],
             ['method'=>'POST','path'=>'/support/ask','name'=>'support.ask','page'=>'public/support','controller'=>'SupportController@ask','services'=>['SupportBotService','AgentContextService']],
 
+            ['method'=>'GET','path'=>'/docs','name'=>'docs.index','page'=>'public/docs','controller'=>'PublicController@docs','services'=>[]],
             ['method'=>'POST','path'=>'/remotedb','name'=>'api.remotedb','page'=>'public/404','controller'=>'RemoteDbController@__invoke','services'=>['DatabaseService','SecretService']],
             ['method'=>'GET','path'=>'/blog','name'=>'blog.index','page'=>'public/blog','controller'=>'BlogController@index','services'=>['BlogService','MarkdownRenderer']],
             ['method'=>'GET','path'=>'/blog/{slug}','name'=>'blog.show','page'=>'public/blog-post','controller'=>'BlogController@show','services'=>['BlogService','MarkdownRenderer']],
@@ -210,6 +211,7 @@ final class ProjectMapService {
     private static function routeDesc(string $path, string $method = 'GET'): string {
         $methodPath = $path . '|' . $method;
         $descs = [
+            '/docs'           => 'Documentation landing — blog categories overview',
             '/blog'           => 'Blog listing — all posts with category filters',
             '/blog/{slug}'    => 'Blog post — rendered from GitHub-sourced markdown',
             '/blog/category/{slug}' => 'Blog listing filtered by category',

@@ -183,4 +183,9 @@ final class PublicController extends BaseController {
             'googleAuthEnabled' => !empty($secrets['google_client_id']) && !empty($secrets['google_client_secret']),
         ]); 
     }
+
+    public function docs(): void {
+        $this->seoKey = 'home';
+        $this->render('public/docs');
+    }
 }

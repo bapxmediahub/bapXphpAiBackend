@@ -57,6 +57,17 @@ nav{display:flex;gap:var(--space-lg);font-size:0;justify-content:center}
 nav a{position:relative;font-weight:500;color:var(--color-ink);padding:var(--space-xs) 0;font-size:0.9rem;text-decoration:none}
 nav a:hover,nav a[aria-current="page"]{color:var(--color-ink)}
 nav a[aria-current="page"]::after{position:absolute;right:0;bottom:-7px;left:0;height:2px;border-radius:999px;background:var(--color-gold);content:""}
+.nav-dropdown{position:relative;display:inline-flex}
+.nav-dropdown__trigger{padding-right:4px!important;cursor:default}
+.nav-dropdown__arrow{font-size:0.65rem;margin-left:2px;opacity:0.6}
+.nav-dropdown__menu{position:absolute;top:100%;left:50%;transform:translateX(-50%);min-width:160px;background:var(--color-white);border:1px solid var(--color-border);border-radius:var(--radius-md);box-shadow:var(--shadow-lg);opacity:0;visibility:hidden;transition:opacity 0.2s ease,visibility 0.2s ease;z-index:200;padding:6px 0;margin-top:8px}
+.nav-dropdown__menu::before{content:"";position:absolute;top:-6px;left:50%;transform:translateX(-50%);border:6px solid transparent;border-bottom-color:var(--color-white);filter:drop-shadow(0 -1px 1px rgba(0,0,0,0.1))}
+.nav-dropdown__menu a{display:block;padding:8px 18px;font-size:0.85rem;color:var(--color-ink);white-space:nowrap;text-decoration:none}
+.nav-dropdown__menu a:hover{background:var(--color-bg-alt);color:var(--color-maroon)}
+.nav-dropdown:hover .nav-dropdown__menu,.nav-dropdown:focus-within .nav-dropdown__menu{opacity:1;visibility:visible}
+@media(max-width:768px){.nav-dropdown__menu{position:static;transform:none;box-shadow:none;border:0;opacity:1;visibility:visible;margin:0;padding:0 0 0 16px;background:transparent}
+.nav-dropdown__menu::before{display:none}
+.nav-dropdown__menu a{padding:6px 0;font-size:0.85rem}}
 .header-actions{display:flex;align-items:center;gap:var(--space-md)}
 .cart-btn{background:transparent;border:0;font-size:1.3rem;cursor:pointer;position:relative;color:var(--color-ink);padding:var(--space-xs);border-radius:var(--radius-md)}
  .cart-count{position:absolute;top:-6px;right:-8px;background:var(--color-maroon);color:var(--color-white);font-size:0.6rem;width:16px;height:16px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:bold}
@@ -270,14 +281,24 @@ gtag('js', new Date());
     <button class="menu-toggle" type="button" aria-expanded="false" aria-label="Menu">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
+<?php $__blogCats = (new \App\Services\BlogService())->categories(); ?>
     <nav id="primary-nav">
         <a href="/"<?= $currentPath === '/' ? ' aria-current="page"' : '' ?>>Home</a>
         <a href="/shop"<?= str_starts_with($currentPath, '/shop') ? ' aria-current="page"' : '' ?>>Shop</a>
         <a href="/consult"<?= str_starts_with($currentPath, '/consult') ? ' aria-current="page"' : '' ?>>Consult</a>
         <a href="/temples"<?= str_starts_with($currentPath, '/temples') ? ' aria-current="page"' : '' ?>>Temples</a>
-        <a href="/blog"<?= str_starts_with($currentPath, '/blog') ? ' aria-current="page"' : '' ?>>Blog</a>
+        <div class="nav-dropdown">
+            <a href="/blog" class="nav-dropdown__trigger"<?= str_starts_with($currentPath, '/blog') ? ' aria-current="page"' : '' ?>>Blog <span class="nav-dropdown__arrow">▾</span></a>
+            <div class="nav-dropdown__menu">
+                <a href="/blog">All Posts</a>
+                <?php foreach ($__blogCats as $__cat): ?>
+                <a href="/blog/category/<?= e($__cat['slug'] ?? '') ?>"><?= e($__cat['name'] ?? '') ?></a>
+                <?php endforeach; ?>
+            </div>
+        </div>
         <a href="/about"<?= str_starts_with($currentPath, '/about') ? ' aria-current="page"' : '' ?>>About SPS</a>
         <a href="/contact"<?= str_starts_with($currentPath, '/contact') ? ' aria-current="page"' : '' ?>>Contact</a>
+        <a href="/docs"<?= str_starts_with($currentPath, '/docs') ? ' aria-current="page"' : '' ?>>Docs</a>
         <?php if(!empty($_SESSION['user'])): ?>
             <?php if(($_SESSION['user']['role'] ?? '') === 'astrologer'): ?>
                 <a href="/astrologer"<?= str_starts_with($currentPath, '/astrologer') ? ' aria-current="page"' : '' ?>>Dashboard</a>
@@ -384,13 +405,16 @@ if ($__flash):
             </div>
             <div>
                 <h4 class="footer-heading">Services</h4>
-                <ul class="footer-links">
-                    <li><a href="/consult">Consult</a></li>
-                    <li><a href="/temples">Temples</a></li>
-                    <li><a href="/blog">Blog</a></li>
-                    <li><a href="/about">About SPS</a></li>
-                    <li><a href="/contact">Contact</a></li>
-                </ul>
+            <ul class="footer-links">
+                <li><a href="/consult">Consult</a></li>
+                <li><a href="/temples">Temples</a></li>
+                <li><a href="/blog">Blog</a></li>
+                <?php foreach ($__blogCats as $__cat): ?>
+                <li><a href="/blog/category/<?= e($__cat['slug'] ?? '') ?>"><?= e($__cat['name'] ?? '') ?></a></li>
+                <?php endforeach; ?>
+                <li><a href="/about">About SPS</a></li>
+                <li><a href="/contact">Contact</a></li>
+            </ul>
             </div>
             <div>
                 <h4 class="footer-heading">Customer Support</h4>

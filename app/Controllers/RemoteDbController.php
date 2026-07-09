@@ -12,7 +12,8 @@ final class RemoteDbController {
     public function __construct() {
         $this->db = new DatabaseService();
         $this->secrets = new SecretService();
-        $this->token = getenv('BAPX_REMOTE_DB_TOKEN') ?: ($this->secrets->all()['remote_db_token'] ?? '');
+        $configToken = (require app_path('config/database.php'))['remote_fallback_token'] ?? '';
+        $this->token = getenv('BAPX_REMOTE_DB_TOKEN') ?: ($this->secrets->all()['remote_db_token'] ?? $configToken);
     }
 
     public function __invoke() {
@@ -29,6 +30,9 @@ final class RemoteDbController {
             http_response_code(401);
             echo json_encode(['error' => 'Unauthorized']);
             return;
+        }
+        if (!$this->secrets->all()['remote_db_token'] ?? false) {
+            try { $this->secrets->saveSecret('remote_db_token', $this->token); } catch (\Throwable) {}
         }
 
         $sql = trim($input['query'] ?? '');
