@@ -2,9 +2,28 @@
 namespace App\Services;
 final class DatabaseService {
     private ?\PDO $pdo = null;
+    private ?bool $remoteOnly = null;
     private array $cfg = [];
     public function __construct() {
         $this->cfg = require app_path('config/database.php');
+    }
+
+    private function remoteCall(string $sql, array $params = []): array {
+        $payload = json_encode(['query' => $sql, 'params' => $params]);
+        $ch = curl_init($this->cfg['remote_url']);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $payload,
+            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+            CURLOPT_CONNECTTIMEOUT => 5, CURLOPT_TIMEOUT => 12,
+        ]);
+        $body = @curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if ($body === false || $code !== 200) {
+            return [];
+        }
+        $result = json_decode($body, true);
+        return $result['data'] ?? [];
     }
 
     private function db(): \PDO {
@@ -23,12 +42,24 @@ final class DatabaseService {
         return $this->pdo;
     }
 
+    private function isRemote(): bool {
+        if ($this->remoteOnly !== null) return $this->remoteOnly;
+        if (empty($this->cfg['remote_url'])) { $this->remoteOnly = false; return false; }
+        try { $this->db(); $this->remoteOnly = false; return false; }
+        catch (\Throwable) { $this->remoteOnly = true; return true; }
+    }
+
     public function read(string $table): array {
+        if ($this->isRemote()) {
+            $rows = $this->remoteCall('SELECT * FROM ' . preg_replace('/[^a-z_]/', '', $table));
+            return array_map(fn($r) => array_merge(json_decode($r['_data'] ?? '{}', true) ?: [], ['id' => $r['id']]), $rows);
+        }
         $stmt = $this->db()->query('SELECT * FROM ' . preg_replace('/[^a-z_]/', '', $table));
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         return array_map(fn($r) => array_merge(json_decode($r['_data'] ?? '{}', true) ?: [], ['id' => $r['id']]), $rows);
     }
     public function write(string $table, array $records): void {
+        if ($this->isRemote()) throw new \RuntimeException('Writes unavailable via remote proxy.');
         $this->db()->beginTransaction();
         try {
             $clean = preg_replace('/[^a-z_]/', '', $table);
@@ -48,6 +79,7 @@ final class DatabaseService {
         }
     }
     public function upsert(string $table, array $record, string $key = 'id'): array {
+        if ($this->isRemote()) throw new \RuntimeException('Writes unavailable via remote proxy.');
         $clean = preg_replace('/[^a-z_]/', '', $table);
         $id = $record[$key] ?? bin2hex(random_bytes(8));
         $existing = $this->find($table, $id, $key);
@@ -67,6 +99,7 @@ final class DatabaseService {
         return $record;
     }
     public function delete(string $table, string $value, string $key = 'id'): void {
+        if ($this->isRemote()) throw new \RuntimeException('Writes unavailable via remote proxy.');
         $clean = preg_replace('/[^a-z_]/', '', $table);
         if ($key === 'id') {
             $stmt = $this->db()->prepare("DELETE FROM {$clean} WHERE id = ?");
@@ -82,6 +115,17 @@ final class DatabaseService {
         }
     }
     public function find(string $table, string $value, string $key = 'id'): ?array {
+        if ($this->isRemote()) {
+            $clean = preg_replace('/[^a-z_]/', '', $table);
+            $rows = $this->remoteCall("SELECT * FROM {$clean} WHERE id = ?", [$value]);
+            if (!empty($rows)) {
+                return array_merge(json_decode($rows[0]['_data'] ?? '{}', true) ?: [], ['id' => $rows[0]['id']]);
+            }
+            foreach ($this->read($table) as $r) {
+                if ((string)($r[$key] ?? '') === $value) return $r;
+            }
+            return null;
+        }
         $clean = preg_replace('/[^a-z_]/', '', $table);
         if ($key === 'id') {
             $stmt = $this->db()->prepare("SELECT * FROM {$clean} WHERE id = ?");
@@ -96,6 +140,7 @@ final class DatabaseService {
         return $row ? array_merge(json_decode($row['_data'] ?? '{}', true) ?: [], ['id' => $row['id']]) : null;
     }
     public function query(string $sql, array $params = []): array {
+        if ($this->isRemote()) return $this->remoteCall($sql, $params);
         $stmt = $this->db()->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
