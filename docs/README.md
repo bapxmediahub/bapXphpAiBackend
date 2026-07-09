@@ -9,9 +9,9 @@ This folder contains connected documentation for developers, maintainers, and co
 - [Architecture](architecture.md): current PHP-template architecture and file structure.
 - [Deployment guide](deployment-hostinger.md): Hostinger Git auto deployment, branch setup, cron, and Vercel note.
 - [Systematic project map](systematic-map.mmd): generated route/controller/service/view/schema/storage/tool/integration/gap map.
-- [JSON storage](json-storage.md): JSON collections and persistence notes.
+- [Data storage](json-storage.md): MySQL persistence and remote proxy fallback notes.
 - [Agentic monorepo](agentic-monorepo.md): repo-native backend primitives and built-in agent guidance.
-- [Schema registry](schema.md): JSON database schema and agent context contract.
+- [Schema registry](schema.md): database schema and agent context contract.
 
 ## Page Notes
 

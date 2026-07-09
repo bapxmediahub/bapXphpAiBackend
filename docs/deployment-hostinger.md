@@ -18,9 +18,9 @@ php /home/ACCOUNT/public_html/tools/process-mail-queue.php
 
 Hostinger hPanel supports Git deployment from GitHub using OAuth. In the Hostinger website management dashboard, open the website, go to **Advanced** -> **Git**, connect the GitHub repository, choose the branch to deploy, and set the install path to `/public_html` or leave it blank when Hostinger maps the repository to the account root. Use `main` for production unless you intentionally host a staging branch.
 
-After the repository is connected, enable **Auto Deployment** for the selected Branch. Hostinger gives a webhook URL for automatic deployments, and updates merged into the deployment branch can trigger a new deploy. Keep `storage/data/` writable and back it up before deploys because this project stores runtime data in JSON files on the host.
+After the repository is connected, enable **Auto Deployment** for the selected Branch. Hostinger gives a webhook URL for automatic deployments, and updates merged into the deployment branch can trigger a new deploy. Ensure the MySQL database is backed up before deploys because all runtime data lives in MySQL tables.
 
-The root `.env` file holds only `APP_NAME` and `APP_URL` and is deployable via Git. Commit branch-specific values so a fresh Hostinger deploy can serve the site. **Never put secrets in `.env`.** Admin credentials are set through **Admin → Settings**. All API secrets (Razorpay, SMTP, Google OAuth, support bot) are set through **Admin → Integrations** and stored in `storage/data/secrets.json` — never in `.env`. Keep generated runtime files out of Git: `storage/runtime-key.php`, `storage/data/secrets.json`, `storage/data/*.lock`, logs, and backups remain host-local.
+The root `.env` file holds only `APP_NAME`, `APP_URL`, and `BAPX_MYSQL_*` connection credentials. Commit branch-specific values so a fresh Hostinger deploy can serve the site. **Never put secrets in `.env`.** Admin credentials are set through **Admin → Settings**. All API secrets (Razorpay, SMTP, Google OAuth, support bot) are set through **Admin → Integrations** and stored in the MySQL `secrets` table — never in `.env`. Keep generated runtime files out of Git: logs, backups, and session files remain host-local.
 
 Recommended branch setup:
 
@@ -52,9 +52,9 @@ This application is built for normal PHP hosting, not Vercel. Vercel's official 
 
 - Frontend: PHP-rendered templates.
 - Backend: PHP controllers, services, and JSON API endpoints.
-- Database: JSON files in `storage/data/`.
+- Database: MySQL (via `DatabaseService`).
 - Build step: none.
-- Email: queued in JSON and sent by `tools/process-mail-queue.php` when SMTP secrets are configured.
+- Email: queued in MySQL `mail_queue` table and sent by `tools/process-mail-queue.php` when SMTP secrets are configured.
 
 ## Directory Structure on Hostinger
 
@@ -69,7 +69,6 @@ This application is built for normal PHP hosting, not Vercel. Vercel's official 
   docs/
   integrations/
   storage/
-    data/
   tools/
   views/
 ```
@@ -77,8 +76,8 @@ This application is built for normal PHP hosting, not Vercel. Vercel's official 
 ## Troubleshooting
 
 - 500 error: check PHP version, `.htaccess`, and PHP error logs.
-- Data not saving: check `storage/data/` permissions.
-- Admin blocked: confirm the existing admin user in `storage/data/users.json` has `role: "admin"`.
+- Data not saving: check MySQL `secrets` table and `DatabaseService` connection.
+- Admin blocked: confirm the existing admin user in the MySQL `users` table has `role: "admin"`.
 - Razorpay disabled: add live key ID and secret in admin integrations.
 - Google login not working: verify the Google Cloud Console has the correct callback URL (`https://sripanchamispiritual.com/auth/google/callback`).
 - Emails not sending: configure SMTP secrets and run `tools/process-mail-queue.php` from cron.

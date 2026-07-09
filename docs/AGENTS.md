@@ -17,7 +17,7 @@ Owns durable documentation and the single systematic project-map artifact.
 - Regenerate `systematic-map.mmd` with `php tools/generate-project-map.php`; do not hand-edit generated map output.
 - Regenerate `KnowledgeMap.mmd` with `bash bapXphp docsmap` or `php tools/generate-docs-map.php`.
 - Treat the map as a derived source index: documentation claims must be checked against the primary files connected by its edges.
-- Keep documentation aligned with the PHP/JSON shared-hosting architecture.
+- Keep documentation aligned with the PHP/MySQL shared-hosting architecture.
 
 ## Work Guidance
 

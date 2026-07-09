@@ -1,19 +1,18 @@
-# JSON Schema Registry
+# Schema Registry
 
-`storage/schema/collections.php` is the database schema for this PHP/MySQL backend.
+`storage/schema/collections.php` is the database schema contract for this PHP/MySQL backend.
 
 Use it before changing:
 
-- JSON collection fields
+- collection fields
 - admin editable fields
 - media fields
 - owner fields
 - support assistant context fields
-- collection names or file paths
+- collection names or table structures
 
 ## Important Keys
 
-- `file`: JSON file under `storage/data`.
 - `primary_key`: record identifier.
 - `owner_field`: field used to filter user-owned data.
 - `admin_managed`: whether the owner admin can manage this collection.
@@ -24,7 +23,7 @@ Use it before changing:
 
 ## Agent Rule
 
-When a data shape changes, update schema first, then code, then docs/tests. Do not infer new JSON fields only from templates or PHP arrays.
+When a data shape changes, update schema first, then code, then docs/tests. Do not infer new fields only from templates or PHP arrays.
 
 ## Remote Database Query Endpoint
 
