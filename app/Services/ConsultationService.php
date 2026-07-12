@@ -25,6 +25,10 @@ final class ConsultationService {
     }
 
     public function sendMessage(array $session, array $user, string $body): array {
+        $mode = (string)($session['mode'] ?? '');
+        $status = (string)($session['status'] ?? 'requested');
+        if ($mode === 'text_session' && !in_array($status, ['accepted', 'active'], true)) throw new \InvalidArgumentException('Messaging becomes available after the astrologer accepts the session.');
+        if ($mode === 'direct_call' && $status !== 'active') throw new \InvalidArgumentException('Call chat becomes available after the astrologer starts the session.');
         $body = trim($body);
         if ($body === '' || mb_strlen($body) > 2000) throw new \InvalidArgumentException('Message must contain 1 to 2000 characters.');
         $message = [
@@ -50,6 +54,7 @@ final class ConsultationService {
     }
 
     public function sendSignal(array $session, array $user, string $type, array $payload): array {
+        if (($session['mode'] ?? '') !== 'direct_call' || ($session['status'] ?? '') !== 'active') throw new \InvalidArgumentException('Calls are available only during an active call session.');
         if (!in_array($type, ['offer','answer','ice','hangup'], true)) throw new \InvalidArgumentException('Invalid call signal.');
         $signal = ['id'=>bin2hex(random_bytes(8)), 'appointment_id'=>$session['id'], 'sender_id'=>$user['sub'] ?? '', 'type'=>$type, 'payload'=>$payload, 'created_at'=>date('c')];
         $this->store->upsert('consultation_signals', $signal);
@@ -57,8 +62,16 @@ final class ConsultationService {
         return $signal;
     }
 
-    public function updateStatus(array $session, string $status): array {
+    public function updateStatus(array $session, string $status, string $actorRole = 'astrologer'): array {
         if (!in_array($status, ['accepted','active','completed','declined','cancelled'], true)) throw new \InvalidArgumentException('Invalid session status.');
+        $current = (string)($session['status'] ?? 'requested');
+        $allowed = [
+            'requested' => ['accepted', 'declined', 'cancelled'],
+            'accepted' => ['active', 'cancelled'],
+            'active' => ['completed'],
+        ];
+        if (!in_array($status, $allowed[$current] ?? [], true)) throw new \InvalidArgumentException('Invalid session status transition.');
+        if ($actorRole === 'customer' && $status !== 'cancelled') throw new \InvalidArgumentException('Customer can only cancel a pending session.');
         $now = date('c');
         $session['status'] = $status;
         $session['last_activity_at'] = $now;

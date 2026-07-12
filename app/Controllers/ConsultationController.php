@@ -21,7 +21,7 @@ final class ConsultationController extends BaseController {
         }
         $this->render('account/consultation', ['session'=>$session, 'messages'=>$this->consultations->messages($id), 'currentUser'=>$this->user, 'iceServers'=>$iceServers]);
     }
-    public function messages(string $id): void { $this->session($id); $this->jsonResponse(['messages'=>$this->consultations->messages($id, (string)($_GET['after'] ?? ''))]); }
+    public function messages(string $id): void { $session=$this->session($id); $this->jsonResponse(['messages'=>$this->consultations->messages($id, (string)($_GET['after'] ?? '')), 'session'=>$session]); }
     public function sendMessage(string $id): void {
         $session = $this->session($id); $input = $this->input();
         try { $message=$this->consultations->sendMessage($session,$this->user,(string)($input['body'] ?? '')); $this->jsonResponse(['message'=>$message],201); }
@@ -42,12 +42,12 @@ final class ConsultationController extends BaseController {
         $role=$this->user['role']??'';
         $status=(string)($this->input()['status']??'');
         if ($role==='customer' && $status==='cancelled') {
-            try { $updated=$this->consultations->updateStatus($session,'cancelled'); $this->jsonResponse(['session'=>$updated]); }
+            try { $updated=$this->consultations->updateStatus($session,'cancelled','customer'); $this->jsonResponse(['session'=>$updated]); }
             catch (\InvalidArgumentException $e) { $this->jsonResponse(['error'=>$e->getMessage()],422); }
             return;
         }
         if ($role!=='astrologer' && $role!=='admin') $this->jsonResponse(['error'=>'Astrologer access required.'],403);
-        try { $updated=$this->consultations->updateStatus($session,$status); $this->jsonResponse(['session'=>$updated]); }
+        try { $updated=$this->consultations->updateStatus($session,$status,$role); $this->jsonResponse(['session'=>$updated]); }
         catch (\InvalidArgumentException $e) { $this->jsonResponse(['error'=>$e->getMessage()],422); }
     }
     public function billCallTime(string $id): void {
@@ -75,6 +75,10 @@ final class ConsultationController extends BaseController {
         if ($slug===''||!in_array($mode,['text_session','direct_call'],true)){$this->flash('Invalid request.','error');$this->redirect('/consult');}
         $astrologer=(new AstrologerService())->findBySlug($slug);
         if(!$astrologer){$this->flash('Astrologer not found.','error');$this->redirect('/consult');}
+        if (!$isWaitlist && ($astrologer['availability_status'] ?? 'offline') !== 'available') {
+            $this->flash('This astrologer is currently unavailable. Please choose an available provider or join their waitlist.', 'warning');
+            $this->redirect('/consult');
+        }
         $user=$_SESSION['user']??[];
         $email=strtolower(trim($user['email']??''));
         $initialCredits=$mode==='text_session'?(int)($astrologer['message_credit_cost']??5):max(1,(int)ceil(((float)($astrologer['call_credit_per_second']??0.5))*60));

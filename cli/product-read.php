@@ -4,26 +4,14 @@
 $root = $argv[1] ?? __DIR__ . '/..';
 $slug = $argv[2] ?? '';
 
-// Load MySQL config
-$config = require $root . '/config/database.php';
-try {
-    $pdo = new PDO(
-        "mysql:host={$config['host']};port={$config['port']};dbname={$config['database']};charset=utf8mb4",
-        $config['username'],
-        $config['password'],
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-    );
-} catch (PDOException $e) {
-    echo "MySQL connection failed. Use bapXphp to check DB config.\n";
-    exit(1);
-}
+require_once $root . '/app/bootstrap.php';
+
+$store = new App\Services\DatabaseService();
+$products = $store->read('products');
 
 if ($slug === '') {
     echo "━━━ Products ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
-    $stmt = $pdo->query("SELECT _data FROM products ORDER BY _created_at DESC");
-    $products = $stmt->fetchAll(PDO::FETCH_COLUMN);
-    foreach ($products as $json) {
-        $p = json_decode($json, true);
+    foreach ($products as $p) {
         $price = $p['offer_price'] ?? $p['price'] ?? '—';
         $name = $p['name'] ?? $p['slug'] ?? 'untitled';
         printf("  %-30s ₹%-8s  %s\n", $name, $price, $p['slug'] ?? '');
@@ -32,21 +20,18 @@ if ($slug === '') {
     exit(0);
 }
 
-$stmt = $pdo->prepare("SELECT _data FROM products WHERE id = ?");
-$stmt->execute([$slug]);
-$json = $stmt->fetchColumn();
-if (!$json) {
-    // Try by slug
-    $stmt = $pdo->prepare("SELECT _data FROM products WHERE JSON_EXTRACT(_data, '$.slug') = ?");
-    $stmt->execute([$slug]);
-    $json = $stmt->fetchColumn();
+$found = null;
+foreach ($products as $product) {
+    if (($product['id'] ?? '') === $slug || ($product['slug'] ?? '') === $slug) {
+        $found = $product;
+        break;
+    }
 }
-if (!$json) {
+if (!$found) {
     echo "Product not found: {$slug}\n";
     echo "Use: php cli/product-read.php <slug>\n";
     exit(1);
 }
-$found = json_decode($json, true);
 
 echo "━━━ Product ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
 echo "  Name:           " . ($found['name'] ?? '—') . "\n";

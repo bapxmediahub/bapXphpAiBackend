@@ -7,13 +7,13 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 112 routes, 13 controllers, 39 services, 49 views, 0 data files, 14 tools"]
-    arch_routes["> Routes: 112 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 113 routes, 13 controllers, 39 services, 49 views, 0 data files, 15 tools"]
+    arch_routes["> Routes: 113 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 13"]:::arch
     arch_svc["> Services: 39"]:::arch
     arch_views["> Views: 49"]:::arch
     arch_data["> Collections: 21 schema | 0 files"]:::arch
-    arch_tools["> Tools: 14"]:::arch
+    arch_tools["> Tools: 15"]:::arch
     arch_gaps["> Gaps: 0"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
@@ -48,6 +48,7 @@ flowchart LR
     route_6f8c21eb26c2["GET /astrologer — Astrologer dashboard — sessions queue"]:::route
     route_3f6461e98686["GET /astrologer/change-password — Astrologer forced password change"]:::route
     route_c90566c68049["POST /astrologer/change-password — Astrologer forced password change"]:::route
+    route_570aaa23b315["POST /astrologer/availability — Astrologer availability update"]:::route
     route_e049e08b4d31["GET /api/consultations/{id}/messages — API — fetch messages"]:::route
     route_3ee173eea23d["POST /api/consultations/{id}/messages — API — send message"]:::route
     route_137a91056f17["GET /api/consultations/{id}/signals — API — fetch WebRTC signals"]:::route
@@ -301,6 +302,7 @@ flowchart LR
     tool_519ad2e88fb9["blog-write"]:::tool
     tool_1913548b93c6["generate-docs-map"]:::tool
     tool_891d42e0bd53["generate-project-map"]:::tool
+    tool_20fe79d51ae4["import-product-images"]:::tool
     tool_42d1d6670e62["optimize-images"]:::tool
     tool_a88dee51947d["pma-client"]:::tool
     tool_63816fb031e2["process-mail-queue"]:::tool
@@ -458,6 +460,11 @@ flowchart LR
   controller_e11bcfbdf300 --> service_f33a1d77b137
   controller_e11bcfbdf300 --> service_66daa9bdc2c1
   controller_e11bcfbdf300 -. renders .-> view_8b5e0862241b
+  route_570aaa23b315 --> controller_e11bcfbdf300
+  controller_e11bcfbdf300 --> service_f33a1d77b137
+  controller_e11bcfbdf300 --> service_ae8ee1aa005a
+  controller_e11bcfbdf300 --> service_e79c019a142b
+  controller_e11bcfbdf300 -. renders .-> view_ac85facbda8b
   route_e049e08b4d31 --> controller_50eaea84bd1d
   controller_50eaea84bd1d --> service_f33a1d77b137
   controller_50eaea84bd1d --> service_0d961cbe684b
@@ -792,6 +799,9 @@ flowchart LR
   controller_4cc77f3351c6 --> controller_6f7f176814f0
   controller_6f7f176814f0 --> service_3fc704b15e1b
   tool_63816fb031e2 --> service_c5fb81744c52
+  tool_20fe79d51ae4 --> service_b30981b6449c
+  tool_20fe79d51ae4 --> service_66daa9bdc2c1
+  tool_20fe79d51ae4 --> collection_86024cad1e83
   service_b2e5928bb46a --> collection_9bc65c2abec1
   service_b2e5928bb46a --> collection_12c500ed0b78
   service_b2e5928bb46a --> collection_2417b5325520

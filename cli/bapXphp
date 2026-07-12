@@ -52,6 +52,8 @@ set -euo pipefail
 # ── Mail & Images ───────────────────────────────────────────────
 #   bapXphp mail:process            — process pending mail queue
 #   bapXphp images:optimize         — convert/resize images to WebP
+#   bapXphp product:images <source> [--dry-run|--assets-only|--database-only]
+#                                   — import ordered product galleries from a ZIP/folder
 #
 # ── Database (MySQL direct) ──────────────────────────────────────
 #   bapXphp db tables               — list all MySQL tables
@@ -657,7 +659,7 @@ cmd_images_optimize() {
 
 # ═══════════════════════════════════════════════════════════════
 # Database Commands (db) — MySQL direct connection
-# Subcommands: tables, describe, list, show, query, find, raw, init, sync
+# Subcommands: tables, describe, list, show, query, find, raw, upsert, delete, remote-status, init, sync
 # ═══════════════════════════════════════════════════════════════
 # The `db` command suite lets the agent query and inspect project data
 # from MySQL. All queries hit the live database.
@@ -687,6 +689,9 @@ cmd_db() {
     query)            cmd_db_query "$@" ;;
     find)             cmd_db_find "$1" "$2" ;;
     raw|sql)          cmd_db_raw "$*" ;;
+    upsert)           cmd_db_upsert "$1" "$2" ;;
+    delete)           cmd_db_delete "$1" "$2" ;;
+    remote-status)    cmd_db_remote_status ;;
     pma)              shift; cmd_db_pma "$*" ;;
     init)             cmd_db_init ;;
     sync|import)      cmd_db_sync ;;
@@ -704,6 +709,9 @@ cmd_db_help() {
   echo "  bapXphp db query <collection> [--where 'f=v'] [--limit N] [--id id]"
   echo "  bapXphp db find <collection> <id>  — find record by ID"
   echo "  bapXphp db raw <sql>           — execute raw SQL on MySQL (auto-fallback to web proxy)"
+  echo "  bapXphp db upsert <collection> <json> — authenticated remote record upsert"
+  echo "  bapXphp db delete <collection> <id>   — authenticated remote record delete"
+  echo "  bapXphp db remote-status         — verify remote mutation token presence"
   echo "  bapXphp db pma <sql>           — execute SQL via phpMyAdmin web proxy (always web)"
   echo "  bapXphp db pma --table-stats   — show live row counts from remote DB"
   echo "  bapXphp db pma --export        — export full DB as SQL"
@@ -711,6 +719,47 @@ cmd_db_help() {
   echo "  bapXphp db sync                — push JSON data files → MySQL tables"
   echo ""
   echo "Config env vars: BAPX_MYSQL_HOST, BAPX_MYSQL_DB, BAPX_MYSQL_USER, BAPX_MYSQL_PASS"
+}
+
+cmd_db_remote_status() {
+  if [ -n "${BAPX_REMOTE_DB_TOKEN:-}" ]; then
+    echo "Remote mutation token: configured"
+  else
+    echo "Remote mutation token: missing"
+    return 1
+  fi
+}
+
+cmd_db_mutation() {
+  local payload="$1"
+  local token="${BAPX_REMOTE_DB_TOKEN:-}"
+  [ -n "$token" ] || die "BAPX_REMOTE_DB_TOKEN is required for remote mutations."
+  curl -sS --max-time 15 -X POST https://sripanchamispiritual.com/remotedb \
+    -H "Content-Type: application/json" \
+    -H "X-BapX-Remote-Token: $token" \
+    -d "$payload" \
+    | php -r '
+      $result = json_decode(file_get_contents("php://stdin"), true) ?: [];
+      if (empty($result["success"])) { fwrite(STDERR, "Remote mutation failed: " . ($result["error"] ?? "Unknown error") . "\n"); exit(1); }
+      echo json_encode($result, JSON_UNESCAPED_UNICODE) . "\n";
+    '
+}
+
+cmd_db_upsert() {
+  local collection="$1" record="$2"
+  [ -n "$collection" ] && [ -n "$record" ] || die "Usage: bapXphp db upsert <collection> '<json record>'"
+  php -r 'json_decode($argv[1], true, 512, JSON_THROW_ON_ERROR);' "$record" >/dev/null 2>&1 || die "Record must be valid JSON."
+  local payload
+  payload=$(php -r 'echo json_encode(["action"=>"upsert","collection"=>$argv[1],"record"=>json_decode($argv[2],true,512,JSON_THROW_ON_ERROR)]);' "$collection" "$record") || die "Unable to encode record."
+  cmd_db_mutation "$payload"
+}
+
+cmd_db_delete() {
+  local collection="$1" id="$2"
+  [ -n "$collection" ] && [ -n "$id" ] || die "Usage: bapXphp db delete <collection> <id>"
+  local payload
+  payload=$(php -r 'echo json_encode(["action"=>"delete","collection"=>$argv[1],"id"=>$argv[2]]);' "$collection" "$id")
+  cmd_db_mutation "$payload"
 }
 
 # ── db tables — List MySQL tables ───────────────────────────────
@@ -798,16 +847,16 @@ cmd_db_query() {
     echo "$data"
   else
     echo "$data" | while IFS= read -r line; do
-      php -r "
-        \$d = json_decode('$line', true) ?: [];
-        echo '  ID:   ' . (\$d['id'] ?? '') . PHP_EOL;
-        foreach (\$d as \$k => \$v) {
-          if (\$k === 'id') continue;
-          \$val = is_array(\$v) ? json_encode(\$v) : \$v;
-          echo \"  \$k: \$val\n\";
+      php -r '
+        $d = json_decode(file_get_contents("php://stdin"), true) ?: [];
+        echo "  ID:   " . ($d["id"] ?? "") . PHP_EOL;
+        foreach ($d as $k => $v) {
+          if ($k === "id") continue;
+          $val = is_array($v) ? json_encode($v) : $v;
+          echo "  $k: $val\n";
         }
-        echo \"  ---\n\";
-      "
+        echo "  ---\n";
+      ' <<< "$line"
     done
   fi
 }
@@ -952,6 +1001,14 @@ cmd_bloggen() {
   echo "Done. Blog cache refreshed."
 }
 
+cmd_product_images() {
+  require_php
+  local source="${1:-}"
+  [ -z "$source" ] && die "Usage: bapXphp product:images <archive.zip|folder> [--dry-run|--assets-only|--database-only]"
+  shift
+  php "$ROOT/cli/import-product-images.php" "$ROOT" "$source" "$@"
+}
+
 # ═══════════════════════════════════════════════════════════════
 # Read / Write Commands — CRUD for blog posts and products
 # ═══════════════════════════════════════════════════════════════
@@ -1028,6 +1085,8 @@ main() {
       cmd_mail_process ;;
     images:optimize|images-optimize|imgopt)
       cmd_images_optimize ;;
+    product:images|product-images)
+      shift; cmd_product_images "$@" ;;
     db)
       shift; cmd_db "$@" ;;
     # Backward compatibility: mysql:* aliases
