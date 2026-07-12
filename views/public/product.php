@@ -16,7 +16,7 @@
                 $gallery = is_array($product['image_urls']) ? $product['image_urls'] : preg_split('/[\r\n,]+/', (string)$product['image_urls']);
             }
             if (!empty($product['image_url'])) array_unshift($gallery, $product['image_url']);
-            $gallery = array_values(array_unique(array_filter(array_map('trim', $gallery))));
+            $gallery = array_values(array_unique(array_filter(array_map(fn($image) => webp_src(trim((string)$image)), $gallery))));
             if (empty($gallery)) $gallery[] = placeholder_img($product['name']);
         ?>
         <div class="product-detail">
@@ -139,7 +139,7 @@
                 <?php foreach(array_slice($related, 0, 4) as $item): ?>
                     <article class="product-card reveal">
                         <div class="product-card__image">
-                            <img src="<?= e($item['image_url'] ?? placeholder_img($item['name'])) ?>" alt="<?= e($item['name']) ?>" decoding="async">
+                            <img src="<?= e(webp_src($item['image_url'] ?? placeholder_img($item['name']))) ?>" alt="<?= e($item['name']) ?>" decoding="async">
                         </div>
                         <div class="product-card__body">
                             <h3><?= e($item['name']) ?></h3>

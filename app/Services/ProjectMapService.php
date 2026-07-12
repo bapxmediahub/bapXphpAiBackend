@@ -49,6 +49,7 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/astrologer','name'=>'astrologer.dashboard','page'=>'astrologer/dashboard','controller'=>'AstrologerController@dashboard','services'=>['AuthService','AstrologerService','ConsultationService']],
             ['method'=>'GET','path'=>'/astrologer/change-password','name'=>'astrologer.password','page'=>'astrologer/change-password','controller'=>'AstrologerController@changePassword','services'=>['AuthService']],
             ['method'=>'POST','path'=>'/astrologer/change-password','name'=>'astrologer.password.save','page'=>'astrologer/change-password','controller'=>'AstrologerController@savePassword','services'=>['AuthService','DatabaseService']],
+            ['method'=>'POST','path'=>'/astrologer/availability','name'=>'astrologer.availability','page'=>'astrologer/dashboard','controller'=>'AstrologerController@updateAvailability','services'=>['AuthService','AstrologerService','AuditLogService']],
             ['method'=>'GET','path'=>'/api/consultations/{id}/messages','name'=>'api.consultation.messages','page'=>'account/consultation','controller'=>'ConsultationController@messages','services'=>['AuthService','ConsultationService']],
             ['method'=>'POST','path'=>'/api/consultations/{id}/messages','name'=>'api.consultation.messages.send','page'=>'account/consultation','controller'=>'ConsultationController@sendMessage','services'=>['AuthService','ConsultationService']],
             ['method'=>'GET','path'=>'/api/consultations/{id}/signals','name'=>'api.consultation.signals','page'=>'account/consultation','controller'=>'ConsultationController@signals','services'=>['AuthService','ConsultationService']],
@@ -267,6 +268,7 @@ final class ProjectMapService {
             '/consultation/{id}' => 'Consultation room — messaging, WebRTC signaling',
             '/astrologer'      => 'Astrologer dashboard — sessions queue',
             '/astrologer/change-password' => 'Astrologer forced password change',
+            '/astrologer/availability|POST' => 'Astrologer availability update',
             '/api/consultations/{id}/messages' => 'API — fetch messages',
             '/api/consultations/{id}/messages|POST' => 'API — send message',
             '/api/consultations/{id}/signals' => 'API — fetch WebRTC signals',
@@ -440,6 +442,11 @@ final class ProjectMapService {
         }
         $lines[] = '  ' . self::controllerId('BaseController') . ' --> ' . self::serviceId('SeoService');
         $lines[] = '  ' . self::toolId('process-mail-queue') . ' --> ' . self::serviceId('SmtpMailer');
+        if (in_array('import-product-images', $scan['tools'], true)) {
+            $lines[] = '  ' . self::toolId('import-product-images') . ' --> ' . self::serviceId('ImageOptimizerService');
+            $lines[] = '  ' . self::toolId('import-product-images') . ' --> ' . self::serviceId('DatabaseService');
+            $lines[] = '  ' . self::toolId('import-product-images') . ' --> ' . self::collectionId('products');
+        }
 
         foreach (self::serviceCollections() as $service => $collections) {
             foreach ($collections as $collection) {

@@ -1,7 +1,7 @@
 <section class="section" style="padding-top:var(--space-xl);">
     <div class="container container--narrow" style="margin-bottom:var(--space-xl);">
-        <nav style="font-size:0.8rem; color:var(--color-text-muted);">
-            <a href="/shop" style="color:var(--color-text-muted);">Shop</a> / <a href="/cart" style="color:var(--color-text-muted);">Cart</a> / <span style="color:var(--color-ink);">Checkout</span>
+        <nav class="breadcrumb breadcrumb--page" aria-label="Breadcrumb">
+            <a href="/shop">Shop</a><span aria-hidden="true">/</span><a href="/cart">Cart</a><span aria-hidden="true">/</span><span>Checkout</span>
         </nav>
     </div>
 
@@ -223,7 +223,7 @@
                     <h2>Order Review</h2>
                     <?php foreach($items as $item): ?>
                         <div class="checkout-item">
-                            <img class="checkout-item__img" src="<?= e($item['product']['image_url'] ?? placeholder_img($item['product']['name'])) ?>" alt="<?= e($item['product']['name']) ?>">
+                            <img class="checkout-item__img" src="<?= e(webp_src($item['product']['image_url'] ?? placeholder_img($item['product']['name']))) ?>" alt="<?= e($item['product']['name']) ?>">
                             <div>
                                 <div class="checkout-item__name"><?= e($item['product']['name']) ?></div>
                                 <div class="checkout-item__meta">Qty: <?= e((string)$item['qty']) ?></div>

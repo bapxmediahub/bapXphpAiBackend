@@ -30,6 +30,7 @@ final class CommerceController extends BaseController {
         if (!$found) {
             $_SESSION['cart'][] = ['slug' => $slug, 'qty' => $qty];
         }
+        if ($this->wantsJson()) $this->jsonResponse($this->cartState($slug));
         $this->flash('Product added to cart.','success');
         $redirect = $_POST['redirect'] ?? $_SERVER['HTTP_REFERER'] ?? '/shop';
         $this->redirect($redirect);
@@ -63,8 +64,26 @@ final class CommerceController extends BaseController {
                 fn($item) => (int)($item['qty'] ?? 0) > 0
             ));
         }
+        if ($this->wantsJson()) {
+            $this->jsonResponse($this->cartState($slug));
+        }
         $redirect = $_POST['redirect'] ?? '/cart';
         $this->redirect($redirect);
+    }
+
+    private function wantsJson(): bool {
+        return str_contains(strtolower((string)($_SERVER['HTTP_ACCEPT'] ?? '')), 'application/json');
+    }
+
+    private function cartState(string $slug): array {
+        $quantity = 0;
+        $cartCount = 0;
+        foreach ($_SESSION['cart'] ?? [] as $item) {
+            $itemQty = (int)($item['qty'] ?? 0);
+            $cartCount += $itemQty;
+            if (($item['slug'] ?? '') === $slug) $quantity = $itemQty;
+        }
+        return ['slug' => $slug, 'quantity' => $quantity, 'cart_count' => $cartCount];
     }
     public function createOrder(): void {
         $this->isApiRequest = true;

@@ -636,6 +636,39 @@ $tests['checkout payment verification preserves shipping contact details'] = fun
     assertTrue(str_contains($checkout, 'typeof Razorpay === \'undefined\''), 'Checkout should not try to open Razorpay when its script is unavailable');
 };
 
+$tests['cart quantity controls update progressively and remove at zero'] = function (): void {
+    $cart = file_get_contents(app_path('views/public/cart.php'));
+    $controller = file_get_contents(app_path('app/Controllers/CommerceController.php'));
+    $css = file_get_contents(app_path('assets/css/band.css'));
+    assertTrue(!str_contains($cart, 'cart-item__remove'), 'Cart should not render a separate delete control');
+    assertTrue(str_contains($cart, "headers:{Accept:'application/json'}"), 'Cart quantity forms should request progressive JSON updates');
+    assertTrue(str_contains($cart, "event.preventDefault()"), 'Cart quantity changes should not navigate when JavaScript is available');
+    assertTrue(!str_contains($cart, 'location.reload()'), 'Removing the final cart item should not reload the page');
+    assertTrue(str_contains($controller, "'cart_count' => \$cartCount"), 'Cart JSON response should include the header cart count');
+    assertTrue(str_contains($controller, 'max(0,'), 'Decrement should reach zero so the line can be removed');
+    assertTrue(!str_contains($css, '.cart-item__remove'), 'Obsolete cart delete CSS should be removed');
+    assertTrue(str_contains($cart, 'breadcrumb breadcrumb--page'), 'Cart should use the aligned page breadcrumb');
+    assertTrue(str_contains(file_get_contents(app_path('views/public/checkout.php')), 'breadcrumb breadcrumb--page'), 'Checkout should use the aligned page breadcrumb');
+    $layout = file_get_contents(app_path('views/layouts/app.php'));
+    assertTrue(str_contains($layout, ".product-card__stepper form"), 'Product card steppers should update without page navigation');
+    assertTrue(str_contains($controller, 'if ($this->wantsJson()) $this->jsonResponse($this->cartState($slug));'), 'Add-to-cart should support progressive JSON updates');
+};
+
+$tests['bapXphp product media workflow is safe and mapped'] = function (): void {
+    $cli = file_get_contents(app_path('cli/bapXphp'));
+    $reader = file_get_contents(app_path('cli/product-read.php'));
+    $importer = file_get_contents(app_path('cli/import-product-images.php'));
+    $map = file_get_contents(app_path('app/Services/ProjectMapService.php'));
+    assertTrue(str_contains($cli, 'product:images'), 'CLI should expose the product image import command');
+    assertTrue(str_contains($cli, 'file_get_contents("php://stdin")'), 'DB output should parse JSON from stdin instead of interpolating content into PHP code');
+    assertTrue(str_contains($reader, "require_once \$root . '/app/bootstrap.php'"), 'Product reader should bootstrap application helpers');
+    assertTrue(str_contains($reader, "new App\\Services\\DatabaseService()"), 'Product reader should use the shared local/remote database boundary');
+    foreach (['--dry-run', 'image_url', 'image_urls', 'ZipArchive', 'ImageOptimizerService'] as $needle) {
+        assertTrue(str_contains($importer, $needle), "Product image importer should include {$needle}");
+    }
+    assertTrue(str_contains($map, "toolId('import-product-images')"), 'Project map should connect product image import tooling');
+};
+
 $tests['account pages expose review forms only for ended sessions and due shipped products'] = function (): void {
     $bookingsView = file_get_contents(app_path('views/account/bookings.php'));
     assertTrue(str_contains($bookingsView, 'name="target_type" value="astrologer"'), 'Ended astrology sessions should expose astrologer review form');
@@ -687,6 +720,36 @@ $tests['astrologer accounts require password change and use username login'] = f
 $tests['consultation api exposes message call and status workflows'] = function (): void {
     $paths=array_column(ProjectMapService::registry()['routes'],'path');
     foreach(['/consultation/{id}','/api/consultations/{id}/messages','/api/consultations/{id}/signals','/api/consultations/{id}/status','/astrologer'] as $path) assertTrue(in_array($path,$paths,true),"Missing consultation route {$path}");
+};
+
+$tests['remote database writes are authenticated and record-scoped'] = function (): void {
+    $controller = file_get_contents(app_path('app/Controllers/RemoteDbController.php'));
+    $database = file_get_contents(app_path('app/Services/DatabaseService.php'));
+    $cli = file_get_contents(app_path('cli/bapXphp'));
+    foreach (['remote_db_token', 'hash_equals', "'upsert'", "'delete'", "'replace'", "collection === 'secrets'"] as $needle) {
+        assertTrue(str_contains($controller, $needle), "Remote controller should enforce {$needle}");
+    }
+    assertTrue(str_contains($database, 'remoteMutation'), 'Database service should use authenticated remote mutations when direct MySQL is unavailable');
+    foreach (['db upsert', 'db delete', 'BAPX_REMOTE_DB_TOKEN'] as $needle) assertTrue(str_contains($cli, $needle), "CLI should expose {$needle}");
+    assertTrue(str_contains(file_get_contents(app_path('views/admin/integrations.php')), 'name="remote_db_token"'), 'Admin integrations should configure the remote mutation token');
+};
+
+$tests['astrologer availability and consultation lifecycle are operational'] = function (): void {
+    $astro = file_get_contents(app_path('app/Controllers/AstrologerController.php'));
+    $consult = file_get_contents(app_path('app/Controllers/ConsultationController.php'));
+    $service = file_get_contents(app_path('app/Services/ConsultationService.php'));
+    $dashboard = file_get_contents(app_path('views/astrologer/dashboard.php'));
+    $room = file_get_contents(app_path('views/account/consultation.php'));
+    assertTrue(str_contains($astro, 'updateAvailability'), 'Astrologer panel should let the provider update availability');
+    assertTrue(str_contains($dashboard, 'action="/astrologer/availability"'), 'Astrologer availability form should post to its own endpoint');
+    assertTrue(str_contains($consult, 'availability_status'), 'Session initiation should enforce provider availability');
+    assertTrue(str_contains($service, "'requested' => ['accepted', 'declined', 'cancelled']"), 'Consultation service should validate the requested lifecycle');
+    assertTrue(str_contains($service, "'accepted' => ['active', 'cancelled']"), 'Consultation service should validate acceptance before start');
+    assertTrue(str_contains($service, "'active' => ['completed']"), 'Consultation service should validate completion after active');
+    foreach (['data-mode=', 'applySession=', 'Messaging becomes available', 'Calls are available only during an active call session'] as $needle) {
+        assertTrue(str_contains($room . $service, $needle), "Two-sided room should enforce {$needle}");
+    }
+    assertTrue(in_array('/astrologer/availability', array_column(ProjectMapService::registry()['routes'], 'path'), true), 'Project map should include astrologer availability route');
 };
 
 $tests['home hero rotates all supplied varahi images'] = function (): void {

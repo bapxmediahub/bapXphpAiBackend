@@ -25,6 +25,24 @@ final class DatabaseService {
         $result = json_decode($body, true);
         return $result['data'] ?? [];
     }
+    private function remoteMutation(string $action, string $table, array $payload): array {
+        $token = trim((string)(getenv('BAPX_REMOTE_DB_TOKEN') ?: ''));
+        if ($token === '') throw new \RuntimeException('Remote mutation token is not configured.');
+        $body = json_encode(['action' => $action, 'collection' => preg_replace('/[^a-z_]/', '', $table)] + $payload);
+        $ch = curl_init($this->cfg['remote_url']);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true, CURLOPT_POSTFIELDS => $body,
+            CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'X-BapX-Remote-Token: ' . $token],
+            CURLOPT_CONNECTTIMEOUT => 5, CURLOPT_TIMEOUT => 12,
+        ]);
+        $body = @curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $result = json_decode((string)$body, true) ?: [];
+        if ($body === false || $code < 200 || $code >= 300 || empty($result['success'])) {
+            throw new \RuntimeException((string)($result['error'] ?? 'Remote mutation failed.'));
+        }
+        return $result;
+    }
 
     private function db(): \PDO {
         if ($this->pdo === null) {
@@ -59,7 +77,7 @@ final class DatabaseService {
         return array_map(fn($r) => array_merge(json_decode($r['_data'] ?? '{}', true) ?: [], ['id' => $r['id']]), $rows);
     }
     public function write(string $table, array $records): void {
-        if ($this->isRemote()) throw new \RuntimeException('Writes unavailable via remote proxy.');
+        if ($this->isRemote()) { $this->remoteMutation('replace', $table, ['records' => $records]); return; }
         $this->db()->beginTransaction();
         try {
             $clean = preg_replace('/[^a-z_]/', '', $table);
@@ -80,7 +98,14 @@ final class DatabaseService {
         }
     }
     public function upsert(string $table, array $record, string $key = 'id'): array {
-        if ($this->isRemote()) throw new \RuntimeException('Writes unavailable via remote proxy.');
+        if ($this->isRemote()) {
+            if ($key !== 'id') {
+                $existing = $this->find($table, (string)($record[$key] ?? ''), $key);
+                if ($existing) $record['id'] = $existing['id'];
+            }
+            $record['id'] ??= bin2hex(random_bytes(8));
+            return $this->remoteMutation('upsert', $table, ['record' => $record])['record'] ?? $record;
+        }
         $clean = preg_replace('/[^a-z_]/', '', $table);
         $id = $record[$key] ?? bin2hex(random_bytes(8));
         $existing = $this->find($table, $id, $key);
@@ -102,7 +127,11 @@ final class DatabaseService {
         return $record;
     }
     public function delete(string $table, string $value, string $key = 'id'): void {
-        if ($this->isRemote()) throw new \RuntimeException('Writes unavailable via remote proxy.');
+        if ($this->isRemote()) {
+            $record = $key === 'id' ? ['id' => $value] : $this->find($table, $value, $key);
+            if ($record) $this->remoteMutation('delete', $table, ['id' => $record['id']]);
+            return;
+        }
         $clean = preg_replace('/[^a-z_]/', '', $table);
         if ($key === 'id') {
             $stmt = $this->db()->prepare("DELETE FROM {$clean} WHERE id = ?");

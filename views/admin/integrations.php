@@ -77,6 +77,12 @@
         </div>
         <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">When configured, the TURN server is added to ICE servers for all WebRTC calls. Leave blank to use STUN only.</p>
 
+        <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">Hosted CLI Remote Access</h2>
+        <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">Set a long random token to allow authenticated <code>bapXphp</code> record updates from a remote agent or shared-hosting shell. It permits only schema-declared record operations and never arbitrary write SQL.</p>
+        <div class="admin-form__row">
+            <label>Remote Mutation Token<input type="password" name="remote_db_token" value="<?= e($secrets['remote_db_token']??'') ?>" placeholder="Generate a long random token" autocomplete="new-password"></label>
+        </div>
+
         <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">Meta Pixel (Facebook Ads)</h2>
         <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">
             Optional Facebook/Meta Ads conversion tracking and retargeting. Enter your Pixel ID to enable Meta tracking across all pages.

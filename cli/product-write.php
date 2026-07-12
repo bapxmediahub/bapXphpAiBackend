@@ -4,13 +4,15 @@
 $root = $argv[1] ?? __DIR__ . '/..';
 $editSlug = $argv[2] ?? '';
 
+require_once $root . '/app/bootstrap.php';
+
 // Load MySQL config
 $config = require $root . '/config/database.php';
 try {
     $pdo = new PDO(
-        "mysql:host={$config['host']};port={$config['port']};dbname={$config['database']};charset=utf8mb4",
-        $config['username'],
-        $config['password'],
+        "mysql:host={$config['host']};port={$config['port']};dbname={$config['dbname']};charset=utf8mb4",
+        $config['user'],
+        $config['pass'],
         [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
     );
 } catch (PDOException $e) {
