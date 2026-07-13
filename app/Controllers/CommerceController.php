@@ -146,7 +146,7 @@ final class CommerceController extends BaseController {
             ]);
             return;
         }
-        if (empty($secrets['razorpay_key_id']) || empty($secrets['razorpay_key_secret'])) {
+        if (!(new SecretService())->razorpayReadyForCurrentHost($secrets)) {
             $this->jsonResponse(['error' => 'Razorpay ' . ($secrets['razorpay_mode'] ?? 'selected') . ' mode is not configured yet.'], 401);
         }
         $discount = 0;
@@ -206,7 +206,7 @@ final class CommerceController extends BaseController {
         $this->isApiRequest = true;
         $this->validateCsrf();
         $secrets = (new SecretService())->all();
-        if (empty($secrets['razorpay_key_secret'])) {
+        if (!(new SecretService())->razorpayReadyForCurrentHost($secrets)) {
             $this->jsonResponse(['verified' => false, 'error' => 'Razorpay ' . ($secrets['razorpay_mode'] ?? 'selected') . ' mode is not configured yet.'], 400);
         }
         $orderId = (string)($_POST['razorpay_order_id'] ?? $_POST['order_id'] ?? '');

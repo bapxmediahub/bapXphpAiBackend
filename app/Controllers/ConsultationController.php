@@ -90,7 +90,7 @@ final class ConsultationController extends BaseController {
             'astrologer_slug'=>$slug,'astrologer_name'=>$astrologer['name']??'','astrologer_email'=>$astrologer['email']??'',
             'mode'=>$mode,'session_type'=>$mode==='text_session'?'Message':'Call',
             'credit_rate'=>$mode==='text_session'?(string)($astrologer['message_credit_cost']??5).' credits/message':(string)($astrologer['call_credit_per_second']??0.5).' credits/sec',
-            'credits_spent'=>$isWaitlist?0:$initialCredits,'status'=>$isWaitlist?'queued':'requested',
+            'credits_spent'=>$isWaitlist?0:$initialCredits,'reserved_credits'=>$initialCredits,'status'=>$isWaitlist?'queued':'requested',
             'date'=>date('Y-m-d'),'time'=>date('H:i'),'created_at'=>date('c'),
         ];
         (new ResourceService('appointments'))->save($session);

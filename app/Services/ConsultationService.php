@@ -66,12 +66,23 @@ final class ConsultationService {
         if (!in_array($status, ['accepted','active','completed','declined','cancelled'], true)) throw new \InvalidArgumentException('Invalid session status.');
         $current = (string)($session['status'] ?? 'requested');
         $allowed = [
+            'queued' => ['accepted', 'declined', 'cancelled'],
             'requested' => ['accepted', 'declined', 'cancelled'],
             'accepted' => ['active', 'cancelled'],
             'active' => ['completed'],
         ];
         if (!in_array($status, $allowed[$current] ?? [], true)) throw new \InvalidArgumentException('Invalid session status transition.');
         if ($actorRole === 'customer' && $status !== 'cancelled') throw new \InvalidArgumentException('Customer can only cancel a pending session.');
+        if ($current === 'queued' && $status === 'accepted') {
+            $credits = max(1, (int)($session['reserved_credits'] ?? 1));
+            (new WalletService())->spend(
+                (string)($session['customer_email'] ?? ''),
+                $credits,
+                (string)($session['id'] ?? ''),
+                (string)($session['session_type'] ?? 'Consultation') . ' session accepted'
+            );
+            $session['credits_spent'] = $credits;
+        }
         $now = date('c');
         $session['status'] = $status;
         $session['last_activity_at'] = $now;

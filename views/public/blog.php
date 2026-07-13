@@ -1,6 +1,10 @@
-<section class="blog-page">
+<section class="blog-page blog-editorial">
   <div class="container">
-    <h1 class="page-title"><?= e($categoryName ?? 'Blog & Updates') ?></h1>
+    <header class="blog-editorial__header">
+      <span class="eyebrow serif-accent">Ideas, rituals and guidance</span>
+      <h1 class="page-title"><?= e($categoryName ?? 'Sri Panchami Journal') ?></h1>
+      <p>Practical spiritual guidance, astrology explainers, and thoughtful updates from our consultants and team.</p>
+    </header>
 
     <?php if (!empty($categories)): ?>
     <div class="blog-categories">
@@ -20,14 +24,15 @@
       </div>
     <?php else: ?>
       <div class="blog-grid">
-        <?php foreach ($posts as $post): ?>
-          <article class="blog-card">
-            <?php if (!empty($post['image'])): ?>
-              <img class="blog-card__image" src="<?= e($post['image']) ?>" alt="<?= e($post['title'] ?? '') ?>" loading="lazy">
-            <?php endif; ?>
+        <?php foreach ($posts as $index => $post): ?>
+          <?php $postImage = $post['image'] ?? $post['og_image'] ?? ($index === 0 ? '/assets/images/hero-temple-bg.webp' : '/assets/images/og-image.jpg'); ?>
+          <article class="blog-card <?= $index === 0 ? 'blog-card--featured' : '' ?>">
+            <a class="blog-card__media" href="/blog/<?= e($post['slug'] ?? '') ?>" aria-label="Read <?= e($post['title'] ?? 'article') ?>">
+              <img class="blog-card__image" src="<?= e($postImage) ?>" alt="" loading="<?= $index === 0 ? 'eager' : 'lazy' ?>">
+            </a>
             <div class="blog-card__body">
-              <?php if (!empty($post['category'])): ?>
-                <span class="blog-card__category"><?php
+              <div class="blog-card__kicker">
+                <?php if (!empty($post['category'])): ?><span class="blog-card__category"><?php
                     $catName = '';
                     foreach ($categories as $cat) {
                         if (($cat['slug'] ?? '') === ($post['category'] ?? '')) {
@@ -36,17 +41,16 @@
                         }
                     }
                     e($catName ?: $post['category']);
-                ?></span>
-              <?php endif; ?>
+                ?></span><?php endif; ?>
+                <?php if (!empty($post['published_at'])): ?><time class="blog-card__date"><?= e(date('M j, Y', strtotime($post['published_at']))) ?></time><?php endif; ?>
+              </div>
               <h2 class="blog-card__title">
                 <a href="/blog/<?= e($post['slug'] ?? '') ?>"><?= e($post['title'] ?? '') ?></a>
               </h2>
               <?php if (!empty($post['excerpt'])): ?>
                 <p class="blog-card__excerpt"><?= e($post['excerpt']) ?></p>
               <?php endif; ?>
-              <?php if (!empty($post['published_at'])): ?>
-                <time class="blog-card__date"><?= e(date('F j, Y', strtotime($post['published_at']))) ?></time>
-              <?php endif; ?>
+              <a class="blog-card__read" href="/blog/<?= e($post['slug'] ?? '') ?>">Read article <span aria-hidden="true">→</span></a>
             </div>
           </article>
         <?php endforeach; ?>

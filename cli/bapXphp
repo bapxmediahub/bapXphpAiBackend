@@ -78,6 +78,8 @@ set -euo pipefail
 # ── Read / Write Content ────────────────────────────────────────
 #   bapXphp read blog [slug]        — read blog post (list all if no slug)
 #   bapXphp write blog [slug]       — create/edit blog post with auto-slug/date/URL
+#   bapXphp read docs [slug]        — read customer guide (list all if no slug)
+#   bapXphp write docs [slug]       — create/edit customer guide
 #   bapXphp read product [slug]     — read product (list all if no slug)
 #   bapXphp write product [slug]    — create/edit product interactively
 #
@@ -92,8 +94,9 @@ if [ -L "$BAPX_SRC" ]; then
 fi
 ROOT="$(cd "$(dirname "$BAPX_SRC")/.." && pwd)"
 
-# Load and export env vars from .env to make them available in the CLI and sub-commands
-if [ -f "$ROOT/.env" ]; then
+# Load project and ignored operator connection settings for CLI subcommands.
+for env_file in "$ROOT/.env" "$ROOT/.env.mysql"; do
+if [ -f "$env_file" ]; then
   while IFS= read -r line || [ -n "$line" ]; do
     # Skip comments and empty lines
     [[ "$line" =~ ^[[:space:]]*# ]] && continue
@@ -103,8 +106,9 @@ if [ -f "$ROOT/.env" ]; then
     if [[ "$line" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]]; then
       eval "export $line"
     fi
-  done < "$ROOT/.env"
+  done < "$env_file"
 fi
+done
 
 MYSQL_HOST="${BAPX_MYSQL_HOST:-srv1877.hstgr.io}"
 MYSQL_PORT="${BAPX_MYSQL_PORT:-3306}"
@@ -734,7 +738,8 @@ cmd_db() {
     upsert)           cmd_db_upsert "$1" "$2" ;;
     delete)           cmd_db_delete "$1" "$2" ;;
     remote-status)    cmd_db_remote_status ;;
-    pma)              shift; cmd_db_pma "$*" ;;
+    pma)              cmd_db_pma "$*" ;;
+    hosted|ssh-sql)   cmd_db_hosted_sql "$*" ;;
     init)             cmd_db_init ;;
     sync|import)      cmd_db_sync ;;
     help|*)           cmd_db_help ;;
@@ -755,6 +760,7 @@ cmd_db_help() {
   echo "  bapXphp db delete <collection> <id>   — authenticated remote record delete"
   echo "  bapXphp db remote-status         — verify remote mutation token presence"
   echo "  bapXphp db pma <sql>           — execute SQL via phpMyAdmin web proxy (always web)"
+  echo "  bapXphp db hosted <sql>        — execute SQL on hosted MySQL through the configured SSH account"
   echo "  bapXphp db pma --table-stats   — show live row counts from remote DB"
   echo "  bapXphp db pma --export        — export full DB as SQL"
   echo "  bapXphp db init                — create MySQL tables from collections.php"
@@ -942,6 +948,22 @@ cmd_db_pma() {
   php "$ROOT/cli/pma-client.php" "$sql"
 }
 
+# ── db hosted <sql> — Execute SQL on hosting through SSH ───────
+cmd_db_hosted_sql() {
+  local sql="$*"
+  [ -n "$sql" ] || die "Usage: bapXphp db hosted \"SELECT ...\""
+  for name in BAPX_SSH_HOST BAPX_SSH_USER BAPX_SSH_PASS BAPX_MYSQL_DB BAPX_MYSQL_USER BAPX_MYSQL_PASS; do
+    [ -n "${!name:-}" ] || die "$name is required in .env.mysql"
+  done
+  command -v sshpass >/dev/null 2>&1 || die "sshpass is required for non-interactive hosted DB operations."
+  local remote_mysql_host="${BAPX_MYSQL_HOST:-localhost}"
+  local remote_command
+  printf -v remote_command 'MYSQL_PWD=%q mysql --batch --raw -h %q -P %q -u %q %q' \
+    "$BAPX_MYSQL_PASS" "$remote_mysql_host" "${BAPX_MYSQL_PORT:-3306}" "$BAPX_MYSQL_USER" "$BAPX_MYSQL_DB"
+  sshpass -p "$BAPX_SSH_PASS" ssh -o StrictHostKeyChecking=accept-new -p "${BAPX_SSH_PORT:-22}" \
+    "$BAPX_SSH_USER@$BAPX_SSH_HOST" "$remote_command" <<< "$sql"
+}
+
 # ── db init — Create MySQL tables from collections.php schema ────
 # Reads the schema file, creates MySQL tables with _data JSON column
 # and indexed columns for commonly queried fields.
@@ -1065,10 +1087,13 @@ cmd_read() {
   case "$type" in
     blog)
       php "$ROOT/cli/blog-read.php" "$ROOT" "$slug" ;;
+    docs|doc)
+      php "$ROOT/cli/doc-read.php" "$ROOT" "$slug" ;;
     product|products)
       php "$ROOT/cli/product-read.php" "$ROOT" "$slug" ;;
     *)
       echo "Usage: bapXphp read blog <slug>"
+      echo "       bapXphp read docs <slug>"
       echo "       bapXphp read product <slug>"
       echo "       bapXphp read blog       (list all posts)"
       echo "       bapXphp read product    (list all products)"
@@ -1084,10 +1109,13 @@ cmd_write() {
   case "$type" in
     blog)
       php "$ROOT/cli/blog-write.php" "$ROOT" "$slug" ;;
+    docs|doc)
+      php "$ROOT/cli/doc-write.php" "$ROOT" "$slug" ;;
     product|products)
       php "$ROOT/cli/product-write.php" "$ROOT" "$slug" ;;
     *)
       echo "Usage: bapXphp write blog [slug]     (create new or edit existing)"
+      echo "       bapXphp write docs [slug]     (create new or edit existing)"
       echo "       bapXphp write product [slug]   (create new or edit existing)"
       exit 1 ;;
   esac

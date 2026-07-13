@@ -117,6 +117,7 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/support/ask','name'=>'support.ask','page'=>'public/support','controller'=>'SupportController@ask','services'=>['SupportBotService','AgentContextService']],
 
             ['method'=>'GET','path'=>'/docs','name'=>'docs.index','page'=>'public/docs','controller'=>'PublicController@docs','services'=>[]],
+            ['method'=>'GET','path'=>'/docs/{slug}','name'=>'docs.show','page'=>'public/doc','controller'=>'PublicController@doc','services'=>['MarkdownRenderer']],
             ['method'=>'POST','path'=>'/remotedb','name'=>'api.remotedb','page'=>'public/404','controller'=>'RemoteDbController@__invoke','services'=>['DatabaseService']],
             ['method'=>'GET','path'=>'/blog','name'=>'blog.index','page'=>'public/blog','controller'=>'BlogController@index','services'=>['BlogService','MarkdownRenderer']],
             ['method'=>'GET','path'=>'/blog/{slug}','name'=>'blog.show','page'=>'public/blog-post','controller'=>'BlogController@show','services'=>['BlogService','MarkdownRenderer']],

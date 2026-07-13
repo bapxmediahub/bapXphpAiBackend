@@ -12,6 +12,7 @@
  */
 
 // ── Config ──
+require_once __DIR__ . '/../app/bootstrap.php';
 $config = require __DIR__ . '/../config/database.php';
 $pmaBase = 'https://auth-db1877.hstgr.io';
 $dbName = $config['dbname'] ?? 'u907253411_db_name_sps';

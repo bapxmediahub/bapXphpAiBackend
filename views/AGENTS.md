@@ -25,9 +25,11 @@ Owns PHP-rendered public, account, admin, and layout templates.
 - Use media-library picker/upload flows for product, temple, and astrologer media.
 - Keep customer and astrologer consultation rooms participant-scoped and backed by the existing PHP API endpoints.
 - Remove or wire dead buttons, placeholder cards, duplicated fallbacks, and stale labels before finishing.
+- Public `/docs` content comes from `content/docs/*.md`, uses real `/docs/{slug}` routes, and explains customer tasks rather than repository architecture.
+- Blog templates preserve Markdown ownership while providing editorial media, metadata, readable line length, and mobile hierarchy.
 - Keep customer Orders, Sessions, Wallet, and Back to Home links in the shared account-side navigation under `/account/dashboard/*`; the global authenticated header exposes only Dashboard and Logout.
 - Astrologer marketplace and homepage cards must use real profile availability, rates, optional metadata, and verified review totals; do not fabricate states, ratings, counts, languages, or experience.
-- Astrologer marketplace and homepage cards share the circular top-overlapping portrait layout and three icon actions. Keep unavailable message/call actions disabled rather than wiring false availability; profile remains navigable.
+- Astrologer marketplace and homepage cards share the circular top-overlapping portrait layout and three icon actions. Keep availability truthful; offline and busy actions may create an uncharged queued request, while only available providers can start immediately.
 - Wrap each marketplace portrait in the shared clipped frame so source-template margins never determine visible face placement.
 
 ## Verification

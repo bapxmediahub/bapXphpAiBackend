@@ -498,8 +498,7 @@ $tests['astrologer marketplace exposes search and direct session actions'] = fun
     assertTrue(!str_contains($view, 'Available Balance'), 'Astrologer marketplace should not show account balance; that belongs in the user panel');
     assertTrue(!str_contains($view, 'href="/recharge"'), 'Astrologer marketplace should not show recharge; that belongs in the logged-in user panel');
     assertTrue(!str_contains($view, 'astro-recharge'), 'Astrologer marketplace should not render a recharge toolbar action');
-    assertTrue(substr_count($view, 'astro-action--disabled') >= 2, 'Unavailable astrologers should keep message and call icons visibly disabled');
-    assertTrue(str_contains($view, 'queue_status'), 'Busy astrologers should retain a real message waitlist action');
+    assertTrue(substr_count($view, 'name="queue_status" value="waitlist"') >= 4, 'Busy and offline consultants should retain real message and call queue actions');
     foreach (['aria-label="Start message session"', 'aria-label="Start call session"', 'Join message waitlist', 'View Profile', 'astro-action--profile', 'astro-status-label'] as $needle) {
         assertTrue(str_contains($view, $needle), "Astrologer marketplace should expose {$needle} actions");
     }
@@ -517,7 +516,7 @@ $tests['wallet recharge is login gated and exposes pricing breakdown'] = functio
         assertTrue(in_array($path, $paths, true), "Wallet route {$path} should be registered");
     }
     $view = file_get_contents(app_path('views/account/wallet.php'));
-    foreach (['Remaining Balance', 'Recharge Amount', 'Service charge', 'GST/tax estimate', 'Pay with Razorpay', 'Razorpay is not configured yet'] as $needle) {
+    foreach (['Remaining Balance', 'Recharge Amount', 'Service charge', 'GST/tax estimate', 'Pay securely with Razorpay', 'Online recharge temporarily unavailable'] as $needle) {
         assertTrue(str_contains($view, $needle), "Wallet page should include {$needle}");
     }
     $initiate = file_get_contents(app_path('app/Controllers/ConsultationController.php'));
@@ -687,6 +686,9 @@ $tests['bapXphp product media workflow is safe and mapped'] = function (): void 
     $importer = file_get_contents(app_path('cli/import-product-images.php'));
     $map = file_get_contents(app_path('app/Services/ProjectMapService.php'));
     assertTrue(str_contains($cli, 'product:images'), 'CLI should expose the product image import command');
+    assertTrue(str_contains($cli, 'pma)              cmd_db_pma "$*"'), 'Direct phpMyAdmin CLI operations should preserve the SQL argument');
+    assertTrue(str_contains($cli, 'cmd_db_hosted_sql'), 'CLI should support direct hosted MySQL operations without an application mutation token');
+    assertTrue(str_contains(file_get_contents(app_path('cli/pma-client.php')), "app/bootstrap.php"), 'phpMyAdmin CLI should load application path helpers before database config');
     assertTrue(str_contains($cli, 'file_get_contents("php://stdin")'), 'DB output should parse JSON from stdin instead of interpolating content into PHP code');
     assertTrue(str_contains($reader, "require_once \$root . '/app/bootstrap.php'"), 'Product reader should bootstrap application helpers');
     assertTrue(str_contains($reader, "new App\\Services\\DatabaseService()"), 'Product reader should use the shared local/remote database boundary');
@@ -990,6 +992,58 @@ $tests['consultation pricing is shared and provider detail rates are data-driven
     assertTrue(str_contains($detail, "message_credit_cost"), 'Consultant detail should use the stored message rate');
     assertTrue(str_contains($detail, "call_credit_per_second"), 'Consultant detail should use the stored call rate');
     assertTrue(str_contains($consult, 'Talk to Consultants Online'), 'Public consultation copy should use consultant terminology');
+};
+
+$tests['offline consultants accept mode specific queued requests'] = function (): void {
+    $market = file_get_contents(app_path('views/public/consult.php'));
+    $controller = file_get_contents(app_path('app/Controllers/ConsultationController.php'));
+    $service = file_get_contents(app_path('app/Services/ConsultationService.php'));
+    $room = file_get_contents(app_path('views/account/consultation.php'));
+    foreach (['Request message session', 'Request call session', 'name="queue_status" value="waitlist"'] as $needle) {
+        assertTrue(str_contains($market, $needle), "Offline marketplace should expose {$needle}");
+    }
+    assertTrue(str_contains($controller, "'reserved_credits'=>\$initialCredits"), 'Queued requests should retain the acceptance charge without charging immediately');
+    assertTrue(str_contains($service, "'queued' => ['accepted', 'declined', 'cancelled']"), 'Providers should be able to accept or decline queued sessions');
+    assertTrue(str_contains($service, "\$current === 'queued' && \$status === 'accepted'"), 'Queued sessions should charge only when accepted');
+    assertTrue(str_contains($room, "['queued','requested']"), 'Provider room controls should handle queued and immediate requests');
+};
+
+$tests['customer help center renders markdown guides on real routes'] = function (): void {
+    $controller = file_get_contents(app_path('app/Controllers/PublicController.php'));
+    $index = file_get_contents(app_path('views/public/docs.php'));
+    $detail = file_get_contents(app_path('views/public/doc.php'));
+    assertTrue(in_array('/docs/{slug}', array_column(ProjectMapService::registry()['routes'], 'path'), true), 'Help center should expose a guide detail route');
+    assertTrue(str_contains($controller, "content/docs/*.md"), 'Customer docs should come from the dedicated Markdown content directory');
+    assertTrue(str_contains($index, 'How can we help?') && str_contains($index, '/docs/<?= e($page[\'slug\']) ?>'), 'Help center should link to real guide pages');
+    assertTrue(str_contains($detail, "\$document['html']"), 'Guide page should render Markdown content');
+    foreach (['create-account', 'order-products', 'message-consultant', 'call-consultant', 'wallet-and-payments'] as $slug) {
+        assertTrue(is_file(app_path("content/docs/{$slug}.md")), "Missing customer guide {$slug}");
+    }
+};
+
+$tests['blog uses an editorial index and readable markdown article surface'] = function (): void {
+    $index = file_get_contents(app_path('views/public/blog.php'));
+    $article = file_get_contents(app_path('views/public/blog-post.php'));
+    $css = file_get_contents(app_path('assets/css/band.css'));
+    foreach (['Sri Panchami Journal', 'blog-card--featured', 'blog-card__media', 'Read article'] as $needle) {
+        assertTrue(str_contains($index, $needle), "Blog index should include {$needle}");
+    }
+    assertTrue(str_contains($article, "\$schemaBase . '/blog'"), 'Article breadcrumbs should use the canonical blog URL');
+    foreach (['blog-post__dek', 'blog-post__featured', 'blog-post__cta'] as $needle) assertTrue(str_contains($article, $needle), "Article should include {$needle}");
+    assertTrue(str_contains($css, '.blog-post__content') && str_contains($css, 'line-height:1.78'), 'Article typography should use a constrained readable measure');
+};
+
+$tests['wallet debits and payment confirmation are serialized and production gated'] = function (): void {
+    $wallet = file_get_contents(app_path('app/Services/WalletService.php'));
+    $secrets = file_get_contents(app_path('app/Services/SecretService.php'));
+    $controller = file_get_contents(app_path('app/Controllers/WalletController.php'));
+    foreach (['GET_LOCK', 'FOR UPDATE', 'RELEASE_LOCK', 'confirmTopUp', 'beginTransaction', 'rollBack'] as $needle) {
+        assertTrue(str_contains($wallet, $needle), "Wallet service should include {$needle}");
+    }
+    assertTrue(str_contains($secrets, 'razorpayReadyForCurrentHost'), 'Selected Razorpay credentials should be checked against the current host');
+    assertTrue(str_contains($secrets, "=== 'live'"), 'Production hosts should require live Razorpay mode');
+    assertTrue(str_contains($controller, "(\$payment['status'] ?? '') !== 'captured'"), 'Wallet confirmation should require a captured gateway payment');
+    assertTrue(str_contains($controller, 'confirmTopUp'), 'Wallet controller should use idempotent atomic confirmation');
 };
 
 foreach ($tests as $name => $test) {

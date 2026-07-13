@@ -6,7 +6,7 @@ alwaysApply: true
 
 # Agent Operating Guide
 
-This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP hosting. It is not a SPA, not a separate MCP/skill server. The backend primitives live in this monorepo. Remote MySQL is the only runtime data store; local JSON files are import-only and never a runtime fallback. Blog posts use Markdown with YAML frontmatter in `content/blog/posts/`. Media metadata uses YAML in `storage/media.yaml`.
+This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP hosting. It is not a SPA, not a separate MCP/skill server. The backend primitives live in this monorepo. Remote MySQL is the only runtime data store; local JSON files are import-only and never a runtime fallback. Blog posts use Markdown with YAML frontmatter in `content/blog/posts/`. Customer help guides use Markdown with YAML frontmatter in `content/docs/`. Media metadata uses YAML in `storage/media.yaml`.
 
 ## DOX Contract
 
@@ -87,6 +87,8 @@ When a required operation is missing or unsafe, enhance the nearest existing `ba
 bapXphp read blog                    # list all blog posts
 bapXphp read blog <slug>             # read a blog post
 bapXphp write blog [slug]            # create or edit blog post (interactive)
+bapXphp read docs [slug]             # list or read customer help guides
+bapXphp write docs [slug]            # create or edit a customer help guide
 bapXphp read product                  # list all products
 bapXphp read product <slug>           # read a product
 bapXphp write product [slug]          # create or edit product (interactive)
@@ -152,6 +154,7 @@ Before finishing, search the touched workflow for placeholders, dead buttons, du
 - `cli/AGENTS.md`: maintenance scripts, project-map generation/validation, local smoke checks, and mail queue tooling.
 - `tests/AGENTS.md`: PHP regression tests and test fixtures.
 - `assets/AGENTS.md`: CSS and static image/media assets.
+- `content/AGENTS.md`: Markdown/YAML customer help, blog, and legal content.
 
 # CRITICAL RULE: ZERO-CODE INITIATION
 
