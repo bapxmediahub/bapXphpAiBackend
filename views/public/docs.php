@@ -7,7 +7,7 @@
         </header>
         <div class="document-index">
             <?php foreach (($pages ?? []) as $page): ?>
-                <a class="document-index__item reveal" href="/docs/<?= e($page['slug']) ?>">
+                <a class="document-index__item reveal" href="/help/<?= e($page['slug']) ?>">
                     <span class="document-index__icon" aria-hidden="true"><?= e(strtoupper(substr((string)($page['icon'] ?? 'G'), 0, 1))) ?></span>
                     <h2><?= e($page['title']) ?></h2>
                     <p><?= e($page['summary']) ?></p>

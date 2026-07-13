@@ -8,7 +8,7 @@ Owns Markdown and YAML content rendered by public blog, help, and legal pages.
 
 - `blog/posts/`: published Markdown articles with YAML frontmatter.
 - `blog/categories.yaml`: blog category labels and summaries.
-- `docs/`: customer-facing task guides rendered at `/docs/{slug}`.
+- `docs/`: customer-facing task guides rendered at `/help/{slug}`; `/docs` remains the help index because the physical repository `docs/` directory conflicts with nested routes on shared hosting.
 - `legal/`: privacy and terms copy.
 
 ## Local Contracts
@@ -21,4 +21,4 @@ Owns Markdown and YAML content rendered by public blog, help, and legal pages.
 ## Verification
 
 - `bapXphp test`
-- Browser check for `/docs`, `/docs/{slug}`, `/blog`, and `/blog/{slug}`.
+- Browser check for `/docs`, `/help/{slug}`, `/blog`, and `/blog/{slug}`.

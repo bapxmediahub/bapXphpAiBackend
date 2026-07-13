@@ -23,4 +23,4 @@ if ($body === '') { fwrite(STDERR, "Body is required.\n"); exit(1); }
 $document = "---\ntitle: {$title}\nslug: {$slug}\nsummary: {$summary}\norder: {$order}\nicon: guide\n---\n\n# {$title}\n\n{$body}\n";
 file_put_contents("{$dir}/{$slug}.md", $document, LOCK_EX);
 if ($editSlug !== '' && $editSlug !== $slug) @unlink("{$dir}/{$editSlug}.md");
-echo "Written: content/docs/{$slug}.md\nURL: /docs/{$slug}\n";
+echo "Written: content/docs/{$slug}.md\nURL: /help/{$slug}\n";

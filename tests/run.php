@@ -1012,9 +1012,10 @@ $tests['customer help center renders markdown guides on real routes'] = function
     $controller = file_get_contents(app_path('app/Controllers/PublicController.php'));
     $index = file_get_contents(app_path('views/public/docs.php'));
     $detail = file_get_contents(app_path('views/public/doc.php'));
-    assertTrue(in_array('/docs/{slug}', array_column(ProjectMapService::registry()['routes'], 'path'), true), 'Help center should expose a guide detail route');
+    assertTrue(in_array('/help/{slug}', array_column(ProjectMapService::registry()['routes'], 'path'), true), 'Help center should expose a hosting-safe guide detail route');
+    assertTrue(str_contains(file_get_contents(app_path('index.php')), "'/help'"), 'Front controller should dispatch hosting-safe help routes into PHP');
     assertTrue(str_contains($controller, "content/docs/*.md"), 'Customer docs should come from the dedicated Markdown content directory');
-    assertTrue(str_contains($index, 'How can we help?') && str_contains($index, '/docs/<?= e($page[\'slug\']) ?>'), 'Help center should link to real guide pages');
+    assertTrue(str_contains($index, 'How can we help?') && str_contains($index, '/help/<?= e($page[\'slug\']) ?>'), 'Help center should link to real guide pages');
     assertTrue(str_contains($detail, "\$document['html']"), 'Guide page should render Markdown content');
     foreach (['create-account', 'order-products', 'message-consultant', 'call-consultant', 'wallet-and-payments'] as $slug) {
         assertTrue(is_file(app_path("content/docs/{$slug}.md")), "Missing customer guide {$slug}");
