@@ -15,6 +15,7 @@ final class WalletController extends BaseController {
         $this->seoKey = 'account';
         $wallet = new WalletService();
         $email = $_SESSION['user']['email'] ?? '';
+        $wallet->ensureSignupBonus($email);
         $balance = $wallet->balanceFor($email);
         $quote = $wallet->quoteTopUp((int)($_GET['amount'] ?? 100));
         $secrets = (new SecretService())->all();

@@ -748,6 +748,15 @@ $tests['wallet payment requests include csrf and database service import'] = fun
     assertTrue(str_contains($controller, 'PaymentService,DatabaseService'), 'Wallet controller should import DatabaseService');
 };
 
+$tests['signup bonus is idempotent and available to existing accounts'] = function (): void {
+    $service = file_get_contents(app_path('app/Services/WalletService.php'));
+    assertTrue(str_contains($service, 'signup_bonus_25'), 'Wallet service should use a stable signup bonus source id');
+    assertTrue(str_contains($service, "'credits' => 25"), 'Wallet service should grant 25 signup credits');
+    assertTrue(str_contains($service, 'ensureSignupBonus'), 'Wallet service should expose the idempotent signup grant');
+    $wallet = file_get_contents(app_path('app/Controllers/WalletController.php'));
+    assertTrue(str_contains($wallet, 'ensureSignupBonus'), 'Wallet dashboard should grant the bonus for existing accounts');
+};
+
 $tests['remote database writes are authenticated and record-scoped'] = function (): void {
     $controller = file_get_contents(app_path('app/Controllers/RemoteDbController.php'));
     $database = file_get_contents(app_path('app/Services/DatabaseService.php'));

@@ -15,6 +15,29 @@ final class WalletService {
         return max(0, $total);
     }
 
+    public function ensureSignupBonus(string $email): array
+    {
+        $email = strtolower(trim($email));
+        if ($email === '') return ['granted' => false, 'credits' => 0];
+        foreach ($this->store->read('wallet_transactions') as $row) {
+            if (strtolower((string)($row['customer_email'] ?? '')) === $email && ($row['source_id'] ?? '') === 'signup_bonus_25') {
+                return ['granted' => false, 'credits' => (int)($row['credits'] ?? 25)];
+            }
+        }
+        $this->store->upsert('wallet_transactions', [
+            'id' => bin2hex(random_bytes(8)),
+            'customer_email' => $email,
+            'type' => 'bonus',
+            'credits' => 25,
+            'amount_rupees' => 0,
+            'source_id' => 'signup_bonus_25',
+            'note' => 'Welcome signup credits',
+            'status' => 'confirmed',
+            'created_at' => date('c'),
+        ]);
+        return ['granted' => true, 'credits' => 25];
+    }
+
     public function quoteTopUp(int $amountRupees): array {
         $amount = max(10, $amountRupees);
         $service = (int)ceil($amount * 0.02);

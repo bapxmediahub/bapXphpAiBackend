@@ -165,7 +165,7 @@
             'fields' => [
                 'id' => ['type' => 'string'],
                 'customer_email' => ['type' => 'email'],
-                'type' => ['type' => 'enum', 'values' => ['recharge', 'debit', 'refund']],
+                'type' => ['type' => 'enum', 'values' => ['recharge', 'debit', 'refund', 'bonus']],
                 'credits' => ['type' => 'number'],
                 'amount_rupees' => ['type' => 'number'],
                 'service_charge' => ['type' => 'number'],
