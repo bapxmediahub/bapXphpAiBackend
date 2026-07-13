@@ -94,7 +94,9 @@ APP_URL=https://your-domain.example
 | Command | Description |
 |---------|-------------|
 | `bapXphp status` | Git status + recent commits |
-| `bapXphp logs` | Tail recent error logs from `storage/logs/` |
+| `bapXphp logs [--limit N]` | Read recent live audit events from remote MySQL |
+| `bapXphp logs --local` | Tail ignored local development logs explicitly |
+| `bapXphp artifacts:clean --dry-run` | Audit tracked runtime and Playwright artifacts before untracking |
 
 ### GitHub
 | Command | Description |

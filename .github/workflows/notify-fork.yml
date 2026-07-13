@@ -1,0 +1,22 @@
+name: Notify downstream fork
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    if: github.repository == 'getwinharris/bapXphpAiBackend'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch downstream sync
+        env:
+          GH_TOKEN: ${{ secrets.FORK_SYNC_TOKEN }}
+        run: >-
+          gh api --method POST
+          repos/bapxmediahub/bapXphpAiBackend/dispatches
+          --field event_type=upstream-main-updated
+          --raw-field client_payload[upstream_sha]="${GITHUB_SHA}"

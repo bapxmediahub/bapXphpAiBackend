@@ -1,6 +1,7 @@
 !.env.example
 
 /storage/logs/*.log
+/storage/logs/
 /storage/backups/*
 !/storage/backups/.gitkeep
 
@@ -10,4 +11,6 @@ tmp/
 .env.mysql
 .playwright-mcp/
 .playwright-cli/
+/output/playwright/
+/server.log
 /content/blog/cache/

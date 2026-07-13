@@ -173,7 +173,7 @@ final class ProjectMapService {
 
         $sharedControllers = ['BaseController'];
         $sharedServices = ['SeoService', 'SmtpMailer', 'ImageOptimizerService', 'DocsMapService', 'GitHubDocService', 'RateLimiter'];
-        $sharedViews = ['account/_nav', 'layouts/admin', 'layouts/app', 'public/404'];
+        $sharedViews = ['account/_nav', 'layouts/admin', 'layouts/app', 'public/404', 'public/_consultation-pricing'];
 
         $gaps = [
             'missing_route_mappings' => array_values(array_filter($map['routes'], fn($route) => empty($route['controller']) || empty($route['page']))),

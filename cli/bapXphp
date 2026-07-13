@@ -42,7 +42,10 @@ set -euo pipefail
 #
 # ── Git ─────────────────────────────────────────────────────────
 #   bapXphp status                  — git status + recent commits
-#   bapXphp logs                    — tail recent error logs from storage/data/
+#   bapXphp logs [--limit N]        — read recent live audit events from remote MySQL
+#   bapXphp logs --local            — tail ignored local development logs
+#   bapXphp artifacts:clean [--dry-run]
+#                                   — untrack and ignore runtime/test artifacts
 #
 # ── GitHub ──────────────────────────────────────────────────────
 #   bapXphp issue                   — create a GitHub issue (interactive via gh CLI)
@@ -617,10 +620,29 @@ cmd_status() {
 
 # ── Logs ────────────────────────────────────────────────────────
 cmd_logs() {
+  local mode="remote" limit=20
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --local) mode="local" ;;
+      --limit) shift; limit="${1:-20}" ;;
+      *) die "Usage: bapXphp logs [--limit N|--local]" ;;
+    esac
+    shift
+  done
+
+  if [ "$mode" = "remote" ]; then
+    [[ "$limit" =~ ^[0-9]+$ ]] || die "--limit must be a positive integer"
+    [ "$limit" -gt 0 ] || die "--limit must be a positive integer"
+    info "Live production audit events (remote MySQL):"
+    cmd_db_raw "SELECT * FROM audit_events ORDER BY _created_at DESC LIMIT $limit"
+    return
+  fi
+
   local logfiles
-  logfiles=$(find "$ROOT/storage/data" -maxdepth 1 -name '*.log' -o -name 'error*.log' 2>/dev/null | head -5)
+  logfiles=$(find "$ROOT/storage/logs" -maxdepth 1 -type f -name '*.log' 2>/dev/null | head -5)
+  [ -f "$ROOT/server.log" ] && logfiles="${logfiles}${logfiles:+$'\n'}$ROOT/server.log"
   if [ -z "$logfiles" ]; then
-    echo "No log files found in storage/data/"
+    echo "No local development logs found."
   else
     for f in $logfiles; do
       echo "── $(basename "$f") (last 20 lines) ──"
@@ -628,6 +650,26 @@ cmd_logs() {
       echo ""
     done
   fi
+}
+
+cmd_artifacts_clean() {
+  local dry_run=false
+  [ "${1:-}" = "--dry-run" ] && dry_run=true
+  [ $# -gt 1 ] && die "Usage: bapXphp artifacts:clean [--dry-run]"
+
+  local tracked
+  tracked=$(git -C "$ROOT" ls-files 'server.log' 'output/playwright/**' 'storage/logs/**')
+  if [ -z "$tracked" ]; then
+    echo "No tracked runtime or Playwright artifacts."
+    return
+  fi
+  echo "$tracked"
+  if [ "$dry_run" = "true" ]; then
+    echo "Dry run: listed artifacts would be removed from Git tracking only."
+    return
+  fi
+  git -C "$ROOT" rm -r --cached --ignore-unmatch -- server.log output/playwright storage/logs
+  ok "Runtime and Playwright artifacts removed from Git tracking; working files preserved."
 }
 
 # ── GitHub Commands ────────────────────────────────────────────
@@ -1078,7 +1120,9 @@ main() {
     status)
       cmd_status ;;
     logs)
-      cmd_logs ;;
+      shift; cmd_logs "$@" ;;
+    artifacts:clean|artifacts-clean)
+      shift; cmd_artifacts_clean "$@" ;;
     issue|pr|merge)
       cmd_"$1" ;;
     mail:process|mail-process)
