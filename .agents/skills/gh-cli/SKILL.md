@@ -153,7 +153,7 @@ Manage agent skills (specialized instructions and tools) from GitHub repositorie
 
 ### `/remotedb`
 
-A secure API endpoint for running read-only SQL queries against the live database.
+A secure API endpoint for live database queries and explicit authenticated record mutations used by the project CLI.
 
 **Endpoint:** `POST https://yoursite.com/remotedb`
 
@@ -170,8 +170,9 @@ curl -X POST https://yoursite.com/remotedb \
 ```
 
 **Security:**
-- Only `SELECT`, `SHOW`, `DESCRIBE`, `EXPLAIN` queries allowed.
-- Token stored in `secrets.remote_db_token`.
+- Query action accepts only `SELECT`, `SHOW`, `DESCRIBE`, and `EXPLAIN`.
+- Mutation actions are `upsert`, `delete`, and `replace` against declared collections; `secrets` is never writable through this endpoint.
+- Token is stored in remote MySQL `secrets.remote_db_token` and sent via the authenticated mutation header.
 - Generate token: `openssl rand -hex 32`
 
 **Usage:**

@@ -6,7 +6,7 @@ alwaysApply: true
 
 # Agent Operating Guide
 
-This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP hosting. It is not a SPA, not a separate MCP/skill server. The backend primitives live in this monorepo. MySQL is the primary runtime data store; JSON files are used only for CLI-based one-time seeding via `bapXphp db sync`. Blog posts use YAML frontmatter in `content/blog/posts/`. Media metadata uses YAML in `storage/media.yaml`.
+This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP hosting. It is not a SPA, not a separate MCP/skill server. The backend primitives live in this monorepo. Remote MySQL is the only runtime data store; local JSON files are import-only and never a runtime fallback. Blog posts use Markdown with YAML frontmatter in `content/blog/posts/`. Media metadata uses YAML in `storage/media.yaml`.
 
 ## DOX Contract
 
@@ -59,11 +59,11 @@ This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP
 
 ## Rules
 
-- MySQL is the primary runtime store. JSON files in `storage/data/` are used only for one-time seeding via `bapXphp db sync`.
+- Remote MySQL is the only runtime store. JSON files in `storage/data/` are used only for explicit one-time imports via `bapXphp db sync`.
 - Update `storage/schema/collections.php` before changing a collection shape, admin fields, media fields, seed data, or agent-visible context.
 - Extend existing controllers, services, views, storage files, and tools when they already cover the use case. Do not scaffold parallel implementations.
 - When a code change reveals a reusable workflow rule, update the matching project skill under `.agents/skills/<skill-name>/SKILL.md` so future agents inherit the framework behavior. Keep skills business-agnostic.
-- Keep route -> controller -> service -> MySQL-store boundaries via `DatabaseService`. `JsonStoreService` has been removed from the codebase.
+- Keep route -> controller -> service -> remote MySQL boundaries via `DatabaseService`. `JsonStoreService` has been removed from the codebase.
 - Do not add React, CDN React, a SPA fallback, or a second frontend.
 - Customer-facing UI changes must follow `Design.md`: warm-neutral canvas, Inter/system sans typography, `#3A0003` primary maroon, `#D1B368` secondary gold, stable photo-first cards, restrained borders/shadows, and the documented responsive breakpoints.
 - Admin mutations should be auditable via `AuditLogService`.

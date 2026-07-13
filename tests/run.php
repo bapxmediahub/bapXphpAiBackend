@@ -64,6 +64,7 @@ $tests['project map registry has no missing route mappings'] = function (): void
 $tests['project map generation lists schema collections without runtime stores'] = function (): void {
     $scan = ProjectMapService::scan();
     assertTrue(in_array('secrets', $scan['schema_collections'], true), 'Secrets should be a registered schema collection');
+    assertTrue(in_array('addresses', $scan['schema_collections'], true), 'Saved customer addresses should be a registered schema collection');
     assertTrue(str_contains(ProjectMapService::renderSystematicMermaid(), 'secrets'), 'Generated Mermaid should include secrets schema entry');
 };
 
@@ -634,6 +635,9 @@ $tests['checkout payment verification preserves shipping contact details'] = fun
     assertTrue(str_contains($checkout, '$hasPaymentGateway = $hasRazorpay || $hasStripe'), 'Checkout payment CTA should render when any supported gateway is configured');
     assertTrue(str_contains($checkout, '$defaultPaymentMethod = $hasRazorpay ? \'razorpay\' : \'stripe\''), 'Checkout should select Stripe when it is the only configured gateway');
     assertTrue(str_contains($checkout, 'typeof Razorpay === \'undefined\''), 'Checkout should not try to open Razorpay when its script is unavailable');
+    assertTrue(str_contains($checkout, 'saved-address'), 'Checkout should expose saved addresses when available');
+    assertTrue(str_contains($checkout, 'save_address'), 'Checkout should support saving a named address');
+    assertTrue(str_contains(file_get_contents(app_path('app/Services/AddressService.php')), "read('addresses')"), 'Saved addresses should use the shared remote database service');
 };
 
 $tests['cart quantity controls update progressively and remove at zero'] = function (): void {

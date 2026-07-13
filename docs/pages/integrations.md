@@ -8,10 +8,9 @@ Purpose: configure Razorpay (test/live), Stripe, Google OAuth, SMTP, Meta Pixel,
 
 ## Secrets Storage
 
-- All secrets are encrypted (AES-256-CBC) and stored in `storage/data/secrets.json`.
-- The encryption key is auto-generated at `storage/runtime-key.php` on first use.
-- Secrets are synced to MySQL via `bapXphp db sync` under the `secrets` collection.
-- Never put secrets in `.env` — only `APP_NAME` and `APP_URL` belong there. Secrets go in the remote MySQL database through Admin → Integrations.
+- Secrets are encrypted and stored in the remote MySQL `secrets` collection through Admin → Integrations.
+- Local JSON files are not runtime secret storage. They may only be used for an explicitly requested one-time import.
+- Never put secrets in committed files. Hosting environment variables are emergency fallback inputs for critical integrations only.
 
 ## Editable Fields
 

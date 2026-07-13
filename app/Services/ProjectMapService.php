@@ -22,7 +22,7 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/categories','name'=>'categories','page'=>'public/categories','controller'=>'PublicController@categories','services'=>['CategoryService']],
             ['method'=>'GET','path'=>'/product/{slug}','name'=>'product.show','page'=>'public/product','controller'=>'PublicController@product','services'=>['ProductService']],
             ['method'=>'GET','path'=>'/cart','name'=>'cart','page'=>'public/cart','controller'=>'PublicController@cart','services'=>['CartService','ProductService']],
-            ['method'=>'GET','path'=>'/checkout','name'=>'checkout','page'=>'public/checkout','controller'=>'PublicController@checkout','services'=>['CartService','ProductService','SecretService']],
+            ['method'=>'GET','path'=>'/checkout','name'=>'checkout','page'=>'public/checkout','controller'=>'PublicController@checkout','services'=>['CartService','ProductService','SecretService','AddressService']],
             ['method'=>'GET','path'=>'/contact','name'=>'contact','page'=>'public/contact','controller'=>'PublicController@contact','services'=>[]],
             ['method'=>'POST','path'=>'/contact','name'=>'contact.post','page'=>'public/contact','controller'=>'PublicController@contact','services'=>['ContactService']],
             ['method'=>'GET','path'=>'/login','name'=>'login','page'=>'public/login','controller'=>'PublicController@login','services'=>['AuthService']],
@@ -133,9 +133,9 @@ final class ProjectMapService {
         unset($route);
         return [
             'routes'=>$routes,
-            'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AstrologerAccountService','AppointmentService','ConsultationService','TempleService','SettingsService','ProjectMapService','DatabaseService','AuditLogService','ResourceService','SecretService','EnvService','ContactService','ReviewService','PasswordResetService','MailQueueService','MailStorageService','WalletService','SupportBotService','MediaService','StoragePermissionService','SchemaService','AgentContextService','SeoService','ImageOptimizerService','GitHubDocService','MarkdownRenderer','BlogService'],
+            'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AstrologerAccountService','AppointmentService','ConsultationService','TempleService','SettingsService','ProjectMapService','DatabaseService','AuditLogService','ResourceService','SecretService','EnvService','ContactService','ReviewService','PasswordResetService','MailQueueService','MailStorageService','WalletService','AddressService','SupportBotService','MediaService','StoragePermissionService','SchemaService','AgentContextService','SeoService','ImageOptimizerService','GitHubDocService','MarkdownRenderer','BlogService'],
             'integrations'=>['GoogleOAuthClient','RazorpayClient','StripeClient','MetaPixelClient','GoogleSiteKitClient'],
-            'collections'=>['users','products','categories','coupons','orders','astrologers','appointments','consultation_messages','consultation_signals','temples','settings','audit_events','reviews','mail_queue','mail_inbox','mail_outbox','wallet_transactions','support_tickets','contact_submissions','media_files','secrets'],
+            'collections'=>['users','addresses','products','categories','coupons','orders','astrologers','appointments','consultation_messages','consultation_signals','temples','settings','audit_events','reviews','mail_queue','mail_inbox','mail_outbox','wallet_transactions','support_tickets','contact_submissions','media_files','secrets'],
         ];
     }
     public static function validate(array $map): array {
