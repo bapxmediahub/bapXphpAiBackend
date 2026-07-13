@@ -59,7 +59,7 @@ flowchart LR
     route_ee5462fe50d8["POST /reviews/astrologer — Submit astrologer review"]:::route
     route_9c8e6425cd02["POST /reviews/product — Submit product review"]:::route
     route_93b329f29ece["GET /docs — Documentation landing — blog categories overview"]:::route
-    route_f8a6fa677b42["GET /docs/{slug}"]:::route
+    route_1a07134bf963["GET /help/{slug}"]:::route
     route_98607742961f["POST /remotedb — Remote DB query endpoint — proxies SQL to production MySQL"]:::route
     route_6e62aa059570["GET /blog — Blog listing — all posts with category filters"]:::route
     route_b8738856284a["GET /blog/{slug} — Blog post — rendered from GitHub-sourced markdown"]:::route
@@ -759,7 +759,7 @@ flowchart LR
   controller_64e608ddc28b -. renders .-> view_54f97aa2b448
   route_93b329f29ece --> controller_18ec49ea2cf4
   controller_18ec49ea2cf4 -. renders .-> view_fad3b39b568b
-  route_f8a6fa677b42 --> controller_18ec49ea2cf4
+  route_1a07134bf963 --> controller_18ec49ea2cf4
   controller_18ec49ea2cf4 --> service_dc8af4c619cd
   controller_18ec49ea2cf4 -. renders .-> view_7124ac9f4433
   route_98607742961f --> controller_2702fc6f256e

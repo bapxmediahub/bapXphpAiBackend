@@ -94,7 +94,7 @@ if ($uri !== null && $uri !== '/' && str_ends_with($uri, '/')) {
 }
 
 // PHP routes (admin + public pages)
-$phpRoutes = ['/','/shop','/shop/','/product','/cart','/checkout','/payment','/recharge','/support','/about','/contact','/temples','/consult','/consultation','/astrologer','/auth','/login','/logout','/register','/forgot-password','/reset-password','/account','/reviews','/sri-panchami-spiritual','/spiritual','/categories','/terms','/privacy','/blog','/docs'];
+$phpRoutes = ['/','/shop','/shop/','/product','/cart','/checkout','/payment','/recharge','/support','/about','/contact','/temples','/consult','/consultation','/astrologer','/auth','/login','/logout','/register','/forgot-password','/reset-password','/account','/reviews','/sri-panchami-spiritual','/spiritual','/categories','/terms','/privacy','/blog','/docs','/help'];
 $isPhpRoute = false;
 foreach ($phpRoutes as $route) {
     if (strpos($uri, $route . '/') === 0 || $uri === $route) {
