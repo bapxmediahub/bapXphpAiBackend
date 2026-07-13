@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AuthService,SecretService,WalletService,PaymentService};
+use App\Services\{AuthService,SecretService,WalletService,PaymentService,DatabaseService};
 use App\Integrations\Razorpay\RazorpayClient;
 
 final class WalletController extends BaseController {

@@ -741,6 +741,13 @@ $tests['public consultation actions include csrf and room imports secrets'] = fu
     assertTrue(str_contains($controller, 'MailQueueService,SecretService'), 'Consultation room should import SecretService');
 };
 
+$tests['wallet payment requests include csrf and database service import'] = function (): void {
+    $view = file_get_contents(app_path('views/account/wallet.php'));
+    assertTrue(str_contains($view, "_csrf:csrf"), 'Wallet create-order and verify requests should include CSRF');
+    $controller = file_get_contents(app_path('app/Controllers/WalletController.php'));
+    assertTrue(str_contains($controller, 'PaymentService,DatabaseService'), 'Wallet controller should import DatabaseService');
+};
+
 $tests['remote database writes are authenticated and record-scoped'] = function (): void {
     $controller = file_get_contents(app_path('app/Controllers/RemoteDbController.php'));
     $database = file_get_contents(app_path('app/Services/DatabaseService.php'));
