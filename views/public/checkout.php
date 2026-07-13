@@ -27,6 +27,17 @@
                                 <input type="email" id="checkout-email" name="email" value="<?= e($_SESSION['user']['email'] ?? '') ?>" placeholder="your@email.com" required>
                             </div>
                         </div>
+                        <?php if (!empty($addresses)): ?>
+                        <div class="form-group" style="margin-top:var(--space-md);">
+                            <label for="saved-address">Use a saved address</label>
+                            <select id="saved-address">
+                                <option value="">Enter a new address</option>
+                                <?php foreach ($addresses as $savedAddress): ?>
+                                    <option value="<?= e((string)$savedAddress['id']) ?>" data-address='<?= e(json_encode($savedAddress, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP)) ?>'><?= e($savedAddress['name']) ?> — <?= e($savedAddress['city']) ?>, <?= e($savedAddress['pincode']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <?php endif; ?>
                         <div class="form-group" style="margin-top:var(--space-md);">
                             <label>Phone</label>
                             <input type="tel" id="checkout-phone" name="phone" placeholder="+91 XXXXX XXXXX" required>
@@ -45,6 +56,12 @@
                                 <input type="text" id="checkout-pincode" name="pincode" placeholder="600001" required>
                             </div>
                         </div>
+                        <?php if (!empty($_SESSION['user']['email'])): ?>
+                        <div class="checkout-form__row" style="margin-top:var(--space-md); align-items:end;">
+                            <div class="form-group"><label for="address-name">Address name</label><input type="text" id="address-name" name="address_name" placeholder="Home, Office, Parents"></div>
+                            <label style="display:flex; gap:var(--space-sm); align-items:center; padding-bottom:12px;"><input type="checkbox" id="save-address" name="save_address" value="1"> Save for next time</label>
+                        </div>
+                        <?php endif; ?>
                     </div>
                     <div class="form-group" style="margin-top:var(--space-md);">
                         <label>Coupon Code</label>
@@ -64,7 +81,7 @@
                     <div id="payment-method-toggle" style="margin-bottom:var(--space-md);">
                         <?php if ($hasRazorpay): ?>
                         <label style="display:inline-flex; align-items:center; gap:var(--space-sm); margin-right:var(--space-lg); cursor:pointer;">
-                            <input type="radio" name="payment_method" value="razorpay" <?= $defaultPaymentMethod === 'razorpay' ? 'checked' : '' ?> onchange="togglePaymentMethod()"> Pay with Razorpay
+                            <input type="radio" name="payment_method" value="razorpay" <?= $defaultPaymentMethod === 'razorpay' ? 'checked' : '' ?> onchange="togglePaymentMethod()"> Pay with Razorpay <small>(<?= e(ucfirst((string)($secrets['razorpay_mode'] ?? 'selected'))) ?> mode)</small>
                         </label>
                         <?php endif; ?>
                         <?php if ($hasStripe): ?>
@@ -96,6 +113,19 @@
                                 btn.textContent = 'Pay ₹<?= e((string)$total) ?> with Razorpay';
                             }
                         }
+                        const savedAddress = document.getElementById('saved-address');
+                        if (savedAddress) savedAddress.addEventListener('change', function () {
+                            const option = this.options[this.selectedIndex];
+                            const data = option && option.dataset.address ? JSON.parse(option.dataset.address) : {};
+                            ['name', 'phone', 'address', 'city', 'pincode'].forEach(function (field) {
+                                const input = document.querySelector('[name="' + field + '"]');
+                                if (input && data[field === 'name' ? 'recipient_name' : field] !== undefined) input.value = data[field === 'name' ? 'recipient_name' : field];
+                            });
+                            const addressName = document.querySelector('[name="address_name"]');
+                            const save = document.querySelector('[name="save_address"]');
+                            if (addressName) addressName.value = data.name || '';
+                            if (save) save.checked = false;
+                        });
                         (() => {
                             const button = document.getElementById('pay-now');
                             const form = document.querySelector('.checkout-form');
@@ -190,8 +220,12 @@
                                                 phone: form.querySelector('[name="phone"]').value,
                                                 address: form.querySelector('[name="address"]').value,
                                                 city: form.querySelector('[name="city"]').value,
-                                                pincode: form.querySelector('[name="pincode"]').value
-                                            });
+                                    pincode: form.querySelector('[name="pincode"]').value
+                                });
+                                const addressName = form.querySelector('[name="address_name"]');
+                                const saveAddress = form.querySelector('[name="save_address"]');
+                                if (addressName) bodyParams.address_name = addressName.value;
+                                if (saveAddress) bodyParams.save_address = saveAddress.checked ? '1' : '';
                                             const verifyResponse = await fetch('/payment/verify', {method: 'POST', body});
                                             const result = await verifyResponse.json();
                                             if (!verifyResponse.ok || !result.verified) {

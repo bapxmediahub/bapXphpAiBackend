@@ -104,6 +104,9 @@ final class CommerceController extends BaseController {
             }
         }
         $paymentMethod = trim($_POST['payment_method'] ?? 'razorpay');
+        if (!empty($_SESSION['user']['email']) && !empty($_POST['save_address']) && trim((string)($_POST['address_name'] ?? '')) !== '') {
+            (new \App\Services\AddressService())->save($_SESSION['user']['email'], $_POST);
+        }
         if ($paymentMethod === 'stripe') {
             if (empty($secrets['stripe_secret_key'])) {
                 $this->jsonResponse(['error' => 'Stripe payment gateway is not configured.'], 401);

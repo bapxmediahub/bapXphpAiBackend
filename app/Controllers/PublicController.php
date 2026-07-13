@@ -157,7 +157,8 @@ final class PublicController extends BaseController {
         $this->seoKey = 'checkout';
         $items = $this->resolveCartItems();
         $secrets = (new SecretService())->all();
-        $this->render('public/checkout', ['items' => $items, 'total' => $this->cartTotal($items), 'secrets' => $secrets]);
+        $addresses = !empty($_SESSION['user']['email']) ? (new \App\Services\AddressService())->forCustomer($_SESSION['user']['email']) : [];
+        $this->render('public/checkout', ['items' => $items, 'total' => $this->cartTotal($items), 'secrets' => $secrets, 'addresses' => $addresses]);
     }
     
     public function contact(): void {

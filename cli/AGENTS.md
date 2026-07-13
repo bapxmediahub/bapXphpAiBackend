@@ -23,7 +23,7 @@ Owns the bapXphp project CLI entry point and all PHP helper scripts for project-
 - The project map has one artifact: `docs/systematic-map.mmd`. `docs/KnowledgeMap.mmd` is a separate generated documentation mindmap, not a parallel project map.
 - Tool output should be deterministic enough for CI and agent verification.
 - **bapXphp** is the agent's first command. Use it for ALL project operations. Never edit content files directly.
-- bapXphp db commands connect to MySQL directly (no SSH tunnel). Exit with error if MySQL unreachable.
+- bapXphp db commands operate on remote MySQL directly or through the authenticated remote DB protocol; never silently fall back to local runtime data.
 - `bapXphp db sync` handles single-object JSON files (e.g. `secrets.json`, `settings.json`) by wrapping them in a single-record array.
 - `bapXphp docsmap` runs `cli/generate-docs-map.php` to regenerate `docs/KnowledgeMap.mmd`.
 - `bapXphp bloggen` runs `cli/refresh-blog-cache.php` to refresh GitHub-sourced blog cache.

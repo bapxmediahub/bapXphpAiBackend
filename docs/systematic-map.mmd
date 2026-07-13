@@ -7,12 +7,12 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 113 routes, 13 controllers, 39 services, 49 views, 0 data files, 15 tools"]
+  subgraph ARCH["Architecture Overview — 113 routes, 13 controllers, 40 services, 49 views, 0 data files, 15 tools"]
     arch_routes["> Routes: 113 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 13"]:::arch
-    arch_svc["> Services: 39"]:::arch
+    arch_svc["> Services: 40"]:::arch
     arch_views["> Views: 49"]:::arch
-    arch_data["> Collections: 21 schema | 0 files"]:::arch
+    arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 15"]:::arch
     arch_gaps["> Gaps: 0"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
@@ -172,6 +172,7 @@ flowchart LR
   end
 
   subgraph SERVICES["Services"]
+    service_125c14ddd376["AddressService"]:::code
     service_b2e5928bb46a["AgentContextService"]:::code
     service_717a4830bf0e["AppointmentService"]:::code
     service_b99a566f219c["AstrologerAccountService"]:::code
@@ -275,6 +276,7 @@ flowchart LR
 
   subgraph SCHEMA["Schema Collections"]
     collection_9bc65c2abec1["users"]:::data
+    collection_963e3a2fe559["addresses"]:::data
     collection_86024cad1e83["products"]:::data
     collection_c851fb104bb0["astrologers"]:::data
     collection_fefa79731a13["temples"]:::data
@@ -365,6 +367,7 @@ flowchart LR
   controller_18ec49ea2cf4 --> service_119321b674bd
   controller_18ec49ea2cf4 --> service_0ab47bcd921f
   controller_18ec49ea2cf4 --> service_6c9416ef0383
+  controller_18ec49ea2cf4 --> service_125c14ddd376
   controller_18ec49ea2cf4 -. renders .-> view_6b1f93c8d0e4
   route_8c80c0301221 --> controller_18ec49ea2cf4
   controller_18ec49ea2cf4 -. renders .-> view_89865e74ab9c

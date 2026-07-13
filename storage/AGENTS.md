@@ -16,7 +16,7 @@ Owns the MySQL schema contract (collections.php), optional JSON seed files, back
 - Update `storage/schema/collections.php` before changing collection shapes, admin fields, media fields, seed data, or agent-visible context.
 - Keep every application collection declared in collections.php; test fixtures and runtime secrets are not application collections.
 - Keep persistent data in MySQL (via DatabaseService). JSON seed files are only for one-time `bapXphp db sync`.
-- `storage/data/secrets.json` contains encrypted API secrets (Razorpay, Stripe, Google OAuth, SMTP, etc.). Never expose secrets to customer-facing assistant context.
+- Runtime secrets live in the remote MySQL `secrets` collection and are edited through Admin -> Integrations. Any local JSON secret fixture is import-only and never runtime storage. Never expose secrets to customer-facing assistant context.
 - Do not expose secrets or all users' data to customer-facing assistant context.
 - When adding a new secrets field, update `SecretService.php` and the admin integrations form.
 - The `secrets` collection is synced to MySQL via `bapXphp db sync` as a single-object JSON file (wrapped in array for sync).

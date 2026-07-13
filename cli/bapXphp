@@ -708,7 +708,7 @@ cmd_db_help() {
   echo "  bapXphp db show <collection>   — show schema collection fields"
   echo "  bapXphp db query <collection> [--where 'f=v'] [--limit N] [--id id]"
   echo "  bapXphp db find <collection> <id>  — find record by ID"
-  echo "  bapXphp db raw <sql>           — execute raw SQL on MySQL (auto-fallback to web proxy)"
+  echo "  bapXphp db raw <sql>           — execute read-only diagnostic SQL against remote MySQL"
   echo "  bapXphp db upsert <collection> <json> — authenticated remote record upsert"
   echo "  bapXphp db delete <collection> <id>   — authenticated remote record delete"
   echo "  bapXphp db remote-status         — verify remote mutation token presence"

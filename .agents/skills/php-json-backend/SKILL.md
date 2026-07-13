@@ -8,7 +8,7 @@ description: Use this skill set when contributing to this PHP/JSON agent-ready m
 - Read `AGENTS.md` first, then the closest child `AGENTS.md` for every path you will touch.
 - Reproduce or inspect the behavior and pinpoint its owning map/source path before selecting or creating the implementation issue.
 - Keep route -> controller -> service -> MySQL-store boundaries via `DatabaseService`.
-- MySQL is the primary runtime store. JSON files in `storage/data/` are used only for one-time seeding via `bapXphp db sync`.
+- Remote MySQL is the only runtime store. JSON files in `storage/data/` are import fixtures only and never a runtime fallback.
 - Use `storage/schema/collections.php` before changing collection shape, admin fields, media fields, seed data, or agent-visible context.
 - Use `docs/systematic-map.mmd` as the single wiring map. Regenerate it with `php cli/generate-project-map.php` and validate with `php cli/validate-project-map.php`.
 - For documentation/AGENTS.md changes, also consult `docs/KnowledgeMap.mmd` and regenerate it with `bash bapXphp docsmap`.
