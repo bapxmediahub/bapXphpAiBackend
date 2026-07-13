@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AuthService,ConsultationService,AstrologerService,WalletService,ResourceService,MailQueueService};
+use App\Services\{AuthService,ConsultationService,AstrologerService,WalletService,ResourceService,MailQueueService,SecretService};
 
 final class ConsultationController extends BaseController {
     private ConsultationService $consultations;

@@ -7,14 +7,14 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 113 routes, 13 controllers, 40 services, 49 views, 0 data files, 15 tools"]
+  subgraph ARCH["Architecture Overview — 113 routes, 13 controllers, 40 services, 50 views, 0 data files, 15 tools"]
     arch_routes["> Routes: 113 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 13"]:::arch
     arch_svc["> Services: 40"]:::arch
-    arch_views["> Views: 49"]:::arch
+    arch_views["> Views: 50"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 15"]:::arch
-    arch_gaps["> Gaps: 0"]:::arch
+    arch_gaps["> Gaps: 1"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -241,6 +241,7 @@ flowchart LR
     view_dae8fcbc86f4["layouts/admin"]:::code
     view_fd382d366d88["layouts/app"]:::code
     view_fe7e7ffe6adc["public/404"]:::code
+    view_b8de55d7769c["public/_consultation-pricing"]:::code
     view_82254c4e2aa1["public/about"]:::code
     view_74015889d737["public/astrologer"]:::code
     view_c8dddc6d8f3e["public/blog"]:::code
@@ -318,7 +319,7 @@ flowchart LR
   end
 
   subgraph GAPS["Gaps & Missing Links"]
-    no_gaps["No detected gaps"]:::data
+    gap_6f4e2f95c8["unwired_views: public/_consultation-pricing"]:::gap
   end
 
   route_e3b717d5883a --> controller_18ec49ea2cf4
@@ -868,3 +869,4 @@ flowchart LR
   tool_ffb4fe3c51d9 --> systematic_map
   tool_6bc5276d6a60 --> ROUTES_PUBLIC
   tool_6bc5276d6a60 --> ROUTES_ADMIN
+  gap_6f4e2f95c8 -. missing .-> view_b8de55d7769c
