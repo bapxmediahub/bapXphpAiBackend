@@ -120,6 +120,15 @@ Manage agent skills (specialized instructions and tools) from GitHub repositorie
 - `gh workflow run <name>`: Trigger a workflow.
 - `gh workflow view <name>`: View workflow definition.
 
+### Post-Merge Fork Sync
+
+- Prefer the authenticated in-app browser **Sync fork → Update branch** control when Browser control is available.
+- If Browser control is unavailable, continue without pausing:
+  `gh repo sync bapxmediahub/bapXphpAiBackend --source getwinharris/bapXphpAiBackend --branch main`
+- Compare both `main` SHAs through `gh api repos/<owner>/bapXphpAiBackend/commits/main --jq .sha`; do not rely only on the sync command's exit status.
+- Keep the fork's upstream-sync workflow enabled with both `workflow_dispatch` and a schedule.
+- Never use a forced sync when the fork has divergent commits. File an issue with the compare evidence instead.
+
 ### Runs (`gh run`)
 - `gh run list`: List workflow runs.
 - `gh run view <run-id>`: View details of a run.
