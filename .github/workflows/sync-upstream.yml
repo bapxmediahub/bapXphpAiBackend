@@ -1,0 +1,26 @@
+name: Sync upstream main
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 * * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-upstream-main
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.repository == 'bapxmediahub/bapXphpAiBackend'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync fork main from upstream
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh api --method POST
+          "repos/${GITHUB_REPOSITORY}/merge-upstream"
+          --field branch=main
