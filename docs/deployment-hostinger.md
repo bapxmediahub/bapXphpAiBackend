@@ -25,6 +25,14 @@ php cli/validate-project-map.php
 php cli/smoke-local.php
 ```
 
+## Fork Synchronization
+
+Upstream pushes to `getwinharris/bapXphpAiBackend:main` run `.github/workflows/notify-fork.yml`. The workflow sends an `upstream-main-updated` repository dispatch to `bapxmediahub/bapXphpAiBackend`, whose `sync-upstream.yml` workflow calls GitHub's supported `merge-upstream` API. Store a fine-grained token as the upstream Actions secret `FORK_SYNC_TOKEN`; it needs access only to the downstream repository with Contents write permission. Keep manual dispatch enabled for recovery. Do not add a scheduled polling fallback.
+
+## Production Logs
+
+Production operational history belongs in remote MySQL `audit_events`, visible in Admin -> Audit Log and through `bapXphp logs`. Local `server.log`, `storage/logs/`, and `output/playwright/` are ignored development/runtime artifacts and must never be committed. Use `bapXphp logs --local` only when diagnosing the local PHP server. Do not auto-commit hosted request or error logs: they may contain customer data and each log commit would retrigger deployment.
+
 ## Vercel
 
 This application is built for normal PHP hosting, not Vercel. Vercel's official platform is oriented around static output and serverless functions; PHP requires a community runtime such as `vercel-php`, which is not the target architecture for this MySQL-backed `public_html` app. Use Hostinger or another PHP host for production.

@@ -89,6 +89,23 @@ $tests['agent workflow diagnoses before issue tracking and stays source grounded
     assertTrue(str_contains($readme, 'AGENTS.md'), 'README should reference AGENTS.md instead of duplicating its workflow');
 };
 
+$tests['fork sync is event driven and runtime artifacts stay out of git'] = function (): void {
+    $sync = file_get_contents(app_path('.github/workflows/sync-upstream.yml'));
+    $notify = file_get_contents(app_path('.github/workflows/notify-fork.yml'));
+    $ignore = file_get_contents(app_path('.gitignore'));
+    $cli = file_get_contents(app_path('cli/bapXphp'));
+    assertTrue(str_contains($sync, 'repository_dispatch:'), 'Fork sync should receive an upstream dispatch');
+    assertTrue(str_contains($sync, 'upstream-main-updated'), 'Fork sync should name the upstream event');
+    assertTrue(!str_contains($sync, 'schedule:'), 'Fork sync should not poll on a timer');
+    assertTrue(str_contains($notify, 'branches: [main]'), 'Upstream notifier should watch main pushes');
+    assertTrue(str_contains($notify, 'FORK_SYNC_TOKEN'), 'Cross-repository dispatch should use a dedicated token');
+    foreach (['/output/playwright/', '/server.log', '/storage/logs/'] as $path) {
+        assertTrue(str_contains($ignore, $path), "Git should ignore {$path}");
+    }
+    assertTrue(str_contains($cli, 'Live production audit events (remote MySQL)'), 'CLI logs should be remote-first');
+    assertTrue(str_contains($cli, 'cmd_artifacts_clean'), 'CLI should own artifact cleanup');
+};
+
 $tests['repo has agent-readable schema and built-in skills'] = function (): void {
     $schemaPath = app_path('storage/schema/collections.php');
     assertTrue(is_file($schemaPath), 'PHP schema registry should exist');
@@ -472,7 +489,7 @@ $tests['astrologer profile uses remote consultation contact panel instead of app
 
 $tests['astrologer marketplace exposes search and direct session actions'] = function (): void {
     $view = file_get_contents(app_path('views/public/consult.php'));
-    foreach (['Search Astrologer', 'astro-search-input', 'astro-status-filter', 'astro-language-filter', 'data-astro-card', 'data-status=', 'data-language='] as $needle) {
+    foreach (['Search Consultant', 'astro-search-input', 'astro-status-filter', 'astro-language-filter', 'data-astro-card', 'data-status=', 'data-language='] as $needle) {
         assertTrue(str_contains($view, $needle), "Astrologer marketplace should expose {$needle}");
     }
     foreach (['Filters', 'Available Now', 'On Chat', 'On Call'] as $needle) {
@@ -525,12 +542,12 @@ $tests['support assistant widget uses browser session memory and google model se
 
 $tests['astrologer profile exposes real remote actions and verified review state'] = function (): void {
     $view = file_get_contents(app_path('views/public/astrologer.php'));
-    foreach (['aria-label="Start message session"', 'aria-label="Start call session"', 'BOOK SESSION', 'No verified reviews yet.', 'Private consultation rooms', 'Admin-managed astrologer profiles', '100% Secure Payments'] as $needle) {
+    foreach (['aria-label="Start message session"', 'aria-label="Start call session"', 'BOOK SESSION', 'No verified reviews yet.', 'Private consultation rooms', 'Admin-managed consultant profiles', '100% Secure Payments'] as $needle) {
         assertTrue(str_contains($view, $needle), "Astrologer profile should expose {$needle}");
     }
     foreach (['+ Follow', 'Flat Deal', 'Send gifts', 'Money Back Guarantee', 'K B...', '87))'] as $needle) assertTrue(!str_contains($view,$needle), "Astrologer profile should not render dead or fabricated content: {$needle}");
-    assertTrue(str_contains($view, '5 credits/message'), 'Astrologer profile should explain message credit cost');
-    assertTrue(str_contains($view, '0.5 credits/sec call'), 'Astrologer profile should explain call credit cost');
+    assertTrue(str_contains($view, 'message_credit_cost') && str_contains($view, 'credits/message'), 'Astrologer profile should explain its data-driven message credit cost');
+    assertTrue(str_contains($view, 'call_credit_per_second') && str_contains($view, 'credits/sec call'), 'Astrologer profile should explain its data-driven call credit cost');
 };
 
 $tests['home page rotates all astrologers instead of showing only three fixed cards'] = function (): void {
@@ -556,7 +573,7 @@ $tests['home hero uses concise current copy and working cta links'] = function (
     assertTrue(!str_contains($view, 'Buy Original Rudraksha, Pooja Items & Spiritual Products Online'), 'Home hero should not lead with ecommerce as the primary business');
     assertTrue(!str_contains($view, 'Shop Spiritual Products</a>'), 'Home hero shop button should use concise text');
     assertTrue(!str_contains($view, 'Remote Astrology Consultation</a>'), 'Home hero astrology button should use shorter text');
-    foreach (['Authentic Spiritual Products for Your Sacred Journey', 'href="/shop"', 'href="/consult"', '>Shop Now</a>', '>Consult Astrologers</a>', 'Sacred Emblems'] as $needle) {
+    foreach (['Authentic Spiritual Products for Your Sacred Journey', 'href="/shop"', 'href="/consult"', '>Shop Now</a>', '>Meet Consultants</a>', 'Sacred Emblems'] as $needle) {
         assertTrue(str_contains($view, $needle), "Home hero should include {$needle}");
     }
     assertTrue(!str_contains($view, '<div class="hero-stat-value">3</div>'), 'Home hero stat value should not be stale');

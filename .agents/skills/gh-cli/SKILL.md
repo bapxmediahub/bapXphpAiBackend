@@ -126,7 +126,7 @@ Manage agent skills (specialized instructions and tools) from GitHub repositorie
 - If Browser control is unavailable, continue without pausing:
   `gh repo sync bapxmediahub/bapXphpAiBackend --source getwinharris/bapXphpAiBackend --branch main`
 - Compare both `main` SHAs through `gh api repos/<owner>/bapXphpAiBackend/commits/main --jq .sha`; do not rely only on the sync command's exit status.
-- Keep the fork's upstream-sync workflow enabled with both `workflow_dispatch` and a schedule.
+- Keep the fork's upstream-sync workflow enabled with `workflow_dispatch` and `repository_dispatch: upstream-main-updated`. Upstream `main` pushes send the dispatch with the `FORK_SYNC_TOKEN` Actions secret.
 - Never use a forced sync when the fork has divergent commits. File an issue with the compare evidence instead.
 
 ### Runs (`gh run`)

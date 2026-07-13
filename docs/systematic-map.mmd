@@ -14,7 +14,7 @@ flowchart LR
     arch_views["> Views: 50"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 15"]:::arch
-    arch_gaps["> Gaps: 1"]:::arch
+    arch_gaps["> Gaps: 0"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -319,7 +319,7 @@ flowchart LR
   end
 
   subgraph GAPS["Gaps & Missing Links"]
-    gap_6f4e2f95c8["unwired_views: public/_consultation-pricing"]:::gap
+    no_gaps["No detected gaps"]:::data
   end
 
   route_e3b717d5883a --> controller_18ec49ea2cf4
@@ -869,4 +869,3 @@ flowchart LR
   tool_ffb4fe3c51d9 --> systematic_map
   tool_6bc5276d6a60 --> ROUTES_PUBLIC
   tool_6bc5276d6a60 --> ROUTES_ADMIN
-  gap_6f4e2f95c8 -. missing .-> view_b8de55d7769c

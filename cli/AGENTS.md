@@ -30,6 +30,8 @@ Owns the bapXphp project CLI entry point and all PHP helper scripts for project-
 - Use `bapXphp read blog <slug>` and `bapXphp write blog [slug]` for all blog post operations.
 - When a project task is not safely operable through `bapXphp`, extend the closest existing CLI concern first. New commands must support non-interactive agent use, work from the repo root on shared hosting, avoid embedded credentials/customer URLs, and provide `--dry-run` for bulk mutations.
 - Use `bapXphp product:images <archive.zip|folder> --dry-run` before importing product galleries; the importer orders front, back, then side images and updates both `image_url` and `image_urls`.
+- `bapXphp logs` reads live remote MySQL `audit_events`; local development logs require the explicit `--local` flag.
+- Use `bapXphp artifacts:clean --dry-run` before untracking `server.log`, `storage/logs/`, or `output/playwright/` artifacts.
 
 ## bapXphp — Agent Quick Start
 
