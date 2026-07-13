@@ -21,7 +21,7 @@ Owns third-party client wrappers for payment, OAuth, and future external service
 
 - Do not hardcode production credentials.
 - Preserve shared-hosting compatibility.
-- All integration secrets (Razorpay test/live keys, Stripe secret key, Google OAuth, Meta Pixel, Google Site Kit, Support Bot API key/model, SEO defaults, and SMTP) are stored encrypted in `secrets.json` and edited through **Admin → Integrations** (`/admin/integrations`). Keep secrets out of `.env`. `.env` only holds APP_NAME and APP_URL.
+- All integration secrets (Razorpay test/live keys, Stripe secret key, Google OAuth, Meta Pixel, Google Site Kit, Support Bot API key/model, SEO defaults, and SMTP) are stored encrypted in the remote MySQL `secrets` collection and edited through **Admin → Integrations** (`/admin/integrations`). Keep secrets out of `.env`. `.env` only holds APP_NAME and APP_URL.
 - Every secret key exposed by `SecretService` must have a corresponding editable field in `views/admin/integrations.php`; saving the form persists all secrets to the encrypted store via `SecretService::save()`. This repo is a flat-file JSON backend, so secrets are first-class admin-managed data, not environment config.
 
 ## Verification
@@ -31,4 +31,3 @@ Owns third-party client wrappers for payment, OAuth, and future external service
 - `php cli/smoke-local.php` when route behavior changes.
 
 ## Child DOX Index
-
