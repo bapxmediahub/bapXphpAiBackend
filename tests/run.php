@@ -732,6 +732,15 @@ $tests['consultation api exposes message call and status workflows'] = function 
     foreach(['/consultation/{id}','/api/consultations/{id}/messages','/api/consultations/{id}/signals','/api/consultations/{id}/status','/astrologer'] as $path) assertTrue(in_array($path,$paths,true),"Missing consultation route {$path}");
 };
 
+$tests['public consultation actions include csrf and room imports secrets'] = function (): void {
+    foreach (['views/public/home.php', 'views/public/consult.php', 'views/public/astrologer.php'] as $path) {
+        $view = file_get_contents(app_path($path));
+        assertTrue(str_contains($view, 'name="_csrf"'), basename($path) . ' should protect consultation initiation forms');
+    }
+    $controller = file_get_contents(app_path('app/Controllers/ConsultationController.php'));
+    assertTrue(str_contains($controller, 'MailQueueService,SecretService'), 'Consultation room should import SecretService');
+};
+
 $tests['remote database writes are authenticated and record-scoped'] = function (): void {
     $controller = file_get_contents(app_path('app/Controllers/RemoteDbController.php'));
     $database = file_get_contents(app_path('app/Services/DatabaseService.php'));
@@ -935,6 +944,19 @@ $tests['systematic project map and KnowledgeMap are the only generated map artif
     foreach (['CLI (bapXphp)', 'Agent Skills', 'Blog & Content', 'Application Architecture', 'Data Layer'] as $needle) {
         assertTrue(str_contains($kmap, $needle), "KnowledgeMap should include {$needle}");
     }
+};
+
+$tests['consultation pricing is shared and provider detail rates are data-driven'] = function (): void {
+    $home = file_get_contents(app_path('views/public/home.php'));
+    $consult = file_get_contents(app_path('views/public/consult.php'));
+    $detail = file_get_contents(app_path('views/public/astrologer.php'));
+    assertTrue(str_contains($home, "_consultation-pricing.php"), 'Home should render the shared consultation pricing card');
+    assertTrue(str_contains($consult, "_consultation-pricing.php"), 'Consult page should render the shared consultation pricing card');
+    assertTrue(!str_contains($home, 'astro-market-price'), 'Home provider cards should not repeat pricing');
+    assertTrue(!str_contains($consult, 'astro-market-price'), 'Consult provider cards should not repeat pricing');
+    assertTrue(str_contains($detail, "message_credit_cost"), 'Consultant detail should use the stored message rate');
+    assertTrue(str_contains($detail, "call_credit_per_second"), 'Consultant detail should use the stored call rate');
+    assertTrue(str_contains($consult, 'Talk to Consultants Online'), 'Public consultation copy should use consultant terminology');
 };
 
 foreach ($tests as $name => $test) {

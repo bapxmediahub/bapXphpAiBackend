@@ -1,23 +1,19 @@
-<section class="section">
+<section class="section document-page">
     <div class="container container--narrow">
-        <div style="text-align:center; margin-bottom:var(--space-2xl);">
+        <header class="document-page__header">
             <span class="eyebrow serif-accent">Documentation</span>
-            <h1 class="section-title" style="margin-bottom:var(--space-sm);">Project Documentation</h1>
-            <p class="lede" style="margin:0 auto;">Developer and agent-facing documentation for the Sri Panchami Spiritual platform.</p>
-        </div>
-        <div class="about-story-grid about-story-grid--single">
-            <div class="about-story-card reveal">
-                <h3><a href="/blog/category/news">News & Updates</a></h3>
-                <p>Platform news, feature releases, and announcements.</p>
-            </div>
-            <div class="about-story-card reveal">
-                <h3><a href="/blog/category/spirituality">Spirituality</a></h3>
-                <p>Spiritual guidance, practices, and wisdom.</p>
-            </div>
-            <div class="about-story-card reveal">
-                <h3><a href="/blog/category/astrology">Astrology</a></h3>
-                <p>Vedic astrology insights and consultations.</p>
-            </div>
+            <h1 class="section-title">Platform Documentation</h1>
+            <p class="lede">Guides are maintained as Markdown files so the product and its documentation stay aligned.</p>
+        </header>
+        <div class="document-index">
+            <?php foreach (($pages ?? []) as $page): ?>
+                <a class="document-index__item reveal" href="/docs#<?= e($page['slug']) ?>" id="<?= e($page['slug']) ?>">
+                    <span class="eyebrow">Guide</span>
+                    <h2><?= e($page['title']) ?></h2>
+                    <p><?= e($page['summary']) ?></p>
+                    <span class="document-index__link">Read guide</span>
+                </a>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>

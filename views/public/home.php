@@ -6,7 +6,7 @@
             <p class="lede">Discover sacred rudraksha, pooja items, spiritual jewellery, and temple idols. Free shipping across India on every order.</p>
             <div class="hero-actions">
                 <a href="/shop" class="btn btn-primary">Shop Now</a>
-                <a href="/consult" class="btn btn-outline">Consult Astrologers</a>
+                <a href="/consult" class="btn btn-outline">Meet Consultants</a>
             </div>
             <div class="hero-stats">
                 <div>
@@ -169,11 +169,12 @@
 <section class="section section--full">
     <div class="section-header">
         <span class="eyebrow serif-accent">Guidance · Clarity · Remedies</span>
-        <h2 class="section-title">Online Astrology Consultation</h2>
-        <p class="lede">Consult experienced Vedic astrologers by private message or direct call for kundli matching, horoscope reading, career guidance, and personalized remedies.</p>
+        <h2 class="section-title">Online Consultation</h2>
+        <p class="lede">Connect with experienced consultants by private message or direct call for guidance, clarity, and personalized support.</p>
     </div>
+    <?php include app_path('views/public/_consultation-pricing.php'); ?>
     <?php if(!empty($astrologers)): ?>
-    <div class="astro-carousel" aria-label="Astrologers carousel">
+    <div class="astro-carousel" aria-label="Consultants carousel">
         <div class="astro-carousel-track">
         <?php foreach(array_values(array_merge($astrologers, $astrologers)) as $astro): ?>
             <?php
@@ -195,16 +196,13 @@
                     <p class="astro-market-speciality"><?= e($speciality) ?></p>
                     <?php if($languageText !== '' || $experience !== ''): ?><div class="astro-market-meta"><?php if($languageText !== ''): ?><span><?= e($languageText) ?></span><?php endif; ?><?php if($experience !== ''): ?><span><?= e($experience) ?> years</span><?php endif; ?></div><?php endif; ?>
                 </div>
-                <div class="astro-market-price">
-                    <strong><?= e((string)($astro['message_credit_cost'] ?? 5)) ?> credits/message</strong>
-                    <span><?= e((string)($astro['call_credit_per_second'] ?? 0.5)) ?> credits/sec call</span>
-                </div>
                 <div class="astro-market-actions">
                     <div class="astro-action-row">
                         <?php if($state === 'online'): ?>
                             <form class="astro-session-form" action="/consultation/initiate" method="post">
                                 <input type="hidden" name="astrologer_slug" value="<?= e($astro['slug'] ?? '') ?>">
                                 <input type="hidden" name="mode" value="text_session">
+                                <input type="hidden" name="_csrf" value="<?= $csrf ?>">
                                 <button type="submit" class="astro-action astro-action--icon astro-action--chat" aria-label="Start message session" title="Message">
                                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 9.2 9.2 0 0 1-3.7-.8L3 21l1.8-5.3A8.2 8.2 0 0 1 4 11.5 8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5Z"/><path d="M8 10h8M8 14h5"/></svg>
                                     <span class="sr-only">Message</span>
@@ -213,6 +211,7 @@
                             <form class="astro-session-form" action="/consultation/initiate" method="post">
                                 <input type="hidden" name="astrologer_slug" value="<?= e($astro['slug'] ?? '') ?>">
                                 <input type="hidden" name="mode" value="direct_call">
+                                <input type="hidden" name="_csrf" value="<?= $csrf ?>">
                                 <button type="submit" class="astro-action astro-action--icon astro-action--call" aria-label="Start call session" title="Call">
                                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.7 19.7 0 0 1-8.6-3.1 19.1 19.1 0 0 1-5.9-5.9A19.7 19.7 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L8.1 10a16 16 0 0 0 5.9 5.9l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2Z"/></svg>
                                     <span class="sr-only">Call</span>
@@ -222,6 +221,7 @@
                             <form class="astro-session-form" action="/consultation/initiate" method="post">
                                 <input type="hidden" name="astrologer_slug" value="<?= e($astro['slug'] ?? '') ?>">
                                 <input type="hidden" name="mode" value="text_session">
+                                <input type="hidden" name="_csrf" value="<?= $csrf ?>">
                                 <input type="hidden" name="queue_status" value="waitlist">
                                 <button type="submit" class="astro-action astro-action--icon astro-action--chat" aria-label="Join message waitlist" title="Join message waitlist">
                                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 9.2 9.2 0 0 1-3.7-.8L3 21l1.8-5.3A8.2 8.2 0 0 1 4 11.5 8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5Z"/><path d="M8 10h8M8 14h5"/></svg>
@@ -376,7 +376,7 @@ document.addEventListener('DOMContentLoaded', function () {
             "name": "Do you offer Vedic astrology consultation in Chennai?",
             "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, we have 13 expert Vedic astrologers offering private text sessions and direct call sessions in Tamil, English, and other Indian languages. Services include kundli matching, horoscope reading, career guidance, and personalized remedies."
+                "text": "Yes, we have expert consultants offering private message sessions and direct calls in Tamil, English, and other Indian languages. Services include kundli matching, horoscope reading, career guidance, and personalized remedies."
             }
         },
         {

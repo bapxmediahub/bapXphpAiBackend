@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{ProductService,AstrologerService,TempleService,CategoryService,SecretService,SeoService,ContactService,ReviewService};
+use App\Services\{ProductService,AstrologerService,TempleService,CategoryService,SecretService,SeoService,ContactService,ReviewService,MarkdownRenderer};
 final class PublicController extends BaseController {
     
     public function home(): void {
@@ -33,13 +33,13 @@ final class PublicController extends BaseController {
     public function terms(): void { 
         $this->detectApiRequest();
         $this->seoKey = 'terms';
-        $this->render('public/terms'); 
+        $this->render('public/terms', ['document' => $this->markdownDocument('content/legal/terms.md')]);
     }
     
     public function privacy(): void { 
         $this->detectApiRequest();
         $this->seoKey = 'privacy';
-        $this->render('public/privacy'); 
+        $this->render('public/privacy', ['document' => $this->markdownDocument('content/legal/privacy.md')]);
     }
     
     public function consult(): void {
@@ -192,7 +192,29 @@ final class PublicController extends BaseController {
     }
 
     public function docs(): void {
+        $this->detectApiRequest();
         $this->seoKey = 'home';
-        $this->render('public/docs');
+        $pages = [];
+        foreach (glob(app_path('docs/pages/*.md')) ?: [] as $path) {
+            $raw = (string)@file_get_contents($path);
+            if ($raw === '') continue;
+            preg_match('/^#\s+(.+)$/m', $raw, $heading);
+            $title = trim($heading[1] ?? pathinfo($path, PATHINFO_FILENAME));
+            $body = preg_replace('/^#\s+.+\R?/m', '', $raw, 1);
+            $body = trim((string)$body);
+            $summary = trim((string)(preg_split('/\R\s*\R/', $body, 2)[0] ?? ''));
+            $pages[] = ['title' => $title, 'slug' => pathinfo($path, PATHINFO_FILENAME), 'summary' => $summary];
+        }
+        usort($pages, fn(array $a, array $b): int => strcmp($a['title'], $b['title']));
+        $this->render('public/docs', ['pages' => $pages]);
+    }
+
+    private function markdownDocument(string $relativePath): array
+    {
+        $raw = (string)@file_get_contents(app_path($relativePath));
+        preg_match('/^#\s+(.+)$/m', $raw, $heading);
+        $title = trim($heading[1] ?? 'Document');
+        $body = trim((string)preg_replace('/^#\s+.+\R?/m', '', $raw, 1));
+        return ['title' => $title, 'html' => (new MarkdownRenderer())->render($body)];
     }
 }
