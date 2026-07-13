@@ -371,6 +371,12 @@ $tests['admin integrations explain api setup and support bot keys'] = function (
     assertTrue(!str_contains($view, 'name="support_bot_google_api_endpoint"'), 'Admin should not need to enter the Google API endpoint manually');
 };
 
+$tests['google oauth callback uses canonical configured app url'] = function (): void {
+    $auth = file_get_contents(app_path('app/Controllers/AuthController.php'));
+    assertTrue(str_contains($auth, "getenv('APP_URL')"), 'Google OAuth should use the configured canonical app URL');
+    assertTrue(!str_contains($auth, "\$_SERVER['HTTP_HOST']"), 'Google OAuth should not trust the incoming host for redirect URI');
+};
+
 $tests['razorpay secrets support test and live modes'] = function (): void {
     $method = new ReflectionMethod(SecretService::class, 'normalize');
     $service = new SecretService();

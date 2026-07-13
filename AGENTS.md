@@ -11,6 +11,7 @@ This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP
 ## DOX Contract
 
 - `AGENTS.md` files are binding work contracts for their subtrees.
+- Keep investigation and file operations inside this repository by default. Do not search sibling folders, home directories, or unrelated projects unless the user explicitly requests that scope.
 - Read this root file first. Identify every expected target path, then read every `AGENTS.md` from the repo root down to each target before editing.
 - The nearest `AGENTS.md` controls local details. Parent docs continue to control repo-wide rules; child docs may not weaken this DOX contract.
 - After meaningful edits, re-check changed paths against the DOX chain, update the closest owning `AGENTS.md` when purpose, structure, workflow, artifacts, contracts, or durable preferences changed, and refresh parent Child DOX Index entries when children change.
