@@ -18,8 +18,10 @@ final class WalletController extends BaseController {
         $wallet->ensureSignupBonus($email);
         $balance = $wallet->balanceFor($email);
         $quote = $wallet->quoteTopUp((int)($_GET['amount'] ?? 100));
-        $secrets = (new SecretService())->all();
-        $this->render('account/wallet', compact('balance', 'quote', 'secrets'));
+        $secretService = new SecretService();
+        $secrets = $secretService->all();
+        $razorpayReady = $secretService->razorpayReadyForCurrentHost($secrets);
+        $this->render('account/wallet', compact('balance', 'quote', 'secrets', 'razorpayReady'));
     }
 
     public function createOrder(): void {
@@ -29,7 +31,7 @@ final class WalletController extends BaseController {
         $secrets = (new SecretService())->all();
         $amountRupees = (int)($_POST['amount_rupees'] ?? 0);
         $quote = (new WalletService())->quoteTopUp($amountRupees);
-        if (empty($secrets['razorpay_key_id']) || empty($secrets['razorpay_key_secret'])) {
+        if (!(new SecretService())->razorpayReadyForCurrentHost($secrets)) {
             $this->jsonResponse(['error' => 'Razorpay ' . ($secrets['razorpay_mode'] ?? 'selected') . ' mode is not configured yet.'], 400);
         }
         try {
@@ -62,7 +64,7 @@ final class WalletController extends BaseController {
         $this->isApiRequest = true;
         $this->validateCsrf();
         $secrets = (new SecretService())->all();
-        if (empty($secrets['razorpay_key_secret'])) {
+        if (!(new SecretService())->razorpayReadyForCurrentHost($secrets)) {
             $this->jsonResponse(['verified' => false, 'error' => 'Razorpay ' . ($secrets['razorpay_mode'] ?? 'selected') . ' mode is not configured yet.'], 400);
         }
         $orderId = (string)($_POST['razorpay_order_id'] ?? $_POST['order_id'] ?? '');
@@ -88,12 +90,16 @@ final class WalletController extends BaseController {
         }
         $expectedPaise = (int)round(((float)($pendingTx['total_rupees'] ?? 0)) * 100);
         $actualPaise = (int)($payment['amount'] ?? 0);
-        if ($actualPaise !== $expectedPaise || (string)($payment['order_id'] ?? '') !== $orderId) {
+        if (($payment['status'] ?? '') !== 'captured' || $actualPaise !== $expectedPaise || (string)($payment['order_id'] ?? '') !== $orderId) {
             $this->jsonResponse(['verified' => false, 'error' => 'Payment amount mismatch — expected ' . $expectedPaise . ' paise, got ' . $actualPaise . '.'], 400);
         }
         $amountRupees = (int)($pendingTx['amount_rupees'] ?? 0);
         $quote = (new WalletService())->quoteTopUp($amountRupees);
-        (new WalletService())->addTopUp($_SESSION['user']['email'] ?? '', $quote, $paymentId, 'confirmed', $pendingTx['id']);
+        try {
+            (new WalletService())->confirmTopUp($_SESSION['user']['email'] ?? '', $orderId, $paymentId, $quote);
+        } catch (\RuntimeException $exception) {
+            $this->jsonResponse(['verified' => false, 'error' => $exception->getMessage()], 409);
+        }
         $this->jsonResponse(['verified' => true]);
     }
 }

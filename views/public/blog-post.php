@@ -1,5 +1,6 @@
 <?php
-    $schemaUrl = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'sripanchamispiritual.com') . '/blog/' . ($slug ?? '');
+    $schemaBase = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'sripanchamispiritual.com');
+    $schemaUrl = $schemaBase . '/blog/' . ($slug ?? '');
     $schemaImage = $meta['og_image'] ?? $meta['image'] ?? ($seo['og_image'] ?? '');
     $schema = [
         '@context' => 'https://schema.org',
@@ -7,8 +8,8 @@
             [
                 '@type' => 'BreadcrumbList',
                 'itemListElement' => [
-                    ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'sripanchamispiritual.com')],
-                    ['@type' => 'ListItem', 'position' => 2, 'name' => 'Blog', 'item' => $schemaUrl . '/blog'],
+                    ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => $schemaBase],
+                    ['@type' => 'ListItem', 'position' => 2, 'name' => 'Blog', 'item' => $schemaBase . '/blog'],
                     ['@type' => 'ListItem', 'position' => 3, 'name' => $meta['title'] ?? 'Post', 'item' => $schemaUrl],
                 ],
             ],
@@ -35,21 +36,20 @@
     $schema['@graph'][1] = array_filter($schema['@graph'][1], fn($v) => $v !== 'undefined');
 ?>
 <script type="application/ld+json"><?= json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?></script>
-<section class="blog-post-page">
+<section class="blog-post-page blog-article">
   <div class="container">
-    <nav class="breadcrumbs">
-      <a href="/blog">← Blog</a>
+    <nav class="breadcrumbs blog-article__breadcrumbs" aria-label="Breadcrumb">
+      <a href="/blog">Journal</a><span aria-hidden="true">/</span><span><?= e($meta['category'] ?? 'Article') ?></span>
     </nav>
 
     <article class="blog-post">
       <header class="blog-post__header">
+        <?php if (!empty($meta['category'])): ?><span class="eyebrow serif-accent"><?= e($meta['category']) ?></span><?php endif; ?>
         <h1><?= e($meta['title'] ?? '') ?></h1>
+        <?php if (!empty($meta['excerpt'])): ?><p class="blog-post__dek"><?= e($meta['excerpt']) ?></p><?php endif; ?>
         <div class="blog-post__meta">
-          <?php if (!empty($meta['category'])): ?>
-            <span class="blog-card__category"><?= e($meta['category']) ?></span>
-          <?php endif; ?>
           <?php if (!empty($meta['published_at'])): ?>
-            <time><?= e(date('F j, Y', strtotime($meta['published_at']))) ?></time>
+            <time datetime="<?= e($meta['published_at']) ?>"><?= e(date('F j, Y', strtotime($meta['published_at']))) ?></time>
           <?php endif; ?>
           <?php if (!empty($meta['author'])): ?>
             <span class="blog-post__author">By <?= e($meta['author']) ?></span>
@@ -57,17 +57,17 @@
         </div>
       </header>
 
-      <?php if (!empty($meta['image'])): ?>
-        <img class="blog-post__featured" src="<?= e($meta['image']) ?>" alt="<?= e($meta['title'] ?? '') ?>" loading="lazy">
-      <?php endif; ?>
+      <?php $articleImage = $meta['image'] ?? $meta['og_image'] ?? '/assets/images/hero-temple-bg.webp'; ?>
+      <figure class="blog-post__featured"><img src="<?= e($articleImage) ?>" alt="" loading="eager"></figure>
 
       <div class="blog-post__content">
         <?= $content ?>
       </div>
     </article>
 
-    <nav class="blog-post__nav">
-      <a href="/blog" class="btn btn--outline">← All Posts</a>
-    </nav>
+    <aside class="blog-post__cta">
+      <div><span class="eyebrow">Personal guidance</span><h2>Speak with a consultant</h2><p>Continue your reading with a private message or call request.</p></div>
+      <a href="/consult" class="btn btn-primary">Browse consultants</a>
+    </aside>
   </div>
 </section>

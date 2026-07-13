@@ -31,22 +31,45 @@
     --color-info-light: #eff6ff;
     --color-rating: #d68641;
 
+    /* Semantic color roles (DESIGN.md / Material-3-style pairs).
+       These are aliases onto the palette above -- same hex values,
+       named by function instead of hue so components can be described
+       declaratively (see /Design.md). */
+    --color-primary: var(--color-maroon);
+    --color-on-primary: var(--color-white);
+    --color-primary-container: var(--color-maroon-light);
+    --color-on-primary-container: var(--color-gold-light);
+    --color-secondary: var(--color-accent);
+    --color-on-secondary: var(--color-white);
+    --color-secondary-container: var(--color-accent-light);
+    --color-tertiary: var(--color-gold);
+    --color-on-tertiary: var(--color-maroon);
+    --color-tertiary-container: var(--color-gold-light);
+    --color-surface: var(--color-bg);
+    --color-surface-container: var(--color-bg-alt);
+    --color-outline: var(--color-border);
+    --color-outline-variant: var(--color-border-light);
+
     /* Gradients */
     --gradient-gold: var(--color-maroon);
     --gradient-divine: var(--color-bg-alt);
 
-    /* Shadows - naming by elevation */
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
-    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.12);
-    --shadow-lg: 0 2px 8px rgba(0, 0, 0, 0.12);
-    --shadow-xl: 0 2px 8px rgba(0, 0, 0, 0.12);
-    --shadow-divine: 0 2px 8px rgba(0, 0, 0, 0.12);
+    /* Elevation scale -- tonal-first, shadow-second (Material 3 style):
+       each step is a deliberate, restrained jump used for exactly one
+       purpose. Never stack more than one step on the same element. */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);      /* resting cards, inputs */
+    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.12);      /* raised buttons, hovered product cards */
+    --shadow-lg: 0 6px 20px rgba(34, 12, 8, 0.14);   /* hovered astrologer / feature cards */
+    --shadow-xl: 0 12px 32px rgba(34, 12, 8, 0.16);  /* modals, drawers, popovers */
+    --shadow-divine: var(--shadow-lg);               /* legacy alias, kept for existing rules */
     --shadow-glow: none;
+    --shadow-focus: 0 0 0 3px rgba(58, 0, 3, 0.4);   /* single focus-ring definition */
 
     /* Transitions */
     --transition-fast: 0.15s ease;
     --transition-base: 0.25s ease;
     --transition-divine: 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    --transition-spring: 0.35s cubic-bezier(0.34, 1.4, 0.64, 1); /* restrained expressive-motion spring for hover lifts */
 
     /* Typography */
     --font-main: 'Inter', system-ui, -apple-system, sans-serif;
@@ -117,8 +140,6 @@ label { cursor: pointer; }
     border: 0;
     text-decoration: none;
     font-size: 0.95rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
     white-space: nowrap;
     line-height: 1.4;
     position: relative;
@@ -145,6 +166,7 @@ label { cursor: pointer; }
     color: var(--color-bg);
     border: none;
     box-shadow: var(--shadow-md);
+    transition: transform var(--transition-spring), box-shadow var(--transition-base), background var(--transition-base);
 }
 .btn-primary:hover {
     transform: translateY(-2px);
@@ -155,13 +177,14 @@ label { cursor: pointer; }
     transform: translateY(0);
 }
 .btn-primary:focus-visible {
-    box-shadow: 0 0 0 3px rgba(58, 0, 3, 0.4);
+    box-shadow: var(--shadow-focus);
     outline: none;
 }
 .btn-outline {
     background: transparent;
     border: 1.5px solid var(--color-gold);
     color: var(--color-ink);
+    transition: transform var(--transition-spring), background var(--transition-base), color var(--transition-base);
 }
 .btn-outline:hover {
     background: var(--color-gold-light);
@@ -169,7 +192,7 @@ label { cursor: pointer; }
     transform: translateY(-2px);
 }
 .btn-outline:focus-visible {
-    box-shadow: 0 0 0 3px rgba(58, 0, 3, 0.4);
+    box-shadow: var(--shadow-focus);
     outline: none;
 }
 .btn-ghost {
@@ -716,14 +739,15 @@ nav a:hover { color: var(--color-maroon); }
      border: 1px solid var(--color-border);
      border-radius: var(--radius-lg);
      overflow: hidden;
-     transition: all var(--transition-divine);
+     box-shadow: var(--shadow-sm);
+     transition: transform var(--transition-spring), box-shadow var(--transition-base), border-color var(--transition-base);
      position: relative;
      display: flex;
      flex-direction: column;
  }
 .product-card:hover {
-    transform: translateY(-8px);
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-md);
     border-color: var(--color-gold);
 }
 .product-card__image {
@@ -1108,10 +1132,10 @@ nav a:hover { color: var(--color-maroon); }
     border: 1px solid var(--color-border);
     border-radius: 18px;
     overflow: hidden;
-    transition: all var(--transition-divine);
+    transition: transform var(--transition-spring), box-shadow var(--transition-base), border-color var(--transition-base);
     box-shadow: var(--shadow-sm);
 }
-.astrologer-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-xl); border-color: rgba(58, 0, 3,0.65); }
+.astrologer-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: rgba(58, 0, 3,0.65); }
 .astrologer-card__header {
     display: flex;
     align-items: center;
@@ -1220,6 +1244,30 @@ nav a:hover { color: var(--color-maroon); }
     appearance: none;
     cursor: pointer;
 }
+.astro-search:focus-within,
+.astro-filter:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-focus);
+}
+.astro-search input:focus,
+.astro-filter select:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+.astro-filter { position: relative; padding-right: 2.4rem; }
+.astro-filter::after {
+    content: '';
+    position: absolute;
+    right: 1rem;
+    bottom: 1.15rem;
+    width: .45rem;
+    height: .45rem;
+    border-right: 2px solid var(--color-primary);
+    border-bottom: 2px solid var(--color-primary);
+    transform: rotate(45deg);
+    pointer-events: none;
+}
+.astro-filter select { width: 100%; padding-right: 1.25rem; }
 .astro-market-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3342,3 +3390,46 @@ body { background: var(--color-bg); }
     height: 18px;
     flex-shrink: 0;
 }
+/* Editorial blog and customer help center */
+.blog-editorial{padding:var(--space-3xl) 0 var(--space-4xl);background:var(--color-surface)}
+.blog-editorial>.container{max-width:1180px}
+.blog-editorial__header{max-width:760px;margin:0 0 var(--space-xl)}
+.blog-editorial__header .page-title{margin:.35rem 0 .6rem;font-size:clamp(2rem,4vw,3.4rem);line-height:1.05}
+.blog-editorial__header>p{margin:0;color:var(--color-text-muted);font-size:1.05rem;line-height:1.65}
+.blog-editorial .blog-categories{padding-bottom:var(--space-lg);border-bottom:1px solid var(--color-outline-variant)}
+.blog-editorial .blog-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-xl)}
+.blog-editorial .blog-card{display:grid;grid-template-columns:180px minmax(0,1fr);overflow:hidden;min-height:240px;border-radius:var(--radius-md);transition:transform var(--transition-base),box-shadow var(--transition-base)}
+.blog-editorial .blog-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
+.blog-card__media{display:block;min-height:100%;overflow:hidden;background:var(--color-primary)}
+.blog-card__image{width:100%;height:100%;object-fit:cover;transition:transform .35s ease}
+.blog-card:hover .blog-card__image{transform:scale(1.025)}
+.blog-card__kicker{display:flex;align-items:center;justify-content:space-between;gap:var(--space-sm)}
+.blog-card__read{display:inline-flex;align-items:center;gap:.4rem;margin-top:auto;color:var(--color-primary);font-size:.88rem;font-weight:700}
+.blog-card--featured{grid-column:1/-1;grid-template-columns:minmax(320px,1.15fr) minmax(0,1fr);min-height:390px}
+.blog-card--featured .blog-card__body{align-content:center;padding:clamp(28px,5vw,56px)}
+.blog-card--featured .blog-card__title{font-size:clamp(1.55rem,3vw,2.35rem)}
+.blog-article{padding:var(--space-xl) 0 var(--space-4xl);background:var(--color-surface)}
+.blog-article>.container{max-width:1050px}
+.blog-article__breadcrumbs,.document-breadcrumbs{display:flex;gap:.55rem;align-items:center;margin-bottom:var(--space-xl);color:var(--color-text-soft);font-size:.85rem}
+.blog-article__breadcrumbs a,.document-breadcrumbs a{color:var(--color-primary);font-weight:700}
+.blog-post{overflow:hidden;border:1px solid var(--color-outline-variant);border-radius:var(--radius-lg);background:var(--color-white);box-shadow:var(--shadow-sm)}
+.blog-post__header{max-width:800px;margin:0 auto;padding:clamp(32px,7vw,72px) clamp(24px,6vw,64px) var(--space-xl);text-align:center}
+.blog-post__header h1{margin:.6rem 0 1rem;font-size:clamp(2rem,5vw,3.65rem);line-height:1.08;color:var(--color-ink)}
+.blog-post__dek{margin:0 auto var(--space-lg);max-width:700px;color:var(--color-text-muted);font-size:1.08rem;line-height:1.65}
+.blog-post__meta{display:flex;justify-content:center;flex-wrap:wrap;gap:var(--space-sm) var(--space-lg);color:var(--color-text-soft);font-size:.86rem}
+.blog-post__featured{margin:0;aspect-ratio:16/7;overflow:hidden;background:var(--color-primary)}
+.blog-post__featured img{width:100%;height:100%;object-fit:cover}
+.blog-post__content{max-width:760px;margin:0 auto;padding:clamp(32px,7vw,72px) clamp(24px,6vw,64px);color:var(--color-text);font-size:1.03rem;line-height:1.78}
+.blog-post__content h2{margin:2.4rem 0 .8rem;color:var(--color-primary);font-size:1.55rem;line-height:1.3}
+.blog-post__content h3{margin:1.8rem 0 .65rem;color:var(--color-ink);font-size:1.2rem}
+.blog-post__content p,.blog-post__content ul,.blog-post__content ol{margin:0 0 1.25rem}
+.blog-post__content li+li{margin-top:.5rem}
+.blog-post__content blockquote{margin:1.8rem 0;padding:var(--space-lg);border-left:3px solid var(--color-tertiary);background:var(--color-surface-container);color:var(--color-text-muted)}
+.blog-post__cta,.document-help-cta{display:flex;align-items:center;justify-content:space-between;gap:var(--space-xl);margin-top:var(--space-xl);padding:var(--space-xl);border:1px solid var(--color-outline-variant);border-radius:var(--radius-md);background:var(--color-surface-container)}
+.blog-post__cta h2{margin:.25rem 0;color:var(--color-primary);font-size:1.35rem}.blog-post__cta p{margin:0;color:var(--color-text-muted)}
+.document-index__icon{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--color-tertiary-container);color:var(--color-primary);font-weight:800}
+.document-guide .document-page__header{margin-bottom:var(--space-xl)}
+.document-help-cta div{display:grid;gap:.2rem}.document-help-cta span{color:var(--color-text-muted)}
+.payment-status{display:grid;gap:.15rem;margin:0 0 var(--space-md);padding:var(--space-md);border:1px solid var(--color-outline-variant);border-radius:var(--radius-sm);font-size:.9rem}.payment-status span{color:var(--color-text-muted)}.payment-status--live{border-color:rgba(45,138,78,.35);background:rgba(45,138,78,.08)}.payment-status--unavailable{border-color:rgba(232,163,23,.45);background:rgba(232,163,23,.09)}
+@media(max-width:900px){.blog-editorial .blog-grid{grid-template-columns:1fr}.blog-card--featured{grid-column:auto}}
+@media(max-width:700px){.blog-editorial .blog-card,.blog-card--featured{grid-template-columns:1fr;min-height:0}.blog-card__media{aspect-ratio:16/9}.blog-post__header h1{font-size:2rem}.blog-post__featured{aspect-ratio:16/9}.blog-post__cta,.document-help-cta{align-items:stretch;flex-direction:column}.blog-post__cta .btn,.document-help-cta .btn{width:100%}}

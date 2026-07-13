@@ -156,9 +156,11 @@ final class PublicController extends BaseController {
         $this->detectApiRequest();
         $this->seoKey = 'checkout';
         $items = $this->resolveCartItems();
-        $secrets = (new SecretService())->all();
+        $secretService = new SecretService();
+        $secrets = $secretService->all();
+        $razorpayReady = $secretService->razorpayReadyForCurrentHost($secrets);
         $addresses = !empty($_SESSION['user']['email']) ? (new \App\Services\AddressService())->forCustomer($_SESSION['user']['email']) : [];
-        $this->render('public/checkout', ['items' => $items, 'total' => $this->cartTotal($items), 'secrets' => $secrets, 'addresses' => $addresses]);
+        $this->render('public/checkout', ['items' => $items, 'total' => $this->cartTotal($items), 'secrets' => $secrets, 'addresses' => $addresses, 'razorpayReady' => $razorpayReady]);
     }
     
     public function contact(): void {
@@ -195,18 +197,61 @@ final class PublicController extends BaseController {
         $this->detectApiRequest();
         $this->seoKey = 'home';
         $pages = [];
-        foreach (glob(app_path('docs/pages/*.md')) ?: [] as $path) {
+        foreach (glob(app_path('content/docs/*.md')) ?: [] as $path) {
             $raw = (string)@file_get_contents($path);
             if ($raw === '') continue;
-            preg_match('/^#\s+(.+)$/m', $raw, $heading);
-            $title = trim($heading[1] ?? pathinfo($path, PATHINFO_FILENAME));
-            $body = preg_replace('/^#\s+.+\R?/m', '', $raw, 1);
-            $body = trim((string)$body);
-            $summary = trim((string)(preg_split('/\R\s*\R/', $body, 2)[0] ?? ''));
-            $pages[] = ['title' => $title, 'slug' => pathinfo($path, PATHINFO_FILENAME), 'summary' => $summary];
+            $document = $this->parseContentDocument($raw, pathinfo($path, PATHINFO_FILENAME));
+            $pages[] = [
+                'title' => $document['title'],
+                'slug' => $document['slug'],
+                'summary' => $document['summary'],
+                'order' => $document['order'],
+                'icon' => $document['icon'],
+            ];
         }
-        usort($pages, fn(array $a, array $b): int => strcmp($a['title'], $b['title']));
+        usort($pages, fn(array $a, array $b): int => ($a['order'] <=> $b['order']) ?: strcmp($a['title'], $b['title']));
         $this->render('public/docs', ['pages' => $pages]);
+    }
+
+    public function doc(string $slug): void {
+        $this->detectApiRequest();
+        $slug = preg_replace('/[^a-z0-9-]/', '', strtolower($slug));
+        $path = app_path('content/docs/' . $slug . '.md');
+        if (!is_file($path)) {
+            $this->renderNotFound();
+            return;
+        }
+        $document = $this->parseContentDocument((string)file_get_contents($path), $slug);
+        $this->seoOverrides = ['title' => $document['title'], 'description' => $document['summary']];
+        $this->render('public/doc', ['document' => $document]);
+    }
+
+    private function parseContentDocument(string $raw, string $fallbackSlug): array
+    {
+        $meta = [];
+        $body = $raw;
+        if (str_starts_with($raw, '---')) {
+            $parts = explode('---', $raw, 3);
+            if (count($parts) === 3) {
+                foreach (explode("\n", trim($parts[1])) as $line) {
+                    if (!str_contains($line, ':')) continue;
+                    [$key, $value] = explode(':', $line, 2);
+                    $meta[trim($key)] = trim(trim($value), "\"'");
+                }
+                $body = trim($parts[2]);
+            }
+        }
+        preg_match('/^#\s+(.+)$/m', $body, $heading);
+        $title = trim((string)($meta['title'] ?? $heading[1] ?? ucfirst(str_replace('-', ' ', $fallbackSlug))));
+        $body = trim((string)preg_replace('/^#\s+.+\R?/m', '', $body, 1));
+        return [
+            'title' => $title,
+            'slug' => (string)($meta['slug'] ?? $fallbackSlug),
+            'summary' => (string)($meta['summary'] ?? ''),
+            'order' => (int)($meta['order'] ?? 100),
+            'icon' => (string)($meta['icon'] ?? 'guide'),
+            'html' => (new MarkdownRenderer())->render($body),
+        ];
     }
 
     private function markdownDocument(string $relativePath): array

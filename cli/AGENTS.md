@@ -13,6 +13,7 @@ Owns the bapXphp project CLI entry point and all PHP helper scripts for project-
 - `refresh-blog-cache.php`: fetches and caches GitHub-sourced blog/documents.
 - `smoke-local.php`: starts a disposable local PHP server and checks key routes/API behavior.
 - `blog-read.php` / `blog-write.php`: CLI blog post read and interactive create/edit tools.
+- `doc-read.php` / `doc-write.php`: CLI customer help guide read and interactive create/edit tools.
 - `product-read.php` / `product-write.php`: CLI product read and interactive create/edit tools.
 - `import-product-images.php`: idempotent ZIP/folder gallery import, image optimization, and MySQL product media updates.
 - Other scripts must have one clear concern.
@@ -24,10 +25,12 @@ Owns the bapXphp project CLI entry point and all PHP helper scripts for project-
 - Tool output should be deterministic enough for CI and agent verification.
 - **bapXphp** is the agent's first command. Use it for ALL project operations. Never edit content files directly.
 - bapXphp db commands operate on remote MySQL directly or through the authenticated remote DB protocol; never silently fall back to local runtime data.
+- Prefer `bapXphp db hosted <sql>` for owner-authorized remote mutations when `.env.mysql` provides hosting and MySQL access; this path does not use an application mutation token.
 - `bapXphp db sync` handles single-object JSON files (e.g. `secrets.json`, `settings.json`) by wrapping them in a single-record array.
 - `bapXphp docsmap` runs `cli/generate-docs-map.php` to regenerate `docs/KnowledgeMap.mmd`.
 - `bapXphp bloggen` runs `cli/refresh-blog-cache.php` to refresh GitHub-sourced blog cache.
 - Use `bapXphp read blog <slug>` and `bapXphp write blog [slug]` for all blog post operations.
+- Use `bapXphp read docs <slug>` and `bapXphp write docs [slug]` for customer help guide operations.
 - When a project task is not safely operable through `bapXphp`, extend the closest existing CLI concern first. New commands must support non-interactive agent use, work from the repo root on shared hosting, avoid embedded credentials/customer URLs, and provide `--dry-run` for bulk mutations.
 - Use `bapXphp product:images <archive.zip|folder> --dry-run` before importing product galleries; the importer orders front, back, then side images and updates both `image_url` and `image_urls`.
 - `bapXphp logs` reads live remote MySQL `audit_events`; local development logs require the explicit `--local` flag.

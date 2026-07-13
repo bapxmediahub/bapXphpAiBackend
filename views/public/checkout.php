@@ -71,7 +71,7 @@
                     </div>
                     <?php
                         $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16));
-                        $hasRazorpay = !empty($secrets['razorpay_key_id']);
+                        $hasRazorpay = !empty($razorpayReady);
                         $hasStripe = !empty($secrets['stripe_secret_key']);
                         $hasPaymentGateway = $hasRazorpay || $hasStripe;
                         $defaultPaymentMethod = $hasRazorpay ? 'razorpay' : 'stripe';
@@ -81,7 +81,7 @@
                     <div id="payment-method-toggle" style="margin-bottom:var(--space-md);">
                         <?php if ($hasRazorpay): ?>
                         <label style="display:inline-flex; align-items:center; gap:var(--space-sm); margin-right:var(--space-lg); cursor:pointer;">
-                            <input type="radio" name="payment_method" value="razorpay" <?= $defaultPaymentMethod === 'razorpay' ? 'checked' : '' ?> onchange="togglePaymentMethod()"> Pay with Razorpay <small>(<?= e(ucfirst((string)($secrets['razorpay_mode'] ?? 'selected'))) ?> mode)</small>
+                            <input type="radio" name="payment_method" value="razorpay" <?= $defaultPaymentMethod === 'razorpay' ? 'checked' : '' ?> onchange="togglePaymentMethod()"> Pay securely with Razorpay <small>(Live)</small>
                         </label>
                         <?php endif; ?>
                         <?php if ($hasStripe): ?>
@@ -148,7 +148,9 @@
                                     phone: form.querySelector('[name="phone"]').value,
                                     address: form.querySelector('[name="address"]').value,
                                     city: form.querySelector('[name="city"]').value,
-                                    pincode: form.querySelector('[name="pincode"]').value
+                                    pincode: form.querySelector('[name="pincode"]').value,
+                                    address_name: form.querySelector('[name="address_name"]')?.value || '',
+                                    save_address: form.querySelector('[name="save_address"]')?.checked ? '1' : ''
                                 };
                                 if (paymentMethod === 'stripe') {
                                     showToast('Opening secure Stripe checkout...', 'info');
@@ -222,10 +224,6 @@
                                                 city: form.querySelector('[name="city"]').value,
                                     pincode: form.querySelector('[name="pincode"]').value
                                 });
-                                const addressName = form.querySelector('[name="address_name"]');
-                                const saveAddress = form.querySelector('[name="save_address"]');
-                                if (addressName) bodyParams.address_name = addressName.value;
-                                if (saveAddress) bodyParams.save_address = saveAddress.checked ? '1' : '';
                                             const verifyResponse = await fetch('/payment/verify', {method: 'POST', body});
                                             const result = await verifyResponse.json();
                                             if (!verifyResponse.ok || !result.verified) {
@@ -250,7 +248,7 @@
                         togglePaymentMethod();
                         </script>
                     <?php else: ?>
-                        <script>document.addEventListener('DOMContentLoaded',function(){showToast('No payment gateway is configured yet. Please contact the administrator.','warning');});</script>
+                        <div class="payment-status payment-status--unavailable"><strong>Online payment temporarily unavailable</strong><span>Your order details are safe, but checkout cannot take payment until the live gateway is connected.</span></div>
                     <?php endif; ?>
                 </div>
                 <div class="checkout-summary reveal">

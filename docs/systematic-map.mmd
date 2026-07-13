@@ -7,13 +7,13 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 113 routes, 13 controllers, 40 services, 50 views, 0 data files, 15 tools"]
-    arch_routes["> Routes: 113 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 114 routes, 13 controllers, 40 services, 51 views, 0 data files, 17 tools"]
+    arch_routes["> Routes: 114 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 13"]:::arch
     arch_svc["> Services: 40"]:::arch
-    arch_views["> Views: 50"]:::arch
+    arch_views["> Views: 51"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
-    arch_tools["> Tools: 15"]:::arch
+    arch_tools["> Tools: 17"]:::arch
     arch_gaps["> Gaps: 0"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
@@ -59,6 +59,7 @@ flowchart LR
     route_ee5462fe50d8["POST /reviews/astrologer — Submit astrologer review"]:::route
     route_9c8e6425cd02["POST /reviews/product — Submit product review"]:::route
     route_93b329f29ece["GET /docs — Documentation landing — blog categories overview"]:::route
+    route_f8a6fa677b42["GET /docs/{slug}"]:::route
     route_98607742961f["POST /remotedb — Remote DB query endpoint — proxies SQL to production MySQL"]:::route
     route_6e62aa059570["GET /blog — Blog listing — all posts with category filters"]:::route
     route_b8738856284a["GET /blog/{slug} — Blog post — rendered from GitHub-sourced markdown"]:::route
@@ -251,6 +252,7 @@ flowchart LR
     view_6b1f93c8d0e4["public/checkout"]:::code
     view_eb9fd22a15bf["public/consult"]:::code
     view_89865e74ab9c["public/contact"]:::code
+    view_7124ac9f4433["public/doc"]:::code
     view_fad3b39b568b["public/docs"]:::code
     view_b8744c438a04["public/forgot-password"]:::code
     view_17c7f41e5cc8["public/home"]:::code
@@ -303,6 +305,8 @@ flowchart LR
   subgraph TOOLS["Tools"]
     tool_fbc45397571b["blog-read"]:::tool
     tool_519ad2e88fb9["blog-write"]:::tool
+    tool_aa7d3d0815ed["doc-read"]:::tool
+    tool_e255759bee23["doc-write"]:::tool
     tool_1913548b93c6["generate-docs-map"]:::tool
     tool_891d42e0bd53["generate-project-map"]:::tool
     tool_20fe79d51ae4["import-product-images"]:::tool
@@ -755,6 +759,9 @@ flowchart LR
   controller_64e608ddc28b -. renders .-> view_54f97aa2b448
   route_93b329f29ece --> controller_18ec49ea2cf4
   controller_18ec49ea2cf4 -. renders .-> view_fad3b39b568b
+  route_f8a6fa677b42 --> controller_18ec49ea2cf4
+  controller_18ec49ea2cf4 --> service_dc8af4c619cd
+  controller_18ec49ea2cf4 -. renders .-> view_7124ac9f4433
   route_98607742961f --> controller_2702fc6f256e
   controller_2702fc6f256e --> service_66daa9bdc2c1
   controller_2702fc6f256e -. renders .-> view_fe7e7ffe6adc
