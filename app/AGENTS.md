@@ -18,7 +18,7 @@ Owns PHP runtime behavior: bootstrap, routes, controllers, services, guards, per
 - User-specific assistant data must flow through `AgentContextService` or equivalent filtering.
 - Project-map structure, including global and internal navigation-to-route edges, belongs in `ProjectMapService::scan()` and `ProjectMapService::renderSystematicMermaid()`.
 - Project-map scans must be deterministic across clean checkouts and deployments; exclude ignored runtime secret stores from generated artifacts.
-- Consultation messages, call signaling, participant authorization, status, and analytics belong in `ConsultationService` and authenticated PHP API controllers.
+- Scheduled appointment lifecycle and analytics belong in `ConsultationService` and authenticated PHP API controllers. Central admin owns status updates and receives SMTP booking notifications; consultant profiles are not login accounts.
 
 ## Work Guidance
 

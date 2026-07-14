@@ -4,4 +4,4 @@ Customers browse `/consult`, open a consultant profile, and submit a preferred d
 
 The product does not expose live call, message, wallet, credit, or WebRTC controls. Consultants update booking status through the authenticated provider panel.
 
-Astrologer accounts are created by admin and open `/astrologer` after the required initial password change. Admin credentials and consultation metrics are available under the Services navigation.
+Consultant profiles are managed only by the central administrator. New requests queue a detailed SMTP notification to the configured site mailbox and are reviewed under `/admin/appointments`; consultants do not receive application login IDs.

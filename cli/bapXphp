@@ -59,6 +59,8 @@ set -euo pipefail
 #   bapXphp images:optimize         — convert/resize images to WebP
 #   bapXphp product:images <source> [--dry-run|--assets-only|--database-only]
 #                                   — import ordered product galleries from a ZIP/folder
+#   bapXphp blog:image <slug> <image> [--source-url /path] [--alt text] [--dry-run]
+#                                   — crop a screenshot/image and attach it to a blog post
 #
 # ── Database (MySQL direct) ──────────────────────────────────────
 #   bapXphp db tables               — list all MySQL tables
@@ -1127,6 +1129,11 @@ cmd_product_images() {
   php "$ROOT/cli/import-product-images.php" "$ROOT" "$source" "$@"
 }
 
+cmd_blog_image() {
+  require_php
+  php "$ROOT/cli/blog-image.php" "$ROOT" "$@"
+}
+
 # ═══════════════════════════════════════════════════════════════
 # Read / Write Commands — CRUD for blog posts and products
 # ═══════════════════════════════════════════════════════════════
@@ -1214,6 +1221,8 @@ main() {
       cmd_images_optimize ;;
     product:images|product-images)
       shift; cmd_product_images "$@" ;;
+    blog:image|blog-image)
+      shift; cmd_blog_image "$@" ;;
     db)
       shift; cmd_db "$@" ;;
     # Backward compatibility: mysql:* aliases

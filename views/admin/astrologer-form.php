@@ -17,44 +17,9 @@
                         <input type="text" name="slug" id="field-slug" placeholder="astrologer-slug">
                     </label>
                 </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-sm);">
-                    <label>Username
-                        <input type="text" name="username" id="field-username" placeholder="login username">
-                    </label>
-                    <label>Email
-                        <input type="email" name="email" id="field-email" placeholder="email@example.com">
-                    </label>
-                </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-sm);">
-                    <label>Message Credit Cost
-                        <input type="number" name="message_credit_cost" id="field-message_credit_cost" placeholder="0" step="any">
-                        <span style="font-size:0.7rem; color:var(--color-text-muted);">Credits charged per text message sent</span>
-                    </label>
-                    <label>Call Credit / Sec
-                        <input type="number" name="call_credit_per_second" id="field-call_credit_per_second" placeholder="0" step="any">
-                        <span style="font-size:0.7rem; color:var(--color-text-muted);">Credits deducted per second of audio call</span>
-                    </label>
-                </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-sm);">
-                    <label>Credit to Rupee Rate
-                        <input type="number" name="credit_to_rupee_rate" id="field-credit_to_rupee_rate" placeholder="0" step="any">
-                        <span style="font-size:0.7rem; color:var(--color-text-muted);">1 credit = how many rupees? e.g. 1 = ₹1</span>
-                    </label>
-                    <label>Payout %
-                        <input type="number" name="payout_percentage" id="field-payout_percentage" placeholder="0" step="any">
-                        <span style="font-size:0.7rem; color:var(--color-text-muted);">% of session revenue paid to astrologer</span>
-                    </label>
-                </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-sm);">
-                    <label>Text Session PRM
-                        <input type="number" name="text_session_prm" id="field-text_session_prm" placeholder="0" step="any">
-                        <span style="font-size:0.7rem; color:var(--color-text-muted);">Credits per minute for text-based session</span>
-                    </label>
-                    <label>Call Session PRM
-                        <input type="number" name="call_session_prm" id="field-call_session_prm" placeholder="0" step="any">
-                        <span style="font-size:0.7rem; color:var(--color-text-muted);">Credits per minute for voice/video session</span>
-                    </label>
-                </div>
+                <label>Contact email (admin reference only)
+                    <input type="email" name="email" id="field-email" placeholder="email@example.com">
+                </label>
                 <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:var(--space-sm);">
                     <label>Experience (years)
                         <input type="number" name="experience_years" id="field-experience_years" placeholder="0" step="any">
@@ -147,10 +112,10 @@
 <div class="admin-card">
     <div class="table-wrap">
         <table>
-            <thead><tr><th>Photo</th><th>Name</th><th>Speciality</th><th>Languages</th><th>Costs</th><th>Status</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Photo</th><th>Name</th><th>Speciality</th><th>Languages</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody>
             <?php if(empty($items)): ?>
-                <tr><td colspan="7" style="text-align:center; color:var(--color-text-muted); padding:var(--space-2xl);">No astrologers yet. Add one using the form above.</td></tr>
+                <tr><td colspan="6" style="text-align:center; color:var(--color-text-muted); padding:var(--space-2xl);">No consultants yet. Add one using the form above.</td></tr>
             <?php else: ?>
                 <?php foreach($items as $item): ?>
                     <tr>
@@ -164,7 +129,6 @@
                         <td style="font-weight:600;"><?= e($item['name'] ?? '') ?></td>
                         <td><?= e($item['speciality'] ?? '—') ?></td>
                         <td><?= e(is_array($item['languages'] ?? null) ? implode(', ', $item['languages']) : ($item['languages'] ?? '—')) ?></td>
-                        <td style="font-size:0.8rem;">Msg: <?= e((string)($item['message_credit_cost'] ?? '—')) ?><br>Call/s: <?= e((string)($item['call_credit_per_second'] ?? '—')) ?></td>
                         <td><span class="badge badge--<?= ($item['availability_status'] ?? 'available') === 'available' ? 'success' : 'default' ?>"><?= e(ucfirst($item['availability_status'] ?? 'available')) ?></span></td>
                         <td>
                             <div style="display:flex; gap:var(--space-xs); align-items:center;">
@@ -285,14 +249,7 @@ document.querySelectorAll('.edit-item').forEach(button => {
         document.getElementById('save-btn').textContent = 'Update Astrologer';
         document.getElementById('field-name').value = item.name || '';
         document.getElementById('field-slug').value = item.slug || '';
-        document.getElementById('field-username').value = item.username || '';
         document.getElementById('field-email').value = item.email || '';
-        document.getElementById('field-message_credit_cost').value = item.message_credit_cost || '';
-        document.getElementById('field-call_credit_per_second').value = item.call_credit_per_second || '';
-        document.getElementById('field-credit_to_rupee_rate').value = item.credit_to_rupee_rate || '';
-        document.getElementById('field-payout_percentage').value = item.payout_percentage || '';
-        document.getElementById('field-text_session_prm').value = item.text_session_prm || '';
-        document.getElementById('field-call_session_prm').value = item.call_session_prm || '';
         document.getElementById('field-experience_years').value = item.experience_years || '';
         document.getElementById('field-slot_minutes').value = item.slot_minutes || '';
         document.getElementById('field-start_time').value = item.start_time || '';

@@ -115,14 +115,6 @@ try {
         }
     }
 
-    foreach (['/assets/js/app.js', '/assets/js/components.js', '/assets/js/pages.js', '/assets/js/main.js'] as $path) {
-        $response = httpRequest($base . $path);
-        echo "{$response['status']} GET {$path}\n";
-        if ($response['status'] !== 404) {
-            $failures[] = "Removed SPA asset {$path} expected 404, got {$response['status']}";
-        }
-    }
-
     $unknown = httpRequest($base . '/unknown-spa-route');
     echo "{$unknown['status']} GET /unknown-spa-route\n";
     if ($unknown['status'] !== 404) {

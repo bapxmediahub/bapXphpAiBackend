@@ -81,7 +81,6 @@
             <div class="admin-submenu" id="menu-services">
                 <a href="/admin/astrologers" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/astrologers') === 0 ? 'active' : '') ?>">Astrologers</a>
                 <a href="/admin/appointments" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/appointments') === 0 ? 'active' : '') ?>">Sessions</a>
-                <a href="/admin/astrologer-credentials" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/astrologer-credentials') === 0 ? 'active' : '') ?>">Login IDs</a>
                 <a href="/admin/consultation-analytics" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/consultation-analytics') === 0 ? 'active' : '') ?>">Analytics</a>
                 <a href="/admin/temples" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/temples') === 0 ? 'active' : '') ?>">Temples</a>
             </div>
@@ -161,7 +160,7 @@
             $__labelMap = [
                 'products'=>'Products','categories'=>'Categories','coupons'=>'Coupons',
                 'orders'=>'Orders','shipping'=>'Shipping','astrologers'=>'Astrologers',
-                'appointments'=>'Sessions','astrologer-credentials'=>'Login IDs',
+                'appointments'=>'Sessions',
                 'consultation-analytics'=>'Analytics','temples'=>'Temples',
                 'settings'=>'Site Settings','integrations'=>'Integrations',
                 'backups'=>'Backups','audit-log'=>'Audit Log',

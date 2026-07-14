@@ -105,6 +105,8 @@ components:
 
 Sri Panchami Spiritual is a calm, warm, earthy, content-led devotional marketplace: astrologer consultations, puja items, blog. This file is the canonical visual contract for everything customer-facing in `views/` and `assets/css/band.css`. It follows the open [DESIGN.md](https://github.com/google-labs-code/design.md) specification (originated by Google Stitch) so any AI agent reads the same tokens and section order -- but the tokens above describe *this* brand, not a generic template. Deep maroon, warm brown, and muted gold read as devotional and premium without tipping into kitsch; whitespace and restraint do the rest of the work.
 
+Commercial references such as Deiveegaa are used to audit product clarity, imagery, pricing, policies, testimonials, FAQs, and checkout visibility. Do not copy their visual identity or unverified product claims; use the comparison to expose missing commerce information and interaction wiring.
+
 Keep the existing PHP templates, routes, forms, and JSON-backed behavior. Design changes must not scaffold a second frontend.
 
 ## Colors
@@ -170,6 +172,9 @@ Shape should stay consistent within a component family -- don't mix `sm` and `lg
 ## Components
 
 - **Header:** warm-neutral (`rgba(250,247,240,0.98)`), ~`80px` tall, non-sticky, hairline bottom border (`rgba(209,179,104,0.45)`), compact logo, centered primary nav with a gold active underline, right-aligned account/cart actions.
+- **Navigation:** the linked brand mark and name are the sole home control. Do not repeat a separate Home item in desktop or mobile navigation.
+- **Mobile commerce tray:** after the cart becomes non-empty, show one fixed maroon tray above the bottom navigation with item count and a direct View cart action. Use an 8px radius and stable 56px minimum height; update it without page reload.
+- **Editorial media:** every blog post uses one intentional 16:9 image for both its listing thumbnail and article hero. UI guides use a legible screenshot of the exact page, cropped around the relevant interface rather than a decorative stock image, and link the represented page below the article.
 - **Buttons (`button-primary` / `button-secondary`):** `48px` minimum height, `8px` radius, no uppercase, no letter-spacing. Primary is solid maroon with a gold hover overlay; hover moves from `shadow-md` to `shadow-lg` and lifts 2px, no more. Secondary is gold-on-maroon-text. Hover states never shift layout.
 - **Forms:** white fields (`on-primary`), `8px` radius, `48px` height, clear labels, a single-value focus ring (`--shadow-focus`) -- no glow.
 - **Search/filter:** one rounded (`pill`) search control, or a quiet grouped filter row. No nested cards for filters.

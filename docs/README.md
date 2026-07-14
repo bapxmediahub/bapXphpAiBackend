@@ -12,6 +12,7 @@ This folder contains connected documentation for developers, maintainers, and co
 - [Storage](json-storage.md): MySQL persistence and schema notes.
 - [Agentic monorepo](agentic-monorepo.md): repo-native backend primitives and built-in agent guidance.
 - [Schema registry](schema.md): MySQL schema contract and agent context fields.
+- [Storefront reference review](competitor-review.md): commerce-polish comparison and release checklist.
 
 ## Page Notes
 

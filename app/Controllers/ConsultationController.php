@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AuthService,ConsultationService,AstrologerService,ResourceService,MailQueueService};
+use App\Services\{AuthService,ConsultationService,AstrologerService,ResourceService,MailQueueService,SecretService};
 
 final class ConsultationController extends BaseController {
     private ConsultationService $consultations;
@@ -20,7 +20,7 @@ final class ConsultationController extends BaseController {
             catch (\InvalidArgumentException $e) { $this->jsonResponse(['error'=>$e->getMessage()],422); }
             return;
         }
-        if ($role!=='astrologer' && $role!=='admin') $this->jsonResponse(['error'=>'Astrologer access required.'],403);
+        if ($role!=='admin') $this->jsonResponse(['error'=>'Administrator access required.'],403);
         try { $updated=$this->consultations->updateStatus($session,$status,$role); $this->jsonResponse(['session'=>$updated]); }
         catch (\InvalidArgumentException $e) { $this->jsonResponse(['error'=>$e->getMessage()],422); }
     }
@@ -54,12 +54,22 @@ final class ConsultationController extends BaseController {
             'date'=>$preferredDate,'time'=>$preferredTime,'created_at'=>date('c'),
         ];
         (new ResourceService('appointments'))->save($session);
-        if(!empty($session['astrologer_email'])){
-            try{(new MailQueueService())->enqueue('astrologer_session_notification',$session['astrologer_email'],
-                'New consultation session - Sri Panchami Spiritual',
-                '<p>Vanakkam '.e($session['astrologer_name']??'').',</p><p>A consultation booking was requested by '.e($session['customer_name']??'a customer').' for '.e($preferredDate).' at '.e($preferredTime).'.</p><p><a href="'.rtrim((string)(getenv('APP_URL')?:''),'/').'/astrologer">Open your dashboard</a> to review the booking.</p>');
-            }catch(\Throwable $e){}
-        }
+        try{
+            $secrets=(new SecretService())->all();
+            $ownerEmail=trim((string)($secrets['smtp_username']??getenv('SMTP_USERNAME')?:''));
+            if($ownerEmail!=='' && filter_var($ownerEmail,FILTER_VALIDATE_EMAIL)){
+                $base=rtrim((string)(getenv('APP_URL')?:''),'/');
+                $html='<p>A new consultation appointment was requested.</p><dl>'
+                    .'<dt>Customer</dt><dd>'.e($session['customer_name']??'').'</dd>'
+                    .'<dt>Email</dt><dd>'.e($session['customer_email']??'').'</dd>'
+                    .'<dt>Phone</dt><dd>'.e($phone).'</dd>'
+                    .'<dt>Consultant</dt><dd>'.e($session['astrologer_name']??'').'</dd>'
+                    .'<dt>Requested time</dt><dd>'.e($preferredDate.' '.$preferredTime).'</dd>'
+                    .'<dt>Narration</dt><dd>'.nl2br(e($session['notes']??''),false).'</dd></dl>'
+                    .'<p><a href="'.e($base.'/admin/appointments').'">Review appointments in admin</a></p>';
+                (new MailQueueService())->enqueue('appointment_owner_notification',$ownerEmail,'New consultation appointment - Sri Panchami Spiritual',$html,null,['appointment_id'=>$id]);
+            }
+        }catch(\Throwable $e){}
         $this->flash('Consultation booking requested. The consultant will confirm the schedule.','success');
         $this->redirect('/account/dashboard/sessions');
     }

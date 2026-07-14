@@ -27,7 +27,7 @@ This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP
 - Media: `assets/images/media/` plus `storage/media.yaml`.
 - Admin: owner tools for CRUD, media, environment variables, permissions, integrations, audit logs, project map, and blog management.
 - Agent context: `AgentContextService` builds safe user-specific context for support/model assistants.
-- Consultations: admin-created astrologer accounts use PHP API polling for messages and WebRTC signaling; browser WebRTC carries call audio.
+- Consultations: central admin manages consultant profiles and scheduled appointments; new requests queue SMTP notifications to the configured site mailbox. Consultant profiles are not login accounts.
 
 ## Diagnose, Then Issue
 

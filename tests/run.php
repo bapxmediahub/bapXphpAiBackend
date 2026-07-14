@@ -744,23 +744,28 @@ $tests['legacy account urls redirect into the dashboard namespace'] = function (
     }
 };
 
-$tests['astrologer accounts require password change and use username login'] = function (): void {
-    assertTrue(str_contains(file_get_contents(app_path('app/Controllers/AuthController.php')),"['username']"),'Login should accept an astrologer username');
+$tests['consultants are profiles without application login credentials'] = function (): void {
+    $auth=file_get_contents(app_path('app/Controllers/AuthController.php'));
     $admin=file_get_contents(app_path('app/Controllers/AdminController.php'));
-    assertTrue(str_contains($admin,'AstrologerAccountService'),'Admin astrologer mutations should synchronize provider accounts');
+    $layout=file_get_contents(app_path('views/layouts/admin.php'));
+    assertTrue(str_contains($auth,'Consultant access is managed by the site administrator.'),'Legacy consultant users should be denied application login');
+    assertTrue(!str_contains($admin,'AstrologerAccountService') && !str_contains($layout,'Login IDs'),'Admin should not create or expose consultant credentials');
+    assertTrue(!is_file(app_path('app/Controllers/AstrologerController.php')) && !is_file(app_path('views/astrologer/dashboard.php')),'Consultant login surfaces should be removed');
 };
 
 $tests['consultation routes expose booking and provider status workflow'] = function (): void {
     $paths=array_column(ProjectMapService::registry()['routes'],'path');
-    foreach(['/consultation/initiate','/api/consultations/{id}/status','/astrologer'] as $path) assertTrue(in_array($path,$paths,true),"Missing consultation route {$path}");
+    foreach(['/consultation/initiate','/api/consultations/{id}/status'] as $path) assertTrue(in_array($path,$paths,true),"Missing consultation route {$path}");
+    foreach(['/astrologer','/astrologer/change-password','/astrologer/availability','/admin/astrologer-credentials'] as $path) assertTrue(!in_array($path,$paths,true),"Consultant credential route should be removed: {$path}");
     foreach(['/consultation/{id}','/api/consultations/{id}/messages','/api/consultations/{id}/signals'] as $path) assertTrue(!in_array($path,$paths,true),"Removed live consultation route should not be public: {$path}");
 };
 
-$tests['consultation booking form includes csrf and sends provider notification'] = function (): void {
+$tests['consultation booking form includes csrf and sends central owner notification'] = function (): void {
     $view = file_get_contents(app_path('views/public/astrologer.php'));
     assertTrue(str_contains($view, 'name="_csrf"'), 'Booking form should include CSRF');
     $controller = file_get_contents(app_path('app/Controllers/ConsultationController.php'));
-    assertTrue(str_contains($controller, 'MailQueueService'), 'Booking controller should notify the provider');
+    foreach (['MailQueueService', 'SecretService', 'smtp_username', 'appointment_owner_notification', '/admin/appointments', 'Narration'] as $needle) assertTrue(str_contains($controller, $needle), "Booking controller should centralize notification through {$needle}");
+    assertTrue(!str_contains($controller, 'astrologer_session_notification'), 'Booking should not email a consultant dashboard login');
 };
 
 $tests['registration creates a default delivery address'] = function (): void {
@@ -802,16 +807,12 @@ $tests['remote database writes are authenticated and record-scoped'] = function 
 };
 
 $tests['consultant booking lifecycle is operational'] = function (): void {
-    $astro = file_get_contents(app_path('app/Controllers/AstrologerController.php'));
     $consult = file_get_contents(app_path('app/Controllers/ConsultationController.php'));
     $service = file_get_contents(app_path('app/Services/ConsultationService.php'));
-    $dashboard = file_get_contents(app_path('views/astrologer/dashboard.php'));
-    assertTrue(str_contains($astro, 'updateAvailability'), 'Astrologer panel should let the provider update availability');
-    assertTrue(str_contains($dashboard, 'action="/astrologer/availability"'), 'Astrologer availability form should post to its own endpoint');
     assertTrue(str_contains($consult, "'mode'=>'booking'"), 'Consultation request should store booking mode');
+    assertTrue(str_contains($consult, "\$role!=='admin'"), 'Only central admin should update appointment status');
     assertTrue(str_contains($service, "'requested' => ['accepted', 'declined', 'cancelled']"), 'Consultation service should validate the requested lifecycle');
     assertTrue(str_contains($service, "'accepted' => ['active', 'cancelled']"), 'Existing provider lifecycle should preserve acceptance transitions');
-    assertTrue(in_array('/astrologer/availability', array_column(ProjectMapService::registry()['routes'], 'path'), true), 'Project map should include astrologer availability route');
 };
 
 $tests['home hero rotates all supplied varahi images'] = function (): void {
@@ -844,9 +845,10 @@ $tests['admin product and astrologer forms expose editable owner fields'] = func
     assertTrue(str_contains($controller, 'mergeExistingRecord'), 'Admin save should preserve existing fields when editing only visible admin fields');
     assertTrue(str_contains($controller, 'AuditLogService'), 'Admin mutations should write audit log records');
     assertTrue(str_contains($auditService, 'function record'), 'Audit log service should be able to record admin changes');
-    foreach (['slug', 'message_credit_cost', 'call_credit_per_second', 'text_session_prm', 'call_session_prm', 'payout_percentage', 'languages', 'working_days'] as $field) {
+    foreach (['slug', 'email', 'experience_years', 'slot_minutes', 'languages', 'working_days', 'speciality'] as $field) {
         assertTrue(str_contains($astroForm, $field), "Astrologer admin form should expose {$field}");
     }
+    foreach (['username', 'message_credit_cost', 'call_credit_per_second', 'payout_percentage'] as $field) assertTrue(!str_contains($astroForm, 'name="' . $field . '"'), "Consultant form should not expose removed credential/rate field {$field}");
 };
 
 $tests['admin project map has a working view'] = function (): void {
@@ -970,7 +972,7 @@ $tests['local smoke tool verifies key routes api and unknown route 404'] = funct
     $tool = app_path('cli/smoke-local.php');
     assertTrue(is_file($tool), 'Local route/API smoke tool should exist');
     $source = file_get_contents($tool);
-    foreach (['/shop', '/checkout', '/consult', '/temples', '/payment/verify', '/support/ask', '/api/categories', '/assets/js/app.js', '/unknown-spa-route'] as $path) {
+    foreach (['/shop', '/checkout', '/consult', '/temples', '/payment/verify', '/support/ask', '/api/categories', '/unknown-spa-route'] as $path) {
         assertTrue(str_contains($source, $path), "Local smoke tool should cover {$path}");
     }
     assertTrue(str_contains($source, 'CSRF protected'), 'Local smoke should verify payment CSRF protection');
@@ -1033,6 +1035,39 @@ $tests['blog uses an editorial index and readable markdown article surface'] = f
     assertTrue(str_contains($article, "\$schemaBase . '/blog'"), 'Article breadcrumbs should use the canonical blog URL');
     foreach (['blog-post__dek', 'blog-post__featured', 'blog-post__cta'] as $needle) assertTrue(str_contains($article, $needle), "Article should include {$needle}");
     assertTrue(str_contains($css, '.blog-post__content') && str_contains($css, 'line-height:1.78'), 'Article typography should use a constrained readable measure');
+};
+
+$tests['blog media uses one screenshot crop for cards and article pages'] = function (): void {
+    $service = file_get_contents(app_path('app/Services/BlogService.php'));
+    $admin = file_get_contents(app_path('views/admin/blog.php'));
+    $index = file_get_contents(app_path('views/public/blog.php'));
+    $article = file_get_contents(app_path('views/public/blog-post.php'));
+    $cli = file_get_contents(app_path('cli/bapXphp'));
+    $crop = file_get_contents(app_path('cli/blog-image.php'));
+    foreach (['og_image', 'image_alt', 'source_url', 'template'] as $field) {
+        assertTrue(str_contains($service, "'{$field}'"), "Blog service should persist {$field}");
+        assertTrue(str_contains($admin, 'name="' . $field . '"'), "Admin blog editor should expose {$field}");
+    }
+    assertTrue(str_contains($index, "\$post['og_image']") && str_contains($article, "\$meta['og_image']"), 'Card and article should share og_image');
+    assertTrue(str_contains($cli, 'blog:image') && str_contains($crop, '--dry-run'), 'CLI should expose safe blog screenshot cropping');
+    assertTrue(str_contains($crop, '$targetWidth = 1200') && str_contains($crop, '$targetHeight = 675'), 'Blog screenshot crop should be stable 16:9');
+};
+
+$tests['public navigation uses brand home link and mobile cart tray'] = function (): void {
+    $layout = file_get_contents(app_path('views/layouts/app.php'));
+    $css = file_get_contents(app_path('assets/css/band.css'));
+    assertSame(1, substr_count($layout, 'href="/" class="brand"'), 'Brand should link home once');
+    assertTrue(!str_contains($layout, '>Home</a>') && !str_contains($layout, '<span>Home</span>'), 'Public navigation should not duplicate Home');
+    foreach (['mobile-cart-tray', 'mobile-cart-count', 'mobile-cart-label'] as $needle) assertTrue(str_contains($layout, $needle), "Cart tray should include {$needle}");
+    assertTrue(str_contains($css, '.mobile-cart-tray') && str_contains($css, 'bottom:78px'), 'Mobile cart tray should sit above bottom navigation');
+};
+
+$tests['support assistant exposes only allowlisted internal navigation actions'] = function (): void {
+    $service = file_get_contents(app_path('app/Services/SupportBotService.php'));
+    $layout = file_get_contents(app_path('views/layouts/app.php'));
+    assertTrue(str_contains($service, 'exact internal path') && str_contains($service, 'Never invent admin paths'), 'Support prompt should ground navigation');
+    assertTrue(str_contains($layout, 'function supportReplyHtml') && str_contains($layout, 'class="support-action"'), 'Support UI should render safe internal actions');
+    assertTrue(!str_contains($layout, 'innerHTML=j.reply'), 'Support reply must not inject model HTML');
 };
 
 $tests['product payment remains production gated after wallet removal'] = function (): void {
