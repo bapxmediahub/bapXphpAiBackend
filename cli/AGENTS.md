@@ -10,6 +10,7 @@ Owns the bapXphp project CLI entry point and all PHP helper scripts for project-
 - `generate-project-map.php`: writes `docs/systematic-map.mmd`, including shared navigation-to-route relationships.
 - `generate-docs-map.php`: writes `docs/KnowledgeMap.mmd` (documentation mindmap).
 - `validate-project-map.php`: verifies the committed systematic map is fresh.
+- `validate-docs-map.php`: verifies the committed KnowledgeMap is fresh.
 - `refresh-blog-cache.php`: fetches and caches GitHub-sourced blog/documents.
 - `smoke-local.php`: starts a disposable local PHP server and checks key routes/API behavior.
 - `blog-read.php` / `blog-write.php`: CLI blog post read and interactive create/edit tools.
@@ -27,7 +28,7 @@ Owns the bapXphp project CLI entry point and all PHP helper scripts for project-
 - bapXphp db commands operate on remote MySQL directly or through the authenticated remote DB protocol; never silently fall back to local runtime data.
 - Prefer `bapXphp db hosted <sql>` for owner-authorized remote mutations when `.env.mysql` provides hosting and MySQL access; this path does not use an application mutation token.
 - `bapXphp db sync` handles single-object JSON files (e.g. `secrets.json`, `settings.json`) by wrapping them in a single-record array.
-- `bapXphp docsmap` runs `cli/generate-docs-map.php` to regenerate `docs/KnowledgeMap.mmd`.
+- `bapXphp update` regenerates and validates both map artifacts; `bapXphp ci` validates without rewriting tracked files.
 - `bapXphp bloggen` runs `cli/refresh-blog-cache.php` to refresh GitHub-sourced blog cache.
 - Use `bapXphp read blog <slug>` and `bapXphp write blog [slug]` for all blog post operations.
 - Use `bapXphp read docs <slug>` and `bapXphp write docs [slug]` for customer help guide operations.
@@ -43,9 +44,9 @@ bapXphp understand     # full project overview
 bapXphp context        # quick session orientation
 bapXphp db query products --limit 5   # query data (MySQL only)
 bapXphp db find orders ord_123        # find record (MySQL only)
-bapXphp docsmap        # regenerate KnowledgeMap.mmd
+bapXphp update         # regenerate both maps after source/docs changes
 bapXphp bloggen        # refresh blog cache from GitHub
-bapXphp check          # full validation chain
+bapXphp ci             # non-mutating PR/CI validation
 ```
 
 ## Work Guidance
@@ -59,6 +60,5 @@ bapXphp check          # full validation chain
 
 - `php -l cli/changed-tool.php`
 - `bapXphp help`
-- `bapXphp map:gen`
-- `bapXphp map:val`
-- `bapXphp smoke`
+- `bapXphp update`
+- `bapXphp ci`

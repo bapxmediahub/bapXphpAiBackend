@@ -4,7 +4,7 @@ Route: `/consult`
 
 Controller: `PublicController@consult`
 
-Purpose: show remote astrology experts with credit pricing, filters, status, waitlist/offline states, and icon-only call/message actions.
+Purpose: show remote consultant profiles with search, language filtering, and one scheduled-booking path.
 
-Key checks: buttons post to `/consultation/initiate`, busy state says `Waitlist`, old `JOIN Q` text is absent, and guest users are redirected to login.
-Astrologer cards use one full-width portrait frame and stable body/action geometry. Availability, rates, languages, experience, and review totals come from stored profile or verified review data; missing values are omitted rather than replaced with placeholders.
+Key checks: cards link to consultant profiles; profile forms post date, time, phone, notes, and CSRF to `/consultation/initiate`; guest submissions redirect to login.
+Cards use stable portrait and action geometry. Languages, experience, speciality, and verified reviews come from remote profile data; missing values are omitted rather than fabricated.

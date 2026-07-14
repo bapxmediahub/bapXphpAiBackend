@@ -1,6 +1,6 @@
 # PHP JSON Agent Ready Backend and Full-Stack Platform
 
-This repository is a **PHP/MySQL agent-ready** full-stack product base for small PHP hosting (Hostinger, cPanel, etc. with `public_html`). It ships with auth, admin CRUD, ecommerce, astrologer marketplace, wallet, reviews, media library, blog, support assistant, mail queue, and built-in AI-agent instructions.
+This repository is a **PHP/MySQL agent-ready** full-stack product base for small PHP hosting (Hostinger, cPanel, etc. with `public_html`). It ships with auth, admin CRUD, ecommerce, scheduled consultant bookings, saved addresses, reviews, media library, Help-category blog guides, support assistant, mail queue, and built-in AI-agent instructions.
 
 **All project operations go through the `bapXphp` CLI.** Never edit content files directly.
 
@@ -26,9 +26,16 @@ bapXphp serve          # Start dev server at 127.0.0.1:6020
 ```dotenv
 APP_NAME="Your App Name"
 APP_URL=https://your-domain.example
+BAPX_MYSQL_HOST=localhost
+BAPX_MYSQL_PORT=3306
+BAPX_MYSQL_DB=database_name
+BAPX_MYSQL_USER=database_user
+BAPX_MYSQL_PASS=database_password
 ```
 
-**`.env` holds only `APP_NAME` and `APP_URL` — nothing else.** Never put secrets, API keys, credentials, or tokens in `.env`. All secrets are stored in the remote MySQL database and managed through **Admin → Integrations** or **Admin → Settings**.
+`.env` provides the site URL and direct MySQL connection. Application secrets such as Razorpay, Google OAuth, SMTP, and the support model remain in the remote MySQL `secrets` collection and are managed through **Admin → Integrations**. The fallback database API defaults to `APP_URL/remotedb` and can be overridden with `BAPX_REMOTE_DB_URL`.
+
+Use **Admin → Settings** for store and site behavior. Use **Admin → Integrations** for credentials and third-party connection status.
 
 ---
 
@@ -46,7 +53,9 @@ APP_URL=https://your-domain.example
 |---------|-------------|
 | `bapXphp test` | Run PHP test suite |
 | `bapXphp lint [path]` | PHP syntax check (`php -l`) |
-| `bapXphp check` | Full validation: lint → test → map:gen → map:val → smoke |
+| `bapXphp ci` | Non-mutating validation: lint → test → both map validators → smoke |
+| `bapXphp check` | Alias for `bapXphp ci` |
+| `bapXphp update` | Regenerate and validate both generated maps |
 | `bapXphp serve` | Start dev server on `127.0.0.1:6020` |
 | `bapXphp smoke` | Run local smoke tests against dev server |
 
@@ -77,6 +86,7 @@ APP_URL=https://your-domain.example
 | `bapXphp map` | View the generated project map |
 | `bapXphp map:gen` | Regenerate `docs/systematic-map.mmd` from source |
 | `bapXphp map:val` | Validate the project map is up to date |
+| `bapXphp docsmap` | Regenerate the documentation KnowledgeMap |
 
 ### Skills & Routes
 | Command | Description |
@@ -102,8 +112,8 @@ APP_URL=https://your-domain.example
 | Command | Description |
 |---------|-------------|
 | `bapXphp issue` | Create a GitHub issue (interactive via `gh`) |
-| `bapXphp pr` | Create a GitHub PR (interactive) |
-| `bapXphp merge` | Merge a GitHub PR (interactive) |
+| `bapXphp pr [gh args]` | Run CI preflight, then create a GitHub PR |
+| `bapXphp merge [gh args]` | Run CI preflight, then merge a GitHub PR |
 
 ### Mail & Images
 | Command | Description |
@@ -120,6 +130,7 @@ APP_URL=https://your-domain.example
 | `bapXphp db show <collection>` | Show collection fields and types |
 | `bapXphp db query <collection> [--where 'f=v'] [--limit N] [--id id] [--owner email]` | Query records from MySQL |
 | `bapXphp db find <collection> <id>` | Find a record by ID |
+| `bapXphp db status` | Verify direct MySQL, remote fallback, and integration readiness |
 | `bapXphp db raw <sql>` | Execute raw SQL |
 | `bapXphp db init` | Create MySQL tables from `collections.php` schema |
 | `bapXphp db sync` | Create MySQL tables from schema (seed data lives in MySQL) |
@@ -133,22 +144,23 @@ APP_URL=https://your-domain.example
 ### Validation (shortcut)
 | Command | Description |
 |---------|-------------|
-| `bapXphp check` | Full chain: lint → test → map:gen → map:val → smoke |
+| `bapXphp ci` | Full non-mutating PR/CI validation |
+| `bapXphp update` | Explicitly refresh both generated map artifacts |
 
 ---
 
 ## What This App Includes
 
 - **Product catalog** with 7 products across 3 categories (sacred-emblems, jewelry, pooja-idols)
-- **Astrologer marketplace** with 21 client-provided profiles, admin-created accounts, private messaging, browser audio calls, credit pricing, and session history
-- **Wallet system** with Razorpay recharge, service charge/tax breakdown, credit balance
-- **Support assistant** AI agent that answers product, order, wallet, and session questions
+- **Consultant directory** with client-provided profiles, admin-created accounts, scheduled booking requests, and booking history
+- **Saved addresses** with a default signup address and reusable checkout selection
+- **Support assistant** AI agent that answers product, order, address, and booking questions
 - **Reviews** for products and astrology sessions
 - **Temple listing** with addresses, timings, maps
 - **Contact/consultation request** forms
-- **Customer account** with order history, session view, wallet
+- **Customer account** with order history and consultation booking status
 - **Owner admin** for products, categories, coupons, astrologers, orders, temples, settings, integrations, backups, audit logs, blog, media library, email inbox/outbox, support tickets, contact submissions, project map
-- **Blog** with YAML frontmatter posts in `content/blog/posts/`
+- **Blog and Help guides** with YAML frontmatter posts in `content/blog/posts/`
 - **Mail queue** for payment confirmations, shipment notifications, review requests
 - **Media library** with upload, context tagging, metadata in `content/blog/posts/` and `storage/media.yaml`
 

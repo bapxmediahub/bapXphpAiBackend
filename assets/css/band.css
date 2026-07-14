@@ -2494,14 +2494,14 @@ tr:hover td { background: var(--color-bg-alt); }
 
 /* ── Trust Bar ── */
 .trust-bar {
-    display: flex;
-    justify-content: center;
-    gap: var(--space-3xl);
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-md);
     padding: var(--space-2xl) 5vw;
     background: var(--color-bg-alt);
     border-top: 1px solid var(--color-border);
     border-bottom: 1px solid var(--color-border);
-    flex-wrap: wrap;
+    max-width: 100%;
     position: relative;
 }
 .trust-bar::before {
@@ -2523,7 +2523,24 @@ tr:hover td { background: var(--color-bg-alt); }
     padding: var(--space-sm) var(--space-md);
     border-radius: var(--radius-md);
     cursor: default;
+    justify-content: center;
+    min-width: 0;
 }
+
+.home-order-steps { max-width: 1000px; margin: var(--space-xl) auto 0; }
+.home-order-step {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    margin-bottom: var(--space-sm);
+    border: 1px solid var(--color-gold);
+    border-radius: 50%;
+    color: var(--color-maroon);
+    font-weight: 800;
+}
+.home-order-actions { display: flex; justify-content: center; gap: var(--space-sm); margin-top: var(--space-xl); flex-wrap: wrap; }
 .trust-item:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-sm);
@@ -2638,7 +2655,8 @@ tr:hover td { background: var(--color-bg-alt); }
     .product-grid { grid-template-columns: 1fr; }
     .astrologer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .hero-stats { display: flex; flex-direction: column; gap: var(--space-sm); align-items: center; }
-    .trust-bar { flex-direction: column; gap: var(--space-sm); align-items: center; }
+    .trust-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-xs); padding: var(--space-lg) var(--space-sm); }
+    .trust-item { font-size: 0.8rem; padding: var(--space-sm); }
 }
 
 /* ── Mobile Meditation App Enhancements ── */

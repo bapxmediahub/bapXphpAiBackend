@@ -16,6 +16,7 @@ Owns durable documentation and the single systematic project-map artifact.
 - Do not create `PROJECT_MAP.md`, `project-map.json`, `project-map.mmd`, or parallel map artifacts (exception: `KnowledgeMap.mmd` is a separate generated artifact, not a parallel project map).
 - Regenerate `systematic-map.mmd` with `php cli/generate-project-map.php`; do not hand-edit generated map output.
 - Regenerate `KnowledgeMap.mmd` with `bash bapXphp docsmap` or `php cli/generate-docs-map.php`.
+- Validate KnowledgeMap freshness with `php cli/validate-docs-map.php`; `bapXphp ci` validates both generated maps without rewriting them.
 - Treat the map as a derived source index: documentation claims must be checked against the primary files connected by its edges.
 - Keep documentation aligned with the PHP/JSON shared-hosting architecture.
 
@@ -27,10 +28,8 @@ Owns durable documentation and the single systematic project-map artifact.
 
 ## Verification
 
-- `bapXphp map:gen`
-- `bapXphp map:val`
-- `bapXphp docsmap`
-- `bapXphp test`
+- `bapXphp update`
+- `bapXphp ci`
 
 ## Child DOX Index
 

@@ -4,7 +4,7 @@ This repo packages the backend and frontend together for small PHP hosting. The 
 
 ## Data Architecture
 
-MySQL is the primary runtime data store. All dynamic data — users, products, astrologers, orders, appointments, consultations, wallet transactions, reviews, settings, secrets — lives in MySQL tables and is accessed via `DatabaseService`.
+Remote MySQL is the only runtime data store. All dynamic data, including users, products, consultants, orders, appointments, reviews, settings, and secrets, lives in MySQL tables and is accessed through `DatabaseService`.
 
 File-based storage is used only for:
 - Blog posts: `content/blog/posts/*.md` with YAML frontmatter
@@ -22,7 +22,7 @@ File-based storage is used only for:
 - Environment editor
 - Storage permission checker
 - Audit log
-- Orders, wallet, reviews, mail queue
+- Orders, addresses, reviews, and mail queue
 - Support assistant context
 - Git-based deployment
 

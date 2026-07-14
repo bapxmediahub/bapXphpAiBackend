@@ -18,7 +18,7 @@
 
 - MySQL is the primary runtime data store, accessed through `DatabaseService`.
 - Collection schema lives in `storage/schema/collections.php`. Data is stored in MySQL tables (not JSON files).
-- Runtime data is remote-only: `DatabaseService` uses the hosted MySQL database or its authenticated `/remotedb` protocol. The local checkout is not a customer-data fallback.
+- Runtime data is remote-only: `.env` supplies direct hosted MySQL credentials to `DatabaseService`; when direct access is unavailable, the CLI/application use `APP_URL/remotedb`. The local checkout is not a customer-data fallback.
 - Blog posts are file-based: `content/blog/posts/*.md` with YAML frontmatter.
 - Media metadata lives in `storage/media.yaml` (not MySQL).
 - `AgentContextService` builds safe user-specific context for the support/model assistant.

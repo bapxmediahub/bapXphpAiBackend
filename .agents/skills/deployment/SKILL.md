@@ -11,4 +11,4 @@ description: Use when editing Hostinger deployment, Git auto-deploy, environment
 - Use upstream `push` -> authenticated `repository_dispatch` -> downstream `merge-upstream` for fork synchronization. Do not use scheduled polling when event-driven dispatch is configured.
 - Read production operational history from remote MySQL `audit_events` with `bapXphp logs`. Never commit hosted logs, local `server.log`, or browser-test output to Git.
 - Do not introduce Node build, SPA deployment, or serverless assumptions.
-- Before committing or pushing to remote `main`, run `php tests/run.php`, regenerate/validate the systematic map, regenerate the KnowledgeMap (`bash bapXphp docsmap`), and run `php tools/smoke-local.php`.
+- Before committing, run `bapXphp update`. Before creating or merging a PR, run non-mutating `bapXphp ci`; it validates tests, both generated maps, and `cli/smoke-local.php`.

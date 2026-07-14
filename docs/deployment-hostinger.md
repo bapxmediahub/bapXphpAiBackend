@@ -6,8 +6,8 @@
 2. Enable **Auto Deployment** for the production **Branch** (`main`) so merged commits deploy automatically.
 3. Upload the current `main` build to `/public_html` with Git or FTP when doing a manual recovery deploy.
 4. Keep `.env`, `index.php`, `.htaccess`, `api/`, `app/`, `assets/`, `integrations/`, `storage/`, `cli/`, and `views/` together.
-5. Set `storage/` and `storage/data/` writable by PHP.
-6. Configure integration secrets from the admin integrations page after deployment.
+5. Configure `BAPX_MYSQL_HOST`, `BAPX_MYSQL_PORT`, `BAPX_MYSQL_DB`, `BAPX_MYSQL_USER`, and `BAPX_MYSQL_PASS` in `.env` for direct hosted MySQL access.
+6. Configure application secrets from Admin -> Integrations; they are stored in remote MySQL, not `.env`.
 7. Set a Hostinger cron job for queued mail after SMTP is configured:
 
 ```bash
@@ -19,10 +19,8 @@ php /home/ACCOUNT/public_html/cli/process-mail-queue.php
 One-time Git auto-deploy from `main` is configured — commits to GitHub main deploy automatically. Merge only after local validation passes:
 
 ```bash
-php tests/run.php
-php cli/generate-project-map.php
-php cli/validate-project-map.php
-php cli/smoke-local.php
+bapXphp update
+bapXphp ci
 ```
 
 ## Fork Synchronization
@@ -48,7 +46,7 @@ This application is built for normal PHP hosting, not Vercel. Vercel's official 
 
 - Frontend: PHP-rendered templates.
 - Backend: PHP controllers, services, and JSON API endpoints.
-- Database: MySQL tables via `DatabaseService`; JSON files only for one-time seeding.
+- Database: direct hosted MySQL via `.env`, with `APP_URL/remotedb` as the developer/agent fallback.
 - Build step: none.
 - Email: queued in JSON and sent by `cli/process-mail-queue.php` when SMTP secrets are configured.
 
@@ -73,8 +71,8 @@ This application is built for normal PHP hosting, not Vercel. Vercel's official 
 ## Troubleshooting
 
 - 500 error: check PHP version, `.htaccess`, and PHP error logs.
-- Data not saving: check `storage/data/` permissions.
-- Admin blocked: confirm the existing admin user in `storage/data/users.json` has `role: "admin"`.
+- Data not saving: run `bapXphp db status`, then verify the `BAPX_MYSQL_*` values and hosted database permissions.
+- Admin blocked: verify the admin account in remote MySQL and the current Admin -> Settings configuration.
 - Razorpay disabled: add live key ID and secret in admin integrations.
 - Google login not working: verify the Google Cloud Console has the correct callback URL (`https://sripanchamispiritual.com/auth/google/callback`).
 - Emails not sending: configure SMTP secrets and run `cli/process-mail-queue.php` from cron.
