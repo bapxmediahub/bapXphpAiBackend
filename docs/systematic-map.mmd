@@ -7,11 +7,11 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 114 routes, 13 controllers, 40 services, 51 views, 0 data files, 17 tools"]
-    arch_routes["> Routes: 114 (Public + Auth + Payment + Admin + Support)"]:::arch
-    arch_ctrl["> Controllers: 13"]:::arch
-    arch_svc["> Services: 40"]:::arch
-    arch_views["> Views: 51"]:::arch
+  subgraph ARCH["Architecture Overview — 101 routes, 12 controllers, 39 services, 46 views, 0 data files, 17 tools"]
+    arch_routes["> Routes: 101 (Public + Auth + Payment + Admin + Support)"]:::arch
+    arch_ctrl["> Controllers: 12"]:::arch
+    arch_svc["> Services: 39"]:::arch
+    arch_views["> Views: 46"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 17"]:::arch
     arch_gaps["> Gaps: 0"]:::arch
@@ -38,24 +38,14 @@ flowchart LR
     route_6ce84be0a21c["GET /account/dashboard — Account dashboard entry — redirects to orders"]:::route
     route_b2c44d359fd8["GET /account/dashboard/orders — My Orders — product reviews"]:::route
     route_53bc246f9b4e["GET /account/dashboard/sessions — My Sessions — astrologer bookings"]:::route
-    route_2df10eba399a["GET /account/dashboard/wallet — Wallet — balance, recharge, transactions"]:::route
-    route_d228d36539bf["POST /account/dashboard/wallet/create-order — Wallet recharge — Razorpay order creation"]:::route
-    route_e6bdc04bc8ff["POST /account/dashboard/wallet/verify — Wallet recharge — verify payment"]:::route
     route_6e1b2c8ad9df["GET /account/orders — Legacy account orders redirect"]:::route
     route_05bd7a95e13b["GET /account/bookings — Legacy account sessions redirect"]:::route
-    route_0203d66cede2["GET /account/wallet — Legacy wallet redirect"]:::route
-    route_3db0d2c31b8e["GET /consultation/{id} — Consultation room — messaging, WebRTC signaling"]:::route
     route_6f8c21eb26c2["GET /astrologer — Astrologer dashboard — sessions queue"]:::route
     route_3f6461e98686["GET /astrologer/change-password — Astrologer forced password change"]:::route
     route_c90566c68049["POST /astrologer/change-password — Astrologer forced password change"]:::route
     route_570aaa23b315["POST /astrologer/availability — Astrologer availability update"]:::route
-    route_e049e08b4d31["GET /api/consultations/{id}/messages — API — fetch messages"]:::route
-    route_3ee173eea23d["POST /api/consultations/{id}/messages — API — send message"]:::route
-    route_137a91056f17["GET /api/consultations/{id}/signals — API — fetch WebRTC signals"]:::route
-    route_dcbdd5c79871["POST /api/consultations/{id}/signals — API — send WebRTC signal"]:::route
     route_f8d4769e9808["POST /api/consultations/{id}/status — API — update appointment status"]:::route
-    route_ef4580defcc8["POST /api/consultations/{id}/bill-time"]:::route
-    route_0e14c4ef1380["POST /consultation/initiate — Initiate consultation session — create appointment, deduct credits, redirect to room"]:::route
+    route_0e14c4ef1380["POST /consultation/initiate — Request a scheduled consultant appointment"]:::route
     route_ee5462fe50d8["POST /reviews/astrologer — Submit astrologer review"]:::route
     route_9c8e6425cd02["POST /reviews/product — Submit product review"]:::route
     route_93b329f29ece["GET /docs — Documentation landing — blog categories overview"]:::route
@@ -83,9 +73,6 @@ flowchart LR
   subgraph ROUTES_PAYMENT["PAYMENT Routes"]
     route_fb4c7f221e5b["GET /cart — Cart page — items, qty, totals"]:::route
     route_f26b003584ac["GET /checkout — Checkout page — address, Razorpay payment"]:::route
-    route_176bd191ff81["GET /recharge — Wallet recharge — buy credits"]:::route
-    route_e30eb1f2e0ae["POST /recharge/create-order — Wallet recharge — Razorpay order creation"]:::route
-    route_a9dfe780ea76["POST /recharge/verify — Wallet recharge — verify payment"]:::route
     route_eca99e09ade9["POST /cart/add — Cart — add item"]:::route
     route_9ba7a8da6f0d["POST /cart/remove — Cart — remove item"]:::route
     route_c048d08cf4d9["POST /cart/update — Cart — update quantity"]:::route
@@ -153,7 +140,6 @@ flowchart LR
     nav_1abee342ae87["/account/dashboard"]:::nav
     nav_41fb19b5f30b["/account/dashboard/orders"]:::nav
     nav_06442c376c88["/account/dashboard/sessions"]:::nav
-    nav_da1c3b4f3293["/account/dashboard/wallet"]:::nav
   end
 
   subgraph CONTROLLERS["Controllers"]
@@ -169,7 +155,6 @@ flowchart LR
     controller_2702fc6f256e["RemoteDbController"]:::code
     controller_452e47b9a403["ReviewController"]:::code
     controller_64e608ddc28b["SupportController"]:::code
-    controller_4cc77f3351c6["WalletController"]:::code
   end
 
   subgraph SERVICES["Services"]
@@ -212,15 +197,12 @@ flowchart LR
     service_82c10839666c["StoragePermissionService"]:::code
     service_1bacfc3e3f3b["SupportBotService"]:::code
     service_c9950f0c49e4["TempleService"]:::code
-    service_df7a87394b21["WalletService"]:::code
   end
 
   subgraph VIEWS["Views"]
     view_17326c025c30["account/_nav"]:::code
     view_bde0b7fa75a6["account/bookings"]:::code
-    view_7459f7fdbec2["account/consultation"]:::code
     view_8bf2f1da4f90["account/orders"]:::code
-    view_eff0f1f428ec["account/wallet"]:::code
     view_17900ac53325["admin/appearance"]:::code
     view_7913e08e07e6["admin/astrologer-credentials"]:::code
     view_c08844df74a9["admin/astrologer-form"]:::code
@@ -242,7 +224,6 @@ flowchart LR
     view_dae8fcbc86f4["layouts/admin"]:::code
     view_fd382d366d88["layouts/app"]:::code
     view_fe7e7ffe6adc["public/404"]:::code
-    view_b8de55d7769c["public/_consultation-pricing"]:::code
     view_82254c4e2aa1["public/about"]:::code
     view_74015889d737["public/astrologer"]:::code
     view_c8dddc6d8f3e["public/blog"]:::code
@@ -252,8 +233,6 @@ flowchart LR
     view_6b1f93c8d0e4["public/checkout"]:::code
     view_eb9fd22a15bf["public/consult"]:::code
     view_89865e74ab9c["public/contact"]:::code
-    view_7124ac9f4433["public/doc"]:::code
-    view_fad3b39b568b["public/docs"]:::code
     view_b8744c438a04["public/forgot-password"]:::code
     view_17c7f41e5cc8["public/home"]:::code
     view_a6af926bf361["public/login"]:::code
@@ -419,43 +398,17 @@ flowchart LR
   controller_9968163fcd32 --> service_f33a1d77b137
   controller_9968163fcd32 --> service_f751cedec776
   controller_9968163fcd32 --> service_cdae135eb5b5
-  controller_9968163fcd32 --> service_df7a87394b21
   controller_9968163fcd32 -. renders .-> view_8bf2f1da4f90
   route_53bc246f9b4e --> controller_9968163fcd32
   controller_9968163fcd32 --> service_f33a1d77b137
   controller_9968163fcd32 --> service_717a4830bf0e
-  controller_9968163fcd32 --> service_df7a87394b21
   controller_9968163fcd32 -. renders .-> view_bde0b7fa75a6
-  route_2df10eba399a --> controller_4cc77f3351c6
-  controller_4cc77f3351c6 --> service_f33a1d77b137
-  controller_4cc77f3351c6 --> service_df7a87394b21
-  controller_4cc77f3351c6 --> service_6c9416ef0383
-  controller_4cc77f3351c6 -. renders .-> view_eff0f1f428ec
-  route_d228d36539bf --> controller_4cc77f3351c6
-  controller_4cc77f3351c6 --> service_f33a1d77b137
-  controller_4cc77f3351c6 --> service_df7a87394b21
-  controller_4cc77f3351c6 --> service_6c9416ef0383
-  controller_4cc77f3351c6 --> service_9eeeaab84791
-  controller_4cc77f3351c6 -. renders .-> view_eff0f1f428ec
-  route_e6bdc04bc8ff --> controller_4cc77f3351c6
-  controller_4cc77f3351c6 --> service_f33a1d77b137
-  controller_4cc77f3351c6 --> service_df7a87394b21
-  controller_4cc77f3351c6 --> service_6c9416ef0383
-  controller_4cc77f3351c6 --> service_9eeeaab84791
-  controller_4cc77f3351c6 -. renders .-> view_eff0f1f428ec
   route_6e1b2c8ad9df --> controller_9968163fcd32
   controller_9968163fcd32 --> service_f33a1d77b137
   controller_9968163fcd32 -. renders .-> view_8bf2f1da4f90
   route_05bd7a95e13b --> controller_9968163fcd32
   controller_9968163fcd32 --> service_f33a1d77b137
   controller_9968163fcd32 -. renders .-> view_bde0b7fa75a6
-  route_0203d66cede2 --> controller_9968163fcd32
-  controller_9968163fcd32 --> service_f33a1d77b137
-  controller_9968163fcd32 -. renders .-> view_eff0f1f428ec
-  route_3db0d2c31b8e --> controller_50eaea84bd1d
-  controller_50eaea84bd1d --> service_f33a1d77b137
-  controller_50eaea84bd1d --> service_0d961cbe684b
-  controller_50eaea84bd1d -. renders .-> view_7459f7fdbec2
   route_6f8c21eb26c2 --> controller_e11bcfbdf300
   controller_e11bcfbdf300 --> service_f33a1d77b137
   controller_e11bcfbdf300 --> service_ae8ee1aa005a
@@ -473,46 +426,10 @@ flowchart LR
   controller_e11bcfbdf300 --> service_ae8ee1aa005a
   controller_e11bcfbdf300 --> service_e79c019a142b
   controller_e11bcfbdf300 -. renders .-> view_ac85facbda8b
-  route_e049e08b4d31 --> controller_50eaea84bd1d
-  controller_50eaea84bd1d --> service_f33a1d77b137
-  controller_50eaea84bd1d --> service_0d961cbe684b
-  controller_50eaea84bd1d -. renders .-> view_7459f7fdbec2
-  route_3ee173eea23d --> controller_50eaea84bd1d
-  controller_50eaea84bd1d --> service_f33a1d77b137
-  controller_50eaea84bd1d --> service_0d961cbe684b
-  controller_50eaea84bd1d -. renders .-> view_7459f7fdbec2
-  route_137a91056f17 --> controller_50eaea84bd1d
-  controller_50eaea84bd1d --> service_f33a1d77b137
-  controller_50eaea84bd1d --> service_0d961cbe684b
-  controller_50eaea84bd1d -. renders .-> view_7459f7fdbec2
-  route_dcbdd5c79871 --> controller_50eaea84bd1d
-  controller_50eaea84bd1d --> service_f33a1d77b137
-  controller_50eaea84bd1d --> service_0d961cbe684b
-  controller_50eaea84bd1d -. renders .-> view_7459f7fdbec2
   route_f8d4769e9808 --> controller_50eaea84bd1d
   controller_50eaea84bd1d --> service_f33a1d77b137
   controller_50eaea84bd1d --> service_0d961cbe684b
-  controller_50eaea84bd1d -. renders .-> view_7459f7fdbec2
-  route_ef4580defcc8 --> controller_50eaea84bd1d
-  controller_50eaea84bd1d --> service_f33a1d77b137
-  controller_50eaea84bd1d --> service_0d961cbe684b
-  controller_50eaea84bd1d --> service_df7a87394b21
-  controller_50eaea84bd1d -. renders .-> view_7459f7fdbec2
-  route_176bd191ff81 --> controller_4cc77f3351c6
-  controller_4cc77f3351c6 --> service_f33a1d77b137
-  controller_4cc77f3351c6 -. renders .-> view_eff0f1f428ec
-  route_e30eb1f2e0ae --> controller_4cc77f3351c6
-  controller_4cc77f3351c6 --> service_f33a1d77b137
-  controller_4cc77f3351c6 --> service_df7a87394b21
-  controller_4cc77f3351c6 --> service_6c9416ef0383
-  controller_4cc77f3351c6 --> service_9eeeaab84791
-  controller_4cc77f3351c6 -. renders .-> view_eff0f1f428ec
-  route_a9dfe780ea76 --> controller_4cc77f3351c6
-  controller_4cc77f3351c6 --> service_f33a1d77b137
-  controller_4cc77f3351c6 --> service_df7a87394b21
-  controller_4cc77f3351c6 --> service_6c9416ef0383
-  controller_4cc77f3351c6 --> service_9eeeaab84791
-  controller_4cc77f3351c6 -. renders .-> view_eff0f1f428ec
+  controller_50eaea84bd1d -. renders .-> view_ac85facbda8b
   route_c3f4bffc0fc6 --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_f751cedec776
   controller_3d37b75c07ec --> service_717a4830bf0e
@@ -739,8 +656,8 @@ flowchart LR
   route_0e14c4ef1380 --> controller_50eaea84bd1d
   controller_50eaea84bd1d --> service_f33a1d77b137
   controller_50eaea84bd1d --> service_ae8ee1aa005a
-  controller_50eaea84bd1d --> service_df7a87394b21
   controller_50eaea84bd1d --> service_ea89d25425b5
+  controller_50eaea84bd1d --> service_1a1be05523e3
   controller_50eaea84bd1d -. renders .-> view_74015889d737
   route_ee5462fe50d8 --> controller_452e47b9a403
   controller_452e47b9a403 --> service_cdae135eb5b5
@@ -758,10 +675,9 @@ flowchart LR
   controller_64e608ddc28b --> service_b2e5928bb46a
   controller_64e608ddc28b -. renders .-> view_54f97aa2b448
   route_93b329f29ece --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 -. renders .-> view_fad3b39b568b
+  controller_18ec49ea2cf4 -. renders .-> view_c8dddc6d8f3e
   route_1a07134bf963 --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 --> service_dc8af4c619cd
-  controller_18ec49ea2cf4 -. renders .-> view_7124ac9f4433
+  controller_18ec49ea2cf4 -. renders .-> view_4febaa319900
   route_98607742961f --> controller_2702fc6f256e
   controller_2702fc6f256e --> service_66daa9bdc2c1
   controller_2702fc6f256e -. renders .-> view_fe7e7ffe6adc
@@ -795,7 +711,6 @@ flowchart LR
   nav_1abee342ae87 --> route_6ce84be0a21c
   nav_41fb19b5f30b --> route_b2c44d359fd8
   nav_06442c376c88 --> route_53bc246f9b4e
-  nav_da1c3b4f3293 --> route_2df10eba399a
   controller_9968163fcd32 --> controller_6f7f176814f0
   controller_3d37b75c07ec --> controller_6f7f176814f0
   controller_e11bcfbdf300 --> controller_6f7f176814f0
@@ -807,7 +722,6 @@ flowchart LR
   controller_2702fc6f256e --> controller_6f7f176814f0
   controller_452e47b9a403 --> controller_6f7f176814f0
   controller_64e608ddc28b --> controller_6f7f176814f0
-  controller_4cc77f3351c6 --> controller_6f7f176814f0
   controller_6f7f176814f0 --> service_3fc704b15e1b
   tool_63816fb031e2 --> service_c5fb81744c52
   tool_20fe79d51ae4 --> service_b30981b6449c
@@ -816,7 +730,6 @@ flowchart LR
   service_b2e5928bb46a --> collection_9bc65c2abec1
   service_b2e5928bb46a --> collection_12c500ed0b78
   service_b2e5928bb46a --> collection_2417b5325520
-  service_b2e5928bb46a --> collection_f2ec0991d55d
   service_b2e5928bb46a --> collection_830b87d9f1ff
   service_717a4830bf0e --> collection_2417b5325520
   service_ae8ee1aa005a --> collection_c851fb104bb0
@@ -853,18 +766,10 @@ flowchart LR
   service_fefb1ba2e4f7 --> collection_2e5d8aa3dfa8
   service_1bacfc3e3f3b --> collection_830b87d9f1ff
   service_c9950f0c49e4 --> collection_fefa79731a13
-  service_df7a87394b21 --> collection_f2ec0991d55d
-  service_df7a87394b21 --> collection_9bc65c2abec1
   service_9eeeaab84791 --> integration_1442a65b90de
   service_9eeeaab84791 --> integration_063c1f657453
   controller_f3a06e444dad --> integration_58a89e5d2ef3
   controller_f3a06e444dad --> integration_58a89e5d2ef3
-  service_9eeeaab84791 --> integration_1442a65b90de
-  service_9eeeaab84791 --> integration_063c1f657453
-  service_9eeeaab84791 --> integration_1442a65b90de
-  service_9eeeaab84791 --> integration_063c1f657453
-  service_9eeeaab84791 --> integration_1442a65b90de
-  service_9eeeaab84791 --> integration_063c1f657453
   service_9eeeaab84791 --> integration_1442a65b90de
   service_9eeeaab84791 --> integration_063c1f657453
   service_9eeeaab84791 --> integration_1442a65b90de

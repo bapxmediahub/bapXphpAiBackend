@@ -39,11 +39,11 @@ final class SeoService {
 
     private function defaults(string $key): array {
         $brand = 'Sri Panchami Spiritual';
-        $desc = 'Consult verified astrologers online by private message or direct call. Recharge wallet credits and shop spiritual products, rudraksha, pooja items, and sacred jewellery.';
+        $desc = 'Shop authentic spiritual products and request scheduled consultations with verified consultants.';
         $maps = [
             'home' => [
                 'title' => $brand . ' – Online Astrology Consultation, Spiritual Products & Temple Guide',
-                'description' => 'Consult verified astrologers online by private message or direct call. Recharge wallet credits and shop authentic spiritual products, rudraksha, pooja items, and sacred jewellery online.',
+                'description' => 'Shop authentic spiritual products, rudraksha, pooja items, and sacred jewellery, or request a scheduled consultation.',
                 'og_type' => 'website',
                 'robots' => 'index, follow',
             ],
@@ -60,14 +60,14 @@ final class SeoService {
                 'robots' => 'index, follow',
             ],
             'consult' => [
-                'title' => 'Talk to Astrologers Online – Vedic Astrology Consultation, Chat & Call',
-                'description' => 'Connect with verified Vedic astrologers online for private message chat or direct call sessions. Get personalised guidance on career, relationships, health, and more.',
+                'title' => 'Book a Vedic Astrology Consultation Online',
+                'description' => 'Request a scheduled appointment with a verified Vedic astrology consultant for personalised guidance.',
                 'og_type' => 'website',
                 'robots' => 'index, follow',
             ],
             'astrologer' => [
                 'title' => 'Vedic Astrologer Online Consultation',
-                'description' => 'Consult an experienced Vedic astrologer online via private message or direct call.',
+                'description' => 'Request a scheduled appointment with an experienced Vedic astrology consultant.',
                 'og_type' => 'profile',
                 'robots' => 'index, follow',
             ],
@@ -127,13 +127,13 @@ final class SeoService {
             ],
             'login' => [
                 'title' => 'Sign In – ' . $brand,
-                'description' => 'Sign in to your ' . $brand . ' account to access astrology bookings, wallet, orders, and more.',
+                'description' => 'Sign in to your ' . $brand . ' account to manage orders, saved delivery addresses, and consultation bookings.',
                 'og_type' => 'website',
                 'robots' => 'noindex, follow',
             ],
             'register' => [
                 'title' => 'Create Account – ' . $brand,
-                'description' => 'Create your ' . $brand . ' account to book astrology consultations, recharge wallet, and shop spiritual products.',
+                'description' => 'Create your ' . $brand . ' account to save delivery addresses, order spiritual products, and book consultations.',
                 'og_type' => 'website',
                 'robots' => 'noindex, follow',
             ],
@@ -151,7 +151,7 @@ final class SeoService {
             ],
             'account' => [
                 'title' => 'My Account – ' . $brand,
-                'description' => 'Manage your ' . $brand . ' account, view orders, astrology bookings, and wallet.',
+                'description' => 'Manage your ' . $brand . ' account, view product orders, and track consultation bookings.',
                 'og_type' => 'website',
                 'robots' => 'noindex, nofollow',
             ],

@@ -2,6 +2,5 @@
 <aside class="account-nav" aria-label="Account navigation">
     <a href="/account/dashboard/orders"<?= str_starts_with($accountPath, '/account/dashboard/orders') ? ' class="active" aria-current="page"' : '' ?>>My Orders</a>
     <a href="/account/dashboard/sessions"<?= str_starts_with($accountPath, '/account/dashboard/sessions') ? ' class="active" aria-current="page"' : '' ?>>My Sessions</a>
-    <a href="/account/dashboard/wallet"<?= str_starts_with($accountPath, '/account/dashboard/wallet') ? ' class="active" aria-current="page"' : '' ?>>Wallet</a>
     <a href="/">Back to Home</a>
 </aside>

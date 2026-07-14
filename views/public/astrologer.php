@@ -21,19 +21,18 @@
                         <p class="booking-profile__meta"><?= e($astrologer['speciality'] ?? 'Vedic Astrology') ?></p>
                         <?php if($profileLanguages): ?><p class="booking-profile__meta">Languages: <?= e(implode(', ', $profileLanguages)) ?></p><?php endif; ?>
                         <?php if($profileExperience!==''): ?><p class="booking-profile__meta"><?= e($profileExperience) ?> years experience</p><?php endif; ?>
-                        <p class="booking-profile__meta">Remote consultation by chat and direct call</p>
-                        <p class="expert-credit-line"><?= e((string)($astrologer['message_credit_cost'] ?? 5)) ?> credits/message <span><?= e((string)($astrologer['call_credit_per_second'] ?? 0.5)) ?> credits/sec call</span></p>
+                        <p class="booking-profile__meta">Scheduled private consultation</p>
                     </div>
                 </section>
 
                 <section class="expert-copy-panel reveal">
-                    <span class="eyebrow">Remote consultation only</span>
+                    <span class="eyebrow">Appointment consultation</span>
                     <h2>About</h2>
                     <p>
                         <?= e($astrologer['description'] ?? 'Connect for practical spiritual guidance, horoscope clarity and family ritual support.') ?>
                     </p>
                     <p>
-                        This service is handled through remote call and message consultation. Appointment date slots and per-consultant booking forms are not used on this page.
+                        Choose your preferred date and time below. The consultant will review and confirm your appointment request.
                     </p>
                 </section>
 
@@ -42,34 +41,16 @@
 
             <aside class="expert-side">
                 <section class="expert-action-card reveal">
-                    <div class="expert-price">
-                        <strong><?= e((string)($astrologer['message_credit_cost'] ?? 5)) ?> credits/message</strong>
-                        <span><?= e((string)($astrologer['call_credit_per_second'] ?? 0.5)) ?> credits/sec call</span>
-                    </div>
-                    <div class="expert-action-grid">
-                        <div class="astro-action-row">
-                            <form class="astro-session-form" action="/consultation/initiate" method="post">
-                                <input type="hidden" name="astrologer_slug" value="<?= e($astrologer['slug']) ?>">
-                                <input type="hidden" name="mode" value="text_session">
-                                <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
-                                <button type="submit" class="astro-action astro-action--icon astro-action--chat" aria-label="Start message session" title="Message">
-                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 9.2 9.2 0 0 1-3.7-.8L3 21l1.8-5.3A8.2 8.2 0 0 1 4 11.5 8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5Z"/><path d="M8 10h8M8 14h5"/></svg>
-                                <span class="sr-only">Message</span>
-                                </button>
-                            </form>
-                            <form class="astro-session-form" action="/consultation/initiate" method="post">
-                                <input type="hidden" name="astrologer_slug" value="<?= e($astrologer['slug']) ?>">
-                                <input type="hidden" name="mode" value="direct_call">
-                                <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
-                                <button type="submit" class="astro-action astro-action--icon astro-action--call" aria-label="Start call session" title="Call">
-                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.7 19.7 0 0 1-8.6-3.1 19.1 19.1 0 0 1-5.9-5.9A19.7 19.7 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L8.1 10a16 16 0 0 0 5.9 5.9l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2Z"/></svg>
-                                <span class="sr-only">Call</span>
-                                </button>
-                            </form>
-                        </div>
-                        <a href="/contact?subject=astrology#contact-form" class="astro-action astro-action--session">BOOK SESSION</a>
-                    </div>
-                    <p>1 rupee adds 20 credits. Minimum top-up is ₹10. Credits are only for consultant message and call sessions.</p>
+                    <h2>Book this consultant</h2>
+                    <form class="booking-request-form" action="/consultation/initiate" method="post">
+                        <input type="hidden" name="astrologer_slug" value="<?= e($astrologer['slug']) ?>">
+                        <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+                        <div class="form-group"><label for="preferred-date">Preferred date</label><input id="preferred-date" type="date" name="preferred_date" min="<?= e(date('Y-m-d')) ?>" required></div>
+                        <div class="form-group"><label for="preferred-time">Preferred time</label><input id="preferred-time" type="time" name="preferred_time" required></div>
+                        <div class="form-group"><label for="booking-phone">Phone</label><input id="booking-phone" type="tel" name="phone" placeholder="+91 XXXXX XXXXX" required></div>
+                        <div class="form-group"><label for="booking-notes">What would you like guidance about?</label><textarea id="booking-notes" name="notes" rows="4" maxlength="2000"></textarea></div>
+                        <button class="btn btn-primary btn-block" type="submit">Request appointment</button>
+                    </form>
                 </section>
 
                 <?php if($profileReviewCount>0): ?><section class="ratings-panel reveal">
@@ -79,9 +60,9 @@
                 </section><?php endif; ?>
 
                 <section class="trust-panel reveal">
-                    <p>Private consultation rooms</p>
+                    <p>Preferred date and time requests</p>
                     <p>Admin-managed consultant profiles</p>
-                    <p>100% Secure Payments</p>
+                    <p>Booking status in your account</p>
                 </section>
 
                 <section class="consultation-panel__contact reveal">

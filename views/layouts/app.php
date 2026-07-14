@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="format-detection" content="telephone=no">
 <title><?= e($pageTitle ?? 'Sri Panchami Spiritual') ?></title>
-<meta name="description" content="<?= e($metaDescription ?? 'Consult verified astrologers online by private message or direct call. Recharge wallet credits and shop spiritual products, rudraksha, pooja items, and sacred jewellery.') ?>">
+<meta name="description" content="<?= e($metaDescription ?? 'Book a private consultant appointment and shop spiritual products, rudraksha, pooja items, and sacred jewellery.') ?>">
 <meta name="robots" content="<?= e($metaRobots ?? 'index, follow') ?>">
 <?php
 $__settings = (new \App\Services\SettingsService())->public();
@@ -312,7 +312,7 @@ gtag('js', new Date());
         </div>
         <a href="/about"<?= str_starts_with($currentPath, '/about') ? ' aria-current="page"' : '' ?>>About SPS</a>
         <a href="/contact"<?= str_starts_with($currentPath, '/contact') ? ' aria-current="page"' : '' ?>>Contact</a>
-        <a href="/docs"<?= str_starts_with($currentPath, '/docs') ? ' aria-current="page"' : '' ?>>Docs</a>
+        <a href="/blog/category/help"<?= $currentPath === '/blog/category/help' ? ' aria-current="page"' : '' ?>>Help</a>
         <?php if(!empty($_SESSION['user'])): ?>
             <?php if(($_SESSION['user']['role'] ?? '') === 'astrologer'): ?>
                 <a href="/astrologer"<?= str_starts_with($currentPath, '/astrologer') ? ' aria-current="page"' : '' ?>>Dashboard</a>
@@ -386,11 +386,11 @@ if ($__flash):
         <button type="button" class="support-panel__close" aria-label="Close support">×</button>
     </div>
     <div class="support-panel__body" id="support-log" aria-live="polite">
-        <p>Ask about your orders, wallet recharge, products, or astrologer sessions.</p>
+        <p>Ask about products, orders, delivery addresses, or consultant bookings.</p>
         <?php if(empty($_SESSION['user'])): ?><p>Sign in to ask about your personal order or session data.</p><?php endif; ?>
     </div>
     <form class="support-panel__form" id="support-form">
-        <textarea name="message" rows="3" required placeholder="Ask about an order, recharge, product, or session"></textarea>
+        <textarea name="message" rows="3" required placeholder="Ask about a product, order, address, or booking"></textarea>
         <button class="btn btn-primary btn-sm">Send</button>
     </form>
 </section>
@@ -402,7 +402,7 @@ if ($__flash):
         <div class="footer-grid">
             <div>
                 <span class="footer-brand">Sri Panchami Spiritual</span>
-                <p class="footer-desc">Online astrology consultation by private message or direct call, plus authentic spiritual products, sacred jewellery, rudraksha, pooja items, and temple guidance.</p>
+                <p class="footer-desc">Scheduled astrology consultations, authentic spiritual products, sacred jewellery, rudraksha, pooja items, and temple guidance.</p>
             </div>
             <div>
                 <h4 class="footer-heading">Shop</h4>

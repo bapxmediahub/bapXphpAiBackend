@@ -1070,6 +1070,12 @@ nav a:hover { color: var(--color-maroon); }
 .auth-card h1 { font-family: var(--font-serif); font-size: 2.2rem; color: var(--color-maroon); margin-bottom: var(--space-xs); text-align: center; }
 .auth-card > p { text-align: center; color: var(--color-text-muted); margin-bottom: var(--space-xl); font-size: 0.95rem; }
 .auth-form { display: grid; gap: var(--space-md); }
+.auth-form__row { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md); }
+.booking-request-form { display:grid; gap:var(--space-md); margin-top:var(--space-md); }
+.booking-request-form .form-group { margin:0; }
+.checkout-address-options { display:grid; gap:var(--space-sm); padding-bottom:8px; }
+.checkout-address-options label { display:flex; align-items:center; gap:var(--space-sm); }
+@media (max-width: 743px) { .auth-form__row { grid-template-columns:1fr; gap:0; } }
 .form-check { display: flex; align-items: center; gap: var(--space-sm); }
 .form-check .checkbox-label { display: flex; align-items: center; gap: var(--space-sm); cursor: pointer; font-size: 0.7rem; color: var(--color-text-muted); line-height: 1; white-space: nowrap; }
 .form-check .checkbox-label input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--color-maroon); flex-shrink: 0; margin: 0; }

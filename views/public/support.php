@@ -2,16 +2,16 @@
     <div class="container">
         <span class="eyebrow serif-accent">Support</span>
         <h1 class="section__title">How can we help?</h1>
-        <p class="lede">Find quick answers about orders, wallet recharge, astrology sessions, and products. You can also open the support assistant from the chat button to ask about your own orders, wallet balance, or past sessions.</p>
+        <p class="lede">Find quick answers about products, orders, delivery addresses, payments, and consultant bookings.</p>
 
         <div class="support-grid">
             <article class="support-card">
-                <h2>Wallet recharge</h2>
-                <p>Recharge credits from <a href="/account/dashboard/wallet">your wallet page</a>. Sign in first so credits are added to your account. 1 rupee adds 20 consultation credits used for astrologer message and call sessions.</p>
+                <h2>Saved addresses</h2>
+                <p>Your signup address becomes the default at checkout. Select another saved address or enter and optionally save a different delivery address for an order.</p>
             </article>
             <article class="support-card">
-                <h2>Astrology sessions</h2>
-                <p>Browse verified astrologers on the <a href="/consult">consultation marketplace</a>. Book a remote message or call session, or request a consultation through our <a href="/contact#contact-form">contact form</a>.</p>
+                <h2>Consultant bookings</h2>
+                <p>Browse consultants on the <a href="/consult">consultation marketplace</a>, choose a profile, and request your preferred appointment date and time.</p>
             </article>
             <article class="support-card">
                 <h2>Orders &amp; shipping</h2>

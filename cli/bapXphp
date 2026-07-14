@@ -1108,7 +1108,7 @@ cmd_write() {
   local type="${1:-}" slug="${2:-}"
   case "$type" in
     blog)
-      php "$ROOT/cli/blog-write.php" "$ROOT" "$slug" ;;
+      php "$ROOT/cli/blog-write.php" "$ROOT" edit "$slug" ;;
     docs|doc)
       php "$ROOT/cli/doc-write.php" "$ROOT" "$slug" ;;
     product|products)

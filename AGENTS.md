@@ -6,7 +6,7 @@ alwaysApply: true
 
 # Agent Operating Guide
 
-This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP hosting. It is not a SPA, not a separate MCP/skill server. The backend primitives live in this monorepo. Remote MySQL is the only runtime data store; local JSON files are import-only and never a runtime fallback. Blog posts use Markdown with YAML frontmatter in `content/blog/posts/`. Customer help guides use Markdown with YAML frontmatter in `content/docs/`. Media metadata uses YAML in `storage/media.yaml`.
+This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP hosting. It is not a SPA, not a separate MCP/skill server. The backend primitives live in this monorepo. Remote MySQL is the only runtime data store; local JSON files are import-only and never a runtime fallback. Blog posts and customer help guides use Markdown with YAML frontmatter in `content/blog/posts/`; help guides use the `help` category. Media metadata uses YAML in `storage/media.yaml`.
 
 ## DOX Contract
 
@@ -71,6 +71,7 @@ This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP
 - User-specific assistant context must use `AgentContextService` or equivalent filtering. Never expose all users' data to a customer assistant.
 - Product, temple, and astrologer media should use the media library picker/upload flow.
 - Blog posts go in `content/blog/posts/` as `.md` files with YAML frontmatter. Blog categories in `content/blog/categories.yaml`.
+- Customer help is blog content in the `help` category. Do not create a separate customer documentation content store or renderer.
 - Media metadata goes in `storage/media.yaml` (not in MySQL).
 - Secrets (Razorpay, Stripe, Google OAuth, SMTP, etc.) are admin-editable through Admin → Integrations and stored in the MySQL `secrets` table. Never put secrets in `.env`. System env vars serve as fallback for critical credentials.
 - Before committing or pushing to remote `main`, verify the repo with the relevant PHP lint checks, tests, project-map generation/validation, and smoke checks.

@@ -6,12 +6,11 @@ final class AgentContextService {
 
     public function forUserEmail(string $email): array {
         $email = strtolower(trim($email));
-        if ($email === '') return ['user'=>null, 'orders'=>[], 'sessions'=>[], 'wallet_transactions'=>[], 'settings'=>$this->publicSettings(), 'site'=>$this->siteContext()];
+        if ($email === '') return ['user'=>null, 'orders'=>[], 'sessions'=>[], 'settings'=>$this->publicSettings(), 'site'=>$this->siteContext()];
         return [
             'user' => $this->firstOwned('users', 'email', $email),
             'orders' => $this->owned('orders', 'customer_email', $email),
             'sessions' => $this->owned('appointments', 'customer_email', $email),
-            'wallet_transactions' => $this->owned('wallet_transactions', 'customer_email', $email),
             'settings' => $this->publicSettings(),
             'site' => $this->siteContext(),
         ];
@@ -45,13 +44,11 @@ final class AgentContextService {
             'pages' => [
                 'shop' => '/shop',
                 'cart' => '/cart',
-                'recharge' => '/account/dashboard/wallet',
                 'astrologers' => '/consult',
                 'booking_contact_form' => '/contact?subject=astrology#contact-form',
                 'contact' => '/contact',
                 'orders' => '/account/dashboard/orders',
                 'sessions' => '/account/dashboard/sessions',
-                'wallet' => '/account/dashboard/wallet',
             ],
             'products' => $products,
             'support_scope' => 'Answer only from this JSON context and public site links. Do not access tools, files, admin data, or other users.',

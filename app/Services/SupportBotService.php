@@ -37,7 +37,7 @@ final class SupportBotService {
         $prompt = "You are Sri Panchami Spiritual support bot.\n"
             . "Return only the final customer-facing answer. Do not include reasoning, analysis, markdown bullets, code, tool calls, or hidden thoughts.\n"
             . "Use only this JSON context for the signed-in customer and public site links. Never mention, infer, or access other users' data. If data is missing, ask the customer to use the contact form.\n"
-            . "Allowed help: product links, cart/recharge/account links, order/session/wallet details from the JSON, and astrology booking through the contact form.\n"
+            . "Allowed help: product, cart, checkout, delivery address, order, and consultant booking details from the JSON.\n"
             . "Customer context JSON: "
             . json_encode($context, JSON_UNESCAPED_SLASHES)
             . "\nCustomer question: " . $message
@@ -75,7 +75,7 @@ final class SupportBotService {
         if (preg_match_all('/"([^"]{20,700})"/', $text, $matches) && !empty($matches[1])) {
             $text = end($matches[1]);
         }
-        if ($text === '') $text = 'I can help with products, wallet recharge, astrologer call/message sessions, orders, and booking requests through the contact form. Please ask one specific question.';
+        if ($text === '') $text = 'I can help with products, orders, delivery addresses, payments, and consultant bookings. Please ask one specific question.';
         return strlen($text) > 900 ? substr($text, 0, 897) . '...' : $text;
     }
 
@@ -87,12 +87,12 @@ final class SupportBotService {
         $lower = strtolower($message);
         if (!$context['signed_in']) {
             if ($this->isPrivateAccountQuestion($lower)) {
-                return 'Please sign in to ask about your personal orders, wallet balance, or past astrologer sessions. I can still explain public products, services, recharge, and consultation booking.';
+                return 'Please sign in to ask about your personal orders or consultant bookings. I can still explain products, checkout, delivery, and booking.';
             }
             return $this->publicGuestReply($lower, $context);
         }
         if (preg_match('/^(hi|hello|hey|vanakkam|namaste)\b/i', trim($message))) {
-            return 'Hello. I can help with product links, cart or recharge guidance, astrology call/message booking through the contact form, and your own order, wallet, or session history.';
+            return 'Hello. I can help with products, checkout, saved addresses, orders, and consultant bookings.';
         }
         if (str_contains($lower, 'order')) {
             return empty($context['orders']) ? 'I could not find orders in your account yet.' : 'I found your recent order data in the account panel. Open My Orders for full delivery address, status, shipped time, and review options.';
@@ -100,7 +100,7 @@ final class SupportBotService {
         if (str_contains($lower, 'talk') || str_contains($lower, 'session') || str_contains($lower, 'astrologer')) {
             return empty($context['sessions']) ? 'I could not find astrologer sessions in your account yet.' : 'I found recent astrologer session records. Open My Sessions to see who you contacted, session type, credits spent, and review options.';
         }
-        return 'I can help with product orders, wallet recharge, astrologer call/message sessions, reviews, and account history. Please ask one specific question.';
+        return 'I can help with product orders, delivery addresses, consultant bookings, reviews, and account history. Please ask one specific question.';
     }
 
     private function publicGuestReply(string $message, array $context): string {
@@ -108,7 +108,7 @@ final class SupportBotService {
         $pages = $site['pages'] ?? [];
         $products = array_slice($site['products'] ?? [], 0, 5);
         if (preg_match('/\b(hi|hello|hey|vanakkam|namaste)\b/i', $message)) {
-            return 'Hello. I can help you browse spiritual products, explain remote astrology call/message services, guide wallet recharge, or send you to the consultation booking form.';
+            return 'Hello. I can help you browse spiritual products, place an order, manage delivery addresses, or request a consultant appointment.';
         }
         if (preg_match('/\b(product|available|shop|buy|item|pendant|jewelry|jewellery)\b/i', $message)) {
             $names = array_filter(array_map(fn($p) => trim((string)($p['name'] ?? '')), $products));
@@ -116,16 +116,16 @@ final class SupportBotService {
             return 'Available products include ' . $list . '. Open ' . ($pages['shop'] ?? '/shop') . ' to browse all products, or add an item to cart from its product page.';
         }
         if (preg_match('/\b(service|consult|booking|book|astrology|call|message|temple)\b/i', $message)) {
-            return 'Available services include spiritual product sales, remote astrology call/message consultation requests, wallet recharge for sessions, and temple guidance. Use ' . ($pages['booking_contact_form'] ?? '/contact?subject=astrology#contact-form') . ' to request a consultation booking.';
+            return 'Available services include spiritual product sales, scheduled consultant appointments, and temple guidance. Open ' . ($pages['consult'] ?? '/consult') . ' to request an appointment.';
         }
         if (preg_match('/\b(recharge|wallet|credit|payment)\b/i', $message)) {
-            return 'Wallet recharge is available from ' . ($pages['recharge'] ?? '/account/dashboard/wallet') . '. You may need to sign in before payment so credits are added to your account.';
+            return 'Product payments are completed securely during checkout. Sign in to reuse saved delivery addresses and view confirmed orders.';
         }
-        return 'I can help with available products, astrology call/message services, recharge, temple guidance, and consultation booking. For personal order or session history, please sign in first.';
+        return 'I can help with products, checkout, delivery addresses, temple guidance, and consultant bookings. For personal order or booking history, please sign in first.';
     }
 
     private function isPrivateAccountQuestion(string $message): bool {
-        return (bool)preg_match('/\b(my order|my booking|my session|my wallet|my balance|track|delivery|shipped|spent|history|past session|previous session)\b/i', $message);
+        return (bool)preg_match('/\b(my order|my booking|my session|track|delivery|shipped|history|past session|previous session)\b/i', $message);
     }
 
 }
