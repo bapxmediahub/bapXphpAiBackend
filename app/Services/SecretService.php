@@ -12,12 +12,13 @@ final class SecretService {
         try {
             $db = new DatabaseService();
             $rows = $db->read('secrets');
-            $stored = [];
+            usort($rows, fn(array $a, array $b): int => ($a['id'] === 'app_secrets' ? 1 : 0) <=> ($b['id'] === 'app_secrets' ? 1 : 0));
+            $stored = array_filter($env, fn($value) => $value !== '');
             foreach ($rows as $r) {
                 unset($r['id']);
-                $stored = array_merge($stored, $r);
+                $stored = array_merge($stored, array_filter($r, fn($value) => $value !== ''));
             }
-            return $this->normalize(array_merge($stored, array_filter($env, fn($v) => $v !== '')));
+            return $this->normalize($stored);
         } catch (\Throwable) {
             return $this->normalize($env);
         }

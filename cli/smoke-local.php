@@ -166,9 +166,15 @@ function httpRequest(string $url, string $method = 'GET', string $body = ''): ar
         $options['header'] = "Content-Type: application/x-www-form-urlencoded\r\n";
         $options['content'] = $body;
     }
-    $context = stream_context_create(['http' => $options]);
-    $content = file_get_contents($url, false, $context);
-    $headers = $http_response_header ?? [];
+    $content = false;
+    $headers = [];
+    for ($attempt = 0; $attempt < 3; $attempt++) {
+        $context = stream_context_create(['http' => $options]);
+        $content = @file_get_contents($url, false, $context);
+        $headers = $http_response_header ?? [];
+        if ($content !== false || $headers !== []) break;
+        usleep(200000);
+    }
     preg_match('/\s(\d{3})\s/', $headers[0] ?? '', $matches);
     return [
         'status' => (int)($matches[1] ?? 0),
