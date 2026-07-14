@@ -5,7 +5,7 @@ description: Use when editing public, account, shop, astrologer, temple, cart, c
 
 # PHP Frontend
 
-- Follow root `AGENTS.md`, `views/AGENTS.md`, and `assets/AGENTS.md` for touched paths.
+- Follow the root `AGENTS.md` repository contract and its view/asset area rules.
 - Read and follow root `Design.md` before changing any customer-facing UI. Treat it as the canonical token, typography, component, and responsive contract.
 - Keep UI as PHP-rendered templates plus existing CSS; do not add React, CDN React, SPA shells, or a second frontend.
 - Templates should consume controller-provided data and existing services, not read JSON storage directly.

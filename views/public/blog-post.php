@@ -17,7 +17,7 @@
                 '@type' => 'Article',
                 'headline' => $meta['title'] ?? '',
                 'description' => $meta['seo_description'] ?? $meta['excerpt'] ?? '',
-                'image' => $schemaImage ?: undefined,
+                'image' => $schemaImage ?: 'undefined',
                 'datePublished' => $meta['published_at'] ?? '',
                 'dateModified' => $meta['updated_at'] ?? $meta['published_at'] ?? '',
                 'author' => [
@@ -65,7 +65,7 @@
       </div>
       <?php $sourceUrl = trim((string)($meta['source_url'] ?? '')); $sourceScheme = parse_url($sourceUrl, PHP_URL_SCHEME); ?>
       <?php if ($sourceUrl !== '' && ($sourceUrl[0] === '/' || in_array($sourceScheme, ['http', 'https'], true))): ?>
-      <p class="blog-post__source"><span>Related page</span><a href="<?= e($meta['source_url']) ?>">Open the page shown in this guide</a></p>
+      <p class="blog-post__source"><span>Related page</span><a href="<?= e($sourceUrl) ?>">Open the page shown in this guide</a></p>
       <?php endif; ?>
     </article>
 

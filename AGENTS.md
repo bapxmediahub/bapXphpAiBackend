@@ -8,14 +8,13 @@ alwaysApply: true
 
 This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP hosting. It is not a SPA, not a separate MCP/skill server. The backend primitives live in this monorepo. Remote MySQL is the only runtime data store; local JSON files are import-only and never a runtime fallback. Blog posts and customer help guides use Markdown with YAML frontmatter in `content/blog/posts/`; help guides use the `help` category. Media metadata uses YAML in `storage/media.yaml`.
 
-## DOX Contract
+## Repository Contract
 
-- `AGENTS.md` files are binding work contracts for their subtrees.
+- This root `AGENTS.md` is the only binding agent contract in the repository. Do not create directory-level `AGENTS.md` files or duplicate these rules in skills.
 - Keep investigation and file operations inside this repository by default. Do not search sibling folders, home directories, or unrelated projects unless the user explicitly requests that scope.
-- Read this root file first. Identify every expected target path, then read every `AGENTS.md` from the repo root down to each target before editing.
-- The nearest `AGENTS.md` controls local details. Parent docs continue to control repo-wide rules; child docs may not weaken this DOX contract.
-- After meaningful edits, re-check changed paths against the DOX chain, update the closest owning `AGENTS.md` when purpose, structure, workflow, artifacts, contracts, or durable preferences changed, and refresh parent Child DOX Index entries when children change. Update every affected durable page/module/role document in the same PR; implementation without documentation reconciliation is incomplete.
-- Keep DOX docs concise and operational. Delete stale or contradictory instructions instead of explaining old history.
+- Read this file before working. Update it only when a repository-wide durable workflow changes.
+- After meaningful edits, update every affected durable page/module/role document in the same PR. Implementation without documentation reconciliation is incomplete.
+- Keep instructions concise and operational. Delete stale or contradictory rules instead of preserving historical duplication.
 
 ## Core Shape
 
@@ -31,7 +30,7 @@ This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP
 
 ## Diagnose, Then Issue
 
-- For a meaningful code, schema, UI, documentation, or workflow change, reproduce or inspect the reported behavior first. Trace the affected systematic-map path and pinpoint the owning source before creating an issue. For documentation/AGENTS.md changes, also consult `docs/KnowledgeMap.mmd`.
+- For a meaningful code, schema, UI, documentation, or workflow change, reproduce or inspect the reported behavior first. Trace the affected systematic-map path and pinpoint the owning source before creating an issue. For documentation or instruction changes, also consult `docs/KnowledgeMap.mmd`.
 - After diagnosis, search open GitHub issues. Select an existing matching issue or create one before editing when GitHub is available.
 - Put reproduction evidence, affected source paths, the pinpointed cause, intended scope, and acceptance checks in the issue. Reference the issue in the branch and PR.
 - Do not create an issue for read-only diagnosis, trivial questions, or when the user explicitly declines issue tracking.
@@ -41,11 +40,10 @@ This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP
 1. Read this root `AGENTS.md`.
 2. Read `docs/systematic-map.mmd` as a generated index, follow the affected edges, reproduce the behavior when possible, and pinpoint the owning source.
 3. Search for an existing issue, then select or create the evidence-backed issue when the diagnose-then-issue rule applies.
-4. Identify target paths and read their complete root-to-leaf `AGENTS.md` chain.
-5. Read the narrow `.agents/skills/<skill-name>/SKILL.md` files that match the task.
-6. Read `storage/schema/collections.php` for schema definitions and `Design.md` for customer-facing UI.
-7. Search with `rg` and inspect existing implementations before creating any file, route, service, view, collection, or navigation item.
-8. Implement against primary repository sources. The generated map summarizes relationships; it does not override source files.
+4. Read the narrow `.agents/skills/<skill-name>/SKILL.md` files that match the task; skills may add task technique but may not duplicate or override this contract.
+5. Read `storage/schema/collections.php` for schema definitions and `Design.md` for customer-facing UI.
+6. Search with `rg` and inspect existing implementations before creating any file, route, service, view, collection, or navigation item.
+7. Implement against primary repository sources. The generated map summarizes relationships; it does not override source files.
 
 ## Project Map
 
@@ -75,6 +73,17 @@ This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP
 - Media metadata goes in `storage/media.yaml` (not in MySQL).
 - Secrets (Razorpay, Stripe, Google OAuth, SMTP, etc.) are admin-editable through Admin → Integrations and stored in the MySQL `secrets` table. Never put secrets in `.env`. System env vars serve as fallback for critical credentials.
 - Before committing or pushing to remote `main`, verify the repo with the relevant PHP lint checks, tests, project-map generation/validation, and smoke checks.
+
+## Area Contracts
+
+- `app/`: keep route -> controller -> service -> `DatabaseService` boundaries; use `AgentContextService` for user-scoped assistant context and audit admin mutations.
+- `views/` and `assets/`: keep PHP templates, follow `Design.md`, reuse shared tokens/components, and browser-test customer UI. Do not add a SPA or build pipeline.
+- `storage/`: declare every persisted field in `storage/schema/collections.php`; remote MySQL is runtime truth and JSON is import-only.
+- `content/`: blog/help content is Markdown with YAML frontmatter; help is the Blog `help` category and uses one shared 16:9 card/article image.
+- `docs/`: maintain durable behavior documentation and only the generated `systematic-map.mmd` and `KnowledgeMap.mmd` map artifacts.
+- `cli/`: extend `bapXphp` for repeatable operations; commands must be shared-hosting compatible, credential-safe, and non-interactive where agents need them.
+- `integrations/`: keep clients small and obtain admin-managed secrets through `SecretService`; never hardcode credentials.
+- `tests/`: assert current contracts without production credentials or network dependence; validation must detect stale generated maps.
 
 ## CLI-Only Operations
 
@@ -142,20 +151,6 @@ For UI changes, also use a browser workflow. Codex agents must use `Browser:cont
 Local browser validation must use this project's single dev-server port: `127.0.0.1:6020`. If `6020` is already listening, inspect and reuse that running project server; do not start another copy on `6021` or any alternate port unless the user explicitly authorizes it.
 
 Before finishing, search the touched workflow for placeholders, dead buttons, duplicated fallbacks, stale labels, and incomplete wiring. Remove or wire them instead of leaving non-working UI.
-
-## Child DOX Index
-
-- `app/AGENTS.md`: PHP controllers, services, bootstrap, router, and route registry.
-- `api/AGENTS.md`: JSON API entrypoint behavior.
-- `.agents/AGENTS.md`: repo-owned agent skills and skill contracts.
-- `views/AGENTS.md`: PHP-rendered public, account, admin, and layout templates.
-- `storage/AGENTS.md`: JSON data, schema contracts, writable runtime files, and backups.
-- `docs/AGENTS.md`: durable documentation and the systematic project map and KnowledgeMap.
-- `integrations/AGENTS.md`: third-party integration client wrappers.
-- `cli/AGENTS.md`: maintenance scripts, project-map generation/validation, local smoke checks, and mail queue tooling.
-- `tests/AGENTS.md`: PHP regression tests and test fixtures.
-- `assets/AGENTS.md`: CSS and static image/media assets.
-- `content/AGENTS.md`: Markdown/YAML customer help, blog, and legal content.
 
 # CRITICAL RULE: ZERO-CODE INITIATION
 

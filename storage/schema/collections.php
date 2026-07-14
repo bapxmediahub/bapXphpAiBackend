@@ -77,6 +77,13 @@
                 'message_credit_cost' => ['type' => 'number'],
                 'call_credit_per_second' => ['type' => 'number'],
                 'languages' => ['type' => 'array', 'items' => 'string'],
+                'modes' => ['type' => 'array', 'items' => 'string'],
+                'working_days' => ['type' => 'array', 'items' => 'string'],
+                'start_time' => ['type' => 'string'],
+                'end_time' => ['type' => 'string'],
+                'slot_minutes' => ['type' => 'number'],
+                'experience_years' => ['type' => 'number'],
+                'speciality' => ['type' => 'string'],
             ],
         ],
         'temples' => [

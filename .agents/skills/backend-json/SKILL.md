@@ -5,7 +5,7 @@ description: Use when editing PHP controllers, services, JSON persistence, auth,
 
 # Backend JSON
 
-- Follow root `AGENTS.md`, then the nearest child `AGENTS.md` for every touched path.
+- Follow the root `AGENTS.md` repository contract.
 - Keep route -> controller -> service -> MySQL-store boundaries via `DatabaseService`.
 - MySQL is the primary runtime store. `bapXphp db` CLI manages the DB (init, sync, query).
 - JSON files in `storage/data/` are used only for one-time seeding via `bapXphp db sync`. Do not use `JsonStoreService` in runtime code.
