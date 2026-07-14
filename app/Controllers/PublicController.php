@@ -194,36 +194,12 @@ final class PublicController extends BaseController {
     }
 
     public function docs(): void {
-        $this->detectApiRequest();
-        $this->seoKey = 'home';
-        $pages = [];
-        foreach (glob(app_path('content/docs/*.md')) ?: [] as $path) {
-            $raw = (string)@file_get_contents($path);
-            if ($raw === '') continue;
-            $document = $this->parseContentDocument($raw, pathinfo($path, PATHINFO_FILENAME));
-            $pages[] = [
-                'title' => $document['title'],
-                'slug' => $document['slug'],
-                'summary' => $document['summary'],
-                'order' => $document['order'],
-                'icon' => $document['icon'],
-            ];
-        }
-        usort($pages, fn(array $a, array $b): int => ($a['order'] <=> $b['order']) ?: strcmp($a['title'], $b['title']));
-        $this->render('public/docs', ['pages' => $pages]);
+        $this->redirect('/blog/category/help');
     }
 
     public function doc(string $slug): void {
-        $this->detectApiRequest();
         $slug = preg_replace('/[^a-z0-9-]/', '', strtolower($slug));
-        $path = app_path('content/docs/' . $slug . '.md');
-        if (!is_file($path)) {
-            $this->renderNotFound();
-            return;
-        }
-        $document = $this->parseContentDocument((string)file_get_contents($path), $slug);
-        $this->seoOverrides = ['title' => $document['title'], 'description' => $document['summary']];
-        $this->render('public/doc', ['document' => $document]);
+        $this->redirect('/blog/' . $slug);
     }
 
     private function parseContentDocument(string $raw, string $fallbackSlug): array

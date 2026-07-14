@@ -74,11 +74,11 @@
     </div>
     <div class="trust-item">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-        Wallet Credits
+        Saved Addresses
     </div>
     <div class="trust-item">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        Call & Message
+        Scheduled Consultations
     </div>
     <div class="trust-item">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
@@ -170,9 +170,8 @@
     <div class="section-header">
         <span class="eyebrow serif-accent">Guidance · Clarity · Remedies</span>
         <h2 class="section-title">Online Consultation</h2>
-        <p class="lede">Connect with experienced consultants by private message or direct call for guidance, clarity, and personalized support.</p>
+        <p class="lede">Choose an experienced consultant and request a private appointment at your preferred date and time.</p>
     </div>
-    <?php include app_path('views/public/_consultation-pricing.php'); ?>
     <?php if(!empty($astrologers)): ?>
     <div class="astro-carousel" aria-label="Consultants carousel">
         <div class="astro-carousel-track">
@@ -198,47 +197,9 @@
                 </div>
                 <div class="astro-market-actions">
                     <div class="astro-action-row">
-                        <?php if($state === 'online'): ?>
-                            <form class="astro-session-form" action="/consultation/initiate" method="post">
-                                <input type="hidden" name="astrologer_slug" value="<?= e($astro['slug'] ?? '') ?>">
-                                <input type="hidden" name="mode" value="text_session">
-                                <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                                <button type="submit" class="astro-action astro-action--icon astro-action--chat" aria-label="Start message session" title="Message">
-                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 9.2 9.2 0 0 1-3.7-.8L3 21l1.8-5.3A8.2 8.2 0 0 1 4 11.5 8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5Z"/><path d="M8 10h8M8 14h5"/></svg>
-                                    <span class="sr-only">Message</span>
-                                </button>
-                            </form>
-                            <form class="astro-session-form" action="/consultation/initiate" method="post">
-                                <input type="hidden" name="astrologer_slug" value="<?= e($astro['slug'] ?? '') ?>">
-                                <input type="hidden" name="mode" value="direct_call">
-                                <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                                <button type="submit" class="astro-action astro-action--icon astro-action--call" aria-label="Start call session" title="Call">
-                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.7 19.7 0 0 1-8.6-3.1 19.1 19.1 0 0 1-5.9-5.9A19.7 19.7 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L8.1 10a16 16 0 0 0 5.9 5.9l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2Z"/></svg>
-                                    <span class="sr-only">Call</span>
-                                </button>
-                            </form>
-                        <?php elseif($state === 'busy'): ?>
-                            <form class="astro-session-form" action="/consultation/initiate" method="post">
-                                <input type="hidden" name="astrologer_slug" value="<?= e($astro['slug'] ?? '') ?>">
-                                <input type="hidden" name="mode" value="text_session">
-                                <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                                <input type="hidden" name="queue_status" value="waitlist">
-                                <button type="submit" class="astro-action astro-action--icon astro-action--chat" aria-label="Join message waitlist" title="Join message waitlist">
-                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 9.2 9.2 0 0 1-3.7-.8L3 21l1.8-5.3A8.2 8.2 0 0 1 4 11.5 8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5Z"/><path d="M8 10h8M8 14h5"/></svg>
-                                    <span class="sr-only">Join message waitlist</span>
-                                </button>
-                            </form>
-                            <span class="astro-action astro-action--icon astro-action--disabled" aria-disabled="true" title="Call unavailable">
-                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.7 19.7 0 0 1-8.6-3.1 19.1 19.1 0 0 1-5.9-5.9A19.7 19.7 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L8.1 10a16 16 0 0 0 5.9 5.9l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2Z"/></svg>
-                                <span class="sr-only">Call unavailable</span>
-                            </span>
-                        <?php else: ?>
-                            <span class="astro-action astro-action--icon astro-action--disabled" aria-disabled="true" title="Message unavailable"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 9.2 9.2 0 0 1-3.7-.8L3 21l1.8-5.3A8.2 8.2 0 0 1 4 11.5 8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5Z"/><path d="M8 10h8M8 14h5"/></svg><span class="sr-only">Message unavailable</span></span>
-                            <span class="astro-action astro-action--icon astro-action--disabled" aria-disabled="true" title="Call unavailable"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.7 19.7 0 0 1-8.6-3.1 19.1 19.1 0 0 1-5.9-5.9A19.7 19.7 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L8.1 10a16 16 0 0 0 5.9 5.9l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2Z"/></svg><span class="sr-only">Call unavailable</span></span>
-                        <?php endif; ?>
-                        <a href="/consult/<?= e($astro['slug'] ?? '') ?>" class="astro-action astro-action--icon astro-action--profile" aria-label="View Profile" title="View Profile">
+                        <a href="/consult/<?= e($astro['slug'] ?? '') ?>" class="astro-action astro-action--icon astro-action--profile" aria-label="Book consultation" title="Book consultation">
                             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
-                            <span class="sr-only">View Profile</span>
+                            <span class="sr-only">Book consultation</span>
                         </a>
                     </div>
                 </div>
@@ -376,7 +337,7 @@ document.addEventListener('DOMContentLoaded', function () {
             "name": "Do you offer Vedic astrology consultation in Chennai?",
             "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, we have expert consultants offering private message sessions and direct calls in Tamil, English, and other Indian languages. Services include kundli matching, horoscope reading, career guidance, and personalized remedies."
+                "text": "Yes, you can request a scheduled appointment with an expert consultant in Tamil, English, and other Indian languages. Services include kundli matching, horoscope reading, career guidance, and personalized remedies."
             }
         },
         {

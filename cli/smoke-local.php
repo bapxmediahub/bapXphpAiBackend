@@ -51,8 +51,8 @@ try {
         '/logout' => 302,
         '/account/orders' => 302,
         '/account/bookings' => 302,
-        '/account/wallet' => 302,
-        '/recharge' => 302,
+        '/account/wallet' => 404,
+        '/recharge' => 404,
         '/admin' => 302,
         '/admin/settings' => 302,
     ] as $path => $expected) {

@@ -2,7 +2,7 @@
 
 Last updated: July 2026
 
-By accessing the website, creating an account, purchasing products, recharging wallet credits, or starting a consultation, you agree to these terms. If you do not agree, do not use the service.
+By accessing the website, creating an account, purchasing products, or requesting a consultation appointment, you agree to these terms. If you do not agree, do not use the service.
 
 ## 1. Eligibility and Accounts
 
@@ -18,7 +18,7 @@ Prices are shown in Indian Rupees unless stated otherwise. Payments are processe
 
 ## 4. Wallet Credits
 
-Wallet credits are prepaid service credits, not cash or a bank balance. They are used for eligible consultation sessions and any explicitly supported platform service. Credits are non-transferable and normally non-refundable except where required by applicable law or an approved platform correction. The current recharge conversion, minimum top-up, and session rates are shown before payment.
+Consultation requests are appointment enquiries. A requested date or time is not confirmed until the consultant or support team accepts it. Any consultation fee and payment instructions are communicated before confirmation.
 
 ## 5. Consultations
 
@@ -50,4 +50,4 @@ We work to keep the service reliable but do not promise uninterrupted availabili
 
 ## 12. Changes and Contact
 
-We may update these terms when the service, providers, or law changes. Continued use after publication means you accept the revised terms. Contact support for order, wallet, consultation, account, or policy questions.
+We may update these terms when the service, providers, or law changes. Continued use after publication means you accept the revised terms. Contact support for order, consultation, account, or policy questions.

@@ -2,11 +2,6 @@
     <div class="account-layout">
         <?php require __DIR__ . '/_nav.php'; ?>
         <div class="account-content">
-            <div class="account-wallet-strip">
-                <span>Remaining Balance</span>
-                <strong><?= e((string)($walletBalance ?? 0)) ?> credits</strong>
-                <a href="/account/dashboard/wallet" class="btn btn-sm btn-primary">Recharge</a>
-            </div>
             <h1>My Orders</h1>
             <?php if(empty($orders)): ?>
                 <div style="text-align:center; padding:var(--space-2xl);">

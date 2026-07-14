@@ -4,7 +4,7 @@
             <span class="eyebrow serif-accent">Traditional Wisdom</span>
             <h1 class="section-title">Sri Panchami Spiritual</h1>
             <p class="lede">A focused guide for devotional practice, sacred products, temple visits, and online astrology consultation through Sri Panchami Spiritual.</p>
-            <p>Use this page as a starting point for authentic spiritual products, Panchami temple guidance, and private message or direct call sessions with admin-managed astrologers.</p>
+            <p>Use this page as a starting point for authentic spiritual products, Panchami temple guidance, and scheduled appointments with admin-managed consultants.</p>
             <div style="display:flex; gap:var(--space-sm); flex-wrap:wrap; margin-top:var(--space-lg);">
                 <a class="btn btn-primary" href="/shop">Shop Sacred Products</a>
                 <a class="btn btn-outline" href="/consult">Consult Astrologers</a>

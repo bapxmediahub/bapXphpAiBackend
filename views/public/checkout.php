@@ -33,7 +33,7 @@
                             <select id="saved-address">
                                 <option value="">Enter a new address</option>
                                 <?php foreach ($addresses as $savedAddress): ?>
-                                    <option value="<?= e((string)$savedAddress['id']) ?>" data-address='<?= e(json_encode($savedAddress, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP)) ?>'><?= e($savedAddress['name']) ?> — <?= e($savedAddress['city']) ?>, <?= e($savedAddress['pincode']) ?></option>
+                                    <option value="<?= e((string)$savedAddress['id']) ?>" <?= !empty($savedAddress['is_default']) ? 'selected' : '' ?> data-address='<?= e(json_encode($savedAddress, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP)) ?>'><?= e($savedAddress['name']) ?><?= !empty($savedAddress['is_default']) ? ' (Default)' : '' ?> — <?= e($savedAddress['city']) ?>, <?= e($savedAddress['pincode']) ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -59,7 +59,10 @@
                         <?php if (!empty($_SESSION['user']['email'])): ?>
                         <div class="checkout-form__row" style="margin-top:var(--space-md); align-items:end;">
                             <div class="form-group"><label for="address-name">Address name</label><input type="text" id="address-name" name="address_name" placeholder="Home, Office, Parents"></div>
-                            <label style="display:flex; gap:var(--space-sm); align-items:center; padding-bottom:12px;"><input type="checkbox" id="save-address" name="save_address" value="1"> Save for next time</label>
+                            <div class="checkout-address-options">
+                                <label><input type="checkbox" id="save-address" name="save_address" value="1"> Save for next time</label>
+                                <label><input type="checkbox" id="default-address" name="is_default" value="1"> Make default</label>
+                            </div>
                         </div>
                         <?php endif; ?>
                     </div>
@@ -93,7 +96,7 @@
                     <?php endif; ?>
                     <?php if($hasPaymentGateway): ?>
                         <button id="pay-now" class="btn btn-primary btn-block btn-lg">Pay ₹<?= e((string)$total) ?></button>
-                        <p style="margin:var(--space-sm) 0 0; color:var(--color-text-muted); font-size:0.85rem;">Ecommerce orders use direct card or UPI payments only. Consultation credits cannot be used for products, and cash on delivery is not available.</p>
+                        <p style="margin:var(--space-sm) 0 0; color:var(--color-text-muted); font-size:0.85rem;">Product orders use secure online card or UPI payment. Cash on delivery is not available.</p>
                         <?php if($hasRazorpay): ?>
                         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
                         <?php endif; ?>
@@ -126,6 +129,7 @@
                             if (addressName) addressName.value = data.name || '';
                             if (save) save.checked = false;
                         });
+                        if (savedAddress && savedAddress.value) savedAddress.dispatchEvent(new Event('change'));
                         (() => {
                             const button = document.getElementById('pay-now');
                             const form = document.querySelector('.checkout-form');
@@ -151,6 +155,7 @@
                                     pincode: form.querySelector('[name="pincode"]').value,
                                     address_name: form.querySelector('[name="address_name"]')?.value || '',
                                     save_address: form.querySelector('[name="save_address"]')?.checked ? '1' : ''
+                                    ,is_default: form.querySelector('[name="is_default"]')?.checked ? '1' : ''
                                 };
                                 if (paymentMethod === 'stripe') {
                                     showToast('Opening secure Stripe checkout...', 'info');

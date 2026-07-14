@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{EnvService,SecretService,DatabaseService,PasswordResetService,WalletService};
+use App\Services\{EnvService,SecretService,DatabaseService,PasswordResetService,AddressService};
 use App\Integrations\GoogleOAuth\GoogleOAuthClient;
 final class AuthController extends BaseController {
   public function googleRedirect(): void {
@@ -20,7 +20,6 @@ final class AuthController extends BaseController {
     unset($_SESSION['oauth_state']);
     session_regenerate_id(true);
     $_SESSION['user']=['sub'=>$user['sub'],'email'=>$user['email'],'name'=>$user['name']??'','username'=>explode('@',$user['email'])[0],'picture'=>$user['picture']??'','role'=>$role,'astrologer_slug'=>$astrologerSlug];
-    if ($role === 'customer') (new WalletService())->ensureSignupBonus($user['email']);
     try { $store->upsert('users',['id'=>$user['sub'],'email'=>$user['email'],'name'=>$user['name']??'','picture'=>$user['picture']??'','role'=>$role]); } catch (\Throwable) {}
     $this->flash('Signed in.','success');
     session_write_close();
@@ -60,7 +59,11 @@ final class AuthController extends BaseController {
     $name = trim($_POST['name'] ?? '');
     $password = $_POST['password'] ?? '';
     $confirm = $_POST['password_confirm'] ?? '';
-    if ($password === '' || $email === '' || $name === '') { $this->flash('All fields are required.','error'); $this->redirect('/register'); }
+    $phone = trim($_POST['phone'] ?? '');
+    $address = trim($_POST['address'] ?? '');
+    $city = trim($_POST['city'] ?? '');
+    $pincode = trim($_POST['pincode'] ?? '');
+    if ($password === '' || $email === '' || $name === '' || $phone === '' || $address === '' || $city === '' || $pincode === '') { $this->flash('Account and delivery address fields are required.','error'); $this->redirect('/register'); }
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) { $this->flash('Invalid email address.','error'); $this->redirect('/register'); }
     if ($password !== $confirm) { $this->flash('Passwords do not match.','error'); $this->redirect('/register'); }
     if (empty($_POST['accept_terms'])) { $this->flash('You must accept the Terms of Service and Privacy Policy to register.','error'); $this->redirect('/register'); }
@@ -71,9 +74,9 @@ final class AuthController extends BaseController {
     $role = 'customer';
     $record = ['id'=>$id,'email'=>$email,'name'=>$name,'role'=>$role,'password_hash'=>password_hash($password,PASSWORD_DEFAULT),'accepted_terms_at'=>date('c')];
     $store->upsert('users',$record,'id');
+    (new AddressService($store))->save($email, ['address_name'=>'Home','name'=>$name,'phone'=>$phone,'address'=>$address,'city'=>$city,'pincode'=>$pincode,'is_default'=>true]);
     session_regenerate_id(true);
     $_SESSION['user'] = ['sub'=>$id,'email'=>$email,'name'=>$name,'role'=>$role];
-    (new WalletService())->ensureSignupBonus($email);
     $this->flash('Registered and signed in.','success');
     $this->redirect('/');
  }
@@ -102,7 +105,6 @@ final class AuthController extends BaseController {
         if ($matches && !empty($u['password_hash']) && password_verify($password,$u['password_hash'])) {
             session_regenerate_id(true);
             $_SESSION['user'] = ['sub'=>$u['id'],'email'=>$u['email'] ?? '','username'=>$u['username'] ?? '','name'=>$u['name'] ?? '','role'=>$u['role'] ?? (!empty($u['is_admin']) ? 'admin' : 'customer'),'astrologer_slug'=>$u['astrologer_slug'] ?? '','must_change_password'=>(bool)($u['must_change_password'] ?? false)];
-            if (($u['role'] ?? 'customer') === 'customer') (new WalletService())->ensureSignupBonus((string)($u['email'] ?? ''));
             $this->flash('Signed in.','success');
             session_write_close();
             $this->redirect(($u['role'] ?? '') === 'astrologer' ? (!empty($u['must_change_password']) ? '/astrologer/change-password' : '/astrologer') : (($u['role'] ?? '') === 'customer' ? '/account/dashboard' : '/'));

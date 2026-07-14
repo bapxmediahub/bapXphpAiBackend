@@ -66,7 +66,7 @@
     </article>
 
     <aside class="blog-post__cta">
-      <div><span class="eyebrow">Personal guidance</span><h2>Speak with a consultant</h2><p>Continue your reading with a private message or call request.</p></div>
+      <div><span class="eyebrow">Personal guidance</span><h2>Book a consultant</h2><p>Request a scheduled appointment at a date and time that suits you.</p></div>
       <a href="/consult" class="btn btn-primary">Browse consultants</a>
     </aside>
   </div>

@@ -70,7 +70,7 @@ $tests['project map generation lists schema collections without runtime stores']
 
 $tests['project map grounds shared navigation in registered get routes'] = function (): void {
     $scan = ProjectMapService::scan();
-    foreach (['/contact', '/account/dashboard', '/account/dashboard/orders', '/account/dashboard/sessions', '/account/dashboard/wallet'] as $path) {
+    foreach (['/contact', '/account/dashboard', '/account/dashboard/orders', '/account/dashboard/sessions'] as $path) {
         assertTrue(in_array($path, $scan['navigation'], true), "Shared navigation should expose the existing {$path} route");
     }
     assertSame([], $scan['gaps']['navigation_without_get_route'], 'Every internal shared navigation path should resolve to a registered GET route');
@@ -463,28 +463,24 @@ $tests['consultations use direct platform sessions without google meet or calend
     assertTrue(!in_array('GoogleCalendarClient', $map['integrations'], true), 'Google Calendar should not be a configured integration');
 };
 
-$tests['remote astrology sessions do not use appointment slots and show per session spend'] = function (): void {
+$tests['consultants use scheduled booking requests without wallet or live session controls'] = function (): void {
     $initiate = file_get_contents(app_path('app/Controllers/ConsultationController.php'));
     $bookingsView = file_get_contents(app_path('views/account/bookings.php'));
     $astrologersView = file_get_contents(app_path('views/public/consult.php'));
     $profileView = file_get_contents(app_path('views/public/astrologer.php'));
-    assertTrue(str_contains($initiate, 'credits_spent'), 'Remote session records should track credits spent per call/message session');
-    assertTrue(str_contains($bookingsView, 'Credits Spent'), 'User session panel should show per-session credits spent');
-    assertTrue(str_contains($bookingsView, 'Session Type'), 'User session panel should show call/message session type');
-    assertTrue(!str_contains($astrologersView, 'JOIN Q'), 'Busy astrologer action should not say JOIN Q');
-    assertTrue(str_contains($astrologersView, 'Waitlist'), 'Busy astrologer action should say Waitlist');
-    assertTrue(str_contains($astrologersView, 'action="/consultation/initiate"'), 'Astrologer listing call/message actions should use initiate route');
-    assertTrue(str_contains($profileView, 'action="/consultation/initiate"'), 'Astrologer profile call/message actions should use initiate route');
+    foreach (['preferred_date', 'preferred_time', "'mode'=>'booking'", "'status'=>'requested'"] as $needle) assertTrue(str_contains($initiate, $needle), "Booking controller should include {$needle}");
+    assertTrue(str_contains($bookingsView, 'My Consultation Bookings'), 'Account panel should show scheduled consultation requests');
+    assertTrue(!str_contains($astrologersView, 'astro-session-form'), 'Marketplace cards should not expose live call or message forms');
+    assertTrue(str_contains($profileView, 'action="/consultation/initiate"'), 'Consultant profile should submit the booking form');
+    assertTrue(!str_contains($initiate, 'WalletService'), 'Booking requests should not depend on wallet credits');
 };
 
-$tests['astrologer profile uses remote consultation contact panel instead of appointment slot forms'] = function (): void {
+$tests['consultant profile provides a real appointment request form'] = function (): void {
     $view = file_get_contents(app_path('views/public/astrologer.php'));
     assertTrue(!str_contains($view, 'slot-picker'), 'Astrologer profile should not render appointment slot picker UI');
     assertTrue(!str_contains($view, 'Available Slots'), 'Astrologer profile should not show cinema-style appointment slots');
-    assertTrue(!str_contains($view, 'name="date"') && !str_contains($view, 'name="time"'), 'Astrologer profile should not post dated slot booking fields');
-    assertTrue(str_contains($view, 'action="/consultation/initiate"'), 'Astrologer profile should post remote call/message session requests');
-    assertTrue(str_contains($view, '/contact'), 'Astrologer profile should direct consultation requests to the contact page');
-    assertTrue(str_contains($view, 'Remote Call') || str_contains($view, 'Remote consultation'), 'Astrologer profile should describe remote call/message consultation');
+    foreach (['name="preferred_date"', 'name="preferred_time"', 'name="phone"', 'name="notes"', 'Request appointment'] as $needle) assertTrue(str_contains($view, $needle), "Consultant profile should include {$needle}");
+    assertTrue(!str_contains($view, 'credits/message') && !str_contains($view, 'credits/sec call'), 'Consultant profile should not show wallet pricing');
 };
 
 $tests['astrologer marketplace exposes search and direct session actions'] = function (): void {
@@ -498,8 +494,8 @@ $tests['astrologer marketplace exposes search and direct session actions'] = fun
     assertTrue(!str_contains($view, 'Available Balance'), 'Astrologer marketplace should not show account balance; that belongs in the user panel');
     assertTrue(!str_contains($view, 'href="/recharge"'), 'Astrologer marketplace should not show recharge; that belongs in the logged-in user panel');
     assertTrue(!str_contains($view, 'astro-recharge'), 'Astrologer marketplace should not render a recharge toolbar action');
-    assertTrue(substr_count($view, 'name="queue_status" value="waitlist"') >= 4, 'Busy and offline consultants should retain real message and call queue actions');
-    foreach (['aria-label="Start message session"', 'aria-label="Start call session"', 'Join message waitlist', 'View Profile', 'astro-action--profile', 'astro-status-label'] as $needle) {
+    assertTrue(!str_contains($view, 'name="queue_status"'), 'Marketplace should not expose live session queues');
+    foreach (['Book consultation', 'astro-action--profile', 'astro-status-label'] as $needle) {
         assertTrue(str_contains($view, $needle), "Astrologer marketplace should expose {$needle} actions");
     }
     foreach (['+ Follow', 'Flat Deal', "['online', 'busy', 'offline']", '125 + ($index * 247)', "['Tamil']", "'N/A') ?> Years"] as $needle) {
@@ -509,19 +505,14 @@ $tests['astrologer marketplace exposes search and direct session actions'] = fun
     assertTrue(!str_contains($view, 'Check Availability'), 'Astrologer marketplace should not use appointment availability CTA');
 };
 
-$tests['wallet recharge is login gated and exposes pricing breakdown'] = function (): void {
+$tests['wallet and recharge routes are not customer facing'] = function (): void {
     $map = ProjectMapService::registry();
     $paths = array_column($map['routes'], 'path');
     foreach (['/account/dashboard/wallet', '/account/dashboard/wallet/create-order', '/account/dashboard/wallet/verify', '/recharge', '/account/wallet'] as $path) {
-        assertTrue(in_array($path, $paths, true), "Wallet route {$path} should be registered");
-    }
-    $view = file_get_contents(app_path('views/account/wallet.php'));
-    foreach (['Remaining Balance', 'Recharge Amount', 'Service charge', 'GST/tax estimate', 'Pay securely with Razorpay', 'Online recharge temporarily unavailable'] as $needle) {
-        assertTrue(str_contains($view, $needle), "Wallet page should include {$needle}");
+        assertTrue(!in_array($path, $paths, true), "Wallet route {$path} should not be registered");
     }
     $initiate = file_get_contents(app_path('app/Controllers/ConsultationController.php'));
-    assertTrue(str_contains($initiate, 'WalletService'), 'Session initiation should check wallet balance');
-    assertTrue(str_contains($initiate, '/account/dashboard/wallet?amount=100'), 'Insufficient session balance should redirect to dashboard wallet');
+    assertTrue(!str_contains($initiate, 'WalletService'), 'Consultation booking should not check wallet balance');
 };
 
 $tests['support assistant widget uses browser session memory and google model setting'] = function (): void {
@@ -530,7 +521,7 @@ $tests['support assistant widget uses browser session memory and google model se
     $map = ProjectMapService::registry();
     $paths = array_column($map['routes'], 'path');
     assertTrue(in_array('/support/ask', $paths, true), 'Support ask route should be registered');
-    foreach (['support-fab', 'support-panel', '/support/ask', 'orders, wallet recharge, products, or astrologer sessions', 'sessionStorage', 'data-support-key'] as $needle) {
+    foreach (['support-fab', 'support-panel', '/support/ask', 'products, orders, delivery addresses, or consultant bookings', 'sessionStorage', 'data-support-key'] as $needle) {
         assertTrue(str_contains($layout, $needle), "Support widget should include {$needle}");
     }
     foreach (['gemini-2.0-flash', 'support_bot_google_api_key', 'Customer context JSON', 'browser_session'] as $needle) {
@@ -539,14 +530,13 @@ $tests['support assistant widget uses browser session memory and google model se
     assertTrue(!str_contains($service, "upsert('support_tickets'"), 'Support bot chat should not persist browser chat into project JSON files');
 };
 
-$tests['astrologer profile exposes real remote actions and verified review state'] = function (): void {
+$tests['consultant profile exposes booking and verified review state'] = function (): void {
     $view = file_get_contents(app_path('views/public/astrologer.php'));
-    foreach (['aria-label="Start message session"', 'aria-label="Start call session"', 'BOOK SESSION', 'No verified reviews yet.', 'Private consultation rooms', 'Admin-managed consultant profiles', '100% Secure Payments'] as $needle) {
+    foreach (['Request appointment', 'No verified reviews yet.', 'Admin-managed consultant profiles', '100% Secure Payments'] as $needle) {
         assertTrue(str_contains($view, $needle), "Astrologer profile should expose {$needle}");
     }
     foreach (['+ Follow', 'Flat Deal', 'Send gifts', 'Money Back Guarantee', 'K B...', '87))'] as $needle) assertTrue(!str_contains($view,$needle), "Astrologer profile should not render dead or fabricated content: {$needle}");
-    assertTrue(str_contains($view, 'message_credit_cost') && str_contains($view, 'credits/message'), 'Astrologer profile should explain its data-driven message credit cost');
-    assertTrue(str_contains($view, 'call_credit_per_second') && str_contains($view, 'credits/sec call'), 'Astrologer profile should explain its data-driven call credit cost');
+    assertTrue(!str_contains($view, 'message_credit_cost') && !str_contains($view, 'call_credit_per_second'), 'Consultant profile should not expose removed wallet rates');
 };
 
 $tests['home page rotates all astrologers instead of showing only three fixed cards'] = function (): void {
@@ -718,10 +708,10 @@ $tests['authenticated navigation separates global and internal account menus'] =
     assertTrue(str_contains($layout, '>Dashboard</a>') && str_contains($layout, 'href="/logout"'), 'Authenticated global navigation should expose Dashboard and Logout');
     assertTrue(!str_contains($layout, '>My Sessions</a>') && !str_contains($layout, '>Wallet</a>'), 'Authenticated global navigation should not duplicate internal account destinations');
     assertTrue(str_contains($layout, 'href="/account/dashboard"'), 'Global Dashboard should use the dashboard entry URL');
-    foreach (['/account/dashboard/orders', '/account/dashboard/sessions', '/account/dashboard/wallet', 'Back to Home'] as $needle) {
+    foreach (['/account/dashboard/orders', '/account/dashboard/sessions', 'Back to Home'] as $needle) {
         assertTrue(str_contains($accountNav, $needle), "Shared account navigation should include {$needle}");
     }
-    foreach (['orders.php', 'bookings.php', 'wallet.php'] as $view) {
+    foreach (['orders.php', 'bookings.php'] as $view) {
         $contents = file_get_contents(app_path('views/account/' . $view));
         assertTrue(str_contains($contents, "require __DIR__ . '/_nav.php'"), "{$view} should reuse shared account navigation");
         assertTrue(!str_contains($contents, '<aside class="account-nav">'), "{$view} should not duplicate account navigation markup");
@@ -730,12 +720,11 @@ $tests['authenticated navigation separates global and internal account menus'] =
 
 $tests['legacy account urls redirect into the dashboard namespace'] = function (): void {
     $account = file_get_contents(app_path('app/Controllers/AccountController.php'));
-    $wallet = file_get_contents(app_path('app/Controllers/WalletController.php'));
-    foreach (['/account/dashboard/orders', '/account/dashboard/sessions', '/account/dashboard/wallet'] as $path) {
-        assertTrue(str_contains($account . $wallet, $path), "Legacy account controllers should redirect to {$path}");
+    foreach (['/account/dashboard/orders', '/account/dashboard/sessions'] as $path) {
+        assertTrue(str_contains($account, $path), "Legacy account controllers should redirect to {$path}");
     }
     $context = file_get_contents(app_path('app/Services/AgentContextService.php'));
-    foreach (['/account/dashboard/orders', '/account/dashboard/sessions', '/account/dashboard/wallet'] as $path) {
+    foreach (['/account/dashboard/orders', '/account/dashboard/sessions'] as $path) {
         assertTrue(str_contains($context, $path), "Agent context should expose canonical dashboard URL {$path}");
     }
 };
@@ -746,34 +735,43 @@ $tests['astrologer accounts require password change and use username login'] = f
     assertTrue(str_contains($admin,'AstrologerAccountService'),'Admin astrologer mutations should synchronize provider accounts');
 };
 
-$tests['consultation api exposes message call and status workflows'] = function (): void {
+$tests['consultation routes expose booking and provider status workflow'] = function (): void {
     $paths=array_column(ProjectMapService::registry()['routes'],'path');
-    foreach(['/consultation/{id}','/api/consultations/{id}/messages','/api/consultations/{id}/signals','/api/consultations/{id}/status','/astrologer'] as $path) assertTrue(in_array($path,$paths,true),"Missing consultation route {$path}");
+    foreach(['/consultation/initiate','/api/consultations/{id}/status','/astrologer'] as $path) assertTrue(in_array($path,$paths,true),"Missing consultation route {$path}");
+    foreach(['/consultation/{id}','/api/consultations/{id}/messages','/api/consultations/{id}/signals'] as $path) assertTrue(!in_array($path,$paths,true),"Removed live consultation route should not be public: {$path}");
 };
 
-$tests['public consultation actions include csrf and room imports secrets'] = function (): void {
-    foreach (['views/public/home.php', 'views/public/consult.php', 'views/public/astrologer.php'] as $path) {
-        $view = file_get_contents(app_path($path));
-        assertTrue(str_contains($view, 'name="_csrf"'), basename($path) . ' should protect consultation initiation forms');
-    }
+$tests['consultation booking form includes csrf and sends provider notification'] = function (): void {
+    $view = file_get_contents(app_path('views/public/astrologer.php'));
+    assertTrue(str_contains($view, 'name="_csrf"'), 'Booking form should include CSRF');
     $controller = file_get_contents(app_path('app/Controllers/ConsultationController.php'));
-    assertTrue(str_contains($controller, 'MailQueueService,SecretService'), 'Consultation room should import SecretService');
+    assertTrue(str_contains($controller, 'MailQueueService'), 'Booking controller should notify the provider');
 };
 
-$tests['wallet payment requests include csrf and database service import'] = function (): void {
-    $view = file_get_contents(app_path('views/account/wallet.php'));
-    assertTrue(str_contains($view, "_csrf:csrf"), 'Wallet create-order and verify requests should include CSRF');
-    $controller = file_get_contents(app_path('app/Controllers/WalletController.php'));
-    assertTrue(str_contains($controller, 'PaymentService,DatabaseService'), 'Wallet controller should import DatabaseService');
+$tests['registration creates a default delivery address'] = function (): void {
+    $auth = file_get_contents(app_path('app/Controllers/AuthController.php'));
+    $register = file_get_contents(app_path('views/public/register.php'));
+    foreach (['phone', 'address', 'city', 'pincode'] as $field) assertTrue(str_contains($register, 'name="' . $field . '"'), "Registration should collect {$field}");
+    assertTrue(str_contains($auth, 'new AddressService') && str_contains($auth, "'is_default'=>true"), 'Registration should save the first address as default');
 };
 
-$tests['signup bonus is idempotent and available to existing accounts'] = function (): void {
-    $service = file_get_contents(app_path('app/Services/WalletService.php'));
-    assertTrue(str_contains($service, 'signup_bonus_25'), 'Wallet service should use a stable signup bonus source id');
-    assertTrue(str_contains($service, "'credits' => 25"), 'Wallet service should grant 25 signup credits');
-    assertTrue(str_contains($service, 'ensureSignupBonus'), 'Wallet service should expose the idempotent signup grant');
-    $wallet = file_get_contents(app_path('app/Controllers/WalletController.php'));
-    assertTrue(str_contains($wallet, 'ensureSignupBonus'), 'Wallet dashboard should grant the bonus for existing accounts');
+$tests['authenticated sessions persist for thirty days until logout'] = function (): void {
+    $bootstrap = file_get_contents(app_path('app/bootstrap.php'));
+    $auth = file_get_contents(app_path('app/Controllers/AuthController.php'));
+    foreach (['session.gc_maxlifetime', "'lifetime' => 60 * 60 * 24 * 30", "'httponly' => true", "'samesite' => 'Lax'", 'session_start()'] as $needle) {
+        assertTrue(str_contains($bootstrap, $needle), "Session bootstrap should include {$needle}");
+    }
+    assertTrue(str_contains($auth, 'session_destroy()'), 'Explicit logout should destroy the persistent session');
+};
+
+$tests['saved addresses select the default and allow another checkout address'] = function (): void {
+    $schema = require app_path('storage/schema/collections.php');
+    assertTrue(isset($schema['collections']['addresses']['fields']['is_default']), 'Address schema should declare is_default');
+    $service = file_get_contents(app_path('app/Services/AddressService.php'));
+    $checkout = file_get_contents(app_path('views/public/checkout.php'));
+    assertTrue(str_contains($service, "'is_default' => \$isDefault"), 'Address service should persist one default address');
+    assertTrue(str_contains($checkout, "' (Default)'"), 'Checkout should label the default saved address');
+    assertTrue(str_contains($checkout, 'Enter a new address') && str_contains($checkout, 'Save for next time'), 'Checkout should allow one-time or newly saved addresses');
 };
 
 $tests['remote database writes are authenticated and record-scoped'] = function (): void {
@@ -788,21 +786,16 @@ $tests['remote database writes are authenticated and record-scoped'] = function 
     assertTrue(str_contains(file_get_contents(app_path('views/admin/integrations.php')), 'name="remote_db_token"'), 'Admin integrations should configure the remote mutation token');
 };
 
-$tests['astrologer availability and consultation lifecycle are operational'] = function (): void {
+$tests['consultant booking lifecycle is operational'] = function (): void {
     $astro = file_get_contents(app_path('app/Controllers/AstrologerController.php'));
     $consult = file_get_contents(app_path('app/Controllers/ConsultationController.php'));
     $service = file_get_contents(app_path('app/Services/ConsultationService.php'));
     $dashboard = file_get_contents(app_path('views/astrologer/dashboard.php'));
-    $room = file_get_contents(app_path('views/account/consultation.php'));
     assertTrue(str_contains($astro, 'updateAvailability'), 'Astrologer panel should let the provider update availability');
     assertTrue(str_contains($dashboard, 'action="/astrologer/availability"'), 'Astrologer availability form should post to its own endpoint');
-    assertTrue(str_contains($consult, 'availability_status'), 'Session initiation should enforce provider availability');
+    assertTrue(str_contains($consult, "'mode'=>'booking'"), 'Consultation request should store booking mode');
     assertTrue(str_contains($service, "'requested' => ['accepted', 'declined', 'cancelled']"), 'Consultation service should validate the requested lifecycle');
-    assertTrue(str_contains($service, "'accepted' => ['active', 'cancelled']"), 'Consultation service should validate acceptance before start');
-    assertTrue(str_contains($service, "'active' => ['completed']"), 'Consultation service should validate completion after active');
-    foreach (['data-mode=', 'applySession=', 'Messaging becomes available', 'Calls are available only during an active call session'] as $needle) {
-        assertTrue(str_contains($room . $service, $needle), "Two-sided room should enforce {$needle}");
-    }
+    assertTrue(str_contains($service, "'accepted' => ['active', 'cancelled']"), 'Existing provider lifecycle should preserve acceptance transitions');
     assertTrue(in_array('/astrologer/availability', array_column(ProjectMapService::registry()['routes'], 'path'), true), 'Project map should include astrologer availability route');
 };
 
@@ -981,44 +974,33 @@ $tests['systematic project map and KnowledgeMap are the only generated map artif
     }
 };
 
-$tests['consultation pricing is shared and provider detail rates are data-driven'] = function (): void {
+$tests['consultation pages use booking language without wallet pricing'] = function (): void {
     $home = file_get_contents(app_path('views/public/home.php'));
     $consult = file_get_contents(app_path('views/public/consult.php'));
     $detail = file_get_contents(app_path('views/public/astrologer.php'));
-    assertTrue(str_contains($home, "_consultation-pricing.php"), 'Home should render the shared consultation pricing card');
-    assertTrue(str_contains($consult, "_consultation-pricing.php"), 'Consult page should render the shared consultation pricing card');
+    assertTrue(!str_contains($detail, 'credits/message') && !str_contains($detail, 'credits/sec call'), 'Consultant detail should not show wallet pricing');
     assertTrue(!str_contains($home, 'astro-market-price'), 'Home provider cards should not repeat pricing');
     assertTrue(!str_contains($consult, 'astro-market-price'), 'Consult provider cards should not repeat pricing');
-    assertTrue(str_contains($detail, "message_credit_cost"), 'Consultant detail should use the stored message rate');
-    assertTrue(str_contains($detail, "call_credit_per_second"), 'Consultant detail should use the stored call rate');
     assertTrue(str_contains($consult, 'Talk to Consultants Online'), 'Public consultation copy should use consultant terminology');
 };
 
-$tests['offline consultants accept mode specific queued requests'] = function (): void {
+$tests['consultants expose one booking path instead of live queues'] = function (): void {
     $market = file_get_contents(app_path('views/public/consult.php'));
     $controller = file_get_contents(app_path('app/Controllers/ConsultationController.php'));
-    $service = file_get_contents(app_path('app/Services/ConsultationService.php'));
-    $room = file_get_contents(app_path('views/account/consultation.php'));
-    foreach (['Request message session', 'Request call session', 'name="queue_status" value="waitlist"'] as $needle) {
-        assertTrue(str_contains($market, $needle), "Offline marketplace should expose {$needle}");
-    }
-    assertTrue(str_contains($controller, "'reserved_credits'=>\$initialCredits"), 'Queued requests should retain the acceptance charge without charging immediately');
-    assertTrue(str_contains($service, "'queued' => ['accepted', 'declined', 'cancelled']"), 'Providers should be able to accept or decline queued sessions');
-    assertTrue(str_contains($service, "\$current === 'queued' && \$status === 'accepted'"), 'Queued sessions should charge only when accepted');
-    assertTrue(str_contains($room, "['queued','requested']"), 'Provider room controls should handle queued and immediate requests');
+    assertTrue(str_contains($market, 'Book consultation'), 'Marketplace should link every consultant to booking');
+    foreach (['Request message session', 'Request call session', 'queue_status', 'reserved_credits'] as $needle) assertTrue(!str_contains($market . $controller, $needle), "Booking path should not expose {$needle}");
 };
 
-$tests['customer help center renders markdown guides on real routes'] = function (): void {
+$tests['customer help is a blog category with compatibility redirects'] = function (): void {
     $controller = file_get_contents(app_path('app/Controllers/PublicController.php'));
-    $index = file_get_contents(app_path('views/public/docs.php'));
-    $detail = file_get_contents(app_path('views/public/doc.php'));
     assertTrue(in_array('/help/{slug}', array_column(ProjectMapService::registry()['routes'], 'path'), true), 'Help center should expose a hosting-safe guide detail route');
     assertTrue(str_contains(file_get_contents(app_path('index.php')), "'/help'"), 'Front controller should dispatch hosting-safe help routes into PHP');
-    assertTrue(str_contains($controller, "content/docs/*.md"), 'Customer docs should come from the dedicated Markdown content directory');
-    assertTrue(str_contains($index, 'How can we help?') && str_contains($index, '/help/<?= e($page[\'slug\']) ?>'), 'Help center should link to real guide pages');
-    assertTrue(str_contains($detail, "\$document['html']"), 'Guide page should render Markdown content');
-    foreach (['create-account', 'order-products', 'message-consultant', 'call-consultant', 'wallet-and-payments'] as $slug) {
-        assertTrue(is_file(app_path("content/docs/{$slug}.md")), "Missing customer guide {$slug}");
+    assertTrue(str_contains($controller, "'/blog/category/help'") && str_contains($controller, "'/blog/' . \$slug"), 'Legacy docs routes should redirect to canonical blog help content');
+    assertTrue(str_contains(file_get_contents(app_path('content/blog/categories.yaml')), 'slug: help'), 'Blog categories should include Help');
+    assertTrue(!is_dir(app_path('content/docs')) || !(glob(app_path('content/docs/*.md')) ?: []), 'Separate customer docs Markdown files should be removed');
+    foreach (['create-account', 'order-products', 'book-consultant', 'payments-and-orders'] as $slug) {
+        $post = file_get_contents(app_path("content/blog/posts/{$slug}.md"));
+        assertTrue(str_contains($post, 'category: help'), "Help post {$slug} should use the help category");
     }
 };
 
@@ -1034,17 +1016,11 @@ $tests['blog uses an editorial index and readable markdown article surface'] = f
     assertTrue(str_contains($css, '.blog-post__content') && str_contains($css, 'line-height:1.78'), 'Article typography should use a constrained readable measure');
 };
 
-$tests['wallet debits and payment confirmation are serialized and production gated'] = function (): void {
-    $wallet = file_get_contents(app_path('app/Services/WalletService.php'));
+$tests['product payment remains production gated after wallet removal'] = function (): void {
     $secrets = file_get_contents(app_path('app/Services/SecretService.php'));
-    $controller = file_get_contents(app_path('app/Controllers/WalletController.php'));
-    foreach (['GET_LOCK', 'FOR UPDATE', 'RELEASE_LOCK', 'confirmTopUp', 'beginTransaction', 'rollBack'] as $needle) {
-        assertTrue(str_contains($wallet, $needle), "Wallet service should include {$needle}");
-    }
     assertTrue(str_contains($secrets, 'razorpayReadyForCurrentHost'), 'Selected Razorpay credentials should be checked against the current host');
     assertTrue(str_contains($secrets, "=== 'live'"), 'Production hosts should require live Razorpay mode');
-    assertTrue(str_contains($controller, "(\$payment['status'] ?? '') !== 'captured'"), 'Wallet confirmation should require a captured gateway payment');
-    assertTrue(str_contains($controller, 'confirmTopUp'), 'Wallet controller should use idempotent atomic confirmation');
+    assertTrue(!is_file(app_path('app/Controllers/WalletController.php')) && !is_file(app_path('views/account/wallet.php')), 'Wallet controller and customer view should be removed');
 };
 
 foreach ($tests as $name => $test) {

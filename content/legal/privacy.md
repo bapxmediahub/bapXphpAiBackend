@@ -2,12 +2,12 @@
 
 Last updated: July 2026
 
-This policy explains how the platform collects, uses, stores, and protects personal information when you use our website, products, consultation services, wallet, support channels, or account.
+This policy explains how the platform collects, uses, stores, and protects personal information when you use our website, products, consultation bookings, support channels, or account.
 
 ## 1. Information We Collect
 
 - Account details such as name, email, phone number, password hash, and saved addresses.
-- Order, shipping, payment-status, wallet, and support records. Full card, bank, and UPI credentials are handled by payment providers and are not stored by us.
+- Order, shipping, payment-status, consultation booking, and support records. Full card, bank, and UPI credentials are handled by payment providers and are not stored by us.
 - Consultation messages, call metadata, session status, preferences, and reviews that you submit.
 - Contact form and support messages, including the information you choose to include.
 - Device, browser, IP, usage, cookie, and referral information needed for security, analytics, and site operation.
@@ -18,7 +18,7 @@ When you use Google Sign-In, we receive the basic profile information permitted 
 
 ## 3. How We Use Information
 
-We use information to create and secure accounts, fulfil orders, process payments, deliver consultations, operate wallet credits, answer support requests, send transactional updates, prevent abuse, improve the service, and meet legal, accounting, and tax obligations. Promotional messages are sent only where permitted and include an opt-out path.
+We use information to create and secure accounts, fulfil orders, process payments, schedule consultations, answer support requests, send transactional updates, prevent abuse, improve the service, and meet legal, accounting, and tax obligations. Promotional messages are sent only where permitted and include an opt-out path.
 
 ## 4. Consultation Privacy
 
@@ -34,7 +34,7 @@ We share the minimum information required with hosting, database, email, analyti
 
 ## 7. Retention and Security
 
-Runtime account, order, wallet, consultation, and audit data is stored in the platform's secured remote database. We apply access controls, record-scoped queries, encryption in transit, audit logging, and operational safeguards. No online service can guarantee absolute security.
+Runtime account, order, consultation, and audit data is stored in the platform's secured remote database. We apply access controls, record-scoped queries, encryption in transit, audit logging, and operational safeguards. No online service can guarantee absolute security.
 
 ## 8. Your Choices and Rights
 

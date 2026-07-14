@@ -2,9 +2,9 @@
     <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
     <div class="container astrologers-hero">
         <div style="text-align:center;">
-            <span class="eyebrow">Expert Guidance · Call and Message Only</span>
-            <h1 class="section-title" style="margin-bottom:var(--space-sm);">Talk to Consultants Online</h1>
-            <p class="lede">Find a consultant by name, language, speciality, or current status.</p>
+            <span class="eyebrow">Expert Guidance · Scheduled Appointments</span>
+            <h1 class="section-title" style="margin-bottom:var(--space-sm);">Book a Consultant</h1>
+            <p class="lede">Find a consultant by name, language, or speciality and request a suitable appointment.</p>
         </div>
     </div>
     <?php if(empty($items)): ?>
@@ -30,15 +30,6 @@
                     <span>Search Consultant</span>
                     <input type="search" id="astro-search-input" placeholder="Search by name, language, speciality">
                 </label>
-                <label class="astro-filter">
-                    <span>Status</span>
-                    <select id="astro-status-filter">
-                        <option value="">All</option>
-                        <option value="online">Online</option>
-                        <option value="busy">Waitlist</option>
-                        <option value="offline">Offline</option>
-                    </select>
-                </label>
                 <?php if($filterLanguages): ?>
                 <label class="astro-filter">
                     <span>Language</span>
@@ -52,22 +43,16 @@
                 <?php endif; ?>
             </div>
             <div class="astro-market-grid">
-                <?php include app_path('views/public/_consultation-pricing.php'); ?>
                 <?php foreach($items as $item): ?>
                     <?php
-                        $availability = $item['availability_status'] ?? 'offline';
-                        $state = $availability === 'available' ? 'online' : (in_array($availability, ['busy', 'waitlist'], true) ? 'busy' : 'offline');
-                        $statusLabel = $state === 'online' ? 'Available' : ($state === 'busy' ? 'Waitlist' : 'Offline');
                         $summary = isset($reviews) ? $reviews->summary('astrologer', $item['slug'] ?? '') : ['average' => 0, 'count' => 0];
                         $languageText = implode(', ', array_slice(array_values(array_filter($item['languages'] ?? [])), 0, 2));
                         $experience = trim((string)($item['experience_years'] ?? ''));
                         $speciality = $item['speciality'] ?? 'Vedic Astrology';
                     ?>
-                    <article class="astro-market-card astro-market-card--<?= e($state) ?> reveal" data-astro-card data-status="<?= e($state) ?>" data-language="<?= e(strtolower(implode(' ', $item['languages'] ?? []))) ?>" data-search="<?= e(strtolower(($item['name'] ?? '') . ' ' . $languageText . ' ' . $speciality)) ?>">
+                    <article class="astro-market-card reveal" data-astro-card data-language="<?= e(strtolower(implode(' ', $item['languages'] ?? []))) ?>" data-search="<?= e(strtolower(($item['name'] ?? '') . ' ' . $languageText . ' ' . $speciality)) ?>">
                         <a class="astro-market-photo" href="/consult/<?= e($item['slug'] ?? '') ?>" aria-label="View <?= e($item['name'] ?? 'Astrologer') ?>">
                             <span class="astro-market-photo-frame"><img class="astro-market-photo-img astro-market-photo-img--<?= e($item['slug'] ?? 'default') ?>" src="<?= e($item['photo_url'] ?? placeholder_img($item['name'] ?? 'Astrologer')) ?>" alt="<?= e($item['name'] ?? 'Astrologer') ?>" loading="lazy"></span>
-                            <span class="astro-status-dot" aria-label="<?= e(ucfirst($state)) ?>"></span>
-                            <span class="astro-status-label"><?= e($statusLabel) ?></span>
                             <?php if(($summary['count'] ?? 0) > 0): ?><span class="astro-rating-pill"><?= e(number_format((float)$summary['average'], 1)) ?> · <?= e((string)$summary['count']) ?></span><?php endif; ?>
                         </a>
                         <div class="astro-market-info">
@@ -78,71 +63,9 @@
                         <div class="astro-market-actions">
                             <?php if(!empty($item['slug'])): ?>
                                 <div class="astro-action-row">
-                                    <?php if($state === 'online'): ?>
-                                        <form class="astro-session-form" action="/consultation/initiate" method="post">
-                                            <input type="hidden" name="astrologer_slug" value="<?= e($item['slug']) ?>">
-                                            <input type="hidden" name="mode" value="text_session">
-                                            <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
-                                            <button type="submit" class="astro-action astro-action--icon astro-action--chat" aria-label="Start message session" title="Message">
-                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 9.2 9.2 0 0 1-3.7-.8L3 21l1.8-5.3A8.2 8.2 0 0 1 4 11.5 8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5Z"/><path d="M8 10h8M8 14h5"/></svg>
-                                            <span class="sr-only">Message</span>
-                                            </button>
-                                        </form>
-                                        <form class="astro-session-form" action="/consultation/initiate" method="post">
-                                            <input type="hidden" name="astrologer_slug" value="<?= e($item['slug']) ?>">
-                                            <input type="hidden" name="mode" value="direct_call">
-                                            <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
-                                            <button type="submit" class="astro-action astro-action--icon astro-action--call" aria-label="Start call session" title="Call">
-                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.7 19.7 0 0 1-8.6-3.1 19.1 19.1 0 0 1-5.9-5.9A19.7 19.7 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L8.1 10a16 16 0 0 0 5.9 5.9l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2Z"/></svg>
-                                            <span class="sr-only">Call</span>
-                                            </button>
-                                        </form>
-                                    <?php elseif($state === 'busy'): ?>
-                                        <form class="astro-session-form" action="/consultation/initiate" method="post">
-                                            <input type="hidden" name="astrologer_slug" value="<?= e($item['slug']) ?>">
-                                            <input type="hidden" name="mode" value="text_session">
-                                            <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
-                                            <input type="hidden" name="queue_status" value="waitlist">
-                                            <button type="submit" class="astro-action astro-action--icon astro-action--chat" aria-label="Join message waitlist" title="Join message waitlist">
-                                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 9.2 9.2 0 0 1-3.7-.8L3 21l1.8-5.3A8.2 8.2 0 0 1 4 11.5 8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5Z"/><path d="M8 10h8M8 14h5"/></svg>
-                                                <span class="sr-only">Join message waitlist</span>
-                                            </button>
-                                        </form>
-                                        <form class="astro-session-form" action="/consultation/initiate" method="post">
-                                            <input type="hidden" name="astrologer_slug" value="<?= e($item['slug']) ?>">
-                                            <input type="hidden" name="mode" value="direct_call">
-                                            <input type="hidden" name="queue_status" value="waitlist">
-                                            <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
-                                            <button type="submit" class="astro-action astro-action--icon astro-action--call" aria-label="Join call waitlist" title="Join call waitlist">
-                                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.7 19.7 0 0 1-8.6-3.1 19.1 19.1 0 0 1-5.9-5.9A19.7 19.7 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L8.1 10a16 16 0 0 0 5.9 5.9l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2Z"/></svg>
-                                                <span class="sr-only">Join call waitlist</span>
-                                            </button>
-                                        </form>
-                                    <?php else: ?>
-                                        <form class="astro-session-form" action="/consultation/initiate" method="post">
-                                            <input type="hidden" name="astrologer_slug" value="<?= e($item['slug']) ?>">
-                                            <input type="hidden" name="mode" value="text_session">
-                                            <input type="hidden" name="queue_status" value="waitlist">
-                                            <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
-                                            <button type="submit" class="astro-action astro-action--icon astro-action--chat" aria-label="Request message session" title="Request message session">
-                                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 9.2 9.2 0 0 1-3.7-.8L3 21l1.8-5.3A8.2 8.2 0 0 1 4 11.5 8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5Z"/><path d="M8 10h8M8 14h5"/></svg>
-                                                <span class="sr-only">Request message session</span>
-                                            </button>
-                                        </form>
-                                        <form class="astro-session-form" action="/consultation/initiate" method="post">
-                                            <input type="hidden" name="astrologer_slug" value="<?= e($item['slug']) ?>">
-                                            <input type="hidden" name="mode" value="direct_call">
-                                            <input type="hidden" name="queue_status" value="waitlist">
-                                            <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
-                                            <button type="submit" class="astro-action astro-action--icon astro-action--call" aria-label="Request call session" title="Request call session">
-                                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.7 19.7 0 0 1-8.6-3.1 19.1 19.1 0 0 1-5.9-5.9A19.7 19.7 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L8.1 10a16 16 0 0 0 5.9 5.9l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2Z"/></svg>
-                                                <span class="sr-only">Request call session</span>
-                                            </button>
-                                        </form>
-                                    <?php endif; ?>
-                                    <a class="astro-action astro-action--icon astro-action--profile" href="/consult/<?= e($item['slug']) ?>" aria-label="View Profile" title="View Profile">
+                                    <a class="astro-action astro-action--icon astro-action--profile" href="/consult/<?= e($item['slug']) ?>" aria-label="Book consultation" title="Book consultation">
                                         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
-                                        <span class="sr-only">View Profile</span>
+                                        <span class="sr-only">Book consultation</span>
                                     </a>
                                 </div>
                             <?php endif; ?>
@@ -166,23 +89,19 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     var input = document.getElementById('astro-search-input');
-    var status = document.getElementById('astro-status-filter');
     var language = document.getElementById('astro-language-filter');
-    if (!input || !status) return;
+    if (!input) return;
     var cards = Array.prototype.slice.call(document.querySelectorAll('[data-astro-card]'));
     function filterCards() {
         var term = input.value.trim().toLowerCase();
-        var statusTerm = status.value;
         var languageTerm = language ? language.value : '';
         cards.forEach(function (card) {
             var searchMatch = term === '' || String(card.dataset.search || '').includes(term);
-            var statusMatch = statusTerm === '' || card.dataset.status === statusTerm;
             var languageMatch = languageTerm === '' || String(card.dataset.language || '').includes(languageTerm);
-            card.hidden = !(searchMatch && statusMatch && languageMatch);
+            card.hidden = !(searchMatch && languageMatch);
         });
     }
     input.addEventListener('input', filterCards);
-    status.addEventListener('change', filterCards);
     if (language) language.addEventListener('change', filterCards);
 });
 </script>

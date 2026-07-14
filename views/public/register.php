@@ -19,6 +19,18 @@
                     <input type="email" name="email" required placeholder="your@email.com">
                 </div>
                 <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" name="phone" required placeholder="+91 XXXXX XXXXX">
+                </div>
+                <div class="form-group">
+                    <label>Default delivery address</label>
+                    <textarea name="address" required rows="2" placeholder="Door no, street, area"></textarea>
+                </div>
+                <div class="auth-form__row">
+                    <div class="form-group"><label>City</label><input type="text" name="city" required placeholder="City"></div>
+                    <div class="form-group"><label>PIN code</label><input type="text" name="pincode" required inputmode="numeric" placeholder="600001"></div>
+                </div>
+                <div class="form-group">
                     <label>Password</label>
                     <input type="password" name="password" required placeholder="••••••••" minlength="6">
                 </div>

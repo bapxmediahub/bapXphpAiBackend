@@ -2,6 +2,14 @@
 declare(strict_types=1);
 
 date_default_timezone_set('Asia/Kolkata');
+ini_set('session.gc_maxlifetime', (string)(60 * 60 * 24 * 30));
+session_set_cookie_params([
+    'lifetime' => 60 * 60 * 24 * 30,
+    'path' => '/',
+    'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+    'httponly' => true,
+    'samesite' => 'Lax',
+]);
 session_start();
 
 spl_autoload_register(function (string $class): void {

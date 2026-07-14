@@ -8,3 +8,6 @@ categories:
   - slug: astrology
     name: Astrology
     description: Vedic astrology insights and consultations
+  - slug: help
+    name: Help
+    description: Customer guides for accounts, orders, delivery, payments, and consultant bookings
