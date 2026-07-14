@@ -483,10 +483,10 @@ $tests['consultant profile provides a real appointment request form'] = function
     assertTrue(!str_contains($view, 'credits/message') && !str_contains($view, 'credits/sec call'), 'Consultant profile should not show wallet pricing');
 };
 
-$tests['astrologer marketplace exposes search and direct session actions'] = function (): void {
+$tests['consultant marketplace exposes booking search and language filters'] = function (): void {
     $view = file_get_contents(app_path('views/public/consult.php'));
-    foreach (['Search Consultant', 'astro-search-input', 'astro-status-filter', 'astro-language-filter', 'data-astro-card', 'data-status=', 'data-language='] as $needle) {
-        assertTrue(str_contains($view, $needle), "Astrologer marketplace should expose {$needle}");
+    foreach (['Search Consultant', 'astro-search-input', 'astro-language-filter', 'data-astro-card', 'data-language='] as $needle) {
+        assertTrue(str_contains($view, $needle), "Consultant marketplace should expose {$needle}");
     }
     foreach (['Filters', 'Available Now', 'On Chat', 'On Call'] as $needle) {
         assertTrue(!str_contains($view, ">{$needle}<"), "Astrologer marketplace should not expose non-working {$needle} button");
@@ -495,13 +495,14 @@ $tests['astrologer marketplace exposes search and direct session actions'] = fun
     assertTrue(!str_contains($view, 'href="/recharge"'), 'Astrologer marketplace should not show recharge; that belongs in the logged-in user panel');
     assertTrue(!str_contains($view, 'astro-recharge'), 'Astrologer marketplace should not render a recharge toolbar action');
     assertTrue(!str_contains($view, 'name="queue_status"'), 'Marketplace should not expose live session queues');
-    foreach (['Book consultation', 'astro-action--profile', 'astro-status-label'] as $needle) {
-        assertTrue(str_contains($view, $needle), "Astrologer marketplace should expose {$needle} actions");
+    foreach (['Book consultation', 'astro-action--profile'] as $needle) {
+        assertTrue(str_contains($view, $needle), "Consultant marketplace should expose {$needle} actions");
     }
+    foreach (['astro-status-filter', 'astro-status-label', 'data-status='] as $needle) assertTrue(!str_contains($view, $needle), "Booking-only marketplace should not expose {$needle}");
     foreach (['+ Follow', 'Flat Deal', "['online', 'busy', 'offline']", '125 + ($index * 247)', "['Tamil']", "'N/A') ?> Years"] as $needle) {
         assertTrue(!str_contains($view, $needle), "Astrologer marketplace should not render invented or dead content: {$needle}");
     }
-    assertTrue(str_contains($view, 'astro-action-row'), 'Message, call, and profile icon buttons should share one card action row');
+    assertTrue(str_contains($view, 'astro-action-row'), 'Booking profile buttons should use the shared card action row');
     assertTrue(!str_contains($view, 'Check Availability'), 'Astrologer marketplace should not use appointment availability CTA');
 };
 
@@ -532,7 +533,7 @@ $tests['support assistant widget uses browser session memory and google model se
 
 $tests['consultant profile exposes booking and verified review state'] = function (): void {
     $view = file_get_contents(app_path('views/public/astrologer.php'));
-    foreach (['Request appointment', 'No verified reviews yet.', 'Admin-managed consultant profiles', '100% Secure Payments'] as $needle) {
+    foreach (['Request appointment', 'No verified reviews yet.', 'Admin-managed consultant profiles', 'Booking status in your account'] as $needle) {
         assertTrue(str_contains($view, $needle), "Astrologer profile should expose {$needle}");
     }
     foreach (['+ Follow', 'Flat Deal', 'Send gifts', 'Money Back Guarantee', 'K B...', '87))'] as $needle) assertTrue(!str_contains($view,$needle), "Astrologer profile should not render dead or fabricated content: {$needle}");
@@ -981,7 +982,7 @@ $tests['consultation pages use booking language without wallet pricing'] = funct
     assertTrue(!str_contains($detail, 'credits/message') && !str_contains($detail, 'credits/sec call'), 'Consultant detail should not show wallet pricing');
     assertTrue(!str_contains($home, 'astro-market-price'), 'Home provider cards should not repeat pricing');
     assertTrue(!str_contains($consult, 'astro-market-price'), 'Consult provider cards should not repeat pricing');
-    assertTrue(str_contains($consult, 'Talk to Consultants Online'), 'Public consultation copy should use consultant terminology');
+    assertTrue(str_contains($consult, 'Book a Consultant'), 'Public consultation copy should use booking terminology');
 };
 
 $tests['consultants expose one booking path instead of live queues'] = function (): void {
@@ -1020,6 +1021,7 @@ $tests['product payment remains production gated after wallet removal'] = functi
     $secrets = file_get_contents(app_path('app/Services/SecretService.php'));
     assertTrue(str_contains($secrets, 'razorpayReadyForCurrentHost'), 'Selected Razorpay credentials should be checked against the current host');
     assertTrue(str_contains($secrets, "=== 'live'"), 'Production hosts should require live Razorpay mode');
+    assertTrue(str_contains($secrets, "['id'] === 'app_secrets'") && str_contains($secrets, 'array_filter($env'), 'Remote app_secrets should override environment fallbacks and legacy rows');
     assertTrue(!is_file(app_path('app/Controllers/WalletController.php')) && !is_file(app_path('views/account/wallet.php')), 'Wallet controller and customer view should be removed');
 };
 
