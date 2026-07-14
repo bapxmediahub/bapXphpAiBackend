@@ -310,7 +310,6 @@ gtag('js', new Date());
         </div>
         <a href="/about"<?= str_starts_with($currentPath, '/about') ? ' aria-current="page"' : '' ?>>About SPS</a>
         <a href="/contact"<?= str_starts_with($currentPath, '/contact') ? ' aria-current="page"' : '' ?>>Contact</a>
-        <a href="/blog/category/help"<?= $currentPath === '/blog/category/help' ? ' aria-current="page"' : '' ?>>Help</a>
         <?php if(!empty($_SESSION['user'])): ?>
             <a href="/account/dashboard"<?= str_starts_with($currentPath, '/account/dashboard') ? ' aria-current="page"' : '' ?>>Dashboard</a>
             <a href="/logout">Logout</a>

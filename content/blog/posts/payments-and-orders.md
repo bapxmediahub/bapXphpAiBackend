@@ -5,6 +5,8 @@ category: help
 published: true
 published_at: 2026-07-14
 excerpt: Understand product checkout payments and what happens after a successful order.
+summary: Understand product checkout payments and what happens after a successful order.
+order: 40
 author: Sri Panchami Spiritual
 og_image: /assets/images/blog/payments-and-orders.webp
 image_alt: Sri Panchami Spiritual checkout and payment page

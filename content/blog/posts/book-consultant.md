@@ -5,6 +5,8 @@ category: help
 published: true
 published_at: 2026-07-14
 excerpt: Choose a consultant and request a preferred appointment date and time.
+summary: Choose a consultant and request a preferred appointment date and time.
+order: 30
 author: Sri Panchami Spiritual
 og_image: /assets/images/blog/book-consultant.webp
 image_alt: Sri Panchami Spiritual consultant booking page

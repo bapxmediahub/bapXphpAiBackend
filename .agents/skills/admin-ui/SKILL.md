@@ -5,7 +5,7 @@ description: Use when editing owner/admin pages, CRUD forms, media library, envi
 
 # Admin UI
 
-- Follow root `AGENTS.md`, `views/AGENTS.md`, `app/AGENTS.md`, and `storage/AGENTS.md` for touched paths.
+- Follow the root `AGENTS.md` repository contract and its app/view/storage area rules.
 - Keep owner/admin UI PHP-template based.
 - Admin mutations should route through controllers/services and remain auditable.
 - Use schema-driven resource fields and the media library for product, temple, and astrologer media.

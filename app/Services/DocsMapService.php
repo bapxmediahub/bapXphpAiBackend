@@ -17,7 +17,7 @@ final class DocsMapService
             '  root(("Knowledge Map — bapXphp"))',
             '',
             '    ### Repository Intelligence',
-            '    AGENTS_FILES["AGENTS.md docs"]',
+            '    AGENTS_FILES["Root AGENTS.md contract"]',
             '    SYSTEMATIC_MAP["docs/systematic-map.mmd"]',
             '    COLLECTIONS_SCHEMA["storage/schema/collections.php"]',
             '    DESIGN_SYSTEM["Design.md"]',
@@ -48,7 +48,7 @@ final class DocsMapService
             '    DOCS_DESIGN["Design.md"]',
             '    DOCS_SYSTEMMAP["docs/systematic-map.mmd"]',
             '    DOCS_KNOWLEDGEMAP["docs/KnowledgeMap.mmd"]',
-            '    DOCS_AGENTS["AGENTS.md chain (root → child)"]',
+            '    DOCS_AGENTS["Root AGENTS.md contract"]',
             '',
             '    ### Blog & Content (GitHub-sourced)',
             '    BLOG_INDEX["GitHub raw → blog index JSON"]',
@@ -101,7 +101,7 @@ final class DocsMapService
         $agentsFiles = $this->findAgentsFiles();
         if ($agentsFiles) {
             $lines[] = '';
-            $lines[] = '    ### AGENTS.md Chain';
+            $lines[] = '    ### Agent Contract';
             foreach ($agentsFiles as $file) {
                 $id = 'AGENTFILE_' . substr(md5($file), 0, 8);
                 $lines[] = "    {$id}[\"{$file}\"]";

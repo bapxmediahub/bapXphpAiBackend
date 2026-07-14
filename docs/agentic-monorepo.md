@@ -38,7 +38,7 @@ Agents should not need a separate MCP server or global skill install to understa
 
 This workflow adopts the documented source-grounding pattern, not an undocumented claim about NotebookLM internals:
 
-- NotebookLM notebooks contain a selected collection of sources, and chat answers use those sources. This repository selects source files through the DOX chain and the affected systematic-map path.
+- NotebookLM notebooks contain a selected collection of sources, and chat answers use those sources. This repository selects source files through the root contract and the affected systematic-map path.
 - NotebookLM citations take the reader back to source context. Here, Mermaid edges take the agent back to routes, controllers, services, views, schema, storage, tools, and navigation.
 - NotebookLM mind maps are generated summaries of uploaded sources and Google warns that generated results can be inaccurate. Likewise, `docs/systematic-map.mmd` is derived context that must be regenerated and checked against primary files.
 - NotebookLM source copies may need resynchronization after originals change. Here, regeneration plus byte-for-byte validation is the synchronization gate.

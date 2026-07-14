@@ -138,7 +138,7 @@ Use **Admin → Settings** for store and site behavior. Use **Admin → Integrat
 ### Blog & Docs
 | Command | Description |
 |---------|-------------|
-| `bapXphp docsmap` | Regenerate `docs/KnowledgeMap.mmd` from docs, AGENTS.md, and skills |
+| `bapXphp docsmap` | Regenerate `docs/KnowledgeMap.mmd` from docs, the root AGENTS.md, and skills |
 | `bapXphp bloggen` | Regenerate blog cache from GitHub markdown sources |
 
 ### Validation (shortcut)

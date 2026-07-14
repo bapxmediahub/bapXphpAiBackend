@@ -5,6 +5,8 @@ category: help
 published: true
 published_at: 2026-07-14
 excerpt: Create an account with a default delivery address and stay signed in securely.
+summary: Create an account with a default delivery address and stay signed in securely.
+order: 10
 author: Sri Panchami Spiritual
 og_image: /assets/images/blog/create-account.webp
 image_alt: Sri Panchami Spiritual account registration form

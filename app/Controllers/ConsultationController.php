@@ -56,7 +56,12 @@ final class ConsultationController extends BaseController {
         (new ResourceService('appointments'))->save($session);
         try{
             $secrets=(new SecretService())->all();
-            $ownerEmail=trim((string)($secrets['smtp_username']??getenv('SMTP_USERNAME')?:''));
+            $ownerEmail=trim((string)(
+                ($secrets['admin_notification_email'] ?? '')
+                ?: (getenv('ADMIN_NOTIFICATION_EMAIL') ?: '')
+                ?: ($secrets['smtp_username'] ?? '')
+                ?: (getenv('SMTP_USERNAME') ?: '')
+            ));
             if($ownerEmail!=='' && filter_var($ownerEmail,FILTER_VALIDATE_EMAIL)){
                 $base=rtrim((string)(getenv('APP_URL')?:''),'/');
                 $html='<p>A new consultation appointment was requested.</p><dl>'

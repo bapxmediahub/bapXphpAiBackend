@@ -119,8 +119,6 @@ $tests['repo has agent-readable schema and built-in skills'] = function (): void
     assertTrue((new SchemaService())->adminFields('products') !== [], 'SchemaService should expose admin fields');
     foreach ([
         'AGENTS.md',
-        '.agents/AGENTS.md',
-        '.agents/skills/AGENTS.md',
         '.agents/skills/php-json-backend/SKILL.md',
         '.agents/skills/backend-json/SKILL.md',
         '.agents/skills/schema/SKILL.md',
@@ -132,6 +130,13 @@ $tests['repo has agent-readable schema and built-in skills'] = function (): void
     ] as $path) {
         assertTrue(is_file(app_path($path)), "Built-in agent instruction file should exist: {$path}");
     }
+    $agentFiles = [];
+    $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(app_path(), FilesystemIterator::SKIP_DOTS));
+    foreach ($iterator as $file) {
+        if ($file->getBasename() === 'AGENTS.md') $agentFiles[] = str_replace(app_path() . '/', '', $file->getPathname());
+    }
+    sort($agentFiles);
+    assertTrue($agentFiles === ['AGENTS.md'], 'Root AGENTS.md should be the only binding agent contract');
     foreach (['example-Agent.md', 'CLAUDE.md', '.codex'] as $path) {
         assertTrue(!file_exists(app_path($path)), "Obsolete duplicated agent instruction path should not exist: {$path}");
     }
@@ -764,7 +769,7 @@ $tests['consultation booking form includes csrf and sends central owner notifica
     $view = file_get_contents(app_path('views/public/astrologer.php'));
     assertTrue(str_contains($view, 'name="_csrf"'), 'Booking form should include CSRF');
     $controller = file_get_contents(app_path('app/Controllers/ConsultationController.php'));
-    foreach (['MailQueueService', 'SecretService', 'smtp_username', 'appointment_owner_notification', '/admin/appointments', 'Narration'] as $needle) assertTrue(str_contains($controller, $needle), "Booking controller should centralize notification through {$needle}");
+    foreach (['MailQueueService', 'SecretService', 'admin_notification_email', 'smtp_username', 'appointment_owner_notification', '/admin/appointments', 'Narration'] as $needle) assertTrue(str_contains($controller, $needle), "Booking controller should centralize notification through {$needle}");
     assertTrue(!str_contains($controller, 'astrologer_session_notification'), 'Booking should not email a consultant dashboard login');
 };
 
@@ -943,7 +948,7 @@ $tests['php 404 page uses themed template classes'] = function (): void {
 $tests['documentation has deployment agent instructions and no one-line placeholder pages'] = function (): void {
     assertTrue(is_file(app_path('AGENTS.md')), 'Agent operating guide should exist');
     $agent = file_get_contents(app_path('AGENTS.md'));
-    foreach (['DOX Contract', 'docs/systematic-map.mmd', 'bapXphp update', 'bapXphp ci', 'documentation reconciliation is incomplete', 'remote `main`'] as $needle) {
+    foreach (['Repository Contract', 'docs/systematic-map.mmd', 'bapXphp update', 'bapXphp ci', 'documentation reconciliation is incomplete', 'remote `main`'] as $needle) {
         assertTrue(str_contains($agent, $needle), "Agent guide should mention {$needle}");
     }
     foreach (glob(app_path('docs/pages/*.md')) ?: [] as $path) {
@@ -1044,11 +1049,16 @@ $tests['blog media uses one screenshot crop for cards and article pages'] = func
     $article = file_get_contents(app_path('views/public/blog-post.php'));
     $cli = file_get_contents(app_path('cli/bapXphp'));
     $crop = file_get_contents(app_path('cli/blog-image.php'));
-    foreach (['og_image', 'image_alt', 'source_url', 'template'] as $field) {
+    foreach (['summary', 'order', 'og_image', 'image_alt', 'source_url', 'template'] as $field) {
         assertTrue(str_contains($service, "'{$field}'"), "Blog service should persist {$field}");
         assertTrue(str_contains($admin, 'name="' . $field . '"'), "Admin blog editor should expose {$field}");
     }
     assertTrue(str_contains($index, "\$post['og_image']") && str_contains($article, "\$meta['og_image']"), 'Card and article should share og_image');
+    assertTrue(str_contains($article, "\$schemaImage ?: 'undefined'") && str_contains($article, 'e($sourceUrl)'), 'Article metadata should tolerate missing images and render the validated source URL');
+    foreach (['create-account', 'order-products', 'book-consultant', 'payments-and-orders'] as $slug) {
+        $post = file_get_contents(app_path("content/blog/posts/{$slug}.md"));
+        assertTrue(str_contains($post, "\nsummary:") && str_contains($post, "\norder:"), "Help post {$slug} should retain summary and order metadata");
+    }
     assertTrue(str_contains($cli, 'blog:image') && str_contains($crop, '--dry-run'), 'CLI should expose safe blog screenshot cropping');
     assertTrue(str_contains($crop, '$targetWidth = 1200') && str_contains($crop, '$targetHeight = 675'), 'Blog screenshot crop should be stable 16:9');
 };
@@ -1058,8 +1068,10 @@ $tests['public navigation uses brand home link and mobile cart tray'] = function
     $css = file_get_contents(app_path('assets/css/band.css'));
     assertSame(1, substr_count($layout, 'href="/" class="brand"'), 'Brand should link home once');
     assertTrue(!str_contains($layout, '>Home</a>') && !str_contains($layout, '<span>Home</span>'), 'Public navigation should not duplicate Home');
+    assertTrue(!str_contains($layout, 'href="/blog/category/help"'), 'Help should remain a Blog category instead of a separate primary-menu item');
     foreach (['mobile-cart-tray', 'mobile-cart-count', 'mobile-cart-label'] as $needle) assertTrue(str_contains($layout, $needle), "Cart tray should include {$needle}");
     assertTrue(str_contains($css, '.mobile-cart-tray') && str_contains($css, 'bottom:78px'), 'Mobile cart tray should sit above bottom navigation');
+    assertSame(substr_count($css, '{'), substr_count($css, '}'), 'Stylesheet should have balanced rule braces');
 };
 
 $tests['support assistant exposes only allowlisted internal navigation actions'] = function (): void {
