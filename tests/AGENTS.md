@@ -12,6 +12,7 @@ Owns PHP regression tests and test expectations for repo contracts.
 
 - Tests should assert current project contracts, not deleted legacy files.
 - When docs, map artifacts, or skills change, update tests in the same change.
+- PR validation must fail on stale systematic or Knowledge maps; tests must not regenerate tracked artifacts before checking freshness.
 
 ## Work Guidance
 
@@ -23,4 +24,3 @@ Owns PHP regression tests and test expectations for repo contracts.
 - `php tests/run.php`
 
 ## Child DOX Index
-

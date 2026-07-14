@@ -45,6 +45,6 @@ This folder contains connected documentation for developers, maintainers, and co
 - Regenerate it after route, service, view, schema, storage, tool, or integration changes:
 
 ```bash
-bapXphp map:gen
-bapXphp map:val
+bapXphp update
+bapXphp ci
 ```

@@ -14,7 +14,7 @@ This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP
 - Keep investigation and file operations inside this repository by default. Do not search sibling folders, home directories, or unrelated projects unless the user explicitly requests that scope.
 - Read this root file first. Identify every expected target path, then read every `AGENTS.md` from the repo root down to each target before editing.
 - The nearest `AGENTS.md` controls local details. Parent docs continue to control repo-wide rules; child docs may not weaken this DOX contract.
-- After meaningful edits, re-check changed paths against the DOX chain, update the closest owning `AGENTS.md` when purpose, structure, workflow, artifacts, contracts, or durable preferences changed, and refresh parent Child DOX Index entries when children change.
+- After meaningful edits, re-check changed paths against the DOX chain, update the closest owning `AGENTS.md` when purpose, structure, workflow, artifacts, contracts, or durable preferences changed, and refresh parent Child DOX Index entries when children change. Update every affected durable page/module/role document in the same PR; implementation without documentation reconciliation is incomplete.
 - Keep DOX docs concise and operational. Delete stale or contradictory instructions instead of explaining old history.
 
 ## Core Shape
@@ -109,7 +109,9 @@ bapXphp db sync                       # push JSON → MySQL
 
 ```bash
 bapXphp test                          # run tests
-bapXphp check                         # full validation chain
+bapXphp update                        # regenerate both map artifacts after source/docs changes
+bapXphp ci                            # non-mutating full PR/CI validation
+bapXphp check                         # alias for bapXphp ci
 bapXphp serve                         # start dev server
 bapXphp map:gen                       # regenerate project map
 bapXphp docsmap                       # regenerate KnowledgeMap
@@ -125,16 +127,14 @@ Run the smallest useful validation for the change:
 
 ```bash
 bapXphp lint path/to/changed.php
-bapXphp test
-bapXphp map:gen
-bapXphp map:val
-bapXphp smoke
+bapXphp update
+bapXphp ci
 ```
 
-For doc/AGENTS/skill changes, also regenerate the KnowledgeMap:
+For doc/AGENTS/skill changes, regenerate and validate both maps:
 
 ```bash
-bapXphp docsmap
+bapXphp update
 ```
 
 For UI changes, also use a browser workflow. Codex agents must use `Browser:control-in-app-browser` for localhost and in-app browser verification when the Browser plugin is available. Standalone Playwright is only a fallback for agents or environments that do not have the Browser plugin. Click the changed page like a user and verify the visible result.
@@ -169,7 +169,7 @@ Immediately after inspecting the map and schema list, you must process the task 
 
 1. **Investigate & Diagnose:** Track down the code footprints. Identify the exact file name, page context, and specific line numbers causing the bug or holding back the feature.
 2. **File the Issue:** Use `gh issue create` to open a clear issue, bug report, or feature ticket. You MUST explicitly embed the exact line references and file paths directly into the GitHub issue body so that future agent instances or humans have immediate grounding.
-3. **Isolate and Execute:** Branch out, perform the micro-targeted code alterations, and run `bapXphp check` to ensure zero regressions.
+3. **Isolate and Execute:** Branch out, perform the micro-targeted code alterations, update affected durable documentation, run `bapXphp update`, and run non-mutating `bapXphp ci` to ensure zero regressions and fresh maps.
 4. **Automated Merging:** Commit the clean updates, push the branch, run `gh pr create` to target `main`, and execute `gh pr merge --merge --delete-branch` to push the features straight to live.
 5. **Post-Merge Fork Sync:** Upstream `main` pushes must dispatch the downstream `upstream-main-updated` workflow through `.github/workflows/notify-fork.yml`; do not use scheduled polling. Verify the dispatch run completes and `gh api repos/getwinharris/bapXphpAiBackend/commits/main --jq .sha` equals `gh api repos/bapxmediahub/bapXphpAiBackend/commits/main --jq .sha`. Keep **Sync fork → Update branch**, `gh repo sync`, and `workflow_dispatch` as recovery paths only. If the fork contains divergent commits and cannot fast-forward, create an evidence-backed issue instead of forcing or discarding fork work.
 6. **Channel Communication to GitHub:** Do not broadcast intermediate debugging steps or structural logs to the terminal prompt. All technical updates, state transitions, and implementation details belong inside the GitHub repository issue comments.

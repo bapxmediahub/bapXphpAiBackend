@@ -56,7 +56,7 @@ final class PublicController extends BaseController {
         $exp = !empty($astrologer['experience_years']) ? ' with ' . $astrologer['experience_years'] . ' years of experience' : '';
         $this->seoOverrides = [
             'title' => ($astrologer['name'] ?? 'Astrologer') . ' – Vedic Astrologer Online Consultation at Sri Panchami Spiritual',
-            'description' => 'Consult ' . ($astrologer['name'] ?? 'an experienced astrologer') . ' online via private message or direct call.' . ($astrologer['speciality'] ? ' ' . $astrologer['speciality'] . '.' : '') . $exp,
+            'description' => 'Request a scheduled appointment with ' . ($astrologer['name'] ?? 'an experienced consultant') . '.' . (!empty($astrologer['speciality']) ? ' ' . $astrologer['speciality'] . '.' : '') . $exp,
             'og_image' => $astrologer['photo_url'] ?? '',
         ];
         $reviewSummary = (new ReviewService())->summary('astrologer', $slug);

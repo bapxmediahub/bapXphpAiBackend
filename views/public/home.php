@@ -177,18 +177,13 @@
         <div class="astro-carousel-track">
         <?php foreach(array_values(array_merge($astrologers, $astrologers)) as $astro): ?>
             <?php
-                $availability = $astro['availability_status'] ?? 'offline';
-                $state = $availability === 'available' ? 'online' : (in_array($availability, ['busy', 'waitlist'], true) ? 'busy' : 'offline');
-                $statusLabel = $state === 'online' ? 'Available' : ($state === 'busy' ? 'Waitlist' : 'Offline');
                 $languageText = implode(', ', array_slice(array_values(array_filter($astro['languages'] ?? [])), 0, 2));
                 $experience = trim((string)($astro['experience_years'] ?? ''));
                 $speciality = $astro['speciality'] ?? 'Vedic Astrology';
             ?>
-            <article class="astro-market-card astro-market-card--<?= e($state) ?> reveal">
+            <article class="astro-market-card reveal">
                 <a class="astro-market-photo" href="/consult/<?= e($astro['slug'] ?? '') ?>" aria-label="View <?= e($astro['name'] ?? 'Astrologer') ?>">
                     <span class="astro-market-photo-frame"><img class="astro-market-photo-img astro-market-photo-img--<?= e($astro['slug'] ?? 'default') ?>" src="<?= e(webp_src($astro['photo_url'] ?? placeholder_img($astro['name'] ?? 'Astrologer'))) ?>" alt="<?= e($astro['name'] ?? 'Astrologer') ?>" loading="lazy"></span>
-                    <span class="astro-status-dot" aria-label="<?= e(ucfirst($state)) ?>"></span>
-                    <span class="astro-status-label"><?= e($statusLabel) ?></span>
                 </a>
                 <div class="astro-market-info">
                     <a href="/consult/<?= e($astro['slug'] ?? '') ?>" class="astro-market-name"><?= e($astro['name'] ?? 'Astrologer') ?></a>
@@ -210,6 +205,25 @@
     <?php endif; ?>
     <div style="text-align:center;">
         <a href="/consult" class="btn btn-primary">View Consultants</a>
+    </div>
+</section>
+
+<section class="section section--alt">
+    <div class="container">
+        <div class="section-header">
+            <span class="eyebrow serif-accent">Simple · Secure · Trackable</span>
+            <h2 class="section-title">How Your Order Works</h2>
+            <p class="lede">Choose an authentic product, pay securely online, and follow the order from your account.</p>
+        </div>
+        <div class="feature-strip home-order-steps">
+            <article><span class="home-order-step">1</span><h3>Choose Products</h3><p>Browse clear product details and add the quantity you need.</p></article>
+            <article><span class="home-order-step">2</span><h3>Select an Address</h3><p>Reuse a saved address or enter a different delivery address at checkout.</p></article>
+            <article><span class="home-order-step">3</span><h3>Pay and Track</h3><p>Complete Razorpay payment and follow confirmation from My Orders.</p></article>
+        </div>
+        <div class="home-order-actions">
+            <a class="btn btn-primary" href="/shop">Browse Products</a>
+            <a class="btn btn-ghost" href="/blog/category/help">Ordering Help</a>
+        </div>
     </div>
 </section>
 

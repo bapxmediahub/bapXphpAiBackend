@@ -7,13 +7,13 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 101 routes, 12 controllers, 39 services, 46 views, 0 data files, 17 tools"]
+  subgraph ARCH["Architecture Overview — 101 routes, 12 controllers, 39 services, 46 views, 0 data files, 18 tools"]
     arch_routes["> Routes: 101 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
     arch_svc["> Services: 39"]:::arch
     arch_views["> Views: 46"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
-    arch_tools["> Tools: 17"]:::arch
+    arch_tools["> Tools: 18"]:::arch
     arch_gaps["> Gaps: 0"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
@@ -27,7 +27,7 @@ flowchart LR
     route_8f45fea80bea["GET /terms — Terms of Service — 15 sections, legal"]:::route
     route_90946be13902["GET /privacy — Privacy Policy — 14 sections, data handling"]:::route
     route_f1167ac0f350["GET /consult — Astrologer marketplace — browse and book"]:::route
-    route_c415a5030f78["GET /consult/{slug} — Astrologer profile — book message/call session"]:::route
+    route_c415a5030f78["GET /consult/{slug} — Consultant profile — request a scheduled appointment"]:::route
     route_7f9505b0f987["GET /temples — Temple listing page"]:::route
     route_14cd9d36c55d["GET /temples/{slug} — Temple detail page"]:::route
     route_e627a983a978["GET /shop — Product shop — grid with pill actions"]:::route
@@ -64,8 +64,8 @@ flowchart LR
     route_292f9c423d3c["POST /reset-password — Reset password POST — update hash"]:::route
     route_21ac6cd20118["GET /auth/google — Google OAuth redirect"]:::route
     route_54bc4589bbac["GET /auth/google/callback — Google OAuth callback — upsert user"]:::route
-    route_bd886de5ac0b["GET /register — Register page — name, email, password, terms"]:::route
-    route_3a7ff6514669["POST /register — Register POST — create user, accept terms"]:::route
+    route_bd886de5ac0b["GET /register — Register page — identity, default delivery address, password, terms"]:::route
+    route_3a7ff6514669["POST /register — Register POST — create user and default address, accept terms"]:::route
     route_a650fd67ad7b["POST /login — Login POST — authenticate, session start"]:::route
     route_1d1ca6617c0d["GET /logout — Logout — session destroy, redirect"]:::route
   end
@@ -297,6 +297,7 @@ flowchart LR
     tool_33987b50a45d["refresh-blog-cache"]:::tool
     tool_6bc5276d6a60["smoke-local"]:::tool
     tool_506de2158fd9["test_race"]:::tool
+    tool_120348175d72["validate-docs-map"]:::tool
     tool_ffb4fe3c51d9["validate-project-map"]:::tool
     tool_a84555c39de6["bapXphp"]:::tool
   end

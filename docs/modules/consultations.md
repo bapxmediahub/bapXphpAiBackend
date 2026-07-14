@@ -1,7 +1,7 @@
-# Consultation Communication
+# Consultation Bookings
 
-Customer and astrologer rooms live at `/consultation/{id}`. Access is restricted to the session customer, assigned astrologer, or admin.
+Customers browse `/consult`, open a consultant profile, and submit a preferred date, time, phone number, and guidance notes. The request is stored as an appointment and appears in the customer, consultant, and admin booking views.
 
-Messages and browser WebRTC signaling use authenticated PHP endpoints under `/api/consultations/{id}`. Clients short-poll JSON collections; no CLI process or WebSocket server is required. WebRTC carries audio directly, while the PHP application records signaling, status, timestamps, credits, and analytics.
+The product does not expose live call, message, wallet, credit, or WebRTC controls. Consultants update booking status through the authenticated provider panel.
 
 Astrologer accounts are created by admin and open `/astrologer` after the required initial password change. Admin credentials and consultation metrics are available under the Services navigation.

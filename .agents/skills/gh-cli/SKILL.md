@@ -120,13 +120,13 @@ Manage agent skills (specialized instructions and tools) from GitHub repositorie
 - `gh workflow run <name>`: Trigger a workflow.
 - `gh workflow view <name>`: View workflow definition.
 
-### Post-Merge Fork Sync
+### Validation and Post-Merge Fork Sync
 
-- Prefer the authenticated in-app browser **Sync fork → Update branch** control when Browser control is available.
-- If Browser control is unavailable, continue without pausing:
-  `gh repo sync bapxmediahub/bapXphpAiBackend --source getwinharris/bapXphpAiBackend --branch main`
+- Run `bapXphp update` before the final commit when source or documentation relationships changed.
+- Use `bapXphp pr` and `bapXphp merge`; both run non-mutating `bapXphp ci` before calling `gh`.
+- Upstream `main` push -> `repository_dispatch` -> downstream `merge-upstream` is the normal sync path. Do not click Sync fork or run `gh repo sync` unless event-driven sync failed.
 - Compare both `main` SHAs through `gh api repos/<owner>/bapXphpAiBackend/commits/main --jq .sha`; do not rely only on the sync command's exit status.
-- Keep the fork's upstream-sync workflow enabled with `workflow_dispatch` and `repository_dispatch: upstream-main-updated`. Upstream `main` pushes send the dispatch with the `FORK_SYNC_TOKEN` Actions secret.
+- Keep manual Sync fork, `gh repo sync`, and `workflow_dispatch` as recovery paths only.
 - Never use a forced sync when the fork has divergent commits. File an issue with the compare evidence instead.
 
 ### Runs (`gh run`)
@@ -164,13 +164,13 @@ Manage agent skills (specialized instructions and tools) from GitHub repositorie
 
 A secure API endpoint for live database queries and explicit authenticated record mutations used by the project CLI.
 
-**Endpoint:** `POST https://yoursite.com/remotedb`
+**Endpoint:** `POST ${APP_URL}/remotedb` (currently `https://sripanchamispiritual.com/remotedb`)
 
 **Request:**
 ```bash
-curl -X POST https://yoursite.com/remotedb \
+curl -X POST "${APP_URL}/remotedb" \
   -H "Content-Type: application/json" \
-  -d '{"token":"YOUR_TOKEN","query":"SELECT * FROM products LIMIT 10"}'
+  -d '{"query":"SELECT * FROM products LIMIT 10"}'
 ```
 
 **Response:**
@@ -186,5 +186,5 @@ curl -X POST https://yoursite.com/remotedb \
 
 **Usage:**
 - Useful when `bapXphp db` cannot connect via direct MySQL.
-- Set token in Admin → Integrations or via DB update.
+- Keep the mutation token in remote MySQL. `bapXphp` can retrieve it through owner-authenticated hosting credentials from ignored `.env.mysql`.
 - Use for debugging and data exploration in production.

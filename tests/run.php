@@ -2,6 +2,7 @@
 require __DIR__ . '/../app/bootstrap.php';
 
 use App\Services\EnvService;
+use App\Services\CategoryService;
 use App\Services\PaymentService;
 use App\Services\ProjectMapService;
 use App\Services\ReviewService;
@@ -263,18 +264,20 @@ $tests['public registration never bootstraps admin on a live site'] = function (
     assertTrue(str_contains($controller, "\$u['role']"), 'Email/password login should preserve an existing stored admin role and password');
 };
 
-$tests['env file defines APP_NAME and APP_URL only'] = function (): void {
+$tests['env defines site and direct database connectivity without application secrets'] = function (): void {
     $exampleEnvPath = app_path('.env.example');
     assertTrue(is_file($exampleEnvPath), '.env.example should exist for safe setup documentation');
     $exampleEnv = EnvService::readFile($exampleEnvPath);
-    foreach (['APP_NAME', 'APP_URL'] as $key) {
+    foreach (['APP_NAME', 'APP_URL', 'BAPX_MYSQL_HOST', 'BAPX_MYSQL_PORT', 'BAPX_MYSQL_DB', 'BAPX_MYSQL_USER', 'BAPX_MYSQL_PASS'] as $key) {
         assertTrue(($exampleEnv[$key] ?? '') !== '', ".env.example should define {$key}");
     }
     assertTrue(!isset($exampleEnv['ADMIN_USERNAME']), '.env.example should not contain ADMIN_USERNAME');
     $envPath = app_path('.env');
     assertTrue(is_file($envPath), '.env should exist for small PHP hosting setup');
     $env = EnvService::readFile($envPath);
+    foreach (['BAPX_MYSQL_HOST', 'BAPX_MYSQL_DB', 'BAPX_MYSQL_USER', 'BAPX_MYSQL_PASS'] as $key) assertTrue(($env[$key] ?? '') !== '', ".env should define {$key} for hosted MySQL");
     assertTrue(!isset($env['ADMIN_PASSWORD']), '.env should not contain ADMIN_PASSWORD');
+    foreach (['RAZORPAY_KEY_SECRET', 'GOOGLE_CLIENT_SECRET', 'SMTP_PASSWORD'] as $key) assertTrue(!isset($env[$key]), ".env should not contain application secret {$key}");
     $auth = file_get_contents(app_path('app/Controllers/AuthController.php'));
     assertTrue(str_contains($auth, 'adminCredentials'), 'Login should check admin credentials from settings');
     assertTrue(str_contains($auth, "'role'=>'admin'"), 'Successful admin login should create an admin session');
@@ -544,8 +547,19 @@ $tests['home page rotates all astrologers instead of showing only three fixed ca
     $view = file_get_contents(app_path('views/public/home.php'));
     assertTrue(!str_contains($view, 'array_slice($astrologers, 0, 3)'), 'Home astrology section should not hard-limit to three astrologers');
     assertTrue(str_contains($view, 'astro-carousel-track'), 'Home astrology section should use a carousel track');
-    assertTrue(str_contains($view, 'astro-status-label'), 'Home cards should share the marketplace status contract');
+    assertTrue(!str_contains($view, 'astro-status-label'), 'Booking-only home cards should not expose live availability status');
     foreach(['+ Follow','4.9 | 500+',"['online', 'busy', 'offline']", "['Tamil']", "'N/A') ?> Years"] as $needle) assertTrue(!str_contains($view,$needle), "Home cards should not render invented or dead content: {$needle}");
+};
+
+$tests['home page rejects malformed remote categories and retains complete sales sections'] = function (): void {
+    foreach ((new CategoryService())->all() as $category) {
+        assertTrue(trim((string)($category['slug'] ?? '')) !== '', 'Rendered categories require a slug');
+        assertTrue(trim((string)($category['name'] ?? '')) !== '', 'Rendered categories require a name');
+    }
+    $view = file_get_contents(app_path('views/public/home.php'));
+    foreach (['Shop by Category', 'Most Liked By People', 'How Your Order Works', 'Online Consultation', 'Panchami Temples Guide', 'Faith · Trust · Tradition'] as $heading) {
+        assertTrue(str_contains($view, $heading), "Home should retain the {$heading} section");
+    }
 };
 
 $tests['astrologer cards use consistent face focused portrait frames'] = function (): void {
@@ -927,7 +941,7 @@ $tests['php 404 page uses themed template classes'] = function (): void {
 $tests['documentation has deployment agent instructions and no one-line placeholder pages'] = function (): void {
     assertTrue(is_file(app_path('AGENTS.md')), 'Agent operating guide should exist');
     $agent = file_get_contents(app_path('AGENTS.md'));
-    foreach (['DOX Contract', 'docs/systematic-map.mmd', 'bapXphp test', 'bapXphp map:gen', 'bapXphp smoke', 'remote `main`'] as $needle) {
+    foreach (['DOX Contract', 'docs/systematic-map.mmd', 'bapXphp update', 'bapXphp ci', 'documentation reconciliation is incomplete', 'remote `main`'] as $needle) {
         assertTrue(str_contains($agent, $needle), "Agent guide should mention {$needle}");
     }
     foreach (glob(app_path('docs/pages/*.md')) ?: [] as $path) {
@@ -940,6 +954,16 @@ $tests['documentation has deployment agent instructions and no one-line placehol
     foreach (['hPanel', 'Advanced', 'Git', 'Auto Deployment', 'Branch', 'public_html', 'Vercel'] as $needle) {
         assertTrue(str_contains($deployment, $needle), "Deployment guide should mention {$needle}");
     }
+};
+
+$tests['pull requests use non mutating CI with fresh project and documentation maps'] = function (): void {
+    $workflow = file_get_contents(app_path('.github/workflows/ci.yml'));
+    $cli = file_get_contents(app_path('cli/bapXphp'));
+    foreach (['pull_request:', 'branches: [main]', './bapXphp ci'] as $needle) assertTrue(str_contains($workflow, $needle), "CI workflow should include {$needle}");
+    foreach (['cmd_ci()', 'validate-project-map.php', 'validate-docs-map.php', 'cmd_update()', 'cmd_ci\n  gh pr create', 'cmd_ci\n  gh pr merge'] as $needle) {
+        assertTrue(str_contains($cli, str_replace('\\n', "\n", $needle)), "CLI should include {$needle}");
+    }
+    assertTrue(!str_contains(substr($cli, strpos($cli, 'cmd_ci()'), strpos($cli, 'cmd_check()') - strpos($cli, 'cmd_ci()')), 'generate-project-map.php'), 'CI validation must not regenerate the project map before checking freshness');
 };
 
 $tests['local smoke tool verifies key routes api and unknown route 404'] = function (): void {
