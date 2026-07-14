@@ -2,10 +2,13 @@
 title: Order products and choose a delivery address
 slug: order-products
 category: help
-author: Sri Panchami Spiritual
 published: true
 published_at: 2026-07-14
 excerpt: Add products, manage quantities, select a saved address, and complete secure checkout.
+author: Sri Panchami Spiritual
+og_image: /assets/images/blog/order-products.webp
+image_alt: Sri Panchami Spiritual product shop
+source_url: /shop
 ---
 
 ## Add products

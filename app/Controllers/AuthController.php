@@ -24,7 +24,7 @@ final class AuthController extends BaseController {
     $this->flash('Signed in.','success');
     session_write_close();
    if ($role === 'admin') { $this->redirect('/admin'); return; }
-   if ($role === 'astrologer') { $this->redirect($mustChange ? '/astrologer/change-password' : '/astrologer'); return; }
+   if ($role === 'astrologer') { $_SESSION = []; $this->flash('Consultant access is managed by the site administrator.','info'); $this->redirect('/login'); }
     $this->redirect('/account/dashboard');
   }
  public function logout(): void {
@@ -103,11 +103,12 @@ final class AuthController extends BaseController {
     foreach ($users as $u) {
         $matches = strcasecmp((string)($u['email'] ?? ''), $email) === 0 || strcasecmp((string)($u['username'] ?? ''), $email) === 0;
         if ($matches && !empty($u['password_hash']) && password_verify($password,$u['password_hash'])) {
+            if (($u['role'] ?? '') === 'astrologer') { $this->flash('Consultant access is managed by the site administrator.','info'); $this->redirect('/login'); }
             session_regenerate_id(true);
             $_SESSION['user'] = ['sub'=>$u['id'],'email'=>$u['email'] ?? '','username'=>$u['username'] ?? '','name'=>$u['name'] ?? '','role'=>$u['role'] ?? (!empty($u['is_admin']) ? 'admin' : 'customer'),'astrologer_slug'=>$u['astrologer_slug'] ?? '','must_change_password'=>(bool)($u['must_change_password'] ?? false)];
             $this->flash('Signed in.','success');
             session_write_close();
-            $this->redirect(($u['role'] ?? '') === 'astrologer' ? (!empty($u['must_change_password']) ? '/astrologer/change-password' : '/astrologer') : (($u['role'] ?? '') === 'customer' ? '/account/dashboard' : '/'));
+            $this->redirect(($u['role'] ?? '') === 'customer' ? '/account/dashboard' : '/');
         }
     }
     $this->flash('Invalid credentials.','error');

@@ -28,7 +28,7 @@
           <?php $postImage = $post['image'] ?? $post['og_image'] ?? ($index === 0 ? '/assets/images/hero-temple-bg.webp' : '/assets/images/og-image.jpg'); ?>
           <article class="blog-card <?= $index === 0 ? 'blog-card--featured' : '' ?>">
             <a class="blog-card__media" href="/blog/<?= e($post['slug'] ?? '') ?>" aria-label="Read <?= e($post['title'] ?? 'article') ?>">
-              <img class="blog-card__image" src="<?= e($postImage) ?>" alt="" loading="<?= $index === 0 ? 'eager' : 'lazy' ?>">
+              <img class="blog-card__image" src="<?= e($postImage) ?>" alt="<?= e($post['image_alt'] ?? '') ?>" loading="<?= $index === 0 ? 'eager' : 'lazy' ?>">
             </a>
             <div class="blog-card__body">
               <div class="blog-card__kicker">

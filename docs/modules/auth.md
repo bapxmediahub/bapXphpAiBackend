@@ -9,7 +9,7 @@ Main files: `AuthController.php`, `AuthService.php`, `EnvService.php`, `PublicCo
 - Single unified login page (`/login`) serving all three roles: admin, astrologer, customer.
 - Role-based redirect after authentication:
   - **admin** → `/admin`
-  - **astrologer** → `/astrologer` (or `/astrologer/change-password` if forced)
+  - Consultant profiles are not login accounts; central admin coordinates appointments.
   - **customer** → `/` (home)
 - Admin credentials checked first from `settings.json` (admin_email/admin_password), then falls back to JSON `users` collection.
 

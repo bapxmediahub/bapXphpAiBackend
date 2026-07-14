@@ -27,9 +27,9 @@ Owns PHP-rendered public, account, admin, and layout templates.
 - Remove or wire dead buttons, placeholder cards, duplicated fallbacks, and stale labels before finishing.
 - Customer help uses the existing blog cards and article renderer under `/blog/category/help`; `/docs` and `/help/{slug}` are redirect-only compatibility routes.
 - Blog templates preserve Markdown ownership while providing editorial media, metadata, readable line length, and mobile hierarchy.
-- Keep customer Orders, Sessions, Wallet, and Back to Home links in the shared account-side navigation under `/account/dashboard/*`; the global authenticated header exposes only Dashboard and Logout.
-- Astrologer marketplace and homepage cards must use real profile availability, rates, optional metadata, and verified review totals; do not fabricate states, ratings, counts, languages, or experience.
-- Astrologer marketplace and homepage cards share the circular top-overlapping portrait layout and three icon actions. Keep availability truthful; offline and busy actions may create an uncharged queued request, while only available providers can start immediately.
+- Keep customer Orders, Sessions, and Back to Home links in the shared account-side navigation under `/account/dashboard/*`; the global authenticated header exposes only Dashboard and Logout. The public brand link is the sole Home control.
+- Consultant marketplace and homepage cards use real optional profile metadata and verified review totals; do not fabricate states, ratings, counts, languages, or experience.
+- Consultant marketplace and homepage cards share the circular top-overlapping portrait layout. Public actions lead to the single scheduled-booking path; consultants do not receive application login controls.
 - Wrap each marketplace portrait in the shared clipped frame so source-template margins never determine visible face placement.
 
 ## Verification

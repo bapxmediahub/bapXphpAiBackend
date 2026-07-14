@@ -58,11 +58,15 @@
       </header>
 
       <?php $articleImage = $meta['image'] ?? $meta['og_image'] ?? '/assets/images/hero-temple-bg.webp'; ?>
-      <figure class="blog-post__featured"><img src="<?= e($articleImage) ?>" alt="" loading="eager"></figure>
+      <figure class="blog-post__featured"><img src="<?= e($articleImage) ?>" alt="<?= e($meta['image_alt'] ?? '') ?>" loading="eager"></figure>
 
       <div class="blog-post__content">
         <?= $content ?>
       </div>
+      <?php $sourceUrl = trim((string)($meta['source_url'] ?? '')); $sourceScheme = parse_url($sourceUrl, PHP_URL_SCHEME); ?>
+      <?php if ($sourceUrl !== '' && ($sourceUrl[0] === '/' || in_array($sourceScheme, ['http', 'https'], true))): ?>
+      <p class="blog-post__source"><span>Related page</span><a href="<?= e($meta['source_url']) ?>">Open the page shown in this guide</a></p>
+      <?php endif; ?>
     </article>
 
     <aside class="blog-post__cta">

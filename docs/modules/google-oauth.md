@@ -21,8 +21,7 @@ Main files: `GoogleOAuthClient.php`, `AuthController.php`, `views/admin/integrat
 - Login uses sign-in scopes only (`openid email profile`), no Calendar/Meet permissions.
 - After authentication, users are redirected based on their role:
   - **admin** → `/admin`
-  - **astrologer** → `/astrologer` (or `/astrologer/change-password` if forced)
+  - Consultant profiles do not authenticate; central admin coordinates appointments.
   - **customer** → `/` (home)
 - New Google-authenticated users are upserted into `users.json` with role `customer`.
 - Existing users (matched by email) retain their previously assigned role.
-

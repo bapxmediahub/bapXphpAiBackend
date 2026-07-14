@@ -14,6 +14,7 @@ Owns the bapXphp project CLI entry point and all PHP helper scripts for project-
 - `refresh-blog-cache.php`: fetches and caches GitHub-sourced blog/documents.
 - `smoke-local.php`: starts a disposable local PHP server and checks key routes/API behavior.
 - `blog-read.php` / `blog-write.php`: CLI blog post read and interactive create/edit tools.
+- `blog-image.php`: center-crop a local screenshot/image to the shared 16:9 blog card/article WebP and update post frontmatter; supports `--dry-run`.
 - `doc-read.php` / `doc-write.php`: CLI customer help guide read and interactive create/edit tools.
 - `product-read.php` / `product-write.php`: CLI product read and interactive create/edit tools.
 - `import-product-images.php`: idempotent ZIP/folder gallery import, image optimization, and MySQL product media updates.
@@ -31,6 +32,7 @@ Owns the bapXphp project CLI entry point and all PHP helper scripts for project-
 - `bapXphp update` regenerates and validates both map artifacts; `bapXphp ci` validates without rewriting tracked files.
 - `bapXphp bloggen` runs `cli/refresh-blog-cache.php` to refresh GitHub-sourced blog cache.
 - Use `bapXphp read blog <slug>` and `bapXphp write blog [slug]` for all blog post operations.
+- Use `bapXphp blog:image <slug> <screenshot-or-image> --dry-run` before attaching UI screenshots; the non-dry run writes one shared card/article image.
 - Use `bapXphp read docs <slug>` and `bapXphp write docs [slug]` for customer help guide operations.
 - When a project task is not safely operable through `bapXphp`, extend the closest existing CLI concern first. New commands must support non-interactive agent use, work from the repo root on shared hosting, avoid embedded credentials/customer URLs, and provide `--dry-run` for bulk mutations.
 - Use `bapXphp product:images <archive.zip|folder> --dry-run` before importing product galleries; the importer orders front, back, then side images and updates both `image_url` and `image_urls`.

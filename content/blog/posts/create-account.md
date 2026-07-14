@@ -2,10 +2,13 @@
 title: Create and access your account
 slug: create-account
 category: help
-author: Sri Panchami Spiritual
 published: true
 published_at: 2026-07-14
 excerpt: Create an account with a default delivery address and stay signed in securely.
+author: Sri Panchami Spiritual
+og_image: /assets/images/blog/create-account.webp
+image_alt: Sri Panchami Spiritual account registration form
+source_url: /register
 ---
 
 ## Create your account

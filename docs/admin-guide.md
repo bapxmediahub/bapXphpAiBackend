@@ -1,5 +1,5 @@
 # Admin Guide
 
-Use the dashboard to manage products, categories, coupons, orders, astrologers, remote session requests, temples, shipping, integrations, backups, audit logs, and the developer project map.
+Use the dashboard to manage products, categories, coupons, orders, consultant profiles, scheduled appointment requests, temples, shipping, integrations, backups, audit logs, blog content, and the developer project map.
 
-Astrologer Login IDs shows each admin-created username and the common temporary password only while the astrologer must change it. Consultation Analytics derives session, acceptance, completion, message, duration, response, and credit metrics from JSON records.
+Consultants do not receive application login IDs. New appointment requests are emailed through configured SMTP to the central site mailbox and reviewed under Sessions. Consultation Analytics summarizes the admin-managed appointment lifecycle.

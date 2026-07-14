@@ -14,12 +14,11 @@ $__favicon = $__settings['favicon_url'] ?? '/assets/images/sps-favicon.svg';
 $__faviconMime = str_contains($__favicon,'.svg') ? 'image/svg+xml' : 'image/png';
 ?>
 <link rel="icon" type="<?= e($__faviconMime) ?>" href="<?= e($__favicon) ?>">
-<?php $__pwaPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/'; $__isAstrologer = str_starts_with($__pwaPath, '/astrologer'); ?>
-<link rel="manifest" href="<?= $__isAstrologer ? '/astrologer/manifest.json' : '/manifest.json' ?>">
+<link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3a0003">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="<?= $__isAstrologer ? 'SPS Consultant' : 'Sri Panchami Spiritual' ?>">
+<meta name="apple-mobile-web-app-title" content="Sri Panchami Spiritual">
 <link rel="apple-touch-icon" href="/assets/images/logo-square.jpeg">
 <link rel="canonical" href="https://<?= e($_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']) ?>">
 <meta property="og:type" content="<?= e($seo['og_type'] ?? 'website') ?>">
@@ -297,7 +296,6 @@ gtag('js', new Date());
     </button>
 <?php try { $__blogCats = (new \App\Services\BlogService())->categories(); } catch (\Throwable $e) { $__blogCats = []; } ?>
     <nav id="primary-nav">
-        <a href="/"<?= $currentPath === '/' ? ' aria-current="page"' : '' ?>>Home</a>
         <a href="/shop"<?= str_starts_with($currentPath, '/shop') ? ' aria-current="page"' : '' ?>>Shop</a>
         <a href="/consult"<?= str_starts_with($currentPath, '/consult') ? ' aria-current="page"' : '' ?>>Consult</a>
         <a href="/temples"<?= str_starts_with($currentPath, '/temples') ? ' aria-current="page"' : '' ?>>Temples</a>
@@ -314,11 +312,7 @@ gtag('js', new Date());
         <a href="/contact"<?= str_starts_with($currentPath, '/contact') ? ' aria-current="page"' : '' ?>>Contact</a>
         <a href="/blog/category/help"<?= $currentPath === '/blog/category/help' ? ' aria-current="page"' : '' ?>>Help</a>
         <?php if(!empty($_SESSION['user'])): ?>
-            <?php if(($_SESSION['user']['role'] ?? '') === 'astrologer'): ?>
-                <a href="/astrologer"<?= str_starts_with($currentPath, '/astrologer') ? ' aria-current="page"' : '' ?>>Dashboard</a>
-            <?php else: ?>
-                <a href="/account/dashboard"<?= str_starts_with($currentPath, '/account/dashboard') ? ' aria-current="page"' : '' ?>>Dashboard</a>
-            <?php endif; ?>
+            <a href="/account/dashboard"<?= str_starts_with($currentPath, '/account/dashboard') ? ' aria-current="page"' : '' ?>>Dashboard</a>
             <a href="/logout">Logout</a>
         <?php else: ?>
             <a href="/login">Login</a>
@@ -347,10 +341,6 @@ if ($__flash):
 <?php if (!in_array($currentPath, ['/login', '/register'])): ?>
 <nav class="bottom-nav" id="bottom-nav">
     <div class="nav-grid">
-        <a href="/" class="nav-item <?= ($_SERVER['REQUEST_URI'] === '/' ? 'active' : '') ?>">
-            <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            <span>Home</span>
-        </a>
         <a href="/shop" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/shop') === 0 ? 'active' : '') ?>">
             <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
             <span>Shop</span>
@@ -373,6 +363,13 @@ if ($__flash):
         </a>
     </div>
 </nav>
+<?php endif; ?>
+
+<?php if ($currentPath !== '/cart'): ?>
+<a href="/cart" class="mobile-cart-tray" id="mobile-cart-tray" <?= $cartCount > 0 ? '' : 'hidden' ?>>
+    <span><strong id="mobile-cart-count"><?= (int)$cartCount ?></strong> <span id="mobile-cart-label"><?= $cartCount === 1 ? 'item' : 'items' ?></span> in cart</span>
+    <span>View cart <span aria-hidden="true">→</span></span>
+</a>
 <?php endif; ?>
 
 <?php if (!in_array($currentPath, ['/login', '/register'])): ?>
@@ -445,8 +442,8 @@ if ($__flash):
 <?php endif; ?>
 <script>
 if ('serviceWorker' in navigator) {
-    var swPath = <?= json_encode($__isAstrologer ? '/astrologer/sw.js' : '/sw.js') ?>;
-    var swScope = <?= json_encode($__isAstrologer ? '/astrologer/' : '/') ?>;
+    var swPath = '/sw.js';
+    var swScope = '/';
     navigator.serviceWorker.register(swPath, { scope: swScope }).catch(function(){});
 }
 var installPrompt=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();installPrompt=e;document.getElementById('pwa-install-btn').style.display='flex';});window.addEventListener('appinstalled',function(){installPrompt=null;document.getElementById('pwa-install-btn').style.display='none';});document.addEventListener('click',function(e){if(e.target.closest('#pwa-install-btn')){if(!installPrompt)return;installPrompt.prompt();installPrompt.userChoice.then(function(){installPrompt=null;document.getElementById('pwa-install-btn').style.display='none';});}});
@@ -466,18 +463,19 @@ var io=new IntersectionObserver(function(entries){entries.forEach(function(e){if
 document.querySelectorAll('.reveal,.panel,.product-card,.astrologer-card').forEach(function(el){io.observe(el);});
 var supportFab=document.querySelector('.support-fab'),supportPanel=document.getElementById('support-panel'),supportClose=document.querySelector('.support-panel__close'),supportForm=document.getElementById('support-form'),supportLog=document.getElementById('support-log');
 function supportEscape(value){return String(value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c];});}
+function supportReplyHtml(value){var safe=supportEscape(value);var allowed=/\/(?:shop|cart|checkout|consult|temples|contact|blog(?:\/[a-z0-9-]+|\/category\/[a-z0-9-]+)?|product\/[a-z0-9-]+|account\/dashboard(?:\/orders|\/sessions)?)(?=$|[\s.,)])/g;return safe.replace(allowed,function(path){return '<a class="support-action" href="'+path+'">Open '+supportEscape(path.replace(/^\//,'').replace(/[-/]/g,' '))+'</a>';});}
 function supportToggle(open){if(!supportPanel||!supportFab)return;supportPanel.hidden=!open;supportFab.setAttribute('aria-expanded',open?'true':'false');}
 function supportSaveLog(){try{if(!supportPanel||!supportLog)return;sessionStorage.setItem(supportPanel.dataset.supportKey,supportLog.innerHTML);}catch(e){}}
 function supportLoadLog(){try{if(!supportPanel||!supportLog)return;var saved=sessionStorage.getItem(supportPanel.dataset.supportKey);if(saved){supportLog.innerHTML=saved;}}catch(e){}}
 if(supportFab&&supportPanel){supportLoadLog();
 supportFab.addEventListener('click',function(){supportToggle(supportPanel.hidden);});
 supportClose.addEventListener('click',function(){supportToggle(false);});}
-if(supportForm){supportForm.addEventListener('submit',async function(e){e.preventDefault();var data=new FormData(supportForm),msg=data.get('message');if(supportLog){supportLog.insertAdjacentHTML('beforeend','<p><strong>You:</strong> '+supportEscape(msg)+'</p>');}supportSaveLog();supportForm.reset();try{var r=await fetch('/support/ask',{method:'POST',body:data});var j=await r.json();if(supportLog){supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> '+supportEscape(j.reply||j.error||'Unable to answer right now.')+'</p>');}}catch(err){if(supportLog){supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> Unable to answer right now.</p>');}}supportSaveLog();if(supportLog){supportLog.scrollTop=supportLog.scrollHeight;}});}
+if(supportForm){supportForm.addEventListener('submit',async function(e){e.preventDefault();var data=new FormData(supportForm),msg=data.get('message');if(supportLog){supportLog.insertAdjacentHTML('beforeend','<p><strong>You:</strong> '+supportEscape(msg)+'</p>');}supportSaveLog();supportForm.reset();try{var r=await fetch('/support/ask',{method:'POST',body:data});var j=await r.json();if(supportLog){supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> '+supportReplyHtml(j.reply||j.error||'Unable to answer right now.')+'</p>');}}catch(err){if(supportLog){supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> Unable to answer right now.</p>');}}supportSaveLog();if(supportLog){supportLog.scrollTop=supportLog.scrollHeight;}});}
 function showToast(msg,type){type=type||'info';var c=document.getElementById('toast-container');if(!c){c=document.createElement('div');c.id='toast-container';document.body.appendChild(c);}var t=document.createElement('div');t.className='toast toast--'+type;var icons={success:'✓',error:'✕',warning:'⚠',info:'ℹ'};t.innerHTML='<span class="toast__icon">'+(icons[type]||'ℹ')+'</span><span class="toast__text">'+msg+'</span><button class="toast__close" aria-label="Dismiss">&times;</button>';t.querySelector('.toast__close').addEventListener('click',function(e){e.stopPropagation();dismiss(t);});t.addEventListener('click',function(){dismiss(t);});c.appendChild(t);var timer=setTimeout(function(){dismiss(t);},4000);function dismiss(el){if(el.classList.contains('toast--out'))return;el.classList.add('toast--out');clearTimeout(timer);setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},250);}}
 document.addEventListener('submit',async function(event){
     var form=event.target.closest('.product-card__stepper form');if(!form||!window.fetch)return;
     event.preventDefault();var button=form.querySelector('button');button.disabled=true;
-    try{var response=await fetch(form.getAttribute('action'),{method:'POST',body:new FormData(form),headers:{Accept:'application/json'}});var data=await response.json();if(!response.ok)throw new Error(data.error||'Unable to update cart.');var stepper=form.closest('.product-card__stepper'),value=stepper.querySelector('.qty-input__value'),minus=stepper.querySelector('form[action="/cart/update"] button'),badge=document.querySelector('.cart-count');value.textContent=data.quantity;if(minus)minus.disabled=data.quantity<=0;if(badge)badge.textContent=data.cart_count;}
+    try{var response=await fetch(form.getAttribute('action'),{method:'POST',body:new FormData(form),headers:{Accept:'application/json'}});var data=await response.json();if(!response.ok)throw new Error(data.error||'Unable to update cart.');var stepper=form.closest('.product-card__stepper'),value=stepper.querySelector('.qty-input__value'),minus=stepper.querySelector('form[action="/cart/update"] button'),badge=document.querySelector('.cart-count'),tray=document.getElementById('mobile-cart-tray'),trayCount=document.getElementById('mobile-cart-count'),trayLabel=document.getElementById('mobile-cart-label');value.textContent=data.quantity;if(minus)minus.disabled=data.quantity<=0;if(badge)badge.textContent=data.cart_count;if(tray){tray.hidden=data.cart_count<=0;if(trayCount)trayCount.textContent=data.cart_count;if(trayLabel)trayLabel.textContent=data.cart_count===1?'item':'items';}}
     catch(error){showToast(error.message,'error');}finally{button.disabled=form.getAttribute('action')==='/cart/update'&&Number(form.closest('.product-card__stepper').querySelector('.qty-input__value').textContent)<=0;}
 });
 </script>

@@ -2,10 +2,13 @@
 title: Book a consultant appointment
 slug: book-consultant
 category: help
-author: Sri Panchami Spiritual
 published: true
 published_at: 2026-07-14
 excerpt: Choose a consultant and request a preferred appointment date and time.
+author: Sri Panchami Spiritual
+og_image: /assets/images/blog/book-consultant.webp
+image_alt: Sri Panchami Spiritual consultant booking page
+source_url: /consult
 ---
 
 ## Request an appointment

@@ -37,7 +37,8 @@ final class SupportBotService {
         $prompt = "You are Sri Panchami Spiritual support bot.\n"
             . "Return only the final customer-facing answer. Do not include reasoning, analysis, markdown bullets, code, tool calls, or hidden thoughts.\n"
             . "Use only this JSON context for the signed-in customer and public site links. Never mention, infer, or access other users' data. If data is missing, ask the customer to use the contact form.\n"
-            . "Allowed help: product, cart, checkout, delivery address, order, and consultant booking details from the JSON.\n"
+            . "Allowed help: product, cart, checkout, delivery address, order, consultant booking, and navigation details from the JSON.\n"
+            . "When useful, include one exact internal path from site.pages or a matching product path. Never invent admin paths, external URLs, or claim that an action already happened.\n"
             . "Customer context JSON: "
             . json_encode($context, JSON_UNESCAPED_SLASHES)
             . "\nCustomer question: " . $message
