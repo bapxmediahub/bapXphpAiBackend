@@ -208,7 +208,7 @@ final class AdminController extends BaseController {
     // public function environment(): void{$this->render('admin/environment',['pageTitle'=>'Environment','envRaw'=>(new EnvService())->raw(),'permissions'=>(new StoragePermissionService())->status()]);}
     // public function saveEnvironment(): void{(new EnvService())->saveRaw((string)($_POST['env_raw'] ?? '')); (new AuditLogService())->record('save','environment','.env',['keys'=>array_keys(EnvService::readFile(app_path('.env')))]); $this->flash('Environment saved.','success'); $this->redirect('/admin/environment');}
     public function fixPermissions(): void{(new StoragePermissionService())->fix(); (new AuditLogService())->record('fix','permissions','storage'); $this->flash('Storage permissions checked and updated where PHP is allowed.','success'); $this->redirect('/admin/environment');}
-    public function projectMap(): void{$this->render('admin/project-map',['pageTitle' => 'Project Map', 'map'=>\App\Services\ProjectMapService::registry(),'validation'=>\App\Services\ProjectMapService::validate(\App\Services\ProjectMapService::registry())]);}
+    public function projectMap(): void{$map = \App\Services\ProjectMapService::scan(); $this->render('admin/project-map',['pageTitle' => 'Project Map', 'map'=>$map,'validation'=>\App\Services\ProjectMapService::validate($map)]);}
     public function workflow(): void{
         $agentRoot = app_path('.agents');
         $skills = [];

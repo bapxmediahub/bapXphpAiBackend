@@ -14,7 +14,7 @@ flowchart LR
     arch_views["> Views: 49"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 21"]:::arch
-    arch_gaps["> Gaps: 0"]:::arch
+    arch_gaps["> Gaps: 1"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -321,7 +321,7 @@ flowchart LR
   end
 
   subgraph GAPS["Gaps & Missing Links"]
-    no_gaps["No detected gaps"]:::data
+    gap_1bdf398660["unwired_schema_collections: media_files"]:::gap
   end
 
   route_get --> controller_publiccontroller
@@ -791,19 +791,39 @@ flowchart LR
   tool_import_product_images --> service_imageoptimizerservice
   tool_import_product_images --> service_databaseservice
   tool_import_product_images --> collection_products
+  service_addressservice --> collection_addresses
+  service_agentcontextservice --> collection_settings
+  service_agentcontextservice --> collection_products
   service_agentcontextservice --> collection_users
   service_agentcontextservice --> collection_orders
   service_agentcontextservice --> collection_appointments
   service_agentcontextservice --> collection_support_tickets
   service_appointmentservice --> collection_appointments
   service_astrologerservice --> collection_astrologers
+  service_auditlogservice --> collection_audit_events
+  service_categoryservice --> collection_categories
   service_consultationservice --> collection_appointments
   service_consultationservice --> collection_consultation_messages
   service_consultationservice --> collection_consultation_signals
-  service_auditlogservice --> collection_audit_events
-  service_categoryservice --> collection_categories
   service_contactservice --> collection_contact_submissions
   service_couponservice --> collection_coupons
+  service_mailqueueservice --> collection_mail_queue
+  service_mailstorageservice --> collection_mail_inbox
+  service_mailstorageservice --> collection_mail_outbox
+  service_orderservice --> collection_orders
+  service_passwordresetservice --> collection_users
+  service_productservice --> collection_products
+  service_reviewservice --> collection_reviews
+  service_reviewservice --> collection_appointments
+  service_reviewservice --> collection_orders
+  service_settingsservice --> collection_settings
+  service_supportticketservice --> collection_support_tickets
+  service_templeservice --> collection_temples
+  service_resourceservice --> collection_products
+  service_resourceservice --> collection_orders
+  service_resourceservice --> collection_appointments
+  service_resourceservice --> collection_categories
+  service_resourceservice --> collection_astrologers
   service_databaseservice --> collection_users
   service_databaseservice --> collection_addresses
   service_databaseservice --> collection_products
@@ -815,21 +835,6 @@ flowchart LR
   service_databaseservice --> collection_mail_inbox
   service_databaseservice --> collection_mail_outbox
   service_databaseservice --> collection_contact_submissions
-  service_mailqueueservice --> collection_mail_queue
-  service_mediaservice --> collection_media_files
-  service_orderservice --> collection_orders
-  service_productservice --> collection_products
-  service_resourceservice --> collection_products
-  service_resourceservice --> collection_categories
-  service_resourceservice --> collection_coupons
-  service_resourceservice --> collection_astrologers
-  service_resourceservice --> collection_temples
-  service_reviewservice --> collection_reviews
-  service_secretservice --> collection_secrets
-  service_settingsservice --> collection_settings
-  service_supportbotservice --> collection_support_tickets
-  service_supportticketservice --> collection_support_tickets
-  service_templeservice --> collection_temples
   service_paymentservice --> integration_razorpayclient
   service_paymentservice --> integration_stripeclient
   controller_authcontroller --> integration_googleoauthclient
@@ -845,3 +850,4 @@ flowchart LR
   tool_validate_project_map --> systematic_map
   tool_smoke_local --> ROUTES_PUBLIC
   tool_smoke_local --> ROUTES_ADMIN
+  gap_1bdf398660 -. missing .-> collection_media_files

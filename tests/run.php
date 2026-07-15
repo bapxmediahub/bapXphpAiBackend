@@ -55,7 +55,7 @@ $tests['payment signature verification matches Razorpay format'] = function (): 
 };
 
 $tests['project map registry has no missing route mappings'] = function (): void {
-    $map = ProjectMapService::registry();
+    $map = ProjectMapService::scan();
     $validation = ProjectMapService::validate($map);
     assertSame([], $validation['missing_route_mappings'], 'Routes should map to controllers');
     assertSame([], $validation['missing_services'], 'Routes should reference declared services');
@@ -494,7 +494,7 @@ $tests['admin list and order detail pages render real data surfaces instead of p
 $tests['consultations use direct platform sessions without google meet or calendar'] = function (): void {
     $consultController = file_get_contents(app_path('app/Controllers/ConsultationController.php'));
     $oauth = file_get_contents(app_path('integrations/google-oauth/GoogleOAuthClient.php'));
-    $map = ProjectMapService::registry();
+    $map = ProjectMapService::scan();
     $services = array_unique(array_merge(...array_map(fn($route) => $route['services'], $map['routes'])));
     assertTrue(!str_contains($consultController, 'meet.google.com'), 'Consultations should not generate Google Meet links');
     assertTrue(!str_contains($oauth, 'calendar.events'), 'Google login should not request Calendar permissions');
