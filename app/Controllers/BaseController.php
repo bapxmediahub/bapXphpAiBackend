@@ -7,7 +7,7 @@ abstract class BaseController {
     protected string $seoKey = 'home';
     protected array $seoOverrides = [];
     
-    protected function redirect(string $path): never { header('Location: ' . $path); exit; }
+    protected function redirect(string $path): never { session_write_close(); header('Location: ' . $path); exit; }
     protected function flash(string $message, string $type = 'info'): void { $_SESSION['flash'] = ['message' => $message, 'type' => $type]; }
 
     protected function validateCsrf(): void {
