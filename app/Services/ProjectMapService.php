@@ -39,6 +39,7 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/account/dashboard','name'=>'account.dashboard','page'=>'account/orders','controller'=>'AccountController@dashboard','services'=>['AuthService']],
             ['method'=>'GET','path'=>'/account/dashboard/orders','name'=>'account.dashboard.orders','page'=>'account/orders','controller'=>'AccountController@orders','services'=>['AuthService','OrderService','ReviewService']],
             ['method'=>'GET','path'=>'/account/dashboard/sessions','name'=>'account.dashboard.sessions','page'=>'account/bookings','controller'=>'AccountController@bookings','services'=>['AuthService','AppointmentService']],
+            ['method'=>'GET','path'=>'/account/dashboard/install','name'=>'account.dashboard.install','page'=>'account/install','controller'=>'AccountController@install','services'=>['AuthService']],
             ['method'=>'GET','path'=>'/account/orders','name'=>'account.orders.legacy','page'=>'account/orders','controller'=>'AccountController@legacyOrders','services'=>['AuthService']],
             ['method'=>'GET','path'=>'/account/bookings','name'=>'account.bookings.legacy','page'=>'account/bookings','controller'=>'AccountController@legacyBookings','services'=>['AuthService']],
             ['method'=>'POST','path'=>'/api/consultations/{id}/status','name'=>'api.consultation.status','page'=>'admin/list','controller'=>'ConsultationController@status','services'=>['AuthService','ConsultationService']],

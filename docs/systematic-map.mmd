@@ -7,11 +7,11 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 96 routes, 11 controllers, 38 services, 43 views, 0 data files, 19 tools"]
-    arch_routes["> Routes: 96 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 97 routes, 11 controllers, 38 services, 44 views, 0 data files, 19 tools"]
+    arch_routes["> Routes: 97 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 11"]:::arch
     arch_svc["> Services: 38"]:::arch
-    arch_views["> Views: 43"]:::arch
+    arch_views["> Views: 44"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 19"]:::arch
     arch_gaps["> Gaps: 0"]:::arch
@@ -38,6 +38,7 @@ flowchart LR
     route_6ce84be0a21c["GET /account/dashboard — Account dashboard entry — redirects to orders"]:::route
     route_b2c44d359fd8["GET /account/dashboard/orders — My Orders — product reviews"]:::route
     route_53bc246f9b4e["GET /account/dashboard/sessions — My Sessions — astrologer bookings"]:::route
+    route_8136f5b45613["GET /account/dashboard/install"]:::route
     route_6e1b2c8ad9df["GET /account/orders — Legacy account orders redirect"]:::route
     route_05bd7a95e13b["GET /account/bookings — Legacy account sessions redirect"]:::route
     route_f8d4769e9808["POST /api/consultations/{id}/status — API — update appointment status"]:::route
@@ -195,6 +196,7 @@ flowchart LR
   subgraph VIEWS["Views"]
     view_17326c025c30["account/_nav"]:::code
     view_bde0b7fa75a6["account/bookings"]:::code
+    view_e106de188447["account/install"]:::code
     view_8bf2f1da4f90["account/orders"]:::code
     view_17900ac53325["admin/appearance"]:::code
     view_c08844df74a9["admin/astrologer-form"]:::code
@@ -395,6 +397,9 @@ flowchart LR
   controller_9968163fcd32 --> service_f33a1d77b137
   controller_9968163fcd32 --> service_717a4830bf0e
   controller_9968163fcd32 -. renders .-> view_bde0b7fa75a6
+  route_8136f5b45613 --> controller_9968163fcd32
+  controller_9968163fcd32 --> service_f33a1d77b137
+  controller_9968163fcd32 -. renders .-> view_e106de188447
   route_6e1b2c8ad9df --> controller_9968163fcd32
   controller_9968163fcd32 --> service_f33a1d77b137
   controller_9968163fcd32 -. renders .-> view_8bf2f1da4f90

@@ -1802,6 +1802,20 @@ nav a:hover { color: var(--color-maroon); }
 .account-nav a:hover, .account-nav a.active { background: var(--color-bg-alt); color: var(--color-maroon); }
 .account-content { background: var(--color-white); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-xl); }
 .account-content h1 { font-family: var(--font-serif); font-size: 1.5rem; margin: 0 0 var(--space-lg); }
+.account-install-section { padding-top: var(--space-xl); }
+.account-install__header { max-width: 720px; margin-bottom: var(--space-xl); }
+.account-install__header h1 { margin: var(--space-2xs) 0 var(--space-sm); }
+.account-install__header p { margin: 0; color: var(--color-text-muted); line-height: 1.65; }
+.account-install__status { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: var(--space-md); padding: var(--space-lg) 0; border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); }
+.account-install__status-icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: var(--color-bg-alt); color: var(--color-maroon); font-size: 1.3rem; font-weight: 700; }
+.account-install__status strong { display: block; margin-bottom: var(--space-2xs); color: var(--color-ink); }
+.account-install__status p { margin: 0; color: var(--color-text-muted); line-height: 1.5; }
+.account-install__instructions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--space-2xl); padding: var(--space-xl) 0; }
+.account-install__instructions section + section { padding-left: var(--space-2xl); border-left: 1px solid var(--color-border); }
+.account-install__instructions h2 { margin: 0 0 var(--space-sm); font-size: 1rem; }
+.account-install__instructions ol { margin: 0; padding-left: 1.25rem; color: var(--color-text-muted); }
+.account-install__instructions li { margin-bottom: var(--space-sm); line-height: 1.55; }
+.account-install__note { margin: 0; padding-top: var(--space-md); border-top: 1px solid var(--color-border); color: var(--color-text-muted); font-size: .88rem; line-height: 1.6; }
 .account-wallet-strip {
     display: flex;
     align-items: center;
@@ -3382,6 +3396,10 @@ body { background: var(--color-bg); }
         height: 44px;
         z-index: 101;
     }
+    .account-install__status { grid-template-columns: auto minmax(0,1fr); }
+    .account-install__status .btn { grid-column: 1 / -1; width: 100%; }
+    .account-install__instructions { grid-template-columns: 1fr; gap: var(--space-lg); }
+    .account-install__instructions section + section { padding: var(--space-lg) 0 0; border-top: 1px solid var(--color-border); border-left: 0; }
 }
 .pwa-install-btn {
     display: none;

@@ -445,7 +445,6 @@ if ('serviceWorker' in navigator) {
     var swScope = '/';
     navigator.serviceWorker.register(swPath, { scope: swScope }).catch(function(){});
 }
-var installPrompt=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();installPrompt=e;document.getElementById('pwa-install-btn').style.display='flex';});window.addEventListener('appinstalled',function(){installPrompt=null;document.getElementById('pwa-install-btn').style.display='none';});document.addEventListener('click',function(e){if(e.target.closest('#pwa-install-btn')){if(!installPrompt)return;installPrompt.prompt();installPrompt.userChoice.then(function(){installPrompt=null;document.getElementById('pwa-install-btn').style.display='none';});}});
 document.getElementById('site-header').querySelector('.menu-toggle').addEventListener('click',function(){
     var n=document.getElementById('primary-nav');n.classList.toggle('open');
     this.setAttribute('aria-expanded',n.classList.contains('open')?'true':'false');
@@ -462,7 +461,7 @@ var io=new IntersectionObserver(function(entries){entries.forEach(function(e){if
 document.querySelectorAll('.reveal,.panel,.product-card,.astrologer-card').forEach(function(el){io.observe(el);});
 var supportFab=document.querySelector('.support-fab'),supportPanel=document.getElementById('support-panel'),supportClose=document.querySelector('.support-panel__close'),supportForm=document.getElementById('support-form'),supportLog=document.getElementById('support-log');
 function supportEscape(value){return String(value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c];});}
-function supportReplyHtml(value){var safe=supportEscape(value);var allowed=/\/(?:shop|cart|checkout|consult|temples|contact|blog(?:\/[a-z0-9-]+|\/category\/[a-z0-9-]+)?|product\/[a-z0-9-]+|account\/dashboard(?:\/orders|\/sessions)?)(?=$|[\s.,)])/g;return safe.replace(allowed,function(path){return '<a class="support-action" href="'+path+'">Open '+supportEscape(path.replace(/^\//,'').replace(/[-/]/g,' '))+'</a>';});}
+function supportReplyHtml(value){var safe=supportEscape(value);var allowed=/\/(?:shop|cart|checkout|consult|temples|contact|blog(?:\/[a-z0-9-]+|\/category\/[a-z0-9-]+)?|product\/[a-z0-9-]+|account\/dashboard(?:\/orders|\/sessions|\/install)?)(?=$|[\s.,)])/g;return safe.replace(allowed,function(path){return '<a class="support-action" href="'+path+'">Open '+supportEscape(path.replace(/^\//,'').replace(/[-/]/g,' '))+'</a>';});}
 function supportToggle(open){if(!supportPanel||!supportFab)return;supportPanel.hidden=!open;supportFab.setAttribute('aria-expanded',open?'true':'false');}
 function supportSaveLog(){try{if(!supportPanel||!supportLog)return;sessionStorage.setItem(supportPanel.dataset.supportKey,supportLog.innerHTML);}catch(e){}}
 function supportLoadLog(){try{if(!supportPanel||!supportLog)return;var saved=sessionStorage.getItem(supportPanel.dataset.supportKey);if(saved){supportLog.innerHTML=saved;}}catch(e){}}
@@ -479,9 +478,5 @@ document.addEventListener('submit',async function(event){
 });
 </script>
 <div id="toast-container" role="alert" aria-live="polite"></div>
-<button id="pwa-install-btn" class="pwa-install-btn">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-    Install App
-</button>
 </body>
 </html>

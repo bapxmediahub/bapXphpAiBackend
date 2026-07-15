@@ -261,6 +261,21 @@ $tests['public service worker does not cache dynamic commerce pages first'] = fu
     assertTrue(str_contains($sw, "css|js|webp|png|jpg|jpeg|svg|ico|woff2?"), 'Public service worker should only runtime-cache static assets');
 };
 
+$tests['customer installation is an account menu workflow'] = function (): void {
+    $routes = ProjectMapService::registry()['routes'];
+    $installRoute = array_values(array_filter($routes, fn($route) => $route['path'] === '/account/dashboard/install'));
+    assertSame(1, count($installRoute), 'Account installation route should be registered once');
+    assertTrue(in_array('AuthService', $installRoute[0]['services'], true), 'Account installation route should require authentication');
+    $nav = file_get_contents(app_path('views/account/_nav.php'));
+    $page = file_get_contents(app_path('views/account/install.php'));
+    $layout = file_get_contents(app_path('views/layouts/app.php'));
+    assertTrue(str_contains($nav, '/account/dashboard/install') && str_contains($nav, 'Install App'), 'Account navigation should expose installation');
+    foreach (['beforeinstallprompt', 'appinstalled', 'display-mode: standalone', 'Add to Home Screen', 'pwa-install-action'] as $needle) {
+        assertTrue(str_contains($page, $needle), "Installation page should include {$needle}");
+    }
+    assertTrue(!str_contains($layout, 'id="pwa-install-btn"') && !str_contains($layout, "closest('#pwa-install-btn')"), 'Public layout should not render or control a floating install button');
+};
+
 $tests['public registration never bootstraps admin on a live site'] = function (): void {
     $controller = file_get_contents(app_path('app/Controllers/AuthController.php'));
     assertTrue(!str_contains($controller, 'count($users) === 0 ? \'admin\' : \'customer\''), 'Public registration should not make the first user an admin on a live site');
