@@ -3,18 +3,18 @@
     <p style="margin:0 0 var(--space-lg); color:var(--color-text-muted); font-size:0.9rem;">
         Ask questions about your site — users, orders, revenue, products, consultations.
         Configure the AI model in <a href="/admin/integrations">Integrations</a>
-        (keys: <code>google_api_key</code>, <code>model</code>).
+        (keys: <code>api_endpoint</code>, <code>api_key</code>, <code>model</code>).
     </p>
     <?php if (empty($modelConfig['api_key'])): ?>
         <div style="background:var(--color-warning-bg, #fff3cd); border:1px solid var(--color-warning-border, #ffc107); border-radius:var(--radius-md); padding:var(--space-md); margin-bottom:var(--space-lg);">
             <strong>AI model not configured.</strong>
-            Go to <a href="/admin/integrations">Admin → Integrations</a> and save the AI model secrets first.
+            Go to <a href="/admin/integrations">Admin → Integrations</a> and set endpoint, api_key, and model first.
         </div>
     <?php endif; ?>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md); margin-bottom:var(--space-lg);">
         <div style="background:var(--color-bg-alt); padding:var(--space-md); border-radius:var(--radius-md);">
             <small style="color:var(--color-text-muted);">Model</small>
-            <div style="font-weight:600;"><?= e($modelConfig['provider'] ?? 'google') ?> / <?= e($modelConfig['model'] ?? 'gemini-2.5-flash') ?></div>
+            <div style="font-weight:600;"><?= e($modelConfig['model'] ?? 'gpt-4o') ?></div>
         </div>
         <div style="background:var(--color-bg-alt); padding:var(--space-md); border-radius:var(--radius-md);">
             <small style="color:var(--color-text-muted);">Endpoint</small>

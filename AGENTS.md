@@ -184,12 +184,13 @@ This standardizes attachment handling across all agent types. Always check `.age
 
 ## Model Routing (from Admin Panel)
 
-Sub-agents should use the most cost-effective AI model for their task. Model config is stored in the `secrets` table under `google_api_key` and `model`, editable via Admin → Integrations. Provider is auto-detected from model name.
+Sub-agents should use the most cost-effective AI model for their task. Model config is stored in the `secrets` table under `api_endpoint`, `api_key`, and `model`, editable via Admin → Integrations. Provider is auto-detected from endpoint URL.
 
-| DB Column | Purpose | Current Value |
-|-----------|---------|--------------|
-| `google_api_key` | API key for AI provider | Set in Admin |
-| `model` | Model ID (e.g. `gemma-4-31b-it`) | Set in Admin |
+| DB Column | Purpose | Example |
+|-----------|---------|---------|
+| `api_endpoint` | OpenAI-compatible base URL | `https://api.openai.com/v1` |
+| `api_key` | API key | Set in Admin |
+| `model` | Model ID | `gpt-4o`, `gemini-2.5-flash`, `claude-sonnet-4-20250514` |
 
 Read via `SecretService::getModelConfig()` at runtime. Never hardcode model names or API keys.
 

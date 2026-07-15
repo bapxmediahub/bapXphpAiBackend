@@ -51,18 +51,26 @@
         </div>
         <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Only sign-in permissions are used. Calendar and Google Meet are not used for this platform.</p>
 
-        <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">Support Bot</h2>
+        <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">AI Model (Maya + Support Bot)</h2>
         <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">
-            Configure the Google AI API for a helper bot that can guide customers to products, explain how to use products, help add items to cart, or suggest booking a text or direct call session with an astrologer.
-            <a href="https://ai.google.dev/gemini-api/docs/api-key" target="_blank" rel="noopener">Google AI API key guide</a>
+            Configure an OpenAI-compatible API for Maya and the support bot. Works with OpenAI, OpenRouter, Google Gemini (via API), or any OpenAI-compatible provider.
+            Set the base URL, API key, and model ID.
         </p>
         <div class="admin-form__row">
-            <label>Google API Key<input name="support_bot_google_api_key" value="<?= e($secrets['support_bot_google_api_key']??'') ?>" placeholder="AIza..."></label>
-            <label>Model<input name="support_bot_model" value="<?= e($secrets['support_bot_model']??'gemini-2.0-flash') ?>" placeholder="gemini-2.0-flash"></label>
+            <label>API Endpoint (base URL)<input name="api_endpoint" value="<?= e($secrets['api_endpoint']??'') ?>" placeholder="https://api.openai.com/v1"></label>
+            <label>Model<input name="model" value="<?= e($secrets['model']??$secrets['support_bot_model']??'gpt-4o') ?>" placeholder="gpt-4o, claude-sonnet-4-20250514, gemini-2.5-flash"></label>
         </div>
+        <div class="admin-form__row">
+            <label>API Key<input type="password" name="api_key" value="<?= e($secrets['api_key']??$secrets['google_api_key']??$secrets['support_bot_google_api_key']??'') ?>" placeholder="sk-... or AIza..." autocomplete="new-password"></label>
+        </div>
+        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.85rem;">
+            OpenRouter example: endpoint <code>https://openrouter.ai/api/v1</code>, model <code>gpt-4o</code>.
+            OpenAI: endpoint <code>https://api.openai.com/v1</code>, model <code>gpt-4o</code>.
+            Google: endpoint <code>https://generativelanguage.googleapis.com/v1beta/models/</code>, model <code>gemini-2.5-flash</code>.
+        </p>
         <input type="hidden" name="support_bot_purge_policy" value="always_purge">
-        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">The app builds the endpoint automatically from the model: <code>https://generativelanguage.googleapis.com/v1beta/models/<?= e($secrets['support_bot_model']??'gemini-2.0-flash') ?>:generateContent</code>. Google documents API-key authentication with the <code>x-goog-api-key</code> header. Free API access is subject to Google account, region, model, and rate-limit rules; it should not be treated as unlimited.</p>
-        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Privacy mode: <strong>always_purge</strong>. Bot task data and conversation scratch data should be deleted after the support task finishes.</p>
+        <input type="hidden" name="support_bot_model" value="<?= e($secrets['support_bot_model']??'') ?>">
+        <input type="hidden" name="support_bot_google_api_key" value="<?= e($secrets['support_bot_google_api_key']??'') ?>">
 
         <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">WebRTC TURN Server</h2>
         <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">

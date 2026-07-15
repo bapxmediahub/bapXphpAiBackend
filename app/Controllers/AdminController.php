@@ -91,36 +91,40 @@ final class AdminController extends BaseController {
         }
     }
     private function callAiApi(array $config, string $message, string $context): string {
-        $provider = $config['provider'] ?? 'google';
-        $model = $config['model'] ?? 'gemini-2.5-flash';
-        $endpoint = $config['endpoint'] ?? 'https://generativelanguage.googleapis.com/v1beta/models/';
-        $key = $config['api_key'] ?? '';
-        $prompt = "You are Maya, the AI assistant for Sri Panchami Spiritual. Answer concisely.\n\n{$context}\n\nQuestion: {$message}\n\nAnswer concisely in Markdown.";
-        if ($provider === 'google' || str_contains($endpoint, 'googleapis')) {
-            $url = rtrim($endpoint, '/') . '/' . rawurlencode($model) . ':generateContent';
+        $endpoint = rtrim($config['endpoint'] ?? 'https://api.openai.com/v1', '/');
+        $model = $config['model'] ?? 'gpt-4o';
+        $key = $config['apiKey'] ?? '';
+        $provider = $config['provider'] ?? 'openai';
+        $prompt = "You are Maya, the AI assistant for Sri Panchami Spiritual. Answer concisely in Markdown.\n\n{$context}\n\nQuestion: {$message}";
+        if ($provider === 'google') {
+            $url = $endpoint . '/' . rawurlencode($model) . ':generateContent';
             $payload = json_encode(['contents'=>[['parts'=>[['text'=>$prompt]]]],'generationConfig'=>['temperature'=>0.3,'maxOutputTokens'=>1024]]);
             $ch = curl_init($url);
             curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_POST=>true, CURLOPT_HTTPHEADER=>['Content-Type: application/json', 'x-goog-api-key: '.$key], CURLOPT_POSTFIELDS=>$payload, CURLOPT_TIMEOUT=>30, CURLOPT_CONNECTTIMEOUT=>10]);
             $body = curl_exec($ch);
             $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
-            if ($status !== 200 || $body === false) return "API error (HTTP {$status}). Check your model config in Admin → Integrations.";
+            if ($status !== 200 || $body === false) return "API error (HTTP {$status}). Check model config.";
             $result = json_decode($body, true);
-            return $result['candidates'][0]['content']['parts'][0]['text'] ?? 'No response from model.';
+            return $result['candidates'][0]['content']['parts'][0]['text'] ?? 'No response.';
         }
-        if ($provider === 'openai' || $provider === 'anthropic') {
-            $url = rtrim($endpoint, '/') . '/chat/completions';
-            $payload = json_encode(['model'=>$model,'messages'=>[['role'=>'system','content'=>$context],['role'=>'user','content'=>$message]],'max_tokens'=>1024]);
-            $ch = curl_init($url);
-            curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_POST=>true, CURLOPT_HTTPHEADER=>['Content-Type: application/json', 'Authorization: Bearer '.$key], CURLOPT_POSTFIELDS=>$payload, CURLOPT_TIMEOUT=>30, CURLOPT_CONNECTTIMEOUT=>10]);
-            $body = curl_exec($ch);
-            $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-            if ($status !== 200 || $body === false) return "API error (HTTP {$status}). Check your model config in Admin → Integrations.";
-            $result = json_decode($body, true);
-            return $result['choices'][0]['message']['content'] ?? 'No response from model.';
+        $url = $endpoint . '/chat/completions';
+        $payload = json_encode(['model'=>$model,'messages'=>[['role'=>'system','content'=>$context],['role'=>'user','content'=>$message]],'max_tokens'=>1024]);
+        $ch = curl_init($url);
+        $headers = ['Content-Type: application/json'];
+        if ($provider === 'anthropic') {
+            $headers[] = 'x-api-key: ' . $key;
+            $headers[] = 'anthropic-version: 2023-06-01';
+        } else {
+            $headers[] = 'Authorization: Bearer ' . $key;
         }
-        return "Provider '{$provider}' not yet supported. Use 'google', 'openai', or 'anthropic'.";
+        curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_POST=>true, CURLOPT_HTTPHEADER=>$headers, CURLOPT_POSTFIELDS=>$payload, CURLOPT_TIMEOUT=>30, CURLOPT_CONNECTTIMEOUT=>10]);
+        $body = curl_exec($ch);
+        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        if ($status !== 200 || $body === false) return "API error (HTTP {$status}). Check endpoint/key/model in Admin → Integrations.";
+        $result = json_decode($body, true);
+        return $result['choices'][0]['message']['content'] ?? 'No response.';
     }
     public function appearance(): void{
         $s=(new SettingsService())->public();
