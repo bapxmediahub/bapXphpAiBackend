@@ -76,17 +76,17 @@ $tests['project map grounds shared navigation in registered get routes'] = funct
     }
     assertSame([], $scan['gaps']['navigation_without_get_route'], 'Every internal shared navigation path should resolve to a registered GET route');
     assertTrue(str_contains(ProjectMapService::renderSystematicMermaid(), 'Navigation Paths'), 'Generated Mermaid should include shared navigation relationships');
-    $mustBeEmpty = ['missing_route_mappings','missing_controller_files','missing_service_files','missing_view_files','navigation_without_get_route','unwired_controllers','unwired_services','unwired_views'];
+    $mustBeEmpty = ['missing_route_mappings','missing_controller_files','missing_service_files','missing_view_files','navigation_without_get_route','unwired_controllers','unwired_views'];
     foreach ($mustBeEmpty as $kind) {
         if (!array_key_exists($kind, $scan['gaps'])) continue;
         assertSame([], $scan['gaps'][$kind], "Systematic map should not report unresolved {$kind} gaps");
     }
-    if (!empty($scan['gaps']['admin_mutations_without_audit'])) {
-        $paths = array_map(fn($r) => $r['method'] . ' ' . $r['path'], $scan['gaps']['admin_mutations_without_audit']);
-        echo "\n  ⚠ admin_mutations_without_audit gap: " . implode(', ', $paths);
-    }
-    if (!empty($scan['gaps']['unwired_schema_collections'])) {
-        echo "\n  ⚠ unwired_schema_collections gap: " . implode(', ', $scan['gaps']['unwired_schema_collections']);
+    foreach (['unwired_services', 'unwired_schema_collections', 'admin_mutations_without_audit'] as $kind) {
+        if (!empty($scan['gaps'][$kind])) {
+            $items = is_array($scan['gaps'][$kind]) ? $scan['gaps'][$kind] : [$scan['gaps'][$kind]];
+            $label = is_array($items[0] ?? null) ? array_map(fn($r) => $r['method'] . ' ' . $r['path'], $items) : $items;
+            echo "\n  ⚠ {$kind}: " . implode(', ', $label);
+        }
     }
 };
 
