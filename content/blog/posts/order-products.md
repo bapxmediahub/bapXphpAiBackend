@@ -1,4 +1,5 @@
 ---
+type: blog
 title: Order products and choose a delivery address
 slug: order-products
 category: help
@@ -12,7 +13,6 @@ og_image: /assets/images/blog/order-products.webp
 image_alt: Sri Panchami Spiritual product shop
 source_url: /shop
 ---
-
 ## Add products
 
 Open **Shop**, use the plus and minus controls to set quantities, then open the cart. Reducing an item to zero removes it.

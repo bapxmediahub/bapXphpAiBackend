@@ -1,4 +1,5 @@
 ---
+type: blog
 title: Major Planetary Transits of 2026 — Effects on Each Rashi
 slug: planetary-transit-effects-2026
 category: astrology
@@ -10,7 +11,6 @@ seo_title: Major Planetary Transits 2026 — Effects on All 12 Rashis | Sri Panc
 seo_description: Complete guide to major planetary transits of 2026. Learn how Saturn in Pisces, Jupiter in Taurus, and other key transits affect your career, finances, relationships, and health.
 og_image: https://sripanchamispiritual.com/assets/images/blog/planetary-transits-2026.jpg
 ---
-
 Planetary transits are the movement of planets through the zodiac signs in real time. Unlike your birth chart which is fixed, transits show the current cosmic weather affecting everyone. 2026 brings several significant transits that will shape global and personal events.
 
 ## Key Transits of 2026

@@ -1,4 +1,5 @@
 ---
+type: blog
 title: Vedic Astrology vs Western Astrology — Key Differences Explained
 slug: vedic-astrology-vs-western-astrology
 category: astrology
@@ -10,7 +11,6 @@ seo_title: Vedic Astrology vs Western Astrology — Key Differences | Sri Pancha
 seo_description: Understand the key differences between Vedic and Western astrology systems. Learn about sidereal vs tropical zodiacs, birth chart interpretation, and which approach is right for you.
 og_image: https://sripanchamispiritual.com/assets/images/blog/vedic-vs-western.jpg
 ---
-
 Astrology has guided humanity for millennia, but not all astrology is the same. Two major systems dominate the global landscape: **Vedic Astrology (Jyotish)** and **Western Astrology**. While both study planetary influences on human life, their methods, philosophies, and calculations differ significantly.
 
 ## The Zodiac: Sidereal vs Tropical

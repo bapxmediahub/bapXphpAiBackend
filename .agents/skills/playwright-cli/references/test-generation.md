@@ -1,3 +1,8 @@
+---
+type: doc
+title: Test Generation
+---
+
 # Test Generation
 
 Generate Playwright test code automatically as you interact with the browser.

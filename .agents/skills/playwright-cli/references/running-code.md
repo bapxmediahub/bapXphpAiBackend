@@ -1,3 +1,8 @@
+---
+type: doc
+title: Running Code
+---
+
 # Running Custom Playwright Code
 
 Use `run-code` to execute arbitrary Playwright code for advanced scenarios not covered by CLI commands.

@@ -1,4 +1,5 @@
 ---
+type: blog
 title: Daily Rashifal — July 2026 Horoscope Predictions for All 12 Rashis
 slug: daily-rashifal-predictions-july-2026
 category: astrology
@@ -10,7 +11,6 @@ seo_title: Daily Rashifal July 2026 — Horoscope Predictions for All 12 Rashis 
 seo_description: July 2026 Rashifal predictions for all 12 Moon signs. Get daily Vedic astrology horoscope readings for career, love, health, and finances based on current planetary transits.
 og_image: https://sripanchamispiritual.com/assets/images/blog/rashifal-july-2026.jpg
 ---
-
 Welcome to your **July 2026 Rashifal** — Vedic astrology predictions for all 12 Moon signs based on current planetary transits. The celestial movements this month bring significant shifts, especially with Jupiter's continued transit through Taurus and Saturn's influence on the water signs.
 
 ## How to Read Your Rashifal

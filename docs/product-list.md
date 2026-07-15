@@ -1,9 +1,9 @@
 ---
+type: doc
 title: Product List
 description: This catalog is based on the product details supplied for the ecommerce store.
 category: docs
 ---
-
 # Product List
 
 This catalog is based on the product details supplied for the ecommerce store.

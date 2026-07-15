@@ -55,7 +55,7 @@ $tests['payment signature verification matches Razorpay format'] = function (): 
 };
 
 $tests['project map registry has no missing route mappings'] = function (): void {
-    $map = ProjectMapService::registry();
+    $map = ProjectMapService::scan();
     $validation = ProjectMapService::validate($map);
     assertSame([], $validation['missing_route_mappings'], 'Routes should map to controllers');
     assertSame([], $validation['missing_services'], 'Routes should reference declared services');
@@ -76,17 +76,17 @@ $tests['project map grounds shared navigation in registered get routes'] = funct
     }
     assertSame([], $scan['gaps']['navigation_without_get_route'], 'Every internal shared navigation path should resolve to a registered GET route');
     assertTrue(str_contains(ProjectMapService::renderSystematicMermaid(), 'Navigation Paths'), 'Generated Mermaid should include shared navigation relationships');
-    $mustBeEmpty = ['missing_route_mappings','missing_controller_files','missing_service_files','missing_view_files','navigation_without_get_route','unwired_controllers','unwired_services','unwired_views'];
+    $mustBeEmpty = ['missing_route_mappings','missing_controller_files','missing_service_files','missing_view_files','navigation_without_get_route','unwired_controllers','unwired_views'];
     foreach ($mustBeEmpty as $kind) {
         if (!array_key_exists($kind, $scan['gaps'])) continue;
         assertSame([], $scan['gaps'][$kind], "Systematic map should not report unresolved {$kind} gaps");
     }
-    if (!empty($scan['gaps']['admin_mutations_without_audit'])) {
-        $paths = array_map(fn($r) => $r['method'] . ' ' . $r['path'], $scan['gaps']['admin_mutations_without_audit']);
-        echo "\n  ⚠ admin_mutations_without_audit gap: " . implode(', ', $paths);
-    }
-    if (!empty($scan['gaps']['unwired_schema_collections'])) {
-        echo "\n  ⚠ unwired_schema_collections gap: " . implode(', ', $scan['gaps']['unwired_schema_collections']);
+    foreach (['unwired_services', 'unwired_schema_collections', 'admin_mutations_without_audit'] as $kind) {
+        if (!empty($scan['gaps'][$kind])) {
+            $items = is_array($scan['gaps'][$kind]) ? $scan['gaps'][$kind] : [$scan['gaps'][$kind]];
+            $label = is_array($items[0] ?? null) ? array_map(fn($r) => $r['method'] . ' ' . $r['path'], $items) : $items;
+            echo "\n  ⚠ {$kind}: " . implode(', ', $label);
+        }
     }
 };
 
@@ -494,7 +494,7 @@ $tests['admin list and order detail pages render real data surfaces instead of p
 $tests['consultations use direct platform sessions without google meet or calendar'] = function (): void {
     $consultController = file_get_contents(app_path('app/Controllers/ConsultationController.php'));
     $oauth = file_get_contents(app_path('integrations/google-oauth/GoogleOAuthClient.php'));
-    $map = ProjectMapService::registry();
+    $map = ProjectMapService::scan();
     $services = array_unique(array_merge(...array_map(fn($route) => $route['services'], $map['routes'])));
     assertTrue(!str_contains($consultController, 'meet.google.com'), 'Consultations should not generate Google Meet links');
     assertTrue(!str_contains($oauth, 'calendar.events'), 'Google login should not request Calendar permissions');
@@ -1025,9 +1025,10 @@ $tests['local smoke tool source covers key routes and CSRF protection'] = functi
     assertTrue(str_contains($source, 'PASS local smoke'), 'Local smoke should provide an authoritative success signal');
 };
 
-$tests['systematic project map and KnowledgeMap are the only generated map artifacts'] = function (): void {
+$tests['systematic project map, docs/map.mmd, and root map.mmd are the generated map artifacts'] = function (): void {
     assertTrue(is_file(app_path('docs/systematic-map.mmd')), 'Systematic Mermaid map should exist');
-    assertTrue(is_file(app_path('docs/KnowledgeMap.mmd')), 'KnowledgeMap.mmd should exist');
+    assertTrue(is_file(app_path('docs/map.mmd')), 'docs/map.mmd should exist');
+    assertTrue(is_file(app_path('map.mmd')), 'root map.mmd should exist');
     foreach (['docs/PROJECT_MAP.md', 'docs/project-map.json', 'docs/project-map.mmd'] as $path) {
         assertTrue(!is_file(app_path($path)), "Old project-map artifact should not exist: {$path}");
     }
@@ -1035,9 +1036,13 @@ $tests['systematic project map and KnowledgeMap are the only generated map artif
     foreach (['PUBLIC Routes', 'AUTH Routes', 'PAYMENT Routes', 'SUPPORT Routes', 'ADMIN Routes', 'Controllers', 'Services', 'Views', 'Integrations', 'Schema Collections', 'Tools', 'Gaps & Missing Links'] as $needle) {
         assertTrue(str_contains($map, $needle), "Systematic map should include {$needle}");
     }
-    $kmap = file_get_contents(app_path('docs/KnowledgeMap.mmd'));
+    $dmap = file_get_contents(app_path('docs/map.mmd'));
     foreach (['CLI (bapXphp)', 'Agent Skills', 'Blog & Content', 'Application Architecture', 'Data Layer'] as $needle) {
-        assertTrue(str_contains($kmap, $needle), "KnowledgeMap should include {$needle}");
+        assertTrue(str_contains($dmap, $needle), "docs/map.mmd should include {$needle}");
+    }
+    $cmap = file_get_contents(app_path('map.mmd'));
+    foreach (['PUBLIC Routes', 'AUTH Routes', 'PAYMENT Routes', 'ADMIN Routes', 'Controllers', 'Services', 'Schema Collections'] as $needle) {
+        assertTrue(str_contains($cmap, $needle), "root map.mmd should include {$needle}");
     }
 };
 

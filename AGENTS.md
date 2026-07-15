@@ -47,7 +47,7 @@ Issue → handoff JSON (GitHub Action) → CTO (bapXphp handoff next)
   - `views/`/`assets/`: PHP templates only. No SPA, no build pipeline.
   - `storage/`: Declare every persisted field in `collections.php`. MySQL is runtime truth; JSON is import-only.
   - `content/`: Blog/help = Markdown with YAML frontmatter in `content/blog/posts/`. Help = `help` category. Shared 16:9 image.
-  - `docs/`: Durable behavior documentation + generated `systematic-map.mmd` and `KnowledgeMap.mmd`.
+  - `docs/`: Durable behavior documentation + generated `systematic-map.mmd` and `map.mmd`.
   - `cli/`: Extend `bapXphp` for repeatable operations. Commands must be non-interactive, credential-safe, shared-hosting compatible.
   - `integrations/`: Keep clients small. Use `SecretService` for secrets. Never hardcode credentials.
   - `tests/`: Assert contracts without production credentials or network dependence.
@@ -70,8 +70,8 @@ For meaningful code/schema/UI/doc/workflow changes, reproduce or inspect behavio
 ## Project Map
 
 - `docs/systematic-map.mmd` = single project-map artifact (routes/controllers/services wiring).
-- `docs/KnowledgeMap.mmd` = generated documentation mindmap.
-- Generators: `cli/generate-project-map.php` (map), `cli/generate-docs-map.php` (KnowledgeMap).
+- `docs/map.mmd` = generated documentation mindmap (skills, docs, blog, agents, admin).
+- Generators: `cli/generate-project-map.php` (systematic-map), `cli/generate-docs-map.php` (docs/map.mmd), `cli/generate-code-map.php` (root map.mmd).
 - Validator: `cli/validate-project-map.php` compares generated Mermaid to committed file.
 - Update `ProjectMapService::scan()` and `::renderSystematicMermaid()` when map needs new sections, edges, or gap checks.
 - Map validation alone is incomplete. For every affected map path, verify the source route, controller action, service, schema entry, and rendered page.

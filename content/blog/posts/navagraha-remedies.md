@@ -1,4 +1,5 @@
 ---
+type: blog
 title: Navagraha Remedies — Balancing the Nine Planets for a Harmonious Life
 slug: navagraha-remedies
 category: spirituality
@@ -10,7 +11,6 @@ seo_title: Navagraha Remedies — 9 Planet Balancing Complete Guide | Sri Pancha
 seo_description: Complete guide to Navagraha remedies — balance the nine planets with gemstones, mantras, donations, and fasting. Learn Vedic remedies for Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, and Ketu.
 og_image: https://sripanchamispiritual.com/assets/images/blog/navagraha-remedies.jpg
 ---
-
 The **Navagraha** (nine planets) are celestial deities that influence every aspect of human life according to Vedic astrology. When a planet is weak or afflicted in your birth chart, it can create challenges in specific areas of life. The good news is that Vedic wisdom offers powerful remedies to balance each planet's energy.
 
 ## Surya (Sun) Remedies

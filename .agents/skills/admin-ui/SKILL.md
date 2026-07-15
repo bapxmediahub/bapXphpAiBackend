@@ -1,8 +1,8 @@
 ---
+type: skill
 name: admin-ui
 description: Use when editing owner/admin pages, CRUD forms, media library, environment editor, permissions, audit log, integrations, or admin navigation.
 ---
-
 # Admin UI
 
 - Follow the root `AGENTS.md` repository contract and its app/view/storage area rules.

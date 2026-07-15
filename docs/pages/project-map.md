@@ -1,9 +1,9 @@
 ---
+type: doc
 title: Project Map
 description: Route /admin/developer/project-map - owner/developer visibility into routes, controllers, services, views, and more.
 category: page
 ---
-
 # Project Map Page
 
 Route: `/admin/developer/project-map`

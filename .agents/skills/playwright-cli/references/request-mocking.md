@@ -1,3 +1,8 @@
+---
+type: doc
+title: Request Mocking
+---
+
 # Request Mocking
 
 Intercept, mock, modify, and block network requests.

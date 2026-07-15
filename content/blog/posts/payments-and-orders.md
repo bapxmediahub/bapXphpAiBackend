@@ -1,4 +1,5 @@
 ---
+type: blog
 title: Payments and order confirmation
 slug: payments-and-orders
 category: help
@@ -12,7 +13,6 @@ og_image: /assets/images/blog/payments-and-orders.webp
 image_alt: Sri Panchami Spiritual checkout and payment page
 source_url: /checkout
 ---
-
 ## Product payments
 
 Product orders use the secure live payment option shown at checkout. Review the amount and delivery address before approving payment.

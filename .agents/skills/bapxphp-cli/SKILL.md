@@ -1,8 +1,8 @@
 ---
+type: skill
 name: bapxphp-cli
 description: Use bapXphp CLI for ALL file/content/db operations. Never use raw shell/edit/write/find/grep tools directly.
 ---
-
 # bapXphp CLI
 
 All project operations go through `bapXphp`. This ensures every operation is auditable, logged, and consistent.
@@ -51,7 +51,8 @@ bapXphp ci                            # non-mutating full PR/CI validation
 bapXphp check                         # alias for bapXphp ci
 bapXphp serve                         # start dev server
 bapXphp map:gen                       # regenerate project map
-bapXphp docsmap                       # regenerate KnowledgeMap
+bapXphp docsmap                       # regenerate docs/map.mmd (content)
+bapXphp codemap                        # regenerate map.mmd (code graph)
 bapXphp schema list                   # list all collections
 bapXphp issue                         # create GitHub issue
 bapXphp pr                            # create PR

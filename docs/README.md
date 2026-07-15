@@ -1,9 +1,9 @@
 ---
+type: doc
 title: Documentation Index
 description: Connected documentation for developers, maintainers, and coding agents building on Sri Panchami Spiritual.
 category: docs
 ---
-
 # Documentation Index
 
 This folder contains connected documentation for developers, maintainers, and coding agents building on Sri Panchami Spiritual.

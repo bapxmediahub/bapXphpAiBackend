@@ -1,9 +1,9 @@
 ---
+type: skill
 name: gh-cli
 description: Use the GitHub CLI (`gh`) to manage repositories, issues, pull requests, releases, and agent skills.
 allowed-tools: Bash(gh:*)
 ---
-
 # GitHub CLI (gh) Skill
 
 Use the GitHub CLI (`gh`) to manage GitHub repositories, issues, pull requests, releases, and agent skills directly from the command line.

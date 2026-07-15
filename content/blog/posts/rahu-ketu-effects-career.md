@@ -1,4 +1,5 @@
 ---
+type: blog
 title: Rahu and Ketu Effects on Career — Navigating the Nodal Influence
 slug: rahu-ketu-effects-career
 category: astrology
@@ -10,7 +11,6 @@ seo_title: Rahu Ketu Effects on Career — Professional Success Guide | Sri Panc
 seo_description: Learn how Rahu and Ketu (the lunar nodes) influence your career, professional growth, and financial success. Understand their effects based on house placement and transit periods.
 og_image: https://sripanchamispiritual.com/assets/images/blog/rahu-ketu-career.jpg
 ---
-
 **Rahu** and **Ketu** are often called shadow planets or the lunar nodes. In Vedic astrology, they hold immense significance — representing your karmic past (Ketu) and your karmic future (Rahu). Their influence on your career can be profound and life-changing.
 
 ## Understanding Rahu and Ketu

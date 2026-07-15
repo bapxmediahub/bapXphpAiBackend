@@ -1,4 +1,5 @@
 ---
+type: blog
 title: Essential Pooja Items for Home — A Complete Guide to Daily Worship
 slug: pooja-items-for-home
 category: spirituality
@@ -10,7 +11,6 @@ seo_title: Essential Pooja Items for Home — Complete Worship Guide | Sri Panch
 seo_description: Complete guide to essential pooja items for your home altar. Learn the significance of lamps, incense, kalash, bells, and more. Shop authentic pooja items online at Sri Panchami Spiritual.
 og_image: https://sripanchamispiritual.com/assets/images/blog/pooja-items.jpg
 ---
-
 Setting up a home pooja altar is a beautiful way to invite divine energy into your daily life. Whether you're a beginner or an experienced practitioner, having the right pooja items enhances your worship experience and deepens your spiritual connection.
 
 ## Essential Pooja Items

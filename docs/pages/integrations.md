@@ -1,9 +1,9 @@
 ---
+type: doc
 title: Integrations
 description: Route /admin/integrations - configure Razorpay, Stripe, Google OAuth, SMTP, Meta Pixel, Google Site Kit, Support Bot, and SEO defaults.
 category: page
 ---
-
 # Admin Integrations
 
 Route: `/admin/integrations`

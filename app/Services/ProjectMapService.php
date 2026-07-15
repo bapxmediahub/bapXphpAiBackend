@@ -5,6 +5,11 @@ final class ProjectMapService {
         'test_race',
     ];
 
+    public const SHARED_CONTROLLERS = ['BaseController'];
+    public const SHARED_SERVICES = ['SeoService', 'SmtpMailer', 'ImageOptimizerService', 'DocsMapService', 'GitHubDocService', 'RateLimiter', 'KnowledgeGraphService'];
+    public const SHARED_VIEWS = ['account/_nav', 'layouts/admin', 'layouts/app', 'public/404', 'public/_consultation-pricing'];
+    public const KNOWN_UNWIRED_COLLECTIONS = ['wallet_transactions', 'media_files'];
+
     public static function registry(): array {
         $routes = [
             ['method'=>'GET','path'=>'/','name'=>'home','page'=>'public/home','controller'=>'PublicController@home','services'=>['ProductService','AstrologerService','TempleService','CategoryService']],
@@ -127,18 +132,16 @@ final class ProjectMapService {
             }
         }
         unset($route);
-        return [
-            'routes'=>$routes,
-            'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AppointmentService','ConsultationService','TempleService','SettingsService','ProjectMapService','DatabaseService','AuditLogService','ResourceService','SecretService','EnvService','ContactService','ReviewService','PasswordResetService','MailQueueService','MailStorageService','AddressService','SupportBotService','SupportTicketService','MediaService','StoragePermissionService','SchemaService','AgentContextService','SeoService','ImageOptimizerService','GitHubDocService','MarkdownRenderer','BlogService','TaxService','BlogDraftService'],
-            'integrations'=>['GoogleOAuthClient','RazorpayClient','StripeClient','MetaPixelClient','GoogleSiteKitClient'],
-            'collections'=>['users','addresses','products','categories','coupons','orders','astrologers','appointments','consultation_messages','consultation_signals','temples','settings','audit_events','reviews','mail_queue','mail_inbox','mail_outbox','wallet_transactions','support_tickets','contact_submissions','media_files','secrets'],
-        ];
+        return ['routes'=>$routes];
     }
     public static function validate(array $map): array {
-        $missingRouteMappings = array_values(array_filter($map['routes'], fn($r) => empty($r['controller']) || empty($r['page'])));
-        $used = array_unique(array_merge(...array_map(fn($r) => $r['services'], $map['routes'])));
-        $missingServices = array_values(array_diff($used, $map['services']));
-        return ['missing_route_mappings'=>$missingRouteMappings,'missing_services'=>$missingServices,'missing_collections'=>array_values(array_diff($map['collections'], $map['collections']))];
+        $services = $map['services'] ?? self::phpBasenames(app_path('app/Services'));
+        $schema = require app_path('storage/schema/collections.php');
+        $collections = $map['collections'] ?? array_keys($schema['collections'] ?? []);
+        $missingRouteMappings = array_values(array_filter($map['routes'] ?? [], fn($r) => empty($r['controller']) || empty($r['page'])));
+        $used = array_unique(array_merge(...array_map(fn($r) => $r['services'] ?? [], $map['routes'] ?? [])));
+        $missingServices = array_values(array_diff($used, $services));
+        return ['missing_route_mappings'=>$missingRouteMappings,'missing_services'=>$missingServices,'missing_collections'=>[]];
     }
 
     public static function scan(): array {
@@ -167,10 +170,10 @@ final class ProjectMapService {
             array_filter($map['routes'], fn($route) => ($route['method'] ?? 'GET') === 'GET')
         )));
 
-        $sharedControllers = ['BaseController'];
-        $sharedServices = ['SeoService', 'SmtpMailer', 'ImageOptimizerService', 'DocsMapService', 'GitHubDocService', 'RateLimiter'];
-        $sharedViews = ['account/_nav', 'layouts/admin', 'layouts/app', 'public/404', 'public/_consultation-pricing'];
-        $knownUnwiredCollections = ['wallet_transactions'];
+        $sharedControllers = self::SHARED_CONTROLLERS;
+        $sharedServices = self::SHARED_SERVICES;
+        $sharedViews = self::SHARED_VIEWS;
+        $knownUnwiredCollections = self::KNOWN_UNWIRED_COLLECTIONS;
 
         $adminPostRoutes = array_values(array_filter($map['routes'], fn($r) => str_starts_with($r['path'] ?? '', '/admin') && ($r['method'] ?? 'GET') === 'POST' && !str_contains($r['path'] ?? '', 'sw.js') && !str_contains($r['path'] ?? '', 'manifest.json') && !str_contains($r['path'] ?? '', '/agent/ask') && !str_contains($r['path'] ?? '', '/blog/preview') && !str_contains($r['path'] ?? '', '/blog/ai-draft')));
         $allScCollections = array_values(array_unique(array_merge(...array_values(self::serviceCollections()))));
@@ -501,7 +504,7 @@ final class ProjectMapService {
         return implode("\n", $lines) . "\n";
     }
 
-    private static function phpBasenames(string $dir): array {
+    public static function phpBasenames(string $dir): array {
         if (!is_dir($dir)) return [];
         $files = iterator_to_array(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)));
         $names = [];
@@ -538,28 +541,61 @@ final class ProjectMapService {
     }
 
     public static function serviceCollections(): array {
-        return [
+        $mapping = [];
+        static $collectionPattern = '/(\$this->store\s*->\s*(?:find|read|create|write|upsert|delete)\s*\(\s*)([\'"])([a-z_]+)\2\s*[\),]/';
+        static $resourcePattern = '/new\s+ResourceService\s*\(\s*([\'"])([a-z_]+)\1\s*\)/';
+
+        foreach (self::phpFiles(app_path('app/Services')) as $file) {
+            $content = file_get_contents($file);
+            $name = basename($file, '.php');
+            $collections = [];
+
+            preg_match_all($collectionPattern, $content, $direct, PREG_SET_ORDER);
+            foreach ($direct as $m) {
+                $collections[$m[3]] = true;
+            }
+
+            if ($collections) {
+                $mapping[$name] = array_keys($collections);
+            }
+        }
+
+        $resourceCollections = [];
+        foreach (self::phpFiles(app_path('app/Controllers')) as $file) {
+            $content = file_get_contents($file);
+            preg_match_all($resourcePattern, $content, $matches, PREG_SET_ORDER);
+            foreach ($matches as $m) {
+                $resourceCollections[$m[2]] = true;
+            }
+        }
+        if ($resourceCollections) {
+            $mapping['ResourceService'] = array_keys($resourceCollections);
+        }
+
+        self::applyManualOverrides($mapping);
+
+        return $mapping;
+    }
+
+    private static function phpFiles(string $dir): array {
+        if (!is_dir($dir)) return [];
+        $files = [];
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)) as $f) {
+            if ($f->getExtension() === 'php') $files[] = $f->getPathname();
+        }
+        sort($files);
+        return $files;
+    }
+
+    private static function applyManualOverrides(array &$mapping): void {
+        $overrides = [
             'AgentContextService' => ['users', 'orders', 'appointments', 'support_tickets'],
-            'AppointmentService' => ['appointments'],
-            'AstrologerService' => ['astrologers'],
-            'ConsultationService' => ['appointments', 'consultation_messages', 'consultation_signals'],
-            'AuditLogService' => ['audit_events'],
-            'CategoryService' => ['categories'],
-            'ContactService' => ['contact_submissions'],
-            'CouponService' => ['coupons'],
             'DatabaseService' => ['users', 'addresses', 'products', 'orders', 'appointments', 'consultation_messages', 'consultation_signals', 'secrets', 'mail_inbox', 'mail_outbox', 'contact_submissions'],
-            'MailQueueService' => ['mail_queue'],
-            'MediaService' => ['media_files'],
-            'OrderService' => ['orders'],
-            'ProductService' => ['products'],
-            'ResourceService' => ['products', 'categories', 'coupons', 'astrologers', 'temples'],
-            'ReviewService' => ['reviews'],
-            'SecretService' => ['secrets'],
-            'SettingsService' => ['settings'],
-            'SupportBotService' => ['support_tickets'],
-            'SupportTicketService' => ['support_tickets'],
-            'TempleService' => ['temples'],
         ];
+        foreach ($overrides as $service => $cols) {
+            $existing = $mapping[$service] ?? [];
+            $mapping[$service] = array_values(array_unique(array_merge($existing, $cols)));
+        }
     }
 
     private static function navigationPaths(): array {
@@ -586,7 +622,10 @@ final class ProjectMapService {
     }
 
     private static function nodeId(string $prefix, string $value): string {
-        return $prefix . '_' . substr(md5($value), 0, 12);
+        $stable = preg_replace('/[^a-zA-Z0-9]/', '_', $value);
+        $stable = preg_replace('/_+/', '_', $stable);
+        $stable = trim($stable, '_');
+        return $prefix . '_' . strtolower(substr($stable, 0, 48));
     }
 
     private static function routeId(array $route): string { return self::nodeId('route', ($route['method'] ?? '') . ' ' . ($route['path'] ?? '')); }

@@ -1,9 +1,9 @@
 ---
+type: doc
 title: Consult Page
 description: Route /consult - show remote consultant profiles with search, language filtering, and one scheduled-booking path.
 category: page
 ---
-
 # Consult Page
 
 Route: `/consult`

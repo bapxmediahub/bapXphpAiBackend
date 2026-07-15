@@ -1,8 +1,8 @@
 ---
+type: skill
 name: frontend-php
 description: Use when editing public, account, shop, astrologer, temple, cart, checkout, contact, or support templates.
 ---
-
 # PHP Frontend
 
 - Follow the root `AGENTS.md` repository contract and its view/asset area rules.

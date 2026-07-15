@@ -1,9 +1,9 @@
 ---
+type: doc
 title: Admin Dashboard
 description: Route /admin - owner dashboard for product, order, and astrology session counts.
 category: page
 ---
-
 # Admin Dashboard
 
 Route: `/admin`

@@ -1,9 +1,9 @@
 ---
+type: doc
 title: GST Commerce
 description: GST Product Billing and Growth Tracking workflow for paid ecommerce product orders.
 category: module
 ---
-
 # GST Product Billing and Growth Tracking
 
 This workflow applies only to paid ecommerce product orders. Scheduled consultant appointments are not included in product tax invoices or GST product-sales exports.
