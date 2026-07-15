@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{CartService,ProductService,SecretService,PaymentService,DatabaseService,MailQueueService};
+use App\Services\{CartService,ProductService,SecretService,PaymentService,DatabaseService,MailQueueService,TaxService,SettingsService};
 use App\Integrations\Razorpay\RazorpayClient;
 use App\Integrations\Stripe\StripeClient;
 final class CommerceController extends BaseController {
@@ -255,10 +255,36 @@ final class CommerceController extends BaseController {
                 $this->jsonResponse(['verified' => false, 'error' => 'Payment already processed.'], 400);
             }
         }
+        $settings = (new SettingsService())->public();
+        $itemsWithRates = array_map(function ($item) use ($products) {
+            $product = $products[$item['slug'] ?? ''] ?? [];
+            $item['gst_rate'] = (float)($product['gst_rate'] ?? 0);
+            $item['hsn_code'] = (string)($product['hsn_code'] ?? '');
+            $item['unit_price'] = (float)($item['line_total'] ?? 0) / max(1, (int)($item['qty'] ?? 1));
+            return $item;
+        }, $orderItems);
+        $shippingState = trim((string)($pendingOrder['shipping_state'] ?? ''));
+        $taxSnapshot = (new TaxService())->snapshot($itemsWithRates, 0, $shippingState, $settings);
+        $allOrders = $db->read('orders');
+        $invoice = (new TaxService())->nextInvoice($allOrders);
         $order = array_merge($pendingOrder, [
             'status' => 'confirmed',
             'payment_id' => $paymentId,
             'payment_email_status' => 'pending',
+            'tax_lines' => $taxSnapshot['tax_lines'],
+            'taxable_value' => $taxSnapshot['taxable_value'],
+            'cgst_total' => $taxSnapshot['cgst_total'],
+            'sgst_total' => $taxSnapshot['sgst_total'],
+            'igst_total' => $taxSnapshot['igst_total'],
+            'tax_total' => $taxSnapshot['tax_total'],
+            'supply_type' => $taxSnapshot['supply_type'],
+            'place_of_supply' => $taxSnapshot['place_of_supply'],
+            'supplier' => $taxSnapshot['supplier'],
+            'customer_gstin' => trim((string)($_POST['customer_gstin'] ?? '')),
+            'invoice_sequence' => $invoice['invoice_sequence'],
+            'invoice_financial_year' => $invoice['invoice_financial_year'],
+            'invoice_number' => $invoice['invoice_number'],
+            'invoice_date' => $invoice['invoice_date'],
         ]);
         $db->upsert('orders', $order);
         (new MailQueueService())->enqueuePaymentConfirmation($order);
