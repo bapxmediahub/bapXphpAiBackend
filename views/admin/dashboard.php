@@ -22,6 +22,58 @@
     </div>
 </div>
 
+<?php
+$__secretsGa = (new \App\Services\SecretService())->all();
+$__gaConfigured = !empty($__secretsGa['google_analytics_id']);
+$__adsConfigured = !empty($__secretsGa['google_ads_id']);
+$__gsvConfigured = !empty($__secretsGa['google_site_verification']);
+$__googleSiteKitEnabled = $__gaConfigured || $__adsConfigured || $__gsvConfigured;
+?>
+
+<?php if ($__googleSiteKitEnabled): ?>
+<div class="admin-card" style="margin-bottom:var(--space-lg); border-left:3px solid var(--color-gold);">
+    <h2 style="display:flex; align-items:center; gap:var(--space-sm); font-size:1rem;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20"/><path d="M2 12h20"/></svg>
+        Google Site Kit
+    </h2>
+    <div style="display:flex; flex-wrap:wrap; gap:var(--space-md); font-size:0.85rem;">
+        <?php if ($__gaConfigured): ?>
+        <span style="display:flex; align-items:center; gap:var(--space-xs);">
+            <span style="color:var(--color-success);">●</span> Analytics
+            <a href="https://analytics.google.com/analytics/web/" target="_blank" rel="noopener" style="font-size:0.75rem;">Open GA4 →</a>
+        </span>
+        <?php endif; ?>
+        <?php if ($__adsConfigured): ?>
+        <span style="display:flex; align-items:center; gap:var(--space-xs);">
+            <span style="color:var(--color-success);">●</span> Ads
+            <a href="https://ads.google.com/" target="_blank" rel="noopener" style="font-size:0.75rem;">Open Ads →</a>
+        </span>
+        <?php endif; ?>
+        <?php if ($__gsvConfigured): ?>
+        <span style="display:flex; align-items:center; gap:var(--space-xs);">
+            <span style="color:var(--color-success);">●</span> Search Console
+            <a href="https://search.google.com/search-console" target="_blank" rel="noopener" style="font-size:0.75rem;">Open Console →</a>
+        </span>
+        <?php endif; ?>
+    </div>
+    <p style="margin:var(--space-sm) 0 0; font-size:0.78rem; color:var(--color-text-muted);">
+        Google Analytics, Ads conversion tracking, and Search Console verification are active.
+        <a href="/admin/integrations" style="font-weight:500;">Configure in Integrations</a>
+    </p>
+</div>
+<?php else: ?>
+<div class="admin-card" style="margin-bottom:var(--space-lg); border-left:3px solid var(--color-border);">
+    <h2 style="display:flex; align-items:center; gap:var(--space-sm); font-size:1rem;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20"/><path d="M2 12h20"/></svg>
+        Google Analytics
+    </h2>
+    <p style="margin:0; font-size:0.85rem; color:var(--color-text-muted);">
+        Google Analytics is not configured. 
+        <a href="/admin/integrations">Set up GA4, Ads, and Search Console in Integrations →</a>
+    </p>
+</div>
+<?php endif; ?>
+
 <div class="admin-quick-grid">
     <div class="admin-card">
         <h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Catalog</h2>

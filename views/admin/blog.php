@@ -30,11 +30,14 @@
         <label>Summary <textarea name="summary" id="edit-summary" rows="2" style="width:100%"></textarea></label>
         <label>Display order <input type="number" name="order" id="edit-order" min="0" step="1" style="width:100%"></label>
         <label class="admin-blog-editor__wide">Excerpt <textarea name="excerpt" id="edit-excerpt" rows="2" style="width:100%"></textarea></label>
+        <label class="admin-blog-editor__wide">SEO Keywords <input type="text" name="keywords" id="edit-keywords" placeholder="astrology, spirituality, vedic astrology" style="width:100%"><small>Comma-separated keywords for search engine indexing.</small></label>
         <label>Published At <input type="date" name="published_at" id="edit-date" style="width:100%"></label>
         <label>Author <input type="text" name="author" id="edit-author" value="Admin" style="width:100%"></label>
         <label class="admin-blog-editor__wide">Content (Markdown) <textarea name="content" id="edit-content" rows="16" style="width:100%;font-family:monospace"></textarea></label>
-        <div style="display:flex;gap:var(--space-sm)">
+        <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap">
             <button class="btn btn-primary" type="submit">Save</button>
+            <button class="btn btn-outline" type="button" onclick="previewArticle()">Preview</button>
+            <button class="btn btn-outline" type="button" onclick="generateDraft()">AI Draft</button>
             <button class="btn btn-outline" type="button" onclick="toggleForm()">Cancel</button>
         </div>
     </div>
@@ -65,4 +68,6 @@
 function toggleForm(){var f=document.getElementById('blog-form');f.hidden=!f.hidden;if(f.hidden)f.reset();}
 function editPost(post){document.getElementById('edit-slug').value=post.slug||'';document.getElementById('edit-slug-display').value=post.slug||'';document.getElementById('edit-title').value=post.title||'';document.getElementById('edit-category').value=post.category||'';document.getElementById('edit-template').value=post.template||'editorial';document.getElementById('edit-image').value=post.og_image||post.image||'';document.getElementById('edit-image-alt').value=post.image_alt||'';document.getElementById('edit-source-url').value=post.source_url||'';document.getElementById('edit-summary').value=post.summary||post.excerpt||'';document.getElementById('edit-order').value=post.order||'';document.getElementById('edit-excerpt').value=post.excerpt||'';document.getElementById('edit-date').value=post.published_at||'';document.getElementById('edit-author').value=post.author||'Admin';document.getElementById('edit-content').value=post.content||'';document.getElementById('blog-form').hidden=false;}
 document.getElementById('edit-title').addEventListener('input',function(){var slug=this.value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');document.getElementById('edit-slug').value=slug;document.getElementById('edit-slug-display').value=slug;});
+function previewArticle(){var f=document.getElementById('blog-form');var fd=new FormData(f);fetch('/admin/blog/preview',{method:'POST',body:fd}).then(function(r){return r.text();}).then(function(html){var w=window.open('','_blank');w.document.write(html);w.document.close();});}
+function generateDraft(){var f=document.getElementById('blog-form');var fd=new FormData(f);fd.set('content','');fetch('/admin/blog/ai-draft',{method:'POST',body:fd}).then(function(r){return r.json();}).then(function(d){if(d.content)document.getElementById('edit-content').value=d.content;});}
 </script>

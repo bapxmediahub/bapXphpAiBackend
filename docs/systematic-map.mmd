@@ -7,11 +7,11 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 99 routes, 11 controllers, 39 services, 46 views, 0 data files, 20 tools"]
-    arch_routes["> Routes: 99 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 102 routes, 11 controllers, 40 services, 47 views, 0 data files, 20 tools"]
+    arch_routes["> Routes: 102 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 11"]:::arch
-    arch_svc["> Services: 39"]:::arch
-    arch_views["> Views: 46"]:::arch
+    arch_svc["> Services: 40"]:::arch
+    arch_views["> Views: 47"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 20"]:::arch
     arch_gaps["> Gaps: 0"]:::arch
@@ -33,6 +33,7 @@ flowchart LR
     route_e627a983a978["GET /shop — Product shop — grid with pill actions"]:::route
     route_3c12328d1184["GET /categories — Products filtered by category"]:::route
     route_762fd619926d["GET /product/{slug} — Product detail — gallery, add-to-cart, buy-now"]:::route
+    route_8ed04f31abab["GET /sitemap.xml"]:::route
     route_8c80c0301221["GET /contact — Contact form GET"]:::route
     route_5d37c858f706["POST /contact — Contact form POST submission"]:::route
     route_6ce84be0a21c["GET /account/dashboard — Account dashboard entry — redirects to orders"]:::route
@@ -131,6 +132,8 @@ flowchart LR
     route_ee5a5224937e["GET /admin/blog"]:::route
     route_1ae4a2a08143["POST /admin/blog/save"]:::route
     route_6412bc37bc92["POST /admin/blog/delete"]:::route
+    route_2dcebe2cfda0["POST /admin/blog/preview"]:::route
+    route_b46d790346e6["POST /admin/blog/ai-draft"]:::route
   end
 
   subgraph NAVIGATION["Navigation Paths"]
@@ -162,6 +165,7 @@ flowchart LR
     service_ae8ee1aa005a["AstrologerService"]:::code
     service_e79c019a142b["AuditLogService"]:::code
     service_f33a1d77b137["AuthService"]:::code
+    service_1909dab7e246["BlogDraftService"]:::code
     service_a59832354e11["BlogService"]:::code
     service_119321b674bd["CartService"]:::code
     service_ebacea9031c7["CategoryService"]:::code
@@ -239,6 +243,7 @@ flowchart LR
     view_d6d59690414b["public/register"]:::code
     view_775af2126c62["public/reset-password"]:::code
     view_ca8b647f9374["public/shop"]:::code
+    view_24738815b9ae["public/sitemap"]:::code
     view_8b63b1a03812["public/spiritual"]:::code
     view_54f97aa2b448["public/support"]:::code
     view_eb7fde4f5646["public/temple"]:::code
@@ -355,6 +360,10 @@ flowchart LR
   controller_18ec49ea2cf4 --> service_125c14ddd376
   controller_18ec49ea2cf4 --> service_fefb1ba2e4f7
   controller_18ec49ea2cf4 -. renders .-> view_6b1f93c8d0e4
+  route_8ed04f31abab --> controller_18ec49ea2cf4
+  controller_18ec49ea2cf4 --> service_a59832354e11
+  controller_18ec49ea2cf4 --> service_0ab47bcd921f
+  controller_18ec49ea2cf4 -. renders .-> view_24738815b9ae
   route_8c80c0301221 --> controller_18ec49ea2cf4
   controller_18ec49ea2cf4 -. renders .-> view_89865e74ab9c
   route_5d37c858f706 --> controller_18ec49ea2cf4
@@ -701,6 +710,16 @@ flowchart LR
   route_6412bc37bc92 --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_a59832354e11
   controller_3d37b75c07ec --> service_e79c019a142b
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_e13f2d1caf99
+  route_2dcebe2cfda0 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_a59832354e11
+  controller_3d37b75c07ec --> service_dc8af4c619cd
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_e13f2d1caf99
+  route_b46d790346e6 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_a59832354e11
+  controller_3d37b75c07ec --> service_1909dab7e246
   controller_3d37b75c07ec --> service_f33a1d77b137
   controller_3d37b75c07ec -. renders .-> view_e13f2d1caf99
   nav_90609cfd31a3 --> route_8c80c0301221

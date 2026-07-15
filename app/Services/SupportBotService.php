@@ -21,12 +21,22 @@ final class SupportBotService {
             }
         }
         $reply ??= $this->fallbackReply($message, $context);
-        return ['reply' => $reply, 'ticket_id' => null, 'memory' => 'browser_session'];
+        $result = ['reply' => $reply, 'ticket_id' => null, 'memory' => 'browser_session'];
+        $actions = $this->extractActions($reply);
+        if ($actions !== []) $result['actions'] = $actions;
+        return $result;
     }
 
     private function customerContext(?array $user): array {
-        if (empty($user['email'])) return ['signed_in' => false] + $this->agentContext->forUserEmail('');
-        return ['signed_in' => true] + $this->agentContext->forUserEmail((string)$user['email']);
+        $cart = array_map(fn($item) => [
+            'slug' => $item['slug'] ?? '',
+            'qty' => (int)($item['qty'] ?? 0),
+            'name' => $item['name'] ?? '',
+        ], array_values($_SESSION['cart'] ?? []));
+        $base = empty($user['email'])
+            ? $this->agentContext->forUserEmail('')
+            : $this->agentContext->forUserEmail((string)$user['email']);
+        return ['signed_in' => !empty($user['email']), 'cart' => $cart] + $base;
     }
 
     private function googleReply(string $message, array $context): ?string {
@@ -38,7 +48,7 @@ final class SupportBotService {
             . "Return only the final customer-facing answer. Do not include reasoning, analysis, markdown bullets, code, tool calls, or hidden thoughts.\n"
             . "Use only this JSON context for the signed-in customer and public site links. Never mention, infer, or access other users' data. If data is missing, ask the customer to use the contact form.\n"
             . "Allowed help: product, cart, checkout, delivery address, order, consultant booking, and navigation details from the JSON.\n"
-            . "When useful, include one exact internal path from site.pages or a matching product path. Never invent admin paths, external URLs, or claim that an action already happened.\n"
+            . "When useful, include one exact internal path from site.pages or a matching product path (e.g., /shop, /cart, /checkout, /product/slug, /consult). Mention the path in the reply so the UI can show a navigation button. Never invent admin paths, external URLs, or claim that an action already happened.\n"
             . "Customer context JSON: "
             . json_encode($context, JSON_UNESCAPED_SLASHES)
             . "\nCustomer question: " . $message
@@ -129,4 +139,26 @@ final class SupportBotService {
         return (bool)preg_match('/\b(my order|my booking|my session|track|delivery|shipped|history|past session|previous session)\b/i', $message);
     }
 
+    private function extractActions(string $reply): array {
+        preg_match_all('/\/(?:shop|cart|checkout|consult|temples|contact|blog(?:\/[a-z0-9-]+|\/category\/[a-z0-9-]+)?|product\/[a-z0-9-]+|account\/dashboard(?:\/orders|\/sessions|\/install)?)(?=[\s.,)\/  ]|$)/i', $reply, $matches);
+        $seen = [];
+        $actions = [];
+        foreach ($matches[0] as $path) {
+            $path = strtolower($path);
+            if (in_array($path, $seen, true)) continue;
+            $seen[] = $path;
+            $label = match (true) {
+                $path === '/shop' => 'View Shop',
+                $path === '/cart' => 'View Cart',
+                $path === '/checkout' => 'Go to Checkout',
+                $path === '/consult' => 'View Consultants',
+                $path === '/contact' => 'Contact Us',
+                $path === '/temples' => 'View Temples',
+                $path === '/blog' => 'Read Blog',
+                default => 'Open ' . trim(preg_replace('/^\/+/', '', str_replace(['-', '/'], ' ', $path)))
+            };
+            $actions[] = ['type' => 'navigate', 'label' => $label, 'path' => $path];
+        }
+        return $actions;
+    }
 }

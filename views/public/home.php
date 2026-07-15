@@ -1,14 +1,18 @@
 <section class="home-hero">
     <div class="container home-hero-inner">
         <div class="hero-copy">
-            <span class="eyebrow">Private spiritual guidance · Scheduled online</span>
-            <h1>Book a Personal Astrology Consultation</h1>
-            <p class="lede">Choose a trusted consultant, request a suitable time, and receive focused guidance. Explore authentic spiritual products when you need them.</p>
+            <span class="eyebrow">Authentic spiritual products · Delivered across India</span>
+            <h1>Discover Authentic Spiritual Products</h1>
+            <p class="lede">Browse our curated collection of genuine spiritual items — from rudraksha malas and pooja kits to sacred jewellery. Every product sourced with devotion.</p>
             <div class="hero-actions">
-                <a href="/consult" class="btn btn-primary">Book a Consultation</a>
-                <a href="/shop" class="btn btn-outline">Shop Products</a>
+                <a href="/shop" class="btn btn-primary">Shop Products</a>
+                <a href="/consult" class="btn btn-outline">Book a Consultation</a>
             </div>
             <div class="hero-stats">
+                <div>
+                    <div class="hero-stat-value"><?= e((string)count($products)) ?></div>
+                    <div class="hero-stat-label">Products</div>
+                </div>
                 <div>
                     <div class="hero-stat-value"><?= e((string)count($astrologers ?? [])) ?></div>
                     <div class="hero-stat-label">Consultants</div>
@@ -16,10 +20,6 @@
                 <div>
                     <div class="hero-stat-value">Online</div>
                     <div class="hero-stat-label">Appointments</div>
-                </div>
-                <div>
-                    <div class="hero-stat-value"><?= e((string)count($products)) ?></div>
-                    <div class="hero-stat-label">Products</div>
                 </div>
             </div>
         </div>

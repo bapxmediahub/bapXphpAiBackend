@@ -37,10 +37,12 @@ final class BlogController extends BaseController
 
         $title = $post['seo_title'] ?? $post['title'] ?? ucfirst(str_replace('-', ' ', $slug));
         $this->seoKey = 'blog.post';
+        $keywords = $post['keywords'] ?? '';
         $this->seoOverrides = [
             'title' => $title,
             'description' => $post['seo_description'] ?? $post['excerpt'] ?? 'Read ' . $title,
             'og_image' => $post['og_image'] ?? null,
+            'keywords' => $keywords,
         ];
 
         $this->render('public/blog-post', [

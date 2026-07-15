@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AuditLogService,AuthService,ConsultationService,EnvService,MailStorageService,MediaService,OrderService,ResourceService,SchemaService,SecretService,SettingsService,StoragePermissionService,TaxService};
+use App\Services\{AuditLogService,AuthService,BlogDraftService,ConsultationService,EnvService,MailStorageService,MarkdownRenderer,MediaService,OrderService,ResourceService,SchemaService,SecretService,SettingsService,StoragePermissionService,TaxService};
 final class AdminController extends BaseController {
     protected string $layout = 'admin';
     public function __construct() {
@@ -143,6 +143,37 @@ final class AdminController extends BaseController {
         }
         $this->flash('Blog post deleted.','info');
         $this->redirect('/admin/blog');
+    }
+    public function previewBlog(): void{
+        $this->layout = 'app';
+        $this->seoKey = 'blog.post';
+        $content = (new MarkdownRenderer())->render($_POST['content'] ?? '');
+        $meta = [
+            'title' => $_POST['title'] ?? 'Preview',
+            'slug' => $_POST['slug'] ?? '',
+            'category' => $_POST['category'] ?? '',
+            'excerpt' => $_POST['excerpt'] ?? '',
+            'summary' => $_POST['summary'] ?? '',
+            'published_at' => $_POST['published_at'] ?? date('Y-m-d'),
+            'author' => $_POST['author'] ?? 'Admin',
+            'og_image' => $_POST['og_image'] ?? '',
+            'image_alt' => $_POST['image_alt'] ?? '',
+            'source_url' => $_POST['source_url'] ?? '',
+            'template' => $_POST['template'] ?? 'editorial',
+        ];
+        $slug = $_POST['slug'] ?? 'preview';
+        $this->render('public/blog-post', [
+            'content' => $content,
+            'meta' => $meta,
+            'slug' => $slug,
+        ]);
+    }
+    public function aiDraftBlog(): void{
+        $template = $_POST['template'] ?? 'editorial';
+        $title = $_POST['title'] ?? 'Article';
+        $sourceUrl = $_POST['source_url'] ?? '/';
+        $draft = (new BlogDraftService())->draft($template, $title, $sourceUrl);
+        $this->jsonResponse(['content' => $draft]);
     }
     public function taxReport(): void{
         $orders = (new OrderService())->all();

@@ -24,6 +24,12 @@ final class SeoService {
         $defaults = $this->defaults($key);
         $meta = array_merge($defaults, $overrides);
 
+        if (!empty($overrides['keywords'])) {
+            $meta['keywords'] = $overrides['keywords'];
+        } elseif (!isset($meta['keywords'])) {
+            $meta['keywords'] = $defaults['keywords'] ?? '';
+        }
+
         $meta['canonical'] ??= $url;
         $meta['og_url'] ??= $url;
         $meta['og_site_name'] = $this->siteName;
@@ -160,12 +166,14 @@ final class SeoService {
                 'description' => 'Read the latest blog posts, feature updates, and spiritual guides from ' . $brand . '.',
                 'og_type' => 'website',
                 'robots' => 'index, follow',
+                'keywords' => 'spiritual blog, astrology articles, vedic astrology blog, rudraksha guide, pooja tips',
             ],
             'blog.post' => [
                 'title' => 'Blog Post – ' . $brand,
                 'description' => 'Read articles, guides, and updates from ' . $brand . '.',
                 'og_type' => 'article',
                 'robots' => 'index, follow',
+                'keywords' => 'astrology, spirituality, vedic astrology, spiritual products',
             ],
             'blog.category' => [
                 'title' => 'Blog Category – ' . $brand,
