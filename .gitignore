@@ -19,3 +19,6 @@ tmp/
 /content/blog/cache/
 null
 homepage.yml
+
+# Runtime browser session state — never commit
+/.agents/temp/

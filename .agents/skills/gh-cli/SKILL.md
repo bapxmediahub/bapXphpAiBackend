@@ -178,13 +178,12 @@ curl -X POST "${APP_URL}/remotedb" \
 {"success": true, "data": [...]}
 ```
 
-**Security:**
+ **Security:**
 - Query action accepts only `SELECT`, `SHOW`, `DESCRIBE`, and `EXPLAIN`.
 - Mutation actions are `upsert`, `delete`, and `replace` against declared collections; `secrets` is never writable through this endpoint.
-- Token is stored in remote MySQL `secrets.remote_db_token` and sent via the authenticated mutation header.
-- Generate token: `openssl rand -hex 32`
+- Password is stored as `remote_db_password` in secrets (set via Admin → Integrations or `REMOTE_DB_PASSWORD` in `.env`). `DatabaseService` sends it automatically in every remote payload. The controller verifies with timing-safe `hash_equals()`.
 
 **Usage:**
 - Useful when `bapXphp db` cannot connect via direct MySQL.
-- Keep the mutation token in remote MySQL. `bapXphp` can retrieve it through owner-authenticated hosting credentials from ignored `.env.mysql`.
+- Password can be set in Admin → Integrations or `.env`. Leave blank for no password (backward compatible).
 - Use for debugging and data exploration in production.

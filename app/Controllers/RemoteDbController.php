@@ -2,9 +2,26 @@
 namespace App\Controllers;
 
 use App\Services\DatabaseService;
+use App\Services\SecretService;
 
 final class RemoteDbController {
     public function __construct() {}
+
+    private function requirePassword(array $input): void {
+        $secrets = (new SecretService())->all();
+        $expected = trim((string)($secrets['remote_db_password'] ?? ''));
+        if ($expected === '') return;
+        $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+        $given = $input['password'] ?? '';
+        if ($given === '' && preg_match('/^Bearer\s+(.+)$/i', $authHeader, $m)) {
+            $given = trim($m[1]);
+        }
+        if (!hash_equals($expected, $given)) {
+            http_response_code(401);
+            echo json_encode(['error' => 'Unauthorized: invalid or missing remote_db_password.']);
+            exit;
+        }
+    }
 
     public function __invoke() {
         $method = $_SERVER['REQUEST_METHOD'];
@@ -15,6 +32,8 @@ final class RemoteDbController {
         }
 
         $input = json_decode(file_get_contents('php://input'), true) ?: [];
+
+        $this->requirePassword($input);
 
         $action = strtolower(trim((string)($input['action'] ?? 'query')));
 

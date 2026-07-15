@@ -39,7 +39,7 @@ BAPX_MYSQL_USER=database_user
 BAPX_MYSQL_PASS=database_password
 ```
 
-`.env` provides the site URL and direct MySQL connection. Application secrets such as Razorpay, Google OAuth, SMTP, and the support model remain in the remote MySQL `secrets` collection and are managed through **Admin → Integrations**. The fallback database API defaults to `APP_URL/remotedb` and can be overridden with `BAPX_REMOTE_DB_URL`.
+`.env` provides the site URL and direct MySQL connection. Application secrets such as Razorpay, Google OAuth, SMTP, and the support model remain in the remote MySQL `secrets` collection and are managed through **Admin → Integrations**. The fallback database API defaults to `APP_URL/remotedb` and can be overridden with `BAPX_REMOTE_DB_URL`. The `/remoteDB` endpoint can be password-protected by setting `REMOTE_DB_PASSWORD` in `.env` or via **Admin → Integrations → Remote DB Password**.
 
 Use **Admin → Settings** for store and site behavior. Use **Admin → Integrations** for credentials and third-party connection status.
 
@@ -105,6 +105,23 @@ Use **Admin → Settings** for store and site behavior. Use **Admin → Integrat
 |---------|-------------|
 | `bapXphp tool list` | List all PHP tools in `cli/` |
 | `bapXphp tool add <file>` | Create a new PHP tool with nano editor |
+
+### Browser Agent (headless browser automation)
+| Command | Description |
+|---------|-------------|
+| `bapXphp browser-agent open <url>` | Fetch page, render YAML snapshot |
+| `bapXphp browser-agent click <selector>` | Click element, follow navigation |
+| `bapXphp browser-agent fill <selector> <value>` | Fill form input |
+| `bapXphp browser-agent submit [selector]` | Submit form |
+| `bapXphp browser-agent snapshot [--max-e=N] [--max-d=N] [--ref=eN]` | YAML page snapshot with depth/element/ref filters |
+| `bapXphp browser-agent smoke <url>` | Quick health check (GET-based) |
+| `bapXphp browser-agent screenshot [file]` | YAML snapshot output (not pixel) |
+| `bapXphp browser-agent config set <key> <value>` | Runtime config: `request_delay_ms`, `timeout`, `tracing` |
+| `bapXphp browser-agent log` | Audit trail of all requests |
+| `bapXphp browser-agent cookies` | Show cookie jar contents |
+| `bapXphp browser-agent count <tag>` | Count DOM tags |
+| `bapXphp browser-agent close` | Clean session/cookies/logs |
+| `bapXphp browser-agent --pw <command>` | Forward to Playwright (local dev only) |
 
 ### Git
 | Command | Description |

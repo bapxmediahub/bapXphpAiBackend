@@ -832,19 +832,24 @@ $tests['saved addresses select the default and allow another checkout address'] 
     assertTrue(str_contains($checkout, 'Enter a new address') && str_contains($checkout, 'Save for next time'), 'Checkout should allow one-time or newly saved addresses');
 };
 
-$tests['remote database uses web proxy without token auth'] = function (): void {
+$tests['remote database uses password auth via admin UI or env'] = function (): void {
     $controller = file_get_contents(app_path('app/Controllers/RemoteDbController.php'));
     $database = file_get_contents(app_path('app/Services/DatabaseService.php'));
     $cli = file_get_contents(app_path('cli/bapXphp'));
-    assertTrue(!str_contains($controller, 'remote_db_token'), 'Remote controller should not have token auth');
-    assertTrue(!str_contains($controller, 'hash_equals'), 'Remote controller should not verify tokens');
+    assertTrue(str_contains($controller, 'requirePassword'), 'Remote controller should have requirePassword');
+    assertTrue(str_contains($controller, 'hash_equals'), 'Remote controller should verify password with timing-safe compare');
+    assertTrue(str_contains($controller, 'SecretService'), 'Remote controller should read password from SecretService');
+    assertTrue(str_contains($controller, 'remote_db_password'), 'Remote controller should check remote_db_password');
     foreach (["'upsert'", "'delete'", "'replace'"] as $needle) {
         assertTrue(str_contains($controller, $needle), "Remote controller should support {$needle}");
     }
     assertTrue(str_contains($database, 'remoteMutation'), 'Database service should use remote mutations when direct MySQL is unavailable');
+    assertTrue(str_contains($database, 'remote_db_password'), 'Database service should send remote_db_password in payload');
     foreach (['db upsert', 'db delete'] as $needle) assertTrue(str_contains($cli, $needle), "CLI should expose {$needle}");
-    assertTrue(!str_contains($cli, 'BAPX_REMOTE_DB_TOKEN'), 'CLI should not reference remote mutation token');
-    assertTrue(!str_contains(file_get_contents(app_path('views/admin/integrations.php')), 'name="remote_db_token"'), 'Admin integrations should not prompt for a remote mutation token');
+    assertTrue(!str_contains($cli, 'REMOTE_DB_PASSWORD'), 'CLI should not reference remote_db_password (handled by DatabaseService)');
+    assertTrue(str_contains(file_get_contents(app_path('views/admin/integrations.php')), 'name="remote_db_password"'), 'Admin integrations should have a remote_db_password field');
+    assertTrue(str_contains(file_get_contents(app_path('config/database.php')), 'REMOTE_DB_PASSWORD'), 'database.php config should read REMOTE_DB_PASSWORD from env');
+    assertTrue(str_contains(file_get_contents(app_path('.env.example')), 'REMOTE_DB_PASSWORD'), '.env.example should document REMOTE_DB_PASSWORD');
 };
 
 $tests['consultant booking lifecycle is operational'] = function (): void {

@@ -99,14 +99,14 @@ This report covers:
 | Google Gemini auto-endpoint detection | ✅ Done | `SecretService.php:894-895` |
 | `agent_api_key` + `agent_model` environment fallback | ✅ Done | `SecretService.php:891-892` |
 
-### 2.9 Remote DB — Token Auth Removed
+### 2.9 Remote DB — Password Auth Added
 | Feature | Status | Files |
 |---------|--------|-------|
-| Token verification removed from controller | ✅ Done | `RemoteDbController.php:632-638` |
-| Token sending removed from DatabaseService | ✅ Done | `DatabaseService.php:672-679` |
-| Token prompting removed from integrations form | ✅ Done | `views/admin/integrations.php` |
-| Token removed from CLI `bapXphp` | ✅ Done | `cli/bapXphp` `cmd_db_upsert` |
-| `remote_db_token` env var removal from tests | ✅ Done | `tests/run.php` |
+| Password verification in controller via `SecretService` | ✅ Done | `RemoteDbController.php` |
+| Password sent by `DatabaseService` in remote payloads | ✅ Done | `DatabaseService.php` |
+| `remote_db_password` field in Admin → Integrations | ✅ Done | `views/admin/integrations.php` |
+| `REMOTE_DB_PASSWORD` read from `.env` / config | ✅ Done | `config/database.php`, `SecretService.php` |
+| Test updated to assert password auth | ✅ Done | `tests/run.php` |
 
 ---
 

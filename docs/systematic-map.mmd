@@ -7,13 +7,13 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 109 routes, 13 controllers, 41 services, 49 views, 0 data files, 20 tools"]
+  subgraph ARCH["Architecture Overview — 109 routes, 13 controllers, 41 services, 49 views, 0 data files, 21 tools"]
     arch_routes["> Routes: 109 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 13"]:::arch
     arch_svc["> Services: 41"]:::arch
     arch_views["> Views: 49"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
-    arch_tools["> Tools: 20"]:::arch
+    arch_tools["> Tools: 21"]:::arch
     arch_gaps["> Gaps: 0"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
@@ -300,6 +300,7 @@ flowchart LR
     tool_d061c8cf89cb["blog-image"]:::tool
     tool_fbc45397571b["blog-read"]:::tool
     tool_519ad2e88fb9["blog-write"]:::tool
+    tool_d298e8bcd599["browser-agent"]:::tool
     tool_aa7d3d0815ed["doc-read"]:::tool
     tool_e255759bee23["doc-write"]:::tool
     tool_1913548b93c6["generate-docs-map"]:::tool
@@ -721,6 +722,7 @@ flowchart LR
   controller_18ec49ea2cf4 -. renders .-> view_4febaa319900
   route_0a02dcc06be5 --> controller_2702fc6f256e
   controller_2702fc6f256e --> service_66daa9bdc2c1
+  controller_2702fc6f256e --> service_6c9416ef0383
   controller_2702fc6f256e -. renders .-> view_fe7e7ffe6adc
   route_6e62aa059570 --> controller_f21ef7cdb1a4
   controller_f21ef7cdb1a4 --> service_a59832354e11

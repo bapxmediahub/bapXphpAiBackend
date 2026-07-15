@@ -108,7 +108,7 @@ final class ProjectMapService {
 
             ['method'=>'GET','path'=>'/docs','name'=>'docs.index','page'=>'public/blog','controller'=>'PublicController@docs','services'=>[]],
             ['method'=>'GET','path'=>'/help/{slug}','name'=>'help.show','page'=>'public/blog-post','controller'=>'PublicController@doc','services'=>[]],
-            ['method'=>'POST','path'=>'/remoteDB','name'=>'api.remotedb','page'=>'public/404','controller'=>'RemoteDbController@__invoke','services'=>['DatabaseService']],
+            ['method'=>'POST','path'=>'/remoteDB','name'=>'api.remotedb','page'=>'public/404','controller'=>'RemoteDbController@__invoke','services'=>['DatabaseService','SecretService']],
             ['method'=>'GET','path'=>'/blog','name'=>'blog.index','page'=>'public/blog','controller'=>'BlogController@index','services'=>['BlogService','MarkdownRenderer']],
             ['method'=>'GET','path'=>'/blog/{slug}','name'=>'blog.show','page'=>'public/blog-post','controller'=>'BlogController@show','services'=>['BlogService','MarkdownRenderer']],
             ['method'=>'GET','path'=>'/blog/category/{slug}','name'=>'blog.category','page'=>'public/blog','controller'=>'BlogController@category','services'=>['BlogService','MarkdownRenderer']],

@@ -2,127 +2,279 @@
 /**
  * Browser Agent — PHP-native browser automation tool
  *
- * Follows playwright-cli command structure and snapshot format.
- * HTTP mode: cURL + DOMDocument (pure PHP, works on shared hosting).
+ * HTTP mode: cURL + DOMDocument (pure PHP, shared hosting).
  * Playwright mode: shells out to playwright-cli (requires Node.js).
- * 
+ *
  * Usage: php cli/browser-agent.php [--pw] <command> [args...]
  *
- * ── Core ──────────────────────────────────────────────────────────
- *   open <url>         — fetch page, return YAML snapshot
- *   goto <url>         — navigate to URL
- *   click <sel>        — follow link / click button by CSS selector
- *   dblclick <sel>     — double-click (HTTP: same as click)
- *   hover <sel>        — show element details (HTTP: info only)
- *   fill <sel> <text>  — store form field value
- *   submit [url]       — POST form with stored values
- *   type <text>        — type text into focused field
- *   press <key>        — press key (HTTP: submit on Enter)
- *   snapshot           — print current page as YAML snapshot
- *   screenshot [file]  — save raw HTML (HTTP) or screenshot (PW)
- *   html               — print raw HTML of current page
- *   eval <expr>        — evaluate JS expression (HTTP: not supported)
- * 
- * ── Mouse ─────────────────────────────────────────────────────────
- *   mousemove <x> <y>  — HTTP: not supported (PW only)
- *   mousedown [btn]    — HTTP: not supported (PW only)
- *   mouseup [btn]      — HTTP: not supported (PW only)
- *   mousewheel <dx> <dy> — HTTP: not supported (PW only)
- *   drag <from> <to>   — HTTP: not supported (PW only)
- *   drop <sel> --file  — HTTP: not supported (PW only)
+ * Session persisted to .agents/temp/browser-session.json between CLI calls.
+ * Snapshot = AI-readable YAML page structure. Pixel screenshots = --pw mode.
  *
- * ── Navigation ────────────────────────────────────────────────────
- *   go-back            — navigate back in history
- *   go-forward         — navigate forward in history
- *   reload             — re-fetch current URL
+ * ── Core ──────────────────────────────────────────────────────
+ *   open/goto <url>     fetch page, YAML snapshot
+ *   click/dblclick <sel> follow link or submit button
+ *   hover <sel>          show element attributes
+ *   fill <sel> <text>   store form field value
+ *   submit [url]        POST form, snapshot result
+ *   snapshot            YAML page structure (AI-readable)
+ *   screenshot [file]   YAML snapshot (pixel screenshots = --pw)
+ *   html                raw HTML
+ *   type <text>         store typed text
+ *   press <key>         Enter = submit
  *
- * ── Tabs ──────────────────────────────────────────────────────────
- *   tab-list           — HTTP: no tabs (PW only)
- *   tab-new [url]      — HTTP: new session (PW only)
- *   tab-close [idx]    — HTTP: not supported (PW only)
- *   tab-select <idx>   — HTTP: not supported (PW only)
+ * ── Navigation ────────────────────────────────────────────────
+ *   go-back / go-forward / reload
  *
- * ── Smoke / Debug ─────────────────────────────────────────────────
- *   smoke <url>        — run smoke tests (status, links, images)
- *   console <url>      — show page HTTP metadata
- *   close              — reset session state
- *   help               — show this help
+ * ── Smoke / Debug ─────────────────────────────────────────────
+ *   smoke <url>         HTTP, links, image smoke test
+ *   console <url>       HTTP metadata
+ *   close               reset session
+ *
+ * ── Playwright mode (--pw, needs Node) ────────────────────────
+ *   --pw open --mobile|--tablet|--desktop <url>
+ *   --pw screenshot [--full-page] [--filename=f.png]
+ *   --pw click/dblclick/hover/drag/drop <ref>
+ *   --pw mousemove/mousedown/mouseup/mousewheel
+ *   --pw press/keydown/keyup
+ *   --pw tab-list/tab-new/tab-close/tab-select
  */
 
 require __DIR__ . '/../app/bootstrap.php';
 
-$session = [
-    'url' => null, 'html' => null, 'dom' => null,
-    'form_data' => [], 'history' => [], 'history_pos' => -1,
-    'cookies' => [], 'hovered' => null,
+define('SESS_FILE', __DIR__ . '/../.agents/temp/browser-session.json');
+define('COOKIE_JAR', __DIR__ . '/../.agents/temp/browser-cookies.txt');
+define('CONFIG_FILE', __DIR__ . '/../.agents/temp/browser-config.json');
+define('LOG_FILE', __DIR__ . '/../.agents/temp/browser-audit.log');
+
+const USER_AGENTS = [
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Safari/605.1.15',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox/135.0',
 ];
 
+function config_load(): array {
+    if (is_file(CONFIG_FILE)) {
+        $d = json_decode(file_get_contents(CONFIG_FILE), true);
+        if ($d) return $d;
+    }
+    return ['request_delay_ms'=>0,'timeout'=>30,'connect_timeout'=>10,'tracing'=>true];
+}
+
+function config_save(array $c): void {
+    file_put_contents(CONFIG_FILE, json_encode($c, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES));
+}
+
+function log_event(string $event, string $detail = ''): void {
+    $dir = dirname(LOG_FILE);
+    if (!is_dir($dir)) mkdir($dir, 0777, true);
+    $line = date('Y-m-d\TH:i:s\Z') . " {$event}" . ($detail ? " {$detail}" : '') . "\n";
+    file_put_contents(LOG_FILE, $line, FILE_APPEND | LOCK_EX);
+}
+
+function req_headers(): array {
+    $cfg = config_load();
+    $ua = USER_AGENTS[array_rand(USER_AGENTS)];
+    $headers = [
+        'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language: en-US,en;q=0.9',
+    ];
+    if ($cfg['tracing'] ?? false) {
+        $rid = bin2hex(random_bytes(8));
+        $headers[] = "X-Request-Id: ba-{$rid}";
+        $headers[] = "X-Browser-Agent: bapXphp/1.0";
+    }
+    return [$ua, $headers];
+}
+
+function req_delay(): void {
+    $cfg = config_load();
+    $ms = $cfg['request_delay_ms'] ?? 0;
+    if ($ms > 0) usleep($ms * 1000);
+}
+
+function sess_load(): array {
+    if (is_file(SESS_FILE)) {
+        $d = json_decode(file_get_contents(SESS_FILE), true);
+        if ($d && isset($d['url'])) return $d;
+    }
+    return ['url'=>null,'html'=>null,'dom'=>null,'form_data'=>[],'history'=>[],'history_pos'=>-1,'cookies'=>[],'trace'=>[]];
+}
+
+function sess_save(array $s): void {
+    $dir = dirname(SESS_FILE);
+    if (!is_dir($dir)) mkdir($dir, 0777, true);
+    $save = $s;
+    unset($save['dom']); // DOMDocument not serializable
+    file_put_contents(SESS_FILE, json_encode($save, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
+}
+
+function cookie_init(): void {
+    $dir = dirname(COOKIE_JAR);
+    if (!is_dir($dir)) mkdir($dir, 0777, true);
+    if (!is_file(COOKIE_JAR)) file_put_contents(COOKIE_JAR, '');
+}
+
 function http_get(string $url, array &$s, bool $store = true): string {
+    cookie_init();
+    req_delay();
+    $cfg = config_load();
+    [$ua, $hdrs] = req_headers();
     $ch = curl_init();
     curl_setopt_array($ch, [
         CURLOPT_URL => $url,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_MAXREDIRS => 5,
-        CURLOPT_TIMEOUT => 15,
-        CURLOPT_CONNECTTIMEOUT => 10,
-        CURLOPT_USERAGENT => 'bapXphp-browser-agent/1.0 (PHP)',
-        CURLOPT_HTTPHEADER => [
-            'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language: en-US,en;q=0.5',
-        ],
+        CURLOPT_TIMEOUT => $cfg['timeout'] ?? 30,
+        CURLOPT_CONNECTTIMEOUT => $cfg['connect_timeout'] ?? 10,
+        CURLOPT_USERAGENT => $ua,
+        CURLOPT_COOKIEFILE => COOKIE_JAR,
+        CURLOPT_COOKIEJAR => COOKIE_JAR,
+        CURLOPT_HTTPHEADER => $hdrs,
     ]);
+    $start = microtime(true);
     $html = curl_exec($ch);
     $info = curl_getinfo($ch);
     $error = curl_error($ch);
+    $elapsed = round((microtime(true) - $start) * 1000);
+    log_event("GET {$info['http_code']}", "{$url} ({$elapsed}ms)");
     if ($html === false) { fwrite(STDERR, "Error: $error\n"); exit(1); }
     $s['url'] = $info['url'];
     $s['html'] = $html;
-    $dom = new DOMDocument(); libxml_use_internal_errors(true); $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html); libxml_clear_errors();
+    $dom = new DOMDocument(); libxml_use_internal_errors(true); @$dom->loadHTML('<?xml encoding="utf-8" ?>' . $html); libxml_clear_errors();
     $s['dom'] = $dom;
-    if ($store) { $s['history'] = array_slice($s['history'], 0, $s['history_pos'] + 1); $s['history'][] = $info['url']; $s['history_pos'] = count($s['history']) - 1; }
-    $s['hovered'] = null;
+    if ($store) {
+        $s['history'] = array_slice($s['history'], 0, $s['history_pos'] + 1);
+        $s['history'][] = $info['url'];
+        $s['history_pos'] = count($s['history']) - 1;
+    }
     return $html;
 }
 
 function text_of(DOMNode $node): string {
-    $t = ''; foreach ($node->childNodes as $c) { if ($c instanceof DOMText) $t .= $c->wholeText; elseif ($c instanceof DOMElement) $t .= ' ' . text_of($c); }
+    $t = '';
+    foreach ($node->childNodes as $c) {
+        if ($c instanceof DOMText) $t .= $c->wholeText;
+        elseif ($c instanceof DOMElement) $t .= ' ' . text_of($c);
+    }
     return trim(preg_replace('/\s+/', ' ', $t));
 }
 
-function snapshot_yaml(array &$s): string {
+function snapshot_yaml(array &$s, int $max_e = 500, int $max_d = 10, ?string $root_ref = null): string {
     if (!$s['dom']) return "error: no page loaded\n";
-    $title = ''; $t = $s['dom']->getElementsByTagName('title'); if ($t->length > 0) $title = trim(str_replace("\n", ' ', $t->item(0)->textContent));
-    $y = "# Page\n- Page URL: {$s['url']}\n- Page Title: {$title}\n- HTTP Status: 200\n\n# Snapshot\n- Page URL: {$s['url']}\n- Page Title: {$title}\n\n";
-    $body = $s['dom']->getElementsByTagName('body')->item(0); if (!$body) { $y .= "  (no body)\n"; return $y; }
-    $ref = 0; $max_d = 6; $max_e = 80;
-    $walk = function(DOMElement $n, int $d) use (&$walk, &$ref, $max_d, $max_e): array {
-        if ($d > $max_d || $ref > $max_e) return []; $elems = [];
-        foreach ($n->childNodes as $c) {
-            if ($ref > $max_e) break; if (!$c instanceof DOMElement) continue;
-            $tag = strtolower($c->tagName); if (in_array($tag, ['script','style','noscript','iframe','svg'])) continue;
-            $ref++; $e = ['ref' => "e{$ref}", 'tag' => $tag];
-            $txt = text_of($c); $txt = mb_substr($txt, 0, 120); if ($txt !== '') $e['text'] = $txt;
-            foreach (['role' => 'role', 'href' => 'url', 'src' => 'src', 'alt' => 'alt', 'name' => 'name', 'type' => 'type', 'class' => 'class'] as $a => $k) {
-                $v = $c->getAttribute($a); if ($v !== '') $e[$k] = mb_substr($v, 0, 120);
+    $title = '';
+    $t = $s['dom']->getElementsByTagName('title');
+    if ($t->length > 0) $title = trim(str_replace("\n", ' ', $t->item(0)->textContent));
+    $y = "page_url: {$s['url']}\npage_title: {$title}\n";
+    if ($root_ref) $y .= "refocus: {$root_ref}\n";
+    $y .= "\n";
+
+    // Resolve root node: body, or drill into a specific ref
+    $body = $s['dom']->getElementsByTagName('body')->item(0);
+    if (!$body) { $y .= "elements: []\n"; return $y; }
+
+    $root_node = $body;
+    if ($root_ref) {
+        $idx = (int) ltrim($root_ref, 'e');
+        // Walk preserving DOMDocument tree order (stops libxml encoding issues)
+        $dom_refs = [];
+        $ri = 0;
+        $w2 = function(DOMElement $n) use (&$w2, &$dom_refs, &$ri, $max_e) {
+            if ($ri > $max_e) return;
+            foreach ($n->childNodes as $c) {
+                if ($ri > $max_e) return;
+                if (!$c instanceof DOMElement) continue;
+                $tag = strtolower($c->tagName);
+                if (in_array($tag, ['script','style','noscript','iframe','svg'], true)) continue;
+                $ri++;
+                $dom_refs[$ri] = $c;
+                $w2($c);
             }
-            $val = $c->getAttribute('value'); if ($val !== '' && in_array($tag, ['input','button','option'])) $e['value'] = mb_substr($val, 0, 80);
-            $children = $walk($c, $d + 1); if ($children) $e['children'] = $children;
+        };
+        $w2($body);
+        if (isset($dom_refs[$idx])) {
+            $root_node = $dom_refs[$idx];
+        }
+    }
+
+    $ref = 0;
+    $walk = function(DOMElement $n, int $d, ?string $pref) use (&$walk, &$ref, $max_d, $max_e): array {
+        if ($d > $max_d || $ref >= $max_e) return [];
+        $elems = [];
+        foreach ($n->childNodes as $c) {
+            if ($ref >= $max_e) break;
+            if (!$c instanceof DOMElement) continue;
+            $tag = strtolower($c->tagName);
+            if (in_array($tag, ['script','style','noscript','iframe','svg'], true)) continue;
+            $ref++;
+            $rid = "e{$ref}";
+            $e = ['ref' => $rid, 'tag' => $tag];
+            if ($pref) $e['p'] = $pref;
+
+            $txt = text_of($c);
+            $txt = mb_substr($txt, 0, 200);
+            if ($txt !== '') $e['text'] = $txt;
+
+            $attr_map = ['id'=>'id','role'=>'role','href'=>'url','src'=>'src','alt'=>'alt','name'=>'name','type'=>'type','class'=>'class','method'=>'method','action'=>'action','data-testid'=>'data-testid','aria-label'=>'aria-label','placeholder'=>'placeholder','title'=>'title','for'=>'for'];
+            foreach ($attr_map as $a => $k) {
+                $v = $c->getAttribute($a);
+                if ($v !== '') $e[$k] = mb_substr($v, 0, 120);
+            }
+
+            $val = $c->getAttribute('value');
+            if ($val !== '' && in_array($tag, ['input','button','option','textarea'], true)) $e['value'] = mb_substr($val, 0, 80);
+
+            if ($tag === 'input') {
+                $inp_type = strtolower($c->getAttribute('type') ?: 'text');
+                if (in_array($inp_type, ['checkbox','radio'], true)) {
+                    $chk = $c->getAttribute('checked');
+                    $e['checked'] = ($chk !== null && $chk !== '') ? true : false;
+                }
+            }
+            if ($tag === 'option') {
+                $sel = $c->getAttribute('selected');
+                $e['selected'] = ($sel !== null && $sel !== '') ? true : false;
+            }
+
+            $children = $walk($c, $d + 1, $rid);
+            if ($children) $e['children'] = $children;
             $elems[] = $e;
-        } return $elems;
+        }
+        return $elems;
     };
-    $y .= "  elements:\n" . arr_yaml($walk($body, 0), 4);
+
+    $top = $walk($root_node, 0, null);
+    if ($root_ref) {
+        // Wrap in a single element to show context
+        $wrapper = ['tag' => 'body', 'ref' => $root_ref, 'children' => $top];
+        $y .= "elements:\n" . arr_yaml([$wrapper], 0);
+    } else {
+        $y .= "elements:\n" . arr_yaml($top, 0);
+    }
+    $y .= "\n({$ref} elements shown, use --max-e=N for more, --ref=eN for drill-down)\n";
     return $y;
 }
 
 function arr_yaml(array $items, int $indent = 0): string {
-    $y = ''; $p = str_repeat(' ', $indent);
+    $y = ''; $p = str_repeat('  ', $indent);
     foreach ($items as $item) {
-        $tag = $item['tag']; $txt = $item['text'] ?? ''; $ref = $item['ref'] ?? '';
-        $y .= "{$p}- {$tag}" . ($ref ? " ({$ref})" : '') . ($txt ? ' "' . str_replace('"', '\"', $txt) . '"' : '') . "\n";
-        foreach (['role','url','src','alt','name','type','value','class'] as $a) { if (isset($item[$a])) $y .= "{$p}  {$a}: {$item[$a]}\n"; }
-        if (isset($item['children'])) $y .= arr_yaml($item['children'], $indent + 2);
-    } return $y;
+        $tag = $item['tag']; $txt = $item['text'] ?? ''; $rid = $item['ref'] ?? '';
+        $y .= "{$p}- {$tag}";
+        if ($rid) $y .= " [{$rid}]";
+        if (isset($item['p'])) $y .= " p:{$item['p']}";
+        if ($txt) $y .= " \"" . str_replace('"', '\"', $txt) . '"';
+        $y .= "\n";
+        $attrs = ['id','role','url','src','alt','name','type','value','class','data-testid','aria-label','placeholder','title','for'];
+        foreach ($attrs as $a) {
+            if (isset($item[$a])) $y .= "{$p}  {$a}: {$item[$a]}\n";
+        }
+        if (isset($item['checked'])) $y .= "{$p}  checked: " . ($item['checked'] ? 'true' : 'false') . "\n";
+        if (isset($item['selected'])) $y .= "{$p}  selected: " . ($item['selected'] ? 'true' : 'false') . "\n";
+        if (isset($item['children'])) $y .= arr_yaml($item['children'], $indent + 1);
+    }
+    return $y;
 }
 
 function css2xpath(string $css): string {
@@ -145,172 +297,479 @@ function resolve_url(string $href, string $base): string {
     return dirname($base) . '/' . ltrim($href, '/');
 }
 
-function find_elem(string $sel, array &$s): ?DOMElement {
-    $x = new DOMXPath($s['dom']); $nodes = $x->query(css2xpath($sel)); return $nodes && $nodes->length > 0 ? $nodes->item(0) : null;
+function find_elem(string $sel, DOMDocument $dom): ?DOMElement {
+    $x = new DOMXPath($dom); $nodes = $x->query(css2xpath($sel));
+    return $nodes && $nodes->length > 0 ? $nodes->item(0) : null;
 }
 
-function cmd_smoke(string $url): void {
-    echo "Smoke testing: $url\n"; echo str_repeat('-', 50) . "\n";
-    $ch = curl_init(); curl_setopt_array($ch, [CURLOPT_URL=>$url, CURLOPT_RETURNTRANSFER=>true, CURLOPT_FOLLOWLOCATION=>true, CURLOPT_TIMEOUT=>10, CURLOPT_CONNECTTIMEOUT=>5, CURLOPT_HEADER=>true, CURLOPT_NOBODY=>true, CURLOPT_USERAGENT=>'bapXphp-browser-agent/1.0']); curl_exec($ch);
-    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE); $ct = curl_getinfo($ch, CURLINFO_CONTENT_TYPE); $err = curl_error($ch);
-    $st = $code === 200 ? 'PASS' : ($code === 301 || $code === 302 ? 'REDIRECT' : 'FAIL');
-    echo "  HTTP {$code}: {$st}\n"; if ($err) echo "  Error: {$err}\n"; if ($ct) echo "  Type: {$ct}\n";
-
-    $body = http_get($url, $sess = ['url'=>null,'html'=>null,'dom'=>null,'form_data'=>[],'history'=>[],'history_pos'=>-1,'cookies'=>[],'hovered'=>null], false);
-    $dom = $sess['dom']; $ti = ''; $t = $dom->getElementsByTagName('title'); if ($t->length > 0) $ti = trim($t->item(0)->textContent);
-    echo "  Title: {$ti}\n";
-    $links = $dom->getElementsByTagName('a'); $int = 0; $ext = 0;
-    foreach ($links as $l) { $h = $l->getAttribute('href'); if (str_starts_with($h,'http') && !str_contains($h, parse_url($url,PHP_URL_HOST))) $ext++; elseif ($h !== '' && $h !== '#') $int++; }
-    echo "  Links: {$int} internal, {$ext} external\n";
-    $imgs = $dom->getElementsByTagName('img'); $broken = 0; $total = 0;
-    foreach ($imgs as $img) { $src = $img->getAttribute('src'); if ($src && !str_starts_with($src,'data:')) { $total++; $iu = str_starts_with($src,'http') ? $src : rtrim($url,'/').'/'.ltrim($src,'/'); $c=curl_init(); curl_setopt_array($c,[CURLOPT_URL=>$iu,CURLOPT_RETURNTRANSFER=>true,CURLOPT_NOBODY=>true,CURLOPT_TIMEOUT=>5,CURLOPT_CONNECTTIMEOUT=>3]); curl_exec($c); if (curl_getinfo($c,CURLINFO_HTTP_CODE)!==200) $broken++; }}
-    if ($total > 0) echo "  Images: {$total} total, {$broken} broken\n";
-    echo str_repeat('-',50) . "\n"; echo ($code===200&&$broken===0) ? "SMOKE PASSED\n" : "SMOKE ISSUES FOUND\n";
-}
-
-function cmd_help(): void {
-    echo "bapXphp browser-agent — PHP browser automation (playwright-cli format)\n\n";
-    echo "HTTP mode (default, pure PHP, no Node needed):\n";
-    echo "  open <url>         goto <url>         — fetch page, YAML snapshot\n";
-    echo "  click <sel>        dblclick <sel>     — follow link / double-click\n";
-    echo "  hover <sel>                           — show element details\n";
-    echo "  fill <sel> <text>  type <text>        — fill form field / type\n";
-    echo "  submit [url]       press <key>        — submit form / press Enter\n";
-    echo "  snapshot           screenshot [file]  — YAML snapshot / save HTML\n";
-    echo "  html               eval <expr>        — raw HTML / JS eval (N/A)\n";
-    echo "  go-back            go-forward         — history navigation\n";
-    echo "  reload                                — re-fetch current URL\n";
-    echo "  smoke <url>        console <url>      — smoke tests / HTTP metadata\n";
-    echo "  close             help                — reset session / this help\n\n";
-    echo "Playwright mode (--pw prefix, needs Node):\n";
-    echo "  --pw click <ref>   --pw dblclick <ref> [btn]\n";
-    echo "  --pw hover <ref>   --pw drag <from> <to>\n";
-    echo "  --pw drop <ref> --path=<file>\n";
-    echo "  --pw mousemove <x> <y>   --pw mousedown [btn]\n";
-    echo "  --pw mouseup [btn]       --pw mousewheel <dx> <dy>\n";
-    echo "  --pw press <key>   --pw keydown <key>  --pw keyup <key>\n";
-    echo "  --pw screenshot [--filename=f.png]\n";
-    echo "  --pw tab-list      --pw tab-new [url]  --pw tab-close [idx]\n";
-    echo "  --pw tab-select <idx>\n\n";
-    echo "Examples:\n";
-    echo "  bapXphp browser-agent open https://example.com\n";
-    echo "  bapXphp browser-agent smoke https://sripanchamispiritual.com\n";
-    echo "  bapXphp browser-agent --pw open https://example.com --headed\n";
+function dom_from_session(array &$s): void {
+    if (!isset($s['dom']) && $s['html']) {
+        $dom = new DOMDocument(); libxml_use_internal_errors(true); @$dom->loadHTML('<?xml encoding="utf-8" ?>' . $s['html']); libxml_clear_errors();
+        $s['dom'] = $dom;
+    }
 }
 
 // ── Main ───────────────────────────────────────────────────────
 $args = $argv; array_shift($args);
-$pw = false; if (($args[0] ?? '') === '--pw') { $pw = true; array_shift($args); }
+$pw = false;
+if (($args[0] ?? '') === '--pw') { $pw = true; array_shift($args); }
 $cmd = $args[0] ?? 'help';
 
 try {
     if ($pw) {
-        $pw_cmd = 'playwright-cli ' . implode(' ', array_map('escapeshellarg', array_slice($args, 1)));
-        $out = shell_exec($pw_cmd . ' 2>&1');
-        if ($out === null) { fwrite(STDERR, "playwright-cli not found. Install: npm install -g @playwright/cli@latest\n"); exit(1); }
+        // Translate device flags to playwright-cli commands
+        $pw_args = array_slice($args, 1);
+        $pw_cmd = $args[1] ?? '';
+        $rest = array_slice($args, 2);
+
+        $device_map = ['--mobile' => '--device="iPhone 15"', '--tablet' => '--device="iPad (gen 10th)"', '--desktop' => ''];
+
+        if ($pw_cmd === 'open' || $pw_cmd === 'goto') {
+            $url = $rest[0] ?? '';
+            $device_flag = '';
+            foreach ($rest as $i => $r) {
+                if (isset($device_map[$r])) { $device_flag = $device_map[$r]; unset($rest[$i]); break; }
+            }
+            $rest = array_values($rest);
+            $url = $rest[0] ?? $url;
+            $full_cmd = 'playwright-cli open ' . escapeshellarg($url) . ($device_flag ? ' ' . $device_flag : '');
+            $out = shell_exec($full_cmd . ' 2>&1');
+            if ($out === null) { fwrite(STDERR, "playwright-cli not found. Install: npm install -g @playwright/cli@latest\n"); exit(1); }
+            echo $out; exit;
+        }
+
+        if ($pw_cmd === 'screenshot') {
+            $file = ''; $full = false;
+            foreach ($rest as $i => $r) {
+                if ($r === '--full-page') { $full = true; unset($rest[$i]); }
+                elseif (str_starts_with($r, '--filename=')) { $file = substr($r, 11); unset($rest[$i]); }
+                elseif (str_starts_with($r, '-f')) { $file = $rest[$i+1] ?? ''; unset($rest[$i]); }
+            }
+            $rest = array_values($rest);
+            $pw_cmd_str = 'playwright-cli screenshot';
+            if ($full) $pw_cmd_str .= ' --full-page';
+            if ($file) $pw_cmd_str .= ' --filename=' . escapeshellarg($file);
+            $out = shell_exec($pw_cmd_str . ' 2>&1');
+            if ($out === null) { fwrite(STDERR, "playwright-cli not found.\n"); exit(1); }
+            echo $out; exit;
+        }
+
+        // Default: pass through to playwright-cli
+        $full_cmd = 'playwright-cli ' . implode(' ', array_map('escapeshellarg', array_merge([$pw_cmd], $rest)));
+        $out = shell_exec($full_cmd . ' 2>&1');
+        if ($out === null) { fwrite(STDERR, "playwright-cli not found.\n"); exit(1); }
         echo $out; exit;
     }
 
+    // HTTP mode — load session
+    $session = sess_load();
+    if (!empty($session['html'])) dom_from_session($session);
+
     switch ($cmd) {
         case 'open': case 'goto':
-            $url = $args[1] ?? ''; if (!$url) { fwrite(STDERR, "Usage: browser-agent open <url>\n"); exit(1); }
-            http_get($url, $session); echo snapshot_yaml($session); break;
+            $url = $args[1] ?? '';
+            if (!$url) { fwrite(STDERR, "Usage: browser-agent open <url>\n"); exit(1); }
+            http_get($url, $session);
+            sess_save($session);
+            echo snapshot_yaml($session);
+            break;
 
         case 'click': case 'dblclick':
-            $sel = $args[1] ?? ''; if (!$sel) { fwrite(STDERR, "Usage: browser-agent click <selector>\n"); exit(1); }
-            if (!$session['dom']) { fwrite(STDERR, "No page loaded.\n"); exit(1); }
-            $node = find_elem($sel, $session);
+            $sel = $args[1] ?? '';
+            if (!$sel) { fwrite(STDERR, "Usage: browser-agent click <selector>\n"); exit(1); }
+            if (!$session['dom']) { fwrite(STDERR, "No page loaded. Use 'open' first.\n"); exit(1); }
+            $node = find_elem($sel, $session['dom']);
             if (!$node) { fwrite(STDERR, "Not found: $sel\n"); exit(1); }
+
             $href = $node->getAttribute('href');
-            if ($href) { http_get(resolve_url($href, $session['url']), $session); echo snapshot_yaml($session); }
-            else { $btn = strtolower($node->getAttribute('type') ?: ''); $name = $node->getAttribute('name') ?: ''; $val = $node->getAttribute('value') ?: '';
-                if ($btn === 'submit' || $tag = strtolower($node->tagName) === 'button') {
-                    $session['form_data'][$name ?: '_submit'] = $val ?: '1'; goto submit_form;
-                } else { fwrite(STDERR, "Element not clickable (no href): $sel\n"); exit(1); }
-            } break;
+            if ($href) {
+                http_get(resolve_url($href, $session['url']), $session);
+                sess_save($session);
+                echo snapshot_yaml($session);
+                break;
+            }
+
+            $btn_type = strtolower($node->getAttribute('type') ?: '');
+            $tag_name = strtolower($node->tagName);
+            $is_submit = ($btn_type === 'submit' || $tag_name === 'button');
+
+            if ($is_submit) {
+                // Look for parent form to get action URL
+                $form = $node->parentNode;
+                while ($form && $form->nodeType === XML_ELEMENT_NODE && strtolower($form->tagName) !== 'form') {
+                    $form = $form->parentNode;
+                }
+                $action = '';
+                if ($form) {
+                    $action = $form->getAttribute('action');
+                    $method = strtoupper($form->getAttribute('method') ?: 'GET');
+                }
+                $submit_url = $action ? resolve_url($action, $session['url']) : $session['url'];
+
+                $form_data = [];
+                // Collect all input values from the form
+                if ($form) {
+                    $inputs = $form->getElementsByTagName('input');
+                    foreach ($inputs as $inp) {
+                        $n = $inp->getAttribute('name');
+                        if ($n) {
+                            $t = strtolower($inp->getAttribute('type') ?: 'text');
+                            if ($t === 'checkbox' || $t === 'radio') {
+                                if ($inp->getAttribute('checked') !== null) $form_data[$n] = $inp->getAttribute('value') ?: 'on';
+                            } else {
+                                $form_data[$n] = $inp->getAttribute('value') ?: '';
+                            }
+                        }
+                    }
+                    $textareas = $form->getElementsByTagName('textarea');
+                    foreach ($textareas as $ta) {
+                        $n = $ta->getAttribute('name');
+                        if ($n) $form_data[$n] = text_of($ta);
+                    }
+                    $selects = $form->getElementsByTagName('select');
+                    foreach ($selects as $sel_el) {
+                        $n = $sel_el->getAttribute('name');
+                        if ($n) {
+                            $opts = $sel_el->getElementsByTagName('option');
+                            foreach ($opts as $opt) {
+                                if ($opt->getAttribute('selected') !== null) {
+                                    $form_data[$n] = $opt->getAttribute('value') ?: text_of($opt);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                // Override with stored form_data
+                foreach ($session['form_data'] as $k => $v) { $form_data[$k] = $v; }
+                $name = $node->getAttribute('name') ?: '';
+                $form_data[$name ?: '_submit'] = $node->getAttribute('value') ?: '1';
+
+                if ($method === 'GET') {
+                    $qs = http_build_query($form_data);
+                    $sep = str_contains($submit_url, '?') ? '&' : '?';
+                    http_get($submit_url . $sep . $qs, $session);
+                } else {
+                    req_delay();
+                    [$ua, $hdrs] = req_headers();
+                    $cfg = config_load();
+                    $ch = curl_init();
+                    curl_setopt_array($ch, [
+                        CURLOPT_URL => $submit_url,
+                        CURLOPT_RETURNTRANSFER => true,
+                        CURLOPT_FOLLOWLOCATION => true,
+                        CURLOPT_POST => true,
+                        CURLOPT_POSTFIELDS => http_build_query($form_data),
+                        CURLOPT_TIMEOUT => $cfg['timeout'] ?? 30,
+                        CURLOPT_USERAGENT => $ua,
+                        CURLOPT_HTTPHEADER => $hdrs,
+                        CURLOPT_COOKIEFILE => COOKIE_JAR,
+                        CURLOPT_COOKIEJAR => COOKIE_JAR,
+                    ]);
+                    $html = curl_exec($ch);
+                    $session['url'] = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
+                    $session['html'] = $html;
+                    $dom = new DOMDocument(); libxml_use_internal_errors(true); @$dom->loadHTML('<?xml encoding="utf-8" ?>' . $html); libxml_clear_errors();
+                    $session['dom'] = $dom;
+                }
+                $session['form_data'] = [];
+                sess_save($session);
+                echo snapshot_yaml($session);
+                break;
+            }
+
+            fwrite(STDERR, "Element not clickable (no href, not a button): $sel\n");
+            exit(1);
 
         case 'hover':
-            $sel = $args[1] ?? ''; if (!$sel) { fwrite(STDERR, "Usage: browser-agent hover <selector>\n"); exit(1); }
+            $sel = $args[1] ?? '';
+            if (!$sel) { fwrite(STDERR, "Usage: browser-agent hover <selector>\n"); exit(1); }
             if (!$session['dom']) { fwrite(STDERR, "No page loaded.\n"); exit(1); }
-            $node = find_elem($sel, $session);
+            $node = find_elem($sel, $session['dom']);
             if (!$node) { fwrite(STDERR, "Not found: $sel\n"); exit(1); }
             $tag = strtolower($node->tagName); $txt = text_of($node); $href = $node->getAttribute('href');
-            echo "Element: <{$tag}> " . ($txt ? "\"{$txt}\"" : '') . "\n";
+            echo "<{$tag}>" . ($txt ? " \"{$txt}\"" : '') . "\n";
             if ($href) echo "  href: {$href}\n";
-            foreach (['src'=>'src','alt'=>'alt','name'=>'name','type'=>'type','class'=>'class','id'=>'id','title'=>'title'] as $a=>$k) {
-                $v = $node->getAttribute($a); if ($v !== '') echo "  {$k}: {$v}\n";
-            } break;
+            foreach (['id'=>'id','src'=>'src','alt'=>'alt','name'=>'name','type'=>'type','class'=>'class','title'=>'title','role'=>'role','data-testid'=>'data-testid','aria-label'=>'aria-label','placeholder'=>'placeholder'] as $a=>$k) {
+                $v = $node->getAttribute($a);
+                if ($v !== '') echo "  {$k}: {$v}\n";
+            }
+            break;
 
         case 'fill':
             $sel = $args[1] ?? ''; $val = $args[2] ?? '';
             if (!$sel || !$val) { fwrite(STDERR, "Usage: browser-agent fill <selector> <text>\n"); exit(1); }
             if (!$session['dom']) { fwrite(STDERR, "No page loaded.\n"); exit(1); }
-            $node = find_elem($sel, $session); if (!$node) { fwrite(STDERR, "Not found: $sel\n"); exit(1); }
-            $name = $node->getAttribute('name') ?: $sel; $session['form_data'][$name] = $val;
-            echo "Set {$name} = {$val}\n"; break;
-
-        case 'type':
-            $sel = $args[1] ?? ''; if (!$sel) { fwrite(STDERR, "Usage: browser-agent type <text>\n"); exit(1); }
-            if (!$session['dom']) { fwrite(STDERR, "No page loaded.\n"); exit(1); }
-            $session['form_data']['_typed'] = $sel; echo "Typed: {$sel}\n"; break;
-
-        case 'press':
-            $key = $args[1] ?? ''; if (!$key) { fwrite(STDERR, "Usage: browser-agent press <key>\n"); exit(1); }
-            if (strtolower($key) === 'enter') goto submit_form;
-            else { echo "Key pressed (stored): {$key}\n"; } break;
-
-        case 'submit': submit_form:
-            $url = $args[1] ?? $session['url'] ?? ''; if (!$url) { fwrite(STDERR, "No URL to submit to.\n"); exit(1); }
-            $ch = curl_init(); curl_setopt_array($ch, [CURLOPT_URL=>$url, CURLOPT_RETURNTRANSFER=>true, CURLOPT_FOLLOWLOCATION=>true, CURLOPT_POST=>true, CURLOPT_POSTFIELDS=>http_build_query($session['form_data']), CURLOPT_TIMEOUT=>15, CURLOPT_USERAGENT=>'bapXphp-browser-agent/1.0']);
-            $html = curl_exec($ch); $session['url'] = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL); $session['html'] = $html;
-            $dom = new DOMDocument(); libxml_use_internal_errors(true); $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html); libxml_clear_errors(); $session['dom'] = $dom;
-            $session['form_data'] = []; echo snapshot_yaml($session); break;
-
-        case 'snapshot': echo snapshot_yaml($session); break;
-
-        case 'screenshot':
-            $file = $args[1] ?? ''; $html = $session['html'] ?? '';
-            if (!$html) { $html = "<html><body><p>No page loaded</p></body></html>"; }
-            if ($file) { file_put_contents($file, $html); echo "Saved: {$file}\n"; }
-            else { echo "---HTML SNIPPET---\n" . mb_substr($html, 0, 2000) . "\n---\n"; }
+            $node = find_elem($sel, $session['dom']);
+            if (!$node) { fwrite(STDERR, "Not found: $sel\n"); exit(1); }
+            $name = $node->getAttribute('name') ?: $sel;
+            $session['form_data'][$name] = $val;
+            sess_save($session);
+            echo "Set {$name} = {$val}\n";
             break;
 
-        case 'html': echo ($session['html'] ?? "(no page loaded)") . "\n"; break;
+        case 'type':
+            $text = $args[1] ?? '';
+            if (!$text) { fwrite(STDERR, "Usage: browser-agent type <text>\n"); exit(1); }
+            $session['form_data']['_typed'] = $text;
+            sess_save($session);
+            echo "Typed: {$text}\n";
+            break;
 
-        case 'eval': echo "eval: JS execution not available in HTTP mode. Use --pw mode.\n"; break;
+        case 'press':
+            $key = $args[1] ?? '';
+            if (!$key) { fwrite(STDERR, "Usage: browser-agent press <key>\n"); exit(1); }
+            if (strtolower($key) === 'enter') {
+                if (!$session['url']) { fwrite(STDERR, "No page to submit to.\n"); exit(1); }
+                goto submit_form;
+            }
+            echo "Key stored: {$key}\n";
+            break;
+
+        case 'submit': submit_form:
+            $url = $args[1] ?? $session['url'] ?? '';
+            if (!$url) { fwrite(STDERR, "No URL to submit to.\n"); exit(1); }
+            req_delay();
+            [$ua, $hdrs] = req_headers();
+            $cfg = config_load();
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => http_build_query($session['form_data']),
+                CURLOPT_TIMEOUT => $cfg['timeout'] ?? 30,
+                CURLOPT_USERAGENT => $ua,
+                CURLOPT_HTTPHEADER => $hdrs,
+                CURLOPT_COOKIEFILE => COOKIE_JAR,
+                CURLOPT_COOKIEJAR => COOKIE_JAR,
+            ]);
+            $html = curl_exec($ch);
+            $session['url'] = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
+            $session['html'] = $html;
+            $dom = new DOMDocument(); libxml_use_internal_errors(true); @$dom->loadHTML('<?xml encoding="utf-8" ?>' . $html); libxml_clear_errors();
+            $session['dom'] = $dom;
+            $session['form_data'] = [];
+            sess_save($session);
+            echo snapshot_yaml($session);
+            break;
+
+        case 'snapshot':
+            if (!$session['dom']) { echo "error: no page loaded\n"; exit(1); }
+            $max_e = 500; $max_d = 10; $root_ref = null;
+            foreach (array_slice($args, 1) as $a) {
+                if (str_starts_with($a, '--max-e=')) $max_e = (int) substr($a, 8);
+                elseif (str_starts_with($a, '--max-d=')) $max_d = (int) substr($a, 8);
+                elseif (str_starts_with($a, '--ref=')) $root_ref = substr($a, 6);
+            }
+            echo snapshot_yaml($session, $max_e, $max_d, $root_ref);
+            break;
+
+        case 'screenshot':
+            // In HTTP mode, screenshot = YAML snapshot (AI-readable).
+            // Pixel screenshots need --pw mode with playwright-cli.
+            if (!$session['dom']) { echo "error: no page loaded\n"; exit(1); }
+            $max_e = 500; $max_d = 10; $root_ref = null;
+            foreach (array_slice($args, 1) as $a) {
+                if (str_starts_with($a, '--max-e=')) $max_e = (int) substr($a, 8);
+                elseif (str_starts_with($a, '--max-d=')) $max_d = (int) substr($a, 8);
+                elseif (str_starts_with($a, '--ref=')) $root_ref = substr($a, 6);
+            }
+            echo "# Screenshot (YAML snapshot — AI-readable. For pixel screenshots use: browser-agent --pw screenshot)\n";
+            echo snapshot_yaml($session, $max_e, $max_d, $root_ref);
+            break;
+
+        case 'count':
+            if (!$session['dom']) { echo "error: no page loaded\n"; exit(1); }
+            $tag_filter = $args[1] ?? '*';
+            $x = new DOMXPath($session['dom']);
+            $q = $tag_filter === '*' ? '//*' : "//{$tag_filter}";
+            $nodes = $x->query($q);
+            $count = $nodes ? $nodes->length : 0;
+            echo "{$tag_filter}: {$count}\n";
+            // Also show tag breakdown
+            if ($tag_filter === '*') {
+                $tags = [];
+                foreach ($nodes as $n) {
+                    $t = strtolower($n->tagName);
+                    $tags[$t] = ($tags[$t] ?? 0) + 1;
+                }
+                arsort($tags);
+                foreach (array_slice($tags, 0, 30) as $t => $c) {
+                    echo "  {$t}: {$c}\n";
+                }
+            }
+            break;
+
+        case 'html':
+            echo ($session['html'] ?? "(no page loaded)") . "\n";
+            break;
+
+        case 'eval':
+            echo "eval: JS not available in HTTP mode. Use --pw mode.\n";
+            break;
 
         case 'go-back':
-            if ($session['history_pos'] > 0) { $session['history_pos']--; http_get($session['history'][$session['history_pos']], $session); echo snapshot_yaml($session); }
-            else { fwrite(STDERR, "No history to go back to.\n"); exit(1); } break;
+            if ($session['history_pos'] > 0) {
+                $session['history_pos']--;
+                http_get($session['history'][$session['history_pos']], $session, false);
+                sess_save($session);
+                echo snapshot_yaml($session);
+            } else { fwrite(STDERR, "No back history.\n"); exit(1); }
+            break;
 
         case 'go-forward':
-            if ($session['history_pos'] < count($session['history']) - 1) { $session['history_pos']++; http_get($session['history'][$session['history_pos']], $session); echo snapshot_yaml($session); }
-            else { fwrite(STDERR, "No forward history.\n"); exit(1); } break;
+            if ($session['history_pos'] < count($session['history']) - 1) {
+                $session['history_pos']++;
+                http_get($session['history'][$session['history_pos']], $session, false);
+                sess_save($session);
+                echo snapshot_yaml($session);
+            } else { fwrite(STDERR, "No forward history.\n"); exit(1); }
+            break;
 
         case 'reload':
             if (!$session['url']) { fwrite(STDERR, "No page to reload.\n"); exit(1); }
-            http_get($session['url'], $session); echo snapshot_yaml($session); break;
+            http_get($session['url'], $session, false);
+            sess_save($session);
+            echo snapshot_yaml($session);
+            break;
 
         case 'smoke':
-            $url = $args[1] ?? ($session['url'] ?? ''); if (!$url) { fwrite(STDERR, "Usage: browser-agent smoke <url>\n"); exit(1); }
-            cmd_smoke($url); break;
+            $url = $args[1] ?? ($session['url'] ?? '');
+            if (!$url) { fwrite(STDERR, "Usage: browser-agent smoke <url>\n"); exit(1); }
+            echo "Smoke: {$url}\n" . str_repeat('-', 50) . "\n";
+            req_delay();
+            [$ua, $hdrs] = req_headers();
+            $cfg = config_load();
+            $ch = curl_init();
+            curl_setopt_array($ch, [CURLOPT_URL=>$url, CURLOPT_RETURNTRANSFER=>true, CURLOPT_FOLLOWLOCATION=>true, CURLOPT_TIMEOUT=>$cfg['timeout']??30, CURLOPT_CONNECTTIMEOUT=>$cfg['connect_timeout']??10, CURLOPT_HEADER=>true, CURLOPT_NOBODY=>false, CURLOPT_USERAGENT=>$ua, CURLOPT_HTTPHEADER=>$hdrs]);
+            $body = curl_exec($ch);
+            $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $ct = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+            $err = curl_error($ch);
+            $st = $code === 200 ? 'PASS' : ($code >= 301 && $code <= 308 ? 'REDIRECT' : 'FAIL');
+            echo "  HTTP {$code}: {$st}\n";
+            if ($err) echo "  Error: {$err}\n";
+            if ($ct) echo "  Type: {$ct}\n";
+
+            $dom = new DOMDocument(); libxml_use_internal_errors(true); @$dom->loadHTML('<?xml encoding="utf-8" ?>' . $body); libxml_clear_errors();
+            $ti = ''; $t = $dom->getElementsByTagName('title'); if ($t->length > 0) $ti = trim($t->item(0)->textContent);
+            echo "  Title: {$ti}\n";
+            $links = $dom->getElementsByTagName('a'); $int = 0; $ext = 0;
+            $host = parse_url($url, PHP_URL_HOST);
+            $base_url = $code >= 300 && $code < 400 ? curl_getinfo($ch, CURLINFO_EFFECTIVE_URL) : $url;
+            foreach ($links as $l) { $h = $l->getAttribute('href'); if (str_starts_with($h,'http') && !str_contains($h, $host)) $ext++; elseif ($h !== '' && $h !== '#') $int++; }
+            echo "  Links: {$int} int, {$ext} ext\n";
+            $imgs = $dom->getElementsByTagName('img'); $broken = 0; $total = 0;
+            $base_parts = parse_url($base_url);
+            $base_dir = isset($base_parts['path']) ? dirname($base_parts['path']) : '/';
+            foreach ($imgs as $img) {
+                $src = $img->getAttribute('src');
+                if ($src && !str_starts_with($src,'data:')) {
+                    $total++;
+                    if (str_starts_with($src,'http')) $iu = $src;
+                    elseif (str_starts_with($src,'//')) $iu = 'https:' . $src;
+                    elseif (str_starts_with($src,'/')) $iu = ($base_parts['scheme']??'https') . '://' . ($base_parts['host']??'') . $src;
+                    else $iu = ($base_parts['scheme']??'https') . '://' . ($base_parts['host']??'') . $base_dir . '/' . $src;
+                    $c = curl_init(); curl_setopt_array($c, [CURLOPT_URL=>$iu, CURLOPT_RETURNTRANSFER=>false, CURLOPT_NOBODY=>false, CURLOPT_TIMEOUT=>8, CURLOPT_CONNECTTIMEOUT=>5]); curl_exec($c);
+                    $img_code = curl_getinfo($c, CURLINFO_HTTP_CODE);
+                    if ($img_code !== 200) $broken++;
+                }
+            }
+            if ($total > 0) echo "  Images: {$total}, {$broken} broken\n";
+            echo str_repeat('-', 50) . "\n" . (($code===200&&$broken===0) ? "SMOKE PASSED\n" : "SMOKE ISSUES\n");
+            break;
 
         case 'console':
-            $url = $args[1] ?? ($session['url'] ?? ''); if (!$url) { fwrite(STDERR, "Usage: browser-agent console <url>\n"); exit(1); }
+            $url = $args[1] ?? ($session['url'] ?? '');
+            if (!$url) { fwrite(STDERR, "Usage: browser-agent console <url>\n"); exit(1); }
             $ch = curl_init(); curl_setopt_array($ch, [CURLOPT_URL=>$url, CURLOPT_RETURNTRANSFER=>true, CURLOPT_FOLLOWLOCATION=>true, CURLOPT_TIMEOUT=>10, CURLOPT_HEADER=>true, CURLOPT_USERAGENT=>'bapXphp-browser-agent/1.0']); $resp = curl_exec($ch);
             echo "HTTP " . curl_getinfo($ch, CURLINFO_HTTP_CODE) . "\n";
             echo "Content-Type: " . curl_getinfo($ch, CURLINFO_CONTENT_TYPE) . "\n";
             if ($r = curl_getinfo($ch, CURLINFO_REDIRECT_URL)) echo "Redirect: {$r}\n";
-            echo "Body size: " . strlen($resp) . " bytes\n"; break;
+            echo "Body: " . strlen($resp) . " bytes\n";
+            break;
 
         case 'mousemove': case 'mousedown': case 'mouseup': case 'mousewheel':
         case 'drag': case 'drop': case 'tab-list': case 'tab-new': case 'tab-close': case 'tab-select':
-            fwrite(STDERR, "{$cmd}: not available in HTTP mode. Use --pw prefix for Playwright mode.\n"); exit(1);
+            fwrite(STDERR, "{$cmd}: not available in HTTP mode. Use --pw prefix.\n"); exit(1);
+
+        case 'config':
+            $cfg = config_load();
+            $sub = $args[1] ?? '';
+            if ($sub === 'set' && $args[2] ?? '') {
+                $key = $args[2]; $val = $args[3] ?? '';
+                if (is_numeric($val)) $val = (int) $val;
+                elseif (in_array($val, ['true','false'], true)) $val = $val === 'true';
+                $cfg[$key] = $val;
+                config_save($cfg);
+                echo "config {$key} = {$val}\n";
+            } else {
+                foreach ($cfg as $k => $v) echo "  {$k}: {$v}\n";
+            }
+            break;
+
+        case 'log':
+            if (is_file(LOG_FILE)) {
+                $lines = (int) ($args[1] ?? 20);
+                $all = file(LOG_FILE, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+                $tail = array_slice($all, -$lines);
+                echo implode("\n", $tail) . "\n";
+            } else { echo "(no log entries)\n"; }
+            break;
+
+        case 'cookies':
+            if (is_file(COOKIE_JAR)) {
+                $cookies = file_get_contents(COOKIE_JAR);
+                echo $cookies ?: "(empty)\n";
+            } else { echo "(no cookie jar)\n"; }
+            break;
 
         case 'close':
-            $session = ['url'=>null,'html'=>null,'dom'=>null,'form_data'=>[],'history'=>[],'history_pos'=>-1,'cookies'=>[],'hovered'=>null];
-            echo "Session reset\n"; break;
+            if (is_file(SESS_FILE)) unlink(SESS_FILE);
+            if (is_file(COOKIE_JAR)) unlink(COOKIE_JAR);
+            if (is_file(LOG_FILE)) unlink(LOG_FILE);
+            $session = ['url'=>null,'html'=>null,'dom'=>null,'form_data'=>[],'history'=>[],'history_pos'=>-1,'cookies'=>[]];
+            echo "Session reset\n";
+            break;
 
-        case 'help': default: cmd_help(); break;
+        case 'help': default:
+            echo "bapXphp browser-agent — PHP browser automation\n\n";
+            echo "HTTP mode (default, pure PHP):\n";
+            echo "  open <url>          fetch page → YAML snapshot (max 500 elems, depth 10)\n";
+            echo "  click <sel>         follow link / submit button\n";
+            echo "  hover <sel>         show element attributes\n";
+            echo "  fill <sel> <text>   set form field\n";
+            echo "  submit [url]        POST form, snapshot result\n";
+            echo "  snapshot [flags]    YAML page structure with refs, parent refs, key attrs\n";
+            echo "    --max-e=N         max elements (default 500)\n";
+            echo "    --max-d=N         max depth (default 10)\n";
+            echo "    --ref=eN          drill into subtree of element eN\n";
+            echo "  screenshot [flags]  YAML snapshot (pixel screenshots = --pw)\n";
+            echo "  smoke <url>         HTTP + links + images + title test\n";
+            echo "  count [tag]         count all elements or specific tag\n";
+            echo "  config [set k v]    show or set config (request_delay_ms, timeout, etc.)\n";
+            echo "  log [N]             show last N audit log entries (default 20)\n";
+            echo "  cookies             show cookie jar contents\n";
+            echo "  go-back/forward     history navigation (doesn't re-push)\n";
+            echo "  reload              re-fetch current page\n";
+            echo "  close               reset session (cookies + log)\n\n";
+            echo "Snapshots include: id, class, role, href, src, alt, name, type, value,\n";
+            echo "  method, action, data-testid, aria-label, placeholder, checked, selected\n\n";
+            echo "Config: request_delay_ms, timeout, connect_timeout, tracing\n";
+            echo "UA pool: Chrome/Mac, Chrome/Win, Chrome/Linux, Safari, Firefox (rotated per request)\n";
+            echo "Session persists across calls in .agents/temp/browser-session.json\n\n";
+            echo "Playwright mode (--pw, needs Node.js + playwright-cli):\n";
+            echo "  --pw open --mobile|--tablet|--desktop <url>\n";
+            echo "  --pw screenshot [--full-page] [--filename=f.png]\n";
+            echo "  --pw click/dblclick/hover/drag/drop <ref>\n";
+            echo "  --pw mousemove/mousedown/mouseup/mousewheel <x> <y>\n";
+            echo "  --pw press/keydown/keyup <key>\n";
+            echo "  --pw tab-list/tab-new/tab-close/tab-select\n";
+            break;
     }
-} catch (Throwable $e) { fwrite(STDERR, "Error: " . $e->getMessage() . "\n"); exit(1); }
+} catch (Throwable $e) {
+    fwrite(STDERR, "Error: " . $e->getMessage() . "\n");
+    exit(1);
+}

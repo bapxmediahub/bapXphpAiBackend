@@ -87,6 +87,23 @@ bapXphp run ls .agents/temp/         # list attachments
 bapXphp read file .agents/temp/<file> # read an attachment
 ```
 
+## Browser Agent (headless browser automation)
+
+```bash
+bapXphp browser-agent open <url>              # fetch page, YAML snapshot
+bapXphp browser-agent click <selector>         # click element
+bapXphp browser-agent fill <selector> <value>  # fill form input
+bapXphp browser-agent submit [selector]        # submit form
+bapXphp browser-agent snapshot                 # YAML page snapshot
+bapXphp browser-agent smoke <url>              # health check
+bapXphp browser-agent screenshot [file]        # YAML output
+bapXphp browser-agent config set <k> <v>       # runtime config
+bapXphp browser-agent log                      # audit trail
+bapXphp browser-agent count <tag>              # count DOM tags
+bapXphp browser-agent close                    # clean session
+bapXphp browser-agent --pw <command>           # forward to Playwright
+```
+
 ## Missing Commands
 
 If a required operation is missing or unsafe, enhance the nearest existing `bapXphp` command before performing the operation. Never use raw bash/write/edit/find tools for operations that have a `bapXphp` equivalent.
