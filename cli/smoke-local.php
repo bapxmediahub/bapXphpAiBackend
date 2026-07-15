@@ -57,6 +57,10 @@ try {
         '/admin/settings' => 302,
     ] as $path => $expected) {
         $response = httpRequest($base . $path);
+        if ($response['status'] === 0) {
+            usleep(1000000);
+            $response = httpRequest($base . $path);
+        }
         echo "{$response['status']} GET {$path}\n";
         if ($response['status'] !== $expected) {
             $failures[] = "GET {$path} expected {$expected}, got {$response['status']}";
