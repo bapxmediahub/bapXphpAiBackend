@@ -8,13 +8,6 @@ permissions:
   issues: write
   contents: write
 
-jobs:
-  dispatch:
-    runs-on: ubuntu-latest
-permissions:
-  issues: write
-  contents: write
-
 concurrency:
   group: issue-agent-${{ github.event.issue.number }}
   cancel-in-progress: false
