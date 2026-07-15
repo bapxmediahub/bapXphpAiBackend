@@ -1,0 +1,152 @@
+{
+  "issue": 170,
+  "role": "worker",
+  "objectives": [
+    {
+      "id": "170-cto-workflow",
+      "status": "gap",
+      "evidence": [
+        ".agents/workflows/cto-workflow.md exists and is outside this Worker's exclusive ownership"
+      ],
+      "browser_evidence": [],
+      "unresolved": [
+        "An independent CTO must verify that assignment and acceptance behavior satisfies issue #170"
+      ]
+    },
+    {
+      "id": "170-role-contracts",
+      "status": "pass",
+      "evidence": [
+        ".agents/workflows/worker.md defines Worker ownership, tools, boundaries, and structured output",
+        ".agents/workflows/reviewer.md defines the read-only Reviewer role"
+      ],
+      "browser_evidence": [],
+      "unresolved": []
+    },
+    {
+      "id": "170-machine-readable-handoff",
+      "status": "pass",
+      "evidence": [
+        "cli/handoff.php validates issue, role, unique objective IDs, statuses, evidence arrays, commands, risks, and next role",
+        ".agents/handoffs/170-worker.json maps issue #170 objectives to evidence and unresolved items",
+        "Issue comment https://github.com/getwinharris/bapXphpAiBackend/issues/170#issuecomment-4979650209 records the stable twelve-ID objective registry"
+      ],
+      "browser_evidence": [],
+      "unresolved": []
+    },
+    {
+      "id": "170-ci-objective-gate",
+      "status": "pass",
+      "evidence": [
+        ".github/workflows/ci.yml detects and validates every changed .agents/handoffs/*.json file",
+        "CI invokes bapXphp handoff validate --issue, which compares the exact handoff ID set with the marked GitHub issue registry",
+        "tests/run.php proves both missing issue objectives and out-of-scope handoff objectives fail"
+      ],
+      "browser_evidence": [],
+      "unresolved": []
+    },
+    {
+      "id": "170-single-cto-comment",
+      "status": "pass",
+      "evidence": [
+        "bapXphp handoff comment renders one <!-- CTO-HANDOFF --> marker and PATCHes the matching PR comment when it exists",
+        ".github/workflows/ci.yml uses github.token and does not require OpenAI credentials"
+      ],
+      "browser_evidence": [],
+      "unresolved": []
+    },
+    {
+      "id": "170-reviewer-findings",
+      "status": "gap",
+      "evidence": [
+        "The handoff schema permits reviewer-role handoffs"
+      ],
+      "browser_evidence": [],
+      "unresolved": [
+        "No independent Reviewer handoff exists yet, so separate Reviewer findings are not proven"
+      ]
+    },
+    {
+      "id": "170-coderabbit-disposition",
+      "status": "gap",
+      "evidence": [],
+      "browser_evidence": [],
+      "unresolved": [
+        "No PR or CodeRabbit review was created in this Worker assignment"
+      ]
+    },
+    {
+      "id": "170-gap-routing",
+      "status": "gap",
+      "evidence": [
+        "The handoff format records gap and blocked statuses and can return next_role to worker"
+      ],
+      "browser_evidence": [],
+      "unresolved": [
+        "No CTO review cycle has exercised routing a failed objective back to the same Worker"
+      ]
+    },
+    {
+      "id": "170-merge-control",
+      "status": "pass",
+      "evidence": [
+        "Existing bapXphp pr and bapXphp merge commands remain unchanged and authoritative",
+        "The Worker did not commit, create a PR, merge, deploy, or change issue state"
+      ],
+      "browser_evidence": [],
+      "unresolved": []
+    },
+    {
+      "id": "170-post-merge-verification",
+      "status": "gap",
+      "evidence": [],
+      "browser_evidence": [],
+      "unresolved": [
+        "Hostinger deployment and upstream/fork main SHA equality are post-merge CTO checks outside this assignment"
+      ]
+    },
+    {
+      "id": "170-regression-tests",
+      "status": "pass",
+      "evidence": [
+        "php tests/run.php passes the focused handoff workflow regression test",
+        "The test covers malformed handoffs, missing pass evidence, duplicate IDs, unresolved gaps, exact issue coverage, missing and unknown objective IDs, and schema alignment"
+      ],
+      "browser_evidence": [],
+      "unresolved": []
+    },
+    {
+      "id": "170-product-169-pilot",
+      "status": "gap",
+      "evidence": [],
+      "browser_evidence": [],
+      "unresolved": [
+        "Issue #169 has not been run as a pilot because this assignment forbids GitHub state changes and PR creation"
+      ]
+    }
+  ],
+  "files_changed": [
+    "cli/handoff.php",
+    "cli/bapXphp",
+    ".github/workflows/ci.yml",
+    "tests/run.php",
+    ".agents/handoffs/170-worker.json"
+  ],
+  "commands_run": [
+    "bapXphp map",
+    "bapXphp schema list",
+    "gh issue comment 170 --body-file - (created stable objective registry comment)",
+    "php -l cli/handoff.php",
+    "bash -n cli/bapXphp",
+    "php tests/run.php",
+    "bapXphp handoff validate .agents/handoffs/170-worker.json --issue",
+    "bapXphp ci (lint, tests, docs-map validation, and smoke passed; project-map freshness failed)"
+  ],
+  "risks": [
+    "The PR comment create/update path is statically tested but was not exercised against GitHub because GitHub state changes were forbidden",
+    "The dirty worktree contains unrelated product, GST, UI, schema, map, documentation, and workflow changes that this Worker preserved",
+    "Full bapXphp ci reports the existing docs/systematic-map.mmd as stale; map regeneration is outside this Worker's exclusive ownership",
+    "A CTO and independent Reviewer must assess all gap objectives before merge"
+  ],
+  "next_role": "reviewer"
+}

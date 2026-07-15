@@ -54,6 +54,12 @@ set -euo pipefail
 #   bapXphp issue                   — create a GitHub issue (interactive via gh CLI)
 #   bapXphp pr [gh args]            — validate, then create a GitHub PR
 #   bapXphp merge [gh args]         — validate, then merge a GitHub PR
+#   bapXphp handoff validate <file> [--issue]
+#                                   — validate structure; --issue also proves GitHub objective coverage
+#   bapXphp handoff comment <file> <pr-number>
+#                                   — create or update the PR's CTO HANDOFF comment
+#   bapXphp handoff next <issue>    — print JSON with next role/objective for sub-agent triggering
+#   bapXphp handoff template <issue> — generate empty worker handoff from issue objectives
 #
 # ── Mail & Images ───────────────────────────────────────────────
 #   bapXphp mail:process            — process pending mail queue
@@ -750,6 +756,72 @@ cmd_merge() {
   gh pr merge "$@"
 }
 
+cmd_handoff() {
+  local action="${1:-}" file="${2:-}" argument="${3:-}"
+  case "$action" in
+    validate)
+      [ $# -ge 2 ] && [ $# -le 3 ] && [ -n "$file" ] || die "Usage: bapXphp handoff validate <file> [--issue]"
+      require_php
+      php "$ROOT/cli/handoff.php" validate "$file"
+      if [ -n "$argument" ]; then
+        [ "$argument" = "--issue" ] || die "Usage: bapXphp handoff validate <file> [--issue]"
+        require_gh
+        local issue_number evidence_file
+        issue_number=$(php -r '$data=json_decode(file_get_contents($argv[1]), true); echo $data["issue"] ?? "";' "$file")
+        [[ "$issue_number" =~ ^[1-9][0-9]*$ ]] || die "Handoff issue number is invalid"
+        evidence_file=$(mktemp)
+        trap 'rm -f "$evidence_file"' RETURN
+        gh issue view "$issue_number" --json body,comments > "$evidence_file"
+        php "$ROOT/cli/handoff.php" coverage "$file" "$evidence_file"
+        rm -f "$evidence_file"
+        trap - RETURN
+      fi
+      ;;
+    comment)
+      local pr_number="$argument"
+      [ $# -eq 3 ] && [ -n "$file" ] && [[ "$pr_number" =~ ^[1-9][0-9]*$ ]] || die "Usage: bapXphp handoff comment <file> <pr-number>"
+      require_php
+      require_gh
+      local body comment_id marker='<!-- CTO-HANDOFF -->'
+      body=$(php "$ROOT/cli/handoff.php" render-comment "$file")
+      comment_id=$(gh api --paginate "repos/${GITHUB_REPOSITORY:-getwinharris/bapXphpAiBackend}/issues/$pr_number/comments" \
+        --jq ".[] | select(.body | contains(\"$marker\")) | .id" | head -1)
+      if [ -n "$comment_id" ]; then
+        gh api --method PATCH "repos/${GITHUB_REPOSITORY:-getwinharris/bapXphpAiBackend}/issues/comments/$comment_id" -f body="$body" >/dev/null
+        ok "CTO HANDOFF comment updated"
+      else
+        gh api --method POST "repos/${GITHUB_REPOSITORY:-getwinharris/bapXphpAiBackend}/issues/$pr_number/comments" -f body="$body" >/dev/null
+        ok "CTO HANDOFF comment created"
+      fi
+      ;;
+    next)
+      [ $# -eq 2 ] && [[ "$file" =~ ^[1-9][0-9]*$ ]] || die "Usage: bapXphp handoff next <issue>"
+      require_php
+      require_gh
+      local evidence_file_2
+      evidence_file_2=$(mktemp)
+      trap 'rm -f "$evidence_file_2"' RETURN
+      gh issue view "$file" --json body,comments > "$evidence_file_2"
+      php "$ROOT/cli/handoff.php" next "$file" "$evidence_file_2"
+      rm -f "$evidence_file_2"
+      trap - RETURN
+      ;;
+    template)
+      [ $# -eq 2 ] && [[ "$file" =~ ^[1-9][0-9]*$ ]] || die "Usage: bapXphp handoff template <issue>"
+      require_php
+      require_gh
+      local evidence_file_3
+      evidence_file_3=$(mktemp)
+      trap 'rm -f "$evidence_file_3"' RETURN
+      gh issue view "$file" --json body,comments > "$evidence_file_3"
+      php "$ROOT/cli/handoff.php" template "$file" "$evidence_file_3"
+      rm -f "$evidence_file_3"
+      trap - RETURN
+      ;;
+    *) die "Usage: bapXphp handoff <validate|comment|next|template> <file> [pr-number]" ;;
+  esac
+}
+
 # ── Mail & Images ──────────────────────────────────────────────
 cmd_mail_process() {
   require_php
@@ -1253,6 +1325,8 @@ main() {
     issue|pr|merge)
       local command="$1"; shift
       cmd_"$command" "$@" ;;
+    handoff)
+      shift; cmd_handoff "$@" ;;
     mail:process|mail-process)
       cmd_mail_process ;;
     images:optimize|images-optimize|imgopt)
