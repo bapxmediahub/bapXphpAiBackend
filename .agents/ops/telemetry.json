@@ -45,7 +45,7 @@
       "tokens_input": 12000,
       "tokens_output": 4500,
       "cost_estimate_usd": 0.12,
-      "score": 75
+      "score": 30
     }
   ],
   "metrics": {
@@ -57,6 +57,6 @@
     "avg_model": "gemini-2.5-flash",
     "avg_tokens_per_cycle": 66250,
     "avg_cost_per_cycle_usd": 0.48,
-    "avg_score": 84
+    "avg_score": 62
   }
 }

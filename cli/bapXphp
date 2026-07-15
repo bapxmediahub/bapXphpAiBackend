@@ -61,7 +61,8 @@ set -euo pipefail
 #   bapXphp handoff next <issue>    — show event-based handoff with role + workflow
 #   bapXphp handoff template <issue> — generate empty handoff template from issue
 #   bapXphp handoff execute <issue> [--next role]
-#                                   — emit handoff context JSON for the next role (GitHub event payload + workflow)
+#                                   — emit handoff context JSON (includes score + event + workflow)
+#   bapXphp handoff score <issue>   — validate work and assign 0-100 score to handoff event
 #
 # ── Mail & Images ───────────────────────────────────────────────
 #   bapXphp mail:process            — process pending mail queue
@@ -826,11 +827,13 @@ cmd_handoff() {
       require_php
       require_gh
       local event_file="$ROOT/.agents/handoffs/events/${file}.json"
+      [ ! -f "$event_file" ] && event_file=$(ls "$ROOT/.agents/handoffs/events/${file}"-*.json 2>/dev/null | head -1)
       if [ -f "$event_file" ]; then
         echo "── Handoff event for issue #${file} ──"
         echo "Event type: $(jq -r '.event_type' "$event_file")"
         echo "Current role: $(jq -r '.workflow.current_role' "$event_file")"
         echo "Next role: $(jq -r '.workflow.next_role' "$event_file")"
+        echo "Score: $(jq '.telemetry.score // "unscored"' "$event_file")/100"
         echo "Chain: $(jq -r '.workflow.sequence | join(" → ")' "$event_file")"
         echo ""
         echo "── Workflow for current role ──"
@@ -843,7 +846,7 @@ cmd_handoff() {
           echo "No workflow definition for role: $role"
         fi
       else
-        warn "No handoff event for issue #${file} at .agents/handoffs/events/${file}.json"
+        warn "No handoff event for issue #${file} at .agents/handoffs/events/${file}*.json"
       fi
       ;;
     template)
@@ -863,6 +866,7 @@ cmd_handoff() {
       local nextFlag=""
       [ "$argument" = "--next" ] && nextFlag="${4:-}"
       local event_file="$ROOT/.agents/handoffs/events/${file}.json"
+      [ ! -f "$event_file" ] && event_file=$(ls "$ROOT/.agents/handoffs/events/${file}"-*.json 2>/dev/null | head -1)
       [ -f "$event_file" ] || die "No handoff event for issue #${file}"
       local role="$nextFlag"
       [ -z "$role" ] && role=$(jq -r '.workflow.current_role' "$event_file")
@@ -872,12 +876,121 @@ cmd_handoff() {
       echo "{"
       echo "  \"issue\": $file,"
       echo "  \"role\": \"$role\","
+      echo "  \"score\": $(jq '.telemetry.score // 0' "$event_file"),"
       echo "  \"event\": $(jq -c '.' "$event_file"),"
       echo "  \"workflow\": $(echo "$workflow_content" | jq -Rs .),"
       echo "  \"attachments\": [$(ls "$ROOT/.agents/temp" 2>/dev/null | jq -R -s -c 'split("\n") | map(select(length > 0))')]"
       echo "}"
       ;;
-    *) die "Usage: bapXphp handoff <validate|comment|next|template|execute> <file> [--next role]" ;;
+    score)
+      [ $# -eq 2 ] && [[ "$file" =~ ^[1-9][0-9]*$ ]] || die "Usage: bapXphp handoff score <issue>"
+      local event_file="$ROOT/.agents/handoffs/events/${file}.json"
+      if [ ! -f "$event_file" ]; then
+        local found
+        found=$(ls "$ROOT/.agents/handoffs/events/${file}"-*.json 2>/dev/null | head -1)
+        [ -n "$found" ] && event_file="$found"
+      fi
+      [ -f "$event_file" ] || die "No handoff event for issue #${file}. Run bapXphp issue or GH Actions first."
+
+      echo "── Scoring handoff for issue #${file} ──"
+
+      local score=0
+      local breakdown=""
+
+      # 1) CI validation (30 points)
+      echo -n "CI check (30pts) ... "
+      if bapXphp ci >/dev/null 2>&1; then
+        score=$((score + 30))
+        breakdown="${breakdown}ci:30 "
+        echo "PASS"
+      else
+        breakdown="${breakdown}ci:0 "
+        echo "FAIL"
+      fi
+
+      # 2) All objectives have evidence (25 points)
+      local total_objs evidence_count
+      total_objs=$(jq '.objectives | length' "$event_file")
+      evidence_count=$(jq '[.objectives[].evidence[]] | length' "$event_file")
+      echo -n "Evidence check (${evidence_count}/${total_objs} objs) ... "
+      if [ "$total_objs" -gt 0 ] && [ "$evidence_count" -ge "$total_objs" ]; then
+        score=$((score + 25))
+        breakdown="${breakdown}evidence:25 "
+        echo "PASS"
+      else
+        local evidence_score=0
+        [ "$total_objs" -gt 0 ] && evidence_score=$(( evidence_count * 25 / total_objs ))
+        score=$((score + evidence_score))
+        breakdown="${breakdown}evidence:${evidence_score} "
+        echo "PARTIAL (${evidence_score})"
+      fi
+
+      # 3) No unresolved items (15 points)
+      local unresolved_count
+      unresolved_count=$(jq '[.objectives[].unresolved[]] | length' "$event_file")
+      echo -n "Unresolved items (${unresolved_count}) ... "
+      if [ "$unresolved_count" -eq 0 ]; then
+        score=$((score + 15))
+        breakdown="${breakdown}unresolved:15 "
+        echo "PASS"
+      else
+        breakdown="${breakdown}unresolved:0 "
+        echo "FAIL"
+      fi
+
+      # 4) No gap statuses (15 points)
+      local gap_count
+      gap_count=$(jq '[.objectives[] | select(.status == "gap")] | length' "$event_file")
+      echo -n "Gap check (${gap_count} gaps) ... "
+      if [ "$gap_count" -eq 0 ]; then
+        score=$((score + 15))
+        breakdown="${breakdown}gaps:15 "
+        echo "PASS"
+      else
+        breakdown="${breakdown}gaps:0 "
+        echo "FAIL"
+      fi
+
+      # 5) Tests pass (15 points)
+      local tests_passed
+      tests_passed=$(jq -r '.telemetry.tests_passed // ""' "$event_file")
+      echo -n "Tests check ... "
+      if [ -n "$tests_passed" ]; then
+        local num passed
+        num=$(echo "$tests_passed" | cut -d/ -f2)
+        passed=$(echo "$tests_passed" | cut -d/ -f1)
+        if [ "$num" -gt 0 ] && [ "$passed" -eq "$num" ]; then
+          score=$((score + 15))
+          breakdown="${breakdown}tests:15 "
+          echo "PASS (${tests_passed})"
+        else
+          breakdown="${breakdown}tests:0 "
+          echo "FAIL (${tests_passed})"
+        fi
+      else
+        breakdown="${breakdown}tests:0 "
+        echo "NO DATA (0)"
+      fi
+
+      echo "── Score: ${score}/100 (${breakdown}) ──"
+
+      # Inject score into handoff event JSON
+      jq --argjson score "$score" '.telemetry.score = $score' "$event_file" > "${event_file}.tmp" && mv "${event_file}.tmp" "$event_file"
+
+      # Also update telemetry.json cycle
+      local cycle_file="$ROOT/.agents/ops/telemetry.json"
+      if [ -f "$cycle_file" ]; then
+        local latest_id
+        latest_id=$(jq -r '.cycles[-1].id' "$cycle_file")
+        jq --arg id "$latest_id" --argjson score "$score" \
+          '(.cycles[] | select(.id == $id) | .score) = $score
+           | .metrics.avg_score = ([.cycles[].score] | add / length | floor)' \
+          "$cycle_file" > "${cycle_file}.tmp" && mv "${cycle_file}.tmp" "$cycle_file"
+      fi
+
+      echo "Score written to handoff event"
+      ;;
+    *) die "Usage: bapXphp handoff <validate|comment|next|template|execute|score> <file> [--next role]" ;;
   esac
 }
 

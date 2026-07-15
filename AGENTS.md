@@ -47,6 +47,7 @@ The goal is score ≥ 90 per cycle. If score < 70, the workflow needs optimizati
 ### GitHub Actions Triggers
 - `issues: opened` → `.github/workflows/issue-agent-trigger.yml` creates handoff JSON
 - `issue_comment: created` → can trigger reviewer handoff when comment starts with `/review`
+- `push: main` → `.github/workflows/notify-fork.yml` dispatches downstream fork sync on `bapxmediahub/bapXphpAiBackend`
 
 This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP hosting. It is not a SPA, not a separate MCP/skill server. The backend primitives live in this monorepo. Remote MySQL is the only runtime data store; local JSON files are import-only and never a runtime fallback. Blog posts and customer help guides use Markdown with YAML frontmatter in `content/blog/posts/`; help guides use the `help` category. Media metadata uses YAML in `storage/media.yaml`.
 
@@ -270,4 +271,7 @@ Immediately after inspecting the map and schema list, you must process the task 
 2. **File the Issue:** Use `gh issue create` to open a clear issue, bug report, or feature ticket. You MUST explicitly embed the exact line references and file paths directly into the GitHub issue body so that future agent instances or humans have immediate grounding.
 3. **Isolate and Execute:** Branch out, perform the micro-targeted code alterations, update affected durable documentation, run `bapXphp update`, and run non-mutating `bapXphp ci` to ensure zero regressions and fresh maps.
 4. **Automated Merging:** Commit the clean updates, push the branch, run `gh pr create` to target `main`, and execute `gh pr merge --merge --delete-branch` to push the features straight to live.
+
+   After merge, `push: main` triggers `.github/workflows/notify-fork.yml` which dispatches an `upstream-main-updated` event to `bapxmediahub/bapXphpAiBackend` via `secrets.FORK_SYNC_TOKEN`. The fork's `sync-upstream.yml` workflow handles the actual sync. Verify the downstream SHA matches.
+
 5. **Channel Communication to GitHub:** Do not broadcast intermediate debugging steps or structural logs to the terminal prompt. All technical updates, state transitions, and implementation details belong inside the GitHub repository issue comments.

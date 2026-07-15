@@ -8,15 +8,17 @@ permissions:
   contents: read
 
 jobs:
-  notify:
+  sync:
     if: github.repository == 'getwinharris/bapXphpAiBackend'
     runs-on: ubuntu-latest
     steps:
-      - name: Dispatch downstream sync
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Push main to downstream fork
         env:
-          GH_TOKEN: ${{ secrets.FORK_SYNC_TOKEN }}
-        run: >-
-          gh api --method POST
-          repos/bapxmediahub/bapXphpAiBackend/dispatches
-          --field event_type=upstream-main-updated
-          --raw-field client_payload[upstream_sha]="${GITHUB_SHA}"
+          FORK_TOKEN: ${{ secrets.FORK_SYNC_TOKEN }}
+        run: |
+          git remote add fork https://bapxmediahub:${FORK_TOKEN}@github.com/bapxmediahub/bapXphpAiBackend.git
+          git push fork main:main
+          echo "Synced ${GITHUB_SHA} → bapxmediahub/bapXphpAiBackend main"

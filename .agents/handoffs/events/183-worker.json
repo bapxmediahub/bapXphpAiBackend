@@ -5,7 +5,12 @@
   "workflow": {
     "current_role": "cto",
     "next_role": "worker",
-    "sequence": ["cto", "worker", "reviewer", "cto"]
+    "sequence": [
+      "cto",
+      "worker",
+      "reviewer",
+      "cto"
+    ]
   },
   "payload": {
     "title": "Wire sub-agents to read AI model config from MySQL secrets instead of hardcoding",
@@ -23,11 +28,14 @@
       "status": "gap",
       "evidence": [],
       "browser_evidence": [],
-      "unresolved": ["Pending CTO investigation"]
+      "unresolved": [
+        "Pending CTO investigation"
+      ]
     }
   ],
   "telemetry": {
     "started_at": "2026-07-15T13:14:38Z",
-    "handoffs_completed": 0
+    "handoffs_completed": 0,
+    "score": 30
   }
 }
