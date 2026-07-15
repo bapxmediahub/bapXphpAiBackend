@@ -2,9 +2,9 @@
     <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
     <div class="container astrologers-hero">
         <div style="text-align:center;">
-            <span class="eyebrow">Expert Guidance · Scheduled Appointments</span>
-            <h1 class="section-title" style="margin-bottom:var(--space-sm);">Book a Consultant</h1>
-            <p class="lede">Find a consultant by name, language, or speciality and request a suitable appointment.</p>
+            <span class="eyebrow">Private guidance · Scheduled online</span>
+            <h1 class="section-title" style="margin-bottom:var(--space-sm);">Choose Your Consultant</h1>
+            <p class="lede">Compare expertise, languages, and experience, then request a suitable appointment.</p>
         </div>
     </div>
     <?php if(empty($items)): ?>

@@ -9,6 +9,7 @@
 tmp/
 tmp/
 .env.mysql
+.env.test-user
 .playwright-mcp/
 .playwright-cli/
 /output/playwright/

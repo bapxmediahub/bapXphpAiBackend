@@ -1,7 +1,7 @@
 ---
 version: alpha
 name: Sri Panchami Spiritual
-description: Calm, warm, earthy public-interface design system for a devotional marketplace (astrology, puja items, blog). Formatted per the open DESIGN.md spec (google-labs-code/design.md) so any AI design/coding agent -- Stitch, Claude, Cursor, Copilot -- reads the same tokens.
+description: Calm, credible interface system for a consultation-first spiritual service with supporting commerce and editorial content.
 colors:
   primary: "#3a0003"
   on-primary: "#ffffff"
@@ -61,9 +61,9 @@ typography:
 rounded:
   xs: 4px
   sm: 8px
-  md: 14px
-  lg: 20px
-  xl: 32px
+  md: 8px
+  lg: 8px
+  xl: 8px
   pill: 999px
 spacing:
   2xs: 2px
@@ -90,11 +90,11 @@ components:
     height: 48px
   card-product:
     backgroundColor: "{colors.surface}"
-    rounded: "{rounded.lg}"
+    rounded: "{rounded.sm}"
     padding: 16px
   card-astrologer:
     backgroundColor: "{colors.on-primary}"
-    rounded: 18px
+    rounded: "{rounded.sm}"
   input:
     backgroundColor: "{colors.on-primary}"
     rounded: "{rounded.sm}"
@@ -103,7 +103,7 @@ components:
 
 ## Overview
 
-Sri Panchami Spiritual is a calm, warm, earthy, content-led devotional marketplace: astrologer consultations, puja items, blog. This file is the canonical visual contract for everything customer-facing in `views/` and `assets/css/band.css`. It follows the open [DESIGN.md](https://github.com/google-labs-code/design.md) specification (originated by Google Stitch) so any AI agent reads the same tokens and section order -- but the tokens above describe *this* brand, not a generic template. Deep maroon, warm brown, and muted gold read as devotional and premium without tipping into kitsch; whitespace and restraint do the rest of the work.
+Sri Panchami Spiritual is a consultation-first service. The primary customer journey is discover consultant -> review profile -> request an appointment -> manage the session. Spiritual products and editorial content support that service; they do not replace it in the first viewport. This file is the canonical visual contract for everything customer-facing in `views/` and `assets/css/band.css`.
 
 Commercial references such as Deiveegaa are used to audit product clarity, imagery, pricing, policies, testimonials, FAQs, and checkout visibility. Do not copy their visual identity or unverified product claims; use the comparison to expose missing commerce information and interaction wiring.
 
@@ -135,6 +135,10 @@ Keep the existing PHP templates, routes, forms, and JSON-backed behavior. Design
 - `.section`: `64px` vertical padding by default. `.section--alt` uses `surface-container`; `.section--warm` uses the warmer `#f6ede4` for value sections.
 - Responsive breakpoints: mobile below `744px` (one column, compact header, bottom nav), tablet `744-1128px` (reduced grid columns, same card geometry), desktop above `1128px` (centered container, `64px` section spacing).
 - Text, buttons, images, and fixed controls must not overlap or reflow awkwardly as content length changes.
+- Do not scale typography with viewport width. Use explicit breakpoint sizes so headings remain predictable and do not dominate short mobile screens.
+- The first viewport must show the product's primary action and a hint of the next section. Home leads to consultation; shop leads to products; account pages lead to the user's current task.
+- Page sections are unframed full-width bands. Cards are reserved for repeated entities, forms, summaries, and genuinely bounded tools. Never place a card inside another decorative card.
+- Desktop operational screens use compact density and stable columns. Mobile screens use one clear column with 16px page gutters and no horizontal scrolling.
 
 ## Elevation & Depth
 
@@ -162,9 +166,9 @@ The radius scale expresses a calm, rounded-but-not-playful geometry:
 |---|---|---|
 | `rounded.xs` | 4px | Chips, tags, small badges |
 | `rounded.sm` | 8px | Buttons, inputs, standard controls (48px tall) |
-| `rounded.md` | 14px | Repeated photo cards, product cards |
-| `rounded.lg` | 20px | Feature cards, panels |
-| `rounded.xl` | 32px | Hero panels, large media |
+| `rounded.md` | 8px | Repeated photo cards, product cards |
+| `rounded.lg` | 8px | Feature cards, panels |
+| `rounded.xl` | 8px | Hero panels and large media when a radius is needed |
 | `rounded.pill` | 999px | Search bars, filter pills, status badges |
 
 Shape should stay consistent within a component family -- don't mix `sm` and `lg` radii on sibling elements of the same card.
@@ -178,9 +182,13 @@ Shape should stay consistent within a component family -- don't mix `sm` and `lg
 - **Buttons (`button-primary` / `button-secondary`):** `48px` minimum height, `8px` radius, no uppercase, no letter-spacing. Primary is solid maroon with a gold hover overlay; hover moves from `shadow-md` to `shadow-lg` and lifts 2px, no more. Secondary is gold-on-maroon-text. Hover states never shift layout.
 - **Forms:** white fields (`on-primary`), `8px` radius, `48px` height, clear labels, a single-value focus ring (`--shadow-focus`) -- no glow.
 - **Search/filter:** one rounded (`pill`) search control, or a quiet grouped filter row. No nested cards for filters.
-- **Product cards (`card-product`):** white, `14px` radius, 1px soft gold-tinted border, image on top, `shadow-sm` at rest, `shadow-md` on hover with a 6px lift.
-- **Astrologer cards (`card-astrologer`):** deep-maroon content panel, circular portrait centered on the top edge (~half outside the panel), cropped to the face. Message/call/profile as three equal circular icon controls in a row. `shadow-sm` at rest, `shadow-lg` on hover.
-- **Hero:** actual deity imagery, correctly framed, dark gradient over a temple background. Left-aligned text on desktop with gold eyebrow + stats; single-column, image-first, centered text on mobile.
+- **Product cards (`card-product`):** white, `8px` radius, 1px quiet border, stable 1:1 media, concise title and price, then the `- 0 +` quantity control. Do not add a second cart button.
+- **Consultant cards (`card-astrologer`):** white, `8px` radius, face-forward portrait, name, speciality, language/experience metadata, review summary when present, and one clear profile/booking action. Every card uses equal media and content tracks so rows align.
+- **Hero:** consultation-first offer over actual devotional imagery. The primary action is `Book a consultation`; shopping is secondary. Desktop text is left aligned. Mobile uses one column, a compact image, and must reveal the next content band without requiring a full-screen scroll.
+- **Authentication:** login and registration are task pages, not marketing pages. Use a centered form surface, suppress the public footer, and keep the complete form visible on common mobile heights.
+- **Consultation discovery:** search and language controls form one quiet toolbar. Results render immediately without reveal animations or low-opacity loading states. Empty and filtered states explain the next action.
+- **Account:** use a persistent internal menu and one unframed content region. Orders, sessions, addresses, and installation are tasks, not promotional cards.
+- **Admin:** optimize for scanning and repeated action: compact sidebar, clear tables, consistent forms, explicit save state, and no marketing-style hero composition.
 - **Value-proposition cards:** 4-column desktop / 2 tablet / 1 mobile, white card, warm icon circle, `accent-italic` heading, muted body, `4px` hover lift into `shadow-lg`.
 - **Footer:** white background, soft border, warm-brown headings, muted body, bottom bar with copyright + credit.
 - **Documents and guides:** Markdown-backed pages use the same warm canvas and a constrained reading column. The page header is centered and quiet; the content surface is white with a single soft border, 14px-20px radius, and `shadow-sm`. Use maroon `h2` headings, muted body text at 1.6-1.7 line-height, generous section spacing, and gold only for eyebrows, links, and small metadata. Documentation indexes use a two-column desktop grid and one-column mobile layout with clear titles, summaries, and a visible `Read guide` action. Do not render legal or customer documentation as long unstructured text or nested cards.
@@ -196,12 +204,15 @@ Shape should stay consistent within a component family -- don't mix `sm` and `lg
 - **Don't** introduce a second frontend, second routing scheme, or a component library that bypasses the existing PHP templates.
 - **Don't** copy reference-product navigation labels or routes that don't exist in this app -- keep the real routes.
 - **Don't** let hover/focus states shift layout or reflow siblings.
+- **Don't** hide essential content behind entrance animations. Motion is optional enhancement and must never control legibility.
+- **Don't** use decorative gradients, oversized pills, or large-radius containers to manufacture hierarchy. Use spacing, typography, borders, and real media.
 - **Do** keep policy, legal, customer, and internal guide content in Markdown/YAML sources and render it through the shared document surface so copy changes do not require template rewrites.
 
 ## Verification
 
-- Check the home page and `/consult` at desktop and mobile widths in a real browser.
-- Confirm all 21 image crops, active navigation, focus states, warm canvas, card alignment, and footer contrast.
+- Check `/`, `/consult`, `/shop`, one product, `/login`, and authenticated account pages at 1440x1000 and 390x844 in a real browser.
+- Confirm image crops, active navigation, focus states, card alignment, no hidden reveal content, no horizontal overflow, and that the next section is hinted in the first mobile viewport.
+- Use the fixed development customer created by `bapXphp dev:user`; its password must come from `BAPX_TEST_USER_PASSWORD` and must never be committed.
 - Run the repo's PHP tests, project-map validation, and local smoke test before commit or push.
 
 ## Implementation Notes

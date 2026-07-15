@@ -279,6 +279,15 @@ $tests['customer installation is an account menu workflow'] = function (): void 
     assertTrue(!str_contains($layout, 'id="pwa-install-btn"') && !str_contains($layout, "closest('#pwa-install-btn')"), 'Public layout should not render or control a floating install button');
 };
 
+$tests['development customer workflow is fixed remote and credential safe'] = function (): void {
+    $cli = file_get_contents(app_path('cli/bapXphp'));
+    $engineering = file_get_contents(app_path('docs/roles/engineering.md'));
+    assertTrue(is_string($cli) && is_string($engineering), 'Development customer workflow sources should be readable');
+    assertTrue(str_contains($cli, 'dev_test_customer') && str_contains($cli, 'BAPX_TEST_USER_PASSWORD'), 'CLI should provide a fixed credential-safe development customer');
+    assertTrue(str_contains($cli, 'cmd_db_upsert users'), 'Development customer should use authenticated remote DB mutation');
+    assertTrue(str_contains($engineering, 'bapXphp dev:user'), 'Engineering guide should document the fixed customer command');
+};
+
 $tests['public registration never bootstraps admin on a live site'] = function (): void {
     $controller = file_get_contents(app_path('app/Controllers/AuthController.php'));
     assertTrue(!str_contains($controller, 'count($users) === 0 ? \'admin\' : \'customer\''), 'Public registration should not make the first user an admin on a live site');
@@ -600,7 +609,7 @@ $tests['home hero uses concise current copy and working cta links'] = function (
     assertTrue(!str_contains($view, 'Buy Original Rudraksha, Pooja Items & Spiritual Products Online'), 'Home hero should not lead with ecommerce as the primary business');
     assertTrue(!str_contains($view, 'Shop Spiritual Products</a>'), 'Home hero shop button should use concise text');
     assertTrue(!str_contains($view, 'Remote Astrology Consultation</a>'), 'Home hero astrology button should use shorter text');
-    foreach (['Authentic Spiritual Products for Your Sacred Journey', 'href="/shop"', 'href="/consult"', '>Shop Now</a>', '>Meet Consultants</a>', 'Sacred Emblems'] as $needle) {
+    foreach (['Book a Personal Astrology Consultation', 'href="/shop"', 'href="/consult"', '>Book a Consultation</a>', '>Shop Products</a>', 'Private spiritual guidance'] as $needle) {
         assertTrue(str_contains($view, $needle), "Home hero should include {$needle}");
     }
     assertTrue(!str_contains($view, '<div class="hero-stat-value">3</div>'), 'Home hero stat value should not be stale');
@@ -1025,7 +1034,7 @@ $tests['consultation pages use booking language without wallet pricing'] = funct
     assertTrue(!str_contains($detail, 'credits/message') && !str_contains($detail, 'credits/sec call'), 'Consultant detail should not show wallet pricing');
     assertTrue(!str_contains($home, 'astro-market-price'), 'Home provider cards should not repeat pricing');
     assertTrue(!str_contains($consult, 'astro-market-price'), 'Consult provider cards should not repeat pricing');
-    assertTrue(str_contains($consult, 'Book a Consultant'), 'Public consultation copy should use booking terminology');
+    assertTrue(str_contains($consult, 'Choose Your Consultant') && str_contains($consult, 'request a suitable appointment'), 'Public consultation copy should use clear scheduled-booking terminology');
 };
 
 $tests['consultants expose one booking path instead of live queues'] = function (): void {

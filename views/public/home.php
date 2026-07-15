@@ -1,25 +1,25 @@
 <section class="home-hero">
     <div class="container home-hero-inner">
         <div class="hero-copy">
-            <span class="eyebrow">Sacred Emblems · Spiritual Jewelry · Pooja Idols</span>
-            <h1>Authentic Spiritual Products for Your Sacred Journey</h1>
-            <p class="lede">Discover sacred rudraksha, pooja items, spiritual jewellery, and temple idols. Free shipping across India on every order.</p>
+            <span class="eyebrow">Private spiritual guidance · Scheduled online</span>
+            <h1>Book a Personal Astrology Consultation</h1>
+            <p class="lede">Choose a trusted consultant, request a suitable time, and receive focused guidance. Explore authentic spiritual products when you need them.</p>
             <div class="hero-actions">
-                <a href="/shop" class="btn btn-primary">Shop Now</a>
-                <a href="/consult" class="btn btn-outline">Meet Consultants</a>
+                <a href="/consult" class="btn btn-primary">Book a Consultation</a>
+                <a href="/shop" class="btn btn-outline">Shop Products</a>
             </div>
             <div class="hero-stats">
                 <div>
+                    <div class="hero-stat-value"><?= e((string)count($astrologers ?? [])) ?></div>
+                    <div class="hero-stat-label">Consultants</div>
+                </div>
+                <div>
+                    <div class="hero-stat-value">Online</div>
+                    <div class="hero-stat-label">Appointments</div>
+                </div>
+                <div>
                     <div class="hero-stat-value"><?= e((string)count($products)) ?></div>
                     <div class="hero-stat-label">Products</div>
-                </div>
-                <div>
-                    <div class="hero-stat-value"><?= e((string)count($categories)) ?></div>
-                    <div class="hero-stat-label">Categories</div>
-                </div>
-                <div>
-                    <div class="hero-stat-value">Free</div>
-                    <div class="hero-stat-label">Shipping</div>
                 </div>
             </div>
         </div>
