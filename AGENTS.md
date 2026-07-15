@@ -26,15 +26,6 @@ Issue → handoff JSON (GitHub Action) → CTO (bapXphp handoff next)
 - Active handoff is always at `.agents/handoffs/active/current.json`
 - Agents advance the chain by commenting `/handoff worker`, `/handoff reviewer`, etc. on the issue
 
-This repository uses a **strict sequential handoff chain** for all work. Never dispatch multiple sub-agents in parallel. Each cycle follows exactly:
-
-```
-Issue → handoff JSON (GitHub Action) → CTO (bapXphp handoff next)
-  → Worker (single objective) → evidence
-  → Reviewer (verify evidence) → findings
-  → CTO (close loop, route next objective or close issue)
-```
-
 ### Why chain, not parallel
 - Each step produces verifiable evidence before the next starts
 - Worker focuses on one objective at a time — no context splitting
@@ -56,8 +47,6 @@ The goal is score ≥ 90 per cycle. If score < 70, the workflow needs optimizati
 ### GitHub Actions Triggers
 - `issues: opened` → `.github/workflows/issue-agent-trigger.yml` creates handoff JSON
 - `issue_comment: created` → can trigger reviewer handoff when comment starts with `/review`
-- `pull_request: closed` (merged) → verifies fork sync SHA match
-- Never use `workflow_dispatch` or `gh repo sync` as primary sync path
 
 This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP hosting. It is not a SPA, not a separate MCP/skill server. The backend primitives live in this monorepo. Remote MySQL is the only runtime data store; local JSON files are import-only and never a runtime fallback. Blog posts and customer help guides use Markdown with YAML frontmatter in `content/blog/posts/`; help guides use the `help` category. Media metadata uses YAML in `storage/media.yaml`.
 
@@ -281,5 +270,4 @@ Immediately after inspecting the map and schema list, you must process the task 
 2. **File the Issue:** Use `gh issue create` to open a clear issue, bug report, or feature ticket. You MUST explicitly embed the exact line references and file paths directly into the GitHub issue body so that future agent instances or humans have immediate grounding.
 3. **Isolate and Execute:** Branch out, perform the micro-targeted code alterations, update affected durable documentation, run `bapXphp update`, and run non-mutating `bapXphp ci` to ensure zero regressions and fresh maps.
 4. **Automated Merging:** Commit the clean updates, push the branch, run `gh pr create` to target `main`, and execute `gh pr merge --merge --delete-branch` to push the features straight to live.
-5. **Post-Merge Fork Sync:** Upstream `main` pushes must dispatch the downstream `upstream-main-updated` workflow through `.github/workflows/notify-fork.yml`; do not use scheduled polling. Verify the dispatch run completes and `gh api repos/getwinharris/bapXphpAiBackend/commits/main --jq .sha` equals `gh api repos/bapxmediahub/bapXphpAiBackend/commits/main --jq .sha`. Keep **Sync fork → Update branch**, `gh repo sync`, and `workflow_dispatch` as recovery paths only. If the fork contains divergent commits and cannot fast-forward, create an evidence-backed issue instead of forcing or discarding fork work.
-6. **Channel Communication to GitHub:** Do not broadcast intermediate debugging steps or structural logs to the terminal prompt. All technical updates, state transitions, and implementation details belong inside the GitHub repository issue comments.
+5. **Channel Communication to GitHub:** Do not broadcast intermediate debugging steps or structural logs to the terminal prompt. All technical updates, state transitions, and implementation details belong inside the GitHub repository issue comments.
