@@ -1,0 +1,24 @@
+{
+    "issue": 183,
+    "role": "worker",
+    "trigger": "github-issue-opened",
+    "created_at": "2026-07-15T13:14:38Z",
+    "title": "Wire sub-agents to read AI model config from MySQL secrets instead of hardcoding\n",
+    "body": "## Objective\nSub-agents (CTO, Worker, Reviewer) currently use whatever model their host environment provides by default. They should read model configuration from the MySQL secrets table at runtime.\n\n## Implementation\nThe Admin → Integrations page stores AI model settings in MySQL secrets table:\n\n| Key | Example |\n|-----|---------|\n| ai_model_provider | google |\n| ai_model_name | gemini-2.5-flash |\n| ai_api_endpoint | https://generativelanguage.googleapis.com/v1/models/ |\n| ai_api_key | (encrypted) |\n\nThe SecretService class already exists at app/Services/SecretService.php. It needs:\n1. Method to read AI model config: getModelConfig(): array\n2. CLI command or env var override for agents: BAPX_AI_MODEL, BAPX_AI_API_KEY, BAPX_AI_ENDPOINT\n3. Fallback chain: SecretService → env var → hardcoded default (gemini-2.5-flash)\n\n## Files\n- app/Services/SecretService.php — add getModelConfig()\n- cli/bapXphp — add ai:config command to display current model settings\n- .github/workflows/*.yml — pass AI model config as env vars if needed\n\n## Acceptance\n- bapXphp ai:config shows the configured model and endpoint\n- SecretService::getModelConfig() returns values from MySQL with env fallback\n- All agent tooling can read model from configured source\n",
+    "labels": [
+  "\n"
+],
+    "objectives": [
+        {
+            "id": "OBJ-183-1",
+            "status": "gap",
+            "evidence": [],
+            "browser_evidence": [],
+            "unresolved": ["Pending investigation by CTO"]
+        }
+    ],
+    "files_changed": [],
+    "commands_run": [],
+    "risks": [],
+    "next_role": "cto"
+}
