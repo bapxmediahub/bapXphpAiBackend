@@ -8,4 +8,4 @@ okf_version: "0.1"
 
 Systematic map: [docs/systematic-map.mmd](../docs/systematic-map.mmd)
 Knowledge map: [docs/map.mmd](../docs/map.mmd)
-Concepts: 253, Edges: 237
+Concepts: 254, Edges: 237

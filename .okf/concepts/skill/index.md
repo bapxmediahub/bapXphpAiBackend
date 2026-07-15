@@ -14,4 +14,5 @@ type: index
 - [gh-cli](gh-cli.md)
 - [php-json-backend](php-json-backend.md)
 - [playwright-cli](playwright-cli.md)
+- [session-memory](session-memory.md)
 - [subagent-orchestration](subagent-orchestration.md)

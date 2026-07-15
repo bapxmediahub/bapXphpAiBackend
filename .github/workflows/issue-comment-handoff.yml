@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   route:
-    if: github.actor != 'handoff-ai-bot' && startsWith(github.event.comment.body, '/handoff ') && endsWith(github.repository, 'bapXphpAiBackend')
+    if: github.actor != 'handoff-ai-bot' && endsWith(github.repository, 'bapXphpAiBackend') && (startsWith(github.event.comment.body, '/handoff ') || startsWith(github.event.comment.body, '/review'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +24,11 @@ jobs:
         id: parse
         run: |
           COMMENT="${{ github.event.comment.body }}"
-          TARGET=$(echo "$COMMENT" | sed 's/\/handoff //')
+          if echo "$COMMENT" | grep -q '^/handoff '; then
+            TARGET=$(echo "$COMMENT" | sed 's/\/handoff //')
+          else
+            TARGET="reviewer"
+          fi
           echo "target=$TARGET" >> $GITHUB_OUTPUT
           echo "Handoff requested: issue #${{ github.event.issue.number }} → $TARGET"
       - name: Route handoff
