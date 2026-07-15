@@ -29,9 +29,13 @@ bapXphp update
 bapXphp ci
 ```
 
-## Fork Synchronization
+## Repository Architecture
 
-Upstream pushes to `getwinharris/bapXphpAiBackend:main` run `.github/workflows/notify-fork.yml`. The workflow sends an `upstream-main-updated` repository dispatch to `bapxmediahub/bapXphpAiBackend`, whose `sync-upstream.yml` workflow calls GitHub's supported `merge-upstream` API. Store a fine-grained token as the upstream Actions secret `FORK_SYNC_TOKEN`; it needs access only to the downstream repository with Contents write permission. Keep manual dispatch enabled for recovery. Do not add a scheduled polling fallback.
+This is a **white-label** product. The upstream source of truth is `getwinharris/bapXphpAiBackend`, forked to `bapxmediahub/bapXphpAiBackend` for customer deployment. Each customer gets their own fork with their branding, domain, and configuration. The product is not customer-specific — it's a reusable automation platform rebranded per client.
+
+### Fork Synchronization
+
+`.github/workflows/sync-upstream.yml` on the deployment fork (`bapxmediahub/bapXphpAiBackend`) runs **hourly** via cron (`0 * * * *`) plus supports `workflow_dispatch` and `repository_dispatch` as fallbacks. It calls GitHub's `merge-upstream` API using `github.token` (no `FORK_SYNC_TOKEN` secret needed). The workflow is guarded by `if: github.repository == 'bapxmediahub/bapXphpAiBackend'` so it only runs on the deployment fork.
 
 ## Production Logs
 
