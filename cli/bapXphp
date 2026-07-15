@@ -95,6 +95,15 @@ set -euo pipefail
 #   bapXphp read product [slug]     — read product (list all if no slug)
 #   bapXphp write product [slug]    — create/edit product interactively
 #
+# ── Generic File Operations (no direct shell/edit/write) ─────────
+#   bapXphp read file <path>        — read arbitrary file with line numbers
+#   bapXphp write file <path>       — write/create arbitrary file (reads stdin)
+#   bapXphp edit <path> <search> <replace>
+#                                   — search/replace in file (dry-run with --preview)
+#   bapXphp grep <pattern> [path]   — search file contents (ripgrep style)
+#   bapXphp find <glob>             — find files by glob pattern
+#   bapXphp run <command...>        — execute any shell command through the CLI
+#
 # ── Backward compatibility aliases ──────────────────────────────
 #   bapXphp mysql:query   → bapXphp db raw
 #   bapXphp mysql:import  → bapXphp db sync
@@ -1260,12 +1269,17 @@ cmd_read() {
       php "$ROOT/cli/doc-read.php" "$ROOT" "$slug" ;;
     product|products)
       php "$ROOT/cli/product-read.php" "$ROOT" "$slug" ;;
+    file)
+      [ -z "$slug" ] && die "Usage: bapXphp read file <path>"
+      [ -f "$slug" ] || die "File not found: $slug"
+      echo "── $slug ──"
+      awk '{ printf "%d: %s\n", NR, $0 }' "$slug"
+      ;;
     *)
       echo "Usage: bapXphp read blog <slug>"
       echo "       bapXphp read docs <slug>"
       echo "       bapXphp read product <slug>"
-      echo "       bapXphp read blog       (list all posts)"
-      echo "       bapXphp read product    (list all products)"
+      echo "       bapXphp read file <path>"
       exit 1 ;;
   esac
 }
@@ -1282,12 +1296,118 @@ cmd_write() {
       php "$ROOT/cli/doc-write.php" "$ROOT" "$slug" ;;
     product|products)
       php "$ROOT/cli/product-write.php" "$ROOT" "$slug" ;;
+    file)
+      [ -z "$slug" ] && die "Usage: bapXphp write file <path>  (provide content via stdin)"
+      local tmpdir dir
+      tmpdir=$(dirname "$slug")
+      [ -d "$tmpdir" ] || mkdir -p "$tmpdir"
+      cat > "$slug"
+      local lines
+      lines=$(wc -l < "$slug" | tr -d ' ')
+      ok "Wrote $lines lines to $slug"
+      ;;
     *)
       echo "Usage: bapXphp write blog [slug]     (create new or edit existing)"
       echo "       bapXphp write docs [slug]     (create new or edit existing)"
-      echo "       bapXphp write product [slug]   (create new or edit existing)"
+      echo "       bapXphp write product [slug]  (create new or edit existing)"
+      echo "       bapXphp write file <path>     (write file, pipe content via stdin)"
       exit 1 ;;
   esac
+}
+
+# ── Generic File Operations ────────────────────────────────────
+
+# ── edit <path> <search> <replace> — Search/replace in a file ──
+cmd_edit() {
+  local preview=false
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --preview) preview=true; shift ;;
+      *) break ;;
+    esac
+  done
+
+  local path="${1:-}" search="${2:-}" replace="${3:-}"
+  [ -z "$path" ] && die "Usage: bapXphp edit <path> <search> <replace>"
+  [ -f "$path" ] || die "File not found: $path"
+  [ -z "$search" ] && die "Usage: bapXphp edit <path> <search> <replace>"
+
+  if [ "$preview" = true ]; then
+    php -r "
+      \$path = \$argv[1]; \$search = \$argv[2]; \$replace = \$argv[3];
+      \$content = file_get_contents(\$path);
+      if (\$content === false) { fwrite(STDERR, \"Failed to read: \$path\n\"); exit(1); }
+      \$count = 0;
+      \$new = str_replace(\$search, \$replace, \$content, \$count);
+      if (\$count === 0) { echo \"No matches found\n\"; exit(0); }
+      echo \"Preview: \$count occurrence(s) would be replaced in \$path\n\";
+      // Show diff-like context
+      \$lines = explode(\"\n\", \$content);
+      foreach (\$lines as \$i => \$line) {
+        if (strpos(\$line, \$search) !== false) {
+          echo \"  -\$line\n\";
+          echo \"  +\" . str_replace(\$search, \$replace, \$line) . \"\n\";
+        }
+      }
+    " "$path" "$search" "$replace"
+    return
+  fi
+
+  php -r "
+    \$path = \$argv[1]; \$search = \$argv[2]; \$replace = \$argv[3];
+    \$content = file_get_contents(\$path);
+    if (\$content === false) { fwrite(STDERR, \"Failed to read: \$path\n\"); exit(1); }
+    \$count = 0;
+    \$new = str_replace(\$search, \$replace, \$content, \$count);
+    if (\$count === 0) { fwrite(STDERR, \"No matches found for: \$search\n\"); exit(1); }
+    file_put_contents(\$path, \$new);
+    echo \"Replaced \$count occurrence(s) in \$path\n\";
+  " "$path" "$search" "$replace"
+}
+
+# ── grep <pattern> [path] — Search file contents ───────────────
+cmd_grep() {
+  local pattern="${1:-}" path="${2:-.}"
+  [ -z "$pattern" ] && die "Usage: bapXphp grep <pattern> [path]"
+
+  if command -v rg >/dev/null 2>&1; then
+    rg --line-number --color=auto "$pattern" "$path"
+  elif command -v grep >/dev/null 2>&1; then
+    grep -rn --color=auto "$pattern" "$path"
+  else
+    find "$path" -type f -exec grep -n "$pattern" {} +
+  fi
+}
+
+# ── find <glob> — Find files by glob pattern ───────────────────
+cmd_find() {
+  local pattern="${1:-}"
+  [ -z "$pattern" ] && die "Usage: bapXphp find <glob-pattern>"
+
+  # Use php glob for cross-platform consistency
+  php -r "
+    \$pattern = \$argv[1];
+    \$matches = glob(\$pattern, GLOB_BRACE);
+    if (\$pattern === '.' || \$pattern === './') { \$matches = ['']; }
+    if (empty(\$matches) || (\$matches === [\$pattern] && !file_exists(\$pattern))) {
+      // Try recursive
+      \$it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator('.'));
+      \$regex = '/' . preg_quote(\$pattern, '/') . '/i';
+      foreach (\$it as \$file) {
+        if (preg_match(\$regex, \$file->getPathname())) {
+          echo \$file->getPathname() . \"\n\";
+        }
+      }
+      exit(0);
+    }
+    foreach (\$matches as \$m) { echo \$m . \"\n\"; }
+  " "$pattern"
+}
+
+# ── run <command...> — Execute any shell command through the CLI ─
+cmd_run() {
+  [ $# -eq 0 ] && die "Usage: bapXphp run <command...>"
+  eval "$@"
 }
 
 # ── Main Dispatch ──────────────────────────────────────────────
@@ -1352,6 +1472,14 @@ main() {
       shift; cmd_read "$@" ;;
     write)
       shift; cmd_write "$@" ;;
+    edit)
+      shift; cmd_edit "$@" ;;
+    grep|search|rg)
+      shift; cmd_grep "$@" ;;
+    find|glob)
+      shift; cmd_find "$@" ;;
+    run|exec|shell)
+      shift; cmd_run "$@" ;;
     *)
       err "Unknown command: $1"
       cmd_help

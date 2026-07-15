@@ -132,7 +132,19 @@ This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP
 
 ## CLI-Only Operations
 
-All project operations go through `bapXphp`. Never edit files directly unless explicitly told otherwise.
+All project operations go through `bapXphp`. Never use raw shell/edit/write/find/grep tools directly — every file or content operation must use the corresponding `bapXphp` command:
+
+| Operation | CLI Command |
+|-----------|-------------|
+| Read file    | `bapXphp read file <path>` |
+| Write file   | `bapXphp write file <path>` (pipe stdin) |
+| Edit file    | `bapXphp edit <path> <search> <replace>` |
+| Search code  | `bapXphp grep <pattern> [path]` |
+| Find files   | `bapXphp find <glob-pattern>` |
+| Run command  | `bapXphp run <command...>` |
+| List dir     | `bapXphp run ls <path>` |
+
+This ensures every operation is auditable, logged, and consistent. If a required operation is missing or unsafe, enhance the nearest existing `bapXphp` command before performing the operation. Agent-facing bulk commands must be non-interactive, shared-hosting compatible, credential-safe, idempotent where practical, and provide `--dry-run` before mutations. GitHub operations remain in `gh`; browser verification remains in the Browser skill.
 
 When a required operation is missing or unsafe, enhance the nearest existing `bapXphp` command before performing the operation. Agent-facing bulk commands must be non-interactive, shared-hosting compatible, credential-safe, idempotent where practical, and provide `--dry-run` before mutations. GitHub operations remain in `gh`; browser verification remains in the Browser skill.
 
