@@ -1,3 +1,9 @@
+---
+title: Shop Page
+description: Route /shop - list JSON-backed products, category filters, prices, stock status, product detail links, and add-to-cart forms.
+category: page
+---
+
 # Shop Page
 
 Route: `/shop`

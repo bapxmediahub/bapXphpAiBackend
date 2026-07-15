@@ -10,5 +10,5 @@ return [
     'dbname' => $env['BAPX_MYSQL_DB'] ?: 'u907253411_db_name_sps',
     'user' => $env['BAPX_MYSQL_USER'] ?: 'u907253411_db_user_sps',
     'pass' => $env['BAPX_MYSQL_PASS'] ?: '',
-    'remote_url' => (string)($env['BAPX_REMOTE_DB_URL'] ?? $_SERVER['BAPX_REMOTE_DB_URL'] ?? $_ENV['BAPX_REMOTE_DB_URL'] ?? ($appUrl . '/remotedb')),
+    'remote_url' => (string)($env['BAPX_REMOTE_DB_URL'] ?? $_SERVER['BAPX_REMOTE_DB_URL'] ?? $_ENV['BAPX_REMOTE_DB_URL'] ?? ($appUrl . '/remoteDB')),
 ];

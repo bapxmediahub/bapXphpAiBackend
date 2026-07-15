@@ -12,7 +12,7 @@ final class SecretService {
         try {
             $db = new DatabaseService();
             $rows = $db->read('secrets');
-            usort($rows, fn(array $a, array $b): int => ($a['id'] === 'app_secrets' ? 1 : 0) <=> ($b['id'] === 'app_secrets' ? 1 : 0));
+            usort($rows, fn(array $a, array $b): int => (($a['id'] ?? '') === 'app_secrets' ? 1 : 0) <=> (($b['id'] ?? '') === 'app_secrets' ? 1 : 0));
             $stored = array_filter($env, fn($value) => $value !== '');
             foreach ($rows as $r) {
                 unset($r['id']);
@@ -37,8 +37,8 @@ final class SecretService {
     public function getModelConfig(): array {
         $secrets = $this->all();
         $endpoint = trim((string)($secrets['api_endpoint'] ?? getenv('BAPX_AI_ENDPOINT') ?: ''));
-        $apiKey = trim((string)($secrets['api_key'] ?? $secrets['google_api_key'] ?? $secrets['support_bot_google_api_key'] ?? getenv('BAPX_AI_API_KEY') ?? getenv('GOOGLE_API_KEY') ?? ''));
-        $model = trim((string)($secrets['model'] ?? $secrets['support_bot_model'] ?? getenv('BAPX_AI_MODEL') ?? 'gpt-4o'));
+        $apiKey = trim((string)($secrets['agent_api_key'] ?? $secrets['support_bot_google_api_key'] ?? getenv('AGENT_API_KEY') ?? getenv('BAPX_AI_API_KEY') ?? ''));
+        $model = trim((string)($secrets['agent_model'] ?? $secrets['support_bot_model'] ?? getenv('AGENT_MODEL') ?? getenv('BAPX_AI_MODEL') ?? 'gemma-4-31b-it'));
         if ($endpoint === '') {
             if (str_contains($model, 'gemini') || str_contains($model, 'gemma')) {
                 $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/';
@@ -78,14 +78,10 @@ final class SecretService {
             'mail_from_email' => (string)(getenv('MAIL_FROM_EMAIL') ?: ''),
             'mail_from_name' => (string)(getenv('MAIL_FROM_NAME') ?: ''),
             'admin_notification_email' => (string)(getenv('ADMIN_NOTIFICATION_EMAIL') ?: ''),
+            'agent_api_key' => (string)(getenv('AGENT_API_KEY') ?: getenv('SUPPORT_BOT_GOOGLE_API_KEY') ?: ''),
+            'agent_model' => (string)(getenv('AGENT_MODEL') ?: getenv('SUPPORT_BOT_MODEL') ?: ''),
             'api_endpoint' => (string)(getenv('BAPX_AI_ENDPOINT') ?: ''),
-            'api_key' => (string)(getenv('BAPX_AI_API_KEY') ?: ''),
-            'google_api_key' => (string)(getenv('GOOGLE_API_KEY') ?: ''),
-            'model' => (string)(getenv('BAPX_AI_MODEL') ?: ''),
-            'support_bot_google_api_key' => (string)(getenv('SUPPORT_BOT_GOOGLE_API_KEY') ?: ''),
-            'support_bot_model' => (string)(getenv('SUPPORT_BOT_MODEL') ?: ''),
             'support_bot_purge_policy' => (string)(getenv('SUPPORT_BOT_PURGE_POLICY') ?: ''),
-            'remote_db_token' => (string)(getenv('BAPX_REMOTE_DB_TOKEN') ?: ''),
             'turn_server_url' => (string)(getenv('TURN_SERVER_URL') ?: ''),
             'turn_username' => (string)(getenv('TURN_USERNAME') ?: ''),
             'turn_credential' => (string)(getenv('TURN_CREDENTIAL') ?: ''),

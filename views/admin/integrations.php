@@ -53,24 +53,23 @@
 
         <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">AI Model (Maya + Support Bot)</h2>
         <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">
-            Configure an OpenAI-compatible API for Maya and the support bot. Works with OpenAI, OpenRouter, Google Gemini (via API), or any OpenAI-compatible provider.
-            Set the base URL, API key, and model ID.
+            Configure an OpenAI-compatible API for Maya and the support bot.
+            Works with OpenAI, OpenRouter, or any OpenAI-compatible provider.
         </p>
         <div class="admin-form__row">
+            <label>Agent Name<input name="agent_name" value="<?= e($secrets['agent_name']??'Agent') ?>" placeholder="Agent"></label>
             <label>API Endpoint (base URL)<input name="api_endpoint" value="<?= e($secrets['api_endpoint']??'') ?>" placeholder="https://api.openai.com/v1"></label>
-            <label>Model<input name="model" value="<?= e($secrets['model']??$secrets['support_bot_model']??'gpt-4o') ?>" placeholder="gpt-4o, claude-sonnet-4-20250514, gemini-2.5-flash"></label>
+            <label>API Key<input type="password" name="agent_api_key" value="<?= e($secrets['agent_api_key']??$secrets['support_bot_google_api_key']??'') ?>" placeholder="sk-... or AIza..." autocomplete="new-password"></label>
         </div>
         <div class="admin-form__row">
-            <label>API Key<input type="password" name="api_key" value="<?= e($secrets['api_key']??$secrets['google_api_key']??$secrets['support_bot_google_api_key']??'') ?>" placeholder="sk-... or AIza..." autocomplete="new-password"></label>
+            <label>Model<input name="agent_model" value="<?= e($secrets['agent_model']??$secrets['support_bot_model']??'gemma-4-31b-it') ?>" placeholder="gemma-4-31b-it"></label>
         </div>
-        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.85rem;">
-            OpenRouter example: endpoint <code>https://openrouter.ai/api/v1</code>, model <code>gpt-4o</code>.
-            OpenAI: endpoint <code>https://api.openai.com/v1</code>, model <code>gpt-4o</code>.
-            Google: endpoint <code>https://generativelanguage.googleapis.com/v1beta/models/</code>, model <code>gemini-2.5-flash</code>.
-        </p>
         <input type="hidden" name="support_bot_purge_policy" value="always_purge">
-        <input type="hidden" name="support_bot_model" value="<?= e($secrets['support_bot_model']??'') ?>">
-        <input type="hidden" name="support_bot_google_api_key" value="<?= e($secrets['support_bot_google_api_key']??'') ?>">
+        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.85rem;">
+            Current model: <strong><?= e($secrets['agent_model'] ?? $secrets['support_bot_model'] ?? 'gemma-4-31b-it') ?></strong>.
+            OpenRouter: endpoint <code>https://openrouter.ai/api/v1</code>.
+            Google: endpoint <code>https://generativelanguage.googleapis.com/v1beta/models/</code>.
+        </p>
 
         <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">WebRTC TURN Server</h2>
         <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">
@@ -84,12 +83,6 @@
             <label>TURN Credential<input type="password" name="turn_credential" value="<?= e($secrets['turn_credential']??'') ?>" placeholder="TURN shared secret" autocomplete="new-password"></label>
         </div>
         <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">When configured, the TURN server is added to ICE servers for all WebRTC calls. Leave blank to use STUN only.</p>
-
-        <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">Hosted CLI Remote Access</h2>
-        <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">Set a long random token to allow authenticated <code>bapXphp</code> record updates from a remote agent or shared-hosting shell. It permits only schema-declared record operations and never arbitrary write SQL.</p>
-        <div class="admin-form__row">
-            <label>Remote Mutation Token<input type="password" name="remote_db_token" value="<?= e($secrets['remote_db_token']??'') ?>" placeholder="Generate a long random token" autocomplete="new-password"></label>
-        </div>
 
         <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">Meta Pixel (Facebook Ads)</h2>
         <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">

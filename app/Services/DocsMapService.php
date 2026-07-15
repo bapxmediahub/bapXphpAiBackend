@@ -108,6 +108,16 @@ final class DocsMapService
             }
         }
 
+        $gaps = $this->findCoverageGaps();
+        if ($gaps) {
+            $lines[] = '';
+            $lines[] = '    ### Coverage Gaps';
+            foreach ($gaps as $label) {
+                $id = 'GAP_' . substr(md5($label), 0, 8);
+                $lines[] = "    {$id}[\"{$label}\"]";
+            }
+        }
+
         return implode("\n", $lines) . "\n";
     }
 
@@ -137,5 +147,31 @@ final class DocsMapService
         }
         sort($files);
         return $files;
+    }
+
+    private function findCoverageGaps(): array
+    {
+        $gaps = [];
+        try {
+            $scan = ProjectMapService::scan();
+
+            $scKeys = array_keys(ProjectMapService::serviceCollections());
+            $allScCollections = array_values(array_unique(array_merge(...array_values(ProjectMapService::serviceCollections()))));
+
+            $routeServices = array_values(array_unique(array_merge(...array_map(fn($r) => $r['services'] ?? [], $scan['routes']))));
+            $unmappedServices = array_diff($routeServices, $scKeys, ['SeoService', 'SmtpMailer', 'ImageOptimizerService', 'DocsMapService', 'GitHubDocService', 'RateLimiter']);
+            if ($unmappedServices) {
+                $gaps[] = 'Services without schema collection mapping: ' . implode(', ', $unmappedServices);
+            }
+
+            $knownUnwired = ['wallet_transactions'];
+            $unwiredCollections = array_diff($scan['schema_collections'], $allScCollections, $knownUnwired);
+            if ($unwiredCollections) {
+                $gaps[] = 'Schema collections without service: ' . implode(', ', $unwiredCollections);
+            }
+        } catch (\Throwable $e) {
+            $gaps[] = 'Gap analysis unavailable: ' . $e->getMessage();
+        }
+        return $gaps;
     }
 }

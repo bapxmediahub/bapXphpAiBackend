@@ -8,12 +8,18 @@ permissions:
   issues: write
   contents: write
 
+concurrency:
+  group: handoff-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
 jobs:
   route:
-    if: startsWith(github.event.comment.body, '/handoff ')
+    if: github.actor != 'handoff-ai-bot' && startsWith(github.event.comment.body, '/handoff ') && endsWith(github.repository, 'bapXphpAiBackend')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Parse handoff target
         id: parse
         run: |
@@ -30,12 +36,10 @@ jobs:
           mkdir -p .agents/handoffs/events .agents/handoffs/active
 
           if [ -f "$EVENT_FILE" ]; then
-            # Update the handoff event with the new role
             cat "$EVENT_FILE" | jq --arg role "$TARGET" \
               '.workflow.current_role = $role | .workflow.next_role = (if $role == "cto" then "worker" elif $role == "worker" then "reviewer" else "cto" end)' \
               > "$ACTIVE_FILE"
           else
-            # Create a new event if none exists
             cat > "$ACTIVE_FILE" << EOF
             {
               "event_type": "issue_comment.created",
@@ -65,11 +69,17 @@ jobs:
           jq empty "$ACTIVE_FILE" && echo "Valid handoff routed to: $TARGET"
       - name: Commit handoff
         run: |
-          git config user.name "handoff-router-bot"
-          git config user.email "bot@bapXphp.local"
+          git config user.name "handoff-ai-bot"
+          git config user.email "handoff-ai-bot@bapXphp.action"
           git add .agents/handoffs/
           git diff --cached --quiet || git commit -m "auto: handoff route to ${{ steps.parse.outputs.target }} for issue #${{ github.event.issue.number }}"
-          git push
+          for i in 1 2 3; do
+            git pull --rebase origin "$GITHUB_REF_NAME" 2>/dev/null || true
+            if git push origin "HEAD:$GITHUB_REF_NAME" 2>/dev/null; then exit 0; fi
+            sleep 2
+          done
+          git pull --rebase origin "$GITHUB_REF_NAME" 2>/dev/null || true
+          git push --force-with-lease origin "HEAD:$GITHUB_REF_NAME"
       - name: Confirm handoff
         run: |
           gh issue comment ${{ github.event.issue.number }} --body \

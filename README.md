@@ -1,3 +1,9 @@
+---
+title: PHP JSON Agent Ready Backend
+description: PHP/MySQL agent-ready full-stack product base for small PHP hosting with auth, admin CRUD, ecommerce, and more.
+category: root
+---
+
 # PHP JSON Agent Ready Backend and Full-Stack Platform
 
 This repository is a **PHP/MySQL agent-ready** full-stack product base for small PHP hosting (Hostinger, cPanel, etc. with `public_html`). It ships with auth, admin CRUD, ecommerce, scheduled consultant bookings, saved addresses, reviews, media library, Help-category blog guides, support assistant, mail queue, and built-in AI-agent instructions.
@@ -54,7 +60,7 @@ Use **Admin → Settings** for store and site behavior. Use **Admin → Integrat
 | `bapXphp test` | Run PHP test suite |
 | `bapXphp lint [path]` | PHP syntax check (`php -l`) |
 | `bapXphp ci` | Non-mutating validation: lint → test → both map validators → smoke |
-| `bapXphp check` | Alias for `bapXphp ci` |
+| `bapXphp check` | Shorthand for `bapXphp ci` |
 | `bapXphp update` | Regenerate and validate both generated maps |
 | `bapXphp serve` | Start dev server on `127.0.0.1:6020` |
 | `bapXphp smoke` | Run local smoke tests against dev server |
@@ -141,11 +147,31 @@ Use **Admin → Settings** for store and site behavior. Use **Admin → Integrat
 | `bapXphp docsmap` | Regenerate `docs/KnowledgeMap.mmd` from docs, the root AGENTS.md, and skills |
 | `bapXphp bloggen` | Regenerate blog cache from GitHub markdown sources |
 
-### Validation (shortcut)
-| Command | Description |
-|---------|-------------|
-| `bapXphp ci` | Full non-mutating PR/CI validation |
-| `bapXphp update` | Explicitly refresh both generated map artifacts |
+---
+
+## Validation Workflow
+
+Run the smallest useful validation for the change:
+
+```bash
+bapXphp lint path/to/changed.php    # syntax check
+bapXphp update                       # regenerate maps
+bapXphp ci                           # full non-mutating validation
+```
+
+For UI changes, also use browser verification on `127.0.0.1:6020`. For doc/AGENTS/skill changes, `bapXphp update` is sufficient.
+
+## Model Routing
+
+Model selection is configured in Admin → Integrations and stored in MySQL `secrets`:
+
+| Role | Recommended Model |
+|------|------------------|
+| CTO/Orchestrator | Pro (Gemini 2.5 Pro / Claude Opus) |
+| Worker | Fast (Gemini 2.5 Flash / Claude Sonnet) |
+| Reviewer | Cheap (Gemini 2.5 Flash) |
+
+Never hardcode model names or API keys. Read from `SecretService` at runtime.
 
 ---
 

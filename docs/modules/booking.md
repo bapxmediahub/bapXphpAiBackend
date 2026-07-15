@@ -1,3 +1,9 @@
+---
+title: Booking Module
+description: Owns remote astrology session requests and participant rooms.
+category: module
+---
+
 # Booking Module
 
 Owns remote astrology session requests and participant rooms.

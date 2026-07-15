@@ -1,3 +1,9 @@
+---
+title: Google OAuth Module
+description: Owns optional customer sign-in through Google.
+category: module
+---
+
 # Google OAuth Module
 
 Owns optional customer sign-in through Google.

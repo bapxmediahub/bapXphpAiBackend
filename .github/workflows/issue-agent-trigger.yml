@@ -11,8 +11,22 @@ permissions:
 jobs:
   dispatch:
     runs-on: ubuntu-latest
+permissions:
+  issues: write
+  contents: write
+
+concurrency:
+  group: issue-agent-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    if: github.actor != 'trigger-ai-bot' && endsWith(github.repository, 'bapXphpAiBackend')
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Create GitHub-style handoff event
         run: |
           ISSUE="${{ github.event.issue.number }}"
@@ -55,11 +69,17 @@ jobs:
         run: jq empty ".agents/handoffs/active/current.json" && echo "Valid handoff JSON"
       - name: Commit handoff event
         run: |
-          git config user.name "agent-trigger-bot"
-          git config user.email "bot@bapXphp.local"
+          git config user.name "trigger-ai-bot"
+          git config user.email "trigger-ai-bot@bapXphp.action"
           git add .agents/handoffs/ .agents/ops/
           git diff --cached --quiet || git commit -m "auto: handoff event for issue #${{ github.event.issue.number }}"
-          git push
+          for i in 1 2 3; do
+            git pull --rebase origin "$GITHUB_REF_NAME" 2>/dev/null || true
+            if git push origin "HEAD:$GITHUB_REF_NAME" 2>/dev/null; then exit 0; fi
+            sleep 2
+          done
+          git pull --rebase origin "$GITHUB_REF_NAME" 2>/dev/null || true
+          git push --force-with-lease origin "HEAD:$GITHUB_REF_NAME"
       - name: Label
         run: gh issue edit ${{ github.event.issue.number }} --add-label "sub-agent-ready" 2>/dev/null || true
         env:

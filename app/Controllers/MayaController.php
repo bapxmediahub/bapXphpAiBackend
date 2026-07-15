@@ -10,10 +10,14 @@ class MayaController extends BaseController {
         $message = trim((string)($input['message'] ?? ''));
         $source = trim((string)($input['source'] ?? 'cli'));
         if ($message === '') {$this->jsonResponse(['error' => 'Message is required'], 400); return;}
+        $agentName = 'Agent';
         try {
             $secrets = new SecretService();
             $db = new DatabaseService();
             $mc = $secrets->getModelConfig();
+            $all = $secrets->all();
+            $agentName = trim((string)($all['agent_name'] ?? 'Agent'));
+            $siteName = trim((string)($all['seo_site_name'] ?? 'the site'));
             $userCount = count($db->read('users'));
             $orderCount = count($db->read('orders'));
             $productCount = count($db->read('products'));
@@ -21,22 +25,22 @@ class MayaController extends BaseController {
             $appointmentCount = count($db->read('appointments'));
             $ticketCount = count($db->read('support_tickets'));
             $revenue = array_sum(array_column($db->read('orders'), 'total'));
-            $context = "Sri Panchami Spiritual site data:\n- Users: {$userCount}\n- Orders: {$orderCount}\n- Products: {$productCount}\n- Astrologers: {$astrologerCount}\n- Appointments: {$appointmentCount}\n- Support tickets: {$ticketCount}\n- Revenue: ₹" . number_format($revenue, 2);
+            $context = "{$siteName} site data:\n- Users: {$userCount}\n- Orders: {$orderCount}\n- Products: {$productCount}\n- Astrologers: {$astrologerCount}\n- Appointments: {$appointmentCount}\n- Support tickets: {$ticketCount}\n- Revenue: ₹" . number_format($revenue, 2);
             if (!empty($mc['apiKey'])) {
-                $answer = $this->callAi($mc, $message, $context);
+                $answer = $this->callAi($mc, $agentName, $siteName, $message, $context);
             } else {
-                $answer = "AI not configured. Go to Admin → Integrations and set endpoint, api_key, and model.";
+                $answer = "AI not configured. Go to Admin → Integrations and set endpoint, agent_api_key, and agent_model.";
             }
-            $this->jsonResponse(['answer' => $answer, 'model' => $mc['model'] ?? 'unknown', 'source' => $source]);
+            $this->jsonResponse(['answer' => $answer, 'model' => $mc['model'] ?? 'unknown', 'source' => $source, 'agent_name' => $agentName]);
         } catch (\Throwable $e) {
-            $this->jsonResponse(['error' => 'Maya error: ' . $e->getMessage()], 500);
+            $this->jsonResponse(['error' => $agentName . ' error: ' . $e->getMessage()], 500);
         }
     }
-    private function callAi(array $mc, string $message, string $context): string {
+    private function callAi(array $mc, string $agentName, string $siteName, string $message, string $context): string {
         $endpoint = rtrim($mc['endpoint'] ?? 'https://api.openai.com/v1', '/');
-        $model = $mc['model'] ?? 'gpt-4o';
+        $model = $mc['model'] ?? 'gemma-4-31b-it';
         $key = $mc['apiKey'] ?? '';
-        $prompt = "You are Maya, the AI assistant for Sri Panchami Spiritual. Answer concisely.\n\n{$context}\n\nUser: {$message}";
+        $prompt = "You are {$agentName}, the AI assistant for {$siteName}. Answer concisely.\n\n{$context}\n\nUser: {$message}";
         $provider = $mc['provider'] ?? 'openai';
         if ($provider === 'google') {
             $url = $endpoint . '/' . rawurlencode($model) . ':generateContent';

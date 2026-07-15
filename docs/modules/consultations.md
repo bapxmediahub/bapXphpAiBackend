@@ -1,3 +1,9 @@
+---
+title: Consultation Bookings
+description: Customers browse /consult, open a consultant profile, and submit a preferred date, time, phone number, and guidance notes.
+category: module
+---
+
 # Consultation Bookings
 
 Customers browse `/consult`, open a consultant profile, and submit a preferred date, time, phone number, and guidance notes. The request is stored as an appointment and appears in the customer, consultant, and admin booking views.

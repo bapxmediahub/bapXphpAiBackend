@@ -1,3 +1,9 @@
+---
+title: Terms & Conditions
+description: By accessing the website, creating an account, purchasing products, or requesting a consultation, you agree to these terms.
+category: legal
+---
+
 # Terms & Conditions
 
 Last updated: July 2026

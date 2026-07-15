@@ -50,8 +50,8 @@ final class SupportBotService {
 
     private function googleReply(string $message, array $context): ?string {
         $secrets = $this->secrets->all();
-        $key = trim((string)(getenv('SUPPORT_BOT_GOOGLE_API_KEY') ?: ($secrets['support_bot_google_api_key'] ?? '')));
-        $model = trim((string)(getenv('SUPPORT_BOT_MODEL') ?: ($secrets['support_bot_model'] ?? 'gemini-2.0-flash'))) ?: 'gemini-2.0-flash';
+        $key = trim((string)(getenv('AGENT_API_KEY') ?: getenv('SUPPORT_BOT_GOOGLE_API_KEY') ?: ($secrets['agent_api_key'] ?? $secrets['support_bot_google_api_key'] ?? '')));
+        $model = trim((string)(getenv('AGENT_MODEL') ?: getenv('SUPPORT_BOT_MODEL') ?: ($secrets['agent_model'] ?? $secrets['support_bot_model'] ?? 'gemma-4-31b-it'))) ?: 'gemma-4-31b-it';
         if ($key === '' || !function_exists('curl_init')) return null;
         $prompt = "You are Sri Panchami Spiritual support bot.\n"
             . "Return only the final customer-facing answer. Do not include reasoning, analysis, markdown bullets, code, tool calls, or hidden thoughts.\n"

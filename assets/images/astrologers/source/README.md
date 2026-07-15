@@ -1,3 +1,9 @@
+---
+title: Client Astrologer Source Images
+description: 21 JPEG byte-for-byte originals from a client-supplied ZIP archive matching astrologer slugs.
+category: reference
+---
+
 # Client Astrologer Source Images
 
 - These 21 JPEG files are byte-for-byte originals from `astrologer's card-20260619T101642Z-3-001.zip` supplied by the client.

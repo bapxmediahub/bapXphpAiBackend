@@ -1,3 +1,9 @@
+---
+title: Schema Registry
+description: storage/schema/collections.php is the database schema for this PHP/MySQL backend.
+category: docs
+---
+
 # Schema Registry
 
 `storage/schema/collections.php` is the database schema for this PHP/MySQL backend.

@@ -157,7 +157,7 @@ MYSQL_USER="${BAPX_MYSQL_USER:-u907253411_db_user_sps}"
 MYSQL_PASS="${BAPX_MYSQL_PASS:-}"
 SCHEMA_FILE="$ROOT/storage/schema/collections.php"
 APP_URL="${APP_URL:-https://sripanchamispiritual.com}"
-REMOTE_DB_URL="${BAPX_REMOTE_DB_URL:-${APP_URL%/}/remotedb}"
+REMOTE_DB_URL="${BAPX_REMOTE_DB_URL:-${APP_URL%/}/remoteDB}"
 
 # ── Colors ─────────────────────────────────────────────────────
 R='\033[0;31m'; G='\033[0;32m'; Y='\033[1;33m'; C='\033[0;36m'; B='\033[1m'; N='\033[0m'
@@ -873,10 +873,17 @@ cmd_handoff() {
       local wf="$ROOT/.agents/workflows/${role}.md"
       local workflow_content=""
       [ -f "$wf" ] && workflow_content=$(cat "$wf")
+      local model_config
+      model_config=$(php -r '
+        require "'"$ROOT"'/app/bootstrap.php";
+        $cfg = (new App\Services\SecretService())->getModelConfig();
+        echo json_encode($cfg);
+      ' 2>/dev/null || echo '{}')
       echo "{"
       echo "  \"issue\": $file,"
       echo "  \"role\": \"$role\","
       echo "  \"score\": $(jq '.telemetry.score // 0' "$event_file"),"
+      echo "  \"model_config\": $(echo "$model_config" | jq -c .),"
       echo "  \"event\": $(jq -c '.' "$event_file"),"
       echo "  \"workflow\": $(echo "$workflow_content" | jq -Rs .),"
       echo "  \"attachments\": [$(ls "$ROOT/.agents/temp" 2>/dev/null | jq -R -s -c 'split("\n") | map(select(length > 0))')]"
@@ -1084,7 +1091,7 @@ cmd_db() {
 }
 
 cmd_db_help() {
-  echo "Database commands — query MySQL directly (falls back to phpMyAdmin web proxy when rate-limited)."
+  echo "Database commands — query MySQL directly, or via /remoteDB web proxy when local MySQL is unavailable."
   echo ""
   echo "  bapXphp db tables              — list MySQL tables"
   echo "  bapXphp db describe <table>    — describe MySQL table columns"
@@ -1092,18 +1099,17 @@ cmd_db_help() {
   echo "  bapXphp db show <collection>   — show schema collection fields"
   echo "  bapXphp db query <collection> [--where 'f=v'] [--limit N] [--id id]"
   echo "  bapXphp db find <collection> <id>  — find record by ID"
-  echo "  bapXphp db raw <sql>           — execute read-only diagnostic SQL against remote MySQL"
-  echo "  bapXphp db upsert <collection> <json> — authenticated remote record upsert"
-  echo "  bapXphp db delete <collection> <id>   — authenticated remote record delete"
+  echo "  bapXphp db raw <sql>           — execute raw SQL via remote endpoint"
+  echo "  bapXphp db upsert <collection> <json> — upsert record via remote endpoint"
+  echo "  bapXphp db delete <collection> <id>   — delete record via remote endpoint"
   echo "  bapXphp db status              — verify DB paths and integration readiness"
-  echo "  bapXphp db pma <sql>           — execute SQL via phpMyAdmin web proxy (always web)"
-  echo "  bapXphp db hosted <sql>        — execute SQL on hosted MySQL through the configured SSH account"
-  echo "  bapXphp db pma --table-stats   — show live row counts from remote DB"
-  echo "  bapXphp db pma --export        — export full DB as SQL"
+  echo "  bapXphp db pma <sql>           — execute SQL via phpMyAdmin web proxy"
+  echo "  bapXphp db hosted <sql>        — execute SQL on hosted MySQL through SSH"
   echo "  bapXphp db init                — create MySQL tables from collections.php"
   echo "  bapXphp db sync                — push JSON data files → MySQL tables"
   echo ""
   echo "Config env vars: BAPX_MYSQL_HOST, BAPX_MYSQL_DB, BAPX_MYSQL_USER, BAPX_MYSQL_PASS"
+  echo "Remote endpoint: $REMOTE_DB_URL"
 }
 
 cmd_db_remote_status() {
@@ -1131,31 +1137,14 @@ cmd_db_remote_status() {
     || { echo "Remote endpoint: unavailable"; return 1; }
 }
 
-load_remote_mutation_token() {
-  if [ -n "${BAPX_REMOTE_DB_TOKEN:-}" ]; then
-    printf '%s' "$BAPX_REMOTE_DB_TOKEN"
-    return
-  fi
-  for name in BAPX_SSH_HOST BAPX_SSH_USER BAPX_SSH_PASS BAPX_MYSQL_DB BAPX_MYSQL_USER BAPX_MYSQL_PASS; do
-    [ -n "${!name:-}" ] || return 1
-  done
-  command -v sshpass >/dev/null 2>&1 || return 1
-  local remote_command query
-  query="SELECT JSON_UNQUOTE(JSON_EXTRACT(_data, '$.token')) FROM secrets WHERE id = 'remote_db_token' LIMIT 1;"
-  printf -v remote_command 'MYSQL_PWD=%q mysql --batch --skip-column-names -h %q -P %q -u %q %q -e %q' \
-    "$BAPX_MYSQL_PASS" "${BAPX_MYSQL_HOST:-localhost}" "${BAPX_MYSQL_PORT:-3306}" "$BAPX_MYSQL_USER" "$BAPX_MYSQL_DB" "$query"
-  sshpass -p "$BAPX_SSH_PASS" ssh -o StrictHostKeyChecking=accept-new -p "${BAPX_SSH_PORT:-22}" \
-    "$BAPX_SSH_USER@$BAPX_SSH_HOST" "$remote_command" 2>/dev/null | tr -d '\r\n'
-}
-
-cmd_db_mutation() {
-  local payload="$1"
-  local token
-  token=$(load_remote_mutation_token || true)
-  [ -n "$token" ] || die "Remote mutation token is unavailable. Configure it in remote MySQL and provide owner SSH settings in .env.mysql."
+cmd_db_upsert() {
+  local collection="$1" record="$2"
+  [ -n "$collection" ] && [ -n "$record" ] || die "Usage: bapXphp db upsert <collection> '<json record>'"
+  php -r 'json_decode($argv[1], true, 512, JSON_THROW_ON_ERROR);' "$record" >/dev/null 2>&1 || die "Record must be valid JSON."
+  local payload
+  payload=$(php -r 'echo json_encode(["action"=>"upsert","collection"=>$argv[1],"record"=>json_decode($argv[2],true,512,JSON_THROW_ON_ERROR)]);' "$collection" "$record") || die "Unable to encode record."
   curl -sS --max-time 15 -X POST "$REMOTE_DB_URL" \
     -H "Content-Type: application/json" \
-    -H "X-BapX-Remote-Token: $token" \
     -d "$payload" \
     | php -r '
       $result = json_decode(file_get_contents("php://stdin"), true) ?: [];
@@ -1164,21 +1153,19 @@ cmd_db_mutation() {
     '
 }
 
-cmd_db_upsert() {
-  local collection="$1" record="$2"
-  [ -n "$collection" ] && [ -n "$record" ] || die "Usage: bapXphp db upsert <collection> '<json record>'"
-  php -r 'json_decode($argv[1], true, 512, JSON_THROW_ON_ERROR);' "$record" >/dev/null 2>&1 || die "Record must be valid JSON."
-  local payload
-  payload=$(php -r 'echo json_encode(["action"=>"upsert","collection"=>$argv[1],"record"=>json_decode($argv[2],true,512,JSON_THROW_ON_ERROR)]);' "$collection" "$record") || die "Unable to encode record."
-  cmd_db_mutation "$payload"
-}
-
 cmd_db_delete() {
   local collection="$1" id="$2"
   [ -n "$collection" ] && [ -n "$id" ] || die "Usage: bapXphp db delete <collection> <id>"
   local payload
   payload=$(php -r 'echo json_encode(["action"=>"delete","collection"=>$argv[1],"id"=>$argv[2]]);' "$collection" "$id")
-  cmd_db_mutation "$payload"
+  curl -sS --max-time 15 -X POST "$REMOTE_DB_URL" \
+    -H "Content-Type: application/json" \
+    -d "$payload" \
+    | php -r '
+      $result = json_decode(file_get_contents("php://stdin"), true) ?: [];
+      if (empty($result["success"])) { fwrite(STDERR, "Remote mutation failed: " . ($result["error"] ?? "Unknown error") . "\n"); exit(1); }
+      echo json_encode($result, JSON_UNESCAPED_UNICODE) . "\n";
+    '
 }
 
 # ── db tables — List MySQL tables ───────────────────────────────

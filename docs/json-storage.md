@@ -1,3 +1,9 @@
+---
+title: JSON Storage
+description: All runtime data is stored in MySQL tables, accessed through DatabaseService. The schema contract lives in storage/schema/collections.php.
+category: docs
+---
+
 # MySQL Storage
 
 All runtime data is stored in MySQL tables, accessed through `DatabaseService`. The schema contract lives in `storage/schema/collections.php`. Agents should treat that file as the database contract before changing MySQL table shapes or admin forms.

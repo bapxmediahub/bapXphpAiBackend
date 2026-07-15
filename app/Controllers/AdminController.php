@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AuditLogService,AuthService,BlogDraftService,ConsultationService,EnvService,MailStorageService,MarkdownRenderer,MediaService,OrderService,ResourceService,SchemaService,SecretService,SettingsService,StoragePermissionService,TaxService};
+use App\Services\{AuditLogService,AuthService,BlogDraftService,ConsultationService,EnvService,MailStorageService,MarkdownRenderer,MediaService,OrderService,ResourceService,SchemaService,SecretService,SettingsService,StoragePermissionService};
 final class AdminController extends BaseController {
     protected string $layout = 'admin';
     public function __construct() {
@@ -34,7 +34,7 @@ final class AdminController extends BaseController {
         }
         $this->render('admin/detail',['pageTitle' => 'Order '.$id, 'title' => 'Order '.$id, 'order' => $order]);
     }
-    public function saveOrderStatus(string $id): void{try{(new OrderService())->updateStatus($id, $_POST['status'] ?? 'confirmed'); $this->flash('Order status updated.','success');}catch(\Throwable){$this->flash('Unable to update order status.','error');} $this->redirect('/admin/orders/'.$id);}
+    public function saveOrderStatus(string $id): void{try{(new OrderService())->updateStatus($id, $_POST['status'] ?? 'confirmed'); (new AuditLogService())->record('save','order.status',$id,['status'=>$_POST['status'] ?? 'confirmed']); $this->flash('Order status updated.','success');}catch(\Throwable){$this->flash('Unable to update order status.','error');} $this->redirect('/admin/orders/'.$id);}
     public function shipping(): void{$this->render('admin/settings',['pageTitle' => 'Shipping', 'title' => 'Shipping']);}
     public function astrologers(): void{
         $this->render('admin/astrologer-form',['pageTitle'=>'Astrologers','title'=>'Astrologers','collection'=>'astrologers','items'=>(new ResourceService('astrologers'))->all(),'mediaFiles'=>$this->mediaFor('astrologers')]);
@@ -50,10 +50,10 @@ final class AdminController extends BaseController {
     public function saveTemple(): void{$this->save('temples');}
     public function deleteTemple(): void{$this->delete('temples');}
     public function settings(): void{$this->render('admin/settings',['pageTitle' => 'Settings', 'title' => 'Site Settings', 'settings'=>(new SettingsService())->public(), 'adminCredentials'=>(new EnvService())->adminCredentials()]);}
-    public function saveSettings(): void{(new SettingsService())->savePublic(['shipping_mode'=>$_POST['shipping_mode'] ?? 'free','flat_rate'=>max(0,(float)($_POST['flat_rate'] ?? 0)),'currency'=>$_POST['currency'] ?? 'INR','timezone'=>$_POST['timezone'] ?? 'Asia/Kolkata','gstin'=>$_POST['gstin'] ?? '','gst_legal_name'=>$_POST['gst_legal_name'] ?? '','gst_trade_name'=>$_POST['gst_trade_name'] ?? '','gst_address'=>$_POST['gst_address'] ?? '','gst_state'=>$_POST['gst_state'] ?? '','gst_state_code'=>$_POST['gst_state_code'] ?? '']); $this->flash('Settings saved.','success'); $this->redirect('/admin/settings');}
-    public function saveAdminCredentials(): void{(new EnvService())->saveAdminCredentials($_POST); $this->flash('Admin credentials saved.','success'); $this->redirect('/admin/settings');}
+    public function saveSettings(): void{(new SettingsService())->savePublic(['shipping_mode'=>$_POST['shipping_mode'] ?? 'free','flat_rate'=>max(0,(float)($_POST['flat_rate'] ?? 0)),'currency'=>$_POST['currency'] ?? 'INR','timezone'=>$_POST['timezone'] ?? 'Asia/Kolkata','gstin'=>$_POST['gstin'] ?? '','gst_legal_name'=>$_POST['gst_legal_name'] ?? '','gst_trade_name'=>$_POST['gst_trade_name'] ?? '','gst_address'=>$_POST['gst_address'] ?? '','gst_state'=>$_POST['gst_state'] ?? '','gst_state_code'=>$_POST['gst_state_code'] ?? '']); (new AuditLogService())->record('save','settings','public',['fields'=>['shipping_mode','flat_rate','currency','timezone','gstin']]); $this->flash('Settings saved.','success'); $this->redirect('/admin/settings');}
+    public function saveAdminCredentials(): void{(new EnvService())->saveAdminCredentials($_POST); (new AuditLogService())->record('save','admin-credentials','env'); $this->flash('Admin credentials saved.','success'); $this->redirect('/admin/settings');}
     public function integrations(): void{$this->render('admin/integrations',['pageTitle' => 'Integrations', 'secrets'=>(new SecretService())->all()]);}
-    public function saveIntegrations(): void{(new SecretService())->save($_POST); $this->flash('Integration settings saved.','success'); $this->redirect('/admin/integrations');}
+    public function saveIntegrations(): void{(new SecretService())->save($_POST); (new AuditLogService())->record('save','integrations','secrets'); $this->flash('Integration settings saved.','success'); $this->redirect('/admin/integrations');}
     public function agent(): void{
         $secrets = new SecretService();
         $modelConfig = $secrets->getModelConfig();
@@ -80,10 +80,10 @@ final class AdminController extends BaseController {
                 if (!empty($files)) $attachments = "\n\nAttachments available in .agents/temp/: " . implode(', ', $files);
             }
             $context = "Site data:\n- Users: {$userCount}\n- Orders: {$orderCount}\n- Products: {$productCount}\n- Astrologers: {$astrologerCount}\n- Appointments: {$appointmentCount}\n- Support tickets: {$ticketCount}\n- Revenue (sum of totals): ₹" . number_format($revenue, 2) . $attachments;
-            if (!empty($modelConfig['api_key'])) {
+            if (!empty($modelConfig['apiKey'])) {
                 $answer = $this->callAiApi($modelConfig, $message, $context);
             } else {
-                $answer = "AI model not configured. Go to Admin → Integrations and set ai_model_provider, ai_model_name, ai_api_endpoint, and ai_api_key.";
+                $answer = "AI model not configured. Go to Admin → Integrations and set api_endpoint, agent_api_key, and agent_model.";
             }
             $this->jsonResponse(['answer'=>$answer]);
         } catch (\Throwable $e) {
@@ -92,7 +92,7 @@ final class AdminController extends BaseController {
     }
     private function callAiApi(array $config, string $message, string $context): string {
         $endpoint = rtrim($config['endpoint'] ?? 'https://api.openai.com/v1', '/');
-        $model = $config['model'] ?? 'gpt-4o';
+        $model = $config['model'] ?? 'gemma-4-31b-it';
         $key = $config['apiKey'] ?? '';
         $provider = $config['provider'] ?? 'openai';
         $prompt = "You are Maya, the AI assistant for Sri Panchami Spiritual. Answer concisely in Markdown.\n\n{$context}\n\nQuestion: {$message}";
@@ -209,6 +209,25 @@ final class AdminController extends BaseController {
     // public function saveEnvironment(): void{(new EnvService())->saveRaw((string)($_POST['env_raw'] ?? '')); (new AuditLogService())->record('save','environment','.env',['keys'=>array_keys(EnvService::readFile(app_path('.env')))]); $this->flash('Environment saved.','success'); $this->redirect('/admin/environment');}
     public function fixPermissions(): void{(new StoragePermissionService())->fix(); (new AuditLogService())->record('fix','permissions','storage'); $this->flash('Storage permissions checked and updated where PHP is allowed.','success'); $this->redirect('/admin/environment');}
     public function projectMap(): void{$this->render('admin/project-map',['pageTitle' => 'Project Map', 'map'=>\App\Services\ProjectMapService::registry(),'validation'=>\App\Services\ProjectMapService::validate(\App\Services\ProjectMapService::registry())]);}
+    public function workflow(): void{
+        $agentRoot = app_path('.agents');
+        $skills = [];
+        foreach (glob($agentRoot . '/skills/*/SKILL.md') ?: [] as $f) {
+            $name = basename(dirname($f));
+            $meta = file_exists($f) ? (preg_match('/^description: (.+)$/m', (string)file_get_contents($f), $m) ? trim($m[1]) : '') : '';
+            $skills[] = ['name' => $name, 'description' => $meta, 'file' => str_replace(app_path(), '', $f)];
+        }
+        $workflows = [];
+        foreach (glob($agentRoot . '/workflows/*.md') ?: [] as $f) {
+            $workflows[] = ['name' => basename($f), 'path' => str_replace(app_path(), '', $f)];
+        }
+        $handoffs = [];
+        foreach (glob($agentRoot . '/handoffs/events/*.json') ?: [] as $f) {
+            $data = json_decode((string)file_get_contents($f), true);
+            $handoffs[] = ['file' => basename($f), 'issue' => $data['issue'] ?? '?', 'role' => $data['role'] ?? '?', 'next_role' => $data['next_role'] ?? '?'];
+        }
+        $this->render('admin/workflow', ['pageTitle'=>'Agent Workflow','skills'=>$skills,'workflows'=>$workflows,'handoffs'=>$handoffs,'agentPath'=>str_replace(app_path(), '', $agentRoot)]);
+    }
     public function blog(): void{
         $blog = new \App\Services\BlogService();
         $this->render('admin/blog',['pageTitle'=>'Blog','title'=>'Blog Posts','posts'=>$blog->all(),'categories'=>$blog->categories()]);
@@ -275,7 +294,16 @@ final class AdminController extends BaseController {
             foreach ($orders as $o) fputcsv($handle, [$o['invoice_number']??'',substr($o['invoice_date']??'',0,10),$o['customer_email']??'',$o['place_of_supply']??'',$o['taxable_value']??0,$o['cgst_total']??0,$o['sgst_total']??0,$o['igst_total']??0,$o['total']??0]);
             fclose($handle); exit;
         }
-        $this->render('admin/tax-report', ['pageTitle'=>'GST Tax Report','title'=>'GST Product Sales Report','orders'=>$orders,'from'=>$from,'to'=>$to]);
+        $totals = ['taxable'=>0,'cgst'=>0,'sgst'=>0,'igst'=>0,'tax'=>0,'gross'=>0];
+        foreach ($orders as $o) {
+            $totals['taxable'] += (float)($o['taxable_value'] ?? 0);
+            $totals['cgst']    += (float)($o['cgst_total'] ?? 0);
+            $totals['sgst']    += (float)($o['sgst_total'] ?? 0);
+            $totals['igst']    += (float)($o['igst_total'] ?? 0);
+            $totals['tax']     += (float)($o['cgst_total'] ?? 0) + (float)($o['sgst_total'] ?? 0) + (float)($o['igst_total'] ?? 0);
+            $totals['gross']   += (float)($o['total'] ?? 0);
+        }
+        $this->render('admin/tax-report', ['pageTitle'=>'GST Tax Report','title'=>'GST Product Sales Report','orders'=>$orders,'from'=>$from,'to'=>$to,'totals'=>$totals]);
     }
     private function list(string $title, ?string $collection = null): void{$this->render('admin/list',['pageTitle' => $title, 'title' => $title, 'collection' => $collection, 'items'=>$collection ? (new ResourceService($collection))->all() : []]);}
     private function resource(string $title,string $collection,array $fields): void{$this->render('admin/resource',['pageTitle' => $title, 'title' => $title, 'collection' => $collection, 'fields' => $fields, 'items'=>(new ResourceService($collection))->all(), 'mediaFiles'=>$this->mediaFor($collection)]);}

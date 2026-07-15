@@ -25,14 +25,13 @@ final class DatabaseService {
         $result = json_decode($body, true);
         return $result['data'] ?? [];
     }
+
     private function remoteMutation(string $action, string $table, array $payload): array {
-        $token = trim((string)(getenv('BAPX_REMOTE_DB_TOKEN') ?: ''));
-        if ($token === '') throw new \RuntimeException('Remote mutation token is not configured.');
         $body = json_encode(['action' => $action, 'collection' => preg_replace('/[^a-z_]/', '', $table)] + $payload);
         $ch = curl_init($this->cfg['remote_url']);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true, CURLOPT_POSTFIELDS => $body,
-            CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'X-BapX-Remote-Token: ' . $token],
+            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
             CURLOPT_CONNECTTIMEOUT => 5, CURLOPT_TIMEOUT => 12,
         ]);
         $body = @curl_exec($ch);

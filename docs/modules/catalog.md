@@ -1,3 +1,9 @@
+---
+title: Catalog Module
+description: Owns product, category, temple, and astrologer catalog reads from MySQL via DatabaseService.
+category: module
+---
+
 # Catalog Module
 
 Owns product, category, temple, and astrologer catalog reads from MySQL via DatabaseService.

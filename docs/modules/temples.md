@@ -1,3 +1,9 @@
+---
+title: Temples Module
+description: Owns temple catalog pages and admin temple records.
+category: module
+---
+
 # Temples Module
 
 Owns temple catalog pages and admin temple records.

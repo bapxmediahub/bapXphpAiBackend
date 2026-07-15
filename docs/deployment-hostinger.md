@@ -1,3 +1,9 @@
+---
+title: Deployment Hostinger
+description: Guide for Hostinger Git auto-deploy setup and production configuration.
+category: docs
+---
+
 # Deployment Guide - Hostinger
 
 ## Deployment Steps

@@ -1,3 +1,9 @@
+---
+title: Home Page
+description: Route / - storefront landing page with product categories, featured products, ordering steps, consultant bookings, and more.
+category: page
+---
+
 # Home Page
 
 Route: `/`

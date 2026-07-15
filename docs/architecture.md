@@ -1,3 +1,9 @@
+---
+title: Architecture
+description: PHP-rendered public, account, and admin templates in views/ with shared CSS and small inline enhancement scripts.
+category: docs
+---
+
 # Architecture
 
 ## Frontend

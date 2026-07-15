@@ -1,3 +1,9 @@
+---
+title: Checkout Page
+description: Route /checkout - collect shipping contact details and start Razorpay checkout when payment keys are configured.
+category: page
+---
+
 # Checkout Page
 
 Route: `/checkout`

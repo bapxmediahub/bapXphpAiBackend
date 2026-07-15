@@ -9,6 +9,17 @@ final class SupportController extends BaseController {
         $this->render('public/support', ['supportNav' => $supportNav]);
     }
 
+    public function latestMessage(): void {
+        $tickets = (new \App\Services\DatabaseService())->read('support_tickets');
+        usort($tickets, fn(array $a, array $b): int => strcmp($b['created_at'] ?? '', $a['created_at'] ?? ''));
+        $latest = $tickets[0] ?? null;
+        if ($latest) {
+            $this->jsonResponse(['success' => true, 'message' => ['id' => $latest['id'], 'text' => $latest['message'] . "\n\n" . $latest['reply']]]);
+        } else {
+            $this->jsonResponse(['success' => false, 'message' => null]);
+        }
+    }
+
     public function ask(): void {
         $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
         $limiter = new \App\Services\RateLimiter();

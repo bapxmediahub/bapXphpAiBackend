@@ -1,3 +1,9 @@
+---
+title: Blog
+description: Blog listing page with pagination and single blog post routes.
+category: page
+---
+
 # Blog
 
 Routes:

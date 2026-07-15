@@ -1,3 +1,9 @@
+---
+title: Orders Module
+description: Owns cart checkout, payment verification, order storage, shipping status, customer order history, and product review timing.
+category: module
+---
+
 # Orders Module
 
 Owns cart checkout, payment verification, order storage, shipping status, customer order history, and product review timing.

@@ -1,3 +1,9 @@
+---
+title: Privacy Policy
+description: This policy explains how the platform collects, uses, stores, and protects personal information.
+category: legal
+---
+
 # Privacy Policy
 
 Last updated: July 2026

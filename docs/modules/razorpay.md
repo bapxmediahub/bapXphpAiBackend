@@ -1,3 +1,9 @@
+---
+title: Razorpay Module
+description: Owns payment order creation and signature verification.
+category: module
+---
+
 # Razorpay Module
 
 Owns payment order creation and signature verification.

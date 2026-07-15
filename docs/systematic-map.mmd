@@ -7,11 +7,11 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 106 routes, 12 controllers, 41 services, 48 views, 0 data files, 20 tools"]
-    arch_routes["> Routes: 106 (Public + Auth + Payment + Admin + Support)"]:::arch
-    arch_ctrl["> Controllers: 12"]:::arch
+  subgraph ARCH["Architecture Overview — 109 routes, 13 controllers, 41 services, 49 views, 0 data files, 20 tools"]
+    arch_routes["> Routes: 109 (Public + Auth + Payment + Admin + Support)"]:::arch
+    arch_ctrl["> Controllers: 13"]:::arch
     arch_svc["> Services: 41"]:::arch
-    arch_views["> Views: 48"]:::arch
+    arch_views["> Views: 49"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 20"]:::arch
     arch_gaps["> Gaps: 0"]:::arch
@@ -49,11 +49,13 @@ flowchart LR
     route_9c8e6425cd02["POST /reviews/product — Submit product review"]:::route
     route_93b329f29ece["GET /docs — Documentation landing — blog categories overview"]:::route
     route_1a07134bf963["GET /help/{slug}"]:::route
-    route_98607742961f["POST /remotedb — Remote DB query endpoint — proxies SQL to production MySQL"]:::route
+    route_0a02dcc06be5["POST /remoteDB — Remote DB query endpoint — proxies SQL to production MySQL"]:::route
     route_6e62aa059570["GET /blog — Blog listing — all posts with category filters"]:::route
     route_b8738856284a["GET /blog/{slug} — Blog post — rendered from GitHub-sourced markdown"]:::route
     route_3c268a290f60["GET /blog/category/{slug} — Blog listing filtered by category"]:::route
     route_3070dff142c3["POST /api/maya"]:::route
+    route_593217ea02df["POST /api/tts/tokenize — TTS — tokenize text for KittenTTS ONNX model"]:::route
+    route_3ff483002409["GET /api/support/latest-message — Support — latest ticket message for TTS polling"]:::route
   end
 
   subgraph ROUTES_AUTH["AUTH Routes"]
@@ -122,6 +124,7 @@ flowchart LR
     route_16d561502e84["POST /admin/media/upload — Admin — upload media"]:::route
     route_74e14338f5d2["POST /admin/environment/fix-permissions — Admin — fix storage permissions"]:::route
     route_e9360697e956["GET /admin/developer/project-map — Admin — project map viewer"]:::route
+    route_68d4224aae26["GET /admin/developer/workflow — Admin — agent workflow viewer"]:::route
     route_94124153470a["POST /admin/products/save — Admin — create/update product"]:::route
     route_608ddd16ca24["POST /admin/products/delete — Admin — delete product"]:::route
     route_5bd40ddf2477["POST /admin/categories/save — Admin — create/update category"]:::route
@@ -161,6 +164,7 @@ flowchart LR
     controller_2702fc6f256e["RemoteDbController"]:::code
     controller_452e47b9a403["ReviewController"]:::code
     controller_64e608ddc28b["SupportController"]:::code
+    controller_43aabb320c7a["TtsController"]:::code
   end
 
   subgraph SERVICES["Services"]
@@ -230,6 +234,7 @@ flowchart LR
     view_9720267f0400["admin/resource"]:::code
     view_ccc5b8c17f9f["admin/settings"]:::code
     view_c9b59025f729["admin/tax-report"]:::code
+    view_0c5c8cc8da49["admin/workflow"]:::code
     view_dae8fcbc86f4["layouts/admin"]:::code
     view_fd382d366d88["layouts/app"]:::code
     view_fe7e7ffe6adc["public/404"]:::code
@@ -470,6 +475,7 @@ flowchart LR
   route_2b4e3ef8ace9 --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_f751cedec776
   controller_3d37b75c07ec --> service_1a1be05523e3
+  controller_3d37b75c07ec --> service_e79c019a142b
   controller_3d37b75c07ec --> service_f33a1d77b137
   controller_3d37b75c07ec -. renders .-> view_99a0e61b7241
   route_c7a9a024dd65 --> controller_3d37b75c07ec
@@ -506,10 +512,12 @@ flowchart LR
   controller_3d37b75c07ec -. renders .-> view_ccc5b8c17f9f
   route_c2fce1e83e49 --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_fefb1ba2e4f7
+  controller_3d37b75c07ec --> service_e79c019a142b
   controller_3d37b75c07ec --> service_f33a1d77b137
   controller_3d37b75c07ec -. renders .-> view_ccc5b8c17f9f
   route_833047aa65da --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_01d1cd760b64
+  controller_3d37b75c07ec --> service_e79c019a142b
   controller_3d37b75c07ec --> service_f33a1d77b137
   controller_3d37b75c07ec -. renders .-> view_ccc5b8c17f9f
   route_818acb238877 --> controller_3d37b75c07ec
@@ -595,6 +603,9 @@ flowchart LR
   controller_3d37b75c07ec --> service_b06ea6dd1537
   controller_3d37b75c07ec --> service_f33a1d77b137
   controller_3d37b75c07ec -. renders .-> view_2b32af729a24
+  route_68d4224aae26 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_0c5c8cc8da49
   route_94124153470a --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_ea89d25425b5
   controller_3d37b75c07ec --> service_e79c019a142b
@@ -647,6 +658,7 @@ flowchart LR
   controller_3d37b75c07ec -. renders .-> view_9720267f0400
   route_f6cc7a75f108 --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_6c9416ef0383
+  controller_3d37b75c07ec --> service_e79c019a142b
   controller_3d37b75c07ec --> service_f33a1d77b137
   controller_3d37b75c07ec -. renders .-> view_62fe69fcdef3
   route_eca99e09ade9 --> controller_7fda1508bed0
@@ -707,7 +719,7 @@ flowchart LR
   controller_18ec49ea2cf4 -. renders .-> view_c8dddc6d8f3e
   route_1a07134bf963 --> controller_18ec49ea2cf4
   controller_18ec49ea2cf4 -. renders .-> view_4febaa319900
-  route_98607742961f --> controller_2702fc6f256e
+  route_0a02dcc06be5 --> controller_2702fc6f256e
   controller_2702fc6f256e --> service_66daa9bdc2c1
   controller_2702fc6f256e -. renders .-> view_fe7e7ffe6adc
   route_6e62aa059570 --> controller_f21ef7cdb1a4
@@ -750,6 +762,11 @@ flowchart LR
   controller_020d5303e833 --> service_6c9416ef0383
   controller_020d5303e833 --> service_66daa9bdc2c1
   controller_020d5303e833 -. renders .-> view_fe7e7ffe6adc
+  route_593217ea02df --> controller_43aabb320c7a
+  controller_43aabb320c7a -. renders .-> view_fe7e7ffe6adc
+  route_3ff483002409 --> controller_64e608ddc28b
+  controller_64e608ddc28b --> service_66daa9bdc2c1
+  controller_64e608ddc28b -. renders .-> view_fe7e7ffe6adc
   nav_90609cfd31a3 --> route_8c80c0301221
   nav_1abee342ae87 --> route_6ce84be0a21c
   nav_41fb19b5f30b --> route_b2c44d359fd8
@@ -766,6 +783,7 @@ flowchart LR
   controller_2702fc6f256e --> controller_6f7f176814f0
   controller_452e47b9a403 --> controller_6f7f176814f0
   controller_64e608ddc28b --> controller_6f7f176814f0
+  controller_43aabb320c7a --> controller_6f7f176814f0
   controller_6f7f176814f0 --> service_3fc704b15e1b
   tool_63816fb031e2 --> service_c5fb81744c52
   tool_20fe79d51ae4 --> service_b30981b6449c
@@ -785,6 +803,7 @@ flowchart LR
   service_fc0ff5cfd93a --> collection_2dce077b5527
   service_c4c5dac5c925 --> collection_28882724d375
   service_66daa9bdc2c1 --> collection_9bc65c2abec1
+  service_66daa9bdc2c1 --> collection_963e3a2fe559
   service_66daa9bdc2c1 --> collection_86024cad1e83
   service_66daa9bdc2c1 --> collection_12c500ed0b78
   service_66daa9bdc2c1 --> collection_2417b5325520

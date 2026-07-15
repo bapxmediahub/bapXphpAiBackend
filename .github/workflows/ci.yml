@@ -14,11 +14,13 @@ concurrency:
 
 jobs:
   validate:
-    if: github.repository == 'getwinharris/bapXphpAiBackend'
+    if: github.actor != 'ci-ai-bot' && endsWith(github.repository, 'bapXphpAiBackend')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
