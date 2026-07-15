@@ -240,6 +240,7 @@ final class ProjectMapService {
             '/account/dashboard' => 'Account dashboard entry — redirects to orders',
             '/account/dashboard/orders' => 'My Orders — product reviews',
             '/account/dashboard/sessions' => 'My Sessions — astrologer bookings',
+            '/account/dashboard/install' => 'Install App — customer installation guidance',
             '/account/orders'  => 'Legacy account orders redirect',
             '/account/bookings' => 'Legacy account sessions redirect',
             '/api/consultations/{id}/status|POST' => 'API — update appointment status',
@@ -531,6 +532,7 @@ final class ProjectMapService {
             '/account/dashboard',
             '/account/dashboard/orders',
             '/account/dashboard/sessions',
+            '/account/dashboard/install',
         ];
     }
 

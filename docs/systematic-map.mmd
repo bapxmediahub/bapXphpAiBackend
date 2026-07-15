@@ -38,7 +38,7 @@ flowchart LR
     route_6ce84be0a21c["GET /account/dashboard — Account dashboard entry — redirects to orders"]:::route
     route_b2c44d359fd8["GET /account/dashboard/orders — My Orders — product reviews"]:::route
     route_53bc246f9b4e["GET /account/dashboard/sessions — My Sessions — astrologer bookings"]:::route
-    route_8136f5b45613["GET /account/dashboard/install"]:::route
+    route_8136f5b45613["GET /account/dashboard/install — Install App — customer installation guidance"]:::route
     route_6e1b2c8ad9df["GET /account/orders — Legacy account orders redirect"]:::route
     route_05bd7a95e13b["GET /account/bookings — Legacy account sessions redirect"]:::route
     route_f8d4769e9808["POST /api/consultations/{id}/status — API — update appointment status"]:::route
@@ -136,6 +136,7 @@ flowchart LR
     nav_1abee342ae87["/account/dashboard"]:::nav
     nav_41fb19b5f30b["/account/dashboard/orders"]:::nav
     nav_06442c376c88["/account/dashboard/sessions"]:::nav
+    nav_c6dda9b9056f["/account/dashboard/install"]:::nav
   end
 
   subgraph CONTROLLERS["Controllers"]
@@ -684,6 +685,7 @@ flowchart LR
   nav_1abee342ae87 --> route_6ce84be0a21c
   nav_41fb19b5f30b --> route_b2c44d359fd8
   nav_06442c376c88 --> route_53bc246f9b4e
+  nav_c6dda9b9056f --> route_8136f5b45613
   controller_9968163fcd32 --> controller_6f7f176814f0
   controller_3d37b75c07ec --> controller_6f7f176814f0
   controller_f3a06e444dad --> controller_6f7f176814f0

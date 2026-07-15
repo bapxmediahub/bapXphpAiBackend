@@ -263,12 +263,15 @@ $tests['public service worker does not cache dynamic commerce pages first'] = fu
 
 $tests['customer installation is an account menu workflow'] = function (): void {
     $routes = ProjectMapService::registry()['routes'];
-    $installRoute = array_values(array_filter($routes, fn($route) => $route['path'] === '/account/dashboard/install'));
+    $installRoute = array_values(array_filter($routes, fn($route) => $route['method'] === 'GET' && $route['path'] === '/account/dashboard/install'));
     assertSame(1, count($installRoute), 'Account installation route should be registered once');
     assertTrue(in_array('AuthService', $installRoute[0]['services'], true), 'Account installation route should require authentication');
     $nav = file_get_contents(app_path('views/account/_nav.php'));
     $page = file_get_contents(app_path('views/account/install.php'));
     $layout = file_get_contents(app_path('views/layouts/app.php'));
+    assertTrue(is_string($nav), 'Account navigation fixture should be readable');
+    assertTrue(is_string($page), 'Installation page fixture should be readable');
+    assertTrue(is_string($layout), 'Public layout fixture should be readable');
     assertTrue(str_contains($nav, '/account/dashboard/install') && str_contains($nav, 'Install App'), 'Account navigation should expose installation');
     foreach (['beforeinstallprompt', 'appinstalled', 'display-mode: standalone', 'Add to Home Screen', 'pwa-install-action'] as $needle) {
         assertTrue(str_contains($page, $needle), "Installation page should include {$needle}");

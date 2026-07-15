@@ -1810,6 +1810,7 @@ nav a:hover { color: var(--color-maroon); }
 .account-install__status-icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: var(--color-bg-alt); color: var(--color-maroon); font-size: 1.3rem; font-weight: 700; }
 .account-install__status strong { display: block; margin-bottom: var(--space-2xs); color: var(--color-ink); }
 .account-install__status p { margin: 0; color: var(--color-text-muted); line-height: 1.5; }
+.account-install__status .btn[hidden] { display: none; }
 .account-install__instructions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--space-2xl); padding: var(--space-xl) 0; }
 .account-install__instructions section + section { padding-left: var(--space-2xl); border-left: 1px solid var(--color-border); }
 .account-install__instructions h2 { margin: 0 0 var(--space-sm); font-size: 1rem; }
