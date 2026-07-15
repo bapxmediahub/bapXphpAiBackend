@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AuditLogService,AuthService,ConsultationService,EnvService,MailStorageService,MediaService,OrderService,ResourceService,SchemaService,SecretService,SettingsService,StoragePermissionService};
+use App\Services\{AuditLogService,AuthService,ConsultationService,EnvService,MailStorageService,MediaService,OrderService,ResourceService,SchemaService,SecretService,SettingsService,StoragePermissionService,TaxService};
 final class AdminController extends BaseController {
     protected string $layout = 'admin';
     public function __construct() {
@@ -50,7 +50,7 @@ final class AdminController extends BaseController {
     public function saveTemple(): void{$this->save('temples');}
     public function deleteTemple(): void{$this->delete('temples');}
     public function settings(): void{$this->render('admin/settings',['pageTitle' => 'Settings', 'title' => 'Site Settings', 'settings'=>(new SettingsService())->public(), 'adminCredentials'=>(new EnvService())->adminCredentials()]);}
-    public function saveSettings(): void{(new SettingsService())->savePublic(['shipping_mode'=>$_POST['shipping_mode'] ?? 'free','flat_rate'=>max(0,(float)($_POST['flat_rate'] ?? 0)),'currency'=>$_POST['currency'] ?? 'INR','timezone'=>$_POST['timezone'] ?? 'Asia/Kolkata']); $this->flash('Settings saved.','success'); $this->redirect('/admin/settings');}
+    public function saveSettings(): void{(new SettingsService())->savePublic(['shipping_mode'=>$_POST['shipping_mode'] ?? 'free','flat_rate'=>max(0,(float)($_POST['flat_rate'] ?? 0)),'currency'=>$_POST['currency'] ?? 'INR','timezone'=>$_POST['timezone'] ?? 'Asia/Kolkata','gstin'=>$_POST['gstin'] ?? '','gst_legal_name'=>$_POST['gst_legal_name'] ?? '','gst_trade_name'=>$_POST['gst_trade_name'] ?? '','gst_address'=>$_POST['gst_address'] ?? '','gst_state'=>$_POST['gst_state'] ?? '','gst_state_code'=>$_POST['gst_state_code'] ?? '']); $this->flash('Settings saved.','success'); $this->redirect('/admin/settings');}
     public function saveAdminCredentials(): void{(new EnvService())->saveAdminCredentials($_POST); $this->flash('Admin credentials saved.','success'); $this->redirect('/admin/settings');}
     public function integrations(): void{$this->render('admin/integrations',['pageTitle' => 'Integrations', 'secrets'=>(new SecretService())->all()]);}
     public function saveIntegrations(): void{(new SecretService())->save($_POST); $this->flash('Integration settings saved.','success'); $this->redirect('/admin/integrations');}
@@ -110,6 +110,23 @@ final class AdminController extends BaseController {
         }
         $this->flash('Blog post deleted.','info');
         $this->redirect('/admin/blog');
+    }
+    public function taxReport(): void{
+        $orders = (new OrderService())->all();
+        $orders = array_values(array_filter($orders, fn($o) => !empty($o['invoice_number'])));
+        $from = (string)($_GET['from'] ?? '');
+        $to = (string)($_GET['to'] ?? '');
+        if ($from !== '') $orders = array_values(array_filter($orders, fn($o) => ($o['invoice_date'] ?? '') >= $from));
+        if ($to !== '') $orders = array_values(array_filter($orders, fn($o) => ($o['invoice_date'] ?? '') <= $to . 'T23:59:59'));
+        if (($_GET['format'] ?? '') === 'csv') {
+            header('Content-Type: text/csv; charset=utf-8');
+            header('Content-Disposition: attachment; filename="gst-tax-report.csv"');
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['Invoice','Date','Customer','Place of Supply','Taxable','CGST','SGST','IGST','Total']);
+            foreach ($orders as $o) fputcsv($handle, [$o['invoice_number']??'',substr($o['invoice_date']??'',0,10),$o['customer_email']??'',$o['place_of_supply']??'',$o['taxable_value']??0,$o['cgst_total']??0,$o['sgst_total']??0,$o['igst_total']??0,$o['total']??0]);
+            fclose($handle); exit;
+        }
+        $this->render('admin/tax-report', ['pageTitle'=>'GST Tax Report','title'=>'GST Product Sales Report','orders'=>$orders,'from'=>$from,'to'=>$to]);
     }
     private function list(string $title, ?string $collection = null): void{$this->render('admin/list',['pageTitle' => $title, 'title' => $title, 'collection' => $collection, 'items'=>$collection ? (new ResourceService($collection))->all() : []]);}
     private function resource(string $title,string $collection,array $fields): void{$this->render('admin/resource',['pageTitle' => $title, 'title' => $title, 'collection' => $collection, 'fields' => $fields, 'items'=>(new ResourceService($collection))->all(), 'mediaFiles'=>$this->mediaFor($collection)]);}

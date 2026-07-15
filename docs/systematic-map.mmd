@@ -7,13 +7,13 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 97 routes, 11 controllers, 38 services, 44 views, 0 data files, 19 tools"]
-    arch_routes["> Routes: 97 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 99 routes, 11 controllers, 39 services, 46 views, 0 data files, 20 tools"]
+    arch_routes["> Routes: 99 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 11"]:::arch
-    arch_svc["> Services: 38"]:::arch
-    arch_views["> Views: 44"]:::arch
+    arch_svc["> Services: 39"]:::arch
+    arch_views["> Views: 46"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
-    arch_tools["> Tools: 19"]:::arch
+    arch_tools["> Tools: 20"]:::arch
     arch_gaps["> Gaps: 0"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
@@ -40,6 +40,7 @@ flowchart LR
     route_53bc246f9b4e["GET /account/dashboard/sessions — My Sessions — astrologer bookings"]:::route
     route_8136f5b45613["GET /account/dashboard/install — Install App — customer installation guidance"]:::route
     route_6e1b2c8ad9df["GET /account/orders — Legacy account orders redirect"]:::route
+    route_2f0729dfe76a["GET /account/orders/{orderId}/invoice"]:::route
     route_05bd7a95e13b["GET /account/bookings — Legacy account sessions redirect"]:::route
     route_f8d4769e9808["POST /api/consultations/{id}/status — API — update appointment status"]:::route
     route_0e14c4ef1380["POST /consultation/initiate — Request a scheduled consultant appointment"]:::route
@@ -96,6 +97,7 @@ flowchart LR
     route_a957673c2bdd["GET /admin/astrologers — Admin — manage astrologers"]:::route
     route_3b4bedeac0b9["GET /admin/appointments — Admin — session list"]:::route
     route_92dd4d9f6051["GET /admin/consultation-analytics — Admin — consultation metrics"]:::route
+    route_e65af988eca1["GET /admin/tax-report"]:::route
     route_a7447dded861["GET /admin/temples — Admin — manage temples"]:::route
     route_a068f086796c["GET /admin/settings — Admin — site settings"]:::route
     route_c2fce1e83e49["POST /admin/settings/save — Admin — save settings"]:::route
@@ -191,6 +193,7 @@ flowchart LR
     service_c5fb81744c52["SmtpMailer"]:::code
     service_82c10839666c["StoragePermissionService"]:::code
     service_1bacfc3e3f3b["SupportBotService"]:::code
+    service_19bd8dc03a23["TaxService"]:::code
     service_c9950f0c49e4["TempleService"]:::code
   end
 
@@ -198,6 +201,7 @@ flowchart LR
     view_17326c025c30["account/_nav"]:::code
     view_bde0b7fa75a6["account/bookings"]:::code
     view_e106de188447["account/install"]:::code
+    view_6698d76d719f["account/invoice"]:::code
     view_8bf2f1da4f90["account/orders"]:::code
     view_17900ac53325["admin/appearance"]:::code
     view_c08844df74a9["admin/astrologer-form"]:::code
@@ -214,6 +218,7 @@ flowchart LR
     view_2b32af729a24["admin/project-map"]:::code
     view_9720267f0400["admin/resource"]:::code
     view_ccc5b8c17f9f["admin/settings"]:::code
+    view_c9b59025f729["admin/tax-report"]:::code
     view_dae8fcbc86f4["layouts/admin"]:::code
     view_fd382d366d88["layouts/app"]:::code
     view_fe7e7ffe6adc["public/404"]:::code
@@ -282,6 +287,7 @@ flowchart LR
     tool_e255759bee23["doc-write"]:::tool
     tool_1913548b93c6["generate-docs-map"]:::tool
     tool_891d42e0bd53["generate-project-map"]:::tool
+    tool_b2c22e3cb9cb["handoff"]:::tool
     tool_20fe79d51ae4["import-product-images"]:::tool
     tool_42d1d6670e62["optimize-images"]:::tool
     tool_a88dee51947d["pma-client"]:::tool
@@ -347,6 +353,7 @@ flowchart LR
   controller_18ec49ea2cf4 --> service_0ab47bcd921f
   controller_18ec49ea2cf4 --> service_6c9416ef0383
   controller_18ec49ea2cf4 --> service_125c14ddd376
+  controller_18ec49ea2cf4 --> service_fefb1ba2e4f7
   controller_18ec49ea2cf4 -. renders .-> view_6b1f93c8d0e4
   route_8c80c0301221 --> controller_18ec49ea2cf4
   controller_18ec49ea2cf4 -. renders .-> view_89865e74ab9c
@@ -404,6 +411,12 @@ flowchart LR
   route_6e1b2c8ad9df --> controller_9968163fcd32
   controller_9968163fcd32 --> service_f33a1d77b137
   controller_9968163fcd32 -. renders .-> view_8bf2f1da4f90
+  route_2f0729dfe76a --> controller_9968163fcd32
+  controller_9968163fcd32 --> service_f33a1d77b137
+  controller_9968163fcd32 --> service_f751cedec776
+  controller_9968163fcd32 --> service_fefb1ba2e4f7
+  controller_9968163fcd32 --> service_19bd8dc03a23
+  controller_9968163fcd32 -. renders .-> view_6698d76d719f
   route_05bd7a95e13b --> controller_9968163fcd32
   controller_9968163fcd32 --> service_f33a1d77b137
   controller_9968163fcd32 -. renders .-> view_bde0b7fa75a6
@@ -461,6 +474,11 @@ flowchart LR
   controller_3d37b75c07ec --> service_0d961cbe684b
   controller_3d37b75c07ec --> service_f33a1d77b137
   controller_3d37b75c07ec -. renders .-> view_860deb20ae6d
+  route_e65af988eca1 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_f751cedec776
+  controller_3d37b75c07ec --> service_19bd8dc03a23
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_c9b59025f729
   route_a7447dded861 --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_c9950f0c49e4
   controller_3d37b75c07ec --> service_69598e3405fb
@@ -617,6 +635,8 @@ flowchart LR
   controller_7fda1508bed0 --> service_6c9416ef0383
   controller_7fda1508bed0 --> service_9eeeaab84791
   controller_7fda1508bed0 --> service_66daa9bdc2c1
+  controller_7fda1508bed0 --> service_19bd8dc03a23
+  controller_7fda1508bed0 --> service_fefb1ba2e4f7
   controller_7fda1508bed0 -. renders .-> view_6b1f93c8d0e4
   route_416fde130b00 --> controller_7fda1508bed0
   controller_7fda1508bed0 --> service_6c9416ef0383
@@ -626,6 +646,8 @@ flowchart LR
   controller_7fda1508bed0 --> service_6c9416ef0383
   controller_7fda1508bed0 --> service_9eeeaab84791
   controller_7fda1508bed0 --> service_66daa9bdc2c1
+  controller_7fda1508bed0 --> service_19bd8dc03a23
+  controller_7fda1508bed0 --> service_fefb1ba2e4f7
   controller_7fda1508bed0 -. renders .-> view_6b1f93c8d0e4
   route_0e14c4ef1380 --> controller_50eaea84bd1d
   controller_50eaea84bd1d --> service_f33a1d77b137

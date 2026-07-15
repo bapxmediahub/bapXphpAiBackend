@@ -1,0 +1,102 @@
+{
+    "issue": 169,
+    "role": "worker",
+    "objectives": [
+        {
+            "id": "OBJ-169-1",
+            "status": "implemented",
+            "evidence": [
+                "storage/schema/collections.php: added hsn_code/gst_rate to products, added invoice+tax fields to orders (21 new fields)",
+                "app/Services/CommerceController.php: verifyPayment() now calls TaxService::snapshot() for tax calculation and TaxService::nextInvoice() for auto-incrementing invoice number; stores tax_lines, taxable_value, cgst/sgst/igst totals, supply_type, place_of_supply, supplier, invoice metadata on order record",
+                "app/Controllers/AccountController.php: added invoice(orderId) route — renders views/account/invoice.php with scoped user+settings",
+                "app/Controllers/AdminController.php: added taxReport() route — date-filtered list + CSV export, renders views/admin/tax-report.php",
+                "app/Services/ProjectMapService.php: registered /account/orders/{orderId}/invoice and /admin/tax-report routes; added TaxService to service catalog; added SettingsService to checkout and verify-payment routes",
+                "app/Controllers/AdminController.php: saveSettings() now persists gstin, gst_legal_name, gst_trade_name, gst_address, gst_state, gst_state_code",
+                "bapXphp ci: all 90+ tests pass, 0 gaps, 0 failures"
+            ],
+            "browser_evidence": [],
+            "unresolved": []
+        },
+        {
+            "id": "OBJ-169-2",
+            "status": "gap",
+            "evidence": [],
+            "browser_evidence": [],
+            "unresolved": [
+                "GST-inclusive pricing display on checkout not yet implemented: need to show taxable_value + tax breakdown in checkout view"
+            ]
+        },
+        {
+            "id": "OBJ-169-3",
+            "status": "gap",
+            "evidence": [],
+            "browser_evidence": [],
+            "unresolved": [
+                "GST settings admin form fields not added to views/admin/settings.php"
+            ]
+        },
+        {
+            "id": "OBJ-169-4",
+            "status": "gap",
+            "evidence": [],
+            "browser_evidence": [],
+            "unresolved": [
+                "Invoice email template / attachment not implemented"
+            ]
+        },
+        {
+            "id": "OBJ-169-5",
+            "status": "gap",
+            "evidence": [],
+            "browser_evidence": [],
+            "unresolved": [
+                "Product admin form fields for hsn_code/gst_rate not added to views/admin/product-form.php"
+            ]
+        },
+        {
+            "id": "OBJ-169-6",
+            "status": "gap",
+            "evidence": [],
+            "browser_evidence": [],
+            "unresolved": [
+                "Admin navigation sidebar entry for /admin/tax-report not yet added"
+            ]
+        },
+        {
+            "id": "OBJ-169-7",
+            "status": "gap",
+            "evidence": [],
+            "browser_evidence": [],
+            "unresolved": [
+                "Account invoice navigation not wired (no link from orders list)"
+            ]
+        },
+        {
+            "id": "OBJ-169-8",
+            "status": "gap",
+            "evidence": [],
+            "browser_evidence": [],
+            "unresolved": [
+                "Not yet started"
+            ]
+        }
+    ],
+    "files_changed": [
+        "app/Controllers/AccountController.php",
+        "app/Controllers/AdminController.php",
+        "app/Controllers/CommerceController.php",
+        "app/Services/ProjectMapService.php",
+        "docs/systematic-map.mmd",
+        "storage/schema/collections.php"
+    ],
+    "commands_run": [
+        "php -l app/Controllers/AccountController.php && php -l app/Controllers/AdminController.php && php -l app/Controllers/CommerceController.php && php -l app/Services/ProjectMapService.php && php -l storage/schema/collections.php",
+        "bapXphp update",
+        "bapXphp ci"
+    ],
+    "risks": [
+        "Existing orders without invoice fields will show partial data on invoice page; handled gracefully via ?? fallbacks in view",
+        "TaxService relies on GST settings being configured by admin before orders are placed"
+    ],
+    "next_role": "reviewer"
+}
