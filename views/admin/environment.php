@@ -2,6 +2,7 @@
     <h2>Environment Variables</h2>
     <p>Edit the deployed <code>.env</code> file for this PHP hosting installation. Keep one <code>KEY=value</code> per line.</p>
     <form method="post" action="/admin/environment/save" class="admin-form">
+        <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
         <label>Editable .env File
             <textarea name="env_raw" rows="16" spellcheck="false" style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace;"><?= e($envRaw) ?></textarea>
         </label>
@@ -16,6 +17,7 @@
             <p style="margin:0;">JSON data, backups, media uploads, and <code>.env</code> must be writable by PHP on shared hosting.</p>
         </div>
         <form method="post" action="/admin/environment/fix-permissions">
+            <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
             <button class="btn btn-sm btn-ghost">Fix Writable Paths</button>
         </form>
     </div>

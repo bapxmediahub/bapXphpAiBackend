@@ -5,6 +5,7 @@
 
 <div class="admin-card">
     <form method="post" action="/admin/appearance/save" class="admin-form" enctype="multipart/form-data">
+        <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
         <h3 style="font-size:1rem; margin:0 0 var(--space-md);">Site Logo</h3>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-xl); align-items:start;">
             <div>

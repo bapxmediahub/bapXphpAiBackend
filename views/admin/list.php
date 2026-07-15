@@ -35,6 +35,7 @@
                                 <?php endif; ?>
                                 <div class="ticket-reply-form" data-ticket-id="<?= e($item['id'] ?? '') ?>">
                                     <form method="POST" action="/admin/support-tickets/save">
+                                        <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
                                         <input type="hidden" name="id" value="<?= e($item['id'] ?? '') ?>">
                                         <textarea name="reply" placeholder="Write your reply…" required><?= e($item['reply'] ?? '') ?></textarea>
                                         <div style="display:flex; gap:var(--space-sm); margin-top:var(--space-sm);">

@@ -40,6 +40,7 @@
         </div>
     </div>
     <form id="agent-form" method="post" action="/admin/agent/ask" style="display:flex; gap:var(--space-sm);" onsubmit="return askAgent(event)">
+        <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
         <input type="text" id="agent-input" name="message" placeholder="e.g. How many users? What's the revenue? Create a blog post about Diwali..." required style="flex:1; padding:var(--space-sm) var(--space-md); border:1px solid var(--color-border); border-radius:var(--radius-md); font-size:0.9rem;">
         <button type="submit" class="btn btn-primary" id="agent-submit">Ask</button>
     </form>
@@ -131,7 +132,7 @@ async function askAgent(e) {
     messages.innerHTML += '<div class="agent-message agent-message--user" style="padding:var(--space-sm) var(--space-md); background:var(--color-maroon); color:#fff; border-radius:var(--radius-md); font-size:0.85rem; align-self:flex-end; max-width:80%;">' + escapeHtml(msg) + '</div>';
     input.value = '';
     try {
-        const resp = await fetch('/admin/agent/ask', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:'message='+encodeURIComponent(msg) + '&csrf_token=' + encodeURIComponent(document.querySelector('input[name="csrf_token"]')?.value || '') });
+        const resp = await fetch('/admin/agent/ask', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:'message='+encodeURIComponent(msg) + '&_csrf=' + encodeURIComponent(document.querySelector('input[name="_csrf"]')?.value || '') });
         const data = await resp.json();
         if (data.error) {
             messages.innerHTML += '<div class="agent-message agent-message--error" style="padding:var(--space-sm) var(--space-md); background:var(--color-error-bg, #f8d7da); border:1px solid var(--color-error, #dc3545); border-radius:var(--radius-md); font-size:0.85rem; color:var(--color-error, #dc3545);">Error: ' + escapeHtml(data.error) + '</div>';

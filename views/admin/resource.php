@@ -4,6 +4,7 @@
         <span class="badge badge--default"><?= count($items) ?> record<?= count($items) !== 1 ? 's' : '' ?></span>
     </div>
     <form id="resource-form" method="post" action="/admin/<?= e($collection) ?>/save" class="admin-form" enctype="multipart/form-data">
+        <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
         <input type="hidden" name="id" id="resource-id">
         <div class="admin-form__row" style="grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));">
             <?php foreach($fields as $field): ?>
@@ -106,6 +107,7 @@
                                     Edit
                                 </button>
                                 <form method="post" action="/admin/<?= e($collection) ?>/delete" onsubmit="return confirm('Delete this record? This cannot be undone.');">
+                                    <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
                                     <input type="hidden" name="id" value="<?= e($item['id']) ?>">
                                     <button class="btn btn-sm" style="background:var(--color-error-light); color:var(--color-error);">
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>

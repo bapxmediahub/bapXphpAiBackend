@@ -1,6 +1,7 @@
 <div class="admin-card">
     <h2>Upload Media</h2>
     <form method="post" action="/admin/media/upload" enctype="multipart/form-data" class="admin-form">
+        <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
         <div class="admin-form__row">
             <label>Context
                 <select name="context">

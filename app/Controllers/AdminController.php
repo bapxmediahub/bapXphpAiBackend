@@ -5,6 +5,7 @@ final class AdminController extends BaseController {
     protected string $layout = 'admin';
     public function __construct() {
         (new AuthService())->requireAdmin();
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') $this->validateCsrf();
         $this->seoKey = 'admin';
     }
 

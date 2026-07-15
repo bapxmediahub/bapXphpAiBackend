@@ -4,6 +4,7 @@
 </div>
 
 <form method="post" action="/admin/blog/save" id="blog-form" class="admin-blog-editor" hidden>
+    <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
     <input type="hidden" name="slug" id="edit-slug" value="">
     <div class="admin-blog-editor__grid">
         <label>Title <input type="text" name="title" id="edit-title" required style="width:100%"></label>
@@ -55,6 +56,7 @@
         <td>
             <button class="btn btn-sm btn-ghost" onclick="editPost(<?= e(json_encode($post)) ?>)">Edit</button>
             <form method="post" action="/admin/blog/delete" style="display:inline" onsubmit="return confirm('Delete this post?')">
+                <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
                 <input type="hidden" name="slug" value="<?= e($post['slug'] ?? '') ?>">
                 <button class="btn btn-sm btn-ghost" style="color:var(--color-error)">Delete</button>
             </form>

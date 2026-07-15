@@ -6,6 +6,7 @@
     <h2 style="font-size:1rem; margin:0 0 var(--space-sm);">Admin Login</h2>
     <p style="margin:0 0 var(--space-lg); color:var(--color-text-muted); font-size:0.9rem;">These credentials are loaded from <code>.env</code>. Change them before production use.</p>
     <form class="admin-form" method="post" action="/admin/settings/admin-credentials">
+        <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
         <div class="admin-form__row">
             <div class="form-group">
                 <label>Admin Username</label>
@@ -26,6 +27,7 @@
 <div class="admin-card">
     <h2 style="font-size:1rem; margin:0 0 var(--space-lg);">Shipping Configuration</h2>
     <form class="admin-form" method="post" action="/admin/settings/save">
+        <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
         <div class="admin-form__row">
             <div class="form-group">
                 <label>Shipping Mode</label>
@@ -56,6 +58,7 @@
 <div class="admin-card" style="margin-top:var(--space-lg);">
     <h2 style="font-size:1rem; margin:0 0 var(--space-lg);">GST Configuration</h2>
     <form class="admin-form" method="post" action="/admin/settings/save">
+        <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
         <div class="admin-form__row">
             <div class="form-group">
                 <label>GSTIN</label>

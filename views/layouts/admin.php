@@ -1,3 +1,4 @@
+<?php $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); $csrf = $_SESSION['csrf_token']; ?>
 <!doctype html>
 <html lang="en">
 <head>
