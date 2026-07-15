@@ -146,7 +146,47 @@ All project operations go through `bapXphp`. Never use raw shell/edit/write/find
 
 This ensures every operation is auditable, logged, and consistent. If a required operation is missing or unsafe, enhance the nearest existing `bapXphp` command before performing the operation. Agent-facing bulk commands must be non-interactive, shared-hosting compatible, credential-safe, idempotent where practical, and provide `--dry-run` before mutations. GitHub operations remain in `gh`; browser verification remains in the Browser skill.
 
-When a required operation is missing or unsafe, enhance the nearest existing `bapXphp` command before performing the operation. Agent-facing bulk commands must be non-interactive, shared-hosting compatible, credential-safe, idempotent where practical, and provide `--dry-run` before mutations. GitHub operations remain in `gh`; browser verification remains in the Browser skill.
+## Attachment System (.agents/temp/)
+
+Every coding agent (OpenCode, Claude Code, Codex, etc.) uses `.agents/temp/` as the standard inbox for user-provided attachments:
+
+1. User attaches a screenshot, image, PDF, or document
+2. Agent copies/moves it to `.agents/temp/` inside this project
+3. Agent reads the file from `.agents/temp/` to understand the visual/content request
+4. Agent processes the file (describes screenshot, extracts text, etc.)
+5. Agent acts on the request using the file as reference
+
+This standardizes attachment handling across all agent types. Always check `.agents/temp/` when a user says they've attached something.
+
+## Model Routing (from Admin Panel)
+
+Sub-agents should use the most cost-effective AI model for their task. Model selection is configured in Admin → Integrations and stored in MySQL `secrets` table:
+
+| Secret Key | Purpose |
+|------------|---------|
+| `ai_model_provider` | `"google"` | `"openai"` | `"anthropic"` |
+| `ai_model_name` | Model ID (e.g. `gemini-2.5-flash`) |
+| `ai_api_endpoint` | Base URL for the API |
+| `ai_api_key` | Authentication key |
+
+**Recommended model mapping:**
+- CTO/Orchestrator → Pro model (Gemini 2.5 Pro / Claude Opus)
+- Worker/Implementation → Fast model (Gemini 2.5 Flash / Claude Sonnet)
+- Reviewer → Cheap model (Gemini 2.5 Flash)
+
+Never hardcode model names or API keys. Always read from `SecretService` at runtime.
+
+## Admin Panel Agent (bapXcli)
+
+The admin panel has an agent interface at `/admin/agent` that:
+- Answers questions about the site (users count, orders, revenue, products)
+- Creates and edits blog posts via natural language
+- Reads MySQL data through DatabaseService
+- Calls AI model (configured in Admin → Integrations)
+- Reads `.agents/temp/` for attachment-based requests
+- Triggers CI/CD on the hosting server
+
+The admin agent reads these collections: `users`, `orders`, `products`, `astrologers`, `appointments`, `support_tickets`, `audit_events`, `settings`. Write/mutation operations require user confirmation.
 
 ### Content CRUD (use the CLI, never edit files directly)
 
