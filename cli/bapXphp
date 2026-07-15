@@ -92,9 +92,8 @@ set -euo pipefail
 #                                   — load handoff context for next role
 #
 # ── Workflows (.agents/workflows/) ───────────────────────────────
-#   .agents/workflows/cto.md        — CTO orchestrator
 #   .agents/workflows/worker.md     — Worker (implementation)
-#   .agents/workflows/reviewer.md   — Reviewer (verification)
+#   .agents/workflows/reviewer.md   — Reviewer (optional verification)
 #
 # ── Attachments (.agents/temp/) ──────────────────────────────────
 #   .agents/temp/                   — inbox for user-provided screenshots/docs
@@ -810,16 +809,16 @@ cmd_handoff() {
       [ $# -eq 3 ] && [ -n "$file" ] && [[ "$pr_number" =~ ^[1-9][0-9]*$ ]] || die "Usage: bapXphp handoff comment <file> <pr-number>"
       require_php
       require_gh
-      local body comment_id marker='<!-- CTO-HANDOFF -->'
+      local body comment_id marker='<!-- HANDOFF-MARKER -->'
       body=$(php "$ROOT/cli/handoff.php" render-comment "$file")
       comment_id=$(gh api --paginate "repos/${GITHUB_REPOSITORY:-getwinharris/bapXphpAiBackend}/issues/$pr_number/comments" \
         --jq ".[] | select(.body | contains(\"$marker\")) | .id" | head -1)
       if [ -n "$comment_id" ]; then
         gh api --method PATCH "repos/${GITHUB_REPOSITORY:-getwinharris/bapXphpAiBackend}/issues/comments/$comment_id" -f body="$body" >/dev/null
-        ok "CTO HANDOFF comment updated"
+        ok "HANDOFF comment updated"
       else
         gh api --method POST "repos/${GITHUB_REPOSITORY:-getwinharris/bapXphpAiBackend}/issues/$pr_number/comments" -f body="$body" >/dev/null
-        ok "CTO HANDOFF comment created"
+        ok "HANDOFF comment created"
       fi
       ;;
     next)

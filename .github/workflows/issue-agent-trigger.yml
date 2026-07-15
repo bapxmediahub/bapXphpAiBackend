@@ -23,9 +23,9 @@ jobs:
             "issue": $ISSUE,
             "actor": "${{ github.actor }}",
             "workflow": {
-              "current_role": "cto",
+              "current_role": "maya",
               "next_role": "worker",
-              "sequence": ["cto", "worker", "reviewer", "cto"]
+              "sequence": ["maya", "worker", "reviewer", "maya"]
             },
             "payload": {
               "title": $(echo '${{ github.event.issue.title }}' | jq -Rs .),
@@ -72,11 +72,8 @@ jobs:
             | Field | Value |
             |-------|-------|
             | Event | \`issues.opened\` |
-            | Next role | **CTO** — investigate and plan |
-            | Chain | CTO → Worker → Reviewer → CTO |
-            | Handoff | \`.agents/handoffs/events/${{ github.event.issue.number }}.json\` |
-
-            CTO: run \`bapXphp map && bapXphp schema list\`, then \`bapXphp handoff next ${{ github.event.issue.number }}\`.
+            | Next role | **Maya** — investigate and plan |
+            | Chain | Maya → Worker → Reviewer → Maya |
 
             When done, comment \`/handoff worker\` to advance the chain."
         env:

@@ -36,12 +36,18 @@ final class SecretService {
     }
     public function getModelConfig(): array {
         $secrets = $this->all();
-        return [
-            'provider' => trim((string)($secrets['ai_model_provider'] ?? getenv('BAPX_AI_PROVIDER') ?: 'google')),
-            'model' => trim((string)($secrets['ai_model_name'] ?? getenv('BAPX_AI_MODEL') ?: 'gemini-2.5-flash')),
-            'endpoint' => trim((string)($secrets['ai_api_endpoint'] ?? getenv('BAPX_AI_ENDPOINT') ?: 'https://generativelanguage.googleapis.com/v1beta/models/')),
-            'api_key' => trim((string)($secrets['ai_api_key'] ?? getenv('BAPX_AI_API_KEY') ?: '')),
-        ];
+        $apiKey = trim((string)($secrets['google_api_key'] ?? $secrets['support_bot_google_api_key'] ?? ''));
+        $model = trim((string)($secrets['model'] ?? $secrets['support_bot_model'] ?? 'gemini-2.5-flash'));
+        $provider = 'google';
+        $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/';
+        if (str_contains($model, 'claude') || str_contains($model, 'opus') || str_contains($model, 'sonnet')) {
+            $provider = 'anthropic';
+            $endpoint = 'https://api.anthropic.com/v1/messages';
+        } elseif (str_contains($model, 'gpt') || str_contains($model, 'o1') || str_contains($model, 'o3')) {
+            $provider = 'openai';
+            $endpoint = 'https://api.openai.com/v1/chat/completions';
+        }
+        return compact('provider', 'model', 'endpoint', 'apiKey');
     }
     private function envSecrets(): array {
         return [
@@ -70,12 +76,10 @@ final class SecretService {
             'mail_from_email' => (string)(getenv('MAIL_FROM_EMAIL') ?: ''),
             'mail_from_name' => (string)(getenv('MAIL_FROM_NAME') ?: ''),
             'admin_notification_email' => (string)(getenv('ADMIN_NOTIFICATION_EMAIL') ?: ''),
-            'ai_model_provider' => (string)(getenv('BAPX_AI_PROVIDER') ?: ''),
-            'ai_model_name' => (string)(getenv('BAPX_AI_MODEL') ?: ''),
-            'ai_api_endpoint' => (string)(getenv('BAPX_AI_ENDPOINT') ?: ''),
-            'ai_api_key' => (string)(getenv('BAPX_AI_API_KEY') ?: ''),
             'support_bot_google_api_key' => (string)(getenv('SUPPORT_BOT_GOOGLE_API_KEY') ?: ''),
             'support_bot_model' => (string)(getenv('SUPPORT_BOT_MODEL') ?: ''),
+            'google_api_key' => (string)(getenv('GOOGLE_API_KEY') ?: ''),
+            'model' => (string)(getenv('MODEL') ?: ''),
             'support_bot_purge_policy' => (string)(getenv('SUPPORT_BOT_PURGE_POLICY') ?: ''),
             'remote_db_token' => (string)(getenv('BAPX_REMOTE_DB_TOKEN') ?: ''),
             'turn_server_url' => (string)(getenv('TURN_SERVER_URL') ?: ''),

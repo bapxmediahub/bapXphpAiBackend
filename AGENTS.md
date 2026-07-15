@@ -13,11 +13,15 @@ Workflow roles are defined in `.agents/workflows/<role>.md` — tool-agnostic de
 This repository uses a **strict sequential handoff chain** for all work. Never dispatch multiple sub-agents in parallel. Each cycle follows exactly:
 
 ```
-Issue → handoff JSON (GitHub Action) → CTO (bapXphp handoff next)
+Issue → handoff JSON (GH Action) → Maya (orchestrate, route)
   → Worker (single objective) → evidence
-  → Reviewer (verify evidence) → findings
-  → CTO (close loop, route next objective or close issue)
+  → Maya (verify, route next objective or close)
 ```
+
+### Roles
+- **Maya** — orchestrate, diagnose, route, review evidence, close the loop. Maya is the only entry point. She reads the handoff, runs `bapXphp map && bapXphp schema list`, pinpoints the owning source, and hands off to Worker with a single clear objective.
+- **Worker** — implement one objective, produce evidence, hand back to me
+- **Reviewer** — *(optional)* verify evidence when the work is complex or risky
 
 ### Event-driven handoff protocol
 - `issues: opened` → `.github/workflows/issue-agent-trigger.yml` creates GitHub-style event payload in `.agents/handoffs/events/<issue>.json`
@@ -168,21 +172,14 @@ This standardizes attachment handling across all agent types. Always check `.age
 
 ## Model Routing (from Admin Panel)
 
-Sub-agents should use the most cost-effective AI model for their task. Model selection is configured in Admin → Integrations and stored in MySQL `secrets` table:
+Sub-agents should use the most cost-effective AI model for their task. Model config is stored in the `secrets` table under `google_api_key` and `model`, editable via Admin → Integrations. Provider is auto-detected from model name.
 
-| Secret Key | Purpose |
-|------------|---------|
-| `ai_model_provider` | `"google"` | `"openai"` | `"anthropic"` |
-| `ai_model_name` | Model ID (e.g. `gemini-2.5-flash`) |
-| `ai_api_endpoint` | Base URL for the API |
-| `ai_api_key` | Authentication key |
+| DB Column | Purpose | Current Value |
+|-----------|---------|--------------|
+| `google_api_key` | API key for AI provider | Set in Admin |
+| `model` | Model ID (e.g. `gemma-4-31b-it`) | Set in Admin |
 
-**Recommended model mapping:**
-- CTO/Orchestrator → Pro model (Gemini 2.5 Pro / Claude Opus)
-- Worker/Implementation → Fast model (Gemini 2.5 Flash / Claude Sonnet)
-- Reviewer → Cheap model (Gemini 2.5 Flash)
-
-Never hardcode model names or API keys. Always read from `SecretService` at runtime.
+Read via `SecretService::getModelConfig()` at runtime. Never hardcode model names or API keys.
 
 ## Admin Panel Agent (bapXcli)
 

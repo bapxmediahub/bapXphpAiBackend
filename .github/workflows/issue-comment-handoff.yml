@@ -43,8 +43,8 @@ jobs:
               "actor": "${{ github.actor }}",
               "workflow": {
                 "current_role": "$TARGET",
-                "next_role": "$(if [ "$TARGET" = "cto" ]; then echo worker; elif [ "$TARGET" = "worker" ]; then echo reviewer; else echo cto; fi)",
-                "sequence": ["cto", "worker", "reviewer", "cto"]
+                "next_role": "$(if [ "$TARGET" = "maya" ]; then echo worker; elif [ "$TARGET" = "worker" ]; then echo reviewer; else echo maya; fi)",
+                "sequence": ["maya", "worker", "reviewer", "maya"]
               },
               "payload": {
                 "comment": $(echo '${{ github.event.comment.body }}' | jq -Rs .)
