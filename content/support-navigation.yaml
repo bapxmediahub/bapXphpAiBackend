@@ -1,0 +1,20 @@
+sections:
+  - section: Account & Orders
+    links:
+      - /account/dashboard/orders: My Orders
+      - /account/dashboard/sessions: My Sessions
+      - /account/dashboard/install: Install App
+  - section: Shop & Products
+    links:
+      - /shop: Browse All Products
+      - /cart: View Cart
+      - /checkout: Checkout
+  - section: Consultations
+    links:
+      - /consult: Browse Consultants
+      - /temples: Temple Guide
+  - section: Help & Support
+    links:
+      - /contact: Contact Form
+      - /docs: Customer Help Guides
+      - /blog: Blog & Articles

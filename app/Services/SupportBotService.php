@@ -22,6 +22,15 @@ final class SupportBotService {
         }
         $reply ??= $this->fallbackReply($message, $context);
         $result = ['reply' => $reply, 'ticket_id' => null, 'memory' => 'browser_session'];
+        $email = !empty($user['email']) ? (string)$user['email'] : '';
+        $escalated = $this->shouldEscalate($message, $reply, $user);
+        if ($escalated && $email !== '') {
+            try {
+                $ticket = (new SupportTicketService())->create($email, $message, 'escalated from support bot');
+                $result['ticket_id'] = $ticket['id'];
+                $result['reply'] .= ' I have created a support ticket to get a human to review your request.';
+            } catch (\Throwable) {}
+        }
         $actions = $this->extractActions($reply);
         if ($actions !== []) $result['actions'] = $actions;
         return $result;
@@ -137,6 +146,14 @@ final class SupportBotService {
 
     private function isPrivateAccountQuestion(string $message): bool {
         return (bool)preg_match('/\b(my order|my booking|my session|track|delivery|shipped|history|past session|previous session)\b/i', $message);
+    }
+
+    private function shouldEscalate(string $message, string $reply, ?array $user): bool {
+        if (empty($user['email'])) return false;
+        if (preg_match('/\b(human|agent|escalate|talk to (a|someone)|speak to|contact support)\b/i', $message)) return true;
+        if (preg_match('/\b(complaint|refund|cancel|cancellation|return|wrong|broken|not working|issue|problem)\b/i', $message)) return true;
+        if (str_contains($reply, 'contact form')) return true;
+        return false;
     }
 
     private function extractActions(string $reply): array {

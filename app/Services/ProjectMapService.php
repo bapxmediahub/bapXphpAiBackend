@@ -69,7 +69,8 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/admin/contact_submissions/delete','name'=>'admin.contact-submissions.delete','page'=>'admin/resource','controller'=>'AdminController@deleteContactSubmission','services'=>['ResourceService','AuditLogService']],
             ['method'=>'GET','path'=>'/admin/email-inbox','name'=>'admin.email-inbox','page'=>'admin/mailbox','controller'=>'AdminController@emailInbox','services'=>['MailStorageService']],
             ['method'=>'GET','path'=>'/admin/email-outbox','name'=>'admin.email-outbox','page'=>'admin/mailbox','controller'=>'AdminController@emailOutbox','services'=>['MailStorageService']],
-            ['method'=>'GET','path'=>'/admin/support-tickets','name'=>'admin.support-tickets','page'=>'admin/list','controller'=>'AdminController@supportTickets','services'=>['DatabaseService']],
+            ['method'=>'GET','path'=>'/admin/support-tickets','name'=>'admin.support-tickets','page'=>'admin/list','controller'=>'AdminController@supportTickets','services'=>['DatabaseService','SupportTicketService']],
+            ['method'=>'POST','path'=>'/admin/support-tickets/save','name'=>'admin.support-tickets.save','page'=>'admin/list','controller'=>'AdminController@saveSupportTicket','services'=>['ResourceService','AuditLogService']],
             ['method'=>'GET','path'=>'/admin/appearance','name'=>'admin.appearance','page'=>'admin/appearance','controller'=>'AdminController@appearance','services'=>['SettingsService']],
             ['method'=>'POST','path'=>'/admin/appearance/save','name'=>'admin.appearance.save','page'=>'admin/appearance','controller'=>'AdminController@saveAppearance','services'=>['SettingsService','AuditLogService']],
             ['method'=>'GET','path'=>'/admin/media','name'=>'admin.media','page'=>'admin/media','controller'=>'AdminController@media','services'=>['MediaService']],
@@ -100,7 +101,7 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/reviews/astrologer','name'=>'reviews.astrologer','page'=>'account/bookings','controller'=>'ReviewController@saveAstrologer','services'=>['ReviewService']],
             ['method'=>'POST','path'=>'/reviews/product','name'=>'reviews.product','page'=>'account/orders','controller'=>'ReviewController@saveProduct','services'=>['ReviewService']],
             ['method'=>'GET','path'=>'/support','name'=>'support.page','page'=>'public/support','controller'=>'SupportController@page','services'=>['SeoService']],
-            ['method'=>'POST','path'=>'/support/ask','name'=>'support.ask','page'=>'public/support','controller'=>'SupportController@ask','services'=>['SupportBotService','AgentContextService']],
+            ['method'=>'POST','path'=>'/support/ask','name'=>'support.ask','page'=>'public/support','controller'=>'SupportController@ask','services'=>['SupportBotService','AgentContextService','SupportTicketService']],
 
             ['method'=>'GET','path'=>'/docs','name'=>'docs.index','page'=>'public/blog','controller'=>'PublicController@docs','services'=>[]],
             ['method'=>'GET','path'=>'/help/{slug}','name'=>'docs.show','page'=>'public/blog-post','controller'=>'PublicController@doc','services'=>[]],
@@ -122,7 +123,7 @@ final class ProjectMapService {
         unset($route);
         return [
             'routes'=>$routes,
-            'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AppointmentService','ConsultationService','TempleService','SettingsService','ProjectMapService','DatabaseService','AuditLogService','ResourceService','SecretService','EnvService','ContactService','ReviewService','PasswordResetService','MailQueueService','MailStorageService','AddressService','SupportBotService','MediaService','StoragePermissionService','SchemaService','AgentContextService','SeoService','ImageOptimizerService','GitHubDocService','MarkdownRenderer','BlogService','TaxService','BlogDraftService'],
+            'services'=>['AuthService','ProductService','CategoryService','CouponService','CartService','OrderService','PaymentService','ShippingService','AstrologerService','AppointmentService','ConsultationService','TempleService','SettingsService','ProjectMapService','DatabaseService','AuditLogService','ResourceService','SecretService','EnvService','ContactService','ReviewService','PasswordResetService','MailQueueService','MailStorageService','AddressService','SupportBotService','SupportTicketService','MediaService','StoragePermissionService','SchemaService','AgentContextService','SeoService','ImageOptimizerService','GitHubDocService','MarkdownRenderer','BlogService','TaxService','BlogDraftService'],
             'integrations'=>['GoogleOAuthClient','RazorpayClient','StripeClient','MetaPixelClient','GoogleSiteKitClient'],
             'collections'=>['users','addresses','products','categories','coupons','orders','astrologers','appointments','consultation_messages','consultation_signals','temples','settings','audit_events','reviews','mail_queue','mail_inbox','mail_outbox','wallet_transactions','support_tickets','contact_submissions','media_files','secrets'],
         ];
@@ -527,6 +528,7 @@ final class ProjectMapService {
             'SecretService' => ['secrets'],
             'SettingsService' => ['settings'],
             'SupportBotService' => ['support_tickets'],
+            'SupportTicketService' => ['support_tickets'],
             'TempleService' => ['temples'],
         ];
     }

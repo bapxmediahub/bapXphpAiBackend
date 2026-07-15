@@ -217,13 +217,18 @@
         'support_tickets' => [
             'primary_key' => 'id',
             'owner_field' => 'customer_email',
+            'admin_managed' => true,
+            'admin_fields' => ['customer_email', 'message', 'reply', 'context', 'status'],
             'agent_context' => ['id', 'customer_email', 'message', 'reply', 'status', 'created_at'],
             'fields' => [
                 'id' => ['type' => 'string'],
                 'customer_email' => ['type' => 'email'],
                 'message' => ['type' => 'text'],
                 'reply' => ['type' => 'text'],
+                'context' => ['type' => 'text'],
                 'status' => ['type' => 'enum', 'values' => ['open', 'answered', 'closed']],
+                'created_at' => ['type' => 'datetime'],
+                'updated_at' => ['type' => 'datetime'],
             ],
         ],
         'categories' => [

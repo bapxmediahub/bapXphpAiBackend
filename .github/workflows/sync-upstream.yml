@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  workflows: write
 
 concurrency:
   group: sync-upstream-main
@@ -24,3 +25,10 @@ jobs:
           gh api --method POST
           "repos/${GITHUB_REPOSITORY}/merge-upstream"
           --field branch=main
+
+      - name: Fallback - gh repo sync on merge-upstream failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh repo sync "${GITHUB_REPOSITORY}" --branch main

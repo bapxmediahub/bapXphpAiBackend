@@ -115,7 +115,20 @@ final class AdminController extends BaseController {
     public function contactSubmissions(): void{$this->resource('Contact Submissions','contact_submissions',['name','email','phone','subject','message','status']);}
     public function saveContactSubmission(): void{$this->save('contact_submissions');}
     public function deleteContactSubmission(): void{$this->delete('contact_submissions');}
-    public function supportTickets(): void{$this->list('Support Tickets','support_tickets');}
+    public function supportTickets(): void{$this->render('admin/list',['pageTitle'=>'Support Tickets','title'=>'Support Tickets','collection'=>'support_tickets','items'=>(new \App\Services\SupportTicketService())->all()]);}
+    public function saveSupportTicket(): void{
+        $id=(string)($_POST['id']??'');
+        $reply=trim((string)($_POST['reply']??''));
+        if ($id !== '' && $reply !== '') {
+            try {
+                (new \App\Services\SupportTicketService())->reply($id, $reply);
+                $this->flash('Reply saved.','success');
+            } catch (\Throwable $e) {
+                $this->flash('Unable to save reply.','error');
+            }
+        }
+        $this->redirect('/admin/support-tickets');
+    }
     public function emailInbox(): void{$this->render('admin/mailbox',['pageTitle'=>'Email Inbox','title'=>'Email Inbox','box'=>'inbox','items'=>(new MailStorageService())->inbox()]);}
     public function emailOutbox(): void{$this->render('admin/mailbox',['pageTitle'=>'Email Outbox','title'=>'Email Outbox','box'=>'outbox','items'=>(new MailStorageService())->outbox()]);}
     public function media(): void{$this->render('admin/media',['pageTitle'=>'Media Library','items'=>(new MediaService())->all()]);}

@@ -5,6 +5,22 @@
         <p class="lede">Find quick answers about products, orders, delivery addresses, payments, and consultant bookings.</p>
 
         <div class="support-grid">
+            <?php if (!empty($supportNav)): ?>
+                <?php foreach ($supportNav as $section): ?>
+                <article class="support-card">
+                    <h2><?= e($section['section'] ?? '') ?></h2>
+                    <ul style="list-style:none; padding:0; margin:0;">
+                        <?php foreach ($section['links'] ?? [] as $link): ?>
+                        <li style="margin-bottom:var(--space-xs);">
+                            <a href="<?= e($link['path'] ?? '#') ?>" style="font-weight:500;">
+                                <?= e($link['label'] ?? $link['path'] ?? '') ?>
+                            </a>
+                        </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </article>
+                <?php endforeach; ?>
+            <?php else: ?>
             <article class="support-card">
                 <h2>Saved addresses</h2>
                 <p>Your signup address becomes the default at checkout. Select another saved address or enter and optionally save a different delivery address for an order.</p>
@@ -29,6 +45,7 @@
                 <h2>Talk to a person</h2>
                 <p>Email <a href="mailto:sripanchamispiritual@gmail.com">sripanchamispiritual@gmail.com</a> or call <a href="tel:+919789444037">+91 97894 44037</a>. We usually reply within one business day.</p>
             </article>
+            <?php endif; ?>
         </div>
 
         <div class="page-cta-card" style="margin-top:var(--space-xl);">
