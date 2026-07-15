@@ -2,11 +2,11 @@ name: Issue agent trigger
 
 on:
   issues:
-    types: [opened]
+    types: [opened, labeled]
 
 permissions:
   issues: write
-  contents: read
+  contents: write
 
 jobs:
   handoff:
@@ -17,21 +17,25 @@ jobs:
         run: |
           ISSUE_NUMBER="${{ github.event.issue.number }}"
           TITLE="${{ github.event.issue.title }}"
-          BODY="${{ github.event.issue.body }}"
-          cat > .agents/handoffs/${ISSUE_NUMBER}-worker.json << EOF
+          BODY="${{ github.event.issue.body || '' }}"
+          LABELS="${{ join(github.event.issue.labels.*.name, ',') }}"
+          mkdir -p .agents/handoffs .agents/ops
+          cat > ".agents/handoffs/${ISSUE_NUMBER}-worker.json" << EOF
           {
               "issue": ${ISSUE_NUMBER},
               "role": "worker",
               "trigger": "github-issue-opened",
+              "created_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
               "title": $(echo "$TITLE" | jq -Rs .),
               "body": $(echo "$BODY" | jq -Rs '.'),
+              "labels": $(echo "$LABELS" | jq -Rs 'split(",")'),
               "objectives": [
                   {
                       "id": "OBJ-${ISSUE_NUMBER}-1",
                       "status": "gap",
                       "evidence": [],
                       "browser_evidence": [],
-                      "unresolved": ["Pending investigation"]
+                      "unresolved": ["Pending investigation by CTO"]
                   }
               ],
               "files_changed": [],
@@ -40,10 +44,41 @@ jobs:
               "next_role": "cto"
           }
           EOF
+          echo "Handoff created for issue #${ISSUE_NUMBER}"
+      - name: Validate handoff JSON
+        run: |
+          for f in .agents/handoffs/*.json; do
+            if ! jq empty "$f" 2>/dev/null; then
+              echo "Invalid JSON: $f"
+              exit 1
+            fi
+          done
+          echo "All handoffs valid"
+      - name: Commit handoff
+        run: |
+          git config user.name "agent-trigger-bot"
+          git config user.email "bot@bapXphp.local"
+          git add .agents/handoffs/ .agents/ops/
+          git diff --cached --quiet || git commit -m "auto: handoff for issue #${{ github.event.issue.number }}"
+          git push
+      - name: Label issue
+        run: |
+          gh issue edit ${{ github.event.issue.number }} --add-label "sub-agent-ready" 2>/dev/null || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Comment handoff ready
         run: |
           ISSUE_NUMBER="${{ github.event.issue.number }}"
           gh issue comment ${ISSUE_NUMBER} --body \
-            "🤖 Sub-agent handoff queued in \`.agents/handoffs/${ISSUE_NUMBER}-worker.json\`. Next CTO session will pick this up via \`bapXphp handoff next ${ISSUE_NUMBER}\`."
+            "## Sub-agent handoff created
+
+            Handoff JSON: \`.agents/handoffs/${ISSUE_NUMBER}-worker.json\`
+
+            Next CTO session will:
+            1. Run \`bapXphp map\` + \`bapXphp schema list\`
+            2. Run \`bapXphp handoff next ${ISSUE_NUMBER}\` to load this objective
+            3. Assign Worker via proper handoff chain (not parallel dispatch)
+
+            Priority: $(echo '${{ github.event.issue.labels }}' | grep -q 'bug\|high\|critical' && echo 'HIGH' || echo 'NORMAL')"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

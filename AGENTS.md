@@ -6,6 +6,41 @@ alwaysApply: true
 
 # Agent Operating Guide
 
+## Orchestration Model (Chain, Not Parallel)
+
+This repository uses a **strict sequential handoff chain** for all work. Never dispatch multiple sub-agents in parallel. Each cycle follows exactly:
+
+```
+Issue → handoff JSON (GitHub Action) → CTO (bapXphp handoff next)
+  → Worker (single objective) → evidence
+  → Reviewer (verify evidence) → findings
+  → CTO (close loop, route next objective or close issue)
+```
+
+### Why chain, not parallel
+- Each step produces verifiable evidence before the next starts
+- Worker focuses on one objective at a time — no context splitting
+- Reviewer catches gaps before CTO routes next work
+- Telemetry in `.agents/ops/telemetry.json` tracks cycle time, score, error rate
+
+### Telemetry & Scoring
+Each completed cycle records in `.agents/ops/telemetry.json`:
+- `duration_minutes`, `total_issues`, `closed_issues`
+- `objectives_completed`, `handoffs_used`, `files_changed`
+- `tests_passed` (e.g. "93/93"), `gaps`, `errors`
+- `sub_agents_used`, `sub_agent_failures`
+- `score` (0-100) calculated from: completion rate × success rate × speed factor
+
+Score formula: `(closed_issues/total_issues) × (1 - errors/objectives) × max(0.5, 1 - duration_minutes/240) × 100`
+
+The goal is score ≥ 90 per cycle. If score < 70, the workflow needs optimization.
+
+### GitHub Actions Triggers
+- `issues: opened` → `.github/workflows/issue-agent-trigger.yml` creates handoff JSON
+- `issue_comment: created` → can trigger reviewer handoff when comment starts with `/review`
+- `pull_request: closed` (merged) → verifies fork sync SHA match
+- Never use `workflow_dispatch` or `gh repo sync` as primary sync path
+
 This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP hosting. It is not a SPA, not a separate MCP/skill server. The backend primitives live in this monorepo. Remote MySQL is the only runtime data store; local JSON files are import-only and never a runtime fallback. Blog posts and customer help guides use Markdown with YAML frontmatter in `content/blog/posts/`; help guides use the `help` category. Media metadata uses YAML in `storage/media.yaml`.
 
 ## Repository Contract
@@ -35,15 +70,25 @@ This repo is an agent-ready PHP/MySQL/YAML full-stack product base for small PHP
 - Put reproduction evidence, affected source paths, the pinpointed cause, intended scope, and acceptance checks in the issue. Reference the issue in the branch and PR.
 - Do not create an issue for read-only diagnosis, trivial questions, or when the user explicitly declines issue tracking.
 
+## Known Issues
+
+- Cart tray desktop styles were recently added (`.mobile-cart-tray` at ≥701px). The CSS class name is a misnomer — `mobile-cart-tray` now shows at all viewports.
+- The GST launch issue (#169) closed all 8 objectives. TaxService, invoice views, admin tax report, and GST settings are fully wired.
+- SupportTicketService persists escalated conversations. The `support_tickets` collection schema has `context`, `created_at`, `updated_at` fields.
+- BlogDraftService provides template-based AI drafts for editorial, product, tool, and help content.
+- If sub-agents are dispatched in parallel instead of sequential handoff, the telemetry score will penalize the cycle.
+
 ## Source-Grounded Work Order
 
-1. Read this root `AGENTS.md`.
-2. Read `docs/systematic-map.mmd` as a generated index, follow the affected edges, reproduce the behavior when possible, and pinpoint the owning source.
-3. Search for an existing issue, then select or create the evidence-backed issue when the diagnose-then-issue rule applies.
-4. Read the narrow `.agents/skills/<skill-name>/SKILL.md` files that match the task; skills may add task technique but may not duplicate or override this contract.
-5. Read `storage/schema/collections.php` for schema definitions and `Design.md` for customer-facing UI.
-6. Search with `rg` and inspect existing implementations before creating any file, route, service, view, collection, or navigation item.
-7. Implement against primary repository sources. The generated map summarizes relationships; it does not override source files.
+1. Run `bapXphp map` AND `bapXphp schema list` **before any action** (mandatory pre-flight).
+2. Run `bapXphp handoff next <issue>` — this reads the handoff JSON and tells you the next role and objective.
+3. Read this root `AGENTS.md`.
+4. Read `docs/systematic-map.mmd` as a generated index, follow the affected edges, reproduce the behavior when possible, and pinpoint the owning source.
+5. Search for an existing issue, then select or create the evidence-backed issue when the diagnose-then-issue rule applies.
+6. Read the narrow `.agents/skills/<skill-name>/SKILL.md` files that match the task; skills may add task technique but may not duplicate or override this contract.
+7. Read `storage/schema/collections.php` for schema definitions and `Design.md` for customer-facing UI.
+8. Search with `rg` and inspect existing implementations before creating any file, route, service, view, collection, or navigation item.
+9. Implement against primary repository sources. The generated map summarizes relationships; it does not override source files.
 
 ## Project Map
 
