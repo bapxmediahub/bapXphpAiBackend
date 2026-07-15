@@ -1,6 +1,6 @@
 # PWA Support
 
-All three role dashboards have PWA install support: admin, astrologer, customer.
+The public customer app and admin dashboard expose PWA metadata. Customer installation is an authenticated account workflow; it is not a floating site control.
 
 ## Manifests
 
@@ -16,15 +16,15 @@ All three role dashboards have PWA install support: admin, astrologer, customer.
 | Public (`/`) | `/sw.js` | `assets/pwa/sw-user.js` — precaches static app metadata only; PHP-rendered pages such as `/shop`, `/cart`, and `/checkout` are network-first so product, cart, and payment UI does not go stale |
 | Admin (`/admin/`) | `/admin/sw.js` | Generated — precaches `/admin`, `/login` |
 
-## Install Button
+## Customer Installation
 
-A fixed bottom-right "Install App" button (`pwa-install-btn`) appears on both layouts:
+Signed-in customers open **Dashboard → Install App**, routed to `/account/dashboard/install`.
 
-- `views/layouts/app.php` — customer and astrologer pages
-- `views/layouts/admin.php` — admin pages
+- The account menu remains visible whether installation is supported or not.
+- Installed mode is detected through `display-mode: standalone` and the iOS standalone flag.
+- `beforeinstallprompt` enables an explicit page-level **Install App** command when the browser supports it.
+- Safari instructions use **Share → Add to Home Screen**.
+- Other unsupported/ineligible browsers receive browser-menu and update guidance instead of a missing button.
+- `views/layouts/app.php` registers the customer service worker but renders no floating installation control.
 
-Behavior:
-- Listens for `beforeinstallprompt` — only shows when browser supports PWA install.
-- On click, triggers the native browser install prompt.
-- Auto-hides after install completes.
-- Styled via `assets/css/band.css` `.pwa-install-btn` class using design tokens (`--color-maroon`, `--shadow-md`, `--radius-pill`).
+The admin layout retains its separate admin installation control and manifest scope.

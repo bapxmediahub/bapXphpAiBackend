@@ -33,4 +33,8 @@ final class AccountController extends BaseController {
         $this->render('account/bookings', compact('bookings'));
     }
 
+    public function install(): void {
+        $this->render('account/install');
+    }
+
 }
