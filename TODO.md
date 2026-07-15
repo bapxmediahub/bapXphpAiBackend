@@ -14,7 +14,7 @@ category: root
 - [ ] `docs/agents/` — Document handoff system, workflows, skills, telemetry
 - [ ] `docs/integrations/` — Document Stripe, Meta Pixel, Google Site Kit
 - [ ] `docs/testing.md` — Document test suite (93 tests, how to run, how to add)
-- [ ] Document AI/Agent system (Maya, support bot, admin agent, BlogDraftService)
+- [ ] Document AI/Agent system (agent, support bot, admin agent, BlogDraftService)
 - [ ] Document mail system, media system, backup system, coupon/shipping/address
 
 ## Phase B: MCP Endpoint (High Priority)

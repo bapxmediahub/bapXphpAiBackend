@@ -62,9 +62,9 @@
         </div>
         <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Only sign-in permissions are used. Calendar and Google Meet are not used for this platform.</p>
 
-        <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">AI Model (Maya + Support Bot)</h2>
+        <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">AI Model (Agent + Support Bot)</h2>
         <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">
-            Configure an OpenAI-compatible API for Maya and the support bot.
+            Configure an OpenAI-compatible API for the site AI agent and the support bot.
             Works with OpenAI, OpenRouter, or any OpenAI-compatible provider.
         </p>
         <div class="admin-form__row">

@@ -33,10 +33,10 @@ jobs:
           echo "diff<<EOF" >> $GITHUB_OUTPUT
           echo "$DIFF" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-      - name: Review via Maya API
+      - name: Review via Agent API
         id: review
         env:
-          MAYA_ENDPOINT: ${{ secrets.MAYA_ENDPOINT }}
+          AGENT_ENDPOINT: ${{ secrets.AGENT_ENDPOINT }}
           BAPX_AI_ENDPOINT: ${{ secrets.BAPX_AI_ENDPOINT }}
           BAPX_AI_API_KEY: ${{ secrets.BAPX_AI_API_KEY }}
           BAPX_AI_MODEL: ${{ secrets.BAPX_AI_MODEL }}
@@ -45,12 +45,12 @@ jobs:
             $diff = $argv[1];
             if (trim($diff) === "") { echo "No diff to review.\n"; exit(0); }
             $msg = "Review this PHP diff and note issues (code style, security, bugs, edge cases). Be concise:\n\n```diff\n" . $diff . "\n```";
-            $endpoint = getenv("MAYA_ENDPOINT") ?: getenv("BAPX_AI_ENDPOINT") ?: "";
+            $endpoint = getenv("AGENT_ENDPOINT") ?: getenv("BAPX_AI_ENDPOINT") ?: "";
             $apiKey = getenv("BAPX_AI_API_KEY") ?: "";
             $model = getenv("BAPX_AI_MODEL") ?: "";
             if ($endpoint === "" || $apiKey === "") {
               $payload = json_encode(["message" => $msg, "source" => "pr-review"]);
-              $ch = curl_init(getenv("APP_URL") . "/api/maya");
+              $ch = curl_init(getenv("APP_URL") . "/api/agent");
               curl_setopt_array($ch, [
                 CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true,
                 CURLOPT_HTTPHEADER => ["Content-Type: application/json"],

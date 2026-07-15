@@ -82,14 +82,14 @@ This report covers:
 | `saveIntegrations` audit logged | ✅ Done | `AdminController.php:489` |
 | Project map updated with AuditLogService | ✅ Done | `ProjectMapService.php:744,754-755,762,772` |
 
-### 2.7 Maya Controller — White-Label
+### 2.7 Agent Controller — White-Label
 | Feature | Status | Files |
 |---------|--------|-------|
-| `agent_name` from secrets (configurable) | ✅ Done | `MayaController.php:572-573` |
-| `seo_site_name` from secrets (no hardcoded name) | ✅ Done | `MayaController.php:574` |
+| `agent_name` from YAML config + secrets override | ✅ Done | `AgentController.php:loadAgentConfig` |
+| `seo_site_name` from secrets (no hardcoded name) | ✅ Done | `AgentController.php` |
 | `agent_name` field in integrations form | ✅ Done | `views/admin/integrations.php` |
-| Multi-provider AI (OpenAI, Google, Anthropic) | ✅ Done | `MayaController.php:607-650` |
-| Model default: gemma-4-31b-it (was gpt-4o) | ✅ Done | `MayaController.php:602` |
+| Multi-provider AI (OpenAI, Google, Anthropic) | ✅ Done | `AgentController.php:callAi` |
+| Model default: gemma-4-31b-it (was gpt-4o) | ✅ Done | `AgentController.php` |
 
 ### 2.8 SecretService / Model Config
 | Feature | Status | Files |
@@ -146,7 +146,7 @@ This report covers:
 ### 4.1 Controllers Without Documentation (8 of 12)
 | Controller | Routes | Documented? |
 |-----------|--------|------------|
-| `MayaController.php` | `POST /api/maya` | ❌ No |
+| `AgentController.php` | `POST /api/agent` | ❌ No |
 | `SupportController.php` | `GET /support`, `POST /support/ask` | ❌ No |
 | `CommerceController.php` | Cart, checkout, payment flows | ❌ No |
 | `AccountController.php` | Dashboard, orders, bookings, install, invoices | ❌ No |
@@ -171,7 +171,7 @@ All 41 services lack dedicated `docs/services/*.md` files. Many are mentioned in
 - MCP/A2A architecture
 
 ### 4.5 Additional Systems Without Documentation
-- AI/Agent system (Maya, support bot, admin agent, BlogDraftService, AgentContextService)
+- AI/Agent system (agent, support bot, admin agent, BlogDraftService, AgentContextService)
 - CLI tools (19 PHP tools, none documented in `docs/`)
 - Stripe, Meta Pixel, Google Site Kit integrations
 - Mail system (inbox/outbox, MailStorageService)

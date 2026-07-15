@@ -4,19 +4,35 @@ namespace App\Controllers;
 use App\Services\SecretService;
 use App\Services\DatabaseService;
 
-class MayaController extends BaseController {
+class AgentController extends BaseController {
+    private function loadAgentConfig(): array {
+        $config = ['name' => 'Agent', 'description' => 'AI assistant for the site'];
+        $path = app_path('config/agent.yml');
+        if (is_file($path)) {
+            $yaml = @file_get_contents($path);
+            if ($yaml !== false && $yaml !== '') {
+                foreach (explode("\n", $yaml) as $line) {
+                    if (preg_match('/^\s*(\w+):\s*(.+)$/', $line, $m)) {
+                        $config[$m[1]] = trim($m[2], " \"'");
+                    }
+                }
+            }
+        }
+        return $config;
+    }
+
     public function ask(): void {
         $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
         $message = trim((string)($input['message'] ?? ''));
         $source = trim((string)($input['source'] ?? 'cli'));
         if ($message === '') {$this->jsonResponse(['error' => 'Message is required'], 400); return;}
-        $agentName = 'Agent';
+        $agentConfig = $this->loadAgentConfig();
         try {
             $secrets = new SecretService();
             $db = new DatabaseService();
             $mc = $secrets->getModelConfig();
             $all = $secrets->all();
-            $agentName = trim((string)($all['agent_name'] ?? 'Agent'));
+            $agentName = trim((string)($all['agent_name'] ?? $agentConfig['name']));
             $siteName = trim((string)($all['seo_site_name'] ?? 'the site'));
             $userCount = count($db->read('users'));
             $orderCount = count($db->read('orders'));

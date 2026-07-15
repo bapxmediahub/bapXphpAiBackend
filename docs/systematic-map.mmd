@@ -53,7 +53,7 @@ flowchart LR
     route_6e62aa059570["GET /blog — Blog listing — all posts with category filters"]:::route
     route_b8738856284a["GET /blog/{slug} — Blog post — rendered from GitHub-sourced markdown"]:::route
     route_3c268a290f60["GET /blog/category/{slug} — Blog listing filtered by category"]:::route
-    route_3070dff142c3["POST /api/maya"]:::route
+    route_f359476da97e["POST /api/agent"]:::route
     route_593217ea02df["POST /api/tts/tokenize — TTS — tokenize text for KittenTTS ONNX model"]:::route
     route_3ff483002409["GET /api/support/latest-message — Support — latest ticket message for TTS polling"]:::route
   end
@@ -154,12 +154,12 @@ flowchart LR
   subgraph CONTROLLERS["Controllers"]
     controller_9968163fcd32["AccountController"]:::code
     controller_3d37b75c07ec["AdminController"]:::code
+    controller_e5d7c85a6532["AgentController"]:::code
     controller_f3a06e444dad["AuthController"]:::code
     controller_6f7f176814f0["BaseController"]:::code
     controller_f21ef7cdb1a4["BlogController"]:::code
     controller_7fda1508bed0["CommerceController"]:::code
     controller_50eaea84bd1d["ConsultationController"]:::code
-    controller_020d5303e833["MayaController"]:::code
     controller_18ec49ea2cf4["PublicController"]:::code
     controller_2702fc6f256e["RemoteDbController"]:::code
     controller_452e47b9a403["ReviewController"]:::code
@@ -760,10 +760,10 @@ flowchart LR
   controller_3d37b75c07ec --> service_1909dab7e246
   controller_3d37b75c07ec --> service_f33a1d77b137
   controller_3d37b75c07ec -. renders .-> view_e13f2d1caf99
-  route_3070dff142c3 --> controller_020d5303e833
-  controller_020d5303e833 --> service_6c9416ef0383
-  controller_020d5303e833 --> service_66daa9bdc2c1
-  controller_020d5303e833 -. renders .-> view_fe7e7ffe6adc
+  route_f359476da97e --> controller_e5d7c85a6532
+  controller_e5d7c85a6532 --> service_6c9416ef0383
+  controller_e5d7c85a6532 --> service_66daa9bdc2c1
+  controller_e5d7c85a6532 -. renders .-> view_fe7e7ffe6adc
   route_593217ea02df --> controller_43aabb320c7a
   controller_43aabb320c7a -. renders .-> view_fe7e7ffe6adc
   route_3ff483002409 --> controller_64e608ddc28b
@@ -776,11 +776,11 @@ flowchart LR
   nav_c6dda9b9056f --> route_8136f5b45613
   controller_9968163fcd32 --> controller_6f7f176814f0
   controller_3d37b75c07ec --> controller_6f7f176814f0
+  controller_e5d7c85a6532 --> controller_6f7f176814f0
   controller_f3a06e444dad --> controller_6f7f176814f0
   controller_f21ef7cdb1a4 --> controller_6f7f176814f0
   controller_7fda1508bed0 --> controller_6f7f176814f0
   controller_50eaea84bd1d --> controller_6f7f176814f0
-  controller_020d5303e833 --> controller_6f7f176814f0
   controller_18ec49ea2cf4 --> controller_6f7f176814f0
   controller_2702fc6f256e --> controller_6f7f176814f0
   controller_452e47b9a403 --> controller_6f7f176814f0
