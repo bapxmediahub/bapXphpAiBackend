@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "bapXphp CTO handoff",
+  "type": "object",
+  "required": ["issue", "role", "objectives", "commands_run", "risks", "next_role"],
+  "properties": {
+    "issue": {"type": "integer", "minimum": 1},
+    "role": {"enum": ["worker", "reviewer", "cto"]},
+    "objectives": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "status", "evidence", "browser_evidence", "unresolved"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "status": {"enum": ["pass", "gap", "blocked"]},
+          "evidence": {"type": "array", "items": {"type": "string"}},
+          "browser_evidence": {"type": "array", "items": {"type": "string"}},
+          "unresolved": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": false
+      }
+    },
+    "files_changed": {"type": "array", "items": {"type": "string"}},
+    "commands_run": {"type": "array", "items": {"type": "string"}},
+    "risks": {"type": "array", "items": {"type": "string"}},
+    "next_role": {"enum": ["worker", "reviewer", "cto", "complete"]}
+  },
+  "additionalProperties": false
+}

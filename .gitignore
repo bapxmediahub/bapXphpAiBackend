@@ -1,5 +1,7 @@
 !.env.example
 
+.DS_Store
+
 /storage/logs/*.log
 /storage/logs/
 /storage/backups/*
