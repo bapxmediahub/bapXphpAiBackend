@@ -1,4 +1,17 @@
 #!/usr/bin/env bash
+# PHP polyglot guard — Issue #201. Allows `php cli/bapXphp <cmd>` to work.
+: <<'BAP_PHP_GUARD'
+<?php
+if (PHP_SAPI === 'cli') {
+    $args = $argv;
+    $script = array_shift($args);
+    $cmd = 'bash ' . escapeshellarg($script);
+    foreach ($args as $a) $cmd .= ' ' . escapeshellarg($a);
+    passthru($cmd, $rc);
+    exit($rc);
+}
+__halt_compiler(); ?>
+BAP_PHP_GUARD
 set -euo pipefail
 
 # ═══════════════════════════════════════════════════════════════
@@ -120,6 +133,47 @@ set -euo pipefail
 #   bapXphp browser-agent html           — print raw HTML of current page
 #   bapXphp browser-agent help           — detailed help with all options
 #   (Use --pw prefix for Playwright mode when Node.js is available.)
+#
+# ── Task Management (todowrite) ──────────────────────────────────
+#   bapXphp todo                   — list tasks
+#   bapXphp todo add <description> — add a task
+#   bapXphp todo update <id> <status> — update task status (pending/in_progress/completed/cancelled)
+#   bapXphp todo done <id>         — mark task completed
+#
+# ── Objectives ───────────────────────────────────────────────────
+#   bapXphp objective read         — show current objectives from OBJECTIVE.md
+#   bapXphp objective update <text> — update objective entry (pipe or pass text)
+#
+# ── Task Dispatch ────────────────────────────────────────────────
+#   bapXphp task run <description> — dispatch a sub-agent task
+#   bapXphp task list              — list running/pending tasks
+#
+# ── Question ─────────────────────────────────────────────────────
+#   bapXphp question <text>        — ask the user a question
+#
+# ── Session Memory ───────────────────────────────────────────────
+#   bapXphp memory init            — initialize session.json in .tmp/
+#
+# ── Context (extract + search) ────────────────────────────────────
+#   bapXphp context-extract        — extract last 48h conversation + commits to .tmp/context-extract.xml
+#   bapXphp context-extract --hours 72
+#                                  — custom window (e.g., 72 hours)
+#   bapXphp context-extract --output /path/file.xml
+#                                  — custom output path (default: .tmp/context-extract.xml)
+#   bapXphp context <query>        — search extracted context for matching messages
+#   bapXphp context "bapXphp opencode compact"
+#                                  — find marker commands in conversation history
+#   bapXphp memory add <role> <content> — append entry
+#   bapXphp memory list            — show all entries
+#   bapXphp memory search <text>   — search by content
+#   bapXphp memory last [n]        — show last n entries
+#   bapXphp memory export          — dump full JSON
+#   bapXphp memory info            — session stats
+#   bapXphp memory clear           — erase session memory
+#
+# ── Skill ────────────────────────────────────────────────────────
+#   bapXphp skill <name>           — load a skill SKILL.md
+#   bapXphp skills                 — list available skills
 #
 # ── Read / Write Content ────────────────────────────────────────
 #   bapXphp read blog [slug]        — read blog post (list all if no slug)
@@ -1668,6 +1722,732 @@ cmd_run() {
   eval "$@"
 }
 
+# ── todo — Task management (todowrite) ─────────────────────────────────
+cmd_todo() {
+  require_php
+  local dir="$ROOT/.agents/todo"
+  mkdir -p "$dir"
+  local file="$dir/tasks.json"
+  local action="${1:-list}" arg="${2:-}"
+
+  case "$action" in
+    list|ls|status)
+      if [ -f "$file" ]; then
+        php -r '
+          $tasks = json_decode(file_get_contents($argv[1]), true) ?: [];
+          if (empty($tasks)) { echo "No tasks.\n"; exit(0); }
+          printf("%-4s %-14s %s\n", "ID", "STATUS", "DESCRIPTION");
+          $i = 0;
+          foreach ($tasks as $t) {
+            printf("%-4d %-14s %s\n", $i, $t["status"] ?? "pending", $t["content"] ?? "");
+            $i++;
+          }
+        ' "$file"
+      else
+        echo "No tasks. Use: bapXphp todo add \"<description>\""
+      fi ;;
+    add|new)
+      [ -z "$arg" ] && die "Usage: bapXphp todo add \"<description>\""
+      php -r '
+        $file = $argv[1]; $content = $argv[2];
+        $tasks = is_file($file) ? (json_decode(file_get_contents($file), true) ?: []) : [];
+        $tasks[] = ["content" => $content, "status" => "pending", "created_at" => date("c")];
+        file_put_contents($file, json_encode($tasks, JSON_PRETTY_PRINT));
+        echo "Added task: $content\n";
+      ' "$file" "$arg" ;;
+    update|mod)
+      local id="${2:-}" status="${3:-}"
+      [ -z "$id" ] && die "Usage: bapXphp todo update <id> <status>"
+      [ -z "$status" ] && die "Status required: pending, in_progress, completed, cancelled"
+      php -r '
+        $file = $argv[1]; $id = (int)$argv[2]; $status = $argv[3];
+        $tasks = is_file($file) ? (json_decode(file_get_contents($file), true) ?: []) : [];
+        if (!isset($tasks[$id])) { fprintf(STDERR, "Task #%d not found\n", $id); exit(1); }
+        $tasks[$id]["status"] = $status;
+        $tasks[$id]["updated_at"] = date("c");
+        file_put_contents($file, json_encode($tasks, JSON_PRETTY_PRINT));
+        echo "Task #$id → $status\n";
+      ' "$file" "$id" "$status" ;;
+    done|complete|finish)
+      [ -z "$arg" ] && die "Usage: bapXphp todo done <id>"
+      php -r '
+        $file = $argv[1]; $id = (int)$argv[2];
+        $tasks = is_file($file) ? (json_decode(file_get_contents($file), true) ?: []) : [];
+        if (!isset($tasks[$id])) { fprintf(STDERR, "Task #%d not found\n", $id); exit(1); }
+        $tasks[$id]["status"] = "completed";
+        $tasks[$id]["updated_at"] = date("c");
+        file_put_contents($file, json_encode($tasks, JSON_PRETTY_PRINT));
+        echo "Task #$id completed: " . $tasks[$id]["content"] . "\n";
+      ' "$file" "$arg" ;;
+    *)
+      echo "Usage: bapXphp todo [list|add|update|done]"
+      echo "  todo               — list all tasks"
+      echo "  todo add <desc>    — add a new task"
+      echo "  todo update <id> <status> — update task status"
+      echo "  todo done <id>     — mark task completed"
+      exit 1 ;;
+  esac
+}
+
+# ── objective — Read/update OBJECTIVE.md ───────────────────────────
+cmd_objective() {
+  require_php
+  local action="${1:-read}" arg="${2:-}"
+  local objFile="$ROOT/OBJECTIVE.md"
+
+  case "$action" in
+    read|show|cat)
+      [ -f "$objFile" ] || die "OBJECTIVE.md not found"
+      php -r '
+        $lines = file($argv[1]);
+        $capture = false;
+        foreach ($lines as $line) {
+          if (preg_match("/^## /", $line)) $capture = true;
+          if ($capture) echo $line;
+        }
+      ' "$objFile"
+      echo ""
+      echo "── Full path: $objFile ──"
+      echo "Use: bapXphp objective update to modify" ;;
+    update|write|edit)
+      if [ -n "$arg" ] && [ "$arg" != "-" ]; then
+        echo "$arg" >> "$objFile"
+        echo "Appended to OBJECTIVE.md"
+      else
+        echo "Paste content (Ctrl+D to finish):"
+        cat >> "$objFile"
+        echo "Appended to OBJECTIVE.md"
+      fi ;;
+    *)
+      echo "Usage: bapXphp objective read"
+      echo "       bapXphp objective update <text>"
+      echo "       bapXphp objective update (paste with Ctrl+D)"
+      exit 1 ;;
+  esac
+}
+
+# ── task — Dispatch a sub-agent task ─────────────────────────────────
+cmd_task() {
+  require_php
+  local dir="$ROOT/.agents/tasks"
+  mkdir -p "$dir"
+  local action="${1:-list}" arg="${2:-}"
+
+  case "$action" in
+    list|ls)
+      local count=0
+      for f in "$dir"/*.json; do
+        [ -f "$f" ] || continue
+        count=$((count + 1))
+        local desc; desc=$(php -r 'echo json_decode(file_get_contents($argv[1]), true)["description"] ?? "?";' "$f") || true
+        local status; status=$(php -r 'echo json_decode(file_get_contents($argv[1]), true)["status"] ?? "?";' "$f") || true
+        printf "  %s  %s  %s\n" "$(basename "$f" .json)" "$status" "$desc"
+      done
+      [ "$count" -eq 0 ] && echo "No tasks." ;;
+    run|dispatch|create)
+      [ -z "$arg" ] && die "Usage: bapXphp task run \"<description>\""
+      local id; id=$(date +%s | md5 | head -8) || id="task_$(date +%s)"
+      php -r '
+        $task = [
+          "id" => $argv[1],
+          "description" => $argv[2],
+          "status" => "dispatched",
+          "created_at" => date("c"),
+          "evidence" => [],
+        ];
+        file_put_contents($argv[3] . "/" . $argv[1] . ".json", json_encode($task, JSON_PRETTY_PRINT));
+        echo "Task dispatched: " . $argv[1] . "\n";
+        echo "  Description: " . $argv[2] . "\n";
+        echo "  File: " . $argv[3] . "/" . $argv[1] . ".json\n";
+      ' "$id" "$arg" "$dir" ;;
+    status)
+      [ -z "$arg" ] && die "Usage: bapXphp task status <id>"
+      local f="$dir/$arg.json"
+      [ -f "$f" ] || die "Task not found: $arg"
+      php -r '
+        $t = json_decode(file_get_contents($argv[1]), true);
+        printf("ID:     %s\nDescription: %s\nStatus:  %s\nCreated: %s\n",
+          $t["id"] ?? "?", $t["description"] ?? "?", $t["status"] ?? "?", $t["created_at"] ?? "?");
+      ' "$f" ;;
+    *)
+      echo "Usage: bapXphp task run \"<description>\""
+      echo "       bapXphp task list"
+      echo "       bapXphp task status <id>"
+      exit 1 ;;
+  esac
+}
+
+# ── question — Ask the user a question ───────────────────────────────
+cmd_question() {
+  local text="${*:-}"
+  [ -z "$text" ] && die "Usage: bapXphp question <text>"
+
+  echo ""
+  echo "╔══════════════════════════════════════════╗"
+  echo "║  QUESTION                                ║"
+  echo "╚══════════════════════════════════════════╝"
+  echo ""
+  echo "$text"
+  echo ""
+  echo "────────────────────────────────────────────"
+  echo -n "→ "
+  read -r response
+  echo "────────────────────────────────────────────"
+  echo "Answer: $response"
+  memory_append "question" "$text" "" && memory_append "user" "$response" ""
+}
+
+# ── Session Memory ──────────────────────────────────────────────────
+# Continuous JSON conversation log in .tmp/session.json
+# Format: {"entries": [{"id":n, "role":"user|cto", "content":"...", "timestamp":"...", "attachments":[...]}]}
+# Role: user = input prompt, cto = CTO/handler reply, question = tool question, answer = user answer
+
+memory_file() { echo "$ROOT/.tmp/session.json"; }
+
+memory_init() {
+  local f; f=$(memory_file)
+  mkdir -p "$ROOT/.tmp"
+  [ -f "$f" ] && return
+  php -r '
+    $data = [
+      "session_id" => uniqid("ses_"),
+      "created_at" => date("c"),
+      "updated_at" => date("c"),
+      "entries" => []
+    ];
+    file_put_contents($argv[1], json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+  ' "$f"
+}
+
+memory_append() {
+  local role="${1:-user}" content="${2:-}" attachments="${3:-[]}"
+  memory_init
+  local f; f=$(memory_file)
+  php -r '
+    $f = $argv[1]; $role = $argv[2]; $content = $argv[3]; $attach = $argv[4];
+    $data = json_decode(file_get_contents($f), true);
+    $entry = [
+      "id" => count($data["entries"]) + 1,
+      "role" => $role,
+      "content" => $content,
+      "timestamp" => date("c"),
+      "attachments" => json_decode($attach, true) ?: []
+    ];
+    $data["entries"][] = $entry;
+    $data["updated_at"] = date("c");
+    file_put_contents($f, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+    echo "[memory] #" . $entry["id"] . " " . $role . " logged\n";
+  ' "$f" "$role" "$content" "$attachments"
+}
+
+cmd_memory() {
+  local action="${1:-list}" arg="${2:-}" arg2="${3:-}"
+  local f; f=$(memory_file)
+
+  case "$action" in
+    init)
+      memory_init
+      echo "Session memory initialized at $f" ;;
+    add|append)
+      local role="${2:-user}" text="${3:-}"
+      shift 2; [ $# -eq 0 ] && die "Usage: bapXphp memory add <role> <content>"
+      memory_append "$role" "$*" "" ;;
+    list|ls|all)
+      [ -f "$f" ] || die "No session memory. Start with: bapXphp memory init"
+      php -r '
+        $data = json_decode(file_get_contents($argv[1]), true);
+        $entries = $data["entries"] ?? [];
+        if (empty($entries)) { echo "Empty session.\n"; exit(0); }
+        echo "Session: " . ($data["session_id"] ?? "?") . "  (" . count($entries) . " entries)\n";
+        echo str_repeat("-", 72) . "\n";
+        foreach ($entries as $e) {
+          $ts = substr($e["timestamp"] ?? "?", 11, 8);
+          $role = str_pad($e["role"] ?? "?", 8);
+          $text = substr($e["content"] ?? "", 0, 60);
+          $ats = count($e["attachments"] ?? []);
+          $att = $ats > 0 ? " [{$ats}att]" : "";
+          echo "  #{$e["id"]} {$ts} {$role} {$text}{$att}\n";
+        }
+      ' "$f" ;;
+    search|grep)
+      [ -z "$arg" ] && die "Usage: bapXphp memory search <text>"
+      [ -f "$f" ] || die "No session memory."
+      php -r '
+        $q = $argv[1]; $data = json_decode(file_get_contents($argv[2]), true);
+        foreach (($data["entries"] ?? []) as $e) {
+          if (mb_stripos($e["content"] ?? "", $q) !== false) {
+            $ts = substr($e["timestamp"] ?? "?", 11, 8);
+            printf("#%-4d %s [%-8s] %s\n", $e["id"], $ts, $e["role"], mb_substr($e["content"], 0, 80));
+          }
+        }
+      ' "$arg" "$f" ;;
+    export|json)
+      [ -f "$f" ] && cat "$f" || echo "No session memory." ;;
+    export-jsonl|jsonl)
+      [ -f "$f" ] || die "No session memory."
+      php -r '
+        $data = json_decode(file_get_contents($argv[1]), true);
+        foreach (($data["entries"] ?? []) as $e) { echo json_encode($e) . "\n"; }
+      ' "$f" ;;
+    last|recent)
+      local count="${2:-5}"
+      [ -f "$f" ] || die "No session memory."
+      php -r '
+        $n = (int)$argv[1]; $data = json_decode(file_get_contents($argv[2]), true);
+        $entries = array_slice($data["entries"] ?? [], -$n);
+        echo "Last " . count($entries) . " entries:\n" . str_repeat("-",72) . "\n";
+        foreach ($entries as $e) {
+          $ts = substr($e["timestamp"] ?? "?", 11, 8);
+          echo "  #{$e["id"]} {$ts} [{$e["role"]}] {$e["content"]}\n";
+        }
+      ' "$count" "$f" ;;
+    info|stats)
+      [ -f "$f" ] || die "No session memory."
+      php -r '
+        $data = json_decode(file_get_contents($argv[1]), true);
+        $entries = $data["entries"] ?? [];
+        $roles = []; $total = strlen(json_encode($data));
+        foreach ($entries as $e) { $r = $e["role"] ?? "?"; $roles[$r] = ($roles[$r] ?? 0) + 1; }
+        echo "Session:    " . ($data["session_id"] ?? "?") . "\n";
+        echo "Created:    " . ($data["created_at"] ?? "?") . "\n";
+        echo "Updated:    " . ($data["updated_at"] ?? "?") . "\n";
+        echo "Entries:    " . count($entries) . "\n";
+        echo "File size:  " . $total . " bytes\n";
+        echo "Breakdown:  "; foreach ($roles as $r => $c) { echo "{$r}={$c} "; }; echo "\n";
+      ' "$f" ;;
+    clear|reset)
+      rm -f "$f"
+      echo "Session memory cleared." ;;
+    *)
+      echo "Usage: bapXphp memory <action> [args]"
+      echo ""
+      echo "Actions:"
+      echo "  init                      Initialize new session memory"
+      echo "  add <role> <content>      Append an entry (role: user|cto)"
+      echo "  list                      Show all entries (summary)"
+      echo "  search <text>             Search entries by content"
+      echo "  last [n]                  Show last n entries (default 5)"
+      echo "  export                    Dump full JSON"
+      echo "  export-jsonl              Dump as JSONL (one JSON per line)"
+      echo "  info                      Session stats"
+      echo "  clear                     Erase session memory"
+      exit 1 ;;
+  esac
+}
+
+# ── Context Extract ──────────────────────────────────────────────
+# Extract last N hours of opencode + codex sessions + git commits
+# into XML for feeding back as context to LLM agents
+cmd_context_extract() {
+  local hours=48 output="$ROOT/.tmp/context-extract.xml"
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --hours) hours="$2"; shift 2 ;;
+      --output|-o) output="$2"; shift 2 ;;
+      *) err "Unknown option: $1"; exit 1 ;;
+    esac
+  done
+
+  mkdir -p "$(dirname "$output")"
+  require_php
+
+  php -r '
+    $hours = (int)$argv[1];
+    $output = $argv[2];
+    $project = "'"$ROOT"'";
+    $now = time();
+    $cutoff = $now - ($hours * 3600);
+
+    // Helper: safe CDATA (escape ]]> sequences + strip invalid XML control chars)
+    function cdata($s) {
+      // Strip ASCII control chars except tab(9), LF(10), CR(13)
+      $s = preg_replace("/[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F]/", "", $s);
+      return str_replace("]]>", "]]]]><![CDATA[>", $s);
+    }
+
+    // Detect marker commands that the user types as conversation section dividers
+    function isMarker($text) {
+      $t = trim(mb_strtolower($text));
+      return $t === "bapxphp opencode compact" || $t === "bapxphp codex compact";
+    }
+
+    $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    $xml .= "<context-extract generated=\"" . date("c") . "\" project=\"" . htmlspecialchars(basename($project)) . "\" hours=\"{$hours}\">\n";
+
+    // ── 1. Git commits ──
+    $xml .= "  <git-log>\n";
+    $cmd = sprintf("git -C %s log --since=\"%d hours ago\" --format=\"<commit sha=\\\"%%H\\\" date=\\\"%%ai\\\" author=\\\"%%an\\\"><subject>%%s</subject><body>%%b</body></commit>\"", escapeshellarg($project), $hours);
+    $gitOut = shell_exec($cmd);
+    if ($gitOut) {
+      $xml .= "    <![CDATA[" . cdata($gitOut) . "]]>\n";
+    }
+    $xml .= "  </git-log>\n";
+
+    // ── 2. Git diff stats ──
+    $xml .= "  <git-diff>\n";
+    $cmd2 = sprintf("git -C %s diff --stat @{ago=\"%d hours\"} 2>/dev/null", escapeshellarg($project), $hours);
+    $diffOut = shell_exec($cmd2);
+    if ($diffOut && trim($diffOut)) {
+      $xml .= "    <![CDATA[" . cdata($diffOut) . "]]>\n";
+    }
+    $xml .= "  </git-diff>\n";
+
+    // ── 3. OpenCode sessions (from SQLite) ──
+    $ocDb = $_SERVER["HOME"] . "/.local/share/opencode/opencode.db";
+    $xml .= "  <sessions source=\"opencode\">\n";
+    if (file_exists($ocDb)) {
+      try {
+        $db = new SQLite3($ocDb, SQLITE3_OPEN_READONLY);
+        $db->exec("PRAGMA synchronous = OFF");
+
+        // Find sessions for this project within time window
+        $stmt = $db->prepare("SELECT s.id, s.title, s.agent, s.time_created, s.time_updated
+          FROM session s
+          WHERE s.directory = :dir
+            AND (s.time_updated >= :cutoff OR s.time_created >= :cutoff)
+          ORDER BY s.time_updated DESC");
+        $stmt->bindValue(":dir", $project, SQLITE3_TEXT);
+        $stmt->bindValue(":cutoff", (int)($cutoff * 1000), SQLITE3_INTEGER); // ms
+        $res = $stmt->execute();
+
+        while ($row = $res->fetchArray(SQLITE3_ASSOC)) {
+          $sid = htmlspecialchars($row["id"]);
+          $title = htmlspecialchars($row["title"] ?? "?");
+          $agent = htmlspecialchars($row["agent"] ?? "?");
+          $created = $row["time_created"] ? date("c", (int)($row["time_created"] / 1000)) : "?";
+          $updated = $row["time_updated"] ? date("c", (int)($row["time_updated"] / 1000)) : "?";
+
+          $xml .= "    <session id=\"{$sid}\" title=\"{$title}\" agent=\"{$agent}\" created=\"{$created}\" updated=\"{$updated}\">\n";
+
+          // Get messages for this session (from message + part tables)
+          $msgStmt = $db->prepare("SELECT m.id as msg_id, m.time_created, m.data as msg_data
+            FROM message m
+            WHERE m.session_id = :sid
+            ORDER BY m.time_created ASC");
+          $msgStmt->bindValue(":sid", $row["id"], SQLITE3_TEXT);
+          $msgRes = $msgStmt->execute();
+          $mseq = 0;
+
+          while ($msgRow = $msgRes->fetchArray(SQLITE3_ASSOC)) {
+            $ts = $msgRow["time_created"] ? date("c", (int)($msgRow["time_created"] / 1000)) : "?";
+            $rawData = $msgRow["msg_data"];
+            $msgData = json_decode($rawData, true);
+            if (!$msgData) continue;
+
+            $role = $msgData["role"] ?? "?";
+            // Detect compaction from agent info in message data
+            $msgAgent = $msgData["mode"] ?? $msgData["agent"] ?? $agent;
+            $isCompaction = ($role === "assistant" && $msgAgent === "compaction");
+
+            // Get parts from part table
+            $partStmt = $db->prepare("SELECT data FROM part WHERE message_id = :mid ORDER BY time_created ASC");
+            $partStmt->bindValue(":mid", $msgRow["msg_id"], SQLITE3_TEXT);
+            $partRes = $partStmt->execute();
+
+            while ($partRow = $partRes->fetchArray(SQLITE3_ASSOC)) {
+              $pData = json_decode($partRow["data"], true);
+              if (!$pData) continue;
+              $ptype = $pData["type"] ?? "";
+
+              if ($ptype === "text" && !empty($pData["text"])) {
+                $text = $pData["text"];
+                if ($isCompaction) {
+                  $xml .= "      <compaction seq=\"{$mseq}\" time=\"{$ts}\">\n";
+                  $xml .= "        <![CDATA[" . cdata($text) . "]]>\n";
+                  $xml .= "      </compaction>\n";
+                } else {
+                  $trunc = mb_substr($text, 0, 5000);
+                  if ($role === "user" && isMarker($text)) {
+                    $xml .= "      <marker seq=\"{$mseq}\" time=\"{$ts}\"><![CDATA[" . cdata($trunc) . "]]></marker>\n";
+                    continue;
+                  }
+                  $xml .= "      <message seq=\"{$mseq}\" role=\"{$role}\" agent=\"" . htmlspecialchars($msgAgent) . "\" time=\"{$ts}\">\n";
+                  $xml .= "        <![CDATA[" . cdata($trunc) . "]]>\n";
+                  $xml .= "      </message>\n";
+                }
+              }
+              if ($ptype === "reasoning" && !$isCompaction && !empty($pData["text"])) {
+                $text = mb_substr($pData["text"], 0, 2000);
+                $xml .= "      <reasoning seq=\"{$mseq}\" time=\"{$ts}\"><![CDATA[" . cdata($text) . "]]></reasoning>\n";
+              }
+              if ($ptype === "tool" && !$isCompaction) {
+                $state = $pData["state"] ?? [];
+                $toolName = $pData["tool"] ?? "?";
+                $status = $state["status"] ?? "?";
+                $tl = $state["title"] ?? "";
+                $out = mb_substr($state["output"] ?? "", 0, 1000);
+                $xml .= "      <tool-call seq=\"{$mseq}\" name=\"" . htmlspecialchars($toolName) . "\" status=\"{$status}\"";
+                if ($tl) $xml .= " title=\"" . htmlspecialchars($tl) . "\"";
+                $xml .= " time=\"{$ts}\">\n";
+                if ($out) $xml .= "        <![CDATA[" . cdata($out) . "]]>\n";
+                $xml .= "      </tool-call>\n";
+              }
+            }
+            $mseq++;
+          }
+          $xml .= "    </session>\n";
+        }
+        $db->close();
+      } catch (Exception $e) {
+        $xml .= "    <note>SQLite error: " . htmlspecialchars($e->getMessage()) . "</note>\n";
+      }
+    }
+    $xml .= "  </sessions>\n";
+
+    // ── 4. Codex sessions (from state_5.sqlite threads + JSONL rollout files) ──
+    $xml .= "  <sessions source=\"codex\">\n";
+    $codexDbPath = $_SERVER["HOME"] . "/.codex/state_5.sqlite";
+    if (file_exists($codexDbPath)) {
+      try {
+        $cdb = new SQLite3($codexDbPath, SQLITE3_OPEN_READONLY);
+        $cdb->exec("PRAGMA synchronous = OFF");
+        // Only threads matching this project directory, updated within window
+        $cstmt = $cdb->prepare("SELECT id, rollout_path, title, updated_at_ms, agent_nickname
+          FROM threads
+          WHERE cwd = :dir
+            AND updated_at_ms >= :cutoff_ms
+            AND thread_source = :tsrc
+          ORDER BY updated_at_ms DESC");
+        $cstmt->bindValue(":dir", $project, SQLITE3_TEXT);
+        $cstmt->bindValue(":cutoff_ms", $cutoff * 1000, SQLITE3_INTEGER);
+        $cstmt->bindValue(":tsrc", "user", SQLITE3_TEXT);
+        $cres = $cstmt->execute();
+
+        while ($crow = $cres->fetchArray(SQLITE3_ASSOC)) {
+          $sid = htmlspecialchars($crow["id"] ?? "");
+          $tname = htmlspecialchars(mb_substr($crow["title"] ?? "?", 0, 80));
+          $updatedTs = $crow["updated_at_ms"] ? date("c", (int)($crow["updated_at_ms"] / 1000)) : "?";
+          $agentNick = htmlspecialchars($crow["agent_nickname"] ?? "?");
+
+          $xml .= "    <session id=\"{$sid}\" title=\"{$tname}\" source=\"codex\" agent=\"{$agentNick}\" updated=\"{$updatedTs}\">\n";
+
+          $rolloutPath = $crow["rollout_path"];
+          if ($rolloutPath && file_exists($rolloutPath) && filesize($rolloutPath) > 0) {
+            $seq = 0;
+            $fp = @fopen($rolloutPath, "r");
+            if ($fp) {
+              while (($line = fgets($fp)) !== false) {
+                $line = trim($line);
+                if ($line === "") continue;
+                $item = json_decode($line, true);
+                if (!$item) continue;
+                $type = $item["type"] ?? "";
+                $payload = $item["payload"] ?? [];
+
+                // response_item with type=message contains conversation turns
+                if ($type === "response_item" && ($payload["type"] ?? "") === "message") {
+                  $role = $payload["role"] ?? "?";
+                  $content = "";
+                  foreach (($payload["content"] ?? []) as $cpart) {
+                    if (($cpart["type"] ?? "") === "input_text" && !empty($cpart["text"])) {
+                      $content .= $cpart["text"] . "\n";
+                    }
+                  }
+                  $content = trim($content);
+                  if (mb_strlen($content) > 5) {
+                    $trunc = mb_substr($content, 0, 5000);
+                    $ts = $item["timestamp"] ?? "?";
+                    if ($role === "user" && isMarker($content)) {
+                      $xml .= "      <marker seq=\"{$seq}\" time=\"{$ts}\"><![CDATA[" . cdata($trunc) . "]]></marker>\n";
+                    } else {
+                      $xml .= "      <message seq=\"{$seq}\" role=\"" . htmlspecialchars($role) . "\" time=\"{$ts}\"><![CDATA[" . cdata($trunc) . "]]></message>\n";
+                    }
+                    $seq++;
+                  }
+                }
+
+                // event_msg with type=user_message is user input
+                if ($type === "event_msg" && ($payload["type"] ?? "") === "user_message") {
+                  $msgText = $payload["message"] ?? "";
+                  if (mb_strlen($msgText) > 5) {
+                    $trunc = mb_substr($msgText, 0, 5000);
+                    $ts = $item["timestamp"] ?? "?";
+                    if (isMarker($msgText)) {
+                      $xml .= "      <marker seq=\"{$seq}\" time=\"{$ts}\"><![CDATA[" . cdata($trunc) . "]]></marker>\n";
+                    } else {
+                      $xml .= "      <message seq=\"{$seq}\" role=\"user\" time=\"{$ts}\"><![CDATA[" . cdata($trunc) . "]]></message>\n";
+                    }
+                    $seq++;
+                  }
+                }
+              }
+              fclose($fp);
+            }
+          } else {
+            $xml .= "      <note>Rollout file not found: " . htmlspecialchars($rolloutPath ?? "?") . "</note>\n";
+          }
+          $xml .= "    </session>\n";
+        }
+        $cdb->close();
+      } catch (Exception $e) {
+        $xml .= "    <note>Codex SQLite error: " . htmlspecialchars($e->getMessage()) . "</note>\n";
+      }
+    }
+    $xml .= "  </sessions>\n";
+
+    // ── 5. Local memory.json ──
+    $memFile = "'"$ROOT"'/.tmp/session.json";
+    if (file_exists($memFile)) {
+      $memData = json_decode(file_get_contents($memFile), true);
+      if ($memData && !empty($memData["entries"])) {
+        $xml .= "  <session-memory>\n";
+        foreach ($memData["entries"] as $e) {
+          $ts = $e["timestamp"] ?? "?";
+          $role = htmlspecialchars($e["role"] ?? "?");
+          $content = mb_substr($e["content"] ?? "", 0, 5000);
+          $xml .= "    <entry id=\"{$e["id"]}\" role=\"{$role}\" time=\"{$ts}\"><![CDATA[" . cdata($content) . "]]></entry>\n";
+        }
+        $xml .= "  </session-memory>\n";
+      }
+    }
+
+    $xml .= "</context-extract>\n";
+
+    file_put_contents($output, $xml);
+    echo "Context extracted to: $output\n";
+    echo "  Hours: $hours\n";
+    echo "  Project: " . basename($project) . "\n";
+
+    // Count elements (strip CDATA first to avoid matching XML in code examples)
+    $strip = preg_replace("/<!\[CDATA\[.*?\]\]>/s", "", $xml);
+    $sessionCount = substr_count($strip, "<session ");
+    $msgCount = substr_count($strip, "<message ");
+    $compCount = substr_count($strip, "<compaction ");
+    $toolCount = substr_count($strip, "<tool-call ");
+    $commitCount = substr_count($xml, "<commit ");    // commits are inside CDATA, count raw
+    $markerCount = substr_count($strip, "<marker ");
+    echo "  Sessions: $sessionCount\n";
+    echo "  Messages: $msgCount\n";
+    echo "  Compactions: $compCount\n";
+    echo "  Tool calls: $toolCount\n";
+    echo "  Commits: $commitCount\n";
+    echo "  Markers: $markerCount\n";
+  ' "$hours" "$output"
+}
+
+# ── context — Search extracted conversation context ──────────────
+# Usage: bapXphp context <query>
+# Searches .tmp/context-extract.xml for messages matching <query>
+# and shows surrounding context.
+cmd_context() {
+  [ $# -lt 1 ] && err "Usage: bapXphp context <query>" && return 1
+
+  local query="$1"
+  local file="$ROOT/.tmp/context-extract.xml"
+
+  [ ! -f "$file" ] && err "No context file found. Run 'bapXphp context-extract' first." && return 1
+
+  require_php
+
+  php -d memory_limit=256M -r '
+    $query = $argv[1];
+    $file = $argv[2];
+    $xml = file_get_contents($file);
+    if (!$xml) { echo "ERROR: Cannot read $file\n"; exit(1); }
+
+    // String-based search — strip CDATA to find message boundaries, but search raw text
+    // Extract all <message ...>...</message> blocks
+    $totalMsgs = 0;
+    $found = [];
+
+    // Split into session blocks to carry session context
+    $sessionBlocks = preg_split("/<\/session>\s*\n\s*<session /", $xml);
+    $queryLower = mb_strtolower($query);
+
+    foreach ($sessionBlocks as $sblock) {
+      // Extract session id/title/agent from <session ...> tag
+      $sid = "?";
+      $stitle = "?";
+      $sagent = "?";
+      if (preg_match("/<session[^>]*id=\"([^\"]+)\"/", $sblock, $m)) $sid = $m[1];
+      if (preg_match("/<session[^>]*title=\"([^\"]+)\"/", $sblock, $m)) $stitle = mb_substr($m[1], 0, 60);
+      if (preg_match("/<session[^>]*agent=\"([^\"]+)\"/", $sblock, $m)) $sagent = $m[1];
+
+      // Find all <message> blocks in this session
+      preg_match_all("/<message[^>]*>(.*?)<\/message>/s", $sblock, $msgs);
+      foreach ($msgs[0] as $msgBlock) {
+        $totalMsgs++;
+
+        // Extract text content (outside XML tags, inside CDATA)
+        $text = strip_tags($msgBlock);
+        $text = trim(preg_replace("/<!\[CDATA\[(.*?)\]\]>/s", "$1", $text));
+
+        if (mb_stripos($text, $query) !== false) {
+          // Extract attributes
+          $role = "";
+          $seq = "";
+          $ts = "";
+          $agent = "";
+          if (preg_match("/role=\"([^\"]+)\"/", $msgBlock, $m)) $role = $m[1];
+          if (preg_match("/seq=\"([^\"]+)\"/", $msgBlock, $m)) $seq = $m[1];
+          if (preg_match("/time=\"([^\"]+)\"/", $msgBlock, $m)) $ts = $m[1];
+          if (preg_match("/agent=\"([^\"]+)\"/", $msgBlock, $m)) $agent = $m[1];
+
+          // Get context lines around match
+          $lines = preg_split("/\r\n|\n|\r/", $text);
+          $matchLines = [];
+          foreach ($lines as $i => $l) {
+            if (mb_stripos($l, $query) !== false) {
+              $start = max(0, $i - 2);
+              $end = min(count($lines) - 1, $i + 2);
+              for ($j = $start; $j <= $end; $j++) {
+                $prefix = $j === $i ? ">>" : "  ";
+                $matchLines[] = $prefix . " " . mb_substr($lines[$j], 0, 200);
+              }
+              $matchLines[] = "---";
+            }
+          }
+
+          $found[] = [
+            "session" => $sid,
+            "title" => $stitle,
+            "agent" => $sagent,
+            "seq" => $seq,
+            "role" => $role,
+            "time" => $ts,
+            "lines" => $matchLines,
+          ];
+
+          if (count($found) >= 20) break 2;
+        }
+      }
+    }
+
+    if (empty($found)) {
+      echo "No matches found for: \"$query\" (searched $totalMsgs messages)\n";
+      exit(0);
+    }
+
+    echo "Matches for \"$query\" in " . count($found) . " messages (of $totalMsgs total)\n";
+    echo str_repeat("=", 60) . "\n\n";
+
+    foreach ($found as $r) {
+      echo "Session: {$r["session"]} | {$r["title"]}\n";
+      echo "  Role: {$r["role"]} | Seq: {$r["seq"]} | Agent: {$r["agent"]}\n";
+      echo "  Time: {$r["time"]}\n";
+      echo "  Context:\n";
+      foreach ($r["lines"] as $l) echo "    $l\n";
+      echo "\n";
+    }
+  ' "$query" "$file"
+}
+
+# ── skill — Load a skill SKILL.md ────────────────────────────────
+cmd_skill() {
+  local name="${1:-}"
+  [ -z "$name" ] && cmd_skills && return
+
+  local skill_file="$ROOT/.agents/skills/$name/SKILL.md"
+  if [ -f "$skill_file" ]; then
+    echo "── $name ──"
+    cat "$skill_file"
+  else
+    err "Skill not found: $name"
+    cmd_skills
+    exit 1
+  fi
+}
+
 # ── ai:config — Show AI model config from MySQL secrets ───────
 cmd_ai_config() {
   require_php
@@ -1689,8 +2469,8 @@ main() {
   case "$1" in
     help|--help|-h)
       cmd_help ;;
-    understand|context)
-      cmd_"$1" ;;
+    understand)
+      cmd_understand ;;
     schema|add|remove|tool)
       local cmd="$1"; shift
       "cmd_${cmd}" "$@" ;;
@@ -1750,6 +2530,22 @@ main() {
       cmd_bloggen ;;
     browser-agent|browser)
       shift; cmd_browser_agent "$@" ;;
+    todo)
+      shift; cmd_todo "$@" ;;
+    objective|obj)
+      shift; cmd_objective "$@" ;;
+    task)
+      shift; cmd_task "$@" ;;
+    question|ask)
+      shift; cmd_question "$@" ;;
+    memory|mem|session)
+      shift; cmd_memory "$@" ;;
+    context-extract|ctx-extract|ctxe)
+      cmd_context_extract ;;
+    context|ctx)
+      shift; cmd_context "$@" ;;
+    skill)
+      shift; cmd_skill "$@" ;;
     read)
       shift; cmd_read "$@" ;;
     write)
