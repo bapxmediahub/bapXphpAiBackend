@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{CartService,SeoService,SecretService};
+use App\Services\{SeoService,SecretService};
 abstract class BaseController {
     protected string $layout = 'app';
     protected bool $isApiRequest = false;
