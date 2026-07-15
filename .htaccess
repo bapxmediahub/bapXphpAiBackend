@@ -1,6 +1,10 @@
 Options -Indexes
 RewriteEngine On
 
+# Block access to .env, .git, and other sensitive dotfiles
+RedirectMatch 403 \.env(\.|$)
+RedirectMatch 403 \.git$
+
 # Block access to sensitive directories (allow /docs route through to index.php)
 RewriteRule ^docs/?$ index.php [QSA,L]
 RewriteRule ^(app|integrations|storage|tools|tests|docs)/ - [F,L]
@@ -10,6 +14,12 @@ RewriteRule ^api/(.*)$ api/index.php [QSA,L]
 
 # Admin routes
 RewriteRule ^admin(.*)$ index.php [QSA,L]
+
+# Redirect /index.php to root (prevents app 404 when DirectoryIndex sets REQUEST_URI=/index.php)
+RewriteRule ^index\.php$ / [R=301,L,QSA]
+
+# Route root explicitly (DirectoryIndex may not fire on all LiteSpeed configs)
+RewriteRule ^$ index.php [QSA,L]
 
 # All other routes - PHP serves views directly
 RewriteCond %{REQUEST_FILENAME} !-f
