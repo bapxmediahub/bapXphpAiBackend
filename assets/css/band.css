@@ -484,8 +484,8 @@ nav a:hover { color: var(--color-maroon); }
 /* ── Home Page ── */
 .home-hero {
     position: relative;
-    min-height: 90vh;
-    padding: var(--space-4xl) 0 var(--space-3xl);
+    min-height: 700px;
+    padding: 56px 0;
     background: var(--color-maroon-deep) url('/assets/images/hero-temple-bg.webp') center/cover no-repeat;
     color: var(--color-white);
     overflow: hidden;
@@ -535,7 +535,7 @@ nav a:hover { color: var(--color-maroon); }
 
 .home-hero h1 {
     font-family: var(--font-display);
-    font-size: clamp(2.4rem, 5.5vw, 4.2rem);
+    font-size: 3.5rem;
     line-height: 1.08;
     margin: 0 0 var(--space-lg) 0;
     color: var(--color-white);
@@ -2566,7 +2566,7 @@ tr:hover td { background: var(--color-bg-alt); }
 }
 
 /* ── Scroll Reveal ── */
-.reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal { opacity: 1; transform: none; }
 .reveal.revealed { opacity: 1; transform: translateY(0); }
 .about-story-card.reveal,
 .about-feature-card.reveal,
@@ -3004,7 +3004,7 @@ h1, h2, h3, h4, h5, h6,
 
 .section { padding: 64px 24px; }
 .section--full { padding-left: 0; padding-right: 0; }
-.section-title { font-size: clamp(1.375rem, 2.5vw, 1.75rem); font-weight: 700; }
+.section-title { font-size: 1.75rem; font-weight: 700; }
 .section-title::before,
 .section-title::after { display: none; }
 .eyebrow { color: var(--color-text-muted); letter-spacing: 0; }
@@ -3035,7 +3035,7 @@ h1, h2, h3, h4, h5, h6,
 .cart-summary,
 .checkout-form {
     border-color: var(--color-border-light);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     background: var(--color-white);
     box-shadow: var(--shadow-sm);
 }
@@ -3085,7 +3085,10 @@ h1, h2, h3, h4, h5, h6,
     .site-header { min-height: 64px; padding: 8px 12px; }
     .section { padding: 48px 16px; }
     .section--full { padding-left: 0; padding-right: 0; }
-    .home-hero { min-height: auto; padding: 40px 16px 56px; }
+    .home-hero { min-height: auto; padding: 20px 16px 32px; }
+    .home-hero h1 { font-size: 1.75rem; }
+    .deity-frame { width: 140px; }
+    .hero-stats { display: none; }
     .astro-search,
     .astro-filter { min-height: 56px; }
     .support-grid { grid-template-columns: 1fr; }
@@ -3401,6 +3404,59 @@ body { background: var(--color-bg); }
     .account-install__status .btn { grid-column: 1 / -1; width: 100%; }
     .account-install__instructions { grid-template-columns: 1fr; gap: var(--space-lg); }
     .account-install__instructions section + section { padding: var(--space-lg) 0 0; border-top: 1px solid var(--color-border); border-left: 0; }
+}
+
+/* Consultation-first card system */
+.astro-market-grid { gap: 24px; padding-top: 0; }
+.astro-market-card,
+.astro-market-card:hover {
+    min-height: 0;
+    padding-top: 0;
+    overflow: hidden;
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-sm);
+    background: var(--color-white);
+    color: var(--color-ink);
+    box-shadow: var(--shadow-sm);
+}
+.astro-market-card:hover { border-color: var(--color-border); box-shadow: var(--shadow-md); }
+.astro-market-photo {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--color-bg-alt);
+    transform: none;
+}
+.astro-market-photo-frame { position: absolute; inset: 0; border: 0; border-radius: 0; box-shadow: none; }
+.astro-market-photo img { object-position: center 22%; }
+.astro-rating-pill { right: 12px; bottom: 12px; left: auto; transform: none; }
+.astro-market-info { justify-items: start; min-height: 132px; padding: 16px; text-align: left; }
+.astro-market-name { color: var(--color-ink); }
+.astro-market-name:hover { color: var(--color-maroon); }
+.astro-market-info p { color: var(--color-text-muted); }
+.astro-market-meta { justify-content: flex-start; }
+.astro-market-meta span { border-radius: 4px; border-color: var(--color-border-light); background: var(--color-bg-alt); color: var(--color-text-muted); }
+.astro-market-actions { justify-content: flex-start; min-height: 60px; padding: 0 16px 16px; }
+.astro-action-row { justify-content: flex-start; }
+.astro-action--icon { width: 44px; height: 44px; min-height: 44px; box-shadow: none; }
+.astro-carousel { padding-top: 16px; }
+@media (max-width: 743px) {
+    .astro-market-grid { gap: 16px; padding-top: 0; }
+    .astro-market-card,
+    .astro-market-card:hover { min-height: 0; padding-top: 0; }
+    .astro-market-photo { top: auto; width: 100%; height: auto; }
+    .astro-market-info { min-height: 0; }
+    .home-hero { min-height: auto; padding: 20px 16px 32px; }
+    .home-hero-inner { gap: 12px; }
+    .home-hero h1 { margin-bottom: 12px; font-size: 1.6rem; }
+    .home-hero .lede { margin-bottom: 16px; line-height: 1.55; }
+    .deity-frame { width: 120px; }
+    .varahi-dots { gap: 6px; margin-top: 8px; }
+    .hero-stats { display: none; }
 }
 .pwa-install-btn {
     display: none;

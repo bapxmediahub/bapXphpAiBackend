@@ -19,6 +19,7 @@ set -euo pipefail
 #   bapXphp update                  — regenerate and validate both project maps
 #   bapXphp serve                   — start dev server on 127.0.0.1:6020
 #   bapXphp smoke                   — run local smoke tests
+#   bapXphp dev:user [--dry-run]   — create/update the fixed remote-DB customer used for browser testing
 #
 # ── Project Map ─────────────────────────────────────────────────
 #   bapXphp map                     — view generated project map
@@ -100,7 +101,7 @@ fi
 ROOT="$(cd "$(dirname "$BAPX_SRC")/.." && pwd)"
 
 # Load project and ignored operator connection settings for CLI subcommands.
-for env_file in "$ROOT/.env" "$ROOT/.env.mysql"; do
+for env_file in "$ROOT/.env" "$ROOT/.env.mysql" "$ROOT/.env.test-user"; do
 if [ -f "$env_file" ]; then
   while IFS= read -r line || [ -n "$line" ]; do
     # Skip comments and empty lines
@@ -143,6 +144,41 @@ require_gh()  { command -v gh >/dev/null 2>&1 || die "GitHub CLI (gh) is not ins
 schema_path() { echo "$SCHEMA_FILE"; }
 
 # ── Commands ───────────────────────────────────────────────────
+
+cmd_dev_user() {
+  local dry_run=false
+  local generate=false
+  [ "${1:-}" = "--dry-run" ] && dry_run=true
+  [ "${1:-}" = "--generate" ] && generate=true
+  local id="${BAPX_TEST_USER_ID:-dev_test_customer}"
+  local email="${BAPX_TEST_USER_EMAIL:-test.user@bapx.dev}"
+  local name="${BAPX_TEST_USER_NAME:-Development Test User}"
+  local password="${BAPX_TEST_USER_PASSWORD:-}"
+  if [ "$generate" = true ] && [ -z "$password" ]; then
+    command -v openssl >/dev/null 2>&1 || die "OpenSSL is required to generate the development password."
+    password=$(openssl rand -base64 24 | tr -d '\r\n')
+    umask 077
+    printf 'BAPX_TEST_USER_PASSWORD=%s\n' "$password" > "$ROOT/.env.test-user"
+  fi
+  [ -n "$password" ] || die "Set BAPX_TEST_USER_PASSWORD in ignored operator config, or run bapXphp dev:user --generate."
+
+  local record
+  record=$(php -r '
+    echo json_encode([
+      "id"=>$argv[1], "email"=>$argv[2], "username"=>"dev_test_customer",
+      "name"=>$argv[3], "role"=>"customer",
+      "password_hash"=>password_hash($argv[4], PASSWORD_DEFAULT),
+      "accepted_terms_at"=>date(DATE_ATOM), "development_fixture"=>true,
+    ], JSON_UNESCAPED_SLASHES);
+  ' "$id" "$email" "$name" "$password")
+
+  if [ "$dry_run" = true ]; then
+    echo "Would upsert fixed development customer: $id ($email)"
+    return
+  fi
+  cmd_db_upsert users "$record" >/dev/null
+  ok "Development customer ready: $id ($email)"
+}
 
 cmd_help() {
   awk '
@@ -1196,6 +1232,8 @@ main() {
       "cmd_${cmd}" "$@" ;;
     test|lint|check|ci|update|serve|smoke)
       cmd_"$1" ;;
+    dev:user|dev-user)
+      shift; cmd_dev_user "$@" ;;
     map)
       cmd_map ;;
     map:gen|mapgen)
