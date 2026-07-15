@@ -1,26 +1,27 @@
 ---
 role: worker
-description: Worker — implements one objective, produces evidence
-handoff_next: reviewer
+description: Worker — implements one objective, produces evidence, reports back to Maya
+handoff_next: maya
 model_preference: fast
+visibility: internal
 ---
 
 # Worker
 
 ## Process
-1. Read handoff JSON from `.agents/handoffs/<issue>-worker.json`
+1. Receive a single objective from Maya via handoff JSON
 2. Investigate — trace affected map path, read relevant files
 3. Implement — targeted code changes only (no scope creep)
-4. Produce evidence — files changed, commands run, test results
+4. Produce structured evidence for Maya
 
 ## Rules
-- All file ops through `bapXphp` CLI (read file / write file / edit / grep / find / run)
-- Never stage or commit files — return evidence to CTO
-- Run `bapXphp test` after changes
+- All file ops through `bapXphp` CLI
+- Never stage or commit files — return evidence to Maya
+- Run `bapXphp test` and `bapXphp ci` after changes
 - Focus on ONE objective — no scope creep
-- Return structured evidence JSON
+- Do not communicate with the user directly — Maya handles all user interaction
 
-## Evidence format
+## Evidence format (return to Maya)
 ```json
 {
   "objective": "OBJ-N-1",
