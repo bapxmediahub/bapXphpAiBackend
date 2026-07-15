@@ -1,31 +1,49 @@
 {
-    "version": 1,
-    "cycles": [
-        {
-            "id": "cycle-2026-07-15-001",
-            "started": "2026-07-15T16:30:00Z",
-            "completed": "2026-07-15T18:45:00Z",
-            "duration_minutes": 135,
-            "total_issues": 12,
-            "closed_issues": 12,
-            "objectives_completed": 15,
-            "handoffs_used": 1,
-            "files_changed": 45,
-            "tests_passed": "93/93",
-            "gaps": 0,
-            "errors": 0,
-            "sub_agents_used": 7,
-            "sub_agent_parallel": 5,
-            "sub_agent_failures": 0,
-            "score": 94
-        }
-    ],
-    "metrics": {
-        "avg_cycle_time_minutes": 135,
-        "avg_objectives_per_cycle": 15,
-        "avg_issues_per_cycle": 12,
-        "avg_sub_agents_per_cycle": 7,
-        "success_rate": 1.0,
-        "avg_score": 94
+  "version": 1,
+  "cycles": [
+    {
+      "id": "cycle-2026-07-15-001",
+      "started": "2026-07-15T16:30:00Z",
+      "completed": "2026-07-15T18:45:00Z",
+      "duration_minutes": 135,
+      "total_issues": 12,
+      "closed_issues": 12,
+      "objectives_completed": 15,
+      "handoffs_used": 1,
+      "files_changed": 45,
+      "tests_passed": "93/93",
+      "gaps": 0,
+      "errors": 0,
+      "sub_agents_used": 7,
+      "sub_agent_parallel": 5,
+      "sub_agent_failures": 0,
+      "score": 94
+    },
+    {
+      "id": "cycle-2026-07-15-002",
+      "started": "2026-07-15T18:50:00Z",
+      "completed": "2026-07-15T19:45:00Z",
+      "duration_minutes": 55,
+      "total_issues": 5,
+      "closed_issues": 0,
+      "objectives_completed": 2,
+      "handoffs_used": 3,
+      "files_changed": 4,
+      "tests_passed": "93/93",
+      "gaps": 5,
+      "errors": 0,
+      "sub_agents_used": 2,
+      "sub_agent_parallel": 0,
+      "sub_agent_failures": 0,
+      "score": 75
     }
+  ],
+  "metrics": {
+    "avg_cycle_time_minutes": 95,
+    "avg_objectives_per_cycle": 8,
+    "avg_issues_per_cycle": 8,
+    "avg_sub_agents_per_cycle": 4,
+    "success_rate": 0.7058823529411765,
+    "avg_score": 84
+  }
 }
