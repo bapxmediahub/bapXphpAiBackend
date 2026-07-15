@@ -50,16 +50,9 @@
                         $experience = trim((string)($item['experience_years'] ?? ''));
                         $speciality = $item['speciality'] ?? 'Vedic Astrology';
                     ?>
-                    <?php
-                        $status = $item['availability_status'] ?? 'available';
-                        $busyMod = $status === 'busy' ? ' astro-market-card--busy' : ($status === 'offline' ? ' astro-market-card--offline' : '');
-                        $priceAmount = $item['message_credit_cost'] ?? $item['call_credit_per_second'] ?? null;
-                    ?>
-                    <article class="astro-market-card reveal<?= $busyMod ?>" data-astro-card data-language="<?= e(strtolower(implode(' ', $item['languages'] ?? []))) ?>" data-search="<?= e(strtolower(($item['name'] ?? '') . ' ' . $languageText . ' ' . $speciality)) ?>">
+                    <article class="astro-market-card reveal" data-astro-card data-language="<?= e(strtolower(implode(' ', $item['languages'] ?? []))) ?>" data-search="<?= e(strtolower(($item['name'] ?? '') . ' ' . $languageText . ' ' . $speciality)) ?>">
                         <a class="astro-market-photo" href="/consult/<?= e($item['slug'] ?? '') ?>" aria-label="View <?= e($item['name'] ?? 'Astrologer') ?>">
                             <span class="astro-market-photo-frame"><img class="astro-market-photo-img astro-market-photo-img--<?= e($item['slug'] ?? 'default') ?>" src="<?= e($item['photo_url'] ?? placeholder_img($item['name'] ?? 'Astrologer')) ?>" alt="<?= e($item['name'] ?? 'Astrologer') ?>" loading="lazy"></span>
-                            <span class="astro-status-dot" role="presentation"></span>
-                            <span class="astro-status-label"><?= e(ucfirst($status)) ?></span>
                             <?php if(($summary['count'] ?? 0) > 0): ?><span class="astro-rating-pill"><?= e(number_format((float)$summary['average'], 1)) ?> · <?= e((string)$summary['count']) ?></span><?php endif; ?>
                         </a>
                         <div class="astro-market-info">
@@ -70,8 +63,10 @@
                         <div class="astro-market-actions">
                             <?php if(!empty($item['slug'])): ?>
                                 <div class="astro-action-row">
-                                    <a class="astro-action" href="/consult/<?= e($item['slug']) ?>">View Profile</a>
-                                    <a class="astro-action astro-action--primary" href="/consult/<?= e($item['slug']) ?>">Book</a>
+                                    <a class="astro-action astro-action--icon astro-action--profile" href="/consult/<?= e($item['slug']) ?>" aria-label="Book consultation" title="Book consultation">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+                                        <span class="sr-only">Book consultation</span>
+                                    </a>
                                 </div>
                             <?php endif; ?>
                         </div>
