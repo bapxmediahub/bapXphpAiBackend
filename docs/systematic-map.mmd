@@ -7,9 +7,9 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 105 routes, 11 controllers, 41 services, 48 views, 0 data files, 20 tools"]
-    arch_routes["> Routes: 105 (Public + Auth + Payment + Admin + Support)"]:::arch
-    arch_ctrl["> Controllers: 11"]:::arch
+  subgraph ARCH["Architecture Overview — 106 routes, 12 controllers, 41 services, 48 views, 0 data files, 20 tools"]
+    arch_routes["> Routes: 106 (Public + Auth + Payment + Admin + Support)"]:::arch
+    arch_ctrl["> Controllers: 12"]:::arch
     arch_svc["> Services: 41"]:::arch
     arch_views["> Views: 48"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
@@ -53,6 +53,7 @@ flowchart LR
     route_6e62aa059570["GET /blog — Blog listing — all posts with category filters"]:::route
     route_b8738856284a["GET /blog/{slug} — Blog post — rendered from GitHub-sourced markdown"]:::route
     route_3c268a290f60["GET /blog/category/{slug} — Blog listing filtered by category"]:::route
+    route_3070dff142c3["POST /api/maya"]:::route
   end
 
   subgraph ROUTES_AUTH["AUTH Routes"]
@@ -155,6 +156,7 @@ flowchart LR
     controller_f21ef7cdb1a4["BlogController"]:::code
     controller_7fda1508bed0["CommerceController"]:::code
     controller_50eaea84bd1d["ConsultationController"]:::code
+    controller_020d5303e833["MayaController"]:::code
     controller_18ec49ea2cf4["PublicController"]:::code
     controller_2702fc6f256e["RemoteDbController"]:::code
     controller_452e47b9a403["ReviewController"]:::code
@@ -744,6 +746,10 @@ flowchart LR
   controller_3d37b75c07ec --> service_1909dab7e246
   controller_3d37b75c07ec --> service_f33a1d77b137
   controller_3d37b75c07ec -. renders .-> view_e13f2d1caf99
+  route_3070dff142c3 --> controller_020d5303e833
+  controller_020d5303e833 --> service_6c9416ef0383
+  controller_020d5303e833 --> service_66daa9bdc2c1
+  controller_020d5303e833 -. renders .-> view_fe7e7ffe6adc
   nav_90609cfd31a3 --> route_8c80c0301221
   nav_1abee342ae87 --> route_6ce84be0a21c
   nav_41fb19b5f30b --> route_b2c44d359fd8
@@ -755,6 +761,7 @@ flowchart LR
   controller_f21ef7cdb1a4 --> controller_6f7f176814f0
   controller_7fda1508bed0 --> controller_6f7f176814f0
   controller_50eaea84bd1d --> controller_6f7f176814f0
+  controller_020d5303e833 --> controller_6f7f176814f0
   controller_18ec49ea2cf4 --> controller_6f7f176814f0
   controller_2702fc6f256e --> controller_6f7f176814f0
   controller_452e47b9a403 --> controller_6f7f176814f0

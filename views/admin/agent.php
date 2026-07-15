@@ -3,7 +3,7 @@
     <p style="margin:0 0 var(--space-lg); color:var(--color-text-muted); font-size:0.9rem;">
         Ask questions about your site — users, orders, revenue, products, consultations.
         Configure the AI model in <a href="/admin/integrations">Integrations</a>
-        (keys: <code>ai_model_provider</code>, <code>ai_model_name</code>, <code>ai_api_endpoint</code>, <code>ai_api_key</code>).
+        (keys: <code>google_api_key</code>, <code>model</code>).
     </p>
     <?php if (empty($modelConfig['api_key'])): ?>
         <div style="background:var(--color-warning-bg, #fff3cd); border:1px solid var(--color-warning-border, #ffc107); border-radius:var(--radius-md); padding:var(--space-md); margin-bottom:var(--space-lg);">

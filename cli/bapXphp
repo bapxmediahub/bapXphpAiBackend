@@ -87,6 +87,7 @@ set -euo pipefail
 #   bapXphp db sync                 — pull MySQL data → seed YAML files (currently: db init only)
 #
 # ── AI / Agent ───────────────────────────────────────────────────
+#   bapXphp maya <message>          — chat with Maya (runs on sripanchamispiritual.com)
 #   bapXphp ai:config               — show AI model config from MySQL secrets
 #   bapXphp handoff execute <issue> [--next role]
 #                                   — load handoff context for next role
@@ -1004,6 +1005,41 @@ cmd_images_optimize() {
   php "$ROOT/cli/optimize-images.php" 2>&1
 }
 
+cmd_maya() {
+  local message="$*"
+  if [ -z "$message" ]; then
+    echo "Usage: bapXphp maya <message>"
+    echo ""
+    echo "Chat with Maya (the AI assistant running on sripanchamispiritual.com)."
+    echo ""
+    echo "Examples:"
+    echo "  bapXphp maya how many users do we have"
+    echo "  bapXphp maya what's the revenue this month"
+    echo "  bapXphp maya create a blog post about Diwali offers"
+    return 0
+  fi
+  local endpoint="${BAPX_MAYA_URL:-https://sripanchamispiritual.com/api/maya}"
+  echo "Maya: thinking..."
+  local response
+  response=$(curl -s -X POST "$endpoint" \
+    -H 'Content-Type: application/json' \
+    -d "$(printf '{"message":"%s","source":"cli"}' "$(echo "$message" | sed 's/"/\\"/g')")" \
+    --connect-timeout 10 --max-time 60 2>&1)
+  if [ $? -ne 0 ]; then
+    echo "Error: Could not reach Maya at $endpoint"
+    echo "Set BAPX_MAYA_URL env var for a different endpoint, or check your connection."
+    return 1
+  fi
+  local answer
+  answer=$(echo "$response" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('answer','') or d.get('error','Unknown error'))" 2>/dev/null)
+  if [ -z "$answer" ]; then
+    echo "Error parsing response: $response"
+    return 1
+  fi
+  echo ""
+  echo "$answer"
+}
+
 # ═══════════════════════════════════════════════════════════════
 # Database Commands (db) — MySQL direct connection
 # Subcommands: tables, describe, list, show, query, find, raw, upsert, delete, remote-status, init, sync
@@ -1627,6 +1663,8 @@ main() {
       cmd_ai_config ;;
     mail:process|mail-process)
       cmd_mail_process ;;
+    maya)
+      shift; cmd_maya "$@" ;;
     images:optimize|images-optimize|imgopt)
       cmd_images_optimize ;;
     product:images|product-images)

@@ -116,6 +116,7 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/admin/blog/delete','name'=>'admin.blog.delete','page'=>'admin/blog','controller'=>'AdminController@deleteBlog','services'=>['BlogService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/blog/preview','name'=>'admin.blog.preview','page'=>'admin/blog','controller'=>'AdminController@previewBlog','services'=>['BlogService','MarkdownRenderer']],
             ['method'=>'POST','path'=>'/admin/blog/ai-draft','name'=>'admin.blog.ai-draft','page'=>'admin/blog','controller'=>'AdminController@aiDraftBlog','services'=>['BlogService','BlogDraftService']],
+            ['method'=>'POST','path'=>'/api/maya','name'=>'api.maya','page'=>'public/404','controller'=>'MayaController@ask','services'=>['SecretService','DatabaseService']],
         ];
         foreach ($routes as &$route) {
             if ((str_starts_with($route['path'], '/admin') || str_starts_with($route['path'], '/reviews')) && !in_array('AuthService', $route['services'], true) && !str_starts_with($route['path'], '/admin/sw.js') && !str_starts_with($route['path'], '/admin/manifest.json')) {

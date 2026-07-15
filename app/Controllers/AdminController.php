@@ -95,7 +95,7 @@ final class AdminController extends BaseController {
         $model = $config['model'] ?? 'gemini-2.5-flash';
         $endpoint = $config['endpoint'] ?? 'https://generativelanguage.googleapis.com/v1beta/models/';
         $key = $config['api_key'] ?? '';
-        $prompt = "You are the admin assistant for Sri Panchami Spiritual. Answer questions about the site based on this context:\n\n{$context}\n\nQuestion: {$message}\n\nAnswer concisely in Markdown.";
+        $prompt = "You are Maya, the AI assistant for Sri Panchami Spiritual. Answer concisely.\n\n{$context}\n\nQuestion: {$message}\n\nAnswer concisely in Markdown.";
         if ($provider === 'google' || str_contains($endpoint, 'googleapis')) {
             $url = rtrim($endpoint, '/') . '/' . rawurlencode($model) . ':generateContent';
             $payload = json_encode(['contents'=>[['parts'=>[['text'=>$prompt]]]],'generationConfig'=>['temperature'=>0.3,'maxOutputTokens'=>1024]]);
