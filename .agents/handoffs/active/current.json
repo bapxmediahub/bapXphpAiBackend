@@ -1,0 +1,30 @@
+{
+  "event_type": "issues.opened",
+  "issue": 187,
+  "actor": "getwinharris",
+  "workflow": {
+    "current_role": "cto",
+    "next_role": "worker",
+    "sequence": ["cto", "worker", "reviewer", "cto"]
+  },
+  "payload": {
+    "title": "TEST issue creation\n",
+    "body": "Testing if gh issue create works\n",
+    "labels": []
+  },
+  "repository": {
+    "owner": "getwinharris",
+    "name": "bapXphpAiBackend"
+  },
+  "objectives": [{
+    "id": "OBJ-187-1",
+    "status": "gap",
+    "evidence": [],
+    "browser_evidence": [],
+    "unresolved": ["Handoff created — awaiting CTO"]
+  }],
+  "telemetry": {
+    "started_at": "2026-07-15T15:08:46Z",
+    "handoffs_completed": 0
+  }
+}
