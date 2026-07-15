@@ -116,41 +116,53 @@ function cookie_init(): void {
     if (!is_file(COOKIE_JAR)) file_put_contents(COOKIE_JAR, '');
 }
 
-function http_get(string $url, array &$s, bool $store = true): string {
+function http_get(string $url, array &$s, bool $store = true, int $retries = 2): string {
     cookie_init();
     req_delay();
     $cfg = config_load();
-    [$ua, $hdrs] = req_headers();
-    $ch = curl_init();
-    curl_setopt_array($ch, [
-        CURLOPT_URL => $url,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_MAXREDIRS => 5,
-        CURLOPT_TIMEOUT => $cfg['timeout'] ?? 30,
-        CURLOPT_CONNECTTIMEOUT => $cfg['connect_timeout'] ?? 10,
-        CURLOPT_USERAGENT => $ua,
-        CURLOPT_COOKIEFILE => COOKIE_JAR,
-        CURLOPT_COOKIEJAR => COOKIE_JAR,
-        CURLOPT_HTTPHEADER => $hdrs,
-    ]);
-    $start = microtime(true);
-    $html = curl_exec($ch);
-    $info = curl_getinfo($ch);
-    $error = curl_error($ch);
-    $elapsed = round((microtime(true) - $start) * 1000);
-    log_event("GET {$info['http_code']}", "{$url} ({$elapsed}ms)");
-    if ($html === false) { fwrite(STDERR, "Error: $error\n"); exit(1); }
-    $s['url'] = $info['url'];
-    $s['html'] = $html;
-    $dom = new DOMDocument(); libxml_use_internal_errors(true); @$dom->loadHTML('<?xml encoding="utf-8" ?>' . $html); libxml_clear_errors();
-    $s['dom'] = $dom;
-    if ($store) {
-        $s['history'] = array_slice($s['history'], 0, $s['history_pos'] + 1);
-        $s['history'][] = $info['url'];
-        $s['history_pos'] = count($s['history']) - 1;
+    $timeout = $cfg['timeout'] ?? 30;
+    $connect_timeout = $cfg['connect_timeout'] ?? 10;
+    for ($attempt = 1; $attempt <= $retries; $attempt++) {
+        [$ua, $hdrs] = req_headers();
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_MAXREDIRS => 5,
+            CURLOPT_TIMEOUT => $timeout,
+            CURLOPT_CONNECTTIMEOUT => $connect_timeout,
+            CURLOPT_USERAGENT => $ua,
+            CURLOPT_COOKIEFILE => COOKIE_JAR,
+            CURLOPT_COOKIEJAR => COOKIE_JAR,
+            CURLOPT_HTTPHEADER => $hdrs,
+        ]);
+        $start = microtime(true);
+        $html = curl_exec($ch);
+        $info = curl_getinfo($ch);
+        $error = curl_error($ch);
+        $elapsed = round((microtime(true) - $start) * 1000);
+        $http_code = $info['http_code'] ?? 0;
+        log_event("GET {$http_code}", "{$url} ({$elapsed}ms) attempt={$attempt}");
+        if ($html !== false && $http_code >= 200 && $http_code < 500) {
+            $s['url'] = $info['url'];
+            $s['html'] = $html;
+            $dom = new DOMDocument(); libxml_use_internal_errors(true); @$dom->loadHTML('<?xml encoding="utf-8" ?>' . $html); libxml_clear_errors();
+            $s['dom'] = $dom;
+            if ($store) {
+                $s['history'] = array_slice($s['history'], 0, $s['history_pos'] + 1);
+                $s['history'][] = $info['url'];
+                $s['history_pos'] = count($s['history']) - 1;
+            }
+            return $html;
+        }
+        if ($attempt < $retries) {
+            $backoff = $attempt * 1000000;
+            usleep($backoff);
+        }
     }
-    return $html;
+    fwrite(STDERR, "Error after {$retries} attempts: {$error} (HTTP {$http_code})\n");
+    exit(1);
 }
 
 function text_of(DOMNode $node): string {
@@ -307,6 +319,246 @@ function dom_from_session(array &$s): void {
         $dom = new DOMDocument(); libxml_use_internal_errors(true); @$dom->loadHTML('<?xml encoding="utf-8" ?>' . $s['html']); libxml_clear_errors();
         $s['dom'] = $dom;
     }
+}
+
+function detect_captcha(DOMDocument $dom, string $html): array {
+    $result = ['detected' => false, 'type' => null, 'sitekey' => null, 'elements' => []];
+    $xpath = new DOMXPath($dom);
+
+    // reCAPTCHA v2/v3 — iframe, api.js, g-recaptcha div
+    if (preg_match('/recaptcha\/api\.js/', $html) || preg_match('/g-recaptcha/', $html) || preg_match('/data-sitekey=["\']([^"\']+)["\']/', $html, $m)) {
+        $result['detected'] = true;
+        $result['type'] = 'recaptcha';
+        if (!empty($m[1])) $result['sitekey'] = $m[1];
+        if (preg_match_all('/data-sitekey=["\']([^"\']+)["\']/', $html, $mm)) $result['sitekey'] = $mm[1][0] ?? null;
+        $nodes = $xpath->query("//*[contains(@class,'g-recaptcha')]");
+        if ($nodes && $nodes->length > 0) {
+            foreach ($nodes as $n) {
+                $e = ['tag' => strtolower($n->tagName), 'ref' => ''];
+                $sk = $n->getAttribute('data-sitekey');
+                if ($sk) $e['sitekey'] = $sk;
+                $result['elements'][] = $e;
+            }
+        }
+    }
+
+    // hCaptcha
+    if (preg_match('/hcaptcha\.com\/1\.api\.js/', $html) || preg_match('/h-captcha/', $html)) {
+        $result['detected'] = true;
+        $result['type'] = 'hcaptcha';
+        if (preg_match('/data-sitekey=["\']([^"\']+)["\']/', $html, $m)) $result['sitekey'] = $m[1];
+        $nodes = $xpath->query("//*[contains(@class,'h-captcha')]");
+        if ($nodes && $nodes->length > 0) {
+            foreach ($nodes as $n) {
+                $e = ['tag' => strtolower($n->tagName), 'ref' => ''];
+                $sk = $n->getAttribute('data-sitekey');
+                if ($sk) $e['sitekey'] = $sk;
+                $result['elements'][] = $e;
+            }
+        }
+    }
+
+    // Cloudflare Turnstile
+    if (preg_match('/turnstile/', $html) && preg_match('/challenges\.cloudflare\.com/', $html)) {
+        $result['detected'] = true;
+        if (!$result['type']) $result['type'] = 'turnstile';
+        if (preg_match('/data-sitekey=["\']([^"\']+)["\']/', $html, $m)) $result['sitekey'] = $m[1];
+    }
+
+    // Text / image captcha in forms
+    $captcha_inputs = $xpath->query("//input[contains(translate(@name,'C','c'),'captcha') or contains(translate(@id,'C','c'),'captcha') or contains(translate(@placeholder,'C','c'),'captcha')]");
+    if ($captcha_inputs && $captcha_inputs->length > 0) {
+        $result['detected'] = true;
+        if (!$result['type']) $result['type'] = 'text_captcha';
+        foreach ($captcha_inputs as $inp) {
+            $e = ['tag' => 'input', 'ref' => '', 'name' => $inp->getAttribute('name'), 'id' => $inp->getAttribute('id')];
+            $result['elements'][] = $e;
+        }
+    }
+
+    if ($result['detected'] && !$result['type']) $result['type'] = 'unknown';
+    return $result;
+}
+
+function parse_ddg_results(DOMDocument $dom): array {
+    $results = [];
+    $xpath = new DOMXPath($dom);
+    // DDG HTML: h2.result__title > a.result__a with href=//duckduckgo.com/l/?uddg=<encoded>
+    // Each result is in div.result > div.result__body
+    $headings = $xpath->query("//h2[contains(@class,'result__title')]");
+    foreach ($headings as $h2) {
+        $link = $xpath->query(".//a[contains(@class,'result__a')]", $h2)->item(0);
+        if (!$link) continue;
+        $href = $link->getAttribute('href');
+        if (!$href) continue;
+        // Decode DDG redirect URL
+        if (preg_match('/uddg=([^&]+)/', $href, $m)) $href = urldecode($m[1]);
+        $title = trim($link->textContent);
+        if (!$title) continue;
+
+        // Snippet is in a sibling div.result__snippet
+        $snippet = '';
+        $body = $h2->parentNode;
+        while ($body && !str_contains($body->getAttribute('class') ?? '', 'result__body')) {
+            $body = $body->parentNode;
+        }
+        if ($body) {
+            $sn = $xpath->query(".//div[contains(@class,'result__snippet')]", $body)->item(0);
+            if ($sn) $snippet = trim($sn->textContent);
+        }
+
+        $results[] = ['title' => $title, 'url' => $href, 'snippet' => mb_substr($snippet, 0, 300)];
+    }
+    return $results;
+}
+
+function parse_google_results(DOMDocument $dom, string $html): array {
+    $results = [];
+    $xpath = new DOMXPath($dom);
+
+    // Try modern Google structure (2024+): h3 inside a link inside a div.g
+    $h3_nodes = $xpath->query("//h3");
+    foreach ($h3_nodes as $h3) {
+        $link = null;
+        // Walk up to find the enclosing <a>
+        $p = $h3->parentNode;
+        while ($p && $p->nodeType === XML_ELEMENT_NODE) {
+            if (strtolower($p->tagName) === 'a' && $p->getAttribute('href')) {
+                $link = $p;
+                break;
+            }
+            $p = $p->parentNode;
+        }
+        if (!$link) {
+            // Maybe h3 is inside a link
+            $link = $h3->parentNode;
+            while ($link && $link->nodeType === XML_ELEMENT_NODE && strtolower($link->tagName) !== 'a') {
+                $link = $link->parentNode;
+            }
+            if (!$link || !$link->getAttribute('href') || !str_starts_with($link->getAttribute('href'), 'http')) {
+                $link = null;
+            }
+        }
+        if (!$link) continue;
+        $href = $link->getAttribute('href');
+        // Skip google internal links
+        if (str_contains($href, '/search?') || str_contains($href, 'google.com/')) continue;
+        $title = trim($h3->textContent);
+        if (!$title) continue;
+
+        // Get snippet: the next sibling div after the parent of h3
+        $snippet = '';
+        $parent = $link->parentNode;
+        while ($parent && $parent->nodeType === XML_ELEMENT_NODE) {
+            $nxt = $parent->nextSibling;
+            while ($nxt && $nxt->nodeType !== XML_ELEMENT_NODE) $nxt = $nxt->nextSibling;
+            if ($nxt) {
+                $spans = $nxt->getElementsByTagName('span');
+                foreach ($spans as $sp) {
+                    $st = trim($sp->textContent);
+                    if (strlen($st) > 30 && !str_starts_with($st, 'http')) { $snippet = mb_substr($st, 0, 300); break; }
+                }
+            }
+            // Also try div[data-sncf]
+            if (!$snippet) {
+                $divs = $parent->getElementsByTagName('div');
+                foreach ($divs as $dv) {
+                    if ($dv->getAttribute('data-sncf') !== '') {
+                        $snippet = mb_substr(trim($dv->textContent), 0, 300);
+                        break;
+                    }
+                }
+            }
+            break;
+        }
+
+        $results[] = ['title' => $title, 'url' => $href, 'snippet' => $snippet];
+    }
+
+    // Also try alternative selectors
+    if (empty($results)) {
+        // Fallback: look for div[class~="g"] with a <a> inside
+        $divs = $xpath->query("//div[contains(@class,'g')]");
+        foreach ($divs as $div) {
+            $links = $div->getElementsByTagName('a');
+            foreach ($links as $a) {
+                $h = $a->getAttribute('href');
+                if ($h && str_starts_with($h, 'http') && !str_contains($h, 'google.com/')) {
+                    $h3s = $a->getElementsByTagName('h3');
+                    if ($h3s->length > 0) {
+                        $title = trim($h3s->item(0)->textContent);
+                        $txt = mb_substr(trim($div->textContent), 0, 300);
+                        $txt = str_replace($title, '', $txt);
+                        $results[] = ['title' => $title, 'url' => $h, 'snippet' => trim($txt)];
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    return $results;
+}
+
+function extract_links(DOMDocument $dom, string $base_url): array {
+    $links = [];
+    $xpath = new DOMXPath($dom);
+    $nodes = $xpath->query("//a[@href]");
+    $host = parse_url($base_url, PHP_URL_HOST);
+    foreach ($nodes as $n) {
+        $href = $n->getAttribute('href');
+        if (!$href || $href === '#' || str_starts_with($href, 'javascript:')) continue;
+        $txt = trim(text_of($n));
+        $abs = resolve_url($href, $base_url);
+        $internal = $host && str_contains($abs, $host);
+        $links[] = ['url' => $abs, 'text' => mb_substr($txt, 0, 120), 'internal' => $internal];
+    }
+    return $links;
+}
+
+function extract_forms(DOMDocument $dom): array {
+    $forms = [];
+    $xpath = new DOMXPath($dom);
+    $nodes = $xpath->query("//form");
+    foreach ($nodes as $f) {
+        $form = [
+            'action' => $f->getAttribute('action') ?: '(current)',
+            'method' => strtoupper($f->getAttribute('method') ?: 'GET'),
+            'id' => $f->getAttribute('id') ?: '',
+            'fields' => [],
+        ];
+        $inputs = $f->getElementsByTagName('input');
+        foreach ($inputs as $inp) {
+            $t = strtolower($inp->getAttribute('type') ?: 'text');
+            if (in_array($t, ['submit', 'button', 'hidden'])) continue;
+            $form['fields'][] = [
+                'name' => $inp->getAttribute('name'),
+                'type' => $t,
+                'placeholder' => $inp->getAttribute('placeholder') ?: '',
+                'required' => $inp->hasAttribute('required'),
+            ];
+        }
+        $textareas = $f->getElementsByTagName('textarea');
+        foreach ($textareas as $ta) {
+            $form['fields'][] = [
+                'name' => $ta->getAttribute('name'),
+                'type' => 'textarea',
+                'placeholder' => $ta->getAttribute('placeholder') ?: '',
+                'required' => $ta->hasAttribute('required'),
+            ];
+        }
+        $selects = $f->getElementsByTagName('select');
+        foreach ($selects as $sel) {
+            $form['fields'][] = [
+                'name' => $sel->getAttribute('name'),
+                'type' => 'select',
+                'placeholder' => '',
+                'required' => $sel->hasAttribute('required'),
+            ];
+        }
+        $forms[] = $form;
+    }
+    return $forms;
 }
 
 // ── Main ───────────────────────────────────────────────────────
@@ -555,20 +807,85 @@ try {
             echo snapshot_yaml($session);
             break;
 
+        case 'search':
+            $query = implode(' ', array_slice($args, 1));
+            if (!$query) { fwrite(STDERR, "Usage: browser-agent search <query>\n"); exit(1); }
+            $engine = 'ddg'; // duckduckgo is most bot-friendly
+            $parsed = [];
+            // Parse --engine=flag
+            foreach (array_slice($args, 1) as $a) {
+                if (str_starts_with($a, '--engine=')) {
+                    $engine = substr($a, 9);
+                    // Remove from query
+                    $query = str_replace($a, '', $query);
+                    $query = preg_replace('/\s+/', ' ', trim($query));
+                }
+            }
+
+            if ($engine === 'google') {
+                // Try no-JS Google
+                $tlds = ['com', 'co.uk', 'ca', 'com.au'];
+                $url = 'https://www.google.' . $tlds[array_rand($tlds)] . '/search?q=' . urlencode($query) . '&hl=en&gbv=1';
+                http_get($url, $session);
+                $html = $session['html'];
+                if (preg_match('/<meta\s+http-equiv="refresh"[^>]*url=([^"\s>]+)/i', $html, $m)) {
+                    http_get(resolve_url(htmlspecialchars_decode($m[1]), $session['url']), $session);
+                }
+                if (preg_match('/consent\.google/', $html)) {
+                    http_get('https://www.google.com/search?q=' . urlencode($query) . '&hl=en&gbv=1&consent=ACCEPT', $session);
+                }
+                sess_save($session);
+                $parsed = parse_google_results($session['dom'], $session['html']);
+            } else {
+                // DuckDuckGo HTML — most bot-friendly
+                $url = 'https://html.duckduckgo.com/html/?q=' . urlencode($query);
+                http_get($url, $session);
+                sess_save($session);
+                $parsed = parse_ddg_results($session['dom']);
+            }
+
+            echo "search_query: {$query}\nengine: {$engine}\nsearch_results: " . count($parsed) . "\n\n";
+            foreach ($parsed as $i => $r) {
+                echo "  - result #" . ($i + 1) . "\n";
+                echo "    title: \"" . str_replace('"', '\"', $r['title']) . "\"\n";
+                echo "    url: {$r['url']}\n";
+                if ($r['snippet']) echo "    snippet: \"" . str_replace('"', '\"', $r['snippet']) . "\"\n";
+            }
+            if (empty($parsed)) {
+                $captcha = detect_captcha($session['dom'], $session['html']);
+                if ($captcha['detected']) {
+                    echo "  (search blocked: {$captcha['type']} detected)\n";
+                } else {
+                    echo "  (no results found)\n";
+                }
+            }
+            break;
+
         case 'snapshot':
             if (!$session['dom']) { echo "error: no page loaded\n"; exit(1); }
-            $max_e = 500; $max_d = 10; $root_ref = null;
+            $max_e = 500; $max_d = 10; $root_ref = null; $out_file = null;
             foreach (array_slice($args, 1) as $a) {
                 if (str_starts_with($a, '--max-e=')) $max_e = (int) substr($a, 8);
                 elseif (str_starts_with($a, '--max-d=')) $max_d = (int) substr($a, 8);
                 elseif (str_starts_with($a, '--ref=')) $root_ref = substr($a, 6);
+                elseif (str_starts_with($a, '--output=')) $out_file = substr($a, 9);
+                elseif (str_starts_with($a, '-o=')) $out_file = substr($a, 4);
             }
-            echo snapshot_yaml($session, $max_e, $max_d, $root_ref);
+            $captcha = detect_captcha($session['dom'], $session['html']);
+            $output = '';
+            if ($captcha['detected']) {
+                $output .= "captcha: {$captcha['type']}" . ($captcha['sitekey'] ? " (sitekey: {$captcha['sitekey']})" : '') . "\n\n";
+            }
+            $output .= snapshot_yaml($session, $max_e, $max_d, $root_ref);
+            if ($out_file) {
+                file_put_contents($out_file, $output);
+                echo "Snapshot saved to {$out_file}\n";
+            } else {
+                echo $output;
+            }
             break;
 
         case 'screenshot':
-            // In HTTP mode, screenshot = YAML snapshot (AI-readable).
-            // Pixel screenshots need --pw mode with playwright-cli.
             if (!$session['dom']) { echo "error: no page loaded\n"; exit(1); }
             $max_e = 500; $max_d = 10; $root_ref = null;
             foreach (array_slice($args, 1) as $a) {
@@ -577,6 +894,10 @@ try {
                 elseif (str_starts_with($a, '--ref=')) $root_ref = substr($a, 6);
             }
             echo "# Screenshot (YAML snapshot — AI-readable. For pixel screenshots use: browser-agent --pw screenshot)\n";
+            $captcha = detect_captcha($session['dom'], $session['html']);
+            if ($captcha['detected']) {
+                echo "# captcha: {$captcha['type']}" . ($captcha['sitekey'] ? " ({$captcha['sitekey']})" : '') . "\n";
+            }
             echo snapshot_yaml($session, $max_e, $max_d, $root_ref);
             break;
 
@@ -726,18 +1047,63 @@ try {
             } else { echo "(no cookie jar)\n"; }
             break;
 
-        case 'close':
-            if (is_file(SESS_FILE)) unlink(SESS_FILE);
-            if (is_file(COOKIE_JAR)) unlink(COOKIE_JAR);
-            if (is_file(LOG_FILE)) unlink(LOG_FILE);
-            $session = ['url'=>null,'html'=>null,'dom'=>null,'form_data'=>[],'history'=>[],'history_pos'=>-1,'cookies'=>[]];
-            echo "Session reset\n";
+        case 'links':
+            if (!$session['dom']) { echo "error: no page loaded\n"; exit(1); }
+            $links = extract_links($session['dom'], $session['url']);
+            echo "total_links: " . count($links) . "\n";
+            $internal = array_filter($links, fn($l) => $l['internal']);
+            $external = array_filter($links, fn($l) => !$l['internal']);
+            echo "internal: " . count($internal) . "\n";
+            echo "external: " . count($external) . "\n\n";
+            foreach (array_slice($links, 0, 50) as $l) {
+                echo "  - " . ($l['internal'] ? '[int]' : '[ext]') . " {$l['url']}";
+                if ($l['text']) echo " \"{$l['text']}\"";
+                echo "\n";
+            }
+            if (count($links) > 50) echo "  ... (" . (count($links) - 50) . " more, use 'html' to see all)\n";
             break;
+
+        case 'forms':
+            if (!$session['dom']) { echo "error: no page loaded\n"; exit(1); }
+            $forms = extract_forms($session['dom']);
+            echo "total_forms: " . count($forms) . "\n\n";
+            foreach ($forms as $i => $f) {
+                echo "  - form #" . ($i + 1) . " [{$f['method']}] {$f['action']}\n";
+                if ($f['id']) echo "    id: {$f['id']}\n";
+                foreach ($f['fields'] as $fd) {
+                    $req = $fd['required'] ? ' *' : '';
+                    echo "    field: {$fd['name']} ({$fd['type']}){$req}";
+                    if ($fd['placeholder']) echo " placeholder=\"{$fd['placeholder']}\"";
+                    echo "\n";
+                }
+            }
+            break;
+
+        case 'captcha':
+            if (!$session['dom']) { echo "error: no page loaded\n"; exit(1); }
+            $captcha = detect_captcha($session['dom'], $session['html']);
+            if ($captcha['detected']) {
+                echo "captcha_detected: true\n";
+                echo "type: {$captcha['type']}\n";
+                if ($captcha['sitekey']) echo "sitekey: {$captcha['sitekey']}\n";
+                if ($captcha['elements']) echo "elements: " . count($captcha['elements']) . "\n";
+                echo "\nNote: Automated captcha solving requires a service (2captcha, capsolver, etc.)\n";
+                echo "or manual intervention via the browser (--pw mode).\n";
+            } else {
+                echo "captcha_detected: false\n";
+                echo "No captcha found on this page.\n";
+            }
+            break;
+
+        case 'close':
 
         case 'help': default:
             echo "bapXphp browser-agent — PHP browser automation\n\n";
             echo "HTTP mode (default, pure PHP):\n";
             echo "  open <url>          fetch page → YAML snapshot (max 500 elems, depth 10)\n";
+            echo "  search <query>      web search (DuckDuckGo by default), parse organic results\n";
+            echo "    --engine=ddg      DuckDuckGo (default, most bot-friendly)\n";
+            echo "    --engine=google   Google search (may be blocked by anti-bot)\n";
             echo "  click <sel>         follow link / submit button\n";
             echo "  hover <sel>         show element attributes\n";
             echo "  fill <sel> <text>   set form field\n";
@@ -746,9 +1112,13 @@ try {
             echo "    --max-e=N         max elements (default 500)\n";
             echo "    --max-d=N         max depth (default 10)\n";
             echo "    --ref=eN          drill into subtree of element eN\n";
+            echo "    --output=FILE     save snapshot to file\n";
             echo "  screenshot [flags]  YAML snapshot (pixel screenshots = --pw)\n";
             echo "  smoke <url>         HTTP + links + images + title test\n";
             echo "  count [tag]         count all elements or specific tag\n";
+            echo "  links               extract all links (internal/external) from current page\n";
+            echo "  forms               list all forms with fields, types, required status\n";
+            echo "  captcha             detect captcha (reCAPTCHA, hCaptcha, Turnstile, text)\n";
             echo "  config [set k v]    show or set config (request_delay_ms, timeout, etc.)\n";
             echo "  log [N]             show last N audit log entries (default 20)\n";
             echo "  cookies             show cookie jar contents\n";
@@ -757,6 +1127,7 @@ try {
             echo "  close               reset session (cookies + log)\n\n";
             echo "Snapshots include: id, class, role, href, src, alt, name, type, value,\n";
             echo "  method, action, data-testid, aria-label, placeholder, checked, selected\n\n";
+            echo "Captcha detection: reCAPTCHA, hCaptcha, Cloudflare Turnstile, text captchas\n";
             echo "Config: request_delay_ms, timeout, connect_timeout, tracing\n";
             echo "UA pool: Chrome/Mac, Chrome/Win, Chrome/Linux, Safari, Firefox (rotated per request)\n";
             echo "Session persists across calls in .agents/temp/browser-session.json\n\n";
