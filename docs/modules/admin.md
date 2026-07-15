@@ -1,9 +1,9 @@
 ---
+type: doc
 title: Admin Module
 description: Owns owner-only pages under /admin.
 category: module
 ---
-
 # Admin Module
 
 Owns owner-only pages under `/admin`.

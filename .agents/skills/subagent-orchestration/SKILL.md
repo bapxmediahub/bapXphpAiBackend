@@ -1,8 +1,8 @@
 ---
+type: skill
 name: subagent-orchestration
 description: Use when designing, implementing, or debugging sub-agent handoff workflows, model routing, telemetry, or admin-panel agent wiring.
 ---
-
 # Sub-Agent Orchestration Patterns
 
 ## Sources Researched

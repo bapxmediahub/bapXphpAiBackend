@@ -53,7 +53,7 @@ final class KnowledgeGraphService {
 
         $this->writeIndexFile($okfDir, "Knowledge Bundle — bapXphp", "okf_version: \"0.1\"\n", [
             "Systematic map: [docs/systematic-map.mmd](../docs/systematic-map.mmd)",
-            "Knowledge graph: [docs/knowledge-graph.mmd](../docs/knowledge-graph.mmd)",
+            "Knowledge map: [docs/map.mmd](../docs/map.mmd)",
             "Concepts: " . count($this->concepts) . ", Edges: " . count($this->edges),
         ]);
 
@@ -117,17 +117,21 @@ final class KnowledgeGraphService {
         return implode("\n", $lines) . "\n";
     }
 
-    private function indexMarkdownFiles(string $dir, string $type): void {
+    private function indexMarkdownFiles(string $dir, string $defaultType): void {
         if (!is_dir($dir)) return;
-        foreach (glob($dir . '/*.md') ?: [] as $file) {
-            $content = file_get_contents($file);
+        $files = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)
+        );
+        foreach ($files as $file) {
+            if ($file->getExtension() !== 'md') continue;
+            $content = file_get_contents($file->getPathname());
             $frontmatter = $this->parseFrontmatter($content);
             $body = $this->stripFrontmatter($content);
-            $name = basename($file, '.md');
-            $relativePath = str_replace($this->root . '/', '', $file);
+            $name = $file->getBasename('.md');
+            $relativePath = str_replace($this->root . '/', '', $file->getPathname());
 
             $this->addConcept($name, [
-                'type' => $type,
+                'type' => $frontmatter['type'] ?? $defaultType,
                 'title' => $frontmatter['title'] ?? $frontmatter['name'] ?? $name,
                 'description' => $frontmatter['description'] ?? $frontmatter['excerpt'] ?? '',
                 'filePath' => $relativePath,
@@ -150,11 +154,31 @@ final class KnowledgeGraphService {
             $relativePath = str_replace($this->root . '/', '', $file);
 
             $this->addConcept($name, [
-                'type' => 'skill',
+                'type' => $frontmatter['type'] ?? 'skill',
                 'title' => $name,
                 'description' => $frontmatter['description'] ?? '',
                 'filePath' => $relativePath,
                 'tags' => ['skill'],
+                'body' => $body,
+            ]);
+
+            $this->extractLinks($body, $name);
+        }
+
+        // Index reference files nested under skills
+        foreach (glob($skillsDir . '/*/references/*.md') ?: [] as $file) {
+            $content = file_get_contents($file);
+            $frontmatter = $this->parseFrontmatter($content);
+            $body = $this->stripFrontmatter($content);
+            $name = basename($file, '.md');
+            $relativePath = str_replace($this->root . '/', '', $file);
+
+            $this->addConcept($name, [
+                'type' => $frontmatter['type'] ?? 'doc',
+                'title' => $frontmatter['title'] ?? $name,
+                'description' => $frontmatter['description'] ?? '',
+                'filePath' => $relativePath,
+                'tags' => ['reference'],
                 'body' => $body,
             ]);
 
@@ -175,7 +199,7 @@ final class KnowledgeGraphService {
             $name = str_replace(['/', '.md'], ['_', ''], $relativePath);
 
             $this->addConcept($name, [
-                'type' => 'agentfile',
+                'type' => $frontmatter['type'] ?? 'agentfile',
                 'title' => $relativePath,
                 'description' => $frontmatter['description'] ?? 'Agent contract',
                 'filePath' => $relativePath,

@@ -1025,9 +1025,10 @@ $tests['local smoke tool source covers key routes and CSRF protection'] = functi
     assertTrue(str_contains($source, 'PASS local smoke'), 'Local smoke should provide an authoritative success signal');
 };
 
-$tests['systematic project map and KnowledgeMap are the only generated map artifacts'] = function (): void {
+$tests['systematic project map, docs/map.mmd, and root map.mmd are the generated map artifacts'] = function (): void {
     assertTrue(is_file(app_path('docs/systematic-map.mmd')), 'Systematic Mermaid map should exist');
-    assertTrue(is_file(app_path('docs/KnowledgeMap.mmd')), 'KnowledgeMap.mmd should exist');
+    assertTrue(is_file(app_path('docs/map.mmd')), 'docs/map.mmd should exist');
+    assertTrue(is_file(app_path('map.mmd')), 'root map.mmd should exist');
     foreach (['docs/PROJECT_MAP.md', 'docs/project-map.json', 'docs/project-map.mmd'] as $path) {
         assertTrue(!is_file(app_path($path)), "Old project-map artifact should not exist: {$path}");
     }
@@ -1035,9 +1036,13 @@ $tests['systematic project map and KnowledgeMap are the only generated map artif
     foreach (['PUBLIC Routes', 'AUTH Routes', 'PAYMENT Routes', 'SUPPORT Routes', 'ADMIN Routes', 'Controllers', 'Services', 'Views', 'Integrations', 'Schema Collections', 'Tools', 'Gaps & Missing Links'] as $needle) {
         assertTrue(str_contains($map, $needle), "Systematic map should include {$needle}");
     }
-    $kmap = file_get_contents(app_path('docs/KnowledgeMap.mmd'));
+    $dmap = file_get_contents(app_path('docs/map.mmd'));
     foreach (['CLI (bapXphp)', 'Agent Skills', 'Blog & Content', 'Application Architecture', 'Data Layer'] as $needle) {
-        assertTrue(str_contains($kmap, $needle), "KnowledgeMap should include {$needle}");
+        assertTrue(str_contains($dmap, $needle), "docs/map.mmd should include {$needle}");
+    }
+    $cmap = file_get_contents(app_path('map.mmd'));
+    foreach (['PUBLIC Routes', 'AUTH Routes', 'PAYMENT Routes', 'ADMIN Routes', 'Controllers', 'Services', 'Schema Collections'] as $needle) {
+        assertTrue(str_contains($cmap, $needle), "root map.mmd should include {$needle}");
     }
 };
 

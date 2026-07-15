@@ -12,6 +12,6 @@ tags: [code, service]
 - [stores → settings](/storage/schema/collections.php)
 - [stores → products](/storage/schema/collections.php)
 - [stores → users](/storage/schema/collections.php)
-- [stores → orders](/storage/schema/collections.php)
+- [stores → Orders Module](/docs/modules/orders.md)
 - [stores → appointments](/storage/schema/collections.php)
 - [stores → support_tickets](/storage/schema/collections.php)

@@ -1,8 +1,8 @@
 ---
+type: skill
 name: schema
 description: Use when changing MySQL database collections, fields, admin forms, media fields, or agent context payloads.
 ---
-
 # Schema
 
 - Follow the root `AGENTS.md` repository contract and its storage area rules.

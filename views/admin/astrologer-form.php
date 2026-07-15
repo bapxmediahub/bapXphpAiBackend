@@ -92,9 +92,9 @@
                     <div class="admin-media-grid">
                         <?php foreach($mediaFiles as $media): ?>
                             <div class="admin-media-tile">
-                                <img src="<?= e($media['path']) ?>" alt="<?= e($media['original_name'] ?? $media['filename'] ?? 'Media') ?>">
+                                <img src="<?= e($media['url'] ?? $media['path']) ?>" alt="<?= e($media['original_name'] ?? $media['filename'] ?? 'Media') ?>">
                                 <small><?= e(substr((string)($media['created_at'] ?? ''), 0, 10)) ?></small>
-                                <button type="button" class="btn btn-sm btn-ghost use-media" data-path="<?= e($media['path']) ?>">Add</button>
+                                <button type="button" class="btn btn-sm btn-ghost use-media" data-path="<?= e($media['url'] ?? $media['path']) ?>">Add</button>
                             </div>
                         <?php endforeach; ?>
                     </div>

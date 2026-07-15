@@ -1,9 +1,9 @@
 ---
+type: doc
 title: Remote Database Operations
 description: The application connects directly to hosted MySQL with the BAPX_MYSQL_* values in .env.
 category: module
 ---
-
 # Remote Database Operations
 
 The application connects directly to hosted MySQL with the `BAPX_MYSQL_*` values in `.env`. If direct MySQL is unavailable from a developer machine, `DatabaseService` and `bapXphp db` use `APP_URL/remotedb`; production currently resolves that fallback to `https://sripanchamispiritual.com/remotedb`.

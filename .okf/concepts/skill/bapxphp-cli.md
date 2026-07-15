@@ -54,7 +54,8 @@ bapXphp ci                            # non-mutating full PR/CI validation
 bapXphp check                         # alias for bapXphp ci
 bapXphp serve                         # start dev server
 bapXphp map:gen                       # regenerate project map
-bapXphp docsmap                       # regenerate KnowledgeMap
+bapXphp docsmap                       # regenerate docs/map.mmd (content)
+bapXphp codemap                        # regenerate map.mmd (code graph)
 bapXphp schema list                   # list all collections
 bapXphp issue                         # create GitHub issue
 bapXphp pr                            # create PR

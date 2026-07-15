@@ -1,8 +1,8 @@
 ---
+type: skill
 name: deployment
 description: Use when editing Hostinger deployment, Git auto-deploy, environment, permissions, cron, or production setup documentation.
 ---
-
 # Deployment
 
 - Follow the root `AGENTS.md` repository contract for deployment documentation edits.

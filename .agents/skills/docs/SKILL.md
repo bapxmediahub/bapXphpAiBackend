@@ -1,12 +1,12 @@
 ---
+type: skill
 name: docs
 description: Use when editing README, docs, project-map docs, or agent-facing instructions.
 ---
-
 # Docs
 
 - Follow the root `AGENTS.md` repository contract.
-- `docs/systematic-map.mmd` is the single project wiring map artifact. `docs/KnowledgeMap.mmd` is a separate documentation mindmap.
+- `docs/systematic-map.mmd` is the single project wiring map artifact. `docs/map.mmd` is the content/documentation mindmap. `map.mmd` (root) is the code dependency graph with edges + gaps.
 - Do not recreate `docs/PROJECT_MAP.md`, `docs/project-map.json`, or `docs/project-map.mmd`.
 - Regenerate the systematic map with `php tools/generate-project-map.php` after route, service, view, schema, storage, tool, or integration changes.
 - Regenerate both maps with `bapXphp update` after root `AGENTS.md`, skill, or documentation changes.

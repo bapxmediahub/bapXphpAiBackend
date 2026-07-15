@@ -1,4 +1,5 @@
 ---
+type: blog
 title: How to Prepare for an Online Astrology Consultation — A Complete Guide
 slug: online-astrology-consultation-guide
 category: news
@@ -7,7 +8,6 @@ published: true
 published_at: 2026-02-20
 excerpt: New to online astrology consultations? Learn how to prepare and request a scheduled appointment with a Vedic astrology consultant.
 ---
-
 Online astrology consultations make Vedic guidance accessible wherever you live. Preparing your details and questions before the appointment helps you use the scheduled time well.
 
 ## Before Your Consultation

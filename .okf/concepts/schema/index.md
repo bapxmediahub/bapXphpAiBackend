@@ -9,8 +9,6 @@ type: index
 - [addresses](addresses.md)
 - [products](products.md)
 - [astrologers](astrologers.md)
-- [temples](temples.md)
-- [orders](orders.md)
 - [appointments](appointments.md)
 - [consultation_messages](consultation_messages.md)
 - [consultation_signals](consultation_signals.md)

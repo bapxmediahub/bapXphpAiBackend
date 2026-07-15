@@ -12,7 +12,7 @@ tags: [code, service]
 - [stores → users](/storage/schema/collections.php)
 - [stores → addresses](/storage/schema/collections.php)
 - [stores → products](/storage/schema/collections.php)
-- [stores → orders](/storage/schema/collections.php)
+- [stores → Orders Module](/docs/modules/orders.md)
 - [stores → appointments](/storage/schema/collections.php)
 - [stores → consultation_messages](/storage/schema/collections.php)
 - [stores → consultation_signals](/storage/schema/collections.php)

@@ -9,4 +9,4 @@ tags: [code, service]
 
 
 ## Connections
-- [stores → temples](/storage/schema/collections.php)
+- [stores → Temples Module](/docs/modules/temples.md)

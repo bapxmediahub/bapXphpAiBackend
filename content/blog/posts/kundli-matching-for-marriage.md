@@ -1,4 +1,5 @@
 ---
+type: blog
 title: Kundli Matching for Marriage — 36 Guna Milan Explained
 slug: kundli-matching-for-marriage
 category: astrology
@@ -10,7 +11,6 @@ seo_title: Kundli Matching for Marriage — 36 Guna Milan Complete Guide | Sri P
 seo_description: Complete guide to Kundli matching (Guna Milan) for marriage compatibility. Learn the 8 categories, 36 gunas, matching score, and why Vedic horoscope compatibility matters for a successful marriage.
 og_image: https://sripanchamispiritual.com/assets/images/blog/kundli-matching.jpg
 ---
-
 **Kundli matching** (also known as Guna Milan or Ashtakoota matching) is the traditional Vedic system of assessing marriage compatibility. Rooted in ancient wisdom, this system evaluates 36 points (gunas) across eight categories to determine the harmony between prospective partners.
 
 ## Why Kundli Matching Matters

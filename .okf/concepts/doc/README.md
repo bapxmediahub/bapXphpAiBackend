@@ -58,3 +58,11 @@ This folder contains connected documentation for developers, maintainers, and co
 bapXphp update
 bapXphp ci
 ```
+
+## Connections
+- [references → Architecture](/docs/architecture.md)
+- [references → Deployment Hostinger](/docs/deployment-hostinger.md)
+- [references → Agentic Monorepo](/docs/agentic-monorepo.md)
+- [references → Schema Registry](/docs/schema.md)
+- [references → Competitor Review](/docs/competitor-review.md)
+- [references → Admin Guide](/docs/roles/admin.md)

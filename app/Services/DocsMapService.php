@@ -33,6 +33,10 @@ final class DocsMapService
         $lines = array_merge($lines, $this->adminSection());
         $lines = array_merge($lines, $this->integrationsSection());
 
+        $lines = array_merge($lines, $this->controllersSection());
+        $lines = array_merge($lines, $this->servicesSection());
+        $lines = array_merge($lines, $this->collectionsSection());
+
         $docFiles = $this->findDocFiles();
         if ($docFiles) {
             $lines[] = '';
@@ -163,6 +167,39 @@ final class DocsMapService
         $integrations = \App\Services\ProjectMapService::phpBasenames($this->root . '/integrations');
         foreach ($integrations as $name) {
             $lines[] = '    INTEG_' . $this->stableId($name) . '["' . $this->label($name) . '"]';
+        }
+        $lines[] = '';
+        return $lines;
+    }
+
+    private function controllersSection(): array
+    {
+        $lines = ["    ### Controllers"];
+        $scan = ProjectMapService::scan();
+        foreach ($scan['controllers'] ?? [] as $name) {
+            $lines[] = '    CTRL_' . $this->stableId($name) . '["' . $this->label($name) . '"]';
+        }
+        $lines[] = '';
+        return $lines;
+    }
+
+    private function servicesSection(): array
+    {
+        $lines = ["    ### Services"];
+        $scan = ProjectMapService::scan();
+        foreach ($scan['services'] ?? [] as $name) {
+            $lines[] = '    SVC_' . $this->stableId($name) . '["' . $this->label($name) . '"]';
+        }
+        $lines[] = '';
+        return $lines;
+    }
+
+    private function collectionsSection(): array
+    {
+        $lines = ["    ### Schema Collections"];
+        $scan = ProjectMapService::scan();
+        foreach ($scan['schema_collections'] ?? [] as $name) {
+            $lines[] = '    COL_' . $this->stableId($name) . '["' . $this->label($name) . '"]';
         }
         $lines[] = '';
         return $lines;

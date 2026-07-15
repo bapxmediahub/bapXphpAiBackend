@@ -1,3 +1,8 @@
+---
+type: doc
+title: Storage State
+---
+
 # Storage Management
 
 Manage cookies, localStorage, sessionStorage, and browser storage state.

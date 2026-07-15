@@ -1,9 +1,9 @@
 ---
+type: doc
 title: PWA Support
 description: The public customer app and admin dashboard expose PWA metadata.
 category: module
 ---
-
 # PWA Support
 
 The public customer app and admin dashboard expose PWA metadata. Customer installation is an authenticated account workflow; it is not a floating site control.

@@ -1,4 +1,5 @@
 ---
+type: blog
 title: New Features at Sri Panchami Spiritual — July 2026 Update
 slug: new-features-july-2026
 category: news
@@ -7,7 +8,6 @@ published: true
 published_at: 2026-07-05
 excerpt: We have simplified consultations to scheduled bookings, improved saved delivery addresses, and expanded customer Help inside the blog.
 ---
-
 ## Scheduled Consultation Bookings
 
 Choose a consultant and request an appointment with your preferred date, time, phone number, and notes. The consultant can review and manage the request from their panel.

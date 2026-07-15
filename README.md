@@ -92,7 +92,8 @@ Use **Admin → Settings** for store and site behavior. Use **Admin → Integrat
 | `bapXphp map` | View the generated project map |
 | `bapXphp map:gen` | Regenerate `docs/systematic-map.mmd` from source |
 | `bapXphp map:val` | Validate the project map is up to date |
-| `bapXphp docsmap` | Regenerate the documentation KnowledgeMap |
+| `bapXphp docsmap` | Regenerate `docs/map.mmd` (content mindmap: skills, docs, blog, agents) |
+| `bapXphp codemap` | Regenerate `map.mmd` (root, code dependency graph with edges + gaps) |
 
 ### Skills & Routes
 | Command | Description |
@@ -161,7 +162,9 @@ Use **Admin → Settings** for store and site behavior. Use **Admin → Integrat
 ### Blog & Docs
 | Command | Description |
 |---------|-------------|
-| `bapXphp docsmap` | Regenerate `docs/KnowledgeMap.mmd` from docs, the root AGENTS.md, and skills |
+| `bapXphp docsmap` | Regenerate `docs/map.mmd` from docs, skills, and agent files |
+| `bapXphp codemap` | Regenerate `map.mmd` code dependency graph from source |
+| `bapXphp update`  | Regenerate all maps + OKF bundle |
 | `bapXphp bloggen` | Regenerate blog cache from GitHub markdown sources |
 
 ---
@@ -224,6 +227,8 @@ Never hardcode model names or API keys. Read from `SecretService` at runtime.
 - [docs/README.md](docs/README.md) — full documentation index
 - [docs/deployment-hostinger.md](docs/deployment-hostinger.md) — Hostinger Git auto-deploy
 - [docs/systematic-map.mmd](docs/systematic-map.mmd) — generated route/controller/service map
+- [docs/map.mmd](docs/map.mmd) — content/documentation mindmap
+- [map.mmd](map.mmd) — code dependency graph with all edges + gaps
 
 ## Stack
 

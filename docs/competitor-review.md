@@ -1,9 +1,9 @@
 ---
+type: doc
 title: Competitor Review
 description: Reference review of Deiveegaa Enterprises storefront design and product presentation.
 category: docs
 ---
-
 # Storefront Reference Review
 
 Reference reviewed: [Deiveegaa Enterprises](https://deiveegaa.com/).

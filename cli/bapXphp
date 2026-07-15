@@ -22,9 +22,9 @@ set -euo pipefail
 #   bapXphp dev:user [--dry-run]   — create/update the fixed remote-DB customer used for browser testing
 #
 # ── Project Map ─────────────────────────────────────────────────
-#   bapXphp map                     — view generated project map
-#   bapXphp map:gen                 — regenerate project map from source
-#   bapXphp map:val                 — validate map is up-to-date
+#   bapXphp map                     — regenerate + view map.mmd (deterministic code graph with edges + gaps)
+#   bapXphp map:gen                 — regenerate systematic-map.mmd + map.mmd from source (AST/regex parsed)
+#   bapXphp map:val                 — validate both maps are up-to-date
 #
 # ── Schema (collections.php) ───────────────────────────────────
 #   bapXphp schema list             — list all collections with field counts
@@ -103,9 +103,10 @@ set -euo pipefail
 #   .agents/ops/telemetry.json      — cycle tracking + scoring
 #
 # ── Blog & Docs ──────────────────────────────────────────────────
-#   bapXphp docsmap                 — regenerate KnowledgeMap.mmd from docs/ + AGENTS.md + skills
+#       bapXphp docsmap                 — regenerate docs/map.mmd (content: skills, docs, blog, admin, agents)
+#       bapXphp codemap                 — regenerate map.mmd (root, code dependency graph with edges + gaps)
 #   bapXphp bloggen                 — regenerate blog cache from GitHub markdown sources
-#   bapXphp okfgen                  — generate .okf/ knowledge bundle from all concept files
+#       bapXphp okfgen                  — generate .okf/ knowledge bundle (OKF v0.1, concept nodes + edges)
 #
 # ── Browser Agent (PHP-native, no Node.js needed) ──────────────
 #   bapXphp browser-agent open <url>     — fetch page, return YAML snapshot
@@ -622,7 +623,22 @@ cmd_ci() {
   php "$ROOT/cli/validate-project-map.php" 2>&1 || { failed=1; warn "MAP VALIDATION FAILED"; }
 
   echo "── docsmap:val ──"
-  php "$ROOT/cli/validate-docs-map.php" "$ROOT" 2>&1 || { failed=1; warn "DOCUMENTATION MAP VALIDATION FAILED"; }
+  php "$ROOT/cli/validate-docs-map.php" "$ROOT" 2>&1 || { failed=1; warn "DOCS MAP VALIDATION FAILED"; }
+
+  echo "── codemap:val (root map.mmd) ──"
+  php "$ROOT/cli/generate-code-map.php" "$ROOT" "$ROOT/.map.mmd.tmp"
+  if [ -f "$ROOT/map.mmd" ]; then
+    if ! diff -q "$ROOT/map.mmd" "$ROOT/.map.mmd.tmp" >/dev/null 2>&1; then
+      warn "CODE MAP STALE. Run bapXphp codemap and commit map.mmd."
+      failed=1
+    else
+      ok "Code map is current"
+    fi
+  else
+    warn "map.mmd missing. Run bapXphp codemap."
+    failed=1
+  fi
+  rm -f "$ROOT/.map.mmd.tmp"
 
   echo "── smoke ──"
   php "$ROOT/cli/smoke-local.php" 2>&1 || { failed=1; warn "SMOKE FAILED"; }
@@ -640,7 +656,8 @@ cmd_check() { cmd_ci; }
 cmd_update() {
   require_php
   php "$ROOT/cli/generate-project-map.php"
-  php "$ROOT/cli/generate-docs-map.php" "$ROOT" "$ROOT/docs/KnowledgeMap.mmd"
+  php "$ROOT/cli/generate-docs-map.php" "$ROOT" "$ROOT/docs/map.mmd"
+  php "$ROOT/cli/generate-code-map.php" "$ROOT" "$ROOT/map.mmd"
   php "$ROOT/cli/generate-okf-bundle.php" "$ROOT"
   php "$ROOT/cli/validate-project-map.php"
   php "$ROOT/cli/validate-docs-map.php" "$ROOT"
@@ -660,21 +677,37 @@ cmd_smoke() {
 
 # ── Map Commands ───────────────────────────────────────────────
 cmd_map() {
-  if [ -f "$ROOT/docs/systematic-map.mmd" ]; then
-    cat "$ROOT/docs/systematic-map.mmd"
-  else
-    warn "Project map not found. Run: bapXphp map:gen"
-  fi
+  require_php
+  echo "── Generating map.mmd (deterministic code graph) ──" >&2
+  php "$ROOT/cli/generate-code-map.php" "$ROOT" "$ROOT/map.mmd" >&2
+  echo "── map.mmd (code: routes → controllers → services → collections, edges + gaps) ──" >&2
+  cat "$ROOT/map.mmd"
 }
 
 cmd_map_gen() {
   require_php
   php "$ROOT/cli/generate-project-map.php" 2>&1
+  php "$ROOT/cli/generate-code-map.php" "$ROOT" "$ROOT/map.mmd" 2>&1
+  echo "generated: docs/systematic-map.mmd, map.mmd"
 }
 
 cmd_map_val() {
   require_php
   php "$ROOT/cli/validate-project-map.php" 2>&1
+  php "$ROOT/cli/generate-code-map.php" "$ROOT" "$ROOT/.map.mmd.tmp" 2>&1
+  if [ -f "$ROOT/map.mmd" ]; then
+    if ! diff -q "$ROOT/map.mmd" "$ROOT/.map.mmd.tmp" >/dev/null 2>&1; then
+      warn "map.mmd STALE. Run bapXphp map:gen / codemap."
+      rm -f "$ROOT/.map.mmd.tmp"
+      return 1
+    fi
+    ok "map.mmd is current"
+  else
+    warn "map.mmd MISSING. Run bapXphp codemap."
+    rm -f "$ROOT/.map.mmd.tmp"
+    return 1
+  fi
+  rm -f "$ROOT/.map.mmd.tmp"
 }
 
 # ── Skills ──────────────────────────────────────────────────────
@@ -1422,20 +1455,28 @@ cmd_db_sync() {
 # Blog & Docs Commands
 # ═══════════════════════════════════════════════════════════════
 
-# ── docsmap — Regenerate KnowledgeMap.mmd ─────────────────────
+# ── docsmap — Regenerate docs/map.mmd ─────────────────────────
 cmd_docsmap() {
   require_php
-  echo "Generating KnowledgeMap.mmd from docs/ + AGENTS.md + skills..."
-  php "$ROOT/cli/generate-docs-map.php" "$ROOT" "$ROOT/docs/KnowledgeMap.mmd"
-  echo "Done. → docs/KnowledgeMap.mmd"
+  echo "Generating docs/map.mmd (content map)..."
+  php "$ROOT/cli/generate-docs-map.php" "$ROOT" "$ROOT/docs/map.mmd"
+  echo "Done. → docs/map.mmd"
+}
+
+# ── codemap — Regenerate root map.mmd ─────────────────────────
+cmd_codemap() {
+  require_php
+  echo "Generating map.mmd (code dependency graph)..."
+  php "$ROOT/cli/generate-code-map.php" "$ROOT" "$ROOT/map.mmd"
+  echo "Done. → map.mmd"
 }
 
 # ── okfgen — Generate OKF knowledge bundle + knowledge graph ──
 cmd_okfgen() {
   require_php
-  echo "Generating OKF knowledge bundle and knowledge graph..."
+  echo "Generating OKF knowledge bundle..."
   php "$ROOT/cli/generate-okf-bundle.php" "$ROOT"
-  echo "Done. → .okf/ (bundle), docs/knowledge-graph.mmd"
+  echo "Done. → .okf/"
 }
 
 # ── bloggen — Regenerate blog cache from GitHub ──────────────
@@ -1701,6 +1742,8 @@ main() {
       cmd_db_sync ;;
     docsmap)
       cmd_docsmap ;;
+    codemap)
+      cmd_codemap ;;
     okfgen|knowledge-graph|kg)
       cmd_okfgen ;;
     bloggen)

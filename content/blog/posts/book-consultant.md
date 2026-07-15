@@ -1,4 +1,5 @@
 ---
+type: blog
 title: Book a consultant appointment
 slug: book-consultant
 category: help
@@ -12,7 +13,6 @@ og_image: /assets/images/blog/book-consultant.webp
 image_alt: Sri Panchami Spiritual consultant booking page
 source_url: /consult
 ---
-
 ## Request an appointment
 
 Open **Consult**, choose a consultant, and review the profile. Enter your preferred date, time, phone number, and a short note about the guidance you need.

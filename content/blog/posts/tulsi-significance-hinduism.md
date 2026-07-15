@@ -1,4 +1,5 @@
 ---
+type: blog
 title: The Sacred Tulsi — Spiritual Significance and Health Benefits of Holy Basil
 slug: tulsi-significance-hinduism
 category: spirituality
@@ -10,7 +11,6 @@ seo_title: Tulsi Significance in Hinduism — Holy Basil Benefits & Worship | Sr
 seo_description: Complete guide to Tulsi (Holy Basil) — its spiritual significance in Hinduism, health benefits, worship practices, and why it is considered the queen of herbs. Learn how to care for Tulsi at home.
 og_image: https://sripanchamispiritual.com/assets/images/blog/tulsi-significance.jpg
 ---
-
 **Tulsi** (Holy Basil or *Ocimum tenuiflorum*) is the most sacred plant in Hindu tradition. Known as "The Queen of Herbs" or "The Incomparable One," Tulsi is considered an earthly manifestation of the goddess Lakshmi and a beloved devotee of Lord Vishnu. Every Hindu home traditionally maintains a Tulsi plant in the courtyard or balcony.
 
 ## Spiritual Significance

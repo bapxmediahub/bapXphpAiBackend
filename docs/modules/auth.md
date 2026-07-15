@@ -1,9 +1,9 @@
 ---
+type: doc
 title: Auth Module
 description: Owns login, registration, logout, Google OAuth, password reset, and admin session handling.
 category: module
 ---
-
 # Auth Module
 
 Owns login, registration, logout, Google OAuth, password reset, and admin session handling.

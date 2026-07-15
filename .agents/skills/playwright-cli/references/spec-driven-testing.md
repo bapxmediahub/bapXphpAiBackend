@@ -1,3 +1,8 @@
+---
+type: doc
+title: Spec Driven Testing
+---
+
 # Spec-driven testing (plan → generate → heal)
 
 End-to-end workflow for authoring and maintaining Playwright tests using `playwright-cli`. The three sections below can be used independently:

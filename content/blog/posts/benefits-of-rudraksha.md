@@ -1,4 +1,5 @@
 ---
+type: blog
 title: Benefits of Rudraksha — Types, Uses, and Spiritual Significance
 slug: benefits-of-rudraksha
 category: spirituality
@@ -10,7 +11,6 @@ seo_title: Benefits of Rudraksha — Types, Mukhis, and Spiritual Powers | Sri P
 seo_description: Complete guide to Rudraksha beads — their spiritual significance, health benefits, different Mukhi types, how to choose and wear them, and where to buy authentic Rudraksha online.
 og_image: https://sripanchamispiritual.com/assets/images/blog/rudraksha-benefits.jpg
 ---
-
 **Rudraksha** beads have been revered in Hindu spirituality for thousands of years. Derived from the seeds of the *Elaeocarpus ganitrus* tree, these sacred beads are believed to be the tears of Lord Shiva, carrying immense spiritual and healing properties.
 
 ## Spiritual Benefits of Rudraksha

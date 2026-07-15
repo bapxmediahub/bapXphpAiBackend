@@ -51,13 +51,13 @@
                     <div class="admin-media-grid">
                         <?php foreach($mediaFiles as $media): ?>
                             <div class="admin-media-tile">
-                                <img src="<?= e($media['path']) ?>" alt="<?= e($media['original_name'] ?? $media['filename'] ?? 'Media') ?>">
+                                <img src="<?= e($media['url'] ?? $media['path']) ?>" alt="<?= e($media['original_name'] ?? $media['filename'] ?? 'Media') ?>">
                                 <small><?= e(substr((string)($media['created_at'] ?? ''), 0, 10)) ?></small>
                                 <?php if($collection === 'products'): ?>
-                                    <button type="button" class="btn btn-sm btn-ghost use-media" data-field="image_url" data-path="<?= e($media['path']) ?>">Primary</button>
-                                    <button type="button" class="btn btn-sm btn-ghost use-media" data-field="image_urls" data-append="1" data-path="<?= e($media['path']) ?>">Gallery</button>
+                                    <button type="button" class="btn btn-sm btn-ghost use-media" data-field="image_url" data-path="<?= e($media['url'] ?? $media['path']) ?>">Primary</button>
+                                    <button type="button" class="btn btn-sm btn-ghost use-media" data-field="image_urls" data-append="1" data-path="<?= e($media['url'] ?? $media['path']) ?>">Gallery</button>
                                 <?php else: ?>
-                                    <button type="button" class="btn btn-sm btn-ghost use-media" data-field="<?= $collection === 'astrologers' ? 'photo_url' : 'image_url' ?>" data-path="<?= e($media['path']) ?>">Use</button>
+                                    <button type="button" class="btn btn-sm btn-ghost use-media" data-field="<?= $collection === 'astrologers' ? 'photo_url' : 'image_url' ?>" data-path="<?= e($media['url'] ?? $media['path']) ?>">Use</button>
                                 <?php endif; ?>
                             </div>
                         <?php endforeach; ?>

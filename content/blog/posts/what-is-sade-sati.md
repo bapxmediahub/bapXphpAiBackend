@@ -1,4 +1,5 @@
 ---
+type: blog
 title: What Is Sade Sati? Understanding Saturn's 7.5-Year Transit and Its Effects
 slug: what-is-sade-sati
 category: astrology
@@ -10,7 +11,6 @@ seo_title: What Is Sade Sati? Saturn's 7.5-Year Transit — Effects & Remedies |
 seo_description: Complete guide to Sade Sati — Saturn's 7.5-year transit through the 12th, 1st, and 2nd houses from your Moon sign. Learn about its effects on career, relationships, health, and powerful remedies.
 og_image: https://sripanchamispiritual.com/assets/images/blog/sade-sati.jpg
 ---
-
 **Sade Sati** is one of the most discussed concepts in Vedic astrology. The term literally means "seven and a half" — referring to the approximately 7.5-year period when Saturn (Shani) transits through the 12th, 1st, and 2nd houses from your Moon sign.
 
 ## The Three Phases of Sade Sati

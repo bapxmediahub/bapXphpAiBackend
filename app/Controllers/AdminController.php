@@ -204,7 +204,7 @@ final class AdminController extends BaseController {
     public function emailInbox(): void{$this->render('admin/mailbox',['pageTitle'=>'Email Inbox','title'=>'Email Inbox','box'=>'inbox','items'=>(new MailStorageService())->inbox()]);}
     public function emailOutbox(): void{$this->render('admin/mailbox',['pageTitle'=>'Email Outbox','title'=>'Email Outbox','box'=>'outbox','items'=>(new MailStorageService())->outbox()]);}
     public function media(): void{$this->render('admin/media',['pageTitle'=>'Media Library','items'=>(new MediaService())->all()]);}
-    public function uploadMedia(): void{$uploaded=(new MediaService())->upload($_FILES['media_files'] ?? [], $_POST['context'] ?? 'shared'); (new AuditLogService())->record('upload','media','',['count'=>count($uploaded),'context'=>$_POST['context'] ?? 'shared']); $this->flash(count($uploaded).' media file'.(count($uploaded) === 1 ? '' : 's').' uploaded.','success'); $this->redirect('/admin/media');}
+    public function uploadMedia(): void{$uploaded=(new MediaService())->upload($_FILES['media_files'] ?? [], $_POST['context'] ?? 'shared', $_POST['description'] ?? null); (new AuditLogService())->record('upload','media','',['count'=>count($uploaded),'context'=>$_POST['context'] ?? 'shared']); $this->flash(count($uploaded).' media file'.(count($uploaded) === 1 ? '' : 's').' uploaded.','success'); $this->redirect('/admin/media');}
     // public function environment(): void{$this->render('admin/environment',['pageTitle'=>'Environment','envRaw'=>(new EnvService())->raw(),'permissions'=>(new StoragePermissionService())->status()]);}
     // public function saveEnvironment(): void{(new EnvService())->saveRaw((string)($_POST['env_raw'] ?? '')); (new AuditLogService())->record('save','environment','.env',['keys'=>array_keys(EnvService::readFile(app_path('.env')))]); $this->flash('Environment saved.','success'); $this->redirect('/admin/environment');}
     public function fixPermissions(): void{(new StoragePermissionService())->fix(); (new AuditLogService())->record('fix','permissions','storage'); $this->flash('Storage permissions checked and updated where PHP is allowed.','success'); $this->redirect('/admin/environment');}
@@ -317,15 +317,17 @@ final class AdminController extends BaseController {
         if ($collection === 'astrologers') {
             $photos=$this->splitList((string)($data['photo_urls'] ?? ''));
             if (!empty($data['photo_url'])) array_unshift($photos, (string)$data['photo_url']);
-            $uploadedPaths=array_column($uploaded, 'path');
+            $uploadedPaths=array_column($uploaded, 'url');
             $photos=array_values(array_unique(array_filter(array_merge($photos, $uploadedPaths))));
             if (!empty($photos)) {
                 $data['photo_url']=$photos[0];
                 $data['photo_urls']=$photos;
             }
         }
-        if ($collection === 'temples' && $uploaded && empty($data['image_url'])) $data['image_url']=$uploaded[0]['path'];
+        if ($collection === 'temples' && $uploaded && empty($data['image_url'])) $data['image_url']=$uploaded[0]['url'];
         $record=(new ResourceService($collection))->save($data);
+        $entityName = (string)($record['name'] ?? $record['slug'] ?? '');
+        if ($uploaded) (new MediaService())->recordUsage($uploaded, $collection, (string)($record['id'] ?? ''), $entityName);
         (new AuditLogService())->record('save',$collection,(string)($record['id'] ?? ''),['fields'=>array_keys($data),'uploaded_media'=>count($uploaded)]);
         $this->flash($collection==='astrologers'?'Consultant profile saved.':'Saved.','success');
         $this->redirect('/admin/'.$collection);
@@ -336,13 +338,15 @@ final class AdminController extends BaseController {
         $images=$this->splitList((string)($data['image_urls'] ?? ''));
         if (!empty($data['image_url'])) array_unshift($images, (string)$data['image_url']);
         $uploaded=$this->uploadedMedia('products');
-        $uploadedPaths=array_column($uploaded, 'path');
+        $uploadedPaths=array_column($uploaded, 'url');
         $images=array_values(array_unique(array_filter(array_merge($images, $uploadedPaths))));
         if (!empty($images)) {
             $data['image_url']=$images[0];
             $data['image_urls']=$images;
         }
         $record=(new ResourceService('products'))->save($data);
+        $entityName = (string)($record['name'] ?? $record['slug'] ?? '');
+        if ($uploaded) (new MediaService())->recordUsage($uploaded, 'products', (string)($record['id'] ?? ''), $entityName);
         (new AuditLogService())->record('save','products',(string)($record['id'] ?? ''),['fields'=>array_keys($data),'uploaded_media'=>count($uploaded)]);
         $this->flash('Product saved.','success');
         $this->redirect('/admin/products');

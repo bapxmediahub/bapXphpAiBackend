@@ -1,9 +1,9 @@
 ---
+type: doc
 title: Temples Page
 description: Route /temples - show JSON-backed temple entries with image, address, pooja details, and detail links.
 category: page
 ---
-
 # Temples Page
 
 Route: `/temples`

@@ -1,4 +1,5 @@
 ---
+type: blog
 title: Create and access your account
 slug: create-account
 category: help
@@ -12,7 +13,6 @@ og_image: /assets/images/blog/create-account.webp
 image_alt: Sri Panchami Spiritual account registration form
 source_url: /register
 ---
-
 ## Create your account
 
 Enter your name, email, phone, password, and default delivery address. Accept the Terms and Privacy Policy, then select **Create Account**.
