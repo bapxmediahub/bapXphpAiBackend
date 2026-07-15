@@ -2,7 +2,10 @@
 namespace App;
 
 final class Router {
-    public function __construct(private array $routes) {}
+    public function __construct(
+        private array $routes,
+        private ?\Closure $controllerFactory = null
+    ) {}
     public function dispatch(string $method, string $uri): void {
         $path = parse_url($uri, PHP_URL_PATH) ?: '/';
         foreach ($this->routes as $route) {
@@ -12,7 +15,9 @@ final class Router {
                 array_shift($matches);
                 [$class, $action] = explode('@', $route['controller']);
                 $fqcn = 'App\\Controllers\\' . $class;
-                (new $fqcn())->{$action}(...$matches);
+                $factory = $this->controllerFactory ?? fn(string $c) => new $c();
+                $controller = $factory($fqcn);
+                $controller->{$action}(...$matches);
                 return;
             }
         }
