@@ -95,7 +95,7 @@ final class AdminController extends BaseController {
         $model = $config['model'] ?? 'gemma-4-31b-it';
         $key = $config['apiKey'] ?? '';
         $provider = $config['provider'] ?? 'openai';
-        $prompt = "You are Maya, the AI assistant for Sri Panchami Spiritual. Answer concisely in Markdown.\n\n{$context}\n\nQuestion: {$message}";
+        $prompt = "You are the AI assistant for the site. Answer concisely in Markdown.\n\n{$context}\n\nQuestion: {$message}";
         if ($provider === 'google') {
             $url = $endpoint . '/' . rawurlencode($model) . ':generateContent';
             $payload = json_encode(['contents'=>[['parts'=>[['text'=>$prompt]]]],'generationConfig'=>['temperature'=>0.3,'maxOutputTokens'=>1024]]);
