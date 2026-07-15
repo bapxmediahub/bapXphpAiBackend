@@ -93,7 +93,7 @@ final class DocsMapService
             $lines[] = '';
             $lines[] = '    ### Discovered Documentation Files';
             foreach ($docFiles as $file) {
-                $id = 'DOCFILE_' . substr(md5($file), 0, 8);
+                $id = 'DOCFILE_' . $this->stableId($file);
                 $lines[] = "    {$id}[\"{$file}\"]";
             }
         }
@@ -103,7 +103,7 @@ final class DocsMapService
             $lines[] = '';
             $lines[] = '    ### Agent Contract';
             foreach ($agentsFiles as $file) {
-                $id = 'AGENTFILE_' . substr(md5($file), 0, 8);
+                $id = 'AGENTFILE_' . $this->stableId($file);
                 $lines[] = "    {$id}[\"{$file}\"]";
             }
         }
@@ -113,7 +113,7 @@ final class DocsMapService
             $lines[] = '';
             $lines[] = '    ### Coverage Gaps';
             foreach ($gaps as $label) {
-                $id = 'GAP_' . substr(md5($label), 0, 8);
+                $id = 'GAP_' . $this->stableId($label);
                 $lines[] = "    {$id}[\"{$label}\"]";
             }
         }
@@ -173,5 +173,12 @@ final class DocsMapService
             $gaps[] = 'Gap analysis unavailable: ' . $e->getMessage();
         }
         return $gaps;
+    }
+
+    private function stableId(string $value): string {
+        $stable = preg_replace('/[^a-zA-Z0-9]/', '_', $value);
+        $stable = preg_replace('/_+/', '_', $stable);
+        $stable = trim($stable, '_');
+        return strtolower(substr($stable, 0, 48));
     }
 }

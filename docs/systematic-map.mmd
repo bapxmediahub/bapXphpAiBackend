@@ -20,828 +20,828 @@ flowchart LR
   end
 
   subgraph ROUTES_PUBLIC["PUBLIC Routes"]
-    route_e3b717d5883a["GET / — Home page — hero, categories, featured products, astrologers"]:::route
-    route_635162d613cf["GET /about — About SPS — story, values, CTA"]:::route
-    route_ce21a56fa9a7["GET /sri-panchami-spiritual — Sri Panchami Spiritual landing page"]:::route
-    route_df221e308e08["GET /spiritual — Short spiritual landing redirect-equivalent page"]:::route
-    route_8f45fea80bea["GET /terms — Terms of Service — 15 sections, legal"]:::route
-    route_90946be13902["GET /privacy — Privacy Policy — 14 sections, data handling"]:::route
-    route_f1167ac0f350["GET /consult — Astrologer marketplace — browse and book"]:::route
-    route_c415a5030f78["GET /consult/{slug} — Consultant profile — request a scheduled appointment"]:::route
-    route_7f9505b0f987["GET /temples — Temple listing page"]:::route
-    route_14cd9d36c55d["GET /temples/{slug} — Temple detail page"]:::route
-    route_e627a983a978["GET /shop — Product shop — grid with pill actions"]:::route
-    route_3c12328d1184["GET /categories — Products filtered by category"]:::route
-    route_762fd619926d["GET /product/{slug} — Product detail — gallery, add-to-cart, buy-now"]:::route
-    route_8ed04f31abab["GET /sitemap.xml"]:::route
-    route_8c80c0301221["GET /contact — Contact form GET"]:::route
-    route_5d37c858f706["POST /contact — Contact form POST submission"]:::route
-    route_6ce84be0a21c["GET /account/dashboard — Account dashboard entry — redirects to orders"]:::route
-    route_b2c44d359fd8["GET /account/dashboard/orders — My Orders — product reviews"]:::route
-    route_53bc246f9b4e["GET /account/dashboard/sessions — My Sessions — astrologer bookings"]:::route
-    route_8136f5b45613["GET /account/dashboard/install — Install App — customer installation guidance"]:::route
-    route_6e1b2c8ad9df["GET /account/orders — Legacy account orders redirect"]:::route
-    route_2f0729dfe76a["GET /account/orders/{orderId}/invoice"]:::route
-    route_05bd7a95e13b["GET /account/bookings — Legacy account sessions redirect"]:::route
-    route_f8d4769e9808["POST /api/consultations/{id}/status — API — update appointment status"]:::route
-    route_0e14c4ef1380["POST /consultation/initiate — Request a scheduled consultant appointment"]:::route
-    route_ee5462fe50d8["POST /reviews/astrologer — Submit astrologer review"]:::route
-    route_9c8e6425cd02["POST /reviews/product — Submit product review"]:::route
-    route_93b329f29ece["GET /docs — Documentation landing — blog categories overview"]:::route
-    route_1a07134bf963["GET /help/{slug}"]:::route
-    route_0a02dcc06be5["POST /remoteDB — Remote DB query endpoint — proxies SQL to production MySQL"]:::route
-    route_6e62aa059570["GET /blog — Blog listing — all posts with category filters"]:::route
-    route_b8738856284a["GET /blog/{slug} — Blog post — rendered from GitHub-sourced markdown"]:::route
-    route_3c268a290f60["GET /blog/category/{slug} — Blog listing filtered by category"]:::route
-    route_f359476da97e["POST /api/agent"]:::route
-    route_593217ea02df["POST /api/tts/tokenize — TTS — tokenize text for KittenTTS ONNX model"]:::route
-    route_3ff483002409["GET /api/support/latest-message — Support — latest ticket message for TTS polling"]:::route
+    route_get["GET / — Home page — hero, categories, featured products, astrologers"]:::route
+    route_get_about["GET /about — About SPS — story, values, CTA"]:::route
+    route_get_sri_panchami_spiritual["GET /sri-panchami-spiritual — Sri Panchami Spiritual landing page"]:::route
+    route_get_spiritual["GET /spiritual — Short spiritual landing redirect-equivalent page"]:::route
+    route_get_terms["GET /terms — Terms of Service — 15 sections, legal"]:::route
+    route_get_privacy["GET /privacy — Privacy Policy — 14 sections, data handling"]:::route
+    route_get_consult["GET /consult — Astrologer marketplace — browse and book"]:::route
+    route_get_consult_slug["GET /consult/{slug} — Consultant profile — request a scheduled appointment"]:::route
+    route_get_temples["GET /temples — Temple listing page"]:::route
+    route_get_temples_slug["GET /temples/{slug} — Temple detail page"]:::route
+    route_get_shop["GET /shop — Product shop — grid with pill actions"]:::route
+    route_get_categories["GET /categories — Products filtered by category"]:::route
+    route_get_product_slug["GET /product/{slug} — Product detail — gallery, add-to-cart, buy-now"]:::route
+    route_get_sitemap_xml["GET /sitemap.xml"]:::route
+    route_get_contact["GET /contact — Contact form GET"]:::route
+    route_post_contact["POST /contact — Contact form POST submission"]:::route
+    route_get_account_dashboard["GET /account/dashboard — Account dashboard entry — redirects to orders"]:::route
+    route_get_account_dashboard_orders["GET /account/dashboard/orders — My Orders — product reviews"]:::route
+    route_get_account_dashboard_sessions["GET /account/dashboard/sessions — My Sessions — astrologer bookings"]:::route
+    route_get_account_dashboard_install["GET /account/dashboard/install — Install App — customer installation guidance"]:::route
+    route_get_account_orders["GET /account/orders — Legacy account orders redirect"]:::route
+    route_get_account_orders_orderid_invoice["GET /account/orders/{orderId}/invoice"]:::route
+    route_get_account_bookings["GET /account/bookings — Legacy account sessions redirect"]:::route
+    route_post_api_consultations_id_status["POST /api/consultations/{id}/status — API — update appointment status"]:::route
+    route_post_consultation_initiate["POST /consultation/initiate — Request a scheduled consultant appointment"]:::route
+    route_post_reviews_astrologer["POST /reviews/astrologer — Submit astrologer review"]:::route
+    route_post_reviews_product["POST /reviews/product — Submit product review"]:::route
+    route_get_docs["GET /docs — Documentation landing — blog categories overview"]:::route
+    route_get_help_slug["GET /help/{slug}"]:::route
+    route_post_remotedb["POST /remoteDB — Remote DB query endpoint — proxies SQL to production MySQL"]:::route
+    route_get_blog["GET /blog — Blog listing — all posts with category filters"]:::route
+    route_get_blog_slug["GET /blog/{slug} — Blog post — rendered from GitHub-sourced markdown"]:::route
+    route_get_blog_category_slug["GET /blog/category/{slug} — Blog listing filtered by category"]:::route
+    route_post_api_agent["POST /api/agent"]:::route
+    route_post_api_tts_tokenize["POST /api/tts/tokenize — TTS — tokenize text for KittenTTS ONNX model"]:::route
+    route_get_api_support_latest_message["GET /api/support/latest-message — Support — latest ticket message for TTS polling"]:::route
   end
 
   subgraph ROUTES_AUTH["AUTH Routes"]
-    route_22374240a33c["GET /login — Login page — email/username + Google OAuth"]:::route
-    route_7d183a0bb001["GET /forgot-password — Forgot password page"]:::route
-    route_2679acb1337a["POST /forgot-password — Forgot password POST — generate reset token"]:::route
-    route_bf1533f65e61["GET /reset-password — Reset password page with token"]:::route
-    route_292f9c423d3c["POST /reset-password — Reset password POST — update hash"]:::route
-    route_21ac6cd20118["GET /auth/google — Google OAuth redirect"]:::route
-    route_54bc4589bbac["GET /auth/google/callback — Google OAuth callback — upsert user"]:::route
-    route_bd886de5ac0b["GET /register — Register page — identity, default delivery address, password, terms"]:::route
-    route_3a7ff6514669["POST /register — Register POST — create user and default address, accept terms"]:::route
-    route_a650fd67ad7b["POST /login — Login POST — authenticate, session start"]:::route
-    route_1d1ca6617c0d["GET /logout — Logout — session destroy, redirect"]:::route
+    route_get_login["GET /login — Login page — email/username + Google OAuth"]:::route
+    route_get_forgot_password["GET /forgot-password — Forgot password page"]:::route
+    route_post_forgot_password["POST /forgot-password — Forgot password POST — generate reset token"]:::route
+    route_get_reset_password["GET /reset-password — Reset password page with token"]:::route
+    route_post_reset_password["POST /reset-password — Reset password POST — update hash"]:::route
+    route_get_auth_google["GET /auth/google — Google OAuth redirect"]:::route
+    route_get_auth_google_callback["GET /auth/google/callback — Google OAuth callback — upsert user"]:::route
+    route_get_register["GET /register — Register page — identity, default delivery address, password, terms"]:::route
+    route_post_register["POST /register — Register POST — create user and default address, accept terms"]:::route
+    route_post_login["POST /login — Login POST — authenticate, session start"]:::route
+    route_get_logout["GET /logout — Logout — session destroy, redirect"]:::route
   end
 
   subgraph ROUTES_PAYMENT["PAYMENT Routes"]
-    route_fb4c7f221e5b["GET /cart — Cart page — items, qty, totals"]:::route
-    route_f26b003584ac["GET /checkout — Checkout page — address, Razorpay payment"]:::route
-    route_eca99e09ade9["POST /cart/add — Cart — add item"]:::route
-    route_9ba7a8da6f0d["POST /cart/remove — Cart — remove item"]:::route
-    route_c048d08cf4d9["POST /cart/update — Cart — update quantity"]:::route
-    route_f0c540724dfe["POST /checkout/create-order — Checkout — create Razorpay order"]:::route
-    route_3cdaaaae69eb["POST /payment/verify — Checkout — verify payment, create order"]:::route
-    route_416fde130b00["POST /create-order — API checkout — Razorpay order"]:::route
-    route_c4966e625ffb["POST /verify-payment — API checkout — verify payment"]:::route
+    route_get_cart["GET /cart — Cart page — items, qty, totals"]:::route
+    route_get_checkout["GET /checkout — Checkout page — address, Razorpay payment"]:::route
+    route_post_cart_add["POST /cart/add — Cart — add item"]:::route
+    route_post_cart_remove["POST /cart/remove — Cart — remove item"]:::route
+    route_post_cart_update["POST /cart/update — Cart — update quantity"]:::route
+    route_post_checkout_create_order["POST /checkout/create-order — Checkout — create Razorpay order"]:::route
+    route_post_payment_verify["POST /payment/verify — Checkout — verify payment, create order"]:::route
+    route_post_create_order["POST /create-order — API checkout — Razorpay order"]:::route
+    route_post_verify_payment["POST /verify-payment — API checkout — verify payment"]:::route
   end
 
   subgraph ROUTES_SUPPORT["SUPPORT Routes"]
-    route_f93276b968be["GET /support"]:::route
-    route_5de8a52549bc["POST /support/ask — Support bot — AI-powered Q&A"]:::route
+    route_get_support["GET /support"]:::route
+    route_post_support_ask["POST /support/ask — Support bot — AI-powered Q&A"]:::route
   end
 
   subgraph ROUTES_ADMIN["ADMIN Routes"]
-    route_c3f4bffc0fc6["GET /admin — Admin dashboard — counts overview"]:::route
-    route_3960f6a49231["GET /admin/products — Admin — manage products"]:::route
-    route_e95fd00567af["GET /admin/categories — Admin — manage categories"]:::route
-    route_cdc48d6b8f5f["GET /admin/coupons — Admin — manage coupons"]:::route
-    route_5e926678ff14["GET /admin/orders — Admin — order list"]:::route
-    route_88925401b130["GET /admin/orders/{id} — Admin — order detail, status update"]:::route
-    route_2b4e3ef8ace9["POST /admin/orders/{id}/status — Admin — update order status + email"]:::route
-    route_c7a9a024dd65["GET /admin/shipping — Admin — shipping settings"]:::route
-    route_a957673c2bdd["GET /admin/astrologers — Admin — manage astrologers"]:::route
-    route_3b4bedeac0b9["GET /admin/appointments — Admin — session list"]:::route
-    route_92dd4d9f6051["GET /admin/consultation-analytics — Admin — consultation metrics"]:::route
-    route_e65af988eca1["GET /admin/tax-report"]:::route
-    route_a7447dded861["GET /admin/temples — Admin — manage temples"]:::route
-    route_a068f086796c["GET /admin/settings — Admin — site settings"]:::route
-    route_c2fce1e83e49["POST /admin/settings/save — Admin — save settings"]:::route
-    route_833047aa65da["POST /admin/settings/admin-credentials — Admin — save admin login"]:::route
-    route_818acb238877["GET /admin/integrations — Admin — API keys, integrations"]:::route
-    route_038d4dfa1e39["GET /admin/agent"]:::route
-    route_f10a46dc5fa4["POST /admin/agent/ask"]:::route
-    route_f679682223bf["GET /admin/backups — Admin — backup list"]:::route
-    route_e67aaf6f51f8["GET /admin/audit-log — Admin — audit log"]:::route
-    route_a343d37ef490["GET /admin/contact-submissions — Admin — contact form entries"]:::route
-    route_4409e3819a27["POST /admin/contact_submissions/save — Admin — save contact submission"]:::route
-    route_ce4718c7cfc4["POST /admin/contact_submissions/delete — Admin — delete contact submission"]:::route
-    route_427d0f3e1215["GET /admin/email-inbox"]:::route
-    route_94db05b769d5["GET /admin/email-outbox"]:::route
-    route_93e1c961f71d["GET /admin/support-tickets — Admin — support tickets"]:::route
-    route_fb78b0ee65e6["POST /admin/support-tickets/save"]:::route
-    route_4115282232ca["GET /admin/appearance — Admin — logo & favicon"]:::route
-    route_c3b94d62a632["POST /admin/appearance/save — Admin — save logo/favicon"]:::route
-    route_0c88057d061a["GET /admin/media — Admin — media library"]:::route
-    route_16d561502e84["POST /admin/media/upload — Admin — upload media"]:::route
-    route_74e14338f5d2["POST /admin/environment/fix-permissions — Admin — fix storage permissions"]:::route
-    route_e9360697e956["GET /admin/developer/project-map — Admin — project map viewer"]:::route
-    route_68d4224aae26["GET /admin/developer/workflow — Admin — agent workflow viewer"]:::route
-    route_94124153470a["POST /admin/products/save — Admin — create/update product"]:::route
-    route_608ddd16ca24["POST /admin/products/delete — Admin — delete product"]:::route
-    route_5bd40ddf2477["POST /admin/categories/save — Admin — create/update category"]:::route
-    route_df55a87c861a["POST /admin/categories/delete — Admin — delete category"]:::route
-    route_9cdd4d3072b4["POST /admin/coupons/save — Admin — create/update coupon"]:::route
-    route_a4ffe236f106["POST /admin/coupons/delete — Admin — delete coupon"]:::route
-    route_ebd390f27282["POST /admin/astrologers/save — Admin — create/update astrologer"]:::route
-    route_dc3164561034["POST /admin/astrologers/delete — Admin — delete astrologer"]:::route
-    route_a2384c26c92f["POST /admin/temples/save — Admin — create/update temple"]:::route
-    route_e69af680148c["POST /admin/temples/delete — Admin — delete temple"]:::route
-    route_f6cc7a75f108["POST /admin/integrations/save — Admin — save integration secrets"]:::route
-    route_ee5a5224937e["GET /admin/blog"]:::route
-    route_1ae4a2a08143["POST /admin/blog/save"]:::route
-    route_6412bc37bc92["POST /admin/blog/delete"]:::route
-    route_2dcebe2cfda0["POST /admin/blog/preview"]:::route
-    route_b46d790346e6["POST /admin/blog/ai-draft"]:::route
+    route_get_admin["GET /admin — Admin dashboard — counts overview"]:::route
+    route_get_admin_products["GET /admin/products — Admin — manage products"]:::route
+    route_get_admin_categories["GET /admin/categories — Admin — manage categories"]:::route
+    route_get_admin_coupons["GET /admin/coupons — Admin — manage coupons"]:::route
+    route_get_admin_orders["GET /admin/orders — Admin — order list"]:::route
+    route_get_admin_orders_id["GET /admin/orders/{id} — Admin — order detail, status update"]:::route
+    route_post_admin_orders_id_status["POST /admin/orders/{id}/status — Admin — update order status + email"]:::route
+    route_get_admin_shipping["GET /admin/shipping — Admin — shipping settings"]:::route
+    route_get_admin_astrologers["GET /admin/astrologers — Admin — manage astrologers"]:::route
+    route_get_admin_appointments["GET /admin/appointments — Admin — session list"]:::route
+    route_get_admin_consultation_analytics["GET /admin/consultation-analytics — Admin — consultation metrics"]:::route
+    route_get_admin_tax_report["GET /admin/tax-report"]:::route
+    route_get_admin_temples["GET /admin/temples — Admin — manage temples"]:::route
+    route_get_admin_settings["GET /admin/settings — Admin — site settings"]:::route
+    route_post_admin_settings_save["POST /admin/settings/save — Admin — save settings"]:::route
+    route_post_admin_settings_admin_credentials["POST /admin/settings/admin-credentials — Admin — save admin login"]:::route
+    route_get_admin_integrations["GET /admin/integrations — Admin — API keys, integrations"]:::route
+    route_get_admin_agent["GET /admin/agent"]:::route
+    route_post_admin_agent_ask["POST /admin/agent/ask"]:::route
+    route_get_admin_backups["GET /admin/backups — Admin — backup list"]:::route
+    route_get_admin_audit_log["GET /admin/audit-log — Admin — audit log"]:::route
+    route_get_admin_contact_submissions["GET /admin/contact-submissions — Admin — contact form entries"]:::route
+    route_post_admin_contact_submissions_save["POST /admin/contact_submissions/save — Admin — save contact submission"]:::route
+    route_post_admin_contact_submissions_delete["POST /admin/contact_submissions/delete — Admin — delete contact submission"]:::route
+    route_get_admin_email_inbox["GET /admin/email-inbox"]:::route
+    route_get_admin_email_outbox["GET /admin/email-outbox"]:::route
+    route_get_admin_support_tickets["GET /admin/support-tickets — Admin — support tickets"]:::route
+    route_post_admin_support_tickets_save["POST /admin/support-tickets/save"]:::route
+    route_get_admin_appearance["GET /admin/appearance — Admin — logo & favicon"]:::route
+    route_post_admin_appearance_save["POST /admin/appearance/save — Admin — save logo/favicon"]:::route
+    route_get_admin_media["GET /admin/media — Admin — media library"]:::route
+    route_post_admin_media_upload["POST /admin/media/upload — Admin — upload media"]:::route
+    route_post_admin_environment_fix_permissions["POST /admin/environment/fix-permissions — Admin — fix storage permissions"]:::route
+    route_get_admin_developer_project_map["GET /admin/developer/project-map — Admin — project map viewer"]:::route
+    route_get_admin_developer_workflow["GET /admin/developer/workflow — Admin — agent workflow viewer"]:::route
+    route_post_admin_products_save["POST /admin/products/save — Admin — create/update product"]:::route
+    route_post_admin_products_delete["POST /admin/products/delete — Admin — delete product"]:::route
+    route_post_admin_categories_save["POST /admin/categories/save — Admin — create/update category"]:::route
+    route_post_admin_categories_delete["POST /admin/categories/delete — Admin — delete category"]:::route
+    route_post_admin_coupons_save["POST /admin/coupons/save — Admin — create/update coupon"]:::route
+    route_post_admin_coupons_delete["POST /admin/coupons/delete — Admin — delete coupon"]:::route
+    route_post_admin_astrologers_save["POST /admin/astrologers/save — Admin — create/update astrologer"]:::route
+    route_post_admin_astrologers_delete["POST /admin/astrologers/delete — Admin — delete astrologer"]:::route
+    route_post_admin_temples_save["POST /admin/temples/save — Admin — create/update temple"]:::route
+    route_post_admin_temples_delete["POST /admin/temples/delete — Admin — delete temple"]:::route
+    route_post_admin_integrations_save["POST /admin/integrations/save — Admin — save integration secrets"]:::route
+    route_get_admin_blog["GET /admin/blog"]:::route
+    route_post_admin_blog_save["POST /admin/blog/save"]:::route
+    route_post_admin_blog_delete["POST /admin/blog/delete"]:::route
+    route_post_admin_blog_preview["POST /admin/blog/preview"]:::route
+    route_post_admin_blog_ai_draft["POST /admin/blog/ai-draft"]:::route
   end
 
   subgraph NAVIGATION["Navigation Paths"]
-    nav_90609cfd31a3["/contact"]:::nav
-    nav_1abee342ae87["/account/dashboard"]:::nav
-    nav_41fb19b5f30b["/account/dashboard/orders"]:::nav
-    nav_06442c376c88["/account/dashboard/sessions"]:::nav
-    nav_c6dda9b9056f["/account/dashboard/install"]:::nav
+    nav_contact["/contact"]:::nav
+    nav_account_dashboard["/account/dashboard"]:::nav
+    nav_account_dashboard_orders["/account/dashboard/orders"]:::nav
+    nav_account_dashboard_sessions["/account/dashboard/sessions"]:::nav
+    nav_account_dashboard_install["/account/dashboard/install"]:::nav
   end
 
   subgraph CONTROLLERS["Controllers"]
-    controller_9968163fcd32["AccountController"]:::code
-    controller_3d37b75c07ec["AdminController"]:::code
-    controller_e5d7c85a6532["AgentController"]:::code
-    controller_f3a06e444dad["AuthController"]:::code
-    controller_6f7f176814f0["BaseController"]:::code
-    controller_f21ef7cdb1a4["BlogController"]:::code
-    controller_7fda1508bed0["CommerceController"]:::code
-    controller_50eaea84bd1d["ConsultationController"]:::code
-    controller_18ec49ea2cf4["PublicController"]:::code
-    controller_2702fc6f256e["RemoteDbController"]:::code
-    controller_452e47b9a403["ReviewController"]:::code
-    controller_64e608ddc28b["SupportController"]:::code
-    controller_43aabb320c7a["TtsController"]:::code
+    controller_accountcontroller["AccountController"]:::code
+    controller_admincontroller["AdminController"]:::code
+    controller_agentcontroller["AgentController"]:::code
+    controller_authcontroller["AuthController"]:::code
+    controller_basecontroller["BaseController"]:::code
+    controller_blogcontroller["BlogController"]:::code
+    controller_commercecontroller["CommerceController"]:::code
+    controller_consultationcontroller["ConsultationController"]:::code
+    controller_publiccontroller["PublicController"]:::code
+    controller_remotedbcontroller["RemoteDbController"]:::code
+    controller_reviewcontroller["ReviewController"]:::code
+    controller_supportcontroller["SupportController"]:::code
+    controller_ttscontroller["TtsController"]:::code
   end
 
   subgraph SERVICES["Services"]
-    service_125c14ddd376["AddressService"]:::code
-    service_b2e5928bb46a["AgentContextService"]:::code
-    service_717a4830bf0e["AppointmentService"]:::code
-    service_ae8ee1aa005a["AstrologerService"]:::code
-    service_e79c019a142b["AuditLogService"]:::code
-    service_f33a1d77b137["AuthService"]:::code
-    service_1909dab7e246["BlogDraftService"]:::code
-    service_a59832354e11["BlogService"]:::code
-    service_119321b674bd["CartService"]:::code
-    service_ebacea9031c7["CategoryService"]:::code
-    service_0d961cbe684b["ConsultationService"]:::code
-    service_fc0ff5cfd93a["ContactService"]:::code
-    service_c4c5dac5c925["CouponService"]:::code
-    service_66daa9bdc2c1["DatabaseService"]:::code
-    service_ef752c9bb64e["DocsMapService"]:::code
-    service_01d1cd760b64["EnvService"]:::code
-    service_88bb58d7e6e8["GitHubDocService"]:::code
-    service_b30981b6449c["ImageOptimizerService"]:::code
-    service_1a1be05523e3["MailQueueService"]:::code
-    service_bf9fe918ea27["MailStorageService"]:::code
-    service_dc8af4c619cd["MarkdownRenderer"]:::code
-    service_75ac00fac97c["MediaService"]:::code
-    service_f751cedec776["OrderService"]:::code
-    service_a0945b05d5db["PasswordResetService"]:::code
-    service_9eeeaab84791["PaymentService"]:::code
-    service_0ab47bcd921f["ProductService"]:::code
-    service_b06ea6dd1537["ProjectMapService"]:::code
-    service_123fd32324c8["RateLimiter"]:::code
-    service_ea89d25425b5["ResourceService"]:::code
-    service_cdae135eb5b5["ReviewService"]:::code
-    service_69598e3405fb["SchemaService"]:::code
-    service_6c9416ef0383["SecretService"]:::code
-    service_3fc704b15e1b["SeoService"]:::code
-    service_fefb1ba2e4f7["SettingsService"]:::code
-    service_58db6f1ab7dc["ShippingService"]:::code
-    service_c5fb81744c52["SmtpMailer"]:::code
-    service_82c10839666c["StoragePermissionService"]:::code
-    service_1bacfc3e3f3b["SupportBotService"]:::code
-    service_97627a5cbf8e["SupportTicketService"]:::code
-    service_19bd8dc03a23["TaxService"]:::code
-    service_c9950f0c49e4["TempleService"]:::code
+    service_addressservice["AddressService"]:::code
+    service_agentcontextservice["AgentContextService"]:::code
+    service_appointmentservice["AppointmentService"]:::code
+    service_astrologerservice["AstrologerService"]:::code
+    service_auditlogservice["AuditLogService"]:::code
+    service_authservice["AuthService"]:::code
+    service_blogdraftservice["BlogDraftService"]:::code
+    service_blogservice["BlogService"]:::code
+    service_cartservice["CartService"]:::code
+    service_categoryservice["CategoryService"]:::code
+    service_consultationservice["ConsultationService"]:::code
+    service_contactservice["ContactService"]:::code
+    service_couponservice["CouponService"]:::code
+    service_databaseservice["DatabaseService"]:::code
+    service_docsmapservice["DocsMapService"]:::code
+    service_envservice["EnvService"]:::code
+    service_githubdocservice["GitHubDocService"]:::code
+    service_imageoptimizerservice["ImageOptimizerService"]:::code
+    service_mailqueueservice["MailQueueService"]:::code
+    service_mailstorageservice["MailStorageService"]:::code
+    service_markdownrenderer["MarkdownRenderer"]:::code
+    service_mediaservice["MediaService"]:::code
+    service_orderservice["OrderService"]:::code
+    service_passwordresetservice["PasswordResetService"]:::code
+    service_paymentservice["PaymentService"]:::code
+    service_productservice["ProductService"]:::code
+    service_projectmapservice["ProjectMapService"]:::code
+    service_ratelimiter["RateLimiter"]:::code
+    service_resourceservice["ResourceService"]:::code
+    service_reviewservice["ReviewService"]:::code
+    service_schemaservice["SchemaService"]:::code
+    service_secretservice["SecretService"]:::code
+    service_seoservice["SeoService"]:::code
+    service_settingsservice["SettingsService"]:::code
+    service_shippingservice["ShippingService"]:::code
+    service_smtpmailer["SmtpMailer"]:::code
+    service_storagepermissionservice["StoragePermissionService"]:::code
+    service_supportbotservice["SupportBotService"]:::code
+    service_supportticketservice["SupportTicketService"]:::code
+    service_taxservice["TaxService"]:::code
+    service_templeservice["TempleService"]:::code
   end
 
   subgraph VIEWS["Views"]
-    view_17326c025c30["account/_nav"]:::code
-    view_bde0b7fa75a6["account/bookings"]:::code
-    view_e106de188447["account/install"]:::code
-    view_6698d76d719f["account/invoice"]:::code
-    view_8bf2f1da4f90["account/orders"]:::code
-    view_6a1c27fa0738["admin/agent"]:::code
-    view_17900ac53325["admin/appearance"]:::code
-    view_c08844df74a9["admin/astrologer-form"]:::code
-    view_e13f2d1caf99["admin/blog"]:::code
-    view_860deb20ae6d["admin/consultation-analytics"]:::code
-    view_af209260b21b["admin/dashboard"]:::code
-    view_99a0e61b7241["admin/detail"]:::code
-    view_036080adacd9["admin/environment"]:::code
-    view_62fe69fcdef3["admin/integrations"]:::code
-    view_ca3569057adb["admin/list"]:::code
-    view_89a7dcb95b04["admin/mailbox"]:::code
-    view_52965cdd23d8["admin/media"]:::code
-    view_8885ff0b037a["admin/product-form"]:::code
-    view_2b32af729a24["admin/project-map"]:::code
-    view_9720267f0400["admin/resource"]:::code
-    view_ccc5b8c17f9f["admin/settings"]:::code
-    view_c9b59025f729["admin/tax-report"]:::code
-    view_0c5c8cc8da49["admin/workflow"]:::code
-    view_dae8fcbc86f4["layouts/admin"]:::code
-    view_fd382d366d88["layouts/app"]:::code
-    view_fe7e7ffe6adc["public/404"]:::code
-    view_82254c4e2aa1["public/about"]:::code
-    view_74015889d737["public/astrologer"]:::code
-    view_c8dddc6d8f3e["public/blog"]:::code
-    view_4febaa319900["public/blog-post"]:::code
-    view_9ee4574eabfc["public/cart"]:::code
-    view_928f31a825c9["public/categories"]:::code
-    view_6b1f93c8d0e4["public/checkout"]:::code
-    view_eb9fd22a15bf["public/consult"]:::code
-    view_89865e74ab9c["public/contact"]:::code
-    view_b8744c438a04["public/forgot-password"]:::code
-    view_17c7f41e5cc8["public/home"]:::code
-    view_a6af926bf361["public/login"]:::code
-    view_eb0a08d1b15b["public/privacy"]:::code
-    view_747a935d6839["public/product"]:::code
-    view_d6d59690414b["public/register"]:::code
-    view_775af2126c62["public/reset-password"]:::code
-    view_ca8b647f9374["public/shop"]:::code
-    view_24738815b9ae["public/sitemap"]:::code
-    view_8b63b1a03812["public/spiritual"]:::code
-    view_54f97aa2b448["public/support"]:::code
-    view_eb7fde4f5646["public/temple"]:::code
-    view_9fad71462848["public/temples"]:::code
-    view_01c77ef07565["public/terms"]:::code
+    view_account_nav["account/_nav"]:::code
+    view_account_bookings["account/bookings"]:::code
+    view_account_install["account/install"]:::code
+    view_account_invoice["account/invoice"]:::code
+    view_account_orders["account/orders"]:::code
+    view_admin_agent["admin/agent"]:::code
+    view_admin_appearance["admin/appearance"]:::code
+    view_admin_astrologer_form["admin/astrologer-form"]:::code
+    view_admin_blog["admin/blog"]:::code
+    view_admin_consultation_analytics["admin/consultation-analytics"]:::code
+    view_admin_dashboard["admin/dashboard"]:::code
+    view_admin_detail["admin/detail"]:::code
+    view_admin_environment["admin/environment"]:::code
+    view_admin_integrations["admin/integrations"]:::code
+    view_admin_list["admin/list"]:::code
+    view_admin_mailbox["admin/mailbox"]:::code
+    view_admin_media["admin/media"]:::code
+    view_admin_product_form["admin/product-form"]:::code
+    view_admin_project_map["admin/project-map"]:::code
+    view_admin_resource["admin/resource"]:::code
+    view_admin_settings["admin/settings"]:::code
+    view_admin_tax_report["admin/tax-report"]:::code
+    view_admin_workflow["admin/workflow"]:::code
+    view_layouts_admin["layouts/admin"]:::code
+    view_layouts_app["layouts/app"]:::code
+    view_public_404["public/404"]:::code
+    view_public_about["public/about"]:::code
+    view_public_astrologer["public/astrologer"]:::code
+    view_public_blog["public/blog"]:::code
+    view_public_blog_post["public/blog-post"]:::code
+    view_public_cart["public/cart"]:::code
+    view_public_categories["public/categories"]:::code
+    view_public_checkout["public/checkout"]:::code
+    view_public_consult["public/consult"]:::code
+    view_public_contact["public/contact"]:::code
+    view_public_forgot_password["public/forgot-password"]:::code
+    view_public_home["public/home"]:::code
+    view_public_login["public/login"]:::code
+    view_public_privacy["public/privacy"]:::code
+    view_public_product["public/product"]:::code
+    view_public_register["public/register"]:::code
+    view_public_reset_password["public/reset-password"]:::code
+    view_public_shop["public/shop"]:::code
+    view_public_sitemap["public/sitemap"]:::code
+    view_public_spiritual["public/spiritual"]:::code
+    view_public_support["public/support"]:::code
+    view_public_temple["public/temple"]:::code
+    view_public_temples["public/temples"]:::code
+    view_public_terms["public/terms"]:::code
   end
 
   subgraph INTEGRATIONS["Integrations"]
-    integration_58a89e5d2ef3["GoogleOAuthClient"]:::code
-    integration_08255445e22a["GoogleSiteKitClient"]:::code
-    integration_3c1708372fc7["MetaPixelClient"]:::code
-    integration_1442a65b90de["RazorpayClient"]:::code
-    integration_063c1f657453["StripeClient"]:::code
+    integration_googleoauthclient["GoogleOAuthClient"]:::code
+    integration_googlesitekitclient["GoogleSiteKitClient"]:::code
+    integration_metapixelclient["MetaPixelClient"]:::code
+    integration_razorpayclient["RazorpayClient"]:::code
+    integration_stripeclient["StripeClient"]:::code
   end
 
   subgraph SCHEMA["Schema Collections"]
-    collection_9bc65c2abec1["users"]:::data
-    collection_963e3a2fe559["addresses"]:::data
-    collection_86024cad1e83["products"]:::data
-    collection_c851fb104bb0["astrologers"]:::data
-    collection_fefa79731a13["temples"]:::data
-    collection_12c500ed0b78["orders"]:::data
-    collection_2417b5325520["appointments"]:::data
-    collection_c37815a262b9["consultation_messages"]:::data
-    collection_ce528b00cff4["consultation_signals"]:::data
-    collection_f2ec0991d55d["wallet_transactions"]:::data
-    collection_830b87d9f1ff["support_tickets"]:::data
-    collection_b0b5ccb4a195["categories"]:::data
-    collection_28882724d375["coupons"]:::data
-    collection_32356d16f20c["audit_events"]:::data
-    collection_d10fbf039e34["mail_queue"]:::data
-    collection_b0d96590d438["mail_inbox"]:::data
-    collection_9fa47bff6beb["mail_outbox"]:::data
-    collection_74dcb1cec508["reviews"]:::data
-    collection_2e5d8aa3dfa8["settings"]:::data
-    collection_2dce077b5527["contact_submissions"]:::data
-    collection_a276577b33a8["media_files"]:::data
-    collection_7de38f3c3d3b["secrets"]:::data
+    collection_users["users"]:::data
+    collection_addresses["addresses"]:::data
+    collection_products["products"]:::data
+    collection_astrologers["astrologers"]:::data
+    collection_temples["temples"]:::data
+    collection_orders["orders"]:::data
+    collection_appointments["appointments"]:::data
+    collection_consultation_messages["consultation_messages"]:::data
+    collection_consultation_signals["consultation_signals"]:::data
+    collection_wallet_transactions["wallet_transactions"]:::data
+    collection_support_tickets["support_tickets"]:::data
+    collection_categories["categories"]:::data
+    collection_coupons["coupons"]:::data
+    collection_audit_events["audit_events"]:::data
+    collection_mail_queue["mail_queue"]:::data
+    collection_mail_inbox["mail_inbox"]:::data
+    collection_mail_outbox["mail_outbox"]:::data
+    collection_reviews["reviews"]:::data
+    collection_settings["settings"]:::data
+    collection_contact_submissions["contact_submissions"]:::data
+    collection_media_files["media_files"]:::data
+    collection_secrets["secrets"]:::data
   end
 
   subgraph TOOLS["Tools"]
-    tool_d061c8cf89cb["blog-image"]:::tool
-    tool_fbc45397571b["blog-read"]:::tool
-    tool_519ad2e88fb9["blog-write"]:::tool
-    tool_d298e8bcd599["browser-agent"]:::tool
-    tool_aa7d3d0815ed["doc-read"]:::tool
-    tool_e255759bee23["doc-write"]:::tool
-    tool_1913548b93c6["generate-docs-map"]:::tool
-    tool_891d42e0bd53["generate-project-map"]:::tool
-    tool_b2c22e3cb9cb["handoff"]:::tool
-    tool_20fe79d51ae4["import-product-images"]:::tool
-    tool_42d1d6670e62["optimize-images"]:::tool
-    tool_a88dee51947d["pma-client"]:::tool
-    tool_63816fb031e2["process-mail-queue"]:::tool
-    tool_390ffcf572b3["product-read"]:::tool
-    tool_09f89263cf83["product-write"]:::tool
-    tool_33987b50a45d["refresh-blog-cache"]:::tool
-    tool_6bc5276d6a60["smoke-local"]:::tool
-    tool_506de2158fd9["test_race"]:::tool
-    tool_120348175d72["validate-docs-map"]:::tool
-    tool_ffb4fe3c51d9["validate-project-map"]:::tool
-    tool_a84555c39de6["bapXphp"]:::tool
+    tool_blog_image["blog-image"]:::tool
+    tool_blog_read["blog-read"]:::tool
+    tool_blog_write["blog-write"]:::tool
+    tool_browser_agent["browser-agent"]:::tool
+    tool_doc_read["doc-read"]:::tool
+    tool_doc_write["doc-write"]:::tool
+    tool_generate_docs_map["generate-docs-map"]:::tool
+    tool_generate_project_map["generate-project-map"]:::tool
+    tool_handoff["handoff"]:::tool
+    tool_import_product_images["import-product-images"]:::tool
+    tool_optimize_images["optimize-images"]:::tool
+    tool_pma_client["pma-client"]:::tool
+    tool_process_mail_queue["process-mail-queue"]:::tool
+    tool_product_read["product-read"]:::tool
+    tool_product_write["product-write"]:::tool
+    tool_refresh_blog_cache["refresh-blog-cache"]:::tool
+    tool_smoke_local["smoke-local"]:::tool
+    tool_test_race["test_race"]:::tool
+    tool_validate_docs_map["validate-docs-map"]:::tool
+    tool_validate_project_map["validate-project-map"]:::tool
+    tool_bapxphp["bapXphp"]:::tool
   end
 
   subgraph GAPS["Gaps & Missing Links"]
     no_gaps["No detected gaps"]:::data
   end
 
-  route_e3b717d5883a --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 --> service_0ab47bcd921f
-  controller_18ec49ea2cf4 --> service_ae8ee1aa005a
-  controller_18ec49ea2cf4 --> service_c9950f0c49e4
-  controller_18ec49ea2cf4 --> service_ebacea9031c7
-  controller_18ec49ea2cf4 -. renders .-> view_17c7f41e5cc8
-  route_635162d613cf --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 -. renders .-> view_82254c4e2aa1
-  route_ce21a56fa9a7 --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 -. renders .-> view_8b63b1a03812
-  route_df221e308e08 --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 -. renders .-> view_8b63b1a03812
-  route_8f45fea80bea --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 -. renders .-> view_01c77ef07565
-  route_90946be13902 --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 -. renders .-> view_eb0a08d1b15b
-  route_f1167ac0f350 --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 --> service_ae8ee1aa005a
-  controller_18ec49ea2cf4 -. renders .-> view_eb9fd22a15bf
-  route_c415a5030f78 --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 --> service_ae8ee1aa005a
-  controller_18ec49ea2cf4 -. renders .-> view_74015889d737
-  route_7f9505b0f987 --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 --> service_c9950f0c49e4
-  controller_18ec49ea2cf4 -. renders .-> view_9fad71462848
-  route_14cd9d36c55d --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 --> service_c9950f0c49e4
-  controller_18ec49ea2cf4 -. renders .-> view_eb7fde4f5646
-  route_e627a983a978 --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 --> service_0ab47bcd921f
-  controller_18ec49ea2cf4 --> service_ebacea9031c7
-  controller_18ec49ea2cf4 -. renders .-> view_ca8b647f9374
-  route_3c12328d1184 --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 --> service_ebacea9031c7
-  controller_18ec49ea2cf4 -. renders .-> view_928f31a825c9
-  route_762fd619926d --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 --> service_0ab47bcd921f
-  controller_18ec49ea2cf4 -. renders .-> view_747a935d6839
-  route_fb4c7f221e5b --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 --> service_119321b674bd
-  controller_18ec49ea2cf4 --> service_0ab47bcd921f
-  controller_18ec49ea2cf4 -. renders .-> view_9ee4574eabfc
-  route_f26b003584ac --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 --> service_119321b674bd
-  controller_18ec49ea2cf4 --> service_0ab47bcd921f
-  controller_18ec49ea2cf4 --> service_6c9416ef0383
-  controller_18ec49ea2cf4 --> service_125c14ddd376
-  controller_18ec49ea2cf4 --> service_fefb1ba2e4f7
-  controller_18ec49ea2cf4 -. renders .-> view_6b1f93c8d0e4
-  route_8ed04f31abab --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 --> service_a59832354e11
-  controller_18ec49ea2cf4 --> service_0ab47bcd921f
-  controller_18ec49ea2cf4 -. renders .-> view_24738815b9ae
-  route_8c80c0301221 --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 -. renders .-> view_89865e74ab9c
-  route_5d37c858f706 --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 --> service_fc0ff5cfd93a
-  controller_18ec49ea2cf4 -. renders .-> view_89865e74ab9c
-  route_22374240a33c --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 --> service_f33a1d77b137
-  controller_18ec49ea2cf4 -. renders .-> view_a6af926bf361
-  route_7d183a0bb001 --> controller_f3a06e444dad
-  controller_f3a06e444dad --> service_a0945b05d5db
-  controller_f3a06e444dad -. renders .-> view_b8744c438a04
-  route_2679acb1337a --> controller_f3a06e444dad
-  controller_f3a06e444dad --> service_a0945b05d5db
-  controller_f3a06e444dad -. renders .-> view_b8744c438a04
-  route_bf1533f65e61 --> controller_f3a06e444dad
-  controller_f3a06e444dad --> service_a0945b05d5db
-  controller_f3a06e444dad -. renders .-> view_775af2126c62
-  route_292f9c423d3c --> controller_f3a06e444dad
-  controller_f3a06e444dad --> service_a0945b05d5db
-  controller_f3a06e444dad -. renders .-> view_775af2126c62
-  route_21ac6cd20118 --> controller_f3a06e444dad
-  controller_f3a06e444dad --> service_6c9416ef0383
-  controller_f3a06e444dad -. renders .-> view_a6af926bf361
-  route_54bc4589bbac --> controller_f3a06e444dad
-  controller_f3a06e444dad --> service_6c9416ef0383
-  controller_f3a06e444dad --> service_66daa9bdc2c1
-  controller_f3a06e444dad -. renders .-> view_a6af926bf361
-  route_bd886de5ac0b --> controller_f3a06e444dad
-  controller_f3a06e444dad -. renders .-> view_d6d59690414b
-  route_3a7ff6514669 --> controller_f3a06e444dad
-  controller_f3a06e444dad --> service_66daa9bdc2c1
-  controller_f3a06e444dad -. renders .-> view_d6d59690414b
-  route_a650fd67ad7b --> controller_f3a06e444dad
-  controller_f3a06e444dad --> service_66daa9bdc2c1
-  controller_f3a06e444dad -. renders .-> view_a6af926bf361
-  route_1d1ca6617c0d --> controller_f3a06e444dad
-  controller_f3a06e444dad --> service_f33a1d77b137
-  controller_f3a06e444dad -. renders .-> view_a6af926bf361
-  route_6ce84be0a21c --> controller_9968163fcd32
-  controller_9968163fcd32 --> service_f33a1d77b137
-  controller_9968163fcd32 -. renders .-> view_8bf2f1da4f90
-  route_b2c44d359fd8 --> controller_9968163fcd32
-  controller_9968163fcd32 --> service_f33a1d77b137
-  controller_9968163fcd32 --> service_f751cedec776
-  controller_9968163fcd32 --> service_cdae135eb5b5
-  controller_9968163fcd32 -. renders .-> view_8bf2f1da4f90
-  route_53bc246f9b4e --> controller_9968163fcd32
-  controller_9968163fcd32 --> service_f33a1d77b137
-  controller_9968163fcd32 --> service_717a4830bf0e
-  controller_9968163fcd32 -. renders .-> view_bde0b7fa75a6
-  route_8136f5b45613 --> controller_9968163fcd32
-  controller_9968163fcd32 --> service_f33a1d77b137
-  controller_9968163fcd32 -. renders .-> view_e106de188447
-  route_6e1b2c8ad9df --> controller_9968163fcd32
-  controller_9968163fcd32 --> service_f33a1d77b137
-  controller_9968163fcd32 -. renders .-> view_8bf2f1da4f90
-  route_2f0729dfe76a --> controller_9968163fcd32
-  controller_9968163fcd32 --> service_f33a1d77b137
-  controller_9968163fcd32 --> service_f751cedec776
-  controller_9968163fcd32 --> service_fefb1ba2e4f7
-  controller_9968163fcd32 --> service_19bd8dc03a23
-  controller_9968163fcd32 -. renders .-> view_6698d76d719f
-  route_05bd7a95e13b --> controller_9968163fcd32
-  controller_9968163fcd32 --> service_f33a1d77b137
-  controller_9968163fcd32 -. renders .-> view_bde0b7fa75a6
-  route_f8d4769e9808 --> controller_50eaea84bd1d
-  controller_50eaea84bd1d --> service_f33a1d77b137
-  controller_50eaea84bd1d --> service_0d961cbe684b
-  controller_50eaea84bd1d -. renders .-> view_ca3569057adb
-  route_c3f4bffc0fc6 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_f751cedec776
-  controller_3d37b75c07ec --> service_717a4830bf0e
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_af209260b21b
-  route_3960f6a49231 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_0ab47bcd921f
-  controller_3d37b75c07ec --> service_69598e3405fb
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_8885ff0b037a
-  route_e95fd00567af --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_ebacea9031c7
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_9720267f0400
-  route_cdc48d6b8f5f --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_c4c5dac5c925
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_9720267f0400
-  route_5e926678ff14 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_f751cedec776
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_ca3569057adb
-  route_88925401b130 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_f751cedec776
-  controller_3d37b75c07ec --> service_58db6f1ab7dc
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_99a0e61b7241
-  route_2b4e3ef8ace9 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_f751cedec776
-  controller_3d37b75c07ec --> service_1a1be05523e3
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_99a0e61b7241
-  route_c7a9a024dd65 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_58db6f1ab7dc
-  controller_3d37b75c07ec --> service_fefb1ba2e4f7
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_ccc5b8c17f9f
-  route_a957673c2bdd --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_ae8ee1aa005a
-  controller_3d37b75c07ec --> service_69598e3405fb
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_c08844df74a9
-  route_3b4bedeac0b9 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_717a4830bf0e
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_ca3569057adb
-  route_92dd4d9f6051 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_0d961cbe684b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_860deb20ae6d
-  route_e65af988eca1 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_f751cedec776
-  controller_3d37b75c07ec --> service_19bd8dc03a23
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_c9b59025f729
-  route_a7447dded861 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_c9950f0c49e4
-  controller_3d37b75c07ec --> service_69598e3405fb
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_9720267f0400
-  route_a068f086796c --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_fefb1ba2e4f7
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_ccc5b8c17f9f
-  route_c2fce1e83e49 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_fefb1ba2e4f7
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_ccc5b8c17f9f
-  route_833047aa65da --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_01d1cd760b64
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_ccc5b8c17f9f
-  route_818acb238877 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_fefb1ba2e4f7
-  controller_3d37b75c07ec --> service_9eeeaab84791
-  controller_3d37b75c07ec --> service_6c9416ef0383
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_62fe69fcdef3
-  route_038d4dfa1e39 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_6c9416ef0383
-  controller_3d37b75c07ec --> service_66daa9bdc2c1
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_6a1c27fa0738
-  route_f10a46dc5fa4 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_6c9416ef0383
-  controller_3d37b75c07ec --> service_66daa9bdc2c1
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_6a1c27fa0738
-  route_f679682223bf --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_66daa9bdc2c1
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_ca3569057adb
-  route_e67aaf6f51f8 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_ca3569057adb
-  route_a343d37ef490 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_fc0ff5cfd93a
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_9720267f0400
-  route_4409e3819a27 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_ea89d25425b5
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_9720267f0400
-  route_ce4718c7cfc4 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_ea89d25425b5
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_9720267f0400
-  route_427d0f3e1215 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_bf9fe918ea27
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_89a7dcb95b04
-  route_94db05b769d5 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_bf9fe918ea27
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_89a7dcb95b04
-  route_93e1c961f71d --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_66daa9bdc2c1
-  controller_3d37b75c07ec --> service_97627a5cbf8e
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_ca3569057adb
-  route_fb78b0ee65e6 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_ea89d25425b5
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_ca3569057adb
-  route_4115282232ca --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_fefb1ba2e4f7
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_17900ac53325
-  route_c3b94d62a632 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_fefb1ba2e4f7
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_17900ac53325
-  route_0c88057d061a --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_75ac00fac97c
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_52965cdd23d8
-  route_16d561502e84 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_75ac00fac97c
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_52965cdd23d8
-  route_74e14338f5d2 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_82c10839666c
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_036080adacd9
-  route_e9360697e956 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_b06ea6dd1537
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_2b32af729a24
-  route_68d4224aae26 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_0c5c8cc8da49
-  route_94124153470a --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_ea89d25425b5
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_8885ff0b037a
-  route_608ddd16ca24 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_ea89d25425b5
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_8885ff0b037a
-  route_5bd40ddf2477 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_ea89d25425b5
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_9720267f0400
-  route_df55a87c861a --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_ea89d25425b5
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_9720267f0400
-  route_9cdd4d3072b4 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_ea89d25425b5
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_9720267f0400
-  route_a4ffe236f106 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_ea89d25425b5
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_9720267f0400
-  route_ebd390f27282 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_ea89d25425b5
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_c08844df74a9
-  route_dc3164561034 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_ea89d25425b5
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_c08844df74a9
-  route_a2384c26c92f --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_ea89d25425b5
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_9720267f0400
-  route_e69af680148c --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_ea89d25425b5
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_9720267f0400
-  route_f6cc7a75f108 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_6c9416ef0383
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_62fe69fcdef3
-  route_eca99e09ade9 --> controller_7fda1508bed0
-  controller_7fda1508bed0 --> service_119321b674bd
-  controller_7fda1508bed0 --> service_0ab47bcd921f
-  controller_7fda1508bed0 -. renders .-> view_9ee4574eabfc
-  route_9ba7a8da6f0d --> controller_7fda1508bed0
-  controller_7fda1508bed0 --> service_119321b674bd
-  controller_7fda1508bed0 -. renders .-> view_9ee4574eabfc
-  route_c048d08cf4d9 --> controller_7fda1508bed0
-  controller_7fda1508bed0 --> service_119321b674bd
-  controller_7fda1508bed0 -. renders .-> view_9ee4574eabfc
-  route_f0c540724dfe --> controller_7fda1508bed0
-  controller_7fda1508bed0 --> service_6c9416ef0383
-  controller_7fda1508bed0 --> service_9eeeaab84791
-  controller_7fda1508bed0 -. renders .-> view_6b1f93c8d0e4
-  route_3cdaaaae69eb --> controller_7fda1508bed0
-  controller_7fda1508bed0 --> service_6c9416ef0383
-  controller_7fda1508bed0 --> service_9eeeaab84791
-  controller_7fda1508bed0 --> service_66daa9bdc2c1
-  controller_7fda1508bed0 --> service_19bd8dc03a23
-  controller_7fda1508bed0 --> service_fefb1ba2e4f7
-  controller_7fda1508bed0 -. renders .-> view_6b1f93c8d0e4
-  route_416fde130b00 --> controller_7fda1508bed0
-  controller_7fda1508bed0 --> service_6c9416ef0383
-  controller_7fda1508bed0 --> service_9eeeaab84791
-  controller_7fda1508bed0 -. renders .-> view_6b1f93c8d0e4
-  route_c4966e625ffb --> controller_7fda1508bed0
-  controller_7fda1508bed0 --> service_6c9416ef0383
-  controller_7fda1508bed0 --> service_9eeeaab84791
-  controller_7fda1508bed0 --> service_66daa9bdc2c1
-  controller_7fda1508bed0 --> service_19bd8dc03a23
-  controller_7fda1508bed0 --> service_fefb1ba2e4f7
-  controller_7fda1508bed0 -. renders .-> view_6b1f93c8d0e4
-  route_0e14c4ef1380 --> controller_50eaea84bd1d
-  controller_50eaea84bd1d --> service_f33a1d77b137
-  controller_50eaea84bd1d --> service_ae8ee1aa005a
-  controller_50eaea84bd1d --> service_ea89d25425b5
-  controller_50eaea84bd1d --> service_1a1be05523e3
-  controller_50eaea84bd1d -. renders .-> view_74015889d737
-  route_ee5462fe50d8 --> controller_452e47b9a403
-  controller_452e47b9a403 --> service_cdae135eb5b5
-  controller_452e47b9a403 --> service_f33a1d77b137
-  controller_452e47b9a403 -. renders .-> view_bde0b7fa75a6
-  route_9c8e6425cd02 --> controller_452e47b9a403
-  controller_452e47b9a403 --> service_cdae135eb5b5
-  controller_452e47b9a403 --> service_f33a1d77b137
-  controller_452e47b9a403 -. renders .-> view_8bf2f1da4f90
-  route_f93276b968be --> controller_64e608ddc28b
-  controller_64e608ddc28b --> service_3fc704b15e1b
-  controller_64e608ddc28b -. renders .-> view_54f97aa2b448
-  route_5de8a52549bc --> controller_64e608ddc28b
-  controller_64e608ddc28b --> service_1bacfc3e3f3b
-  controller_64e608ddc28b --> service_b2e5928bb46a
-  controller_64e608ddc28b --> service_97627a5cbf8e
-  controller_64e608ddc28b -. renders .-> view_54f97aa2b448
-  route_93b329f29ece --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 -. renders .-> view_c8dddc6d8f3e
-  route_1a07134bf963 --> controller_18ec49ea2cf4
-  controller_18ec49ea2cf4 -. renders .-> view_4febaa319900
-  route_0a02dcc06be5 --> controller_2702fc6f256e
-  controller_2702fc6f256e --> service_66daa9bdc2c1
-  controller_2702fc6f256e --> service_6c9416ef0383
-  controller_2702fc6f256e -. renders .-> view_fe7e7ffe6adc
-  route_6e62aa059570 --> controller_f21ef7cdb1a4
-  controller_f21ef7cdb1a4 --> service_a59832354e11
-  controller_f21ef7cdb1a4 --> service_dc8af4c619cd
-  controller_f21ef7cdb1a4 -. renders .-> view_c8dddc6d8f3e
-  route_b8738856284a --> controller_f21ef7cdb1a4
-  controller_f21ef7cdb1a4 --> service_a59832354e11
-  controller_f21ef7cdb1a4 --> service_dc8af4c619cd
-  controller_f21ef7cdb1a4 -. renders .-> view_4febaa319900
-  route_3c268a290f60 --> controller_f21ef7cdb1a4
-  controller_f21ef7cdb1a4 --> service_a59832354e11
-  controller_f21ef7cdb1a4 --> service_dc8af4c619cd
-  controller_f21ef7cdb1a4 -. renders .-> view_c8dddc6d8f3e
-  route_ee5a5224937e --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_a59832354e11
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_e13f2d1caf99
-  route_1ae4a2a08143 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_a59832354e11
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_e13f2d1caf99
-  route_6412bc37bc92 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_a59832354e11
-  controller_3d37b75c07ec --> service_e79c019a142b
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_e13f2d1caf99
-  route_2dcebe2cfda0 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_a59832354e11
-  controller_3d37b75c07ec --> service_dc8af4c619cd
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_e13f2d1caf99
-  route_b46d790346e6 --> controller_3d37b75c07ec
-  controller_3d37b75c07ec --> service_a59832354e11
-  controller_3d37b75c07ec --> service_1909dab7e246
-  controller_3d37b75c07ec --> service_f33a1d77b137
-  controller_3d37b75c07ec -. renders .-> view_e13f2d1caf99
-  route_f359476da97e --> controller_e5d7c85a6532
-  controller_e5d7c85a6532 --> service_6c9416ef0383
-  controller_e5d7c85a6532 --> service_66daa9bdc2c1
-  controller_e5d7c85a6532 -. renders .-> view_fe7e7ffe6adc
-  route_593217ea02df --> controller_43aabb320c7a
-  controller_43aabb320c7a -. renders .-> view_fe7e7ffe6adc
-  route_3ff483002409 --> controller_64e608ddc28b
-  controller_64e608ddc28b --> service_66daa9bdc2c1
-  controller_64e608ddc28b -. renders .-> view_fe7e7ffe6adc
-  nav_90609cfd31a3 --> route_8c80c0301221
-  nav_1abee342ae87 --> route_6ce84be0a21c
-  nav_41fb19b5f30b --> route_b2c44d359fd8
-  nav_06442c376c88 --> route_53bc246f9b4e
-  nav_c6dda9b9056f --> route_8136f5b45613
-  controller_9968163fcd32 --> controller_6f7f176814f0
-  controller_3d37b75c07ec --> controller_6f7f176814f0
-  controller_e5d7c85a6532 --> controller_6f7f176814f0
-  controller_f3a06e444dad --> controller_6f7f176814f0
-  controller_f21ef7cdb1a4 --> controller_6f7f176814f0
-  controller_7fda1508bed0 --> controller_6f7f176814f0
-  controller_50eaea84bd1d --> controller_6f7f176814f0
-  controller_18ec49ea2cf4 --> controller_6f7f176814f0
-  controller_2702fc6f256e --> controller_6f7f176814f0
-  controller_452e47b9a403 --> controller_6f7f176814f0
-  controller_64e608ddc28b --> controller_6f7f176814f0
-  controller_43aabb320c7a --> controller_6f7f176814f0
-  controller_6f7f176814f0 --> service_3fc704b15e1b
-  tool_63816fb031e2 --> service_c5fb81744c52
-  tool_20fe79d51ae4 --> service_b30981b6449c
-  tool_20fe79d51ae4 --> service_66daa9bdc2c1
-  tool_20fe79d51ae4 --> collection_86024cad1e83
-  service_b2e5928bb46a --> collection_9bc65c2abec1
-  service_b2e5928bb46a --> collection_12c500ed0b78
-  service_b2e5928bb46a --> collection_2417b5325520
-  service_b2e5928bb46a --> collection_830b87d9f1ff
-  service_717a4830bf0e --> collection_2417b5325520
-  service_ae8ee1aa005a --> collection_c851fb104bb0
-  service_0d961cbe684b --> collection_2417b5325520
-  service_0d961cbe684b --> collection_c37815a262b9
-  service_0d961cbe684b --> collection_ce528b00cff4
-  service_e79c019a142b --> collection_32356d16f20c
-  service_ebacea9031c7 --> collection_b0b5ccb4a195
-  service_fc0ff5cfd93a --> collection_2dce077b5527
-  service_c4c5dac5c925 --> collection_28882724d375
-  service_66daa9bdc2c1 --> collection_9bc65c2abec1
-  service_66daa9bdc2c1 --> collection_963e3a2fe559
-  service_66daa9bdc2c1 --> collection_86024cad1e83
-  service_66daa9bdc2c1 --> collection_12c500ed0b78
-  service_66daa9bdc2c1 --> collection_2417b5325520
-  service_66daa9bdc2c1 --> collection_c37815a262b9
-  service_66daa9bdc2c1 --> collection_ce528b00cff4
-  service_66daa9bdc2c1 --> collection_7de38f3c3d3b
-  service_66daa9bdc2c1 --> collection_b0d96590d438
-  service_66daa9bdc2c1 --> collection_9fa47bff6beb
-  service_66daa9bdc2c1 --> collection_2dce077b5527
-  service_1a1be05523e3 --> collection_d10fbf039e34
-  service_75ac00fac97c --> collection_a276577b33a8
-  service_f751cedec776 --> collection_12c500ed0b78
-  service_0ab47bcd921f --> collection_86024cad1e83
-  service_ea89d25425b5 --> collection_86024cad1e83
-  service_ea89d25425b5 --> collection_b0b5ccb4a195
-  service_ea89d25425b5 --> collection_28882724d375
-  service_ea89d25425b5 --> collection_c851fb104bb0
-  service_ea89d25425b5 --> collection_fefa79731a13
-  service_cdae135eb5b5 --> collection_74dcb1cec508
-  service_6c9416ef0383 --> collection_7de38f3c3d3b
-  service_fefb1ba2e4f7 --> collection_2e5d8aa3dfa8
-  service_1bacfc3e3f3b --> collection_830b87d9f1ff
-  service_97627a5cbf8e --> collection_830b87d9f1ff
-  service_c9950f0c49e4 --> collection_fefa79731a13
-  service_9eeeaab84791 --> integration_1442a65b90de
-  service_9eeeaab84791 --> integration_063c1f657453
-  controller_f3a06e444dad --> integration_58a89e5d2ef3
-  controller_f3a06e444dad --> integration_58a89e5d2ef3
-  service_9eeeaab84791 --> integration_1442a65b90de
-  service_9eeeaab84791 --> integration_063c1f657453
-  service_9eeeaab84791 --> integration_1442a65b90de
-  service_9eeeaab84791 --> integration_063c1f657453
-  service_9eeeaab84791 --> integration_1442a65b90de
-  service_9eeeaab84791 --> integration_063c1f657453
-  service_1bacfc3e3f3b --> integration_08255445e22a
-  tool_891d42e0bd53 --> systematic_map["docs/systematic-map.mmd"]:::data
-  tool_ffb4fe3c51d9 --> systematic_map
-  tool_6bc5276d6a60 --> ROUTES_PUBLIC
-  tool_6bc5276d6a60 --> ROUTES_ADMIN
+  route_get --> controller_publiccontroller
+  controller_publiccontroller --> service_productservice
+  controller_publiccontroller --> service_astrologerservice
+  controller_publiccontroller --> service_templeservice
+  controller_publiccontroller --> service_categoryservice
+  controller_publiccontroller -. renders .-> view_public_home
+  route_get_about --> controller_publiccontroller
+  controller_publiccontroller -. renders .-> view_public_about
+  route_get_sri_panchami_spiritual --> controller_publiccontroller
+  controller_publiccontroller -. renders .-> view_public_spiritual
+  route_get_spiritual --> controller_publiccontroller
+  controller_publiccontroller -. renders .-> view_public_spiritual
+  route_get_terms --> controller_publiccontroller
+  controller_publiccontroller -. renders .-> view_public_terms
+  route_get_privacy --> controller_publiccontroller
+  controller_publiccontroller -. renders .-> view_public_privacy
+  route_get_consult --> controller_publiccontroller
+  controller_publiccontroller --> service_astrologerservice
+  controller_publiccontroller -. renders .-> view_public_consult
+  route_get_consult_slug --> controller_publiccontroller
+  controller_publiccontroller --> service_astrologerservice
+  controller_publiccontroller -. renders .-> view_public_astrologer
+  route_get_temples --> controller_publiccontroller
+  controller_publiccontroller --> service_templeservice
+  controller_publiccontroller -. renders .-> view_public_temples
+  route_get_temples_slug --> controller_publiccontroller
+  controller_publiccontroller --> service_templeservice
+  controller_publiccontroller -. renders .-> view_public_temple
+  route_get_shop --> controller_publiccontroller
+  controller_publiccontroller --> service_productservice
+  controller_publiccontroller --> service_categoryservice
+  controller_publiccontroller -. renders .-> view_public_shop
+  route_get_categories --> controller_publiccontroller
+  controller_publiccontroller --> service_categoryservice
+  controller_publiccontroller -. renders .-> view_public_categories
+  route_get_product_slug --> controller_publiccontroller
+  controller_publiccontroller --> service_productservice
+  controller_publiccontroller -. renders .-> view_public_product
+  route_get_cart --> controller_publiccontroller
+  controller_publiccontroller --> service_cartservice
+  controller_publiccontroller --> service_productservice
+  controller_publiccontroller -. renders .-> view_public_cart
+  route_get_checkout --> controller_publiccontroller
+  controller_publiccontroller --> service_cartservice
+  controller_publiccontroller --> service_productservice
+  controller_publiccontroller --> service_secretservice
+  controller_publiccontroller --> service_addressservice
+  controller_publiccontroller --> service_settingsservice
+  controller_publiccontroller -. renders .-> view_public_checkout
+  route_get_sitemap_xml --> controller_publiccontroller
+  controller_publiccontroller --> service_blogservice
+  controller_publiccontroller --> service_productservice
+  controller_publiccontroller -. renders .-> view_public_sitemap
+  route_get_contact --> controller_publiccontroller
+  controller_publiccontroller -. renders .-> view_public_contact
+  route_post_contact --> controller_publiccontroller
+  controller_publiccontroller --> service_contactservice
+  controller_publiccontroller -. renders .-> view_public_contact
+  route_get_login --> controller_publiccontroller
+  controller_publiccontroller --> service_authservice
+  controller_publiccontroller -. renders .-> view_public_login
+  route_get_forgot_password --> controller_authcontroller
+  controller_authcontroller --> service_passwordresetservice
+  controller_authcontroller -. renders .-> view_public_forgot_password
+  route_post_forgot_password --> controller_authcontroller
+  controller_authcontroller --> service_passwordresetservice
+  controller_authcontroller -. renders .-> view_public_forgot_password
+  route_get_reset_password --> controller_authcontroller
+  controller_authcontroller --> service_passwordresetservice
+  controller_authcontroller -. renders .-> view_public_reset_password
+  route_post_reset_password --> controller_authcontroller
+  controller_authcontroller --> service_passwordresetservice
+  controller_authcontroller -. renders .-> view_public_reset_password
+  route_get_auth_google --> controller_authcontroller
+  controller_authcontroller --> service_secretservice
+  controller_authcontroller -. renders .-> view_public_login
+  route_get_auth_google_callback --> controller_authcontroller
+  controller_authcontroller --> service_secretservice
+  controller_authcontroller --> service_databaseservice
+  controller_authcontroller -. renders .-> view_public_login
+  route_get_register --> controller_authcontroller
+  controller_authcontroller -. renders .-> view_public_register
+  route_post_register --> controller_authcontroller
+  controller_authcontroller --> service_databaseservice
+  controller_authcontroller -. renders .-> view_public_register
+  route_post_login --> controller_authcontroller
+  controller_authcontroller --> service_databaseservice
+  controller_authcontroller -. renders .-> view_public_login
+  route_get_logout --> controller_authcontroller
+  controller_authcontroller --> service_authservice
+  controller_authcontroller -. renders .-> view_public_login
+  route_get_account_dashboard --> controller_accountcontroller
+  controller_accountcontroller --> service_authservice
+  controller_accountcontroller -. renders .-> view_account_orders
+  route_get_account_dashboard_orders --> controller_accountcontroller
+  controller_accountcontroller --> service_authservice
+  controller_accountcontroller --> service_orderservice
+  controller_accountcontroller --> service_reviewservice
+  controller_accountcontroller -. renders .-> view_account_orders
+  route_get_account_dashboard_sessions --> controller_accountcontroller
+  controller_accountcontroller --> service_authservice
+  controller_accountcontroller --> service_appointmentservice
+  controller_accountcontroller -. renders .-> view_account_bookings
+  route_get_account_dashboard_install --> controller_accountcontroller
+  controller_accountcontroller --> service_authservice
+  controller_accountcontroller -. renders .-> view_account_install
+  route_get_account_orders --> controller_accountcontroller
+  controller_accountcontroller --> service_authservice
+  controller_accountcontroller -. renders .-> view_account_orders
+  route_get_account_orders_orderid_invoice --> controller_accountcontroller
+  controller_accountcontroller --> service_authservice
+  controller_accountcontroller --> service_orderservice
+  controller_accountcontroller --> service_settingsservice
+  controller_accountcontroller --> service_taxservice
+  controller_accountcontroller -. renders .-> view_account_invoice
+  route_get_account_bookings --> controller_accountcontroller
+  controller_accountcontroller --> service_authservice
+  controller_accountcontroller -. renders .-> view_account_bookings
+  route_post_api_consultations_id_status --> controller_consultationcontroller
+  controller_consultationcontroller --> service_authservice
+  controller_consultationcontroller --> service_consultationservice
+  controller_consultationcontroller -. renders .-> view_admin_list
+  route_get_admin --> controller_admincontroller
+  controller_admincontroller --> service_orderservice
+  controller_admincontroller --> service_appointmentservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_dashboard
+  route_get_admin_products --> controller_admincontroller
+  controller_admincontroller --> service_productservice
+  controller_admincontroller --> service_schemaservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_product_form
+  route_get_admin_categories --> controller_admincontroller
+  controller_admincontroller --> service_categoryservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_resource
+  route_get_admin_coupons --> controller_admincontroller
+  controller_admincontroller --> service_couponservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_resource
+  route_get_admin_orders --> controller_admincontroller
+  controller_admincontroller --> service_orderservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_list
+  route_get_admin_orders_id --> controller_admincontroller
+  controller_admincontroller --> service_orderservice
+  controller_admincontroller --> service_shippingservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_detail
+  route_post_admin_orders_id_status --> controller_admincontroller
+  controller_admincontroller --> service_orderservice
+  controller_admincontroller --> service_mailqueueservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_detail
+  route_get_admin_shipping --> controller_admincontroller
+  controller_admincontroller --> service_shippingservice
+  controller_admincontroller --> service_settingsservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_settings
+  route_get_admin_astrologers --> controller_admincontroller
+  controller_admincontroller --> service_astrologerservice
+  controller_admincontroller --> service_schemaservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_astrologer_form
+  route_get_admin_appointments --> controller_admincontroller
+  controller_admincontroller --> service_appointmentservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_list
+  route_get_admin_consultation_analytics --> controller_admincontroller
+  controller_admincontroller --> service_consultationservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_consultation_analytics
+  route_get_admin_tax_report --> controller_admincontroller
+  controller_admincontroller --> service_orderservice
+  controller_admincontroller --> service_taxservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_tax_report
+  route_get_admin_temples --> controller_admincontroller
+  controller_admincontroller --> service_templeservice
+  controller_admincontroller --> service_schemaservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_resource
+  route_get_admin_settings --> controller_admincontroller
+  controller_admincontroller --> service_settingsservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_settings
+  route_post_admin_settings_save --> controller_admincontroller
+  controller_admincontroller --> service_settingsservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_settings
+  route_post_admin_settings_admin_credentials --> controller_admincontroller
+  controller_admincontroller --> service_envservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_settings
+  route_get_admin_integrations --> controller_admincontroller
+  controller_admincontroller --> service_settingsservice
+  controller_admincontroller --> service_paymentservice
+  controller_admincontroller --> service_secretservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_integrations
+  route_get_admin_agent --> controller_admincontroller
+  controller_admincontroller --> service_secretservice
+  controller_admincontroller --> service_databaseservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_agent
+  route_post_admin_agent_ask --> controller_admincontroller
+  controller_admincontroller --> service_secretservice
+  controller_admincontroller --> service_databaseservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_agent
+  route_get_admin_backups --> controller_admincontroller
+  controller_admincontroller --> service_databaseservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_list
+  route_get_admin_audit_log --> controller_admincontroller
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_list
+  route_get_admin_contact_submissions --> controller_admincontroller
+  controller_admincontroller --> service_contactservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_resource
+  route_post_admin_contact_submissions_save --> controller_admincontroller
+  controller_admincontroller --> service_resourceservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_resource
+  route_post_admin_contact_submissions_delete --> controller_admincontroller
+  controller_admincontroller --> service_resourceservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_resource
+  route_get_admin_email_inbox --> controller_admincontroller
+  controller_admincontroller --> service_mailstorageservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_mailbox
+  route_get_admin_email_outbox --> controller_admincontroller
+  controller_admincontroller --> service_mailstorageservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_mailbox
+  route_get_admin_support_tickets --> controller_admincontroller
+  controller_admincontroller --> service_databaseservice
+  controller_admincontroller --> service_supportticketservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_list
+  route_post_admin_support_tickets_save --> controller_admincontroller
+  controller_admincontroller --> service_resourceservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_list
+  route_get_admin_appearance --> controller_admincontroller
+  controller_admincontroller --> service_settingsservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_appearance
+  route_post_admin_appearance_save --> controller_admincontroller
+  controller_admincontroller --> service_settingsservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_appearance
+  route_get_admin_media --> controller_admincontroller
+  controller_admincontroller --> service_mediaservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_media
+  route_post_admin_media_upload --> controller_admincontroller
+  controller_admincontroller --> service_mediaservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_media
+  route_post_admin_environment_fix_permissions --> controller_admincontroller
+  controller_admincontroller --> service_storagepermissionservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_environment
+  route_get_admin_developer_project_map --> controller_admincontroller
+  controller_admincontroller --> service_projectmapservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_project_map
+  route_get_admin_developer_workflow --> controller_admincontroller
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_workflow
+  route_post_admin_products_save --> controller_admincontroller
+  controller_admincontroller --> service_resourceservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_product_form
+  route_post_admin_products_delete --> controller_admincontroller
+  controller_admincontroller --> service_resourceservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_product_form
+  route_post_admin_categories_save --> controller_admincontroller
+  controller_admincontroller --> service_resourceservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_resource
+  route_post_admin_categories_delete --> controller_admincontroller
+  controller_admincontroller --> service_resourceservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_resource
+  route_post_admin_coupons_save --> controller_admincontroller
+  controller_admincontroller --> service_resourceservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_resource
+  route_post_admin_coupons_delete --> controller_admincontroller
+  controller_admincontroller --> service_resourceservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_resource
+  route_post_admin_astrologers_save --> controller_admincontroller
+  controller_admincontroller --> service_resourceservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_astrologer_form
+  route_post_admin_astrologers_delete --> controller_admincontroller
+  controller_admincontroller --> service_resourceservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_astrologer_form
+  route_post_admin_temples_save --> controller_admincontroller
+  controller_admincontroller --> service_resourceservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_resource
+  route_post_admin_temples_delete --> controller_admincontroller
+  controller_admincontroller --> service_resourceservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_resource
+  route_post_admin_integrations_save --> controller_admincontroller
+  controller_admincontroller --> service_secretservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_integrations
+  route_post_cart_add --> controller_commercecontroller
+  controller_commercecontroller --> service_cartservice
+  controller_commercecontroller --> service_productservice
+  controller_commercecontroller -. renders .-> view_public_cart
+  route_post_cart_remove --> controller_commercecontroller
+  controller_commercecontroller --> service_cartservice
+  controller_commercecontroller -. renders .-> view_public_cart
+  route_post_cart_update --> controller_commercecontroller
+  controller_commercecontroller --> service_cartservice
+  controller_commercecontroller -. renders .-> view_public_cart
+  route_post_checkout_create_order --> controller_commercecontroller
+  controller_commercecontroller --> service_secretservice
+  controller_commercecontroller --> service_paymentservice
+  controller_commercecontroller -. renders .-> view_public_checkout
+  route_post_payment_verify --> controller_commercecontroller
+  controller_commercecontroller --> service_secretservice
+  controller_commercecontroller --> service_paymentservice
+  controller_commercecontroller --> service_databaseservice
+  controller_commercecontroller --> service_taxservice
+  controller_commercecontroller --> service_settingsservice
+  controller_commercecontroller -. renders .-> view_public_checkout
+  route_post_create_order --> controller_commercecontroller
+  controller_commercecontroller --> service_secretservice
+  controller_commercecontroller --> service_paymentservice
+  controller_commercecontroller -. renders .-> view_public_checkout
+  route_post_verify_payment --> controller_commercecontroller
+  controller_commercecontroller --> service_secretservice
+  controller_commercecontroller --> service_paymentservice
+  controller_commercecontroller --> service_databaseservice
+  controller_commercecontroller --> service_taxservice
+  controller_commercecontroller --> service_settingsservice
+  controller_commercecontroller -. renders .-> view_public_checkout
+  route_post_consultation_initiate --> controller_consultationcontroller
+  controller_consultationcontroller --> service_authservice
+  controller_consultationcontroller --> service_astrologerservice
+  controller_consultationcontroller --> service_resourceservice
+  controller_consultationcontroller --> service_mailqueueservice
+  controller_consultationcontroller -. renders .-> view_public_astrologer
+  route_post_reviews_astrologer --> controller_reviewcontroller
+  controller_reviewcontroller --> service_reviewservice
+  controller_reviewcontroller --> service_authservice
+  controller_reviewcontroller -. renders .-> view_account_bookings
+  route_post_reviews_product --> controller_reviewcontroller
+  controller_reviewcontroller --> service_reviewservice
+  controller_reviewcontroller --> service_authservice
+  controller_reviewcontroller -. renders .-> view_account_orders
+  route_get_support --> controller_supportcontroller
+  controller_supportcontroller --> service_seoservice
+  controller_supportcontroller -. renders .-> view_public_support
+  route_post_support_ask --> controller_supportcontroller
+  controller_supportcontroller --> service_supportbotservice
+  controller_supportcontroller --> service_agentcontextservice
+  controller_supportcontroller --> service_supportticketservice
+  controller_supportcontroller -. renders .-> view_public_support
+  route_get_docs --> controller_publiccontroller
+  controller_publiccontroller -. renders .-> view_public_blog
+  route_get_help_slug --> controller_publiccontroller
+  controller_publiccontroller -. renders .-> view_public_blog_post
+  route_post_remotedb --> controller_remotedbcontroller
+  controller_remotedbcontroller --> service_databaseservice
+  controller_remotedbcontroller --> service_secretservice
+  controller_remotedbcontroller -. renders .-> view_public_404
+  route_get_blog --> controller_blogcontroller
+  controller_blogcontroller --> service_blogservice
+  controller_blogcontroller --> service_markdownrenderer
+  controller_blogcontroller -. renders .-> view_public_blog
+  route_get_blog_slug --> controller_blogcontroller
+  controller_blogcontroller --> service_blogservice
+  controller_blogcontroller --> service_markdownrenderer
+  controller_blogcontroller -. renders .-> view_public_blog_post
+  route_get_blog_category_slug --> controller_blogcontroller
+  controller_blogcontroller --> service_blogservice
+  controller_blogcontroller --> service_markdownrenderer
+  controller_blogcontroller -. renders .-> view_public_blog
+  route_get_admin_blog --> controller_admincontroller
+  controller_admincontroller --> service_blogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_blog
+  route_post_admin_blog_save --> controller_admincontroller
+  controller_admincontroller --> service_blogservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_blog
+  route_post_admin_blog_delete --> controller_admincontroller
+  controller_admincontroller --> service_blogservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_blog
+  route_post_admin_blog_preview --> controller_admincontroller
+  controller_admincontroller --> service_blogservice
+  controller_admincontroller --> service_markdownrenderer
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_blog
+  route_post_admin_blog_ai_draft --> controller_admincontroller
+  controller_admincontroller --> service_blogservice
+  controller_admincontroller --> service_blogdraftservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_blog
+  route_post_api_agent --> controller_agentcontroller
+  controller_agentcontroller --> service_secretservice
+  controller_agentcontroller --> service_databaseservice
+  controller_agentcontroller -. renders .-> view_public_404
+  route_post_api_tts_tokenize --> controller_ttscontroller
+  controller_ttscontroller -. renders .-> view_public_404
+  route_get_api_support_latest_message --> controller_supportcontroller
+  controller_supportcontroller --> service_databaseservice
+  controller_supportcontroller -. renders .-> view_public_404
+  nav_contact --> route_get_contact
+  nav_account_dashboard --> route_get_account_dashboard
+  nav_account_dashboard_orders --> route_get_account_dashboard_orders
+  nav_account_dashboard_sessions --> route_get_account_dashboard_sessions
+  nav_account_dashboard_install --> route_get_account_dashboard_install
+  controller_accountcontroller --> controller_basecontroller
+  controller_admincontroller --> controller_basecontroller
+  controller_agentcontroller --> controller_basecontroller
+  controller_authcontroller --> controller_basecontroller
+  controller_blogcontroller --> controller_basecontroller
+  controller_commercecontroller --> controller_basecontroller
+  controller_consultationcontroller --> controller_basecontroller
+  controller_publiccontroller --> controller_basecontroller
+  controller_remotedbcontroller --> controller_basecontroller
+  controller_reviewcontroller --> controller_basecontroller
+  controller_supportcontroller --> controller_basecontroller
+  controller_ttscontroller --> controller_basecontroller
+  controller_basecontroller --> service_seoservice
+  tool_process_mail_queue --> service_smtpmailer
+  tool_import_product_images --> service_imageoptimizerservice
+  tool_import_product_images --> service_databaseservice
+  tool_import_product_images --> collection_products
+  service_agentcontextservice --> collection_users
+  service_agentcontextservice --> collection_orders
+  service_agentcontextservice --> collection_appointments
+  service_agentcontextservice --> collection_support_tickets
+  service_appointmentservice --> collection_appointments
+  service_astrologerservice --> collection_astrologers
+  service_consultationservice --> collection_appointments
+  service_consultationservice --> collection_consultation_messages
+  service_consultationservice --> collection_consultation_signals
+  service_auditlogservice --> collection_audit_events
+  service_categoryservice --> collection_categories
+  service_contactservice --> collection_contact_submissions
+  service_couponservice --> collection_coupons
+  service_databaseservice --> collection_users
+  service_databaseservice --> collection_addresses
+  service_databaseservice --> collection_products
+  service_databaseservice --> collection_orders
+  service_databaseservice --> collection_appointments
+  service_databaseservice --> collection_consultation_messages
+  service_databaseservice --> collection_consultation_signals
+  service_databaseservice --> collection_secrets
+  service_databaseservice --> collection_mail_inbox
+  service_databaseservice --> collection_mail_outbox
+  service_databaseservice --> collection_contact_submissions
+  service_mailqueueservice --> collection_mail_queue
+  service_mediaservice --> collection_media_files
+  service_orderservice --> collection_orders
+  service_productservice --> collection_products
+  service_resourceservice --> collection_products
+  service_resourceservice --> collection_categories
+  service_resourceservice --> collection_coupons
+  service_resourceservice --> collection_astrologers
+  service_resourceservice --> collection_temples
+  service_reviewservice --> collection_reviews
+  service_secretservice --> collection_secrets
+  service_settingsservice --> collection_settings
+  service_supportbotservice --> collection_support_tickets
+  service_supportticketservice --> collection_support_tickets
+  service_templeservice --> collection_temples
+  service_paymentservice --> integration_razorpayclient
+  service_paymentservice --> integration_stripeclient
+  controller_authcontroller --> integration_googleoauthclient
+  controller_authcontroller --> integration_googleoauthclient
+  service_paymentservice --> integration_razorpayclient
+  service_paymentservice --> integration_stripeclient
+  service_paymentservice --> integration_razorpayclient
+  service_paymentservice --> integration_stripeclient
+  service_paymentservice --> integration_razorpayclient
+  service_paymentservice --> integration_stripeclient
+  service_supportbotservice --> integration_googlesitekitclient
+  tool_generate_project_map --> systematic_map["docs/systematic-map.mmd"]:::data
+  tool_validate_project_map --> systematic_map
+  tool_smoke_local --> ROUTES_PUBLIC
+  tool_smoke_local --> ROUTES_ADMIN

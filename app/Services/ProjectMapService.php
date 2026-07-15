@@ -586,7 +586,10 @@ final class ProjectMapService {
     }
 
     private static function nodeId(string $prefix, string $value): string {
-        return $prefix . '_' . substr(md5($value), 0, 12);
+        $stable = preg_replace('/[^a-zA-Z0-9]/', '_', $value);
+        $stable = preg_replace('/_+/', '_', $stable);
+        $stable = trim($stable, '_');
+        return $prefix . '_' . strtolower(substr($stable, 0, 48));
     }
 
     private static function routeId(array $route): string { return self::nodeId('route', ($route['method'] ?? '') . ' ' . ($route['path'] ?? '')); }
