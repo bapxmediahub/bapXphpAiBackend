@@ -530,10 +530,13 @@ $tests['consultant marketplace exposes booking search and language filters'] = f
     assertTrue(!str_contains($view, 'href="/recharge"'), 'Astrologer marketplace should not show recharge; that belongs in the logged-in user panel');
     assertTrue(!str_contains($view, 'astro-recharge'), 'Astrologer marketplace should not render a recharge toolbar action');
     assertTrue(!str_contains($view, 'name="queue_status"'), 'Marketplace should not expose live session queues');
-    foreach (['Book consultation', 'astro-action--profile'] as $needle) {
+    foreach (['View Profile', 'astro-action--primary'] as $needle) {
         assertTrue(str_contains($view, $needle), "Consultant marketplace should expose {$needle} actions");
     }
-    foreach (['astro-status-filter', 'astro-status-label', 'data-status='] as $needle) assertTrue(!str_contains($view, $needle), "Booking-only marketplace should not expose {$needle}");
+    foreach (['astro-status-filter', 'data-status='] as $needle) assertTrue(!str_contains($view, $needle), "Booking-only marketplace should not expose {$needle}");
+    assertTrue(str_contains($view, 'astro-status-label'), 'Consultant cards should show availability status');
+    assertTrue(str_contains($view, 'astro-status-dot'), 'Consultant cards should show status dot indicator');
+    assertTrue(str_contains($view, 'availability_status'), 'Consultant cards should read availability from data');
     foreach (['+ Follow', 'Flat Deal', "['online', 'busy', 'offline']", '125 + ($index * 247)', "['Tamil']", "'N/A') ?> Years"] as $needle) {
         assertTrue(!str_contains($view, $needle), "Astrologer marketplace should not render invented or dead content: {$needle}");
     }
@@ -1040,7 +1043,7 @@ $tests['consultation pages use booking language without wallet pricing'] = funct
 $tests['consultants expose one booking path instead of live queues'] = function (): void {
     $market = file_get_contents(app_path('views/public/consult.php'));
     $controller = file_get_contents(app_path('app/Controllers/ConsultationController.php'));
-    assertTrue(str_contains($market, 'Book consultation'), 'Marketplace should link every consultant to booking');
+    assertTrue(str_contains($market, 'View Profile') && str_contains($market, 'Book'), 'Marketplace should link every consultant to profile and booking');
     foreach (['Request message session', 'Request call session', 'queue_status', 'reserved_credits'] as $needle) assertTrue(!str_contains($market . $controller, $needle), "Booking path should not expose {$needle}");
 };
 

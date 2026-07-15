@@ -28,9 +28,15 @@ final class MailQueueService {
     public function enqueuePaymentConfirmation(array $order): ?array {
         $to = trim((string)($order['customer_email'] ?? ''));
         if ($to === '') return null;
+        $invoiceHtml = '';
+        if (!empty($order['invoice_number'])) {
+            $invoiceHtml = '<p>Invoice: <strong>' . e((string)($order['invoice_number'] ?? '')) . '</strong> — '
+                . '<a href="' . rtrim(($_ENV['APP_URL'] ?? 'https://' . ($_SERVER['HTTP_HOST'] ?? 'localhost')), '/') . '/account/orders/' . e((string)($order['id'] ?? '')) . '/invoice">View invoice</a></p>';
+        }
         $subject = 'Sri Panchami Spiritual payment confirmed';
         $html = '<p>Vanakkam ' . e((string)($order['customer_name'] ?? '')) . ',</p>'
             . '<p>Your payment for order ' . e((string)($order['id'] ?? '')) . ' is confirmed.</p>'
+            . $invoiceHtml
             . '<p>Total: ₹' . e((string)($order['total'] ?? 0)) . '</p>';
         return $this->enqueue('payment_confirmation', $to, $subject, $html, null, ['order_id' => $order['id'] ?? '']);
     }

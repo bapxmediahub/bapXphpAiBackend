@@ -160,7 +160,8 @@ final class PublicController extends BaseController {
         $secrets = $secretService->all();
         $razorpayReady = $secretService->razorpayReadyForCurrentHost($secrets);
         $addresses = !empty($_SESSION['user']['email']) ? (new \App\Services\AddressService())->forCustomer($_SESSION['user']['email']) : [];
-        $this->render('public/checkout', ['items' => $items, 'total' => $this->cartTotal($items), 'secrets' => $secrets, 'addresses' => $addresses, 'razorpayReady' => $razorpayReady]);
+        $settings = (new \App\Services\SettingsService())->public();
+        $this->render('public/checkout', ['items' => $items, 'total' => $this->cartTotal($items), 'secrets' => $secrets, 'addresses' => $addresses, 'razorpayReady' => $razorpayReady, 'settings' => $settings]);
     }
     
     public function contact(): void {

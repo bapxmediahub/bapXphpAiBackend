@@ -13,7 +13,7 @@
             <?php else: ?>
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>Order ID</th><th>Status</th><th>Total</th><th>Delivery Address</th><th>Shipped At</th><th>Product Review</th></tr></thead>
+                        <thead><tr><th>Order ID</th><th>Status</th><th>Total</th><th>Delivery Address</th><th>Shipped At</th><th>Invoice</th><th>Product Review</th></tr></thead>
                         <tbody>
                         <?php foreach($orders as $order): ?>
                             <tr>
@@ -26,6 +26,13 @@
                                 </td>
                                 <td style="font-size:0.85rem; color:var(--color-text-muted);">
                                     <?= !empty($order['shipped_at']) ? e($order['shipped_at']) : e(ucfirst(str_replace('_', ' ', (string)($order['status'] ?? 'processing')))) ?>
+                                </td>
+                                <td>
+                                    <?php if (!empty($order['invoice_number'])): ?>
+                                        <a href="/account/orders/<?= e($order['id']) ?>/invoice" class="btn btn-sm" style="padding:0.3rem 0.6rem; font-size:0.75rem;">View Invoice</a>
+                                    <?php else: ?>
+                                        <span style="color:var(--color-text-muted); font-size:0.8rem;">Pending</span>
+                                    <?php endif; ?>
                                 </td>
                                 <td data-review_request_after_at="<?= e((string)($order['review_request_after_at'] ?? '')) ?>">
                                     <?php if(isset($reviewService) && $reviewService->productReviewIsDue($order)): ?>

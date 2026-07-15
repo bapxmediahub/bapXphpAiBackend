@@ -53,3 +53,43 @@
         <button class="btn btn-primary btn-sm">Save Settings</button>
     </form>
 </div>
+<div class="admin-card" style="margin-top:var(--space-lg);">
+    <h2 style="font-size:1rem; margin:0 0 var(--space-lg);">GST Configuration</h2>
+    <form class="admin-form" method="post" action="/admin/settings/save">
+        <div class="admin-form__row">
+            <div class="form-group">
+                <label>GSTIN</label>
+                <input type="text" name="gstin" value="<?= e($settings['gstin'] ?? '') ?>" placeholder="33ABCDE1234F1Z5" maxlength="15">
+            </div>
+            <div class="form-group">
+                <label>State Code</label>
+                <input type="text" name="gst_state_code" value="<?= e($settings['gst_state_code'] ?? '33') ?>" placeholder="33" maxlength="2">
+            </div>
+        </div>
+        <div class="admin-form__row">
+            <div class="form-group">
+                <label>Legal Name</label>
+                <input type="text" name="gst_legal_name" value="<?= e($settings['gst_legal_name'] ?? '') ?>" placeholder="Registered business name">
+            </div>
+            <div class="form-group">
+                <label>Trade Name</label>
+                <input type="text" name="gst_trade_name" value="<?= e($settings['gst_trade_name'] ?? '') ?>" placeholder="Brand / trade name">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Address</label>
+            <textarea name="gst_address" rows="3" placeholder="Registered business address"><?= e($settings['gst_address'] ?? '') ?></textarea>
+        </div>
+        <div class="admin-form__row">
+            <div class="form-group">
+                <label>State</label>
+                <input type="text" name="gst_state" value="<?= e($settings['gst_state'] ?? 'Tamil Nadu') ?>" placeholder="Tamil Nadu">
+            </div>
+            <div class="form-group">
+                <label></label>
+                <span style="font-size:0.8rem; color:var(--color-text-muted); display:block; padding-top:0.5rem;">Used for supply-type determination (intrastate vs interstate).</span>
+            </div>
+        </div>
+        <button class="btn btn-primary btn-sm">Save Settings</button>
+    </form>
+</div>

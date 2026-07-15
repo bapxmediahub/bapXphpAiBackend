@@ -53,6 +53,46 @@
             </div>
         </div>
 
+        <h3 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-md);">Color Palette</h3>
+        <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">Customize brand colors site-wide. Uses the <code>--color-*</code> CSS custom property naming.</p>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md) var(--space-xl);">
+            <div>
+                <label>Primary <span style="font-weight:400; font-size:0.8rem; color:var(--color-text-muted);">(maroon)</span></label>
+                <div style="display:flex; gap:var(--space-sm); align-items:center;">
+                    <input type="color" name="palette_primary" value="<?= e($palette_primary) ?>" style="width:44px; height:44px; border:0; padding:0; cursor:pointer; border-radius:6px; flex-shrink:0;">
+                    <code style="font-size:0.85rem;"><?= e($palette_primary) ?></code>
+                </div>
+            </div>
+            <div>
+                <label>Secondary <span style="font-weight:400; font-size:0.8rem; color:var(--color-text-muted);">(gold)</span></label>
+                <div style="display:flex; gap:var(--space-sm); align-items:center;">
+                    <input type="color" name="palette_secondary" value="<?= e($palette_secondary) ?>" style="width:44px; height:44px; border:0; padding:0; cursor:pointer; border-radius:6px; flex-shrink:0;">
+                    <code style="font-size:0.85rem;"><?= e($palette_secondary) ?></code>
+                </div>
+            </div>
+            <div>
+                <label>Canvas <span style="font-weight:400; font-size:0.8rem; color:var(--color-text-muted);">(page background)</span></label>
+                <div style="display:flex; gap:var(--space-sm); align-items:center;">
+                    <input type="color" name="palette_canvas" value="<?= e($palette_canvas) ?>" style="width:44px; height:44px; border:0; padding:0; cursor:pointer; border-radius:6px; flex-shrink:0;">
+                    <code style="font-size:0.85rem;"><?= e($palette_canvas) ?></code>
+                </div>
+            </div>
+            <div>
+                <label>Text <span style="font-weight:400; font-size:0.8rem; color:var(--color-text-muted);">(body copy)</span></label>
+                <div style="display:flex; gap:var(--space-sm); align-items:center;">
+                    <input type="color" name="palette_text" value="<?= e($palette_text) ?>" style="width:44px; height:44px; border:0; padding:0; cursor:pointer; border-radius:6px; flex-shrink:0;">
+                    <code style="font-size:0.85rem;"><?= e($palette_text) ?></code>
+                </div>
+            </div>
+            <div>
+                <label>Link <span style="font-weight:400; font-size:0.8rem; color:var(--color-text-muted);">(inline links)</span></label>
+                <div style="display:flex; gap:var(--space-sm); align-items:center;">
+                    <input type="color" name="palette_link" value="<?= e($palette_link) ?>" style="width:44px; height:44px; border:0; padding:0; cursor:pointer; border-radius:6px; flex-shrink:0;">
+                    <code style="font-size:0.85rem;"><?= e($palette_link) ?></code>
+                </div>
+            </div>
+        </div>
+
         <?php if(!empty($upload_error)): ?>
             <div class="flash flash--error" style="margin-top:var(--space-md);"><?= e($upload_error) ?></div>
         <?php endif; ?>
@@ -60,6 +100,9 @@
             <div class="flash flash--success" style="margin-top:var(--space-md);"><?= e($upload_success) ?></div>
         <?php endif; ?>
 
-        <button class="btn btn-primary" style="margin-top:var(--space-lg);">Save Appearance</button>
+        <div style="display:flex; gap:var(--space-md); margin-top:var(--space-lg);">
+            <button class="btn btn-primary">Save Appearance</button>
+            <button type="submit" name="reset_palette" value="1" class="btn btn-ghost">Reset to Defaults</button>
+        </div>
     </form>
 </div>

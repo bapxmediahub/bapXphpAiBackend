@@ -280,6 +280,37 @@
                         <span>Total</span>
                         <span>₹<?= e((string)$total) ?></span>
                     </div>
+                    <?php
+                    $gstConfigured = !empty($settings['gstin']);
+                    $anyGstRate = false;
+                    foreach ($items as $item) {
+                        if (!empty($item['product']['gst_rate']) && (float)$item['product']['gst_rate'] > 0) {
+                            $anyGstRate = true; break;
+                        }
+                    }
+                    ?>
+                    <div style="margin-top:var(--space-lg); padding-top:var(--space-md); border-top:1px solid var(--color-border);">
+                        <h4 style="margin:0 0 var(--space-sm); font-size:0.9rem;">Tax Information</h4>
+                        <?php if ($gstConfigured && $anyGstRate): ?>
+                            <div style="font-size:0.85rem; color:var(--color-text-muted); display:grid; gap:var(--space-2xs);">
+                                <span>Tax inclusive pricing</span>
+                                <span>GST will be calculated at payment confirmation based on your delivery state.</span>
+                            </div>
+                        <?php elseif ($gstConfigured): ?>
+                            <div style="font-size:0.85rem; color:var(--color-text-muted); display:grid; gap:var(--space-2xs);">
+                                <span>GST will be calculated at payment confirmation.</span>
+                            </div>
+                        <?php else: ?>
+                            <div style="font-size:0.85rem; color:var(--color-text-muted); display:grid; gap:var(--space-2xs);">
+                                <span>GST not configured for this store.</span>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($gstConfigured && !empty($settings['gstin'])): ?>
+                            <div style="font-size:0.75rem; color:var(--color-text-muted); margin-top:var(--space-xs);">
+                                GSTIN: <?= e($settings['gstin']) ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
         </div>

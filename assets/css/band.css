@@ -3441,15 +3441,25 @@ body { background: var(--color-bg); }
 .astro-market-meta { justify-content: flex-start; }
 .astro-market-meta span { border-radius: 4px; border-color: var(--color-border-light); background: var(--color-bg-alt); color: var(--color-text-muted); }
 .astro-market-actions { justify-content: flex-start; min-height: 60px; padding: 0 16px 16px; }
-.astro-action-row { justify-content: flex-start; }
+.astro-action-row { justify-content: flex-start; gap: 8px; }
+.astro-action { min-height: 36px; font-size: 0.78rem; font-weight: 700; padding: 0 1rem; border-radius: var(--radius-pill); border: 1.5px solid var(--color-border); background: var(--color-white); color: var(--color-ink); text-decoration: none; transition: background var(--transition-base), border-color var(--transition-base), color var(--transition-base); }
+.astro-action:hover { border-color: var(--color-maroon); color: var(--color-maroon); }
+.astro-action--primary { border-color: var(--color-maroon); background: var(--color-maroon); color: var(--color-white); }
+.astro-action--primary:hover { background: var(--color-maroon-deep); border-color: var(--color-maroon-deep); color: var(--color-white); }
 .astro-action--icon { width: 44px; height: 44px; min-height: 44px; box-shadow: none; }
+.astro-market-price { border-top: 1px solid var(--color-border-light); margin-top: auto; padding: var(--space-sm) 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; font-size: 0.82rem; color: var(--color-ink); }
+.astro-market-price strong { color: var(--color-maroon); font-weight: 700; }
+.astro-market-price span { color: var(--color-text-muted); font-size: 0.78rem; }
 .astro-carousel { padding-top: 16px; }
 @media (max-width: 743px) {
     .astro-market-grid { gap: 16px; padding-top: 0; }
     .astro-market-card,
     .astro-market-card:hover { min-height: 0; padding-top: 0; }
-    .astro-market-photo { top: auto; width: 100%; height: auto; }
+    .astro-market-photo { top: auto; width: 100%; height: auto; aspect-ratio: 4 / 3; }
     .astro-market-info { min-height: 0; }
+    .astro-market-info p, .astro-market-price { font-size: 0.78rem; }
+    .astro-rating-pill { right: 10px; bottom: 10px; left: auto; min-width: 60px; font-size: 0.54rem; }
+    .astro-action { min-height: 32px; font-size: 0.68rem; padding: 0 0.75rem; }
     .home-hero { min-height: auto; padding: 20px 16px 32px; }
     .home-hero-inner { gap: 12px; }
     .home-hero h1 { margin-bottom: 12px; font-size: 1.6rem; }

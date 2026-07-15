@@ -150,17 +150,8 @@ main{padding-bottom:0}
 .nav-item{display:flex;flex-direction:column;align-items:center;padding:var(--space-xs) 0;color:var(--color-text-muted);font-size:0.6rem;text-decoration:none;min-height:48px;justify-content:center}
 .nav-item .icon svg{width:20px;height:20px;margin-bottom:2px}
 .astro-search,.astro-filter{min-height:64px;border-radius:var(--radius-pill);background:var(--color-white);border-color:var(--color-border);box-shadow:var(--shadow-sm)}
-.astro-market-grid{row-gap:88px;padding-top:64px}
-.astro-market-card,.astro-market-card:hover{position:relative;min-height:352px;padding-top:78px;overflow:visible;border:1px solid var(--color-gold);border-radius:var(--radius-md);background:var(--color-maroon);color:var(--color-white);box-shadow:0 8px 24px rgba(58,0,3,.16);transform:none}
-.astro-market-photo{position:absolute;top:-64px;left:50%;z-index:2;width:136px;height:136px;aspect-ratio:1;overflow:visible;border:0;border-radius:50%;background:transparent;transform:translateX(-50%)}
-.astro-market-photo-frame{position:absolute;inset:0;overflow:hidden;border:5px solid var(--color-gold);border-radius:50%;background:var(--color-bg-alt);box-shadow:0 5px 16px rgba(36,0,2,.3)}
-.astro-market-photo img{width:100%;height:100%;border:0;border-radius:0;background:transparent;object-fit:cover;object-position:center;box-shadow:none;transform:none}
-.astro-market-info{justify-items:center;text-align:center}.astro-market-name{min-height:0;color:var(--color-white)}.astro-market-info p{min-height:0;color:var(--color-gold-light)}
-.astro-market-price{justify-content:center;border-top-color:rgba(209,179,104,.32);text-align:center}.astro-market-price strong{color:var(--color-gold)}.astro-market-price span{color:var(--color-gold-light)}
 .consultation-pricing-card{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:var(--space-xl);padding:var(--space-lg) var(--space-xl);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-white);color:var(--color-ink);box-shadow:var(--shadow-sm)}
 .consultation-pricing-card h2{margin:0 0 var(--space-xs);font-size:1.35rem}.consultation-pricing-card p{margin:0;color:var(--color-text-muted);max-width:58ch}.consultation-pricing-card__rates{display:flex;gap:var(--space-lg);align-items:stretch}.consultation-pricing-card__rates div{display:grid;gap:2px;min-width:130px;padding-left:var(--space-lg);border-left:1px solid var(--color-border)}.consultation-pricing-card__rates strong{font-size:1.35rem;color:var(--color-maroon)}.consultation-pricing-card__rates span{font-size:.78rem;color:var(--color-text-muted)}
-.astro-market-actions{min-height:72px;padding:4px 20px 20px}.astro-action-row{gap:12px}.astro-action--icon{width:46px;height:46px;min-height:46px;padding:0;border:1px solid var(--color-gold);border-radius:50%;background:var(--color-gold-light);color:var(--color-maroon)}
-.astro-status-label{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
 .astrologer-card,.panel{border-color:var(--color-border-light);border-radius:var(--radius-md);box-shadow:none}
 .astrologer-card:hover,.panel:hover{transform:none;border-color:var(--color-border);box-shadow:var(--shadow-md)}
 .support-fab{background:var(--color-maroon);box-shadow:var(--shadow-md)}
@@ -231,6 +222,25 @@ echo $critical;
 ?>
 </style>
 <link rel="stylesheet" href="/assets/css/band.css?v=<?= filemtime(__DIR__ . '/../../assets/css/band.css') ?>">
+<style>
+<?php
+$__palette_semantic = [
+    '--color-primary' => ['set' => ($__settings['palette_primary'] ?? '#3A0003'), 'alias' => '--color-maroon'],
+    '--color-secondary' => ['set' => ($__settings['palette_secondary'] ?? '#D1B368'), 'alias' => '--color-gold'],
+    '--color-canvas' => ['set' => ($__settings['palette_canvas'] ?? '#FAF7F0'), 'alias' => '--color-bg'],
+    '--color-text-primary' => ['set' => ($__settings['palette_text'] ?? '#222222'), 'alias' => '--color-ink'],
+    '--color-link' => ['set' => ($__settings['palette_link'] ?? '#3A0003'), 'alias' => ''],
+];
+$__palette_css = ':root{';
+foreach ($__palette_semantic as $__n => $__c) {
+    $__v = $__c['set'];
+    $__palette_css .= $__n . ':' . e($__v) . ';';
+    if ($__c['alias'] !== '') $__palette_css .= $__c['alias'] . ':' . e($__v) . ';';
+}
+$__palette_css .= '}';
+echo $__palette_css;
+?>
+</style>
 <style>
 .document-page__header{max-width:760px;margin:0 auto var(--space-2xl);text-align:center}.document-page__content{max-width:760px;margin:0 auto;padding:clamp(24px,4vw,48px);border:1px solid var(--color-border);border-radius:var(--radius-lg);background:var(--color-white);box-shadow:var(--shadow-sm)}.document-page__content h2{margin:2rem 0 .65rem;color:var(--color-maroon);font-size:1.35rem}.document-page__content h2:first-child{margin-top:0}.document-page__content p,.document-page__content li{color:var(--color-text-muted);line-height:1.7}.document-page__content ul{padding-left:1.25rem}.document-index{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-md)}.document-index__item{display:grid;gap:var(--space-xs);padding:var(--space-lg);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-white);color:inherit;text-decoration:none;box-shadow:var(--shadow-sm);transition:transform var(--transition-base),box-shadow var(--transition-base),border-color var(--transition-base)}.document-index__item:hover{transform:translateY(-3px);border-color:var(--color-gold);box-shadow:var(--shadow-md)}.document-index__item h2{margin:0;color:var(--color-maroon);font-size:1.15rem}.document-index__item p{margin:0;color:var(--color-text-muted);line-height:1.55}.document-index__link{color:var(--color-maroon);font-weight:700;font-size:.82rem;margin-top:var(--space-sm)}
 .blog-page{padding:var(--space-3xl) 0}.blog-page .container{max-width:1180px}.page-title{margin:0 0 var(--space-lg);font-size:clamp(1.8rem,4vw,2.6rem);color:var(--color-ink)}.blog-categories{display:flex;flex-wrap:wrap;gap:var(--space-sm);margin-bottom:var(--space-2xl)}.blog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-xl)}.blog-card{overflow:hidden;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-white);box-shadow:var(--shadow-sm)}.blog-card__body{display:grid;gap:var(--space-sm);padding:var(--space-lg)}.blog-card__title{margin:0;font-size:1.15rem;line-height:1.3}.blog-card__title a{color:var(--color-maroon)}.blog-card__excerpt{margin:0;color:var(--color-text-muted);line-height:1.55}.blog-card__date{font-size:.8rem;color:var(--color-text-soft)}.blog-card__category{font-size:.72rem;color:var(--color-maroon);font-weight:700;text-transform:uppercase}

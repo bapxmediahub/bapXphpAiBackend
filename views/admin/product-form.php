@@ -48,6 +48,14 @@
                         <option value="draft">Draft</option>
                     </select>
                 </label>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-sm);">
+                    <label>HSN Code
+                        <input type="text" name="hsn_code" id="field-hsn_code" placeholder="e.g. 3307" maxlength="8">
+                    </label>
+                    <label>GST Rate (%)
+                        <input type="number" name="gst_rate" id="field-gst_rate" placeholder="e.g. 12" min="0" max="100" step="0.01">
+                    </label>
+                </div>
                 <label>Description
                     <textarea name="description" id="field-description" rows="4"></textarea>
                 </label>
@@ -253,6 +261,8 @@ function resetForm() {
     document.getElementById('featured-img').style.display = 'none';
     document.getElementById('featured-placeholder').style.display = 'inline';
     clearCategoryChips();
+    document.getElementById('field-hsn_code').value = '';
+    document.getElementById('field-gst_rate').value = '';
     document.querySelectorAll('#product-form input, #product-form select, #product-form textarea').forEach(el => {
         if (el.type !== 'hidden' && el.id !== 'field-image_urls' && el.name !== 'media_files[]') {
             if (el.type === 'select-one') el.selectedIndex = 0; else el.value = '';
@@ -271,6 +281,8 @@ document.querySelectorAll('.edit-item').forEach(button => {
         document.getElementById('field-price').value = item.price || '';
         document.getElementById('field-offer_price').value = item.offer_price || '';
         document.getElementById('field-stock_status').value = item.stock_status || 'in_stock';
+        document.getElementById('field-hsn_code').value = item.hsn_code || '';
+        document.getElementById('field-gst_rate').value = item.gst_rate || '';
         document.getElementById('field-description').value = item.description || '';
         galleryImages = parseImages(item.image_urls || item.image_url || []);
         renderGallery();

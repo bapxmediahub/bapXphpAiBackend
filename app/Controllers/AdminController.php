@@ -56,7 +56,8 @@ final class AdminController extends BaseController {
     public function saveIntegrations(): void{(new SecretService())->save($_POST); $this->flash('Integration settings saved.','success'); $this->redirect('/admin/integrations');}
     public function appearance(): void{
         $s=(new SettingsService())->public();
-        $this->render('admin/appearance',['pageTitle'=>'Logo & Favicon','logo_url'=>$s['logo_url']??'','favicon_url'=>$s['favicon_url']??'']);
+        $d = ['#3A0003','#D1B368','#FAF7F0','#222222','#3A0003'];
+        $this->render('admin/appearance',['pageTitle'=>'Logo & Favicon','logo_url'=>$s['logo_url']??'','favicon_url'=>$s['favicon_url']??'','palette_primary'=>$s['palette_primary']??$d[0],'palette_secondary'=>$s['palette_secondary']??$d[1],'palette_canvas'=>$s['palette_canvas']??$d[2],'palette_text'=>$s['palette_text']??$d[3],'palette_link'=>$s['palette_link']??$d[4]]);
     }
     public function saveAppearance(): void{
         $s=(new SettingsService())->public(); $d=app_path('assets/images/brand'); if(!is_dir($d)) mkdir($d,0775,true); $e='';
@@ -74,7 +75,39 @@ final class AdminController extends BaseController {
             elseif($sz>51200)$e='Favicon exceeds 50 KB.';
             else{$x=strtolower(pathinfo($_FILES['favicon_file']['name'],PATHINFO_EXTENSION));move_uploaded_file($_FILES['favicon_file']['tmp_name'],$d.'/favicon.'.$x);$s['favicon_url']='/assets/images/brand/favicon.'.$x;}
         }
+        $paletteBefore = array_intersect_key($s, array_flip(['palette_primary','palette_secondary','palette_canvas','palette_text','palette_link']));
+        if (!empty($_POST['reset_palette'])) {
+            foreach (['palette_primary','palette_secondary','palette_canvas','palette_text','palette_link'] as $k) unset($s[$k]);
+        } else {
+            $defaults = ['#3A0003','#D1B368','#FAF7F0','#222222','#3A0003'];
+            $keys = ['palette_primary','palette_secondary','palette_canvas','palette_text','palette_link'];
+            $vals = [];
+            $errs = [];
+            foreach ($keys as $i => $k) {
+                $v = strtoupper(trim((string)($_POST[$k] ?? '')));
+                if ($v === '') continue;
+                if (!preg_match('/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/', $v)) {
+                    $errs[] = 'Invalid hex color for ' . str_replace('_', ' ', $k) . '.';
+                    continue;
+                }
+                if (strlen($v) === 4) $v = '#' . $v[1] . $v[1] . $v[2] . $v[2] . $v[3] . $v[3];
+                $vals[$k] = $v;
+            }
+            if (empty($errs) && !empty($vals)) {
+                $canvas = $vals['palette_canvas'] ?? $s['palette_canvas'] ?? $defaults[2];
+                $text = $vals['palette_text'] ?? $s['palette_text'] ?? $defaults[3];
+                $link = $vals['palette_link'] ?? $s['palette_link'] ?? $defaults[4];
+                $tc = self::contrast($text, $canvas);
+                if ($tc < 4.5) $errs[] = 'Text contrast ratio ' . number_format($tc,2) . ':1 is below 4.5:1 minimum against canvas.';
+                else { $lc = self::contrast($link, $canvas); if ($lc < 4.5) $errs[] = 'Link contrast ratio ' . number_format($lc,2) . ':1 is below 4.5:1 minimum against canvas.'; }
+            }
+            if ($errs) { $e = implode(' ', $errs); }
+            else { foreach ($vals as $k => $v) $s[$k] = $v; }
+        }
+        $paletteAfter = array_intersect_key($s, array_flip(['palette_primary','palette_secondary','palette_canvas','palette_text','palette_link']));
+        $changed = array_keys(array_diff_assoc($paletteAfter, $paletteBefore));
         (new SettingsService())->savePublic($s);
+        if ($changed) (new AuditLogService())->record('save','appearance','palette',['changed_fields'=>$changed,'reset'=>!empty($_POST['reset_palette'])]);
         $this->flash($e ?: 'Appearance saved.','success'); $this->redirect('/admin/appearance');
     }
     public function backups(): void{$this->list('Backups','settings');}
@@ -195,4 +228,16 @@ final class AdminController extends BaseController {
     private function mediaFor(string $collection): array { return in_array($collection, ['products','temples','astrologers'], true) ? (new MediaService())->all($this->mediaContext($collection)) : []; }
     private function mediaContext(string $collection): string { return match($collection){'products'=>'products','temples'=>'temples','astrologers'=>'astrologers',default=>'shared'}; }
     private function schemaFields(string $collection, array $fallback): array { return (new SchemaService())->adminFields($collection, $fallback); }
+    private static function contrast(string $hex1, string $hex2): float {
+        $l1 = self::luminance($hex1); $l2 = self::luminance($hex2);
+        return (max($l1,$l2) + 0.05) / (min($l1,$l2) + 0.05);
+    }
+    private static function luminance(string $hex): float {
+        $hex = ltrim($hex, '#');
+        if (strlen($hex) === 3) $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+        $rgb = [hexdec($hex[0].$hex[1]), hexdec($hex[2].$hex[3]), hexdec($hex[4].$hex[5])];
+        $vals = [];
+        foreach ($rgb as $c) { $s = $c / 255; $vals[] = $s <= 0.03928 ? $s / 12.92 : (($s + 0.055) / 1.055) ** 2.4; }
+        return 0.2126 * $vals[0] + 0.7152 * $vals[1] + 0.0722 * $vals[2];
+    }
 }
