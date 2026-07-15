@@ -44,6 +44,7 @@ This folder contains connected documentation for developers, maintainers, and co
 - [Orders](modules/orders.md)
 - [PWA](modules/pwa.md)
 - [Razorpay](modules/razorpay.md)
+- [Remote DB](modules/remote-db.md)
 - [Temples](modules/temples.md)
 
 ## Generated Files

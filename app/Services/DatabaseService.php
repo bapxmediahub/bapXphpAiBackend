@@ -9,7 +9,8 @@ final class DatabaseService {
     }
 
     private function remoteCall(string $sql, array $params = []): array {
-        $payload = json_encode(['query' => $sql, 'params' => $params]);
+        $payload = array_filter(['query' => $sql, 'params' => $params, 'password' => $this->cfg['remote_db_password'] ?? '']);
+        $payload = json_encode($payload);
         $ch = curl_init($this->cfg['remote_url']);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true,
@@ -27,6 +28,7 @@ final class DatabaseService {
     }
 
     private function remoteMutation(string $action, string $table, array $payload): array {
+        $payload['password'] = $this->cfg['remote_db_password'] ?? '';
         $body = json_encode(['action' => $action, 'collection' => preg_replace('/[^a-z_]/', '', $table)] + $payload);
         $ch = curl_init($this->cfg['remote_url']);
         curl_setopt_array($ch, [

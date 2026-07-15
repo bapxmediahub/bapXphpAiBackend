@@ -82,6 +82,7 @@ final class SecretService {
             'agent_model' => (string)(getenv('AGENT_MODEL') ?: getenv('SUPPORT_BOT_MODEL') ?: ''),
             'api_endpoint' => (string)(getenv('BAPX_AI_ENDPOINT') ?: ''),
             'support_bot_purge_policy' => (string)(getenv('SUPPORT_BOT_PURGE_POLICY') ?: ''),
+            'remote_db_password' => (string)(getenv('REMOTE_DB_PASSWORD') ?: ''),
             'turn_server_url' => (string)(getenv('TURN_SERVER_URL') ?: ''),
             'turn_username' => (string)(getenv('TURN_USERNAME') ?: ''),
             'turn_credential' => (string)(getenv('TURN_CREDENTIAL') ?: ''),
