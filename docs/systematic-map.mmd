@@ -7,11 +7,11 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 103 routes, 11 controllers, 41 services, 47 views, 0 data files, 20 tools"]
-    arch_routes["> Routes: 103 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 105 routes, 11 controllers, 41 services, 48 views, 0 data files, 20 tools"]
+    arch_routes["> Routes: 105 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 11"]:::arch
     arch_svc["> Services: 41"]:::arch
-    arch_views["> Views: 47"]:::arch
+    arch_views["> Views: 48"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 20"]:::arch
     arch_gaps["> Gaps: 0"]:::arch
@@ -104,6 +104,8 @@ flowchart LR
     route_c2fce1e83e49["POST /admin/settings/save — Admin — save settings"]:::route
     route_833047aa65da["POST /admin/settings/admin-credentials — Admin — save admin login"]:::route
     route_818acb238877["GET /admin/integrations — Admin — API keys, integrations"]:::route
+    route_038d4dfa1e39["GET /admin/agent"]:::route
+    route_f10a46dc5fa4["POST /admin/agent/ask"]:::route
     route_f679682223bf["GET /admin/backups — Admin — backup list"]:::route
     route_e67aaf6f51f8["GET /admin/audit-log — Admin — audit log"]:::route
     route_a343d37ef490["GET /admin/contact-submissions — Admin — contact form entries"]:::route
@@ -209,6 +211,7 @@ flowchart LR
     view_e106de188447["account/install"]:::code
     view_6698d76d719f["account/invoice"]:::code
     view_8bf2f1da4f90["account/orders"]:::code
+    view_6a1c27fa0738["admin/agent"]:::code
     view_17900ac53325["admin/appearance"]:::code
     view_c08844df74a9["admin/astrologer-form"]:::code
     view_e13f2d1caf99["admin/blog"]:::code
@@ -513,6 +516,16 @@ flowchart LR
   controller_3d37b75c07ec --> service_6c9416ef0383
   controller_3d37b75c07ec --> service_f33a1d77b137
   controller_3d37b75c07ec -. renders .-> view_62fe69fcdef3
+  route_038d4dfa1e39 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_6c9416ef0383
+  controller_3d37b75c07ec --> service_66daa9bdc2c1
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_6a1c27fa0738
+  route_f10a46dc5fa4 --> controller_3d37b75c07ec
+  controller_3d37b75c07ec --> service_6c9416ef0383
+  controller_3d37b75c07ec --> service_66daa9bdc2c1
+  controller_3d37b75c07ec --> service_f33a1d77b137
+  controller_3d37b75c07ec -. renders .-> view_6a1c27fa0738
   route_f679682223bf --> controller_3d37b75c07ec
   controller_3d37b75c07ec --> service_66daa9bdc2c1
   controller_3d37b75c07ec --> service_f33a1d77b137

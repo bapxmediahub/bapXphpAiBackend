@@ -54,6 +54,74 @@ final class AdminController extends BaseController {
     public function saveAdminCredentials(): void{(new EnvService())->saveAdminCredentials($_POST); $this->flash('Admin credentials saved.','success'); $this->redirect('/admin/settings');}
     public function integrations(): void{$this->render('admin/integrations',['pageTitle' => 'Integrations', 'secrets'=>(new SecretService())->all()]);}
     public function saveIntegrations(): void{(new SecretService())->save($_POST); $this->flash('Integration settings saved.','success'); $this->redirect('/admin/integrations');}
+    public function agent(): void{
+        $secrets = new SecretService();
+        $modelConfig = $secrets->getModelConfig();
+        $this->render('admin/agent',['pageTitle'=>'AI Agent','modelConfig'=>$modelConfig]);
+    }
+    public function agentAsk(): void{
+        $message = trim((string)($_POST['message'] ?? ''));
+        if ($message === '') {$this->jsonResponse(['error'=>'Message is required'],400); return;}
+        try {
+            $secrets = new SecretService();
+            $db = new \App\Services\DatabaseService();
+            $modelConfig = $secrets->getModelConfig();
+            $userCount = count($db->read('users'));
+            $orderCount = count($db->read('orders'));
+            $productCount = count($db->read('products'));
+            $astrologerCount = count($db->read('astrologers'));
+            $appointmentCount = count($db->read('appointments'));
+            $ticketCount = count($db->read('support_tickets'));
+            $revenue = array_sum(array_column($db->read('orders'), 'total'));
+            $attachments = '';
+            $tempDir = app_path('.agents/temp');
+            if (is_dir($tempDir)) {
+                $files = array_diff(scandir($tempDir), ['.','..']);
+                if (!empty($files)) $attachments = "\n\nAttachments available in .agents/temp/: " . implode(', ', $files);
+            }
+            $context = "Site data:\n- Users: {$userCount}\n- Orders: {$orderCount}\n- Products: {$productCount}\n- Astrologers: {$astrologerCount}\n- Appointments: {$appointmentCount}\n- Support tickets: {$ticketCount}\n- Revenue (sum of totals): ₹" . number_format($revenue, 2) . $attachments;
+            if (!empty($modelConfig['api_key'])) {
+                $answer = $this->callAiApi($modelConfig, $message, $context);
+            } else {
+                $answer = "AI model not configured. Go to Admin → Integrations and set ai_model_provider, ai_model_name, ai_api_endpoint, and ai_api_key.";
+            }
+            $this->jsonResponse(['answer'=>$answer]);
+        } catch (\Throwable $e) {
+            $this->jsonResponse(['error'=>'Agent error: '.$e->getMessage()],500);
+        }
+    }
+    private function callAiApi(array $config, string $message, string $context): string {
+        $provider = $config['provider'] ?? 'google';
+        $model = $config['model'] ?? 'gemini-2.5-flash';
+        $endpoint = $config['endpoint'] ?? 'https://generativelanguage.googleapis.com/v1beta/models/';
+        $key = $config['api_key'] ?? '';
+        $prompt = "You are the admin assistant for Sri Panchami Spiritual. Answer questions about the site based on this context:\n\n{$context}\n\nQuestion: {$message}\n\nAnswer concisely in Markdown.";
+        if ($provider === 'google' || str_contains($endpoint, 'googleapis')) {
+            $url = rtrim($endpoint, '/') . '/' . rawurlencode($model) . ':generateContent';
+            $payload = json_encode(['contents'=>[['parts'=>[['text'=>$prompt]]]],'generationConfig'=>['temperature'=>0.3,'maxOutputTokens'=>1024]]);
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_POST=>true, CURLOPT_HTTPHEADER=>['Content-Type: application/json', 'x-goog-api-key: '.$key], CURLOPT_POSTFIELDS=>$payload, CURLOPT_TIMEOUT=>30, CURLOPT_CONNECTTIMEOUT=>10]);
+            $body = curl_exec($ch);
+            $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            if ($status !== 200 || $body === false) return "API error (HTTP {$status}). Check your model config in Admin → Integrations.";
+            $result = json_decode($body, true);
+            return $result['candidates'][0]['content']['parts'][0]['text'] ?? 'No response from model.';
+        }
+        if ($provider === 'openai' || $provider === 'anthropic') {
+            $url = rtrim($endpoint, '/') . '/chat/completions';
+            $payload = json_encode(['model'=>$model,'messages'=>[['role'=>'system','content'=>$context],['role'=>'user','content'=>$message]],'max_tokens'=>1024]);
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_POST=>true, CURLOPT_HTTPHEADER=>['Content-Type: application/json', 'Authorization: Bearer '.$key], CURLOPT_POSTFIELDS=>$payload, CURLOPT_TIMEOUT=>30, CURLOPT_CONNECTTIMEOUT=>10]);
+            $body = curl_exec($ch);
+            $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            if ($status !== 200 || $body === false) return "API error (HTTP {$status}). Check your model config in Admin → Integrations.";
+            $result = json_decode($body, true);
+            return $result['choices'][0]['message']['content'] ?? 'No response from model.';
+        }
+        return "Provider '{$provider}' not yet supported. Use 'google', 'openai', or 'anthropic'.";
+    }
     public function appearance(): void{
         $s=(new SettingsService())->public();
         $d = ['#3A0003','#D1B368','#FAF7F0','#222222','#3A0003'];

@@ -58,8 +58,10 @@ set -euo pipefail
 #                                   — validate structure; --issue also proves GitHub objective coverage
 #   bapXphp handoff comment <file> <pr-number>
 #                                   — create or update the PR's CTO HANDOFF comment
-#   bapXphp handoff next <issue>    — print JSON with next role/objective for sub-agent triggering
-#   bapXphp handoff template <issue> — generate empty worker handoff from issue objectives
+#   bapXphp handoff next <issue>    — show event-based handoff with role + workflow
+#   bapXphp handoff template <issue> — generate empty handoff template from issue
+#   bapXphp handoff execute <issue> [--next role]
+#                                   — emit handoff context JSON for the next role (GitHub event payload + workflow)
 #
 # ── Mail & Images ───────────────────────────────────────────────
 #   bapXphp mail:process            — process pending mail queue
@@ -82,6 +84,22 @@ set -euo pipefail
 #   bapXphp db raw <sql>            — execute raw SQL on MySQL
 #   bapXphp db init                 — create MySQL tables from collections.php schema
 #   bapXphp db sync                 — pull MySQL data → seed YAML files (currently: db init only)
+#
+# ── AI / Agent ───────────────────────────────────────────────────
+#   bapXphp ai:config               — show AI model config from MySQL secrets
+#   bapXphp handoff execute <issue> [--next role]
+#                                   — load handoff context for next role
+#
+# ── Workflows (.agents/workflows/) ───────────────────────────────
+#   .agents/workflows/cto.md        — CTO orchestrator
+#   .agents/workflows/worker.md     — Worker (implementation)
+#   .agents/workflows/reviewer.md   — Reviewer (verification)
+#
+# ── Attachments (.agents/temp/) ──────────────────────────────────
+#   .agents/temp/                   — inbox for user-provided screenshots/docs
+#
+# ── Telemetry (.agents/ops/) ─────────────────────────────────────
+#   .agents/ops/telemetry.json      — cycle tracking + scoring
 #
 # ── Blog & Docs ──────────────────────────────────────────────────
 #   bapXphp docsmap                 — regenerate KnowledgeMap.mmd from docs/ + AGENTS.md + skills
@@ -807,13 +825,26 @@ cmd_handoff() {
       [ $# -eq 2 ] && [[ "$file" =~ ^[1-9][0-9]*$ ]] || die "Usage: bapXphp handoff next <issue>"
       require_php
       require_gh
-      local evidence_file_2
-      evidence_file_2=$(mktemp)
-      trap 'rm -f "$evidence_file_2"' RETURN
-      gh issue view "$file" --json body,comments > "$evidence_file_2"
-      php "$ROOT/cli/handoff.php" next "$file" "$evidence_file_2"
-      rm -f "$evidence_file_2"
-      trap - RETURN
+      local event_file="$ROOT/.agents/handoffs/events/${file}.json"
+      if [ -f "$event_file" ]; then
+        echo "── Handoff event for issue #${file} ──"
+        echo "Event type: $(jq -r '.event_type' "$event_file")"
+        echo "Current role: $(jq -r '.workflow.current_role' "$event_file")"
+        echo "Next role: $(jq -r '.workflow.next_role' "$event_file")"
+        echo "Chain: $(jq -r '.workflow.sequence | join(" → ")' "$event_file")"
+        echo ""
+        echo "── Workflow for current role ──"
+        local role
+        role=$(jq -r '.workflow.current_role' "$event_file")
+        local wf="$ROOT/.agents/workflows/${role}.md"
+        if [ -f "$wf" ]; then
+          cat "$wf"
+        else
+          echo "No workflow definition for role: $role"
+        fi
+      else
+        warn "No handoff event for issue #${file} at .agents/handoffs/events/${file}.json"
+      fi
       ;;
     template)
       [ $# -eq 2 ] && [[ "$file" =~ ^[1-9][0-9]*$ ]] || die "Usage: bapXphp handoff template <issue>"
@@ -827,7 +858,26 @@ cmd_handoff() {
       rm -f "$evidence_file_3"
       trap - RETURN
       ;;
-    *) die "Usage: bapXphp handoff <validate|comment|next|template> <file> [pr-number]" ;;
+    execute)
+      [ $# -ge 2 ] && [[ "$file" =~ ^[1-9][0-9]*$ ]] || die "Usage: bapXphp handoff execute <issue> [--next role]"
+      local nextFlag=""
+      [ "$argument" = "--next" ] && nextFlag="${4:-}"
+      local event_file="$ROOT/.agents/handoffs/events/${file}.json"
+      [ -f "$event_file" ] || die "No handoff event for issue #${file}"
+      local role="$nextFlag"
+      [ -z "$role" ] && role=$(jq -r '.workflow.current_role' "$event_file")
+      local wf="$ROOT/.agents/workflows/${role}.md"
+      local workflow_content=""
+      [ -f "$wf" ] && workflow_content=$(cat "$wf")
+      echo "{"
+      echo "  \"issue\": $file,"
+      echo "  \"role\": \"$role\","
+      echo "  \"event\": $(jq -c '.' "$event_file"),"
+      echo "  \"workflow\": $(echo "$workflow_content" | jq -Rs .),"
+      echo "  \"attachments\": [$(ls "$ROOT/.agents/temp" 2>/dev/null | jq -R -s -c 'split("\n") | map(select(length > 0))')]"
+      echo "}"
+      ;;
+    *) die "Usage: bapXphp handoff <validate|comment|next|template|execute> <file> [--next role]" ;;
   esac
 }
 
@@ -1410,6 +1460,20 @@ cmd_run() {
   eval "$@"
 }
 
+# ── ai:config — Show AI model config from MySQL secrets ───────
+cmd_ai_config() {
+  require_php
+  php -r '
+    require "'"$ROOT"'/app/bootstrap.php";
+    $cfg = (new App\Services\SecretService())->getModelConfig();
+    echo "Provider:  " . $cfg["provider"] . "\n";
+    echo "Model:     " . $cfg["model"] . "\n";
+    echo "Endpoint:  " . $cfg["endpoint"] . "\n";
+    echo "API Key:   " . (empty($cfg["api_key"]) ? "(not set)" : substr($cfg["api_key"], 0, 8) . "..." . substr($cfg["api_key"], -4)) . "\n";
+    echo "\nOverride via env: BAPX_AI_PROVIDER, BAPX_AI_MODEL, BAPX_AI_ENDPOINT, BAPX_AI_API_KEY\n";
+  '
+}
+
 # ── Main Dispatch ──────────────────────────────────────────────
 main() {
   [ $# -eq 0 ] && set -- help
@@ -1447,6 +1511,8 @@ main() {
       cmd_"$command" "$@" ;;
     handoff)
       shift; cmd_handoff "$@" ;;
+    ai:config|ai-config|model-config)
+      cmd_ai_config ;;
     mail:process|mail-process)
       cmd_mail_process ;;
     images:optimize|images-optimize|imgopt)

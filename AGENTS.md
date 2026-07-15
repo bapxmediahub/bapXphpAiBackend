@@ -8,6 +8,24 @@ alwaysApply: true
 
 ## Orchestration Model (Chain, Not Parallel)
 
+Workflow roles are defined in `.agents/workflows/<role>.md` — tool-agnostic definitions usable by OpenCode, Claude Code, Codex, or any coding agent. Handoff execution: `bapXphp handoff execute <issue> [--next role]` reads the handoff JSON and outputs context + workflow for the next role.
+
+This repository uses a **strict sequential handoff chain** for all work. Never dispatch multiple sub-agents in parallel. Each cycle follows exactly:
+
+```
+Issue → handoff JSON (GitHub Action) → CTO (bapXphp handoff next)
+  → Worker (single objective) → evidence
+  → Reviewer (verify evidence) → findings
+  → CTO (close loop, route next objective or close issue)
+```
+
+### Event-driven handoff protocol
+- `issues: opened` → `.github/workflows/issue-agent-trigger.yml` creates GitHub-style event payload in `.agents/handoffs/events/<issue>.json`
+- `issue_comment: /handoff <role>` → `.github/workflows/issue-comment-handoff.yml` routes the active handoff to the next role
+- Each handoff event has `event_type`, `workflow.current_role`, `workflow.next_role`, `workflow.sequence`
+- Active handoff is always at `.agents/handoffs/active/current.json`
+- Agents advance the chain by commenting `/handoff worker`, `/handoff reviewer`, etc. on the issue
+
 This repository uses a **strict sequential handoff chain** for all work. Never dispatch multiple sub-agents in parallel. Each cycle follows exactly:
 
 ```

@@ -115,6 +115,7 @@
             <div class="admin-submenu" id="menu-settings">
                 <a href="/admin/environment" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/environment') === 0 ? 'active' : '') ?>">Environment</a>
                 <a href="/admin/integrations" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/integrations') === 0 ? 'active' : '') ?>">Integrations</a>
+                <a href="/admin/agent" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/agent') === 0 ? 'active' : '') ?>">AI Agent</a>
                 <a href="/admin/settings" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/settings') === 0 ? 'active' : '') ?>">Site Settings</a>
                 <a href="/admin/backups" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/backups') === 0 ? 'active' : '') ?>">Backups</a>
                 <a href="/admin/audit-log" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/audit-log') === 0 ? 'active' : '') ?>">Audit Log</a>
