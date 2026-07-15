@@ -6,41 +6,25 @@ alwaysApply: true
 
 # Agent Operating Guide
 
-## Orchestration Model (Maya + Silent Sub-Agents)
-
-**Maya is the only agent the user ever interacts with.** She presents as a single, capable assistant that handles support queries, admin tasks, and code work directly. Internally, Maya dispatches Worker (and optionally Reviewer) sub-agents for complex or multi-step tasks — but this is never visible to the user.
+## Orchestration Model (Chain, Not Parallel)
 
 Workflow roles are defined in `.agents/workflows/<role>.md` — tool-agnostic definitions usable by OpenCode, Claude Code, Codex, or any coding agent. Handoff execution: `bapXphp handoff execute <issue> [--next role]` reads the handoff JSON and outputs context + workflow for the next role.
 
-Each cycle follows exactly:
+This repository uses a **strict sequential handoff chain** for all work. Never dispatch multiple sub-agents in parallel. Each cycle follows exactly:
 
 ```
-User query → Maya (assess, route)
+Issue → handoff JSON (GitHub Action) → CTO (bapXphp handoff next)
   → Worker (single objective) → evidence
-  → Maya (verify, incorporate into response, close)
+  → Reviewer (verify evidence) → findings
+  → CTO (close loop, route next objective or close issue)
 ```
 
-### Roles
-- **Maya** — the unified public-facing agent. Maya handles all user interaction (support, admin, chat). For complex work, she silently dispatches Worker sub-agents, then incorporates their results into her response as if she did the work herself. She never reveals the internal chain.
-- **Worker** — internal sub-agent that Maya dispatches via the Task tool. Executes one objective, produces evidence, and reports back to Maya. Never talks to the user.
-- **Reviewer** — *(optional)* internal sub-agent that Maya may dispatch to verify Worker evidence before incorporating results.
-
-### Internal handoff protocol (never exposed to user)
+### Event-driven handoff protocol
 - `issues: opened` → `.github/workflows/issue-agent-trigger.yml` creates GitHub-style event payload in `.agents/handoffs/events/<issue>.json`
 - `issue_comment: /handoff <role>` → `.github/workflows/issue-comment-handoff.yml` routes the active handoff to the next role
 - Each handoff event has `event_type`, `workflow.current_role`, `workflow.next_role`, `workflow.sequence`
 - Active handoff is always at `.agents/handoffs/active/current.json`
 - Agents advance the chain by commenting `/handoff worker`, `/handoff reviewer`, etc. on the issue
-
-### How Maya uses sub-agents transparently
-
-When a user asks a complex question or requests work:
-
-1. **Maya assesses** the request, breaks it into objectives
-2. **Worker dispatch** — Maya uses the Task tool to dispatch a Worker with a single objective. The Task description includes: handoff event path, objective ID, relevant files, and acceptance criteria.
-3. **Worker executes** — Worker implements, tests, and returns structured evidence
-4. **Maya incorporates** — Maya reads the Worker's evidence, possibly dispatches Reviewer for verification, then responds to the user naturally as if she did the work
-5. **Never exposed** — Maya never says "I dispatched a sub-agent" or "Worker did X". She says "I looked into this" or "Here's what I found".
 
 ### Why chain, not parallel
 - Each step produces verifiable evidence before the next starts
@@ -184,15 +168,21 @@ This standardizes attachment handling across all agent types. Always check `.age
 
 ## Model Routing (from Admin Panel)
 
-Sub-agents should use the most cost-effective AI model for their task. Model config is stored in the `secrets` table under `api_endpoint`, `api_key`, and `model`, editable via Admin → Integrations. Provider is auto-detected from endpoint URL.
+Sub-agents should use the most cost-effective AI model for their task. Model selection is configured in Admin → Integrations and stored in MySQL `secrets` table:
 
-| DB Column | Purpose | Example |
-|-----------|---------|---------|
-| `api_endpoint` | OpenAI-compatible base URL | `https://api.openai.com/v1` |
-| `api_key` | API key | Set in Admin |
-| `model` | Model ID | `gpt-4o`, `gemini-2.5-flash`, `claude-sonnet-4-20250514` |
+| Secret Key | Purpose |
+|------------|---------|
+| `ai_model_provider` | `"google"` | `"openai"` | `"anthropic"` |
+| `ai_model_name` | Model ID (e.g. `gemini-2.5-flash`) |
+| `ai_api_endpoint` | Base URL for the API |
+| `ai_api_key` | Authentication key |
 
-Read via `SecretService::getModelConfig()` at runtime. Never hardcode model names or API keys.
+**Recommended model mapping:**
+- CTO/Orchestrator → Pro model (Gemini 2.5 Pro / Claude Opus)
+- Worker/Implementation → Fast model (Gemini 2.5 Flash / Claude Sonnet)
+- Reviewer → Cheap model (Gemini 2.5 Flash)
+
+Never hardcode model names or API keys. Always read from `SecretService` at runtime.
 
 ## Admin Panel Agent (bapXcli)
 
