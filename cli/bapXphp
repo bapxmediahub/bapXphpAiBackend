@@ -122,16 +122,20 @@ set -euo pipefail
 #       bapXphp okfgen                  — generate .okf/ knowledge bundle (OKF v0.1, concept nodes + edges)
 #
 # ── Browser Agent (PHP-native, no Node.js needed) ──────────────
-#   bapXphp browser-agent open <url>     — fetch page, return YAML snapshot
-#   bapXphp browser-agent goto <url>     — navigate to URL
-#   bapXphp browser-agent snapshot       — print current page as YAML snapshot
-#   bapXphp browser-agent click <sel>    — follow link by CSS selector
-#   bapXphp browser-agent fill <sel> <t> — store form field value
-#   bapXphp browser-agent submit         — submit form with stored values
-#   bapXphp browser-agent smoke <url>    — run smoke tests (status, links, images)
-#   bapXphp browser-agent console <url>  — show page HTTP metadata
-#   bapXphp browser-agent html           — print raw HTML of current page
-#   bapXphp browser-agent help           — detailed help with all options
+#   bapXphp browser-agent open <url>      — fetch page, return YAML snapshot
+#   bapXphp browser-agent search <query>  — Google search, parse organic results
+#   bapXphp browser-agent goto <url>      — navigate to URL
+#   bapXphp browser-agent snapshot        — print current page as YAML snapshot
+#   bapXphp browser-agent click <sel>     — follow link by CSS selector
+#   bapXphp browser-agent fill <sel> <t>  — store form field value
+#   bapXphp browser-agent submit          — submit form with stored values
+#   bapXphp browser-agent smoke <url>     — run smoke tests (status, links, images)
+#   bapXphp browser-agent links           — extract all links from current page
+#   bapXphp browser-agent forms           — list all forms with fields
+#   bapXphp browser-agent captcha         — detect captcha on current page
+#   bapXphp browser-agent console <url>   — show page HTTP metadata
+#   bapXphp browser-agent html            — print raw HTML of current page
+#   bapXphp browser-agent help            — detailed help with all options
 #   (Use --pw prefix for Playwright mode when Node.js is available.)
 #
 # ── Task Management (todowrite) ──────────────────────────────────
