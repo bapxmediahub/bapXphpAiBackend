@@ -37,6 +37,11 @@ define('COOKIE_JAR', __DIR__ . '/../.agents/temp/browser-cookies.txt');
 define('CONFIG_FILE', __DIR__ . '/../.agents/temp/browser-config.json');
 define('LOG_FILE', __DIR__ . '/../.agents/temp/browser-audit.log');
 
+// Local binaries (Linux x86_64 for cPanel production)
+define('CHROME_BIN', __DIR__ . '/../storage/.bin/chrome-linux/chrome');
+define('CHROME_LAUNCHER', __DIR__ . '/../.bin/launch-chrome.sh');
+define('KITTENTTS_MODEL', __DIR__ . '/../storage/.bin/kitten-tts/model_quantized.onnx');
+
 const USER_AGENTS = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36',
@@ -50,7 +55,7 @@ function config_load(): array {
         $d = json_decode(file_get_contents(CONFIG_FILE), true);
         if ($d) return $d;
     }
-    return ['request_delay_ms'=>0,'timeout'=>30,'connect_timeout'=>10,'tracing'=>true];
+    return ['request_delay_ms'=>0,'timeout'=>30,'connect_timeout'=>10,'tracing'=>true,'cdp_ws'=>''];
 }
 
 function config_save(array $c): void {
@@ -154,6 +159,200 @@ function http_get(string $url, array &$s, bool $store = true, int $retries = 2):
     }
     fwrite(STDERR, "Error after {$retries} attempts: {$error} (HTTP {$http_code})\n");
     exit(1);
+}
+
+// ── CDP (Chrome DevTools Protocol) Client ──────────────────────
+function cdp_connect(string $ws_url): ?array {
+    $ctx = stream_context_create(['socket'=>['connect_timeout'=>10]]);
+    $fp = @stream_socket_client($ws_url, $errno, $errstr, 10, STREAM_CLIENT_CONNECT, $ctx);
+    if (!$fp) { fwrite(STDERR, "CDP connect failed: {$errstr} ({$errno})\n"); return null; }
+    stream_set_blocking($fp, true);
+    $key = base64_encode(random_bytes(16));
+    $req = "GET / HTTP/1.1\r\nHost: " . parse_url($ws_url, PHP_URL_HOST) . "\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: {$key}\r\nSec-WebSocket-Version: 13\r\n\r\n";
+    fwrite($fp, $req);
+    $resp = '';
+    while (!feof($fp)) { $resp .= fread($fp, 1024); if (str_contains($resp, "\r\n\r\n")) break; }
+    if (!str_contains($resp, '101 Switching Protocols')) { fwrite(STDERR, "CDP handshake failed\n"); fclose($fp); return null; }
+    return ['fp'=>$fp, 'id'=>1];
+}
+
+function cdp_send(array $conn, string $method, array $params = []): ?array {
+    $msg = json_encode(['id'=>$conn['id']++,'method'=>$method,'params'=>$params]);
+    $frame = chr(0x81) . chr(strlen($msg)) . $msg;
+    fwrite($conn['fp'], $frame);
+    $buf = '';
+    while (!feof($conn['fp'])) {
+        $buf .= fread($conn['fp'], 1024);
+        if (strlen($buf) >= 2) {
+            $len = ord($buf[1]) & 127;
+            if (strlen($buf) >= 2 + $len) break;
+        }
+    }
+    if ($buf === '') return null;
+    $payload = substr($buf, 2);
+    return json_decode($payload, true);
+}
+
+function cdp_close(array $conn): void {
+    fclose($conn['fp']);
+}
+
+// ── API Mode (remote API endpoints) ───────────────────────────────
+function api_request(string $base, string $cmd, array $args): void {
+    $cfg = config_load();
+    $token = $cfg['api_token'] ?? '';
+    
+    $endpoints = [
+        'search'    => ['POST', 'search', ['query', 'engine']],
+        'open'      => ['POST', 'open', ['url']],
+        'click'     => ['POST', 'click', ['selector']],
+        'fill'      => ['POST', 'fill', ['selector', 'text']],
+        'snapshot'  => ['POST', 'snapshot', ['max_elements', 'max_depth']],
+        'links'     => ['POST', 'links', []],
+        'forms'     => ['POST', 'forms', []],
+        'captcha'   => ['POST', 'captcha', []],
+        'smoke'     => ['POST', 'smoke', ['url']],
+        'cdp'       => ['POST', 'cdp', ['ws_url', 'method', 'params']],
+        'cdp_launch'=> ['POST', 'cdp_launch', ['port', 'headless', 'no_sandbox']],
+        'status'    => ['GET', 'status', []],
+    ];
+    
+    if (!isset($endpoints[$cmd])) {
+        fwrite(STDERR, "Unknown API command: $cmd\n");
+        exit(1);
+    }
+    
+    [$method, $endpoint, $argNames] = $endpoints[$cmd];
+    $url = rtrim($base, '/') . '/' . $endpoint;
+    
+    $data = [];
+    foreach ($argNames as $i => $name) {
+        $data[$name] = $args[$i] ?? '';
+    }
+    // Handle boolean args
+    foreach (['headless', 'no_sandbox'] as $boolArg) {
+        if (isset($data[$boolArg]) && in_array(strtolower($data[$boolArg]), ['true', '1', 'yes'], true)) {
+            $data[$boolArg] = true;
+        } elseif (isset($data[$boolArg])) {
+            $data[$boolArg] = false;
+        }
+    }
+    
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CUSTOMREQUEST => $method,
+        CURLOPT_TIMEOUT => 60,
+        CURLOPT_HTTPHEADER => array_merge([
+            'Content-Type: application/json',
+            'Accept: application/json',
+        ], $token ? ['Authorization: Bearer ' . $token] : []),
+    ]);
+    
+    if ($method === 'POST') {
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    }
+    
+    $resp = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($resp === false) {
+        fwrite(STDERR, "API request failed\n");
+        exit(1);
+    }
+    
+    $result = json_decode($resp, true);
+    if ($code >= 400) {
+        fwrite(STDERR, "API error ($code): " . ($result['error'] ?? $resp) . "\n");
+        exit(1);
+    }
+    
+    echo json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n";
+}
+
+function api_config(string $key, string $value = ''): void {
+    $cfg = config_load();
+    if ($value !== '') {
+        $cfg[$key] = $value;
+        config_save($cfg);
+        echo "$key = $value\n";
+    } else {
+        echo ($cfg[$key] ?? '') . "\n";
+    }
+}
+
+// ── CDP Commands ────────────────────────────────────────────────
+function cdp_cmd(array $args): void {
+    $cfg = config_load();
+    $ws = $args[0] ?? ($cfg['cdp_ws'] ?? '');
+    if (!$ws) { fwrite(STDERR, "Usage: browser-agent cdp <ws_url|command> [args...]\nSet default: browser-agent config set cdp_ws ws://host:port/devtools/browser/xxx\n"); exit(1); }
+    if (str_starts_with($ws, 'ws')) {
+        $conn = cdp_connect($ws);
+        if (!$conn) exit(1);
+        $cmd = $args[1] ?? 'version';
+        $out = cdp_send($conn, $cmd, array_slice($args, 2));
+        echo json_encode($out, JSON_PRETTY_PRINT) . "\n";
+        cdp_close($conn);
+    } else {
+        $conn = cdp_connect($cfg['cdp_ws'] ?? '');
+        if (!$conn) exit(1);
+        $out = cdp_send($conn, $ws, array_slice($args, 1));
+        echo json_encode($out, JSON_PRETTY_PRINT) . "\n";
+        cdp_close($conn);
+    }
+}
+
+// ── CDP Launch (start local Chrome binary in background) ───────────
+function cdp_launch(array $args): void {
+    $binDir = __DIR__ . '/../.bin/chrome-linux';
+    $chrome = $binDir . '/chrome';
+    if (!is_file($chrome) || !is_executable($chrome)) {
+        fwrite(STDERR, "Chrome binary not found at $chrome\nRun php .bin/download-chrome.php to install\n");
+        exit(1);
+    }
+
+    // Verify binary can run on this architecture
+    $test = @shell_exec("$chrome --version 2>&1");
+    if ($test === false || $test === '' || str_contains($test, 'cannot execute') || str_contains($test, 'Exec format error')) {
+        fwrite(STDERR, "Chrome binary is Linux x86_64 only — won't run on this machine (macOS ARM64).\n");
+        fwrite(STDERR, "For local testing, run Chrome on a Linux x86_64 server and use remote CDP:\n");
+        fwrite(STDERR, "  .bin/launch-chrome.sh --port=9222  # on Linux server\n");
+        fwrite(STDERR, "  browser-agent config set cdp_ws ws://your-server:9222/devtools/browser/\n");
+        fwrite(STDERR, "  browser-agent cdp Target.getTargets\n");
+        exit(1);
+    }
+
+    $port = 9222;
+    $userDataDir = null;
+    $headless = true;
+    $noSandbox = true;
+
+    foreach ($args as $arg) {
+        if (str_starts_with($arg, '--port=')) $port = (int) substr($arg, 7);
+        elseif (str_starts_with($arg, '--user-data-dir=')) $userDataDir = substr($arg, 16);
+        elseif ($arg === '--headless=false') $headless = false;
+        elseif ($arg === '--no-sandbox=false') $noSandbox = false;
+    }
+
+    $cmd = [$chrome];
+    if ($headless) $cmd[] = '--headless=new';
+    if ($noSandbox) $cmd[] = '--no-sandbox';
+    $cmd[] = '--disable-gpu';
+    $cmd[] = '--disable-dev-shm-usage';
+    $cmd[] = '--remote-debugging-port=' . $port;
+    $cmd[] = '--remote-debugging-address=0.0.0.0';
+    $cmd[] = '--user-data-dir=' . ($userDataDir ?: sys_get_temp_dir() . '/chrome-cdp-' . uniqid());
+
+    // Start Chrome in background
+    $cmdStr = implode(' ', array_map('escapeshellarg', $cmd)) . ' > /dev/null 2>&1 &';
+    $pid = shell_exec($cmdStr);
+    if (!$pid) { fwrite(STDERR, "Failed to start Chrome\n"); exit(1); }
+
+    echo "Started Chrome on port $port (PID: $pid)\n";
+    echo "CDP endpoint: ws://localhost:$port/devtools/browser/\n";
+    echo "Use 'browser-agent cdp Target.getTargets' to connect\n";
 }
 
 function text_of(DOMNode $node): string {
@@ -554,14 +753,33 @@ function extract_forms(DOMDocument $dom): array {
 
 // ── Main ───────────────────────────────────────────────────────
 $args = $argv; array_shift($args);
+$apiMode = false;
+if (($args[0] ?? '') === '--api') {
+    $apiMode = true;
+    array_shift($args);
+}
 $cmd = $args[0] ?? 'help';
 
 try {
+    if ($apiMode) {
+        $apiBase = config_load()['api_base'] ?? 'http://localhost/api/browser';
+        api_request($apiBase, $cmd, array_slice($args, 1));
+        exit(0);
+    }
+
     // HTTP mode — load session
     $session = sess_load();
     if (!empty($session['html'])) dom_from_session($session);
 
     switch ($cmd) {
+        case 'cdp':
+            cdp_cmd(array_slice($args, 1));
+            break;
+
+        case 'cdp_launch':
+            cdp_launch(array_slice($args, 1));
+            break;
+
         case 'open': case 'goto':
             $url = $args[1] ?? '';
             if (!$url) { fwrite(STDERR, "Usage: browser-agent open <url>\n"); exit(1); }
@@ -1063,9 +1281,26 @@ try {
             echo "  links               extract all links (internal/external) from current page\n";
             echo "  forms               list all forms with fields, types, required status\n";
             echo "  captcha             detect captcha (reCAPTCHA, hCaptcha, Turnstile, text)\n";
-            echo "  config [set k v]    show or set config (request_delay_ms, timeout, etc.)\n";
+            echo "  config [set k v]    show or set config (request_delay_ms, timeout, cdp_ws)\n";
             echo "  log [N]             show last N audit log entries (default 20)\n";
             echo "  cookies             show cookie jar contents\n";
+            echo "\nCDP mode (remote Chrome via DevTools Protocol):\n";
+            echo "  cdp <ws_url|cmd>    connect to Chrome CDP websocket\n";
+            echo "  cdp_launch          start local Chrome from .bin/chrome-linux/\n";
+            echo "    --port=N          debugging port (default 9222)\n";
+            echo "    --user-data-dir=  custom profile dir\n";
+            echo "    --headless=false  show browser window\n";
+            echo "  config set cdp_ws ws://host:9222/devtools/browser/xxx  set default CDP endpoint\n";
+            echo "  cdp Target.getTargets                                   list targets\n";
+            echo "  cdp Page.navigate '{\"url\":\"https://example.com\"}'    navigate\n";
+            echo "  cdp Runtime.evaluate '{\"expression\":\"document.title\"}' eval JS\n";
+            echo "\n";
+            echo "Snapshots include: id, class, role, href, src, alt, name, type, value,\n";
+            echo "  method, action, data-testid, aria-label, placeholder, checked, selected\n\n";
+            echo "Captcha detection: reCAPTCHA, hCaptcha, Cloudflare Turnstile, text captchas\n";
+            echo "Config: request_delay_ms, timeout, connect_timeout, tracing, cdp_ws\n";
+            echo "UA pool: Chrome/Mac, Chrome/Win, Chrome/Linux, Safari, Firefox (rotated per request)\n";
+            echo "Session persists across calls in .agents/temp/browser-session.json\n";
             echo "  go-back/forward     history navigation (doesn't re-push)\n";
             echo "  reload              re-fetch current page\n";
             echo "  close               reset session (cookies + log)\n\n";

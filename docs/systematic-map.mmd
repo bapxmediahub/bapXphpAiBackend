@@ -7,10 +7,10 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 109 routes, 13 controllers, 42 services, 49 views, 0 data files, 23 tools"]
-    arch_routes["> Routes: 109 (Public + Auth + Payment + Admin + Support)"]:::arch
-    arch_ctrl["> Controllers: 13"]:::arch
-    arch_svc["> Services: 42"]:::arch
+  subgraph ARCH["Architecture Overview — 127 routes, 15 controllers, 43 services, 49 views, 0 data files, 23 tools"]
+    arch_routes["> Routes: 127 (Public + Auth + Payment + Admin + Support)"]:::arch
+    arch_ctrl["> Controllers: 15"]:::arch
+    arch_svc["> Services: 43"]:::arch
     arch_views["> Views: 49"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 23"]:::arch
@@ -33,6 +33,12 @@ flowchart LR
     route_get_shop["GET /shop — Product shop — grid with pill actions"]:::route
     route_get_categories["GET /categories — Products filtered by category"]:::route
     route_get_product_slug["GET /product/{slug} — Product detail — gallery, add-to-cart, buy-now"]:::route
+    route_get_api["GET /api"]:::route
+    route_get_api_shop["GET /api/shop"]:::route
+    route_get_api_categories["GET /api/categories"]:::route
+    route_get_api_product_slug["GET /api/product/{slug}"]:::route
+    route_get_api_consult["GET /api/consult"]:::route
+    route_get_api_temples["GET /api/temples"]:::route
     route_get_sitemap_xml["GET /sitemap.xml"]:::route
     route_get_contact["GET /contact — Contact form GET"]:::route
     route_post_contact["POST /contact — Contact form POST submission"]:::route
@@ -55,6 +61,18 @@ flowchart LR
     route_get_blog_category_slug["GET /blog/category/{slug} — Blog listing filtered by category"]:::route
     route_post_api_agent["POST /api/agent"]:::route
     route_post_api_tts_tokenize["POST /api/tts/tokenize — TTS — tokenize text for KittenTTS ONNX model"]:::route
+    route_post_api_browser_search["POST /api/browser/search"]:::route
+    route_post_api_browser_open["POST /api/browser/open"]:::route
+    route_post_api_browser_click["POST /api/browser/click"]:::route
+    route_post_api_browser_fill["POST /api/browser/fill"]:::route
+    route_post_api_browser_snapshot["POST /api/browser/snapshot"]:::route
+    route_post_api_browser_links["POST /api/browser/links"]:::route
+    route_post_api_browser_forms["POST /api/browser/forms"]:::route
+    route_post_api_browser_captcha["POST /api/browser/captcha"]:::route
+    route_post_api_browser_smoke["POST /api/browser/smoke"]:::route
+    route_post_api_browser_cdp["POST /api/browser/cdp"]:::route
+    route_post_api_browser_cdp_launch["POST /api/browser/cdp_launch"]:::route
+    route_get_api_browser_status["GET /api/browser/status"]:::route
     route_get_api_support_latest_message["GET /api/support/latest-message — Support — latest ticket message for TTS polling"]:::route
   end
 
@@ -155,9 +173,11 @@ flowchart LR
     controller_accountcontroller["AccountController"]:::code
     controller_admincontroller["AdminController"]:::code
     controller_agentcontroller["AgentController"]:::code
+    controller_apicontroller["ApiController"]:::code
     controller_authcontroller["AuthController"]:::code
     controller_basecontroller["BaseController"]:::code
     controller_blogcontroller["BlogController"]:::code
+    controller_browseragentcontroller["BrowserAgentController"]:::code
     controller_commercecontroller["CommerceController"]:::code
     controller_consultationcontroller["ConsultationController"]:::code
     controller_publiccontroller["PublicController"]:::code
@@ -176,6 +196,7 @@ flowchart LR
     service_authservice["AuthService"]:::code
     service_blogdraftservice["BlogDraftService"]:::code
     service_blogservice["BlogService"]:::code
+    service_browsersession["BrowserSession"]:::code
     service_cartservice["CartService"]:::code
     service_categoryservice["CategoryService"]:::code
     service_consultationservice["ConsultationService"]:::code
@@ -365,6 +386,24 @@ flowchart LR
   route_get_product_slug --> controller_publiccontroller
   controller_publiccontroller --> service_productservice
   controller_publiccontroller -. renders .-> view_public_product
+  route_get_api --> controller_apicontroller
+  controller_apicontroller -. renders .-> view_public_404
+  route_get_api_shop --> controller_apicontroller
+  controller_apicontroller --> service_productservice
+  controller_apicontroller --> service_categoryservice
+  controller_apicontroller -. renders .-> view_public_404
+  route_get_api_categories --> controller_apicontroller
+  controller_apicontroller --> service_categoryservice
+  controller_apicontroller -. renders .-> view_public_404
+  route_get_api_product_slug --> controller_apicontroller
+  controller_apicontroller --> service_productservice
+  controller_apicontroller -. renders .-> view_public_404
+  route_get_api_consult --> controller_apicontroller
+  controller_apicontroller --> service_productservice
+  controller_apicontroller -. renders .-> view_public_404
+  route_get_api_temples --> controller_apicontroller
+  controller_apicontroller --> service_templeservice
+  controller_apicontroller -. renders .-> view_public_404
   route_get_cart --> controller_publiccontroller
   controller_publiccontroller --> service_cartservice
   controller_publiccontroller --> service_productservice
@@ -769,6 +808,30 @@ flowchart LR
   controller_agentcontroller -. renders .-> view_public_404
   route_post_api_tts_tokenize --> controller_ttscontroller
   controller_ttscontroller -. renders .-> view_public_404
+  route_post_api_browser_search --> controller_browseragentcontroller
+  controller_browseragentcontroller -. renders .-> view_public_404
+  route_post_api_browser_open --> controller_browseragentcontroller
+  controller_browseragentcontroller -. renders .-> view_public_404
+  route_post_api_browser_click --> controller_browseragentcontroller
+  controller_browseragentcontroller -. renders .-> view_public_404
+  route_post_api_browser_fill --> controller_browseragentcontroller
+  controller_browseragentcontroller -. renders .-> view_public_404
+  route_post_api_browser_snapshot --> controller_browseragentcontroller
+  controller_browseragentcontroller -. renders .-> view_public_404
+  route_post_api_browser_links --> controller_browseragentcontroller
+  controller_browseragentcontroller -. renders .-> view_public_404
+  route_post_api_browser_forms --> controller_browseragentcontroller
+  controller_browseragentcontroller -. renders .-> view_public_404
+  route_post_api_browser_captcha --> controller_browseragentcontroller
+  controller_browseragentcontroller -. renders .-> view_public_404
+  route_post_api_browser_smoke --> controller_browseragentcontroller
+  controller_browseragentcontroller -. renders .-> view_public_404
+  route_post_api_browser_cdp --> controller_browseragentcontroller
+  controller_browseragentcontroller -. renders .-> view_public_404
+  route_post_api_browser_cdp_launch --> controller_browseragentcontroller
+  controller_browseragentcontroller -. renders .-> view_public_404
+  route_get_api_browser_status --> controller_browseragentcontroller
+  controller_browseragentcontroller -. renders .-> view_public_404
   route_get_api_support_latest_message --> controller_supportcontroller
   controller_supportcontroller --> service_databaseservice
   controller_supportcontroller -. renders .-> view_public_404
@@ -780,8 +843,10 @@ flowchart LR
   controller_accountcontroller --> controller_basecontroller
   controller_admincontroller --> controller_basecontroller
   controller_agentcontroller --> controller_basecontroller
+  controller_apicontroller --> controller_basecontroller
   controller_authcontroller --> controller_basecontroller
   controller_blogcontroller --> controller_basecontroller
+  controller_browseragentcontroller --> controller_basecontroller
   controller_commercecontroller --> controller_basecontroller
   controller_consultationcontroller --> controller_basecontroller
   controller_publiccontroller --> controller_basecontroller

@@ -6,7 +6,7 @@ final class ProjectMapService {
     ];
 
     public const SHARED_CONTROLLERS = ['BaseController'];
-    public const SHARED_SERVICES = ['SeoService', 'SmtpMailer', 'ImageOptimizerService', 'DocsMapService', 'GitHubDocService', 'RateLimiter', 'KnowledgeGraphService'];
+    public const SHARED_SERVICES = ['SeoService', 'SmtpMailer', 'ImageOptimizerService', 'DocsMapService', 'GitHubDocService', 'RateLimiter', 'KnowledgeGraphService', 'BrowserSession'];
     public const SHARED_VIEWS = ['account/_nav', 'layouts/admin', 'layouts/app', 'public/404', 'public/_consultation-pricing', 'admin/environment'];
     public const KNOWN_UNWIRED_COLLECTIONS = ['wallet_transactions', 'media_files'];
 
@@ -26,6 +26,12 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/shop','name'=>'shop','page'=>'public/shop','controller'=>'PublicController@shop','services'=>['ProductService','CategoryService']],
             ['method'=>'GET','path'=>'/categories','name'=>'categories','page'=>'public/categories','controller'=>'PublicController@categories','services'=>['CategoryService']],
             ['method'=>'GET','path'=>'/product/{slug}','name'=>'product.show','page'=>'public/product','controller'=>'PublicController@product','services'=>['ProductService']],
+            ['method'=>'GET','path'=>'/api','name'=>'api.index','page'=>'public/404','controller'=>'ApiController@index','services'=>[]],
+            ['method'=>'GET','path'=>'/api/shop','name'=>'api.shop','page'=>'public/404','controller'=>'ApiController@shop','services'=>['ProductService','CategoryService']],
+            ['method'=>'GET','path'=>'/api/categories','name'=>'api.categories','page'=>'public/404','controller'=>'ApiController@categories','services'=>['CategoryService']],
+            ['method'=>'GET','path'=>'/api/product/{slug}','name'=>'api.product','page'=>'public/404','controller'=>'ApiController@product','services'=>['ProductService']],
+            ['method'=>'GET','path'=>'/api/consult','name'=>'api.consult','page'=>'public/404','controller'=>'ApiController@consult','services'=>['ProductService']],
+            ['method'=>'GET','path'=>'/api/temples','name'=>'api.temples','page'=>'public/404','controller'=>'ApiController@temples','services'=>['TempleService']],
             ['method'=>'GET','path'=>'/cart','name'=>'cart','page'=>'public/cart','controller'=>'PublicController@cart','services'=>['CartService','ProductService']],
             ['method'=>'GET','path'=>'/checkout','name'=>'checkout','page'=>'public/checkout','controller'=>'PublicController@checkout','services'=>['CartService','ProductService','SecretService','AddressService','SettingsService']],
             ['method'=>'GET','path'=>'/sitemap.xml','name'=>'sitemap','page'=>'public/sitemap','controller'=>'PublicController@sitemap','services'=>['BlogService','ProductService']],
@@ -122,6 +128,18 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/admin/blog/ai-draft','name'=>'admin.blog.ai-draft','page'=>'admin/blog','controller'=>'AdminController@aiDraftBlog','services'=>['BlogService','BlogDraftService']],
             ['method'=>'POST','path'=>'/api/agent','name'=>'api.agent','page'=>'public/404','controller'=>'AgentController@ask','services'=>['SecretService','DatabaseService']],
             ['method'=>'POST','path'=>'/api/tts/tokenize','name'=>'api.tts.tokenize','page'=>'public/404','controller'=>'TtsController@tokenize','services'=>[]],
+            ['method'=>'POST','path'=>'/api/browser/search','name'=>'api.browser.search','page'=>'public/404','controller'=>'BrowserAgentController@search','services'=>[]],
+            ['method'=>'POST','path'=>'/api/browser/open','name'=>'api.browser.open','page'=>'public/404','controller'=>'BrowserAgentController@open','services'=>[]],
+            ['method'=>'POST','path'=>'/api/browser/click','name'=>'api.browser.click','page'=>'public/404','controller'=>'BrowserAgentController@click','services'=>[]],
+            ['method'=>'POST','path'=>'/api/browser/fill','name'=>'api.browser.fill','page'=>'public/404','controller'=>'BrowserAgentController@fill','services'=>[]],
+            ['method'=>'POST','path'=>'/api/browser/snapshot','name'=>'api.browser.snapshot','page'=>'public/404','controller'=>'BrowserAgentController@snapshot','services'=>[]],
+            ['method'=>'POST','path'=>'/api/browser/links','name'=>'api.browser.links','page'=>'public/404','controller'=>'BrowserAgentController@links','services'=>[]],
+            ['method'=>'POST','path'=>'/api/browser/forms','name'=>'api.browser.forms','page'=>'public/404','controller'=>'BrowserAgentController@forms','services'=>[]],
+            ['method'=>'POST','path'=>'/api/browser/captcha','name'=>'api.browser.captcha','page'=>'public/404','controller'=>'BrowserAgentController@captcha','services'=>[]],
+            ['method'=>'POST','path'=>'/api/browser/smoke','name'=>'api.browser.smoke','page'=>'public/404','controller'=>'BrowserAgentController@smoke','services'=>[]],
+            ['method'=>'POST','path'=>'/api/browser/cdp','name'=>'api.browser.cdp','page'=>'public/404','controller'=>'BrowserAgentController@cdp','services'=>[]],
+            ['method'=>'POST','path'=>'/api/browser/cdp_launch','name'=>'api.browser.cdp_launch','page'=>'public/404','controller'=>'BrowserAgentController@cdpLaunch','services'=>[]],
+            ['method'=>'GET','path'=>'/api/browser/status','name'=>'api.browser.status','page'=>'public/404','controller'=>'BrowserAgentController@status','services'=>[]],
             ['method'=>'GET','path'=>'/api/support/latest-message','name'=>'api.support.latest','page'=>'public/404','controller'=>'SupportController@latestMessage','services'=>['DatabaseService']],
         ];
         foreach ($routes as &$route) {

@@ -1,8 +1,0 @@
-<IfModule mod_mime.c>
-    AddType application/onnx .onnx
-    AddType application/wasm .wasm
-</IfModule>
-<IfModule mod_headers.c>
-    Header set Cache-Control "max-age=31536000, public"
-    Header set Access-Control-Allow-Origin "*"
-</IfModule>
