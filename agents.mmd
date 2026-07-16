@@ -39,7 +39,7 @@ flowchart LR
   deployment -->|live verification| browser_tester
   browser_tester -->|close or reopen| cto
 
-  telemetry["Telemetry<br/><small>status, started_at, completed_at, duration_seconds, attempts, tool_failures, evidence_count, reviewer_findings, regressions, node_entries, edge_outcomes, termination_reason, score</small><br/>minimum score 90"]:::gate
+  telemetry["Telemetry<br/><small>started, completed, duration_minutes, total_issues, closed_issues, objectives_completed, handoffs_used, tests_passed, gaps, errors, score</small><br/>minimum score 90"]:::gate
   worker -. records .-> telemetry
   reviewer -. verifies .-> telemetry
   browser_tester -. renders .-> telemetry

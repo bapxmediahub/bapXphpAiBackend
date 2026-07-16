@@ -106,21 +106,18 @@
   ],
   "telemetry": {
     "required": [
-      "status",
-      "started_at",
-      "completed_at",
-      "duration_seconds",
-      "attempts",
-      "tool_failures",
-      "evidence_count",
-      "reviewer_findings",
-      "regressions",
-      "node_entries",
-      "edge_outcomes",
-      "termination_reason",
+      "started",
+      "completed",
+      "duration_minutes",
+      "total_issues",
+      "closed_issues",
+      "objectives_completed",
+      "handoffs_used",
+      "tests_passed",
+      "gaps",
+      "errors",
       "score"
     ],
-    "statuses": ["pass", "fail", "blocked"],
     "minimum_score": 90
   }
 }

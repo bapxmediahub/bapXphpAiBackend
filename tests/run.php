@@ -99,13 +99,10 @@ $tests['agent workflow diagnoses before issue tracking and stays source grounded
     assertTrue(str_contains($readme, 'AGENTS.md'), 'README should reference AGENTS.md instead of duplicating its workflow');
 };
 
-$tests['fork sync and runtime artifacts are properly managed'] = function (): void {
-    $sync = file_get_contents(app_path('.github/workflows/sync-upstream.yml'));
+$tests['independent deployment repository and runtime artifacts are properly managed'] = function (): void {
     $ignore = file_get_contents(app_path('.gitignore'));
     $cli = file_get_contents(app_path('cli/bapXphp'));
-    assertTrue(str_contains($sync, 'schedule:') && str_contains($sync, '0 * * * *'), 'Fork sync should use hourly schedule');
-    assertTrue(str_contains($sync, 'workflow_dispatch:'), 'Fork sync should support manual dispatch');
-    assertTrue(str_contains($sync, 'merge-upstream'), 'Fork sync should use merge-upstream API');
+    assertTrue(!is_file(app_path('.github/workflows/sync-upstream.yml')), 'Independent deployment repository should not retain fork-sync automation');
     assertTrue(!is_file(app_path('.github/workflows/notify-fork.yml')), 'Notify-fork was replaced by schedule-based sync');
     foreach (['/output/playwright/', '/server.log', '/storage/logs/'] as $path) {
         assertTrue(str_contains($ignore, $path), "Git should ignore {$path}");
@@ -1023,7 +1020,7 @@ $tests['repository operations use git and GitHub Actions without duplicate agent
     assertTrue(!is_file(app_path('.agents/skills/gh-cli/SKILL.md')), 'GitHub CLI skill should be removed');
     assertTrue(!is_dir(app_path('.claude')), 'Duplicate .claude agent folder should not exist');
     assertTrue(is_file(app_path('.github/workflows/branch-pr.yml')), 'Branch pushes should have an Actions-owned PR workflow');
-    assertTrue(!str_contains(file_get_contents(app_path('.github/workflows/sync-upstream.yml')), 'workflows: write'), 'Workflow permissions should use supported GitHub Actions keys');
+    assertTrue(!is_file(app_path('.github/workflows/sync-upstream.yml')), 'Unforked repository should not contain sync-upstream workflow');
 
     $activeFiles = [
         app_path('AGENTS.md'),
@@ -1053,11 +1050,6 @@ $tests['repository operations use git and GitHub Actions without duplicate agent
         assertTrue(str_contains($commentHandoff, $needle), "Issue comments should support the bapXai CTO hook via {$needle}");
     }
 
-    $sync = file_get_contents(app_path('.github/workflows/sync-upstream.yml'));
-    assertTrue(str_contains($sync, 'git merge-base main upstream/main'), 'Fork sync should diagnose unrelated histories');
-    assertTrue(str_contains($sync, 'git merge --no-edit upstream/main'), 'Fork sync should merge compatible divergent histories');
-    assertTrue(!str_contains($sync, 'git merge --ff-only upstream/main'), 'Fork sync should not assume every compatible fork is fast-forward only');
-
     $review = file_get_contents(app_path('.github/workflows/ai-pr-review.yml'));
     assertTrue(str_contains($review, "APP_URL: \${{ vars.APP_URL || 'https://sripanchamispiritual.com' }}"), 'AI review should have a usable hosted agent fallback');
     assertTrue(str_contains($review, 'No AI endpoint or APP_URL configured.'), 'AI review should fail with a clear configuration error instead of an invalid curl URL');
@@ -1069,7 +1061,8 @@ $tests['repository operations use git and GitHub Actions without duplicate agent
 
     $agents = file_get_contents(app_path('AGENTS.md'));
     assertTrue(str_contains($agents, '`bapxmediahub/bapXphpAiBackend` is the only agent working repository'), 'Agent contract should pin work to the deployment repository');
-    assertTrue(str_contains($agents, '`getwinharris/bapXphpAiBackend` is read-only upstream'), 'Agent contract should keep the template upstream read-only');
+    assertTrue(str_contains($agents, 'repository is independent and unforked'), 'Agent contract should record the independent repository state');
+    assertTrue(str_contains($agents, 'Do not add an upstream remote'), 'Agent contract should prohibit stale fork synchronization');
 };
 
 $tests['local smoke tool source covers key routes and CSRF protection'] = function (): void {
@@ -1113,9 +1106,14 @@ $tests['agent harness is yaml driven and has a generated validated graph'] = fun
     foreach (['cto', 'worker', 'reviewer', 'browser_tester'] as $role) {
         assertTrue(isset($config['roles'][$role]), "Agent workflow should declare {$role}");
     }
-    foreach (['status', 'duration_seconds', 'attempts', 'tool_failures', 'reviewer_findings', 'node_entries', 'edge_outcomes', 'termination_reason', 'score'] as $metric) {
+    foreach (['started', 'completed', 'duration_minutes', 'total_issues', 'closed_issues', 'objectives_completed', 'handoffs_used', 'tests_passed', 'gaps', 'errors', 'score'] as $metric) {
         assertTrue(in_array($metric, $config['telemetry']['required'] ?? [], true), "Telemetry should require {$metric}");
     }
+    $handoffSchema = json_decode(file_get_contents(app_path('.agents/workflows/handoff.schema.json')), true);
+    assertTrue(in_array('browser_tester', $handoffSchema['properties']['role']['enum'] ?? [], true), 'Handoff schema should support browser tester role');
+    assertTrue(in_array('browser_tester', $handoffSchema['properties']['next_role']['enum'] ?? [], true), 'Handoff schema should route to browser tester');
+    $preCommit = file_get_contents(app_path('.agents/hooks/pre-commit'));
+    assertTrue(str_contains($preCommit, '.agents/handoffs/**/*.json'), 'Pre-commit hook should validate nested handoff event and active files');
     assertSame('sequential', $config['workflow']['execution'] ?? '', 'Agent roles should execute sequentially');
     assertTrue(in_array('hidden_reasoning', $config['workflow']['context_policy']['exclude'] ?? [], true), 'Handoffs should exclude hidden reasoning');
     foreach ($config['scripts'] ?? [] as $name => $script) {
