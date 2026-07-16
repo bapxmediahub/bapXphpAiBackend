@@ -1061,9 +1061,11 @@ $tests['repository operations use git and GitHub Actions without duplicate agent
     $review = file_get_contents(app_path('.github/workflows/ai-pr-review.yml'));
     assertTrue(str_contains($review, "APP_URL: \${{ vars.APP_URL || 'https://sripanchamispiritual.com' }}"), 'AI review should have a usable hosted agent fallback');
     assertTrue(str_contains($review, 'No AI endpoint or APP_URL configured.'), 'AI review should fail with a clear configuration error instead of an invalid curl URL');
+    assertTrue(str_contains($review, 'file_get_contents($argv[1])') && str_contains($review, 'pr_diff.patch'), 'AI review should read the diff from a file instead of interpolating it into a shell command');
 
     $branchPr = file_get_contents(app_path('.github/workflows/branch-pr.yml'));
     assertTrue(str_contains($branchPr, "github.repository == 'bapxmediahub/bapXphpAiBackend'"), 'Automatic PR creation should run only in the deployment working repository');
+    assertTrue(str_contains($branchPr, 'actions/create-github-app-token@v2') && str_contains($branchPr, 'error.status === 403'), 'Automatic PR creation should use the bapXai App when configured and explain disabled token permissions');
 
     $agents = file_get_contents(app_path('AGENTS.md'));
     assertTrue(str_contains($agents, '`bapxmediahub/bapXphpAiBackend` is the only agent working repository'), 'Agent contract should pin work to the deployment repository');
