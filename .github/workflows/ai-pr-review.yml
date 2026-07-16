@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   review:
-    if: github.actor != 'review-ai-bot' && endsWith(github.repository, 'bapXphpAiBackend')
+    if: github.repository == 'bapxmediahub/bapXphpAiBackend' && github.actor != 'review-ai-bot'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -26,13 +26,9 @@ jobs:
           php-version: '8.2'
           extensions: curl, json, mbstring
       - name: Collect PR diff
-        id: diff
         run: |
           git fetch origin ${{ github.base_ref }} --depth=1
-          DIFF=$(git diff origin/${{ github.base_ref }}...HEAD -- . ':!.github' 2>/dev/null | head -5000)
-          echo "diff<<EOF" >> $GITHUB_OUTPUT
-          echo "$DIFF" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          git diff origin/${{ github.base_ref }}...HEAD -- . ':!.github' 2>/dev/null | head -5000 > pr_diff.patch
       - name: Review via Agent API
         id: review
         env:
@@ -40,9 +36,10 @@ jobs:
           BAPX_AI_ENDPOINT: ${{ secrets.BAPX_AI_ENDPOINT }}
           BAPX_AI_API_KEY: ${{ secrets.BAPX_AI_API_KEY }}
           BAPX_AI_MODEL: ${{ secrets.BAPX_AI_MODEL }}
+          APP_URL: ${{ vars.APP_URL || 'https://sripanchamispiritual.com' }}
         run: |
           php -r '
-            $diff = $argv[1];
+            $diff = file_get_contents($argv[1]) ?: "";
             if (trim($diff) === "") { echo "No diff to review.\n"; exit(0); }
             $msg = "Review this PHP diff and note issues (code style, security, bugs, edge cases). Be concise:\n\n```diff\n" . $diff . "\n```";
             $endpoint = getenv("AGENT_ENDPOINT") ?: getenv("BAPX_AI_ENDPOINT") ?: "";
@@ -50,7 +47,12 @@ jobs:
             $model = getenv("BAPX_AI_MODEL") ?: "";
             if ($endpoint === "" || $apiKey === "") {
               $payload = json_encode(["message" => $msg, "source" => "pr-review"]);
-              $ch = curl_init(getenv("APP_URL") . "/api/agent");
+              $appUrl = rtrim((string)getenv("APP_URL"), "/");
+              if ($appUrl === "") {
+                fwrite(STDERR, "No AI endpoint or APP_URL configured.\n");
+                exit(1);
+              }
+              $ch = curl_init($appUrl . "/api/agent");
               curl_setopt_array($ch, [
                 CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true,
                 CURLOPT_HTTPHEADER => ["Content-Type: application/json"],
@@ -91,7 +93,7 @@ jobs:
                 curl_close($ch);
               }
             }
-          ' "${{ steps.diff.outputs.diff }}" > review_output.txt
+          ' pr_diff.patch > review_output.txt
           cat review_output.txt
       - name: Post review comment
         uses: actions/github-script@v7
