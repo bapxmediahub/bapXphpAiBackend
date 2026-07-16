@@ -56,21 +56,18 @@ set -euo pipefail
 #   bapXphp skills                  — list available agent skills with descriptions
 #   bapXphp route:list              — list all registered routes with controllers
 #
-# ── Git ─────────────────────────────────────────────────────────
-#   bapXphp status                  — git status + recent commits
+# ── Repository Support ──────────────────────────────────────────
+#   bapXphp status                  — repository status + recent commits
 #   bapXphp logs [--limit N]        — read recent live audit events from remote MySQL
 #   bapXphp logs --local            — tail ignored local development logs
 #   bapXphp artifacts:clean [--dry-run]
 #                                   — untrack and ignore runtime/test artifacts
-#
-# ── GitHub ──────────────────────────────────────────────────────
-#   bapXphp issue                   — create a GitHub issue (interactive via gh CLI)
-#   bapXphp pr [gh args]            — validate, then create a GitHub PR
-#   bapXphp merge [gh args]         — validate, then merge a GitHub PR
+#   bapXphp hooks install           — install .agents/hooks as this checkout's Git hooks
+#   bapXphp hooks status            — show configured Git hooks path
+#   bapXphp tui                     — open the interactive project terminal UI
 #   bapXphp handoff validate <file> [--issue]
-#                                   — validate structure; --issue also proves GitHub objective coverage
-#   bapXphp handoff comment <file> <pr-number>
-#                                   — create or update the PR's CTO HANDOFF comment
+#                                   — validate structure and local Action event objective coverage
+#   bapXphp handoff active          — show the current GitHub Actions handoff
 #   bapXphp handoff next <issue>    — show event-based handoff with role + workflow
 #   bapXphp handoff template <issue> — generate empty handoff template from issue
 #   bapXphp handoff execute <issue> [--next role]
@@ -102,6 +99,7 @@ set -euo pipefail
 # ── AI / Agent ───────────────────────────────────────────────────
 #   bapXphp agent <message>          — chat with the site AI agent
 #   bapXphp ai:config               — show AI model config from MySQL secrets
+#   bapXphp ai:probe                — safely verify the configured model endpoint
 #   bapXphp handoff execute <issue> [--next role]
 #                                   — load handoff context for next role
 #
@@ -246,7 +244,6 @@ err()  { printf "${R}%s${N}\n" "$*" >&2; }
 die()  { err "$*"; exit 1; }
 
 require_php() { command -v php >/dev/null 2>&1 || die "PHP is not installed"; }
-require_gh()  { command -v gh >/dev/null 2>&1 || die "GitHub CLI (gh) is not installed"; }
 
 schema_path() { echo "$SCHEMA_FILE"; }
 
@@ -323,34 +320,6 @@ cmd_understand() {
   printf "${B}── Recent Commits ──────────────────────────${N}\n"
   git -C "$ROOT" log --oneline -5 2>/dev/null | sed 's/^/  /'
   echo ""
-
-  # ── Open Issues (gh) ──
-  if command -v gh >/dev/null 2>&1; then
-    local issues
-    issues=$(gh issue list --state open --limit 10 --json number,title,createdAt 2>/dev/null) || issues=""
-    if [ -n "$issues" ] && [ "$issues" != "[]" ]; then
-      printf "${B}── Open Issues ────────────────────────────${N}\n"
-      echo "$issues" | php -r '
-        $items = json_decode(stream_get_contents(STDIN), true);
-        foreach ($items as $i) printf("  #%d  %s (opened %s)\n", $i["number"], $i["title"], substr($i["createdAt"],0,10));
-      '
-      echo ""
-    fi
-  fi
-
-  # ── Recent Merged PRs (gh) ──
-  if command -v gh >/dev/null 2>&1; then
-    local prs
-    prs=$(gh pr list --state merged --limit 5 --json number,title,mergedAt 2>/dev/null) || prs=""
-    if [ -n "$prs" ] && [ "$prs" != "[]" ]; then
-      printf "${B}── Recent PRs Merged ───────────────────────${N}\n"
-      echo "$prs" | php -r '
-        $items = json_decode(stream_get_contents(STDIN), true);
-        foreach ($items as $i) printf("  #%d  %s (merged %s)\n", $i["number"], $i["title"], substr($i["mergedAt"],0,10));
-      '
-      echo ""
-    fi
-  fi
 
   # ── Schema Collections ──
   if [ -f "$SCHEMA_FILE" ]; then
@@ -872,66 +841,32 @@ cmd_artifacts_clean() {
   ok "Runtime and Playwright artifacts removed from Git tracking; working files preserved."
 }
 
-# ── GitHub Commands ────────────────────────────────────────────
-cmd_issue() {
-  require_gh
-  gh issue create
-}
-
-cmd_pr() {
-  require_gh
-  cmd_ci
-  gh pr create "$@"
-}
-
-cmd_merge() {
-  require_gh
-  cmd_ci
-  gh pr merge "$@"
-}
-
 cmd_handoff() {
   local action="${1:-}" file="${2:-}" argument="${3:-}"
   case "$action" in
+    active)
+      [ $# -eq 1 ] || die "Usage: bapXphp handoff active"
+      local active_file="$ROOT/.agents/handoffs/active/current.json"
+      [ -f "$active_file" ] || die "No active GitHub Actions handoff"
+      jq . "$active_file"
+      ;;
     validate)
       [ $# -ge 2 ] && [ $# -le 3 ] && [ -n "$file" ] || die "Usage: bapXphp handoff validate <file> [--issue]"
       require_php
       php "$ROOT/cli/handoff.php" validate "$file"
       if [ -n "$argument" ]; then
         [ "$argument" = "--issue" ] || die "Usage: bapXphp handoff validate <file> [--issue]"
-        require_gh
-        local issue_number evidence_file
+        local issue_number event_file
         issue_number=$(php -r '$data=json_decode(file_get_contents($argv[1]), true); echo $data["issue"] ?? "";' "$file")
         [[ "$issue_number" =~ ^[1-9][0-9]*$ ]] || die "Handoff issue number is invalid"
-        evidence_file=$(mktemp)
-        trap 'rm -f "$evidence_file"' RETURN
-        gh issue view "$issue_number" --json body,comments > "$evidence_file"
-        php "$ROOT/cli/handoff.php" coverage "$file" "$evidence_file"
-        rm -f "$evidence_file"
-        trap - RETURN
-      fi
-      ;;
-    comment)
-      local pr_number="$argument"
-      [ $# -eq 3 ] && [ -n "$file" ] && [[ "$pr_number" =~ ^[1-9][0-9]*$ ]] || die "Usage: bapXphp handoff comment <file> <pr-number>"
-      require_php
-      require_gh
-      local body comment_id marker='<!-- HANDOFF-MARKER -->'
-      body=$(php "$ROOT/cli/handoff.php" render-comment "$file")
-      comment_id=$(gh api --paginate "repos/${GITHUB_REPOSITORY:-getwinharris/bapXphpAiBackend}/issues/$pr_number/comments" \
-        --jq ".[] | select(.body | contains(\"$marker\")) | .id" | head -1)
-      if [ -n "$comment_id" ]; then
-        gh api --method PATCH "repos/${GITHUB_REPOSITORY:-getwinharris/bapXphpAiBackend}/issues/comments/$comment_id" -f body="$body" >/dev/null
-        ok "HANDOFF comment updated"
-      else
-        gh api --method POST "repos/${GITHUB_REPOSITORY:-getwinharris/bapXphpAiBackend}/issues/$pr_number/comments" -f body="$body" >/dev/null
-        ok "HANDOFF comment created"
+        event_file="$ROOT/.agents/handoffs/events/${issue_number}.json"
+        [ -f "$event_file" ] || die "No GitHub Actions handoff event for issue #${issue_number}"
+        php "$ROOT/cli/handoff.php" coverage-event "$file" "$event_file"
       fi
       ;;
     next)
       [ $# -eq 2 ] && [[ "$file" =~ ^[1-9][0-9]*$ ]] || die "Usage: bapXphp handoff next <issue>"
       require_php
-      require_gh
       local event_file="$ROOT/.agents/handoffs/events/${file}.json"
       [ ! -f "$event_file" ] && event_file=$(ls "$ROOT/.agents/handoffs/events/${file}"-*.json 2>/dev/null | head -1)
       if [ -f "$event_file" ]; then
@@ -958,14 +893,17 @@ cmd_handoff() {
     template)
       [ $# -eq 2 ] && [[ "$file" =~ ^[1-9][0-9]*$ ]] || die "Usage: bapXphp handoff template <issue>"
       require_php
-      require_gh
-      local evidence_file_3
-      evidence_file_3=$(mktemp)
-      trap 'rm -f "$evidence_file_3"' RETURN
-      gh issue view "$file" --json body,comments > "$evidence_file_3"
-      php "$ROOT/cli/handoff.php" template "$file" "$evidence_file_3"
-      rm -f "$evidence_file_3"
-      trap - RETURN
+      local event_file_3="$ROOT/.agents/handoffs/events/${file}.json"
+      [ -f "$event_file_3" ] || die "No GitHub Actions handoff event for issue #${file}"
+      php -r '
+        $event=json_decode(file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR);
+        $objectives=[];
+        foreach ($event["objectives"] ?? [] as $objective) {
+          $id=trim((string)($objective["id"] ?? ""));
+          if ($id !== "") $objectives[]=["id"=>$id,"status"=>"gap","evidence"=>[],"browser_evidence"=>[],"unresolved"=>["Not yet started"]];
+        }
+        echo json_encode(["issue"=>(int)$event["issue"],"role"=>"worker","objectives"=>$objectives,"files_changed"=>[],"commands_run"=>[],"risks"=>[],"next_role"=>"reviewer"], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES), "\n";
+      ' "$event_file_3"
       ;;
     execute)
       [ $# -ge 2 ] && [[ "$file" =~ ^[1-9][0-9]*$ ]] || die "Usage: bapXphp handoff execute <issue> [--next role]"
@@ -1003,7 +941,7 @@ cmd_handoff() {
         found=$(ls "$ROOT/.agents/handoffs/events/${file}"-*.json 2>/dev/null | head -1)
         [ -n "$found" ] && event_file="$found"
       fi
-      [ -f "$event_file" ] || die "No handoff event for issue #${file}. Run bapXphp issue or GH Actions first."
+      [ -f "$event_file" ] || die "No handoff event for issue #${file}. Wait for the GitHub Actions issue trigger or inspect the issue in GitHub."
 
       echo "── Scoring handoff for issue #${file} ──"
 
@@ -1103,8 +1041,30 @@ cmd_handoff() {
 
       echo "Score written to handoff event"
       ;;
-    *) die "Usage: bapXphp handoff <validate|comment|next|template|execute|score> <file> [--next role]" ;;
+    *) die "Usage: bapXphp handoff <active|validate|next|template|execute|score> <file> [--next role]" ;;
   esac
+}
+
+cmd_hooks() {
+  local action="${1:-status}"
+  case "$action" in
+    install)
+      git -C "$ROOT" config core.hooksPath .agents/hooks
+      chmod +x "$ROOT/.agents/hooks/"*
+      ok "Git hooks installed from .agents/hooks"
+      ;;
+    status)
+      local configured
+      configured=$(git -C "$ROOT" config --get core.hooksPath || true)
+      echo "Git hooks path: ${configured:-not installed}"
+      ;;
+    *) die "Usage: bapXphp hooks <install|status>" ;;
+  esac
+}
+
+cmd_tui() {
+  require_php
+  php "$ROOT/cli/tui.php"
 }
 
 # ── Mail & Images ──────────────────────────────────────────────
@@ -2461,8 +2421,32 @@ cmd_ai_config() {
     echo "Provider:  " . $cfg["provider"] . "\n";
     echo "Model:     " . $cfg["model"] . "\n";
     echo "Endpoint:  " . $cfg["endpoint"] . "\n";
-    echo "API Key:   " . (empty($cfg["api_key"]) ? "(not set)" : substr($cfg["api_key"], 0, 8) . "..." . substr($cfg["api_key"], -4)) . "\n";
+    echo "API Key:   " . (!empty($cfg["configured"]) ? "configured" : "not configured") . "\n";
     echo "\nOverride via env: BAPX_AI_PROVIDER, BAPX_AI_MODEL, BAPX_AI_ENDPOINT, BAPX_AI_API_KEY\n";
+  '
+}
+
+cmd_ai_probe() {
+  require_php
+  php -r '
+    require "'"$ROOT"'/app/bootstrap.php";
+    $cfg=(new App\Services\SecretService())->getModelConfig();
+    if (empty($cfg["apiKey"])) { fwrite(STDERR, "AI model is not configured in remote MySQL secrets.\n"); exit(2); }
+    $model=$cfg["model"]; $endpoint=rtrim($cfg["endpoint"], "/"); $key=$cfg["apiKey"];
+    if ($cfg["provider"] === "google") {
+      $url=$endpoint . "/" . rawurlencode($model) . ":generateContent";
+      $payload=json_encode(["contents"=>[["parts"=>[["text"=>"Reply with exactly OK"]]]],"generationConfig"=>["temperature"=>0,"maxOutputTokens"=>8]]);
+      $headers=["Content-Type: application/json","x-goog-api-key: ".$key];
+    } else {
+      $url=$endpoint . "/chat/completions";
+      $payload=json_encode(["model"=>$model,"messages"=>[["role"=>"user","content"=>"Reply with exactly OK"]],"max_tokens"=>8]);
+      $headers=["Content-Type: application/json","Authorization: Bearer ".$key];
+    }
+    $ch=curl_init($url);
+    curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_POST=>true,CURLOPT_HTTPHEADER=>$headers,CURLOPT_POSTFIELDS=>$payload,CURLOPT_TIMEOUT=>30,CURLOPT_CONNECTTIMEOUT=>10]);
+    $body=curl_exec($ch); $status=curl_getinfo($ch,CURLINFO_HTTP_CODE); $error=curl_error($ch); curl_close($ch);
+    if ($body === false || $status < 200 || $status >= 300) { fwrite(STDERR, "AI probe failed (HTTP {$status})" . ($error !== "" ? ": {$error}" : "") . "\n"); exit(1); }
+    echo "PASS {$cfg["provider"]} model {$model} responded successfully.\n";
   '
 }
 
@@ -2498,13 +2482,16 @@ main() {
       shift; cmd_logs "$@" ;;
     artifacts:clean|artifacts-clean)
       shift; cmd_artifacts_clean "$@" ;;
-    issue|pr|merge)
-      local command="$1"; shift
-      cmd_"$command" "$@" ;;
+    hooks)
+      shift; cmd_hooks "$@" ;;
+    tui)
+      cmd_tui ;;
     handoff)
       shift; cmd_handoff "$@" ;;
     ai:config|ai-config|model-config)
       cmd_ai_config ;;
+    ai:probe|ai-probe)
+      cmd_ai_probe ;;
     mail:process|mail-process)
       cmd_mail_process ;;
     agent)

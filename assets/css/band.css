@@ -3457,6 +3457,145 @@ body { background: var(--color-bg); }
     .varahi-dots { gap: 6px; margin-top: 8px; }
     .hero-stats { display: none; }
 }
+/* Compact consultation cards: circular portrait overlaps the card edge. */
+.astro-market-grid {
+    gap: 72px 20px;
+    padding-top: 58px;
+}
+.astro-market-card,
+.astro-market-card:hover {
+    min-height: 250px;
+    padding: 64px 18px 16px;
+    overflow: visible;
+    border-color: var(--color-border-light);
+    background: var(--color-white);
+    color: var(--color-ink);
+}
+.astro-market-photo {
+    position: absolute;
+    top: -58px;
+    left: 50%;
+    width: 120px;
+    height: 120px;
+    aspect-ratio: 1;
+    overflow: visible;
+    background: transparent;
+    transform: translateX(-50%);
+}
+.astro-market-photo-frame {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border: 4px solid var(--color-gold);
+    border-radius: 50%;
+    background: var(--color-bg-alt);
+    box-shadow: var(--shadow-md);
+}
+.astro-market-photo img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center 22%;
+}
+.astro-rating-pill {
+    right: -10px;
+    bottom: 4px;
+    left: auto;
+    transform: none;
+}
+.astro-market-info {
+    justify-items: center;
+    min-height: 104px;
+    padding: 8px 0 12px;
+    text-align: center;
+}
+.astro-market-name {
+    min-height: 0;
+    color: var(--color-ink);
+}
+.astro-market-info p {
+    min-height: 0;
+    color: var(--color-text-muted);
+}
+.astro-market-meta {
+    justify-content: center;
+    min-height: 0;
+}
+.astro-market-actions {
+    min-height: 0;
+    padding: 0;
+}
+.astro-action-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    width: 100%;
+    gap: 8px;
+}
+.astro-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 8px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-white);
+    color: var(--color-maroon);
+    font-size: 0.76rem;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+}
+.astro-action:hover {
+    border-color: var(--color-maroon);
+    color: var(--color-maroon);
+}
+.astro-action--primary {
+    border-color: var(--color-maroon);
+    background: var(--color-maroon);
+    color: var(--color-white);
+}
+.astro-action--primary:hover {
+    border-color: var(--color-maroon-deep);
+    background: var(--color-maroon-deep);
+    color: var(--color-white);
+}
+.astro-carousel {
+    padding-top: 64px;
+}
+.astro-carousel .astro-market-card {
+    width: min(270px, 82vw);
+}
+@media (max-width: 743px) {
+    .astro-market-grid {
+        gap: 66px 16px;
+        padding-top: 54px;
+    }
+    .astro-market-card,
+    .astro-market-card:hover {
+        min-height: 238px;
+        padding: 58px 14px 14px;
+    }
+    .astro-market-photo {
+        top: -52px;
+        width: 108px;
+        height: 108px;
+    }
+    .astro-market-info {
+        min-height: 96px;
+    }
+    .astro-action {
+        min-height: 42px;
+        padding-inline: 8px;
+        font-size: 0.72rem;
+    }
+    .astro-carousel {
+        padding-top: 58px;
+    }
+}
+
 .pwa-install-btn {
     display: none;
     position: fixed;

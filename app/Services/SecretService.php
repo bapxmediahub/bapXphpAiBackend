@@ -13,20 +13,26 @@ final class SecretService {
             $db = new DatabaseService();
             $rows = $db->read('secrets');
             usort($rows, fn(array $a, array $b): int => (($a['id'] ?? '') === 'app_secrets' ? 1 : 0) <=> (($b['id'] ?? '') === 'app_secrets' ? 1 : 0));
-            $stored = array_filter($env, fn($value) => $value !== '');
+            $stored = [];
             foreach ($rows as $r) {
-                unset($r['id']);
-                $stored = array_merge($stored, array_filter($r, fn($value) => $value !== ''));
+                $stored = array_merge($stored, $this->decodeRecord($r));
             }
-            return $this->normalize($stored);
+            return $this->normalize(array_replace(array_filter($env, fn($value) => $value !== ''), $stored));
         } catch (\Throwable) {
             return $this->normalize($env);
         }
     }
     public function save(array $values): void {
         $db = new DatabaseService();
-        $record = $this->normalize($values);
-        $record['id'] = 'app_secrets';
+        $iv = random_bytes(16);
+        $plain = json_encode($this->normalize($values), JSON_THROW_ON_ERROR);
+        $cipher = openssl_encrypt($plain, 'aes-256-cbc', $this->key(), OPENSSL_RAW_DATA, $iv);
+        if ($cipher === false) throw new \RuntimeException('Unable to encrypt integration settings.');
+        $record = [
+            'id' => 'app_secrets',
+            'iv' => base64_encode($iv),
+            'ciphertext' => base64_encode($cipher),
+        ];
         $db->upsert('secrets', $record, 'id');
     }
     public function saveSecret(string $key, string $value): void {
@@ -36,9 +42,10 @@ final class SecretService {
     }
     public function getModelConfig(): array {
         $secrets = $this->all();
-        $endpoint = trim((string)($secrets['api_endpoint'] ?? getenv('BAPX_AI_ENDPOINT') ?: ''));
-        $apiKey = trim((string)($secrets['agent_api_key'] ?? $secrets['support_bot_google_api_key'] ?? getenv('AGENT_API_KEY') ?? getenv('BAPX_AI_API_KEY') ?? ''));
-        $model = trim((string)($secrets['agent_model'] ?? $secrets['support_bot_model'] ?? getenv('AGENT_MODEL') ?? getenv('BAPX_AI_MODEL') ?? 'gemma-4-31b-it'));
+        $endpoint = $this->firstValue($secrets, ['api_endpoint'], ['BAPX_AI_ENDPOINT']);
+        $apiKey = $this->firstValue($secrets, ['agent_api_key', 'support_bot_google_api_key'], ['AGENT_API_KEY', 'BAPX_AI_API_KEY']);
+        $model = $this->firstValue($secrets, ['agent_model', 'support_bot_model'], ['AGENT_MODEL', 'BAPX_AI_MODEL']);
+        if ($model === '') $model = 'gemma-4-31b-it';
         if ($endpoint === '') {
             if (str_contains($model, 'gemini') || str_contains($model, 'gemma')) {
                 $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/';
@@ -49,7 +56,44 @@ final class SecretService {
         $provider = 'openai';
         if (str_contains($endpoint, 'googleapis')) $provider = 'google';
         elseif (str_contains($endpoint, 'anthropic')) $provider = 'anthropic';
-        return compact('provider', 'model', 'endpoint', 'apiKey');
+        return compact('provider', 'model', 'endpoint', 'apiKey') + ['configured' => $apiKey !== ''];
+    }
+    private function decodeRecord(array $record): array {
+        $iv = base64_decode((string)($record['iv'] ?? ''), true);
+        $cipher = base64_decode((string)($record['ciphertext'] ?? ''), true);
+        if ($iv !== false && $cipher !== false && $iv !== '' && $cipher !== '') {
+            $plain = openssl_decrypt($cipher, 'aes-256-cbc', $this->key(), OPENSSL_RAW_DATA, $iv);
+            if ($plain === false) throw new \RuntimeException('Unable to decrypt integration settings.');
+            $decoded = json_decode($plain, true, 512, JSON_THROW_ON_ERROR);
+            return is_array($decoded) ? $decoded : [];
+        }
+        unset($record['id'], $record['iv'], $record['ciphertext']);
+        return array_filter($record, fn($value) => $value !== '');
+    }
+    private function key(): string {
+        $configured = trim((string)(getenv('SECRET_STORAGE_KEY') ?: ''));
+        if ($configured === '') {
+            $legacy = storage_path('runtime-key.php');
+            if (is_file($legacy)) $configured = (string)require $legacy;
+        }
+        if ($configured === '') {
+            $db = require app_path('config/database.php');
+            $configured = trim((string)($db['remote_db_password'] ?? ''));
+            if ($configured === '') $configured = trim((string)($db['pass'] ?? ''));
+        }
+        if ($configured === '') throw new \RuntimeException('Secret storage key is not configured.');
+        return hash('sha256', $configured, true);
+    }
+    private function firstValue(array $values, array $keys, array $envKeys): string {
+        foreach ($keys as $key) {
+            $value = trim((string)($values[$key] ?? ''));
+            if ($value !== '') return $value;
+        }
+        foreach ($envKeys as $key) {
+            $value = trim((string)(getenv($key) ?: ''));
+            if ($value !== '') return $value;
+        }
+        return '';
     }
     private function envSecrets(): array {
         return [

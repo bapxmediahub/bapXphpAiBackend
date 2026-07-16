@@ -132,12 +132,18 @@ Use **Admin → Settings** for store and site behavior. Use **Admin → Integrat
 | `bapXphp logs --local` | Tail ignored local development logs explicitly |
 | `bapXphp artifacts:clean --dry-run` | Audit tracked runtime and Playwright artifacts before untracking |
 
-### GitHub
+### Repository Operations
 | Command | Description |
 |---------|-------------|
-| `bapXphp issue` | Create a GitHub issue (interactive via `gh`) |
-| `bapXphp pr [gh args]` | Run CI preflight, then create a GitHub PR |
-| `bapXphp merge [gh args]` | Run CI preflight, then merge a GitHub PR |
+| `git status --short --branch` | Inspect the checkout |
+| `git switch -c fix/issue-N-description` | Create an isolated branch |
+| `git add` / `git commit` / `git push` | Record and publish source changes |
+| `bapXphp hooks install` | Install repository-owned Git enforcement hooks |
+| `bapXphp tui` | Open the interactive project terminal UI |
+
+Hostinger needs plain Git, not GitHub CLI. GitHub issues, handoffs, PR comments,
+review routing, and merge coordination run in GitHub Actions or the GitHub web
+interface.
 
 ### Mail & Images
 | Command | Description |

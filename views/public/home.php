@@ -192,10 +192,8 @@
                 </div>
                 <div class="astro-market-actions">
                     <div class="astro-action-row">
-                        <a href="/consult/<?= e($astro['slug'] ?? '') ?>" class="astro-action astro-action--icon astro-action--profile" aria-label="Book consultation" title="Book consultation">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
-                            <span class="sr-only">Book consultation</span>
-                        </a>
+                        <a href="/consult/<?= e($astro['slug'] ?? '') ?>" class="astro-action">View profile</a>
+                        <a href="/consult/<?= e($astro['slug'] ?? '') ?>#booking-form" class="astro-action astro-action--primary">Book appointment</a>
                     </div>
                 </div>
             </article>

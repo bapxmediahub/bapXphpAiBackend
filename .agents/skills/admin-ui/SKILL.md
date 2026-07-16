@@ -28,7 +28,7 @@ The admin panel has an agent interface at `/admin/agent` that:
 The agent controller:
 1. Receives prompt via POST (JSON body with `prompt` field, optional `attachment` reference)
 2. Builds context from MySQL: `DatabaseService` queries for users, orders, products, etc.
-3. Calls AI API using SecretService (reads `ai_model_provider`, `ai_api_key`, `ai_model_name`, `ai_api_endpoint`)
+3. Calls AI API using `SecretService` (`agent_api_key`, `agent_model`, `api_endpoint`)
 4. Streams Markdown response back to the admin panel UI
 
 ### Agent Permissions
@@ -51,7 +51,6 @@ Configured in Admin → Integrations with these fields stored in MySQL `secrets`
 
 | Key | Purpose |
 |-----|---------|
-| `ai_model_provider` | `"google"`, `"openai"`, or `"anthropic"` |
-| `ai_model_name` | Model ID (e.g. `"gemini-2.5-flash"`) |
-| `ai_api_endpoint` | Full API URL |
-| `ai_api_key` | Authentication key |
+| `agent_api_key` | Authentication key |
+| `agent_model` | Model ID; defaults to `gemma-4-31b-it` |
+| `api_endpoint` | Full provider API URL |

@@ -535,7 +535,7 @@ $tests['consultant marketplace exposes booking search and language filters'] = f
     assertTrue(!str_contains($view, 'href="/recharge"'), 'Astrologer marketplace should not show recharge; that belongs in the logged-in user panel');
     assertTrue(!str_contains($view, 'astro-recharge'), 'Astrologer marketplace should not render a recharge toolbar action');
     assertTrue(!str_contains($view, 'name="queue_status"'), 'Marketplace should not expose live session queues');
-    foreach (['Book consultation', 'astro-action--profile'] as $needle) {
+    foreach (['View profile', 'Book appointment', '#booking-form', 'astro-action--primary'] as $needle) {
         assertTrue(str_contains($view, $needle), "Consultant marketplace should expose {$needle} actions");
     }
     foreach (['astro-status-filter', 'astro-status-label', 'data-status='] as $needle) assertTrue(!str_contains($view, $needle), "Booking-only marketplace should not expose {$needle}");
@@ -601,10 +601,12 @@ $tests['home page rejects malformed remote categories and retains complete sales
 
 $tests['astrologer cards use consistent face focused portrait frames'] = function (): void {
     $css=file_get_contents(app_path('assets/css/band.css'));
-    foreach(['aspect-ratio: 1;','object-position: center;','.astro-market-photo-frame','.astro-carousel .astro-market-card'] as $needle) assertTrue(str_contains($css,$needle),"Astrologer card CSS should include {$needle}");
+    foreach(['aspect-ratio: 1;','object-position: center 22%;','.astro-market-photo-frame','.astro-carousel .astro-market-card','top: -58px','border-radius: 50%'] as $needle) assertTrue(str_contains($css,$needle),"Astrologer card CSS should include {$needle}");
     assertTrue(!str_contains($css,'.astro-carousel .astrologer-card'),'Homepage carousel should target the actual marketplace card class');
     foreach (['views/public/home.php', 'views/public/consult.php'] as $viewPath) {
-        assertTrue(str_contains(file_get_contents(app_path($viewPath)), 'astro-market-photo-frame'), "{$viewPath} should use the clipped portrait frame");
+        $view = file_get_contents(app_path($viewPath));
+        assertTrue(str_contains($view, 'astro-market-photo-frame'), "{$viewPath} should use the clipped portrait frame");
+        assertTrue(str_contains($view, 'View profile') && str_contains($view, 'Book appointment'), "{$viewPath} should expose both consultation actions");
     }
 };
 
@@ -1007,10 +1009,44 @@ $tests['pull requests use non mutating CI with fresh project and documentation m
     $workflow = file_get_contents(app_path('.github/workflows/ci.yml'));
     $cli = file_get_contents(app_path('cli/bapXphp'));
     foreach (['pull_request:', 'branches: [main]', './bapXphp ci'] as $needle) assertTrue(str_contains($workflow, $needle), "CI workflow should include {$needle}");
-    foreach (['cmd_ci()', 'validate-project-map.php', 'validate-docs-map.php', 'cmd_update()', 'cmd_ci\n  gh pr create', 'cmd_ci\n  gh pr merge'] as $needle) {
+    foreach (['cmd_ci()', 'validate-project-map.php', 'validate-docs-map.php', 'cmd_update()', 'cmd_hooks()', 'cmd_tui()', 'cmd_ai_probe()'] as $needle) {
         assertTrue(str_contains($cli, str_replace('\\n', "\n", $needle)), "CLI should include {$needle}");
     }
+    foreach (['require_gh', 'cmd_issue()', 'cmd_pr()', 'cmd_merge()', 'gh issue list', 'gh pr list'] as $needle) {
+        assertTrue(!str_contains($cli, $needle), "CLI should not depend on {$needle}");
+    }
     assertTrue(!str_contains(substr($cli, strpos($cli, 'cmd_ci()'), strpos($cli, 'cmd_check()') - strpos($cli, 'cmd_ci()')), 'generate-project-map.php'), 'CI validation must not regenerate the project map before checking freshness');
+};
+
+$tests['repository operations use git and GitHub Actions without duplicate agent folders'] = function (): void {
+    assertTrue(is_file(app_path('.agents/skills/git/SKILL.md')), 'Plain Git skill should exist');
+    assertTrue(!is_file(app_path('.agents/skills/gh-cli/SKILL.md')), 'GitHub CLI skill should be removed');
+    assertTrue(!is_dir(app_path('.claude')), 'Duplicate .claude agent folder should not exist');
+    assertTrue(is_file(app_path('.github/workflows/branch-pr.yml')), 'Branch pushes should have an Actions-owned PR workflow');
+    assertTrue(!str_contains(file_get_contents(app_path('.github/workflows/sync-upstream.yml')), 'workflows: write'), 'Workflow permissions should use supported GitHub Actions keys');
+
+    $activeFiles = [
+        app_path('AGENTS.md'),
+        app_path('README.md'),
+        app_path('cli/bapXphp'),
+        app_path('.agents/workflows/browser-tester.md'),
+        app_path('.agents/workflows/cto-workflow.md'),
+        app_path('.agents/skills/git/SKILL.md'),
+        app_path('.agents/skills/deployment/SKILL.md'),
+    ];
+    foreach ($activeFiles as $path) {
+        $source = file_get_contents($path);
+        assertTrue(!preg_match('/\bgh\s+(issue|pr|api|workflow|repo)\b/', $source), basename($path) . ' should not require GitHub CLI');
+    }
+
+    $trigger = file_get_contents(app_path('.github/workflows/issue-agent-trigger.yml'));
+    foreach (['workflow_dispatch:', 'types: [opened, closed]', 'Create or refresh handoff event', 'Clear matching active handoff', 'github.rest.issues.get'] as $needle) {
+        assertTrue(str_contains($trigger, $needle), "Issue orchestration should include {$needle}");
+    }
+    assertTrue(!str_contains($trigger, 'types: [opened, labeled]'), 'Agent labels must not recursively dispatch duplicate handoffs');
+
+    $tui = file_get_contents(app_path('cli/tui.php'));
+    assertTrue(str_contains($tui, 'function activeHandoff') && str_contains($tui, 'handoff:'), 'TUI should show the actual active issue and role');
 };
 
 $tests['local smoke tool source covers key routes and CSRF protection'] = function (): void {
@@ -1021,6 +1057,8 @@ $tests['local smoke tool source covers key routes and CSRF protection'] = functi
         assertTrue(str_contains($source, $path), "Local smoke tool should cover {$path}");
     }
     assertTrue(str_contains($source, 'CSRF protected'), 'Local smoke should verify payment CSRF protection');
+    assertTrue(str_contains($source, "'BAPX_TEST_MODE' => '1'"), 'Local smoke should not depend on the production database or network');
+    assertTrue(str_contains(file_get_contents(app_path('app/Services/DatabaseService.php')), "getenv('BAPX_TEST_MODE') === '1'"), 'Database service should expose an explicit smoke-test boundary');
     assertTrue(str_contains($source, 'PASS local smoke'), 'Local smoke should provide an authoritative success signal');
 };
 
@@ -1058,7 +1096,7 @@ $tests['consultation pages use booking language without wallet pricing'] = funct
 $tests['consultants expose one booking path instead of live queues'] = function (): void {
     $market = file_get_contents(app_path('views/public/consult.php'));
     $controller = file_get_contents(app_path('app/Controllers/ConsultationController.php'));
-    assertTrue(str_contains($market, 'Book consultation'), 'Marketplace should link every consultant to booking');
+    assertTrue(str_contains($market, 'Book appointment') && str_contains($market, '#booking-form'), 'Marketplace should link every consultant directly to booking');
     foreach (['Request message session', 'Request call session', 'queue_status', 'reserved_credits'] as $needle) assertTrue(!str_contains($market . $controller, $needle), "Booking path should not expose {$needle}");
 };
 
@@ -1094,7 +1132,7 @@ $tests['blog media uses one screenshot crop for cards and article pages'] = func
     $article = file_get_contents(app_path('views/public/blog-post.php'));
     $cli = file_get_contents(app_path('cli/bapXphp'));
     $crop = file_get_contents(app_path('cli/blog-image.php'));
-    foreach (['summary', 'order', 'og_image', 'image_alt', 'source_url', 'template'] as $field) {
+    foreach (['type', 'summary', 'order', 'og_image', 'image_alt', 'source_url', 'template'] as $field) {
         assertTrue(str_contains($service, "'{$field}'"), "Blog service should persist {$field}");
         assertTrue(str_contains($admin, 'name="' . $field . '"'), "Admin blog editor should expose {$field}");
     }
@@ -1103,6 +1141,11 @@ $tests['blog media uses one screenshot crop for cards and article pages'] = func
     foreach (['create-account', 'order-products', 'book-consultant', 'payments-and-orders'] as $slug) {
         $post = file_get_contents(app_path("content/blog/posts/{$slug}.md"));
         assertTrue(str_contains($post, "\nsummary:") && str_contains($post, "\norder:"), "Help post {$slug} should retain summary and order metadata");
+        assertTrue(str_contains($post, "\nimage_alt: Loaded "), "Help post {$slug} should describe a fully loaded browser capture");
+        $image = app_path("assets/images/blog/{$slug}.webp");
+        $size = getimagesize($image);
+        assertTrue(is_array($size) && $size[0] === 1200 && $size[1] === 675, "Help post {$slug} should use a verified 1200x675 image");
+        assertTrue(filesize($image) > 20000, "Help post {$slug} screenshot should contain rendered page detail");
     }
     assertTrue(str_contains($cli, 'blog:image') && str_contains($crop, '--dry-run'), 'CLI should expose safe blog screenshot cropping');
     assertTrue(str_contains($crop, '$targetWidth = 1200') && str_contains($crop, '$targetHeight = 675'), 'Blog screenshot crop should be stable 16:9');
@@ -1132,6 +1175,9 @@ $tests['product payment remains production gated after wallet removal'] = functi
     assertTrue(str_contains($secrets, 'razorpayReadyForCurrentHost'), 'Selected Razorpay credentials should be checked against the current host');
     assertTrue(str_contains($secrets, "=== 'live'"), 'Production hosts should require live Razorpay mode');
     assertTrue(str_contains($secrets, "?? '') === 'app_secrets'") && str_contains($secrets, 'array_filter($env'), 'Remote app_secrets should override environment fallbacks and legacy rows');
+    foreach (['openssl_encrypt', 'openssl_decrypt', "'iv' =>", "'ciphertext' =>", "'agent_api_key'", "'gemma-4-31b-it'", "'configured' =>"] as $needle) {
+        assertTrue(str_contains($secrets, $needle), "Remote integration secrets should include {$needle}");
+    }
     assertTrue(!is_file(app_path('app/Controllers/WalletController.php')) && !is_file(app_path('views/account/wallet.php')), 'Wallet controller and customer view should be removed');
 };
 

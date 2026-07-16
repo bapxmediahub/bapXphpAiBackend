@@ -54,8 +54,9 @@ bapXphp map:gen                       # regenerate project map
 bapXphp docsmap                       # regenerate docs/map.mmd (content)
 bapXphp codemap                        # regenerate map.mmd (code graph)
 bapXphp schema list                   # list all collections
-bapXphp issue                         # create GitHub issue
-bapXphp pr                            # create PR
+bapXphp hooks install                 # install repository-owned Git hooks
+bapXphp hooks status                  # inspect hook installation
+bapXphp tui                           # interactive project operations
 bapXphp help                          # full reference
 
 ## Validation
@@ -78,6 +79,10 @@ bapXphp handoff validate <file>      # validate handoff JSON
 ```
 
 Cycle data is tracked in `.agents/ops/telemetry.json`.
+
+Use plain `git` for branches, commits, fetch, pull, and push. GitHub Actions
+and the GitHub web interface own issue/PR/handoff conversations. The hosted
+server does not require `gh`.
 
 ## Attachments
 

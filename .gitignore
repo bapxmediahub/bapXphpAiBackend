@@ -22,6 +22,7 @@ homepage.yml
 
 # Runtime browser session state — never commit
 /.agents/temp/
+/.okf/
 .tmp/
 storage/.bin/chrome-linux/
 storage/.bin/kitten-tts/

@@ -22,6 +22,20 @@ php /home/ACCOUNT/public_html/cli/process-mail-queue.php
 
 8. Smoke test public pages, account redirects, admin login, API endpoints, checkout configuration, and the mail queue.
 
+The hosted shell requires `git` and PHP. It does **not** require GitHub CLI
+(`gh`). hPanel auto-deploy performs the normal production pull. For manual
+diagnosis or recovery:
+
+```bash
+git status --short --branch
+git fetch origin
+git pull --ff-only origin main
+git rev-parse HEAD
+```
+
+Do not run issue, PR, review, or handoff conversations from Hostinger. Those
+belong to GitHub Actions and the GitHub web interface.
+
 One-time Git auto-deploy from `main` is configured — commits to GitHub main deploy automatically. Merge only after local validation passes:
 
 ```bash

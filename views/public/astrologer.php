@@ -40,7 +40,7 @@
             </div>
 
             <aside class="expert-side">
-                <section class="expert-action-card reveal">
+                <section class="expert-action-card reveal" id="booking-form">
                     <h2>Book this consultant</h2>
                     <form class="booking-request-form" action="/consultation/initiate" method="post">
                         <input type="hidden" name="astrologer_slug" value="<?= e($astrologer['slug']) ?>">

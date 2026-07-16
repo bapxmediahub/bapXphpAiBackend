@@ -65,4 +65,4 @@ Active artifacts: `.agents/handoffs/<issue>-worker.json` and
 - `bapXphp handoff next <issue>` — print JSON with next role/objective
 - `bapXphp handoff template <issue>` — generate empty Worker handoff
 - `bapXphp handoff validate <file> [--issue]` — validate + coverage
-- `bapXphp handoff comment <file> <pr>` — upsert PR comment
+- GitHub Actions publishes validated handoff evidence to the matching issue or PR

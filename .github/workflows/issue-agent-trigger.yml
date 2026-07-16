@@ -2,95 +2,141 @@ name: Issue agent trigger
 
 on:
   issues:
-    types: [opened, labeled]
+    types: [opened, closed]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Existing open issue to create or refresh a handoff for
+        required: true
+        type: number
 
 permissions:
   issues: write
   contents: write
 
 concurrency:
-  group: issue-agent-${{ github.event.issue.number }}
+  group: issue-agent-${{ github.event.issue.number || inputs.issue_number }}
   cancel-in-progress: false
 
 jobs:
   dispatch:
-    if: github.actor != 'trigger-ai-bot' && endsWith(github.repository, 'bapXphpAiBackend')
+    if: github.event.action != 'closed' && github.actor != 'trigger-ai-bot' && endsWith(github.repository, 'bapXphpAiBackend')
     runs-on: ubuntu-latest
+    env:
+      ISSUE: ${{ github.event.issue.number || inputs.issue_number }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Create GitHub-style handoff event
-        run: |
-          ISSUE="${{ github.event.issue.number }}"
-          mkdir -p .agents/handoffs/events .agents/handoffs/active .agents/ops
-          cat > ".agents/handoffs/events/${ISSUE}.json" << EOF
-          {
-            "event_type": "issues.opened",
-            "issue": $ISSUE,
-            "actor": "${{ github.actor }}",
-            "workflow": {
-              "current_role": "cto",
-              "next_role": "worker",
-              "sequence": ["cto", "worker", "reviewer", "cto"]
-            },
-            "payload": {
-              "title": $(echo '${{ github.event.issue.title }}' | jq -Rs .),
-              "body": $(echo '${{ github.event.issue.body }}' | jq -Rs .),
-              "labels": $(echo '${{ toJSON(github.event.issue.labels) }}' | jq -c '[.[].name]')
-            },
-            "repository": {
-              "owner": "${{ github.repository_owner }}",
-              "name": "${{ github.event.repository.name }}"
-            },
-            "objectives": [{
-              "id": "OBJ-${ISSUE}-1",
-              "status": "gap",
-              "evidence": [],
-              "browser_evidence": [],
-              "unresolved": ["Handoff created — awaiting CTO"]
-            }],
-            "telemetry": {
-              "started_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-              "handoffs_completed": 0
+      - name: Create or refresh handoff event
+        uses: actions/github-script@v7
+        env:
+          ISSUE: ${{ env.ISSUE }}
+        with:
+          script: |
+            const fs = require('fs');
+            const issueNumber = Number(process.env.ISSUE);
+            const issue = await github.rest.issues.get({
+              ...context.repo,
+              issue_number: issueNumber
+            });
+            if (issue.data.state !== 'open') {
+              core.setFailed(`Issue #${issueNumber} is not open`);
+              return;
             }
-          }
-          EOF
-          cp ".agents/handoffs/events/${ISSUE}.json" ".agents/handoffs/active/current.json"
-          echo "Created handoff event for issue #$ISSUE → .agents/handoffs/events/${ISSUE}.json"
+            const event = {
+              event_type: context.eventName === 'workflow_dispatch' ? 'workflow_dispatch' : 'issues.opened',
+              issue: issueNumber,
+              actor: context.actor,
+              workflow: {
+                current_role: 'cto',
+                next_role: 'worker',
+                sequence: ['cto', 'worker', 'reviewer', 'cto']
+              },
+              payload: {
+                title: issue.data.title || '',
+                body: issue.data.body || '',
+                labels: (issue.data.labels || []).map(label => typeof label === 'string' ? label : label.name)
+              },
+              repository: {
+                owner: context.repo.owner,
+                name: context.repo.repo
+              },
+              objectives: [{
+                id: `OBJ-${issueNumber}-1`,
+                status: 'gap',
+                evidence: [],
+                browser_evidence: [],
+                unresolved: ['Handoff created - awaiting CTO']
+              }],
+              telemetry: {
+                started_at: new Date().toISOString(),
+                handoffs_completed: 0
+              }
+            };
+            fs.mkdirSync('.agents/handoffs/events', { recursive: true });
+            fs.mkdirSync('.agents/handoffs/active', { recursive: true });
+            fs.mkdirSync('.agents/ops', { recursive: true });
+            const body = `${JSON.stringify(event, null, 2)}\n`;
+            fs.writeFileSync(`.agents/handoffs/events/${issueNumber}.json`, body);
+            fs.writeFileSync('.agents/handoffs/active/current.json', body);
       - name: Validate
-        run: jq empty ".agents/handoffs/active/current.json" && echo "Valid handoff JSON"
+        run: jq empty ".agents/handoffs/events/${ISSUE}.json" ".agents/handoffs/active/current.json"
       - name: Commit handoff event
         run: |
           git config user.name "trigger-ai-bot"
           git config user.email "trigger-ai-bot@bapXphp.action"
           git add .agents/handoffs/ .agents/ops/
-          git diff --cached --quiet || git commit -m "auto: handoff event for issue #${{ github.event.issue.number }}"
-          for i in 1 2 3; do
-            git pull --rebase origin "$GITHUB_REF_NAME" 2>/dev/null || true
-            if git push origin "HEAD:$GITHUB_REF_NAME" 2>/dev/null; then exit 0; fi
-            sleep 2
-          done
-          git pull --rebase origin "$GITHUB_REF_NAME" 2>/dev/null || true
-          git push --force-with-lease origin "HEAD:$GITHUB_REF_NAME"
-      - name: Label
-        run: gh issue edit ${{ github.event.issue.number }} --add-label "sub-agent-ready" 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "auto: handoff event for issue #${ISSUE}"
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"
+      - name: Label and comment
+        uses: actions/github-script@v7
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Handoff comment
-        run: |
-          gh issue comment ${{ github.event.issue.number }} --body \
-            "## 🔄 Handoff dispatched
+          ISSUE: ${{ env.ISSUE }}
+        with:
+          script: |
+            const issue = Number(process.env.ISSUE);
+            await github.rest.issues.addLabels({
+              ...context.repo,
+              issue_number: issue,
+              labels: ['sub-agent-ready']
+            });
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: issue,
+              body: `## Handoff dispatched
 
             | Field | Value |
             |-------|-------|
-            | Event | \`issues.opened\` |
-            | Next role | **CTO** — investigate and plan |
-            | Chain | CTO → Worker → Reviewer → CTO |
-            | Handoff | \`.agents/handoffs/events/${{ github.event.issue.number }}.json\` |
+            | Next role | **CTO** |
+            | Chain | CTO -> Worker -> Reviewer -> CTO |
+            | Handoff | \`.agents/handoffs/events/${issue}.json\` |
 
-            CTO: run \`bapXphp map && bapXphp schema list\`, then \`bapXphp handoff next ${{ github.event.issue.number }}\`.
+            CTO: run \`bapXphp map && bapXphp schema list\`, then \`bapXphp handoff next ${issue}\`.
 
-            When done, comment \`/handoff worker\` to advance the chain."
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            Comment \`/handoff worker\` only after the CTO records a bounded objective.`
+            });
+
+  cleanup:
+    if: github.event.action == 'closed' && endsWith(github.repository, 'bapXphpAiBackend')
+    runs-on: ubuntu-latest
+    env:
+      ISSUE: ${{ github.event.issue.number }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Clear matching active handoff
+        run: |
+          ACTIVE=".agents/handoffs/active/current.json"
+          if [ -f "$ACTIVE" ] && [ "$(jq -r '.issue // 0' "$ACTIVE")" = "$ISSUE" ]; then
+            git rm "$ACTIVE"
+          fi
+      - name: Commit cleanup
+        run: |
+          git config user.name "trigger-ai-bot"
+          git config user.email "trigger-ai-bot@bapXphp.action"
+          git diff --cached --quiet || git commit -m "auto: clear closed issue #${ISSUE} handoff"
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"

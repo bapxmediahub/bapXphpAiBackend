@@ -15,7 +15,8 @@ $descriptor = [
     1 => ['pipe', 'w'],
     2 => ['pipe', 'w'],
 ];
-$process = proc_open('php -S 127.0.0.1:' . $port . ' index.php', $descriptor, $pipes, app_path());
+$environment = array_merge(getenv() ?: [], ['BAPX_TEST_MODE' => '1']);
+$process = proc_open('php -S 127.0.0.1:' . $port . ' index.php', $descriptor, $pipes, app_path(), $environment);
 if (!is_resource($process)) {
     fwrite(STDERR, "Unable to start local PHP server.\n");
     exit(1);

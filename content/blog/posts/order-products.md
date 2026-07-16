@@ -1,18 +1,19 @@
 ---
-type: blog
 title: Order products and choose a delivery address
 slug: order-products
+type: blog
 category: help
 published: true
 published_at: 2026-07-14
-excerpt: Add products, manage quantities, select a saved address, and complete secure checkout.
 summary: Add products, manage quantities, select a saved address, and complete secure checkout.
 order: 20
+excerpt: Add products, manage quantities, select a saved address, and complete secure checkout.
 author: Sri Panchami Spiritual
 og_image: /assets/images/blog/order-products.webp
-image_alt: Sri Panchami Spiritual product shop
+image_alt: Loaded Sri Panchami Spiritual shop with product images and quantity controls
 source_url: /shop
 ---
+
 ## Add products
 
 Open **Shop**, use the plus and minus controls to set quantities, then open the cart. Reducing an item to zero removes it.

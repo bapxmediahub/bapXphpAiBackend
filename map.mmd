@@ -7,13 +7,13 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 127 routes, 15 controllers, 43 services, 49 views, 0 data files, 23 tools"]
+  subgraph ARCH["Architecture Overview — 127 routes, 15 controllers, 43 services, 49 views, 0 data files, 24 tools"]
     arch_routes["> Routes: 127 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 15"]:::arch
     arch_svc["> Services: 43"]:::arch
     arch_views["> Views: 49"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
-    arch_tools["> Tools: 23"]:::arch
+    arch_tools["> Tools: 24"]:::arch
     arch_gaps["> Gaps: 0"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
@@ -339,6 +339,7 @@ flowchart LR
     tool_refresh_blog_cache["refresh-blog-cache"]:::tool
     tool_smoke_local["smoke-local"]:::tool
     tool_test_race["test_race"]:::tool
+    tool_tui["tui"]:::tool
     tool_validate_docs_map["validate-docs-map"]:::tool
     tool_validate_project_map["validate-project-map"]:::tool
     tool_bapxphp["bapXphp"]:::tool

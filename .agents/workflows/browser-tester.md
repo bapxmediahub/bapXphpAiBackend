@@ -27,8 +27,8 @@ Use GPT-5.4 or newer.
 - Browser control for localhost (`127.0.0.1:6020`) and live URLs
 - Screenshots, DOM/accessibility inspection, console and network
   evidence exposed by the browser
-- `gh issue list`, `gh issue view`, `gh issue create`,
-  `gh issue comment`
+- GitHub issue pages in the authenticated browser
+- GitHub Actions handoff events under `.agents/handoffs/events/`
 
 ## Responsibility
 
@@ -36,7 +36,7 @@ Use GPT-5.4 or newer.
   installation workflows like a human
 - Reproduce on the requested desktop and mobile viewports
 - Search open issues BEFORE creating a new issue
-- Create or update an issue with: URL, viewport, steps, expected
+- Create or update the issue through GitHub web/Actions with: URL, viewport, steps, expected
   result, actual result, screenshot reference, console/network
   evidence, severity, and acceptance check
 

@@ -63,10 +63,8 @@
                         <div class="astro-market-actions">
                             <?php if(!empty($item['slug'])): ?>
                                 <div class="astro-action-row">
-                                    <a class="astro-action astro-action--icon astro-action--profile" href="/consult/<?= e($item['slug']) ?>" aria-label="Book consultation" title="Book consultation">
-                                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
-                                        <span class="sr-only">Book consultation</span>
-                                    </a>
+                                    <a class="astro-action" href="/consult/<?= e($item['slug']) ?>">View profile</a>
+                                    <a class="astro-action astro-action--primary" href="/consult/<?= e($item['slug']) ?>#booking-form">Book appointment</a>
                                 </div>
                             <?php endif; ?>
                         </div>

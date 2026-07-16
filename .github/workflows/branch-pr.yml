@@ -1,0 +1,53 @@
+name: Open branch pull request
+
+on:
+  push:
+    branches:
+      - 'codex/**'
+      - 'fix/**'
+      - 'feat/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: branch-pr-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  open:
+    if: github.repository == 'getwinharris/bapXphpAiBackend'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const head = context.ref.replace('refs/heads/', '');
+            const pulls = await github.rest.pulls.list({
+              ...context.repo,
+              state: 'open',
+              head: `${context.repo.owner}:${head}`,
+              base: 'main'
+            });
+            if (pulls.data.length) {
+              core.info(`PR #${pulls.data[0].number} already tracks ${head}`);
+              return;
+            }
+            const title = head
+              .replace(/^(codex|fix|feat)\//, '')
+              .replace(/[-_]+/g, ' ')
+              .replace(/\b\w/g, value => value.toUpperCase());
+            const result = await github.rest.pulls.create({
+              ...context.repo,
+              title,
+              head,
+              base: 'main',
+              body: [
+                'Created automatically from a pushed implementation branch.',
+                '',
+                'GitHub Actions owns CI, handoff comments, and review routing.',
+                'Merge only after validation and Reviewer evidence pass.'
+              ].join('\n')
+            });
+            core.info(`Created PR #${result.data.number}`);

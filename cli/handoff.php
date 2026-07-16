@@ -174,6 +174,24 @@ function validateCoverage(array $handoff, string $issueEvidenceFile): void
     if ($unknown !== []) fail('handoff contains IDs absent from issue registry: ' . implode(', ', $unknown));
 }
 
+function validateEventCoverage(array $handoff, string $eventFile): void
+{
+    $event = jsonFile($eventFile, 'handoff event');
+    if (($event['issue'] ?? null) !== $handoff['issue']) fail('handoff event issue does not match handoff issue');
+    $eventIds = [];
+    foreach ($event['objectives'] ?? [] as $objective) {
+        $id = trim((string)($objective['id'] ?? ''));
+        if ($id !== '') $eventIds[] = $id;
+    }
+    if ($eventIds === []) fail('handoff event has no objective IDs');
+    if (count($eventIds) !== count(array_unique($eventIds))) fail('handoff event contains duplicate objective IDs');
+    $handoffIds = array_column($handoff['objectives'], 'id');
+    $missing = array_values(array_diff($eventIds, $handoffIds));
+    $unknown = array_values(array_diff($handoffIds, $eventIds));
+    if ($missing !== []) fail('handoff is missing event objective IDs: ' . implode(', ', $missing));
+    if ($unknown !== []) fail('handoff contains IDs absent from event: ' . implode(', ', $unknown));
+}
+
 function renderComment(array $handoff, string $file): string
 {
     $lines = [
@@ -418,7 +436,7 @@ if ($action === 'execute') {
     if (!$found) fail("Objective '{$targetId}' not found in handoff");
 }
 
-if (!in_array($action, ['validate', 'coverage', 'render-comment', 'execute'], true) || $file === '') {
+if (!in_array($action, ['validate', 'coverage', 'coverage-event', 'render-comment', 'execute'], true) || $file === '') {
     fwrite(STDERR, "Usage: php cli/handoff.php <validate|render-comment> <file>\n       php cli/handoff.php coverage <file> <issue-evidence.json>\n       php cli/handoff.php next <issue> <issue-evidence.json>\n       php cli/handoff.php template <issue> <issue-evidence.json>\n       php cli/handoff.php execute <handoff.json> <objective-id>\n");
     exit(1);
 }
@@ -438,6 +456,12 @@ if ($action === 'coverage') {
     if (count($argv) !== 4) fail('coverage requires a handoff and issue-evidence file');
     validateCoverage($handoff, $argv[3]);
     printf("PASS issue #%d objective coverage (%d objectives)\n", $handoff['issue'], count($handoff['objectives']));
+    exit(0);
+}
+if ($action === 'coverage-event') {
+    if (count($argv) !== 4) fail('coverage-event requires a handoff and event file');
+    validateEventCoverage($handoff, $argv[3]);
+    printf("PASS event #%d objective coverage (%d objectives)\n", $handoff['issue'], count($handoff['objectives']));
     exit(0);
 }
 if (count($argv) !== 3) fail('render-comment accepts exactly one handoff file');

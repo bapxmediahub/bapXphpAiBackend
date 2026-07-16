@@ -34,7 +34,7 @@ final class BlogService {
         $content = $data['content'] ?? '';
         unset($data['content']);
         $frontmatter = '';
-        foreach (['title','slug','category','published','published_at','updated_at','summary','order','excerpt','author','seo_title','seo_description','keywords','og_image','image_alt','source_url','template'] as $key) {
+        foreach (['title','slug','type','category','published','published_at','updated_at','summary','order','excerpt','author','seo_title','seo_description','keywords','og_image','image_alt','source_url','template'] as $key) {
             if (isset($data[$key]) && $data[$key] !== '') {
                 $val = $data[$key];
                 if (is_bool($val)) $val = $val ? 'true' : 'false';

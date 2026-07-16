@@ -21,6 +21,7 @@ description: Use when editing Hostinger deployment, Git auto-deploy, environment
 - **Database**: Remote MySQL (production), direct connection or `/remotedb` fallback
 - **AI Model**: Configured in Admin → Integrations, stored in MySQL `secrets` table
 - **Agent sub-delegation**: Sub-agents can trigger `workflow_dispatch` on GitHub Actions for long-running deployment tasks
+- **Hosted tools**: plain `git` and PHP; GitHub CLI is not a Hostinger dependency
 
 ## CI/CD Pipeline
 
@@ -28,12 +29,11 @@ description: Use when editing Hostinger deployment, Git auto-deploy, environment
 2. GitHub Actions runs `bapXphp ci` (lint → test → map validation → smoke)
 3. If passing, production webhook pulls the new code
 4. Fork sync dispatches upstream-main-updated to downstream
-5. Recovery: `gh repo sync` only if event-driven sync fails
+5. Recovery: use the GitHub fork update UI or sync Action if event-driven sync fails
 
 ## Sub-Agent Cloud Delegation
 
-Coding agents (OpenCode, Claude Code, Codex) acting as CTO can:
-1. Trigger GitHub Actions `workflow_dispatch` from the hosting server
-2. SSH into hosting for direct database inspection (via `bapXphp db hosted` credentials)
-3. Read production audit logs via `bapXphp logs`
-4. Query production MySQL via `/remotedb` endpoint
+Coding agents work locally and publish branches with plain Git. GitHub Actions
+owns issue, handoff, PR, and review events. On hosting, agents may use project
+CLI commands for database, logs, mail, and browser diagnostics, but must not
+depend on `gh`.

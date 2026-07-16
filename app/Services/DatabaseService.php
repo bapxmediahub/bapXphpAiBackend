@@ -8,6 +8,10 @@ final class DatabaseService {
         $this->cfg = require app_path('config/database.php');
     }
 
+    private function isTestMode(): bool {
+        return getenv('BAPX_TEST_MODE') === '1';
+    }
+
     private function remoteCall(string $sql, array $params = []): array {
         $payload = array_filter(['query' => $sql, 'params' => $params, 'password' => $this->cfg['remote_db_password'] ?? '']);
         $payload = json_encode($payload);
@@ -69,6 +73,7 @@ final class DatabaseService {
     }
 
     public function read(string $table): array {
+        if ($this->isTestMode()) return [];
         if ($this->isRemote()) {
             $rows = $this->remoteCall('SELECT * FROM ' . preg_replace('/[^a-z_]/', '', $table));
             return array_map(fn($r) => array_merge(json_decode($r['_data'] ?? '{}', true) ?: [], ['id' => $r['id']]), $rows);
@@ -78,6 +83,7 @@ final class DatabaseService {
         return array_map(fn($r) => array_merge(json_decode($r['_data'] ?? '{}', true) ?: [], ['id' => $r['id']]), $rows);
     }
     public function write(string $table, array $records): void {
+        if ($this->isTestMode()) return;
         if ($this->isRemote()) { $this->remoteMutation('replace', $table, ['records' => $records]); return; }
         $this->db()->beginTransaction();
         try {
@@ -99,6 +105,10 @@ final class DatabaseService {
         }
     }
     public function upsert(string $table, array $record, string $key = 'id'): array {
+        if ($this->isTestMode()) {
+            $record['id'] ??= bin2hex(random_bytes(8));
+            return $record;
+        }
         if ($this->isRemote()) {
             if ($key !== 'id') {
                 $existing = $this->find($table, (string)($record[$key] ?? ''), $key);
@@ -128,6 +138,7 @@ final class DatabaseService {
         return $record;
     }
     public function delete(string $table, string $value, string $key = 'id'): void {
+        if ($this->isTestMode()) return;
         if ($this->isRemote()) {
             $record = $key === 'id' ? ['id' => $value] : $this->find($table, $value, $key);
             if ($record) $this->remoteMutation('delete', $table, ['id' => $record['id']]);
@@ -148,6 +159,7 @@ final class DatabaseService {
         }
     }
     public function find(string $table, string $value, string $key = 'id'): ?array {
+        if ($this->isTestMode()) return null;
         if ($this->isRemote()) {
             $clean = preg_replace('/[^a-z_]/', '', $table);
             $rows = $this->remoteCall("SELECT * FROM {$clean} WHERE id = ?", [$value]);
@@ -173,10 +185,14 @@ final class DatabaseService {
         return $row ? array_merge(json_decode($row['_data'] ?? '{}', true) ?: [], ['id' => $row['id']]) : null;
     }
     public function query(string $sql, array $params = []): array {
+        if ($this->isTestMode()) return [];
         if ($this->isRemote()) return $this->remoteCall($sql, $params);
         $stmt = $this->db()->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
-    public function connection(): \PDO { return $this->db(); }
+    public function connection(): \PDO {
+        if ($this->isTestMode()) throw new \RuntimeException('Database connection is disabled in test mode.');
+        return $this->db();
+    }
 }

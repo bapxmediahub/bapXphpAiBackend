@@ -42,11 +42,11 @@ Sub-agents should use the most cost-effective model for their task. Configured f
 | Worker (Implementation) | Gemini 2.5 Flash / Claude Sonnet | Fast execution, good at code tasks |
 | Reviewer (Verification) | Gemini 2.5 Flash | Cheap verification with structured rubric |
 
-Model selection is read from `secrets` table at runtime:
-- `ai_model_provider` : `"google"` | `"openai"` | `"anthropic"`
-- `ai_model_name` : model ID string
-- `ai_api_endpoint` : base URL for the API
-- `ai_api_key` : authentication key
+Model selection is read from the encrypted `app_secrets` record in remote
+MySQL at runtime:
+- `agent_model`: model ID, default `gemma-4-31b-it`
+- `api_endpoint`: provider base URL
+- `agent_api_key`: authentication key
 
 ## Admin Panel Agent (bapXcli)
 
@@ -145,7 +145,8 @@ The site is hosted on Hostinger shared hosting with Git auto-deploy:
 - **CI**: GitHub Actions (`bapXphp ci`)
 - **DB**: Remote MySQL (production)
 - **Agent sub-delegation**: Sub-agents can trigger `workflow_dispatch` on GitHub Actions for long-running tasks
-- **Recovery**: Manual `gh repo sync` only when event-driven sync fails
+- **Hosted runtime**: plain Git and PHP only; no GitHub CLI dependency
+- **Recovery**: GitHub fork update UI or the sync Action
 
 ## Critical Mistakes to Avoid
 
