@@ -3,12 +3,11 @@
  * Browser Agent — PHP-native browser automation tool
  *
  * HTTP mode: cURL + DOMDocument (pure PHP, shared hosting).
- * Playwright mode: shells out to playwright-cli (requires Node.js).
  *
- * Usage: php cli/browser-agent.php [--pw] <command> [args...]
+ * Usage: php cli/browser-agent.php <command> [args...]
  *
  * Session persisted to .agents/temp/browser-session.json between CLI calls.
- * Snapshot = AI-readable YAML page structure. Pixel screenshots = --pw mode.
+ * Snapshot = AI-readable YAML page structure.
  *
  * ── Core ──────────────────────────────────────────────────────
  *   open/goto <url>     fetch page, YAML snapshot
@@ -17,7 +16,7 @@
  *   fill <sel> <text>   store form field value
  *   submit [url]        POST form, snapshot result
  *   snapshot            YAML page structure (AI-readable)
- *   screenshot [file]   YAML snapshot (pixel screenshots = --pw)
+ *   screenshot [file]   YAML snapshot
  *   html                raw HTML
  *   type <text>         store typed text
  *   press <key>         Enter = submit
@@ -29,14 +28,6 @@
  *   smoke <url>         HTTP, links, image smoke test
  *   console <url>       HTTP metadata
  *   close               reset session
- *
- * ── Playwright mode (--pw, needs Node) ────────────────────────
- *   --pw open --mobile|--tablet|--desktop <url>
- *   --pw screenshot [--full-page] [--filename=f.png]
- *   --pw click/dblclick/hover/drag/drop <ref>
- *   --pw mousemove/mousedown/mouseup/mousewheel
- *   --pw press/keydown/keyup
- *   --pw tab-list/tab-new/tab-close/tab-select
  */
 
 require __DIR__ . '/../app/bootstrap.php';
@@ -563,56 +554,9 @@ function extract_forms(DOMDocument $dom): array {
 
 // ── Main ───────────────────────────────────────────────────────
 $args = $argv; array_shift($args);
-$pw = false;
-if (($args[0] ?? '') === '--pw') { $pw = true; array_shift($args); }
 $cmd = $args[0] ?? 'help';
 
 try {
-    if ($pw) {
-        // Translate device flags to playwright-cli commands
-        $pw_args = array_slice($args, 1);
-        $pw_cmd = $args[1] ?? '';
-        $rest = array_slice($args, 2);
-
-        $device_map = ['--mobile' => '--device="iPhone 15"', '--tablet' => '--device="iPad (gen 10th)"', '--desktop' => ''];
-
-        if ($pw_cmd === 'open' || $pw_cmd === 'goto') {
-            $url = $rest[0] ?? '';
-            $device_flag = '';
-            foreach ($rest as $i => $r) {
-                if (isset($device_map[$r])) { $device_flag = $device_map[$r]; unset($rest[$i]); break; }
-            }
-            $rest = array_values($rest);
-            $url = $rest[0] ?? $url;
-            $full_cmd = 'playwright-cli open ' . escapeshellarg($url) . ($device_flag ? ' ' . $device_flag : '');
-            $out = shell_exec($full_cmd . ' 2>&1');
-            if ($out === null) { fwrite(STDERR, "playwright-cli not found. Install: npm install -g @playwright/cli@latest\n"); exit(1); }
-            echo $out; exit;
-        }
-
-        if ($pw_cmd === 'screenshot') {
-            $file = ''; $full = false;
-            foreach ($rest as $i => $r) {
-                if ($r === '--full-page') { $full = true; unset($rest[$i]); }
-                elseif (str_starts_with($r, '--filename=')) { $file = substr($r, 11); unset($rest[$i]); }
-                elseif (str_starts_with($r, '-f')) { $file = $rest[$i+1] ?? ''; unset($rest[$i]); }
-            }
-            $rest = array_values($rest);
-            $pw_cmd_str = 'playwright-cli screenshot';
-            if ($full) $pw_cmd_str .= ' --full-page';
-            if ($file) $pw_cmd_str .= ' --filename=' . escapeshellarg($file);
-            $out = shell_exec($pw_cmd_str . ' 2>&1');
-            if ($out === null) { fwrite(STDERR, "playwright-cli not found.\n"); exit(1); }
-            echo $out; exit;
-        }
-
-        // Default: pass through to playwright-cli
-        $full_cmd = 'playwright-cli ' . implode(' ', array_map('escapeshellarg', array_merge([$pw_cmd], $rest)));
-        $out = shell_exec($full_cmd . ' 2>&1');
-        if ($out === null) { fwrite(STDERR, "playwright-cli not found.\n"); exit(1); }
-        echo $out; exit;
-    }
-
     // HTTP mode — load session
     $session = sess_load();
     if (!empty($session['html'])) dom_from_session($session);
@@ -893,7 +837,7 @@ try {
                 elseif (str_starts_with($a, '--max-d=')) $max_d = (int) substr($a, 8);
                 elseif (str_starts_with($a, '--ref=')) $root_ref = substr($a, 6);
             }
-            echo "# Screenshot (YAML snapshot — AI-readable. For pixel screenshots use: browser-agent --pw screenshot)\n";
+            echo "# Screenshot (YAML snapshot — AI-readable)\n";
             $captcha = detect_captcha($session['dom'], $session['html']);
             if ($captcha['detected']) {
                 echo "# captcha: {$captcha['type']}" . ($captcha['sitekey'] ? " ({$captcha['sitekey']})" : '') . "\n";
@@ -928,7 +872,7 @@ try {
             break;
 
         case 'eval':
-            echo "eval: JS not available in HTTP mode. Use --pw mode.\n";
+            echo "eval: JavaScript not available in HTTP mode.\n";
             break;
 
         case 'go-back':
@@ -1014,7 +958,7 @@ try {
 
         case 'mousemove': case 'mousedown': case 'mouseup': case 'mousewheel':
         case 'drag': case 'drop': case 'tab-list': case 'tab-new': case 'tab-close': case 'tab-select':
-            fwrite(STDERR, "{$cmd}: not available in HTTP mode. Use --pw prefix.\n"); exit(1);
+            fwrite(STDERR, "{$cmd}: not available in HTTP mode.\n"); exit(1);
 
         case 'config':
             $cfg = config_load();
@@ -1088,7 +1032,7 @@ try {
                 if ($captcha['sitekey']) echo "sitekey: {$captcha['sitekey']}\n";
                 if ($captcha['elements']) echo "elements: " . count($captcha['elements']) . "\n";
                 echo "\nNote: Automated captcha solving requires a service (2captcha, capsolver, etc.)\n";
-                echo "or manual intervention via the browser (--pw mode).\n";
+                echo "or manual intervention via a real browser.\n";
             } else {
                 echo "captcha_detected: false\n";
                 echo "No captcha found on this page.\n";
@@ -1113,7 +1057,7 @@ try {
             echo "    --max-d=N         max depth (default 10)\n";
             echo "    --ref=eN          drill into subtree of element eN\n";
             echo "    --output=FILE     save snapshot to file\n";
-            echo "  screenshot [flags]  YAML snapshot (pixel screenshots = --pw)\n";
+            echo "  screenshot [flags]  YAML snapshot\n";
             echo "  smoke <url>         HTTP + links + images + title test\n";
             echo "  count [tag]         count all elements or specific tag\n";
             echo "  links               extract all links (internal/external) from current page\n";
@@ -1129,15 +1073,8 @@ try {
             echo "  method, action, data-testid, aria-label, placeholder, checked, selected\n\n";
             echo "Captcha detection: reCAPTCHA, hCaptcha, Cloudflare Turnstile, text captchas\n";
             echo "Config: request_delay_ms, timeout, connect_timeout, tracing\n";
-            echo "UA pool: Chrome/Mac, Chrome/Win, Chrome/Linux, Safari, Firefox (rotated per request)\n";
-            echo "Session persists across calls in .agents/temp/browser-session.json\n\n";
-            echo "Playwright mode (--pw, needs Node.js + playwright-cli):\n";
-            echo "  --pw open --mobile|--tablet|--desktop <url>\n";
-            echo "  --pw screenshot [--full-page] [--filename=f.png]\n";
-            echo "  --pw click/dblclick/hover/drag/drop <ref>\n";
-            echo "  --pw mousemove/mousedown/mouseup/mousewheel <x> <y>\n";
-            echo "  --pw press/keydown/keyup <key>\n";
-            echo "  --pw tab-list/tab-new/tab-close/tab-select\n";
+echo "UA pool: Chrome/Mac, Chrome/Win, Chrome/Linux, Safari, Firefox (rotated per request)\n";
+echo "Session persists across calls in .agents/temp/browser-session.json\n";
             break;
     }
 } catch (Throwable $e) {

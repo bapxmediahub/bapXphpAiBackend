@@ -133,7 +133,6 @@ $tests['repo has agent-readable schema and built-in skills'] = function (): void
         '.agents/skills/frontend-php/SKILL.md',
         '.agents/skills/deployment/SKILL.md',
         '.agents/skills/docs/SKILL.md',
-        '.agents/skills/playwright-cli/SKILL.md',
     ] as $path) {
         assertTrue(is_file(app_path($path)), "Built-in agent instruction file should exist: {$path}");
     }
