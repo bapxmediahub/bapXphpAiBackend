@@ -1,0 +1,39 @@
+{
+  "event_type": "issues.opened",
+  "issue": 6,
+  "actor": "getwinharris",
+  "workflow": {
+    "current_role": "cto",
+    "next_role": "worker",
+    "sequence": [
+      "cto",
+      "worker",
+      "reviewer",
+      "cto"
+    ]
+  },
+  "payload": {
+    "title": "Fix AI PR review HTTP 403 and validate configured model endpoint",
+    "body": "## Reproduction\n1. Open or synchronize a pull request.\n2. Wait for `.github/workflows/ai-pr-review.yml`.\n3. The workflow posts `API error (HTTP 403). Check model config.` instead of a review.\n\n## Pinpointed source\n- `.github/workflows/ai-pr-review.yml` selects `AGENT_ENDPOINT` / `BAPX_AI_ENDPOINT`, or falls back to `APP_URL/api/agent`.\n- Provider, endpoint shape, model name, and authorization are not preflighted.\n- Non-200 responses are reduced to generic output, hiding the provider response needed to diagnose the 403.\n\n## Required fix\n- Add credential-safe preflight validation for endpoint, provider and model.\n- Support the configured remote-DB model settings without printing secrets.\n- Fail the check clearly when review generation fails; do not post a successful-looking review comment containing only an API error.\n- Add a deterministic mocked test for Google and OpenAI-compatible response parsing.\n\n## Acceptance\n- A test PR receives an actual concise review.\n- Invalid configuration produces a failed Action with a useful redacted diagnosis.\n- No API key appears in logs or comments.",
+    "labels": []
+  },
+  "repository": {
+    "owner": "bapxmediahub",
+    "name": "bapXphpAiBackend"
+  },
+  "objectives": [
+    {
+      "id": "OBJ-6-1",
+      "status": "gap",
+      "evidence": [],
+      "browser_evidence": [],
+      "unresolved": [
+        "Handoff created - awaiting CTO"
+      ]
+    }
+  ],
+  "telemetry": {
+    "started_at": "2026-07-16T14:13:51.955Z",
+    "handoffs_completed": 0
+  }
+}
