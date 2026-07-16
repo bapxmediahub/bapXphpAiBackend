@@ -19,10 +19,10 @@ flowchart LR
   end
 
   subgraph TOOLS["Guaranteed scripts and tools"]
-    map["Generate and validate maps<br/><small>bapXphp update</small>"]:::tool
-    ci["Lint, tests, maps, smoke<br/><small>bapXphp ci</small>"]:::tool
-    score["Score handoff evidence<br/><small>bapXphp handoff score <issue></small>"]:::tool
-    browser["Capture rendered evidence<br/><small>bapXphp browser-agent</small>"]:::tool
+    map["Generate and validate maps<br/><small>bapXphp update</small><br/><small>success: reviewer | failure: worker</small>"]:::tool
+    ci["Lint, tests, maps, smoke<br/><small>bapXphp ci</small><br/><small>success: reviewer | failure: worker</small>"]:::tool
+    score["Score handoff evidence<br/><small>bapXphp handoff score <issue></small><br/><small>success: pull_request | failure: cto</small>"]:::tool
+    browser["Capture rendered evidence<br/><small>bapXphp browser-agent</small><br/><small>success: cto | failure: worker</small>"]:::tool
   end
 
   github_issue -->|scope| cto
@@ -39,7 +39,7 @@ flowchart LR
   deployment -->|live verification| browser_tester
   browser_tester -->|close or reopen| cto
 
-  telemetry["Telemetry<br/><small>status, started_at, completed_at, duration_seconds, attempts, tool_failures, evidence_count, reviewer_findings, regressions, score</small><br/>minimum score 90"]:::gate
+  telemetry["Telemetry<br/><small>status, started_at, completed_at, duration_seconds, attempts, tool_failures, evidence_count, reviewer_findings, regressions, node_entries, edge_outcomes, termination_reason, score</small><br/>minimum score 90"]:::gate
   worker -. records .-> telemetry
   reviewer -. verifies .-> telemetry
   browser_tester -. renders .-> telemetry

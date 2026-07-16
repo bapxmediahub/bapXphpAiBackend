@@ -44,7 +44,10 @@ $lines[] = '  end';
 $lines[] = '';
 $lines[] = '  subgraph TOOLS["Guaranteed scripts and tools"]';
 foreach (($config['scripts'] ?? []) as $key => $script) {
-    $lines[] = sprintf('    %s["%s<br/><small>%s</small>"]:::tool', $id((string)$key), $quote((string)($script['label'] ?? $key)), $quote((string)($script['command'] ?? '')));
+    $success = (string)($script['success'] ?? '');
+    $failure = (string)($script['failure'] ?? '');
+    $result = trim("success: {$success} | failure: {$failure}");
+    $lines[] = sprintf('    %s["%s<br/><small>%s</small><br/><small>%s</small>"]:::tool', $id((string)$key), $quote((string)($script['label'] ?? $key)), $quote((string)($script['command'] ?? '')), $quote($result));
 }
 $lines[] = '  end';
 $lines[] = '';

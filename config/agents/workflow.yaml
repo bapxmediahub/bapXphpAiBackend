@@ -3,7 +3,13 @@
   "workflow": {
     "entry": "github_issue",
     "sequence": ["cto", "worker", "reviewer", "cto"],
-    "completion_gate": "cto"
+    "completion_gate": "cto",
+    "execution": "sequential",
+    "context_policy": {
+      "preserve": ["issue", "objective_ids", "acceptance_checks", "evidence", "review_findings"],
+      "reset_per_role": ["system_prompt", "allowed_tools", "owned_paths", "skills"],
+      "exclude": ["hidden_reasoning", "unrelated_user_data", "secrets"]
+    }
   },
   "roles": {
     "cto": {
@@ -58,10 +64,30 @@
     }
   },
   "scripts": {
-    "map": {"label": "Generate and validate maps", "command": "bapXphp update"},
-    "ci": {"label": "Lint, tests, maps, smoke", "command": "bapXphp ci"},
-    "score": {"label": "Score handoff evidence", "command": "bapXphp handoff score <issue>"},
-    "browser": {"label": "Capture rendered evidence", "command": "bapXphp browser-agent"}
+    "map": {
+      "label": "Generate and validate maps",
+      "command": "bapXphp update",
+      "success": "reviewer",
+      "failure": "worker"
+    },
+    "ci": {
+      "label": "Lint, tests, maps, smoke",
+      "command": "bapXphp ci",
+      "success": "reviewer",
+      "failure": "worker"
+    },
+    "score": {
+      "label": "Score handoff evidence",
+      "command": "bapXphp handoff score <issue>",
+      "success": "pull_request",
+      "failure": "cto"
+    },
+    "browser": {
+      "label": "Capture rendered evidence",
+      "command": "bapXphp browser-agent",
+      "success": "cto",
+      "failure": "worker"
+    }
   },
   "edges": [
     {"from": "github_issue", "to": "cto", "label": "scope"},
@@ -89,6 +115,9 @@
       "evidence_count",
       "reviewer_findings",
       "regressions",
+      "node_entries",
+      "edge_outcomes",
+      "termination_reason",
       "score"
     ],
     "statuses": ["pass", "fail", "blocked"],
