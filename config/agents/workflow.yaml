@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "workflow": {
+    "entry": "github_issue",
+    "sequence": ["cto", "worker", "reviewer", "cto"],
+    "completion_gate": "cto"
+  },
+  "roles": {
+    "cto": {
+      "label": "CTO",
+      "contract": ".agents/workflows/cto-workflow.md",
+      "skills": ["subagent-orchestration", "git", "bapxphp-cli"],
+      "tools": ["handoff-next", "handoff-score", "github-actions"],
+      "owns": ["scope", "objective-registry", "handoff", "acceptance", "merge"],
+      "may_edit": false
+    },
+    "worker": {
+      "label": "Worker",
+      "contract": ".agents/workflows/worker.md",
+      "skills": ["backend-json", "frontend-php", "admin-ui", "schema", "docs"],
+      "tools": ["bapxphp-map", "bapxphp-schema", "bapxphp-ci"],
+      "owns": ["one-assigned-objective", "implementation-evidence"],
+      "may_edit": true
+    },
+    "reviewer": {
+      "label": "Reviewer",
+      "contract": ".agents/workflows/reviewer.md",
+      "skills": ["git", "bapxphp-cli"],
+      "tools": ["diff-review", "bapxphp-ci", "coderabbit"],
+      "owns": ["independent-verification", "findings", "objective-verdict"],
+      "may_edit": false
+    },
+    "browser_tester": {
+      "label": "Browser Tester",
+      "contract": ".agents/workflows/browser-tester.md",
+      "skills": ["frontend-php", "admin-ui"],
+      "tools": ["browser-agent", "remote-chrome"],
+      "owns": ["desktop-evidence", "mobile-evidence", "network-console-evidence"],
+      "may_edit": false
+    }
+  },
+  "events": {
+    "github_issue": {
+      "label": "Issue opened or @bapXai mentioned",
+      "source": ".github/workflows/issue-comment-handoff.yml"
+    },
+    "branch_push": {
+      "label": "Implementation branch pushed",
+      "source": ".github/workflows/branch-pr.yml"
+    },
+    "pull_request": {
+      "label": "Pull request updated",
+      "source": ".github/workflows/ci.yml"
+    },
+    "deployment": {
+      "label": "Deployment main merged",
+      "source": "docs/deployment-hostinger.md"
+    }
+  },
+  "scripts": {
+    "map": {"label": "Generate and validate maps", "command": "bapXphp update"},
+    "ci": {"label": "Lint, tests, maps, smoke", "command": "bapXphp ci"},
+    "score": {"label": "Score handoff evidence", "command": "bapXphp handoff score <issue>"},
+    "browser": {"label": "Capture rendered evidence", "command": "bapXphp browser-agent"}
+  },
+  "edges": [
+    {"from": "github_issue", "to": "cto", "label": "scope"},
+    {"from": "cto", "to": "worker", "label": "one objective"},
+    {"from": "worker", "to": "ci", "label": "deterministic checks"},
+    {"from": "ci", "to": "reviewer", "label": "evidence"},
+    {"from": "reviewer", "to": "browser_tester", "label": "UI objective"},
+    {"from": "reviewer", "to": "cto", "label": "pass"},
+    {"from": "reviewer", "to": "worker", "label": "gap or blocked"},
+    {"from": "browser_tester", "to": "cto", "label": "rendered verdict"},
+    {"from": "cto", "to": "score", "label": "acceptance"},
+    {"from": "score", "to": "pull_request", "label": "score >= gate"},
+    {"from": "pull_request", "to": "deployment", "label": "merge"},
+    {"from": "deployment", "to": "browser_tester", "label": "live verification"},
+    {"from": "browser_tester", "to": "cto", "label": "close or reopen"}
+  ],
+  "telemetry": {
+    "required": [
+      "status",
+      "started_at",
+      "completed_at",
+      "duration_seconds",
+      "attempts",
+      "tool_failures",
+      "evidence_count",
+      "reviewer_findings",
+      "regressions",
+      "score"
+    ],
+    "statuses": ["pass", "fail", "blocked"],
+    "minimum_score": 90
+  }
+}

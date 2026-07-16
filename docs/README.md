@@ -12,6 +12,7 @@ This folder contains connected documentation for developers, maintainers, and co
 
 - [Main README](../README.md): repo overview, local setup, deployment summary, and documentation links.
 - [Agent operating guide](../AGENTS.md): required DOX workflow for coding agents.
+- [Agent workflow graph](../agents.mmd): generated roles, tools, handoffs, failure loops, and telemetry.
 - [Architecture](architecture.md): current PHP-template architecture and file structure.
 - [Deployment guide](deployment-hostinger.md): Hostinger Git auto deployment, branch setup, cron, and Vercel note.
 - [Systematic project map](systematic-map.mmd): generated route/controller/service/view/schema/storage/tool/integration/gap map.

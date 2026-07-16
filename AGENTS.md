@@ -74,7 +74,8 @@ For meaningful code/schema/UI/doc/workflow changes, reproduce or inspect behavio
 
 - `docs/systematic-map.mmd` = single project-map artifact (routes/controllers/services wiring).
 - `docs/map.mmd` = generated documentation mindmap (skills, docs, blog, agents, admin).
-- Generators: `cli/generate-project-map.php` (systematic-map), `cli/generate-docs-map.php` (docs/map.mmd), `cli/generate-code-map.php` (root map.mmd).
+- `agents.mmd` = generated agent harness graph from `config/agents/workflow.yaml`.
+- Generators: `cli/generate-project-map.php` (systematic-map), `cli/generate-docs-map.php` (docs/map.mmd), `cli/generate-agents-map.php` (agents.mmd), `cli/generate-code-map.php` (root map.mmd).
 - Validator: `cli/validate-project-map.php` compares generated Mermaid to committed file.
 - Update `ProjectMapService::scan()` and `::renderSystematicMermaid()` when map needs new sections, edges, or gap checks.
 - Map validation alone is incomplete. For every affected map path, verify the source route, controller action, service, schema entry, and rendered page.

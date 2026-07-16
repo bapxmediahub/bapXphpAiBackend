@@ -1106,6 +1106,24 @@ $tests['systematic project map, docs/map.mmd, and root map.mmd are the generated
     }
 };
 
+$tests['agent harness is yaml driven and has a generated validated graph'] = function (): void {
+    $source = file_get_contents(app_path('config/agents/workflow.yaml'));
+    $config = json_decode($source, true);
+    assertTrue(is_array($config), 'Agent workflow YAML should be machine readable');
+    foreach (['cto', 'worker', 'reviewer', 'browser_tester'] as $role) {
+        assertTrue(isset($config['roles'][$role]), "Agent workflow should declare {$role}");
+    }
+    foreach (['status', 'duration_seconds', 'attempts', 'tool_failures', 'reviewer_findings', 'score'] as $metric) {
+        assertTrue(in_array($metric, $config['telemetry']['required'] ?? [], true), "Telemetry should require {$metric}");
+    }
+    $map = file_get_contents(app_path('agents.mmd'));
+    foreach (['CTO', 'Worker', 'Reviewer', 'Browser Tester', 'gap or blocked', 'Telemetry'] as $needle) {
+        assertTrue(str_contains($map, $needle), "agents.mmd should include {$needle}");
+    }
+    $cli = file_get_contents(app_path('cli/bapXphp'));
+    assertTrue(str_contains($cli, 'validate-agents-map.php') && str_contains($cli, 'generate-agents-map.php'), 'CI and update should own agent map freshness');
+};
+
 $tests['consultation pages use booking language without wallet pricing'] = function (): void {
     $home = file_get_contents(app_path('views/public/home.php'));
     $consult = file_get_contents(app_path('views/public/consult.php'));
