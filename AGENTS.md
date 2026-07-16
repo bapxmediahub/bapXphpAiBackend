@@ -98,6 +98,15 @@ For meaningful code/schema/UI/doc/workflow changes, reproduce or inspect behavio
 - `MayaController` renamed to `AgentController`, route `/api/maya` → `/api/agent`. The AI agent name is configurable via `config/agent.yml` and overridable in Admin → Integrations (`agent_name` secret).
 - Each `.agents/skills/<tool-name>/` directory contains a `SKILL.md` (≤1024 lines) as the tool index, plus a `references/` subdirectory where the actual skill docs live (playwright-cli model).
 
+## Browser Agent & CDP
+
+- **Browser Agent CLI:** `cli/browser-agent.php` — pure PHP HTTP mode (cURL + DOMDocument) for shared hosting. Commands: `open`, `click`, `fill`, `search`, `snapshot`, `links`, `forms`, `captcha`, `smoke`, `config`, `log`, `cookies`.
+- **CDP Mode:** Remote Chrome via DevTools Protocol. Set `config set cdp_ws ws://host:9222/devtools/browser/xxx` then use `cdp <method> [params]`. For JS-heavy sites (YouTube, SPAs).
+- **Local Chrome (cPanel):** `browser-agent cdp_launch --port=9222` starts bundled Chrome from `.bin/chrome-linux/chrome` (Linux x86_64). Download: `php .bin/download-chrome.php`.
+- **Remote Chrome (Mac/local dev):** Run `./bin/launch-chrome.sh --port=9222` on Linux server, then `browser-agent config set cdp_ws ws://your-server:9222/devtools/browser/...`.
+- **API Endpoints:** `/api/browser/*` — search, open, click, fill, snapshot, links, forms, captcha, smoke, cdp, cdp_launch, status.
+- **TTS:** `storage/kittentts/model_quantized.onnx` (KittenTTS ONNX). Download manually from Hugging Face (requires auth). Served at `/storage/kittentts/`. Frontend uses onnxruntime-web.
+
 ## Skill Ownership
 
 - `.agents/skills/subagent-orchestration/` is owned by the **CEO** (repository architect), not the CTO agent. It contains research on agent orchestration patterns, telemetry design, and implementation reference. CTO agents should not load this skill — it is outside their execution scope.

@@ -22,3 +22,4 @@ homepage.yml
 
 # Runtime browser session state — never commit
 /.agents/temp/
+.tmp/
