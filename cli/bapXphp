@@ -652,6 +652,9 @@ cmd_ci() {
   echo "── docsmap:val ──"
   php "$ROOT/cli/validate-docs-map.php" "$ROOT" 2>&1 || { failed=1; warn "DOCS MAP VALIDATION FAILED"; }
 
+  echo "── agentsmap:val ──"
+  php "$ROOT/cli/validate-agents-map.php" "$ROOT" 2>&1 || { failed=1; warn "AGENT MAP VALIDATION FAILED"; }
+
   echo "── codemap:val (root map.mmd) ──"
   php "$ROOT/cli/generate-code-map.php" "$ROOT" "$ROOT/.map.mmd.tmp"
   if [ -f "$ROOT/map.mmd" ]; then
@@ -684,10 +687,12 @@ cmd_update() {
   require_php
   php "$ROOT/cli/generate-project-map.php"
   php "$ROOT/cli/generate-docs-map.php" "$ROOT" "$ROOT/docs/map.mmd"
+  php "$ROOT/cli/generate-agents-map.php" "$ROOT" "$ROOT/agents.mmd"
   php "$ROOT/cli/generate-code-map.php" "$ROOT" "$ROOT/map.mmd"
   php "$ROOT/cli/generate-okf-bundle.php" "$ROOT"
   php "$ROOT/cli/validate-project-map.php"
   php "$ROOT/cli/validate-docs-map.php" "$ROOT"
+  php "$ROOT/cli/validate-agents-map.php" "$ROOT"
   ok "MAPS AND KNOWLEDGE BUNDLE UPDATED"
 }
 
@@ -2513,6 +2518,8 @@ main() {
       cmd_db_sync ;;
     docsmap)
       cmd_docsmap ;;
+    agentsmap)
+      php "$ROOT/cli/generate-agents-map.php" "$ROOT" "$ROOT/agents.mmd" ;;
     codemap)
       cmd_codemap ;;
     okfgen|knowledge-graph|kg)

@@ -1106,6 +1106,33 @@ $tests['systematic project map, docs/map.mmd, and root map.mmd are the generated
     }
 };
 
+$tests['agent harness is yaml driven and has a generated validated graph'] = function (): void {
+    $source = file_get_contents(app_path('config/agents/workflow.yaml'));
+    $config = json_decode($source, true);
+    assertTrue(is_array($config), 'Agent workflow YAML should be machine readable');
+    foreach (['cto', 'worker', 'reviewer', 'browser_tester'] as $role) {
+        assertTrue(isset($config['roles'][$role]), "Agent workflow should declare {$role}");
+    }
+    foreach (['status', 'duration_seconds', 'attempts', 'tool_failures', 'reviewer_findings', 'node_entries', 'edge_outcomes', 'termination_reason', 'score'] as $metric) {
+        assertTrue(in_array($metric, $config['telemetry']['required'] ?? [], true), "Telemetry should require {$metric}");
+    }
+    assertSame('sequential', $config['workflow']['execution'] ?? '', 'Agent roles should execute sequentially');
+    assertTrue(in_array('hidden_reasoning', $config['workflow']['context_policy']['exclude'] ?? [], true), 'Handoffs should exclude hidden reasoning');
+    foreach ($config['scripts'] ?? [] as $name => $script) {
+        assertTrue(!empty($script['success']) && !empty($script['failure']), "Tool {$name} should declare success and failure routing");
+    }
+    $map = file_get_contents(app_path('agents.mmd'));
+    foreach (['CTO', 'Worker', 'Reviewer', 'Browser Tester', 'gap or blocked', 'Telemetry'] as $needle) {
+        assertTrue(str_contains($map, $needle), "agents.mmd should include {$needle}");
+    }
+    $cli = file_get_contents(app_path('cli/bapXphp'));
+    assertTrue(str_contains($cli, 'validate-agents-map.php') && str_contains($cli, 'generate-agents-map.php'), 'CI and update should own agent map freshness');
+    $internal = file_get_contents(app_path('docs/internal/agent-harness.md'));
+    foreach (['ChatDev 2.0', 'ElevenLabs Workflows', 'OpenAI Harness Engineering', 'GitHub Actions', 'Deterministic work does not need an agent'] as $needle) {
+        assertTrue(str_contains($internal, $needle), "Internal harness documentation should include {$needle}");
+    }
+};
+
 $tests['consultation pages use booking language without wallet pricing'] = function (): void {
     $home = file_get_contents(app_path('views/public/home.php'));
     $consult = file_get_contents(app_path('views/public/consult.php'));

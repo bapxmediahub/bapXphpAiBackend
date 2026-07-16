@@ -7,13 +7,13 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 127 routes, 15 controllers, 43 services, 49 views, 0 data files, 24 tools"]
+  subgraph ARCH["Architecture Overview — 127 routes, 15 controllers, 43 services, 49 views, 0 data files, 26 tools"]
     arch_routes["> Routes: 127 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 15"]:::arch
     arch_svc["> Services: 43"]:::arch
     arch_views["> Views: 49"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
-    arch_tools["> Tools: 24"]:::arch
+    arch_tools["> Tools: 26"]:::arch
     arch_gaps["> Gaps: 0"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
@@ -325,6 +325,7 @@ flowchart LR
     tool_browser_agent["browser-agent"]:::tool
     tool_doc_read["doc-read"]:::tool
     tool_doc_write["doc-write"]:::tool
+    tool_generate_agents_map["generate-agents-map"]:::tool
     tool_generate_code_map["generate-code-map"]:::tool
     tool_generate_docs_map["generate-docs-map"]:::tool
     tool_generate_okf_bundle["generate-okf-bundle"]:::tool
@@ -340,6 +341,7 @@ flowchart LR
     tool_smoke_local["smoke-local"]:::tool
     tool_test_race["test_race"]:::tool
     tool_tui["tui"]:::tool
+    tool_validate_agents_map["validate-agents-map"]:::tool
     tool_validate_docs_map["validate-docs-map"]:::tool
     tool_validate_project_map["validate-project-map"]:::tool
     tool_bapxphp["bapXphp"]:::tool
