@@ -5,7 +5,7 @@
   "required": ["issue", "role", "objectives", "commands_run", "risks", "next_role"],
   "properties": {
     "issue": {"type": "integer", "minimum": 1},
-    "role": {"enum": ["worker", "reviewer", "cto"]},
+    "role": {"enum": ["worker", "reviewer", "browser_tester", "cto"]},
     "objectives": {
       "type": "array",
       "minItems": 1,
@@ -25,7 +25,7 @@
     "files_changed": {"type": "array", "items": {"type": "string"}},
     "commands_run": {"type": "array", "items": {"type": "string"}},
     "risks": {"type": "array", "items": {"type": "string"}},
-    "next_role": {"enum": ["worker", "reviewer", "cto", "complete"]},
+    "next_role": {"enum": ["worker", "reviewer", "browser_tester", "cto", "complete"]},
     "before_objective_hooks": {
       "type": "array",
       "items": {
