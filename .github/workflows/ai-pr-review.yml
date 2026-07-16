@@ -40,6 +40,7 @@ jobs:
           BAPX_AI_ENDPOINT: ${{ secrets.BAPX_AI_ENDPOINT }}
           BAPX_AI_API_KEY: ${{ secrets.BAPX_AI_API_KEY }}
           BAPX_AI_MODEL: ${{ secrets.BAPX_AI_MODEL }}
+          APP_URL: ${{ vars.APP_URL || 'https://sripanchamispiritual.com' }}
         run: |
           php -r '
             $diff = $argv[1];
@@ -50,7 +51,12 @@ jobs:
             $model = getenv("BAPX_AI_MODEL") ?: "";
             if ($endpoint === "" || $apiKey === "") {
               $payload = json_encode(["message" => $msg, "source" => "pr-review"]);
-              $ch = curl_init(getenv("APP_URL") . "/api/agent");
+              $appUrl = rtrim((string)getenv("APP_URL"), "/");
+              if ($appUrl === "") {
+                fwrite(STDERR, "No AI endpoint or APP_URL configured.\n");
+                exit(1);
+              }
+              $ch = curl_init($appUrl . "/api/agent");
               curl_setopt_array($ch, [
                 CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true,
                 CURLOPT_HTTPHEADER => ["Content-Type: application/json"],

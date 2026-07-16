@@ -14,18 +14,27 @@ concurrency:
 
 jobs:
   route:
-    if: github.actor != 'handoff-ai-bot' && endsWith(github.repository, 'bapXphpAiBackend') && (startsWith(github.event.comment.body, '/handoff ') || startsWith(github.event.comment.body, '/review'))
+    if: github.repository == 'bapxmediahub/bapXphpAiBackend' && github.actor != 'handoff-ai-bot' && github.actor != 'bapxai[bot]' && (startsWith(github.event.comment.body, '/handoff ') || startsWith(github.event.comment.body, '/review') || contains(github.event.comment.body, '@bapXai'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Create bapXai installation token
+        id: app-token
+        if: vars.BAPXAI_APP_ID != ''
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.BAPXAI_APP_ID }}
+          private-key: ${{ secrets.BAPXAI_PRIVATE_KEY }}
       - name: Parse handoff target
         id: parse
         run: |
           COMMENT="${{ github.event.comment.body }}"
           if echo "$COMMENT" | grep -q '^/handoff '; then
             TARGET=$(echo "$COMMENT" | sed 's/\/handoff //')
+          elif echo "$COMMENT" | grep -qi '@bapXai'; then
+            TARGET="cto"
           else
             TARGET="reviewer"
           fi
@@ -55,7 +64,10 @@ jobs:
                 "sequence": ["cto", "worker", "reviewer", "cto"]
               },
               "payload": {
-                "comment": $(echo '${{ github.event.comment.body }}' | jq -Rs .)
+                "title": $(echo '${{ github.event.issue.title }}' | jq -Rs .),
+                "body": $(echo '${{ github.event.issue.body }}' | jq -Rs .),
+                "comment": $(echo '${{ github.event.comment.body }}' | jq -Rs .),
+                "issue_url": "${{ github.event.issue.html_url }}"
               },
               "repository": {
                 "owner": "${{ github.repository_owner }}",
@@ -86,20 +98,27 @@ jobs:
           git push --force-with-lease origin "HEAD:$GITHUB_REF_NAME"
       - name: Confirm handoff
         uses: actions/github-script@v7
-        env:
-          TARGET: ${{ steps.parse.outputs.target }}
         with:
+          github-token: ${{ steps.app-token.outputs.token || github.token }}
           script: |
+            const isMention = /@bapxai/i.test(context.payload.comment.body || '');
+            const prefix = isMention
+              ? '## bapXai CTO request accepted'
+              : `## Handoff routed to **${process.env.TARGET}**`;
             await github.rest.issues.createComment({
               ...context.repo,
               issue_number: context.issue.number,
-              body: `## Handoff routed to **${process.env.TARGET}**
+              body: `${prefix}
 
             | Role | Status |
             |------|--------|
-            | Previous | completed |
             | Current | ${process.env.TARGET} |
-            | Next | awaiting completion |
+            | Next | source-grounded diagnosis |
+            | Issue | #${context.issue.number} |
+
+            The CTO handoff now contains the issue title, description, triggering comment, and repository URL. The next agent must inspect the mapped route, owning files, and current issue evidence before changing code.
 
             Active handoff: \`.agents/handoffs/active/current.json\``
             });
+        env:
+          TARGET: ${{ steps.parse.outputs.target }}

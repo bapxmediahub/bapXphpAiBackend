@@ -1047,6 +1047,27 @@ $tests['repository operations use git and GitHub Actions without duplicate agent
 
     $tui = file_get_contents(app_path('cli/tui.php'));
     assertTrue(str_contains($tui, 'function activeHandoff') && str_contains($tui, 'handoff:'), 'TUI should show the actual active issue and role');
+
+    $commentHandoff = file_get_contents(app_path('.github/workflows/issue-comment-handoff.yml'));
+    foreach (["github.repository == 'bapxmediahub/bapXphpAiBackend'", '@bapXai', 'actions/create-github-app-token@v2', 'BAPXAI_APP_ID', 'BAPXAI_PRIVATE_KEY', 'source-grounded diagnosis'] as $needle) {
+        assertTrue(str_contains($commentHandoff, $needle), "Issue comments should support the bapXai CTO hook via {$needle}");
+    }
+
+    $sync = file_get_contents(app_path('.github/workflows/sync-upstream.yml'));
+    assertTrue(str_contains($sync, 'git merge-base main upstream/main'), 'Fork sync should diagnose unrelated histories');
+    assertTrue(str_contains($sync, 'git merge --no-edit upstream/main'), 'Fork sync should merge compatible divergent histories');
+    assertTrue(!str_contains($sync, 'git merge --ff-only upstream/main'), 'Fork sync should not assume every compatible fork is fast-forward only');
+
+    $review = file_get_contents(app_path('.github/workflows/ai-pr-review.yml'));
+    assertTrue(str_contains($review, "APP_URL: \${{ vars.APP_URL || 'https://sripanchamispiritual.com' }}"), 'AI review should have a usable hosted agent fallback');
+    assertTrue(str_contains($review, 'No AI endpoint or APP_URL configured.'), 'AI review should fail with a clear configuration error instead of an invalid curl URL');
+
+    $branchPr = file_get_contents(app_path('.github/workflows/branch-pr.yml'));
+    assertTrue(str_contains($branchPr, "github.repository == 'bapxmediahub/bapXphpAiBackend'"), 'Automatic PR creation should run only in the deployment working repository');
+
+    $agents = file_get_contents(app_path('AGENTS.md'));
+    assertTrue(str_contains($agents, '`bapxmediahub/bapXphpAiBackend` is the only agent working repository'), 'Agent contract should pin work to the deployment repository');
+    assertTrue(str_contains($agents, '`getwinharris/bapXphpAiBackend` is read-only upstream'), 'Agent contract should keep the template upstream read-only');
 };
 
 $tests['local smoke tool source covers key routes and CSRF protection'] = function (): void {
@@ -1159,6 +1180,7 @@ $tests['public navigation uses brand home link and mobile cart tray'] = function
     assertTrue(!str_contains($layout, 'href="/blog/category/help"'), 'Help should remain a Blog category instead of a separate primary-menu item');
     foreach (['mobile-cart-tray', 'mobile-cart-count', 'mobile-cart-label'] as $needle) assertTrue(str_contains($layout, $needle), "Cart tray should include {$needle}");
     assertTrue(str_contains($css, '.mobile-cart-tray') && str_contains($css, 'bottom:78px'), 'Mobile cart tray should sit above bottom navigation');
+    assertTrue(str_contains($css, '.support-fab{right:24px;bottom:24px}') && str_contains($css, '.mobile-cart-tray{position:fixed;right:24px;bottom:88px'), 'Desktop support should align directly below the cart tray');
     assertSame(substr_count($css, '{'), substr_count($css, '}'), 'Stylesheet should have balanced rule braces');
 };
 

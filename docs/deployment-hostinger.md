@@ -45,11 +45,58 @@ bapXphp ci
 
 ## Repository Architecture
 
-This is a **white-label** product. The upstream source of truth is `getwinharris/bapXphpAiBackend`, forked to `bapxmediahub/bapXphpAiBackend` for customer deployment. Each customer gets their own fork with their branding, domain, and configuration. The product is not customer-specific — it's a reusable automation platform rebranded per client.
+During this customer build, `bapxmediahub/bapXphpAiBackend` is the only agent
+working repository and the Hostinger deployment source. All issues, branches,
+PRs, handoffs, reviews, and customer-specific changes belong there.
+
+`getwinharris/bapXphpAiBackend` is read-only upstream and is consumed only by
+the synchronization workflow. After the customer project is complete,
+`bapxmediahub/bapXphpAiBackend` will be unforked and made independent. The
+reusable white-label PHP/AI backend package will then be published separately
+under a different product name.
 
 ### Fork Synchronization
 
 `.github/workflows/sync-upstream.yml` on the deployment fork (`bapxmediahub/bapXphpAiBackend`) runs **hourly** via cron (`0 * * * *`) plus supports `workflow_dispatch` and `repository_dispatch` as fallbacks. It calls GitHub's `merge-upstream` API using `github.token` (no `FORK_SYNC_TOKEN` secret needed). The workflow is guarded by `if: github.repository == 'bapxmediahub/bapXphpAiBackend'` so it only runs on the deployment fork.
+
+Automatic sync requires the fork and upstream to share Git ancestry. If
+`git merge-base upstream/main main` returns no commit, do not reset or
+force-push the deployment fork. Create one reviewed bridge merge:
+
+```bash
+git fetch origin main
+git fetch upstream main
+git switch -c maintenance/bridge-deployment-history origin/main
+git merge --allow-unrelated-histories --no-commit upstream/main
+# Resolve only the verified tree differences, then run bapXphp ci.
+git commit -m "chore: bridge deployment fork history"
+git push origin HEAD
+```
+
+After that merge introduces both parent histories, normal `merge-upstream` and
+the plain-Git fallback can synchronize future upstream commits without
+discarding customer commits.
+
+### bapXai GitHub App
+
+The built-in `GITHUB_TOKEN` always posts as `github-actions[bot]`; workflow YAML
+cannot change its avatar. To make `@bapXai` comments use the supplied bot logo:
+
+1. Register a private GitHub App named `bapXai`.
+2. Grant repository **Issues: read/write**, **Pull requests: read/write**, and
+   **Contents: read/write** permissions.
+3. Install it only on `bapxmediahub/bapXphpAiBackend`. The read-only upstream
+   does not run agent handoffs.
+4. Upload `assets/images/bapXfavicon.png` as the App badge.
+5. Add repository variable `BAPXAI_APP_ID`.
+6. Add repository secret `BAPXAI_PRIVATE_KEY` containing the generated private
+   key.
+
+`.github/workflows/issue-comment-handoff.yml` then exchanges those credentials
+for a short-lived installation token. Mentioning `@bapXai` on an issue routes
+the issue title, description, triggering comment, and URL into the CTO handoff
+and posts the acknowledgement as the installed App. Without these two
+credentials, the workflow still runs but comments as `github-actions[bot]`.
 
 ## Production Logs
 

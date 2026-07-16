@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   open:
-    if: github.repository == 'getwinharris/bapXphpAiBackend'
+    if: github.repository == 'bapxmediahub/bapXphpAiBackend'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@v7
