@@ -4,11 +4,38 @@ namespace App\Services;
 final class MailQueueService {
     public function __construct(private DatabaseService $store = new DatabaseService()) {}
 
+    private function wrapHtml(string $inner): string {
+        $settings = (new SettingsService())->public();
+        $logoUrl = $settings['logo_url'] ?? '';
+        $siteName = 'Sri Panchami Spiritual';
+        $logoHtml = $logoUrl ? "<img src=\"$logoUrl\" alt=\"$siteName\" style=\"max-width:180px;height:auto;margin-bottom:16px;\">" : "<h1 style=\"margin:0 0 16px;font-size:1.5rem;color:#3a0003;\">$siteName</h1>";
+        $footerHtml = '<hr style="border:none;border-top:1px solid #e5e5e5;margin:24px 0;">'
+            . '<p style="margin:0;font-size:0.8rem;color:#666;">'
+            . 'GSTIN: ' . e((string)($settings['gstin'] ?? '')) . '<br>'
+            . 'Address: ' . e((string)($settings['gst_address'] ?? '')) . '<br>'
+            . 'State: ' . e((string)($settings['gst_state'] ?? '')) . ' (' . e((string)($settings['gst_state_code'] ?? '')) . ')<br>'
+            . 'PAN: ' . e((string)($settings['gst_pan'] ?? '')) . '<br>'
+            . 'Email: support@sripanchamispiritual.com | Phone: +91-XXXXXXXXXX'
+            . '</p>'
+            . '<p style="margin-top:16px;font-size:0.75rem;color:#999;">'
+            . 'This is an automated email from ' . e($siteName) . '. Please do not reply.'
+            . '</p>';
+
+        return '<div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.6;color:#222;max-width:600px;margin:0 auto;padding:24px;">'
+            . '<div style="text-align:center;padding-bottom:16px;border-bottom:1px solid #e5e5e5;">' . $logoHtml . '</div>'
+            . '<div style="padding:24px 0;">'
+            . $inner
+            . '</div>'
+            . '<div style="text-align:center;">' . $footerHtml . '</div>'
+            . '</div>';
+    }
+
     public function all(): array {
         return $this->store->read('mail_queue');
     }
 
     public function enqueue(string $type, string $to, string $subject, string $html, ?\DateTimeImmutable $availableAt = null, array $meta = []): array {
+        $html = $this->wrapHtml($html);
         $record = [
             'id' => bin2hex(random_bytes(8)),
             'type' => $type,

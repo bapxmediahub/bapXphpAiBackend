@@ -1,5 +1,5 @@
 #!/bin/bash
-# Launch headless Chrome from .bin/chrome-linux/chrome
+# Launch headless Chrome from storage/.bin/chrome-linux/chrome
 # Usage: .bin/launch-chrome.sh [--port=9222] [--user-data-dir=/path] [--headless=false]
 
 CHROME_BIN="$(dirname "$0")/chrome-linux/chrome"
