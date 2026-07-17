@@ -17,7 +17,7 @@ Main files: `AuthController.php`, `AuthService.php`, `EnvService.php`, `PublicCo
   - **admin** → `/admin`
   - Consultant profiles are not login accounts; central admin coordinates appointments.
   - **customer** → `/` (home)
-- Admin credentials checked first from `settings.json` (admin_email/admin_password), then falls back to JSON `users` collection.
+- Admin credentials managed via `EnvService` through the MySQL `settings` collection (editable via Admin → Settings).
 
 ## Google OAuth
 
@@ -29,5 +29,10 @@ Main files: `AuthController.php`, `AuthService.php`, `EnvService.php`, `PublicCo
 ## Registration
 
 - Public registration creates `customer` role users only.
-- Astrologer accounts are admin-created, accept username login, and require a password change before workspace access.
+- Consultant profiles are admin-created in Admin → Astrologers; these are profiles, not login accounts.
 - Private routes redirect guests to `/login`.
+
+## Data Storage
+
+- Users and addresses stored in MySQL via `DatabaseService` (not JSON files).
+- Schema defined in `storage/schema/collections.php`.

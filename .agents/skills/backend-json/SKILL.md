@@ -10,7 +10,7 @@ description: Use when editing PHP controllers, services, JSON persistence, auth,
 - MySQL is the primary runtime store. `bapXphp db` CLI manages the DB (init, sync, query).
 - JSON files in `storage/data/` are used only for one-time seeding via `bapXphp db sync`. Do not use `JsonStoreService` in runtime code.
 - JSON files in `storage/data/` are used only for one-time seeding via `bapXphp db sync`. Do not use `JsonStoreService` in runtime code.
-- Blog posts use YAML frontmatter in `content/blog/posts/`. Media metadata uses `storage/media.yaml`.
+- Blog posts use YAML frontmatter in `content/blog/posts/`. Media metadata uses MySQL `media_files` collection.
 - Use `DatabaseService`, `ResourceService`, and existing services instead of ad hoc storage writes.
 - Keep assistant/customer context filtered through `AgentContextService` or equivalent user-specific filtering.
 - Implement consultation messaging and WebRTC signaling through authenticated PHP JSON APIs and `ConsultationService`; do not introduce a persistent WebSocket or CLI service.

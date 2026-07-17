@@ -180,20 +180,19 @@ final class CommerceController extends BaseController {
             $status = $exception->getCode() === 401 ? 401 : 500;
             $this->jsonResponse(['error' => $exception->getMessage()], $status);
         }
-        $store->upsert('orders', [
-            'id' => bin2hex(random_bytes(8)),
-            'status' => 'pending',
+        $_SESSION['pending_order'] = [
+            'razorpay_order_id' => $order['id'] ?? '',
             'total' => $amount / 100,
+            'items' => array_map(fn($i) => ['slug' => $i['slug'], 'name' => $i['name'], 'qty' => $i['qty'], 'line_total' => $i['line_total']], $items),
+            'coupon_code' => $couponCode,
+            'discount' => $discount,
             'customer_email' => $_SESSION['user']['email'] ?? ($_POST['email'] ?? 'guest'),
             'customer_name' => trim((string)($_POST['name'] ?? ($_SESSION['user']['name'] ?? ''))),
             'customer_phone' => trim((string)($_POST['phone'] ?? '')),
             'shipping_address' => trim((string)($_POST['address'] ?? '')),
             'shipping_city' => trim((string)($_POST['city'] ?? '')),
             'shipping_pincode' => trim((string)($_POST['pincode'] ?? '')),
-            'items' => array_map(fn($i) => ['slug' => $i['slug'], 'name' => $i['name'], 'qty' => $i['qty'], 'line_total' => $i['line_total']], $items),
-            'razorpay_order_id' => $order['id'] ?? '',
-            'created_at' => date('c'),
-        ]);
+        ];
         $this->jsonResponse([
             'id' => $order['id'] ?? '',
             'order_id' => $order['id'] ?? '',
@@ -205,6 +204,10 @@ final class CommerceController extends BaseController {
     public function verifyPayment(): void {
         $this->isApiRequest = true;
         $this->validateCsrf();
+        $pendingOrder = $_SESSION['pending_order'] ?? null;
+        if (!$pendingOrder || ($pendingOrder['razorpay_order_id'] ?? '') === '') {
+            $this->jsonResponse(['verified' => false, 'error' => 'No pending order found. Please start checkout again.'], 400);
+        }
         $secrets = (new SecretService())->all();
         if (!(new SecretService())->razorpayReadyForCurrentHost($secrets)) {
             $this->jsonResponse(['verified' => false, 'error' => 'Razorpay ' . ($secrets['razorpay_mode'] ?? 'selected') . ' mode is not configured yet.'], 400);
@@ -215,18 +218,17 @@ final class CommerceController extends BaseController {
         if ($orderId === '' || $paymentId === '' || $signature === '') {
             $this->jsonResponse(['verified' => false, 'error' => 'Missing Razorpay payment verification fields.'], 400);
         }
+        if ($orderId !== ($pendingOrder['razorpay_order_id'] ?? '')) {
+            $this->jsonResponse(['verified' => false, 'error' => 'Order ID mismatch.'], 400);
+        }
         $ok = (new PaymentService($secrets['razorpay_key_secret'] ?? ''))->verifySignature(
             $orderId,
             $paymentId,
             $signature
         );
         if (!$ok) {
+            unset($_SESSION['pending_order']);
             $this->jsonResponse(['verified' => false, 'error' => 'Payment signature mismatch.'], 400);
-        }
-        $db = new DatabaseService();
-        $pendingOrder = $db->find('orders', $orderId, 'razorpay_order_id');
-        if (!$pendingOrder || ($pendingOrder['status'] ?? '') !== 'pending') {
-            $this->jsonResponse(['verified' => false, 'error' => 'Order not found or already processed.'], 400);
         }
         $razorpay = new RazorpayClient($secrets['razorpay_key_id'], $secrets['razorpay_key_secret']);
         try {
@@ -237,8 +239,10 @@ final class CommerceController extends BaseController {
         $expectedPaise = (int)round(((float)($pendingOrder['total'] ?? 0)) * 100);
         $actualPaise = (int)($payment['amount'] ?? 0);
         if ($actualPaise !== $expectedPaise || (string)($payment['order_id'] ?? '') !== $orderId) {
+            unset($_SESSION['pending_order']);
             $this->jsonResponse(['verified' => false, 'error' => 'Payment amount mismatch.'], 400);
         }
+        $db = new DatabaseService();
         $orderItems = $pendingOrder['items'] ?? [];
         $products = [];
         foreach ($db->read('products') as $p) { $products[$p['slug'] ?? ''] = $p; }
@@ -251,7 +255,7 @@ final class CommerceController extends BaseController {
         }
         $existingOrders = $db->read('orders');
         foreach ($existingOrders as $existing) {
-            if (($existing['payment_id'] ?? '') === $paymentId && ($existing['id'] ?? '') !== ($pendingOrder['id'] ?? '')) {
+            if (($existing['payment_id'] ?? '') === $paymentId) {
                 $this->jsonResponse(['verified' => false, 'error' => 'Payment already processed.'], 400);
             }
         }
@@ -263,14 +267,27 @@ final class CommerceController extends BaseController {
             $item['unit_price'] = (float)($item['line_total'] ?? 0) / max(1, (int)($item['qty'] ?? 1));
             return $item;
         }, $orderItems);
-        $shippingState = trim((string)($pendingOrder['shipping_state'] ?? ''));
+        $shippingState = trim((string)($_POST['state'] ?? ''));
         $taxSnapshot = (new TaxService())->snapshot($itemsWithRates, 0, $shippingState, $settings);
         $allOrders = $db->read('orders');
         $invoice = (new TaxService())->nextInvoice($allOrders);
-        $order = array_merge($pendingOrder, [
+        $localId = bin2hex(random_bytes(8));
+        $order = [
+            'id' => $localId,
             'status' => 'confirmed',
+            'total' => $pendingOrder['total'],
             'payment_id' => $paymentId,
+            'razorpay_order_id' => $pendingOrder['razorpay_order_id'],
             'payment_email_status' => 'pending',
+            'customer_email' => $pendingOrder['customer_email'],
+            'customer_name' => $pendingOrder['customer_name'],
+            'customer_phone' => $pendingOrder['customer_phone'],
+            'shipping_address' => $pendingOrder['shipping_address'],
+            'shipping_city' => $pendingOrder['shipping_city'],
+            'shipping_pincode' => $pendingOrder['shipping_pincode'],
+            'items' => $pendingOrder['items'],
+            'coupon_code' => $pendingOrder['coupon_code'],
+            'discount' => $pendingOrder['discount'],
             'tax_lines' => $taxSnapshot['tax_lines'],
             'taxable_value' => $taxSnapshot['taxable_value'],
             'cgst_total' => $taxSnapshot['cgst_total'],
@@ -285,10 +302,11 @@ final class CommerceController extends BaseController {
             'invoice_financial_year' => $invoice['invoice_financial_year'],
             'invoice_number' => $invoice['invoice_number'],
             'invoice_date' => $invoice['invoice_date'],
-        ]);
+            'created_at' => date('c'),
+        ];
         $db->upsert('orders', $order);
         (new MailQueueService())->enqueuePaymentConfirmation($order);
-        $_SESSION['cart'] = [];
-        $this->jsonResponse(['verified' => true, 'order_id' => $order['id']]);
+        unset($_SESSION['pending_order'], $_SESSION['cart']);
+        $this->jsonResponse(['verified' => true, 'order_id' => $localId]);
     }
 }

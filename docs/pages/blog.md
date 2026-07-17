@@ -16,7 +16,8 @@ Views: `views/public/blog.php`, `views/public/blog-post.php`
 
 ## Features
 
-- Posts stored in `products.json` with `type: "blog"` (shared catalog collection).
-- Markdown body rendered to HTML.
+- Posts stored as Markdown with YAML frontmatter in `content/blog/posts/*.md`.
+- Managed via `BlogService` and editable through Admin → Blog editor.
 - Paginated listing (10 per page), newest first.
 - SEO: meta description from post excerpt, canonical URL, Open Graph tags.
+- `help` category posts serve as customer help center guides.

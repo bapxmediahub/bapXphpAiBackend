@@ -214,7 +214,7 @@ Never hardcode model names or API keys. Read from `SecretService` at runtime.
 - **Owner admin** for products, categories, coupons, astrologers, orders, temples, settings, integrations, backups, audit logs, blog, media library, email inbox/outbox, support tickets, contact submissions, project map
 - **Blog and Help guides** with YAML frontmatter posts in `content/blog/posts/`
 - **Mail queue** for payment confirmations, shipment notifications, review requests
-- **Media library** with upload, context tagging, metadata in `content/blog/posts/` and `storage/media.yaml`
+- **Media library** with upload, context tagging, metadata in MySQL `media_files` collection
 
 ## Architecture
 
@@ -223,7 +223,7 @@ Never hardcode model names or API keys. Read from `SecretService` at runtime.
 - **Database**: MySQL is the primary runtime store. `config/database.php` holds connection config
 - **Schema**: `storage/schema/collections.php` is the canonical schema contract
 - **Blog**: YAML frontmatter `.md` files in `content/blog/posts/`
-- **Media**: metadata in `storage/media.yaml` (not MySQL)
+- **Media**: metadata in MySQL `media_files` collection
 - **Secrets**: stored in MySQL `secrets` table, edited through **Admin → Integrations**
 - **No SPA**: unknown routes return the PHP 404 page
 

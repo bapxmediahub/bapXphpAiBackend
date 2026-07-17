@@ -15,7 +15,7 @@ Remote MySQL is the only runtime data store. All dynamic data, including users, 
 File-based storage is used only for:
 - Blog posts: `content/blog/posts/*.md` with YAML frontmatter
 - Blog categories: `content/blog/categories.yaml`
-- Media metadata: `storage/media.yaml`
+- Media metadata: MySQL `media_files` collection (uploaded via Admin → Media)
 - One-time seeding: JSON files in `storage/data/` synced to MySQL via `bapXphp db sync`
 
 ## Backend Primitives

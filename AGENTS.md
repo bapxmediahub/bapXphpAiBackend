@@ -41,7 +41,7 @@ Issue → handoff JSON (GitHub Action) → CTO (bapXphp handoff next)
 - **Frontend:** PHP templates in `views/` following `Design.md`.
 - **Backend:** PHP controllers/services in `app/`. Route → controller → service → remote MySQL via `DatabaseService`.
 - **Schema:** `storage/schema/collections.php` is canonical. Update before changing collection shape, admin fields, media fields, or agent-visible context.
-- **Media:** `assets/images/media/` plus `storage/media.yaml`.
+- **Media:** `assets/images/media/` plus MySQL `media_files` collection.
 - **Admin:** Owner tools for CRUD, media, env vars, permissions, integrations, audit logs, project map, blog.
 - **Agent context:** `AgentContextService` builds user-specific context for support assistants.
 - **Consultations:** Admin manages consultant profiles and scheduled appointments. New requests queue SMTP notifications. Consultant profiles are not login accounts.
@@ -100,7 +100,8 @@ For meaningful code/schema/UI/doc/workflow changes, reproduce or inspect behavio
 - `/admin/environment` GET route + controller method are commented out.
 - The deployment repository is already unforked. Fork-sync automation is obsolete and must not be reintroduced.
 - `MayaController` renamed to `AgentController`, route `/api/maya` → `/api/agent`. The AI agent name is configurable via `config/agent.yml` and overridable in Admin → Integrations (`agent_name` secret).
-- Each `.agents/skills/<tool-name>/` directory contains a `SKILL.md` (≤1024 lines) as the tool index, plus a `references/` subdirectory where the actual skill docs live (playwright-cli model).
+- Each `.agents/skills/<tool-name>/` directory contains a `SKILL.md` (≤1024 lines) as the tool index, plus a `references/` subdirectory where the actual skill docs live. Exception: `gh-cli` skill has no SKILL.md (GitHub CLI is intentionally excluded from the repository).
+- `views/admin/environment.php` view file exists on disk but is unused (the `/admin/environment` GET route is commented out).
 
 
 
