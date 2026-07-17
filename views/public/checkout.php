@@ -84,7 +84,7 @@
                     <div id="payment-method-toggle" style="margin-bottom:var(--space-md);">
                         <?php if ($hasRazorpay): ?>
                         <label style="display:inline-flex; align-items:center; gap:var(--space-sm); margin-right:var(--space-lg); cursor:pointer;">
-                            <input type="radio" name="payment_method" value="razorpay" <?= $defaultPaymentMethod === 'razorpay' ? 'checked' : '' ?> onchange="togglePaymentMethod()"> Pay securely with Razorpay <small>(Live)</small>
+                            <input type="radio" name="payment_method" value="razorpay" <?= $defaultPaymentMethod === 'razorpay' ? 'checked' : '' ?> onchange="togglePaymentMethod()"> Pay securely with Razorpay <small>(<?= e($secrets['razorpay_mode'] ?? 'test') ?>)</small>
                         </label>
                         <?php endif; ?>
                         <?php if ($hasStripe): ?>
@@ -93,6 +93,8 @@
                         </label>
                         <?php endif; ?>
                     </div>
+                    <?php else: ?>
+                    <p style="color:var(--color-text-muted); font-style:italic;">Payment gateway is not configured. Please contact the site owner to complete the setup.</p>
                     <?php endif; ?>
                     <?php if($hasPaymentGateway): ?>
                         <button id="pay-now" class="btn btn-primary btn-block btn-lg">Pay ₹<?= e((string)$total) ?></button>

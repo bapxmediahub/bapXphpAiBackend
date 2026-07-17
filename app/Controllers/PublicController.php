@@ -155,12 +155,31 @@ final class PublicController extends BaseController {
     public function checkout(): void {
         $this->detectApiRequest();
         $this->seoKey = 'checkout';
-        $items = $this->resolveCartItems();
-        $secretService = new SecretService();
-        $secrets = $secretService->all();
-        $razorpayReady = $secretService->razorpayReadyForCurrentHost($secrets);
-        $addresses = !empty($_SESSION['user']['email']) ? (new \App\Services\AddressService())->forCustomer($_SESSION['user']['email']) : [];
-        $settings = (new \App\Services\SettingsService())->public();
+        $items = [];
+        try {
+            $items = $this->resolveCartItems();
+        } catch (\Throwable $e) {
+            error_log('Checkout resolveCartItems error: ' . $e->getMessage());
+        }
+        $secrets = [];
+        $razorpayReady = false;
+        $settings = ['shipping_mode' => 'free', 'flat_rate' => 0];
+        try {
+            $secretService = new SecretService();
+            $secrets = $secretService->all();
+            $razorpayReady = $secretService->razorpayReadyForCurrentHost($secrets);
+            $settings = (new \App\Services\SettingsService())->public();
+        } catch (\Throwable $e) {
+            error_log('Checkout secrets/settings error: ' . $e->getMessage());
+        }
+        $addresses = [];
+        if (($items !== []) && ($_SESSION['user']['email'] ?? '') !== '') {
+            try {
+                $addresses = (new \App\Services\AddressService())->forCustomer($_SESSION['user']['email']);
+            } catch (\Throwable $e) {
+                error_log('Checkout addresses error: ' . $e->getMessage());
+            }
+        }
         $this->render('public/checkout', ['items' => $items, 'total' => $this->cartTotal($items), 'secrets' => $secrets, 'addresses' => $addresses, 'razorpayReady' => $razorpayReady, 'settings' => $settings]);
     }
     
