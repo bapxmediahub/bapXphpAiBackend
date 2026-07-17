@@ -7,13 +7,13 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 127 routes, 15 controllers, 43 services, 49 views, 0 data files, 26 tools"]
-    arch_routes["> Routes: 127 (Public + Auth + Payment + Admin + Support)"]:::arch
-    arch_ctrl["> Controllers: 15"]:::arch
-    arch_svc["> Services: 43"]:::arch
+  subgraph ARCH["Architecture Overview — 113 routes, 13 controllers, 42 services, 49 views, 0 data files, 25 tools"]
+    arch_routes["> Routes: 113 (Public + Auth + Payment + Admin + Support)"]:::arch
+    arch_ctrl["> Controllers: 13"]:::arch
+    arch_svc["> Services: 42"]:::arch
     arch_views["> Views: 49"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
-    arch_tools["> Tools: 26"]:::arch
+    arch_tools["> Tools: 25"]:::arch
     arch_gaps["> Gaps: 0"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
@@ -60,20 +60,6 @@ flowchart LR
     route_get_blog_slug["GET /blog/{slug} — Blog post — rendered from GitHub-sourced markdown"]:::route
     route_get_blog_category_slug["GET /blog/category/{slug} — Blog listing filtered by category"]:::route
     route_post_api_agent["POST /api/agent"]:::route
-    route_post_api_tts_tokenize["POST /api/tts/tokenize — TTS — tokenize text for KittenTTS ONNX model"]:::route
-    route_post_api_browser_search["POST /api/browser/search"]:::route
-    route_post_api_browser_open["POST /api/browser/open"]:::route
-    route_post_api_browser_click["POST /api/browser/click"]:::route
-    route_post_api_browser_fill["POST /api/browser/fill"]:::route
-    route_post_api_browser_snapshot["POST /api/browser/snapshot"]:::route
-    route_post_api_browser_links["POST /api/browser/links"]:::route
-    route_post_api_browser_forms["POST /api/browser/forms"]:::route
-    route_post_api_browser_captcha["POST /api/browser/captcha"]:::route
-    route_post_api_browser_smoke["POST /api/browser/smoke"]:::route
-    route_post_api_browser_cdp["POST /api/browser/cdp"]:::route
-    route_post_api_browser_cdp_launch["POST /api/browser/cdp_launch"]:::route
-    route_get_api_browser_status["GET /api/browser/status"]:::route
-    route_get_api_support_latest_message["GET /api/support/latest-message — Support — latest ticket message for TTS polling"]:::route
   end
 
   subgraph ROUTES_AUTH["AUTH Routes"]
@@ -177,14 +163,12 @@ flowchart LR
     controller_authcontroller["AuthController"]:::code
     controller_basecontroller["BaseController"]:::code
     controller_blogcontroller["BlogController"]:::code
-    controller_browseragentcontroller["BrowserAgentController"]:::code
     controller_commercecontroller["CommerceController"]:::code
     controller_consultationcontroller["ConsultationController"]:::code
     controller_publiccontroller["PublicController"]:::code
     controller_remotedbcontroller["RemoteDbController"]:::code
     controller_reviewcontroller["ReviewController"]:::code
     controller_supportcontroller["SupportController"]:::code
-    controller_ttscontroller["TtsController"]:::code
   end
 
   subgraph SERVICES["Services"]
@@ -196,7 +180,6 @@ flowchart LR
     service_authservice["AuthService"]:::code
     service_blogdraftservice["BlogDraftService"]:::code
     service_blogservice["BlogService"]:::code
-    service_browsersession["BrowserSession"]:::code
     service_cartservice["CartService"]:::code
     service_categoryservice["CategoryService"]:::code
     service_consultationservice["ConsultationService"]:::code
@@ -322,7 +305,6 @@ flowchart LR
     tool_blog_image["blog-image"]:::tool
     tool_blog_read["blog-read"]:::tool
     tool_blog_write["blog-write"]:::tool
-    tool_browser_agent["browser-agent"]:::tool
     tool_doc_read["doc-read"]:::tool
     tool_doc_write["doc-write"]:::tool
     tool_generate_agents_map["generate-agents-map"]:::tool
@@ -809,35 +791,6 @@ flowchart LR
   controller_agentcontroller --> service_secretservice
   controller_agentcontroller --> service_databaseservice
   controller_agentcontroller -. renders .-> view_public_404
-  route_post_api_tts_tokenize --> controller_ttscontroller
-  controller_ttscontroller -. renders .-> view_public_404
-  route_post_api_browser_search --> controller_browseragentcontroller
-  controller_browseragentcontroller -. renders .-> view_public_404
-  route_post_api_browser_open --> controller_browseragentcontroller
-  controller_browseragentcontroller -. renders .-> view_public_404
-  route_post_api_browser_click --> controller_browseragentcontroller
-  controller_browseragentcontroller -. renders .-> view_public_404
-  route_post_api_browser_fill --> controller_browseragentcontroller
-  controller_browseragentcontroller -. renders .-> view_public_404
-  route_post_api_browser_snapshot --> controller_browseragentcontroller
-  controller_browseragentcontroller -. renders .-> view_public_404
-  route_post_api_browser_links --> controller_browseragentcontroller
-  controller_browseragentcontroller -. renders .-> view_public_404
-  route_post_api_browser_forms --> controller_browseragentcontroller
-  controller_browseragentcontroller -. renders .-> view_public_404
-  route_post_api_browser_captcha --> controller_browseragentcontroller
-  controller_browseragentcontroller -. renders .-> view_public_404
-  route_post_api_browser_smoke --> controller_browseragentcontroller
-  controller_browseragentcontroller -. renders .-> view_public_404
-  route_post_api_browser_cdp --> controller_browseragentcontroller
-  controller_browseragentcontroller -. renders .-> view_public_404
-  route_post_api_browser_cdp_launch --> controller_browseragentcontroller
-  controller_browseragentcontroller -. renders .-> view_public_404
-  route_get_api_browser_status --> controller_browseragentcontroller
-  controller_browseragentcontroller -. renders .-> view_public_404
-  route_get_api_support_latest_message --> controller_supportcontroller
-  controller_supportcontroller --> service_databaseservice
-  controller_supportcontroller -. renders .-> view_public_404
   nav_contact --> route_get_contact
   nav_account_dashboard --> route_get_account_dashboard
   nav_account_dashboard_orders --> route_get_account_dashboard_orders
@@ -849,14 +802,12 @@ flowchart LR
   controller_apicontroller --> controller_basecontroller
   controller_authcontroller --> controller_basecontroller
   controller_blogcontroller --> controller_basecontroller
-  controller_browseragentcontroller --> controller_basecontroller
   controller_commercecontroller --> controller_basecontroller
   controller_consultationcontroller --> controller_basecontroller
   controller_publiccontroller --> controller_basecontroller
   controller_remotedbcontroller --> controller_basecontroller
   controller_reviewcontroller --> controller_basecontroller
   controller_supportcontroller --> controller_basecontroller
-  controller_ttscontroller --> controller_basecontroller
   controller_basecontroller --> service_seoservice
   tool_process_mail_queue --> service_smtpmailer
   tool_import_product_images --> service_imageoptimizerservice

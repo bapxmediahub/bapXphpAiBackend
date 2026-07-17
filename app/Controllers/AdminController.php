@@ -67,20 +67,52 @@ final class AdminController extends BaseController {
             $secrets = new SecretService();
             $db = new \App\Services\DatabaseService();
             $modelConfig = $secrets->getModelConfig();
-            $userCount = count($db->read('users'));
-            $orderCount = count($db->read('orders'));
-            $productCount = count($db->read('products'));
+            $orders = $db->read('orders');
+            $users = $db->read('users');
+            $products = $db->read('products');
+            $userCount = count($users);
+            $orderCount = count($orders);
+            $productCount = count($products);
             $astrologerCount = count($db->read('astrologers'));
             $appointmentCount = count($db->read('appointments'));
             $ticketCount = count($db->read('support_tickets'));
-            $revenue = array_sum(array_column($db->read('orders'), 'total'));
+            $totalRevenue = array_sum(array_column($orders, 'total'));
+            $confirmedOrders = array_filter($orders, fn($o) => ($o['status'] ?? '') === 'confirmed');
+            $pendingOrders = array_filter($orders, fn($o) => ($o['status'] ?? '') === 'pending');
+            $confirmedRevenue = array_sum(array_column($confirmedOrders, 'total'));
+            $pendingRevenue = array_sum(array_column($pendingOrders, 'total'));
+            $avgOrderValue = $orderCount > 0 ? $totalRevenue / $orderCount : 0;
+            $revenueByUser = [];
+            foreach ($confirmedOrders as $o) {
+                $email = $o['customer_email'] ?? 'guest';
+                $revenueByUser[$email] = ($revenueByUser[$email] ?? 0) + (float)($o['total'] ?? 0);
+            }
+            arsort($revenueByUser);
+            $topUsers = array_slice($revenueByUser, 0, 5);
+            $topUsersStr = '';
+            foreach ($topUsers as $email => $amount) {
+                $topUsersStr .= "\n  - {$email}: ₹" . number_format($amount, 2);
+            }
             $attachments = '';
             $tempDir = app_path('.agents/temp');
             if (is_dir($tempDir)) {
                 $files = array_diff(scandir($tempDir), ['.','..']);
-                if (!empty($files)) $attachments = "\n\nAttachments available in .agents/temp/: " . implode(', ', $files);
+                if (!empty($files)) $attachments = "\n\nAttachments in .agents/temp/: " . implode(', ', $files);
             }
-            $context = "Site data:\n- Users: {$userCount}\n- Orders: {$orderCount}\n- Products: {$productCount}\n- Astrologers: {$astrologerCount}\n- Appointments: {$appointmentCount}\n- Support tickets: {$ticketCount}\n- Revenue (sum of totals): ₹" . number_format($revenue, 2) . $attachments;
+            $context = "You are the admin AI assistant. You have full access to site data.\n\n"
+                . "Site data:\n"
+                . "- Total users: {$userCount}\n"
+                . "- Total orders: {$orderCount} (confirmed: " . count($confirmedOrders) . ", pending: " . count($pendingOrders) . ")\n"
+                . "- Products: {$productCount}\n"
+                . "- Astrologers: {$astrologerCount}\n"
+                . "- Appointments: {$appointmentCount}\n"
+                . "- Support tickets: {$ticketCount}\n"
+                . "- Total revenue: ₹" . number_format($totalRevenue, 2) . "\n"
+                . "- Confirmed revenue: ₹" . number_format($confirmedRevenue, 2) . "\n"
+                . "- Pending revenue (unconfirmed): ₹" . number_format($pendingRevenue, 2) . "\n"
+                . "- Average order value: ₹" . number_format($avgOrderValue, 2) . "\n"
+                . "- Top 5 customers by revenue:" . $topUsersStr
+                . $attachments;
             if (!empty($modelConfig['apiKey'])) {
                 $answer = $this->callAiApi($modelConfig, $message, $context);
             } else {

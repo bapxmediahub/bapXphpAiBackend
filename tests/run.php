@@ -1103,15 +1103,13 @@ $tests['agent harness is yaml driven and has a generated validated graph'] = fun
     $source = file_get_contents(app_path('config/agents/workflow.yaml'));
     $config = json_decode($source, true);
     assertTrue(is_array($config), 'Agent workflow YAML should be machine readable');
-    foreach (['cto', 'worker', 'reviewer', 'browser_tester'] as $role) {
+    foreach (['cto', 'worker', 'reviewer'] as $role) {
         assertTrue(isset($config['roles'][$role]), "Agent workflow should declare {$role}");
     }
     foreach (['started', 'completed', 'duration_minutes', 'total_issues', 'closed_issues', 'objectives_completed', 'handoffs_used', 'tests_passed', 'gaps', 'errors', 'score'] as $metric) {
         assertTrue(in_array($metric, $config['telemetry']['required'] ?? [], true), "Telemetry should require {$metric}");
     }
     $handoffSchema = json_decode(file_get_contents(app_path('.agents/workflows/handoff.schema.json')), true);
-    assertTrue(in_array('browser_tester', $handoffSchema['properties']['role']['enum'] ?? [], true), 'Handoff schema should support browser tester role');
-    assertTrue(in_array('browser_tester', $handoffSchema['properties']['next_role']['enum'] ?? [], true), 'Handoff schema should route to browser tester');
     $preCommit = file_get_contents(app_path('.agents/hooks/pre-commit'));
     assertTrue(str_contains($preCommit, '.agents/handoffs/**/*.json'), 'Pre-commit hook should validate nested handoff event and active files');
     assertSame('sequential', $config['workflow']['execution'] ?? '', 'Agent roles should execute sequentially');
@@ -1120,7 +1118,7 @@ $tests['agent harness is yaml driven and has a generated validated graph'] = fun
         assertTrue(!empty($script['success']) && !empty($script['failure']), "Tool {$name} should declare success and failure routing");
     }
     $map = file_get_contents(app_path('agents.mmd'));
-    foreach (['CTO', 'Worker', 'Reviewer', 'Browser Tester', 'gap or blocked', 'Telemetry'] as $needle) {
+    foreach (['CTO', 'Worker', 'Reviewer', 'gap or blocked', 'Telemetry'] as $needle) {
         assertTrue(str_contains($map, $needle), "agents.mmd should include {$needle}");
     }
     $cli = file_get_contents(app_path('cli/bapXphp'));

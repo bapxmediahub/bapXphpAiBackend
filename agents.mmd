@@ -15,29 +15,24 @@ flowchart LR
     cto["CTO<br/><small>.agents/workflows/cto-workflow.md</small>"]:::role
     worker["Worker<br/><small>.agents/workflows/worker.md</small>"]:::role
     reviewer["Reviewer<br/><small>.agents/workflows/reviewer.md</small>"]:::role
-    browser_tester["Browser Tester<br/><small>.agents/workflows/browser-tester.md</small>"]:::role
   end
 
   subgraph TOOLS["Guaranteed scripts and tools"]
     map["Generate and validate maps<br/><small>bapXphp update</small><br/><small>success: reviewer | failure: worker</small>"]:::tool
     ci["Lint, tests, maps, smoke<br/><small>bapXphp ci</small><br/><small>success: reviewer | failure: worker</small>"]:::tool
     score["Score handoff evidence<br/><small>bapXphp handoff score <issue></small><br/><small>success: pull_request | failure: cto</small>"]:::tool
-    browser["Capture rendered evidence<br/><small>bapXphp browser-agent</small><br/><small>success: cto | failure: worker</small>"]:::tool
   end
 
   github_issue -->|scope| cto
   cto -->|one objective| worker
   worker -->|deterministic checks| ci
   ci -->|evidence| reviewer
-  reviewer -->|UI objective| browser_tester
   reviewer -->|pass| cto
   reviewer -->|gap or blocked| worker
-  browser_tester -->|rendered verdict| cto
   cto -->|acceptance| score
   score -->|score >= gate| pull_request
   pull_request -->|merge| deployment
-  deployment -->|live verification| browser_tester
-  browser_tester -->|close or reopen| cto
+  deployment -->|live verification| cto
 
   telemetry["Telemetry<br/><small>started, completed, duration_minutes, total_issues, closed_issues, objectives_completed, handoffs_used, tests_passed, gaps, errors, score</small><br/>minimum score 90"]:::gate
   worker -. records .-> telemetry

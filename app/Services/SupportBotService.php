@@ -54,10 +54,14 @@ final class SupportBotService {
         $model = trim((string)(getenv('AGENT_MODEL') ?: getenv('SUPPORT_BOT_MODEL') ?: ($secrets['agent_model'] ?? $secrets['support_bot_model'] ?? 'gemma-4-31b-it'))) ?: 'gemma-4-31b-it';
         if ($key === '' || !function_exists('curl_init')) return null;
         $prompt = "You are Sri Panchami Spiritual support bot.\n"
-            . "Return only the final customer-facing answer. Do not include reasoning, analysis, markdown bullets, code, tool calls, or hidden thoughts.\n"
+            . "Return only the final customer-facing answer in plain text. Do not include reasoning, analysis, markdown, code, tool calls, or hidden thoughts.\n"
             . "Use only this JSON context for the signed-in customer and public site links. Never mention, infer, or access other users' data. If data is missing, ask the customer to use the contact form.\n"
             . "Allowed help: product, cart, checkout, delivery address, order, consultant booking, and navigation details from the JSON.\n"
-            . "When useful, include one exact internal path from site.pages or a matching product path (e.g., /shop, /cart, /checkout, /product/slug, /consult). Mention the path in the reply so the UI can show a navigation button. Never invent admin paths, external URLs, or claim that an action already happened.\n"
+            . "INCLUDE one exact internal path in your reply (e.g., /shop, /product/slug, /consult/slug, /cart, /checkout, /support, /contact) so the UI can show a navigation button.\n"
+            . "For booking a consultation: explain step-by-step — browse consultants at /consult, view their profile, fill contact details, submit request, wait for admin to confirm appointment. Mention /consult.\n"
+            . "For buying a product: explain step-by-step — browse /shop, click a product, add to cart, go to /cart, proceed to /checkout, enter address, pay with card/UPI, view order at /account/dashboard/orders.\n"
+            . "For product issues or returns: ask the customer to use the /contact form.\n"
+            . "Never invent admin paths, external URLs, or claim that an action already happened.\n"
             . "Customer context JSON: "
             . json_encode($context, JSON_UNESCAPED_SLASHES)
             . "\nCustomer question: " . $message
@@ -128,20 +132,28 @@ final class SupportBotService {
         $pages = $site['pages'] ?? [];
         $products = array_slice($site['products'] ?? [], 0, 5);
         if (preg_match('/\b(hi|hello|hey|vanakkam|namaste)\b/i', $message)) {
-            return 'Hello. I can help you browse spiritual products, place an order, manage delivery addresses, or request a consultant appointment.';
+            return 'Hello. I can help you browse spiritual products at /shop, place an order, or request a consultant appointment at /consult.';
         }
         if (preg_match('/\b(product|available|shop|buy|item|pendant|jewelry|jewellery)\b/i', $message)) {
             $names = array_filter(array_map(fn($p) => trim((string)($p['name'] ?? '')), $products));
             $list = $names ? implode(', ', $names) : 'sacred emblems and spiritual jewelry';
-            return 'Available products include ' . $list . '. Open ' . ($pages['shop'] ?? '/shop') . ' to browse all products, or add an item to cart from its product page.';
+            $productLinks = '';
+            foreach (array_slice($products, 0, 3) as $p) {
+                $slug = $p['slug'] ?? '';
+                if ($slug) $productLinks .= ' /product/' . $slug;
+            }
+            return 'Available products include ' . $list . '. Browse all at /shop' . $productLinks . '. To buy: go to /shop, click a product, add to cart, then proceed to /checkout to pay with card or UPI.';
         }
         if (preg_match('/\b(service|consult|booking|book|astrology|call|message|temple)\b/i', $message)) {
-            return 'Available services include spiritual product sales, scheduled consultant appointments, and temple guidance. Open ' . ($pages['consult'] ?? '/consult') . ' to request an appointment.';
+            return 'To book a consultation: go to /consult, browse astrologers, click View Profile, fill your details, and submit a request. The admin will confirm and schedule your appointment. For temple guidance, visit /temples.';
         }
         if (preg_match('/\b(recharge|wallet|credit|payment)\b/i', $message)) {
-            return 'Product payments are completed securely during checkout. Sign in to reuse saved delivery addresses and view confirmed orders.';
+            return 'Product payments are completed securely during checkout at /checkout. You can pay with card or UPI. Sign in to reuse saved delivery addresses and view confirmed orders at /account/dashboard/orders.';
         }
-        return 'I can help with products, checkout, delivery addresses, temple guidance, and consultant bookings. For personal order or booking history, please sign in first.';
+        if (preg_match('/\b(how|step|guide|help|documentation|docs)\b/i', $message)) {
+            return 'I can help with:\n- Browsing products at /shop\n- Booking a consultant at /consult\n- Your orders at /account/dashboard/orders\n- Contact us at /contact\nWhat would you like to know more about?';
+        }
+        return 'I can help with products at /shop, consultant bookings at /consult, temples at /temples, and orders at /account/dashboard/orders. For personal history, please sign in first. What would you like help with?';
     }
 
     private function isPrivateAccountQuestion(string $message): bool {

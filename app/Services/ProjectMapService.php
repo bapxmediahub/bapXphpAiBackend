@@ -6,7 +6,7 @@ final class ProjectMapService {
     ];
 
     public const SHARED_CONTROLLERS = ['BaseController'];
-    public const SHARED_SERVICES = ['SeoService', 'SmtpMailer', 'ImageOptimizerService', 'DocsMapService', 'GitHubDocService', 'RateLimiter', 'KnowledgeGraphService', 'BrowserSession'];
+    public const SHARED_SERVICES = ['SeoService', 'SmtpMailer', 'ImageOptimizerService', 'DocsMapService', 'GitHubDocService', 'RateLimiter', 'KnowledgeGraphService'];
     public const SHARED_VIEWS = ['account/_nav', 'layouts/admin', 'layouts/app', 'public/404', 'public/_consultation-pricing', 'admin/environment'];
     public const KNOWN_UNWIRED_COLLECTIONS = ['wallet_transactions', 'media_files'];
 
@@ -127,20 +127,8 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/admin/blog/preview','name'=>'admin.blog.preview','page'=>'admin/blog','controller'=>'AdminController@previewBlog','services'=>['BlogService','MarkdownRenderer']],
             ['method'=>'POST','path'=>'/admin/blog/ai-draft','name'=>'admin.blog.ai-draft','page'=>'admin/blog','controller'=>'AdminController@aiDraftBlog','services'=>['BlogService','BlogDraftService']],
             ['method'=>'POST','path'=>'/api/agent','name'=>'api.agent','page'=>'public/404','controller'=>'AgentController@ask','services'=>['SecretService','DatabaseService']],
-            ['method'=>'POST','path'=>'/api/tts/tokenize','name'=>'api.tts.tokenize','page'=>'public/404','controller'=>'TtsController@tokenize','services'=>[]],
-            ['method'=>'POST','path'=>'/api/browser/search','name'=>'api.browser.search','page'=>'public/404','controller'=>'BrowserAgentController@search','services'=>[]],
-            ['method'=>'POST','path'=>'/api/browser/open','name'=>'api.browser.open','page'=>'public/404','controller'=>'BrowserAgentController@open','services'=>[]],
-            ['method'=>'POST','path'=>'/api/browser/click','name'=>'api.browser.click','page'=>'public/404','controller'=>'BrowserAgentController@click','services'=>[]],
-            ['method'=>'POST','path'=>'/api/browser/fill','name'=>'api.browser.fill','page'=>'public/404','controller'=>'BrowserAgentController@fill','services'=>[]],
-            ['method'=>'POST','path'=>'/api/browser/snapshot','name'=>'api.browser.snapshot','page'=>'public/404','controller'=>'BrowserAgentController@snapshot','services'=>[]],
-            ['method'=>'POST','path'=>'/api/browser/links','name'=>'api.browser.links','page'=>'public/404','controller'=>'BrowserAgentController@links','services'=>[]],
-            ['method'=>'POST','path'=>'/api/browser/forms','name'=>'api.browser.forms','page'=>'public/404','controller'=>'BrowserAgentController@forms','services'=>[]],
-            ['method'=>'POST','path'=>'/api/browser/captcha','name'=>'api.browser.captcha','page'=>'public/404','controller'=>'BrowserAgentController@captcha','services'=>[]],
-            ['method'=>'POST','path'=>'/api/browser/smoke','name'=>'api.browser.smoke','page'=>'public/404','controller'=>'BrowserAgentController@smoke','services'=>[]],
-            ['method'=>'POST','path'=>'/api/browser/cdp','name'=>'api.browser.cdp','page'=>'public/404','controller'=>'BrowserAgentController@cdp','services'=>[]],
-            ['method'=>'POST','path'=>'/api/browser/cdp_launch','name'=>'api.browser.cdp_launch','page'=>'public/404','controller'=>'BrowserAgentController@cdpLaunch','services'=>[]],
-            ['method'=>'GET','path'=>'/api/browser/status','name'=>'api.browser.status','page'=>'public/404','controller'=>'BrowserAgentController@status','services'=>[]],
-            ['method'=>'GET','path'=>'/api/support/latest-message','name'=>'api.support.latest','page'=>'public/404','controller'=>'SupportController@latestMessage','services'=>['DatabaseService']],
+
+
         ];
         foreach ($routes as &$route) {
             if ((str_starts_with($route['path'], '/admin') || str_starts_with($route['path'], '/reviews')) && !in_array('AuthService', $route['services'], true) && !str_starts_with($route['path'], '/admin/sw.js') && !str_starts_with($route['path'], '/admin/manifest.json')) {
@@ -285,8 +273,8 @@ final class ProjectMapService {
             '/reviews/astrologer|POST' => 'Submit astrologer review',
             '/reviews/product|POST'    => 'Submit product review',
             '/support/ask|POST' => 'Support bot — AI-powered Q&A',
-            '/api/support/latest-message|GET' => 'Support — latest ticket message for TTS polling',
-            '/api/tts/tokenize|POST' => 'TTS — tokenize text for KittenTTS ONNX model',
+
+
             '/admin'            => 'Admin dashboard — counts overview',
             '/admin/products'   => 'Admin — manage products',
             '/admin/categories' => 'Admin — manage categories',
