@@ -35,8 +35,7 @@
       "tools": ["diff-review", "bapxphp-ci", "coderabbit"],
       "owns": ["independent-verification", "findings", "objective-verdict"],
       "may_edit": false
-    },
-
+    }
   },
   "events": {
     "github_issue": {
@@ -74,8 +73,7 @@
       "command": "bapXphp handoff score <issue>",
       "success": "pull_request",
       "failure": "cto"
-    },
-
+    }
   },
   "edges": [
     {"from": "github_issue", "to": "cto", "label": "scope"},
