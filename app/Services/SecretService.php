@@ -2,10 +2,7 @@
 namespace App\Services;
 final class SecretService {
     public function razorpayReadyForCurrentHost(array $secrets): bool {
-        if (empty($secrets['razorpay_key_id']) || empty($secrets['razorpay_key_secret'])) return false;
-        $host = strtolower((string)($_SERVER['HTTP_HOST'] ?? parse_url((string)(getenv('APP_URL') ?: ''), PHP_URL_HOST) ?? ''));
-        $isLocal = $host === '' || str_starts_with($host, 'localhost') || str_starts_with($host, '127.0.0.1');
-        return $isLocal || ($secrets['razorpay_mode'] ?? '') === 'live';
+        return !empty($secrets['razorpay_key_id']) && !empty($secrets['razorpay_key_secret']);
     }
     public function all(): array {
         $env = $this->envSecrets();
