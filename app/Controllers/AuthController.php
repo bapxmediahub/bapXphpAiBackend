@@ -15,12 +15,13 @@ final class AuthController extends BaseController {
    if(!empty($token['error'])||empty($token['access_token'])){$this->flash('Google login failed. Please try again.','error');$this->redirect('/login');}
    $user=$this->get('https://openidconnect.googleapis.com/v1/userinfo',$token['access_token']);
    if(empty($user)){$this->flash('Failed to fetch your profile from Google. Please try again.','error');$this->redirect('/login');}
-    $store=new DatabaseService(); $users=$store->read('users'); $role = 'customer'; $astrologerSlug = ''; $mustChange = false;
-   foreach ($users as $u) { if (($u['id'] ?? '') === ($user['sub'] ?? '') || (($u['email'] ?? '') !== '' && ($u['email'] ?? '') === ($user['email'] ?? ''))) { $role=$u['role'] ?? (!empty($u['is_admin']) ? 'admin' : 'customer'); $astrologerSlug=$u['astrologer_slug'] ?? ''; $mustChange=(bool)($u['must_change_password'] ?? false); break; } }
+    $store=new DatabaseService(); $users=$store->read('users'); $role = 'customer'; $astrologerSlug = ''; $mustChange = false; $existingId = '';
+    foreach ($users as $u) { if (($u['id'] ?? '') === ($user['sub'] ?? '') || (($u['email'] ?? '') !== '' && ($u['email'] ?? '') === ($user['email'] ?? ''))) { $role=$u['role'] ?? (!empty($u['is_admin']) ? 'admin' : 'customer'); $astrologerSlug=$u['astrologer_slug'] ?? ''; $mustChange=(bool)($u['must_change_password'] ?? false); if (($u['email'] ?? '') === ($user['email'] ?? '')) $existingId=$u['id']??''; break; } }
+    $userId = $existingId ?: ($user['sub'] ?? bin2hex(random_bytes(8)));
     unset($_SESSION['oauth_state']);
     session_regenerate_id(true);
-    $_SESSION['user']=['sub'=>$user['sub'],'email'=>$user['email'],'name'=>$user['name']??'','username'=>explode('@',$user['email'])[0],'picture'=>$user['picture']??'','role'=>$role,'astrologer_slug'=>$astrologerSlug];
-    try { $store->upsert('users',['id'=>$user['sub'],'email'=>$user['email'],'name'=>$user['name']??'','picture'=>$user['picture']??'','role'=>$role]); } catch (\Throwable) {}
+    $_SESSION['user']=['sub'=>$userId,'email'=>$user['email'],'name'=>$user['name']??'','username'=>explode('@',$user['email'])[0],'picture'=>$user['picture']??'','role'=>$role,'astrologer_slug'=>$astrologerSlug];
+    try { $store->upsert('users',['id'=>$userId,'email'=>$user['email'],'name'=>$user['name']??'','picture'=>$user['picture']??'','role'=>$role]); } catch (\Throwable) {}
     $this->flash('Signed in.','success');
     session_write_close();
    if ($role === 'admin') { $this->redirect('/admin'); return; }
