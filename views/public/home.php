@@ -1,25 +1,25 @@
 <section class="home-hero">
     <div class="container home-hero-inner">
         <div class="hero-copy">
-            <span class="eyebrow">Authentic spiritual products · Delivered across India</span>
-            <h1>Discover Authentic Spiritual Products</h1>
-            <p class="lede">Browse our curated collection of genuine spiritual items — from rudraksha malas and pooja kits to sacred jewellery. Every product sourced with devotion.</p>
+            <span class="eyebrow">Vedic astrology · Spiritual guidance · Remedies</span>
+            <h1>Book a Private Consultation</h1>
+            <p class="lede">Connect with an experienced consultant for personalised guidance — horoscope clarity, kundli matching, career insights, and spiritual remedies from the comfort of your home.</p>
             <div class="hero-actions">
-                <a href="/shop" class="btn btn-primary">Shop Products</a>
-                <a href="/consult" class="btn btn-outline">Book a Consultation</a>
+                <a href="/consult" class="btn btn-primary">Book a Consultation</a>
+                <a href="/shop" class="btn btn-outline">Shop Products</a>
             </div>
             <div class="hero-stats">
-                <div>
-                    <div class="hero-stat-value"><?= e((string)count($products)) ?></div>
-                    <div class="hero-stat-label">Products</div>
-                </div>
                 <div>
                     <div class="hero-stat-value"><?= e((string)count($astrologers ?? [])) ?></div>
                     <div class="hero-stat-label">Consultants</div>
                 </div>
                 <div>
-                    <div class="hero-stat-value">Online</div>
-                    <div class="hero-stat-label">Appointments</div>
+                    <div class="hero-stat-value"><?= e((string)count($products)) ?></div>
+                    <div class="hero-stat-label">Products</div>
+                </div>
+                <div>
+                    <div class="hero-stat-value">Instant</div>
+                    <div class="hero-stat-label">Booking</div>
                 </div>
             </div>
         </div>

@@ -613,7 +613,7 @@ $tests['home hero uses concise current copy and working cta links'] = function (
     assertTrue(!str_contains($view, 'Buy Original Rudraksha, Pooja Items & Spiritual Products Online'), 'Home hero should not lead with ecommerce as the primary business');
     assertTrue(!str_contains($view, 'Shop Spiritual Products</a>'), 'Home hero shop button should use concise text');
     assertTrue(!str_contains($view, 'Remote Astrology Consultation</a>'), 'Home hero astrology button should use shorter text');
-    foreach (['Discover Authentic Spiritual Products', 'href="/shop"', 'href="/consult"', '>Book a Consultation</a>', '>Shop Products</a>', 'Authentic spiritual products'] as $needle) {
+    foreach (['Book a Private Consultation', 'href="/shop"', 'href="/consult"', '>Book a Consultation</a>', '>Shop Products</a>', 'Vedic astrology'] as $needle) {
         assertTrue(str_contains($view, $needle), "Home hero should include {$needle}");
     }
     assertTrue(!str_contains($view, '<div class="hero-stat-value">3</div>'), 'Home hero stat value should not be stale');

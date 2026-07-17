@@ -19,15 +19,18 @@
                     <div class="booking-profile__content">
                         <h1 class="booking-profile__name"><?= e($astrologer['name']) ?></h1>
                         <p class="booking-profile__meta"><?= e($astrologer['speciality'] ?? 'Vedic Astrology') ?></p>
-                        <?php if($profileLanguages): ?><p class="booking-profile__meta">Languages: <?= e(implode(', ', $profileLanguages)) ?></p><?php endif; ?>
+                        <?php if($profileLanguages): ?><p class="booking-profile__meta"><?= e(implode(', ', $profileLanguages)) ?></p><?php endif; ?>
                         <?php if($profileExperience!==''): ?><p class="booking-profile__meta"><?= e($profileExperience) ?> years experience</p><?php endif; ?>
                         <p class="booking-profile__meta">Scheduled private consultation</p>
+                    </div>
+                    <div class="expert-profile-actions">
+                        <a href="#booking-form" class="btn btn-primary btn-sm">Book appointment</a>
                     </div>
                 </section>
 
                 <section class="expert-copy-panel reveal">
                     <span class="eyebrow">Appointment consultation</span>
-                    <h2>About</h2>
+                    <h2>About <?= e(explode(' ', $astrologer['name'] ?? 'Consultant')[0]) ?></h2>
                     <p>
                         <?= e($astrologer['description'] ?? 'Connect for practical spiritual guidance, horoscope clarity and family ritual support.') ?>
                     </p>
@@ -36,27 +39,38 @@
                     </p>
                 </section>
 
-                <section class="expert-copy-panel reveal"><div class="expert-tabs"><strong>Reviews</strong><span><?= e((string)$profileReviewCount) ?> verified</span></div><p><?= $profileReviewCount>0?'Verified customer rating: '.e(number_format((float)$reviewSummary['average'],1)).' out of 5.':'No verified reviews yet.' ?></p></section>
+                <?php if($profileReviewCount>0): ?>
+                <section class="review-list-panel reveal">
+                    <div class="expert-tabs"><strong>Reviews</strong><span><?= e((string)$profileReviewCount) ?> verified</span></div>
+                    <div class="review-score-bar">
+                        <strong><?= e(number_format((float)$reviewSummary['average'],1)) ?></strong>
+                        <span>Average rating from <?= e((string)$profileReviewCount) ?> verified <?= $profileReviewCount === 1 ? 'customer' : 'customers' ?></span>
+                    </div>
+                </section>
+                <?php else: ?>
+                <section class="expert-copy-panel reveal"><div class="expert-tabs"><strong>Reviews</strong><span>0 verified</span></div><p style="color:var(--color-text-muted);">No verified reviews yet. Be the first to book and share your experience.</p></section>
+                <?php endif; ?>
             </div>
 
             <aside class="expert-side">
                 <section class="expert-action-card reveal" id="booking-form">
                     <h2>Book this consultant</h2>
+                    <p class="expert-action-card__sub">Request a private appointment at your preferred date and time.</p>
                     <form class="booking-request-form" action="/consultation/initiate" method="post">
                         <input type="hidden" name="astrologer_slug" value="<?= e($astrologer['slug']) ?>">
                         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
                         <div class="form-group"><label for="preferred-date">Preferred date</label><input id="preferred-date" type="date" name="preferred_date" min="<?= e(date('Y-m-d')) ?>" required></div>
                         <div class="form-group"><label for="preferred-time">Preferred time</label><input id="preferred-time" type="time" name="preferred_time" required></div>
                         <div class="form-group"><label for="booking-phone">Phone</label><input id="booking-phone" type="tel" name="phone" placeholder="+91 XXXXX XXXXX" required></div>
-                        <div class="form-group"><label for="booking-notes">What would you like guidance about?</label><textarea id="booking-notes" name="notes" rows="4" maxlength="2000"></textarea></div>
+                        <div class="form-group"><label for="booking-notes">What would you like guidance about?</label><textarea id="booking-notes" name="notes" rows="3" maxlength="2000" placeholder="E.g., career guidance, marriage compatibility, family rituals…"></textarea></div>
                         <button class="btn btn-primary btn-block" type="submit">Request appointment</button>
                     </form>
                 </section>
 
                 <?php if($profileReviewCount>0): ?><section class="ratings-panel reveal">
-                    <h2>Ratings</h2>
+                    <h2>Rating</h2>
                     <div class="ratings-panel__score"><?= e(number_format((float)$reviewSummary['average'],1)) ?></div>
-                    <p><?= e((string)$profileReviewCount) ?> verified ratings</p>
+                    <p><?= e((string)$profileReviewCount) ?> verified <?= $profileReviewCount === 1 ? 'rating' : 'ratings' ?></p>
                 </section><?php endif; ?>
 
                 <section class="trust-panel reveal">
@@ -66,8 +80,8 @@
                 </section>
 
                 <section class="consultation-panel__contact reveal">
-                    <h3 style="font-family:var(--font-serif); margin:0 0 var(--space-xs);">Contact Sri Panchami Spiritual</h3>
-                    <p style="margin:0 0 var(--space-sm); color:var(--color-text-muted); font-size:0.9rem;">For ritual requests and support-assisted sessions.</p>
+                    <h3 style="font-family:var(--font-serif); margin:0 0 var(--space-xs);">Need help?</h3>
+                    <p style="margin:0 0 var(--space-sm); color:var(--color-text-muted); font-size:0.9rem;">Contact Sri Panchami Spiritual for ritual requests and support-assisted sessions.</p>
                 </section>
             </aside>
         </div>

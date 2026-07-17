@@ -14,7 +14,10 @@
                     <strong id="pwa-status-title">Checking this browser</strong>
                     <p id="pwa-status-copy">Checking if this device supports app installation…</p>
                 </div>
-                <button class="btn btn-primary" id="pwa-install-action" type="button" hidden>Install App</button>
+                <div class="account-install__actions">
+                    <button class="btn btn-primary" id="pwa-install-action" type="button">Install App</button>
+                    <span class="account-install__fallback-note" id="pwa-fallback-note" hidden>Use browser menu → Install app</span>
+                </div>
             </section>
 
             <div class="account-install__instructions">
@@ -48,43 +51,52 @@
     var title=document.getElementById('pwa-status-title');
     var copy=document.getElementById('pwa-status-copy');
     var action=document.getElementById('pwa-install-action');
+    var fallbackNote=document.getElementById('pwa-fallback-note');
     var standalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
     var isiOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
     var reasons=[];
 
+    function usable(){ action.hidden=false; fallbackNote.hidden=true; }
+    function fallback(){ action.hidden=false; fallbackNote.hidden=false; }
+
     function render(state){
         status.dataset.pwaState=state;
-        action.hidden=true;
         if(state==='installed'){
-            title.textContent='App installed';
+            title.textContent='App is installed';
             copy.textContent='Sri Panchami Spiritual is already running as an installed app on this device.';
+            action.hidden=true; fallbackNote.hidden=true;
         }else if(state==='available'){
             title.textContent='Ready to install';
             copy.textContent='This browser can install the app directly. Tap the button below.';
-            action.hidden=false;
-        }else if(state==='ios'){
-            title.textContent='Install from Safari';
-            copy.textContent='Use Share, then Add to Home Screen. Apple devices do not show a browser install prompt.';
+            usable();
         }else if(state==='installing'){
             title.textContent='Installation started';
             copy.textContent='Follow the browser confirmation. This page will update when installation finishes.';
+            action.hidden=true; fallbackNote.hidden=true;
+        }else if(state==='ios'){
+            title.textContent='Install from Safari';
+            copy.textContent='Tap Share, then Add to Home Screen to install Sri Panchami Spiritual on your device.';
+            fallback();
         }else if(state==='no-service-worker'){
             title.textContent='Not available in this browser';
             copy.textContent='This browser does not support service workers, which are required for app installation. Try the latest Chrome, Edge, or Safari.';
+            fallback();
         }else if(state==='not-secure'){
             title.textContent='HTTPS required';
             copy.textContent='App installation requires a secure (HTTPS) connection. Visit this page over HTTPS to install.';
-        }else if(state==='iframe'){
-            title.textContent='Opened in an embedded frame';
-            copy.textContent='Installation is not available inside an embedded view. Open this page in your main browser window.';
+            action.hidden=true; fallbackNote.hidden=true;
         }else if(state==='no-event'){
-            title.textContent='Not installable in this browser';
-            copy.textContent='Your browser did not signal that this site can be installed. Try updating your browser or use Chrome, Edge, or Safari on a supported device.'+(reasons.length?' Possible reasons: '+reasons.join(', ')+'.':'');
+            title.textContent='Install from browser menu';
+            copy.textContent='Use Install app or Add to Home screen in your browser menu. If the option is missing, update your browser and reload.';
+            fallback();
         }else{
             title.textContent='Install from your browser menu';
-            copy.textContent='Use Install app or Add to Home screen in the browser menu. If the option is missing, update your browser and reload this page.';
+            copy.textContent='Use Install app or Add to Home screen in the browser menu.';
+            fallback();
         }
     }
+
+    if(standalone){ render('installed'); return; }
 
     if(!('serviceWorker' in navigator)){
         render('no-service-worker');
@@ -95,6 +107,21 @@
     }
     try{if(window.self!==window.top){reasons.push('page loaded in an iframe');}}catch(e){}
 
+    if(isiOS){
+        render('ios');
+        return;
+    }
+
+    action.addEventListener('click',function(){
+        if(deferredPrompt){
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(function(choice){
+                deferredPrompt=null;
+                if(choice.outcome==='accepted'){ render('installing'); }
+            });
+        }
+    });
+
     window.addEventListener('beforeinstallprompt',function(event){
         event.preventDefault();
         deferredPrompt=event;
@@ -104,26 +131,8 @@
         deferredPrompt=null;
         render('installed');
     });
-    action.addEventListener('click',function(){
-        if(!deferredPrompt)return;
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(function(choice){
-            deferredPrompt=null;
-            render(choice.outcome==='accepted'?'installing':(isiOS?'ios':'no-event'));
-        });
-    });
-    if(standalone){
-        render('installed');
-    }else if(isiOS){
-        render('ios');
-    }else if(reasons.length>0&&reasons.indexOf('page loaded in an iframe')!==-1){
-        render('iframe');
-    }else if(reasons.length>0&&reasons.indexOf('page not served over HTTPS')!==-1){
-        render('not-secure');
-    }else{
-        setTimeout(function(){
-            if(!deferredPrompt)render('no-event');
-        },3000);
-    }
+    setTimeout(function(){
+        if(!deferredPrompt&&!standalone)render('no-event');
+    },3000);
 })();
 </script>
