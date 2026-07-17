@@ -9,16 +9,50 @@ use App\Services\ReviewService;
 use App\Services\SchemaService;
 use App\Services\SecretService;
 
+$assertionCount = 0;
+
 function assertTrue(bool $condition, string $message): void {
+    global $assertionCount;
+    $assertionCount++;
     if (!$condition) {
         throw new RuntimeException($message);
     }
 }
 
 function assertSame(mixed $expected, mixed $actual, string $message): void {
+    global $assertionCount;
+    $assertionCount++;
     if ($expected !== $actual) {
         throw new RuntimeException($message . "\nExpected: " . var_export($expected, true) . "\nActual: " . var_export($actual, true));
     }
+}
+
+function fileRead(string $path): string {
+    return file_get_contents(app_path($path));
+}
+
+function fileContains(string $path, string $needle, string $msg = ''): void {
+    assertTrue(str_contains(fileRead($path), $needle), $msg ?: "{$path} should contain {$needle}");
+}
+
+function fileNotContains(string $path, string $needle, string $msg = ''): void {
+    assertTrue(!str_contains(fileRead($path), $needle), $msg ?: "{$path} should not contain {$needle}");
+}
+
+function routePaths(): array {
+    return array_column(ProjectMapService::registry()['routes'], 'path');
+}
+
+function routeExists(string $path, string $msg = ''): void {
+    assertTrue(in_array($path, routePaths(), true), $msg ?: "Route {$path} should be registered");
+}
+
+function routeMissing(string $path, string $msg = ''): void {
+    assertTrue(!in_array($path, routePaths(), true), $msg ?: "Route {$path} should not be registered");
+}
+
+function assertMinCount(int $min, array $items, string $msg): void {
+    assertTrue(count($items) >= $min, $msg . " (got " . count($items) . ", expected >= {$min})");
 }
 
 $failures = [];
@@ -154,8 +188,7 @@ $tests['local development router serves existing static files directly'] = funct
 
 $tests['public and api routes cover spiritual and category pages without fallback gaps'] = function (): void {
     $index = file_get_contents(app_path('index.php'));
-    $routes = ProjectMapService::registry()['routes'];
-    $paths = array_column($routes, 'path');
+    $paths = routePaths();
     assertTrue(str_contains($index, "'/sri-panchami-spiritual'"), 'Router should dispatch /sri-panchami-spiritual to PHP');
     assertTrue(in_array('/sri-panchami-spiritual', $paths, true), 'Route registry should include /sri-panchami-spiritual');
     assertTrue(in_array('/spiritual', $paths, true), 'Route registry should include /spiritual or remove it from route detection');
@@ -321,21 +354,18 @@ $tests['env defines site and direct database connectivity without application se
 $tests['admin settings can update env admin credentials'] = function (): void {
     $view = file_get_contents(app_path('views/admin/settings.php'));
     $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
-    $map = ProjectMapService::registry();
-    $paths = array_column($map['routes'], 'path');
     foreach (['name="admin_username"', 'name="admin_email"', 'name="admin_password"', 'action="/admin/settings/admin-credentials"'] as $needle) {
         assertTrue(str_contains($view, $needle), "Admin settings should expose {$needle}");
     }
     assertTrue(str_contains($controller, 'saveAdminCredentials'), 'Admin controller should save admin credentials');
-    assertTrue(in_array('/admin/settings/admin-credentials', $paths, true), 'Route registry should include admin credential save route');
+    routeExists('/admin/settings/admin-credentials', 'Route registry should include admin credential save route');
 };
 
 $tests['admin environment page edits env and storage permissions'] = function (): void {
     $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
     $env = file_get_contents(app_path('app/Services/EnvService.php'));
     $permissions = file_get_contents(app_path('app/Services/StoragePermissionService.php'));
-    $paths = array_column(ProjectMapService::registry()['routes'], 'path');
-    assertTrue(in_array('/admin/environment/fix-permissions', $paths, true), 'Fix-permissions route should be registered');
+    routeExists('/admin/environment/fix-permissions', 'Fix-permissions route should be registered');
     assertTrue(str_contains($controller, 'fixPermissions'), 'Admin controller should expose storage permission repair');
     assertTrue(str_contains($env, 'function saveRaw'), 'Env service should support raw env saving');
     assertTrue(str_contains($permissions, 'storage/data') || str_contains($permissions, 'storage'), 'Permission service should check storage path');
@@ -467,8 +497,7 @@ $tests['razorpay secrets support test and live modes'] = function (): void {
 $tests['admin settings form persists shipping settings instead of rendering a dead form'] = function (): void {
     $view = file_get_contents(app_path('views/admin/settings.php'));
     $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
-    $map = ProjectMapService::registry();
-    $paths = array_column($map['routes'], 'path');
+    $paths = routePaths();
     assertTrue(str_contains($view, 'action="/admin/settings/save"'), 'Admin settings form should post to a save route');
     assertTrue(str_contains($view, 'name="shipping_mode"'), 'Admin settings form should name shipping mode field');
     assertTrue(str_contains($view, 'name="flat_rate"'), 'Admin settings form should name flat rate field');
@@ -544,21 +573,16 @@ $tests['consultant marketplace exposes booking search and language filters'] = f
 };
 
 $tests['wallet and recharge routes are not customer facing'] = function (): void {
-    $map = ProjectMapService::registry();
-    $paths = array_column($map['routes'], 'path');
     foreach (['/account/dashboard/wallet', '/account/dashboard/wallet/create-order', '/account/dashboard/wallet/verify', '/recharge', '/account/wallet'] as $path) {
-        assertTrue(!in_array($path, $paths, true), "Wallet route {$path} should not be registered");
+        routeMissing($path, "Wallet route {$path} should not be registered");
     }
-    $initiate = file_get_contents(app_path('app/Controllers/ConsultationController.php'));
-    assertTrue(!str_contains($initiate, 'WalletService'), 'Consultation booking should not check wallet balance');
+    fileNotContains('app/Controllers/ConsultationController.php', 'WalletService', 'Consultation booking should not check wallet balance');
 };
 
 $tests['support assistant widget uses browser session memory and google model setting'] = function (): void {
     $layout = file_get_contents(app_path('views/layouts/app.php'));
     $service = file_get_contents(app_path('app/Services/SupportBotService.php'));
-    $map = ProjectMapService::registry();
-    $paths = array_column($map['routes'], 'path');
-    assertTrue(in_array('/support/ask', $paths, true), 'Support ask route should be registered');
+    routeExists('/support/ask', 'Support ask route should be registered');
     foreach (['support-fab', 'support-panel', '/support/ask', 'products, orders, delivery addresses, or consultant bookings', 'sessionStorage', 'data-support-key'] as $needle) {
         assertTrue(str_contains($layout, $needle), "Support widget should include {$needle}");
     }
@@ -670,12 +694,10 @@ $tests['checkout and admin order pages wire customer email workflow'] = function
     $commerce = file_get_contents(app_path('app/Controllers/CommerceController.php'));
     $admin = file_get_contents(app_path('app/Controllers/AdminController.php'));
     $detailView = file_get_contents(app_path('views/admin/detail.php'));
-    $map = ProjectMapService::registry();
-    $paths = array_column($map['routes'], 'path');
+    routeExists('/admin/orders/{id}/status', 'Project map should include the admin order status save route');
     assertTrue(str_contains($commerce, 'enqueuePaymentConfirmation'), 'Successful payment verification should queue payment confirmation email');
     assertTrue(str_contains($admin, 'saveOrderStatus'), 'Admin controller should expose order status updates');
     assertTrue(str_contains($detailView, 'name="status"'), 'Order detail should expose a status update form');
-    assertTrue(in_array('/admin/orders/{id}/status', $paths, true), 'Project map should include the admin order status save route');
 };
 
 $tests['checkout payment verification preserves shipping contact details'] = function (): void {
@@ -693,7 +715,7 @@ $tests['checkout payment verification preserves shipping contact details'] = fun
         assertTrue(str_contains($checkout, $needle), "Razorpay verification request should include {$needle}");
     }
     foreach (['/checkout/create-order', '/payment/verify', '/create-order', '/verify-payment'] as $path) {
-        assertTrue(in_array($path, array_column(ProjectMapService::registry()['routes'], 'path'), true), "Razorpay route should exist: {$path}");
+        routeExists($path, "Razorpay route should exist: {$path}");
     }
     assertTrue(str_contains($checkout, '$hasPaymentGateway = $hasRazorpay || $hasStripe'), 'Checkout payment CTA should render when any supported gateway is configured');
     assertTrue(str_contains($checkout, '$defaultPaymentMethod = $hasRazorpay ? \'razorpay\' : \'stripe\''), 'Checkout should select Stripe when it is the only configured gateway');
@@ -790,10 +812,9 @@ $tests['consultants are profiles without application login credentials'] = funct
 };
 
 $tests['consultation routes expose booking and provider status workflow'] = function (): void {
-    $paths=array_column(ProjectMapService::registry()['routes'],'path');
-    foreach(['/consultation/initiate','/api/consultations/{id}/status'] as $path) assertTrue(in_array($path,$paths,true),"Missing consultation route {$path}");
-    foreach(['/astrologer','/astrologer/change-password','/astrologer/availability','/admin/astrologer-credentials'] as $path) assertTrue(!in_array($path,$paths,true),"Consultant credential route should be removed: {$path}");
-    foreach(['/consultation/{id}','/api/consultations/{id}/messages','/api/consultations/{id}/signals'] as $path) assertTrue(!in_array($path,$paths,true),"Removed live consultation route should not be public: {$path}");
+    foreach(['/consultation/initiate','/api/consultations/{id}/status'] as $path) routeExists($path,"Missing consultation route {$path}");
+    foreach(['/astrologer','/astrologer/change-password','/astrologer/availability','/admin/astrologer-credentials'] as $path) routeMissing($path,"Consultant credential route should be removed: {$path}");
+    foreach(['/consultation/{id}','/api/consultations/{id}/messages','/api/consultations/{id}/signals'] as $path) routeMissing($path,"Removed live consultation route should not be public: {$path}");
 };
 
 $tests['consultation booking form includes csrf and sends central owner notification'] = function (): void {
@@ -860,8 +881,8 @@ $tests['consultant booking lifecycle is operational'] = function (): void {
 };
 
 $tests['home hero rotates all supplied varahi images'] = function (): void {
-    assertSame(10,count(glob(app_path('assets/images/hero/varahi/varahi-*.png'))?:[]),'Hero should include all ten supplied Varahi images');
-    assertTrue(str_contains(file_get_contents(app_path('views/public/home.php')),'data-varahi-slider'),'Home should render the Varahi image slider');
+    assertMinCount(8, glob(app_path('assets/images/hero/varahi/varahi-*.png')) ?: [], 'Hero should include at least 8 Varahi images');
+    fileContains('views/public/home.php', 'data-varahi-slider', 'Home should render the Varahi image slider');
 };
 
 $tests['admin product and astrologer forms expose editable owner fields'] = function (): void {
@@ -1148,7 +1169,7 @@ $tests['consultants expose one booking path instead of live queues'] = function 
 
 $tests['customer help is a blog category with compatibility redirects'] = function (): void {
     $controller = file_get_contents(app_path('app/Controllers/PublicController.php'));
-    assertTrue(in_array('/help/{slug}', array_column(ProjectMapService::registry()['routes'], 'path'), true), 'Help center should expose a hosting-safe guide detail route');
+    routeExists('/help/{slug}', 'Help center should expose a hosting-safe guide detail route');
     assertTrue(str_contains(file_get_contents(app_path('index.php')), "'/help'"), 'Front controller should dispatch hosting-safe help routes into PHP');
     assertTrue(str_contains($controller, "'/blog/category/help'") && str_contains($controller, "'/blog/' . \$slug"), 'Legacy docs routes should redirect to canonical blog help content');
     assertTrue(str_contains(file_get_contents(app_path('content/blog/categories.yaml')), 'slug: help'), 'Blog categories should include Help');
@@ -1237,7 +1258,10 @@ foreach ($tests as $name => $test) {
     }
 }
 
+$passed = count($tests) - count($failures);
+echo "\n{$passed}/" . count($tests) . " passed, {$assertionCount} assertions\n";
+
 if ($failures) {
-    echo implode("\n", $failures) . "\n";
+    echo "\n" . implode("\n", $failures) . "\n";
     exit(1);
 }

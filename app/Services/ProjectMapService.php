@@ -7,7 +7,7 @@ final class ProjectMapService {
 
     public const SHARED_CONTROLLERS = ['BaseController'];
     public const SHARED_SERVICES = ['SeoService', 'SmtpMailer', 'ImageOptimizerService', 'DocsMapService', 'GitHubDocService', 'RateLimiter', 'KnowledgeGraphService'];
-    public const SHARED_VIEWS = ['account/_nav', 'layouts/admin', 'layouts/app', 'public/404', 'public/_consultation-pricing', 'admin/environment'];
+    public const SHARED_VIEWS = ['account/_nav', 'layouts/admin', 'layouts/app', 'public/404', 'admin/environment'];
     public const KNOWN_UNWIRED_COLLECTIONS = ['wallet_transactions', 'media_files'];
 
     public static function registry(): array {

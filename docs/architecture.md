@@ -26,7 +26,7 @@ category: docs
 - Collection schema lives in `storage/schema/collections.php`. Data is stored in MySQL tables (not JSON files).
 - Runtime data is remote-only: `.env` supplies direct hosted MySQL credentials to `DatabaseService`; when direct access is unavailable, the CLI/application use `APP_URL/remotedb`. The local checkout is not a customer-data fallback.
 - Blog posts are file-based: `content/blog/posts/*.md` with YAML frontmatter.
-- Media metadata lives in `storage/media.yaml` (not MySQL).
+- Media metadata lives in MySQL `media_files` collection.
 - `AgentContextService` builds safe user-specific context for the support/model assistant.
 
 ## Current Data Flow

@@ -48,6 +48,7 @@ This folder contains connected documentation for developers, maintainers, and co
 - [Razorpay](modules/razorpay.md)
 - [Remote DB](modules/remote-db.md)
 - [Temples](modules/temples.md)
+- [GST Commerce](modules/gst-commerce.md)
 
 ## Generated Files
 
