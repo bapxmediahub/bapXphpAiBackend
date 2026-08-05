@@ -17,6 +17,7 @@ final class AiReplyCleaner
     private const LABELS = [
         'role', 'context', 'constraint', 'constraints', 'question', 'input data',
         'customer context', 'customer question', 'task', 'goal', 'plan', 'reasoning',
+        'allowed help', 'requirement', 'requirements', 'available data', 'site data',
         'thinking', 'output format', 'format', 'persona', 'instruction', 'instructions',
     ];
 
@@ -24,6 +25,9 @@ final class AiReplyCleaner
     private const META_OPENERS = [
         'the user is asking', 'the user wants', 'the user asked', 'the customer is asking',
         'the prompt asks', 'the question asks', 'i need to', 'i should', 'i must',
+        'the provided data', 'the json shows', 'the json lists', 'the site data',
+        'the data shows', 'the data lists', 'explain that', 'mention the', 'mention that',
+        'allowed help', 'requirement', 'requirements', 'note to self',
         'as an ai', 'maintain the persona', 'maintain a persona', 'answer only',
         'list the', 'step 1', 'step 2', 'first, i', 'so, the answer',
     ];
@@ -35,7 +39,7 @@ final class AiReplyCleaner
     ];
 
     /** A reply made only of these has leaked internals and should not be shown. */
-    private const INTERNAL_MARKERS = '/\b(signed_in|customer context|context json|site\.pages|wallet_transactions|support_scope|generationconfig|tool call|the user said|the bot should|the bot needs|allowed scope)\b/i';
+    private const INTERNAL_MARKERS = '/\b(signed_in|customer context|context json|site\.pages|wallet_transactions|support_scope|generationconfig|tool call|the user said|the bot should|the bot needs|allowed scope|allowed help|the json shows|the json lists|the provided data|include one exact internal path|answer only the final)\b/i';
 
     public function clean(string $reply, string $fallback = ''): string
     {
@@ -65,6 +69,11 @@ final class AiReplyCleaner
 
         $text = trim(preg_replace('/\n{3,}/', "\n\n", implode("\n", $kept)) ?? '');
 
+        // A model that emits its whole brief on one line defeats line-based stripping,
+        // so sweep sentences too. Only applied to long single lines, where the risk of
+        // splitting genuine prose mid-thought is lowest.
+        $text = $this->stripScaffoldSentences($text);
+
         // A model that answered only inside quotes: take the longest quoted span.
         if ($text === '' && preg_match_all('/"([^"]{20,700})"/', $reply, $matches) && !empty($matches[1])) {
             $text = trim(end($matches[1]));
@@ -77,6 +86,22 @@ final class AiReplyCleaner
     public function looksInternal(string $reply): bool
     {
         return (bool)preg_match(self::INTERNAL_MARKERS, $reply);
+    }
+
+
+    /** Removes scaffold sentences from a run-on line. */
+    private function stripScaffoldSentences(string $text): string
+    {
+        $out = [];
+        foreach (preg_split('/\R/', $text) ?: [] as $line) {
+            if (mb_strlen($line) < 120 || !str_contains($line, '.')) { $out[] = $line; continue; }
+            $sentences = preg_split('/(?<=[.!?])\s+/', $line) ?: [$line];
+            $keep = array_values(array_filter($sentences, fn(string $s): bool => !$this->isScaffold(trim($s))));
+            // If everything looked like scaffold the split was probably wrong; keep the
+            // original rather than returning nothing.
+            $out[] = $keep ? implode(' ', $keep) : $line;
+        }
+        return trim(implode("\n", $out));
     }
 
     private function isScaffold(string $line): bool
