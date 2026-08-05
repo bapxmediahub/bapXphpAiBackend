@@ -10,8 +10,8 @@ contract for non-Claude tooling; if the two ever disagree, this file wins and
   deployment source. Issues, branches, PRs and releases all live there.
 - The repository is independent and unforked. Do not add an upstream remote or
   synchronise from any other copy.
-- Skills live in `.claude/skills/`; tool-compatible project pointers may also live
-  in `.agents/skills/`. Hooks live in `.claude/hooks/`.
+- Canonical project skills live in `.claude/skills/`. Do not create a duplicate
+  `.agents/skills/` tree. Hooks live in `.claude/hooks/`.
 - The product has exactly two PHP agent surfaces: customer support and owner/admin chat.
 
 ## Work order

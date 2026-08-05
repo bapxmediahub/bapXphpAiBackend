@@ -11,12 +11,12 @@ GitHub CLI (`gh`) on the hosted server.
 ## Boundaries
 
 - Use plain `git` for status, diff, branches, commits, fetch, pull, and push.
-- Use `bapXphp` only for project-owned operations such as tests, maps, schema,
-  database access, browser automation, hooks, and AI configuration.
+- Use `bapXphp` only for project-owned operations such as tests, maps, indexes,
+  schema, database access, hooks, and AI configuration.
 - GitHub issues, PR creation, review, and merge coordination belong to GitHub Actions
   or the GitHub API/web interface.
 - Never wrap ordinary Git commands in `bapXphp`.
-- Never force-push or discard divergent customer-fork commits.
+- Never force-push or discard unrelated or divergent work.
 
 ## Local Workflow
 

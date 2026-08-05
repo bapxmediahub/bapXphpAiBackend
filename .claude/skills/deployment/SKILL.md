@@ -18,7 +18,7 @@ description: Use when editing Hostinger deployment, Git auto-deploy, environment
 
 - **Host**: Hostinger shared hosting / VPS
 - **Auto-deploy**: merge/push to deployment `main` → Hostinger Git integration pulls production
-- **CI**: GitHub Actions (`bapXphp ci`) runs on push/PR to main
+- **CI**: GitHub Actions (`bapXphp ci`) runs for every pull request and for pushes to `main`
 - **Database**: Remote MySQL (production), direct connection or `/remotedb` fallback
 - **AI Model**: Configured in Admin → Integrations, stored in MySQL `secrets` table
 - **Hosted tools**: plain `git` and PHP; GitHub CLI is not a Hostinger dependency
@@ -27,7 +27,7 @@ description: Use when editing Hostinger deployment, Git auto-deploy, environment
 
 1. Developer / Agent pushes a branch to `bapxmediahub/bapXphpAiBackend`
 2. The branch/PR workflow runs repository checks and may create/update an eligible PR according to `.github/workflows/branch-pr.yml`
-3. Merge to deployment `main` after Reviewer evidence passes
+3. Merge to deployment `main` after CI and review evidence pass
 4. The already-configured Hostinger Git integration pulls deployment `main`; this is
    a one-time hosting setup, not a per-release manual configuration step
 5. Verify the deployed revision and live health; a merge alone is not deployment evidence.

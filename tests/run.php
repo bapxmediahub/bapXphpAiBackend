@@ -178,7 +178,7 @@ $tests['repo has agent-readable schema and built-in skills'] = function (): void
     assertTrue((new SchemaService())->adminFields('products') !== [], 'SchemaService should expose admin fields');
     foreach ([
         'AGENTS.md',
-        '.claude/skills/backend-json/SKILL.md',
+        '.claude/skills/backend-php-mysql/SKILL.md',
         '.claude/skills/schema/SKILL.md',
         '.claude/skills/admin-ui/SKILL.md',
         '.claude/skills/frontend-php/SKILL.md',
@@ -232,6 +232,11 @@ $tests['every project skill has portable frontmatter and no empty reference plac
         assertTrue(!str_contains($text, 'type: skill'), basename(dirname($file)) . ' should not use ignored type frontmatter');
     }
     assertTrue(!(bool)glob(app_path('.claude/skills/*/references/.gitkeep')), 'Skills should not carry empty reference placeholders');
+    assertTrue(!is_dir(app_path('.claude/skills/backend-json')), 'Obsolete backend-json skill name should not return');
+    assertTrue(!is_dir(app_path('.agents/skills')), 'Canonical skills should not be duplicated under .agents');
+    $cliSkills = shell_exec('cd ' . escapeshellarg(app_path()) . ' && ./bapXphp skills 2>&1') ?: '';
+    assertTrue(str_contains($cliSkills, 'backend-php-mysql'), 'CLI skill discovery should include canonical .claude skills');
+    assertTrue(!str_contains($cliSkills, 'backend-json'), 'CLI skill discovery should not expose the obsolete backend-json name');
 };
 
 $tests['knowledge index keeps type-qualified concepts collision-free'] = function (): void {

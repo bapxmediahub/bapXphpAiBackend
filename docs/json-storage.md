@@ -18,7 +18,7 @@ JSON files in `storage/data/` are optional one-time import fixtures only:
 
 ```bash
 bapXphp db init     # Create tables from collections.php
-bapXphp db sync     # Push JSON seed data into MySQL
+bapXphp db sync     # Compatibility alias for db init
 ```
 
 They are never runtime storage. All runtime reads and writes go through `DatabaseService` to remote MySQL. Blog/document content remains Markdown/YAML by design.
