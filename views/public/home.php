@@ -102,24 +102,6 @@
     </div>
 </div>
 
-<section class="category-section section">
-    <div class="section-header">
-        <h2 class="section-title">Shop by Category</h2>
-        <p class="lede">Curated collections of authentic spiritual products for every need — from rudraksha malas to complete pooja kits</p>
-    </div>
-    <div class="category-grid">
-        <?php foreach($categories as $cat): ?>
-            <a class="category-card" href="/shop?category=<?= e($cat['slug']) ?>">
-                <div class="category-img-wrap">
-                    <img src="<?= e($cat['image_url'] ?? placeholder_img($cat['name'])) ?>" alt="Buy <?= e($cat['name']) ?> online in Chennai" decoding="async">
-                </div>
-                <h3><?= e($cat['name']) ?></h3>
-                <p><?= e($cat['description']) ?></p>
-            </a>
-        <?php endforeach; ?>
-    </div>
-</section>
-
 <section class="section">
     <div class="container">
         <?php
