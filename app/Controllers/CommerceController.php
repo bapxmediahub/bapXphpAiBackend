@@ -8,12 +8,23 @@ final class CommerceController extends BaseController {
         $this->validateCsrf();
         $slug = trim($_POST['slug'] ?? '');
         $qty = max(1, min(99, (int)($_POST['qty'] ?? 1)));
+        // These are reached by fetch() from the product and shop pages. Redirecting
+        // returns the HTML of /shop, which the caller tries to parse as JSON and fails
+        // with "Unexpected token '<'" — so an out-of-stock product looked like a broken
+        // site instead of a clear message.
         if ($slug === '') {
+            if ($this->wantsJson()) $this->jsonResponse(['error' => 'Invalid product.'], 422);
             $this->flash('Invalid product.','error');
             $this->redirect('/shop');
         }
         $product = (new ProductService())->findBySlug($slug);
-        if (!$product || ($product['stock_status'] ?? '') !== 'in_stock') {
+        if (!$product) {
+            if ($this->wantsJson()) $this->jsonResponse(['error' => 'That product is no longer available.'], 404);
+            $this->flash('That product is no longer available.','error');
+            $this->redirect('/shop');
+        }
+        if (($product['stock_status'] ?? '') !== 'in_stock') {
+            if ($this->wantsJson()) $this->jsonResponse(['error' => 'This product is currently out of stock.'], 409);
             $this->flash('This product is currently out of stock.', 'error');
             $this->redirect('/shop');
         }
@@ -41,6 +52,7 @@ final class CommerceController extends BaseController {
         if (!empty($_SESSION['cart'])) {
             $_SESSION['cart'] = array_values(array_filter($_SESSION['cart'], fn($item) => ($item['slug'] ?? '') !== $slug));
         }
+        if ($this->wantsJson()) $this->jsonResponse($this->cartState($slug));
         $this->redirect('/cart');
     }
     public function updateCart(): void {

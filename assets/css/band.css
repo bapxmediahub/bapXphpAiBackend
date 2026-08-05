@@ -550,14 +550,26 @@ nav a:hover { color: var(--color-maroon); }
     letter-spacing: 0;
 }
 
+/* Base lede: readable on the light page background. The white variant below is
+   scoped to dark heroes. An unscoped white .lede made this text invisible on Terms,
+   Privacy and the temple detail pages — 1.07 contrast against the cream background. */
 .lede {
     font-size: 1.15rem;
     line-height: 1.8;
-    color: rgba(255,255,255,0.9);
+    color: var(--color-text-muted);
     margin-bottom: var(--space-xl);
     font-weight: 400;
     font-family: var(--font-main);
     max-width: 600px;
+}
+
+/* Only where the lede genuinely sits on a dark image or maroon panel. */
+.home-hero .lede,
+.page-hero .lede,
+.hero .lede,
+.temple-hero .lede,
+.astro-hero .lede {
+    color: rgba(255,255,255,0.9);
 }
 
 .hero-actions { display: flex; gap: var(--space-md); flex-wrap: wrap; }
