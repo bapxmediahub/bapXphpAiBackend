@@ -188,10 +188,11 @@ nav.open{display:flex}
 .footer-grid{grid-template-columns:1fr 1fr}
 .bottom-nav{display:block}
 .main-content{padding-bottom:calc(60px + var(--space-md))}
-.site-header{grid-template-columns:48px 1fr 48px}
-.site-header .brand{justify-self:start}
-.site-header .menu-toggle{justify-self:center;width:46px;height:46px;display:inline-flex;align-items:center;justify-content:center}
-.site-header .header-actions{justify-self:end}
+/* Mobile header order: brand left, then cart, then the menu button hard right. */
+.site-header{display:flex;align-items:center;gap:4px}
+.site-header .brand{order:1;margin-right:auto}
+.site-header .header-actions{order:2}
+.site-header .menu-toggle{order:3;width:46px;height:46px;display:inline-flex;align-items:center;justify-content:center}
 .cart-btn{width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center}
 .brand span{display:none}
 .astrologers-page{padding-top:var(--space-md)!important}
@@ -218,7 +219,7 @@ nav.open{display:flex}
 .footer-grid{grid-template-columns:1fr}
 .hero-actions{flex-direction:column;align-items:center}
 }
-@media(max-width:743px){.site-header{min-height:64px;padding:8px 12px}.section{padding:48px 0}.home-hero{min-height:auto;padding:48px 16px}.astro-search,.astro-filter{min-height:56px}.consultation-pricing-card{grid-template-columns:1fr;gap:var(--space-md);padding:var(--space-md)}.consultation-pricing-card__rates{gap:var(--space-sm)}.consultation-pricing-card__rates div{min-width:0;flex:1;padding-left:var(--space-sm)}.support-fab{position:absolute;top:10px;right:68px;bottom:auto;width:44px;height:44px;z-index:101}}
+@media(max-width:743px){.site-header{min-height:64px;padding:8px 12px}.section{padding:48px 0}.home-hero{min-height:auto;padding:48px 16px}.astro-search,.astro-filter{min-height:56px}.consultation-pricing-card{grid-template-columns:1fr;gap:var(--space-md);padding:var(--space-md)}.consultation-pricing-card__rates{gap:var(--space-sm)}.consultation-pricing-card__rates div{min-width:0;flex:1;padding-left:var(--space-sm)}}
 ';
 echo $critical;
 ?>
