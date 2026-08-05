@@ -8,7 +8,7 @@ description: Use when editing owner/admin pages, CRUD forms, media library, envi
 - Keep owner/admin UI PHP-template based.
 - Admin mutations should route through controllers/services and remain auditable.
 - Use schema-driven resource fields and the media library for product, temple, and astrologer media.
-- Keep astrologer accounts admin-created; show temporary credentials only until the provider changes the initial password.
+- Treat consultants/astrologers as admin-managed public profiles, not application login accounts. Do not create or display provider credentials unless authentication is explicitly added as a separate product change.
 - Validate with `php tests/run.php`; use a browser workflow for changed admin pages.
 
 ## Admin Panel Agent
@@ -20,12 +20,12 @@ run the CLI, or trigger deployments.
 
 ### Implementation Pattern
 
-The agent controller:
-1. `AdminController::agent()` receives a normal form POST.
-2. `AdminController::agentAsk()` currently builds aggregate counts directly with
+The admin-agent flow:
+1. `GET /admin/agent` calls `AdminController::agent()` and renders the page.
+2. `POST /admin/agent/ask` calls `AdminController::agentAsk()`, which builds aggregate counts directly with
    `DatabaseService`; it does not use `AgentContextService`.
 3. `SecretService` supplies `agent_api_key`, `agent_model`, and `api_endpoint`.
-4. The controller renders the returned Markdown response.
+4. The controller returns JSON; JavaScript in `views/admin/agent.php` renders the response.
 
 ### Agent Permissions
 

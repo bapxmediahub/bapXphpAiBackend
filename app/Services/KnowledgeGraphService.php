@@ -71,7 +71,7 @@ final class KnowledgeGraphService {
                 ['question' => 'What is the live product, category, consultant, temple or admin-editable value?', 'use' => $appUrl . '/remotedb'],
                 ['question' => 'Where is a blog article and what frontmatter does it declare?', 'use' => 'concepts filtered by type=blog, then read its resource'],
                 ['question' => 'Where is an image and which source files reference it?', 'use' => 'concepts filtered by type=image; query by filename or resource'],
-                ['question' => 'What repository instructions or skill apply?', 'use' => 'AGENTS.md, CLAUDE.md, then .agents/skills or .claude/skills'],
+                ['question' => 'What repository instructions or skill apply?', 'use' => 'AGENTS.md, CLAUDE.md, then .claude/skills'],
             ],
             'query_examples' => [
                 'sed -n \'1,90p\' index.yaml',
@@ -135,11 +135,18 @@ final class KnowledgeGraphService {
 
     private function indexMarkdownFiles(string $dir, string $defaultType): void {
         if (!is_dir($dir)) return;
-        $files = new \RecursiveIteratorIterator(
+        // Filesystem iteration order differs between platforms, so collect and sort
+        // before indexing. Without this the same tree produces different output on
+        // macOS and on Linux CI.
+        $paths = [];
+        foreach (new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)
-        );
-        foreach ($files as $file) {
-            if ($file->getExtension() !== 'md') continue;
+        ) as $candidate) {
+            if ($candidate->isFile() && $candidate->getExtension() === 'md') $paths[] = $candidate->getPathname();
+        }
+        sort($paths, SORT_STRING);
+        foreach ($paths as $path) {
+            $file = new \SplFileInfo($path);
             $content = file_get_contents($file->getPathname());
             $frontmatter = $this->parseFrontmatter($content);
             $body = $this->stripFrontmatter($content);
@@ -147,7 +154,15 @@ final class KnowledgeGraphService {
             $relativePath = str_replace($this->root . '/', '', $file->getPathname());
 
             $conceptType = (string)($frontmatter['type'] ?? $defaultType);
+            // Two documents can share a basename (docs/roles/admin.md and
+            // docs/modules/admin.md both yielded "doc:admin"), and the later one
+            // silently replaced the earlier, dropping a document from the index. The
+            // first by sorted path keeps the bare id so link resolution still works;
+            // any collision is qualified by its parent directory.
             $conceptId = $conceptType . ':' . $name;
+            if (isset($this->concepts[$conceptId])) {
+                $conceptId = $conceptType . ':' . basename(dirname($file->getPathname())) . '/' . $name;
+            }
             $this->addConcept($conceptId, [
                 'type' => $conceptType,
                 'title' => $frontmatter['title'] ?? $frontmatter['name'] ?? $name,
@@ -167,14 +182,21 @@ final class KnowledgeGraphService {
         $imageRoot = $this->root . '/assets/images';
         if (!is_dir($imageRoot)) return;
         $usageFiles = $this->usageFiles();
-        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($imageRoot, \FilesystemIterator::SKIP_DOTS));
-        foreach ($files as $file) {
-            if (!$file->isFile() || !in_array(strtolower($file->getExtension()), ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'], true)) continue;
+        $imagePaths = [];
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($imageRoot, \FilesystemIterator::SKIP_DOTS)) as $candidate) {
+            if ($candidate->isFile() && in_array(strtolower($candidate->getExtension()), ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'], true)) {
+                $imagePaths[] = $candidate->getPathname();
+            }
+        }
+        sort($imagePaths, SORT_STRING);
+        foreach ($imagePaths as $imagePath) {
+            $file = new \SplFileInfo($imagePath);
             $relativePath = str_replace($this->root . '/', '', $file->getPathname());
             $usedIn = [];
             foreach ($usageFiles as $usagePath => $content) {
                 if (str_contains($content, $relativePath) || str_contains($content, '/' . $relativePath)) $usedIn[] = $usagePath;
             }
+            sort($usedIn, SORT_STRING);
             $this->addConcept('image:' . $relativePath, [
                 'type' => 'image',
                 'title' => $file->getFilename(),
@@ -202,6 +224,8 @@ final class KnowledgeGraphService {
                 if ($content !== false) $result[str_replace($this->root . '/', '', $file->getPathname())] = $content;
             }
         }
+        // Key order feeds used_in ordering downstream, so make it platform-independent.
+        ksort($result, SORT_STRING);
         return $result;
     }
 

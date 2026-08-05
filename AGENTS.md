@@ -14,7 +14,7 @@ each, and it lives in `CLAUDE.md`.
 
 Quick orientation:
 
-- Skills: `.agents/skills/<name>/SKILL.md` with shared canonical implementations in `.claude/skills/<name>/SKILL.md`
+- Skills: canonical project skills live in `.claude/skills/<name>/SKILL.md`
 - Hooks: `.claude/hooks/`
 - Schema (canonical): `storage/schema/collections.php`
 - UI (canonical): `Design.md`

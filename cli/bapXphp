@@ -85,7 +85,7 @@ set -euo pipefail
 #   bapXphp db status               — verify DB paths and integration readiness
 #   bapXphp db raw <sql>            — execute raw SQL on MySQL
 #   bapXphp db init                 — create MySQL tables from collections.php schema
-#   bapXphp db sync                 — pull MySQL data → seed YAML files (currently: db init only)
+#   bapXphp db sync                 — compatibility alias for db init
 #
 # ── AI Configuration ─────────────────────────────────────────────
 #   bapXphp ai:config               — show AI model config from MySQL secrets
@@ -303,14 +303,14 @@ cmd_understand() {
   fi
 
   # ── Skills ──
-  local skills_root="$ROOT/.agents/skills"
+  local skills_root="$ROOT/.claude/skills"
   printf "${B}── Skills ──────────────────────────────────${N}\n"
   if [ -d "$skills_root" ]; then
     for skill_dir in "$skills_root"/*/; do
       [ -d "$skill_dir" ] || continue
       local sname; sname=$(basename "$skill_dir" 2>/dev/null) || true
       local sdesc
-      sdesc=$(head -3 "$skill_dir/SKILL.md" 2>/dev/null | tail -1 | sed 's/^#* *//') || true
+      sdesc=$(sed -n 's/^description: //p' "$skill_dir/SKILL.md" 2>/dev/null | head -1) || true
       sdesc="${sdesc:-Use when editing $sname tasks}"
       printf "  • %s  %s\n" "$sname" "$sdesc"
     done
@@ -335,7 +335,7 @@ cmd_understand() {
   printf "  ${C}bapXphp update${N}      regenerate and validate both repository maps\n"
   printf "  ${C}bapXphp db query <col>${N}  --where 'field=val' --limit 10\n"
   printf "  ${C}bapXphp db init${N}     create MySQL tables from schema\n"
-  printf "  ${C}bapXphp db sync${N}     push JSON → MySQL\n"
+  printf "  ${C}bapXphp db sync${N}     compatibility alias for db init\n"
   printf "  ${C}bapXphp understand${N}  Full project overview\n"
   printf "  ${C}bapXphp help${N}        All commands\n"
   echo ""
@@ -629,6 +629,7 @@ cmd_ci() {
     ok "Knowledge index is current"
   else
     warn "KNOWLEDGE INDEX STALE. Run bapXphp update and commit index.yaml."
+    diff -u "$ROOT/index.yaml" "$ROOT/.index.tmp.yaml" | head -40 || true
     failed=1
   fi
   rm -f "$ROOT/.index.tmp.yaml"
@@ -721,7 +722,7 @@ cmd_map_val() {
 
 # ── Skills ──────────────────────────────────────────────────────
 cmd_skills() {
-  local skills_root="$ROOT/.agents/skills"
+  local skills_root="$ROOT/.claude/skills"
   if [ ! -d "$skills_root" ]; then
     warn "Skills directory not found: $skills_root"
     return
@@ -734,7 +735,7 @@ cmd_skills() {
     name=$(basename "$skill_dir" 2>/dev/null) || true
     local desc=""
     if [ -f "$skill_dir/SKILL.md" ]; then
-      desc=$(head -3 "$skill_dir/SKILL.md" 2>/dev/null | tail -1 | sed 's/^#* *//') || true
+      desc=$(sed -n 's/^description: //p' "$skill_dir/SKILL.md" 2>/dev/null | head -1) || true
     fi
     desc="${desc:-No description}"
     printf "  %s  %s\n" "$name" "$desc"
@@ -911,7 +912,7 @@ cmd_db_help() {
   echo "  bapXphp db pma <sql>           — execute SQL via phpMyAdmin web proxy"
   echo "  bapXphp db hosted <sql>        — execute SQL on hosted MySQL through SSH"
   echo "  bapXphp db init                — create MySQL tables from collections.php"
-  echo "  bapXphp db sync                — push JSON data files → MySQL tables"
+  echo "  bapXphp db sync                — compatibility alias for db init"
   echo ""
   echo "Config env vars: BAPX_MYSQL_HOST, BAPX_MYSQL_DB, BAPX_MYSQL_USER, BAPX_MYSQL_PASS"
   echo "Remote endpoint: $REMOTE_DB_URL"
@@ -1155,7 +1156,7 @@ cmd_db_init() {
   "
 }
 
-# ── db sync — Push JSON data files → MySQL tables ──────────────
+# ── db sync — Compatibility alias for db init ─────────────────
 # Reads every JSON data file defined in collections.php and inserts
 # records into the corresponding MySQL table (INSERT IGNORE).
 cmd_db_sync() {
@@ -2072,7 +2073,7 @@ cmd_skill() {
   local name="${1:-}"
   [ -z "$name" ] && cmd_skills && return
 
-  local skill_file="$ROOT/.agents/skills/$name/SKILL.md"
+  local skill_file="$ROOT/.claude/skills/$name/SKILL.md"
   if [ -f "$skill_file" ]; then
     echo "── $name ──"
     cat "$skill_file"

@@ -26,7 +26,7 @@ discovery:
   - question: "Where is an image and which source files reference it?"
     use: "concepts filtered by type=image; query by filename or resource"
   - question: "What repository instructions or skill apply?"
-    use: "AGENTS.md, CLAUDE.md, then .agents/skills or .claude/skills"
+    use: "AGENTS.md, CLAUDE.md, then .claude/skills"
 query_examples:
   - "sed -n '1,90p' index.yaml"
   - "rg -n -B4 -A14 'id: \"<concept-id>\"' index.yaml"
@@ -36,12 +36,12 @@ query_examples:
   - "rg -n -B4 -A12 'type: \"skill\"' index.yaml"
   - "rg -n '<term>' docs/project-index.json map.mmd index.yaml"
 summary:
-  concepts: 389
-  relationships: 237
+  concepts: 391
+  relationships: 231
   by_type:
     blog: 16
     controller: 12
-    doc: 33
+    doc: 35
     image: 144
     route: 112
     schema: 22
@@ -308,11 +308,11 @@ concepts:
     header_image: ""
   - id: "doc:admin"
     type: "doc"
-    title: "Admin Guide"
-    description: "Use the admin panel to manage catalog content, media, astrologer accounts, orders, payments, support, and more."
-    resource: "docs/roles/admin.md"
+    title: "Admin Module"
+    description: "Owns owner-only pages under /admin."
+    resource: "docs/modules/admin.md"
     tags:
-      - "role"
+      - "module"
     filename: "admin.md"
     header_image: ""
   - id: "doc:admin-dashboard"
@@ -521,6 +521,15 @@ concepts:
       - "module"
     filename: "orders.md"
     header_image: ""
+  - id: "doc:pages/temples"
+    type: "doc"
+    title: "Temples Page"
+    description: "Route /temples - show JSON-backed temple entries with image, address, pooja details, and detail links."
+    resource: "docs/pages/temples.md"
+    tags:
+      - "page"
+    filename: "temples.md"
+    header_image: ""
   - id: "doc:product-list"
     type: "doc"
     title: "Product List"
@@ -556,6 +565,15 @@ concepts:
     tags:
       - "module"
     filename: "remote-db.md"
+    header_image: ""
+  - id: "doc:roles/admin"
+    type: "doc"
+    title: "Admin Guide"
+    description: "Use the admin panel to manage catalog content, media, astrologer accounts, orders, payments, support, and more."
+    resource: "docs/roles/admin.md"
+    tags:
+      - "role"
+    filename: "admin.md"
     header_image: ""
   - id: "doc:schema"
     type: "doc"
@@ -1636,9 +1654,9 @@ concepts:
     mime: "image/webp"
     usage_count: 3
     used_in:
+      - "assets/css/band.css"
       - "views/public/blog-post.php"
       - "views/public/blog.php"
-      - "assets/css/band.css"
   - id: "image:assets/images/hero/varahi/varahi-01.png"
     type: "image"
     title: "varahi-01.png"
@@ -1904,8 +1922,8 @@ concepts:
     mime: "image/jpeg"
     usage_count: 2
     used_in:
-      - "views/layouts/app.php"
       - "views/layouts/admin.php"
+      - "views/layouts/app.php"
   - id: "image:assets/images/logo-square.webp"
     type: "image"
     title: "logo-square.webp"
@@ -1978,9 +1996,9 @@ concepts:
     mime: "image/jpeg"
     usage_count: 3
     used_in:
-      - "views/public/blog.php"
-      - "views/layouts/app.php"
       - "app/Services/SeoService.php"
+      - "views/layouts/app.php"
+      - "views/public/blog.php"
   - id: "image:assets/images/products/karuppasami-dollar-back.webp"
     type: "image"
     title: "karuppasami-dollar-back.webp"
@@ -4619,11 +4637,11 @@ concepts:
     resource: ".claude/skills/admin-ui/SKILL.md"
     tags:
       - "skill"
-  - id: "skill:backend-json"
+  - id: "skill:backend-php-mysql"
     type: "skill"
-    title: "backend-json"
-    description: "Use when editing PHP controllers, services, MySQL persistence, auth, support context, wallet, orders, reviews, media, or audit behavior."
-    resource: ".claude/skills/backend-json/SKILL.md"
+    title: "backend-php-mysql"
+    description: "Use when editing PHP controllers, services, hosted MySQL persistence, authentication, agent context, orders, reviews, media metadata, payments, or audit behavior."
+    resource: ".claude/skills/backend-php-mysql/SKILL.md"
     tags:
       - "skill"
   - id: "skill:bapxphp-cli"
@@ -4650,7 +4668,7 @@ concepts:
   - id: "skill:frontend-php"
     type: "skill"
     title: "frontend-php"
-    description: "Use when editing public, account, shop, astrologer, temple, cart, checkout, contact, or support templates."
+    description: "Use when editing public, account, shop, consultant, temple, cart, checkout, contact, support, or other customer-facing PHP templates."
     resource: ".claude/skills/frontend-php/SKILL.md"
     tags:
       - "skill"
@@ -4894,24 +4912,6 @@ relationships:
   - from: "controller:SupportController"
     to: "service:SupportTicketService"
     relation: "uses"
-  - from: "doc:README"
-    to: "doc:admin"
-    relation: "references"
-  - from: "doc:README"
-    to: "doc:admin-guide"
-    relation: "references"
-  - from: "doc:README"
-    to: "doc:architecture"
-    relation: "references"
-  - from: "doc:README"
-    to: "doc:deployment-hostinger"
-    relation: "references"
-  - from: "doc:README"
-    to: "doc:email-setup"
-    relation: "references"
-  - from: "doc:README"
-    to: "doc:schema"
-    relation: "references"
   - from: "route:get"
     to: "controller:PublicController"
     relation: "handled_by"
