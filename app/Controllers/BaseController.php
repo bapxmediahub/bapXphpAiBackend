@@ -90,6 +90,13 @@ abstract class BaseController {
 
     protected function renderNotFound(): void {
         http_response_code(404);
+        // An API caller must get JSON. Returning the HTML 404 page to /api/ broke
+        // clients that parse the response.
+        if ($this->isApiRequest || str_starts_with((string)($_SERVER['REQUEST_URI'] ?? ''), '/api/')) {
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['error' => 'Not found']);
+            exit;
+        }
         $secrets = (new \App\Services\SecretService())->all();
         $seo = (new \App\Services\SeoService($secrets))->page('404', [
             'title' => 'Page not found',
