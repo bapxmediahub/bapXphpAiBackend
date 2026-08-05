@@ -11,14 +11,72 @@ final class MediaService {
         $this->storageDir = storage_path('media');
     }
 
+    /** Contexts the library knows about. 'blog' was missing, so blog uploads vanished. */
+    private const CONTEXTS = ['shared', 'products', 'temples', 'astrologers', 'blog'];
+
+    /** Asset folders scanned so images shipped with the site appear alongside uploads. */
+    private const ASSET_DIRS = [
+        'products'    => 'assets/images/products',
+        'temples'     => 'assets/images/temples',
+        'astrologers' => 'assets/images/astrologers',
+        'blog'        => 'assets/images/blog',
+        'shared'      => 'assets/images/media',
+    ];
+
     public function all(?string $context = null): array {
-        if ($context) return $this->readWithAliases($context);
+        $contexts = $context ? [$context] : self::CONTEXTS;
         $all = [];
-        foreach (['shared','products','temples','astrologers'] as $ctx) {
+        foreach ($contexts as $ctx) {
             $all = array_merge($all, $this->readWithAliases($ctx));
         }
-        usort($all, fn($a,$b) => strcmp((string)($b['created_at']??''), (string)($a['created_at']??'')));
-        return $all;
+        // The catalogue only records files uploaded through the admin, so product and
+        // temple artwork that ships with the site never appeared in the library and
+        // could not be picked when editing a post. Scan the folders too and merge on
+        // path, with catalogue entries winning so descriptions and usage survive.
+        $byPath = [];
+        foreach ($all as $item) {
+            $key = (string)($item['url'] ?? $item['path'] ?? '');
+            if ($key !== '') $byPath[$key] = $item;
+        }
+        foreach ($this->scanAssetFiles($context) as $file) {
+            if (!isset($byPath[$file['url']])) $byPath[$file['url']] = $file;
+        }
+        $merged = array_values($byPath);
+        usort($merged, fn($a, $b) => strcmp((string)($b['created_at'] ?? ''), (string)($a['created_at'] ?? '')));
+        return $merged;
+    }
+
+    /** Image files present on disk, as library entries. */
+    private function scanAssetFiles(?string $context = null): array {
+        $dirs = $context ? array_intersect_key(self::ASSET_DIRS, [$context => true]) : self::ASSET_DIRS;
+        $out = [];
+        foreach ($dirs as $ctx => $relative) {
+            $dir = app_path($relative);
+            if (!is_dir($dir)) continue;
+            $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS));
+            $paths = [];
+            foreach ($iterator as $file) {
+                if (!$file->isFile()) continue;
+                if (!in_array(strtolower($file->getExtension()), ['jpg','jpeg','png','webp','gif','svg'], true)) continue;
+                $paths[] = $file->getPathname();
+            }
+            sort($paths, SORT_STRING);   // stable order across platforms
+            foreach ($paths as $path) {
+                $url = '/' . ltrim(str_replace(app_path(), '', $path), '/');
+                $out[] = [
+                    'id'          => 'file:' . $url,
+                    'url'         => $url,
+                    'path'        => $url,
+                    'filename'    => basename($path),
+                    'context'     => $ctx,
+                    'description' => '',
+                    'size'        => @filesize($path) ?: 0,
+                    'created_at'  => date('c', @filemtime($path) ?: time()),
+                    'source'      => 'file',
+                ];
+            }
+        }
+        return $out;
     }
 
     public function upload(array $files, string $context = 'shared', ?string $description = null, array $usedIn = []): array {
