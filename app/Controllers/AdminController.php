@@ -242,8 +242,6 @@ final class AdminController extends BaseController {
         if ($changed) (new AuditLogService())->record('save','appearance','palette',['changed_fields'=>$changed,'reset'=>!empty($_POST['reset_palette'])]);
         $this->flash($e ?: 'Appearance saved.','success'); $this->redirect('/admin/appearance');
     }
-    public function backups(): void{$this->list('Backups','settings');}
-    public function audit(): void{$this->list('Audit Log','audit_events');}
     public function contactSubmissions(): void{$this->resource('Contact Submissions','contact_submissions',['name','email','phone','subject','message','status']);}
     public function saveContactSubmission(): void{$this->save('contact_submissions');}
     public function deleteContactSubmission(): void{$this->delete('contact_submissions');}
@@ -294,13 +292,6 @@ final class AdminController extends BaseController {
             (new AuditLogService())->record('test','email',$to,['transport'=>$transport,'result'=>'failed','error'=>$e->getMessage()]);
         }
         $this->redirect('/admin/integrations');
-    }
-    public function environment(): void{
-        $this->render('admin/environment',[
-            'pageTitle'=>'Environment',
-            'envRaw'=>(new EnvService())->raw(),
-            'permissions'=>(new StoragePermissionService())->status(),
-        ]);
     }
     public function blog(): void{
         $blog = new \App\Services\BlogService();
