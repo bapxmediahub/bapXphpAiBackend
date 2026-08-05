@@ -204,56 +204,22 @@ final class AdminController extends BaseController {
     }
 
     private function askModel(string $prompt): ?string {
-        $config = (new SecretService())->getModelConfig();
-        if (trim((string)($config['apiKey'] ?? '')) === '') return null;
-        $answer = $this->callAiApi($config, $prompt, '');
-        if (str_starts_with($answer, 'AI request failed') || str_starts_with($answer, 'No AI API key')) return null;
-        return $answer;
+        return (new \App\Services\AiClient())->completeOrNull($prompt);
     }
 
+    /**
+     * The provider call now lives in AiClient, shared with the customer support agent,
+     * which used to hardcode its own endpoint and model and so ignored whatever the
+     * admin had configured here. This method keeps the admin's prompt and its
+     * error-to-screen behaviour.
+     */
     private function callAiApi(array $config, string $message, string $context): string {
-        $endpoint = rtrim($config['endpoint'] ?? 'https://api.openai.com/v1', '/');
-        $model = $config['model'] ?? 'gemma-4-31b-it';
-        $key = $config['apiKey'] ?? '';
-        $provider = $config['provider'] ?? 'openai';
-        // Fail fast rather than sending a request that is certain to be rejected — an
-        // absent key returned an opaque HTTP 400 that read as a model problem.
-        if (trim((string)$key) === '') {
-            return 'No AI API key is configured. Set ai_api_key in Admin → Integrations, then try again.';
-        }
         $prompt = "You are the admin assistant for this store. Answer the question directly.\n"
             . "Give only the final answer. Do not restate your role, the context, the constraints or the question. "
             . "Do not show your reasoning or a plan. Use short Markdown.\n\n{$context}\n\nQuestion: {$message}";
-        if ($provider === 'google') {
-            $url = $endpoint . '/' . rawurlencode($model) . ':generateContent';
-            $payload = json_encode(['contents'=>[['parts'=>[['text'=>$prompt]]]],'generationConfig'=>['temperature'=>0.3,'maxOutputTokens'=>1024]]);
-            $ch = curl_init($url);
-            curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_POST=>true, CURLOPT_HTTPHEADER=>['Content-Type: application/json', 'x-goog-api-key: '.$key], CURLOPT_POSTFIELDS=>$payload, CURLOPT_TIMEOUT=>30, CURLOPT_CONNECTTIMEOUT=>10]);
-            $body = curl_exec($ch);
-            $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-            if ($status !== 200 || $body === false) return self::aiError($status, $body);
-            $result = json_decode($body, true);
-            $text = (string)($result['candidates'][0]['content']['parts'][0]['text'] ?? '');
-            return $this->cleanAnswer($text);
-        }
-        $url = $endpoint . '/chat/completions';
-        $payload = json_encode(['model'=>$model,'messages'=>[['role'=>'system','content'=>$context],['role'=>'user','content'=>$message]],'max_tokens'=>1024]);
-        $ch = curl_init($url);
-        $headers = ['Content-Type: application/json'];
-        if ($provider === 'anthropic') {
-            $headers[] = 'x-api-key: ' . $key;
-            $headers[] = 'anthropic-version: 2023-06-01';
-        } else {
-            $headers[] = 'Authorization: Bearer ' . $key;
-        }
-        curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_POST=>true, CURLOPT_HTTPHEADER=>$headers, CURLOPT_POSTFIELDS=>$payload, CURLOPT_TIMEOUT=>30, CURLOPT_CONNECTTIMEOUT=>10]);
-        $body = curl_exec($ch);
-        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        if ($status !== 200 || $body === false) return self::aiError($status, $body);
-        $result = json_decode($body, true);
-        return $this->cleanAnswer((string)($result['choices'][0]['message']['content'] ?? ''));
+        $answer = (new \App\Services\AiClient())->complete($prompt);
+        if (\App\Services\AiClient::isError($answer)) return $answer;
+        return $this->cleanAnswer($answer);
     }
     public function appearance(): void{
         $s=(new SettingsService())->public();
@@ -601,26 +567,4 @@ final class AdminController extends BaseController {
         return 0.2126 * $vals[0] + 0.7152 * $vals[1] + 0.0722 * $vals[2];
     }
 
-    /**
-     * Turns a failed AI API response into something actionable. The previous message
-     * ("API error (HTTP 400). Check model config.") hid the provider's own explanation,
-     * which is usually the exact reason — most often a missing or rejected API key.
-     */
-    private static function aiError(int $status, $body): string {
-        $detail = '';
-        $decoded = is_string($body) ? json_decode($body, true) : null;
-        if (is_array($decoded)) {
-            $detail = (string)($decoded['error']['message'] ?? $decoded['error']['type'] ?? $decoded['message'] ?? '');
-        }
-        if ($detail === '' && is_string($body) && trim($body) !== '') $detail = mb_substr(trim(strip_tags($body)), 0, 300);
-        $hint = match (true) {
-            $status === 400 => ' Check the model name and that the API key is set in Admin → Integrations.',
-            in_array($status, [401, 403], true) => ' The API key was rejected. Set a valid ai_api_key in Admin → Integrations.',
-            $status === 404 => ' The model or endpoint does not exist for this provider.',
-            $status === 429 => ' Rate limit or quota exceeded for this API key.',
-            $status === 0   => ' The request never reached the provider. Check outbound network access.',
-            default => '',
-        };
-        return "AI request failed (HTTP {$status})." . ($detail !== '' ? ' ' . $detail : '') . $hint;
-    }
 }

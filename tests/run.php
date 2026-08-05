@@ -656,9 +656,22 @@ $tests['support assistant widget uses browser session memory and google model se
     foreach (['support-fab', 'support-panel', '/support/ask', 'products, orders, delivery addresses, or consultant bookings', 'sessionStorage', 'data-support-key'] as $needle) {
         assertTrue(str_contains($layout, $needle), "Support widget should include {$needle}");
     }
-    foreach (['gemma-4-31b-it', 'agent_api_key', 'Customer context JSON', 'browser_session'] as $needle) {
+    foreach (['Customer context JSON', 'browser_session'] as $needle) {
         assertTrue(str_contains($service, $needle), "Support bot service should include {$needle}");
     }
+    // This test used to require the service to name gemma-4-31b-it and read its own
+    // key. That hardcoding was the defect: the widget called a fixed endpoint and model
+    // and ignored Admin → Integrations, so changing the model fixed the admin agent and
+    // left every customer reply falling back to a canned menu.
+    assertTrue(str_contains($service, 'AiClient'), 'Support bot should call the model through the shared AiClient');
+    foreach (['gemma-4-31b-it', 'generativelanguage.googleapis.com', 'curl_init', 'x-goog-api-key'] as $needle) {
+        assertTrue(!str_contains($service, $needle), "Support bot must not hardcode provider details: {$needle}");
+    }
+    $client = file_get_contents(app_path('app/Services/AiClient.php'));
+    assertTrue(str_contains($client, 'getModelConfig'), 'AiClient should resolve endpoint and model from Admin → Integrations');
+    $admin = file_get_contents(app_path('app/Controllers/AdminController.php'));
+    assertTrue(str_contains($admin, 'AiClient') && !str_contains($admin, 'x-goog-api-key'),
+        'Admin agent should share the same client rather than keep a second provider call');
     assertTrue(!str_contains($service, "upsert('support_tickets'"), 'Support bot chat should not persist browser chat into project JSON files');
 };
 
@@ -1386,6 +1399,21 @@ $tests['support assistant answers signed-out visitors instead of printing a menu
         'An unrelated question should not be forced onto an article');
     assertSame(null, $match('hi there', ['articles' => []]),
         'No articles in context should match nothing');
+
+    // "delivery", "track" and "shipped" used to match on their own, so a shipping-policy
+    // question anyone may be told the answer to was turned away with "please sign in".
+    $private = (new ReflectionMethod($bot, 'isPrivateAccountQuestion'))->getClosure($bot);
+    foreach ([
+        'how long does delivery take to singapore', 'what is your shipping policy',
+        'do you deliver to malaysia', 'what is this app',
+    ] as $public) {
+        assertTrue(!$private($public), "A general question should not require sign-in: {$public}");
+    }
+    foreach ([
+        'where is my order', 'track my parcel', 'my order status', 'order history', 'show me order #1042',
+    ] as $personal) {
+        assertTrue($private($personal), "A personal-account question should require sign-in: {$personal}");
+    }
 };
 
 $tests['product payment remains production gated after wallet removal'] = function (): void {

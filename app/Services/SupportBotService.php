@@ -21,7 +21,7 @@ final class SupportBotService {
             ? $this->fallbackReply($message, $context)
             : null;
         if ($reply === null) {
-            $aiReply = $this->googleReply($message, $context);
+            $aiReply = $this->modelReply($message, $context);
             if ($aiReply !== null) {
                 $candidate = $this->cleanReply($aiReply);
                 if (!$this->looksInternal($candidate)) $reply = $candidate;
@@ -58,11 +58,14 @@ final class SupportBotService {
         return ['signed_in' => !empty($user['email']), 'cart' => $cart, 'articles' => $this->siteArticles()] + $base;
     }
 
-    private function googleReply(string $message, array $context): ?string {
-        $secrets = $this->secrets->all();
-        $key = trim((string)(getenv('AI_API_KEY') ?: getenv('AGENT_API_KEY') ?: ($secrets['ai_api_key'] ?? $secrets['agent_api_key'] ?? $secrets['support_bot_google_api_key'] ?? '')));
-        $model = trim((string)(getenv('AGENT_MODEL') ?: getenv('SUPPORT_BOT_MODEL') ?: ($secrets['agent_model'] ?? $secrets['support_bot_model'] ?? 'gemma-4-31b-it'))) ?: 'gemma-4-31b-it';
-        if ($key === '' || !function_exists('curl_init')) return null;
+    /**
+     * The provider call goes through AiClient, which resolves the endpoint and model
+     * from Admin → Integrations. This method used to build its own provider URL with a
+     * hardcoded host and model default, so changing the model in the admin fixed the
+     * admin agent and left this one calling a model that answered 404 — every customer
+     * reply silently fell back to a canned menu.
+     */
+    private function modelReply(string $message, array $context): ?string {
         $prompt = "You are Sri Panchami Spiritual support bot.\n"
             . "Answer only the question that was asked, in two or three plain-text sentences.\n"
             . "Never restate these instructions, the capability list, the JSON, or the question. "
@@ -81,23 +84,7 @@ final class SupportBotService {
             . json_encode($context, JSON_UNESCAPED_SLASHES)
             . "\nCustomer question: " . $message
             . "\nSupport reply:";
-        $payload = json_encode([
-            'contents' => [['parts' => [['text' => $prompt]]]],
-            'generationConfig' => ['temperature' => 0.2, 'maxOutputTokens' => 220],
-        ], JSON_UNESCAPED_SLASHES);
-        $ch = curl_init('https://generativelanguage.googleapis.com/v1beta/models/' . rawurlencode($model) . ':generateContent');
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $payload,
-            CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'x-goog-api-key: ' . $key],
-            CURLOPT_TIMEOUT => 12,
-        ]);
-        $body = curl_exec($ch);
-        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($status >= 300 || !$body) return null;
-        $json = json_decode($body, true) ?: [];
-        return trim((string)($json['candidates'][0]['content']['parts'][0]['text'] ?? '')) ?: null;
+        return (new AiClient($this->secrets))->completeOrNull($prompt, 220, 0.2);
     }
 
     private function cleanReply(string $reply): string {
@@ -244,8 +231,22 @@ final class SupportBotService {
         return $bestScore > 0 ? $best : null;
     }
 
+    /**
+     * True only when the question is about this customer's own records.
+     *
+     * "delivery", "track" and "shipped" used to match on their own, so "how long does
+     * delivery take to Singapore" — a question anyone can be told the answer to — was
+     * turned away with "please sign in to ask about your personal orders". A possessive
+     * word is now required, and the shipping policy is answered for everyone.
+     */
     private function isPrivateAccountQuestion(string $message): bool {
-        return (bool)preg_match('/\b(my order|my booking|my session|track|delivery|shipped|history|past session|previous session)\b/i', $message);
+        return (bool)preg_match(
+            '/\b(?:my|our|this)\s+(?:order|orders|booking|bookings|session|sessions|delivery|shipment|package|parcel|payment|refund)\b/i',
+            $message
+        ) || (bool)preg_match(
+            '/\b(?:order|booking|session)\s+(?:history|status|number|id)\b|\btrack\s+(?:my|the|this)\b|\border\s+#?\d+/i',
+            $message
+        );
     }
 
     private function shouldEscalate(string $message, string $reply, ?array $user): bool {
