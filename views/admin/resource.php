@@ -67,8 +67,8 @@
             <?php endif; ?>
         <?php endif; ?>
         <div style="margin-top:var(--space-md); display:flex; gap:var(--space-sm);">
-            <button type="submit" class="btn btn-primary" id="save-btn">Save <?= e(rtrim($title,'s')) ?></button>
-            <button type="reset" class="btn btn-ghost" onclick="document.getElementById('resource-id').value=''; document.getElementById('save-btn').textContent='Save <?= e(rtrim($title,'s')) ?>';">Clear</button>
+            <button type="submit" class="btn btn-primary" id="save-btn">Save <?= e(singular_label($title)) ?></button>
+            <button type="reset" class="btn btn-ghost" onclick="document.getElementById('resource-id').value=''; document.getElementById('save-btn').textContent='Save <?= e(singular_label($title)) ?>';">Clear</button>
         </div>
     </form>
 </div>
@@ -127,7 +127,7 @@ document.querySelectorAll('.edit-item').forEach(button => {
     button.addEventListener('click', () => {
         const item = JSON.parse(button.dataset.item || '{}');
         document.getElementById('resource-id').value = item.__id || '';
-        document.getElementById('save-btn').textContent = 'Update <?= e(rtrim($title,'s')) ?>';
+        document.getElementById('save-btn').textContent = 'Update <?= e(singular_label($title)) ?>';
         <?php foreach($fields as $field): ?>
             var el = document.getElementById('field-<?= e($field) ?>');
             if (el) {
@@ -177,7 +177,7 @@ document.querySelectorAll('.use-media').forEach(button => {
 });
 document.getElementById('resource-form').addEventListener('reset', () => {
     document.getElementById('resource-id').value = '';
-    document.getElementById('save-btn').textContent = 'Save <?= e(rtrim($title,'s')) ?>';
+    document.getElementById('save-btn').textContent = 'Save <?= e(singular_label($title)) ?>';
     renderProductImages([]);
 });
 </script>

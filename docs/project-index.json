@@ -3,7 +3,7 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 110,
+        "routes": 111,
         "controllers": 12,
         "services": 42,
         "views": 46,
@@ -287,6 +287,18 @@
             "path": "/admin/blog/save",
             "name": "admin.blog.save",
             "controller": "AdminController@saveBlog",
+            "view": "admin/blog",
+            "services": [
+                "BlogService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/blog/toggle",
+            "name": "admin.blog.toggle",
+            "controller": "AdminController@toggleBlog",
             "view": "admin/blog",
             "services": [
                 "BlogService",

@@ -28,6 +28,18 @@ function app_path(string $path = ''): string { return dirname(__DIR__) . ($path 
 function storage_path(string $path = ''): string { return app_path('storage' . ($path ? '/' . ltrim($path, '/') : '')); }
 function e(string $value): string { return htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); }
 /** True when a site module (consult|shop|blog) is switched on in Admin → Site Settings. */
+/**
+ * Singular form of an admin collection label. rtrim($title,'s') produced "Categorie"
+ * from "Categories" — it strips the trailing s without handling -ies.
+ */
+function singular_label(string $plural): string {
+    $plural = trim($plural);
+    if (preg_match('/ies$/i', $plural)) return preg_replace('/ies$/i', 'y', $plural);
+    if (preg_match('/(ses|xes|zes|ches|shes)$/i', $plural)) return preg_replace('/es$/i', '', $plural);
+    if (preg_match('/s$/i', $plural) && !preg_match('/ss$/i', $plural)) return preg_replace('/s$/i', '', $plural);
+    return $plural;
+}
+
 function module_on(string $key): bool { return (new App\Services\SettingsService())->moduleEnabled($key); }
 function placeholder_img(string $label = ''): string {
     $label = $label ?: 'Sri Panchami';

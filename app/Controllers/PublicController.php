@@ -275,6 +275,9 @@ final class PublicController extends BaseController {
     
     public function login(): void { 
         $this->detectApiRequest();
+        // Someone already signed in has no business on the sign-in page; send them to
+        // their dashboard instead of offering a second login.
+        if (!empty($_SESSION['user'])) $this->redirect((($_SESSION['user']['role'] ?? '') === 'admin') ? '/admin' : '/account/dashboard');
         $this->seoKey = 'login';
         $secrets = (new \App\Services\SecretService())->all();
         $this->render('public/login', [
@@ -319,12 +322,42 @@ final class PublicController extends BaseController {
         ];
     }
 
+    /**
+     * Markdown page with YAML frontmatter, the same file shape blogs use.
+     *
+     * This previously stripped only a leading "# Heading" and rendered everything else,
+     * so the frontmatter block was published as body text — Terms and Privacy opened
+     * with "title: Terms & Conditions description: ... category: legal". Frontmatter is
+     * metadata and must never reach the page.
+     */
     private function markdownDocument(string $relativePath): array
     {
         $raw = (string)@file_get_contents(app_path($relativePath));
-        preg_match('/^#\s+(.+)$/m', $raw, $heading);
-        $title = trim($heading[1] ?? 'Document');
-        $body = trim((string)preg_replace('/^#\s+.+\R?/m', '', $raw, 1));
-        return ['title' => $title, 'html' => (new MarkdownRenderer())->render($body)];
+        $meta = [];
+        $body = $raw;
+
+        if (preg_match('/\A\x{FEFF}?\s*---\R(.*?)\R---\R?(.*)\z/su', $raw, $m)) {
+            foreach (preg_split('/\R/', $m[1]) as $line) {
+                if (!str_contains($line, ':')) continue;
+                [$key, $value] = explode(':', $line, 2);
+                $meta[trim($key)] = trim(trim($value), " \"'");
+            }
+            $body = $m[2];
+        }
+
+        // Frontmatter title wins; fall back to a leading H1, which is then removed so it
+        // is not printed twice under the page heading.
+        $title = trim((string)($meta['title'] ?? ''));
+        if ($title === '') {
+            preg_match('/^#\s+(.+)$/m', $body, $heading);
+            $title = trim($heading[1] ?? 'Document');
+        }
+        $body = trim((string)preg_replace('/^#\s+.+\R?/m', '', $body, 1));
+
+        return [
+            'title' => $title,
+            'description' => (string)($meta['description'] ?? ''),
+            'html' => (new MarkdownRenderer())->render($body),
+        ];
     }
 }
