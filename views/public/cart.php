@@ -54,10 +54,21 @@
                         <span>Shipping</span>
                         <span style="color:var(--color-success);">Free</span>
                     </div>
+                    <?php if (!empty($gstAmount)): ?>
+                    <div class="cart-summary__row">
+                        <span>GST (<?= e((string)$gstRate) ?>% incl.)</span>
+                        <span data-cart-gst>₹<?= e(number_format((float)$gstAmount, 2)) ?></span>
+                    </div>
+                    <?php endif; ?>
                     <div class="cart-summary__row cart-summary__row--total">
                         <span>Total</span>
                         <span data-cart-total>₹<?= e((string)($total ?? 0)) ?></span>
                     </div>
+                    <?php if (!empty($gstAmount)): ?>
+                    <p style="margin:var(--space-xs) 0 0; font-size:0.75rem; color:var(--color-text-muted);">
+                        Prices include GST. Final CGST/SGST or IGST split is set by your delivery state at checkout.
+                    </p>
+                    <?php endif; ?>
                     <a href="/checkout" class="btn btn-primary btn-block btn-lg">Proceed to Checkout</a>
                     <div style="text-align:center; margin-top:var(--space-sm);">
                         <a href="/shop" style="font-size:0.85rem; color:var(--color-text-muted);">← Continue Shopping</a>

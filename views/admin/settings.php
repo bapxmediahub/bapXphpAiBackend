@@ -76,9 +76,25 @@
     </form>
 </div>
 <div class="admin-card" style="margin-top:var(--space-lg);">
-    <h2 style="font-size:1rem; margin:0 0 var(--space-lg);">GST Configuration</h2>
+    <h2 style="font-size:1rem; margin:0 0 var(--space-sm);">GST Configuration</h2>
+    <p style="margin:0 0 var(--space-lg); font-size:0.85rem; color:var(--color-text-muted);">
+        Prices are GST-inclusive. The default rate below applies to any product that does not
+        set its own rate on the product form. Confirm the rate and HSN code with your accountant.
+    </p>
     <form class="admin-form" method="post" action="/admin/settings/save">
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+        <div class="admin-form__row">
+            <div class="form-group">
+                <label>Default GST Rate (%)</label>
+                <input type="number" name="default_gst_rate" step="0.01" min="0" max="100"
+                       value="<?= e((string)($settings['default_gst_rate'] ?? \App\Services\TaxService::DEFAULT_GST_RATE)) ?>" placeholder="5">
+            </div>
+            <div class="form-group">
+                <label>Default HSN Code</label>
+                <input type="text" name="default_hsn_code" maxlength="8"
+                       value="<?= e((string)($settings['default_hsn_code'] ?? \App\Services\TaxService::DEFAULT_HSN_CODE)) ?>" placeholder="8306">
+            </div>
+        </div>
         <div class="admin-form__row">
             <div class="form-group">
                 <label>GSTIN</label>

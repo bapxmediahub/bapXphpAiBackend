@@ -57,10 +57,11 @@ final class AdminController extends BaseController {
         // every field belonging to the other forms (notably the GST configuration).
         $service = new SettingsService();
         $settings = $service->admin();
-        foreach (['shipping_mode','currency','timezone','gstin','gst_legal_name','gst_trade_name','gst_address','gst_state','gst_state_code'] as $key) {
+        foreach (['shipping_mode','currency','timezone','gstin','gst_legal_name','gst_trade_name','gst_address','gst_state','gst_state_code','default_hsn_code'] as $key) {
             if (array_key_exists($key, $_POST)) $settings[$key] = trim((string)$_POST[$key]);
         }
         if (array_key_exists('flat_rate', $_POST)) $settings['flat_rate'] = max(0, (float)$_POST['flat_rate']);
+        if (array_key_exists('default_gst_rate', $_POST)) $settings['default_gst_rate'] = max(0, min(100, (float)$_POST['default_gst_rate']));
         $changedModules = [];
         foreach (array_keys(SettingsService::MODULES) as $key) {
             $field = 'module_' . $key;
