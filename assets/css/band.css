@@ -3697,7 +3697,23 @@ body { background: var(--color-bg); }
    the top bar instead. The cart tray shares its line and stops short of it so the
    two never overlap. */
 @media (max-width: 700px) {
+    /* Both sit on one horizontal line: same bottom edge and same height, so their
+       centres line up exactly. The cart pill is centred on screen and capped so it
+       can never run under the support button on the right. */
     .support-fab { position: fixed; top: auto; right: 12px; bottom: 78px; width: 56px; height: 56px; z-index: 1100; }
-    /* Tray ends before the button and keeps breathing room on the right. */
-    .mobile-cart-tray { right: 80px; bottom: 78px; min-height: 56px; }
+    .mobile-cart-tray {
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        width: max-content;
+        max-width: calc(100vw - 160px);
+        bottom: 78px;
+        height: 56px;
+        min-height: 56px;
+        justify-content: center;
+        gap: 12px;
+        padding: 0 18px;
+    }
+    /* Centred content, so the divider is no longer pushed to the far edge. */
+    .mobile-cart-tray > span:last-child { padding-left: 12px; }
 }

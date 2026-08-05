@@ -399,7 +399,7 @@ $tests['contact page exposes consultation request form'] = function (): void {
         assertTrue(str_contains($view, $field), "Contact form should include {$field}");
     }
     assertTrue(str_contains($view, 'Astrology Consultation'), 'Contact form should include an astrology consultation subject');
-    foreach (['tel:+919789444037', 'tel:+919789444038', 'mailto:sripanchamispiritual@gmail.com', 'contact-direct-link--mail'] as $needle) {
+    foreach (['tel:+919789444037', 'tel:+919789444038', 'mailto:support@sripanchamispiritual.com', 'contact-direct-link--mail'] as $needle) {
         assertTrue(str_contains($view, $needle), "Contact page should expose {$needle}");
     }
     foreach (['Online Store', 'VIP appointments only', 'Regular sessions are available through Consult'] as $needle) {

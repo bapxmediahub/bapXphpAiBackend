@@ -284,19 +284,29 @@
                     </div>
                     <?php
                     $gstConfigured = !empty($settings['gstin']);
-                    $anyGstRate = false;
+                    // Resolve the effective rate the same way TaxService will at payment,
+                    // so the customer sees the real number here instead of a vague promise.
+                    $gstRate = 0.0;
                     foreach ($items as $item) {
-                        if (!empty($item['product']['gst_rate']) && (float)$item['product']['gst_rate'] > 0) {
-                            $anyGstRate = true; break;
-                        }
+                        $gstRate = \App\Services\TaxService::rateFor($item['product'] ?? [], $settings);
+                        if ($gstRate > 0) break;
                     }
+                    $anyGstRate = $gstRate > 0;
+                    $gstAmount = $anyGstRate ? round($total - ($total / (1 + $gstRate / 100)), 2) : 0.0;
+                    $gstRateLabel = rtrim(rtrim(number_format($gstRate, 2, '.', ''), '0'), '.');
                     ?>
+                    <?php if ($anyGstRate): ?>
+                    <div class="checkout-summary__row" style="display:flex; justify-content:space-between;">
+                        <span>GST (<?= e($gstRateLabel) ?>% incl.)</span>
+                        <span>₹<?= e(number_format($gstAmount, 2)) ?></span>
+                    </div>
+                    <?php endif; ?>
                     <div style="margin-top:var(--space-lg); padding-top:var(--space-md); border-top:1px solid var(--color-border);">
                         <h4 style="margin:0 0 var(--space-sm); font-size:0.9rem;">Tax Information</h4>
                         <?php if ($gstConfigured && $anyGstRate): ?>
                             <div style="font-size:0.85rem; color:var(--color-text-muted); display:grid; gap:var(--space-2xs);">
-                                <span>Tax inclusive pricing</span>
-                                <span>GST will be calculated at payment confirmation based on your delivery state.</span>
+                                <span>Prices include GST at <?= e($gstRateLabel) ?>% — ₹<?= e(number_format($gstAmount, 2)) ?> of this order.</span>
+                                <span>Your delivery state decides the CGST/SGST or IGST split on the invoice.</span>
                             </div>
                         <?php elseif ($gstConfigured): ?>
                             <div style="font-size:0.85rem; color:var(--color-text-muted); display:grid; gap:var(--space-2xs);">

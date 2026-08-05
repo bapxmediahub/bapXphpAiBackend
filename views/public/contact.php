@@ -83,9 +83,9 @@
             <div class="contact-card contact-card--direct contact-direct-panel reveal">
                 <div class="contact-card__body">
                     <span class="contact-card__eyebrow">email</span>
-                    <a class="contact-direct-link contact-direct-link--mail" href="mailto:sripanchamispiritual@gmail.com">
+                    <a class="contact-direct-link contact-direct-link--mail" href="mailto:support@sripanchamispiritual.com">
                         <span class="contact-direct-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="m22 6-10 7L2 6"/></svg></span>
-                        <span>sripanchamispiritual@gmail.com</span>
+                        <span>support@sripanchamispiritual.com</span>
                     </a>
                 </div>
             </div>

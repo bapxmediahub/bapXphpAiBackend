@@ -101,7 +101,32 @@ final class MailQueueService {
             . '<p>Your payment for order ' . e((string)($order['id'] ?? '')) . ' is confirmed.</p>'
             . $invoiceHtml
             . '<p>Total: ₹' . e((string)($order['total'] ?? 0)) . '</p>';
-        return $this->enqueue('payment_confirmation', $to, $subject, $html, null, ['order_id' => $order['id'] ?? '']);
+        $sent = $this->enqueue('payment_confirmation', $to, $subject, $html, null, ['order_id' => $order['id'] ?? '']);
+        $this->notifyAdmin(
+            'New order ' . (string)($order['id'] ?? ''),
+            '<p>A new paid order has come in.</p>'
+            . '<p>Order: <strong>' . e((string)($order['id'] ?? '')) . '</strong><br>'
+            . 'Customer: ' . e((string)($order['customer_name'] ?? '')) . ' &lt;' . e($to) . '&gt;<br>'
+            . 'Total: ₹' . e((string)($order['total'] ?? 0)) . '</p>',
+            ['order_id' => $order['id'] ?? '']
+        );
+        return $sent;
+    }
+
+    /**
+     * Send a copy to the owner. The destination is admin_notification_email, which is
+     * deliberately separate from the sending mailbox: customers are written to from
+     * support@, while the owner is notified at their own inbox.
+     */
+    public function notifyAdmin(string $subject, string $html, array $meta = []): ?array {
+        $admin = trim((string)((new SecretService())->all()['admin_notification_email'] ?? ''));
+        if ($admin === '' || !filter_var($admin, FILTER_VALIDATE_EMAIL)) return null;
+        try {
+            return $this->enqueue('admin_notification', $admin, $subject . ' - Sri Panchami Spiritual', $html, null, $meta);
+        } catch (\Throwable $e) {
+            error_log('Admin notification failed: ' . $e->getMessage());
+            return null;
+        }
     }
 
     public function enqueueShipmentNotification(array $order): ?array {

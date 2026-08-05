@@ -63,7 +63,7 @@ final class ConsultationController extends BaseController {
                 ?: (getenv('SMTP_USERNAME') ?: '')
             ));
             if($ownerEmail!=='' && filter_var($ownerEmail,FILTER_VALIDATE_EMAIL)){
-                $base=rtrim((string)(getenv('APP_URL')?:''),'/');
+                $base=rtrim($this->siteUrl('/'),'/');
                 $html='<p>A new consultation appointment was requested.</p><dl>'
                     .'<dt>Customer</dt><dd>'.e($session['customer_name']??'').'</dd>'
                     .'<dt>Email</dt><dd>'.e($session['customer_email']??'').'</dd>'
@@ -73,6 +73,16 @@ final class ConsultationController extends BaseController {
                     .'<dt>Narration</dt><dd>'.nl2br(e($session['notes']??''),false).'</dd></dl>'
                     .'<p><a href="'.e($base.'/admin/appointments').'">Review appointments in admin</a></p>';
                 (new MailQueueService())->enqueue('appointment_owner_notification',$ownerEmail,'New consultation appointment - Sri Panchami Spiritual',$html,null,['appointment_id'=>$id]);
+            }
+            // The customer was never told their booking was received — only the owner
+            // was notified. Confirm to the customer as well.
+            if($email!=='' && filter_var($email,FILTER_VALIDATE_EMAIL)){
+                $customerHtml='<p>Vanakkam '.e((string)($session['customer_name']??'')).',</p>'
+                    .'<p>We have received your consultation request. The consultant will confirm the schedule shortly.</p><dl>'
+                    .'<dt>Consultant</dt><dd>'.e((string)($session['astrologer_name']??'')).'</dd>'
+                    .'<dt>Requested time</dt><dd>'.e($preferredDate.' '.$preferredTime).'</dd></dl>'
+                    .'<p><a href="'.e($this->siteUrl('/account/dashboard/sessions')).'">View your sessions</a></p>';
+                (new MailQueueService())->enqueue('appointment_customer_confirmation',$email,'Your consultation request - Sri Panchami Spiritual',$customerHtml,null,['appointment_id'=>$id]);
             }
         }catch(\Throwable $e){}
         $this->flash('Consultation booking requested. The consultant will confirm the schedule.','success');

@@ -151,7 +151,17 @@ final class PublicController extends BaseController {
         $this->detectApiRequest();
         $this->seoKey = 'cart';
         $items = $this->resolveCartItems();
-        $this->render('public/cart', ['items' => $items, 'total' => $this->cartTotal($items)]);
+        $total = $this->cartTotal($items);
+        // Prices are GST-inclusive, so show the tax already contained in the total.
+        $settings = (new \App\Services\SettingsService())->public();
+        $gstRate = \App\Services\TaxService::rateFor($items[0]['product'] ?? [], $settings);
+        $gstAmount = $gstRate > 0 ? round($total - ($total / (1 + $gstRate / 100)), 2) : 0.0;
+        $this->render('public/cart', [
+            'items' => $items,
+            'total' => $total,
+            'gstRate' => rtrim(rtrim(number_format($gstRate, 2, '.', ''), '0'), '.'),
+            'gstAmount' => $gstAmount,
+        ]);
     }
     
     public function checkout(): void {
