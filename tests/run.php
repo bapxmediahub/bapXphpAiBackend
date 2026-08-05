@@ -3,6 +3,7 @@ require __DIR__ . '/../app/bootstrap.php';
 
 use App\Services\EnvService;
 use App\Services\CategoryService;
+use App\Services\DatabaseService;
 use App\Services\PaymentService;
 use App\Services\ProjectMapService;
 use App\Services\ReviewService;
@@ -941,6 +942,29 @@ $tests['saved addresses select the default and allow another checkout address'] 
     assertTrue(str_contains($service, "'is_default' => \$isDefault"), 'Address service should persist one default address');
     assertTrue(str_contains($checkout, "' (Default)'"), 'Checkout should label the default saved address');
     assertTrue(str_contains($checkout, 'Enter a new address') && str_contains($checkout, 'Save for next time'), 'Checkout should allow one-time or newly saved addresses');
+};
+
+$tests['the database bridge never calls the host it is running on'] = function (): void {
+    $source = file_get_contents(app_path('app/Services/DatabaseService.php'));
+    assertTrue(str_contains($source, 'remoteUrlIsSelf'), 'isRemote must detect a self-referential remote_url');
+    assertTrue(str_contains($source, 'HTTP_HOST'), 'Self-detection must compare against the serving host');
+
+    // Live: remote_url points at the host serving the request, so the bridge must not
+    // be taken. Taking it produced "Remote database request failed with HTTP 500" on
+    // production whenever direct MySQL hiccupped, because the server called itself.
+    $previousHost = $_SERVER['HTTP_HOST'] ?? null;
+    $_SERVER['HTTP_HOST'] = 'sripanchamispiritual.com';
+    $service = new DatabaseService();
+    $method = (new ReflectionObject($service))->getMethod('isRemote');
+    assertTrue($method->invoke($service) === false, 'A host serving its own remote_url must stay on direct MySQL');
+
+    // CLI has no HTTP_HOST, so a dev machine still uses the bridge.
+    unset($_SERVER['HTTP_HOST']);
+    $cliService = new DatabaseService();
+    $cliMethod = (new ReflectionObject($cliService))->getMethod('isRemote');
+    assertTrue($cliMethod->invoke($cliService) === true, 'Without a serving host the bridge must still be available');
+
+    if ($previousHost === null) unset($_SERVER['HTTP_HOST']); else $_SERVER['HTTP_HOST'] = $previousHost;
 };
 
 $tests['remote database uses password auth via admin UI or env'] = function (): void {

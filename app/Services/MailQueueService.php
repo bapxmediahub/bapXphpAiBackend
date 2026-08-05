@@ -29,8 +29,9 @@ final class MailQueueService {
         'sans'        => "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif",
     ];
 
-    private function wrapHtml(string $inner): string {
+    private function wrapHtml(string $inner, string $audience = 'customer'): string {
         $b = self::BRAND;
+        $isAdmin = $audience === 'admin';
         $settings = (new SettingsService())->public();
         $siteName = 'Sri Panchami Spiritual';
         $siteUrl = rtrim($this->siteUrl('/'), '/');
@@ -62,11 +63,15 @@ final class MailQueueService {
             . '<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:#ffffff;border:1px solid ' . $b['border'] . ';border-radius:14px;overflow:hidden;">'
 
             // Header
-            . '<tr><td align="center" style="background:' . $b['maroon'] . ';padding:22px 24px;border-bottom:3px solid ' . $b['gold'] . ';">'
-            . '<img src="' . e($logoUrl) . '" width="64" height="64" alt="' . e($siteName) . '" '
-            . 'style="display:block;margin:0 auto 10px;width:64px;height:64px;border-radius:50%;border:2px solid ' . $b['gold'] . ';">'
-            . '<div style="font-family:' . $b['serif'] . ';font-size:19px;font-weight:bold;color:' . $b['gold'] . ';letter-spacing:0.4px;">'
-            . e($siteName) . '</div></td></tr>'
+            . '<tr><td align="center" style="background:' . ($isAdmin ? $b['maroon_deep'] : $b['maroon']) . ';padding:22px 24px;border-bottom:3px solid ' . $b['gold'] . ';">'
+            . '<img src="' . e($logoUrl) . '" width="' . ($isAdmin ? 44 : 64) . '" height="' . ($isAdmin ? 44 : 64) . '" alt="' . e($siteName) . '" '
+            . 'style="display:block;margin:0 auto 10px;width:' . ($isAdmin ? 44 : 64) . 'px;height:' . ($isAdmin ? 44 : 64) . 'px;border-radius:50%;border:2px solid ' . $b['gold'] . ';">'
+            . '<div style="font-family:' . $b['serif'] . ';font-size:' . ($isAdmin ? 16 : 19) . 'px;font-weight:bold;color:' . $b['gold'] . ';letter-spacing:0.4px;">'
+            . e($siteName) . '</div>'
+            // Admin mail is labelled so it is obvious at a glance in a shared inbox that
+            // this is a store notification, not something a customer received.
+            . ($isAdmin ? '<div style="margin-top:6px;font-family:' . $b['sans'] . ';font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#c9b89a;">Store notification</div>' : '')
+            . '</td></tr>'
 
             // Body — 16px, the floor for comfortable reading on a phone
             . '<tr><td style="padding:30px 28px 10px;font-family:' . $b['sans'] . ';font-size:16px;line-height:1.65;color:' . $b['ink'] . ';">'
@@ -76,15 +81,22 @@ final class MailQueueService {
             . '<tr><td style="padding:10px 28px 26px;">'
             . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>'
             . '<td style="border-top:1px solid ' . $b['border'] . ';padding-top:18px;font-family:' . $b['sans'] . ';font-size:12px;line-height:1.7;color:' . $b['muted'] . ';">'
-            . '<strong style="color:' . $b['ink'] . ';font-family:' . $b['serif'] . ';font-size:14px;">' . e($siteName) . '</strong>' . $legalHtml
-            . '<br><br>Need help? Reply to this email or write to '
-            . '<a href="mailto:support@sripanchamispiritual.com" style="color:' . $b['maroon'] . ';text-decoration:underline;">support@sripanchamispiritual.com</a>'
-            . '<br><a href="' . e($siteUrl) . '" style="color:' . $b['maroon'] . ';text-decoration:underline;">' . e(preg_replace('#^https?://#', '', $siteUrl)) . '</a>'
+            . ($isAdmin
+                ? '<strong style="color:' . $b['ink'] . ';font-family:' . $b['serif'] . ';font-size:14px;">Store notification</strong>'
+                  . '<br>Sent to the store owner. Customers do not receive this email.'
+                  . '<br><a href="' . e($siteUrl . '/admin') . '" style="color:' . $b['maroon'] . ';text-decoration:underline;">Open the admin panel</a>'
+                : '<strong style="color:' . $b['ink'] . ';font-family:' . $b['serif'] . ';font-size:14px;">' . e($siteName) . '</strong>' . $legalHtml
+                  . '<br><br>Need help? Reply to this email or write to '
+                  . '<a href="mailto:support@sripanchamispiritual.com" style="color:' . $b['maroon'] . ';text-decoration:underline;">support@sripanchamispiritual.com</a>'
+                  . '<br><a href="' . e($siteUrl) . '" style="color:' . $b['maroon'] . ';text-decoration:underline;">' . e(preg_replace('#^https?://#', '', $siteUrl)) . '</a>')
             . '</td></tr></table></td></tr>'
 
             . '</table>'
             . '<div style="font-family:' . $b['sans'] . ';font-size:11px;color:' . $b['muted'] . ';padding:14px 8px 0;max-width:600px;">'
-            . 'You received this because you have an account or placed an order with ' . e($siteName) . '.</div>'
+            . ($isAdmin
+                ? 'Automated store notification. Change the recipient in Admin &rarr; Integrations.'
+                : 'You received this because you have an account or placed an order with ' . e($siteName) . '.')
+            . '</div>'
             . '</td></tr></table></body></html>';
     }
 
@@ -131,8 +143,13 @@ final class MailQueueService {
         return $this->store->read('mail_queue');
     }
 
-    public function enqueue(string $type, string $to, string $subject, string $html, ?\DateTimeImmutable $availableAt = null, array $meta = []): array {
-        $html = $this->wrapHtml($html);
+    /**
+     * $audience selects the template. Both are sent from the same authenticated
+     * mailbox (support@); only the layout and footer differ, so the owner can tell a
+     * store notification from something a customer received.
+     */
+    public function enqueue(string $type, string $to, string $subject, string $html, ?\DateTimeImmutable $availableAt = null, array $meta = [], string $audience = 'customer'): array {
+        $html = $this->wrapHtml($html, $audience);
         $record = [
             'id' => bin2hex(random_bytes(8)),
             'type' => $type,
@@ -224,7 +241,7 @@ final class MailQueueService {
         $admin = trim((string)((new SecretService())->all()['admin_notification_email'] ?? ''));
         if ($admin === '' || !filter_var($admin, FILTER_VALIDATE_EMAIL)) return null;
         try {
-            return $this->enqueue('admin_notification', $admin, $subject . ' - Sri Panchami Spiritual', $html, null, $meta);
+            return $this->enqueue('admin_notification', $admin, $subject, $html, null, $meta, 'admin');
         } catch (\Throwable $e) {
             error_log('Admin notification failed: ' . $e->getMessage());
             return null;
