@@ -115,10 +115,10 @@ final class AdminController extends BaseController {
                 $topUsersStr .= "\n  - {$email}: ₹" . number_format($amount, 2);
             }
             $attachments = '';
-            $tempDir = app_path('.agents/temp');
+            $tempDir = app_path('.claude/temp');
             if (is_dir($tempDir)) {
                 $files = array_diff(scandir($tempDir), ['.','..']);
-                if (!empty($files)) $attachments = "\n\nAttachments in .agents/temp/: " . implode(', ', $files);
+                if (!empty($files)) $attachments = "\n\nAttachments in .claude/temp/: " . implode(', ', $files);
             }
             $context = "You are the admin AI assistant. You have full access to site data.\n\n"
                 . "Site data:\n"
@@ -260,25 +260,12 @@ final class AdminController extends BaseController {
     public function media(): void{$this->render('admin/media',['pageTitle'=>'Media Library','items'=>(new MediaService())->all()]);}
     public function uploadMedia(): void{$uploaded=(new MediaService())->upload($_FILES['media_files'] ?? [], $_POST['context'] ?? 'shared', $_POST['description'] ?? null); (new AuditLogService())->record('upload','media','',['count'=>count($uploaded),'context'=>$_POST['context'] ?? 'shared']); $this->flash(count($uploaded).' media file'.(count($uploaded) === 1 ? '' : 's').' uploaded.','success'); $this->redirect('/admin/media');}
     public function fixPermissions(): void{(new StoragePermissionService())->fix(); (new AuditLogService())->record('fix','permissions','storage'); $this->flash('Storage permissions checked and updated where PHP is allowed.','success'); $this->redirect('/admin/settings');}
-    public function projectMap(): void{$map = \App\Services\ProjectMapService::scan(); $this->render('admin/project-map',['pageTitle' => 'Project Map', 'map'=>$map,'validation'=>\App\Services\ProjectMapService::validate($map)]);}
-    public function workflow(): void{
-        $agentRoot = app_path('.agents');
-        $skills = [];
-        foreach (glob($agentRoot . '/skills/*/SKILL.md') ?: [] as $f) {
-            $name = basename(dirname($f));
-            $meta = file_exists($f) ? (preg_match('/^description: (.+)$/m', (string)file_get_contents($f), $m) ? trim($m[1]) : '') : '';
-            $skills[] = ['name' => $name, 'description' => $meta, 'file' => str_replace(app_path(), '', $f)];
-        }
-        $workflows = [];
-        foreach (glob($agentRoot . '/workflows/*.md') ?: [] as $f) {
-            $workflows[] = ['name' => basename($f), 'path' => str_replace(app_path(), '', $f)];
-        }
-        $handoffs = [];
-        foreach (glob($agentRoot . '/handoffs/events/*.json') ?: [] as $f) {
-            $data = json_decode((string)file_get_contents($f), true);
-            $handoffs[] = ['file' => basename($f), 'issue' => $data['issue'] ?? '?', 'role' => $data['role'] ?? '?', 'next_role' => $data['next_role'] ?? '?'];
-        }
-        $this->render('admin/workflow', ['pageTitle'=>'Agent Workflow','skills'=>$skills,'workflows'=>$workflows,'handoffs'=>$handoffs,'agentPath'=>str_replace(app_path(), '', $agentRoot)]);
+    public function environment(): void{
+        $this->render('admin/environment',[
+            'pageTitle'=>'Environment',
+            'envRaw'=>(new EnvService())->raw(),
+            'permissions'=>(new StoragePermissionService())->status(),
+        ]);
     }
     public function blog(): void{
         $blog = new \App\Services\BlogService();

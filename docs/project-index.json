@@ -1,0 +1,1397 @@
+{
+    "generated_by": "cli/generate-project-index.php",
+    "source": "App\\Services\\ProjectMapService::scan()",
+    "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
+    "summary": {
+        "routes": 112,
+        "controllers": 13,
+        "services": 42,
+        "views": 47,
+        "collections": 22
+    },
+    "routes": [
+        {
+            "method": "GET",
+            "path": "/",
+            "name": "home",
+            "controller": "PublicController@home",
+            "view": "public/home",
+            "services": [
+                "ProductService",
+                "AstrologerService",
+                "TempleService",
+                "CategoryService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/about",
+            "name": "about",
+            "controller": "PublicController@about",
+            "view": "public/about",
+            "services": []
+        },
+        {
+            "method": "GET",
+            "path": "/account/bookings",
+            "name": "account.bookings.legacy",
+            "controller": "AccountController@legacyBookings",
+            "view": "account/bookings",
+            "services": [
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/account/dashboard",
+            "name": "account.dashboard",
+            "controller": "AccountController@dashboard",
+            "view": "account/orders",
+            "services": [
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/account/dashboard/install",
+            "name": "account.dashboard.install",
+            "controller": "AccountController@install",
+            "view": "account/install",
+            "services": [
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/account/dashboard/orders",
+            "name": "account.dashboard.orders",
+            "controller": "AccountController@orders",
+            "view": "account/orders",
+            "services": [
+                "AuthService",
+                "OrderService",
+                "ReviewService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/account/dashboard/sessions",
+            "name": "account.dashboard.sessions",
+            "controller": "AccountController@bookings",
+            "view": "account/bookings",
+            "services": [
+                "AuthService",
+                "AppointmentService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/account/orders",
+            "name": "account.orders.legacy",
+            "controller": "AccountController@legacyOrders",
+            "view": "account/orders",
+            "services": [
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/account/orders/{orderId}/invoice",
+            "name": "account.invoice",
+            "controller": "AccountController@invoice",
+            "view": "account/invoice",
+            "services": [
+                "AuthService",
+                "OrderService",
+                "SettingsService",
+                "TaxService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin",
+            "name": "admin.dashboard",
+            "controller": "AdminController@dashboard",
+            "view": "admin/dashboard",
+            "services": [
+                "OrderService",
+                "AppointmentService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/agent",
+            "name": "admin.agent",
+            "controller": "AdminController@agent",
+            "view": "admin/agent",
+            "services": [
+                "SecretService",
+                "DatabaseService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/agent/ask",
+            "name": "admin.agent.ask",
+            "controller": "AdminController@agentAsk",
+            "view": "admin/agent",
+            "services": [
+                "SecretService",
+                "DatabaseService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/appearance",
+            "name": "admin.appearance",
+            "controller": "AdminController@appearance",
+            "view": "admin/appearance",
+            "services": [
+                "SettingsService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/appearance/save",
+            "name": "admin.appearance.save",
+            "controller": "AdminController@saveAppearance",
+            "view": "admin/appearance",
+            "services": [
+                "SettingsService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/appointments",
+            "name": "admin.appointments",
+            "controller": "AdminController@appointments",
+            "view": "admin/list",
+            "services": [
+                "AppointmentService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/astrologers",
+            "name": "admin.astrologers",
+            "controller": "AdminController@astrologers",
+            "view": "admin/astrologer-form",
+            "services": [
+                "AstrologerService",
+                "SchemaService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/astrologers/delete",
+            "name": "admin.astrologers.delete",
+            "controller": "AdminController@deleteAstrologer",
+            "view": "admin/astrologer-form",
+            "services": [
+                "ResourceService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/astrologers/save",
+            "name": "admin.astrologers.save",
+            "controller": "AdminController@saveAstrologer",
+            "view": "admin/astrologer-form",
+            "services": [
+                "ResourceService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/audit-log",
+            "name": "admin.audit",
+            "controller": "AdminController@audit",
+            "view": "admin/list",
+            "services": [
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/backups",
+            "name": "admin.backups",
+            "controller": "AdminController@backups",
+            "view": "admin/list",
+            "services": [
+                "DatabaseService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/blog",
+            "name": "admin.blog",
+            "controller": "AdminController@blog",
+            "view": "admin/blog",
+            "services": [
+                "BlogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/blog/ai-draft",
+            "name": "admin.blog.ai-draft",
+            "controller": "AdminController@aiDraftBlog",
+            "view": "admin/blog",
+            "services": [
+                "BlogService",
+                "BlogDraftService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/blog/delete",
+            "name": "admin.blog.delete",
+            "controller": "AdminController@deleteBlog",
+            "view": "admin/blog",
+            "services": [
+                "BlogService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/blog/preview",
+            "name": "admin.blog.preview",
+            "controller": "AdminController@previewBlog",
+            "view": "admin/blog",
+            "services": [
+                "BlogService",
+                "MarkdownRenderer",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/blog/save",
+            "name": "admin.blog.save",
+            "controller": "AdminController@saveBlog",
+            "view": "admin/blog",
+            "services": [
+                "BlogService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/categories",
+            "name": "admin.categories",
+            "controller": "AdminController@categories",
+            "view": "admin/resource",
+            "services": [
+                "CategoryService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/categories/delete",
+            "name": "admin.categories.delete",
+            "controller": "AdminController@deleteCategory",
+            "view": "admin/resource",
+            "services": [
+                "ResourceService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/categories/save",
+            "name": "admin.categories.save",
+            "controller": "AdminController@saveCategory",
+            "view": "admin/resource",
+            "services": [
+                "ResourceService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/consultation-analytics",
+            "name": "admin.consultation-analytics",
+            "controller": "AdminController@consultationAnalytics",
+            "view": "admin/consultation-analytics",
+            "services": [
+                "ConsultationService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/contact-submissions",
+            "name": "admin.contact-submissions",
+            "controller": "AdminController@contactSubmissions",
+            "view": "admin/resource",
+            "services": [
+                "ContactService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/contact_submissions/delete",
+            "name": "admin.contact-submissions.delete",
+            "controller": "AdminController@deleteContactSubmission",
+            "view": "admin/resource",
+            "services": [
+                "ResourceService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/contact_submissions/save",
+            "name": "admin.contact-submissions.save",
+            "controller": "AdminController@saveContactSubmission",
+            "view": "admin/resource",
+            "services": [
+                "ResourceService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/coupons",
+            "name": "admin.coupons",
+            "controller": "AdminController@coupons",
+            "view": "admin/resource",
+            "services": [
+                "CouponService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/coupons/delete",
+            "name": "admin.coupons.delete",
+            "controller": "AdminController@deleteCoupon",
+            "view": "admin/resource",
+            "services": [
+                "ResourceService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/coupons/save",
+            "name": "admin.coupons.save",
+            "controller": "AdminController@saveCoupon",
+            "view": "admin/resource",
+            "services": [
+                "ResourceService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/email-inbox",
+            "name": "admin.email-inbox",
+            "controller": "AdminController@emailInbox",
+            "view": "admin/mailbox",
+            "services": [
+                "MailStorageService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/email-outbox",
+            "name": "admin.email-outbox",
+            "controller": "AdminController@emailOutbox",
+            "view": "admin/mailbox",
+            "services": [
+                "MailStorageService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/environment",
+            "name": "admin.environment",
+            "controller": "AdminController@environment",
+            "view": "admin/environment",
+            "services": [
+                "EnvService",
+                "StoragePermissionService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/environment/fix-permissions",
+            "name": "admin.environment.fix-permissions",
+            "controller": "AdminController@fixPermissions",
+            "view": "admin/settings",
+            "services": [
+                "StoragePermissionService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/integrations",
+            "name": "admin.integrations",
+            "controller": "AdminController@integrations",
+            "view": "admin/integrations",
+            "services": [
+                "SettingsService",
+                "PaymentService",
+                "SecretService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/integrations/save",
+            "name": "admin.integrations.save",
+            "controller": "AdminController@saveIntegrations",
+            "view": "admin/integrations",
+            "services": [
+                "SecretService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/media",
+            "name": "admin.media",
+            "controller": "AdminController@media",
+            "view": "admin/media",
+            "services": [
+                "MediaService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/media/upload",
+            "name": "admin.media.upload",
+            "controller": "AdminController@uploadMedia",
+            "view": "admin/media",
+            "services": [
+                "MediaService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/orders",
+            "name": "admin.orders",
+            "controller": "AdminController@orders",
+            "view": "admin/list",
+            "services": [
+                "OrderService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/orders/{id}",
+            "name": "admin.order.show",
+            "controller": "AdminController@order",
+            "view": "admin/detail",
+            "services": [
+                "OrderService",
+                "ShippingService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/orders/{id}/status",
+            "name": "admin.order.status",
+            "controller": "AdminController@saveOrderStatus",
+            "view": "admin/detail",
+            "services": [
+                "OrderService",
+                "MailQueueService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/products",
+            "name": "admin.products",
+            "controller": "AdminController@products",
+            "view": "admin/product-form",
+            "services": [
+                "ProductService",
+                "SchemaService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/products/delete",
+            "name": "admin.products.delete",
+            "controller": "AdminController@deleteProduct",
+            "view": "admin/product-form",
+            "services": [
+                "ResourceService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/products/save",
+            "name": "admin.products.save",
+            "controller": "AdminController@saveProduct",
+            "view": "admin/product-form",
+            "services": [
+                "ResourceService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/settings",
+            "name": "admin.settings",
+            "controller": "AdminController@settings",
+            "view": "admin/settings",
+            "services": [
+                "SettingsService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/settings/admin-credentials",
+            "name": "admin.settings.admin-credentials",
+            "controller": "AdminController@saveAdminCredentials",
+            "view": "admin/settings",
+            "services": [
+                "EnvService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/settings/save",
+            "name": "admin.settings.save",
+            "controller": "AdminController@saveSettings",
+            "view": "admin/settings",
+            "services": [
+                "SettingsService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/shipping",
+            "name": "admin.shipping",
+            "controller": "AdminController@shipping",
+            "view": "admin/settings",
+            "services": [
+                "ShippingService",
+                "SettingsService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/support-tickets",
+            "name": "admin.support-tickets",
+            "controller": "AdminController@supportTickets",
+            "view": "admin/list",
+            "services": [
+                "DatabaseService",
+                "SupportTicketService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/support-tickets/save",
+            "name": "admin.support-tickets.save",
+            "controller": "AdminController@saveSupportTicket",
+            "view": "admin/list",
+            "services": [
+                "ResourceService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/tax-report",
+            "name": "admin.tax-report",
+            "controller": "AdminController@taxReport",
+            "view": "admin/tax-report",
+            "services": [
+                "OrderService",
+                "TaxService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/temples",
+            "name": "admin.temples",
+            "controller": "AdminController@temples",
+            "view": "admin/resource",
+            "services": [
+                "TempleService",
+                "SchemaService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/temples/delete",
+            "name": "admin.temples.delete",
+            "controller": "AdminController@deleteTemple",
+            "view": "admin/resource",
+            "services": [
+                "ResourceService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/temples/save",
+            "name": "admin.temples.save",
+            "controller": "AdminController@saveTemple",
+            "view": "admin/resource",
+            "services": [
+                "ResourceService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/api",
+            "name": "api.index",
+            "controller": "ApiController@index",
+            "view": "public/404",
+            "services": []
+        },
+        {
+            "method": "POST",
+            "path": "/api/agent",
+            "name": "api.agent",
+            "controller": "AgentController@ask",
+            "view": "public/404",
+            "services": [
+                "SecretService",
+                "DatabaseService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/api/categories",
+            "name": "api.categories",
+            "controller": "ApiController@categories",
+            "view": "public/404",
+            "services": [
+                "CategoryService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/api/consult",
+            "name": "api.consult",
+            "controller": "ApiController@consult",
+            "view": "public/404",
+            "services": [
+                "ProductService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/api/consultations/{id}/status",
+            "name": "api.consultation.status",
+            "controller": "ConsultationController@status",
+            "view": "admin/list",
+            "services": [
+                "AuthService",
+                "ConsultationService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/api/product/{slug}",
+            "name": "api.product",
+            "controller": "ApiController@product",
+            "view": "public/404",
+            "services": [
+                "ProductService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/api/shop",
+            "name": "api.shop",
+            "controller": "ApiController@shop",
+            "view": "public/404",
+            "services": [
+                "ProductService",
+                "CategoryService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/api/temples",
+            "name": "api.temples",
+            "controller": "ApiController@temples",
+            "view": "public/404",
+            "services": [
+                "TempleService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/auth/google",
+            "name": "auth.google",
+            "controller": "AuthController@googleRedirect",
+            "view": "public/login",
+            "services": [
+                "SecretService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/auth/google/callback",
+            "name": "auth.google.callback",
+            "controller": "AuthController@callback",
+            "view": "public/login",
+            "services": [
+                "SecretService",
+                "DatabaseService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/blog",
+            "name": "blog.index",
+            "controller": "BlogController@index",
+            "view": "public/blog",
+            "services": [
+                "BlogService",
+                "MarkdownRenderer"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/blog/category/{slug}",
+            "name": "blog.category",
+            "controller": "BlogController@category",
+            "view": "public/blog",
+            "services": [
+                "BlogService",
+                "MarkdownRenderer"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/blog/{slug}",
+            "name": "blog.show",
+            "controller": "BlogController@show",
+            "view": "public/blog-post",
+            "services": [
+                "BlogService",
+                "MarkdownRenderer"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/cart",
+            "name": "cart",
+            "controller": "PublicController@cart",
+            "view": "public/cart",
+            "services": [
+                "CartService",
+                "ProductService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/cart/add",
+            "name": "cart.add",
+            "controller": "CommerceController@addToCart",
+            "view": "public/cart",
+            "services": [
+                "CartService",
+                "ProductService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/cart/remove",
+            "name": "cart.remove",
+            "controller": "CommerceController@removeFromCart",
+            "view": "public/cart",
+            "services": [
+                "CartService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/cart/update",
+            "name": "cart.update",
+            "controller": "CommerceController@updateCart",
+            "view": "public/cart",
+            "services": [
+                "CartService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/categories",
+            "name": "categories",
+            "controller": "PublicController@categories",
+            "view": "public/categories",
+            "services": [
+                "CategoryService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/checkout",
+            "name": "checkout",
+            "controller": "PublicController@checkout",
+            "view": "public/checkout",
+            "services": [
+                "CartService",
+                "ProductService",
+                "SecretService",
+                "AddressService",
+                "SettingsService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/checkout/create-order",
+            "name": "checkout.create-order",
+            "controller": "CommerceController@createOrder",
+            "view": "public/checkout",
+            "services": [
+                "SecretService",
+                "PaymentService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/consult",
+            "name": "consult",
+            "controller": "PublicController@consult",
+            "view": "public/consult",
+            "services": [
+                "AstrologerService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/consult/{slug}",
+            "name": "consult.show",
+            "controller": "PublicController@consultant",
+            "view": "public/astrologer",
+            "services": [
+                "AstrologerService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/consultation/initiate",
+            "name": "consultation.initiate",
+            "controller": "ConsultationController@initiate",
+            "view": "public/astrologer",
+            "services": [
+                "AuthService",
+                "AstrologerService",
+                "ResourceService",
+                "MailQueueService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/contact",
+            "name": "contact",
+            "controller": "PublicController@contact",
+            "view": "public/contact",
+            "services": []
+        },
+        {
+            "method": "POST",
+            "path": "/contact",
+            "name": "contact.post",
+            "controller": "PublicController@contact",
+            "view": "public/contact",
+            "services": [
+                "ContactService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/create-order",
+            "name": "api.checkout.create-order",
+            "controller": "CommerceController@createOrder",
+            "view": "public/checkout",
+            "services": [
+                "SecretService",
+                "PaymentService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/docs",
+            "name": "docs.index",
+            "controller": "PublicController@docs",
+            "view": "public/blog",
+            "services": []
+        },
+        {
+            "method": "GET",
+            "path": "/forgot-password",
+            "name": "forgot-password",
+            "controller": "AuthController@forgotPassword",
+            "view": "public/forgot-password",
+            "services": [
+                "PasswordResetService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/forgot-password",
+            "name": "forgot-password.post",
+            "controller": "AuthController@forgotPasswordPost",
+            "view": "public/forgot-password",
+            "services": [
+                "PasswordResetService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/help/{slug}",
+            "name": "help.show",
+            "controller": "PublicController@doc",
+            "view": "public/blog-post",
+            "services": []
+        },
+        {
+            "method": "GET",
+            "path": "/login",
+            "name": "login",
+            "controller": "PublicController@login",
+            "view": "public/login",
+            "services": [
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/login",
+            "name": "login.post",
+            "controller": "AuthController@loginPost",
+            "view": "public/login",
+            "services": [
+                "DatabaseService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/logout",
+            "name": "logout",
+            "controller": "AuthController@logout",
+            "view": "public/login",
+            "services": [
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/payment/verify",
+            "name": "payment.verify",
+            "controller": "CommerceController@verifyPayment",
+            "view": "public/checkout",
+            "services": [
+                "SecretService",
+                "PaymentService",
+                "DatabaseService",
+                "TaxService",
+                "SettingsService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/privacy",
+            "name": "privacy",
+            "controller": "PublicController@privacy",
+            "view": "public/privacy",
+            "services": []
+        },
+        {
+            "method": "GET",
+            "path": "/product/{slug}",
+            "name": "product.show",
+            "controller": "PublicController@product",
+            "view": "public/product",
+            "services": [
+                "ProductService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/register",
+            "name": "register",
+            "controller": "AuthController@register",
+            "view": "public/register",
+            "services": []
+        },
+        {
+            "method": "POST",
+            "path": "/register",
+            "name": "register.post",
+            "controller": "AuthController@registerPost",
+            "view": "public/register",
+            "services": [
+                "DatabaseService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/remoteDB",
+            "name": "api.remotedb",
+            "controller": "RemoteDbController@__invoke",
+            "view": "public/404",
+            "services": [
+                "DatabaseService",
+                "SecretService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/reset-password",
+            "name": "reset-password",
+            "controller": "AuthController@resetPassword",
+            "view": "public/reset-password",
+            "services": [
+                "PasswordResetService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/reset-password",
+            "name": "reset-password.post",
+            "controller": "AuthController@resetPasswordPost",
+            "view": "public/reset-password",
+            "services": [
+                "PasswordResetService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/reviews/astrologer",
+            "name": "reviews.astrologer",
+            "controller": "ReviewController@saveAstrologer",
+            "view": "account/bookings",
+            "services": [
+                "ReviewService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/reviews/product",
+            "name": "reviews.product",
+            "controller": "ReviewController@saveProduct",
+            "view": "account/orders",
+            "services": [
+                "ReviewService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/shop",
+            "name": "shop",
+            "controller": "PublicController@shop",
+            "view": "public/shop",
+            "services": [
+                "ProductService",
+                "CategoryService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/sitemap.xml",
+            "name": "sitemap",
+            "controller": "PublicController@sitemap",
+            "view": "public/sitemap",
+            "services": [
+                "BlogService",
+                "ProductService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/spiritual",
+            "name": "spiritual.short",
+            "controller": "PublicController@spiritual",
+            "view": "public/spiritual",
+            "services": []
+        },
+        {
+            "method": "GET",
+            "path": "/sri-panchami-spiritual",
+            "name": "spiritual",
+            "controller": "PublicController@spiritual",
+            "view": "public/spiritual",
+            "services": []
+        },
+        {
+            "method": "GET",
+            "path": "/support",
+            "name": "support.page",
+            "controller": "SupportController@page",
+            "view": "public/support",
+            "services": [
+                "SeoService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/support/ask",
+            "name": "support.ask",
+            "controller": "SupportController@ask",
+            "view": "public/support",
+            "services": [
+                "SupportBotService",
+                "AgentContextService",
+                "SupportTicketService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/temples",
+            "name": "temples",
+            "controller": "PublicController@temples",
+            "view": "public/temples",
+            "services": [
+                "TempleService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/temples/{slug}",
+            "name": "temple.show",
+            "controller": "PublicController@temple",
+            "view": "public/temple",
+            "services": [
+                "TempleService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/terms",
+            "name": "terms",
+            "controller": "PublicController@terms",
+            "view": "public/terms",
+            "services": []
+        },
+        {
+            "method": "POST",
+            "path": "/verify-payment",
+            "name": "api.payment.verify",
+            "controller": "CommerceController@verifyPayment",
+            "view": "public/checkout",
+            "services": [
+                "SecretService",
+                "PaymentService",
+                "DatabaseService",
+                "TaxService",
+                "SettingsService"
+            ]
+        }
+    ],
+    "controllers": [
+        "AccountController",
+        "AdminController",
+        "AgentController",
+        "ApiController",
+        "AuthController",
+        "BaseController",
+        "BlogController",
+        "CommerceController",
+        "ConsultationController",
+        "PublicController",
+        "RemoteDbController",
+        "ReviewController",
+        "SupportController"
+    ],
+    "services": [
+        "AddressService",
+        "AgentContextService",
+        "AppointmentService",
+        "AstrologerService",
+        "AuditLogService",
+        "AuthService",
+        "BlogDraftService",
+        "BlogService",
+        "CartService",
+        "CategoryService",
+        "ConsultationService",
+        "ContactService",
+        "CouponService",
+        "DatabaseService",
+        "DocsMapService",
+        "EnvService",
+        "GitHubDocService",
+        "ImageOptimizerService",
+        "KnowledgeGraphService",
+        "MailQueueService",
+        "MailStorageService",
+        "MarkdownRenderer",
+        "MediaService",
+        "OrderService",
+        "PasswordResetService",
+        "PaymentService",
+        "ProductService",
+        "ProjectMapService",
+        "RateLimiter",
+        "ResourceService",
+        "ReviewService",
+        "SchemaService",
+        "SecretService",
+        "SeoService",
+        "SettingsService",
+        "ShippingService",
+        "SmtpMailer",
+        "StoragePermissionService",
+        "SupportBotService",
+        "SupportTicketService",
+        "TaxService",
+        "TempleService"
+    ],
+    "views": [
+        "account/_nav",
+        "account/bookings",
+        "account/install",
+        "account/invoice",
+        "account/orders",
+        "admin/agent",
+        "admin/appearance",
+        "admin/astrologer-form",
+        "admin/blog",
+        "admin/consultation-analytics",
+        "admin/dashboard",
+        "admin/detail",
+        "admin/environment",
+        "admin/integrations",
+        "admin/list",
+        "admin/mailbox",
+        "admin/media",
+        "admin/product-form",
+        "admin/resource",
+        "admin/settings",
+        "admin/tax-report",
+        "layouts/admin",
+        "layouts/app",
+        "public/404",
+        "public/about",
+        "public/astrologer",
+        "public/blog",
+        "public/blog-post",
+        "public/cart",
+        "public/categories",
+        "public/checkout",
+        "public/consult",
+        "public/contact",
+        "public/forgot-password",
+        "public/home",
+        "public/login",
+        "public/privacy",
+        "public/product",
+        "public/register",
+        "public/reset-password",
+        "public/shop",
+        "public/sitemap",
+        "public/spiritual",
+        "public/support",
+        "public/temple",
+        "public/temples",
+        "public/terms"
+    ],
+    "collections": [
+        "addresses",
+        "appointments",
+        "astrologers",
+        "audit_events",
+        "categories",
+        "consultation_messages",
+        "consultation_signals",
+        "contact_submissions",
+        "coupons",
+        "mail_inbox",
+        "mail_outbox",
+        "mail_queue",
+        "media_files",
+        "orders",
+        "products",
+        "reviews",
+        "secrets",
+        "settings",
+        "support_tickets",
+        "temples",
+        "users",
+        "wallet_transactions"
+    ],
+    "integrations": [
+        "GoogleOAuthClient",
+        "GoogleSiteKitClient",
+        "MetaPixelClient",
+        "RazorpayClient",
+        "StripeClient"
+    ],
+    "gaps": {
+        "missing_route_mappings": [],
+        "missing_controller_files": [],
+        "missing_service_files": [],
+        "missing_view_files": [],
+        "navigation_without_get_route": [],
+        "unwired_controllers": [],
+        "unwired_services": [
+            "ProjectMapService"
+        ],
+        "unwired_views": [],
+        "admin_mutations_without_audit": [],
+        "unwired_schema_collections": []
+    }
+}

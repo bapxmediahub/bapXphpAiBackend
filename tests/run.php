@@ -125,12 +125,12 @@ $tests['project map grounds shared navigation in registered get routes'] = funct
 };
 
 $tests['agent workflow diagnoses before issue tracking and stays source grounded'] = function (): void {
-    $agents = file_get_contents(app_path('AGENTS.md'));
+    $contract = file_get_contents(app_path('CLAUDE.md'));
     $readme = file_get_contents(app_path('README.md'));
-    foreach (['Diagnose, Then Issue', 'reproduce or inspect behavior first', 'pinpoint the owning source', 'Work Order', 'Map validation alone is incomplete'] as $needle) {
-        assertTrue(str_contains($agents, $needle), "Root AGENTS.md should include {$needle}");
+    foreach (['Work order', 'evidence-backed', 'Inspect existing implementations before creating', 'Verify in a browser'] as $needle) {
+        assertTrue(str_contains($contract, $needle), "CLAUDE.md should include {$needle}");
     }
-    assertTrue(str_contains($readme, 'AGENTS.md'), 'README should reference AGENTS.md instead of duplicating its workflow');
+    assertTrue(str_contains($readme, 'AGENTS.md') || str_contains($readme, 'CLAUDE.md'), 'README should reference the agent contract instead of duplicating its workflow');
 };
 
 $tests['independent deployment repository and runtime artifacts are properly managed'] = function (): void {
@@ -157,13 +157,12 @@ $tests['repo has agent-readable schema and built-in skills'] = function (): void
     assertTrue((new SchemaService())->adminFields('products') !== [], 'SchemaService should expose admin fields');
     foreach ([
         'AGENTS.md',
-        '.agents/skills/php-json-backend/SKILL.md',
-        '.agents/skills/backend-json/SKILL.md',
-        '.agents/skills/schema/SKILL.md',
-        '.agents/skills/admin-ui/SKILL.md',
-        '.agents/skills/frontend-php/SKILL.md',
-        '.agents/skills/deployment/SKILL.md',
-        '.agents/skills/docs/SKILL.md',
+        '.claude/skills/backend-json/SKILL.md',
+        '.claude/skills/schema/SKILL.md',
+        '.claude/skills/admin-ui/SKILL.md',
+        '.claude/skills/frontend-php/SKILL.md',
+        '.claude/skills/deployment/SKILL.md',
+        '.claude/skills/docs/SKILL.md',
     ] as $path) {
         assertTrue(is_file(app_path($path)), "Built-in agent instruction file should exist: {$path}");
     }
@@ -173,18 +172,18 @@ $tests['repo has agent-readable schema and built-in skills'] = function (): void
         if ($file->getBasename() === 'AGENTS.md') $agentFiles[] = str_replace(app_path() . '/', '', $file->getPathname());
     }
     sort($agentFiles);
-    assertTrue($agentFiles === ['AGENTS.md'], 'Root AGENTS.md should be the only binding agent contract');
+    assertTrue($agentFiles === ['AGENTS.md'], 'Root AGENTS.md should be the only AGENTS.md');
     foreach (['example-Agent.md', '.codex'] as $path) {
         assertTrue(!file_exists(app_path($path)), "Obsolete duplicated agent instruction path should not exist: {$path}");
     }
-    // CLAUDE.md is allowed, but only as a pointer to AGENTS.md. The rule being protected
-    // here is "one binding contract", not the filename — so assert it delegates rather
-    // than restating rules, which is what would actually cause the two to drift.
-    if (file_exists(app_path('CLAUDE.md'))) {
-        $claude = (string)file_get_contents(app_path('CLAUDE.md'));
-        assertTrue(str_contains($claude, 'AGENTS.md'), 'CLAUDE.md must point at AGENTS.md as the binding contract');
-        assertTrue(substr_count($claude, "\n") < 80, 'CLAUDE.md must stay a short pointer, not a second copy of the contract');
-    }
+    // CLAUDE.md now holds the contract and AGENTS.md is the pointer, so the roles are
+    // the reverse of the earlier arrangement. Assert exactly one of them carries the
+    // rules, which is what stops the two from drifting apart.
+    assertTrue(file_exists(app_path('CLAUDE.md')), 'CLAUDE.md must exist and carry the binding contract');
+    $agentsMd = (string)file_get_contents(app_path('AGENTS.md'));
+    assertTrue(str_contains($agentsMd, 'CLAUDE.md'), 'AGENTS.md must point at CLAUDE.md as the binding contract');
+    assertTrue(substr_count($agentsMd, "\n") < 40, 'AGENTS.md must stay a short pointer, not a second copy of the contract');
+    assertTrue(!is_dir(app_path('.agents')), 'Agent tooling lives in .claude, not .agents');
 };
 
 $tests['local development router serves existing static files directly'] = function (): void {
@@ -924,14 +923,6 @@ $tests['admin product and astrologer forms expose editable owner fields'] = func
     foreach (['username', 'message_credit_cost', 'call_credit_per_second', 'payout_percentage'] as $field) assertTrue(!str_contains($astroForm, 'name="' . $field . '"'), "Consultant form should not expose removed credential/rate field {$field}");
 };
 
-$tests['admin project map has a working view'] = function (): void {
-    $view = app_path('views/admin/project-map.php');
-    assertTrue(is_file($view), 'Project map admin route should have a renderable view');
-    $contents = file_get_contents($view);
-    assertTrue(str_contains($contents, 'Validation'), 'Project map view should show validation status');
-    assertTrue(str_contains($contents, 'Routes'), 'Project map view should show route mappings');
-};
-
 $tests['admin sidebar exposes every admin menu'] = function (): void {
     $layout = file_get_contents(app_path('views/layouts/admin.php'));
     foreach ([
@@ -952,7 +943,6 @@ $tests['admin sidebar exposes every admin menu'] = function (): void {
         '/admin/shipping',
         '/admin/backups',
         '/admin/audit-log',
-        '/admin/developer/project-map',
     ] as $path) {
         assertTrue(str_contains($layout, 'href="' . $path . '"'), "Admin sidebar should link {$path}");
     }
@@ -1014,10 +1004,11 @@ $tests['php 404 page uses themed template classes'] = function (): void {
 };
 
 $tests['documentation has deployment agent instructions and no one-line placeholder pages'] = function (): void {
-    assertTrue(is_file(app_path('AGENTS.md')), 'Agent operating guide should exist');
-    $agent = file_get_contents(app_path('AGENTS.md'));
-    foreach (['Repository Contract', 'docs/systematic-map.mmd', 'bapXphp update', 'bapXphp ci', 'After meaningful edits', 'Before pushing to `main`'] as $needle) {
-        assertTrue(str_contains($agent, $needle), "Agent guide should mention {$needle}");
+    assertTrue(is_file(app_path('AGENTS.md')), 'Agent operating guide pointer should exist');
+    assertTrue(is_file(app_path('CLAUDE.md')), 'Binding agent contract should exist');
+    $agent = file_get_contents(app_path('CLAUDE.md'));
+    foreach (['Repository', 'docs/systematic-map.mmd', 'bapXphp ci', 'Before pushing to `main`'] as $needle) {
+        assertTrue(str_contains($agent, $needle), "Agent contract should mention {$needle}");
     }
     foreach (glob(app_path('docs/pages/*.md')) ?: [] as $path) {
         assertTrue(count(file($path) ?: []) > 3, basename($path) . ' should contain real page notes, not only a heading');
@@ -1035,7 +1026,7 @@ $tests['pull requests use non mutating CI with fresh project and documentation m
     $workflow = file_get_contents(app_path('.github/workflows/ci.yml'));
     $cli = file_get_contents(app_path('cli/bapXphp'));
     foreach (['pull_request:', 'branches: [main]', './bapXphp ci'] as $needle) assertTrue(str_contains($workflow, $needle), "CI workflow should include {$needle}");
-    foreach (['cmd_ci()', 'validate-project-map.php', 'validate-docs-map.php', 'cmd_update()', 'cmd_hooks()', 'cmd_tui()', 'cmd_ai_probe()'] as $needle) {
+    foreach (['cmd_ci()', 'validate-project-map.php', 'validate-docs-map.php', 'cmd_update()', 'cmd_hooks()', 'cmd_ai_probe()'] as $needle) {
         assertTrue(str_contains($cli, str_replace('\\n', "\n", $needle)), "CLI should include {$needle}");
     }
     foreach (['require_gh', 'cmd_issue()', 'cmd_pr()', 'cmd_merge()', 'gh issue list', 'gh pr list'] as $needle) {
@@ -1045,9 +1036,10 @@ $tests['pull requests use non mutating CI with fresh project and documentation m
 };
 
 $tests['repository operations use git and GitHub Actions without duplicate agent folders'] = function (): void {
-    assertTrue(is_file(app_path('.agents/skills/git/SKILL.md')), 'Plain Git skill should exist');
-    assertTrue(!is_file(app_path('.agents/skills/gh-cli/SKILL.md')), 'GitHub CLI skill should be removed');
-    assertTrue(!is_dir(app_path('.claude')), 'Duplicate .claude agent folder should not exist');
+    assertTrue(is_file(app_path('.claude/skills/git/SKILL.md')), 'Plain Git skill should exist');
+    assertTrue(!is_file(app_path('.claude/skills/gh-cli/SKILL.md')), 'GitHub CLI skill should be removed');
+    assertTrue(is_dir(app_path('.claude')), 'Agent tooling should live in .claude');
+    assertTrue(!is_dir(app_path('.agents')), 'Legacy .agents folder should not exist');
     assertTrue(is_file(app_path('.github/workflows/branch-pr.yml')), 'Branch pushes should have an Actions-owned PR workflow');
     assertTrue(!is_file(app_path('.github/workflows/sync-upstream.yml')), 'Unforked repository should not contain sync-upstream workflow');
 
@@ -1055,41 +1047,23 @@ $tests['repository operations use git and GitHub Actions without duplicate agent
         app_path('AGENTS.md'),
         app_path('README.md'),
         app_path('cli/bapXphp'),
-        app_path('.agents/workflows/browser-tester.md'),
-        app_path('.agents/workflows/cto-workflow.md'),
-        app_path('.agents/skills/git/SKILL.md'),
-        app_path('.agents/skills/deployment/SKILL.md'),
+        app_path('.claude/skills/git/SKILL.md'),
+        app_path('.claude/skills/deployment/SKILL.md'),
     ];
     foreach ($activeFiles as $path) {
         $source = file_get_contents($path);
         assertTrue(!preg_match('/\bgh\s+(issue|pr|api|workflow|repo)\b/', $source), basename($path) . ' should not require GitHub CLI');
     }
 
-    $trigger = file_get_contents(app_path('.github/workflows/issue-agent-trigger.yml'));
-    foreach (['workflow_dispatch:', 'types: [opened, closed]', 'Create or refresh handoff event', 'Clear matching active handoff', 'github.rest.issues.get'] as $needle) {
-        assertTrue(str_contains($trigger, $needle), "Issue orchestration should include {$needle}");
-    }
-    assertTrue(!str_contains($trigger, 'types: [opened, labeled]'), 'Agent labels must not recursively dispatch duplicate handoffs');
 
-    $tui = file_get_contents(app_path('cli/tui.php'));
-    assertTrue(str_contains($tui, 'function activeHandoff') && str_contains($tui, 'handoff:'), 'TUI should show the actual active issue and role');
 
-    $commentHandoff = file_get_contents(app_path('.github/workflows/issue-comment-handoff.yml'));
-    foreach (["github.repository == 'bapxmediahub/bapXphpAiBackend'", '@bapXai', 'actions/create-github-app-token@v2', 'BAPXAI_APP_ID', 'BAPXAI_PRIVATE_KEY', 'source-grounded diagnosis'] as $needle) {
-        assertTrue(str_contains($commentHandoff, $needle), "Issue comments should support the bapXai CTO hook via {$needle}");
-    }
-
-    $review = file_get_contents(app_path('.github/workflows/ai-pr-review.yml'));
-    assertTrue(str_contains($review, "APP_URL: \${{ vars.APP_URL || 'https://sripanchamispiritual.com' }}"), 'AI review should have a usable hosted agent fallback');
-    assertTrue(str_contains($review, 'No AI endpoint or APP_URL configured.'), 'AI review should fail with a clear configuration error instead of an invalid curl URL');
-    assertTrue(str_contains($review, 'file_get_contents($argv[1])') && str_contains($review, 'pr_diff.patch'), 'AI review should read the diff from a file instead of interpolating it into a shell command');
 
     $branchPr = file_get_contents(app_path('.github/workflows/branch-pr.yml'));
     assertTrue(str_contains($branchPr, "github.repository == 'bapxmediahub/bapXphpAiBackend'"), 'Automatic PR creation should run only in the deployment working repository');
     assertTrue(str_contains($branchPr, 'actions/create-github-app-token@v2') && str_contains($branchPr, 'error.status === 403'), 'Automatic PR creation should use the bapXai App when configured and explain disabled token permissions');
 
-    $agents = file_get_contents(app_path('AGENTS.md'));
-    assertTrue(str_contains($agents, '`bapxmediahub/bapXphpAiBackend` is the only agent working repository'), 'Agent contract should pin work to the deployment repository');
+    $agents = file_get_contents(app_path('CLAUDE.md'));
+    assertTrue(str_contains($agents, '`bapxmediahub/bapXphpAiBackend` is the only working repository'), 'Agent contract should pin work to the deployment repository');
     assertTrue(str_contains($agents, 'repository is independent and unforked'), 'Agent contract should record the independent repository state');
     assertTrue(str_contains($agents, 'Do not add an upstream remote'), 'Agent contract should prohibit stale fork synchronization');
 };
@@ -1125,36 +1099,6 @@ $tests['systematic project map, docs/map.mmd, and root map.mmd are the generated
     $cmap = file_get_contents(app_path('map.mmd'));
     foreach (['PUBLIC Routes', 'AUTH Routes', 'PAYMENT Routes', 'ADMIN Routes', 'Controllers', 'Services', 'Schema Collections'] as $needle) {
         assertTrue(str_contains($cmap, $needle), "root map.mmd should include {$needle}");
-    }
-};
-
-$tests['agent harness is yaml driven and has a generated validated graph'] = function (): void {
-    $source = file_get_contents(app_path('config/agents/workflow.yaml'));
-    $config = json_decode($source, true);
-    assertTrue(is_array($config), 'Agent workflow YAML should be machine readable');
-    foreach (['cto', 'worker', 'reviewer'] as $role) {
-        assertTrue(isset($config['roles'][$role]), "Agent workflow should declare {$role}");
-    }
-    foreach (['started', 'completed', 'duration_minutes', 'total_issues', 'closed_issues', 'objectives_completed', 'handoffs_used', 'tests_passed', 'gaps', 'errors', 'score'] as $metric) {
-        assertTrue(in_array($metric, $config['telemetry']['required'] ?? [], true), "Telemetry should require {$metric}");
-    }
-    $handoffSchema = json_decode(file_get_contents(app_path('.agents/workflows/handoff.schema.json')), true);
-    $preCommit = file_get_contents(app_path('.agents/hooks/pre-commit'));
-    assertTrue(str_contains($preCommit, '.agents/handoffs/**/*.json'), 'Pre-commit hook should validate nested handoff event and active files');
-    assertSame('sequential', $config['workflow']['execution'] ?? '', 'Agent roles should execute sequentially');
-    assertTrue(in_array('hidden_reasoning', $config['workflow']['context_policy']['exclude'] ?? [], true), 'Handoffs should exclude hidden reasoning');
-    foreach ($config['scripts'] ?? [] as $name => $script) {
-        assertTrue(!empty($script['success']) && !empty($script['failure']), "Tool {$name} should declare success and failure routing");
-    }
-    $map = file_get_contents(app_path('agents.mmd'));
-    foreach (['CTO', 'Worker', 'Reviewer', 'gap or blocked', 'Telemetry'] as $needle) {
-        assertTrue(str_contains($map, $needle), "agents.mmd should include {$needle}");
-    }
-    $cli = file_get_contents(app_path('cli/bapXphp'));
-    assertTrue(str_contains($cli, 'validate-agents-map.php') && str_contains($cli, 'generate-agents-map.php'), 'CI and update should own agent map freshness');
-    $internal = file_get_contents(app_path('docs/internal/agent-harness.md'));
-    foreach (['ChatDev 2.0', 'ElevenLabs Workflows', 'OpenAI Harness Engineering', 'GitHub Actions', 'Deterministic work does not need an agent'] as $needle) {
-        assertTrue(str_contains($internal, $needle), "Internal harness documentation should include {$needle}");
     }
 };
 

@@ -84,7 +84,7 @@ final class DocsMapService
     private function skillsSection(): array
     {
         $lines = ["    ### Agent Skills"];
-        $dirs = glob($this->root . '/.agents/skills/*/SKILL.md') ?: [];
+        $dirs = glob($this->root . '/.claude/skills/*/SKILL.md') ?: [];
         foreach ($dirs as $skillFile) {
             $name = basename(dirname($skillFile));
             $lines[] = '    SKILL_' . $this->stableId($name) . '["' . $this->label($name) . '"]';
