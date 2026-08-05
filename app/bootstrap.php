@@ -27,6 +27,8 @@ spl_autoload_register(function (string $class): void {
 function app_path(string $path = ''): string { return dirname(__DIR__) . ($path ? '/' . ltrim($path, '/') : ''); }
 function storage_path(string $path = ''): string { return app_path('storage' . ($path ? '/' . ltrim($path, '/') : '')); }
 function e(string $value): string { return htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); }
+/** True when a site module (consult|shop|blog) is switched on in Admin → Site Settings. */
+function module_on(string $key): bool { return (new App\Services\SettingsService())->moduleEnabled($key); }
 function placeholder_img(string $label = ''): string {
     $label = $label ?: 'Sri Panchami';
     $label = htmlspecialchars($label, ENT_QUOTES | ENT_XML1, 'UTF-8');

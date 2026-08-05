@@ -10,6 +10,9 @@ return [
     'dbname' => $env['BAPX_MYSQL_DB'] ?: 'u907253411_db_name_sps',
     'user' => $env['BAPX_MYSQL_USER'] ?: 'u907253411_db_user_sps',
     'pass' => $env['BAPX_MYSQL_PASS'] ?: '',
-    'remote_url' => (string)($env['BAPX_REMOTE_DB_URL'] ?? $_SERVER['BAPX_REMOTE_DB_URL'] ?? $_ENV['BAPX_REMOTE_DB_URL'] ?? ($appUrl . '/remoteDB')),
+    // Lowercase '/remotedb'. The live host serves this path case-sensitively and 404s on
+    // '/remoteDB'; DatabaseService::remoteCall() swallows non-200 responses and returns [],
+    // so the wrong casing silently renders an empty site instead of raising an error.
+    'remote_url' => (string)($env['BAPX_REMOTE_DB_URL'] ?? $_SERVER['BAPX_REMOTE_DB_URL'] ?? $_ENV['BAPX_REMOTE_DB_URL'] ?? ($appUrl . '/remotedb')),
     'remote_db_password' => (string)($env['REMOTE_DB_PASSWORD'] ?? ''),
 ];

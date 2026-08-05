@@ -51,7 +51,28 @@ final class AdminController extends BaseController {
     public function saveTemple(): void{$this->save('temples');}
     public function deleteTemple(): void{$this->delete('temples');}
     public function settings(): void{$this->render('admin/settings',['pageTitle' => 'Settings', 'title' => 'Site Settings', 'settings'=>(new SettingsService())->public(), 'adminCredentials'=>(new EnvService())->adminCredentials()]);}
-    public function saveSettings(): void{(new SettingsService())->savePublic(['shipping_mode'=>$_POST['shipping_mode'] ?? 'free','flat_rate'=>max(0,(float)($_POST['flat_rate'] ?? 0)),'currency'=>$_POST['currency'] ?? 'INR','timezone'=>$_POST['timezone'] ?? 'Asia/Kolkata','gstin'=>$_POST['gstin'] ?? '','gst_legal_name'=>$_POST['gst_legal_name'] ?? '','gst_trade_name'=>$_POST['gst_trade_name'] ?? '','gst_address'=>$_POST['gst_address'] ?? '','gst_state'=>$_POST['gst_state'] ?? '','gst_state_code'=>$_POST['gst_state_code'] ?? '']); (new AuditLogService())->record('save','settings','public',['fields'=>['shipping_mode','flat_rate','currency','timezone','gstin']]); $this->flash('Settings saved.','success'); $this->redirect('/admin/settings');}
+    public function saveSettings(): void{
+        // The settings page posts several independent forms to this one action, so only
+        // apply the fields actually submitted. Defaulting absent keys would blank out
+        // every field belonging to the other forms (notably the GST configuration).
+        $service = new SettingsService();
+        $settings = $service->admin();
+        foreach (['shipping_mode','currency','timezone','gstin','gst_legal_name','gst_trade_name','gst_address','gst_state','gst_state_code'] as $key) {
+            if (array_key_exists($key, $_POST)) $settings[$key] = trim((string)$_POST[$key]);
+        }
+        if (array_key_exists('flat_rate', $_POST)) $settings['flat_rate'] = max(0, (float)$_POST['flat_rate']);
+        $changedModules = [];
+        foreach (array_keys(SettingsService::MODULES) as $key) {
+            $field = 'module_' . $key;
+            if (!array_key_exists($field, $_POST)) continue;
+            $settings[$field] = ((string)$_POST[$field] === '1') ? '1' : '0';
+            $changedModules[] = $field;
+        }
+        $service->savePublic($settings);
+        (new AuditLogService())->record('save','settings','public',['fields'=>array_merge(array_values(array_intersect(['shipping_mode','flat_rate','currency','timezone','gstin'], array_keys($_POST))), $changedModules)]);
+        $this->flash('Settings saved.','success');
+        $this->redirect('/admin/settings');
+    }
     public function saveAdminCredentials(): void{(new EnvService())->saveAdminCredentials($_POST); (new AuditLogService())->record('save','admin-credentials','env'); $this->flash('Admin credentials saved.','success'); $this->redirect('/admin/settings');}
     public function integrations(): void{$this->render('admin/integrations',['pageTitle' => 'Integrations', 'secrets'=>(new SecretService())->all()]);}
     public function saveIntegrations(): void{(new SecretService())->save($_POST); (new AuditLogService())->record('save','integrations','secrets'); $this->flash('Integration settings saved.','success'); $this->redirect('/admin/integrations');}
