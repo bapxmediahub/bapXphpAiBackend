@@ -25,10 +25,9 @@ final class OrderService {
      * no way to follow it, and support has nothing to answer "where is my order" with.
      */
     public function updateStatus(string $id, string $status, ?\DateTimeImmutable $now = null, array $tracking = []): array {
-        $orders = $this->all();
-        $updated = null;
-        $now ??= new \DateTimeImmutable();
-
+        // Validate before touching the database: the tracking rule does not depend on
+        // the order, and failing first avoids a pointless read (and lets the rule be
+        // tested without database access).
         if ($status === 'shipped') {
             $trackingId = trim((string)($tracking['tracking_id'] ?? ''));
             $trackingUrl = trim((string)($tracking['tracking_url'] ?? ''));
@@ -36,6 +35,10 @@ final class OrderService {
             if ($trackingUrl === '') throw new \InvalidArgumentException('A courier tracking link is required to mark an order shipped.');
             if (!filter_var($trackingUrl, FILTER_VALIDATE_URL)) throw new \InvalidArgumentException('The courier tracking link must be a valid URL.');
         }
+
+        $orders = $this->all();
+        $updated = null;
+        $now ??= new \DateTimeImmutable();
 
         foreach ($orders as &$order) {
             if (($order['id'] ?? '') !== $id) continue;
