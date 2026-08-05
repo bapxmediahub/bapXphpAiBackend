@@ -3761,3 +3761,35 @@ body { background: var(--color-bg); }
 /* Cart toggle carries the same gold stroke as the support button, so the two read as
    one pair of floating controls rather than two unrelated elements. */
 .mobile-cart-tray { border: 1px solid var(--color-gold); }
+
+/* ── Document page header (Terms, Privacy, help articles) ─────────────────────
+   The header inherited centred text from .section-header while the article body
+   below it is left aligned, and .lede caps at 600px with no auto margin — so the
+   lede box sat flush left while the title was centred, and neither lined up with
+   the body text. A legal document reads better left aligned throughout, on one
+   consistent left edge. */
+.document-page__header {
+    text-align: left;
+    max-width: 760px;
+    /* Same 760px box and auto centring as .document-page__content, so the header and
+       the article share one left edge. */
+    margin: 0 auto var(--space-2xl);
+}
+.document-page__header .eyebrow {
+    display: inline-block;
+    margin-bottom: var(--space-xs);
+}
+.document-page__header .section-title {
+    /* .section-title is inline-block globally (for its centred underline), which made
+       the heading flow onto the same line as the eyebrow once the header stopped being
+       centred. It needs its own line here. */
+    display: block;
+    text-align: left;
+    margin: 0 0 var(--space-sm);
+}
+.document-page__header .lede {
+    text-align: left;
+    margin-left: 0;
+    margin-right: 0;
+    max-width: 70ch;
+}
