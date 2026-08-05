@@ -3410,15 +3410,6 @@ body { background: var(--color-bg); }
     .astro-action-row { gap: 10px; }
     .astro-action--icon { width: 44px; height: 44px; min-height: 44px; padding: 0; }
     .astro-carousel { padding-top: 62px; }
-    .support-fab {
-        position: absolute;
-        top: 10px;
-        right: 68px;
-        bottom: auto;
-        width: 44px;
-        height: 44px;
-        z-index: 101;
-    }
     .account-install__status { grid-template-columns: auto minmax(0,1fr); }
     .account-install__actions { grid-column: 1 / -1; width: 100%; flex-direction: row; justify-content: center; flex-wrap: wrap; }
     .account-install__instructions { grid-template-columns: 1fr; gap: var(--space-lg); }
@@ -3698,4 +3689,15 @@ body { background: var(--color-bg); }
 .document-help-cta div{display:grid;gap:.2rem}.document-help-cta span{color:var(--color-text-muted)}
 .payment-status{display:grid;gap:.15rem;margin:0 0 var(--space-md);padding:var(--space-md);border:1px solid var(--color-outline-variant);border-radius:var(--radius-sm);font-size:.9rem}.payment-status span{color:var(--color-text-muted)}.payment-status--live{border-color:rgba(45,138,78,.35);background:rgba(45,138,78,.08)}.payment-status--unavailable{border-color:rgba(232,163,23,.45);background:rgba(232,163,23,.09)}
 @media(max-width:900px){.blog-editorial .blog-grid{grid-template-columns:1fr}.blog-card--featured{grid-column:auto}}
-@media(max-width:700px){.blog-editorial .blog-card,.blog-card--featured{grid-template-columns:1fr;min-height:0}.blog-card__media{aspect-ratio:16/9}.blog-post__header h1{font-size:2rem}.blog-post__featured{aspect-ratio:16/9}.blog-post__cta,.document-help-cta{align-items:stretch;flex-direction:column}.blog-post__cta .btn,.document-help-cta .btn{width:100%}.admin-blog-editor__grid{grid-template-columns:1fr}.blog-post__source{align-items:flex-start;flex-direction:column}.mobile-cart-tray{position:fixed;right:12px;bottom:78px;left:12px;z-index:999;display:flex;align-items:center;justify-content:space-between;min-height:56px;padding:10px 16px;border-radius:8px;background:var(--color-maroon);box-shadow:var(--shadow-lg);color:var(--color-white);font-size:.88rem;font-weight:600}.mobile-cart-tray[hidden]{display:none}.mobile-cart-tray>span:last-child{padding-left:12px;border-left:1px solid rgba(255,255,255,.28)}}
+@media(max-width:700px){.blog-editorial .blog-card,.blog-card--featured{grid-template-columns:1fr;min-height:0}.blog-card__media{aspect-ratio:16/9}.blog-post__header h1{font-size:2rem}.blog-post__featured{aspect-ratio:16/9}.blog-post__cta,.document-help-cta{align-items:stretch;flex-direction:column}.blog-post__cta .btn,.document-help-cta .btn{width:100%}.admin-blog-editor__grid{grid-template-columns:1fr}.blog-post__source{align-items:flex-start;flex-direction:column}.mobile-cart-tray{position:fixed;right:70px;bottom:78px;left:12px;z-index:999;display:flex;align-items:center;justify-content:space-between;min-height:56px;padding:10px 16px;border-radius:8px;background:var(--color-maroon);box-shadow:var(--shadow-lg);color:var(--color-white);font-size:.88rem;font-weight:600}.mobile-cart-tray[hidden]{display:none}.mobile-cart-tray>span:last-child{padding-left:12px;border-left:1px solid rgba(255,255,255,.28)}}
+
+/* ── Floating support button + cart tray ──────────────────────────────────────
+   The support button is a floating action button at every viewport. It used to be
+   pinned into the header on mobile (position:absolute, top:10px), which put it in
+   the top bar instead. The cart tray shares its line and stops short of it so the
+   two never overlap. */
+@media (max-width: 700px) {
+    .support-fab { position: fixed; top: auto; right: 12px; bottom: 78px; width: 56px; height: 56px; z-index: 1100; }
+    /* Tray ends before the button and keeps breathing room on the right. */
+    .mobile-cart-tray { right: 80px; bottom: 78px; min-height: 56px; }
+}
