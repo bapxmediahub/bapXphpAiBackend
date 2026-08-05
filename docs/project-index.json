@@ -3,7 +3,7 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 108,
+        "routes": 110,
         "controllers": 12,
         "services": 42,
         "views": 46,
@@ -245,6 +245,28 @@
             "services": [
                 "BlogService",
                 "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/blog/enhance-content",
+            "name": "admin.blog.enhance-content",
+            "controller": "AdminController@enhanceBlogContent",
+            "view": "admin/blog",
+            "services": [
+                "SecretService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/blog/enhance-title",
+            "name": "admin.blog.enhance-title",
+            "controller": "AdminController@enhanceBlogTitle",
+            "view": "admin/blog",
+            "services": [
+                "SecretService",
                 "AuthService"
             ]
         },
@@ -1346,7 +1368,30 @@
             "StoragePermissionService"
         ],
         "unwired_views": [],
-        "admin_mutations_without_audit": [],
+        "admin_mutations_without_audit": [
+            {
+                "method": "POST",
+                "path": "/admin/blog/enhance-title",
+                "name": "admin.blog.enhance-title",
+                "page": "admin/blog",
+                "controller": "AdminController@enhanceBlogTitle",
+                "services": [
+                    "SecretService",
+                    "AuthService"
+                ]
+            },
+            {
+                "method": "POST",
+                "path": "/admin/blog/enhance-content",
+                "name": "admin.blog.enhance-content",
+                "page": "admin/blog",
+                "controller": "AdminController@enhanceBlogContent",
+                "services": [
+                    "SecretService",
+                    "AuthService"
+                ]
+            }
+        ],
         "unwired_schema_collections": []
     }
 }

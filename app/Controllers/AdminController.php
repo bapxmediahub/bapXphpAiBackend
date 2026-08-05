@@ -145,6 +145,19 @@ final class AdminController extends BaseController {
             $this->jsonResponse(['error'=>'Agent error: '.$e->getMessage()],500);
         }
     }
+    /**
+     * One-shot model call for the blog Enhance buttons. Reuses the configured agent
+     * model rather than adding a second provider path. Returns null when no key is set
+     * so the caller can give the owner a specific message.
+     */
+    private function askModel(string $prompt): ?string {
+        $config = (new SecretService())->getModelConfig();
+        if (trim((string)($config['apiKey'] ?? '')) === '') return null;
+        $answer = $this->callAiApi($config, $prompt, '');
+        if (str_starts_with($answer, 'AI request failed') || str_starts_with($answer, 'No AI API key')) return null;
+        return $answer;
+    }
+
     private function callAiApi(array $config, string $message, string $context): string {
         $endpoint = rtrim($config['endpoint'] ?? 'https://api.openai.com/v1', '/');
         $model = $config['model'] ?? 'gemma-4-31b-it';
@@ -295,7 +308,13 @@ final class AdminController extends BaseController {
     }
     public function blog(): void{
         $blog = new \App\Services\BlogService();
-        $this->render('admin/blog',['pageTitle'=>'Blog','title'=>'Blog Posts','posts'=>$blog->all(),'categories'=>$blog->categories()]);
+        // The editor's "Choose from uploads" picker needs the library, otherwise it
+        // renders empty and the only way to set an image is to type a path.
+        $this->render('admin/blog',[
+            'pageTitle'=>'Blog','title'=>'Blog Posts',
+            'posts'=>$blog->all(),'categories'=>$blog->categories(),
+            'mediaFiles'=>(new MediaService())->all('blog'),
+        ]);
     }
     public function saveBlog(): void{
         $blog = new \App\Services\BlogService();
@@ -343,6 +362,33 @@ final class AdminController extends BaseController {
         $sourceUrl = $_POST['source_url'] ?? '/';
         $draft = (new BlogDraftService())->draft($template, $title, $sourceUrl);
         $this->jsonResponse(['content' => $draft]);
+    }
+    /**
+     * Enhance one field at a time. The single AI Draft button rewrote the whole body
+     * from a title, so improving a headline meant losing the article. Title and content
+     * are now separate and each returns only its own field.
+     */
+    public function enhanceBlogTitle(): void{
+        $title = trim((string)($_POST['title'] ?? ''));
+        if ($title === '') { $this->jsonResponse(['error' => 'Enter a title first.'], 400); return; }
+        $result = $this->askModel(
+            "Rewrite this blog headline for a Tamil spiritual products and astrology site. "
+            . "Return ONE headline only, plain text, no quotes, no markdown, under 70 characters.\n\nHeadline: " . $title
+        );
+        if ($result === null) { $this->jsonResponse(['error' => 'No AI API key is configured. Set agent_api_key in Admin → Integrations.'], 400); return; }
+        $clean = trim(preg_replace('/\s+/', ' ', strip_tags($result)) ?? $result, " \t\n\r\0\x0B\"'");
+        $this->jsonResponse(['title' => mb_substr($clean, 0, 120)]);
+    }
+    public function enhanceBlogContent(): void{
+        $content = trim((string)($_POST['content'] ?? ''));
+        if ($content === '') { $this->jsonResponse(['error' => 'Write some content first.'], 400); return; }
+        $result = $this->askModel(
+            "Improve the clarity and flow of this blog article. Keep the author's meaning, language and "
+            . "any Tamil text. Return Markdown only — no HTML, no code fences around the whole answer, "
+            . "no commentary.\n\nArticle:\n" . $content
+        );
+        if ($result === null) { $this->jsonResponse(['error' => 'No AI API key is configured. Set agent_api_key in Admin → Integrations.'], 400); return; }
+        $this->jsonResponse(['content' => trim($result)]);
     }
     public function taxReport(): void{
         $orders = (new OrderService())->all();

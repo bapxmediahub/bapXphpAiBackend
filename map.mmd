@@ -7,14 +7,14 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 108 routes, 12 controllers, 42 services, 46 views, 0 data files, 20 tools"]
-    arch_routes["> Routes: 108 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 110 routes, 12 controllers, 42 services, 46 views, 0 data files, 20 tools"]
+    arch_routes["> Routes: 110 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
     arch_svc["> Services: 42"]:::arch
     arch_views["> Views: 46"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 20"]:::arch
-    arch_gaps["> Gaps: 2"]:::arch
+    arch_gaps["> Gaps: 4"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -139,6 +139,8 @@ flowchart LR
     route_post_admin_blog_save["POST /admin/blog/save"]:::route
     route_post_admin_blog_delete["POST /admin/blog/delete"]:::route
     route_post_admin_blog_preview["POST /admin/blog/preview"]:::route
+    route_post_admin_blog_enhance_title["POST /admin/blog/enhance-title"]:::route
+    route_post_admin_blog_enhance_content["POST /admin/blog/enhance-content"]:::route
     route_post_admin_blog_ai_draft["POST /admin/blog/ai-draft"]:::route
   end
 
@@ -318,6 +320,8 @@ flowchart LR
   subgraph GAPS["Gaps & Missing Links"]
     gap_5df3fe25a8["unwired_services: ProjectMapService"]:::gap
     gap_52015418b5["unwired_services: StoragePermissionService"]:::gap
+    gap_6b9c2b4b5a["POST /admin/blog/enhance-title — missing AuditLogService"]:::gap
+    gap_b4217badec["POST /admin/blog/enhance-content — missing AuditLogService"]:::gap
   end
 
   route_get --> controller_publiccontroller
@@ -755,6 +759,14 @@ flowchart LR
   controller_admincontroller --> service_markdownrenderer
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_blog
+  route_post_admin_blog_enhance_title --> controller_admincontroller
+  controller_admincontroller --> service_secretservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_blog
+  route_post_admin_blog_enhance_content --> controller_admincontroller
+  controller_admincontroller --> service_secretservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_blog
   route_post_admin_blog_ai_draft --> controller_admincontroller
   controller_admincontroller --> service_blogservice
   controller_admincontroller --> service_blogdraftservice
@@ -841,3 +853,5 @@ flowchart LR
   tool_smoke_local --> ROUTES_ADMIN
   gap_5df3fe25a8 -. missing .-> service_projectmapservice
   gap_52015418b5 -. missing .-> service_storagepermissionservice
+  gap_6b9c2b4b5a -. missing .-> controller_admincontroller
+  gap_b4217badec -. missing .-> controller_admincontroller

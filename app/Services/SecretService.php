@@ -20,10 +20,31 @@ final class SecretService {
             return $this->normalize($env);
         }
     }
+    /**
+     * Merges into the stored secrets rather than replacing them.
+     *
+     * The Integrations form does not contain every secret — razorpay_key_id,
+     * razorpay_key_secret, support_bot_google_api_key, remote_db_token and token are
+     * all absent from it. Replacing the whole blob with the posted fields silently
+     * destroyed those, so saving SMTP settings wiped the live payment keys and the AI
+     * key. Only keys actually present in the submission are changed.
+     */
     public function save(array $values): void {
         $db = $this->store ?? new DatabaseService();
+        unset($values['_csrf']);
+        $existing = [];
+        try {
+            foreach ($db->read('secrets') as $row) {
+                $existing = array_merge($existing, $this->decodeRecord($row));
+            }
+        } catch (\Throwable) {
+            // A read failure must not turn into a wipe: without the current values a
+            // merge is impossible, so refuse rather than overwrite with a subset.
+            throw new \RuntimeException('Could not read existing settings, so nothing was saved. Try again.');
+        }
+        $merged = array_replace($existing, $values);
         $iv = random_bytes(16);
-        $plain = json_encode($this->normalize($values), JSON_THROW_ON_ERROR);
+        $plain = json_encode($this->normalize($merged), JSON_THROW_ON_ERROR);
         $cipher = openssl_encrypt($plain, 'aes-256-cbc', $this->key(), OPENSSL_RAW_DATA, $iv);
         if ($cipher === false) throw new \RuntimeException('Unable to encrypt integration settings.');
         $record = [

@@ -36,14 +36,14 @@ query_examples:
   - "rg -n -B4 -A12 'type: \"skill\"' index.yaml"
   - "rg -n '<term>' docs/project-index.json map.mmd index.yaml"
 summary:
-  concepts: 387
-  relationships: 226
+  concepts: 389
+  relationships: 228
   by_type:
     blog: 16
     controller: 12
     doc: 35
     image: 144
-    route: 108
+    route: 110
     schema: 22
     service: 42
     skill: 8
@@ -3434,6 +3434,36 @@ concepts:
       - "AuditLogService"
       - "AuthService"
     view: "admin/blog"
+  - id: "route:post__admin_blog_enhance_content"
+    type: "route"
+    title: "POST /admin/blog/enhance-content"
+    description: "admin.blog.enhance-content"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/admin/blog/enhance-content"
+    controller: "AdminController@enhanceBlogContent"
+    services:
+      - "SecretService"
+      - "AuthService"
+    view: "admin/blog"
+  - id: "route:post__admin_blog_enhance_title"
+    type: "route"
+    title: "POST /admin/blog/enhance-title"
+    description: "admin.blog.enhance-title"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/admin/blog/enhance-title"
+    controller: "AdminController@enhanceBlogTitle"
+    services:
+      - "SecretService"
+      - "AuthService"
+    view: "admin/blog"
   - id: "route:post__admin_blog_preview"
     type: "route"
     title: "POST /admin/blog/preview"
@@ -5058,6 +5088,12 @@ relationships:
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:post__admin_blog_delete"
+    to: "controller:AdminController"
+    relation: "handled_by"
+  - from: "route:post__admin_blog_enhance_content"
+    to: "controller:AdminController"
+    relation: "handled_by"
+  - from: "route:post__admin_blog_enhance_title"
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:post__admin_blog_preview"
