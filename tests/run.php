@@ -174,8 +174,16 @@ $tests['repo has agent-readable schema and built-in skills'] = function (): void
     }
     sort($agentFiles);
     assertTrue($agentFiles === ['AGENTS.md'], 'Root AGENTS.md should be the only binding agent contract');
-    foreach (['example-Agent.md', 'CLAUDE.md', '.codex'] as $path) {
+    foreach (['example-Agent.md', '.codex'] as $path) {
         assertTrue(!file_exists(app_path($path)), "Obsolete duplicated agent instruction path should not exist: {$path}");
+    }
+    // CLAUDE.md is allowed, but only as a pointer to AGENTS.md. The rule being protected
+    // here is "one binding contract", not the filename — so assert it delegates rather
+    // than restating rules, which is what would actually cause the two to drift.
+    if (file_exists(app_path('CLAUDE.md'))) {
+        $claude = (string)file_get_contents(app_path('CLAUDE.md'));
+        assertTrue(str_contains($claude, 'AGENTS.md'), 'CLAUDE.md must point at AGENTS.md as the binding contract');
+        assertTrue(substr_count($claude, "\n") < 80, 'CLAUDE.md must stay a short pointer, not a second copy of the contract');
     }
 };
 
