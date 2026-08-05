@@ -72,7 +72,7 @@ final class ConsultationController extends BaseController {
                     .'<dt>Requested time</dt><dd>'.e($preferredDate.' '.$preferredTime).'</dd>'
                     .'<dt>Narration</dt><dd>'.nl2br(e($session['notes']??''),false).'</dd></dl>'
                     .'<p><a href="'.e($base.'/admin/appointments').'">Review appointments in admin</a></p>';
-                (new MailQueueService())->enqueue('appointment_owner_notification',$ownerEmail,'New consultation appointment - Sri Panchami Spiritual',$html,null,['appointment_id'=>$id]);
+                (new MailQueueService())->enqueue('appointment_owner_notification',$ownerEmail,'New consultation appointment',$html,null,['appointment_id'=>$id],'admin');
             }
             // The customer was never told their booking was received — only the owner
             // was notified. Confirm to the customer as well.

@@ -34,7 +34,12 @@ final class SecretService {
         unset($values['_csrf']);
         $existing = [];
         try {
-            foreach ($db->read('secrets') as $row) {
+            // Same precedence as all(): app_secrets is merged last so it wins. Without
+            // this ordering the stale secrets-primary row overwrote current values on
+            // every save — it silently reverted a freshly saved SMTP password.
+            $rows = $db->read('secrets');
+            usort($rows, fn(array $a, array $b): int => (($a['id'] ?? '') === 'app_secrets' ? 1 : 0) <=> (($b['id'] ?? '') === 'app_secrets' ? 1 : 0));
+            foreach ($rows as $row) {
                 $existing = array_merge($existing, $this->decodeRecord($row));
             }
         } catch (\Throwable) {

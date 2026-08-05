@@ -84,8 +84,25 @@ final class DatabaseService {
         if ($this->remoteOnly !== null) return $this->remoteOnly;
         if ($this->forceDirect) return $this->remoteOnly = false;
         if (empty($this->cfg['remote_url'])) { $this->remoteOnly = false; return false; }
+        // The bridge is for instances that have no database of their own. When
+        // remote_url points back at the host serving this request, taking it would mean
+        // HTTP-requesting ourselves: the inner request hits the same unavailable MySQL,
+        // returns 500, and the outer one reports a confusing nested failure — while
+        // doubling the connection pressure that caused the problem. Stay direct and let
+        // a real MySQL error surface.
+        if ($this->remoteUrlIsSelf()) { $this->remoteOnly = false; return false; }
         try { $this->db(); $this->remoteOnly = false; return false; }
         catch (\Throwable) { $this->remoteOnly = true; return true; }
+    }
+
+    /** True when remote_url resolves to the host currently serving this request. */
+    private function remoteUrlIsSelf(): bool {
+        $host = strtolower((string)($_SERVER['HTTP_HOST'] ?? ''));
+        if ($host === '') return false;                       // CLI: no self to compare against
+        $remoteHost = strtolower((string)(parse_url((string)$this->cfg['remote_url'], PHP_URL_HOST) ?: ''));
+        if ($remoteHost === '') return false;
+        $host = preg_replace('/:\d+$/', '', $host) ?? $host;
+        return $remoteHost === $host || $remoteHost === 'www.' . $host || 'www.' . $remoteHost === $host;
     }
 
     public function read(string $table): array {
