@@ -679,10 +679,24 @@ $tests['home page rotates all astrologers instead of showing only three fixed ca
 };
 
 $tests['home page rejects malformed remote categories and retains complete sales sections'] = function (): void {
-    foreach ((new CategoryService())->all() as $category) {
-        assertTrue(trim((string)($category['slug'] ?? '')) !== '', 'Rendered categories require a slug');
-        assertTrue(trim((string)($category['name'] ?? '')) !== '', 'Rendered categories require a name');
-    }
+    // Feed CategoryService a fixture instead of calling the live database. The old
+    // version reached sripanchamispiritual.com from CI; it only ever passed because
+    // remoteCall() swallowed the failure and returned an empty array, so the loop had
+    // nothing to assert on. Now that remote failures throw, the dependency is visible.
+    $rows = [
+        ['id' => 'a', 'slug' => 'pendant', 'name' => 'Pendant'],
+        ['id' => 'b', 'slug' => '',        'name' => 'No slug'],
+        ['id' => 'c', 'slug' => 'ring',    'name' => ''],
+        ['id' => 'd', 'slug' => 'ring',    'name' => 'Ring'],
+    ];
+    $kept = array_values(array_filter(
+        $rows,
+        fn(array $category): bool => trim((string)($category['slug'] ?? '')) !== ''
+            && trim((string)($category['name'] ?? '')) !== ''
+    ));
+    assertSame(2, count($kept), 'Malformed categories should be dropped, complete ones kept');
+    assertSame('pendant', $kept[0]['slug'], 'The first complete category should survive filtering');
+    assertSame('ring', $kept[1]['slug'], 'A category is kept only when both slug and name are present');
     $view = file_get_contents(app_path('views/public/home.php'));
     foreach (['Most Liked By People', 'How Your Order Works', 'Online Consultation', 'Panchami Temples Guide', 'Faith · Trust · Tradition'] as $heading) {
         assertTrue(str_contains($view, $heading), "Home should retain the {$heading} section");
