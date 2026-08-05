@@ -162,7 +162,19 @@ final class AuthController extends BaseController {
         $this->flash('Passwords do not match.','error');
         $this->redirect('/reset-password?token=' . urlencode($token));
     }
+    $resetEmail = (new PasswordResetService())->emailForToken($token);
     if ((new PasswordResetService())->resetPassword($token, $password)) {
+        // Confirm the change to the account holder. If the reset was not theirs, this
+        // is the only signal they get that someone else changed their password.
+        if ($resetEmail !== '' && filter_var($resetEmail, FILTER_VALIDATE_EMAIL)) {
+            try {
+                (new MailQueueService())->enqueue('password_changed', $resetEmail,
+                    'Your Sri Panchami Spiritual password was changed',
+                    '<p>Your account password was just changed.</p>'
+                    . '<p>If this was not you, contact us immediately at '
+                    . '<a href="mailto:support@sripanchamispiritual.com">support@sripanchamispiritual.com</a>.</p>');
+            } catch (\Throwable $e) { error_log('Password change mail failed: ' . $e->getMessage()); }
+        }
         $this->flash('Password updated. Please sign in.','success');
         $this->redirect('/login');
     }

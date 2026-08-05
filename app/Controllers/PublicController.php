@@ -250,6 +250,19 @@ final class PublicController extends BaseController {
                 'subject' => $_POST['subject'] ?? '',
                 'message' => $_POST['message'] ?? '',
             ]);
+            // The owner was never told a contact form had been submitted; it only
+            // appeared under Admin -> Contacts if someone thought to look.
+            try {
+                (new \App\Services\MailQueueService())->notifyAdmin(
+                    'New contact form submission',
+                    '<p>A new message came in through the contact form.</p><dl>'
+                    . '<dt>Name</dt><dd>' . e((string)($_POST['name'] ?? '')) . '</dd>'
+                    . '<dt>Email</dt><dd>' . e((string)($_POST['email'] ?? '')) . '</dd>'
+                    . '<dt>Phone</dt><dd>' . e((string)($_POST['phone'] ?? '')) . '</dd>'
+                    . '<dt>Subject</dt><dd>' . e((string)($_POST['subject'] ?? '')) . '</dd>'
+                    . '<dt>Message</dt><dd>' . nl2br(e((string)($_POST['message'] ?? '')), false) . '</dd></dl>'
+                );
+            } catch (\Throwable $e) { error_log('Contact notification failed: ' . $e->getMessage()); }
             $success = true;
         }
         $this->render('public/contact', ['success' => $success, 'subject' => $subject]);

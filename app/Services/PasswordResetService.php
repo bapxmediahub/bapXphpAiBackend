@@ -18,6 +18,19 @@ final class PasswordResetService {
         return null;
     }
 
+    /**
+     * Email address a reset token belongs to. Needed to confirm the change to the
+     * account holder after the token has been consumed and is no longer resolvable.
+     */
+    public function emailForToken(string $token): string {
+        if ($token === '') return '';
+        $hash = hash('sha256', $token);
+        foreach ($this->store->read('users') as $user) {
+            if (($user['reset_token_hash'] ?? '') === $hash) return (string)($user['email'] ?? '');
+        }
+        return '';
+    }
+
     public function resetPassword(string $token, string $password, ?\DateTimeImmutable $now = null): bool {
         if ($token === '' || $password === '') return false;
         $now ??= new \DateTimeImmutable();
