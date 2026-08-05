@@ -57,6 +57,7 @@ final class AdminController extends BaseController {
     }
     public function shipping(): void{$this->render('admin/settings',['pageTitle' => 'Shipping', 'title' => 'Shipping']);}
     public function astrologers(): void{
+        $this->requireModule('consult');
         $this->render('admin/astrologer-form',['pageTitle'=>'Astrologers','title'=>'Astrologers','collection'=>'astrologers','items'=>(new ResourceService('astrologers'))->all(),'mediaFiles'=>$this->mediaFor('astrologers')]);
     }
     public function saveAstrologer(): void{$this->save('astrologers');}
@@ -64,9 +65,9 @@ final class AdminController extends BaseController {
         $id=(string)($_POST['id']??'');
         (new ResourceService('astrologers'))->delete($id); (new AuditLogService())->record('delete','astrologers',$id); $this->flash('Deleted.','info'); $this->redirect('/admin/astrologers');
     }
-    public function appointments(): void{$this->list('Sessions','appointments');}
-    public function consultationAnalytics(): void{$this->render('admin/consultation-analytics',['pageTitle'=>'Consultation Analytics','metrics'=>(new ConsultationService())->analytics()]);}
-    public function temples(): void{$this->resource('Temples','temples',$this->schemaFields('temples',['name','description','image_url','address','map_url']));}
+    public function appointments(): void{$this->requireModule('consult'); $this->list('Sessions','appointments');}
+    public function consultationAnalytics(): void{$this->requireModule('consult'); $this->render('admin/consultation-analytics',['pageTitle'=>'Consultation Analytics','metrics'=>(new ConsultationService())->analytics()]);}
+    public function temples(): void{$this->requireModule('consult'); $this->resource('Temples','temples',$this->schemaFields('temples',['name','description','image_url','address','map_url']));}
     public function saveTemple(): void{$this->save('temples');}
     public function deleteTemple(): void{$this->delete('temples');}
     public function settings(): void{$this->render('admin/settings',['pageTitle' => 'Settings', 'title' => 'Site Settings', 'settings'=>(new SettingsService())->public(), 'adminCredentials'=>(new EnvService())->adminCredentials()]);}
@@ -326,6 +327,7 @@ final class AdminController extends BaseController {
         $this->redirect('/admin/integrations');
     }
     public function blog(): void{
+        $this->requireModule('blog');
         $blog = new \App\Services\BlogService();
         // The editor's "Choose from uploads" picker needs the library, otherwise it
         // renders empty and the only way to set an image is to type a path.
