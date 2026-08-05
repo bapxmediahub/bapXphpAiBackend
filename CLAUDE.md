@@ -18,7 +18,10 @@ contract for non-Claude tooling; if the two ever disagree, this file wins and
 
 1. `./bapXphp map` and `./bapXphp schema list` before proposing any change.
 2. Read this file.
-3. Read `docs/systematic-map.mmd` for route → controller → service wiring.
+3. **Check `docs/project-index.json` before claiming any feature exists.** It is the
+   generated, committed inventory of every route, controller, service, view and
+   collection. If something is not in it, it does not exist — add it rather than
+   assuming it is there. Read `docs/systematic-map.mmd` for the wiring diagram.
 4. Search existing GitHub issues, then open an evidence-backed one (reproduction,
    affected paths, pinpointed cause, acceptance checks). Skip this for read-only
    diagnosis or when the user declines tracking.

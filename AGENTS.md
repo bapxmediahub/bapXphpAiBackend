@@ -25,3 +25,6 @@ Before pushing to `main`: `./bapXphp ci`, and confirm it is green.
 
 The handoff chain, role agents and subagent orchestration described in earlier
 revisions have been removed. Do not reintroduce them.
+
+Inventory of what actually exists (check before claiming a feature):
+`docs/project-index.json` — generated, committed, drift-checked by `./bapXphp ci`.

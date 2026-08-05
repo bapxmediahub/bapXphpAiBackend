@@ -644,7 +644,20 @@ cmd_ci() {
   echo "── docsmap:val ──"
   php "$ROOT/cli/validate-docs-map.php" "$ROOT" 2>&1 || { failed=1; warn "DOCS MAP VALIDATION FAILED"; }
 
-  echo "── agentsmap:val ──"
+  echo "── index:val (docs/project-index.json) ──"
+  php "$ROOT/cli/generate-project-index.php" "$ROOT" "$ROOT/.project-index.tmp.json" >/dev/null 2>&1
+  if [ -f "$ROOT/docs/project-index.json" ]; then
+    if ! diff -q "$ROOT/docs/project-index.json" "$ROOT/.project-index.tmp.json" >/dev/null 2>&1; then
+      warn "PROJECT INDEX STALE. Run bapXphp update and commit docs/project-index.json."
+      failed=1
+    else
+      ok "Project index is current"
+    fi
+  else
+    warn "PROJECT INDEX MISSING. Run bapXphp update."
+    failed=1
+  fi
+  rm -f "$ROOT/.project-index.tmp.json"
 
   echo "── codemap:val (root map.mmd) ──"
   php "$ROOT/cli/generate-code-map.php" "$ROOT" "$ROOT/.map.mmd.tmp"
@@ -679,6 +692,7 @@ cmd_update() {
   php "$ROOT/cli/generate-project-map.php"
   php "$ROOT/cli/generate-docs-map.php" "$ROOT" "$ROOT/docs/map.mmd"
   php "$ROOT/cli/generate-code-map.php" "$ROOT" "$ROOT/map.mmd"
+  php "$ROOT/cli/generate-project-index.php" "$ROOT"
   php "$ROOT/cli/generate-okf-bundle.php" "$ROOT"
   php "$ROOT/cli/validate-project-map.php"
   php "$ROOT/cli/validate-docs-map.php" "$ROOT"
