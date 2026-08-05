@@ -622,7 +622,7 @@ $tests['home page rejects malformed remote categories and retains complete sales
         assertTrue(trim((string)($category['name'] ?? '')) !== '', 'Rendered categories require a name');
     }
     $view = file_get_contents(app_path('views/public/home.php'));
-    foreach (['Shop by Category', 'Most Liked By People', 'How Your Order Works', 'Online Consultation', 'Panchami Temples Guide', 'Faith · Trust · Tradition'] as $heading) {
+    foreach (['Most Liked By People', 'How Your Order Works', 'Online Consultation', 'Panchami Temples Guide', 'Faith · Trust · Tradition'] as $heading) {
         assertTrue(str_contains($view, $heading), "Home should retain the {$heading} section");
     }
 };

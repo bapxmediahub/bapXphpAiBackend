@@ -3721,3 +3721,23 @@ body { background: var(--color-bg); }
     .mobile-cart-tray > span { white-space: nowrap; }
     .mobile-cart-tray > span:last-child { padding-left: 10px; }
 }
+
+/* Desktop: the cart pill and support button share one horizontal line.
+   They were previously stacked in the same right-hand column (tray bottom:88px,
+   button bottom:24px), which read as one above the other rather than side by side. */
+@media (min-width: 701px) {
+    .support-fab { right: 24px; bottom: 24px; width: 56px; height: 56px; }
+    .mobile-cart-tray {
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        bottom: 24px;
+        height: 56px;
+        min-height: 56px;
+        width: max-content;
+        max-width: calc(100vw - 200px);
+        justify-content: center;
+        white-space: nowrap;
+    }
+    .support-panel { right: 24px; bottom: 96px; }
+}
