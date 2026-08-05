@@ -58,6 +58,11 @@ class AgentController extends BaseController {
         $key = $mc['apiKey'] ?? '';
         $prompt = "You are {$agentName}, the AI assistant for {$siteName}. Answer concisely.\n\n{$context}\n\nUser: {$message}";
         $provider = $mc['provider'] ?? 'openai';
+        // Fail fast rather than sending a request that is certain to be rejected — an
+        // absent key returned an opaque HTTP 400 that read as a model problem.
+        if (trim((string)$key) === '') {
+            return 'No AI API key is configured. Set agent_api_key in Admin → Integrations, then try again.';
+        }
         if ($provider === 'google') {
             $url = $endpoint . '/' . rawurlencode($model) . ':generateContent';
             $payload = json_encode(['contents' => [['parts' => [['text' => $prompt]]]], 'generationConfig' => ['temperature' => 0.3, 'maxOutputTokens' => 1024]]);
@@ -66,7 +71,7 @@ class AgentController extends BaseController {
             $body = curl_exec($ch);
             $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
-            if ($status !== 200 || $body === false) return "API error (HTTP {$status}). Check model config.";
+            if ($status !== 200 || $body === false) return self::aiError($status, $body);
             $result = json_decode($body, true);
             return $result['candidates'][0]['content']['parts'][0]['text'] ?? 'No response.';
         }
@@ -84,8 +89,31 @@ class AgentController extends BaseController {
         $body = curl_exec($ch);
         $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        if ($status !== 200 || $body === false) return "API error (HTTP {$status}). Check your endpoint/key/model in Admin → Integrations.";
+        if ($status !== 200 || $body === false) return self::aiError($status, $body);
         $result = json_decode($body, true);
         return $result['choices'][0]['message']['content'] ?? 'No response.';
+    }
+
+    /**
+     * Turns a failed AI API response into something actionable. The previous message
+     * ("API error (HTTP 400). Check model config.") hid the provider's own explanation,
+     * which is usually the exact reason — most often a missing or rejected API key.
+     */
+    private static function aiError(int $status, $body): string {
+        $detail = '';
+        $decoded = is_string($body) ? json_decode($body, true) : null;
+        if (is_array($decoded)) {
+            $detail = (string)($decoded['error']['message'] ?? $decoded['error']['type'] ?? $decoded['message'] ?? '');
+        }
+        if ($detail === '' && is_string($body) && trim($body) !== '') $detail = mb_substr(trim(strip_tags($body)), 0, 300);
+        $hint = match (true) {
+            $status === 400 => ' Check the model name and that the API key is set in Admin → Integrations.',
+            in_array($status, [401, 403], true) => ' The API key was rejected. Set a valid agent_api_key in Admin → Integrations.',
+            $status === 404 => ' The model or endpoint does not exist for this provider.',
+            $status === 429 => ' Rate limit or quota exceeded for this API key.',
+            $status === 0   => ' The request never reached the provider. Check outbound network access.',
+            default => '',
+        };
+        return "AI request failed (HTTP {$status})." . ($detail !== '' ? ' ' . $detail : '') . $hint;
     }
 }
