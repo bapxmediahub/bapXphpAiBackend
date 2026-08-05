@@ -4,8 +4,13 @@ namespace App\Services;
 final class SmtpMailer {
     public function __construct(private array $settings) {}
 
+    /**
+     * SMTP only. The PHP mail() fallback was removed: it silently downgraded delivery
+     * whenever SMTP credentials were wrong, so a misconfiguration looked like success
+     * while messages went out unauthenticated with far worse deliverability.
+     */
     public function configured(): bool {
-        return $this->smtpConfigured() || $this->phpMailConfigured();
+        return $this->smtpConfigured();
     }
 
     public function fromEmail(): string {
@@ -17,7 +22,7 @@ final class SmtpMailer {
     }
 
     public function transport(): string {
-        return $this->smtpConfigured() ? 'smtp' : 'php_mail';
+        return 'smtp';
     }
 
     private function smtpConfigured(): bool {
@@ -26,10 +31,6 @@ final class SmtpMailer {
             && !empty($this->settings['smtp_username'])
             && !empty($this->settings['smtp_password'])
             && $this->fromEmail() !== '';
-    }
-
-    private function phpMailConfigured(): bool {
-        return function_exists('mail') && $this->fromEmail() !== '';
     }
 
     public function buildMessage(string $to, string $subject, string $html): string {
@@ -60,11 +61,9 @@ final class SmtpMailer {
 
     public function send(string $to, string $subject, string $html): void {
         if (!$this->configured()) {
-            throw new \RuntimeException('Email delivery is not configured.');
-        }
-        if (!$this->smtpConfigured()) {
-            $this->sendWithPhpMail($to, $subject, $html);
-            return;
+            throw new \RuntimeException(
+                'SMTP is not configured. Set host, port, username, password and From Email in Admin → Integrations.'
+            );
         }
         $host = (string)$this->settings['smtp_host'];
         $port = (int)$this->settings['smtp_port'];
@@ -107,21 +106,6 @@ final class SmtpMailer {
         return $name !== '' ? $name . ' <' . $email . '>' : $email;
     }
 
-    private function sendWithPhpMail(string $to, string $subject, string $html): void {
-        $fromEmail = $this->fromEmail();
-        $fromName = $this->fromName();
-        $headers = [
-            'MIME-Version: 1.0',
-            'Content-Type: text/html; charset=UTF-8',
-            'From: ' . $this->formatAddress($fromEmail, $fromName),
-            'Reply-To: ' . $this->replyToEmail(),
-            'X-Mailer: PHP/' . PHP_VERSION,
-        ];
-        $ok = @mail($to, $subject, $html, implode("\r\n", $headers), '-f' . $fromEmail);
-        if (!$ok) {
-            throw new \RuntimeException('PHP mail() delivery failed.');
-        }
-    }
 
     private function replyToEmail(): string {
         $replyTo = trim((string)($this->settings['mail_reply_to'] ?? ''));

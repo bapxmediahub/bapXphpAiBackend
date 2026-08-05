@@ -81,7 +81,7 @@ final class AuthController extends BaseController {
     try {
         (new MailQueueService())->enqueue('welcome', $email, 'Welcome to Sri Panchami Spiritual',
             '<p>Hello ' . e($name) . ',</p><p>Your account is ready. You can view orders and saved addresses in your dashboard.</p>'
-            . '<p><a href="' . e($this->siteUrl('/account/dashboard')) . '">Open your dashboard</a></p>');
+            . \App\Services\MailQueueService::button('Open your dashboard', $this->siteUrl('/account/dashboard')));
     } catch (\Throwable) {}
     $this->flash('Registered and signed in.','success');
     $this->redirect('/');
@@ -140,7 +140,7 @@ final class AuthController extends BaseController {
             try {
                 (new MailQueueService())->enqueue('password_reset', $email, 'Reset your Sri Panchami Spiritual password',
                     '<p>We received a request to reset your password.</p>'
-                    . '<p><a href="' . e($link) . '">Reset your password</a></p>'
+                    . \App\Services\MailQueueService::button('Reset your password', $link)
                     . '<p>If you did not request this, you can ignore this email.</p>');
             } catch (\Throwable) {}
         }

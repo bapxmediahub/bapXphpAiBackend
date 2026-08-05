@@ -4,30 +4,72 @@ namespace App\Services;
 final class MailQueueService {
     public function __construct(private DatabaseService $store = new DatabaseService()) {}
 
+    /**
+     * Table-based email layout. Email clients ignore flexbox, grid and most modern CSS,
+     * and Outlook drops <div> margins, so the structure is nested tables with inline
+     * styles — the only markup that renders consistently across Gmail, Outlook and iOS.
+     */
     private function wrapHtml(string $inner): string {
         $settings = (new SettingsService())->public();
-        $logoUrl = $settings['logo_url'] ?? '';
         $siteName = 'Sri Panchami Spiritual';
-        $logoHtml = $logoUrl ? "<img src=\"$logoUrl\" alt=\"$siteName\" style=\"max-width:180px;height:auto;margin-bottom:16px;\">" : "<h1 style=\"margin:0 0 16px;font-size:1.5rem;color:#3a0003;\">$siteName</h1>";
-        $footerHtml = '<hr style="border:none;border-top:1px solid #e5e5e5;margin:24px 0;">'
-            . '<p style="margin:0;font-size:0.8rem;color:#666;">'
-            . 'GSTIN: ' . e((string)($settings['gstin'] ?? '')) . '<br>'
-            . 'Address: ' . e((string)($settings['gst_address'] ?? '')) . '<br>'
-            . 'State: ' . e((string)($settings['gst_state'] ?? '')) . ' (' . e((string)($settings['gst_state_code'] ?? '')) . ')<br>'
-            . 'PAN: ' . e((string)($settings['gst_pan'] ?? '')) . '<br>'
-            . 'Email: support@sripanchamispiritual.com | Phone: +91-XXXXXXXXXX'
-            . '</p>'
-            . '<p style="margin-top:16px;font-size:0.75rem;color:#999;">'
-            . 'This is an automated email from ' . e($siteName) . '. Please do not reply.'
-            . '</p>';
+        $maroon = '#3a0003';
+        $gold = '#d1b368';
+        $siteUrl = rtrim((string)((require app_path('config/database.php'))['app_url'] ?? ''), '/');
+        $logoUrl = trim((string)($settings['logo_url'] ?? ''));
 
-        return '<div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.6;color:#222;max-width:600px;margin:0 auto;padding:24px;">'
-            . '<div style="text-align:center;padding-bottom:16px;border-bottom:1px solid #e5e5e5;">' . $logoHtml . '</div>'
-            . '<div style="padding:24px 0;">'
-            . $inner
-            . '</div>'
-            . '<div style="text-align:center;">' . $footerHtml . '</div>'
-            . '</div>';
+        $header = $logoUrl !== ''
+            ? '<img src="' . e($logoUrl) . '" alt="' . e($siteName) . '" width="150" style="display:block;margin:0 auto;max-width:150px;height:auto;border:0;">'
+            : '<div style="font-family:Georgia,\'Times New Roman\',serif;font-size:22px;font-weight:bold;color:' . $gold . ';letter-spacing:0.5px;">' . e($siteName) . '</div>';
+
+        // Legal block only renders the values that exist, so an unconfigured store does
+        // not email customers a list of empty labels.
+        $legal = [];
+        if (!empty($settings['gstin'])) $legal[] = 'GSTIN: ' . e((string)$settings['gstin']);
+        if (!empty($settings['gst_address'])) $legal[] = e((string)$settings['gst_address']);
+        $legalHtml = $legal ? '<br>' . implode('<br>', $legal) : '';
+
+        return '<!doctype html><html><head><meta charset="utf-8">'
+            . '<meta name="viewport" content="width=device-width,initial-scale=1">'
+            . '<meta name="color-scheme" content="light only">'
+            . '</head>'
+            . '<body style="margin:0;padding:0;background:#f4f1ea;">'
+            . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f1ea;padding:24px 12px;">'
+            . '<tr><td align="center">'
+            . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e7e0cf;">'
+
+            . '<tr><td align="center" style="background:' . $maroon . ';padding:24px 20px;">' . $header . '</td></tr>'
+
+            . '<tr><td style="padding:28px 28px 8px;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,Helvetica,Arial,sans-serif;'
+            . 'font-size:15px;line-height:1.65;color:#2b1712;">' . $inner . '</td></tr>'
+
+            . '<tr><td style="padding:8px 28px 24px;">'
+            . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">'
+            . '<tr><td style="border-top:1px solid #ece6d8;padding-top:16px;'
+            . 'font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,Helvetica,Arial,sans-serif;font-size:12px;line-height:1.6;color:#7b6b63;">'
+            . '<strong style="color:#2b1712;">' . e($siteName) . '</strong>' . $legalHtml
+            . '<br>Questions? Reply to this email or write to '
+            . '<a href="mailto:support@sripanchamispiritual.com" style="color:' . $maroon . ';">support@sripanchamispiritual.com</a>'
+            . ($siteUrl !== '' ? '<br><a href="' . e($siteUrl) . '" style="color:' . $maroon . ';">' . e(preg_replace('#^https?://#', '', $siteUrl)) . '</a>' : '')
+            . '</td></tr></table></td></tr>'
+
+            . '</table>'
+            . '</td></tr></table></body></html>';
+    }
+
+    /** Absolute URL for links in email; relative paths are useless in an inbox. */
+    private function siteUrl(string $path = '/'): string {
+        $base = rtrim((string)((require app_path('config/database.php'))['app_url'] ?? ''), '/');
+        if ($base === '') $base = 'https://sripanchamispiritual.com';
+        return $base . '/' . ltrim($path, '/');
+    }
+
+    /** Call-to-action button that survives Outlook, which ignores padding on <a>. */
+    public static function button(string $label, string $url): string {
+        return '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:18px 0;">'
+            . '<tr><td align="center" bgcolor="#3a0003" style="border-radius:999px;">'
+            . '<a href="' . e($url) . '" style="display:inline-block;padding:12px 26px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;'
+            . 'font-size:14px;font-weight:600;color:#d1b368;text-decoration:none;border-radius:999px;">' . e($label) . '</a>'
+            . '</td></tr></table>';
     }
 
     public function all(): array {
@@ -100,7 +142,8 @@ final class MailQueueService {
         $html = '<p>Vanakkam ' . e((string)($order['customer_name'] ?? '')) . ',</p>'
             . '<p>Your payment for order ' . e((string)($order['id'] ?? '')) . ' is confirmed.</p>'
             . $invoiceHtml
-            . '<p>Total: ₹' . e((string)($order['total'] ?? 0)) . '</p>';
+            . '<p>Total: <strong>₹' . e((string)($order['total'] ?? 0)) . '</strong></p>'
+            . self::button('View your order', $this->siteUrl('/account/dashboard/orders'));
         $sent = $this->enqueue('payment_confirmation', $to, $subject, $html, null, ['order_id' => $order['id'] ?? '']);
         $this->notifyAdmin(
             'New order ' . (string)($order['id'] ?? ''),
@@ -150,8 +193,9 @@ final class MailQueueService {
             '<p>Vanakkam ' . e((string)($order['customer_name'] ?? '')) . ',</p>'
             . '<p>Your payment for order <strong>' . e((string)($order['id'] ?? '')) . '</strong> could not be completed, '
             . 'so the order has not been placed and you have not been charged.</p>'
-            . '<p>Your cart has been kept. You can try again from <a href="/checkout">checkout</a>, '
-            . 'or reply to this email and we will help.</p>' . $detail,
+            . '<p>Your cart has been kept, so nothing needs rebuilding.</p>'
+            . self::button('Complete your order', $this->siteUrl('/checkout'))
+            . '<p style="color:#7b6b63;font-size:13px;">Reply to this email if you would like help.</p>' . $detail,
             null, ['order_id' => $order['id'] ?? '']);
     }
 
@@ -186,7 +230,7 @@ final class MailQueueService {
                 $this->enqueue('blog_newsletter', $email, 'New article: ' . $title,
                     '<h2 style="margin:0 0 8px;">' . e($title) . '</h2>'
                     . ($excerpt !== '' ? '<p>' . e($excerpt) . '</p>' : '')
-                    . '<p><a href="/blog/' . e($slug) . '">Read the article</a></p>',
+                    . self::button('Read the article', $this->siteUrl('/blog/' . $slug)),
                     null, ['slug' => $slug]);
                 $sent++;
             } catch (\Throwable $error) {
@@ -200,8 +244,9 @@ final class MailQueueService {
         $to = trim((string)($order['customer_email'] ?? ''));
         if ($to === '') return null;
         $subject = 'Sri Panchami Spiritual order shipped';
-        $html = '<p>Your order ' . e((string)($order['id'] ?? '')) . ' has been shipped.</p>'
-            . '<p>We will ask for your product review after you have had time to receive and use it.</p>';
+        $html = '<p>Your order <strong>' . e((string)($order['id'] ?? '')) . '</strong> has been shipped.</p>'
+            . '<p>We will ask for a review once you have had time to receive and use it.</p>'
+            . self::button('Track your order', $this->siteUrl('/account/dashboard/orders'));
         return $this->enqueue('shipment_notification', $to, $subject, $html, null, ['order_id' => $order['id'] ?? '']);
     }
 
