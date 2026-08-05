@@ -36,7 +36,7 @@ query_examples:
   - "rg -n -B4 -A12 'type: \"skill\"' index.yaml"
   - "rg -n '<term>' docs/project-index.json map.mmd index.yaml"
 summary:
-  concepts: 389
+  concepts: 390
   relationships: 228
   by_type:
     blog: 16
@@ -46,7 +46,7 @@ summary:
     route: 110
     schema: 22
     service: 42
-    skill: 8
+    skill: 9
 concepts:
   - id: "blog:benefits-of-rudraksha"
     type: "blog"
@@ -4645,6 +4645,13 @@ concepts:
     title: "git"
     description: "Use plain Git for local history, branches, pushes, and Hostinger deployment checkouts."
     resource: ".claude/skills/git/SKILL.md"
+    tags:
+      - "skill"
+  - id: "skill:remotedb"
+    type: "skill"
+    title: "remotedb"
+    description: "Use when reading or writing hosted MySQL through the /remotedb HTTP API — querying records, upserting, deleting, or inspecting schema from outside the live server."
+    resource: ".claude/skills/remotedb/SKILL.md"
     tags:
       - "skill"
   - id: "skill:schema"

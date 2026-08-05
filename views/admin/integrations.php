@@ -6,15 +6,11 @@
     <form method="post" action="/admin/integrations/save" class="admin-form">
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
 
-        <h2 style="font-size:1rem; margin:0 0 var(--space-sm);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> Remote DB Password</h2>
-        <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">
-            Set a password to protect the <code>/remotedb</code> endpoint. When set, every remote call must include this password.
-            Can also be set via <code>REMOTE_DB_PASSWORD</code> in <code>.env</code>. Leave blank for no password (backward compatible).
-        </p>
-        <div class="admin-form__row">
-            <label>Remote DB Password<input type="password" name="remote_db_password" value="<?= e($secrets['remote_db_password']??'') ?>" placeholder="Leave blank to disable password protection" autocomplete="new-password"></label>
+        <div style="margin:0 0 var(--space-lg); padding:var(--space-sm) var(--space-md); border-radius:var(--radius-md); border:1px solid var(--color-border); background:var(--color-bg-alt); font-size:0.85rem; color:var(--color-text-muted);">
+            <strong style="color:var(--color-ink);">Database access</strong><br>
+            The <code>/remotedb</code> endpoint authenticates with your MySQL password from <code>.env</code>.
+            There is nothing to configure here, and no separate token to keep in sync.
         </div>
-        <p style="margin:var(--space-xs) 0 var(--space-lg); color:var(--color-text-muted); font-size:0.8rem;">The <code>/remotedb</code> endpoint is used by the remote database bridge when MySQL is unreachable directly. Protecting it prevents unauthorized data access or mutation.</p>
 
         <h2 style="font-size:1rem; margin:0 0 var(--space-sm);">Razorpay Payments</h2>
         <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">

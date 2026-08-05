@@ -96,9 +96,10 @@ final class SecretService {
             if (is_file($legacy)) $configured = (string)require $legacy;
         }
         if ($configured === '') {
+            // The database password is the single shared secret. There is no separate
+            // remote_db_password or remote_db_token to keep in sync.
             $db = require app_path('config/database.php');
-            $configured = trim((string)($db['remote_db_password'] ?? ''));
-            if ($configured === '') $configured = trim((string)($db['pass'] ?? ''));
+            $configured = trim((string)($db['pass'] ?? ''));
         }
         if ($configured === '') throw new \RuntimeException('Secret storage key is not configured.');
         return hash('sha256', $configured, true);
@@ -145,7 +146,6 @@ final class SecretService {
             'agent_model' => (string)(getenv('AGENT_MODEL') ?: getenv('SUPPORT_BOT_MODEL') ?: ''),
             'api_endpoint' => (string)(getenv('BAPX_AI_ENDPOINT') ?: ''),
             'support_bot_purge_policy' => (string)(getenv('SUPPORT_BOT_PURGE_POLICY') ?: ''),
-            'remote_db_password' => (string)(getenv('REMOTE_DB_PASSWORD') ?: ''),
             'turn_server_url' => (string)(getenv('TURN_SERVER_URL') ?: ''),
             'turn_username' => (string)(getenv('TURN_USERNAME') ?: ''),
             'turn_credential' => (string)(getenv('TURN_CREDENTIAL') ?: ''),
