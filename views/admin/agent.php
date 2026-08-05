@@ -5,7 +5,9 @@
         Configure the AI model in <a href="/admin/integrations">Integrations</a>
         (keys: <code>agent_api_key</code>, <code>agent_model</code>, <code>api_endpoint</code>).
     </p>
-    <?php if (empty($modelConfig['api_key'])): ?>
+    <?php // getModelConfig() returns 'apiKey' and 'configured'; the old 'api_key' key
+          // never existed, so this warning showed even when a key was set. ?>
+    <?php if (empty($modelConfig['configured'])): ?>
         <div style="background:var(--color-warning-bg, #fff3cd); border:1px solid var(--color-warning-border, #ffc107); border-radius:var(--radius-md); padding:var(--space-md); margin-bottom:var(--space-lg);">
             <strong>AI model not configured.</strong>
             Go to <a href="/admin/integrations">Admin → Integrations</a> and set endpoint, api_key, and model first.
