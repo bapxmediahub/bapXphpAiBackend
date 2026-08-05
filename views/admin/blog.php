@@ -9,7 +9,6 @@
     <input type="hidden" name="type" id="edit-type" value="blog">
     <div class="admin-blog-editor__grid">
         <label>Title <button type="button" class="btn btn-sm btn-outline be-enhance-inline" id="enhance-title">Enhance</button> <input type="text" name="title" id="edit-title" required style="width:100%"></label>
-        <label>Slug <input type="text" name="slug" id="edit-slug-display" placeholder="auto-from-title" style="width:100%"></label>
         <label>Category
             <select name="category" id="edit-category" style="width:100%">
                 <option value="">Uncategorized</option>
@@ -18,6 +17,12 @@
                 <?php endforeach; ?>
             </select>
         </label>
+    </div>
+
+    <details class="be-settings">
+        <summary>Post settings <span>slug, image, excerpt, SEO, date, author</span></summary>
+        <div class="admin-blog-editor__grid">
+        <label>Slug <input type="text" name="slug" id="edit-slug-display" placeholder="auto-from-title" style="width:100%"></label>
         <label>Article template
             <select name="template" id="edit-template" style="width:100%">
                 <option value="editorial">Editorial story</option>
@@ -35,6 +40,10 @@
         <label class="admin-blog-editor__wide">SEO Keywords <input type="text" name="keywords" id="edit-keywords" placeholder="astrology, spirituality, vedic astrology" style="width:100%"><small>Comma-separated keywords for search engine indexing.</small></label>
         <label>Published At <input type="date" name="published_at" id="edit-date" style="width:100%"></label>
         <label>Author <input type="text" name="author" id="edit-author" value="Admin" style="width:100%"></label>
+        </div>
+    </details>
+
+    <div class="admin-blog-editor__grid">
         <div class="admin-blog-editor__wide">
             <div class="be-tabs" role="tablist">
                 <button type="button" class="be-tab is-active" data-mode="document" role="tab">Edit as document</button>
@@ -134,6 +143,13 @@ function generateDraft(){var f=document.getElementById('blog-form');var fd=new F
 </script>
 
 <style>
+.be-settings{margin:0 0 14px;border:1px solid var(--color-border);border-radius:8px;background:var(--color-white)}
+.be-settings>summary{padding:10px 14px;cursor:pointer;font-weight:600;font-size:.88rem;list-style:none;display:flex;align-items:center;gap:8px}
+.be-settings>summary::-webkit-details-marker{display:none}
+.be-settings>summary::before{content:'▸';color:var(--color-text-muted);transition:transform .15s}
+.be-settings[open]>summary::before{transform:rotate(90deg)}
+.be-settings>summary span{font-weight:400;font-size:.78rem;color:var(--color-text-muted)}
+.be-settings .admin-blog-editor__grid{padding:0 14px 14px}
 .be-tabs{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
 .be-tab{padding:7px 14px;border:1px solid var(--color-border);background:var(--color-white);border-radius:999px;font-size:.82rem;cursor:pointer;font-family:inherit;color:var(--color-text-muted)}
 .be-tab.is-active{background:var(--color-maroon);color:var(--color-gold);border-color:var(--color-gold)}
