@@ -19,6 +19,7 @@ Quick orientation:
 - Schema (canonical): `storage/schema/collections.php`
 - UI (canonical): `Design.md`
 - Wiring: `docs/systematic-map.mmd`
+- Local browser-test credentials: `.env.test-user` (gitignored; never copy its values into tracked files or logs)
 
 Before any change: `./bapXphp map && ./bapXphp schema list`.
 Before pushing to `main`: `./bapXphp ci`, and confirm it is green.

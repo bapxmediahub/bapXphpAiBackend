@@ -176,9 +176,15 @@ final class SmtpMailer {
 
         $code = (int)substr($response, 0, 3);
         if (!in_array($code, $codes, true)) {
+            // Hint is provider-aware: a Gmail app-password message is misleading when the
+            // server is Hostinger, and vice versa.
+            $host = strtolower((string)($this->settings['smtp_host'] ?? ''));
+            $isGoogle = str_contains($host, 'gmail') || str_contains($host, 'google');
+            $authHint = $isGoogle
+                ? ' Gmail requires a 16-character App Password with 2-Step Verification enabled, not the account password.'
+                : ' Check that this mailbox exists in your hosting control panel and that the password is exactly the mailbox password. The username must be the full email address.';
             $hint = match (true) {
-                $code === 535 => ' Authentication was rejected. For Gmail you must use a 16-character App Password with 2-Step Verification enabled, not the account password.',
-                $code === 534 => ' The provider requires an application-specific password.',
+                in_array($code, [535, 534], true) => ' Authentication was rejected.' . $authHint,
                 in_array($code, [553, 550, 554], true) => ' The sender address was rejected. From Email must match the authenticated mailbox.',
                 default => '',
             };

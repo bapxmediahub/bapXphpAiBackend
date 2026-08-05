@@ -57,6 +57,11 @@ contract for non-Claude tooling; if the two ever disagree, this file wins and
 This is a web app and a PWA. **Verify in a browser, not the terminal** — desktop and
 375px mobile. Terminal checks cover generators, schema and tests only.
 
+Local browser-test credentials and the fixed customer test ID are stored in
+`.env.test-user`. The file is gitignored; read it locally when authentication is
+required, and never copy its credential values into tracked files, command output,
+test reports or logs.
+
 ```bash
 php -S 127.0.0.1:8811 index.php    # local server
 ./bapXphp ci                        # lint, tests, maps, smoke
