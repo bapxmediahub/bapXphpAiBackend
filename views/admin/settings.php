@@ -25,6 +25,26 @@
     </form>
 </div>
 <div class="admin-card">
+    <h2 style="font-size:1rem; margin:0 0 var(--space-sm);">Site Modules</h2>
+    <p style="margin:0 0 var(--space-lg); font-size:0.85rem; color:var(--color-text-muted);">
+        Switching a module off hides its navigation links and home page section, and makes its
+        public pages return 404. Existing data is kept and reappears when you switch it back on.
+    </p>
+    <form class="admin-form" method="post" action="/admin/settings/save">
+        <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+        <?php $__mods = (new \App\Services\SettingsService())->modules(); ?>
+        <?php foreach (\App\Services\SettingsService::MODULES as $__key => $__label): ?>
+            <div class="form-group" style="display:flex; flex-direction:row; align-items:center; justify-content:flex-start; gap:var(--space-sm); margin-bottom:var(--space-sm);">
+                <input type="hidden" name="module_<?= e($__key) ?>" value="0">
+                <input type="checkbox" id="module_<?= e($__key) ?>" name="module_<?= e($__key) ?>" value="1"
+                       style="width:18px; height:18px; flex:0 0 auto; margin:0;" <?= $__mods[$__key] ? 'checked' : '' ?>>
+                <label for="module_<?= e($__key) ?>" style="margin:0; font-weight:600; text-transform:none; letter-spacing:0; cursor:pointer;"><?= e($__label) ?></label>
+            </div>
+        <?php endforeach; ?>
+        <button type="submit" class="btn btn-primary">Save Modules</button>
+    </form>
+</div>
+<div class="admin-card">
     <h2 style="font-size:1rem; margin:0 0 var(--space-lg);">Shipping Configuration</h2>
     <form class="admin-form" method="post" action="/admin/settings/save">
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">

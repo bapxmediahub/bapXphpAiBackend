@@ -43,6 +43,7 @@ final class PublicController extends BaseController {
     }
     
     public function consult(): void {
+        $this->requireModule('consult');
         $this->detectApiRequest();
         $this->seoKey = 'consult';
         $reviews = new ReviewService();
@@ -50,6 +51,7 @@ final class PublicController extends BaseController {
     }
     
     public function consultant(string $slug): void {
+        $this->requireModule('consult');
         $this->detectApiRequest();
         $astrologer = (new AstrologerService())->findBySlug($slug);
         $this->seoKey = 'astrologer';

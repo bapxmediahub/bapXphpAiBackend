@@ -22,9 +22,15 @@ final class AuditLogService {
             'meta' => $details,
             'created_at' => date('c'),
         ];
-        $records = $this->store->read('audit_events');
-        $records[] = $event;
-        $this->store->write('audit_events', $records);
+        // Insert just this event. The previous implementation read the whole table,
+        // appended one row and rewrote every row, which is O(n) per admin action and
+        // risks losing the entire audit history if the rewrite fails part-way through.
+        // Audit logging must never break the operation it is recording.
+        try {
+            $this->store->upsert('audit_events', $event);
+        } catch (\Throwable $e) {
+            error_log('Audit log write failed: ' . $e->getMessage());
+        }
         return $event;
     }
 }

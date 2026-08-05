@@ -1,25 +1,39 @@
 <section class="home-hero">
     <div class="container home-hero-inner">
         <div class="hero-copy">
+            <?php if (module_on('consult')): ?>
             <span class="eyebrow">Vedic astrology · Spiritual guidance · Remedies</span>
             <h1>Book a Private Consultation</h1>
             <p class="lede">Connect with an experienced consultant for personalised guidance — horoscope clarity, kundli matching, career insights, and spiritual remedies from the comfort of your home.</p>
+            <?php else: ?>
+            <span class="eyebrow">Sacred jewellery · Pooja items · Remedies</span>
+            <h1>Authentic Spiritual Products</h1>
+            <p class="lede">Sacred jewellery, rudraksha, and pooja essentials — sourced with care and delivered across India, along with a guide to the Panchami temples.</p>
+            <?php endif; ?>
             <div class="hero-actions">
+                <?php if (module_on('consult')): ?>
                 <a href="/consult" class="btn btn-primary">Book a Consultation</a>
-                <a href="/shop" class="btn btn-outline">Shop Products</a>
+                <?php endif; ?>
+                <?php if (module_on('shop')): ?>
+                <a href="/shop" class="btn <?= module_on('consult') ? 'btn-outline' : 'btn-primary' ?>">Shop Products</a>
+                <?php endif; ?>
             </div>
             <div class="hero-stats">
+                <?php if (module_on('consult')): ?>
                 <div>
                     <div class="hero-stat-value"><?= e((string)count($astrologers ?? [])) ?></div>
                     <div class="hero-stat-label">Consultants</div>
                 </div>
+                <?php endif; ?>
+                <?php if (module_on('shop')): ?>
                 <div>
                     <div class="hero-stat-value"><?= e((string)count($products)) ?></div>
                     <div class="hero-stat-label">Products</div>
                 </div>
+                <?php endif; ?>
                 <div>
-                    <div class="hero-stat-value">Instant</div>
-                    <div class="hero-stat-label">Booking</div>
+                    <div class="hero-stat-value"><?= module_on('consult') ? 'Instant' : 'Trusted' ?></div>
+                    <div class="hero-stat-label"><?= module_on('consult') ? 'Booking' : 'Sourcing' ?></div>
                 </div>
             </div>
         </div>
@@ -76,10 +90,12 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
         Saved Addresses
     </div>
+    <?php if (module_on('consult')): ?>
     <div class="trust-item">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
         Scheduled Consultations
     </div>
+    <?php endif; ?>
     <div class="trust-item">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
         Spiritual Products
@@ -166,6 +182,7 @@
     </div>
 </section>
 
+<?php if (module_on('consult')): ?>
 <section class="section section--full">
     <div class="section-header">
         <span class="eyebrow serif-accent">Guidance · Clarity · Remedies</span>
@@ -205,6 +222,7 @@
         <a href="/consult" class="btn btn-primary">View Consultants</a>
     </div>
 </section>
+<?php endif; ?>
 
 <section class="section section--alt">
     <div class="container">
@@ -322,8 +340,13 @@ document.addEventListener('DOMContentLoaded', function () {
     <div class="page-cta-card reveal">
         <div>
             <span class="page-cta-card__eyebrow">Need Guidance?</span>
+            <?php if (module_on('consult')): ?>
             <h3>Start a Consultation Request</h3>
             <p>Use the contact form for astrology sessions, product questions, temple guidance, or VIP direct astrology visit requests.</p>
+            <?php else: ?>
+            <h3>Get in Touch</h3>
+            <p>Use the contact form for product questions, order help, or temple guidance.</p>
+            <?php endif; ?>
         </div>
         <a class="btn btn-primary page-cta-card__button" href="/contact#contact-form">Let’s Get Connected →</a>
     </div>

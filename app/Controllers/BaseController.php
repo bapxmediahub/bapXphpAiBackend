@@ -62,6 +62,16 @@ abstract class BaseController {
         require app_path('views/layouts/' . $this->layout . '.php');
     }
     
+    /**
+     * Render 404 and stop when a site module is switched off in Admin → Site Settings.
+     * Hiding the navigation link is not enough — the route stays directly reachable.
+     */
+    protected function requireModule(string $key): void {
+        if ((new \App\Services\SettingsService())->moduleEnabled($key)) return;
+        $this->renderNotFound();
+        exit;
+    }
+
     protected function renderNotFound(): void {
         http_response_code(404);
         $secrets = (new \App\Services\SecretService())->all();

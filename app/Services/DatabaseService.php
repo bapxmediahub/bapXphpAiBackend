@@ -88,7 +88,10 @@ final class DatabaseService {
         $this->db()->beginTransaction();
         try {
             $clean = preg_replace('/[^a-z_]/', '', $table);
-            $this->db()->exec("TRUNCATE TABLE {$clean}");
+            // DELETE, not TRUNCATE. TRUNCATE is DDL and triggers an implicit COMMIT in
+            // MySQL, which ends the transaction opened above — the later commit()/rollBack()
+            // then fails with "There is no active transaction" and the whole write is lost.
+            $this->db()->exec("DELETE FROM {$clean}");
             $stmt = $this->db()->prepare("INSERT INTO {$clean} (id, _data, _owner, _status, _created_at, _updated_at) VALUES (?, ?, ?, ?, ?, ?)");
             foreach ($records as $rec) {
                 $id = $rec['id'] ?? bin2hex(random_bytes(8));

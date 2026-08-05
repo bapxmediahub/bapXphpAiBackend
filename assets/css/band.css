@@ -1,3 +1,9 @@
+/* The HTML `hidden` attribute must always win. Component rules such as
+   `.astro-market-card { display: flex }` are author-level and otherwise beat the
+   user-agent `[hidden] { display: none }`, which silently breaks every JS filter
+   and panel that toggles `element.hidden` (consultant search, cart tray, support panel). */
+[hidden] { display: none !important; }
+
 :root {
     /* Design.md public interface palette */
     --color-ink: #222222;
@@ -2724,9 +2730,10 @@ tr:hover td { background: var(--color-bg-alt); }
     .product-grid { grid-template-columns: 1fr; gap: var(--space-md); }
      .product-card { border-radius: var(--radius-lg); }
     .product-card__body { padding: var(--space-md); }
-    .product-card__actions { flex-direction: column; gap: var(--space-sm); }
-    .product-card__actions .btn-ghost { width: 100%; height: 30px; min-height: 30px; }
-    .product-card__actions .product-card__form { width: 100%; }
+    /* Keep "View" and the quantity stepper on one row, matching desktop. */
+    .product-card__actions { flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 6px; }
+    .product-card__actions .btn-ghost { width: auto; flex: 0 0 auto; height: 30px; min-height: 30px; padding: 0 0.6rem; }
+    .product-card__actions .product-card__form { width: auto; flex: 0 0 auto; margin-left: auto; }
     
     .category-section { padding-left: var(--space-md); padding-right: var(--space-md); }
     .category-grid { grid-template-columns: repeat(2, minmax(0, 128px)); justify-content: center; gap: var(--space-md); }

@@ -10,6 +10,7 @@
 <?php $__seoKeywords = $seo['keywords'] ?? ''; if ($__seoKeywords !== ''): ?><meta name="keywords" content="<?= e($__seoKeywords) ?>"><?php endif; ?>
 <?php
 $__settings = (new \App\Services\SettingsService())->public();
+$__modules = (new \App\Services\SettingsService())->modules();
 $__logo = $__settings['logo_url'] ?? '/assets/images/logo-small.jpeg';
 $__favicon = $__settings['favicon_url'] ?? '/assets/images/sps-favicon.svg';
 $__faviconMime = str_contains($__favicon,'.svg') ? 'image/svg+xml' : 'image/png';
@@ -307,9 +308,14 @@ gtag('js', new Date());
     </button>
 <?php try { $__blogCats = (new \App\Services\BlogService())->categories(); } catch (\Throwable $e) { $__blogCats = []; } ?>
     <nav id="primary-nav">
+        <?php if ($__modules['shop']): ?>
         <a href="/shop"<?= str_starts_with($currentPath, '/shop') ? ' aria-current="page"' : '' ?>>Shop</a>
+        <?php endif; ?>
+        <?php if ($__modules['consult']): ?>
         <a href="/consult"<?= str_starts_with($currentPath, '/consult') ? ' aria-current="page"' : '' ?>>Consult</a>
+        <?php endif; ?>
         <a href="/temples"<?= str_starts_with($currentPath, '/temples') ? ' aria-current="page"' : '' ?>>Temples</a>
+        <?php if ($__modules['blog']): ?>
         <div class="nav-dropdown">
             <a href="/blog" class="nav-dropdown__trigger"<?= str_starts_with($currentPath, '/blog') ? ' aria-current="page"' : '' ?>>Blog <span class="nav-dropdown__arrow">▾</span></a>
             <div class="nav-dropdown__menu">
@@ -319,6 +325,7 @@ gtag('js', new Date());
                 <?php endforeach; ?>
             </div>
         </div>
+        <?php endif; ?>
         <a href="/about"<?= str_starts_with($currentPath, '/about') ? ' aria-current="page"' : '' ?>>About SPS</a>
         <a href="/contact"<?= str_starts_with($currentPath, '/contact') ? ' aria-current="page"' : '' ?>>Contact</a>
         <?php if(!empty($_SESSION['user'])): ?>
@@ -351,22 +358,28 @@ if ($__flash):
 <?php if (!in_array($currentPath, ['/login', '/register'])): ?>
 <nav class="bottom-nav" id="bottom-nav">
     <div class="nav-grid">
+        <?php if ($__modules['shop']): ?>
         <a href="/shop" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/shop') === 0 ? 'active' : '') ?>">
             <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
             <span>Shop</span>
         </a>
+        <?php endif; ?>
+        <?php if ($__modules['consult']): ?>
         <a href="/consult" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/consult') === 0 ? 'active' : '') ?>">
             <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20"/><path d="M2 12h20"/></svg>
             <span>Consult</span>
         </a>
+        <?php endif; ?>
         <a href="/temples" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/temples') === 0 ? 'active' : '') ?>">
             <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
             <span>Temples</span>
         </a>
+        <?php if ($__modules['blog']): ?>
         <a href="/blog" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/blog') === 0 ? 'active' : '') ?>">
             <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
             <span>Blog</span>
         </a>
+        <?php endif; ?>
         <a href="/cart" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/cart') === 0 ? 'active' : '') ?>">
             <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
             <span>Cart</span>
@@ -414,11 +427,11 @@ if ($__flash):
             <div>
                 <h4 class="footer-heading">Shop</h4>
                 <ul class="footer-links">
-                    <li><a href="/shop">All Products</a></li>
-                    <li><a href="/consult">Consult</a></li>
+                    <?php if ($__modules['shop']): ?><li><a href="/shop">All Products</a></li><?php endif; ?>
+                    <?php if ($__modules['consult']): ?><li><a href="/consult">Consult</a></li><?php endif; ?>
                     <li><a href="/temples">Temples</a></li>
                     <li><a href="/about">About SPS</a></li>
-                    <li><a href="/blog">Blog</a></li>
+                    <?php if ($__modules['blog']): ?><li><a href="/blog">Blog</a></li><?php endif; ?>
                     <li><a href="/contact">Contact</a></li>
                     <li><a href="/terms">Terms</a></li>
                     <li><a href="/privacy">Privacy</a></li>
@@ -427,12 +440,14 @@ if ($__flash):
             <div>
                 <h4 class="footer-heading">Services</h4>
             <ul class="footer-links">
-                <li><a href="/consult">Consult</a></li>
+                <?php if ($__modules['consult']): ?><li><a href="/consult">Consult</a></li><?php endif; ?>
                 <li><a href="/temples">Temples</a></li>
+                <?php if ($__modules['blog']): ?>
                 <li><a href="/blog">Blog</a></li>
                 <?php foreach ($__blogCats as $__cat): ?>
                 <li><a href="/blog/category/<?= e($__cat['slug'] ?? '') ?>"><?= e($__cat['name'] ?? '') ?></a></li>
                 <?php endforeach; ?>
+                <?php endif; ?>
                 <li><a href="/about">About SPS</a></li>
                 <li><a href="/contact">Contact</a></li>
             </ul>
