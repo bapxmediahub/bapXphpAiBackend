@@ -3697,30 +3697,29 @@ body { background: var(--color-bg); }
    the top bar instead. The cart tray shares its line and stops short of it so the
    two never overlap. */
 @media (max-width: 700px) {
-    /* Full-width bottom cart bar, the pattern used by Flipkart and Uber Eats: spans
-       the viewport with a small side margin, fully rounded ends, and sits low so it
-       reads as an action bar rather than a floating chip. A full-width bar cannot
-       share a line with the support button, so the button sits directly above it. */
+    /* Cart bar and support button share ONE line. The bar stretches across everything
+       left of the button rather than the full viewport — a truly full-width bar leaves
+       no room beside it and pushes the button onto a second line. */
     .mobile-cart-tray {
         left: 12px;
-        right: 12px;
+        right: 80px;
         transform: none;
         width: auto;
         max-width: none;
         bottom: 14px;
-        height: 58px;
-        min-height: 58px;
+        height: 56px;
+        min-height: 56px;
         border-radius: 999px;
         justify-content: space-between;
-        gap: 12px;
-        padding: 0 24px;
-        font-size: 0.9rem;
+        gap: 10px;
+        padding: 0 20px;
+        font-size: 0.85rem;
         white-space: nowrap;
     }
-    .mobile-cart-tray > span { white-space: nowrap; }
-    .mobile-cart-tray > span:last-child { padding-left: 12px; }
-    .support-fab { position: fixed; top: auto; right: 12px; bottom: 84px; width: 52px; height: 52px; z-index: 1100; }
-    .support-panel { right: 12px; bottom: 146px; }
+    .mobile-cart-tray > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mobile-cart-tray > span:last-child { padding-left: 10px; flex: 0 0 auto; }
+    .support-fab { position: fixed; top: auto; right: 12px; bottom: 14px; width: 56px; height: 56px; z-index: 1100; }
+    .support-panel { right: 12px; bottom: 82px; }
 }
 
 /* Desktop: the cart pill and support button share one horizontal line.
@@ -3735,9 +3734,13 @@ body { background: var(--color-bg); }
         bottom: 24px;
         height: 56px;
         min-height: 56px;
-        width: max-content;
-        max-width: calc(100vw - 200px);
-        justify-content: center;
+        /* Stretched, not shrink-to-fit. max-content sized it to the text, which read as
+           a small chip; this gives it real width while staying clear of the button. */
+        width: min(720px, calc(100vw - 220px));
+        max-width: none;
+        border-radius: 999px;
+        justify-content: space-between;
+        padding: 0 28px;
         white-space: nowrap;
     }
     .support-panel { right: 24px; bottom: 96px; }
