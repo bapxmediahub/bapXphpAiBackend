@@ -38,7 +38,10 @@ try {
     foreach ([
         '/' => 200,
         '/shop' => 200,
-        '/product/karuppasami-dollar' => 200,
+        // Test mode has no records, so a product slug legitimately resolves to nothing.
+        // 404 is the correct answer now that a missing product no longer renders an
+        // empty page with HTTP 200 (a soft 404 that search engines indexed).
+        '/product/karuppasami-dollar' => 404,
         '/cart' => 200,
         '/checkout' => 200,
         '/contact' => 200,

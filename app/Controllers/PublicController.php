@@ -74,6 +74,7 @@ final class PublicController extends BaseController {
     public function temple(string $slug): void { 
         $this->detectApiRequest();
         $temple = (new TempleService())->findBySlug($slug);
+        if (!$temple) $this->renderNotFound();
         $this->seoKey = 'temple';
         $this->seoOverrides = [
             'title' => ($temple['name'] ?? 'Temple') . ' – Temple Timings, Address, Pooja & Darshan at Sri Panchami Spiritual',
@@ -129,6 +130,10 @@ final class PublicController extends BaseController {
     public function product(string $slug): void {
         $this->detectApiRequest();
         $product = (new ProductService())->findBySlug($slug);
+        // A missing product used to render the template with a null record and return
+        // HTTP 200 — a soft 404. Search engines index those as real pages and keep
+        // crawling dead URLs.
+        if (!$product) $this->renderNotFound();
         $related = [];
         if ($product) {
             $all = (new ProductService())->all();

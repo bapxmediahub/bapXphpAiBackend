@@ -2,6 +2,15 @@
 namespace App\Services;
 final class DatabaseService {
     private static array $remoteQueryCache = [];
+    /**
+     * One connection per request, shared by every instance. There are 27 places that
+     * construct a DatabaseService, and each used to open its own MySQL connection, so a
+     * single page render could open a dozen. On shared hosting that exhausts the
+     * per-user connection limit and PDO fails with
+     * SQLSTATE[HY000] [2002] Operation not permitted — the real cause of the
+     * intermittent 503s. PHP tears the connection down at the end of the request.
+     */
+    private static ?\PDO $sharedPdo = null;
     private ?\PDO $pdo = null;
     private ?bool $remoteOnly = null;
     private array $cfg = [];
@@ -61,21 +70,22 @@ final class DatabaseService {
 
     private function db(): \PDO {
         if ($this->pdo === null) {
+            if (self::$sharedPdo !== null) return $this->pdo = self::$sharedPdo;
             $this->cfg = require app_path('config/database.php');
             foreach (['host', 'dbname', 'user', 'pass'] as $required) {
                 if (trim((string)($this->cfg[$required] ?? '')) === '') {
                     throw new \RuntimeException('Direct MySQL is not configured; missing ' . $required . '.');
                 }
             }
-            $errno = 0; $errstr = '';
-            $fp = @fsockopen($this->cfg['host'], (int)$this->cfg['port'], $errno, $errstr, 3);
-            if (!$fp) {
-                throw new \RuntimeException("MySQL unavailable at {$this->cfg['host']}:{$this->cfg['port']}");
-            }
-            fclose($fp);
+            // No fsockopen probe. It opened a second socket purely to test reachability,
+            // doubling connection pressure under exactly the conditions where the limit
+            // is already being hit. PDO's own timeout reports an unreachable server.
             $dsn = 'mysql:host=' . $this->cfg['host'] . ';port=' . $this->cfg['port'] . ';dbname=' . $this->cfg['dbname'] . ';charset=utf8mb4';
-            $this->pdo = new \PDO($dsn, $this->cfg['user'], $this->cfg['pass'], [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, \PDO::ATTR_TIMEOUT => 5]);
-            if (!$this->pdo) throw new \RuntimeException('Cannot connect to MySQL.');
+            $this->pdo = self::$sharedPdo = new \PDO($dsn, $this->cfg['user'], $this->cfg['pass'], [
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                \PDO::ATTR_TIMEOUT => 5,
+                \PDO::ATTR_PERSISTENT => false,
+            ]);
         }
         return $this->pdo;
     }
