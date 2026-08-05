@@ -45,7 +45,10 @@ final class SupportBotService {
         $base = empty($user['email'])
             ? $this->agentContext->forUserEmail('')
             : $this->agentContext->forUserEmail((string)$user['email']);
-        return ['signed_in' => !empty($user['email']), 'cart' => $cart] + $base;
+        // Articles let the agent answer "what is this app?" from real content instead of
+        // falling back to a navigation list. BlogService::all() already withholds
+        // unpublished posts and posts whose module is off.
+        return ['signed_in' => !empty($user['email']), 'cart' => $cart, 'articles' => $this->siteArticles()] + $base;
     }
 
     private function googleReply(string $message, array $context): ?string {
@@ -56,9 +59,11 @@ final class SupportBotService {
         $prompt = "You are Sri Panchami Spiritual support bot.\n"
             . "Return only the final customer-facing answer in plain text. Do not include reasoning, analysis, markdown, code, tool calls, or hidden thoughts.\n"
             . "Use only this JSON context for the signed-in customer and public site links. Never mention, infer, or access other users' data. If data is missing, ask the customer to use the contact form.\n"
-            . "Allowed help: product, cart, checkout, delivery address, order, consultant booking, and navigation details from the JSON.\n"
+            . "Allowed help: " . $this->allowedHelp() . ".\n"
             . "INCLUDE one exact internal path in your reply (e.g., /shop, /product/slug, /consult/slug, /cart, /checkout, /support, /contact) so the UI can show a navigation button.\n"
-            . "For booking a consultation: explain step-by-step — browse consultants at /consult, view their profile, fill contact details, submit request, wait for admin to confirm appointment. Mention /consult.\n"
+            . ($this->consultEnabled()
+                ? "For booking a consultation: explain step-by-step — browse consultants at /consult, view their profile, fill contact details, submit request, wait for admin to confirm appointment. Mention /consult.\n"
+                : "Consultations are unavailable. Never mention /consult, consultants or astrologers.\n")
             . "For buying a product: explain step-by-step — browse /shop, click a product, add to cart, go to /cart, proceed to /checkout, enter address, pay with card/UPI, view order at /account/dashboard/orders.\n"
             . "For product issues or returns: ask the customer to use the /contact form.\n"
             . "Never invent admin paths, external URLs, or claim that an action already happened.\n"
@@ -120,6 +125,36 @@ final class SupportBotService {
     }
 
     /** Consultation answers must not be offered when the module is switched off. */
+
+    /** Capabilities the agent may offer, derived from the modules actually switched on. */
+    private function allowedHelp(): string {
+        $help = ['navigation details from the JSON'];
+        if (module_on('ecommerce')) array_unshift($help, 'product', 'cart', 'checkout', 'delivery address', 'order');
+        if ($this->consultEnabled()) $help[] = 'consultant booking';
+        if (module_on('blog')) $help[] = 'articles and help guides';
+        return implode(', ', $help);
+    }
+
+    /** Published articles the agent may quote, filtered exactly as the public site is. */
+    private function siteArticles(int $limit = 12): array {
+        try {
+            $out = [];
+            foreach ((new BlogService())->all() as $post) {
+                $out[] = [
+                    'title' => (string)($post['title'] ?? ''),
+                    'url' => '/blog/' . (string)($post['slug'] ?? ''),
+                    'category' => (string)($post['category'] ?? ''),
+                    'summary' => mb_substr(trim((string)($post['excerpt'] ?? $post['summary'] ?? '')), 0, 180),
+                ];
+                if (count($out) >= $limit) break;
+            }
+            return $out;
+        } catch (\Throwable $e) {
+            error_log('Article context failed: ' . $e->getMessage());
+            return [];
+        }
+    }
+
     private function consultEnabled(): bool {
         return (new SettingsService())->moduleEnabled('consult');
     }

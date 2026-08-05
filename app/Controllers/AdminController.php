@@ -135,6 +135,26 @@ final class AdminController extends BaseController {
             foreach ($topUsers as $email => $amount) {
                 $topUsersStr .= "\n  - {$email}: ₹" . number_format($amount, 2);
             }
+            // Per-product sales. "Which products sell best?" could not be answered before,
+            // because only a product count reached the model.
+            $unitsBySlug = [];
+            $revenueBySlug = [];
+            foreach ($confirmedOrders as $o) {
+                foreach (($o['items'] ?? []) as $item) {
+                    $key = (string)($item['name'] ?? $item['slug'] ?? '');
+                    if ($key === '') continue;
+                    $qty = (int)($item['qty'] ?? 1);
+                    $unitsBySlug[$key] = ($unitsBySlug[$key] ?? 0) + $qty;
+                    $revenueBySlug[$key] = ($revenueBySlug[$key] ?? 0) + (float)($item['line_total'] ?? 0);
+                }
+            }
+            arsort($unitsBySlug);
+            $topProductsStr = '';
+            foreach (array_slice($unitsBySlug, 0, 5, true) as $name => $units) {
+                $topProductsStr .= "\n  - {$name}: {$units} sold, ₹" . number_format($revenueBySlug[$name] ?? 0, 2);
+            }
+            if ($topProductsStr === '') $topProductsStr = "\n  - no confirmed sales yet";
+
             $attachments = '';
             $tempDir = app_path('.claude/temp');
             if (is_dir($tempDir)) {
@@ -153,8 +173,11 @@ final class AdminController extends BaseController {
                 . "- Confirmed revenue: ₹" . number_format($confirmedRevenue, 2) . "\n"
                 . "- Pending revenue (unconfirmed): ₹" . number_format($pendingRevenue, 2) . "\n"
                 . "- Average order value: ₹" . number_format($avgOrderValue, 2) . "\n"
+                . "- Top 5 products by units sold:" . $topProductsStr . "\n"
                 . "- Top 5 customers by revenue:" . $topUsersStr
-                . $attachments;
+                . $attachments
+                . "\n\nUse this data to answer. Never repeat it back unless asked for it. "
+                . "Never list customer email addresses unless the question is specifically about customers.";
             if (!empty($modelConfig['apiKey'])) {
                 $answer = $this->callAiApi($modelConfig, $message, $context);
             } else {
