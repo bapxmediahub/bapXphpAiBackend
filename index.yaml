@@ -36,13 +36,13 @@ query_examples:
   - "rg -n -B4 -A12 'type: \"skill\"' index.yaml"
   - "rg -n '<term>' docs/project-index.json map.mmd index.yaml"
 summary:
-  concepts: 391
+  concepts: 395
   relationships: 229
   by_type:
     blog: 16
     controller: 12
     doc: 35
-    image: 144
+    image: 148
     route: 111
     schema: 22
     service: 42
@@ -2298,6 +2298,54 @@ concepts:
       - "unreferenced"
     filename: "yamthiram-dollar-front.webp"
     mime: "image/webp"
+    usage_count: 0
+    used_in: []
+  - id: "image:assets/images/pwa/icon-192-maskable.png"
+    type: "image"
+    title: "icon-192-maskable.png"
+    description: "Image with no static repository reference detected."
+    resource: "assets/images/pwa/icon-192-maskable.png"
+    tags:
+      - "image"
+      - "unreferenced"
+    filename: "icon-192-maskable.png"
+    mime: "image/png"
+    usage_count: 0
+    used_in: []
+  - id: "image:assets/images/pwa/icon-192.png"
+    type: "image"
+    title: "icon-192.png"
+    description: "Image with no static repository reference detected."
+    resource: "assets/images/pwa/icon-192.png"
+    tags:
+      - "image"
+      - "unreferenced"
+    filename: "icon-192.png"
+    mime: "image/png"
+    usage_count: 0
+    used_in: []
+  - id: "image:assets/images/pwa/icon-512-maskable.png"
+    type: "image"
+    title: "icon-512-maskable.png"
+    description: "Image with no static repository reference detected."
+    resource: "assets/images/pwa/icon-512-maskable.png"
+    tags:
+      - "image"
+      - "unreferenced"
+    filename: "icon-512-maskable.png"
+    mime: "image/png"
+    usage_count: 0
+    used_in: []
+  - id: "image:assets/images/pwa/icon-512.png"
+    type: "image"
+    title: "icon-512.png"
+    description: "Image with no static repository reference detected."
+    resource: "assets/images/pwa/icon-512.png"
+    tags:
+      - "image"
+      - "unreferenced"
+    filename: "icon-512.png"
+    mime: "image/png"
     usage_count: 0
     used_in: []
   - id: "image:assets/images/sps-favicon.svg"

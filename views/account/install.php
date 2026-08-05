@@ -118,7 +118,18 @@
             deferredPrompt.userChoice.then(function(choice){
                 deferredPrompt=null;
                 if(choice.outcome==='accepted'){ render('installing'); }
+                else { render('available'); }
             });
+            return;
+        }
+        // Without a stored prompt the click did nothing at all, so the button looked
+        // broken. Say why, and give the manual route every browser supports.
+        if(standalone){ render('installed'); return; }
+        render('no-event');
+        if(window.showToast){
+            showToast(isiOS
+                ? 'Open the Share menu and choose "Add to Home Screen".'
+                : 'Your browser has not offered installation yet. Use the browser menu and choose "Install app", or reload and try again.','info');
         }
     });
 
