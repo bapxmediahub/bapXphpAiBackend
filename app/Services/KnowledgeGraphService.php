@@ -144,7 +144,7 @@ final class KnowledgeGraphService {
     }
 
     private function indexSkillFiles(): void {
-        $skillsDir = $this->root . '/.agents/skills';
+        $skillsDir = $this->root . '/.claude/skills';
         if (!is_dir($skillsDir)) return;
         foreach (glob($skillsDir . '/*/SKILL.md') ?: [] as $file) {
             $name = basename(dirname($file));

@@ -64,7 +64,6 @@ set -euo pipefail
 #                                   — untrack and ignore runtime/test artifacts
 #   bapXphp hooks install           — install .agents/hooks as this checkout's Git hooks
 #   bapXphp hooks status            — show configured Git hooks path
-#   bapXphp tui                     — open the interactive project terminal UI
 #   bapXphp handoff validate <file> [--issue]
 #                                   — validate structure and local Action event objective coverage
 #   bapXphp handoff active          — show the current GitHub Actions handoff
@@ -103,15 +102,8 @@ set -euo pipefail
 #   bapXphp handoff execute <issue> [--next role]
 #                                   — load handoff context for next role
 #
-# ── Workflows (.agents/workflows/) ───────────────────────────────
-#   .agents/workflows/worker.md     — Worker (implementation)
-#   .agents/workflows/reviewer.md   — Reviewer (optional verification)
 #
-# ── Attachments (.agents/temp/) ──────────────────────────────────
-#   .agents/temp/                   — inbox for user-provided screenshots/docs
 #
-# ── Telemetry (.agents/ops/) ─────────────────────────────────────
-#   .agents/ops/telemetry.json      — cycle tracking + scoring
 #
 # ── Blog & Docs ──────────────────────────────────────────────────
 #       bapXphp docsmap                 — regenerate docs/map.mmd (content: skills, docs, blog, admin, agents)
@@ -653,7 +645,6 @@ cmd_ci() {
   php "$ROOT/cli/validate-docs-map.php" "$ROOT" 2>&1 || { failed=1; warn "DOCS MAP VALIDATION FAILED"; }
 
   echo "── agentsmap:val ──"
-  php "$ROOT/cli/validate-agents-map.php" "$ROOT" 2>&1 || { failed=1; warn "AGENT MAP VALIDATION FAILED"; }
 
   echo "── codemap:val (root map.mmd) ──"
   php "$ROOT/cli/generate-code-map.php" "$ROOT" "$ROOT/.map.mmd.tmp"
@@ -687,12 +678,10 @@ cmd_update() {
   require_php
   php "$ROOT/cli/generate-project-map.php"
   php "$ROOT/cli/generate-docs-map.php" "$ROOT" "$ROOT/docs/map.mmd"
-  php "$ROOT/cli/generate-agents-map.php" "$ROOT" "$ROOT/agents.mmd"
   php "$ROOT/cli/generate-code-map.php" "$ROOT" "$ROOT/map.mmd"
   php "$ROOT/cli/generate-okf-bundle.php" "$ROOT"
   php "$ROOT/cli/validate-project-map.php"
   php "$ROOT/cli/validate-docs-map.php" "$ROOT"
-  php "$ROOT/cli/validate-agents-map.php" "$ROOT"
   ok "MAPS AND KNOWLEDGE BUNDLE UPDATED"
 }
 
@@ -846,209 +835,6 @@ cmd_artifacts_clean() {
   ok "Runtime and Playwright artifacts removed from Git tracking; working files preserved."
 }
 
-cmd_handoff() {
-  local action="${1:-}" file="${2:-}" argument="${3:-}"
-  case "$action" in
-    active)
-      [ $# -eq 1 ] || die "Usage: bapXphp handoff active"
-      local active_file="$ROOT/.agents/handoffs/active/current.json"
-      [ -f "$active_file" ] || die "No active GitHub Actions handoff"
-      jq . "$active_file"
-      ;;
-    validate)
-      [ $# -ge 2 ] && [ $# -le 3 ] && [ -n "$file" ] || die "Usage: bapXphp handoff validate <file> [--issue]"
-      require_php
-      php "$ROOT/cli/handoff.php" validate "$file"
-      if [ -n "$argument" ]; then
-        [ "$argument" = "--issue" ] || die "Usage: bapXphp handoff validate <file> [--issue]"
-        local issue_number event_file
-        issue_number=$(php -r '$data=json_decode(file_get_contents($argv[1]), true); echo $data["issue"] ?? "";' "$file")
-        [[ "$issue_number" =~ ^[1-9][0-9]*$ ]] || die "Handoff issue number is invalid"
-        event_file="$ROOT/.agents/handoffs/events/${issue_number}.json"
-        [ -f "$event_file" ] || die "No GitHub Actions handoff event for issue #${issue_number}"
-        php "$ROOT/cli/handoff.php" coverage-event "$file" "$event_file"
-      fi
-      ;;
-    next)
-      [ $# -eq 2 ] && [[ "$file" =~ ^[1-9][0-9]*$ ]] || die "Usage: bapXphp handoff next <issue>"
-      require_php
-      local event_file="$ROOT/.agents/handoffs/events/${file}.json"
-      [ ! -f "$event_file" ] && event_file=$(ls "$ROOT/.agents/handoffs/events/${file}"-*.json 2>/dev/null | head -1)
-      if [ -f "$event_file" ]; then
-        echo "── Handoff event for issue #${file} ──"
-        echo "Event type: $(jq -r '.event_type' "$event_file")"
-        echo "Current role: $(jq -r '.workflow.current_role' "$event_file")"
-        echo "Next role: $(jq -r '.workflow.next_role' "$event_file")"
-        echo "Score: $(jq '.telemetry.score // "unscored"' "$event_file")/100"
-        echo "Chain: $(jq -r '.workflow.sequence | join(" → ")' "$event_file")"
-        echo ""
-        echo "── Workflow for current role ──"
-        local role
-        role=$(jq -r '.workflow.current_role' "$event_file")
-        local wf="$ROOT/.agents/workflows/${role}.md"
-        if [ -f "$wf" ]; then
-          cat "$wf"
-        else
-          echo "No workflow definition for role: $role"
-        fi
-      else
-        warn "No handoff event for issue #${file} at .agents/handoffs/events/${file}*.json"
-      fi
-      ;;
-    template)
-      [ $# -eq 2 ] && [[ "$file" =~ ^[1-9][0-9]*$ ]] || die "Usage: bapXphp handoff template <issue>"
-      require_php
-      local event_file_3="$ROOT/.agents/handoffs/events/${file}.json"
-      [ -f "$event_file_3" ] || die "No GitHub Actions handoff event for issue #${file}"
-      php -r '
-        $event=json_decode(file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR);
-        $objectives=[];
-        foreach ($event["objectives"] ?? [] as $objective) {
-          $id=trim((string)($objective["id"] ?? ""));
-          if ($id !== "") $objectives[]=["id"=>$id,"status"=>"gap","evidence"=>[],"browser_evidence"=>[],"unresolved"=>["Not yet started"]];
-        }
-        echo json_encode(["issue"=>(int)$event["issue"],"role"=>"worker","objectives"=>$objectives,"files_changed"=>[],"commands_run"=>[],"risks"=>[],"next_role"=>"reviewer"], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES), "\n";
-      ' "$event_file_3"
-      ;;
-    execute)
-      [ $# -ge 2 ] && [[ "$file" =~ ^[1-9][0-9]*$ ]] || die "Usage: bapXphp handoff execute <issue> [--next role]"
-      local nextFlag=""
-      [ "$argument" = "--next" ] && nextFlag="${4:-}"
-      local event_file="$ROOT/.agents/handoffs/events/${file}.json"
-      [ ! -f "$event_file" ] && event_file=$(ls "$ROOT/.agents/handoffs/events/${file}"-*.json 2>/dev/null | head -1)
-      [ -f "$event_file" ] || die "No handoff event for issue #${file}"
-      local role="$nextFlag"
-      [ -z "$role" ] && role=$(jq -r '.workflow.current_role' "$event_file")
-      local wf="$ROOT/.agents/workflows/${role}.md"
-      local workflow_content=""
-      [ -f "$wf" ] && workflow_content=$(cat "$wf")
-      local model_config
-      model_config=$(php -r '
-        require "'"$ROOT"'/app/bootstrap.php";
-        $cfg = (new App\Services\SecretService())->getModelConfig();
-        echo json_encode($cfg);
-      ' 2>/dev/null || echo '{}')
-      echo "{"
-      echo "  \"issue\": $file,"
-      echo "  \"role\": \"$role\","
-      echo "  \"score\": $(jq '.telemetry.score // 0' "$event_file"),"
-      echo "  \"model_config\": $(echo "$model_config" | jq -c .),"
-      echo "  \"event\": $(jq -c '.' "$event_file"),"
-      echo "  \"workflow\": $(echo "$workflow_content" | jq -Rs .),"
-      echo "  \"attachments\": [$(ls "$ROOT/.agents/temp" 2>/dev/null | jq -R -s -c 'split("\n") | map(select(length > 0))')]"
-      echo "}"
-      ;;
-    score)
-      [ $# -eq 2 ] && [[ "$file" =~ ^[1-9][0-9]*$ ]] || die "Usage: bapXphp handoff score <issue>"
-      local event_file="$ROOT/.agents/handoffs/events/${file}.json"
-      if [ ! -f "$event_file" ]; then
-        local found
-        found=$(ls "$ROOT/.agents/handoffs/events/${file}"-*.json 2>/dev/null | head -1)
-        [ -n "$found" ] && event_file="$found"
-      fi
-      [ -f "$event_file" ] || die "No handoff event for issue #${file}. Wait for the GitHub Actions issue trigger or inspect the issue in GitHub."
-
-      echo "── Scoring handoff for issue #${file} ──"
-
-      local score=0
-      local breakdown=""
-
-      # 1) CI validation (30 points)
-      echo -n "CI check (30pts) ... "
-      if bapXphp ci >/dev/null 2>&1; then
-        score=$((score + 30))
-        breakdown="${breakdown}ci:30 "
-        echo "PASS"
-      else
-        breakdown="${breakdown}ci:0 "
-        echo "FAIL"
-      fi
-
-      # 2) All objectives have evidence (25 points)
-      local total_objs evidence_count
-      total_objs=$(jq '.objectives | length' "$event_file")
-      evidence_count=$(jq '[.objectives[].evidence[]] | length' "$event_file")
-      echo -n "Evidence check (${evidence_count}/${total_objs} objs) ... "
-      if [ "$total_objs" -gt 0 ] && [ "$evidence_count" -ge "$total_objs" ]; then
-        score=$((score + 25))
-        breakdown="${breakdown}evidence:25 "
-        echo "PASS"
-      else
-        local evidence_score=0
-        [ "$total_objs" -gt 0 ] && evidence_score=$(( evidence_count * 25 / total_objs ))
-        score=$((score + evidence_score))
-        breakdown="${breakdown}evidence:${evidence_score} "
-        echo "PARTIAL (${evidence_score})"
-      fi
-
-      # 3) No unresolved items (15 points)
-      local unresolved_count
-      unresolved_count=$(jq '[.objectives[].unresolved[]] | length' "$event_file")
-      echo -n "Unresolved items (${unresolved_count}) ... "
-      if [ "$unresolved_count" -eq 0 ]; then
-        score=$((score + 15))
-        breakdown="${breakdown}unresolved:15 "
-        echo "PASS"
-      else
-        breakdown="${breakdown}unresolved:0 "
-        echo "FAIL"
-      fi
-
-      # 4) No gap statuses (15 points)
-      local gap_count
-      gap_count=$(jq '[.objectives[] | select(.status == "gap")] | length' "$event_file")
-      echo -n "Gap check (${gap_count} gaps) ... "
-      if [ "$gap_count" -eq 0 ]; then
-        score=$((score + 15))
-        breakdown="${breakdown}gaps:15 "
-        echo "PASS"
-      else
-        breakdown="${breakdown}gaps:0 "
-        echo "FAIL"
-      fi
-
-      # 5) Tests pass (15 points)
-      local tests_passed
-      tests_passed=$(jq -r '.telemetry.tests_passed // ""' "$event_file")
-      echo -n "Tests check ... "
-      if [ -n "$tests_passed" ]; then
-        local num passed
-        num=$(echo "$tests_passed" | cut -d/ -f2)
-        passed=$(echo "$tests_passed" | cut -d/ -f1)
-        if [ "$num" -gt 0 ] && [ "$passed" -eq "$num" ]; then
-          score=$((score + 15))
-          breakdown="${breakdown}tests:15 "
-          echo "PASS (${tests_passed})"
-        else
-          breakdown="${breakdown}tests:0 "
-          echo "FAIL (${tests_passed})"
-        fi
-      else
-        breakdown="${breakdown}tests:0 "
-        echo "NO DATA (0)"
-      fi
-
-      echo "── Score: ${score}/100 (${breakdown}) ──"
-
-      # Inject score into handoff event JSON
-      jq --argjson score "$score" '.telemetry.score = $score' "$event_file" > "${event_file}.tmp" && mv "${event_file}.tmp" "$event_file"
-
-      # Also update telemetry.json cycle
-      local cycle_file="$ROOT/.agents/ops/telemetry.json"
-      if [ -f "$cycle_file" ]; then
-        local latest_id
-        latest_id=$(jq -r '.cycles[-1].id' "$cycle_file")
-        jq --arg id "$latest_id" --argjson score "$score" \
-          '(.cycles[] | select(.id == $id) | .score) = $score
-           | .metrics.avg_score = ([.cycles[].score] | add / length | floor)' \
-          "$cycle_file" > "${cycle_file}.tmp" && mv "${cycle_file}.tmp" "$cycle_file"
-      fi
-
-      echo "Score written to handoff event"
-      ;;
-    *) die "Usage: bapXphp handoff <active|validate|next|template|execute|score> <file> [--next role]" ;;
-  esac
-}
 
 cmd_hooks() {
   local action="${1:-status}"
@@ -1067,10 +853,6 @@ cmd_hooks() {
   esac
 }
 
-cmd_tui() {
-  require_php
-  php "$ROOT/cli/tui.php"
-}
 
 # ── Mail & Images ──────────────────────────────────────────────
 cmd_mail_process() {
@@ -2489,10 +2271,6 @@ main() {
       shift; cmd_artifacts_clean "$@" ;;
     hooks)
       shift; cmd_hooks "$@" ;;
-    tui)
-      cmd_tui ;;
-    handoff)
-      shift; cmd_handoff "$@" ;;
     ai:config|ai-config|model-config)
       cmd_ai_config ;;
     ai:probe|ai-probe)
@@ -2519,7 +2297,7 @@ main() {
     docsmap)
       cmd_docsmap ;;
     agentsmap)
-      php "$ROOT/cli/generate-agents-map.php" "$ROOT" "$ROOT/agents.mmd" ;;
+      : ;;
     codemap)
       cmd_codemap ;;
     okfgen|knowledge-graph|kg)

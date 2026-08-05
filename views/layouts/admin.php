@@ -132,14 +132,6 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
                 <a href="/admin/backups" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/backups') === 0 ? 'active' : '') ?>">Backups</a>
                 <a href="/admin/audit-log" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/audit-log') === 0 ? 'active' : '') ?>">Audit Log</a>
             </div>
-            <a href="/admin/developer/project-map" class="admin-nav-top <?= (strpos($_SERVER['REQUEST_URI'], '/admin/developer/project-map') === 0 ? 'active' : '') ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h6v6H3zM15 3h6v6h-6zM9 15h6v6H9z"/><path d="M6 9v3h6v3M18 9v3h-6"/></svg>
-                Project Map
-            </a>
-            <a href="/admin/developer/workflow" class="admin-nav-top <?= (strpos($_SERVER['REQUEST_URI'], '/admin/developer/workflow') === 0 ? 'active' : '') ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                Workflow
-            </a>
         </nav>
         <div class="admin-sidebar__footer">
             <a href="/">

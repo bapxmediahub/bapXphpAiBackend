@@ -1,0 +1,64 @@
+---
+type: skill
+name: admin-ui
+description: Use when editing owner/admin pages, CRUD forms, media library, environment editor, permissions, audit log, integrations, or admin navigation.
+---
+# Admin UI
+
+- Follow the root `AGENTS.md` repository contract and its app/view/storage area rules.
+- Keep owner/admin UI PHP-template based.
+- Admin mutations should route through controllers/services and remain auditable.
+- Use schema-driven resource fields and the media library for product, temple, and astrologer media.
+- Keep astrologer accounts admin-created; show temporary credentials only until the provider changes the initial password.
+- Validate with `php tests/run.php`; use a browser workflow for changed admin pages.
+
+## Admin Panel Agent (bapXcli)
+
+The admin panel has an agent interface at `/admin/agent` that:
+
+1. **Answers questions** about the site: user count, orders, revenue, products, consultations
+2. **Creates/edits blog posts** via natural language prompts (delegates to `bapXphp write blog`)
+3. **Reads MySQL data** through `DatabaseService` to answer queries
+4. **Calls AI model** configured in Admin → Integrations (Google Gemini endpoint by default)
+5. **Reads attachments** from `.claude/temp/` (screenshots, documents provided by the user)
+6. **Triggers CI/CD** actions on the hosting server via `workflow_dispatch`
+
+### Implementation Pattern
+
+The agent controller:
+1. Receives prompt via POST (JSON body with `prompt` field, optional `attachment` reference)
+2. Builds context from MySQL: `DatabaseService` queries for users, orders, products, etc.
+3. Calls AI API using `SecretService` (`agent_api_key`, `agent_model`, `api_endpoint`)
+4. Streams Markdown response back to the admin panel UI
+
+### Agent Permissions
+
+The admin agent has read access to:
+- `users` — count, list
+- `orders` — count, list, revenue totals
+- `products` — list, details
+- `astrologers` — list, details
+- `appointments` — list, count
+- `support_tickets` — list, count
+- `audit_events` — recent events
+- `settings` — public settings
+
+Write/mutation operations require explicit user confirmation before execution.
+
+## AI Integration Secrets
+
+Configured in Admin → Integrations with these fields stored in MySQL `secrets` table:
+
+| Key | Purpose |
+|-----|---------|
+| `agent_api_key` | Authentication key |
+| `agent_model` | Model ID; defaults to `gemma-4-31b-it` |
+| `api_endpoint` | Full provider API URL |
+
+## Testing
+
+Log into `/admin` and click through the page you changed, including its form submit and delete paths. Admin forms post several independent forms to one action, so confirm a partial submit does not blank the fields belonging to the other forms. Then `./bapXphp test`.
+
+## Keeping this skill current
+
+Update when an admin route, sidebar group, or CRUD form contract changes. The sidebar is gated by `SettingsService::modules()`; re-check both the on and off states.

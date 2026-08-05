@@ -7,14 +7,14 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 113 routes, 13 controllers, 42 services, 49 views, 0 data files, 25 tools"]
-    arch_routes["> Routes: 113 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 111 routes, 13 controllers, 42 services, 47 views, 0 data files, 21 tools"]
+    arch_routes["> Routes: 111 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 13"]:::arch
     arch_svc["> Services: 42"]:::arch
-    arch_views["> Views: 49"]:::arch
+    arch_views["> Views: 47"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
-    arch_tools["> Tools: 25"]:::arch
-    arch_gaps["> Gaps: 0"]:::arch
+    arch_tools["> Tools: 21"]:::arch
+    arch_gaps["> Gaps: 1"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -127,8 +127,6 @@ flowchart LR
     route_get_admin_media["GET /admin/media — Admin — media library"]:::route
     route_post_admin_media_upload["POST /admin/media/upload — Admin — upload media"]:::route
     route_post_admin_environment_fix_permissions["POST /admin/environment/fix-permissions — Admin — fix storage permissions"]:::route
-    route_get_admin_developer_project_map["GET /admin/developer/project-map — Admin — project map viewer"]:::route
-    route_get_admin_developer_workflow["GET /admin/developer/workflow — Admin — agent workflow viewer"]:::route
     route_post_admin_products_save["POST /admin/products/save — Admin — create/update product"]:::route
     route_post_admin_products_delete["POST /admin/products/delete — Admin — delete product"]:::route
     route_post_admin_categories_save["POST /admin/categories/save — Admin — create/update category"]:::route
@@ -235,11 +233,9 @@ flowchart LR
     view_admin_mailbox["admin/mailbox"]:::code
     view_admin_media["admin/media"]:::code
     view_admin_product_form["admin/product-form"]:::code
-    view_admin_project_map["admin/project-map"]:::code
     view_admin_resource["admin/resource"]:::code
     view_admin_settings["admin/settings"]:::code
     view_admin_tax_report["admin/tax-report"]:::code
-    view_admin_workflow["admin/workflow"]:::code
     view_layouts_admin["layouts/admin"]:::code
     view_layouts_app["layouts/app"]:::code
     view_public_404["public/404"]:::code
@@ -307,12 +303,10 @@ flowchart LR
     tool_blog_write["blog-write"]:::tool
     tool_doc_read["doc-read"]:::tool
     tool_doc_write["doc-write"]:::tool
-    tool_generate_agents_map["generate-agents-map"]:::tool
     tool_generate_code_map["generate-code-map"]:::tool
     tool_generate_docs_map["generate-docs-map"]:::tool
     tool_generate_okf_bundle["generate-okf-bundle"]:::tool
     tool_generate_project_map["generate-project-map"]:::tool
-    tool_handoff["handoff"]:::tool
     tool_import_product_images["import-product-images"]:::tool
     tool_optimize_images["optimize-images"]:::tool
     tool_pma_client["pma-client"]:::tool
@@ -322,15 +316,13 @@ flowchart LR
     tool_refresh_blog_cache["refresh-blog-cache"]:::tool
     tool_smoke_local["smoke-local"]:::tool
     tool_test_race["test_race"]:::tool
-    tool_tui["tui"]:::tool
-    tool_validate_agents_map["validate-agents-map"]:::tool
     tool_validate_docs_map["validate-docs-map"]:::tool
     tool_validate_project_map["validate-project-map"]:::tool
     tool_bapxphp["bapXphp"]:::tool
   end
 
   subgraph GAPS["Gaps & Missing Links"]
-    no_gaps["No detected gaps"]:::data
+    gap_5df3fe25a8["unwired_services: ProjectMapService"]:::gap
   end
 
   route_get --> controller_publiccontroller
@@ -627,13 +619,6 @@ flowchart LR
   controller_admincontroller --> service_auditlogservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_settings
-  route_get_admin_developer_project_map --> controller_admincontroller
-  controller_admincontroller --> service_projectmapservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_project_map
-  route_get_admin_developer_workflow --> controller_admincontroller
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_workflow
   route_post_admin_products_save --> controller_admincontroller
   controller_admincontroller --> service_resourceservice
   controller_admincontroller --> service_auditlogservice
@@ -872,3 +857,4 @@ flowchart LR
   tool_validate_project_map --> systematic_map
   tool_smoke_local --> ROUTES_PUBLIC
   tool_smoke_local --> ROUTES_ADMIN
+  gap_5df3fe25a8 -. missing .-> service_projectmapservice
