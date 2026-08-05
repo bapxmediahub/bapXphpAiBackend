@@ -7,14 +7,14 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 111 routes, 12 controllers, 43 services, 46 views, 0 data files, 20 tools"]
+  subgraph ARCH["Architecture Overview — 111 routes, 12 controllers, 44 services, 46 views, 0 data files, 20 tools"]
     arch_routes["> Routes: 111 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
-    arch_svc["> Services: 43"]:::arch
+    arch_svc["> Services: 44"]:::arch
     arch_views["> Views: 46"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 20"]:::arch
-    arch_gaps["> Gaps: 5"]:::arch
+    arch_gaps["> Gaps: 6"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -171,6 +171,7 @@ flowchart LR
   subgraph SERVICES["Services"]
     service_addressservice["AddressService"]:::code
     service_agentcontextservice["AgentContextService"]:::code
+    service_aiclient["AiClient"]:::code
     service_aireplycleaner["AiReplyCleaner"]:::code
     service_appointmentservice["AppointmentService"]:::code
     service_astrologerservice["AstrologerService"]:::code
@@ -320,9 +321,10 @@ flowchart LR
   end
 
   subgraph GAPS["Gaps & Missing Links"]
-    gap_544da70574["unwired_services: AiReplyCleaner"]:::gap
-    gap_2001143d96["unwired_services: ProjectMapService"]:::gap
-    gap_54bf9b88d4["unwired_services: StoragePermissionService"]:::gap
+    gap_85752c3912["unwired_services: AiClient"]:::gap
+    gap_59aa34e773["unwired_services: AiReplyCleaner"]:::gap
+    gap_d35c2ce4d6["unwired_services: ProjectMapService"]:::gap
+    gap_95525e3d98["unwired_services: StoragePermissionService"]:::gap
     gap_6b9c2b4b5a["POST /admin/blog/enhance-title — missing AuditLogService"]:::gap
     gap_b4217badec["POST /admin/blog/enhance-content — missing AuditLogService"]:::gap
   end
@@ -859,8 +861,9 @@ flowchart LR
   tool_validate_project_map --> systematic_map
   tool_smoke_local --> ROUTES_PUBLIC
   tool_smoke_local --> ROUTES_ADMIN
-  gap_544da70574 -. missing .-> service_aireplycleaner
-  gap_2001143d96 -. missing .-> service_projectmapservice
-  gap_54bf9b88d4 -. missing .-> service_storagepermissionservice
+  gap_85752c3912 -. missing .-> service_aiclient
+  gap_59aa34e773 -. missing .-> service_aireplycleaner
+  gap_d35c2ce4d6 -. missing .-> service_projectmapservice
+  gap_95525e3d98 -. missing .-> service_storagepermissionservice
   gap_6b9c2b4b5a -. missing .-> controller_admincontroller
   gap_b4217badec -. missing .-> controller_admincontroller
