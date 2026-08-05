@@ -86,25 +86,14 @@ final class SupportBotService {
     }
 
     private function cleanReply(string $reply): string {
-        $reply = preg_replace('/<thought\b[^>]*>.*?<\/thought>/is', '', $reply) ?? $reply;
-        $lines = array_filter(array_map('trim', preg_split('/\R/', $reply) ?: []));
-        $clean = [];
-        foreach ($lines as $line) {
-            $line = preg_replace('/^\s*[\*\-]\s*/', '', $line) ?? $line;
-            if (preg_match('/^(role|constraint|customer context|customer question|the customer|i need|greeting|list the|maintain a|answer only|support reply)\b/i', $line)) continue;
-            $line = trim($line, " \t\n\r\0\x0B`*");
-            if ($line !== '') $clean[] = $line;
-        }
-        $text = trim(implode(' ', $clean));
-        if (preg_match_all('/"([^"]{20,700})"/', $text, $matches) && !empty($matches[1])) {
-            $text = end($matches[1]);
-        }
-        if ($text === '') $text = 'I can help with products, orders, delivery addresses, payments, and consultant bookings. Please ask one specific question.';
-        return strlen($text) > 900 ? substr($text, 0, 897) . '...' : $text;
+        return (new AiReplyCleaner())->clean(
+            $reply,
+            'I can help with products, orders, delivery addresses and payments. Please ask one specific question.'
+        );
     }
 
     private function looksInternal(string $reply): bool {
-        return (bool)preg_match('/\b(signed_in|customer context|context json|site\.pages|wallet_transactions|support_scope|generationconfig|tool call|role:|constraint|the user said|the bot should|the bot needs|allowed scope)\b/i', $reply);
+        return (new AiReplyCleaner())->looksInternal($reply);
     }
 
     private function fallbackReply(string $message, array $context): string {
