@@ -944,6 +944,37 @@ $tests['saved addresses select the default and allow another checkout address'] 
     assertTrue(str_contains($checkout, 'Enter a new address') && str_contains($checkout, 'Save for next time'), 'Checkout should allow one-time or newly saved addresses');
 };
 
+$tests['shipping an order requires a courier tracking id and link'] = function (): void {
+    $service = new \App\Services\OrderService();
+    $cases = [
+        [[], 'tracking ID'],
+        [['tracking_id' => 'ABC123'], 'tracking link'],
+        [['tracking_url' => 'https://courier.example/t/1'], 'tracking ID'],
+        [['tracking_id' => 'ABC123', 'tracking_url' => 'not-a-url'], 'valid URL'],
+    ];
+    foreach ($cases as [$tracking, $expected]) {
+        $blocked = false;
+        try { $service->updateStatus('missing-order', 'shipped', null, $tracking); }
+        catch (\InvalidArgumentException $e) { $blocked = str_contains($e->getMessage(), $expected); }
+        catch (\Throwable) { $blocked = false; }
+        assertTrue($blocked, 'Marking shipped without complete tracking should be rejected: ' . $expected);
+    }
+
+    // With both present, validation passes and the order lookup is what fails.
+    $reachedLookup = false;
+    try { $service->updateStatus('missing-order', 'shipped', null, ['tracking_id' => 'ABC123', 'tracking_url' => 'https://courier.example/t/1']); }
+    catch (\InvalidArgumentException) { $reachedLookup = false; }
+    catch (\Throwable) { $reachedLookup = true; }
+    assertTrue($reachedLookup, 'Complete tracking should pass validation');
+
+    // Other transitions must not be blocked by the shipping requirement.
+    $processingBlocked = false;
+    try { $service->updateStatus('missing-order', 'processing'); }
+    catch (\InvalidArgumentException) { $processingBlocked = true; }
+    catch (\Throwable) {}
+    assertTrue(!$processingBlocked, 'Non-shipping transitions must not require tracking');
+};
+
 $tests['the database bridge never calls the host it is running on'] = function (): void {
     $source = file_get_contents(app_path('app/Services/DatabaseService.php'));
     assertTrue(str_contains($source, 'remoteUrlIsSelf'), 'isRemote must detect a self-referential remote_url');

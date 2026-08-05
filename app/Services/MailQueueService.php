@@ -320,10 +320,27 @@ final class MailQueueService {
         $to = trim((string)($order['customer_email'] ?? ''));
         if ($to === '') return null;
         $subject = 'Sri Panchami Spiritual order shipped';
+        $trackingId = trim((string)($order['tracking_id'] ?? ''));
+        $trackingUrl = trim((string)($order['tracking_url'] ?? ''));
+        $courier = trim((string)($order['courier_name'] ?? ''));
+        // Domestic versus international changes what we can honestly promise.
+        $country = strtolower(trim((string)($order['shipping_country'] ?? $order['country'] ?? 'india')));
+        $isDomestic = $country === '' || str_contains($country, 'india');
+        $window = $isDomestic
+            ? \App\Services\OrderService::DELIVERY_DAYS_DOMESTIC
+            : \App\Services\OrderService::DELIVERY_DAYS_INTERNATIONAL;
+
         $html = self::heading('Your order is on its way')
-            . '<p>We have dispatched your order. You will receive it shortly.</p>'
-            . self::details(['Order' => e((string)($order['id'] ?? ''))])
-            . self::button('Track your order', $this->siteUrl('/account/dashboard/orders'))
+            . '<p>We have dispatched your order. Delivery usually takes <strong>' . e($window) . '</strong> from today.</p>'
+            . self::details(array_filter([
+                'Order'       => e((string)($order['id'] ?? '')),
+                'Courier'     => $courier !== '' ? e($courier) : '',
+                'Tracking ID' => $trackingId !== '' ? e($trackingId) : '',
+            ]))
+            . ($trackingUrl !== ''
+                ? self::button('Track your parcel', $trackingUrl)
+                  . '<p style="font-size:13px;color:#91877c;">Tracking can take a few hours to show its first update.</p>'
+                : self::button('View your order', $this->siteUrl('/account/dashboard/orders')))
             . '<p style="color:#91877c;font-size:13px;">We will ask for a review once you have had time to use it.</p>';
         return $this->enqueue('shipment_notification', $to, $subject, $html, null, ['order_id' => $order['id'] ?? '']);
     }
