@@ -689,7 +689,7 @@ $tests['mail queue exposes due messages and processor script for cron delivery']
     $queue = new \App\Services\MailQueueService();
     assertTrue(method_exists($queue, 'due'), 'MailQueueService should have due method');
     assertTrue(method_exists($queue, 'enqueue'), 'MailQueueService should have enqueue method');
-    assertTrue(is_file(app_path('cli/process-mail-queue.php')), 'Mail queue should have a cron-friendly processor script');
+    assertTrue(str_contains(file_get_contents(app_path('app/Services/MailQueueService.php')), 'deliverNow'), 'Mail must be delivered in-request, not by a cron script');
 };
 
 $tests['order shipping workflow sets review date and queues customer emails'] = function (): void {

@@ -5,6 +5,7 @@ foreach (['BAPX_MYSQL_HOST','BAPX_MYSQL_PORT','BAPX_MYSQL_DB','BAPX_MYSQL_USER',
 }
 $appUrl = rtrim((string)($env['APP_URL'] ?? $_SERVER['APP_URL'] ?? $_ENV['APP_URL'] ?? 'https://sripanchamispiritual.com'), '/');
 return [
+    'app_url' => $appUrl,
     'host' => $env['BAPX_MYSQL_HOST'] ?: 'localhost',
     'port' => $env['BAPX_MYSQL_PORT'] ?: '3306',
     'dbname' => $env['BAPX_MYSQL_DB'] ?: 'u907253411_db_name_sps',

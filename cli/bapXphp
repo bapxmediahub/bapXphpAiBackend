@@ -871,7 +871,7 @@ cmd_hooks() {
 # ── Mail & Images ──────────────────────────────────────────────
 cmd_mail_process() {
   require_php
-  php "$ROOT/cli/process-mail-queue.php" 2>&1
+  php -r 'require "app/bootstrap.php"; $m=new App\\Services\\MailQueueService(); $n=0; foreach($m->due() as $r){ if($m->deliverNow($r)) $n++; } echo "Sent $n queued emails.\n";' 2>&1
 }
 
 cmd_images_optimize() {
