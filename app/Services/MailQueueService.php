@@ -129,6 +129,73 @@ final class MailQueueService {
         }
     }
 
+    /**
+     * A failed payment left the customer with nothing — no screen, no email — while the
+     * owner never learned an attempt had failed. Both are told, and the customer is
+     * pointed back at their cart, which is deliberately preserved.
+     */
+    public function enqueuePaymentFailure(array $order, string $reason = ''): ?array {
+        $to = trim((string)($order['customer_email'] ?? ''));
+        $detail = $reason !== '' ? '<p>Reason: ' . e($reason) . '</p>' : '';
+        $this->notifyAdmin(
+            'Payment failed for ' . (string)($order['id'] ?? 'an order'),
+            '<p>A payment attempt failed.</p>'
+            . '<p>Order: <strong>' . e((string)($order['id'] ?? '')) . '</strong><br>'
+            . 'Customer: ' . e((string)($order['customer_name'] ?? '')) . ' &lt;' . e($to) . '&gt;<br>'
+            . 'Amount: ₹' . e((string)($order['total'] ?? 0)) . '</p>' . $detail,
+            ['order_id' => $order['id'] ?? '']
+        );
+        if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) return null;
+        return $this->enqueue('payment_failed', $to, 'Your payment could not be completed',
+            '<p>Vanakkam ' . e((string)($order['customer_name'] ?? '')) . ',</p>'
+            . '<p>Your payment for order <strong>' . e((string)($order['id'] ?? '')) . '</strong> could not be completed, '
+            . 'so the order has not been placed and you have not been charged.</p>'
+            . '<p>Your cart has been kept. You can try again from <a href="/checkout">checkout</a>, '
+            . 'or reply to this email and we will help.</p>' . $detail,
+            null, ['order_id' => $order['id'] ?? '']);
+    }
+
+    /** Security notice so an account holder learns about a sign-in they did not make. */
+    public function enqueueLoginNotification(string $email, string $name, string $role): ?array {
+        $email = trim($email);
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) return null;
+        $when = date('d M Y, H:i');
+        $ip = (string)($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+        return $this->enqueue('login_notification', $email, 'New sign-in to your Sri Panchami Spiritual account',
+            '<p>Hello ' . e($name !== '' ? $name : 'there') . ',</p>'
+            . '<p>Your account was signed in to on <strong>' . e($when) . '</strong> (IP ' . e($ip) . ').</p>'
+            . '<p>If this was you, no action is needed. If it was not, change your password immediately '
+            . 'and contact <a href="mailto:support@sripanchamispiritual.com">support@sripanchamispiritual.com</a>.</p>',
+            null, ['role' => $role]);
+    }
+
+    /**
+     * Newsletter for a newly published post. Sent to registered customers; the owner and
+     * consultants are skipped so a publish does not mail the whole staff.
+     */
+    public function enqueueBlogNewsletter(array $post, array $recipients): int {
+        $title = trim((string)($post['title'] ?? ''));
+        $slug = trim((string)($post['slug'] ?? ''));
+        if ($title === '' || $slug === '') return 0;
+        $excerpt = trim((string)($post['excerpt'] ?? $post['summary'] ?? ''));
+        $sent = 0;
+        foreach ($recipients as $email) {
+            $email = trim((string)$email);
+            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) continue;
+            try {
+                $this->enqueue('blog_newsletter', $email, 'New article: ' . $title,
+                    '<h2 style="margin:0 0 8px;">' . e($title) . '</h2>'
+                    . ($excerpt !== '' ? '<p>' . e($excerpt) . '</p>' : '')
+                    . '<p><a href="/blog/' . e($slug) . '">Read the article</a></p>',
+                    null, ['slug' => $slug]);
+                $sent++;
+            } catch (\Throwable $error) {
+                error_log('Newsletter send failed for ' . $email . ': ' . $error->getMessage());
+            }
+        }
+        return $sent;
+    }
+
     public function enqueueShipmentNotification(array $order): ?array {
         $to = trim((string)($order['customer_email'] ?? ''));
         if ($to === '') return null;

@@ -17,7 +17,7 @@
     <?php if (empty($modelConfig['configured'])): ?>
         <div class="agent-notice">
             <strong>No API key configured.</strong>
-            Set <code>agent_api_key</code> in <a href="/admin/integrations">Admin → Integrations</a> to enable the agent.
+            Set <code>ai_api_key</code> in <a href="/admin/integrations">Admin → Integrations</a> to enable the agent.
         </div>
     <?php endif; ?>
 </div>

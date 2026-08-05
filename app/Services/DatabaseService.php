@@ -17,7 +17,7 @@ final class DatabaseService {
         $cacheKey = hash('sha256', (string)$this->cfg['remote_url'] . "\0" . $sql . "\0" . serialize($params));
         if (array_key_exists($cacheKey, self::$remoteQueryCache)) return self::$remoteQueryCache[$cacheKey];
 
-        $payload = json_encode(array_filter(['query' => $sql, 'params' => $params, 'password' => $this->cfg['remote_db_password'] ?? '']), JSON_THROW_ON_ERROR);
+        $payload = json_encode(array_filter(['query' => $sql, 'params' => $params, 'password' => $this->cfg['pass'] ?? '']), JSON_THROW_ON_ERROR);
         $ch = curl_init($this->cfg['remote_url']);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true,
@@ -41,7 +41,7 @@ final class DatabaseService {
     }
 
     private function remoteMutation(string $action, string $table, array $payload): array {
-        $payload['password'] = $this->cfg['remote_db_password'] ?? '';
+        $payload['password'] = $this->cfg['pass'] ?? '';
         $body = json_encode(['action' => $action, 'collection' => preg_replace('/[^a-z_]/', '', $table)] + $payload);
         $ch = curl_init($this->cfg['remote_url']);
         curl_setopt_array($ch, [

@@ -9,12 +9,87 @@ final class MarkdownRenderer
         $html = $this->renderCodeBlocks($html);
         $html = $this->renderHeadings($html);
         $html = $this->renderHorizontalRules($html);
+        $html = $this->renderTables($html);
         $html = $this->renderUnorderedLists($html);
         $html = $this->renderOrderedLists($html);
         $html = $this->renderInlineFormatting($html);
         $html = $this->renderParagraphs($html);
         $html = $this->sanitize($html);
         return $html;
+    }
+
+
+    /**
+     * GitHub-style pipe tables. Runs after headings and rules but before lists and
+     * paragraphs, so a table block is already wrapped in <table> by the time
+     * renderParagraphs() sees it and is left alone.
+     *
+     *   | Name | Price |
+     *   |------|------:|
+     *   | Mala |   499 |
+     *
+     * The delimiter row sets alignment: :--- left, ---: right, :---: centre.
+     */
+    private function renderTables(string $html): string
+    {
+        $lines = explode("\n", $html);
+        $out = [];
+        $count = count($lines);
+
+        for ($i = 0; $i < $count; $i++) {
+            $header = trim($lines[$i]);
+            $delimiter = trim($lines[$i + 1] ?? '');
+
+            $looksLikeTable = $header !== '' && str_contains($header, '|')
+                && $delimiter !== '' && preg_match('/^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?$/', $delimiter) === 1;
+
+            if (!$looksLikeTable) { $out[] = $lines[$i]; continue; }
+
+            $headers = $this->splitTableRow($header);
+            $aligns = array_map(static function (string $spec): string {
+                $spec = trim($spec);
+                $left = str_starts_with($spec, ':');
+                $right = str_ends_with($spec, ':');
+                if ($left && $right) return ' style="text-align:center"';
+                if ($right) return ' style="text-align:right"';
+                return '';
+            }, $this->splitTableRow($delimiter));
+
+            if (count($headers) === 0) { $out[] = $lines[$i]; continue; }
+
+            $body = [];
+            $j = $i + 2;
+            while ($j < $count && trim($lines[$j]) !== '' && str_contains($lines[$j], '|')) {
+                $body[] = $this->splitTableRow(trim($lines[$j]));
+                $j++;
+            }
+
+            $table = '<table><thead><tr>';
+            foreach ($headers as $index => $cell) {
+                $table .= '<th' . ($aligns[$index] ?? '') . '>' . $cell . '</th>';
+            }
+            $table .= '</tr></thead><tbody>';
+            foreach ($body as $row) {
+                $table .= '<tr>';
+                foreach ($headers as $index => $_) {
+                    $table .= '<td' . ($aligns[$index] ?? '') . '>' . ($row[$index] ?? '') . '</td>';
+                }
+                $table .= '</tr>';
+            }
+            $table .= '</tbody></table>';
+
+            $out[] = $table;
+            $i = $j - 1;
+        }
+
+        return implode("\n", $out);
+    }
+
+    /** Splits a pipe row into cells, ignoring the optional leading and trailing pipes. */
+    private function splitTableRow(string $row): array
+    {
+        $row = preg_replace('/^\||\|$/', '', trim($row)) ?? $row;
+        return array_map('trim', explode('|', $row));
     }
 
     private function sanitize(string $html): string

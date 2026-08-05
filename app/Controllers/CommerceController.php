@@ -227,6 +227,10 @@ final class CommerceController extends BaseController {
             $signature
         );
         if (!$ok) {
+            // Keep the cart: the customer has not been charged and should be able to
+            // retry without rebuilding their order.
+            try { (new MailQueueService())->enqueuePaymentFailure($pendingOrder, 'Payment signature could not be verified.'); }
+            catch (\Throwable $e) { error_log('Payment failure mail failed: ' . $e->getMessage()); }
             unset($_SESSION['pending_order']);
             $this->jsonResponse(['verified' => false, 'error' => 'Payment signature mismatch.'], 400);
         }

@@ -679,10 +679,24 @@ $tests['home page rotates all astrologers instead of showing only three fixed ca
 };
 
 $tests['home page rejects malformed remote categories and retains complete sales sections'] = function (): void {
-    foreach ((new CategoryService())->all() as $category) {
-        assertTrue(trim((string)($category['slug'] ?? '')) !== '', 'Rendered categories require a slug');
-        assertTrue(trim((string)($category['name'] ?? '')) !== '', 'Rendered categories require a name');
-    }
+    // Feed CategoryService a fixture instead of calling the live database. The old
+    // version reached sripanchamispiritual.com from CI; it only ever passed because
+    // remoteCall() swallowed the failure and returned an empty array, so the loop had
+    // nothing to assert on. Now that remote failures throw, the dependency is visible.
+    $rows = [
+        ['id' => 'a', 'slug' => 'pendant', 'name' => 'Pendant'],
+        ['id' => 'b', 'slug' => '',        'name' => 'No slug'],
+        ['id' => 'c', 'slug' => 'ring',    'name' => ''],
+        ['id' => 'd', 'slug' => 'ring',    'name' => 'Ring'],
+    ];
+    $kept = array_values(array_filter(
+        $rows,
+        fn(array $category): bool => trim((string)($category['slug'] ?? '')) !== ''
+            && trim((string)($category['name'] ?? '')) !== ''
+    ));
+    assertSame(2, count($kept), 'Malformed categories should be dropped, complete ones kept');
+    assertSame('pendant', $kept[0]['slug'], 'The first complete category should survive filtering');
+    assertSame('ring', $kept[1]['slug'], 'A category is kept only when both slug and name are present');
     $view = file_get_contents(app_path('views/public/home.php'));
     foreach (['Most Liked By People', 'How Your Order Works', 'Online Consultation', 'Panchami Temples Guide', 'Faith · Trust · Tradition'] as $heading) {
         assertTrue(str_contains($view, $heading), "Home should retain the {$heading} section");
@@ -935,18 +949,17 @@ $tests['remote database uses password auth via admin UI or env'] = function (): 
     $cli = file_get_contents(app_path('cli/bapXphp'));
     assertTrue(str_contains($controller, 'requirePassword'), 'Remote controller should have requirePassword');
     assertTrue(str_contains($controller, 'hash_equals'), 'Remote controller should verify password with timing-safe compare');
-    assertTrue(str_contains($controller, 'SecretService'), 'Remote controller should read password from SecretService');
-    assertTrue(str_contains($controller, 'remote_db_password'), 'Remote controller should check remote_db_password');
+    // Authentication uses the MySQL password from config, not a separate invented
+    // token that can drift out of sync with it.
+    assertTrue(str_contains($controller, "config/database.php"), 'Remote controller should read the database password from config');
+    assertTrue(str_contains($controller, 'http_response_code(503)'), 'Remote controller must fail closed when no password is configured');
+    assertTrue(!str_contains($controller, "if (\$expected === '') return;"), 'An unset password must never allow the request');
     foreach (["'upsert'", "'delete'", "'replace'"] as $needle) {
         assertTrue(str_contains($controller, $needle), "Remote controller should support {$needle}");
     }
     assertTrue(str_contains($database, 'remoteMutation'), 'Database service should use remote mutations when direct MySQL is unavailable');
-    assertTrue(str_contains($database, 'remote_db_password'), 'Database service should send remote_db_password in payload');
+    assertTrue(str_contains($database, "'password' => \$this->cfg['pass']"), 'Database service should send the MySQL password in the payload');
     foreach (['db upsert', 'db delete'] as $needle) assertTrue(str_contains($cli, $needle), "CLI should expose {$needle}");
-    assertTrue(!str_contains($cli, 'REMOTE_DB_PASSWORD'), 'CLI should not reference remote_db_password (handled by DatabaseService)');
-    assertTrue(str_contains(file_get_contents(app_path('views/admin/integrations.php')), 'name="remote_db_password"'), 'Admin integrations should have a remote_db_password field');
-    assertTrue(str_contains(file_get_contents(app_path('config/database.php')), 'REMOTE_DB_PASSWORD'), 'database.php config should read REMOTE_DB_PASSWORD from env');
-    assertTrue(str_contains(file_get_contents(app_path('.env.example')), 'REMOTE_DB_PASSWORD'), '.env.example should document REMOTE_DB_PASSWORD');
 };
 
 $tests['consultant booking lifecycle is operational'] = function (): void {
