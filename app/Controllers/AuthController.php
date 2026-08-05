@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{EnvService,SecretService,DatabaseService,PasswordResetService,AddressService};
+use App\Services\{EnvService,SecretService,DatabaseService,PasswordResetService,AddressService,MailQueueService,SettingsService};
 use App\Integrations\GoogleOAuth\GoogleOAuthClient;
 final class AuthController extends BaseController {
   public function googleRedirect(): void {
@@ -78,6 +78,11 @@ final class AuthController extends BaseController {
     (new AddressService($store))->save($email, ['address_name'=>'Home','name'=>$name,'phone'=>$phone,'address'=>$address,'city'=>$city,'pincode'=>$pincode,'is_default'=>true]);
     session_regenerate_id(true);
     $_SESSION['user'] = ['sub'=>$id,'email'=>$email,'name'=>$name,'role'=>$role];
+    try {
+        (new MailQueueService())->enqueue('welcome', $email, 'Welcome to Sri Panchami Spiritual',
+            '<p>Hello ' . e($name) . ',</p><p>Your account is ready. You can view orders and saved addresses in your dashboard.</p>'
+            . '<p><a href="' . e($this->siteUrl('/account/dashboard')) . '">Open your dashboard</a></p>');
+    } catch (\Throwable) {}
     $this->flash('Registered and signed in.','success');
     $this->redirect('/');
  }
@@ -127,13 +132,20 @@ final class AuthController extends BaseController {
     if ($email !== '') {
         $token = (new PasswordResetService())->createToken($email);
         if ($token) {
-            $link = rtrim((string)(getenv('APP_URL') ?: ''), '/') . '/reset-password?token=' . urlencode($token);
-            $_SESSION['last_reset_link'] = $link;
-            $this->flash('Password reset link: ' . $link, 'info');
+            // The link is emailed, never rendered. Showing it would hand any visitor a
+            // working reset for an address they do not control.
+            $link = $this->siteUrl('/reset-password?token=' . urlencode($token));
+            try {
+                (new MailQueueService())->enqueue('password_reset', $email, 'Reset your Sri Panchami Spiritual password',
+                    '<p>We received a request to reset your password.</p>'
+                    . '<p><a href="' . e($link) . '">Reset your password</a></p>'
+                    . '<p>If you did not request this, you can ignore this email.</p>');
+            } catch (\Throwable) {}
         }
-    } else {
-        $this->flash('If this email is registered, a reset link will be sent.','info');
     }
+    // Identical response either way, so the form cannot be used to discover which
+    // addresses are registered.
+    $this->flash('If this email is registered, a reset link has been sent.','info');
     $this->redirect('/forgot-password');
   }
   public function resetPassword(): void {

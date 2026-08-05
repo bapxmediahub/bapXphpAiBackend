@@ -7,13 +7,13 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 112 routes, 13 controllers, 42 services, 47 views, 0 data files, 22 tools"]
-    arch_routes["> Routes: 112 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 113 routes, 13 controllers, 42 services, 47 views, 0 data files, 21 tools"]
+    arch_routes["> Routes: 113 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 13"]:::arch
     arch_svc["> Services: 42"]:::arch
     arch_views["> Views: 47"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
-    arch_tools["> Tools: 22"]:::arch
+    arch_tools["> Tools: 21"]:::arch
     arch_gaps["> Gaps: 1"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
@@ -138,6 +138,7 @@ flowchart LR
     route_post_admin_astrologers_delete["POST /admin/astrologers/delete — Admin — delete astrologer"]:::route
     route_post_admin_temples_save["POST /admin/temples/save — Admin — create/update temple"]:::route
     route_post_admin_temples_delete["POST /admin/temples/delete — Admin — delete temple"]:::route
+    route_post_admin_integrations_test_email["POST /admin/integrations/test-email"]:::route
     route_post_admin_integrations_save["POST /admin/integrations/save — Admin — save integration secrets"]:::route
     route_get_admin_blog["GET /admin/blog"]:::route
     route_post_admin_blog_save["POST /admin/blog/save"]:::route
@@ -312,7 +313,6 @@ flowchart LR
     tool_import_product_images["import-product-images"]:::tool
     tool_optimize_images["optimize-images"]:::tool
     tool_pma_client["pma-client"]:::tool
-    tool_process_mail_queue["process-mail-queue"]:::tool
     tool_product_read["product-read"]:::tool
     tool_product_write["product-write"]:::tool
     tool_refresh_blog_cache["refresh-blog-cache"]:::tool
@@ -676,6 +676,12 @@ flowchart LR
   controller_admincontroller --> service_auditlogservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_resource
+  route_post_admin_integrations_test_email --> controller_admincontroller
+  controller_admincontroller --> service_secretservice
+  controller_admincontroller --> service_smtpmailer
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_integrations
   route_post_admin_integrations_save --> controller_admincontroller
   controller_admincontroller --> service_secretservice
   controller_admincontroller --> service_auditlogservice
@@ -801,7 +807,6 @@ flowchart LR
   controller_reviewcontroller --> controller_basecontroller
   controller_supportcontroller --> controller_basecontroller
   controller_basecontroller --> service_seoservice
-  tool_process_mail_queue --> service_smtpmailer
   tool_import_product_images --> service_imageoptimizerservice
   tool_import_product_images --> service_databaseservice
   tool_import_product_images --> collection_products

@@ -10,6 +10,22 @@ abstract class BaseController {
     protected function redirect(string $path): never { session_write_close(); header('Location: ' . $path); exit; }
     protected function flash(string $message, string $type = 'info'): void { $_SESSION['flash'] = ['message' => $message, 'type' => $type]; }
 
+    /**
+     * Absolute site URL for a path. `.env` is read with parse_ini_file() and never
+     * exported to the process environment, so getenv('APP_URL') is empty — links built
+     * from it came out with no origin, which broke them in email.
+     */
+    protected function siteUrl(string $path = '/'): string {
+        $config = require app_path('config/database.php');
+        $base = rtrim((string)($config['app_url'] ?? ''), '/');
+        if ($base === '') {
+            $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            $host = (string)($_SERVER['HTTP_HOST'] ?? 'sripanchamispiritual.com');
+            $base = $scheme . '://' . $host;
+        }
+        return $base . '/' . ltrim($path, '/');
+    }
+
     protected function validateCsrf(): void {
         $token = $_POST['_csrf'] ?? '';
         $expected = $_SESSION['csrf_token'] ?? '';

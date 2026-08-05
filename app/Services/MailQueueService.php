@@ -49,7 +49,43 @@ final class MailQueueService {
         ];
         $saved = $this->store->upsert('mail_queue', $record);
         (new MailStorageService($this->store))->recordQueuedOutbox($saved);
+        // Deliver in this request. There is no cron on the host, so anything that is
+        // only queued is never sent. The row is still written first, so a failed send
+        // leaves an auditable record with the error rather than vanishing.
+        if ($availableAt === null) $this->deliverNow($saved);
         return $saved;
+    }
+
+    /**
+     * Best-effort immediate delivery. Never throws: a mail failure must not break the
+     * checkout, signup or password reset that triggered it.
+     */
+    public function deliverNow(array $record): bool {
+        try {
+            $mailer = new SmtpMailer((new SecretService())->all());
+            if (!$mailer->configured()) {
+                $this->markFailed((string)$record['id'], 'Email delivery is not configured.');
+                return false;
+            }
+            $mailer->send((string)$record['to'], (string)$record['subject'], (string)$record['html']);
+            $this->markSent((string)$record['id']);
+            (new MailStorageService($this->store))->updateOutboxForQueue((string)$record['id'], 'sent', [
+                'from_email' => $mailer->fromEmail(),
+                'transport' => $mailer->transport(),
+                'sent_at' => date('c'),
+            ]);
+            return true;
+        } catch (\Throwable $error) {
+            try {
+                $this->markFailed((string)$record['id'], $error->getMessage());
+                (new MailStorageService($this->store))->updateOutboxForQueue((string)$record['id'], 'failed', [
+                    'last_error' => $error->getMessage(),
+                    'failed_at' => date('c'),
+                ]);
+            } catch (\Throwable) {}
+            error_log('Mail delivery failed: ' . $error->getMessage());
+            return false;
+        }
     }
 
     public function enqueuePaymentConfirmation(array $order): ?array {

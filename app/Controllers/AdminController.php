@@ -260,6 +260,35 @@ final class AdminController extends BaseController {
     public function media(): void{$this->render('admin/media',['pageTitle'=>'Media Library','items'=>(new MediaService())->all()]);}
     public function uploadMedia(): void{$uploaded=(new MediaService())->upload($_FILES['media_files'] ?? [], $_POST['context'] ?? 'shared', $_POST['description'] ?? null); (new AuditLogService())->record('upload','media','',['count'=>count($uploaded),'context'=>$_POST['context'] ?? 'shared']); $this->flash(count($uploaded).' media file'.(count($uploaded) === 1 ? '' : 's').' uploaded.','success'); $this->redirect('/admin/media');}
     public function fixPermissions(): void{(new StoragePermissionService())->fix(); (new AuditLogService())->record('fix','permissions','storage'); $this->flash('Storage permissions checked and updated where PHP is allowed.','success'); $this->redirect('/admin/settings');}
+    public function testEmail(): void{
+        $to = trim((string)($_POST['test_email'] ?? ''));
+        if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
+            $_SESSION['mail_test_result'] = ['ok'=>false,'transport'=>'','message'=>'Enter a valid email address.'];
+            $this->redirect('/admin/integrations');
+        }
+        $mailer = new \App\Services\SmtpMailer((new SecretService())->all());
+        if (!$mailer->configured()) {
+            $_SESSION['mail_test_result'] = ['ok'=>false,'transport'=>'','message'=>'No SMTP settings saved, and PHP mail() is unavailable. Fill in the fields above and save first.'];
+            $this->redirect('/admin/integrations');
+        }
+        $transport = $mailer->transport();
+        $sentAt = date('c');
+        try {
+            $mailer->send(
+                $to,
+                'Test email from Sri Panchami Spiritual',
+                '<p>This is a test message sent from Admin &rarr; Integrations.</p>'
+                . '<p>Transport: <strong>' . e($transport) . '</strong><br>From: <strong>' . e($mailer->fromEmail()) . '</strong><br>Sent: ' . e($sentAt) . '</p>'
+                . '<p>If you received this, transactional email is working.</p>'
+            );
+            $_SESSION['mail_test_result'] = ['ok'=>true,'transport'=>$transport,'message'=>'Test email sent to ' . $to . ' from ' . $mailer->fromEmail() . '. Check the inbox, and the spam folder.'];
+            (new AuditLogService())->record('test','email',$to,['transport'=>$transport,'result'=>'sent']);
+        } catch (\Throwable $e) {
+            $_SESSION['mail_test_result'] = ['ok'=>false,'transport'=>$transport,'message'=>$e->getMessage()];
+            (new AuditLogService())->record('test','email',$to,['transport'=>$transport,'result'=>'failed','error'=>$e->getMessage()]);
+        }
+        $this->redirect('/admin/integrations');
+    }
     public function environment(): void{
         $this->render('admin/environment',[
             'pageTitle'=>'Environment',

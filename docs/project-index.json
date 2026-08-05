@@ -3,7 +3,7 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 112,
+        "routes": 113,
         "controllers": 13,
         "services": 42,
         "views": 47,
@@ -477,6 +477,19 @@
             "view": "admin/integrations",
             "services": [
                 "SecretService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/integrations/test-email",
+            "name": "admin.integrations.test-email",
+            "controller": "AdminController@testEmail",
+            "view": "admin/integrations",
+            "services": [
+                "SecretService",
+                "SmtpMailer",
                 "AuditLogService",
                 "AuthService"
             ]

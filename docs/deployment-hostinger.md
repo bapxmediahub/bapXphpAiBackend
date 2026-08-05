@@ -17,7 +17,6 @@ category: docs
 7. Set a Hostinger cron job for queued mail after SMTP is configured:
 
 ```bash
-php /home/ACCOUNT/public_html/cli/process-mail-queue.php
 ```
 
 8. Smoke test public pages, account redirects, admin login, API endpoints, checkout configuration, and the mail queue.
@@ -95,7 +94,7 @@ This application is built for normal PHP hosting, not Vercel. Vercel's official 
 - Backend: PHP controllers, services, and JSON API endpoints.
 - Database: direct hosted MySQL via `.env`, with `APP_URL/remotedb` as the developer/agent fallback.
 - Build step: none.
-- Email: queued in JSON and sent by `cli/process-mail-queue.php` when SMTP secrets are configured.
+- Email: sent immediately when generated, using the SMTP secrets from Admin → Integrations. No cron job is required. Use Admin → Integrations → Send a Test Email to verify.
 
 ## Directory Structure on Hostinger
 
@@ -122,4 +121,4 @@ This application is built for normal PHP hosting, not Vercel. Vercel's official 
 - Admin blocked: verify the admin account in remote MySQL and the current Admin -> Settings configuration.
 - Razorpay disabled: add live key ID and secret in admin integrations.
 - Google login not working: verify the Google Cloud Console has the correct callback URL (`https://sripanchamispiritual.com/auth/google/callback`).
-- Emails not sending: configure SMTP secrets and run `cli/process-mail-queue.php` from cron.
+- Emails not sending: check Admin → Integrations → Send a Test Email. It reports the exact SMTP error. For Hostinger use `smtp.hostinger.com`, port 465 (SSL) or 587 (TLS), the full email address as username, and a From Email matching that mailbox.

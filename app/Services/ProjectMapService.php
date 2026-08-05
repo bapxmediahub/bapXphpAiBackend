@@ -100,6 +100,7 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/admin/astrologers/delete','name'=>'admin.astrologers.delete','page'=>'admin/astrologer-form','controller'=>'AdminController@deleteAstrologer','services'=>['ResourceService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/temples/save','name'=>'admin.temples.save','page'=>'admin/resource','controller'=>'AdminController@saveTemple','services'=>['ResourceService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/temples/delete','name'=>'admin.temples.delete','page'=>'admin/resource','controller'=>'AdminController@deleteTemple','services'=>['ResourceService','AuditLogService']],
+            ['method'=>'POST','path'=>'/admin/integrations/test-email','name'=>'admin.integrations.test-email','page'=>'admin/integrations','controller'=>'AdminController@testEmail','services'=>['SecretService','SmtpMailer','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/integrations/save','name'=>'admin.integrations.save','page'=>'admin/integrations','controller'=>'AdminController@saveIntegrations','services'=>['SecretService','AuditLogService']],
             ['method'=>'POST','path'=>'/cart/add','name'=>'cart.add','page'=>'public/cart','controller'=>'CommerceController@addToCart','services'=>['CartService','ProductService']],
             ['method'=>'POST','path'=>'/cart/remove','name'=>'cart.remove','page'=>'public/cart','controller'=>'CommerceController@removeFromCart','services'=>['CartService']],
@@ -440,7 +441,6 @@ final class ProjectMapService {
             if ($controller !== 'BaseController') $lines[] = '  ' . self::controllerId($controller) . ' --> ' . self::controllerId('BaseController');
         }
         $lines[] = '  ' . self::controllerId('BaseController') . ' --> ' . self::serviceId('SeoService');
-        $lines[] = '  ' . self::toolId('process-mail-queue') . ' --> ' . self::serviceId('SmtpMailer');
         if (in_array('import-product-images', $scan['tools'], true)) {
             $lines[] = '  ' . self::toolId('import-product-images') . ' --> ' . self::serviceId('ImageOptimizerService');
             $lines[] = '  ' . self::toolId('import-product-images') . ' --> ' . self::serviceId('DatabaseService');

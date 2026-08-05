@@ -69,7 +69,10 @@ final class SmtpMailer {
         $target = ($secure === 'ssl' ? 'ssl://' : '') . $host . ':' . $port;
         $socket = @stream_socket_client($target, $errno, $errstr, 20, STREAM_CLIENT_CONNECT);
         if (!$socket) {
-            throw new \RuntimeException('SMTP connection failed: ' . $errstr);
+            throw new \RuntimeException(
+                "Could not connect to {$host}:{$port} ({$errstr}). Check the host and port, and that the "
+                . "server allows outbound SMTP — many hosts block ports 465 and 587 by default."
+            );
         }
         stream_set_timeout($socket, 20);
         $this->expect($socket, [220]);
@@ -88,7 +91,10 @@ final class SmtpMailer {
         $this->command($socket, 'MAIL FROM:<' . $from . '>', [250]);
         $this->command($socket, 'RCPT TO:<' . $to . '>', [250, 251]);
         $this->command($socket, 'DATA', [354]);
-        fwrite($socket, $this->buildMessage($to, $subject, $html) . "\r\n.\r\n");
+        // Dot-stuffing (RFC 5321 §4.5.2): a body line starting with "." would otherwise
+        // be read as the end-of-data marker, silently truncating the message.
+        $body = preg_replace('/^\./m', '..', $this->buildMessage($to, $subject, $html));
+        fwrite($socket, $body . "\r\n.\r\n");
         $this->expect($socket, [250]);
         $this->command($socket, 'QUIT', [221]);
         fclose($socket);
@@ -150,9 +156,25 @@ final class SmtpMailer {
             $response .= $line;
             $done = strlen($line) >= 4 && $line[3] === ' ';
         } while (empty($done));
+
+        // An empty response means the socket timed out or was closed rather than the
+        // server replying. Reporting a bare "SMTP error:" here hides the real cause.
+        if (trim($response) === '') {
+            $meta = stream_get_meta_data($socket);
+            throw new \RuntimeException(!empty($meta['timed_out'])
+                ? 'SMTP timed out waiting for the server. The port is most likely blocked by the host or a firewall.'
+                : 'SMTP connection closed by the server before it replied. Check the port and encryption setting (465 uses SSL, 587 uses TLS/STARTTLS).');
+        }
+
         $code = (int)substr($response, 0, 3);
         if (!in_array($code, $codes, true)) {
-            throw new \RuntimeException('SMTP error: ' . trim($response));
+            $hint = match (true) {
+                $code === 535 => ' Authentication was rejected. For Gmail you must use a 16-character App Password with 2-Step Verification enabled, not the account password.',
+                $code === 534 => ' The provider requires an application-specific password.',
+                in_array($code, [553, 550, 554], true) => ' The sender address was rejected. From Email must match the authenticated mailbox.',
+                default => '',
+            };
+            throw new \RuntimeException('SMTP error ' . $code . ': ' . trim($response) . $hint);
         }
         return $response;
     }
