@@ -16,6 +16,8 @@ final class KnowledgeGraphService {
 
         $this->indexMarkdownFiles($this->root . '/docs', 'doc');
         $this->indexMarkdownFiles($this->root . '/content/blog/posts', 'blog');
+        $this->indexImageFiles();
+        $this->indexMissingReferencedImages();
         $this->indexSkillFiles();
         $this->indexAgentsFiles();
         $this->indexCodeConcepts();
@@ -23,54 +25,68 @@ final class KnowledgeGraphService {
         return ['concepts' => $this->concepts, 'edges' => $this->edges];
     }
 
-    public function writeOkfBundle(string $outputDir): void {
-        $okfDir = $outputDir . '/.okf';
-        $this->rmdirRecursive($okfDir);
-
-        foreach ($this->concepts as $id => $c) {
-            $typeDir = $okfDir . '/concepts/' . $c['type'];
-            if (!is_dir($typeDir)) mkdir($typeDir, 0775, true);
-
-            $outbound = array_values(array_filter($this->edges, fn($e) => $e['from'] === $id));
-            $body = $c['body'];
-            if ($outbound) {
-                $body .= "\n\n## Connections\n";
-                foreach ($outbound as $e) {
-                    $body .= "- [" . $e['relation'] . " → " . ($this->concepts[$e['to']]['title'] ?? $e['to']) . "](/{$this->concepts[$e['to']]['filePath']})\n";
-                }
+    public function writeYamlIndex(string $outputFile): void {
+        $concepts = [];
+        foreach ($this->concepts as $id => $concept) {
+            $row = [
+                'id' => $id,
+                'type' => $concept['type'],
+                'title' => $concept['title'],
+                'description' => $concept['description'],
+                'resource' => $concept['filePath'],
+                'tags' => array_values($concept['tags'] ?? []),
+            ];
+            foreach (['filename', 'mime', 'header_image', 'exists', 'status', 'usage_count', 'used_in', 'data_source', 'collection', 'schema_file', 'method', 'path', 'controller', 'services', 'view'] as $field) {
+                if (array_key_exists($field, $concept)) $row[$field] = $concept[$field];
             }
-
-            $frontmatter = "---\n";
-            $frontmatter .= "type: " . $c['type'] . "\n";
-            $frontmatter .= "title: " . $this->yamlEscape($c['title']) . "\n";
-            $frontmatter .= "description: " . $this->yamlEscape($c['description']) . "\n";
-            $frontmatter .= "resource: " . $c['filePath'] . "\n";
-            if (!empty($c['tags'])) $frontmatter .= "tags: [" . implode(', ', $c['tags']) . "]\n";
-            $frontmatter .= "---\n";
-
-            file_put_contents($typeDir . '/' . $id . '.md', $frontmatter . "\n" . $body);
+            $concepts[] = $row;
         }
+        usort($concepts, fn(array $a, array $b): int => [$a['type'], $a['id']] <=> [$b['type'], $b['id']]);
+        $edges = array_values($this->edges);
+        usort($edges, fn(array $a, array $b): int => [$a['from'], $a['relation'], $a['to']] <=> [$b['from'], $b['relation'], $b['to']]);
 
-        $this->writeIndexFile($okfDir, "Knowledge Bundle — bapXphp", "okf_version: \"0.1\"\n", [
-            "Systematic map: [docs/systematic-map.mmd](../docs/systematic-map.mmd)",
-            "Knowledge map: [docs/map.mmd](../docs/map.mmd)",
-            "Concepts: " . count($this->concepts) . ", Edges: " . count($this->edges),
-        ]);
-
-        $grouped = [];
-        foreach ($this->concepts as $id => $c) {
-            $grouped[$c['type']][] = $id;
-        }
-        foreach ($grouped as $type => $ids) {
-            $typeDir = $okfDir . '/concepts/' . $type;
-            $this->writeIndexFile($typeDir, ucfirst($type) . " Concepts", "", array_map(fn($id) => "- [" . ($this->concepts[$id]['title'] ?? $id) . "]({$id}.md)", $ids));
-        }
-    }
-
-    private function writeIndexFile(string $dir, string $title, string $extraFrontmatter, array $bodyLines): void {
-        if (!is_dir($dir)) mkdir($dir, 0775, true);
-        $content = "---\ntitle: {$title}\ntype: index\n{$extraFrontmatter}---\n\n# {$title}\n\n" . implode("\n", $bodyLines) . "\n";
-        file_put_contents($dir . '/index.md', $content);
+        $appUrl = rtrim((string)((require $this->root . '/config/database.php')['app_url'] ?? ''), '/');
+        $index = [
+            'format' => 'bapx-project-knowledge-index',
+            'version' => '1.0',
+            'generated_by' => 'cli/generate-okf-bundle.php',
+            'authoritative_sources' => [
+                'runtime_data' => $appUrl . '/remotedb',
+                'schema' => 'storage/schema/collections.php',
+                'blogs' => 'content/blog/posts/*.md',
+                'images' => 'assets/images/**/*',
+                'code_map' => 'map.mmd',
+                'documentation_map' => 'docs/map.mmd',
+            ],
+            'rules' => [
+                'Concepts are original project resources; this index never copies blog bodies or runtime records.',
+                'Products, categories, consultants, temples and other editable records are queried from remotedb.',
+                'Blog Markdown and image binaries remain local files.',
+                'Read discovery first; query only the relevant section or resource. Do not load this entire index into agent context.',
+                'Use at most three discovery hops: entry instructions, exact index match, original source. Avoid broad listings and recursive scans unless the target is absent.',
+            ],
+            'discovery' => [
+                ['question' => 'Does a route, controller, service, view or collection exist?', 'use' => 'docs/project-index.json'],
+                ['question' => 'How are routes, controllers, services and collections connected?', 'use' => 'map.mmd'],
+                ['question' => 'What is the live product, category, consultant, temple or admin-editable value?', 'use' => $appUrl . '/remotedb'],
+                ['question' => 'Where is a blog article and what frontmatter does it declare?', 'use' => 'concepts filtered by type=blog, then read its resource'],
+                ['question' => 'Where is an image and which source files reference it?', 'use' => 'concepts filtered by type=image; query by filename or resource'],
+                ['question' => 'What repository instructions or skill apply?', 'use' => 'AGENTS.md, CLAUDE.md, then .agents/skills or .claude/skills'],
+            ],
+            'query_examples' => [
+                'sed -n \'1,90p\' index.yaml',
+                'rg -n -B4 -A14 \'id: "<concept-id>"\' index.yaml',
+                'rg -n -A12 \'type: "blog"\' index.yaml',
+                'rg -n -B4 -A12 \'filename: "<name>"\' index.yaml',
+                'rg -n -B4 -A14 \'path: "/shop"\' index.yaml',
+                'rg -n -B4 -A12 \'type: "skill"\' index.yaml',
+                'rg -n \'<term>\' docs/project-index.json map.mmd index.yaml',
+            ],
+            'summary' => ['concepts' => count($concepts), 'relationships' => count($edges), 'by_type' => array_count_values(array_column($concepts, 'type'))],
+            'concepts' => $concepts,
+            'relationships' => $edges,
+        ];
+        file_put_contents($outputFile, $this->toYaml($index));
     }
 
     public function renderMermaid(): string {
@@ -130,16 +146,96 @@ final class KnowledgeGraphService {
             $name = $file->getBasename('.md');
             $relativePath = str_replace($this->root . '/', '', $file->getPathname());
 
-            $this->addConcept($name, [
-                'type' => $frontmatter['type'] ?? $defaultType,
+            $conceptType = (string)($frontmatter['type'] ?? $defaultType);
+            $conceptId = $conceptType . ':' . $name;
+            $this->addConcept($conceptId, [
+                'type' => $conceptType,
                 'title' => $frontmatter['title'] ?? $frontmatter['name'] ?? $name,
                 'description' => $frontmatter['description'] ?? $frontmatter['excerpt'] ?? '',
                 'filePath' => $relativePath,
+                'filename' => $file->getFilename(),
+                'header_image' => $frontmatter['og_image'] ?? $frontmatter['image_url'] ?? '',
                 'tags' => $this->extractTags($frontmatter),
                 'body' => $body,
             ]);
 
-            $this->extractLinks($body, $name);
+            $this->extractLinks($body, $conceptId);
+        }
+    }
+
+    private function indexImageFiles(): void {
+        $imageRoot = $this->root . '/assets/images';
+        if (!is_dir($imageRoot)) return;
+        $usageFiles = $this->usageFiles();
+        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($imageRoot, \FilesystemIterator::SKIP_DOTS));
+        foreach ($files as $file) {
+            if (!$file->isFile() || !in_array(strtolower($file->getExtension()), ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'], true)) continue;
+            $relativePath = str_replace($this->root . '/', '', $file->getPathname());
+            $usedIn = [];
+            foreach ($usageFiles as $usagePath => $content) {
+                if (str_contains($content, $relativePath) || str_contains($content, '/' . $relativePath)) $usedIn[] = $usagePath;
+            }
+            $this->addConcept('image:' . $relativePath, [
+                'type' => 'image',
+                'title' => $file->getFilename(),
+                'description' => $usedIn ? 'Image referenced by ' . count($usedIn) . ' project resource(s).' : 'Image with no static repository reference detected.',
+                'filePath' => $relativePath,
+                'filename' => $file->getFilename(),
+                'mime' => $this->imageMime($file->getExtension()),
+                'usage_count' => count($usedIn),
+                'used_in' => $usedIn,
+                'tags' => ['image', $usedIn ? 'used' : 'unreferenced'],
+                'body' => '',
+            ]);
+        }
+    }
+
+    private function usageFiles(): array {
+        $result = [];
+        foreach (['content/blog/posts', 'views', 'app', 'assets/css', 'assets/js'] as $relativeDir) {
+            $dir = $this->root . '/' . $relativeDir;
+            if (!is_dir($dir)) continue;
+            $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS));
+            foreach ($files as $file) {
+                if (!$file->isFile() || !in_array(strtolower($file->getExtension()), ['md', 'php', 'css', 'js'], true)) continue;
+                $content = @file_get_contents($file->getPathname());
+                if ($content !== false) $result[str_replace($this->root . '/', '', $file->getPathname())] = $content;
+            }
+        }
+        return $result;
+    }
+
+    private function imageMime(string $extension): string {
+        return match (strtolower($extension)) {
+            'jpg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp',
+            'gif' => 'image/gif', 'svg' => 'image/svg+xml', default => 'application/octet-stream',
+        };
+    }
+
+    private function indexMissingReferencedImages(): void {
+        foreach ($this->concepts as $concept) {
+            if (($concept['type'] ?? '') !== 'blog') continue;
+            $headerImage = trim((string)($concept['header_image'] ?? ''));
+            if ($headerImage === '') continue;
+            $urlPath = (string)(parse_url($headerImage, PHP_URL_PATH) ?: $headerImage);
+            $relativePath = ltrim($urlPath, '/');
+            if (!str_starts_with($relativePath, 'assets/images/')) continue;
+            if (is_file($this->root . '/' . $relativePath)) continue;
+            $extension = strtolower(pathinfo($relativePath, PATHINFO_EXTENSION));
+            $this->addConcept('image:' . $relativePath, [
+                'type' => 'image',
+                'title' => basename($relativePath),
+                'description' => 'Referenced local image binary is missing.',
+                'filePath' => $relativePath,
+                'filename' => basename($relativePath),
+                'mime' => $this->imageMime($extension),
+                'exists' => false,
+                'status' => 'missing',
+                'usage_count' => 1,
+                'used_in' => [$concept['filePath']],
+                'tags' => ['image', 'missing', 'referenced'],
+                'body' => '',
+            ]);
         }
     }
 
@@ -153,7 +249,8 @@ final class KnowledgeGraphService {
             $body = $this->stripFrontmatter($content);
             $relativePath = str_replace($this->root . '/', '', $file);
 
-            $this->addConcept($name, [
+            $conceptId = 'skill:' . $name;
+            $this->addConcept($conceptId, [
                 'type' => $frontmatter['type'] ?? 'skill',
                 'title' => $name,
                 'description' => $frontmatter['description'] ?? '',
@@ -162,7 +259,7 @@ final class KnowledgeGraphService {
                 'body' => $body,
             ]);
 
-            $this->extractLinks($body, $name);
+            $this->extractLinks($body, $conceptId);
         }
 
         // Index reference files nested under skills
@@ -173,7 +270,8 @@ final class KnowledgeGraphService {
             $name = basename($file, '.md');
             $relativePath = str_replace($this->root . '/', '', $file);
 
-            $this->addConcept($name, [
+            $conceptId = 'doc:skill-reference:' . basename(dirname(dirname($file))) . ':' . $name;
+            $this->addConcept($conceptId, [
                 'type' => $frontmatter['type'] ?? 'doc',
                 'title' => $frontmatter['title'] ?? $name,
                 'description' => $frontmatter['description'] ?? '',
@@ -182,7 +280,7 @@ final class KnowledgeGraphService {
                 'body' => $body,
             ]);
 
-            $this->extractLinks($body, $name);
+            $this->extractLinks($body, $conceptId);
         }
     }
 
@@ -198,7 +296,7 @@ final class KnowledgeGraphService {
             $relativePath = str_replace($this->root . '/', '', $file->getPathname());
             $name = str_replace(['/', '.md'], ['_', ''], $relativePath);
 
-            $this->addConcept($name, [
+            $this->addConcept('agentfile:' . $name, [
                 'type' => $frontmatter['type'] ?? 'agentfile',
                 'title' => $relativePath,
                 'description' => $frontmatter['description'] ?? 'Agent contract',
@@ -213,23 +311,24 @@ final class KnowledgeGraphService {
         $map = ProjectMapService::scan();
 
         foreach ($map['controllers'] as $name) {
-            $this->addConcept($name, [
+            $this->addConcept('controller:' . $name, [
                 'type' => 'controller', 'title' => $name,
                 'description' => 'Controller: ' . $name, 'filePath' => 'app/Controllers/' . $name . '.php',
                 'tags' => ['code', 'controller'], 'body' => '',
             ]);
         }
         foreach ($map['services'] as $name) {
-            $this->addConcept($name, [
+            $this->addConcept('service:' . $name, [
                 'type' => 'service', 'title' => $name,
                 'description' => 'Service: ' . $name, 'filePath' => 'app/Services/' . $name . '.php',
                 'tags' => ['code', 'service'], 'body' => '',
             ]);
         }
         foreach ($map['schema_collections'] as $name) {
-            $this->addConcept($name, [
+            $this->addConcept('schema:' . $name, [
                 'type' => 'schema', 'title' => $name,
                 'description' => 'Schema collection: ' . $name, 'filePath' => 'storage/schema/collections.php',
+                'data_source' => 'remotedb', 'collection' => $name, 'schema_file' => 'storage/schema/collections.php',
                 'tags' => ['schema'], 'body' => '',
             ]);
         }
@@ -239,22 +338,25 @@ final class KnowledgeGraphService {
             $this->addConcept($rid, [
                 'type' => 'route', 'title' => ($route['method'] ?? 'GET') . ' ' . ($route['path'] ?? ''),
                 'description' => $route['name'] ?? '', 'filePath' => 'app/routes.php',
+                'method' => $route['method'] ?? 'GET', 'path' => $route['path'] ?? '',
+                'controller' => $route['controller'] ?? '', 'services' => array_values($route['services'] ?? []),
+                'view' => $route['page'] ?? '',
                 'tags' => ['code', 'route'], 'body' => '',
             ]);
 
             $controller = explode('@', (string)($route['controller'] ?? ''))[0] ?? '';
             if ($controller) {
-                $this->addEdge($rid, $controller, 'handled_by');
+                $this->addEdge($rid, 'controller:' . $controller, 'handled_by');
             }
             foreach ($route['services'] ?? [] as $svc) {
-                $this->addEdge($controller, $svc, 'uses');
+                $this->addEdge('controller:' . $controller, 'service:' . $svc, 'uses');
             }
         }
 
         $sc = ProjectMapService::serviceCollections();
         foreach ($sc as $service => $cols) {
             foreach ($cols as $col) {
-                $this->addEdge($service, $col, 'stores');
+                $this->addEdge('service:' . $service, 'schema:' . $col, 'stores');
             }
         }
     }
@@ -310,9 +412,12 @@ final class KnowledgeGraphService {
         foreach ($matches as $m) {
             $targetPath = $m[2];
             $targetName = basename($targetPath, '.md');
-            if ($targetName === $sourceId) continue;
-            if (isset($this->concepts[$targetName])) {
-                $this->addEdge($sourceId, $targetName, 'references');
+            foreach (['doc:' . $targetName, 'blog:' . $targetName, 'skill:' . $targetName] as $targetId) {
+                if ($targetId === $sourceId) continue;
+                if (isset($this->concepts[$targetId])) {
+                    $this->addEdge($sourceId, $targetId, 'references');
+                    break;
+                }
             }
         }
     }
@@ -325,7 +430,7 @@ final class KnowledgeGraphService {
     }
 
     private static function routeId(array $route): string {
-        return strtolower(trim(preg_replace('/[^a-zA-Z0-9]/', '_', ($route['method'] ?? 'GET') . '_' . ($route['path'] ?? '')), '_'));
+        return 'route:' . strtolower(trim(preg_replace('/[^a-zA-Z0-9]/', '_', ($route['method'] ?? 'GET') . '_' . ($route['path'] ?? '')), '_'));
     }
 
     private function stableId(string $value): string {
@@ -340,6 +445,42 @@ final class KnowledgeGraphService {
 
     private function yamlEscape(string $value): string {
         return str_replace('"', '\"', $value);
+    }
+
+    private function toYaml(mixed $value, int $indent = 0): string {
+        if (!is_array($value)) return str_repeat(' ', $indent) . $this->yamlScalar($value) . "\n";
+        $yaml = '';
+        $isList = array_is_list($value);
+        foreach ($value as $key => $item) {
+            $prefix = str_repeat(' ', $indent) . ($isList ? '- ' : $key . ': ');
+            if (is_array($item)) {
+                if ($item === []) {
+                    $yaml .= $prefix . "[]\n";
+                } elseif ($isList && !array_is_list($item)) {
+                    $firstKey = array_key_first($item);
+                    $firstValue = $item[$firstKey];
+                    if (!is_array($firstValue)) {
+                        $yaml .= $prefix . $firstKey . ': ' . $this->yamlScalar($firstValue) . "\n";
+                        unset($item[$firstKey]);
+                        $yaml .= $this->toYaml($item, $indent + 2);
+                    } else {
+                        $yaml .= rtrim($prefix) . "\n" . $this->toYaml($item, $indent + 2);
+                    }
+                } else {
+                    $yaml .= rtrim($prefix) . "\n" . $this->toYaml($item, $indent + 2);
+                }
+            } else {
+                $yaml .= $prefix . $this->yamlScalar($item) . "\n";
+            }
+        }
+        return $yaml;
+    }
+
+    private function yamlScalar(mixed $value): string {
+        if ($value === null) return 'null';
+        if (is_bool($value)) return $value ? 'true' : 'false';
+        if (is_int($value) || is_float($value)) return (string)$value;
+        return json_encode((string)$value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
     private function rmdirRecursive(string $dir): void {

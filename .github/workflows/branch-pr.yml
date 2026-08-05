@@ -55,7 +55,7 @@ jobs:
                 body: [
                   'Created automatically from a pushed implementation branch.',
                   '',
-                  'GitHub Actions owns CI, handoff comments, and review routing.',
+                  'GitHub Actions owns CI and pull-request creation.',
                   'Merge only after validation and Reviewer evidence pass.'
                 ].join('\n')
               });

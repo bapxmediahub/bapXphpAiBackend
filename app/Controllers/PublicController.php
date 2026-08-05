@@ -6,10 +6,10 @@ final class PublicController extends BaseController {
     public function home(): void {
         $this->detectApiRequest();
         $this->seoKey = 'home';
-        try { $categories = (new CategoryService())->all(); } catch (\Throwable $e) { $categories = []; }
-        try { $products = (new ProductService())->all(); } catch (\Throwable $e) { $products = []; }
-        try { $astrologers = (new AstrologerService())->all(); } catch (\Throwable $e) { $astrologers = []; }
-        try { $temples = (new TempleService())->all(); } catch (\Throwable $e) { $temples = []; }
+        $categories = (new CategoryService())->all();
+        $products = (new ProductService())->all();
+        $astrologers = (new AstrologerService())->all();
+        $temples = (new TempleService())->all();
         $this->render('public/home', [
             'products' => $products,
             'astrologers' => $astrologers,
@@ -86,8 +86,8 @@ final class PublicController extends BaseController {
     public function shop(): void {
         $this->detectApiRequest();
         $category = $_GET['category'] ?? '';
-        try { $categories = (new CategoryService())->all(); } catch (\Throwable $e) { $categories = []; }
-        try { $items = (new ProductService())->all(); } catch (\Throwable $e) { $items = []; }
+        $categories = (new CategoryService())->all();
+        $items = (new ProductService())->all();
         $this->seoKey = 'shop';
         if ($category) {
             $items = array_values(array_filter($items, function ($item) use ($category) {

@@ -64,14 +64,6 @@ set -euo pipefail
 #                                   — untrack and ignore runtime/test artifacts
 #   bapXphp hooks install           — install .agents/hooks as this checkout's Git hooks
 #   bapXphp hooks status            — show configured Git hooks path
-#   bapXphp handoff validate <file> [--issue]
-#                                   — validate structure and local Action event objective coverage
-#   bapXphp handoff active          — show the current GitHub Actions handoff
-#   bapXphp handoff next <issue>    — show event-based handoff with role + workflow
-#   bapXphp handoff template <issue> — generate empty handoff template from issue
-#   bapXphp handoff execute <issue> [--next role]
-#                                   — emit handoff context JSON (includes score + event + workflow)
-#   bapXphp handoff score <issue>   — validate work and assign 0-100 score to handoff event
 #
 # ── Mail & Images ───────────────────────────────────────────────
 #   bapXphp mail:process            — process pending mail queue
@@ -95,38 +87,14 @@ set -euo pipefail
 #   bapXphp db init                 — create MySQL tables from collections.php schema
 #   bapXphp db sync                 — pull MySQL data → seed YAML files (currently: db init only)
 #
-# ── AI / Agent ───────────────────────────────────────────────────
-#   bapXphp agent <message>          — chat with the site AI agent
+# ── AI Configuration ─────────────────────────────────────────────
 #   bapXphp ai:config               — show AI model config from MySQL secrets
 #   bapXphp ai:probe                — safely verify the configured model endpoint
-#   bapXphp handoff execute <issue> [--next role]
-#                                   — load handoff context for next role
-#
-#
-#
-#
 # ── Blog & Docs ──────────────────────────────────────────────────
 #       bapXphp docsmap                 — regenerate docs/map.mmd (content: skills, docs, blog, admin, agents)
 #       bapXphp codemap                 — regenerate map.mmd (root, code dependency graph with edges + gaps)
 #   bapXphp bloggen                 — regenerate blog cache from GitHub markdown sources
-#       bapXphp okfgen                  — generate .okf/ knowledge bundle (OKF v0.1, concept nodes + edges)
-#
-# ── Browser Agent (PHP-native, no Node.js needed) ──────────────
-#   bapXphp browser-agent open <url>      — fetch page, return YAML snapshot
-#   bapXphp browser-agent search <query>  — Google search, parse organic results
-#   bapXphp browser-agent goto <url>      — navigate to URL
-#   bapXphp browser-agent snapshot        — print current page as YAML snapshot
-#   bapXphp browser-agent click <sel>     — follow link by CSS selector
-#   bapXphp browser-agent fill <sel> <t>  — store form field value
-#   bapXphp browser-agent submit          — submit form with stored values
-#   bapXphp browser-agent smoke <url>     — run smoke tests (status, links, images)
-#   bapXphp browser-agent links           — extract all links from current page
-#   bapXphp browser-agent forms           — list all forms with fields
-#   bapXphp browser-agent captcha         — detect captcha on current page
-#   bapXphp browser-agent console <url>   — show page HTTP metadata
-#   bapXphp browser-agent html            — print raw HTML of current page
-#   bapXphp browser-agent help            — detailed help with all options
-#   (Use --pw prefix for Playwright mode when Node.js is available.)
+#       bapXphp index                   — generate index.yaml knowledge index (concepts + relationships)
 #
 # ── Task Management (todowrite) ──────────────────────────────────
 #   bapXphp todo                   — list tasks
@@ -137,10 +105,6 @@ set -euo pipefail
 # ── Objectives ───────────────────────────────────────────────────
 #   bapXphp objective read         — show current objectives from OBJECTIVE.md
 #   bapXphp objective update <text> — update objective entry (pipe or pass text)
-#
-# ── Task Dispatch ────────────────────────────────────────────────
-#   bapXphp task run <description> — dispatch a sub-agent task
-#   bapXphp task list              — list running/pending tasks
 #
 # ── Question ─────────────────────────────────────────────────────
 #   bapXphp question <text>        — ask the user a question
@@ -220,7 +184,7 @@ MYSQL_USER="${BAPX_MYSQL_USER:-u907253411_db_user_sps}"
 MYSQL_PASS="${BAPX_MYSQL_PASS:-}"
 SCHEMA_FILE="$ROOT/storage/schema/collections.php"
 APP_URL="${APP_URL:-https://sripanchamispiritual.com}"
-REMOTE_DB_URL="${BAPX_REMOTE_DB_URL:-${APP_URL%/}/remoteDB}"
+REMOTE_DB_URL="${BAPX_REMOTE_DB_URL:-${APP_URL%/}/remotedb}"
 
 # ── Colors ─────────────────────────────────────────────────────
 R='\033[0;31m'; G='\033[0;32m'; Y='\033[1;33m'; C='\033[0;36m'; B='\033[1m'; N='\033[0m'
@@ -659,6 +623,16 @@ cmd_ci() {
   fi
   rm -f "$ROOT/.project-index.tmp.json"
 
+  echo "── knowledge:val (index.yaml) ──"
+  php "$ROOT/cli/generate-okf-bundle.php" "$ROOT" "$ROOT/.index.tmp.yaml" >/dev/null 2>&1
+  if [ -f "$ROOT/index.yaml" ] && diff -q "$ROOT/index.yaml" "$ROOT/.index.tmp.yaml" >/dev/null 2>&1; then
+    ok "Knowledge index is current"
+  else
+    warn "KNOWLEDGE INDEX STALE. Run bapXphp update and commit index.yaml."
+    failed=1
+  fi
+  rm -f "$ROOT/.index.tmp.yaml"
+
   echo "── codemap:val (root map.mmd) ──"
   php "$ROOT/cli/generate-code-map.php" "$ROOT" "$ROOT/.map.mmd.tmp"
   if [ -f "$ROOT/map.mmd" ]; then
@@ -696,7 +670,7 @@ cmd_update() {
   php "$ROOT/cli/generate-okf-bundle.php" "$ROOT"
   php "$ROOT/cli/validate-project-map.php"
   php "$ROOT/cli/validate-docs-map.php" "$ROOT"
-  ok "MAPS AND KNOWLEDGE BUNDLE UPDATED"
+  ok "MAPS AND KNOWLEDGE INDEX UPDATED"
 }
 
 cmd_serve() {
@@ -835,9 +809,9 @@ cmd_artifacts_clean() {
   [ $# -gt 1 ] && die "Usage: bapXphp artifacts:clean [--dry-run]"
 
   local tracked
-  tracked=$(git -C "$ROOT" ls-files 'server.log' 'output/playwright/**' 'storage/logs/**')
+  tracked=$(git -C "$ROOT" ls-files 'server.log' 'storage/logs/**')
   if [ -z "$tracked" ]; then
-    echo "No tracked runtime or Playwright artifacts."
+    echo "No tracked runtime artifacts."
     return
   fi
   echo "$tracked"
@@ -845,8 +819,8 @@ cmd_artifacts_clean() {
     echo "Dry run: listed artifacts would be removed from Git tracking only."
     return
   fi
-  git -C "$ROOT" rm -r --cached --ignore-unmatch -- server.log output/playwright storage/logs
-  ok "Runtime and Playwright artifacts removed from Git tracking; working files preserved."
+  git -C "$ROOT" rm -r --cached --ignore-unmatch -- server.log storage/logs
+  ok "Runtime artifacts removed from Git tracking; working files preserved."
 }
 
 
@@ -877,41 +851,6 @@ cmd_mail_process() {
 cmd_images_optimize() {
   require_php
   php "$ROOT/cli/optimize-images.php" 2>&1
-}
-
-cmd_agent() {
-  local message="$*"
-  if [ -z "$message" ]; then
-    echo "Usage: bapXphp agent <message>"
-    echo ""
-    echo "Chat with the site AI agent."
-    echo ""
-    echo "Examples:"
-    echo "  bapXphp agent how many users do we have"
-    echo "  bapXphp agent what's the revenue this month"
-    echo "  bapXphp agent create a blog post about Diwali offers"
-    return 0
-  fi
-  local endpoint="${BAPX_AGENT_URL:-https://sripanchamispiritual.com/api/agent}"
-  echo "Agent: thinking..."
-  local response
-  response=$(curl -s -X POST "$endpoint" \
-    -H 'Content-Type: application/json' \
-    -d "$(printf '{"message":"%s","source":"cli"}' "$(echo "$message" | sed 's/"/\\"/g')")" \
-    --connect-timeout 10 --max-time 60 2>&1)
-  if [ $? -ne 0 ]; then
-    echo "Error: Could not reach agent at $endpoint"
-    echo "Set BAPX_AGENT_URL env var for a different endpoint, or check your connection."
-    return 1
-  fi
-  local answer
-  answer=$(echo "$response" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('answer','') or d.get('error','Unknown error'))" 2>/dev/null)
-  if [ -z "$answer" ]; then
-    echo "Error parsing response: $answer"
-    return 1
-  fi
-  echo ""
-  echo "$answer"
 }
 
 # ═══════════════════════════════════════════════════════════════
@@ -949,7 +888,6 @@ cmd_db() {
     upsert)           cmd_db_upsert "$1" "$2" ;;
     delete)           cmd_db_delete "$1" "$2" ;;
     status|remote-status) cmd_db_remote_status ;;
-    pma)              cmd_db_pma "$*" ;;
     hosted|ssh-sql)   cmd_db_hosted_sql "$*" ;;
     init)             cmd_db_init ;;
     sync|import)      cmd_db_sync ;;
@@ -958,7 +896,7 @@ cmd_db() {
 }
 
 cmd_db_help() {
-  echo "Database commands — query MySQL directly, or via /remoteDB web proxy when local MySQL is unavailable."
+  echo "Database commands — query MySQL directly, or via /remotedb web proxy when local MySQL is unavailable."
   echo ""
   echo "  bapXphp db tables              — list MySQL tables"
   echo "  bapXphp db describe <table>    — describe MySQL table columns"
@@ -1165,14 +1103,6 @@ cmd_db_raw() {
     '
 }
 
-# ── db pma <sql> — Execute SQL via phpMyAdmin web proxy ──────────
-# Always uses the phpMyAdmin web interface, bypassing direct MySQL limits.
-cmd_db_pma() {
-  local sql="$*"
-  [ -z "$sql" ] && die "Usage: bapXphp db pma \"SELECT ...\" (or --table-stats, --export)"
-  php "$ROOT/cli/pma-client.php" "$sql"
-}
-
 # ── db hosted <sql> — Execute SQL on hosting through SSH ───────
 cmd_db_hosted_sql() {
   local sql="$*"
@@ -1290,12 +1220,12 @@ cmd_codemap() {
   echo "Done. → map.mmd"
 }
 
-# ── okfgen — Generate OKF knowledge bundle + knowledge graph ──
+# ── index — Generate queryable project knowledge index ──
 cmd_okfgen() {
   require_php
-  echo "Generating OKF knowledge bundle..."
+  echo "Generating project knowledge index..."
   php "$ROOT/cli/generate-okf-bundle.php" "$ROOT"
-  echo "Done. → .okf/"
+  echo "Done. → index.yaml"
 }
 
 # ── bloggen — Regenerate blog cache from GitHub ──────────────
@@ -1317,15 +1247,6 @@ cmd_product_images() {
 cmd_blog_image() {
   require_php
   php "$ROOT/cli/blog-image.php" "$ROOT" "$@"
-}
-
-# ═══════════════════════════════════════════════════════════════
-# Browser Agent Commands — PHP-native browser automation
-# ═══════════════════════════════════════════════════════════════
-
-cmd_browser_agent() {
-  require_php
-  php "$ROOT/cli/browser-agent.php" "$@"
 }
 
 # ═══════════════════════════════════════════════════════════════
@@ -1587,57 +1508,6 @@ cmd_objective() {
       echo "Usage: bapXphp objective read"
       echo "       bapXphp objective update <text>"
       echo "       bapXphp objective update (paste with Ctrl+D)"
-      exit 1 ;;
-  esac
-}
-
-# ── task — Dispatch a sub-agent task ─────────────────────────────────
-cmd_task() {
-  require_php
-  local dir="$ROOT/.agents/tasks"
-  mkdir -p "$dir"
-  local action="${1:-list}" arg="${2:-}"
-
-  case "$action" in
-    list|ls)
-      local count=0
-      for f in "$dir"/*.json; do
-        [ -f "$f" ] || continue
-        count=$((count + 1))
-        local desc; desc=$(php -r 'echo json_decode(file_get_contents($argv[1]), true)["description"] ?? "?";' "$f") || true
-        local status; status=$(php -r 'echo json_decode(file_get_contents($argv[1]), true)["status"] ?? "?";' "$f") || true
-        printf "  %s  %s  %s\n" "$(basename "$f" .json)" "$status" "$desc"
-      done
-      [ "$count" -eq 0 ] && echo "No tasks." ;;
-    run|dispatch|create)
-      [ -z "$arg" ] && die "Usage: bapXphp task run \"<description>\""
-      local id; id=$(date +%s | md5 | head -8) || id="task_$(date +%s)"
-      php -r '
-        $task = [
-          "id" => $argv[1],
-          "description" => $argv[2],
-          "status" => "dispatched",
-          "created_at" => date("c"),
-          "evidence" => [],
-        ];
-        file_put_contents($argv[3] . "/" . $argv[1] . ".json", json_encode($task, JSON_PRETTY_PRINT));
-        echo "Task dispatched: " . $argv[1] . "\n";
-        echo "  Description: " . $argv[2] . "\n";
-        echo "  File: " . $argv[3] . "/" . $argv[1] . ".json\n";
-      ' "$id" "$arg" "$dir" ;;
-    status)
-      [ -z "$arg" ] && die "Usage: bapXphp task status <id>"
-      local f="$dir/$arg.json"
-      [ -f "$f" ] || die "Task not found: $arg"
-      php -r '
-        $t = json_decode(file_get_contents($argv[1]), true);
-        printf("ID:     %s\nDescription: %s\nStatus:  %s\nCreated: %s\n",
-          $t["id"] ?? "?", $t["description"] ?? "?", $t["status"] ?? "?", $t["created_at"] ?? "?");
-      ' "$f" ;;
-    *)
-      echo "Usage: bapXphp task run \"<description>\""
-      echo "       bapXphp task list"
-      echo "       bapXphp task status <id>"
       exit 1 ;;
   esac
 }
@@ -2291,8 +2161,6 @@ main() {
       cmd_ai_probe ;;
     mail:process|mail-process)
       cmd_mail_process ;;
-    agent)
-      shift; cmd_agent "$@" ;;
     images:optimize|images-optimize|imgopt)
       cmd_images_optimize ;;
     product:images|product-images)
@@ -2310,22 +2178,16 @@ main() {
       cmd_db_sync ;;
     docsmap)
       cmd_docsmap ;;
-    agentsmap)
-      : ;;
     codemap)
       cmd_codemap ;;
-    okfgen|knowledge-graph|kg)
+    index|okfgen|knowledge-graph|kg)
       cmd_okfgen ;;
     bloggen)
       cmd_bloggen ;;
-    browser-agent|browser)
-      shift; cmd_browser_agent "$@" ;;
     todo)
       shift; cmd_todo "$@" ;;
     objective|obj)
       shift; cmd_objective "$@" ;;
-    task)
-      shift; cmd_task "$@" ;;
     question|ask)
       shift; cmd_question "$@" ;;
     memory|mem|session)

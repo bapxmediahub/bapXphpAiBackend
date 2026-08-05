@@ -304,7 +304,16 @@ final class CommerceController extends BaseController {
             'invoice_date' => $invoice['invoice_date'],
             'created_at' => date('c'),
         ];
-        $db->upsert('orders', $order);
+        try {
+            $db->upsert('orders', $order);
+        } catch (\Throwable $error) {
+            error_log('[order-persistence-failed] payment_id=' . $paymentId . ' order_id=' . $localId . ' error=' . $error->getMessage());
+            $this->jsonResponse([
+                'verified' => false,
+                'payment_verified' => true,
+                'error' => 'Payment was verified, but the order could not be saved. Your cart has been preserved. Contact support with payment ID ' . $paymentId . '.',
+            ], 503);
+        }
         (new MailQueueService())->enqueuePaymentConfirmation($order);
         unset($_SESSION['pending_order'], $_SESSION['cart']);
         $this->jsonResponse(['verified' => true, 'order_id' => $localId]);

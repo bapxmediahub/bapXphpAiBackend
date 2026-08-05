@@ -9,7 +9,7 @@
  * agent can check a feature before claiming or inventing one.
  *
  * Generated from ProjectMapService::scan(), the same scan that builds the maps, so
- * the two can never disagree. Committed (unlike .okf/) so a fresh clone has it.
+ * the two can never disagree. Committed so a fresh clone has it.
  *
  *   php cli/generate-project-index.php [root] [outfile]
  */

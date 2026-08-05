@@ -81,6 +81,27 @@ $tests['database service can connect to MySQL'] = function (): void {
     }
 };
 
+$tests['remote database failures are loud cached and never use implicit localhost storage'] = function (): void {
+    $service = file_get_contents(app_path('app/Services/DatabaseService.php'));
+    $config = file_get_contents(app_path('config/database.php'));
+    $controller = file_get_contents(app_path('app/Controllers/RemoteDbController.php'));
+    assertTrue(str_contains($service, 'private static array $remoteQueryCache'), 'Remote reads should use a request-level cache shared across service instances');
+    assertTrue(str_contains($service, 'array_key_exists($cacheKey, self::$remoteQueryCache)'), 'Repeated remote queries should return the request-level cached result');
+    assertTrue(str_contains($service, 'self::$remoteQueryCache = []'), 'Database mutations should invalidate remote read caches');
+    assertTrue(str_contains($service, 'Remote database request failed with HTTP'), 'Non-200 remote responses should throw a visible failure');
+    assertTrue(str_contains($service, 'Remote database returned an invalid response'), 'Malformed remote responses should throw instead of becoming empty data');
+    assertTrue(!str_contains($config, "'host' => \$env['BAPX_MYSQL_HOST'] ?: 'localhost'"), 'Runtime storage must not fall back to implicit localhost MySQL');
+    assertTrue(str_contains($config, "\$_SERVER[\$key] ?? \$_ENV[\$key] ?? getenv(\$key)"), 'Runtime environment overrides should take precedence over .env file defaults');
+    assertTrue(str_contains($controller, 'new DatabaseService(true)'), 'The remote DB endpoint must terminate at direct hosted MySQL instead of recursively calling itself');
+    $public = file_get_contents(app_path('app/Controllers/PublicController.php'));
+    assertTrue(!str_contains($public, 'catch (\\Throwable $e) { $products = []; }'), 'Catalog transport failures must not be rendered as a valid empty shop');
+    $bootstrap = file_get_contents(app_path('app/bootstrap.php'));
+    assertTrue(str_contains($bootstrap, 'set_exception_handler') && str_contains($bootstrap, 'http_response_code(503)'), 'Unhandled database failures should render a controlled 503 response');
+    $api = file_get_contents(app_path('api/index.php'));
+    assertTrue(!str_contains($api, "'detail' => \$e->getMessage()"), 'API failures must be logged without exposing internal transport details');
+    assertTrue(str_contains($api, "['error' => 'Service temporarily unavailable']"), 'API database failures should return a stable 503 response');
+};
+
 $tests['payment signature verification matches Razorpay format'] = function (): void {
     $service = new PaymentService('secret');
     $signature = hash_hmac('sha256', 'order_1|pay_1', 'secret');
@@ -138,7 +159,7 @@ $tests['independent deployment repository and runtime artifacts are properly man
     $cli = file_get_contents(app_path('cli/bapXphp'));
     assertTrue(!is_file(app_path('.github/workflows/sync-upstream.yml')), 'Independent deployment repository should not retain fork-sync automation');
     assertTrue(!is_file(app_path('.github/workflows/notify-fork.yml')), 'Notify-fork was replaced by schedule-based sync');
-    foreach (['/output/playwright/', '/server.log', '/storage/logs/'] as $path) {
+    foreach (['/server.log', '/storage/logs/'] as $path) {
         assertTrue(str_contains($ignore, $path), "Git should ignore {$path}");
     }
     assertTrue(str_contains($cli, 'Live production audit events (remote MySQL)'), 'CLI logs should be remote-first');
@@ -183,7 +204,53 @@ $tests['repo has agent-readable schema and built-in skills'] = function (): void
     $agentsMd = (string)file_get_contents(app_path('AGENTS.md'));
     assertTrue(str_contains($agentsMd, 'CLAUDE.md'), 'AGENTS.md must point at CLAUDE.md as the binding contract');
     assertTrue(substr_count($agentsMd, "\n") < 40, 'AGENTS.md must stay a short pointer, not a second copy of the contract');
-    assertTrue(!is_dir(app_path('.agents')), 'Agent tooling lives in .claude, not .agents');
+    assertTrue(!is_dir(app_path('.agents/handoffs')) && !is_dir(app_path('.agents/workflows')), 'Removed agent orchestration must not return');
+};
+
+$tests['application exposes exactly admin chat and customer support agents'] = function (): void {
+    $routes = \App\Services\ProjectMapService::registry()['routes'];
+    $agentRoutes = array_values(array_filter($routes, fn($route) => in_array($route['path'] ?? '', ['/admin/agent', '/admin/agent/ask', '/support', '/support/ask'], true)));
+    assertSame(4, count($agentRoutes), 'Two agent surfaces should expose only their page and ask routes');
+    assertTrue(!in_array('/api/agent', array_column($routes, 'path'), true), 'Duplicate public agent API must be removed');
+    assertTrue(!is_file(app_path('app/Controllers/AgentController.php')), 'Duplicate AgentController must be removed');
+    assertTrue(!is_file(app_path('config/agent.yml')), 'Duplicate agent YAML config must be removed');
+    $cli = (string)file_get_contents(app_path('cli/bapXphp'));
+    foreach (['browser-agent', 'cmd_browser_agent', 'cmd_task', 'BAPX_AGENT_URL', 'pma-client.php'] as $removed) {
+        assertTrue(!str_contains($cli, $removed), "CLI should not contain removed surface {$removed}");
+    }
+    foreach (['.bin/download-chrome.php', '.bin/launch-chrome.sh', 'cli/pma-client.php'] as $removedFile) {
+        assertTrue(!is_file(app_path($removedFile)), "Browser dependency should be removed: {$removedFile}");
+    }
+};
+
+$tests['every project skill has portable frontmatter and no empty reference placeholder'] = function (): void {
+    $skillFiles = glob(app_path('.claude/skills/*/SKILL.md')) ?: [];
+    assertTrue(count($skillFiles) >= 8, 'All canonical project skills should be present');
+    foreach ($skillFiles as $file) {
+        $text = (string)file_get_contents($file);
+        assertTrue((bool)preg_match('/\A---\nname: [a-z0-9]+(?:-[a-z0-9]+)*\ndescription: .+\n---\n/s', $text), basename(dirname($file)) . ' should have only portable name/description frontmatter first');
+        assertTrue(!str_contains($text, 'type: skill'), basename(dirname($file)) . ' should not use ignored type frontmatter');
+    }
+    assertTrue(!(bool)glob(app_path('.claude/skills/*/references/.gitkeep')), 'Skills should not carry empty reference placeholders');
+};
+
+$tests['knowledge index keeps type-qualified concepts collision-free'] = function (): void {
+    $graph = (new \App\Services\KnowledgeGraphService(app_path()))->build();
+    $concepts = $graph['concepts'];
+    $schema = require app_path('storage/schema/collections.php');
+    foreach (array_keys($schema['collections']) as $collection) {
+        assertTrue(isset($concepts['schema:' . $collection]), "Knowledge index should include schema:{$collection}");
+    }
+    foreach (glob(app_path('.claude/skills/*/SKILL.md')) ?: [] as $file) {
+        $name = basename(dirname($file));
+        assertTrue(isset($concepts['skill:' . $name]), "Knowledge index should include skill:{$name}");
+    }
+    assertTrue(isset($concepts['route:get__shop']), 'Knowledge index should include type-qualified shop route');
+    assertTrue(isset($concepts['blog:benefits-of-rudraksha']), 'Knowledge index should include type-qualified blog');
+    $missingImage = $concepts['image:assets/images/blog/rudraksha-benefits.jpg'] ?? null;
+    assertTrue(is_array($missingImage), 'Knowledge index should retain a concept for a referenced missing image');
+    assertSame(false, $missingImage['exists'] ?? null, 'Missing image concept should expose exists=false');
+    assertTrue(in_array('content/blog/posts/benefits-of-rudraksha.md', $missingImage['used_in'] ?? [], true), 'Missing image should identify its referring blog');
 };
 
 $tests['local development router serves existing static files directly'] = function (): void {
@@ -732,6 +799,16 @@ $tests['checkout payment verification preserves shipping contact details'] = fun
     assertTrue(str_contains(file_get_contents(app_path('app/Services/AddressService.php')), "read('addresses')"), 'Saved addresses should use the shared remote database service');
 };
 
+$tests['verified payments remain recoverable when order persistence fails'] = function (): void {
+    $commerce = file_get_contents(app_path('app/Controllers/CommerceController.php'));
+    assertTrue(str_contains($commerce, "'[order-persistence-failed] payment_id='"), 'Failed order writes should produce an operator-visible error with payment correlation');
+    assertTrue(str_contains($commerce, "'payment_verified' => true"), 'The checkout response should distinguish a verified payment from a persisted order');
+    assertTrue(str_contains($commerce, 'Your cart has been preserved.'), 'Customers should be told that failed order persistence did not clear their cart');
+    $persistPosition = strpos($commerce, "\$db->upsert('orders', \$order)");
+    $clearPosition = strpos($commerce, "unset(\$_SESSION['pending_order'], \$_SESSION['cart'])");
+    assertTrue($persistPosition !== false && $clearPosition !== false && $persistPosition < $clearPosition, 'Checkout state must only be cleared after the order write succeeds');
+};
+
 $tests['cart quantity controls update progressively and remove at zero'] = function (): void {
     $cart = file_get_contents(app_path('views/public/cart.php'));
     $controller = file_get_contents(app_path('app/Controllers/CommerceController.php'));
@@ -756,9 +833,8 @@ $tests['bapXphp product media workflow is safe and mapped'] = function (): void 
     $importer = file_get_contents(app_path('cli/import-product-images.php'));
     $map = file_get_contents(app_path('app/Services/ProjectMapService.php'));
     assertTrue(str_contains($cli, 'product:images'), 'CLI should expose the product image import command');
-    assertTrue(str_contains($cli, 'pma)              cmd_db_pma "$*"'), 'Direct phpMyAdmin CLI operations should preserve the SQL argument');
     assertTrue(str_contains($cli, 'cmd_db_hosted_sql'), 'CLI should support direct hosted MySQL operations without an application mutation token');
-    assertTrue(str_contains(file_get_contents(app_path('cli/pma-client.php')), "app/bootstrap.php"), 'phpMyAdmin CLI should load application path helpers before database config');
+    assertTrue(!is_file(app_path('cli/pma-client.php')), 'Browser-driven phpMyAdmin client should be removed');
     assertTrue(str_contains($cli, 'file_get_contents("php://stdin")'), 'DB output should parse JSON from stdin instead of interpolating content into PHP code');
     assertTrue(str_contains($reader, "require_once \$root . '/app/bootstrap.php'"), 'Product reader should bootstrap application helpers');
     assertTrue(str_contains($reader, "new App\\Services\\DatabaseService()"), 'Product reader should use the shared local/remote database boundary');
@@ -956,7 +1032,7 @@ $tests['architecture and deployment docs describe current php template stack'] =
         assertTrue(!str_contains($doc, 'React'), 'Docs should not describe the removed React/CDN architecture');
         assertTrue(!str_contains($doc, 'CDN'), 'Docs should not say the app loads React from a CDN');
     }
-    foreach (['small PHP hosting', 'public_html', 'MySQL is the primary runtime store', '.env', 'APP_NAME', 'APP_URL', 'Admin → Settings', 'Admin → Integrations', 'agentic development', 'docs/README.md', 'docs/deployment-hostinger.md', 'AGENTS.md', 'docs/systematic-map.mmd'] as $needle) {
+    foreach (['small PHP hosting', 'public_html', 'hosted MySQL as the primary runtime store', '.env', 'APP_NAME', 'APP_URL', 'Admin → Settings', 'Admin → Integrations', 'docs/project-index.json', 'index.yaml', 'docs/README.md', 'docs/deployment-hostinger.md', 'AGENTS.md', 'docs/systematic-map.mmd'] as $needle) {
         assertTrue(str_contains($readme, $needle), "README should describe {$needle}");
     }
     assertTrue(is_file(app_path('docs/README.md')), 'Documentation index should exist and be linked from README');
@@ -1039,7 +1115,7 @@ $tests['repository operations use git and GitHub Actions without duplicate agent
     assertTrue(is_file(app_path('.claude/skills/git/SKILL.md')), 'Plain Git skill should exist');
     assertTrue(!is_file(app_path('.claude/skills/gh-cli/SKILL.md')), 'GitHub CLI skill should be removed');
     assertTrue(is_dir(app_path('.claude')), 'Agent tooling should live in .claude');
-    assertTrue(!is_dir(app_path('.agents')), 'Legacy .agents folder should not exist');
+    assertTrue(!is_dir(app_path('.agents/handoffs')) && !is_dir(app_path('.agents/workflows')) && !is_dir(app_path('.agents/ops')), 'Legacy handoff and orchestration folders should not exist');
     assertTrue(is_file(app_path('.github/workflows/branch-pr.yml')), 'Branch pushes should have an Actions-owned PR workflow');
     assertTrue(!is_file(app_path('.github/workflows/sync-upstream.yml')), 'Unforked repository should not contain sync-upstream workflow');
 
