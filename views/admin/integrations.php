@@ -71,7 +71,7 @@
         <div class="admin-form__row">
             <label>Agent Name<input name="agent_name" value="<?= e($secrets['agent_name']??'Agent') ?>" placeholder="Agent"></label>
             <label>API Endpoint (base URL)<input name="api_endpoint" value="<?= e($secrets['api_endpoint']??'') ?>" placeholder="https://api.openai.com/v1"></label>
-            <label>API Key<input type="password" name="agent_api_key" value="<?= e($secrets['agent_api_key']??$secrets['support_bot_google_api_key']??'') ?>" placeholder="sk-... or AIza..." autocomplete="new-password"></label>
+            <label>API Key<input type="password" name="ai_api_key" value="<?= e($secrets['ai_api_key']??$secrets['agent_api_key']??$secrets['support_bot_google_api_key']??'') ?>" placeholder="sk-... or AIza..." autocomplete="new-password"></label>
         </div>
         <div class="admin-form__row">
             <label>Model<input name="agent_model" value="<?= e($secrets['agent_model']??$secrets['support_bot_model']??'gemma-4-31b-it') ?>" placeholder="gemma-4-31b-it"></label>

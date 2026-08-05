@@ -13,10 +13,22 @@ final class RemoteDbController {
         $this->store = new DatabaseService(true);
     }
 
+    /**
+     * The endpoint authenticates with the MySQL password from config, not a separate
+     * invented token. Anyone entitled to query the database already holds it, and it
+     * cannot drift out of sync with a second secret.
+     *
+     * Fails closed: an unset password rejects every request instead of allowing all of
+     * them, which is how the endpoint came to accept unauthenticated queries.
+     */
     private function requirePassword(array $input): void {
-        $secrets = (new SecretService($this->store))->all();
-        $expected = trim((string)($secrets['remote_db_password'] ?? ''));
-        if ($expected === '') return;
+        $config = require app_path('config/database.php');
+        $expected = trim((string)($config['pass'] ?? ''));
+        if ($expected === '') {
+            http_response_code(503);
+            echo json_encode(['error' => 'Remote database access is not configured.']);
+            exit;
+        }
         $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
         $given = $input['password'] ?? '';
         if ($given === '' && preg_match('/^Bearer\s+(.+)$/i', $authHeader, $m)) {
@@ -24,7 +36,7 @@ final class RemoteDbController {
         }
         if (!hash_equals($expected, $given)) {
             http_response_code(401);
-            echo json_encode(['error' => 'Unauthorized: invalid or missing remote_db_password.']);
+            echo json_encode(['error' => 'Unauthorized: invalid or missing database password.']);
             exit;
         }
     }

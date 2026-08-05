@@ -935,18 +935,17 @@ $tests['remote database uses password auth via admin UI or env'] = function (): 
     $cli = file_get_contents(app_path('cli/bapXphp'));
     assertTrue(str_contains($controller, 'requirePassword'), 'Remote controller should have requirePassword');
     assertTrue(str_contains($controller, 'hash_equals'), 'Remote controller should verify password with timing-safe compare');
-    assertTrue(str_contains($controller, 'SecretService'), 'Remote controller should read password from SecretService');
-    assertTrue(str_contains($controller, 'remote_db_password'), 'Remote controller should check remote_db_password');
+    // Authentication uses the MySQL password from config, not a separate invented
+    // token that can drift out of sync with it.
+    assertTrue(str_contains($controller, "config/database.php"), 'Remote controller should read the database password from config');
+    assertTrue(str_contains($controller, 'http_response_code(503)'), 'Remote controller must fail closed when no password is configured');
+    assertTrue(!str_contains($controller, "if (\$expected === '') return;"), 'An unset password must never allow the request');
     foreach (["'upsert'", "'delete'", "'replace'"] as $needle) {
         assertTrue(str_contains($controller, $needle), "Remote controller should support {$needle}");
     }
     assertTrue(str_contains($database, 'remoteMutation'), 'Database service should use remote mutations when direct MySQL is unavailable');
-    assertTrue(str_contains($database, 'remote_db_password'), 'Database service should send remote_db_password in payload');
+    assertTrue(str_contains($database, "'password' => \$this->cfg['pass']"), 'Database service should send the MySQL password in the payload');
     foreach (['db upsert', 'db delete'] as $needle) assertTrue(str_contains($cli, $needle), "CLI should expose {$needle}");
-    assertTrue(!str_contains($cli, 'REMOTE_DB_PASSWORD'), 'CLI should not reference remote_db_password (handled by DatabaseService)');
-    assertTrue(str_contains(file_get_contents(app_path('views/admin/integrations.php')), 'name="remote_db_password"'), 'Admin integrations should have a remote_db_password field');
-    assertTrue(str_contains(file_get_contents(app_path('config/database.php')), 'REMOTE_DB_PASSWORD'), 'database.php config should read REMOTE_DB_PASSWORD from env');
-    assertTrue(str_contains(file_get_contents(app_path('.env.example')), 'REMOTE_DB_PASSWORD'), '.env.example should document REMOTE_DB_PASSWORD');
 };
 
 $tests['consultant booking lifecycle is operational'] = function (): void {

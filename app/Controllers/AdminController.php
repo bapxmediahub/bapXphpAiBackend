@@ -138,7 +138,7 @@ final class AdminController extends BaseController {
             if (!empty($modelConfig['apiKey'])) {
                 $answer = $this->callAiApi($modelConfig, $message, $context);
             } else {
-                $answer = "AI model not configured. Go to Admin → Integrations and set api_endpoint, agent_api_key, and agent_model.";
+                $answer = "AI model not configured. Go to Admin → Integrations and set api_endpoint, ai_api_key, and agent_model.";
             }
             $this->jsonResponse(['answer'=>$answer]);
         } catch (\Throwable $e) {
@@ -166,7 +166,7 @@ final class AdminController extends BaseController {
         // Fail fast rather than sending a request that is certain to be rejected — an
         // absent key returned an opaque HTTP 400 that read as a model problem.
         if (trim((string)$key) === '') {
-            return 'No AI API key is configured. Set agent_api_key in Admin → Integrations, then try again.';
+            return 'No AI API key is configured. Set ai_api_key in Admin → Integrations, then try again.';
         }
         $prompt = "You are the AI assistant for the site. Answer concisely in Markdown.\n\n{$context}\n\nQuestion: {$message}";
         if ($provider === 'google') {
@@ -375,7 +375,7 @@ final class AdminController extends BaseController {
             "Rewrite this blog headline for a Tamil spiritual products and astrology site. "
             . "Return ONE headline only, plain text, no quotes, no markdown, under 70 characters.\n\nHeadline: " . $title
         );
-        if ($result === null) { $this->jsonResponse(['error' => 'No AI API key is configured. Set agent_api_key in Admin → Integrations.'], 400); return; }
+        if ($result === null) { $this->jsonResponse(['error' => 'No AI API key is configured. Set ai_api_key in Admin → Integrations.'], 400); return; }
         $clean = trim(preg_replace('/\s+/', ' ', strip_tags($result)) ?? $result, " \t\n\r\0\x0B\"'");
         $this->jsonResponse(['title' => mb_substr($clean, 0, 120)]);
     }
@@ -387,7 +387,7 @@ final class AdminController extends BaseController {
             . "any Tamil text. Return Markdown only — no HTML, no code fences around the whole answer, "
             . "no commentary.\n\nArticle:\n" . $content
         );
-        if ($result === null) { $this->jsonResponse(['error' => 'No AI API key is configured. Set agent_api_key in Admin → Integrations.'], 400); return; }
+        if ($result === null) { $this->jsonResponse(['error' => 'No AI API key is configured. Set ai_api_key in Admin → Integrations.'], 400); return; }
         $this->jsonResponse(['content' => trim($result)]);
     }
     public function taxReport(): void{
@@ -514,7 +514,7 @@ final class AdminController extends BaseController {
         if ($detail === '' && is_string($body) && trim($body) !== '') $detail = mb_substr(trim(strip_tags($body)), 0, 300);
         $hint = match (true) {
             $status === 400 => ' Check the model name and that the API key is set in Admin → Integrations.',
-            in_array($status, [401, 403], true) => ' The API key was rejected. Set a valid agent_api_key in Admin → Integrations.',
+            in_array($status, [401, 403], true) => ' The API key was rejected. Set a valid ai_api_key in Admin → Integrations.',
             $status === 404 => ' The model or endpoint does not exist for this provider.',
             $status === 429 => ' Rate limit or quota exceeded for this API key.',
             $status === 0   => ' The request never reached the provider. Check outbound network access.',

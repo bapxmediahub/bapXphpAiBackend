@@ -17,5 +17,4 @@ return [
     // A wrong-case endpoint variant must fail loudly; transport and response failures are never converted
     // into an empty collection that could be mistaken for valid production data.
     'remote_url' => $envValue('BAPX_REMOTE_DB_URL', $appUrl . '/remotedb'),
-    'remote_db_password' => $envValue('REMOTE_DB_PASSWORD'),
 ];

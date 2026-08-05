@@ -24,7 +24,7 @@ final class SecretService {
      * Merges into the stored secrets rather than replacing them.
      *
      * The Integrations form does not contain every secret — razorpay_key_id,
-     * razorpay_key_secret, support_bot_google_api_key, remote_db_token and token are
+     * razorpay_key_secret, ai_api_key, and the model settings are
      * all absent from it. Replacing the whole blob with the posted fields silently
      * destroyed those, so saving SMTP settings wiped the live payment keys and the AI
      * key. Only keys actually present in the submission are changed.
@@ -62,7 +62,7 @@ final class SecretService {
     public function getModelConfig(): array {
         $secrets = $this->all();
         $endpoint = $this->firstValue($secrets, ['api_endpoint'], ['BAPX_AI_ENDPOINT']);
-        $apiKey = $this->firstValue($secrets, ['agent_api_key', 'support_bot_google_api_key'], ['AGENT_API_KEY', 'BAPX_AI_API_KEY']);
+        $apiKey = $this->firstValue($secrets, ['ai_api_key', 'agent_api_key', 'support_bot_google_api_key'], ['AI_API_KEY', 'AGENT_API_KEY', 'BAPX_AI_API_KEY']);
         $model = $this->firstValue($secrets, ['agent_model', 'support_bot_model'], ['AGENT_MODEL', 'BAPX_AI_MODEL']);
         if ($model === '') $model = 'gemma-4-31b-it';
         if ($endpoint === '') {
@@ -141,7 +141,7 @@ final class SecretService {
             'mail_from_email' => (string)(getenv('MAIL_FROM_EMAIL') ?: ''),
             'mail_from_name' => (string)(getenv('MAIL_FROM_NAME') ?: ''),
             'admin_notification_email' => (string)(getenv('ADMIN_NOTIFICATION_EMAIL') ?: ''),
-            'agent_api_key' => (string)(getenv('AGENT_API_KEY') ?: getenv('SUPPORT_BOT_GOOGLE_API_KEY') ?: ''),
+            'ai_api_key' => (string)(getenv('AI_API_KEY') ?: getenv('AGENT_API_KEY') ?: getenv('SUPPORT_BOT_GOOGLE_API_KEY') ?: ''),
             'agent_model' => (string)(getenv('AGENT_MODEL') ?: getenv('SUPPORT_BOT_MODEL') ?: ''),
             'api_endpoint' => (string)(getenv('BAPX_AI_ENDPOINT') ?: ''),
             'support_bot_purge_policy' => (string)(getenv('SUPPORT_BOT_PURGE_POLICY') ?: ''),
