@@ -391,7 +391,7 @@ if ($__flash):
 
 <?php if ($currentPath !== '/cart'): ?>
 <a href="/cart" class="mobile-cart-tray" id="mobile-cart-tray" <?= $cartCount > 0 ? '' : 'hidden' ?>>
-    <span><strong id="mobile-cart-count"><?= (int)$cartCount ?></strong> <span id="mobile-cart-label"><?= $cartCount === 1 ? 'item' : 'items' ?></span> in cart</span>
+    <span><strong id="mobile-cart-count"><?= (int)$cartCount ?></strong> <span id="mobile-cart-label"><?= $cartCount === 1 ? 'item' : 'items' ?></span></span>
     <span>View cart <span aria-hidden="true">→</span></span>
 </a>
 <?php endif; ?>

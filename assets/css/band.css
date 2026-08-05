@@ -3706,14 +3706,18 @@ body { background: var(--color-bg); }
         right: auto;
         transform: translateX(-50%);
         width: max-content;
+        /* A centred pill can only be this wide before its right edge reaches the
+           support button, so the label must stay on one line within it. */
         max-width: calc(100vw - 160px);
         bottom: 78px;
         height: 56px;
         min-height: 56px;
         justify-content: center;
-        gap: 12px;
-        padding: 0 18px;
+        gap: 10px;
+        padding: 0 14px;
+        font-size: 0.8rem;
+        white-space: nowrap;
     }
-    /* Centred content, so the divider is no longer pushed to the far edge. */
-    .mobile-cart-tray > span:last-child { padding-left: 12px; }
+    .mobile-cart-tray > span { white-space: nowrap; }
+    .mobile-cart-tray > span:last-child { padding-left: 10px; }
 }
