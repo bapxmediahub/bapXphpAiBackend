@@ -3745,3 +3745,7 @@ body { background: var(--color-bg); }
     }
     .support-panel { right: 24px; bottom: 96px; }
 }
+
+/* Cart toggle carries the same gold stroke as the support button, so the two read as
+   one pair of floating controls rather than two unrelated elements. */
+.mobile-cart-tray { border: 1px solid var(--color-gold); }
