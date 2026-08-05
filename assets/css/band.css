@@ -3697,29 +3697,30 @@ body { background: var(--color-bg); }
    the top bar instead. The cart tray shares its line and stops short of it so the
    two never overlap. */
 @media (max-width: 700px) {
-    /* Both sit on one horizontal line: same bottom edge and same height, so their
-       centres line up exactly. The cart pill is centred on screen and capped so it
-       can never run under the support button on the right. */
-    .support-fab { position: fixed; top: auto; right: 12px; bottom: 78px; width: 56px; height: 56px; z-index: 1100; }
+    /* Full-width bottom cart bar, the pattern used by Flipkart and Uber Eats: spans
+       the viewport with a small side margin, fully rounded ends, and sits low so it
+       reads as an action bar rather than a floating chip. A full-width bar cannot
+       share a line with the support button, so the button sits directly above it. */
     .mobile-cart-tray {
-        left: 50%;
-        right: auto;
-        transform: translateX(-50%);
-        width: max-content;
-        /* A centred pill can only be this wide before its right edge reaches the
-           support button, so the label must stay on one line within it. */
-        max-width: calc(100vw - 160px);
-        bottom: 78px;
-        height: 56px;
-        min-height: 56px;
-        justify-content: center;
-        gap: 10px;
-        padding: 0 14px;
-        font-size: 0.8rem;
+        left: 12px;
+        right: 12px;
+        transform: none;
+        width: auto;
+        max-width: none;
+        bottom: 14px;
+        height: 58px;
+        min-height: 58px;
+        border-radius: 999px;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 0 24px;
+        font-size: 0.9rem;
         white-space: nowrap;
     }
     .mobile-cart-tray > span { white-space: nowrap; }
-    .mobile-cart-tray > span:last-child { padding-left: 10px; }
+    .mobile-cart-tray > span:last-child { padding-left: 12px; }
+    .support-fab { position: fixed; top: auto; right: 12px; bottom: 84px; width: 52px; height: 52px; z-index: 1100; }
+    .support-panel { right: 12px; bottom: 146px; }
 }
 
 /* Desktop: the cart pill and support button share one horizontal line.
