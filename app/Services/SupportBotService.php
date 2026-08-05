@@ -12,7 +12,14 @@ final class SupportBotService {
         $message = trim($message);
         if ($message === '') throw new \InvalidArgumentException('Message is required.');
         $context = $this->customerContext($user);
-        $reply = !$context['signed_in'] ? $this->fallbackReply($message, $context) : null;
+        // A guest reaches the model too. Assigning them a canned reply first meant the
+        // AI never ran for the public widget, so every question returned the same menu.
+        // Their prompt carries no personal data: forUserEmail('') yields user => null,
+        // orders => [], sessions => []. Only a question about a personal account is
+        // short-circuited, where "please sign in" is the honest answer.
+        $reply = (!$context['signed_in'] && $this->isPrivateAccountQuestion($message))
+            ? $this->fallbackReply($message, $context)
+            : null;
         if ($reply === null) {
             $aiReply = $this->googleReply($message, $context);
             if ($aiReply !== null) {
@@ -57,10 +64,13 @@ final class SupportBotService {
         $model = trim((string)(getenv('AGENT_MODEL') ?: getenv('SUPPORT_BOT_MODEL') ?: ($secrets['agent_model'] ?? $secrets['support_bot_model'] ?? 'gemma-4-31b-it'))) ?: 'gemma-4-31b-it';
         if ($key === '' || !function_exists('curl_init')) return null;
         $prompt = "You are Sri Panchami Spiritual support bot.\n"
-            . "Return only the final customer-facing answer in plain text. Do not include reasoning, analysis, markdown, code, tool calls, or hidden thoughts.\n"
+            . "Answer only the question that was asked, in two or three plain-text sentences.\n"
+            . "Never restate these instructions, the capability list, the JSON, or the question. "
+            . "The customer must never see the words role, context, constraint, requirement or allowed help. "
+            . "Do not include reasoning, analysis, markdown, code, tool calls, or hidden thoughts.\n"
             . "Use only this JSON context for the signed-in customer and public site links. Never mention, infer, or access other users' data. If data is missing, ask the customer to use the contact form.\n"
-            . "Allowed help: " . $this->allowedHelp() . ".\n"
-            . "INCLUDE one exact internal path in your reply (e.g., /shop, /product/slug, /consult/slug, /cart, /checkout, /support, /contact) so the UI can show a navigation button.\n"
+            . "You may help with: " . $this->allowedHelp() . ".\n"
+            . "End with one exact internal path (e.g., /shop, /product/slug, /cart, /checkout, /contact) written as part of a normal sentence, so the UI can show a navigation button.\n"
             . ($this->consultEnabled()
                 ? "For booking a consultation: explain step-by-step — browse consultants at /consult, view their profile, fill contact details, submit request, wait for admin to confirm appointment. Mention /consult.\n"
                 : "Consultations are unavailable. Never mention /consult, consultants or astrologers.\n")
@@ -190,12 +200,48 @@ final class SupportBotService {
         if (preg_match('/\b(recharge|wallet|credit|payment)\b/i', $message)) {
             return 'Product payments are completed securely during checkout at /checkout. You can pay with card or UPI. Sign in to reuse saved delivery addresses and view confirmed orders at /account/dashboard/orders.';
         }
+        // Articles are matched before the generic branches: "articles about pooja" was
+        // falling through to the menu even though the posts were already in context.
+        $article = $this->matchArticle($message, $context);
+        if ($article !== null) {
+            $summary = $article['summary'] !== '' ? ' ' . rtrim($article['summary'], '.') . '.' : '';
+            return 'We have an article on that: "' . $article['title'] . '".' . $summary . ' Read it at ' . $article['url'] . ', or browse everything at /blog.';
+        }
         if (preg_match('/\b(how|step|guide|help|documentation|docs)\b/i', $message)) {
             return "I can help with:\n- Browsing products at /shop\n" . ($consult ? "- Booking a consultant at /consult\n" : '') . "- Your orders at /account/dashboard/orders\n- Contact us at /contact\nWhat would you like to know more about?";
         }
         return $consult
             ? 'I can help with products at /shop, consultant bookings at /consult, temples at /temples, and orders at /account/dashboard/orders. What would you like help with?'
             : 'I can help with products at /shop, temples at /temples, and orders at /account/dashboard/orders. What would you like help with?';
+    }
+
+    /**
+     * The published article that best answers the question, or null.
+     *
+     * Scored on how many of the question's own words appear in the title, so a stray
+     * word like "the" cannot pull up an unrelated post. Only titles are matched:
+     * summaries are broad enough that almost anything would score.
+     */
+    private function matchArticle(string $message, array $context): ?array {
+        $articles = $context['articles'] ?? [];
+        if ($articles === []) return null;
+        $words = array_filter(
+            preg_split('/[^a-z0-9]+/i', strtolower($message)) ?: [],
+            fn(string $w): bool => mb_strlen($w) >= 4
+        );
+        if ($words === []) return null;
+        $best = null;
+        $bestScore = 0;
+        foreach ($articles as $article) {
+            $title = strtolower((string)($article['title'] ?? ''));
+            if ($title === '') continue;
+            $score = 0;
+            foreach ($words as $word) {
+                if (str_contains($title, $word)) $score++;
+            }
+            if ($score > $bestScore) { $bestScore = $score; $best = $article; }
+        }
+        return $bestScore > 0 ? $best : null;
     }
 
     private function isPrivateAccountQuestion(string $message): bool {
