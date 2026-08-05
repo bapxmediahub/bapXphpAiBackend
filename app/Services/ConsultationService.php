@@ -84,7 +84,44 @@ final class ConsultationService {
             $signals = array_values(array_filter($this->store->read('consultation_signals'), fn($row) => ($row['appointment_id'] ?? '') !== ($session['id'] ?? '')));
             $this->store->write('consultation_signals', $signals);
         }
-        return (new ResourceService('appointments'))->save($session);
+        $saved = (new ResourceService('appointments'))->save($session);
+        $this->notifyStatusChange($saved, $status);
+        return $saved;
+    }
+
+    /**
+     * Tell the customer when their appointment changes state. Previously the owner was
+     * notified on booking but the customer heard nothing again — an appointment could
+     * be accepted, declined or cancelled without the person who booked it being told.
+     */
+    private function notifyStatusChange(array $session, string $status): void {
+        $to = trim((string)($session['customer_email'] ?? ''));
+        if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) return;
+        $consultant = (string)($session['astrologer_name'] ?? 'your consultant');
+        $when = trim((string)($session['preferred_date'] ?? '') . ' ' . (string)($session['preferred_time'] ?? ''));
+        [$subject, $body] = match ($status) {
+            'accepted' => ['Your consultation is confirmed',
+                '<p>Your consultation with <strong>' . e($consultant) . '</strong> is confirmed'
+                . ($when !== '' ? ' for <strong>' . e($when) . '</strong>' : '') . '.</p>'],
+            'declined' => ['Your consultation request could not be scheduled',
+                '<p>Unfortunately <strong>' . e($consultant) . '</strong> could not take this appointment. '
+                . 'Please choose another consultant or time.</p>'],
+            'cancelled' => ['Your consultation has been cancelled',
+                '<p>Your consultation with <strong>' . e($consultant) . '</strong> has been cancelled.</p>'],
+            'completed' => ['Thank you for your consultation',
+                '<p>Your consultation with <strong>' . e($consultant) . '</strong> is complete. '
+                . 'We would be grateful if you left a review.</p>'],
+            default => ['', ''],
+        };
+        if ($subject === '') return;
+        try {
+            (new MailQueueService($this->store))->enqueue(
+                'appointment_' . $status, $to, $subject . ' - Sri Panchami Spiritual', $body,
+                null, ['appointment_id' => $session['id'] ?? '']
+            );
+        } catch (\Throwable $e) {
+            error_log('Appointment status mail failed: ' . $e->getMessage());
+        }
     }
 
     public function analytics(): array {
