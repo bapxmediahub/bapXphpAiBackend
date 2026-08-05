@@ -1913,15 +1913,16 @@ concepts:
   - id: "image:assets/images/logo-square.jpeg"
     type: "image"
     title: "logo-square.jpeg"
-    description: "Image referenced by 2 project resource(s)."
+    description: "Image referenced by 3 project resource(s)."
     resource: "assets/images/logo-square.jpeg"
     tags:
       - "image"
       - "used"
     filename: "logo-square.jpeg"
     mime: "image/jpeg"
-    usage_count: 2
+    usage_count: 3
     used_in:
+      - "app/Services/MailQueueService.php"
       - "views/layouts/admin.php"
       - "views/layouts/app.php"
   - id: "image:assets/images/logo-square.webp"
