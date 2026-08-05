@@ -55,3 +55,20 @@ function img_tag(string $src, string $alt = '', array $attrs = []): string {
 }
 
 \App\Services\EnvService::load();
+
+set_exception_handler(static function (\Throwable $error): void {
+    error_log('[unhandled] ' . $error::class . ': ' . $error->getMessage());
+    http_response_code(503);
+    header('Cache-Control: no-store');
+    $uri = (string)($_SERVER['REQUEST_URI'] ?? '/');
+    $acceptsJson = str_starts_with($uri, '/api/')
+        || str_contains(strtolower((string)($_SERVER['HTTP_ACCEPT'] ?? '')), 'application/json')
+        || str_contains(strtolower((string)($_SERVER['CONTENT_TYPE'] ?? '')), 'application/json');
+    if ($acceptsJson) {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['error' => 'The database is temporarily unavailable. Please retry.']);
+        return;
+    }
+    header('Content-Type: text/html; charset=utf-8');
+    echo '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Service temporarily unavailable</title><style>body{margin:0;background:#fdfbf7;color:#2b1712;font:16px/1.6 system-ui,sans-serif;display:grid;min-height:100vh;place-items:center}.panel{width:min(560px,calc(100% - 40px));padding:40px;border:1px solid #d7bd72;border-radius:24px;background:#fff;box-shadow:0 18px 50px #3a00031a;text-align:center}h1{font-family:Georgia,serif;color:#3a0003}a{display:inline-block;margin-top:12px;padding:12px 20px;border-radius:999px;background:#3a0003;color:#fff;text-decoration:none}</style></head><body><main class="panel"><p>Temporary service interruption</p><h1>We could not reach our secure database.</h1><p>Your request was not recorded. Please wait a moment and try again. If you were completing a payment, contact support before retrying.</p><a href="javascript:location.reload()">Try again</a></main></body></html>';
+});

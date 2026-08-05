@@ -3,8 +3,8 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 113,
-        "controllers": 13,
+        "routes": 112,
+        "controllers": 12,
         "services": 42,
         "views": 47,
         "collections": 22
@@ -717,17 +717,6 @@
             "services": []
         },
         {
-            "method": "POST",
-            "path": "/api/agent",
-            "name": "api.agent",
-            "controller": "AgentController@ask",
-            "view": "public/404",
-            "services": [
-                "SecretService",
-                "DatabaseService"
-            ]
-        },
-        {
             "method": "GET",
             "path": "/api/categories",
             "name": "api.categories",
@@ -1100,7 +1089,7 @@
         },
         {
             "method": "POST",
-            "path": "/remoteDB",
+            "path": "/remotedb",
             "name": "api.remotedb",
             "controller": "RemoteDbController@__invoke",
             "view": "public/404",
@@ -1257,7 +1246,6 @@
     "controllers": [
         "AccountController",
         "AdminController",
-        "AgentController",
         "ApiController",
         "AuthController",
         "BaseController",

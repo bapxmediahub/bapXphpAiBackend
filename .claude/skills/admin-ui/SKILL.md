@@ -1,5 +1,4 @@
 ---
-type: skill
 name: admin-ui
 description: Use when editing owner/admin pages, CRUD forms, media library, environment editor, permissions, audit log, integrations, or admin navigation.
 ---
@@ -12,38 +11,30 @@ description: Use when editing owner/admin pages, CRUD forms, media library, envi
 - Keep astrologer accounts admin-created; show temporary credentials only until the provider changes the initial password.
 - Validate with `php tests/run.php`; use a browser workflow for changed admin pages.
 
-## Admin Panel Agent (bapXcli)
+## Admin Panel Agent
 
-The admin panel has an agent interface at `/admin/agent` that:
-
-1. **Answers questions** about the site: user count, orders, revenue, products, consultations
-2. **Creates/edits blog posts** via natural language prompts (delegates to `bapXphp write blog`)
-3. **Reads MySQL data** through `DatabaseService` to answer queries
-4. **Calls AI model** configured in Admin → Integrations (Google Gemini endpoint by default)
-5. **Reads attachments** from `.claude/temp/` (screenshots, documents provided by the user)
-6. **Triggers CI/CD** actions on the hosting server via `workflow_dispatch`
+The interface at `/admin/agent` sends a prompt plus a bounded site summary to the
+configured AI endpoint. Treat it as a read-only assistant unless controller code
+explicitly implements and authorizes a mutation. It does not currently edit blogs,
+run the CLI, or trigger deployments.
 
 ### Implementation Pattern
 
 The agent controller:
-1. Receives prompt via POST (JSON body with `prompt` field, optional `attachment` reference)
-2. Builds context from MySQL: `DatabaseService` queries for users, orders, products, etc.
-3. Calls AI API using `SecretService` (`agent_api_key`, `agent_model`, `api_endpoint`)
-4. Streams Markdown response back to the admin panel UI
+1. `AdminController::agent()` receives a normal form POST.
+2. `AdminController::agentAsk()` currently builds aggregate counts directly with
+   `DatabaseService`; it does not use `AgentContextService`.
+3. `SecretService` supplies `agent_api_key`, `agent_model`, and `api_endpoint`.
+4. The controller renders the returned Markdown response.
 
 ### Agent Permissions
 
-The admin agent has read access to:
-- `users` — count, list
-- `orders` — count, list, revenue totals
-- `products` — list, details
-- `astrologers` — list, details
-- `appointments` — list, count
-- `support_tickets` — list, count
-- `audit_events` — recent events
-- `settings` — public settings
-
-Write/mutation operations require explicit user confirmation before execution.
+Keep context aggregate, allowlisted and purpose-specific. The current top-customer
+email summary is a privacy gap and must be removed or anonymized; do not describe it
+as safe merely because the route is admin-only. Do not expose passwords, secrets,
+full user lists, payment data, or unrelated customer records. A future write
+operation needs an explicit controller/service contract, authorization, confirmation,
+CSRF protection and audit event; a prompt alone is never authorization.
 
 ## AI Integration Secrets
 

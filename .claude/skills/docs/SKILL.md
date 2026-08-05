@@ -1,20 +1,23 @@
 ---
-type: skill
 name: docs
 description: Use when editing README, docs, project-map docs, or agent-facing instructions.
 ---
 # Docs
 
 - Follow the root `AGENTS.md` repository contract.
-- `docs/systematic-map.mmd` is the single project wiring map artifact. `docs/map.mmd` is the content/documentation mindmap. `map.mmd` (root) is the code dependency graph with edges + gaps.
+- `docs/systematic-map.mmd` is the systematic inventory, `docs/map.mmd` is the
+  content/documentation mindmap, and root `map.mmd` is the code dependency graph.
+  Root `index.yaml` is the generated concept/relationship router; it points to
+  original resources and must not copy blog bodies or hosted records.
 - Do not recreate `docs/PROJECT_MAP.md`, `docs/project-map.json`, or `docs/project-map.mmd`.
-- Regenerate the systematic map with `php tools/generate-project-map.php` after route, service, view, schema, storage, tool, or integration changes.
-- Regenerate both maps with `bapXphp update` after root `AGENTS.md`, skill, or documentation changes.
+- Regenerate all committed maps and indexes with `./bapXphp update` after route,
+  service, view, schema, storage, tool, skill, blog metadata, or documentation changes.
 - Never hand-edit generated Mermaid. Fix deterministic scan/render inputs, then regenerate through the tool.
 - Use the map like a source index: follow affected nodes to the actual files and verify route, page, schema, storage, and navigation behavior before documenting completion.
 - Search existing docs and code before adding a file; a gap node is not automatic permission to scaffold one.
-- Validate with `php tools/validate-project-map.php`.
-- Keep durable docs concise, current, and aligned with the PHP/JSON shared-hosting architecture.
+- Query `index.yaml` narrowly to locate original files; never load it wholesale or treat generated summaries as the source of truth. `docs/project-index.json` is the machine-readable code index.
+- Validate with `./bapXphp ci`.
+- Keep durable docs concise and aligned with the PHP/MySQL shared-hosting architecture and Markdown-file blog boundary.
 
 ## Testing
 

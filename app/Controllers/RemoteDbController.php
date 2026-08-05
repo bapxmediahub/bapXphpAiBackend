@@ -5,10 +5,16 @@ use App\Services\DatabaseService;
 use App\Services\SecretService;
 
 final class RemoteDbController {
-    public function __construct() {}
+    private DatabaseService $store;
+
+    public function __construct() {
+        // The HTTP bridge must terminate at hosted MySQL. It must never fall back to
+        // its own /remotedb URL when direct MySQL is unavailable.
+        $this->store = new DatabaseService(true);
+    }
 
     private function requirePassword(array $input): void {
-        $secrets = (new SecretService())->all();
+        $secrets = (new SecretService($this->store))->all();
         $expected = trim((string)($secrets['remote_db_password'] ?? ''));
         if ($expected === '') return;
         $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
@@ -51,8 +57,7 @@ final class RemoteDbController {
         }
 
         try {
-            $db = new DatabaseService();
-            $result = $db->query($sql, $params);
+            $result = $this->store->query($sql, $params);
             http_response_code(200);
             echo json_encode(['success' => true, 'data' => $result]);
         } catch (\Throwable $e) {
@@ -69,7 +74,7 @@ final class RemoteDbController {
             return;
         }
         try {
-            $store = new DatabaseService();
+            $store = $this->store;
             if ($action === 'upsert') {
                 $record = $input['record'] ?? null;
                 if (!is_array($record) || empty($record['id'])) throw new \InvalidArgumentException('Record id is required.');

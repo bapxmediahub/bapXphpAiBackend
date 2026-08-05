@@ -1,19 +1,21 @@
 <?php
-$env = parse_ini_file(app_path('.env')) ?: [];
-foreach (['BAPX_MYSQL_HOST','BAPX_MYSQL_PORT','BAPX_MYSQL_DB','BAPX_MYSQL_USER','BAPX_MYSQL_PASS','REMOTE_DB_PASSWORD'] as $k) {
-    $env[$k] = $env[$k] ?? $_SERVER[$k] ?? $_ENV[$k] ?? '';
-}
-$appUrl = rtrim((string)($env['APP_URL'] ?? $_SERVER['APP_URL'] ?? $_ENV['APP_URL'] ?? 'https://sripanchamispiritual.com'), '/');
+$fileEnv = parse_ini_file(app_path('.env')) ?: [];
+$envValue = static function (string $key, string $default = '') use ($fileEnv): string {
+    $runtime = $_SERVER[$key] ?? $_ENV[$key] ?? getenv($key);
+    if ($runtime !== false && $runtime !== null && $runtime !== '') return (string)$runtime;
+    return (string)($fileEnv[$key] ?? $default);
+};
+$appUrl = rtrim($envValue('APP_URL', 'https://sripanchamispiritual.com'), '/');
 return [
     'app_url' => $appUrl,
-    'host' => $env['BAPX_MYSQL_HOST'] ?: 'localhost',
-    'port' => $env['BAPX_MYSQL_PORT'] ?: '3306',
-    'dbname' => $env['BAPX_MYSQL_DB'] ?: 'u907253411_db_name_sps',
-    'user' => $env['BAPX_MYSQL_USER'] ?: 'u907253411_db_user_sps',
-    'pass' => $env['BAPX_MYSQL_PASS'] ?: '',
+    'host' => $envValue('BAPX_MYSQL_HOST'),
+    'port' => $envValue('BAPX_MYSQL_PORT', '3306'),
+    'dbname' => $envValue('BAPX_MYSQL_DB'),
+    'user' => $envValue('BAPX_MYSQL_USER'),
+    'pass' => $envValue('BAPX_MYSQL_PASS'),
     // Lowercase '/remotedb'. The live host serves this path case-sensitively and 404s on
-    // '/remoteDB'; DatabaseService::remoteCall() swallows non-200 responses and returns [],
-    // so the wrong casing silently renders an empty site instead of raising an error.
-    'remote_url' => (string)($env['BAPX_REMOTE_DB_URL'] ?? $_SERVER['BAPX_REMOTE_DB_URL'] ?? $_ENV['BAPX_REMOTE_DB_URL'] ?? ($appUrl . '/remotedb')),
-    'remote_db_password' => (string)($env['REMOTE_DB_PASSWORD'] ?? ''),
+    // A wrong-case endpoint variant must fail loudly; transport and response failures are never converted
+    // into an empty collection that could be mistaken for valid production data.
+    'remote_url' => $envValue('BAPX_REMOTE_DB_URL', $appUrl . '/remotedb'),
+    'remote_db_password' => $envValue('REMOTE_DB_PASSWORD'),
 ];

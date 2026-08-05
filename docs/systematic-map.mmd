@@ -7,13 +7,13 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 113 routes, 13 controllers, 42 services, 47 views, 0 data files, 21 tools"]
-    arch_routes["> Routes: 113 (Public + Auth + Payment + Admin + Support)"]:::arch
-    arch_ctrl["> Controllers: 13"]:::arch
+  subgraph ARCH["Architecture Overview — 112 routes, 12 controllers, 42 services, 47 views, 0 data files, 20 tools"]
+    arch_routes["> Routes: 112 (Public + Auth + Payment + Admin + Support)"]:::arch
+    arch_ctrl["> Controllers: 12"]:::arch
     arch_svc["> Services: 42"]:::arch
     arch_views["> Views: 47"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
-    arch_tools["> Tools: 21"]:::arch
+    arch_tools["> Tools: 20"]:::arch
     arch_gaps["> Gaps: 1"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
@@ -55,11 +55,10 @@ flowchart LR
     route_post_reviews_product["POST /reviews/product — Submit product review"]:::route
     route_get_docs["GET /docs — Documentation landing — blog categories overview"]:::route
     route_get_help_slug["GET /help/{slug}"]:::route
-    route_post_remotedb["POST /remoteDB — Remote DB query endpoint — proxies SQL to production MySQL"]:::route
+    route_post_remotedb["POST /remotedb — Remote DB query endpoint — proxies SQL to production MySQL"]:::route
     route_get_blog["GET /blog — Blog listing — all posts with category filters"]:::route
     route_get_blog_slug["GET /blog/{slug} — Blog post — rendered from GitHub-sourced markdown"]:::route
     route_get_blog_category_slug["GET /blog/category/{slug} — Blog listing filtered by category"]:::route
-    route_post_api_agent["POST /api/agent"]:::route
   end
 
   subgraph ROUTES_AUTH["AUTH Routes"]
@@ -158,7 +157,6 @@ flowchart LR
   subgraph CONTROLLERS["Controllers"]
     controller_accountcontroller["AccountController"]:::code
     controller_admincontroller["AdminController"]:::code
-    controller_agentcontroller["AgentController"]:::code
     controller_apicontroller["ApiController"]:::code
     controller_authcontroller["AuthController"]:::code
     controller_basecontroller["BaseController"]:::code
@@ -312,7 +310,6 @@ flowchart LR
     tool_generate_project_map["generate-project-map"]:::tool
     tool_import_product_images["import-product-images"]:::tool
     tool_optimize_images["optimize-images"]:::tool
-    tool_pma_client["pma-client"]:::tool
     tool_product_read["product-read"]:::tool
     tool_product_write["product-write"]:::tool
     tool_refresh_blog_cache["refresh-blog-cache"]:::tool
@@ -785,10 +782,6 @@ flowchart LR
   controller_admincontroller --> service_blogdraftservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_blog
-  route_post_api_agent --> controller_agentcontroller
-  controller_agentcontroller --> service_secretservice
-  controller_agentcontroller --> service_databaseservice
-  controller_agentcontroller -. renders .-> view_public_404
   nav_contact --> route_get_contact
   nav_account_dashboard --> route_get_account_dashboard
   nav_account_dashboard_orders --> route_get_account_dashboard_orders
@@ -796,7 +789,6 @@ flowchart LR
   nav_account_dashboard_install --> route_get_account_dashboard_install
   controller_accountcontroller --> controller_basecontroller
   controller_admincontroller --> controller_basecontroller
-  controller_agentcontroller --> controller_basecontroller
   controller_apicontroller --> controller_basecontroller
   controller_authcontroller --> controller_basecontroller
   controller_blogcontroller --> controller_basecontroller

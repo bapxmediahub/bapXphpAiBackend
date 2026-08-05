@@ -1,13 +1,14 @@
 <?php
 namespace App\Services;
 final class SecretService {
+    public function __construct(private ?DatabaseService $store = null) {}
     public function razorpayReadyForCurrentHost(array $secrets): bool {
         return !empty($secrets['razorpay_key_id']) && !empty($secrets['razorpay_key_secret']);
     }
     public function all(): array {
         $env = $this->envSecrets();
         try {
-            $db = new DatabaseService();
+            $db = $this->store ?? new DatabaseService();
             $rows = $db->read('secrets');
             usort($rows, fn(array $a, array $b): int => (($a['id'] ?? '') === 'app_secrets' ? 1 : 0) <=> (($b['id'] ?? '') === 'app_secrets' ? 1 : 0));
             $stored = [];
@@ -20,7 +21,7 @@ final class SecretService {
         }
     }
     public function save(array $values): void {
-        $db = new DatabaseService();
+        $db = $this->store ?? new DatabaseService();
         $iv = random_bytes(16);
         $plain = json_encode($this->normalize($values), JSON_THROW_ON_ERROR);
         $cipher = openssl_encrypt($plain, 'aes-256-cbc', $this->key(), OPENSSL_RAW_DATA, $iv);

@@ -1,61 +1,59 @@
 ---
 type: doc
 title: Documentation Index
-description: Connected documentation for developers, maintainers, and coding agents building on Sri Panchami Spiritual.
+description: Navigation for the verified architecture, deployment, modules, and pages.
 category: docs
 ---
+
 # Documentation Index
 
-This folder contains connected documentation for developers, maintainers, and coding agents building on Sri Panchami Spiritual.
+Start with the root [`README.md`](../README.md) for human navigation and
+[`CLAUDE.md`](../CLAUDE.md) for the binding agent contract.
 
-## Start Here
+## Generated navigation
 
-- [Main README](../README.md): repo overview, local setup, deployment summary, and documentation links.
-- [Agent operating guide](../AGENTS.md): required DOX workflow for coding agents.
-- [Agent workflow graph](../agents.mmd): generated roles, tools, handoffs, failure loops, and telemetry.
-- [Internal agent harness](internal/agent-harness.md): CLI, Actions, hooks, roles, tools, handoffs, research basis, and telemetry. Internal only; not linked from customer navigation.
-- [Architecture](architecture.md): current PHP-template architecture and file structure.
-- [Deployment guide](deployment-hostinger.md): Hostinger Git auto deployment, branch setup, cron, and Vercel note.
-- [Systematic project map](systematic-map.mmd): generated route/controller/service/view/schema/storage/tool/integration/gap map.
-- [Storage](json-storage.md): MySQL persistence and schema notes.
-- [Agentic monorepo](agentic-monorepo.md): repo-native backend primitives and built-in agent guidance.
-- [Schema registry](schema.md): MySQL schema contract and agent context fields.
-- [Storefront reference review](competitor-review.md): commerce-polish comparison and release checklist.
+- [`project-index.json`](project-index.json): exact routes, controllers, services,
+  views, integrations, and schema collections.
+- [`systematic-map.mmd`](systematic-map.mmd): generated systematic inventory.
+- [`map.mmd`](map.mmd): documentation/content mindmap.
+- [`../map.mmd`](../map.mmd): route-to-controller-to-service dependency graph.
+- [`../index.yaml`](../index.yaml): query router for blogs, images, skills, code,
+  schema, and hosted `/remotedb` concepts.
 
-## Page Notes
+Generated files point to original sources. Do not hand-edit them.
 
-- [Home](pages/home.md)
-- [Shop](pages/shop.md)
-- [Blog](pages/blog.md)
-- [Checkout](pages/checkout.md)
-- [Consult](pages/consult.md)
-- [Temples](pages/temples.md)
-- [About](pages/about.md)
-- [Admin dashboard](pages/admin-dashboard.md)
-- [Integrations](pages/integrations.md)
-- [Project map page](pages/project-map.md)
+## Maintainer guides
 
-## Module Notes
+- [`architecture.md`](architecture.md)
+- [`deployment-hostinger.md`](deployment-hostinger.md)
+- [`schema.md`](schema.md)
+- [`json-storage.md`](json-storage.md) — historical filename; content must describe
+  the current hosted-MySQL boundary
+- [`admin-guide.md`](admin-guide.md)
+- [`email-setup.md`](email-setup.md)
 
-- [Admin](modules/admin.md)
-- [Auth](modules/auth.md)
-- [Booking](modules/booking.md)
-- [Consultation communication](modules/consultations.md)
-- [Catalog](modules/catalog.md)
-- [Google OAuth](modules/google-oauth.md)
-- [Orders](modules/orders.md)
-- [PWA](modules/pwa.md)
-- [Razorpay](modules/razorpay.md)
-- [Remote DB](modules/remote-db.md)
-- [Temples](modules/temples.md)
-- [GST Commerce](modules/gst-commerce.md)
+## Modules
 
-## Generated Files
+- [`modules/admin.md`](modules/admin.md)
+- [`modules/auth.md`](modules/auth.md)
+- [`modules/catalog.md`](modules/catalog.md)
+- [`modules/booking.md`](modules/booking.md)
+- [`modules/consultations.md`](modules/consultations.md)
+- [`modules/orders.md`](modules/orders.md)
+- [`modules/remote-db.md`](modules/remote-db.md)
+- [`modules/razorpay.md`](modules/razorpay.md)
+- [`modules/google-oauth.md`](modules/google-oauth.md)
+- [`modules/pwa.md`](modules/pwa.md)
+- [`modules/temples.md`](modules/temples.md)
 
-- `systematic-map.mmd` is generated from `App\Services\ProjectMapService`.
-- Regenerate it after route, service, view, schema, storage, tool, or integration changes:
+## Page notes
+
+Page-specific notes live in [`pages/`](pages/). Verify every claim against the route,
+controller, service, and view listed in `project-index.json` before updating it.
+
+## Regeneration
 
 ```bash
-bapXphp update
-bapXphp ci
+./bapXphp update
+./bapXphp ci
 ```

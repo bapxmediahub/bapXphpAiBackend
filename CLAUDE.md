@@ -10,11 +10,25 @@ contract for non-Claude tooling; if the two ever disagree, this file wins and
   deployment source. Issues, branches, PRs and releases all live there.
 - The repository is independent and unforked. Do not add an upstream remote or
   synchronise from any other copy.
-- Skills live in `.claude/skills/`. Hooks live in `.claude/hooks/`.
-- There is no handoff chain, no role agents and no subagent orchestration. Those were
-  removed — do not reintroduce them.
+- Skills live in `.claude/skills/`; tool-compatible project pointers may also live
+  in `.agents/skills/`. Hooks live in `.claude/hooks/`.
+- The product has exactly two PHP agent surfaces: customer support and owner/admin chat.
 
 ## Work order
+
+### Navigation budget
+
+For repository questions, use at most three discovery hops before answering:
+
+1. Read this file and only the `discovery`, `query_examples`, and `summary` block at
+   the top of `index.yaml`.
+2. Narrow-search `index.yaml` or `docs/project-index.json` for the exact route,
+   concept, filename, collection, class, or skill.
+3. Open the returned original source and answer with its path/symbol.
+
+Do not run broad directory listings, recursive globs, Git history, or read the whole
+generated index when the indexed path answers the question. Broaden only when a
+target is absent, and state that absence as a finding.
 
 1. `./bapXphp map` and `./bapXphp schema list` before proposing any change.
 2. Read this file.
@@ -22,6 +36,9 @@ contract for non-Claude tooling; if the two ever disagree, this file wins and
    generated, committed inventory of every route, controller, service, view and
    collection. If something is not in it, it does not exist — add it rather than
    assuming it is there. Read `docs/systematic-map.mmd` for the wiring diagram.
+   Use root `index.yaml` to query original project concepts and relationships,
+   including blogs, images and hosted `/remotedb` collections. Read its `discovery`
+   section first and query narrowly; never load the entire generated file into context.
 4. Search existing GitHub issues, then open an evidence-backed one (reproduction,
    affected paths, pinpointed cause, acceptance checks). Skip this for read-only
    diagnosis or when the user declines tracking.
@@ -37,17 +54,20 @@ contract for non-Claude tooling; if the two ever disagree, this file wins and
   MySQL via `DatabaseService`.
 - **Schema:** `storage/schema/collections.php` is canonical. Update it before changing
   any collection shape.
-- **Runtime store:** remote MySQL only. `storage/data/` JSON is one-time import
-  material. Blog posts are Markdown with YAML frontmatter in `content/blog/posts/`;
-  images live in storage. Everything else is in MySQL.
-- **Agents:** exactly two, both pure PHP with no browser or external runtime
-  dependency — a customer support agent and an admin agent. Admin agent context must
+- **Runtime store:** hosted MySQL only for admin-editable records. Do not create local
+  product, category, consultant, order, user, setting, media-metadata or secret copies.
+  Blog posts are Markdown with YAML frontmatter in `content/blog/posts/`; image
+  binaries remain files. `MediaService` still has a local YAML catalogue: this is a
+  known migration gap, not an approved second runtime store.
+- **Agents:** exactly two pure-PHP application surfaces — customer support and
+  owner/admin chat. Admin agent context must
   go through `AgentContextService`; never expose all users' data.
 
 ## Environment
 
 - The remote endpoint is `/remotedb`, all lowercase. `DatabaseService::remoteCall()`
-  returns `[]` on any non-200, so a wrong URL renders an empty site with no error.
+  must throw on transport, non-2xx and invalid-response failures; never convert a DB
+  outage into an empty catalogue.
 - `.env` holds only `APP_NAME`, `APP_URL`, the `BAPX_MYSQL_*` values and
   `BAPX_REMOTE_DB_URL`. Every other secret belongs in the MySQL `secrets` table via
   Admin → Integrations.

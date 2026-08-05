@@ -14,7 +14,7 @@ each, and it lives in `CLAUDE.md`.
 
 Quick orientation:
 
-- Skills: `.claude/skills/<name>/SKILL.md`
+- Skills: `.agents/skills/<name>/SKILL.md` with shared canonical implementations in `.claude/skills/<name>/SKILL.md`
 - Hooks: `.claude/hooks/`
 - Schema (canonical): `storage/schema/collections.php`
 - UI (canonical): `Design.md`
@@ -24,8 +24,14 @@ Quick orientation:
 Before any change: `./bapXphp map && ./bapXphp schema list`.
 Before pushing to `main`: `./bapXphp ci`, and confirm it is green.
 
-The handoff chain, role agents and subagent orchestration described in earlier
-revisions have been removed. Do not reintroduce them.
+The product has exactly two PHP agent surfaces: customer support and owner/admin chat.
 
 Inventory of what actually exists (check before claiming a feature):
 `docs/project-index.json` — generated, committed, drift-checked by `./bapXphp ci`.
+
+Queryable project knowledge: `index.yaml`. It points to the original blogs, images,
+code, documentation, maps and hosted `/remotedb` collections; it does not duplicate
+blog bodies or runtime database records. Read `discovery` first and query narrowly;
+do not load the complete generated index into agent context. Use a three-hop budget:
+entry instructions → exact index match → original source. Avoid broad `ls`, recursive
+globs and Git history unless the indexed target is absent.

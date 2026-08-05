@@ -1,10 +1,11 @@
 <?php
 namespace App\Services;
 final class DatabaseService {
+    private static array $remoteQueryCache = [];
     private ?\PDO $pdo = null;
     private ?bool $remoteOnly = null;
     private array $cfg = [];
-    public function __construct() {
+    public function __construct(private bool $forceDirect = false) {
         $this->cfg = require app_path('config/database.php');
     }
 
@@ -13,8 +14,10 @@ final class DatabaseService {
     }
 
     private function remoteCall(string $sql, array $params = []): array {
-        $payload = array_filter(['query' => $sql, 'params' => $params, 'password' => $this->cfg['remote_db_password'] ?? '']);
-        $payload = json_encode($payload);
+        $cacheKey = hash('sha256', (string)$this->cfg['remote_url'] . "\0" . $sql . "\0" . serialize($params));
+        if (array_key_exists($cacheKey, self::$remoteQueryCache)) return self::$remoteQueryCache[$cacheKey];
+
+        $payload = json_encode(array_filter(['query' => $sql, 'params' => $params, 'password' => $this->cfg['remote_db_password'] ?? '']), JSON_THROW_ON_ERROR);
         $ch = curl_init($this->cfg['remote_url']);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true,
@@ -24,11 +27,17 @@ final class DatabaseService {
         ]);
         $body = @curl_exec($ch);
         $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($body === false || $code !== 200) {
-            return [];
+        $transportError = $body === false ? curl_error($ch) : '';
+        if ($body === false) throw new \RuntimeException('Remote database transport failed: ' . ($transportError ?: 'unknown cURL error'));
+        $result = json_decode((string)$body, true);
+        if ($code !== 200) {
+            $message = is_array($result) ? trim((string)($result['error'] ?? '')) : '';
+            throw new \RuntimeException('Remote database request failed with HTTP ' . $code . ($message !== '' ? ': ' . $message : '.'));
         }
-        $result = json_decode($body, true);
-        return $result['data'] ?? [];
+        if (!is_array($result) || empty($result['success']) || !isset($result['data']) || !is_array($result['data'])) {
+            throw new \RuntimeException('Remote database returned an invalid response.');
+        }
+        return self::$remoteQueryCache[$cacheKey] = $result['data'];
     }
 
     private function remoteMutation(string $action, string $table, array $payload): array {
@@ -46,12 +55,18 @@ final class DatabaseService {
         if ($body === false || $code < 200 || $code >= 300 || empty($result['success'])) {
             throw new \RuntimeException((string)($result['error'] ?? 'Remote mutation failed.'));
         }
+        self::$remoteQueryCache = [];
         return $result;
     }
 
     private function db(): \PDO {
         if ($this->pdo === null) {
             $this->cfg = require app_path('config/database.php');
+            foreach (['host', 'dbname', 'user', 'pass'] as $required) {
+                if (trim((string)($this->cfg[$required] ?? '')) === '') {
+                    throw new \RuntimeException('Direct MySQL is not configured; missing ' . $required . '.');
+                }
+            }
             $errno = 0; $errstr = '';
             $fp = @fsockopen($this->cfg['host'], (int)$this->cfg['port'], $errno, $errstr, 3);
             if (!$fp) {
@@ -67,6 +82,7 @@ final class DatabaseService {
 
     private function isRemote(): bool {
         if ($this->remoteOnly !== null) return $this->remoteOnly;
+        if ($this->forceDirect) return $this->remoteOnly = false;
         if (empty($this->cfg['remote_url'])) { $this->remoteOnly = false; return false; }
         try { $this->db(); $this->remoteOnly = false; return false; }
         catch (\Throwable) { $this->remoteOnly = true; return true; }
@@ -102,6 +118,7 @@ final class DatabaseService {
                 $stmt->execute([$id, json_encode($rec), $owner, $status, $created, $updated]);
             }
             $this->db()->commit();
+            self::$remoteQueryCache = [];
         } catch (\Throwable $e) {
             $this->db()->rollBack();
             throw $e;
@@ -164,10 +181,13 @@ final class DatabaseService {
     public function find(string $table, string $value, string $key = 'id'): ?array {
         if ($this->isTestMode()) return null;
         if ($this->isRemote()) {
-            $clean = preg_replace('/[^a-z_]/', '', $table);
-            $rows = $this->remoteCall("SELECT * FROM {$clean} WHERE id = ?", [$value]);
-            if (!empty($rows)) {
-                return array_merge(json_decode($rows[0]['_data'] ?? '{}', true) ?: [], ['id' => $rows[0]['id']]);
+            if ($key === 'id') {
+                $clean = preg_replace('/[^a-z_]/', '', $table);
+                $rows = $this->remoteCall("SELECT * FROM {$clean} WHERE id = ?", [$value]);
+                if (!empty($rows)) {
+                    return array_merge(json_decode($rows[0]['_data'] ?? '{}', true) ?: [], ['id' => $rows[0]['id']]);
+                }
+                return null;
             }
             foreach ($this->read($table) as $r) {
                 if ((string)($r[$key] ?? '') === $value) return $r;

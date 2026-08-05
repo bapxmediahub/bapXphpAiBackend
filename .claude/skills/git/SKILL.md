@@ -1,8 +1,6 @@
 ---
-type: skill
 name: git
 description: Use plain Git for local history, branches, pushes, and Hostinger deployment checkouts.
-allowed-tools: Bash(git:*)
 ---
 
 # Git
@@ -15,8 +13,8 @@ GitHub CLI (`gh`) on the hosted server.
 - Use plain `git` for status, diff, branches, commits, fetch, pull, and push.
 - Use `bapXphp` only for project-owned operations such as tests, maps, schema,
   database access, browser automation, hooks, and AI configuration.
-- GitHub issues, handoff comments, PR creation, review routing, and merge
-  coordination belong to GitHub Actions or the GitHub web interface.
+- GitHub issues, PR creation, review, and merge coordination belong to GitHub Actions
+  or the GitHub API/web interface.
 - Never wrap ordinary Git commands in `bapXphp`.
 - Never force-push or discard divergent customer-fork commits.
 
@@ -31,8 +29,9 @@ git commit -m "fix: describe the change"
 git push -u origin HEAD
 ```
 
-Pushing an eligible feature/fix branch lets the repository workflow create or
-update the PR. CI and reviewer handoffs run in GitHub Actions.
+Pushing `codex/**`, `fix/**`, or `feat/**` lets `branch-pr.yml` create a PR when
+repository permissions allow it. Validation runs for pull requests and pushes to
+`main`; verify the actual Action result.
 
 ## Hostinger
 

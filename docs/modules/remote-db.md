@@ -8,6 +8,8 @@ category: module
 
 The application connects directly to hosted MySQL with the `BAPX_MYSQL_*` values in `.env`. If direct MySQL is unavailable from a developer machine, `DatabaseService` and `bapXphp db` use `APP_URL/remotedb`; production currently resolves that fallback to `https://sripanchamispiritual.com/remotedb`.
 
+Remote reads are memoized for the lifetime of one PHP request, including across service instances, and the cache is cleared after every mutation. Transport errors, non-2xx responses, and malformed payloads throw exceptions instead of being treated as valid empty collections. The `/remotedb` controller is forced to terminate at directly configured hosted MySQL so it cannot recurse into itself when MySQL is unavailable.
+
 `/remotedb` accepts read queries for diagnostics. Record mutations require the owner-configured `remote_db_password` and use explicit `upsert`, `delete`, or `replace` actions against declared schema collections. Application secrets remain in the MySQL `secrets` collection and are never writable through the public endpoint.
 
 Set the password in **Admin → Integrations → Remote DB Password** or in `.env` as `REMOTE_DB_PASSWORD`. When set, `DatabaseService` includes it automatically in every remote call. Leave blank for no password (backward compatible).

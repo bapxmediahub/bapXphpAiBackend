@@ -18,8 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 try {
     require __DIR__ . '/../app/bootstrap.php';
 } catch (\Throwable $e) {
+    error_log('[api-bootstrap-failed] ' . $e->getMessage());
     http_response_code(503);
-    echo json_encode(['error' => 'Service temporarily unavailable', 'detail' => $e->getMessage()]);
+    echo json_encode(['error' => 'Service temporarily unavailable']);
     exit;
 }
 
@@ -42,8 +43,9 @@ foreach ($routes as $route) {
             $controller = new $fqcn();
             $controller->{$action}(...$matches);
         } catch (\Throwable $e) {
-            http_response_code(500);
-            echo json_encode(['error' => 'Internal error', 'detail' => $e->getMessage()]);
+            error_log('[api-request-failed] ' . $e->getMessage());
+            http_response_code(503);
+            echo json_encode(['error' => 'Service temporarily unavailable']);
         }
         $matched = true;
         break;

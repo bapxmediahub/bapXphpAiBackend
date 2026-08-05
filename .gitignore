@@ -12,17 +12,10 @@ tmp/
 tmp/
 .env.mysql
 .env.test-user
-.playwright-mcp/
-.playwright-cli/
-/output/playwright/
 /server.log
 /content/blog/cache/
 null
 homepage.yml
 
-# Runtime browser session state — never commit
-/.agents/temp/
-/.okf/
 .tmp/
-storage/.bin/chrome-linux/
 storage/.bin/kitten-tts/

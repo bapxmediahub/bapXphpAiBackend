@@ -117,7 +117,7 @@ final class ProjectMapService {
 
             ['method'=>'GET','path'=>'/docs','name'=>'docs.index','page'=>'public/blog','controller'=>'PublicController@docs','services'=>[]],
             ['method'=>'GET','path'=>'/help/{slug}','name'=>'help.show','page'=>'public/blog-post','controller'=>'PublicController@doc','services'=>[]],
-            ['method'=>'POST','path'=>'/remoteDB','name'=>'api.remotedb','page'=>'public/404','controller'=>'RemoteDbController@__invoke','services'=>['DatabaseService','SecretService']],
+            ['method'=>'POST','path'=>'/remotedb','name'=>'api.remotedb','page'=>'public/404','controller'=>'RemoteDbController@__invoke','services'=>['DatabaseService','SecretService']],
             ['method'=>'GET','path'=>'/blog','name'=>'blog.index','page'=>'public/blog','controller'=>'BlogController@index','services'=>['BlogService','MarkdownRenderer']],
             ['method'=>'GET','path'=>'/blog/{slug}','name'=>'blog.show','page'=>'public/blog-post','controller'=>'BlogController@show','services'=>['BlogService','MarkdownRenderer']],
             ['method'=>'GET','path'=>'/blog/category/{slug}','name'=>'blog.category','page'=>'public/blog','controller'=>'BlogController@category','services'=>['BlogService','MarkdownRenderer']],
@@ -126,7 +126,6 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/admin/blog/delete','name'=>'admin.blog.delete','page'=>'admin/blog','controller'=>'AdminController@deleteBlog','services'=>['BlogService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/blog/preview','name'=>'admin.blog.preview','page'=>'admin/blog','controller'=>'AdminController@previewBlog','services'=>['BlogService','MarkdownRenderer']],
             ['method'=>'POST','path'=>'/admin/blog/ai-draft','name'=>'admin.blog.ai-draft','page'=>'admin/blog','controller'=>'AdminController@aiDraftBlog','services'=>['BlogService','BlogDraftService']],
-            ['method'=>'POST','path'=>'/api/agent','name'=>'api.agent','page'=>'public/404','controller'=>'AgentController@ask','services'=>['SecretService','DatabaseService']],
 
 
         ];
@@ -313,7 +312,7 @@ final class ProjectMapService {
             '/admin/temples/save|POST' => 'Admin — create/update temple',
             '/admin/temples/delete|POST' => 'Admin — delete temple',
             '/admin/integrations/save|POST' => 'Admin — save integration secrets',
-            '/remoteDB|POST' => 'Remote DB query endpoint — proxies SQL to production MySQL',
+            '/remotedb|POST' => 'Remote DB query endpoint — proxies SQL to production MySQL',
 
         ];
         if (isset($descs[$methodPath])) return $descs[$methodPath];
