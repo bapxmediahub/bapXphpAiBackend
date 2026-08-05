@@ -136,3 +136,4 @@ Forbidden from writing code or creating files upon receiving a new prompt. Must 
 - GitHub issue conversations and handoff triggers run in `.github/workflows/`.
 - Repository enforcement hooks live only in `.agents/hooks/`; install them with `bapXphp hooks install`.
 - `.agents/workflows/` and `.agents/handoffs/` are canonical for every coding agent. Do not add `.claude/` or other duplicated role folders.
+- Root `CLAUDE.md` is permitted as a **pointer only**, so Claude Code loads this contract automatically. It must delegate to `AGENTS.md` and must not restate any rule. `tests/run.php` enforces both conditions.
