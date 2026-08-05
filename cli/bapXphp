@@ -629,6 +629,7 @@ cmd_ci() {
     ok "Knowledge index is current"
   else
     warn "KNOWLEDGE INDEX STALE. Run bapXphp update and commit index.yaml."
+    diff -u "$ROOT/index.yaml" "$ROOT/.index.tmp.yaml" | head -40 || true
     failed=1
   fi
   rm -f "$ROOT/.index.tmp.yaml"
