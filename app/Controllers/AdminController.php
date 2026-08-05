@@ -35,7 +35,26 @@ final class AdminController extends BaseController {
         }
         $this->render('admin/detail',['pageTitle' => 'Order '.$id, 'title' => 'Order '.$id, 'order' => $order]);
     }
-    public function saveOrderStatus(string $id): void{try{(new OrderService())->updateStatus($id, $_POST['status'] ?? 'confirmed'); (new AuditLogService())->record('save','order.status',$id,['status'=>$_POST['status'] ?? 'confirmed']); $this->flash('Order status updated.','success');}catch(\Throwable){$this->flash('Unable to update order status.','error');} $this->redirect('/admin/orders/'.$id);}
+    public function saveOrderStatus(string $id): void{
+        $status = (string)($_POST['status'] ?? 'confirmed');
+        $tracking = [
+            'tracking_id'  => (string)($_POST['tracking_id'] ?? ''),
+            'tracking_url' => (string)($_POST['tracking_url'] ?? ''),
+            'courier_name' => (string)($_POST['courier_name'] ?? ''),
+        ];
+        try {
+            (new OrderService())->updateStatus($id, $status, null, $tracking);
+            (new AuditLogService())->record('save','order.status',$id,['status'=>$status,'tracking_id'=>$tracking['tracking_id']]);
+            $this->flash('Order status updated.','success');
+        } catch (\InvalidArgumentException $e) {
+            // Surface the real reason — a missing tracking ID used to read as a generic
+            // "unable to update", leaving the owner guessing.
+            $this->flash($e->getMessage(),'error');
+        } catch (\Throwable) {
+            $this->flash('Unable to update order status.','error');
+        }
+        $this->redirect('/admin/orders/'.$id);
+    }
     public function shipping(): void{$this->render('admin/settings',['pageTitle' => 'Shipping', 'title' => 'Shipping']);}
     public function astrologers(): void{
         $this->render('admin/astrologer-form',['pageTitle'=>'Astrologers','title'=>'Astrologers','collection'=>'astrologers','items'=>(new ResourceService('astrologers'))->all(),'mediaFiles'=>$this->mediaFor('astrologers')]);
