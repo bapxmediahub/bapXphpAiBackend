@@ -3,7 +3,7 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 111,
+        "routes": 112,
         "controllers": 13,
         "services": 42,
         "views": 47,
@@ -429,6 +429,18 @@
             "view": "admin/mailbox",
             "services": [
                 "MailStorageService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/environment",
+            "name": "admin.environment",
+            "controller": "AdminController@environment",
+            "view": "admin/environment",
+            "services": [
+                "EnvService",
+                "StoragePermissionService",
                 "AuthService"
             ]
         },

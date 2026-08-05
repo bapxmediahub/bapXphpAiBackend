@@ -111,30 +111,44 @@ final class SupportBotService {
         $lower = strtolower($message);
         if (!$context['signed_in']) {
             if ($this->isPrivateAccountQuestion($lower)) {
-                return 'Please sign in to ask about your personal orders or consultant bookings. I can still explain products, checkout, delivery, and booking.';
+                return 'Please sign in to ask about your personal orders. I can still explain products, checkout, and delivery.';
             }
             return $this->publicGuestReply($lower, $context);
         }
         if (preg_match('/^(hi|hello|hey|vanakkam|namaste)\b/i', trim($message))) {
-            return 'Hello. I can help with products, checkout, saved addresses, orders, and consultant bookings.';
+            return 'Hello. I can help with products, checkout, saved addresses, and orders.';
         }
         if (str_contains($lower, 'order')) {
             return empty($context['orders']) ? 'I could not find orders in your account yet.' : 'I found your recent order data in the account panel. Open My Orders for full delivery address, status, shipped time, and review options.';
         }
-        if (str_contains($lower, 'talk') || str_contains($lower, 'session') || str_contains($lower, 'astrologer')) {
+        if ($this->consultEnabled() && (str_contains($lower, 'talk') || str_contains($lower, 'session') || str_contains($lower, 'astrologer'))) {
             return empty($context['sessions']) ? 'I could not find astrologer sessions in your account yet.' : 'I found recent astrologer session records. Open My Sessions to see who you contacted, session type, credits spent, and review options.';
         }
-        return 'I can help with product orders, delivery addresses, consultant bookings, reviews, and account history. Please ask one specific question.';
+        // Anything that is not a personal-account question is answered from site
+        // knowledge, the same as for a guest. Without this a signed-in customer got a
+        // generic line where a signed-out visitor got real product names and links.
+        return $this->publicGuestReply($lower, $context);
+    }
+
+    /** Consultation answers must not be offered when the module is switched off. */
+    private function consultEnabled(): bool {
+        return (new SettingsService())->moduleEnabled('consult');
     }
 
     private function publicGuestReply(string $message, array $context): string {
         $site = $context['site'] ?? [];
         $pages = $site['pages'] ?? [];
         $products = array_slice($site['products'] ?? [], 0, 5);
+        $consult = $this->consultEnabled();
         if (preg_match('/\b(hi|hello|hey|vanakkam|namaste)\b/i', $message)) {
-            return 'Hello. I can help you browse spiritual products at /shop, place an order, or request a consultant appointment at /consult.';
+            return $consult
+                ? 'Hello. I can help you browse spiritual products at /shop, place an order, or request a consultant appointment at /consult.'
+                : 'Hello. I can help you browse spiritual products at /shop, place an order, or explore temples at /temples.';
         }
-        if (preg_match('/\b(product|available|shop|buy|item|pendant|jewelry|jewellery)\b/i', $message)) {
+        if (preg_match('/\b(deliver\w*|shipping|ship|courier|dispatch)\b/i', $message)) {
+            return 'Delivery is calculated at checkout. Add items to your cart, go to /checkout and enter your address to see the exact shipping charge before paying. Track confirmed orders at /account/dashboard/orders.';
+        }
+        if (preg_match('/\b(products?|available|shop|buy|price|items?|pendants?|rings?|jewelry|jewellery)\b/i', $message)) {
             $names = array_filter(array_map(fn($p) => trim((string)($p['name'] ?? '')), $products));
             $list = $names ? implode(', ', $names) : 'sacred emblems and spiritual jewelry';
             $productLinks = '';
@@ -144,16 +158,20 @@ final class SupportBotService {
             }
             return 'Available products include ' . $list . '. Browse all at /shop' . $productLinks . '. To buy: go to /shop, click a product, add to cart, then proceed to /checkout to pay with card or UPI.';
         }
-        if (preg_match('/\b(service|consult|booking|book|astrology|call|message|temple)\b/i', $message)) {
-            return 'To book a consultation: go to /consult, browse astrologers, click View Profile, fill your details, and submit a request. The admin will confirm and schedule your appointment. For temple guidance, visit /temples.';
+        if (preg_match('/\b(services?|consult\w*|bookings?|book|astrology|call|message|temples?)\b/i', $message)) {
+            return $consult
+                ? 'To book a consultation: go to /consult, browse astrologers, click View Profile, fill your details, and submit a request. The admin will confirm and schedule your appointment. For temple guidance, visit /temples.'
+                : 'Online consultation is not available at the moment. For temple guidance visit /temples, or send us a message at /contact.';
         }
         if (preg_match('/\b(recharge|wallet|credit|payment)\b/i', $message)) {
             return 'Product payments are completed securely during checkout at /checkout. You can pay with card or UPI. Sign in to reuse saved delivery addresses and view confirmed orders at /account/dashboard/orders.';
         }
         if (preg_match('/\b(how|step|guide|help|documentation|docs)\b/i', $message)) {
-            return 'I can help with:\n- Browsing products at /shop\n- Booking a consultant at /consult\n- Your orders at /account/dashboard/orders\n- Contact us at /contact\nWhat would you like to know more about?';
+            return "I can help with:\n- Browsing products at /shop\n" . ($consult ? "- Booking a consultant at /consult\n" : '') . "- Your orders at /account/dashboard/orders\n- Contact us at /contact\nWhat would you like to know more about?";
         }
-        return 'I can help with products at /shop, consultant bookings at /consult, temples at /temples, and orders at /account/dashboard/orders. For personal history, please sign in first. What would you like help with?';
+        return $consult
+            ? 'I can help with products at /shop, consultant bookings at /consult, temples at /temples, and orders at /account/dashboard/orders. What would you like help with?'
+            : 'I can help with products at /shop, temples at /temples, and orders at /account/dashboard/orders. What would you like help with?';
     }
 
     private function isPrivateAccountQuestion(string $message): bool {

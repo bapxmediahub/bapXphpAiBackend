@@ -260,6 +260,13 @@ final class AdminController extends BaseController {
     public function media(): void{$this->render('admin/media',['pageTitle'=>'Media Library','items'=>(new MediaService())->all()]);}
     public function uploadMedia(): void{$uploaded=(new MediaService())->upload($_FILES['media_files'] ?? [], $_POST['context'] ?? 'shared', $_POST['description'] ?? null); (new AuditLogService())->record('upload','media','',['count'=>count($uploaded),'context'=>$_POST['context'] ?? 'shared']); $this->flash(count($uploaded).' media file'.(count($uploaded) === 1 ? '' : 's').' uploaded.','success'); $this->redirect('/admin/media');}
     public function fixPermissions(): void{(new StoragePermissionService())->fix(); (new AuditLogService())->record('fix','permissions','storage'); $this->flash('Storage permissions checked and updated where PHP is allowed.','success'); $this->redirect('/admin/settings');}
+    public function environment(): void{
+        $this->render('admin/environment',[
+            'pageTitle'=>'Environment',
+            'envRaw'=>(new EnvService())->raw(),
+            'permissions'=>(new StoragePermissionService())->status(),
+        ]);
+    }
     public function blog(): void{
         $blog = new \App\Services\BlogService();
         $this->render('admin/blog',['pageTitle'=>'Blog','title'=>'Blog Posts','posts'=>$blog->all(),'categories'=>$blog->categories()]);

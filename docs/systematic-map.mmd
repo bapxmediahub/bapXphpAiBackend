@@ -7,8 +7,8 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 111 routes, 13 controllers, 42 services, 47 views, 0 data files, 22 tools"]
-    arch_routes["> Routes: 111 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 112 routes, 13 controllers, 42 services, 47 views, 0 data files, 22 tools"]
+    arch_routes["> Routes: 112 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 13"]:::arch
     arch_svc["> Services: 42"]:::arch
     arch_views["> Views: 47"]:::arch
@@ -126,6 +126,7 @@ flowchart LR
     route_post_admin_appearance_save["POST /admin/appearance/save — Admin — save logo/favicon"]:::route
     route_get_admin_media["GET /admin/media — Admin — media library"]:::route
     route_post_admin_media_upload["POST /admin/media/upload — Admin — upload media"]:::route
+    route_get_admin_environment["GET /admin/environment"]:::route
     route_post_admin_environment_fix_permissions["POST /admin/environment/fix-permissions — Admin — fix storage permissions"]:::route
     route_post_admin_products_save["POST /admin/products/save — Admin — create/update product"]:::route
     route_post_admin_products_delete["POST /admin/products/delete — Admin — delete product"]:::route
@@ -615,6 +616,11 @@ flowchart LR
   controller_admincontroller --> service_auditlogservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_media
+  route_get_admin_environment --> controller_admincontroller
+  controller_admincontroller --> service_envservice
+  controller_admincontroller --> service_storagepermissionservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_environment
   route_post_admin_environment_fix_permissions --> controller_admincontroller
   controller_admincontroller --> service_storagepermissionservice
   controller_admincontroller --> service_auditlogservice
