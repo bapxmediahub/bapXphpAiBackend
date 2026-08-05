@@ -9,14 +9,41 @@ final class BlogService {
         $this->categoriesFile = app_path('content/blog/categories.yaml');
         if (!is_dir($this->postsDir)) mkdir($this->postsDir, 0775, true);
     }
-    public function all(): array {
+    /** Categories that disappear with their module, so their posts disappear too. */
+    private const MODULE_CATEGORIES = [
+        'consult'   => ['consult', 'consultation', 'consultations', 'astrology', 'consultant'],
+        'ecommerce' => ['shop', 'products', 'orders'],
+    ];
+
+    /**
+     * @param bool $all true for the admin, which must see hidden posts to unhide them.
+     *
+     * A post whose category belongs to a switched-off module is withheld from the site:
+     * switching consultations off left consultation articles reachable, linking to
+     * pages that now 404.
+     */
+    public function all(bool $all = false): array {
         $posts = [];
         foreach (glob($this->postsDir . '/*.md') ?: [] as $file) {
             $post = $this->parseFile($file);
-            if ($post) $posts[] = $post;
+            if (!$post) continue;
+            if (!$all) {
+                if (empty($post['published'])) continue;
+                if ($this->categoryIsDisabled((string)($post['category'] ?? ''))) continue;
+            }
+            $posts[] = $post;
         }
         usort($posts, fn($a, $b) => strcmp($b['published_at'] ?? '', $a['published_at'] ?? ''));
         return $posts;
+    }
+
+    public function categoryIsDisabled(string $category): bool {
+        $category = strtolower(trim($category));
+        if ($category === '') return false;
+        foreach (self::MODULE_CATEGORIES as $module => $categories) {
+            if (in_array($category, $categories, true) && !module_on($module)) return true;
+        }
+        return false;
     }
     public function find(string $slug): ?array {
         $file = $this->postsDir . '/' . $slug . '.md';

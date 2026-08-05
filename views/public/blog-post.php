@@ -69,9 +69,16 @@
       <?php endif; ?>
     </article>
 
+    <?php if (module_on('consult')): ?>
     <aside class="blog-post__cta">
       <div><span class="eyebrow">Personal guidance</span><h2>Book a consultant</h2><p>Request a scheduled appointment at a date and time that suits you.</p></div>
       <a href="/consult" class="btn btn-primary">Browse consultants</a>
     </aside>
+    <?php else: ?>
+    <aside class="blog-post__cta">
+      <div><span class="eyebrow">Shop</span><h2>Explore our collection</h2><p>Authentic spiritual products, sourced with care and delivered across India.</p></div>
+      <a href="/shop" class="btn btn-primary">Browse products</a>
+    </aside>
+    <?php endif; ?>
   </div>
 </section>

@@ -7,8 +7,8 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 110 routes, 12 controllers, 42 services, 46 views, 0 data files, 20 tools"]
-    arch_routes["> Routes: 110 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 111 routes, 12 controllers, 42 services, 46 views, 0 data files, 20 tools"]
+    arch_routes["> Routes: 111 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
     arch_svc["> Services: 42"]:::arch
     arch_views["> Views: 46"]:::arch
@@ -137,6 +137,7 @@ flowchart LR
     route_post_admin_integrations_save["POST /admin/integrations/save — Admin — save integration secrets"]:::route
     route_get_admin_blog["GET /admin/blog"]:::route
     route_post_admin_blog_save["POST /admin/blog/save"]:::route
+    route_post_admin_blog_toggle["POST /admin/blog/toggle"]:::route
     route_post_admin_blog_delete["POST /admin/blog/delete"]:::route
     route_post_admin_blog_preview["POST /admin/blog/preview"]:::route
     route_post_admin_blog_enhance_title["POST /admin/blog/enhance-title"]:::route
@@ -745,6 +746,11 @@ flowchart LR
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_blog
   route_post_admin_blog_save --> controller_admincontroller
+  controller_admincontroller --> service_blogservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_blog
+  route_post_admin_blog_toggle --> controller_admincontroller
   controller_admincontroller --> service_blogservice
   controller_admincontroller --> service_auditlogservice
   controller_admincontroller --> service_authservice

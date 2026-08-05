@@ -331,7 +331,7 @@ final class AdminController extends BaseController {
         // renders empty and the only way to set an image is to type a path.
         $this->render('admin/blog',[
             'pageTitle'=>'Blog','title'=>'Blog Posts',
-            'posts'=>$blog->all(),'categories'=>$blog->categories(),
+            'posts'=>$blog->all(true),'categories'=>$blog->categories(),
             'mediaFiles'=>(new MediaService())->all('blog'),
         ]);
     }
@@ -365,6 +365,18 @@ final class AdminController extends BaseController {
             error_log('Blog newsletter failed: ' . $e->getMessage());
             return 0;
         }
+    }
+    /** Flip a post between published and hidden without opening the editor. */
+    public function toggleBlog(): void{
+        $slug = trim((string)($_POST['slug'] ?? ''));
+        $blog = new \App\Services\BlogService();
+        $post = $slug !== '' ? $blog->find($slug) : null;
+        if (!$post) { $this->flash('Post not found.','error'); $this->redirect('/admin/blog'); }
+        $post['published'] = empty($post['published']);
+        $blog->save($post);
+        (new AuditLogService())->record('save','blog.published',$slug,['published'=>$post['published']]);
+        $this->flash($post['published'] ? 'Post is now visible on the site.' : 'Post is now hidden from the site.','success');
+        $this->redirect('/admin/blog');
     }
     public function deleteBlog(): void{
         $slug = (string)($_POST['slug'] ?? '');
@@ -463,6 +475,14 @@ final class AdminController extends BaseController {
     private function resource(string $title,string $collection,array $fields): void{$this->render('admin/resource',['pageTitle' => $title, 'title' => $title, 'collection' => $collection, 'fields' => $fields, 'items'=>(new ResourceService($collection))->all(), 'mediaFiles'=>$this->mediaFor($collection)]);}
     private function save(string $collection): void{
         $data=$this->cleanPost();
+        // Saving the blank form created an empty record. Every collection here is
+        // identified by a name or a code, so refuse when neither is present rather than
+        // adding a nameless row the owner then has to hunt down and delete.
+        $identifier = trim((string)($data['name'] ?? $data['code'] ?? $data['title'] ?? ''));
+        if ($identifier === '') {
+            $this->flash('Enter a name before saving.', 'error');
+            $this->redirect('/admin/'.$collection);
+        }
         $data=$this->mergeExistingRecord($collection, $data);
         if(isset($data['working_days']))$data['working_days']=$this->splitList($data['working_days']);
         if(isset($data['modes']))$data['modes']=$this->splitList($data['modes']);
