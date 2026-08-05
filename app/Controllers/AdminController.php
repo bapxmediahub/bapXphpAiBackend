@@ -170,6 +170,16 @@ final class AdminController extends BaseController {
      * model rather than adding a second provider path. Returns null when no key is set
      * so the caller can give the owner a specific message.
      */
+    /** Shared with the support bot so both agents strip scaffold the same way. */
+    private function cleanAnswer(string $text): string {
+        $cleaner = new \App\Services\AiReplyCleaner();
+        $clean = $cleaner->clean($text, '');
+        if ($clean === '' || $cleaner->looksInternal($clean)) {
+            return 'I could not produce a clear answer to that. Try asking it a different way.';
+        }
+        return $clean;
+    }
+
     private function askModel(string $prompt): ?string {
         $config = (new SecretService())->getModelConfig();
         if (trim((string)($config['apiKey'] ?? '')) === '') return null;
@@ -188,7 +198,9 @@ final class AdminController extends BaseController {
         if (trim((string)$key) === '') {
             return 'No AI API key is configured. Set ai_api_key in Admin → Integrations, then try again.';
         }
-        $prompt = "You are the AI assistant for the site. Answer concisely in Markdown.\n\n{$context}\n\nQuestion: {$message}";
+        $prompt = "You are the admin assistant for this store. Answer the question directly.\n"
+            . "Give only the final answer. Do not restate your role, the context, the constraints or the question. "
+            . "Do not show your reasoning or a plan. Use short Markdown.\n\n{$context}\n\nQuestion: {$message}";
         if ($provider === 'google') {
             $url = $endpoint . '/' . rawurlencode($model) . ':generateContent';
             $payload = json_encode(['contents'=>[['parts'=>[['text'=>$prompt]]]],'generationConfig'=>['temperature'=>0.3,'maxOutputTokens'=>1024]]);
@@ -199,7 +211,8 @@ final class AdminController extends BaseController {
             curl_close($ch);
             if ($status !== 200 || $body === false) return self::aiError($status, $body);
             $result = json_decode($body, true);
-            return $result['candidates'][0]['content']['parts'][0]['text'] ?? 'No response.';
+            $text = (string)($result['candidates'][0]['content']['parts'][0]['text'] ?? '');
+            return $this->cleanAnswer($text);
         }
         $url = $endpoint . '/chat/completions';
         $payload = json_encode(['model'=>$model,'messages'=>[['role'=>'system','content'=>$context],['role'=>'user','content'=>$message]],'max_tokens'=>1024]);
@@ -217,7 +230,7 @@ final class AdminController extends BaseController {
         curl_close($ch);
         if ($status !== 200 || $body === false) return self::aiError($status, $body);
         $result = json_decode($body, true);
-        return $result['choices'][0]['message']['content'] ?? 'No response.';
+        return $this->cleanAnswer((string)($result['choices'][0]['message']['content'] ?? ''));
     }
     public function appearance(): void{
         $s=(new SettingsService())->public();

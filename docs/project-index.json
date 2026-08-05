@@ -5,7 +5,7 @@
     "summary": {
         "routes": 111,
         "controllers": 12,
-        "services": 42,
+        "services": 43,
         "views": 46,
         "collections": 22
     },
@@ -1248,6 +1248,7 @@
     "services": [
         "AddressService",
         "AgentContextService",
+        "AiReplyCleaner",
         "AppointmentService",
         "AstrologerService",
         "AuditLogService",
@@ -1376,6 +1377,7 @@
         "navigation_without_get_route": [],
         "unwired_controllers": [],
         "unwired_services": [
+            "AiReplyCleaner",
             "ProjectMapService",
             "StoragePermissionService"
         ],

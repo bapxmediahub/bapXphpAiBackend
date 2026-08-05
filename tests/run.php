@@ -944,6 +944,38 @@ $tests['saved addresses select the default and allow another checkout address'] 
     assertTrue(str_contains($checkout, 'Enter a new address') && str_contains($checkout, 'Save for next time'), 'Checkout should allow one-time or newly saved addresses');
 };
 
+$tests['agent replies never expose the model reasoning scaffold'] = function (): void {
+    $cleaner = new \App\Services\AiReplyCleaner();
+
+    $leaked = "* Role: AI assistant for the site (admin AI assistant).\n"
+        . "* Context: Provided site data (users, orders, products, etc.).\n"
+        . "* Constraint: Answer concisely in Markdown.\n"
+        . "* Question: \"are you a LLM?\"\n\n"
+        . "* The user is asking about my nature/identity.\n"
+        . "* I am indeed a Large Language Model (LLM).\n\n"
+        . "* Concise.\n* Markdown.\n";
+    $clean = $cleaner->clean($leaked, '');
+    foreach (['Role:', 'Context:', 'Constraint:', 'Question:', 'The user is asking', 'Concise'] as $scaffold) {
+        assertTrue(!str_contains($clean, $scaffold), "Scaffold must be removed: {$scaffold}");
+    }
+    assertTrue(str_contains($clean, 'Large Language Model'), 'The actual answer must survive');
+
+    // "Direct answer: X" wraps a real answer — keep X.
+    assertTrue(str_contains($cleaner->clean("* Direct answer: Revenue is Rs 5,489.", ''), 'Revenue is Rs 5,489.'),
+        'A labelled direct answer must be unwrapped, not dropped');
+
+    // Ordinary prose that merely contains a label word must survive.
+    $prose = 'The role of a consultant here is separate from products.';
+    assertTrue(str_contains($cleaner->clean($prose, ''), 'role of a consultant'),
+        'Prose containing a label word must not be treated as scaffold');
+
+    // Both agents must share this one implementation.
+    assertTrue(str_contains(file_get_contents(app_path('app/Services/SupportBotService.php')), 'AiReplyCleaner'),
+        'Support bot should delegate to the shared cleaner');
+    assertTrue(str_contains(file_get_contents(app_path('app/Controllers/AdminController.php')), 'AiReplyCleaner'),
+        'Admin agent should delegate to the shared cleaner');
+};
+
 $tests['shipping an order requires a courier tracking id and link'] = function (): void {
     $service = new \App\Services\OrderService();
     $cases = [
