@@ -3,10 +3,10 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 112,
+        "routes": 108,
         "controllers": 12,
         "services": 42,
-        "views": 47,
+        "views": 46,
         "collections": 22
     },
     "routes": [
@@ -215,28 +215,6 @@
         },
         {
             "method": "GET",
-            "path": "/admin/audit-log",
-            "name": "admin.audit",
-            "controller": "AdminController@audit",
-            "view": "admin/list",
-            "services": [
-                "AuditLogService",
-                "AuthService"
-            ]
-        },
-        {
-            "method": "GET",
-            "path": "/admin/backups",
-            "name": "admin.backups",
-            "controller": "AdminController@backups",
-            "view": "admin/list",
-            "services": [
-                "DatabaseService",
-                "AuthService"
-            ]
-        },
-        {
-            "method": "GET",
             "path": "/admin/blog",
             "name": "admin.blog",
             "controller": "AdminController@blog",
@@ -429,30 +407,6 @@
             "view": "admin/mailbox",
             "services": [
                 "MailStorageService",
-                "AuthService"
-            ]
-        },
-        {
-            "method": "GET",
-            "path": "/admin/environment",
-            "name": "admin.environment",
-            "controller": "AdminController@environment",
-            "view": "admin/environment",
-            "services": [
-                "EnvService",
-                "StoragePermissionService",
-                "AuthService"
-            ]
-        },
-        {
-            "method": "POST",
-            "path": "/admin/environment/fix-permissions",
-            "name": "admin.environment.fix-permissions",
-            "controller": "AdminController@fixPermissions",
-            "view": "admin/settings",
-            "services": [
-                "StoragePermissionService",
-                "AuditLogService",
                 "AuthService"
             ]
         },
@@ -1314,7 +1268,6 @@
         "admin/consultation-analytics",
         "admin/dashboard",
         "admin/detail",
-        "admin/environment",
         "admin/integrations",
         "admin/list",
         "admin/mailbox",
@@ -1389,7 +1342,8 @@
         "navigation_without_get_route": [],
         "unwired_controllers": [],
         "unwired_services": [
-            "ProjectMapService"
+            "ProjectMapService",
+            "StoragePermissionService"
         ],
         "unwired_views": [],
         "admin_mutations_without_audit": [],

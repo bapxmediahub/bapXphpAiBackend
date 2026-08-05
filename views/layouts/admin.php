@@ -125,12 +125,9 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
                 <svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
             <div class="admin-submenu" id="menu-settings">
-                <a href="/admin/environment" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/environment') === 0 ? 'active' : '') ?>">Environment</a>
                 <a href="/admin/integrations" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/integrations') === 0 ? 'active' : '') ?>">Integrations</a>
                 <a href="/admin/agent" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/agent') === 0 ? 'active' : '') ?>">AI Agent</a>
                 <a href="/admin/settings" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/settings') === 0 ? 'active' : '') ?>">Site Settings</a>
-                <a href="/admin/backups" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/backups') === 0 ? 'active' : '') ?>">Backups</a>
-                <a href="/admin/audit-log" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/audit-log') === 0 ? 'active' : '') ?>">Audit Log</a>
             </div>
         </nav>
         <div class="admin-sidebar__footer">
@@ -228,5 +225,28 @@ document.querySelectorAll('.table-wrap').forEach(function(wrap){var table=wrap.q
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     Install App
 </button>
+<script>
+// Saves travel over HTTP to the remote database and take seconds. Without this the
+// button stays live, an impatient second click posts the form again, and two records
+// are created. Disable on first submit and say what is happening.
+(function () {
+    document.querySelectorAll('form.admin-form[method="post"]').forEach(function (form) {
+        form.addEventListener('submit', function () {
+            var btn = form.querySelector('button[type="submit"], button:not([type])');
+            if (!btn || btn.dataset.saving === '1') return;
+            btn.dataset.saving = '1';
+            btn.dataset.label = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Saving\u2026';
+            // Re-enable if the browser restores the page from cache instead of navigating.
+            setTimeout(function () {
+                btn.disabled = false;
+                btn.dataset.saving = '';
+                if (btn.dataset.label) btn.textContent = btn.dataset.label;
+            }, 20000);
+        });
+    });
+})();
+</script>
 </body>
 </html>

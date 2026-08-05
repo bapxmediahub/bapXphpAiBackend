@@ -440,16 +440,6 @@ $tests['admin settings can update env admin credentials'] = function (): void {
     routeExists('/admin/settings/admin-credentials', 'Route registry should include admin credential save route');
 };
 
-$tests['admin environment page edits env and storage permissions'] = function (): void {
-    $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
-    $env = file_get_contents(app_path('app/Services/EnvService.php'));
-    $permissions = file_get_contents(app_path('app/Services/StoragePermissionService.php'));
-    routeExists('/admin/environment/fix-permissions', 'Fix-permissions route should be registered');
-    assertTrue(str_contains($controller, 'fixPermissions'), 'Admin controller should expose storage permission repair');
-    assertTrue(str_contains($env, 'function saveRaw'), 'Env service should support raw env saving');
-    assertTrue(str_contains($permissions, 'storage/data') || str_contains($permissions, 'storage'), 'Permission service should check storage path');
-};
-
 $tests['support assistant uses schema-filtered agent context'] = function (): void {
     $service = file_get_contents(app_path('app/Services/SupportBotService.php'));
     $context = file_get_contents(app_path('app/Services/AgentContextService.php'));
@@ -1018,12 +1008,9 @@ $tests['admin sidebar exposes every admin menu'] = function (): void {
         '/admin/contact-submissions',
         '/admin/support-tickets',
         '/admin/media',
-        '/admin/environment',
         '/admin/settings',
         '/admin/integrations',
         '/admin/shipping',
-        '/admin/backups',
-        '/admin/audit-log',
     ] as $path) {
         assertTrue(str_contains($layout, 'href="' . $path . '"'), "Admin sidebar should link {$path}");
     }

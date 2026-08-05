@@ -36,14 +36,14 @@ query_examples:
   - "rg -n -B4 -A12 'type: \"skill\"' index.yaml"
   - "rg -n '<term>' docs/project-index.json map.mmd index.yaml"
 summary:
-  concepts: 391
-  relationships: 231
+  concepts: 387
+  relationships: 226
   by_type:
     blog: 16
     controller: 12
     doc: 35
     image: 144
-    route: 112
+    route: 108
     schema: 22
     service: 42
     skill: 8
@@ -2596,36 +2596,6 @@ concepts:
       - "SchemaService"
       - "AuthService"
     view: "admin/astrologer-form"
-  - id: "route:get__admin_audit_log"
-    type: "route"
-    title: "GET /admin/audit-log"
-    description: "admin.audit"
-    resource: "app/routes.php"
-    tags:
-      - "code"
-      - "route"
-    method: "GET"
-    path: "/admin/audit-log"
-    controller: "AdminController@audit"
-    services:
-      - "AuditLogService"
-      - "AuthService"
-    view: "admin/list"
-  - id: "route:get__admin_backups"
-    type: "route"
-    title: "GET /admin/backups"
-    description: "admin.backups"
-    resource: "app/routes.php"
-    tags:
-      - "code"
-      - "route"
-    method: "GET"
-    path: "/admin/backups"
-    controller: "AdminController@backups"
-    services:
-      - "DatabaseService"
-      - "AuthService"
-    view: "admin/list"
   - id: "route:get__admin_blog"
     type: "route"
     title: "GET /admin/blog"
@@ -2731,22 +2701,6 @@ concepts:
       - "MailStorageService"
       - "AuthService"
     view: "admin/mailbox"
-  - id: "route:get__admin_environment"
-    type: "route"
-    title: "GET /admin/environment"
-    description: "admin.environment"
-    resource: "app/routes.php"
-    tags:
-      - "code"
-      - "route"
-    method: "GET"
-    path: "/admin/environment"
-    controller: "AdminController@environment"
-    services:
-      - "EnvService"
-      - "StoragePermissionService"
-      - "AuthService"
-    view: "admin/environment"
   - id: "route:get__admin_integrations"
     type: "route"
     title: "GET /admin/integrations"
@@ -3608,22 +3562,6 @@ concepts:
       - "AuditLogService"
       - "AuthService"
     view: "admin/resource"
-  - id: "route:post__admin_environment_fix_permissions"
-    type: "route"
-    title: "POST /admin/environment/fix-permissions"
-    description: "admin.environment.fix-permissions"
-    resource: "app/routes.php"
-    tags:
-      - "code"
-      - "route"
-    method: "POST"
-    path: "/admin/environment/fix-permissions"
-    controller: "AdminController@fixPermissions"
-    services:
-      - "StoragePermissionService"
-      - "AuditLogService"
-      - "AuthService"
-    view: "admin/settings"
   - id: "route:post__admin_integrations_save"
     type: "route"
     title: "POST /admin/integrations/save"
@@ -4781,9 +4719,6 @@ relationships:
     to: "service:SmtpMailer"
     relation: "uses"
   - from: "controller:AdminController"
-    to: "service:StoragePermissionService"
-    relation: "uses"
-  - from: "controller:AdminController"
     to: "service:SupportTicketService"
     relation: "uses"
   - from: "controller:AdminController"
@@ -4954,12 +4889,6 @@ relationships:
   - from: "route:get__admin_astrologers"
     to: "controller:AdminController"
     relation: "handled_by"
-  - from: "route:get__admin_audit_log"
-    to: "controller:AdminController"
-    relation: "handled_by"
-  - from: "route:get__admin_backups"
-    to: "controller:AdminController"
-    relation: "handled_by"
   - from: "route:get__admin_blog"
     to: "controller:AdminController"
     relation: "handled_by"
@@ -4979,9 +4908,6 @@ relationships:
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:get__admin_email_outbox"
-    to: "controller:AdminController"
-    relation: "handled_by"
-  - from: "route:get__admin_environment"
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:get__admin_integrations"
@@ -5156,9 +5082,6 @@ relationships:
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:post__admin_coupons_save"
-    to: "controller:AdminController"
-    relation: "handled_by"
-  - from: "route:post__admin_environment_fix_permissions"
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:post__admin_integrations_save"

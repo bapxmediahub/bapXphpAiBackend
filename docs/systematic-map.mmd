@@ -7,14 +7,14 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 112 routes, 12 controllers, 42 services, 47 views, 0 data files, 20 tools"]
-    arch_routes["> Routes: 112 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 108 routes, 12 controllers, 42 services, 46 views, 0 data files, 20 tools"]
+    arch_routes["> Routes: 108 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
     arch_svc["> Services: 42"]:::arch
-    arch_views["> Views: 47"]:::arch
+    arch_views["> Views: 46"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 20"]:::arch
-    arch_gaps["> Gaps: 1"]:::arch
+    arch_gaps["> Gaps: 2"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -112,8 +112,6 @@ flowchart LR
     route_get_admin_integrations["GET /admin/integrations — Admin — API keys, integrations"]:::route
     route_get_admin_agent["GET /admin/agent"]:::route
     route_post_admin_agent_ask["POST /admin/agent/ask"]:::route
-    route_get_admin_backups["GET /admin/backups — Admin — backup list"]:::route
-    route_get_admin_audit_log["GET /admin/audit-log — Admin — audit log"]:::route
     route_get_admin_contact_submissions["GET /admin/contact-submissions — Admin — contact form entries"]:::route
     route_post_admin_contact_submissions_save["POST /admin/contact_submissions/save — Admin — save contact submission"]:::route
     route_post_admin_contact_submissions_delete["POST /admin/contact_submissions/delete — Admin — delete contact submission"]:::route
@@ -125,8 +123,6 @@ flowchart LR
     route_post_admin_appearance_save["POST /admin/appearance/save — Admin — save logo/favicon"]:::route
     route_get_admin_media["GET /admin/media — Admin — media library"]:::route
     route_post_admin_media_upload["POST /admin/media/upload — Admin — upload media"]:::route
-    route_get_admin_environment["GET /admin/environment"]:::route
-    route_post_admin_environment_fix_permissions["POST /admin/environment/fix-permissions — Admin — fix storage permissions"]:::route
     route_post_admin_products_save["POST /admin/products/save — Admin — create/update product"]:::route
     route_post_admin_products_delete["POST /admin/products/delete — Admin — delete product"]:::route
     route_post_admin_categories_save["POST /admin/categories/save — Admin — create/update category"]:::route
@@ -227,7 +223,6 @@ flowchart LR
     view_admin_consultation_analytics["admin/consultation-analytics"]:::code
     view_admin_dashboard["admin/dashboard"]:::code
     view_admin_detail["admin/detail"]:::code
-    view_admin_environment["admin/environment"]:::code
     view_admin_integrations["admin/integrations"]:::code
     view_admin_list["admin/list"]:::code
     view_admin_mailbox["admin/mailbox"]:::code
@@ -322,6 +317,7 @@ flowchart LR
 
   subgraph GAPS["Gaps & Missing Links"]
     gap_5df3fe25a8["unwired_services: ProjectMapService"]:::gap
+    gap_52015418b5["unwired_services: StoragePermissionService"]:::gap
   end
 
   route_get --> controller_publiccontroller
@@ -555,14 +551,6 @@ flowchart LR
   controller_admincontroller --> service_databaseservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_agent
-  route_get_admin_backups --> controller_admincontroller
-  controller_admincontroller --> service_databaseservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_list
-  route_get_admin_audit_log --> controller_admincontroller
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_list
   route_get_admin_contact_submissions --> controller_admincontroller
   controller_admincontroller --> service_contactservice
   controller_admincontroller --> service_authservice
@@ -613,16 +601,6 @@ flowchart LR
   controller_admincontroller --> service_auditlogservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_media
-  route_get_admin_environment --> controller_admincontroller
-  controller_admincontroller --> service_envservice
-  controller_admincontroller --> service_storagepermissionservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_environment
-  route_post_admin_environment_fix_permissions --> controller_admincontroller
-  controller_admincontroller --> service_storagepermissionservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_settings
   route_post_admin_products_save --> controller_admincontroller
   controller_admincontroller --> service_resourceservice
   controller_admincontroller --> service_auditlogservice
@@ -862,3 +840,4 @@ flowchart LR
   tool_smoke_local --> ROUTES_PUBLIC
   tool_smoke_local --> ROUTES_ADMIN
   gap_5df3fe25a8 -. missing .-> service_projectmapservice
+  gap_52015418b5 -. missing .-> service_storagepermissionservice
