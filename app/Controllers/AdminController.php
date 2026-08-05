@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AuditLogService,AuthService,BlogDraftService,ConsultationService,EnvService,MailStorageService,MarkdownRenderer,MediaService,OrderService,ResourceService,SchemaService,SecretService,SettingsService,StoragePermissionService};
+use App\Services\{AuditLogService,MailQueueService,AuthService,BlogDraftService,ConsultationService,EnvService,MailStorageService,MarkdownRenderer,MediaService,OrderService,ResourceService,SchemaService,SecretService,SettingsService,StoragePermissionService};
 final class AdminController extends BaseController {
     protected string $layout = 'admin';
     public function __construct() {
@@ -318,10 +318,34 @@ final class AdminController extends BaseController {
     }
     public function saveBlog(): void{
         $blog = new \App\Services\BlogService();
+        $slug = trim((string)($_POST['slug'] ?? ''));
+        // Only a post that did not exist before triggers the newsletter, so editing an
+        // article never re-mails everyone who already received it.
+        $isNew = $slug === '' || $blog->find($slug) === null;
         $blog->save($_POST);
         (new AuditLogService())->record('save','blog',$_POST['slug'] ?? '');
-        $this->flash('Blog post saved.','success');
+        $sent = 0;
+        if ($isNew && ($_POST['notify_subscribers'] ?? '') === '1') {
+            $sent = $this->sendBlogNewsletter($_POST);
+        }
+        $this->flash($sent > 0 ? "Blog post saved. Newsletter sent to {$sent} subscriber(s)." : 'Blog post saved.','success');
         $this->redirect('/admin/blog');
+    }
+    /** Registered customers only — the owner and consultants are not subscribers. */
+    private function sendBlogNewsletter(array $post): int {
+        try {
+            $recipients = [];
+            foreach ((new \App\Services\DatabaseService())->read('users') as $user) {
+                $role = (string)($user['role'] ?? 'customer');
+                if ($role !== 'customer') continue;
+                $email = trim((string)($user['email'] ?? ''));
+                if ($email !== '') $recipients[] = $email;
+            }
+            return (new MailQueueService())->enqueueBlogNewsletter($post, array_unique($recipients));
+        } catch (\Throwable $e) {
+            error_log('Blog newsletter failed: ' . $e->getMessage());
+            return 0;
+        }
     }
     public function deleteBlog(): void{
         $slug = (string)($_POST['slug'] ?? '');

@@ -100,6 +100,8 @@ final class AuthController extends BaseController {
             }
             session_regenerate_id(true);
             $_SESSION['user'] = ['sub'=>'env-admin','email'=>$admin['email'],'name'=>$admin['username'] ?: 'Admin','role'=>'admin'];
+            try { (new MailQueueService())->enqueueLoginNotification($admin['email'], $admin['username'] ?: 'Admin', 'admin'); }
+            catch (\Throwable $e) { error_log('Login notification failed: ' . $e->getMessage()); }
             $this->flash('Signed in.','success');
             $this->redirect('/admin');
         }

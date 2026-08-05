@@ -91,6 +91,11 @@
             </div>
         </div>
 
+        <label class="admin-blog-editor__wide" style="display:flex;align-items:center;gap:8px;font-weight:600">
+            <input type="checkbox" name="notify_subscribers" value="1" style="width:16px;height:16px;margin:0">
+            Email this article to registered customers
+            <small style="font-weight:400;color:var(--color-text-muted)">Only on a new post, never on an edit.</small>
+        </label>
         <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap">
             <button class="btn btn-primary" type="submit">Save</button>
             <button class="btn btn-outline" type="button" onclick="toggleForm()">Cancel</button>
