@@ -43,7 +43,7 @@
             </article>
             <article class="support-card">
                 <h2>Talk to a person</h2>
-                <p>Email <a href="mailto:sripanchamispiritual@gmail.com">sripanchamispiritual@gmail.com</a> or call <a href="tel:+919789444037">+91 97894 44037</a>. We usually reply within one business day.</p>
+                <p>Email <a href="mailto:support@sripanchamispiritual.com">support@sripanchamispiritual.com</a> or call <a href="tel:+919789444037">+91 97894 44037</a>. We usually reply within one business day.</p>
             </article>
             <?php endif; ?>
         </div>

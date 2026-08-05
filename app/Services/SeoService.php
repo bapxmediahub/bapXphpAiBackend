@@ -208,7 +208,7 @@ final class SeoService {
             'description' => 'Authentic spiritual products, sacred jewellery, expert Vedic astrology consultation, and temple guidance.',
             'url' => $this->pageUrl(''),
             'telephone' => $this->telephone,
-            'email' => 'sripanchamispiritual@gmail.com',
+            'email' => 'support@sripanchamispiritual.com',
         ];
     }
 

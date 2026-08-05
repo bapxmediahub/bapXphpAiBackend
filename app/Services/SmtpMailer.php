@@ -35,7 +35,10 @@ final class SmtpMailer {
     public function buildMessage(string $to, string $subject, string $html): string {
         $fromEmail = $this->fromEmail();
         $fromName = $this->fromName();
-        $replyTo = trim((string)($this->settings['admin_notification_email'] ?? $fromEmail));
+        // Replies go to the sending mailbox (support@), not the admin's personal inbox.
+        // admin_notification_email is the destination for admin *notifications*, which
+        // is a different thing from where a customer's reply should land.
+        $replyTo = $this->replyToEmail();
         $boundary = 'sps_' . bin2hex(random_bytes(12));
         $plain = trim(strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", $html)));
         $headers = [
@@ -111,13 +114,18 @@ final class SmtpMailer {
             'MIME-Version: 1.0',
             'Content-Type: text/html; charset=UTF-8',
             'From: ' . $this->formatAddress($fromEmail, $fromName),
-            'Reply-To: ' . trim((string)($this->settings['admin_notification_email'] ?? $fromEmail)),
+            'Reply-To: ' . $this->replyToEmail(),
             'X-Mailer: PHP/' . PHP_VERSION,
         ];
         $ok = @mail($to, $subject, $html, implode("\r\n", $headers), '-f' . $fromEmail);
         if (!$ok) {
             throw new \RuntimeException('PHP mail() delivery failed.');
         }
+    }
+
+    private function replyToEmail(): string {
+        $replyTo = trim((string)($this->settings['mail_reply_to'] ?? ''));
+        return $replyTo !== '' ? $replyTo : $this->fromEmail();
     }
 
     private function fromName(): string {

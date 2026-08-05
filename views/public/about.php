@@ -88,7 +88,7 @@
     "mainEntity": {
         "@type": "LocalBusiness",
         "name": "Sri Panchami Spiritual",
-        "email": "sripanchamispiritual@gmail.com"
+        "email": "support@sripanchamispiritual.com"
     }
 }
 </script>

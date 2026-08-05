@@ -149,22 +149,26 @@
                     <option value="tls" <?= (($secrets['smtp_encryption']??'ssl') === 'tls') ? 'selected' : '' ?>>TLS / STARTTLS (587)</option>
                 </select>
             </label>
-            <label>SMTP Username<input name="smtp_username" value="<?= e($secrets['smtp_username']??'') ?>" placeholder="support@your-domain.com"></label>
+            <label>SMTP Username<input name="smtp_username" value="<?= e($secrets['smtp_username']??'') ?>" placeholder="support@sripanchamispiritual.com"></label>
         </div>
         <div class="admin-form__row">
             <label>SMTP Password<input type="password" name="smtp_password" value="<?= e($secrets['smtp_password']??'') ?>" placeholder="SMTP password" autocomplete="new-password"></label>
-            <label>From Email<input name="mail_from_email" value="<?= e($secrets['mail_from_email']??'') ?>" placeholder="support@your-domain.com"></label>
+            <label>From Email<input name="mail_from_email" value="<?= e($secrets['mail_from_email']??'') ?>" placeholder="support@sripanchamispiritual.com"></label>
         </div>
         <div class="admin-form__row">
             <label>From Name<input name="mail_from_name" value="<?= e($secrets['mail_from_name']??'Sri Panchami Spiritual') ?>" placeholder="Sri Panchami Spiritual"></label>
-            <label>Admin Notification Email<input name="admin_notification_email" value="<?= e($secrets['admin_notification_email']??'') ?>" placeholder="admin@your-domain.com"></label>
+            <label>Admin Notification Email<input name="admin_notification_email" value="<?= e($secrets['admin_notification_email']??'') ?>" placeholder="sripanchamispiritual@gmail.com"></label>
         </div>
         <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">
-            Use the mailbox created in your hosting control panel. For Hostinger:
-            host <code>smtp.hostinger.com</code>, port <code>465</code> with SSL or <code>587</code> with TLS/STARTTLS,
-            username is the <strong>full email address</strong>, password is that mailbox's password.
-            The From Email should be the same mailbox, or the provider will reject the message.
-            Mail is sent immediately when it is generated — no cron job is involved.
+            <strong>Hostinger mailbox:</strong> host <code>smtp.hostinger.com</code>,
+            port <code>465</code> with SSL (or <code>587</code> with TLS/STARTTLS).
+            <strong>SMTP Username</strong> and <strong>From Email</strong> must both be the
+            full mailbox address, e.g. <code>support@sripanchamispiritual.com</code> — providers
+            reject a From Email that does not match the authenticated mailbox.
+            <strong>Admin Notification Email</strong> is different: it is where <em>you</em> get told
+            about new orders and bookings, so it can be a personal inbox such as a Gmail address.
+            Customers are always written to from the From Email, and replies come back there.
+            Mail is sent immediately when generated — no cron job is involved.
         </p>
 
         <div class="admin-card" style="background:var(--color-bg-alt); margin-top:var(--space-xl); padding:var(--space-md);">

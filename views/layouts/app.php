@@ -252,7 +252,7 @@ echo $__palette_css;
 <noscript><link rel="stylesheet" href="/assets/css/band.css?v=<?= filemtime(__DIR__ . '/../../assets/css/band.css') ?>"></noscript>
 <?php $__secrets_org = (new \App\Services\SecretService())->all(); $__phone = $__secrets_org['phone'] ?? ''; $__telephone = $__phone !== '' ? '["' . e($__phone) . '"]' : '["+919789444037","+919789444038"]'; ?>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":["Organization","OnlineStore"],"name":"<?= e($seo['og_site_name'] ?? 'Sri Panchami Spiritual') ?>","description":"Authentic spiritual products, sacred jewellery, expert Vedic astrology consultation, and temple guidance.","url":"https://<?= e($_SERVER['HTTP_HOST']) ?>","telephone":<?= $__telephone ?>,"email":"sripanchamispiritual@gmail.com"}
+{"@context":"https://schema.org","@type":["Organization","OnlineStore"],"name":"<?= e($seo['og_site_name'] ?? 'Sri Panchami Spiritual') ?>","description":"Authentic spiritual products, sacred jewellery, expert Vedic astrology consultation, and temple guidance.","url":"https://<?= e($_SERVER['HTTP_HOST']) ?>","telephone":<?= $__telephone ?>,"email":"support@sripanchamispiritual.com"}
 </script>
 <?php if (!empty($seo['json_ld'])): ?><?= $seo['json_ld'] ?><?php endif; ?>
 <?php
@@ -458,7 +458,7 @@ if ($__flash):
                 <ul class="footer-links">
                     <li><a href="tel:+919789444037">+91 97894 44037</a></li>
                     <li><a href="tel:+919789444038">+91 97894 44038</a></li>
-                    <li><a href="mailto:sripanchamispiritual@gmail.com">sripanchamispiritual@gmail.com</a></li>
+                    <li><a href="mailto:support@sripanchamispiritual.com">support@sripanchamispiritual.com</a></li>
                 </ul>
             </div>
         </div>
