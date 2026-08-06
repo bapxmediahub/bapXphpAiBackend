@@ -75,6 +75,33 @@ final class AgentToolRegistry
                 ],
             ],
             [
+                'name' => 'support_enquiries',
+                'description' => 'Customer support enquiries: how many there are, their status split, and how many '
+                    . 'concern orders, delivery, payment or refunds. Use this for any question about enquiries, '
+                    . 'tickets or what customers are asking. Says plainly when there are none.',
+                'parameters' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'topic' => [
+                            'type' => 'string',
+                            'description' => 'Narrow to a topic: orders, delivery, payment, refund, product. Omit for all.',
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'name' => 'search_articles',
+                'description' => 'Search published blog and help articles by keyword. Returns titles and their paths '
+                    . 'so an answer can point at real published content.',
+                'parameters' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'query' => ['type' => 'string', 'description' => 'Words to search for.'],
+                    ],
+                    'required' => ['query'],
+                ],
+            ],
+            [
                 'name' => 'coupon_status',
                 'description' => 'Whether a coupon is currently usable, and why not if it is refused: '
                     . 'expired, not started, spend limits, usage limits.',
@@ -111,6 +138,8 @@ final class AgentToolRegistry
                 'find_order' => $this->findOrder($args),
                 'product_status' => $this->productStatus($args),
                 'sales_summary' => $this->salesSummary($args),
+                'support_enquiries' => $this->supportEnquiries($args),
+                'search_articles' => $this->searchArticles($args),
                 'coupon_status' => $this->couponStatus($args),
                 default => ['error' => 'No such tool: ' . $name],
             };
@@ -220,6 +249,116 @@ final class AgentToolRegistry
             'currency' => 'INR',
             'best_sellers' => array_slice($units, 0, 5, true),
         ];
+    }
+
+    /** Words that mark an enquiry as being about a topic. */
+    private const ENQUIRY_TOPICS = [
+        'orders'   => ['order', 'ordered', 'purchase', 'invoice'],
+        'delivery' => ['deliver', 'delivery', 'shipping', 'shipment', 'shipped', 'courier', 'track', 'tracking', 'parcel'],
+        'payment'  => ['payment', 'paid', 'card', 'upi', 'razorpay', 'charge'],
+        'refund'   => ['refund', 'cancel', 'cancellation', 'return', 'money back'],
+        'product'  => ['product', 'pendant', 'ring', 'stock', 'size', 'item'],
+    ];
+
+    /**
+     * Support enquiries, counted and grouped.
+     *
+     * "How many enquiries came for orders" previously answered 5 — which was the order
+     * count from the statistics blob, not enquiries at all. There were none to count.
+     * This returns the real figure, says so when it is zero, and states the words it
+     * matched on, because "order-related" is an interpretation and the owner should be
+     * able to see which one was used.
+     */
+    private function supportEnquiries(array $args): array
+    {
+        $topic = strtolower(trim((string)($args['topic'] ?? '')));
+        $tickets = [];
+        foreach ((new SupportTicketService($this->store))->all() as $ticket) {
+            // A record holding nothing but an id is not an enquiry. Production has one,
+            // and counting it would overstate a number the owner acts on.
+            if (count(array_filter($ticket, fn($v, $k) => $k !== 'id' && $v !== '' && $v !== null, ARRAY_FILTER_USE_BOTH)) === 0) continue;
+            $tickets[] = $ticket;
+        }
+
+        if ($tickets === []) {
+            return [
+                'total' => 0,
+                'message' => 'No customer support enquiries have been recorded yet. '
+                    . 'The support_tickets collection is empty apart from one placeholder row holding only an id.',
+            ];
+        }
+
+        $byStatus = [];
+        $byTopic = array_fill_keys(array_keys(self::ENQUIRY_TOPICS), 0);
+        $unanswered = 0;
+        $matched = [];
+        foreach ($tickets as $ticket) {
+            $status = (string)($ticket['status'] ?? 'open');
+            $byStatus[$status] = ($byStatus[$status] ?? 0) + 1;
+            if (trim((string)($ticket['reply'] ?? '')) === '') $unanswered++;
+            $blob = strtolower(trim((string)($ticket['message'] ?? '') . ' ' . (string)($ticket['reply'] ?? '')));
+            foreach (self::ENQUIRY_TOPICS as $name => $words) {
+                foreach ($words as $word) {
+                    if (!str_contains($blob, $word)) continue;
+                    $byTopic[$name]++;
+                    if ($name === $topic || $topic === '') $matched[] = ['id' => (string)($ticket['id'] ?? ''), 'status' => $status];
+                    break;
+                }
+            }
+        }
+
+        $out = [
+            'total' => count($tickets),
+            'by_status' => $byStatus,
+            'by_topic' => $byTopic,
+            'awaiting_reply' => $unanswered,
+            'topic_words_used' => self::ENQUIRY_TOPICS,
+        ];
+        if ($topic !== '') {
+            $out['topic'] = $topic;
+            $out['matching'] = $byTopic[$topic] ?? 0;
+            $out['matching_tickets'] = array_slice($matched, 0, 20);
+        }
+        return $out;
+    }
+
+    /**
+     * Published articles matching a query.
+     *
+     * Scored on how many of the query's own words appear in the title and summary, so
+     * an answer can point at real content. BlogService::all() is the public filter, so
+     * an unpublished post or one in a switched-off category cannot be cited.
+     */
+    private function searchArticles(array $args): array
+    {
+        $query = strtolower(trim((string)($args['query'] ?? '')));
+        if ($query === '') return ['error' => 'Give something to search for.'];
+        $words = array_filter(
+            preg_split('/[^a-z0-9]+/', $query) ?: [],
+            fn(string $w): bool => mb_strlen($w) >= 3
+        );
+        if ($words === []) return ['found' => 0, 'message' => 'Nothing specific enough to search for.'];
+
+        $scored = [];
+        foreach ((new BlogService())->all(false) as $post) {
+            $title = strtolower((string)($post['title'] ?? ''));
+            $summary = strtolower((string)($post['excerpt'] ?? $post['summary'] ?? ''));
+            $score = 0;
+            foreach ($words as $word) {
+                if (str_contains($title, $word)) $score += 2;   // a title match is the stronger signal
+                if (str_contains($summary, $word)) $score += 1;
+            }
+            if ($score === 0) continue;
+            $scored[] = [
+                'title' => (string)($post['title'] ?? ''),
+                'path' => '/blog/' . (string)($post['slug'] ?? ''),
+                'category' => (string)($post['category'] ?? ''),
+                'score' => $score,
+            ];
+        }
+        usort($scored, fn(array $a, array $b): int => $b['score'] <=> $a['score']);
+        if ($scored === []) return ['found' => 0, 'message' => 'No published article matched.'];
+        return ['found' => count($scored), 'articles' => array_slice($scored, 0, 5)];
     }
 
     private function couponStatus(array $args): array
