@@ -100,12 +100,34 @@ final class AdminController extends BaseController {
     public function agent(): void{
         $secrets = new SecretService();
         $modelConfig = $secrets->getModelConfig();
-        $this->render('admin/agent',['pageTitle'=>'AI Agent','modelConfig'=>$modelConfig]);
+        // Everything the owner may write @ against, so the chat can autocomplete rather
+        // than making them remember slugs and filenames.
+        $attachables = (new \App\Services\AgentAttachmentService())->catalogue();
+        $this->render('admin/agent',['pageTitle'=>'AI Agent','modelConfig'=>$modelConfig,'attachables'=>$attachables]);
     }
     public function agentAsk(): void{
         $message = trim((string)($_POST['message'] ?? ''));
         if ($message === '') {$this->jsonResponse(['error'=>'Message is required'],400); return;}
         try {
+            // @terms, @privacy, @some-article and @filename.jpg pull that document into
+            // the prompt. Resolved here so both a draft command and an ordinary question
+            // can refer to one.
+            $attachments = (new \App\Services\AgentAttachmentService())->resolve($message);
+
+            // /create-blog and /add-product draft content and hand back a filled-in form.
+            // The agent never writes to the site: the owner reads the draft and saves it
+            // through the same route the normal admin screens post to.
+            $command = \App\Services\AgentDraftService::command($message);
+            if ($command !== null) {
+                $draft = (new \App\Services\AgentDraftService())->draft(
+                    $command,
+                    \App\Services\AgentDraftService::subject($message),
+                    $attachments['context']
+                );
+                $draft['missing'] = $attachments['missing'];
+                $this->jsonResponse(['draft' => $draft]);
+                return;
+            }
             $secrets = new SecretService();
             $db = new \App\Services\DatabaseService();
             $modelConfig = $secrets->getModelConfig();
@@ -155,12 +177,6 @@ final class AdminController extends BaseController {
             }
             if ($topProductsStr === '') $topProductsStr = "\n  - no confirmed sales yet";
 
-            $attachments = '';
-            $tempDir = app_path('.claude/temp');
-            if (is_dir($tempDir)) {
-                $files = array_diff(scandir($tempDir), ['.','..']);
-                if (!empty($files)) $attachments = "\n\nAttachments in .claude/temp/: " . implode(', ', $files);
-            }
             $context = "You are the admin AI assistant. You have full access to site data.\n\n"
                 . "Site data:\n"
                 . "- Total users: {$userCount}\n"
@@ -175,7 +191,7 @@ final class AdminController extends BaseController {
                 . "- Average order value: ₹" . number_format($avgOrderValue, 2) . "\n"
                 . "- Top 5 products by units sold:" . $topProductsStr . "\n"
                 . "- Top 5 customers by revenue:" . $topUsersStr
-                . $attachments
+                . ($attachments['context'] !== '' ? "\n\nDocuments the owner attached with @:" . $attachments['context'] : '')
                 . "\n\nUse this data to answer. Never repeat it back unless asked for it. "
                 . "Never list customer email addresses unless the question is specifically about customers.";
             if (!empty($modelConfig['apiKey'])) {
@@ -183,7 +199,7 @@ final class AdminController extends BaseController {
             } else {
                 $answer = "AI model not configured. Go to Admin → Integrations and set api_endpoint, ai_api_key, and agent_model.";
             }
-            $this->jsonResponse(['answer'=>$answer]);
+            $this->jsonResponse(['answer'=>$answer, 'missing'=>$attachments['missing']]);
         } catch (\Throwable $e) {
             $this->jsonResponse(['error'=>'Agent error: '.$e->getMessage()],500);
         }
@@ -297,7 +313,25 @@ final class AdminController extends BaseController {
     public function emailInbox(): void{$this->render('admin/mailbox',['pageTitle'=>'Email Inbox','title'=>'Email Inbox','box'=>'inbox','items'=>(new MailStorageService())->inbox()]);}
     public function emailOutbox(): void{$this->render('admin/mailbox',['pageTitle'=>'Email Outbox','title'=>'Email Outbox','box'=>'outbox','items'=>(new MailStorageService())->outbox()]);}
     public function media(): void{$this->render('admin/media',['pageTitle'=>'Media Library','items'=>(new MediaService())->all()]);}
-    public function uploadMedia(): void{$uploaded=(new MediaService())->upload($_FILES['media_files'] ?? [], $_POST['context'] ?? 'shared', $_POST['description'] ?? null); (new AuditLogService())->record('upload','media','',['count'=>count($uploaded),'context'=>$_POST['context'] ?? 'shared']); $this->flash(count($uploaded).' media file'.(count($uploaded) === 1 ? '' : 's').' uploaded.','success'); $this->redirect('/admin/media');}
+    /**
+     * Every upload in the admin lands in the media library, whichever screen sent it.
+     *
+     * The agent chat uploads here too, and comes back to the chat rather than dumping
+     * the owner on the media page mid-conversation. The return path is restricted to
+     * this admin so a crafted form cannot bounce anyone off-site.
+     */
+    public function uploadMedia(): void{
+        $uploaded=(new MediaService())->upload($_FILES['media_files'] ?? [], $_POST['context'] ?? 'shared', $_POST['description'] ?? null);
+        (new AuditLogService())->record('upload','media','',['count'=>count($uploaded),'context'=>$_POST['context'] ?? 'shared']);
+        $names = array_filter(array_map(fn($f) => basename((string)($f['url'] ?? $f['path'] ?? '')), $uploaded));
+        $this->flash(
+            count($uploaded).' media file'.(count($uploaded) === 1 ? '' : 's').' uploaded.'
+            . ($names ? ' Attach with @'.implode(' or @', $names).'.' : ''),
+            'success'
+        );
+        $redirect = (string)($_POST['redirect'] ?? '');
+        $this->redirect(preg_match('#^/admin/[a-z0-9/-]*$#i', $redirect) ? $redirect : '/admin/media');
+    }
     public function fixPermissions(): void{(new StoragePermissionService())->fix(); (new AuditLogService())->record('fix','permissions','storage'); $this->flash('Storage permissions checked and updated where PHP is allowed.','success'); $this->redirect('/admin/settings');}
     /**
      * Ask the configured model one real question and report exactly what came back.

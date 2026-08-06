@@ -1026,6 +1026,62 @@ $tests['a paying customer lands on their order and a failure explains itself'] =
     assertSame(substr_count($css, '{'), substr_count($css, '}'), 'Stylesheet should have balanced rule braces');
 };
 
+$tests['the admin agent attaches documents and drafts into a form it cannot save'] = function (): void {
+    $attach = new \App\Services\AgentAttachmentService();
+
+    // @terms and @privacy bring the document's text in, without its frontmatter.
+    $legal = $attach->resolve('tighten the refund wording in @terms');
+    assertSame(['terms'], $legal['resolved'], '@terms should resolve to the legal page');
+    assertTrue(strlen($legal['context']) > 200, '@terms should carry the document text');
+    assertTrue(!str_contains($legal['context'], "\ntitle:"), 'Frontmatter is never content');
+
+    // An unknown name is reported rather than silently dropped.
+    $missing = $attach->resolve('what about @definitely-not-a-real-thing');
+    assertSame([], $missing['resolved'], 'An unknown @name resolves to nothing');
+    assertSame(['definitely-not-a-real-thing'], $missing['missing'], 'An unknown @name is reported back');
+
+    // Visibility is inherited from BlogService, never re-implemented here.
+    $service = file_get_contents(app_path('app/Services/AgentAttachmentService.php'));
+    assertTrue(str_contains($service, 'blog->all(false)'),
+        'Attachments must use the public blog filter so hidden categories stay hidden');
+
+    // The agent drafts; it never writes.
+    assertSame('create-blog', \App\Services\AgentDraftService::command('/create-blog rudraksha'), 'A blog command is recognised');
+    assertSame('add-product', \App\Services\AgentDraftService::command('/add-product brass lamp'), 'A product command is recognised');
+    assertSame(null, \App\Services\AgentDraftService::command('how many orders today?'), 'An ordinary question is not a command');
+    assertSame('rudraksha benefits', \App\Services\AgentDraftService::subject('/create-blog rudraksha benefits'), 'The subject is what follows the command');
+
+    $draft = (new \App\Services\AgentDraftService())->draft('create-blog', '');
+    assertSame('/admin/blog/save', $draft['action'], 'A draft posts to the existing save route');
+    assertTrue(count($draft['fields']) > 0, 'A draft lists the fields a save needs');
+    $names = array_column($draft['fields'], 'name');
+    foreach (['title', 'slug', 'category', 'content'] as $needed) {
+        assertTrue(in_array($needed, $names, true), "A blog draft should ask for {$needed}");
+    }
+
+    // Price and tax are the owner's to set — a model guessing a price puts a wrong
+    // number in front of a shopper.
+    $product = (new \App\Services\AgentDraftService())->draft('add-product', '');
+    $hinted = [];
+    foreach ($product['fields'] as $field) {
+        if (isset($field['hint'])) $hinted[] = $field['name'];
+    }
+    foreach (['price', 'hsn_code', 'gst_rate', 'image_url'] as $ownerOnly) {
+        assertTrue(in_array($ownerOnly, $hinted, true), "{$ownerOnly} should be marked for the owner to set");
+    }
+    $service = file_get_contents(app_path('app/Services/AgentDraftService.php'));
+    assertTrue(str_contains($service, 'Never invent a price'), 'The prompt must forbid inventing a price');
+
+    // The chat can upload, and an upload anywhere in the admin joins the media library.
+    $view = file_get_contents(app_path('views/admin/agent.php'));
+    assertTrue(str_contains($view, '/admin/media/upload') && str_contains($view, 'media_files[]'),
+        'The agent chat should upload into the media library');
+    assertTrue(str_contains($view, 'agent-mentions'), 'The chat should offer @ attachments');
+    $admin = file_get_contents(app_path('app/Controllers/AdminController.php'));
+    assertTrue(str_contains($admin, "preg_match('#^/admin/[a-z0-9/-]*\$#i', \$redirect)"),
+        'An upload return path must be restricted to the admin');
+};
+
 $tests['an unpaid checkout never registers an order'] = function (): void {
     // The Stripe branch wrote the order the moment the customer was redirected to the
     // gateway, so every abandoned or cancelled checkout left a permanent "Pending" row

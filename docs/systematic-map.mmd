@@ -7,14 +7,14 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 113 routes, 12 controllers, 45 services, 47 views, 0 data files, 20 tools"]
+  subgraph ARCH["Architecture Overview — 113 routes, 12 controllers, 47 services, 47 views, 0 data files, 20 tools"]
     arch_routes["> Routes: 113 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
-    arch_svc["> Services: 45"]:::arch
+    arch_svc["> Services: 47"]:::arch
     arch_views["> Views: 47"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 20"]:::arch
-    arch_gaps["> Gaps: 6"]:::arch
+    arch_gaps["> Gaps: 8"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -172,7 +172,9 @@ flowchart LR
 
   subgraph SERVICES["Services"]
     service_addressservice["AddressService"]:::code
+    service_agentattachmentservice["AgentAttachmentService"]:::code
     service_agentcontextservice["AgentContextService"]:::code
+    service_agentdraftservice["AgentDraftService"]:::code
     service_aiclient["AiClient"]:::code
     service_aireplycleaner["AiReplyCleaner"]:::code
     service_appointmentservice["AppointmentService"]:::code
@@ -325,10 +327,12 @@ flowchart LR
   end
 
   subgraph GAPS["Gaps & Missing Links"]
-    gap_544da70574["unwired_services: AiReplyCleaner"]:::gap
-    gap_785e99a166["unwired_services: CourierService"]:::gap
-    gap_d35c2ce4d6["unwired_services: ProjectMapService"]:::gap
-    gap_95525e3d98["unwired_services: StoragePermissionService"]:::gap
+    gap_e1fbc2af09["unwired_services: AgentAttachmentService"]:::gap
+    gap_ae5276ce59["unwired_services: AgentDraftService"]:::gap
+    gap_7901aebe91["unwired_services: AiReplyCleaner"]:::gap
+    gap_7893297d25["unwired_services: CourierService"]:::gap
+    gap_d1a24f9ede["unwired_services: ProjectMapService"]:::gap
+    gap_bc97ac563c["unwired_services: StoragePermissionService"]:::gap
     gap_6b9c2b4b5a["POST /admin/blog/enhance-title — missing AuditLogService"]:::gap
     gap_b4217badec["POST /admin/blog/enhance-content — missing AuditLogService"]:::gap
   end
@@ -876,9 +880,11 @@ flowchart LR
   tool_validate_project_map --> systematic_map
   tool_smoke_local --> ROUTES_PUBLIC
   tool_smoke_local --> ROUTES_ADMIN
-  gap_544da70574 -. missing .-> service_aireplycleaner
-  gap_785e99a166 -. missing .-> service_courierservice
-  gap_d35c2ce4d6 -. missing .-> service_projectmapservice
-  gap_95525e3d98 -. missing .-> service_storagepermissionservice
+  gap_e1fbc2af09 -. missing .-> service_agentattachmentservice
+  gap_ae5276ce59 -. missing .-> service_agentdraftservice
+  gap_7901aebe91 -. missing .-> service_aireplycleaner
+  gap_7893297d25 -. missing .-> service_courierservice
+  gap_d1a24f9ede -. missing .-> service_projectmapservice
+  gap_bc97ac563c -. missing .-> service_storagepermissionservice
   gap_6b9c2b4b5a -. missing .-> controller_admincontroller
   gap_b4217badec -. missing .-> controller_admincontroller

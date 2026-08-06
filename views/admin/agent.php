@@ -33,22 +33,43 @@
     </div>
 
     <div class="agent-suggestions" id="agent-suggestions">
-        <?php foreach (['How many users do we have?', 'What is the revenue this month?', 'Which products sell best?', 'How many pending orders?'] as $__s): ?>
+        <?php foreach (['Which products sell best?', 'What is the revenue this month?', '/create-blog benefits of rudraksha', '/add-product brass oil lamp'] as $__s): ?>
             <button type="button" class="agent-suggestion" data-q="<?= e($__s) ?>"><?= e($__s) ?></button>
         <?php endforeach; ?>
     </div>
 
-    <form id="agent-form" class="agent-composer" onsubmit="return askAgent(event)">
+    <div class="agent-composer-wrap">
+        <?php // Typing @ opens this. Without it the owner has to remember exact slugs. ?>
+        <div id="agent-mentions" class="agent-mentions" role="listbox" aria-label="Attach a page, article or image"></div>
+        <form id="agent-form" class="agent-composer" onsubmit="return askAgent(event)">
+            <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+            <button type="button" class="agent-attach" id="agent-upload-btn" aria-label="Upload an image"
+                    title="Upload an image — it is added to the media library">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+            </button>
+            <textarea id="agent-input" name="message" rows="1" required
+                      placeholder="Ask anything, @attach a page or image, or type /create-blog…"
+                      aria-label="Message"></textarea>
+            <button type="submit" class="agent-send" id="agent-submit" aria-label="Send">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+        </form>
+    </div>
+    <p class="agent-hint">
+        Enter to send · Shift+Enter for a new line · <code>@terms</code> or <code>@filename</code> to attach ·
+        <code>/create-blog</code> and <code>/add-product</code> to draft
+    </p>
+
+    <?php // Uploads here land in the media library, the same as every other admin upload. ?>
+    <form id="agent-upload-form" action="/admin/media/upload" method="post" enctype="multipart/form-data" hidden>
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
-        <textarea id="agent-input" name="message" rows="1" required
-                  placeholder="Ask anything about your store…"
-                  aria-label="Message"></textarea>
-        <button type="submit" class="agent-send" id="agent-submit" aria-label="Send">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        </button>
+        <input type="hidden" name="context" value="blog">
+        <input type="hidden" name="redirect" value="/admin/agent">
+        <input type="file" id="agent-upload-input" name="media_files[]" accept="image/*" multiple>
     </form>
-    <p class="agent-hint">Enter to send · Shift+Enter for a new line</p>
 </div>
+
+<script id="agent-attachables" type="application/json"><?= json_encode($attachables ?? [], JSON_UNESCAPED_SLASHES) ?></script>
 
 <style>
 .agent-head { display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-md); flex-wrap:wrap; }
@@ -76,6 +97,29 @@
 .agent-bubble ul, .agent-bubble ol { margin:var(--space-2xs) 0; padding-left:1.1rem; }
 .agent-bubble table { border-collapse:collapse; margin:var(--space-2xs) 0; font-size:0.82rem; }
 .agent-bubble th, .agent-bubble td { border:1px solid var(--color-border); padding:4px 8px; text-align:left; }
+
+/* The composer sits inside a wrapper so the @ list can float above it. */
+.agent-composer-wrap { position:relative; }
+.agent-attach { flex:0 0 auto; background:none; border:1px solid var(--color-border); border-radius:10px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--color-text-muted); }
+.agent-attach:hover { color:var(--color-maroon); border-color:var(--color-maroon); }
+.agent-mentions { display:none; position:absolute; bottom:calc(100% + 6px); left:0; right:0; max-height:240px; overflow-y:auto; background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-md); box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:20; }
+.agent-mentions.is-open { display:block; }
+.agent-mention { display:flex; justify-content:space-between; gap:var(--space-sm); width:100%; padding:8px 12px; background:none; border:0; text-align:left; cursor:pointer; font-size:0.84rem; }
+.agent-mention:hover { background:var(--color-bg-alt); }
+.agent-mention__name { font-weight:600; }
+.agent-mention__kind { color:var(--color-text-muted); font-size:0.75rem; }
+
+/* A draft is a form, not a sentence — it needs the width a chat bubble caps. */
+.agent-bubble:has(.agent-draft) { max-width:100%; width:100%; }
+/* A draft the owner reviews. Nothing here has been saved. */
+.agent-draft__note { margin:0 0 var(--space-sm); font-size:0.85rem; }
+.agent-draft__form { display:flex; flex-direction:column; gap:var(--space-sm); }
+.agent-draft__row { display:flex; flex-direction:column; gap:4px; }
+.agent-draft__label { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; color:var(--color-text-muted); }
+.agent-draft__row input, .agent-draft__row textarea { width:100%; padding:8px 10px; border:1px solid var(--color-border); border-radius:var(--radius-sm); font-family:inherit; font-size:0.85rem; }
+.agent-draft__row textarea { resize:vertical; line-height:1.6; }
+.agent-draft__hint { font-size:0.75rem; color:var(--color-text-muted); }
+.agent-draft__actions { margin-top:var(--space-xs); }
 
 .agent-typing { display:inline-flex; gap:4px; align-items:center; }
 .agent-typing i { width:6px; height:6px; border-radius:50%; background:var(--color-text-muted); display:inline-block; animation:agentBlink 1.2s infinite ease-in-out; }
@@ -172,6 +216,115 @@
         form.requestSubmit();
     });
 
+    // ── Draft forms ────────────────────────────────────────────────────────
+    // The agent hands back a filled-in form, never a saved record. It posts to the
+    // same route the ordinary admin screens use, so nothing reaches the site until
+    // the owner has read the draft and pressed Save.
+    function buildDraftForm(draft) {
+        const wrap = document.createElement('div');
+        wrap.className = 'agent-draft';
+
+        const note = document.createElement('p');
+        note.className = 'agent-draft__note';
+        note.textContent = draft.note || '';
+        wrap.appendChild(note);
+
+        const form = document.createElement('form');
+        form.method = 'post';
+        form.action = draft.action;
+        form.className = 'agent-draft__form';
+
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden'; csrf.name = '_csrf';
+        csrf.value = document.querySelector('input[name="_csrf"]')?.value || '';
+        form.appendChild(csrf);
+
+        (draft.fields || []).forEach(function (field) {
+            const row = document.createElement('label');
+            row.className = 'agent-draft__row';
+
+            const label = document.createElement('span');
+            label.className = 'agent-draft__label';
+            label.textContent = field.label + (field.required ? ' *' : '');
+            row.appendChild(label);
+
+            const big = field.type === 'textarea' || field.type === 'markdown';
+            const input = document.createElement(big ? 'textarea' : 'input');
+            if (big) { input.rows = field.type === 'markdown' ? 12 : 3; } else { input.type = 'text'; }
+            input.name = field.name;
+            input.value = field.value || '';
+            if (field.required) input.required = true;
+            row.appendChild(input);
+
+            if (field.hint) {
+                const hint = document.createElement('span');
+                hint.className = 'agent-draft__hint';
+                hint.textContent = field.hint;
+                row.appendChild(hint);
+            }
+            form.appendChild(row);
+        });
+
+        const actions = document.createElement('div');
+        actions.className = 'agent-draft__actions';
+        const save = document.createElement('button');
+        save.type = 'submit';
+        save.className = 'btn btn-primary btn-sm';
+        save.textContent = draft.kind === 'blog' ? 'Save blog post' : 'Save product';
+        actions.appendChild(save);
+        form.appendChild(actions);
+
+        wrap.appendChild(form);
+        return wrap;
+    }
+
+    // ── @ attachments ──────────────────────────────────────────────────────
+    const attachables = JSON.parse(document.getElementById('agent-attachables')?.textContent || '[]');
+    const mentionBox = document.getElementById('agent-mentions');
+
+    function closeMentions() { if (mentionBox) mentionBox.classList.remove('is-open'); }
+
+    function openMentions(query) {
+        if (!mentionBox) return;
+        const q = query.toLowerCase();
+        const hits = attachables.filter(a => a.name.toLowerCase().includes(q)).slice(0, 8);
+        if (!hits.length) { closeMentions(); return; }
+        mentionBox.innerHTML = '';
+        hits.forEach(function (hit) {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'agent-mention';
+            item.innerHTML = '<span class="agent-mention__name">@' + escapeHtml(hit.name) + '</span>'
+                + '<span class="agent-mention__kind">' + escapeHtml(hit.kind) + '</span>';
+            item.addEventListener('click', function () {
+                input.value = input.value.replace(/@([A-Za-z0-9._-]*)$/, '@' + hit.name + ' ');
+                closeMentions();
+                input.focus();
+                autoGrow();
+            });
+            mentionBox.appendChild(item);
+        });
+        mentionBox.classList.add('is-open');
+    }
+
+    input.addEventListener('input', function () {
+        const match = input.value.slice(0, input.selectionStart).match(/@([A-Za-z0-9._-]*)$/);
+        if (match) { openMentions(match[1]); } else { closeMentions(); }
+    });
+    input.addEventListener('blur', function () { setTimeout(closeMentions, 150); });
+
+    // ── Upload ─────────────────────────────────────────────────────────────
+    const uploadBtn = document.getElementById('agent-upload-btn');
+    const uploadInput = document.getElementById('agent-upload-input');
+    if (uploadBtn && uploadInput) {
+        uploadBtn.addEventListener('click', function () { uploadInput.click(); });
+        uploadInput.addEventListener('change', function () {
+            if (uploadInput.files && uploadInput.files.length) {
+                document.getElementById('agent-upload-form').submit();
+            }
+        });
+    }
+
     window.askAgent = async function (e) {
         e.preventDefault();
         const msg = input.value.trim();
@@ -197,8 +350,15 @@
             if (data.error) {
                 thinking.className = 'agent-bubble agent-bubble--error';
                 thinking.textContent = data.error;
+            } else if (data.draft) {
+                thinking.innerHTML = '';
+                thinking.appendChild(buildDraftForm(data.draft));
             } else {
                 thinking.innerHTML = renderMarkdown(data.answer || 'No response.');
+            }
+            if (data.missing && data.missing.length) {
+                addRow('bot', 'I could not find ' + data.missing.map(m => '<code>@' + escapeHtml(m) + '</code>').join(', ')
+                    + '. Type <code>@</code> to see what is available.');
             }
         } catch (err) {
             thinking.className = 'agent-bubble agent-bubble--error';
