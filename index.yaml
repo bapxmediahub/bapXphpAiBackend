@@ -36,7 +36,7 @@ query_examples:
   - "rg -n -B4 -A12 'type: \"skill\"' index.yaml"
   - "rg -n '<term>' docs/project-index.json map.mmd index.yaml"
 summary:
-  concepts: 400
+  concepts: 402
   relationships: 232
   by_type:
     blog: 16
@@ -45,7 +45,7 @@ summary:
     image: 148
     route: 113
     schema: 22
-    service: 45
+    service: 47
     skill: 9
 concepts:
   - id: "blog:benefits-of-rudraksha"
@@ -4368,11 +4368,27 @@ concepts:
     tags:
       - "code"
       - "service"
+  - id: "service:AgentAttachmentService"
+    type: "service"
+    title: "AgentAttachmentService"
+    description: "Service: AgentAttachmentService"
+    resource: "app/Services/AgentAttachmentService.php"
+    tags:
+      - "code"
+      - "service"
   - id: "service:AgentContextService"
     type: "service"
     title: "AgentContextService"
     description: "Service: AgentContextService"
     resource: "app/Services/AgentContextService.php"
+    tags:
+      - "code"
+      - "service"
+  - id: "service:AgentDraftService"
+    type: "service"
+    title: "AgentDraftService"
+    description: "Service: AgentDraftService"
+    resource: "app/Services/AgentDraftService.php"
     tags:
       - "code"
       - "service"
