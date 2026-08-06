@@ -55,7 +55,12 @@ final class SupportBotService {
         // Articles let the agent answer "what is this app?" from real content instead of
         // falling back to a navigation list. BlogService::all() already withholds
         // unpublished posts and posts whose module is off.
-        return ['signed_in' => !empty($user['email']), 'cart' => $cart, 'articles' => $this->siteArticles()] + $base;
+        return [
+            'signed_in' => !empty($user['email']),
+            'cart' => $cart,
+            'articles' => $this->siteArticles(),
+            'policies' => $this->policies(),
+        ] + $base;
     }
 
     /**
@@ -80,6 +85,9 @@ final class SupportBotService {
             . "For buying a product: explain step-by-step — browse /shop, click a product, add to cart, go to /cart, proceed to /checkout, enter address, pay with card/UPI, view order at /account/dashboard/orders.\n"
             . "For product issues or returns: ask the customer to use the /contact form.\n"
             . "Never invent admin paths, external URLs, or claim that an action already happened.\n"
+            . "The JSON has a \"policies\" object with this shop's delivery times, shipping cost, payment methods "
+            . "and tracking. Answer questions about those from it. Only say you do not have the information when "
+            . "it is genuinely absent from the JSON.\n"
             . "Customer context JSON: "
             . json_encode($context, JSON_UNESCAPED_SLASHES)
             . "\nCustomer question: " . $message
@@ -130,6 +138,26 @@ final class SupportBotService {
         if ($this->consultEnabled()) $help[] = 'consultant booking';
         if (module_on('blog')) $help[] = 'articles and help guides';
         return implode(', ', $help);
+    }
+
+    /**
+     * The shop's own rules, so the agent can answer them instead of deflecting.
+     *
+     * Asked "how long does delivery take to Singapore" the agent replied that it had no
+     * information — while OrderService has held the answer all along and the shipment
+     * email already quotes it. The constants are read rather than restated, so the
+     * promise the agent makes and the promise the email makes cannot drift apart.
+     */
+    private function policies(): array
+    {
+        return [
+            'delivery_within_india' => OrderService::DELIVERY_DAYS_DOMESTIC . ' after dispatch',
+            'delivery_outside_india' => OrderService::DELIVERY_DAYS_INTERNATIONAL . ' after dispatch',
+            'shipping_cost' => 'Calculated at checkout once the delivery address is entered, and shown before payment.',
+            'payment_methods' => 'Card and UPI, taken securely at checkout.',
+            'tracking' => 'A courier name, tracking ID and tracking link are emailed when an order ships, and shown at /account/dashboard/orders.',
+            'returns_or_problems' => 'Ask the customer to use the /contact form.',
+        ];
     }
 
     /** Published articles the agent may quote, filtered exactly as the public site is. */

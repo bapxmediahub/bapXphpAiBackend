@@ -1082,6 +1082,26 @@ $tests['the admin agent attaches documents and drafts into a form it cannot save
         'An upload return path must be restricted to the admin');
 };
 
+$tests['the support agent knows this shop\'s own delivery and payment rules'] = function (): void {
+    // Asked "how long does delivery take to singapore" the agent answered that it had
+    // no information, while OrderService had held the answer all along and the shipment
+    // email already quoted it.
+    $bot = new \App\Services\SupportBotService();
+    $policies = (new ReflectionMethod($bot, 'policies'))->getClosure($bot)();
+    foreach (['delivery_within_india', 'delivery_outside_india', 'shipping_cost', 'payment_methods', 'tracking'] as $key) {
+        assertTrue(!empty($policies[$key]), "The agent should know {$key}");
+    }
+    // Read from the constants, not restated, so the promise the agent makes and the
+    // promise the shipment email makes cannot drift apart.
+    assertTrue(str_contains($policies['delivery_within_india'], \App\Services\OrderService::DELIVERY_DAYS_DOMESTIC),
+        'Domestic delivery should come from OrderService');
+    assertTrue(str_contains($policies['delivery_outside_india'], \App\Services\OrderService::DELIVERY_DAYS_INTERNATIONAL),
+        'International delivery should come from OrderService');
+    $service = file_get_contents(app_path('app/Services/SupportBotService.php'));
+    assertTrue(str_contains($service, 'OrderService::DELIVERY_DAYS_DOMESTIC'), 'Delivery days must not be retyped');
+    assertTrue(str_contains($service, 'object with this shop'), 'The prompt should point the model at the policies');
+};
+
 $tests['the model answer is separated from the model thinking out loud'] = function (): void {
     // gemma-4-31b-it is a reasoning model. AiClient read parts[0], which for a reasoning
     // response is the *thought*, not the answer. Every reply handed back was the model
