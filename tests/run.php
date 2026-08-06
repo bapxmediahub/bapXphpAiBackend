@@ -1128,6 +1128,55 @@ $tests['the blog editor keeps images and fills in the date and author itself'] =
         'The author field should no longer be hard-coded to Admin');
 };
 
+$tests['the admin agent grounds a count instead of returning the nearest number'] = function (): void {
+    // "how many enquiries came for orders" answered 5. There were no enquiries at all:
+    // 5 was Total orders from the statistics blob. A number with no stated source is
+    // unverifiable, which is the actual defect — not the length of the reply.
+    $registry = new \App\Services\AgentToolRegistry();
+    foreach (['support_enquiries', 'search_articles'] as $tool) {
+        assertTrue($registry->has($tool), "The agent should be able to call {$tool}");
+    }
+    assertTrue(isset($registry->run('search_articles', [])['error']), 'search_articles needs a query');
+
+    $source = file_get_contents(app_path('app/Services/AgentToolRegistry.php'));
+    assertTrue(str_contains($source, 'ARRAY_FILTER_USE_BOTH'),
+        'A record holding nothing but an id is not an enquiry and must not be counted');
+    assertTrue(str_contains($source, 'No customer support enquiries have been recorded yet'),
+        'Zero enquiries should be stated plainly, not left for the model to phrase');
+    assertTrue(str_contains($source, "'topic_words_used' => self::ENQUIRY_TOPICS"),
+        'The words behind an interpretation should travel with the count');
+    assertTrue(str_contains($source, 'blog->all(false)') || str_contains($source, "BlogService())->all(false)"),
+        'Article search must use the public filter so an unpublished post cannot be cited');
+    // Still read-only, now that two more tools exist.
+    foreach (['upsert(', '->write(', '->delete(', '->save('] as $mutation) {
+        assertTrue(!str_contains($source, $mutation), "Tools must stay read-only: found {$mutation}");
+    }
+
+    $bare = (new ReflectionMethod(\App\Controllers\AdminController::class, 'isBareFigure'));
+    foreach (['5', '**5**', '5.', '  5  ', '₹5'] as $answer) {
+        assertTrue($bare->invoke(null, $answer), "A reply of '{$answer}' is a bare figure");
+    }
+    foreach (['5 orders', 'I found 5 support enquiries in support_tickets.', ''] as $answer) {
+        assertTrue(!$bare->invoke(null, $answer), "'{$answer}' is not a bare figure");
+    }
+
+    $only = (new ReflectionMethod(\App\Controllers\AdminController::class, 'wantsNumberOnly'));
+    foreach (['how many orders, just the number', 'give me the count only', 'total only please'] as $q) {
+        assertTrue($only->invoke(null, $q), "'{$q}' asks for a figure alone");
+    }
+    foreach (['how many enquiries came for orders', 'which products sell best'] as $q) {
+        assertTrue(!$only->invoke(null, $q), "'{$q}' does not ask for a figure alone");
+    }
+
+    $admin = file_get_contents(app_path('app/Controllers/AdminController.php'));
+    assertTrue(str_contains($admin, 'say what it counts, where it came from'),
+        'The admin persona should require a number to carry its source');
+    assertTrue(str_contains($admin, 'Never substitute a different number'),
+        'The persona should forbid answering with whatever number is to hand');
+    assertTrue(!str_contains($admin, 'You are the admin assistant for this store. Answer the question directly.'),
+        'The prompt that produced the one-word answer should be gone');
+};
+
 $tests['every module toggle in the code refers to a module that exists'] = function (): void {
     // moduleEnabled() returns its `?? true` default for an unknown key, so a typo does
     // not fail — it silently reads as "switched on" whatever the owner set. That is how

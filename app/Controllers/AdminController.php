@@ -234,21 +234,60 @@ final class AdminController extends BaseController {
      * error-to-screen behaviour.
      */
     private function callAiApi(array $config, string $message, string $context): string {
-        $prompt = "You are the admin assistant for this store. Answer the question directly.\n"
-            . "Give only the final answer. Do not restate your role, the context, the constraints or the question. "
-            . "Do not show your reasoning or a plan. Use short Markdown.\n"
-            . "You can look things up. Use the tools for anything about a specific order, product or coupon, "
-            . "or for sales over a period, instead of saying you do not have the information. "
-            . "Only report what a tool returned; never invent an order id, a tracking number or a figure.\n"
+        // "Answer directly / give only the final answer" produced a bare "5" for
+        // "how many enquiries came for orders" — and that 5 was the order count from
+        // the statistics blob, not enquiries, of which there are none. A number with no
+        // stated source is unverifiable, so the persona now asks for the figure, how it
+        // was arrived at, and what was checked.
+        $prompt = "You are the admin analyst for this store, talking to its owner. "
+            . "Be brief and concrete: two to five sentences, or a short Markdown list.\n"
+            . "When you give a number, say what it counts, where it came from, and any judgement you made "
+            . "to arrive at it. If a word in the question is open to interpretation, say how you read it.\n"
+            . "If the data shows none of something, say so plainly. Never substitute a different number that "
+            . "happens to be available.\n"
+            . "End with the single most useful next step, when there is one.\n"
+            . "Do not restate your role, the context, the constraints or the question. Do not show your reasoning "
+            . "or a plan.\n"
+            . "You can look things up. Use the tools for anything about a specific order, product, coupon, "
+            . "support enquiry or article, or for sales over a period, instead of saying you do not have the "
+            . "information. Only report what a tool returned; never invent an order id, a tracking number or a "
+            . "figure.\n"
             . "\n{$context}\n\nQuestion: {$message}";
         // With tools the agent can answer "where is order 9426" — the data was always
         // there, but nothing let the model ask for it.
-        $answer = (new \App\Services\AiClient())->completeWithTools(
-            $prompt,
-            new \App\Services\AgentToolRegistry()
-        );
+        $client = new \App\Services\AiClient();
+        $tools = new \App\Services\AgentToolRegistry();
+        $answer = $client->completeWithTools($prompt, $tools);
         if (\App\Services\AiClient::isError($answer)) return $answer;
+
+        // A bare figure is the failure this persona exists to prevent, so it is caught
+        // rather than trusted. One retry, then whatever comes back is shown — an
+        // unadorned number the owner can see is better than a loop they wait through.
+        if (self::isBareFigure($answer) && !self::wantsNumberOnly($message)) {
+            $retry = $client->completeWithTools(
+                $prompt . "\n\nYour previous reply was just \"" . trim($answer) . "\". "
+                . "Say what that number counts, which data you checked to get it, and how you interpreted the question.",
+                $tools
+            );
+            if (!\App\Services\AiClient::isError($retry) && trim($retry) !== '') $answer = $retry;
+        }
         return $this->cleanAnswer($answer);
+    }
+
+    /** A reply that is only a number, with nothing saying what it counts. */
+    private static function isBareFigure(string $answer): bool {
+        $stripped = trim(preg_replace('/[\s*_`#.,:₹%-]+/u', '', $answer) ?? '');
+        return $stripped !== '' && mb_strlen($stripped) <= 12 && preg_match('/^\d+$/', $stripped) === 1;
+    }
+
+    /** The owner explicitly asked for just the figure. */
+    private static function wantsNumberOnly(string $question): bool {
+        return (bool)preg_match(
+            '/\b(?:just|only)\s+(?:the\s+)?(?:number|count|figure|total)\b'   // "just the number"
+            . '|\b(?:number|count|figure|total)\s+only\b'                     // "the count only"
+            . '|\bno\s+explanation\b/i',
+            $question
+        );
     }
     public function appearance(): void{
         $s=(new SettingsService())->public();
