@@ -137,10 +137,14 @@ final class CommerceController extends BaseController {
                 $status = $exception->getCode() === 401 ? 401 : 500;
                 $this->jsonResponse(['error' => $exception->getMessage()], $status);
             }
+            // Held in the session, not written, until the payment is verified — exactly
+            // as the Razorpay path does. Writing here registered an order the moment
+            // the customer was sent to the gateway, so every abandoned or cancelled
+            // checkout left a permanent "Pending" row in the admin with a real total
+            // against a customer who never paid.
             $orderId = bin2hex(random_bytes(8));
-            $store->upsert('orders', [
+            $_SESSION['pending_order'] = [
                 'id' => $orderId,
-                'status' => 'pending',
                 'total' => $cartTotal,
                 'customer_email' => $_SESSION['user']['email'] ?? ($_POST['email'] ?? 'guest'),
                 'customer_name' => trim((string)($_POST['name'] ?? ($_SESSION['user']['name'] ?? ''))),
@@ -150,8 +154,7 @@ final class CommerceController extends BaseController {
                 'shipping_pincode' => trim((string)($_POST['pincode'] ?? '')),
                 'items' => array_map(fn($i) => ['slug' => $i['slug'], 'name' => $i['name'], 'qty' => $i['qty'], 'line_total' => $i['line_total']], $items),
                 'stripe_session_id' => $stripeSession['id'] ?? '',
-                'created_at' => date('c'),
-            ]);
+            ];
             $this->jsonResponse([
                 'stripe_url' => $stripeSession['url'] ?? '',
                 'order_id' => $orderId,

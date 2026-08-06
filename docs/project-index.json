@@ -5,7 +5,7 @@
     "summary": {
         "routes": 111,
         "controllers": 12,
-        "services": 44,
+        "services": 45,
         "views": 46,
         "collections": 22
     },
@@ -1261,6 +1261,7 @@
         "ConsultationService",
         "ContactService",
         "CouponService",
+        "CourierService",
         "DatabaseService",
         "DocsMapService",
         "EnvService",
@@ -1380,6 +1381,7 @@
         "unwired_services": [
             "AiClient",
             "AiReplyCleaner",
+            "CourierService",
             "ProjectMapService",
             "StoragePermissionService"
         ],

@@ -989,13 +989,35 @@ $tests['agent replies never expose the model reasoning scaffold'] = function ():
         'Admin agent should delegate to the shared cleaner');
 };
 
+$tests['an unpaid checkout never registers an order'] = function (): void {
+    // The Stripe branch wrote the order the moment the customer was redirected to the
+    // gateway, so every abandoned or cancelled checkout left a permanent "Pending" row
+    // in the admin with a real total against a customer who never paid. Razorpay always
+    // held it in the session; both now do.
+    $commerce = file_get_contents(app_path('app/Controllers/CommerceController.php'));
+    $beforeVerify = substr($commerce, 0, strpos($commerce, 'public function verifyPayment'));
+    assertTrue(!str_contains($beforeVerify, "upsert('orders'"),
+        'No order may be written before the payment is verified');
+    assertTrue(substr_count($commerce, "upsert('orders'") === 1,
+        'Orders should be written in exactly one place, after verification');
+    assertTrue(str_contains($beforeVerify, "\$_SESSION['pending_order']"),
+        'An unpaid checkout should be held in the session');
+
+    // A record with nothing but an id is not something the admin can act on.
+    $list = file_get_contents(app_path('views/admin/list.php'));
+    assertTrue(str_contains($list, "ARRAY_FILTER_USE_BOTH"),
+        'The admin list should skip records carrying nothing but an id');
+};
+
 $tests['shipping an order requires a courier tracking id and link'] = function (): void {
     $service = new \App\Services\OrderService();
     $cases = [
-        [[], 'tracking ID'],
-        [['tracking_id' => 'ABC123'], 'tracking link'],
-        [['tracking_url' => 'https://courier.example/t/1'], 'tracking ID'],
-        [['tracking_id' => 'ABC123', 'tracking_url' => 'not-a-url'], 'valid URL'],
+        [[], 'Select the courier'],
+        [['tracking_id' => 'ABC123'], 'Select the courier'],
+        [['courier_name' => 'DTDC'], 'tracking ID'],
+        // A courier that is not on the list still has to bring its own link.
+        [['courier_name' => 'Some Local Courier', 'tracking_id' => 'ABC123'], 'not on the list'],
+        [['courier_name' => 'Some Local Courier', 'tracking_id' => 'ABC123', 'tracking_url' => 'not-a-url'], 'valid URL'],
     ];
     foreach ($cases as [$tracking, $expected]) {
         $blocked = false;
@@ -1005,12 +1027,23 @@ $tests['shipping an order requires a courier tracking id and link'] = function (
         assertTrue($blocked, 'Marking shipped without complete tracking should be rejected: ' . $expected);
     }
 
-    // With both present, validation passes and the order lookup is what fails.
+    // A known courier supplies its own link, so the admin never types a URL: validation
+    // passes with courier + tracking ID alone and the order lookup is what fails.
     $reachedLookup = false;
-    try { $service->updateStatus('missing-order', 'shipped', null, ['tracking_id' => 'ABC123', 'tracking_url' => 'https://courier.example/t/1']); }
+    try { $service->updateStatus('missing-order', 'shipped', null, ['courier_name' => 'DTDC', 'tracking_id' => 'ABC123']); }
     catch (\InvalidArgumentException) { $reachedLookup = false; }
     catch (\Throwable) { $reachedLookup = true; }
-    assertTrue($reachedLookup, 'Complete tracking should pass validation');
+    assertTrue($reachedLookup, 'A known courier should not require a typed tracking link');
+
+    // Every courier offered in the dropdown must resolve to a usable link.
+    $couriers = \App\Services\CourierService::all();
+    assertSame(7, count($couriers), 'All seven couriers should be offered');
+    foreach ($couriers as $name => $url) {
+        assertTrue(filter_var($url, FILTER_VALIDATE_URL) !== false, "Courier {$name} should have a valid tracking URL");
+        assertTrue(str_starts_with($url, 'https://'), "Courier {$name} should use https");
+        assertTrue(\App\Services\CourierService::isKnown($name), "Courier {$name} should be recognised");
+    }
+    assertSame('', \App\Services\CourierService::trackingUrl('Not A Courier'), 'An unknown courier has no link');
 
     // Other transitions must not be blocked by the shipping requirement.
     $processingBlocked = false;

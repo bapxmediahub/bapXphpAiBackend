@@ -14,6 +14,12 @@
                 <tr><td colspan="4" style="text-align:center; color:var(--color-text-muted); padding:var(--space-2xl);">No <?= e(strtolower($title)) ?> records yet.</td></tr>
             <?php else: ?>
                 <?php foreach($items as $item): ?>
+                    <?php
+                    // A record carrying nothing but an id is not a record the admin can
+                    // act on. One such row rendered as "Active · ₹0" at the top of
+                    // Orders, above real orders, with no date and no customer.
+                    if (count(array_filter($item, fn($v, $k) => $k !== 'id' && $v !== '' && $v !== null, ARRAY_FILTER_USE_BOTH)) === 0) continue;
+                    ?>
                     <tr class="<?= (($collection ?? '') === 'support_tickets') ? 'ticket-row' : '' ?>" <?= (($collection ?? '') === 'support_tickets') ? 'onclick="toggleTicket(this)"' : '' ?>>
                         <td><code style="font-size:0.8rem; background:var(--color-bg-alt); padding:0.2rem 0.5rem; border-radius:var(--radius-sm);"><?= e(substr((string)($item['id'] ?? $item['slug'] ?? $item['code'] ?? 'record'), 0, 16)) ?></code></td>
                         <td>
