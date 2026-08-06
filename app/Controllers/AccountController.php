@@ -37,6 +37,32 @@ final class AccountController extends BaseController {
         $this->render('account/install');
     }
 
+    /**
+     * One order, in full.
+     *
+     * My Orders was a seven-column table with no way into an individual order, so a
+     * customer could see a status but never the items, the address and the tracking
+     * together. It doubles as the thank-you screen: a verified payment lands here with
+     * ?placed=1, which is the first time the customer sees what they actually bought.
+     */
+    public function order(string $orderId): void {
+        $order = $this->ownedOrder($orderId);
+        if (!$order) { $this->renderNotFound(); return; }
+        $justPlaced = isset($_GET['placed']);
+        $settings = (new SettingsService())->public();
+        $this->render('account/order', compact('order', 'justPlaced', 'settings'));
+    }
+
+    /** The order, only if it belongs to the signed-in customer. */
+    private function ownedOrder(string $orderId): ?array {
+        $userEmail = $_SESSION['user']['email'] ?? '';
+        if ($userEmail === '') return null;
+        foreach ((new OrderService())->all() as $o) {
+            if (($o['id'] ?? '') === $orderId && ($o['customer_email'] ?? '') === $userEmail) return $o;
+        }
+        return null;
+    }
+
     public function invoice(string $orderId): void {
         $userEmail = $_SESSION['user']['email'] ?? '';
         $orders = (new OrderService())->all();

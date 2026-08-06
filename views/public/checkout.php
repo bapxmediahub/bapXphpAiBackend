@@ -15,6 +15,17 @@
         <div class="container">
             <div class="checkout-layout">
                 <div class="checkout-form reveal">
+                    <?php // A failed payment used to be a toast that disappeared before it could
+                          // be read, leaving the shopper on a full cart with no idea what happened. ?>
+                    <div class="pay-failed" id="pay-failed" role="alert" aria-live="assertive">
+                        <h3>Your payment did not go through</h3>
+                        <p id="pay-failed-reason">No money has left your account, and nothing has been ordered.</p>
+                        <p>Your cart is exactly as you left it, so you can try again whenever you are ready.</p>
+                        <div class="pay-failed__actions">
+                            <button type="button" class="btn btn-primary btn-sm" id="pay-retry">Try payment again</button>
+                            <a href="/contact" class="btn btn-sm btn-ghost">Contact us</a>
+                        </div>
+                    </div>
                     <div class="checkout-form__section">
                         <h3 class="checkout-form__section-title">Shipping Details</h3>
                         <div class="checkout-form__row">
@@ -103,6 +114,29 @@
                         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
                         <?php endif; ?>
                         <script>
+                        // Shown in place of a toast: a payment failure is the one message a
+                        // shopper must be able to read at their own pace and act on.
+                        function showPaymentFailure(reason) {
+                            var panel = document.getElementById('pay-failed');
+                            if (!panel) return;
+                            var line = document.getElementById('pay-failed-reason');
+                            if (line) {
+                                line.textContent = reason
+                                    ? reason + ' No money has left your account, and nothing has been ordered.'
+                                    : 'No money has left your account, and nothing has been ordered.';
+                            }
+                            panel.classList.add('is-open');
+                            panel.scrollIntoView({behavior: 'smooth', block: 'center'});
+                        }
+                        document.addEventListener('DOMContentLoaded', function () {
+                            var retry = document.getElementById('pay-retry');
+                            if (!retry) return;
+                            retry.addEventListener('click', function () {
+                                document.getElementById('pay-failed').classList.remove('is-open');
+                                var pay = document.getElementById('pay-now');
+                                if (pay) { pay.disabled = false; pay.click(); }
+                            });
+                        });
                         const checkoutGateways = {
                             razorpay: <?= $hasRazorpay ? 'true' : 'false' ?>,
                             stripe: <?= $hasStripe ? 'true' : 'false' ?>
@@ -236,19 +270,21 @@
                                             if (!verifyResponse.ok || !result.verified) {
                                                 throw new Error(result.error || 'Payment verification failed.');
                                             }
-                                            showToast('Order placed. Redirecting to your orders...', 'success');
-                                            window.location.href = '/account/orders';
+                                            // Land on the order itself, not the list. A toast that
+                                            // vanishes was the whole acknowledgement a customer got
+                                            // for the moment they had just paid.
+                                            window.location.href = '/account/orders/' + encodeURIComponent(result.order_id) + '?placed=1';
                                         }
                                     });
                                     razorpay.on('payment.failed', (event) => {
                                         button.disabled = false;
-                                        const reason = event.error && event.error.description ? event.error.description : 'Payment failed. Please try again.';
-                                        showToast(reason, 'error');
+                                        const reason = event.error && event.error.description ? event.error.description : '';
+                                        showPaymentFailure(reason);
                                     });
                                     razorpay.open();
                                 } catch (error) {
                                     button.disabled = false;
-                                    showToast(error.message || 'Payment could not be started.', 'error');
+                                    showPaymentFailure(error.message || '');
                                 }
                             });
                         })();

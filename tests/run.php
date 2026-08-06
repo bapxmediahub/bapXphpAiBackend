@@ -989,6 +989,43 @@ $tests['agent replies never expose the model reasoning scaffold'] = function ():
         'Admin agent should delegate to the shared cleaner');
 };
 
+$tests['a paying customer lands on their order and a failure explains itself'] = function (): void {
+    routeExists('/account/orders/{orderId}', 'A customer should be able to open one order');
+
+    // My Orders showed a status but gave no way into the order itself.
+    $list = file_get_contents(app_path('views/account/orders.php'));
+    assertTrue(str_contains($list, 'View order') && str_contains($list, '/account/orders/'),
+        'Each order row should link to that order');
+
+    // A verified payment used to redirect to the list behind a toast that vanished.
+    $checkout = file_get_contents(app_path('views/public/checkout.php'));
+    assertTrue(str_contains($checkout, "'/account/orders/' + encodeURIComponent(result.order_id) + '?placed=1'"),
+        'A verified payment should land on the order that was just placed');
+    assertTrue(!str_contains($checkout, "showToast('Order placed"),
+        'The order confirmation should not be a toast');
+    assertTrue(str_contains($checkout, 'showPaymentFailure') && str_contains($checkout, 'pay-retry'),
+        'A failed payment should show a panel with a retry, not a toast');
+
+    // The thank-you banner is part of the order page and only appears on arrival.
+    $order = file_get_contents(app_path('views/account/order.php'));
+    assertTrue(str_contains($order, 'Thank you') && str_contains($order, 'justPlaced'),
+        'The order page should double as the thank-you screen');
+    foreach (['tracking_url', 'courier_name', 'Total paid'] as $needle) {
+        assertTrue(str_contains($order, $needle), "The order page should show {$needle}");
+    }
+
+    // The page must only ever render an order belonging to the signed-in customer.
+    $controller = file_get_contents(app_path('app/Controllers/AccountController.php'));
+    assertTrue(str_contains($controller, 'ownedOrder') && str_contains($controller, "customer_email'] ?? '') === \$userEmail"),
+        'One customer must not be able to open another customer\'s order');
+
+    $css = file_get_contents(app_path('assets/css/band.css'));
+    foreach (['.order-thanks', '.order-card', '.pay-failed'] as $rule) {
+        assertTrue(str_contains($css, $rule), "Stylesheet should define {$rule}");
+    }
+    assertSame(substr_count($css, '{'), substr_count($css, '}'), 'Stylesheet should have balanced rule braces');
+};
+
 $tests['an unpaid checkout never registers an order'] = function (): void {
     // The Stripe branch wrote the order the moment the customer was redirected to the
     // gateway, so every abandoned or cancelled checkout left a permanent "Pending" row

@@ -3793,3 +3793,90 @@ body { background: var(--color-bg); }
     margin-right: 0;
     max-width: 70ch;
 }
+
+/* ── Customer order page ───────────────────────────────────────────────────
+   The thank-you banner and the single-order view. A customer who has just paid
+   used to get a toast that vanished and a seven-column table; this is the first
+   screen that tells them what they bought and what happens next. */
+.order-thanks {
+    text-align: center;
+    padding: var(--space-xl) var(--space-lg);
+    margin-bottom: var(--space-lg);
+    background: var(--color-success-light);
+    border: 1px solid rgba(45, 138, 78, 0.25);
+    border-radius: var(--radius-lg);
+    color: var(--color-success);
+}
+.order-thanks h1 {
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    margin: var(--space-sm) 0 var(--space-xs);
+    color: var(--color-maroon);
+}
+.order-thanks p {
+    margin: 0 auto var(--space-xs);
+    max-width: 52ch;
+    color: var(--color-text);
+}
+.order-thanks__meta { font-size: 0.85rem; color: var(--color-text-muted); }
+.order-thanks__actions {
+    display: flex;
+    gap: var(--space-sm);
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: var(--space-md);
+}
+.order-card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    background: var(--color-bg);
+}
+.order-card__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+}
+.order-card__label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+    margin-bottom: 0.25rem;
+}
+.order-card__id { font-size: 0.85rem; }
+.order-card__value { margin: 0; font-size: 0.9rem; line-height: 1.6; }
+.order-card__note { margin: var(--space-xs) 0 0; font-size: 0.82rem; color: var(--color-text-muted); }
+.order-card__heading { font-family: var(--font-serif); font-size: 1.05rem; margin: var(--space-lg) 0 var(--space-sm); }
+.order-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-lg);
+    padding: var(--space-md) 0;
+}
+.order-card__actions {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    margin-top: var(--space-lg);
+}
+/* The checkout failure panel replaces a toast that disappeared before a shopper
+   could read why their payment had not gone through. */
+.pay-failed {
+    display: none;
+    padding: var(--space-lg);
+    margin-bottom: var(--space-md);
+    background: var(--color-error-light, #fdecec);
+    border: 1px solid rgba(180, 35, 35, 0.25);
+    border-radius: var(--radius-lg);
+}
+.pay-failed.is-open { display: block; }
+.pay-failed h3 { font-family: var(--font-serif); margin: 0 0 var(--space-xs); font-size: 1.1rem; }
+.pay-failed p { margin: 0 0 var(--space-sm); font-size: 0.9rem; }
+.pay-failed__actions { display: flex; gap: var(--space-sm); flex-wrap: wrap; }

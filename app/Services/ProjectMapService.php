@@ -54,6 +54,7 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/account/dashboard/install','name'=>'account.dashboard.install','page'=>'account/install','controller'=>'AccountController@install','services'=>['AuthService']],
             ['method'=>'GET','path'=>'/account/orders','name'=>'account.orders.legacy','page'=>'account/orders','controller'=>'AccountController@legacyOrders','services'=>['AuthService']],
             ['method'=>'GET','path'=>'/account/orders/{orderId}/invoice','name'=>'account.invoice','page'=>'account/invoice','controller'=>'AccountController@invoice','services'=>['AuthService','OrderService','SettingsService','TaxService']],
+            ['method'=>'GET','path'=>'/account/orders/{orderId}','name'=>'account.order','page'=>'account/order','controller'=>'AccountController@order','services'=>['AuthService','OrderService','SettingsService']],
             ['method'=>'GET','path'=>'/account/bookings','name'=>'account.bookings.legacy','page'=>'account/bookings','controller'=>'AccountController@legacyBookings','services'=>['AuthService']],
             ['method'=>'POST','path'=>'/api/consultations/{id}/status','name'=>'api.consultation.status','page'=>'admin/list','controller'=>'ConsultationController@status','services'=>['AuthService','ConsultationService']],
             ['method'=>'GET','path'=>'/admin','name'=>'admin.dashboard','page'=>'admin/dashboard','controller'=>'AdminController@dashboard','services'=>['OrderService','AppointmentService']],
