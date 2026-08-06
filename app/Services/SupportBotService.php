@@ -134,7 +134,11 @@ final class SupportBotService {
     /** Capabilities the agent may offer, derived from the modules actually switched on. */
     private function allowedHelp(): string {
         $help = ['navigation details from the JSON'];
-        if (module_on('ecommerce')) array_unshift($help, 'product', 'cart', 'checkout', 'delivery address', 'order');
+        // 'shop' is the key in SettingsService::MODULES. 'ecommerce' is not, and
+        // moduleEnabled() returns its `?? true` default for an unknown key — so this
+        // read as "on" whatever the owner had set, and the bot kept offering cart and
+        // checkout help for a shop that was switched off.
+        if (module_on('shop')) array_unshift($help, 'product', 'cart', 'checkout', 'delivery address', 'order');
         if ($this->consultEnabled()) $help[] = 'consultant booking';
         if (module_on('blog')) $help[] = 'articles and help guides';
         return implode(', ', $help);

@@ -1128,6 +1128,28 @@ $tests['the blog editor keeps images and fills in the date and author itself'] =
         'The author field should no longer be hard-coded to Admin');
 };
 
+$tests['every module toggle in the code refers to a module that exists'] = function (): void {
+    // moduleEnabled() returns its `?? true` default for an unknown key, so a typo does
+    // not fail — it silently reads as "switched on" whatever the owner set. That is how
+    // the support bot kept offering cart and checkout help for a disabled shop.
+    $known = array_keys(\App\Services\SettingsService::MODULES);
+    $used = [];
+    foreach ([app_path('app'), app_path('views')] as $dir) {
+        $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir));
+        foreach ($files as $file) {
+            if ($file->getExtension() !== 'php') continue;
+            if (preg_match_all("/module(?:_on|Enabled)\\(\\s*'([a-z_]+)'/", (string)file_get_contents($file->getPathname()), $m)) {
+                foreach ($m[1] as $key) $used[$key] = ($used[$key] ?? 0) + 1;
+            }
+        }
+    }
+    assertTrue($used !== [], 'Module toggles should be found in the source');
+    foreach (array_keys($used) as $key) {
+        assertTrue(in_array($key, $known, true),
+            "module_on('{$key}') refers to a module that does not exist; known keys are " . implode(', ', $known));
+    }
+};
+
 $tests['the admin agent can look things up instead of guessing'] = function (): void {
     $registry = new \App\Services\AgentToolRegistry();
     $names = array_column($registry->declarations(), 'name');
