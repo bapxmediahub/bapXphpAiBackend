@@ -398,15 +398,42 @@ final class AdminController extends BaseController {
             'pageTitle'=>'Blog','title'=>'Blog Posts',
             'posts'=>$blog->all(true),'categories'=>$blog->categories(),
             'mediaFiles'=>(new MediaService())->all('blog'),
+            'currentAuthor'=>$this->currentAuthorName(),
         ]);
     }
+    /** The signed-in admin's own name, falling back to a generic byline. */
+    private function currentAuthorName(): string {
+        $user = $_SESSION['user'] ?? [];
+        foreach (['name', 'username'] as $key) {
+            $value = trim((string)($user[$key] ?? ''));
+            if ($value !== '') return $value;
+        }
+        $email = trim((string)($user['email'] ?? ''));
+        if ($email !== '') return explode('@', $email)[0];
+        return 'Admin';
+    }
+
     public function saveBlog(): void{
         $blog = new \App\Services\BlogService();
         $slug = trim((string)($_POST['slug'] ?? ''));
         // Only a post that did not exist before triggers the newsletter, so editing an
         // article never re-mails everyone who already received it.
         $isNew = $slug === '' || $blog->find($slug) === null;
-        $blog->save($_POST);
+
+        // The date and the author are facts the site already knows, so it should not be
+        // asking for them. Left blank they were saved blank, which is why a new post
+        // showed no date and sorted to the bottom of the list. Both stay editable for
+        // the case where a post is backdated or written by someone else.
+        $post = $_POST;
+        if (trim((string)($post['published_at'] ?? '')) === '') {
+            $existing = $slug !== '' ? $blog->find($slug) : null;
+            $post['published_at'] = (string)($existing['published_at'] ?? '') ?: date('Y-m-d');
+        }
+        if (trim((string)($post['author'] ?? '')) === '') {
+            $post['author'] = $this->currentAuthorName();
+        }
+        $post['updated_at'] = date('Y-m-d');
+        $blog->save($post);
         (new AuditLogService())->record('save','blog',$_POST['slug'] ?? '');
         $sent = 0;
         if ($isNew && ($_POST['notify_subscribers'] ?? '') === '1') {

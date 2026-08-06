@@ -1102,6 +1102,32 @@ $tests['the support agent knows this shop\'s own delivery and payment rules'] = 
     assertTrue(str_contains($service, 'object with this shop'), 'The prompt should point the model at the policies');
 };
 
+$tests['the blog editor keeps images and fills in the date and author itself'] = function (): void {
+    $view = file_get_contents(app_path('views/admin/blog.php'));
+
+    // A top-level <img> was dropped: the root loop fell through to inline(n), which
+    // walks the node's CHILDREN, and an <img> has none — so an image picked from the
+    // media library converted to an empty string and vanished the moment Preview or
+    // Markdown was opened.
+    assertTrue(str_contains($view, 'var VOIDISH = /^(img|br|hr|input)$/;'),
+        'Nodes that carry everything in their attributes need their own branch');
+    assertTrue(str_contains($view, "if (t==='img') return '!['+(node.getAttribute('alt')||'')+']('+(node.getAttribute('src')||'')+')';"),
+        'A top-level image should convert to Markdown, not an empty string');
+    $guard = strpos($view, 'VOIDISH.test(tag)');
+    $fallback = strpos($view, 'else { var t2=inline(n).trim();');
+    assertTrue($guard !== false && $fallback !== false && $guard < $fallback,
+        'The image branch must run before the fallback that dropped it');
+
+    // The date and the author are facts the site already knows.
+    $admin = file_get_contents(app_path('app/Controllers/AdminController.php'));
+    assertTrue(str_contains($admin, 'currentAuthorName'), 'The author should come from the signed-in admin');
+    assertTrue(str_contains($admin, "\$post['published_at'] = (string)(\$existing['published_at'] ?? '') ?: date('Y-m-d');"),
+        'A blank date should become today, and an edit should keep the original date');
+    assertTrue(str_contains($view, 'Leave blank for today'), 'The form should say the date is optional');
+    assertTrue(!str_contains($view, 'name="author" id="edit-author" value="Admin"'),
+        'The author field should no longer be hard-coded to Admin');
+};
+
 $tests['the model answer is separated from the model thinking out loud'] = function (): void {
     // gemma-4-31b-it is a reasoning model. AiClient read parts[0], which for a reasoning
     // response is the *thought*, not the answer. Every reply handed back was the model

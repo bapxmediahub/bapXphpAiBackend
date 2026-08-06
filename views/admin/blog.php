@@ -20,7 +20,7 @@
     </div>
 
     <details class="be-settings">
-        <summary>Post settings <span>slug, image, excerpt, SEO, date, author</span></summary>
+        <summary>Post settings <span>slug, image, excerpt, SEO — date and author are automatic</span></summary>
         <div class="admin-blog-editor__grid">
         <label>Slug <input type="text" name="slug" id="edit-slug-display" placeholder="auto-from-title" style="width:100%"></label>
         <label>Article template
@@ -38,8 +38,10 @@
         <label>Display order <input type="number" name="order" id="edit-order" min="0" step="1" style="width:100%"></label>
         <label class="admin-blog-editor__wide">Excerpt <textarea name="excerpt" id="edit-excerpt" rows="2" style="width:100%"></textarea></label>
         <label class="admin-blog-editor__wide">SEO Keywords <input type="text" name="keywords" id="edit-keywords" placeholder="astrology, spirituality, vedic astrology" style="width:100%"><small>Comma-separated keywords for search engine indexing.</small></label>
-        <label>Published At <input type="date" name="published_at" id="edit-date" style="width:100%"></label>
-        <label>Author <input type="text" name="author" id="edit-author" value="Admin" style="width:100%"></label>
+        <?php // Both are filled in on save from today's date and the signed-in admin.
+              // They stay here for backdating a post or crediting someone else. ?>
+        <label>Published At <input type="date" name="published_at" id="edit-date" style="width:100%"><small>Leave blank for today.</small></label>
+        <label>Author <input type="text" name="author" id="edit-author" placeholder="<?= e($currentAuthor ?? 'Admin') ?>" style="width:100%"><small>Leave blank to credit <?= e($currentAuthor ?? 'Admin') ?>.</small></label>
         </div>
     </details>
 
@@ -257,10 +259,27 @@ function generateDraft(){var f=document.getElementById('blog-form');var fd=new F
             });
             return s;
         }
+        // Renders one node, rather than its children. inline() walks childNodes, so a
+        // node that carries everything in its attributes and has no children — an <img>
+        // is the case that bit us — converted to an empty string and vanished on the
+        // next mode switch. That is why an image picked from the media library
+        // disappeared as soon as Preview was opened.
+        function one(node) {
+            if (node.nodeType===3) return node.nodeValue;
+            var t = node.nodeName.toLowerCase();
+            if (t==='img') return '!['+(node.getAttribute('alt')||'')+']('+(node.getAttribute('src')||'')+')';
+            if (t==='br') return '\n';
+            var wrap = document.createElement('div');
+            wrap.appendChild(node.cloneNode(true));
+            return inline(wrap);
+        }
+        var VOIDISH = /^(img|br|hr|input)$/;
+
         var out=[];
         root.childNodes.forEach(function(n){
             if (n.nodeType===3) { var t=n.nodeValue.trim(); if(t) out.push(t); return; }
             var tag=n.nodeName.toLowerCase();
+            if (VOIDISH.test(tag)) { var v=one(n).trim(); if(v){out.push(v);out.push('');} return; }
             if (/^h[1-3]$/.test(tag)) out.push('#'.repeat(+tag[1])+' '+inline(n).trim());
             else if (tag==='blockquote') out.push('> '+inline(n).trim());
             else if (tag==='pre') out.push('```\n'+n.textContent.replace(/\n$/,'')+'\n```');
