@@ -72,6 +72,31 @@ target is absent, and state that absence as a finding.
   `BAPX_REMOTE_DB_URL`. Every other secret belongs in the MySQL `secrets` table via
   Admin → Integrations.
 
+## Model facts you must not guess
+
+Your training has a cutoff and this project uses models released after it. **Search the
+web before asserting that a model, endpoint or API field does not exist.** Saying "that
+model name looks wrong" without checking sends the owner chasing a configuration problem
+that is not there.
+
+- `gemma-4-31b-it` **is a real, current model** on the Gemini API, served from
+  `https://generativelanguage.googleapis.com/v1beta/models`. It is the configured model
+  for both agents. Proof:
+  <https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api> and
+  <https://huggingface.co/google/gemma-4-31B-it>. It was wrongly called fake twice
+  during development; the real defect was ours, in response parsing.
+- It is a **reasoning model**. Its reply may contain the model thinking out loud, either
+  as parts flagged `"thought": true` or as prose before the answer. Read the answer with
+  `AiClient::answerFromParts()`; never take `parts[0]`, which is usually the reasoning.
+  Reference: <https://github.com/google-gemini/cookbook/issues/1198>.
+- `thinkingConfig.includeThoughts: false` is silently ignored by this model family, and
+  `thinkingLevel` is rejected outright by this endpoint (HTTP 400, `Unknown name
+  "thinkingLevel"`). Filter the reasoning out of the response instead of trying to
+  switch it off.
+
+The general rule: when a fact about an external service decides what you change, verify
+it against that service's own documentation and record the URL beside the code.
+
 ## Testing
 
 This is a web app and a PWA. **Verify in a browser, not the terminal** — desktop and

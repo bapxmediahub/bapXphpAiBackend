@@ -1082,6 +1082,43 @@ $tests['the admin agent attaches documents and drafts into a form it cannot save
         'An upload return path must be restricted to the admin');
 };
 
+$tests['the model answer is separated from the model thinking out loud'] = function (): void {
+    // gemma-4-31b-it is a reasoning model. AiClient read parts[0], which for a reasoning
+    // response is the *thought*, not the answer. Every reply handed back was the model
+    // thinking out loud: AiReplyCleaner then correctly stripped it as scaffold and left
+    // nothing, so both agents fell back to a canned reply. One array index.
+    assertSame('the answer', \App\Services\AiClient::answerFromParts([
+        ['text' => 'The user wants me to…', 'thought' => true],
+        ['text' => 'the answer'],
+    ]), 'A thought part must never be returned as the answer');
+    assertSame('the answer', \App\Services\AiClient::answerFromParts([['text' => 'the answer']]),
+        'A response with no thoughts is returned as-is');
+    assertSame('Hello world', \App\Services\AiClient::answerFromParts([
+        ['text' => 'planning', 'thought' => true], ['text' => 'Hello '], ['text' => 'world'],
+    ]), 'A multi-part answer is joined');
+    assertSame('only thinking', \App\Services\AiClient::answerFromParts([['text' => 'only thinking', 'thought' => true]]),
+        'A response that is nothing but thought is still shown, since an empty string explains nothing');
+    assertSame('', \App\Services\AiClient::answerFromParts([]), 'No parts means no answer');
+
+    // The thought flag is not always set — sometimes the reasoning arrives as prose —
+    // so the answer is also fenced.
+    assertSame('A rudraksha is a seed.', \App\Services\AiClient::fencedAnswer(
+        "I will write it between `<final_answer>` and `</final_answer>` as asked.\n"
+        . "<final_answer>A rudraksha is a seed.</final_answer>"
+    ), 'The model quoting the tag names while planning must not be mistaken for the answer');
+    assertSame(null, \App\Services\AiClient::fencedAnswer('use `<final_answer>` and `</final_answer>`'),
+        'A prompt echo alone is not an answer');
+    assertSame('ok', \App\Services\AiClient::fencedAnswer('<final_answer>ok</final_answer>'), 'A plain fence is read');
+    assertSame(null, \App\Services\AiClient::fencedAnswer('no tags here'), 'No fence means no fenced answer');
+
+    // The request must ask for the reasoning to stop, in the shape the API accepts.
+    $client = file_get_contents(app_path('app/Services/AiClient.php'));
+    assertTrue(str_contains($client, "'thinkingConfig' => ['thinkingLevel' => 'MINIMAL']"),
+        'thinkingLevel must be nested inside thinkingConfig; at the top of generationConfig the API returns HTTP 400');
+    assertTrue(!str_contains($client, "parts'][0]['text']"),
+        'The client must never read parts[0] as the answer');
+};
+
 $tests['a product can be hidden without deleting it, and an offer expires'] = function (): void {
     $service = new \App\Services\ProductService(
         new \App\Services\DatabaseService(),
