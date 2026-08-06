@@ -1082,6 +1082,62 @@ $tests['the admin agent attaches documents and drafts into a form it cannot save
         'An upload return path must be restricted to the admin');
 };
 
+$tests['a coupon obeys its dates, spend range and usage limits'] = function (): void {
+    $service = new \App\Services\CouponService();
+    $now = new \DateTimeImmutable('2026-08-06 12:00:00');
+    $coupon = fn(array $overrides = []): array => array_merge(
+        ['code' => 'SAVE', 'active' => true, 'discount_type' => 'percentage', 'discount_value' => 25],
+        $overrides
+    );
+
+    // Checkout computed min($cartTotal * $value / 100, $value), comparing rupees against
+    // a percentage, so 25% off a ₹2000 cart was paid as ₹25.
+    assertSame(500.0, $service->discountFor($coupon(), 2000.0), 'A 25% coupon on ₹2000 should give ₹500');
+    assertSame(100.0, $service->discountFor($coupon(['discount_type' => 'fixed', 'discount_value' => 100]), 2000.0),
+        'A fixed coupon gives its face value');
+    assertSame(300.0, $service->discountFor($coupon(['discount_value' => 20, 'max_discount' => 300]), 2000.0),
+        'max_discount is the rupee ceiling the old cap was reaching for');
+    assertSame(400.0, $service->discountFor($coupon(['discount_value' => 20, 'max_discount' => 900]), 2000.0),
+        'A ceiling above the discount changes nothing');
+    assertSame(500.0, $service->discountFor($coupon(['discount_type' => 'fixed', 'discount_value' => 9999]), 500.0),
+        'A discount never exceeds the cart');
+
+    $refused = function (array $c, float $total, int $usedAll = 0, int $usedByCustomer = 0) use ($service, $now): string {
+        try { $service->assertUsable($c, $total, $usedAll, $usedByCustomer, $now); return ''; }
+        catch (\InvalidArgumentException $e) { return $e->getMessage(); }
+    };
+
+    // A posted promo code used to be redeemable by anyone, any number of times, on a
+    // cart of any size, forever.
+    assertTrue(str_contains($refused($coupon(['ends_at' => '2026-08-01']), 2000.0), 'expired'),
+        'An expired coupon is refused');
+    assertSame('', $refused($coupon(['ends_at' => '2026-08-06']), 2000.0),
+        'A coupon ending today is valid for the whole of today');
+    assertTrue(str_contains($refused($coupon(['starts_at' => '2026-09-01']), 2000.0), 'not active yet'),
+        'A future coupon is refused');
+    assertTrue(str_contains($refused($coupon(['min_spend' => 3000]), 2000.0), 'Add ₹1,000.00 more'),
+        'Below the minimum spend, the shopper is told how much more is needed');
+    assertTrue(str_contains($refused($coupon(['max_spend' => 1000]), 2000.0), 'up to ₹1,000.00'),
+        'Above the maximum spend is refused');
+    assertTrue(str_contains($refused($coupon(['usage_limit' => 1]), 2000.0, 1), 'fully redeemed'),
+        'A coupon past its total usage limit is refused');
+    assertTrue(str_contains($refused($coupon(['usage_limit_per_customer' => 1]), 2000.0, 5, 1), 'already used'),
+        'A coupon past its per-customer limit is refused');
+    assertTrue(str_contains($refused($coupon(['active' => false]), 2000.0), 'no longer available'),
+        'An inactive coupon is refused');
+    assertTrue(str_contains($refused(['code' => 'S', 'status' => 'inactive'], 2000.0), 'no longer available'),
+        'The status enum is honoured as well as the active flag');
+    assertSame('', $refused($coupon(), 2000.0), 'A coupon inside every limit is allowed');
+
+    // Checkout must not keep its own copy of the rule, and must tell the shopper why.
+    $commerce = file_get_contents(app_path('app/Controllers/CommerceController.php'));
+    assertTrue(str_contains($commerce, 'CouponService'), 'Checkout should judge coupons through CouponService');
+    assertTrue(!str_contains($commerce, '$this->cartTotal($items) * $discountValue / 100'),
+        'The broken percentage maths must not survive in checkout');
+    assertTrue(str_contains($commerce, "jsonResponse(['error' => \$e->getMessage()], 422)"),
+        'A refused coupon should tell the shopper why instead of silently charging full price');
+};
+
 $tests['an unpaid checkout never registers an order'] = function (): void {
     // The Stripe branch wrote the order the moment the customer was redirected to the
     // gateway, so every abandoned or cancelled checkout left a permanent "Pending" row

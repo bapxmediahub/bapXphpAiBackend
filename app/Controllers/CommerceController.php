@@ -164,23 +164,23 @@ final class CommerceController extends BaseController {
         if (!(new SecretService())->razorpayReadyForCurrentHost($secrets)) {
             $this->jsonResponse(['error' => 'Razorpay ' . ($secrets['razorpay_mode'] ?? 'selected') . ' mode is not configured yet.'], 401);
         }
+        // Every coupon rule lives in CouponService. This used to check only whether the
+        // code was active, so a posted promo code never expired and had no spend or
+        // usage limit; and the percentage branch compared rupees against a percentage,
+        // paying 25% off a ₹2000 cart as ₹25. A refusal is now told to the shopper
+        // rather than silently applying no discount and charging full price.
         $discount = 0;
         $couponCode = trim($_POST['coupon_code'] ?? '');
         if ($couponCode !== '') {
-            $coupons = $store->read('coupons');
-            foreach ($coupons as $c) {
-                if (strcasecmp($c['code'] ?? '', $couponCode) === 0) {
-                    if (($c['active'] ?? false) || ($c['status'] ?? '') === 'active') {
-                        $discountValue = (float)($c['discount_value'] ?? 0);
-                        if (($c['discount_type'] ?? '') === 'percentage') {
-                            $discount = min($this->cartTotal($items) * $discountValue / 100, $discountValue);
-                        } else {
-                            $discount = $discountValue;
-                        }
-                        $discount = min($discount, $this->cartTotal($items));
-                    }
-                    break;
-                }
+            try {
+                $applied = (new \App\Services\CouponService($store))->apply(
+                    $couponCode,
+                    (float)$this->cartTotal($items),
+                    (string)($_SESSION['user']['email'] ?? ($_POST['email'] ?? ''))
+                );
+                $discount = $applied['discount'];
+            } catch (\InvalidArgumentException $e) {
+                $this->jsonResponse(['error' => $e->getMessage()], 422);
             }
         }
         $cartAmount = max(0, $this->cartTotal($items) - $discount) * 100;

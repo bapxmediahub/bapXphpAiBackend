@@ -15,6 +15,21 @@
                         <label style="flex-direction:row; align-items:center; gap:var(--space-xs); text-transform:none; font-weight:400;">
                             <input type="checkbox" name="<?= e($field) ?>" id="field-<?= e($field) ?>" value="1" checked> Active
                         </label>
+                    <?php elseif($field === 'free_shipping'): ?>
+                        <label style="flex-direction:row; align-items:center; gap:var(--space-xs); text-transform:none; font-weight:400;">
+                            <input type="checkbox" name="<?= e($field) ?>" id="field-<?= e($field) ?>" value="1"> Also give free shipping
+                        </label>
+                    <?php elseif($field === 'discount_type'): ?>
+                        <select name="<?= e($field) ?>" id="field-<?= e($field) ?>">
+                            <option value="fixed">Fixed amount (₹)</option>
+                            <option value="percentage">Percentage (%)</option>
+                        </select>
+                    <?php // A coupon with no end date never expires, which is how a posted promo
+                          // code stayed redeemable forever. ?>
+                    <?php elseif(str_ends_with($field, '_at')): ?>
+                        <input type="date" name="<?= e($field) ?>" id="field-<?= e($field) ?>">
+                    <?php elseif(str_contains($field, '_spend') || str_contains($field, '_limit') || str_contains($field, 'discount')): ?>
+                        <input type="number" name="<?= e($field) ?>" id="field-<?= e($field) ?>" placeholder="Leave blank for no limit" step="any" min="0">
                     <?php elseif(str_contains($field, '_url') && !in_array($field, ['image_url', 'photo_url'], true)): ?>
                         <input type="url" name="<?= e($field) ?>" id="field-<?= e($field) ?>" placeholder="https://...">
                     <?php elseif(str_contains($field, 'price') || str_contains($field, 'amount') || str_contains($field, 'value') || str_contains($field, '_prm') || str_contains($field, '_percentage') || $field === 'slot_minutes' || $field === 'experience_years'): ?>
