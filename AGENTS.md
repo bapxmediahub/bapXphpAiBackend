@@ -35,3 +35,5 @@ blog bodies or runtime database records. Read `discovery` first and query narrow
 do not load the complete generated index into agent context. Use a three-hop budget:
 entry instructions → exact index match → original source. Avoid broad `ls`, recursive
 globs and Git history unless the indexed target is absent.
+
+- Model facts, including the AI model in use, live in `CLAUDE.md`. Verify against a provider's own docs before saying a model or field does not exist.
