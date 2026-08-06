@@ -299,6 +299,29 @@ final class AdminController extends BaseController {
     public function media(): void{$this->render('admin/media',['pageTitle'=>'Media Library','items'=>(new MediaService())->all()]);}
     public function uploadMedia(): void{$uploaded=(new MediaService())->upload($_FILES['media_files'] ?? [], $_POST['context'] ?? 'shared', $_POST['description'] ?? null); (new AuditLogService())->record('upload','media','',['count'=>count($uploaded),'context'=>$_POST['context'] ?? 'shared']); $this->flash(count($uploaded).' media file'.(count($uploaded) === 1 ? '' : 's').' uploaded.','success'); $this->redirect('/admin/media');}
     public function fixPermissions(): void{(new StoragePermissionService())->fix(); (new AuditLogService())->record('fix','permissions','storage'); $this->flash('Storage permissions checked and updated where PHP is allowed.','success'); $this->redirect('/admin/settings');}
+    /**
+     * Ask the configured model one real question and report exactly what came back.
+     *
+     * Both agents fall back to a canned reply when a call is rejected — correct for a
+     * customer, but it left the owner unable to tell "the model is switched off" from
+     * "the model name is wrong" or "the key expired". Every one of those looked like a
+     * bot that had stopped thinking.
+     */
+    public function testAi(): void{
+        $this->validateCsrf();
+        $config = (new SecretService())->getModelConfig();
+        $answer = (new \App\Services\AiClient())->complete('Reply with exactly: connection ok', 32, 0.0);
+        $ok = !\App\Services\AiClient::isError($answer) && trim($answer) !== '';
+        $_SESSION['ai_test_result'] = [
+            'ok' => $ok,
+            'model' => (string)($config['model'] ?? ''),
+            'endpoint' => (string)($config['endpoint'] ?? ''),
+            'message' => $ok ? trim($answer) : ($answer !== '' ? $answer : 'The provider returned an empty response.'),
+        ];
+        (new AuditLogService())->record('test','ai',(string)($config['model'] ?? ''),['result'=>$ok ? 'ok' : 'failed']);
+        $this->redirect('/admin/integrations');
+    }
+
     public function testEmail(): void{
         $to = trim((string)($_POST['test_email'] ?? ''));
         if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) {

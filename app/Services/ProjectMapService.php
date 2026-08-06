@@ -98,6 +98,7 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/admin/temples/save','name'=>'admin.temples.save','page'=>'admin/resource','controller'=>'AdminController@saveTemple','services'=>['ResourceService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/temples/delete','name'=>'admin.temples.delete','page'=>'admin/resource','controller'=>'AdminController@deleteTemple','services'=>['ResourceService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/integrations/test-email','name'=>'admin.integrations.test-email','page'=>'admin/integrations','controller'=>'AdminController@testEmail','services'=>['SecretService','SmtpMailer','AuditLogService']],
+            ['method'=>'POST','path'=>'/admin/integrations/test-ai','name'=>'admin.integrations.test-ai','page'=>'admin/integrations','controller'=>'AdminController@testAi','services'=>['SecretService','AiClient','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/integrations/save','name'=>'admin.integrations.save','page'=>'admin/integrations','controller'=>'AdminController@saveIntegrations','services'=>['SecretService','AuditLogService']],
             ['method'=>'POST','path'=>'/cart/add','name'=>'cart.add','page'=>'public/cart','controller'=>'CommerceController@addToCart','services'=>['CartService','ProductService']],
             ['method'=>'POST','path'=>'/cart/remove','name'=>'cart.remove','page'=>'public/cart','controller'=>'CommerceController@removeFromCart','services'=>['CartService']],
