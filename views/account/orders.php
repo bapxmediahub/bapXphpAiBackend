@@ -17,7 +17,12 @@
                         <tbody>
                         <?php foreach($orders as $order): ?>
                             <tr>
-                                <td><code style="font-size:0.8rem; background:var(--color-bg-alt); padding:0.2rem 0.5rem; border-radius:var(--radius-sm);"><?= e(substr($order['id'] ?? '', 0, 12)) ?></code></td>
+                                <td>
+                                    <code style="font-size:0.8rem; background:var(--color-bg-alt); padding:0.2rem 0.5rem; border-radius:var(--radius-sm);"><?= e(substr($order['id'] ?? '', 0, 12)) ?></code>
+                                    <?php // The table shows a status but never the order itself. ?>
+                                    <a href="/account/orders/<?= e((string)($order['id'] ?? '')) ?>" class="btn btn-sm"
+                                       style="display:block; margin-top:0.4rem; padding:0.3rem 0.6rem; font-size:0.75rem; text-align:center;">View order</a>
+                                </td>
                                 <td>
                                     <?php
                                     // Customer-facing wording. "confirmed" means paid and queued, which

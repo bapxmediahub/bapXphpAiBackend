@@ -7,11 +7,11 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 111 routes, 12 controllers, 45 services, 46 views, 0 data files, 20 tools"]
-    arch_routes["> Routes: 111 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 112 routes, 12 controllers, 45 services, 47 views, 0 data files, 20 tools"]
+    arch_routes["> Routes: 112 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
     arch_svc["> Services: 45"]:::arch
-    arch_views["> Views: 46"]:::arch
+    arch_views["> Views: 47"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 20"]:::arch
     arch_gaps["> Gaps: 7"]:::arch
@@ -48,6 +48,7 @@ flowchart LR
     route_get_account_dashboard_install["GET /account/dashboard/install — Install App — customer installation guidance"]:::route
     route_get_account_orders["GET /account/orders — Legacy account orders redirect"]:::route
     route_get_account_orders_orderid_invoice["GET /account/orders/{orderId}/invoice"]:::route
+    route_get_account_orders_orderid["GET /account/orders/{orderId}"]:::route
     route_get_account_bookings["GET /account/bookings — Legacy account sessions redirect"]:::route
     route_post_api_consultations_id_status["POST /api/consultations/{id}/status — API — update appointment status"]:::route
     route_post_consultation_initiate["POST /consultation/initiate — Request a scheduled consultant appointment"]:::route
@@ -221,6 +222,7 @@ flowchart LR
     view_account_bookings["account/bookings"]:::code
     view_account_install["account/install"]:::code
     view_account_invoice["account/invoice"]:::code
+    view_account_order["account/order"]:::code
     view_account_orders["account/orders"]:::code
     view_admin_agent["admin/agent"]:::code
     view_admin_appearance["admin/appearance"]:::code
@@ -464,6 +466,11 @@ flowchart LR
   controller_accountcontroller --> service_settingsservice
   controller_accountcontroller --> service_taxservice
   controller_accountcontroller -. renders .-> view_account_invoice
+  route_get_account_orders_orderid --> controller_accountcontroller
+  controller_accountcontroller --> service_authservice
+  controller_accountcontroller --> service_orderservice
+  controller_accountcontroller --> service_settingsservice
+  controller_accountcontroller -. renders .-> view_account_order
   route_get_account_bookings --> controller_accountcontroller
   controller_accountcontroller --> service_authservice
   controller_accountcontroller -. renders .-> view_account_bookings

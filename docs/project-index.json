@@ -3,10 +3,10 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 111,
+        "routes": 112,
         "controllers": 12,
         "services": 45,
-        "views": 46,
+        "views": 47,
         "collections": 22
     },
     "routes": [
@@ -92,6 +92,18 @@
             "view": "account/orders",
             "services": [
                 "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/account/orders/{orderId}",
+            "name": "account.order",
+            "controller": "AccountController@order",
+            "view": "account/order",
+            "services": [
+                "AuthService",
+                "OrderService",
+                "SettingsService"
             ]
         },
         {
@@ -1297,6 +1309,7 @@
         "account/bookings",
         "account/install",
         "account/invoice",
+        "account/order",
         "account/orders",
         "admin/agent",
         "admin/appearance",

@@ -36,14 +36,14 @@ query_examples:
   - "rg -n -B4 -A12 'type: \"skill\"' index.yaml"
   - "rg -n '<term>' docs/project-index.json map.mmd index.yaml"
 summary:
-  concepts: 398
-  relationships: 229
+  concepts: 399
+  relationships: 230
   by_type:
     blog: 16
     controller: 12
     doc: 35
     image: 148
-    route: 111
+    route: 112
     schema: 22
     service: 45
     skill: 9
@@ -2550,6 +2550,22 @@ concepts:
     services:
       - "AuthService"
     view: "account/orders"
+  - id: "route:get__account_orders__orderid"
+    type: "route"
+    title: "GET /account/orders/{orderId}"
+    description: "account.order"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/account/orders/{orderId}"
+    controller: "AccountController@order"
+    services:
+      - "AuthService"
+      - "OrderService"
+      - "SettingsService"
+    view: "account/order"
   - id: "route:get__account_orders__orderid__invoice"
     type: "route"
     title: "GET /account/orders/{orderId}/invoice"
@@ -4995,6 +5011,9 @@ relationships:
     to: "controller:AccountController"
     relation: "handled_by"
   - from: "route:get__account_orders"
+    to: "controller:AccountController"
+    relation: "handled_by"
+  - from: "route:get__account_orders__orderid"
     to: "controller:AccountController"
     relation: "handled_by"
   - from: "route:get__account_orders__orderid__invoice"
