@@ -1128,6 +1128,48 @@ $tests['the blog editor keeps images and fills in the date and author itself'] =
         'The author field should no longer be hard-coded to Admin');
 };
 
+$tests['the admin agent can look things up instead of guessing'] = function (): void {
+    $registry = new \App\Services\AgentToolRegistry();
+    $names = array_column($registry->declarations(), 'name');
+    foreach (['find_order', 'product_status', 'sales_summary', 'coupon_status'] as $tool) {
+        assertTrue(in_array($tool, $names, true), "The agent should be able to call {$tool}");
+        assertTrue($registry->has($tool), "{$tool} should be recognised");
+    }
+    assertTrue(!$registry->has('delete_everything'), 'An unknown tool is not recognised');
+
+    // Each declaration must carry a schema, or the model cannot call it.
+    foreach ($registry->declarations() as $tool) {
+        assertTrue(($tool['description'] ?? '') !== '', 'Every tool needs a description');
+        assertTrue(($tool['parameters']['type'] ?? '') === 'object', 'Every tool needs an object parameter schema');
+    }
+
+    // An unknown tool is reported, not thrown: the model should be told and allowed to
+    // say so, rather than collapsing the request into a 500.
+    assertTrue(isset($registry->run('no_such_tool', [])['error']), 'An unknown tool returns an error');
+    assertTrue(isset($registry->run('find_order', [])['error']), 'find_order needs an id or an email');
+    assertTrue(isset($registry->run('coupon_status', [])['error']), 'coupon_status needs a code');
+
+    // Read-only. An agent that could change the shop on its own would be one prompt
+    // away from hiding a product, with the reply as the owner's first notice.
+    $source = file_get_contents(app_path('app/Services/AgentToolRegistry.php'));
+    foreach (["upsert(", "->write(", "->delete(", "->save("] as $mutation) {
+        assertTrue(!str_contains($source, $mutation), "Tools must stay read-only: found {$mutation}");
+    }
+    // A coupon must be judged by the same service checkout uses, or the agent could
+    // tell the owner a coupon works while checkout refuses it.
+    assertTrue(str_contains($source, 'assertUsable'), 'Coupon status should use CouponService');
+
+    $client = file_get_contents(app_path('app/Services/AiClient.php'));
+    assertTrue(str_contains($client, 'functionDeclarations'), 'Tools should be declared to the provider');
+    assertTrue(str_contains($client, 'functionResponse'), 'Tool results should be returned to the model');
+    assertTrue(str_contains($client, "\$round < \$maxRounds"),
+        'The tool loop must be bounded, or a looping model holds the request open until PHP times out');
+    assertTrue(str_contains($client, "'role' => 'model', 'parts' => \$parts"),
+        'The model turn must stay in the history, or the function response answers a call the conversation no longer has');
+    $admin = file_get_contents(app_path('app/Controllers/AdminController.php'));
+    assertTrue(str_contains($admin, 'completeWithTools'), 'The admin agent should use the tool loop');
+};
+
 $tests['the model answer is separated from the model thinking out loud'] = function (): void {
     // gemma-4-31b-it is a reasoning model. AiClient read parts[0], which for a reasoning
     // response is the *thought*, not the answer. Every reply handed back was the model
