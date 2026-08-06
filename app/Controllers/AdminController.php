@@ -23,7 +23,11 @@ final class AdminController extends BaseController {
     public function categories(): void{$this->resource('Categories','categories',['name','description']);}
     public function saveCategory(): void{$this->save('categories');}
     public function deleteCategory(): void{$this->delete('categories');}
-    public function coupons(): void{$this->resource('Coupons','coupons',['code','discount_type','discount_value','active']);}
+    public function coupons(): void{$this->resource('Coupons','coupons',[
+        'code','discount_type','discount_value','max_discount',
+        'starts_at','ends_at','min_spend','max_spend',
+        'usage_limit','usage_limit_per_customer','free_shipping','active',
+    ]);}
     public function saveCoupon(): void{$this->save('coupons');}
     public function deleteCoupon(): void{$this->delete('coupons');}
     public function orders(): void{$this->list('Orders','orders');}

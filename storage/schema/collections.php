@@ -247,7 +247,24 @@
         'coupons' => [
             'primary_key' => 'id',
             'admin_managed' => true,
-            'fields' => ['id' => ['type' => 'string'], 'code' => ['type' => 'string', 'required' => true], 'status' => ['type' => 'enum', 'values' => ['active', 'inactive']]],
+            // Without dates and limits a posted promo code was redeemable by anyone,
+            // any number of times, on a cart of any size, forever.
+            'fields' => [
+                'id' => ['type' => 'string'],
+                'code' => ['type' => 'string', 'required' => true],
+                'status' => ['type' => 'enum', 'values' => ['active', 'inactive']],
+                'discount_type' => ['type' => 'enum', 'values' => ['fixed', 'percentage']],
+                'discount_value' => ['type' => 'number'],
+                // A rupee ceiling for a percentage coupon: "20% off, up to ₹500".
+                'max_discount' => ['type' => 'number'],
+                'starts_at' => ['type' => 'datetime'],
+                'ends_at' => ['type' => 'datetime'],
+                'min_spend' => ['type' => 'number'],
+                'max_spend' => ['type' => 'number'],
+                'usage_limit' => ['type' => 'number'],
+                'usage_limit_per_customer' => ['type' => 'number'],
+                'free_shipping' => ['type' => 'boolean'],
+            ],
         ],
         'audit_events' => [
             'primary_key' => 'id',
