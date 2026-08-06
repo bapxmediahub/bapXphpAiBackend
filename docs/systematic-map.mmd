@@ -7,14 +7,14 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 112 routes, 12 controllers, 45 services, 47 views, 0 data files, 20 tools"]
-    arch_routes["> Routes: 112 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 113 routes, 12 controllers, 45 services, 47 views, 0 data files, 20 tools"]
+    arch_routes["> Routes: 113 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
     arch_svc["> Services: 45"]:::arch
     arch_views["> Views: 47"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 20"]:::arch
-    arch_gaps["> Gaps: 7"]:::arch
+    arch_gaps["> Gaps: 6"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -135,6 +135,7 @@ flowchart LR
     route_post_admin_temples_save["POST /admin/temples/save — Admin — create/update temple"]:::route
     route_post_admin_temples_delete["POST /admin/temples/delete — Admin — delete temple"]:::route
     route_post_admin_integrations_test_email["POST /admin/integrations/test-email"]:::route
+    route_post_admin_integrations_test_ai["POST /admin/integrations/test-ai"]:::route
     route_post_admin_integrations_save["POST /admin/integrations/save — Admin — save integration secrets"]:::route
     route_get_admin_blog["GET /admin/blog"]:::route
     route_post_admin_blog_save["POST /admin/blog/save"]:::route
@@ -324,11 +325,10 @@ flowchart LR
   end
 
   subgraph GAPS["Gaps & Missing Links"]
-    gap_85752c3912["unwired_services: AiClient"]:::gap
-    gap_59aa34e773["unwired_services: AiReplyCleaner"]:::gap
-    gap_848defe3e1["unwired_services: CourierService"]:::gap
-    gap_b09974925e["unwired_services: ProjectMapService"]:::gap
-    gap_2f94bb198d["unwired_services: StoragePermissionService"]:::gap
+    gap_544da70574["unwired_services: AiReplyCleaner"]:::gap
+    gap_785e99a166["unwired_services: CourierService"]:::gap
+    gap_d35c2ce4d6["unwired_services: ProjectMapService"]:::gap
+    gap_95525e3d98["unwired_services: StoragePermissionService"]:::gap
     gap_6b9c2b4b5a["POST /admin/blog/enhance-title — missing AuditLogService"]:::gap
     gap_b4217badec["POST /admin/blog/enhance-content — missing AuditLogService"]:::gap
   end
@@ -675,6 +675,12 @@ flowchart LR
   controller_admincontroller --> service_auditlogservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_integrations
+  route_post_admin_integrations_test_ai --> controller_admincontroller
+  controller_admincontroller --> service_secretservice
+  controller_admincontroller --> service_aiclient
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_integrations
   route_post_admin_integrations_save --> controller_admincontroller
   controller_admincontroller --> service_secretservice
   controller_admincontroller --> service_auditlogservice
@@ -870,10 +876,9 @@ flowchart LR
   tool_validate_project_map --> systematic_map
   tool_smoke_local --> ROUTES_PUBLIC
   tool_smoke_local --> ROUTES_ADMIN
-  gap_85752c3912 -. missing .-> service_aiclient
-  gap_59aa34e773 -. missing .-> service_aireplycleaner
-  gap_848defe3e1 -. missing .-> service_courierservice
-  gap_b09974925e -. missing .-> service_projectmapservice
-  gap_2f94bb198d -. missing .-> service_storagepermissionservice
+  gap_544da70574 -. missing .-> service_aireplycleaner
+  gap_785e99a166 -. missing .-> service_courierservice
+  gap_d35c2ce4d6 -. missing .-> service_projectmapservice
+  gap_95525e3d98 -. missing .-> service_storagepermissionservice
   gap_6b9c2b4b5a -. missing .-> controller_admincontroller
   gap_b4217badec -. missing .-> controller_admincontroller

@@ -3,7 +3,7 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 112,
+        "routes": 113,
         "controllers": 12,
         "services": 45,
         "views": 47,
@@ -477,6 +477,19 @@
             "view": "admin/integrations",
             "services": [
                 "SecretService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/integrations/test-ai",
+            "name": "admin.integrations.test-ai",
+            "controller": "AdminController@testAi",
+            "view": "admin/integrations",
+            "services": [
+                "SecretService",
+                "AiClient",
                 "AuditLogService",
                 "AuthService"
             ]
@@ -1392,7 +1405,6 @@
         "navigation_without_get_route": [],
         "unwired_controllers": [],
         "unwired_services": [
-            "AiClient",
             "AiReplyCleaner",
             "CourierService",
             "ProjectMapService",

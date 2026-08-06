@@ -203,3 +203,32 @@
         </form>
     </div>
 </div>
+
+<?php
+// Both agents fall back to a canned reply when the provider rejects a call, which is
+// right for a customer but left the owner with no way to tell "the model is off" from
+// "the model is broken". This asks the provider one real question and prints exactly
+// what came back.
+$aiTest = $_SESSION['ai_test_result'] ?? null;
+unset($_SESSION['ai_test_result']);
+?>
+<div class="admin-card" style="margin-top:var(--space-lg);">
+    <h2 style="font-size:1.1rem; margin:0 0 var(--space-sm);">Test the AI connection</h2>
+    <p style="color:var(--color-text-muted); margin:0 0 var(--space-md); font-size:0.9rem;">
+        Sends one short question to the configured model. Both the support bot and this admin
+        assistant use these settings, so if this fails they are both falling back to fixed replies.
+    </p>
+    <?php if ($aiTest): ?>
+        <div style="margin-bottom:var(--space-md); padding:var(--space-sm) var(--space-md); border-radius:var(--radius-sm); border:1px solid <?= $aiTest['ok'] ? 'var(--color-success, #15803d)' : 'var(--color-error, #b91c1c)' ?>; background:<?= $aiTest['ok'] ? 'rgba(21,128,61,0.08)' : 'rgba(185,28,28,0.08)' ?>;">
+            <strong><?= $aiTest['ok'] ? 'The model answered' : 'The model did not answer' ?></strong>
+            <div style="margin-top:var(--space-2xs); font-size:0.82rem; color:var(--color-text-muted);">
+                <?= e((string)($aiTest['model'] ?? '')) ?> · <?= e((string)($aiTest['endpoint'] ?? '')) ?>
+            </div>
+            <div style="margin-top:var(--space-2xs); font-size:0.85rem; white-space:pre-wrap;"><?= e((string)$aiTest['message']) ?></div>
+        </div>
+    <?php endif; ?>
+    <form class="admin-form" method="post" action="/admin/integrations/test-ai">
+        <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+        <button class="btn btn-secondary">Test AI Connection</button>
+    </form>
+</div>

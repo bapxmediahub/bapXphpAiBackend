@@ -36,14 +36,14 @@ query_examples:
   - "rg -n -B4 -A12 'type: \"skill\"' index.yaml"
   - "rg -n '<term>' docs/project-index.json map.mmd index.yaml"
 summary:
-  concepts: 399
-  relationships: 230
+  concepts: 400
+  relationships: 232
   by_type:
     blog: 16
     controller: 12
     doc: 35
     image: 148
-    route: 112
+    route: 113
     schema: 22
     service: 45
     skill: 9
@@ -3689,6 +3689,23 @@ concepts:
       - "AuditLogService"
       - "AuthService"
     view: "admin/integrations"
+  - id: "route:post__admin_integrations_test_ai"
+    type: "route"
+    title: "POST /admin/integrations/test-ai"
+    description: "admin.integrations.test-ai"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/admin/integrations/test-ai"
+    controller: "AdminController@testAi"
+    services:
+      - "SecretService"
+      - "AiClient"
+      - "AuditLogService"
+      - "AuthService"
+    view: "admin/integrations"
   - id: "route:post__admin_integrations_test_email"
     type: "route"
     title: "POST /admin/integrations/test-email"
@@ -4786,6 +4803,9 @@ relationships:
     to: "service:TaxService"
     relation: "uses"
   - from: "controller:AdminController"
+    to: "service:AiClient"
+    relation: "uses"
+  - from: "controller:AdminController"
     to: "service:AppointmentService"
     relation: "uses"
   - from: "controller:AdminController"
@@ -5239,6 +5259,9 @@ relationships:
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:post__admin_integrations_save"
+    to: "controller:AdminController"
+    relation: "handled_by"
+  - from: "route:post__admin_integrations_test_ai"
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:post__admin_integrations_test_email"
