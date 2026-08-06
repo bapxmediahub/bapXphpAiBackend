@@ -3,6 +3,11 @@
         <h2 style="margin:0; font-size:1.1rem;"><?= e($title) ?></h2>
         <span class="badge badge--default"><?= count($items) ?> record<?= count($items) !== 1 ? 's' : '' ?></span>
     </div>
+    <style>
+    .pf-section{margin:var(--space-md) 0 0;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--color-text-muted);border-bottom:1px solid var(--color-border);padding-bottom:0.3rem}
+    .pf-section:first-of-type{margin-top:0}
+    .pf-hint{margin:0;font-size:0.75rem;color:var(--color-text-muted)}
+    </style>
     <form id="product-form" method="post" action="/admin/<?= e($collection) ?>/save" class="admin-form" enctype="multipart/form-data">
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
         <input type="hidden" name="id" id="resource-id">
@@ -10,6 +15,9 @@
         <textarea name="image_urls" id="field-image_urls" style="display:none"></textarea>
         <div style="display:grid; grid-template-columns: 1fr 340px; gap: var(--space-xl); align-items:start;">
             <div style="display:grid; gap:var(--space-sm);">
+                <?php // Grouped into named sections. A flat column put the tax fields
+                      // between stock and description, so there was nothing to scan for. ?>
+                <p class="pf-section">General</p>
                 <label>Slug
                     <input type="text" name="slug" id="field-slug" placeholder="product-slug">
                 </label>
@@ -32,6 +40,7 @@
                     <?php endif; ?>
                     </div>
                 </label>
+                <p class="pf-section">Pricing</p>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-sm);">
                     <label>Price (₹)
                         <input type="number" name="price" id="field-price" placeholder="0" step="any">
@@ -40,6 +49,27 @@
                         <input type="number" name="offer_price" id="field-offer_price" placeholder="0" step="any">
                     </label>
                 </div>
+                <?php // An offer with no end kept discounting until somebody remembered
+                      // to clear it. Leave both blank to run it until you stop it. ?>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-sm);">
+                    <label>Offer starts
+                        <input type="date" name="offer_starts_at" id="field-offer_starts_at">
+                    </label>
+                    <label>Offer ends
+                        <input type="date" name="offer_ends_at" id="field-offer_ends_at">
+                    </label>
+                </div>
+                <p class="pf-hint">Leave the dates blank to run the offer until you clear it. The offer price applies only inside this window.</p>
+
+                <p class="pf-section">Inventory &amp; visibility</p>
+                <?php // Visibility is not stock. Hiding a product used to mean deleting
+                      // it, which loses the record that past orders point at. ?>
+                <label>Visibility
+                    <select name="status" id="field-status">
+                        <option value="visible">Visible on the shop</option>
+                        <option value="hidden">Hidden — kept, but not for sale</option>
+                    </select>
+                </label>
                 <label>Stock Status
                     <select name="stock_status" id="field-stock_status">
                         <option value="in_stock">In Stock</option>
@@ -49,6 +79,7 @@
                         <option value="draft">Draft</option>
                     </select>
                 </label>
+                <p class="pf-section">Tax</p>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-sm);">
                     <label>HSN Code
                         <input type="text" name="hsn_code" id="field-hsn_code" placeholder="e.g. 3307" maxlength="8">
@@ -57,6 +88,7 @@
                         <input type="number" name="gst_rate" id="field-gst_rate" placeholder="e.g. 12" min="0" max="100" step="0.01">
                     </label>
                 </div>
+                <p class="pf-section">Description</p>
                 <label>Description
                     <textarea name="description" id="field-description" rows="4"></textarea>
                 </label>
@@ -125,7 +157,14 @@
                         <td style="max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600;"><?= e($item['name'] ?? '') ?></td>
                         <td><?= e($item['category'] ?? '—') ?></td>
                         <td>₹<?= e((string)($item['offer_price'] ?: $item['price'] ?: '0')) ?></td>
-                        <td><span class="badge badge--<?= ($item['stock_status'] ?? 'in_stock') === 'in_stock' ? 'success' : 'default' ?>"><?= e(ucwords(str_replace('_', ' ', $item['stock_status'] ?? 'in_stock'))) ?></span></td>
+                        <td>
+                            <span class="badge badge--<?= ($item['stock_status'] ?? 'in_stock') === 'in_stock' ? 'success' : 'default' ?>"><?= e(ucwords(str_replace('_', ' ', $item['stock_status'] ?? 'in_stock'))) ?></span>
+                            <?php // A hidden product still appears here — that is the point of
+                                  // hiding rather than deleting — so the list has to say so. ?>
+                            <?php if (($item['status'] ?? 'visible') === 'hidden'): ?>
+                                <span class="badge badge--default" style="margin-left:0.25rem;">Hidden</span>
+                            <?php endif; ?>
+                        </td>
                         <td>
                             <div style="display:flex; gap:var(--space-xs); align-items:center;">
                                 <?php if(!empty($item['slug'])): ?>
@@ -265,6 +304,9 @@ function resetForm() {
     clearCategoryChips();
     document.getElementById('field-hsn_code').value = '';
     document.getElementById('field-gst_rate').value = '';
+    document.getElementById('field-status').value = 'visible';
+    document.getElementById('field-offer_starts_at').value = '';
+    document.getElementById('field-offer_ends_at').value = '';
     document.querySelectorAll('#product-form input, #product-form select, #product-form textarea').forEach(el => {
         if (el.type !== 'hidden' && el.id !== 'field-image_urls' && el.name !== 'media_files[]') {
             if (el.type === 'select-one') el.selectedIndex = 0; else el.value = '';
@@ -282,6 +324,10 @@ document.querySelectorAll('.edit-item').forEach(button => {
         setCategoryChips(item.category || '');
         document.getElementById('field-price').value = item.price || '';
         document.getElementById('field-offer_price').value = item.offer_price || '';
+        // Dates arrive as ISO strings; a date input needs just the YYYY-MM-DD part.
+        document.getElementById('field-offer_starts_at').value = (item.offer_starts_at || '').slice(0, 10);
+        document.getElementById('field-offer_ends_at').value = (item.offer_ends_at || '').slice(0, 10);
+        document.getElementById('field-status').value = item.status || 'visible';
         document.getElementById('field-stock_status').value = item.stock_status || 'in_stock';
         document.getElementById('field-hsn_code').value = item.hsn_code || '';
         document.getElementById('field-gst_rate').value = item.gst_rate || '';

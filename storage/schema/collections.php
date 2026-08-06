@@ -43,7 +43,7 @@
             'primary_key' => 'id',
             'admin_managed' => true,
             'media_fields' => ['image_url', 'image_urls'],
-            'admin_fields' => ['slug', 'name', 'description', 'category', 'image_url', 'image_urls', 'price', 'offer_price', 'hsn_code', 'gst_rate', 'stock_status'],
+            'admin_fields' => ['slug', 'name', 'description', 'category', 'image_url', 'image_urls', 'price', 'offer_price', 'offer_starts_at', 'offer_ends_at', 'hsn_code', 'gst_rate', 'stock_status', 'status'],
             'agent_context' => ['id', 'slug', 'name', 'category', 'categories', 'price', 'offer_price', 'hsn_code', 'gst_rate', 'stock_status'],
             'fields' => [
                 'id' => ['type' => 'string', 'required' => true],
@@ -59,6 +59,13 @@
                 'hsn_code' => ['type' => 'string'],
                 'gst_rate' => ['type' => 'number'],
                 'stock_status' => ['type' => 'enum', 'values' => ['in_stock', 'active', 'inactive', 'draft', 'out_of_stock']],
+                // Visibility, separate from stock. Without it the only way to take a
+                // product off the shop was to delete it, losing the record past orders
+                // point at. Absent means visible, so existing products are unaffected.
+                'status' => ['type' => 'enum', 'values' => ['visible', 'hidden']],
+                // An offer with no end kept discounting until somebody remembered.
+                'offer_starts_at' => ['type' => 'datetime'],
+                'offer_ends_at' => ['type' => 'datetime'],
             ],
         ],
         'astrologers' => [

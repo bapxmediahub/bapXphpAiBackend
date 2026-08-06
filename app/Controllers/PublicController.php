@@ -7,7 +7,7 @@ final class PublicController extends BaseController {
         $this->detectApiRequest();
         $this->seoKey = 'home';
         $categories = (new CategoryService())->all();
-        $products = (new ProductService())->all();
+        $products = (new ProductService())->visible();
         $astrologers = (new AstrologerService())->all();
         $temples = (new TempleService())->all();
         $this->render('public/home', [
@@ -88,7 +88,7 @@ final class PublicController extends BaseController {
         $this->detectApiRequest();
         $category = $_GET['category'] ?? '';
         $categories = (new CategoryService())->all();
-        $items = (new ProductService())->all();
+        $items = (new ProductService())->visible();
         $this->seoKey = 'shop';
         if ($category) {
             $items = array_values(array_filter($items, function ($item) use ($category) {
@@ -124,7 +124,7 @@ final class PublicController extends BaseController {
             return;
         }
         $this->seoKey = 'shop';
-        $this->render('public/categories', ['items' => (new ProductService())->all(), 'categories' => $categories, 'category' => '']);
+        $this->render('public/categories', ['items' => (new ProductService())->visible(), 'categories' => $categories, 'category' => '']);
     }
     
     public function product(string $slug): void {
@@ -136,7 +136,7 @@ final class PublicController extends BaseController {
         if (!$product) $this->renderNotFound();
         $related = [];
         if ($product) {
-            $all = (new ProductService())->all();
+            $all = (new ProductService())->visible();
             $related = array_values(array_filter($all, fn($p) => ($p['slug'] ?? '') !== $slug));
             $this->seoKey = 'product';
             $price = $product['offer_price'] ?? $product['price'] ?? 0;
@@ -211,7 +211,7 @@ final class PublicController extends BaseController {
             '/terms', '/privacy', '/spiritual',
         ];
         $products = [];
-        try { $products = (new ProductService())->all(); } catch (\Throwable) {}
+        try { $products = (new ProductService())->visible(); } catch (\Throwable) {}
         $blogPosts = [];
         try { $blogPosts = (new BlogService())->all(); } catch (\Throwable) {}
 

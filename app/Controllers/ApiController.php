@@ -16,7 +16,8 @@ final class ApiController extends BaseController {
 
     public function shop(): void {
         $service = new ProductService();
-        $products = $service->all();
+        // The public API is a storefront surface: hidden products stay out of it.
+        $products = $service->visible();
         $categories = (new CategoryService())->all();
         $this->jsonResponse(['success' => true, 'products' => $products, 'categories' => $categories]);
     }
@@ -28,7 +29,7 @@ final class ApiController extends BaseController {
 
     public function product(string $slug): void {
         $service = new ProductService();
-        $products = $service->all();
+        $products = $service->visible();
         $product = null;
         foreach ($products as $p) {
             if (($p['slug'] ?? '') === $slug) { $product = $p; break; }
