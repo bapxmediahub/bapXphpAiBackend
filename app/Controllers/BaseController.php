@@ -113,11 +113,10 @@ abstract class BaseController {
 
     protected function resolveCartItems(): array {
         if (empty($_SESSION['cart'])) return [];
-        $products = [];
-        $store = new \App\Services\DatabaseService();
-        foreach ($store->read('products') as $p) {
-            $products[$p['slug'] ?? ''] = $p;
-        }
+        // Through ProductService, so a hidden product and an expired offer price are
+        // already applied. Reading the table directly meant the cart could still price
+        // an offer that had ended, charging a figure the product page no longer showed.
+        $products = (new \App\Services\ProductService())->bySlug();
         $items = [];
         foreach ($_SESSION['cart'] as $line) {
             $slug = $line['slug'] ?? '';

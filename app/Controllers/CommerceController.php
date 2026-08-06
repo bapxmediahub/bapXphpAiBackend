@@ -106,8 +106,9 @@ final class CommerceController extends BaseController {
             $this->jsonResponse(['error' => 'Cart is empty or products are unavailable.'], 400);
         }
         $store = new DatabaseService();
-        $products = [];
-        foreach ($store->read('products') as $p) { $products[$p['slug'] ?? ''] = $p; }
+        // Hidden products resolve to null here, so a product taken off the shop cannot
+        // be checked out by anyone still holding a cart or a link.
+        $products = (new ProductService())->bySlug();
         foreach ($items as $item) {
             $product = $products[$item['slug']] ?? null;
             $status = $product['stock_status'] ?? '';
@@ -263,8 +264,7 @@ final class CommerceController extends BaseController {
         }
         $db = new DatabaseService();
         $orderItems = $pendingOrder['items'] ?? [];
-        $products = [];
-        foreach ($db->read('products') as $p) { $products[$p['slug'] ?? ''] = $p; }
+        $products = (new ProductService())->bySlug();
         foreach ($orderItems as $oi) {
             $product = $products[$oi['slug'] ?? ''] ?? null;
             $status = $product['stock_status'] ?? '';

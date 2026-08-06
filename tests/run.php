@@ -1082,6 +1082,59 @@ $tests['the admin agent attaches documents and drafts into a form it cannot save
         'An upload return path must be restricted to the admin');
 };
 
+$tests['a product can be hidden without deleting it, and an offer expires'] = function (): void {
+    $service = new \App\Services\ProductService(
+        new \App\Services\DatabaseService(),
+        new \DateTimeImmutable('2026-08-06 12:00:00')
+    );
+    $normalise = (new ReflectionMethod($service, 'normalise'))->getClosure($service);
+    $product = fn(array $overrides = []): array => array_merge(
+        ['slug' => 'x', 'name' => 'X', 'price' => 1000, 'offer_price' => 700],
+        $overrides
+    );
+    $paid = fn(array $overrides = []): float => $service->priceOf($normalise($product($overrides)));
+
+    // offer_price used to apply from the moment it was typed until somebody remembered
+    // to clear it, so a festival discount kept discounting.
+    assertSame(700.0, $paid(), 'An offer with no dates applies');
+    assertSame(1000.0, $paid(['offer_ends_at' => '2026-08-01']), 'An expired offer is not charged');
+    assertSame(700.0, $paid(['offer_ends_at' => '2026-08-06']), 'An offer ending today runs to the end of the day');
+    assertSame(700.0, $paid(['offer_ends_at' => '2026-08-31']), 'An offer still inside its window applies');
+    assertSame(1000.0, $paid(['offer_starts_at' => '2026-09-01']), 'An offer that has not started is not charged');
+    assertSame(700.0, $paid(['offer_starts_at' => '2026-08-01', 'offer_ends_at' => '2026-08-31']), 'A running window applies');
+
+    // stock_status is stock; visibility had no field at all, so the only way to take a
+    // product off the shop was to delete it and lose what past orders point at.
+    assertTrue(!$normalise($product())['is_hidden'], 'A product with no status stays visible');
+    assertTrue(!$normalise($product(['status' => 'visible']))['is_hidden'], 'Visible means visible');
+    foreach (['hidden', 'inactive', 'draft', 'disabled'] as $off) {
+        assertTrue($normalise($product(['status' => $off]))['is_hidden'], "Status {$off} hides the product");
+    }
+
+    // Every surface a shopper can reach must use the filtered read, or one of them
+    // shows a price another one does not charge.
+    $public = file_get_contents(app_path('app/Controllers/PublicController.php'));
+    assertTrue(!str_contains($public, '(new ProductService())->all()'),
+        'Public pages should list visible products only');
+    $api = file_get_contents(app_path('app/Controllers/ApiController.php'));
+    assertTrue(substr_count($api, '$service->visible()') >= 2, 'The public API should expose visible products only');
+    $base = file_get_contents(app_path('app/Controllers/BaseController.php'));
+    assertTrue(str_contains($base, 'ProductService())->bySlug()'),
+        'The cart must price through ProductService so an expired offer is not charged');
+    $commerce = file_get_contents(app_path('app/Controllers/CommerceController.php'));
+    assertTrue(!str_contains($commerce, "foreach (\$store->read('products') as \$p)")
+        && !str_contains($commerce, "foreach (\$db->read('products') as \$p)"),
+        'Checkout must not read the products table around the visibility rule');
+    $agent = file_get_contents(app_path('app/Services/AgentContextService.php'));
+    assertTrue(str_contains($agent, '->visible()'), 'The support agent must not offer a hidden product');
+
+    // A hidden product must not stay buyable through its URL.
+    assertSame(null, $service->findBySlug('__no_such_product__'), 'An unknown slug resolves to nothing');
+    $source = file_get_contents(app_path('app/Services/ProductService.php'));
+    assertTrue(str_contains($source, 'if (!$includeHidden && !empty($item[\'is_hidden\'])) return null;'),
+        'findBySlug should withhold a hidden product unless explicitly asked');
+};
+
 $tests['a coupon obeys its dates, spend range and usage limits'] = function (): void {
     $service = new \App\Services\CouponService();
     $now = new \DateTimeImmutable('2026-08-06 12:00:00');
