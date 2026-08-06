@@ -5,7 +5,7 @@
     "summary": {
         "routes": 113,
         "controllers": 12,
-        "services": 47,
+        "services": 48,
         "views": 47,
         "collections": 22
     },
@@ -1275,6 +1275,7 @@
         "AgentAttachmentService",
         "AgentContextService",
         "AgentDraftService",
+        "AgentToolRegistry",
         "AiClient",
         "AiReplyCleaner",
         "AppointmentService",
@@ -1409,6 +1410,7 @@
         "unwired_services": [
             "AgentAttachmentService",
             "AgentDraftService",
+            "AgentToolRegistry",
             "AiReplyCleaner",
             "CourierService",
             "ProjectMapService",

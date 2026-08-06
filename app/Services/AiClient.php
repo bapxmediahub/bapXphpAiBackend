@@ -37,6 +37,93 @@ final class AiClient
         return trim($answer) !== '' ? $answer : null;
     }
 
+    /**
+     * A conversation in which the model may look things up before answering.
+     *
+     * Without tools the model can only answer from whatever context was pre-computed and
+     * pasted into the prompt: it could say how many orders exist, because that number
+     * was in the blob, and could not say where order 9426 was, because nobody had
+     * thought to include it. A bigger blob does not solve that — it costs tokens on
+     * every message, is stale the moment it is built, and still only answers questions
+     * somebody anticipated. Here the model is told what it may ask for and asks.
+     *
+     * The loop is bounded. A model that keeps calling tools would otherwise hold the
+     * request open until PHP's time limit, and the owner would watch a spinner.
+     *
+     * Only Google is wired up: it is the configured provider, and a tool protocol
+     * written for a provider nobody uses is a guess that would go stale untested.
+     * Other providers fall back to a plain completion, which still answers.
+     */
+    public function completeWithTools(
+        string $prompt,
+        AgentToolRegistry $tools,
+        int $maxTokens = 1024,
+        float $temperature = 0.3,
+        int $maxRounds = 4
+    ): string {
+        $config = $this->secrets->getModelConfig();
+        if (($config['provider'] ?? '') !== 'google') return $this->complete($prompt, $maxTokens, $temperature);
+
+        $key = trim((string)($config['apiKey'] ?? ''));
+        if ($key === '') return 'No AI API key is configured. Set ai_api_key in Admin → Integrations, then try again.';
+        if (!function_exists('curl_init')) return 'AI request failed: cURL is not available on this server.';
+
+        $endpoint = rtrim((string)($config['endpoint'] ?? ''), '/');
+        $url = $endpoint . '/' . rawurlencode((string)($config['model'] ?? '')) . ':generateContent';
+        $headers = ['Content-Type: application/json', 'x-goog-api-key: ' . $key];
+
+        $contents = [['role' => 'user', 'parts' => [['text' => $this->withAnswerFence($prompt)]]]];
+
+        for ($round = 0; $round < $maxRounds; $round++) {
+            $payload = json_encode([
+                'contents' => $contents,
+                'tools' => [['functionDeclarations' => $tools->declarations()]],
+                'generationConfig' => [
+                    'temperature' => $temperature,
+                    'maxOutputTokens' => $maxTokens,
+                    'thinkingConfig' => ['thinkingLevel' => 'MINIMAL'],
+                ],
+            ], JSON_UNESCAPED_SLASHES);
+
+            $body = $this->post($url, $payload, $headers, $status);
+            if ($status !== 200 || $body === false) return self::describeFailure($status, $body);
+
+            $result = json_decode((string)$body, true);
+            $parts = $result['candidates'][0]['content']['parts'] ?? [];
+
+            $calls = [];
+            foreach ($parts as $part) {
+                if (isset($part['functionCall']['name'])) $calls[] = $part['functionCall'];
+            }
+            if ($calls === []) return self::answerFromParts($parts);
+
+            // Keep the model's own turn in the history, or the next request has a
+            // function response answering a call the conversation no longer contains.
+            $contents[] = ['role' => 'model', 'parts' => $parts];
+
+            $responses = [];
+            foreach ($calls as $call) {
+                $name = (string)$call['name'];
+                $args = is_array($call['args'] ?? null) ? $call['args'] : [];
+                $responses[] = ['functionResponse' => [
+                    'name' => $name,
+                    'response' => $tools->has($name)
+                        ? $tools->run($name, $args)
+                        : ['error' => 'No such tool: ' . $name],
+                ]];
+            }
+            $contents[] = ['role' => 'user', 'parts' => $responses];
+        }
+
+        // Out of rounds: ask once more with no tools, so the owner gets an answer
+        // built from what was already looked up rather than an empty reply.
+        return $this->complete(
+            $prompt . "\n\nAnswer now from what you already know. Do not ask for more lookups.",
+            $maxTokens,
+            $temperature
+        );
+    }
+
     /** Model text, or a sentence explaining why there is none. */
     public function complete(string $prompt, int $maxTokens = 1024, float $temperature = 0.3): string
     {

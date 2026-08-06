@@ -236,8 +236,17 @@ final class AdminController extends BaseController {
     private function callAiApi(array $config, string $message, string $context): string {
         $prompt = "You are the admin assistant for this store. Answer the question directly.\n"
             . "Give only the final answer. Do not restate your role, the context, the constraints or the question. "
-            . "Do not show your reasoning or a plan. Use short Markdown.\n\n{$context}\n\nQuestion: {$message}";
-        $answer = (new \App\Services\AiClient())->complete($prompt);
+            . "Do not show your reasoning or a plan. Use short Markdown.\n"
+            . "You can look things up. Use the tools for anything about a specific order, product or coupon, "
+            . "or for sales over a period, instead of saying you do not have the information. "
+            . "Only report what a tool returned; never invent an order id, a tracking number or a figure.\n"
+            . "\n{$context}\n\nQuestion: {$message}";
+        // With tools the agent can answer "where is order 9426" — the data was always
+        // there, but nothing let the model ask for it.
+        $answer = (new \App\Services\AiClient())->completeWithTools(
+            $prompt,
+            new \App\Services\AgentToolRegistry()
+        );
         if (\App\Services\AiClient::isError($answer)) return $answer;
         return $this->cleanAnswer($answer);
     }
