@@ -1128,8 +1128,9 @@ $tests['a product can be hidden without deleting it, and an offer expires'] = fu
     $agent = file_get_contents(app_path('app/Services/AgentContextService.php'));
     assertTrue(str_contains($agent, '->visible()'), 'The support agent must not offer a hidden product');
 
-    // A hidden product must not stay buyable through its URL.
-    assertSame(null, $service->findBySlug('__no_such_product__'), 'An unknown slug resolves to nothing');
+    // A hidden product must not stay buyable through its URL. Asserted against the
+    // source rather than by calling findBySlug(), which reads the database — a test
+    // that reaches sripanchamispiritual.com from CI is a test of the network.
     $source = file_get_contents(app_path('app/Services/ProductService.php'));
     assertTrue(str_contains($source, 'if (!$includeHidden && !empty($item[\'is_hidden\'])) return null;'),
         'findBySlug should withhold a hidden product unless explicitly asked');
