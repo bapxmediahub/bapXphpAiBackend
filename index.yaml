@@ -36,14 +36,14 @@ query_examples:
   - "rg -n -B4 -A12 'type: \"skill\"' index.yaml"
   - "rg -n '<term>' docs/project-index.json map.mmd index.yaml"
 summary:
-  concepts: 403
-  relationships: 232
+  concepts: 404
+  relationships: 234
   by_type:
     blog: 16
     controller: 12
     doc: 35
     image: 148
-    route: 113
+    route: 114
     schema: 22
     service: 48
     skill: 9
@@ -390,7 +390,7 @@ concepts:
   - id: "doc:checkout"
     type: "doc"
     title: "Checkout Page"
-    description: "Route /checkout - collect shipping contact details and start Razorpay checkout when payment keys are configured."
+    description: "Route /checkout - collect shipping contact details and start a configured Razorpay or Stripe checkout."
     resource: "docs/pages/checkout.md"
     tags:
       - "page"
@@ -3238,6 +3238,24 @@ concepts:
     services:
       - "AuthService"
     view: "public/login"
+  - id: "route:get__payment_stripe_return"
+    type: "route"
+    title: "GET /payment/stripe/return"
+    description: "payment.stripe.return"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/payment/stripe/return"
+    controller: "CommerceController@completeStripe"
+    services:
+      - "SecretService"
+      - "DatabaseService"
+      - "TaxService"
+      - "SettingsService"
+      - "MailQueueService"
+    view: "account/order"
   - id: "route:get__privacy"
     type: "route"
     title: "GET /privacy"
@@ -4947,6 +4965,9 @@ relationships:
     to: "service:DatabaseService"
     relation: "uses"
   - from: "controller:CommerceController"
+    to: "service:MailQueueService"
+    relation: "uses"
+  - from: "controller:CommerceController"
     to: "service:PaymentService"
     relation: "uses"
   - from: "controller:CommerceController"
@@ -5194,6 +5215,9 @@ relationships:
     relation: "handled_by"
   - from: "route:get__logout"
     to: "controller:AuthController"
+    relation: "handled_by"
+  - from: "route:get__payment_stripe_return"
+    to: "controller:CommerceController"
     relation: "handled_by"
   - from: "route:get__privacy"
     to: "controller:PublicController"

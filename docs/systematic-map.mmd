@@ -7,8 +7,8 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 113 routes, 12 controllers, 48 services, 47 views, 0 data files, 20 tools"]
-    arch_routes["> Routes: 113 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 114 routes, 12 controllers, 48 services, 47 views, 0 data files, 20 tools"]
+    arch_routes["> Routes: 114 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
     arch_svc["> Services: 48"]:::arch
     arch_views["> Views: 47"]:::arch
@@ -84,6 +84,7 @@ flowchart LR
     route_post_cart_update["POST /cart/update — Cart — update quantity"]:::route
     route_post_checkout_create_order["POST /checkout/create-order — Checkout — create Razorpay order"]:::route
     route_post_payment_verify["POST /payment/verify — Checkout — verify payment, create order"]:::route
+    route_get_payment_stripe_return["GET /payment/stripe/return — Checkout — verify Stripe session, create order, show confirmation"]:::route
     route_post_create_order["POST /create-order — API checkout — Razorpay order"]:::route
     route_post_verify_payment["POST /verify-payment — API checkout — verify payment"]:::route
   end
@@ -713,6 +714,13 @@ flowchart LR
   controller_commercecontroller --> service_taxservice
   controller_commercecontroller --> service_settingsservice
   controller_commercecontroller -. renders .-> view_public_checkout
+  route_get_payment_stripe_return --> controller_commercecontroller
+  controller_commercecontroller --> service_secretservice
+  controller_commercecontroller --> service_databaseservice
+  controller_commercecontroller --> service_taxservice
+  controller_commercecontroller --> service_settingsservice
+  controller_commercecontroller --> service_mailqueueservice
+  controller_commercecontroller -. renders .-> view_account_order
   route_post_create_order --> controller_commercecontroller
   controller_commercecontroller --> service_secretservice
   controller_commercecontroller --> service_paymentservice
@@ -871,6 +879,8 @@ flowchart LR
   service_paymentservice --> integration_stripeclient
   controller_authcontroller --> integration_googleoauthclient
   controller_authcontroller --> integration_googleoauthclient
+  service_paymentservice --> integration_razorpayclient
+  service_paymentservice --> integration_stripeclient
   service_paymentservice --> integration_razorpayclient
   service_paymentservice --> integration_stripeclient
   service_paymentservice --> integration_razorpayclient
