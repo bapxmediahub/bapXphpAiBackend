@@ -25,16 +25,5 @@ jobs:
         with:
           php-version: '8.2'
           extensions: curl, json, mbstring, pdo_mysql
-      - name: Regenerate branch artifacts
-        run: ./bapXphp update
-      - uses: actions/upload-artifact@v4
-        with:
-          name: issue-26-generated
-          path: |
-            docs/systematic-map.mmd
-            docs/map.mmd
-            docs/project-index.json
-            map.mmd
-            index.yaml
       - name: Validate code, tests, maps, and routes
         run: ./bapXphp ci
