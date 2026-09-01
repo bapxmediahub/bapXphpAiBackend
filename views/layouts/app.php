@@ -106,6 +106,8 @@ main{padding-bottom:0}
 .old-price{text-decoration:line-through;color:var(--color-text-muted);font-size:0.85rem}
 .product-card__actions{display:flex;gap:var(--space-xs);align-items:center}
 .product-card__actions .btn{flex:1}
+.product-card__add-form{display:flex;flex:1;margin:0}
+.product-card__add-form .btn{width:100%}
 .product-card__actions .product-card__form{display:flex;align-items:center;gap:6px;margin-left:auto}
 .product-card__stepper{height:30px;min-height:30px;border:1.5px solid var(--color-gold);background:var(--color-gold-light);border-radius:999px;overflow:hidden}
 .product-card__stepper form{display:flex;height:100%;margin:0}

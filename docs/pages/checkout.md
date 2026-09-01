@@ -1,7 +1,7 @@
 ---
 type: doc
 title: Checkout Page
-description: Route /checkout - collect shipping contact details and start Razorpay checkout when payment keys are configured.
+description: Route /checkout - collect shipping contact details and start a configured Razorpay or Stripe checkout.
 category: page
 ---
 # Checkout Page
@@ -10,6 +10,6 @@ Route: `/checkout`
 
 Controller: `PublicController@checkout`
 
-Purpose: collect shipping contact details and start Razorpay checkout when payment keys are configured.
+Purpose: collect shipping contact details and start Razorpay or Stripe checkout when that gateway is configured.
 
-Key checks: name, email, phone, address, city, and PIN are posted through payment verification; missing Razorpay config is shown clearly instead of silently failing. The payment button creates a server-side Razorpay order, opens Standard Checkout, handles cancellation and failed payments, then verifies the returned payment id, order id, and signature before saving the order.
+Key checks: name, email, phone, address, city, and PIN are retained through payment verification; missing gateway configuration is shown clearly instead of silently failing. Razorpay verifies the returned payment id, order id, signature, fetched amount, and gateway order before saving. Stripe returns through `/payment/stripe/return`, where the server retrieves the Checkout Session and verifies paid status, INR currency, amount, and the session held for that customer. Both gateways share one idempotent order-persistence boundary and land on the owned order detail with the payment-success state. Failed or cancelled payment keeps the cart available for retry.

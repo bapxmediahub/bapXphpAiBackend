@@ -56,12 +56,24 @@
                                         <span class="discount-pct">-<?= $pct ?>%</span>
                                     <?php endif; ?>
                                 </div>
-                                <?php $itemQty = $cartQuantities[(string)($item['slug'] ?? '')] ?? 0; ?>
+                                <?php
+                                    $itemSlug = trim((string)($item['slug'] ?? ''));
+                                    $itemQty = $cartQuantities[$itemSlug] ?? 0;
+                                ?>
                                 <div class="product-card__actions">
-                                    <a href="/product/<?= e($item['slug']) ?>" class="btn btn-sm btn-ghost">View →</a>
+                                    <a href="/product/<?= e(rawurlencode($itemSlug)) ?>" class="btn btn-sm btn-ghost">View</a>
+                                    <?php if($itemQty <= 0): ?>
+                                    <form method="post" action="/cart/add" class="product-card__add-form">
+                                        <input type="hidden" name="slug" value="<?= e($itemSlug) ?>">
+                                        <input type="hidden" name="qty" value="1">
+                                        <input type="hidden" name="redirect" value="/shop">
+                                        <input type="hidden" name="_csrf" value="<?= $csrf ?>">
+                                        <button type="submit" class="btn btn-sm btn-primary">Add to Cart</button>
+                                    </form>
+                                    <?php else: ?>
                                     <div class="product-card__form product-card__stepper" aria-label="<?= e($item['name']) ?> cart quantity">
                                         <form method="post" action="/cart/update">
-                                            <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
+                                            <input type="hidden" name="slug" value="<?= e($itemSlug) ?>">
                                             <input type="hidden" name="action" value="dec">
                                             <input type="hidden" name="redirect" value="/shop">
                                             <input type="hidden" name="_csrf" value="<?= $csrf ?>">
@@ -69,13 +81,14 @@
                                         </form>
                                         <span class="qty-input__value"><?= e((string)$itemQty) ?></span>
                                         <form method="post" action="/cart/add">
-                                            <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
+                                            <input type="hidden" name="slug" value="<?= e($itemSlug) ?>">
                                             <input type="hidden" name="qty" value="1">
                                             <input type="hidden" name="redirect" value="/shop">
                                             <input type="hidden" name="_csrf" value="<?= $csrf ?>">
                                             <button type="submit" aria-label="Add one <?= e($item['name']) ?>">+</button>
                                         </form>
                                     </div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </article>

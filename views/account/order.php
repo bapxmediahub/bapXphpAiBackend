@@ -41,7 +41,11 @@ $__first = $__name !== '' ? explode(' ', $__name)[0] : '';
                         and you will get an email the moment it is on its way.
                     </p>
                     <p class="order-thanks__meta">
-                        A confirmation has been sent to <strong><?= e((string)($order['customer_email'] ?? '')) ?></strong>.
+                        Order <strong><?= e((string)($order['id'] ?? '')) ?></strong>
+                        <?php if (!empty($order['invoice_number'])): ?>
+                            · Invoice <strong><?= e((string)$order['invoice_number']) ?></strong>
+                        <?php endif; ?>
+                        <br>A confirmation is being sent to <strong><?= e((string)($order['customer_email'] ?? '')) ?></strong>.
                     </p>
                     <div class="order-thanks__actions">
                         <a href="/shop" class="btn btn-primary">Continue shopping</a>

@@ -287,7 +287,7 @@ $tests['cart does not expose unfinished coupon placeholder ui'] = function (): v
     assertTrue(!str_contains($view, '$item[\'qty\'] <= 1 ? \'disabled\''), 'Cart decrement should be able to remove the last unit');
 };
 
-$tests['product cards use zero based cart steppers without duplicate add buttons'] = function (): void {
+$tests['product cards use explicit first add action without duplicate add controls'] = function (): void {
     foreach (['views/public/shop.php', 'views/public/home.php', 'views/public/product.php'] as $path) {
         $view = file_get_contents(app_path($path));
         assertTrue(str_contains($view, 'product-card__stepper'), "{$path} should render the compact card cart stepper");
@@ -297,6 +297,11 @@ $tests['product cards use zero based cart steppers without duplicate add buttons
     }
     $shop = file_get_contents(app_path('views/public/shop.php'));
     assertTrue(str_contains($shop, '$itemQty = $cartQuantities'), 'Shop cards should show zero when the item is absent from the session cart');
+    assertTrue(str_contains($shop, 'Add to Cart'), 'Shop cards should label the first cart action explicitly');
+    assertTrue(str_contains($shop, 'if($itemQty <= 0)'), 'Shop cards should replace the add action with the quantity stepper after adding');
+    assertTrue(str_contains($shop, 'rawurlencode($itemSlug)'), 'Shop product links should survive legacy whitespace in stored slugs');
+    $products = file_get_contents(app_path('app/Services/ProductService.php'));
+    assertTrue(str_contains($products, 'trim(rawurldecode($slug))'), 'Product lookup should decode and trim route slugs before comparison');
     $commerce = file_get_contents(app_path('app/Controllers/CommerceController.php'));
     assertTrue(str_contains($commerce, 'max(0') && str_contains($commerce, "fn(\$item) => (int)(\$item['qty'] ?? 0) > 0"), 'Cart decrement should remove an item at zero quantity');
 };
@@ -1406,6 +1411,17 @@ $tests['an unpaid checkout never registers an order'] = function (): void {
     $list = file_get_contents(app_path('views/admin/list.php'));
     assertTrue(str_contains($list, "ARRAY_FILTER_USE_BOTH"),
         'The admin list should skip records carrying nothing but an id');
+};
+
+$tests['Stripe return verifies and lands on the order confirmation'] = function (): void {
+    $commerce = file_get_contents(app_path('app/Controllers/CommerceController.php'));
+    $routes = routePaths();
+    assertTrue(in_array('/payment/stripe/return', $routes, true), 'Stripe should have a dedicated hosted-checkout return route');
+    assertTrue(str_contains($commerce, "['payment_status'] ?? '') === 'paid'"), 'Stripe return should require a paid session');
+    assertTrue(str_contains($commerce, "['amount_total'] ?? 0) === \$expected"), 'Stripe return should verify the paid amount');
+    assertTrue(str_contains($commerce, "['currency'] ?? '')) === 'inr'"), 'Stripe return should verify INR');
+    assertTrue(str_contains($commerce, "?placed=1"), 'Stripe success should land on the order-specific thank-you state');
+    assertTrue(substr_count($commerce, "upsert('orders'") === 1, 'Both gateways should share one order persistence boundary');
 };
 
 $tests['shipping an order requires a courier tracking id and link'] = function (): void {

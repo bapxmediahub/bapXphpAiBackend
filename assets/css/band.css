@@ -824,6 +824,8 @@ nav a:hover { color: var(--color-maroon); }
 }
 .product-card__actions { display: flex; gap: 6px; align-items: center; }
 .product-card__actions .btn-ghost { padding: 0 0.7rem; flex: none; height: 30px; min-height: 30px; border-radius: 999px; font-size: 0.8rem; border-width: 1.5px; text-transform: none; letter-spacing: 0; position: static; overflow: visible; }
+.product-card__add-form { display: flex; flex: 1; margin: 0; }
+.product-card__add-form .btn { width: 100%; min-height: 30px; height: 30px; padding: 0 0.75rem; font-size: 0.8rem; }
 .product-card__actions .product-card__form { display: flex; align-items: center; gap: 6px; margin-left: auto; }
 .product-card__stepper {
     height: 30px;
@@ -2745,6 +2747,7 @@ tr:hover td { background: var(--color-bg-alt); }
     /* Keep "View" and the quantity stepper on one row, matching desktop. */
     .product-card__actions { flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 6px; }
     .product-card__actions .btn-ghost { width: auto; flex: 0 0 auto; height: 30px; min-height: 30px; padding: 0 0.6rem; }
+    .product-card__add-form { min-width: 0; }
     .product-card__actions .product-card__form { width: auto; flex: 0 0 auto; margin-left: auto; }
     
     .category-section { padding-left: var(--space-md); padding-right: var(--space-md); }
