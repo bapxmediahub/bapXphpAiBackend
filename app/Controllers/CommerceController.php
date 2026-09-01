@@ -130,7 +130,7 @@ final class CommerceController extends BaseController {
                 'amount' => (int)round($cartTotal * 100),
                 'quantity' => 1,
             ]];
-            $successUrl = rtrim((string)($_ENV['APP_URL'] ?? 'https://' . ($_SERVER['HTTP_HOST'] ?? 'localhost')), '/') . '/account/orders?stripe_session_id={CHECKOUT_SESSION_ID}';
+            $successUrl = rtrim((string)($_ENV['APP_URL'] ?? 'https://' . ($_SERVER['HTTP_HOST'] ?? 'localhost')), '/') . '/payment/stripe/return?session_id={CHECKOUT_SESSION_ID}';
             $cancelUrl = rtrim((string)($_ENV['APP_URL'] ?? 'https://' . ($_SERVER['HTTP_HOST'] ?? 'localhost')), '/') . '/checkout';
             try {
                 $stripeSession = (new StripeClient($secrets['stripe_secret_key']))->createCheckoutSession($lineItems, $successUrl, $cancelUrl);
@@ -153,8 +153,12 @@ final class CommerceController extends BaseController {
                 'shipping_address' => trim((string)($_POST['address'] ?? '')),
                 'shipping_city' => trim((string)($_POST['city'] ?? '')),
                 'shipping_pincode' => trim((string)($_POST['pincode'] ?? '')),
+                'shipping_state' => trim((string)($_POST['state'] ?? '')),
+                'customer_gstin' => trim((string)($_POST['customer_gstin'] ?? '')),
                 'items' => array_map(fn($i) => ['slug' => $i['slug'], 'name' => $i['name'], 'qty' => $i['qty'], 'line_total' => $i['line_total']], $items),
                 'stripe_session_id' => $stripeSession['id'] ?? '',
+                'coupon_code' => '',
+                'discount' => 0,
             ];
             $this->jsonResponse([
                 'stripe_url' => $stripeSession['url'] ?? '',
@@ -208,6 +212,8 @@ final class CommerceController extends BaseController {
             'shipping_address' => trim((string)($_POST['address'] ?? '')),
             'shipping_city' => trim((string)($_POST['city'] ?? '')),
             'shipping_pincode' => trim((string)($_POST['pincode'] ?? '')),
+            'shipping_state' => trim((string)($_POST['state'] ?? '')),
+            'customer_gstin' => trim((string)($_POST['customer_gstin'] ?? '')),
         ];
         $this->jsonResponse([
             'id' => $order['id'] ?? '',
@@ -262,41 +268,108 @@ final class CommerceController extends BaseController {
             unset($_SESSION['pending_order']);
             $this->jsonResponse(['verified' => false, 'error' => 'Payment amount mismatch.'], 400);
         }
+        try {
+            $localId = $this->persistVerifiedOrder($pendingOrder, $paymentId, [
+                'razorpay_order_id' => $pendingOrder['razorpay_order_id'],
+            ]);
+        } catch (\Throwable $error) {
+            error_log('[order-persistence-failed] payment_id=' . $paymentId . ' error=' . $error->getMessage());
+            $this->jsonResponse([
+                'verified' => false,
+                'payment_verified' => true,
+                'error' => 'Payment was verified, but the order could not be saved. Your cart has been preserved. Contact support with payment ID ' . $paymentId . '.',
+            ], 503);
+        }
+        $this->jsonResponse(['verified' => true, 'order_id' => $localId]);
+    }
+
+    /** Stripe's hosted page returns here; success is never trusted from the URL alone. */
+    public function completeStripe(): void {
+        $sessionId = trim((string)($_GET['session_id'] ?? ''));
+        if ($sessionId === '') {
+            $this->flash('The payment result was incomplete. Your cart is still available.', 'error');
+            $this->redirect('/checkout');
+        }
+
         $db = new DatabaseService();
-        $orderItems = $pendingOrder['items'] ?? [];
-        $products = (new ProductService())->bySlug();
-        foreach ($orderItems as $oi) {
-            $product = $products[$oi['slug'] ?? ''] ?? null;
-            $status = $product['stock_status'] ?? '';
-            if (!in_array($status, ['in_stock', 'active'], true)) {
-                $this->jsonResponse(['verified' => false, 'error' => ($oi['name'] ?? 'A product') . ' is no longer available.'], 400);
+        foreach ($db->read('orders') as $existing) {
+            if (($existing['stripe_session_id'] ?? '') === $sessionId) {
+                $this->redirect('/account/orders/' . rawurlencode((string)$existing['id']) . '?placed=1');
             }
         }
+
+        $pendingOrder = $_SESSION['pending_order'] ?? null;
+        if (!$pendingOrder || !hash_equals((string)($pendingOrder['stripe_session_id'] ?? ''), $sessionId)) {
+            $this->flash('We could not match this payment to your checkout. Your cart has been preserved.', 'error');
+            $this->redirect('/checkout');
+        }
+
+        $secrets = (new SecretService())->all();
+        try {
+            $session = (new StripeClient((string)($secrets['stripe_secret_key'] ?? '')))->retrieveSession($sessionId);
+        } catch (\RuntimeException $error) {
+            $this->flash('We could not verify the payment with Stripe yet. Please try again.', 'error');
+            $this->redirect('/checkout');
+        }
+
+        $expected = (int)round(((float)($pendingOrder['total'] ?? 0)) * 100);
+        $paid = ($session['payment_status'] ?? '') === 'paid'
+            && (int)($session['amount_total'] ?? 0) === $expected
+            && strtolower((string)($session['currency'] ?? '')) === 'inr';
+        if (!$paid) {
+            try { (new MailQueueService())->enqueuePaymentFailure($pendingOrder, 'Stripe did not confirm a paid session.'); }
+            catch (\Throwable $error) { error_log('Stripe failure mail failed: ' . $error->getMessage()); }
+            $this->flash('Your payment was not confirmed. Your cart is unchanged, so you can try again.', 'error');
+            $this->redirect('/checkout');
+        }
+
+        $paymentId = trim((string)($session['payment_intent'] ?? '')) ?: $sessionId;
+        try {
+            $localId = $this->persistVerifiedOrder($pendingOrder, $paymentId, ['stripe_session_id' => $sessionId]);
+        } catch (\Throwable $error) {
+            error_log('[stripe-order-persistence-failed] session_id=' . $sessionId . ' error=' . $error->getMessage());
+            $this->flash('Payment was verified, but the order could not be saved. Your cart is preserved. Contact support with Stripe session ' . $sessionId . '.', 'error');
+            $this->redirect('/checkout');
+        }
+        $this->redirect('/account/orders/' . rawurlencode($localId) . '?placed=1');
+    }
+
+    /** Persist either gateway through one idempotent, tax-aware order boundary. */
+    private function persistVerifiedOrder(array $pendingOrder, string $paymentId, array $gatewayFields): string {
+        $db = new DatabaseService();
         $existingOrders = $db->read('orders');
         foreach ($existingOrders as $existing) {
-            if (($existing['payment_id'] ?? '') === $paymentId) {
-                $this->jsonResponse(['verified' => false, 'error' => 'Payment already processed.'], 400);
+            if (($existing['payment_id'] ?? '') === $paymentId) return (string)$existing['id'];
+            if (!empty($gatewayFields['stripe_session_id']) && ($existing['stripe_session_id'] ?? '') === $gatewayFields['stripe_session_id']) {
+                return (string)$existing['id'];
             }
         }
-        $settings = (new SettingsService())->public();
-        $itemsWithRates = array_map(function ($item) use ($products) {
+
+        $orderItems = $pendingOrder['items'] ?? [];
+        $products = (new ProductService())->bySlug();
+        foreach ($orderItems as $item) {
+            $product = $products[$item['slug'] ?? ''] ?? null;
+            if (!in_array($product['stock_status'] ?? '', ['in_stock', 'active'], true)) {
+                throw new \RuntimeException(($item['name'] ?? 'A product') . ' is no longer available.');
+            }
+        }
+
+        $itemsWithRates = array_map(function (array $item) use ($products): array {
             $product = $products[$item['slug'] ?? ''] ?? [];
             $item['gst_rate'] = (float)($product['gst_rate'] ?? 0);
             $item['hsn_code'] = (string)($product['hsn_code'] ?? '');
             $item['unit_price'] = (float)($item['line_total'] ?? 0) / max(1, (int)($item['qty'] ?? 1));
             return $item;
         }, $orderItems);
-        $shippingState = trim((string)($_POST['state'] ?? ''));
-        $taxSnapshot = (new TaxService())->snapshot($itemsWithRates, 0, $shippingState, $settings);
-        $allOrders = $db->read('orders');
-        $invoice = (new TaxService())->nextInvoice($allOrders);
+        $settings = (new SettingsService())->public();
+        $tax = (new TaxService())->snapshot($itemsWithRates, 0, (string)($pendingOrder['shipping_state'] ?? ''), $settings);
+        $invoice = (new TaxService())->nextInvoice($existingOrders);
         $localId = bin2hex(random_bytes(8));
-        $order = [
+        $order = array_merge([
             'id' => $localId,
             'status' => 'confirmed',
             'total' => $pendingOrder['total'],
             'payment_id' => $paymentId,
-            'razorpay_order_id' => $pendingOrder['razorpay_order_id'],
             'payment_email_status' => 'pending',
             'customer_email' => $pendingOrder['customer_email'],
             'customer_name' => $pendingOrder['customer_name'],
@@ -304,37 +377,29 @@ final class CommerceController extends BaseController {
             'shipping_address' => $pendingOrder['shipping_address'],
             'shipping_city' => $pendingOrder['shipping_city'],
             'shipping_pincode' => $pendingOrder['shipping_pincode'],
-            'items' => $pendingOrder['items'],
-            'coupon_code' => $pendingOrder['coupon_code'],
-            'discount' => $pendingOrder['discount'],
-            'tax_lines' => $taxSnapshot['tax_lines'],
-            'taxable_value' => $taxSnapshot['taxable_value'],
-            'cgst_total' => $taxSnapshot['cgst_total'],
-            'sgst_total' => $taxSnapshot['sgst_total'],
-            'igst_total' => $taxSnapshot['igst_total'],
-            'tax_total' => $taxSnapshot['tax_total'],
-            'supply_type' => $taxSnapshot['supply_type'],
-            'place_of_supply' => $taxSnapshot['place_of_supply'],
-            'supplier' => $taxSnapshot['supplier'],
-            'customer_gstin' => trim((string)($_POST['customer_gstin'] ?? '')),
+            'shipping_state' => $pendingOrder['shipping_state'] ?? '',
+            'items' => $orderItems,
+            'coupon_code' => $pendingOrder['coupon_code'] ?? '',
+            'discount' => $pendingOrder['discount'] ?? 0,
+            'tax_lines' => $tax['tax_lines'],
+            'taxable_value' => $tax['taxable_value'],
+            'cgst_total' => $tax['cgst_total'],
+            'sgst_total' => $tax['sgst_total'],
+            'igst_total' => $tax['igst_total'],
+            'tax_total' => $tax['tax_total'],
+            'supply_type' => $tax['supply_type'],
+            'place_of_supply' => $tax['place_of_supply'],
+            'supplier' => $tax['supplier'],
+            'customer_gstin' => $pendingOrder['customer_gstin'] ?? '',
             'invoice_sequence' => $invoice['invoice_sequence'],
             'invoice_financial_year' => $invoice['invoice_financial_year'],
             'invoice_number' => $invoice['invoice_number'],
             'invoice_date' => $invoice['invoice_date'],
             'created_at' => date('c'),
-        ];
-        try {
-            $db->upsert('orders', $order);
-        } catch (\Throwable $error) {
-            error_log('[order-persistence-failed] payment_id=' . $paymentId . ' order_id=' . $localId . ' error=' . $error->getMessage());
-            $this->jsonResponse([
-                'verified' => false,
-                'payment_verified' => true,
-                'error' => 'Payment was verified, but the order could not be saved. Your cart has been preserved. Contact support with payment ID ' . $paymentId . '.',
-            ], 503);
-        }
+        ], $gatewayFields);
+        $db->upsert('orders', $order);
         (new MailQueueService())->enqueuePaymentConfirmation($order);
         unset($_SESSION['pending_order'], $_SESSION['cart']);
-        $this->jsonResponse(['verified' => true, 'order_id' => $localId]);
+        return $localId;
     }
 }

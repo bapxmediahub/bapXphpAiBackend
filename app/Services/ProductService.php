@@ -45,6 +45,7 @@ final class ProductService
      */
     public function findBySlug(string $slug, bool $includeHidden = false): ?array
     {
+        $slug = trim(rawurldecode($slug));
         foreach ($this->all() as $item) {
             if (($item['slug'] ?? '') !== $slug) continue;
             if (!$includeHidden && !empty($item['is_hidden'])) return null;
@@ -92,6 +93,10 @@ final class ProductService
      */
     private function normalise(array $product): array
     {
+        // Legacy admin records may contain accidental leading/trailing whitespace.
+        // Browsers and web servers trim that whitespace from the route, which made a
+        // visible product card lead to a 404 even though the product existed.
+        $product['slug'] = trim((string)($product['slug'] ?? ''));
         $product['is_hidden'] = $this->isHidden($product);
         if (!empty($product['offer_price']) && !$this->offerIsRunning($product)) {
             $product['offer_price'] = null;
