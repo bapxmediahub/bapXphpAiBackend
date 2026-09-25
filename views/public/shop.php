@@ -35,59 +35,50 @@
                 <div class="product-grid">
                     <?php foreach($items as $item): ?>
                         <?php $hasOffer = !empty($item['offer_price']) && $item['offer_price'] < $item['price']; ?>
+                        <?php
+                            $itemSlug = trim((string)($item['slug'] ?? ''));
+                            $productUrl = '/product/' . rawurlencode($itemSlug);
+                            $isPurchasable = in_array((string)($item['stock_status'] ?? 'in_stock'), ['in_stock', 'active'], true);
+                        ?>
                         <article class="product-card reveal">
-                            <div class="product-card__image">
+                            <a class="product-card__image" href="<?= e($productUrl) ?>" aria-label="View <?= e($item['name']) ?>">
                                 <img src="<?= e(webp_src($item['image_url'] ?? placeholder_img($item['name']))) ?>" alt="<?= e($item['name']) ?>" decoding="async">
                                 <?php if($hasOffer): ?>
                                     <span class="product-card__badge product-card__badge--sale">Sale</span>
                                 <?php endif; ?>
-                            </div>
+                            </a>
                             <div class="product-card__body">
                                 <?php if(!empty($item['category'])): ?>
                                     <span style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--color-gold); font-weight:600;"><?= e($item['category']) ?></span>
                                 <?php endif; ?>
-                                <h3><?= e($item['name']) ?></h3>
+                                <h3><a class="product-card__title" href="<?= e($productUrl) ?>"><?= e($item['name']) ?></a></h3>
                                 <p class="product-card__desc"><?= e($item['description']) ?></p>
                                 <div class="product-card__price-row">
-                                    <span class="price">₹<?= e((string)($item['offer_price'] ?: $item['price'] ?: 0)) ?></span>
+                                    <span class="price">₹<?= e((string)(($item['offer_price'] ?? 0) ?: ($item['price'] ?? 0))) ?></span>
                                     <?php if($hasOffer): ?>
                                         <span class="old-price">₹<?= e($item['price']) ?></span>
                                         <?php $pct = round((1 - $item['offer_price'] / ($item['price'] ?: 1)) * 100); ?>
                                         <span class="discount-pct">-<?= $pct ?>%</span>
                                     <?php endif; ?>
                                 </div>
-                                <?php
-                                    $itemSlug = trim((string)($item['slug'] ?? ''));
-                                    $itemQty = $cartQuantities[$itemSlug] ?? 0;
-                                ?>
                                 <div class="product-card__actions">
-                                    <a href="/product/<?= e(rawurlencode($itemSlug)) ?>" class="btn btn-sm btn-ghost">View</a>
-                                    <?php if($itemQty <= 0): ?>
+                                    <?php if($isPurchasable): ?>
+                                    <form method="post" action="/cart/add" class="product-card__buy-form">
+                                        <input type="hidden" name="slug" value="<?= e($itemSlug) ?>">
+                                        <input type="hidden" name="qty" value="1">
+                                        <input type="hidden" name="redirect" value="/checkout">
+                                        <input type="hidden" name="_csrf" value="<?= $csrf ?>">
+                                        <button type="submit" class="btn btn-sm btn-primary">Buy Now</button>
+                                    </form>
                                     <form method="post" action="/cart/add" class="product-card__add-form">
                                         <input type="hidden" name="slug" value="<?= e($itemSlug) ?>">
                                         <input type="hidden" name="qty" value="1">
                                         <input type="hidden" name="redirect" value="/shop">
                                         <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                                        <button type="submit" class="btn btn-sm btn-primary">Add to Cart</button>
+                                        <button type="submit" class="btn btn-sm btn-outline">Add to Cart</button>
                                     </form>
                                     <?php else: ?>
-                                    <div class="product-card__form product-card__stepper" aria-label="<?= e($item['name']) ?> cart quantity">
-                                        <form method="post" action="/cart/update">
-                                            <input type="hidden" name="slug" value="<?= e($itemSlug) ?>">
-                                            <input type="hidden" name="action" value="dec">
-                                            <input type="hidden" name="redirect" value="/shop">
-                                            <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                                            <button type="submit" aria-label="Remove one <?= e($item['name']) ?>" <?= $itemQty <= 0 ? 'disabled' : '' ?>>−</button>
-                                        </form>
-                                        <span class="qty-input__value"><?= e((string)$itemQty) ?></span>
-                                        <form method="post" action="/cart/add">
-                                            <input type="hidden" name="slug" value="<?= e($itemSlug) ?>">
-                                            <input type="hidden" name="qty" value="1">
-                                            <input type="hidden" name="redirect" value="/shop">
-                                            <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                                            <button type="submit" aria-label="Add one <?= e($item['name']) ?>">+</button>
-                                        </form>
-                                    </div>
+                                    <span class="product-card__unavailable">Out of stock</span>
                                     <?php endif; ?>
                                 </div>
                             </div>
@@ -100,9 +91,9 @@
     <div class="container" style="margin-top:var(--space-2xl);">
         <div class="page-cta-card reveal">
             <div>
-                <span class="page-cta-card__eyebrow">Need Guidance?</span>
-                <h3>Start a Consultation Request</h3>
-                <p>Use the contact form for astrology sessions, product questions, temple guidance, or VIP direct astrology visit requests.</p>
+                <span class="page-cta-card__eyebrow">Need help?</span>
+                <h3>Send a General Enquiry</h3>
+                <p>Contact us with product questions, order support, temple guidance, or general store enquiries.</p>
             </div>
             <a class="btn btn-primary page-cta-card__button" href="/contact#contact-form">Let’s Get Connected →</a>
         </div>

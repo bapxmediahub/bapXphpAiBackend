@@ -11,16 +11,13 @@ final class BlogService {
     }
     /** Categories that disappear with their module, so their posts disappear too. */
     private const MODULE_CATEGORIES = [
-        'consult'   => ['consult', 'consultation', 'consultations', 'astrology', 'consultant'],
-        'ecommerce' => ['shop', 'products', 'orders'],
+        'shop' => ['shop', 'products', 'orders'],
     ];
 
     /**
      * @param bool $all true for the admin, which must see hidden posts to unhide them.
      *
-     * A post whose category belongs to a switched-off module is withheld from the site:
-     * switching consultations off left consultation articles reachable, linking to
-     * pages that now 404.
+     * A post whose category belongs to a switched-off module is withheld from the site.
      */
     public function all(bool $all = false): array {
         $posts = [];

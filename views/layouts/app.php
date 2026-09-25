@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="format-detection" content="telephone=no">
 <title><?= e($pageTitle ?? 'Sri Panchami Spiritual') ?></title>
-<meta name="description" content="<?= e($metaDescription ?? 'Book a private consultant appointment and shop spiritual products, rudraksha, pooja items, and sacred jewellery.') ?>">
+<meta name="description" content="<?= e($metaDescription ?? 'Shop spiritual products, rudraksha, pooja items, sacred jewellery, and devotional essentials.') ?>">
 <meta name="robots" content="<?= e($metaRobots ?? 'index, follow') ?>">
 <?php $__seoKeywords = $seo['keywords'] ?? ''; if ($__seoKeywords !== ''): ?><meta name="keywords" content="<?= e($__seoKeywords) ?>"><?php endif; ?>
 <?php
@@ -254,7 +254,7 @@ echo $__palette_css;
 <noscript><link rel="stylesheet" href="/assets/css/band.css?v=<?= filemtime(__DIR__ . '/../../assets/css/band.css') ?>"></noscript>
 <?php $__secrets_org = (new \App\Services\SecretService())->all(); $__phone = $__secrets_org['phone'] ?? ''; $__telephone = $__phone !== '' ? '["' . e($__phone) . '"]' : '["+919789444037","+919789444038"]'; ?>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":["Organization","OnlineStore"],"name":"<?= e($seo['og_site_name'] ?? 'Sri Panchami Spiritual') ?>","description":"Authentic spiritual products, sacred jewellery, expert Vedic astrology consultation, and temple guidance.","url":"https://<?= e($_SERVER['HTTP_HOST']) ?>","telephone":<?= $__telephone ?>,"email":"support@sripanchamispiritual.com"}
+{"@context":"https://schema.org","@type":["Organization","OnlineStore"],"name":"<?= e($seo['og_site_name'] ?? 'Sri Panchami Spiritual') ?>","description":"Authentic spiritual products, sacred jewellery, devotional essentials, and temple guidance.","url":"https://<?= e($_SERVER['HTTP_HOST']) ?>","telephone":<?= $__telephone ?>,"email":"support@sripanchamispiritual.com"}
 </script>
 <?php if (!empty($seo['json_ld'])): ?><?= $seo['json_ld'] ?><?php endif; ?>
 <?php
@@ -314,9 +314,6 @@ gtag('js', new Date());
         <?php if ($__modules['shop']): ?>
         <a href="/shop"<?= str_starts_with($currentPath, '/shop') ? ' aria-current="page"' : '' ?>>Shop</a>
         <?php endif; ?>
-        <?php if ($__modules['consult']): ?>
-        <a href="/consult"<?= str_starts_with($currentPath, '/consult') ? ' aria-current="page"' : '' ?>>Consult</a>
-        <?php endif; ?>
         <a href="/temples"<?= str_starts_with($currentPath, '/temples') ? ' aria-current="page"' : '' ?>>Temples</a>
         <?php if ($__modules['blog']): ?>
         <div class="nav-dropdown">
@@ -367,12 +364,6 @@ if ($__flash):
             <span>Shop</span>
         </a>
         <?php endif; ?>
-        <?php if ($__modules['consult']): ?>
-        <a href="/consult" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/consult') === 0 ? 'active' : '') ?>">
-            <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20"/><path d="M2 12h20"/></svg>
-            <span>Consult</span>
-        </a>
-        <?php endif; ?>
         <a href="/temples" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/temples') === 0 ? 'active' : '') ?>">
             <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
             <span>Temples</span>
@@ -409,11 +400,11 @@ if ($__flash):
         <button type="button" class="support-panel__close" aria-label="Close support">×</button>
     </div>
     <div class="support-panel__body" id="support-log" aria-live="polite">
-        <p>Ask about products, orders, delivery addresses, or consultant bookings.</p>
-        <?php if(empty($_SESSION['user'])): ?><p>Sign in to ask about your personal order or session data.</p><?php endif; ?>
+        <p>Ask about products, orders, delivery addresses, or temple guidance.</p>
+        <?php if(empty($_SESSION['user'])): ?><p>Sign in to ask about your personal order data.</p><?php endif; ?>
     </div>
     <form class="support-panel__form" id="support-form">
-        <textarea name="message" rows="3" required placeholder="Ask about a product, order, address, or booking"></textarea>
+        <textarea name="message" rows="3" required placeholder="Ask about a product, order, address, or temple"></textarea>
         <button class="btn btn-primary btn-sm">Send</button>
     </form>
 </section>
@@ -425,13 +416,12 @@ if ($__flash):
         <div class="footer-grid">
             <div>
                 <span class="footer-brand">Sri Panchami Spiritual</span>
-                <p class="footer-desc">Scheduled astrology consultations, authentic spiritual products, sacred jewellery, rudraksha, pooja items, and temple guidance.</p>
+                <p class="footer-desc">Authentic spiritual products, sacred jewellery, rudraksha, pooja items, and temple guidance.</p>
             </div>
             <div>
                 <h4 class="footer-heading">Shop</h4>
                 <ul class="footer-links">
                     <?php if ($__modules['shop']): ?><li><a href="/shop">All Products</a></li><?php endif; ?>
-                    <?php if ($__modules['consult']): ?><li><a href="/consult">Consult</a></li><?php endif; ?>
                     <li><a href="/temples">Temples</a></li>
                     <li><a href="/about">About SPS</a></li>
                     <?php if ($__modules['blog']): ?><li><a href="/blog">Blog</a></li><?php endif; ?>
@@ -441,9 +431,8 @@ if ($__flash):
                 </ul>
             </div>
             <div>
-                <h4 class="footer-heading">Services</h4>
+                <h4 class="footer-heading">Explore</h4>
             <ul class="footer-links">
-                <?php if ($__modules['consult']): ?><li><a href="/consult">Consult</a></li><?php endif; ?>
                 <li><a href="/temples">Temples</a></li>
                 <?php if ($__modules['blog']): ?>
                 <li><a href="/blog">Blog</a></li>
@@ -490,7 +479,7 @@ var io=new IntersectionObserver(function(entries){entries.forEach(function(e){if
 document.querySelectorAll('.reveal,.panel,.product-card,.astrologer-card').forEach(function(el){io.observe(el);});
 var supportFab=document.querySelector('.support-fab'),supportPanel=document.getElementById('support-panel'),supportClose=document.querySelector('.support-panel__close'),supportForm=document.getElementById('support-form'),supportLog=document.getElementById('support-log');
 function supportEscape(value){return String(value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c];});}
-function supportReplyHtml(value){var safe=supportEscape(value);var allowed=/\/(?:shop|cart|checkout|consult|temples|contact|blog(?:\/[a-z0-9-]+|\/category\/[a-z0-9-]+)?|product\/[a-z0-9-]+|account\/dashboard(?:\/orders|\/sessions|\/install)?)(?=$|[\s.,)])/g;return safe.replace(allowed,function(path){return '<a class="support-action" href="'+path+'">Open '+supportEscape(path.replace(/^\//,'').replace(/[-/]/g,' '))+'</a>';});}
+function supportReplyHtml(value){var safe=supportEscape(value);var allowed=/\/(?:shop|cart|checkout|temples|contact|blog(?:\/[a-z0-9-]+|\/category\/[a-z0-9-]+)?|product\/[a-z0-9-]+|account\/dashboard(?:\/orders|\/install)?)(?=$|[\s.,)])/g;return safe.replace(allowed,function(path){return '<a class="support-action" href="'+path+'">Open '+supportEscape(path.replace(/^\//,'').replace(/[-/]/g,' '))+'</a>';});}
 function supportActionsHtml(actions){if(!actions||!actions.length)return'';var h='<div class="support-actions">';for(var i=0;i<actions.length;i++){var a=actions[i];if(a.type==='navigate'&&a.path){h+='<a class="btn btn-sm btn-outline support-action-btn" href="'+supportEscape(a.path)+'">'+supportEscape(a.label)+'</a>';}}return h+'</div>';}
 function supportToggle(open){if(!supportPanel||!supportFab)return;supportPanel.hidden=!open;supportFab.setAttribute('aria-expanded',open?'true':'false');}
 function supportSaveLog(){try{if(!supportPanel||!supportLog)return;sessionStorage.setItem(supportPanel.dataset.supportKey,supportLog.innerHTML);}catch(e){}}

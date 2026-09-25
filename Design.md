@@ -1,7 +1,7 @@
 ---
 version: alpha
 name: Sri Panchami Spiritual
-description: Calm, credible interface system for a consultation-first spiritual service with supporting commerce and editorial content.
+description: Calm, credible interface system for a spiritual-products storefront with supporting temple guides and editorial content.
 colors:
   primary: "#3a0003"
   on-primary: "#ffffff"
@@ -103,7 +103,7 @@ components:
 
 ## Overview
 
-Sri Panchami Spiritual is a consultation-first service. The primary customer journey is discover consultant -> review profile -> request an appointment -> manage the session. Spiritual products and editorial content support that service; they do not replace it in the first viewport. This file is the canonical visual contract for everything customer-facing in `views/` and `assets/css/band.css`.
+Sri Panchami Spiritual is a spiritual-products storefront. The primary customer journey is discover products -> review product details -> add to cart or buy now -> manage the order. Temple guides and editorial content support that journey. This file is the canonical visual contract for everything customer-facing in `views/` and `assets/css/band.css`.
 
 Commercial references such as Deiveegaa are used to audit product clarity, imagery, pricing, policies, testimonials, FAQs, and checkout visibility. Do not copy their visual identity or unverified product claims; use the comparison to expose missing commerce information and interaction wiring.
 
@@ -136,7 +136,7 @@ Keep the existing PHP templates, routes, forms, and JSON-backed behavior. Design
 - Responsive breakpoints: mobile below `744px` (one column, compact header, bottom nav), tablet `744-1128px` (reduced grid columns, same card geometry), desktop above `1128px` (centered container, `64px` section spacing).
 - Text, buttons, images, and fixed controls must not overlap or reflow awkwardly as content length changes.
 - Do not scale typography with viewport width. Use explicit breakpoint sizes so headings remain predictable and do not dominate short mobile screens.
-- The first viewport must show the product's primary action and a hint of the next section. Home leads to consultation; shop leads to products; account pages lead to the user's current task.
+- The first viewport must show the product's primary action and a hint of the next section. Home and shop lead to products; account pages lead to the user's current task.
 - Page sections are unframed full-width bands. Cards are reserved for repeated entities, forms, summaries, and genuinely bounded tools. Never place a card inside another decorative card.
 - Desktop operational screens use compact density and stable columns. Mobile screens use one clear column with 16px page gutters and no horizontal scrolling.
 
@@ -211,7 +211,7 @@ Shape should stay consistent within a component family -- don't mix `sm` and `lg
 
 ## Verification
 
-- Check `/`, `/consult`, `/shop`, one product, `/login`, and authenticated account pages at 1440x1000 and 390x844 in a real browser.
+- Check `/`, `/shop`, one product, `/login`, and authenticated account pages at 1440x1000 and 390x844 in a real browser.
 - Confirm image crops, active navigation, focus states, card alignment, no hidden reveal content, no horizontal overflow, and that the next section is hinted in the first mobile viewport.
 - Use the fixed development customer created by `bapXphp dev:user`; its password must come from `BAPX_TEST_USER_PASSWORD` and must never be committed.
 - Run the repo's PHP tests, project-map validation, and local smoke test before commit or push.

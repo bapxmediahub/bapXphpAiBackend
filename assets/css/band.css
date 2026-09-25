@@ -769,6 +769,7 @@ nav a:hover { color: var(--color-maroon); }
     border-color: var(--color-gold);
 }
 .product-card__image {
+    display: block;
     position: relative;
     overflow: hidden;
     aspect-ratio: 1;
@@ -823,9 +824,15 @@ nav a:hover { color: var(--color-maroon); }
     border-radius: var(--radius-sm);
 }
 .product-card__actions { display: flex; gap: 6px; align-items: center; }
+.product-card__buy-form,
+.product-card__add-form { display: flex; flex: 1; margin: 0; min-width: 0; }
+.product-card__buy-form .btn,
+.product-card__add-form .btn { width: 100%; min-height: 30px; height: 30px; padding: 0 0.6rem; font-size: 0.78rem; white-space: nowrap; }
+.product-card__title { color: inherit; text-decoration: none; }
+.product-card__title:hover,
+.product-card__title:focus-visible { color: var(--color-primary); text-decoration: underline; }
+.product-card__unavailable { color: var(--color-text-muted); font-size: 0.8rem; font-weight: 600; }
 .product-card__actions .btn-ghost { padding: 0 0.7rem; flex: none; height: 30px; min-height: 30px; border-radius: 999px; font-size: 0.8rem; border-width: 1.5px; text-transform: none; letter-spacing: 0; position: static; overflow: visible; }
-.product-card__add-form { display: flex; flex: 1; margin: 0; }
-.product-card__add-form .btn { width: 100%; min-height: 30px; height: 30px; padding: 0 0.75rem; font-size: 0.8rem; }
 .product-card__actions .product-card__form { display: flex; align-items: center; gap: 6px; margin-left: auto; }
 .product-card__stepper {
     height: 30px;
@@ -2744,10 +2751,10 @@ tr:hover td { background: var(--color-bg-alt); }
     .product-grid { grid-template-columns: 1fr; gap: var(--space-md); }
      .product-card { border-radius: var(--radius-lg); }
     .product-card__body { padding: var(--space-md); }
-    /* Keep "View" and the quantity stepper on one row, matching desktop. */
+    /* Keep the two commerce actions on one row, matching desktop. */
     .product-card__actions { flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 6px; }
     .product-card__actions .btn-ghost { width: auto; flex: 0 0 auto; height: 30px; min-height: 30px; padding: 0 0.6rem; }
-    .product-card__add-form { min-width: 0; }
+    .product-card__buy-form, .product-card__add-form { min-width: 0; }
     .product-card__actions .product-card__form { width: auto; flex: 0 0 auto; margin-left: auto; }
     
     .category-section { padding-left: var(--space-md); padding-right: var(--space-md); }

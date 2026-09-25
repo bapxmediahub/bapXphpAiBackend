@@ -48,8 +48,8 @@ However, Sade Sati is not purely negative. It is a period of **karmic purificati
 
 ## When Does Sade Sati End?
 
-Sade Sati ends when Saturn moves into the 3rd house from your Moon sign. To check your current Sade Sati status, you need to know your Moon sign (Janma Rashi). Our [astrologers](/consult) can calculate this for you with your exact birth details.
+Sade Sati ends when Saturn moves into the 3rd house from your Moon sign. To check its timing, begin by identifying your Moon sign (Janma Rashi) from your birth chart.
 
 ## Conclusion
 
-Sade Sati is not a punishment — it's a spiritual boot camp. When understood and navigated wisely, it becomes one of the most transformative periods of your life. At Sri Panchami Spiritual, our experienced Vedic astrologers can help you understand your unique Sade Sati journey and prescribe personalized remedies.
+Sade Sati is not a punishment — it can be a period of discipline, reflection, and steady spiritual practice. Focus on grounded routines, prayer, and community support as you navigate change.

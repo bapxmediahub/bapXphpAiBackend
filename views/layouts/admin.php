@@ -77,7 +77,6 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
                 <a href="/admin/coupons" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/coupons') === 0 ? 'active' : '') ?>">Coupons</a>
             </div>
             <?php endif; ?>
-            <?php if ($__modules['consult']): ?>
             <button type="button" class="admin-nav-toggle" data-target="menu-services" aria-expanded="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20"/><path d="M2 12h20"/></svg>
                 Services
@@ -89,7 +88,6 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
                 <a href="/admin/consultation-analytics" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/consultation-analytics') === 0 ? 'active' : '') ?>">Analytics</a>
                 <a href="/admin/temples" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/temples') === 0 ? 'active' : '') ?>">Temples</a>
             </div>
-            <?php endif; ?>
             <?php if ($__modules['blog']): ?>
             <a href="/admin/blog" class="admin-nav-top <?= (strpos($_SERVER['REQUEST_URI'], '/admin/blog') === 0 ? 'active' : '') ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>

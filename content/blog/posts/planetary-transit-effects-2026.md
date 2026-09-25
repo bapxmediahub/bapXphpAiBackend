@@ -68,8 +68,8 @@ Saturn's transit through Pisces asks for discipline and structure. While this ma
 1. **Know your Rashi**: Your Moon sign determines how transits affect you personally
 2. **Track key dates**: Mark Saturn and Jupiter transit dates for important decisions
 3. **Follow remedies**: Navagraha remedies help balance challenging transits
-4. **Consult an expert**: Personalized guidance based on your birth chart
+4. **Keep a journal**: Notice how changing routines and intentions affect your daily life
 
-## Book a Transit Reading
+## Build a Steady Practice
 
-Understanding how planetary transits affect your unique birth chart requires expert analysis. At **Sri Panchami Spiritual**, our astrologers specialize in transit predictions and can help you plan 2026 with cosmic clarity. [Book your session](/consult) today.
+Use transit themes as prompts for reflection rather than fixed predictions. [Explore spiritual products](/shop) and simple devotional routines that help you stay centred through the year.

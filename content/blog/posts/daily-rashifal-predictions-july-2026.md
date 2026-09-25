@@ -15,7 +15,7 @@ Welcome to your **July 2026 Rashifal** — Vedic astrology predictions for all 1
 
 ## How to Read Your Rashifal
 
-In Vedic astrology, your Rashi (Moon sign) is determined by the position of the Moon at your time of birth. If you don't know your Rashi, [consult our astrologers](/consult) for a free birth chart calculation.
+In Vedic astrology, your Rashi (Moon sign) is determined by the position of the Moon at your time of birth. If you do not know your Rashi, start with your birth-chart details and a trusted reference source.
 
 ## Mesha Rashi (Aries)
 **Career**: A favorable month for new initiatives. Mars energizes your 10th house — leadership roles and competitive projects bring success.
@@ -96,4 +96,4 @@ In Vedic astrology, your Rashi (Moon sign) is determined by the position of the 
 - Donate **white food** (rice, milk, curd) on Mondays
 - Visit a **temple** on Saturdays for Shani's blessings
 
-For a personalized reading based on your exact birth chart, [book a session](/consult) with our expert Vedic astrologers at Sri Panchami Spiritual.
+For a more devotional approach to the month, [browse spiritual products](/shop) for your home practice.

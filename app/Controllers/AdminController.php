@@ -12,8 +12,21 @@ final class AdminController extends BaseController {
     public function dashboard(): void{
         $productCount = count((new ResourceService('products'))->all());
         $orderCount = count((new ResourceService('orders'))->all());
-        $bookingCount = count((new ResourceService('appointments'))->all());
-        $this->render('admin/dashboard', ['pageTitle' => 'Dashboard', 'productCount' => $productCount, 'orderCount' => $orderCount, 'bookingCount' => $bookingCount]);
+        // Public consultation booking has been retired, but historical requests remain
+        // an owner responsibility. Keep them visible from the admin dashboard rather
+        // than making their recovery depend on a public-site module flag.
+        $appointments = (new ResourceService('appointments'))->all();
+        usort($appointments, static fn(array $a, array $b): int => strcmp(
+            (string)($b['created_at'] ?? $b['preferred_date'] ?? ''),
+            (string)($a['created_at'] ?? $a['preferred_date'] ?? '')
+        ));
+        $this->render('admin/dashboard', [
+            'pageTitle' => 'Dashboard',
+            'productCount' => $productCount,
+            'orderCount' => $orderCount,
+            'bookingCount' => count($appointments),
+            'appointments' => array_slice($appointments, 0, 5),
+        ]);
     }
     public function products(): void{
         $this->render('admin/product-form',['pageTitle'=>'Products','title'=>'Products','collection'=>'products','items'=>(new ResourceService('products'))->all(),'categories'=>(new ResourceService('categories'))->all(),'mediaFiles'=>$this->mediaFor('products')]);
@@ -61,7 +74,6 @@ final class AdminController extends BaseController {
     }
     public function shipping(): void{$this->render('admin/settings',['pageTitle' => 'Shipping', 'title' => 'Shipping']);}
     public function astrologers(): void{
-        $this->requireModule('consult');
         $this->render('admin/astrologer-form',['pageTitle'=>'Astrologers','title'=>'Astrologers','collection'=>'astrologers','items'=>(new ResourceService('astrologers'))->all(),'mediaFiles'=>$this->mediaFor('astrologers')]);
     }
     public function saveAstrologer(): void{$this->save('astrologers');}
@@ -69,9 +81,9 @@ final class AdminController extends BaseController {
         $id=(string)($_POST['id']??'');
         (new ResourceService('astrologers'))->delete($id); (new AuditLogService())->record('delete','astrologers',$id); $this->flash('Deleted.','info'); $this->redirect('/admin/astrologers');
     }
-    public function appointments(): void{$this->requireModule('consult'); $this->list('Sessions','appointments');}
-    public function consultationAnalytics(): void{$this->requireModule('consult'); $this->render('admin/consultation-analytics',['pageTitle'=>'Consultation Analytics','metrics'=>(new ConsultationService())->analytics()]);}
-    public function temples(): void{$this->requireModule('consult'); $this->resource('Temples','temples',$this->schemaFields('temples',['name','description','image_url','address','map_url']));}
+    public function appointments(): void{$this->list('Sessions','appointments');}
+    public function consultationAnalytics(): void{$this->render('admin/consultation-analytics',['pageTitle'=>'Consultation Analytics','metrics'=>(new ConsultationService())->analytics()]);}
+    public function temples(): void{$this->resource('Temples','temples',$this->schemaFields('temples',['name','description','image_url','address','map_url']));}
     public function saveTemple(): void{$this->save('temples');}
     public function deleteTemple(): void{$this->delete('temples');}
     public function settings(): void{$this->render('admin/settings',['pageTitle' => 'Settings', 'title' => 'Site Settings', 'settings'=>(new SettingsService())->public(), 'adminCredentials'=>(new EnvService())->adminCredentials()]);}
@@ -416,7 +428,7 @@ final class AdminController extends BaseController {
         }
         $mailer = new \App\Services\SmtpMailer((new SecretService())->all());
         if (!$mailer->configured()) {
-            $_SESSION['mail_test_result'] = ['ok'=>false,'transport'=>'','message'=>'No SMTP settings saved, and PHP mail() is unavailable. Fill in the fields above and save first.'];
+            $_SESSION['mail_test_result'] = ['ok'=>false,'transport'=>'','message'=>'SMTP is not fully configured. Save the host, port, mailbox username, password and From Email above first.'];
             $this->redirect('/admin/integrations');
         }
         $transport = $mailer->transport();
@@ -649,6 +661,14 @@ final class AdminController extends BaseController {
     private function saveProductRecord(): void{
         $data=$this->cleanPost();
         $data=$this->mergeExistingRecord('products', $data);
+        // Product details are structured so the public product page can present them
+        // consistently. Empty fields intentionally clear old imported values.
+        foreach (['highlights', 'description_points'] as $field) {
+            if (array_key_exists($field, $_POST)) $data[$field] = array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', (string)$_POST[$field]) ?: []), static fn($line) => $line !== ''));
+        }
+        if (array_key_exists('specifications', $_POST)) {
+            $data['specifications'] = $this->parseSpecifications((string)$_POST['specifications']);
+        }
         $images=$this->splitList((string)($data['image_urls'] ?? ''));
         if (!empty($data['image_url'])) array_unshift($images, (string)$data['image_url']);
         $uploaded=$this->uploadedMedia('products');
@@ -685,6 +705,18 @@ final class AdminController extends BaseController {
     }
     private function splitList(string $value): array {
         return array_values(array_filter(array_map('trim', preg_split('/[\r\n,]+/', $value) ?: [])));
+    }
+    private function parseSpecifications(string $value): array {
+        $specifications = [];
+        foreach (preg_split('/\r\n|\r|\n/', $value) ?: [] as $line) {
+            $line = trim($line);
+            if ($line === '') continue;
+            $parts = preg_split('/\s*[:=]\s*/', $line, 2);
+            if (count($parts) !== 2) continue;
+            [$label, $detail] = array_map('trim', $parts);
+            if ($label !== '' && $detail !== '') $specifications[$label] = $detail;
+        }
+        return $specifications;
     }
     private function uploadedMedia(string $collection): array { return (new MediaService())->upload($_FILES['media_files'] ?? [], $this->mediaContext($collection)); }
     private function mediaFor(string $collection): array { return in_array($collection, ['products','temples','astrologers'], true) ? (new MediaService())->all($this->mediaContext($collection)) : []; }

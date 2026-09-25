@@ -10,7 +10,7 @@ All runtime data is stored in MySQL tables, accessed through `DatabaseService`. 
 
 ## Collections
 
-All collections defined in `collections.php` map to remote MySQL tables for runtime use. The local checkout is not a runtime database and must not be used as a fallback for customer, admin, payment, wallet, address, or consultation data. `DatabaseService` reaches the hosted database directly when configured, or uses the authenticated remote DB protocol for explicitly supported operations.
+All collections defined in `collections.php` map to remote MySQL tables for runtime use. The local checkout is not a runtime database and must not be used as a fallback for customer, admin, payment, wallet, address, or historical appointment data. `DatabaseService` reaches the hosted database directly when configured, or uses the authenticated remote DB protocol for explicitly supported operations.
 
 ## JSON Seed Data (CLI Only)
 

@@ -53,10 +53,10 @@ You may experience ups and downs in your career. Your path involves service-orie
 
 - **Chant Rahu mantra**: "Om Rahave Namah" (108 times, especially on Saturdays)
 - **Chant Ketu mantra**: "Om Ketave Namah" (108 times, especially on Tuesdays)
-- **Wear** a 7-faced Hessonite (Gomed) for Rahu or Cat's Eye (Vaidooryam) for Ketu after expert consultation
+- **Wear** a 7-faced Hessonite (Gomed) for Rahu or Cat's Eye (Vaidooryam) with thoughtful preparation
 - **Donate** blue cloth, blankets, or coconuts on Saturdays
 - **Feed** stray animals and birds regularly
 
 ## Conclusion
 
-Rahu and Ketu are your karmic guides — Rahu shows where you need to grow, and Ketu shows where you've already been. By understanding their placement in your birth chart, you can align your career choices with your soul's journey. [Consult our astrologers](/consult) for a personalized analysis of Rahu and Ketu in your chart.
+Rahu and Ketu are often understood as karmic guides — Rahu shows where you need to grow, and Ketu shows where you have already been. Use the ideas in this guide for reflection, and [browse spiritual products](/shop) that support a regular devotional practice.

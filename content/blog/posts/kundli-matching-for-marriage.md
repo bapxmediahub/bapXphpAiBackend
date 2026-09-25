@@ -65,6 +65,6 @@ Nadi Dosha occurs when both partners share the same Nadi type (Adi, Madhya, or A
 - If either partner's 5th house is strong
 - Through specific remedial rituals prescribed by an experienced astrologer
 
-## Consult Our Experts
+## Keep the Context in Mind
 
-Kundli matching is a nuanced art that requires expert interpretation. A score alone doesn't tell the whole story — the strength of houses, planetary positions, and Dasha periods all matter. At **Sri Panchami Spiritual**, our Vedic astrologers provide detailed compatibility analysis with personalized guidance. [Book a session](/consult) for comprehensive Kundli matching.
+Kundli matching is a nuanced tradition. A score alone does not tell the whole story; family values, communication, mutual respect, and practical compatibility matter too.

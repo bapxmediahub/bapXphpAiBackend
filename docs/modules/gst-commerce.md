@@ -6,7 +6,7 @@ category: module
 ---
 # GST Product Billing and Growth Tracking
 
-This workflow applies only to paid ecommerce product orders. Scheduled consultant appointments are not included in product tax invoices or GST product-sales exports.
+This workflow applies only to paid ecommerce product orders.
 
 ## Owner Setup
 
@@ -25,7 +25,7 @@ Storefront prices are treated as GST-inclusive. At checkout the order records th
 
 ## Filing Report
 
-Open **Admin -> GST Report**, select the filing period, and export CSV. The report includes only confirmed product invoices and excludes cancelled orders and consultant appointments. It is a filing-oriented sales ledger, not direct GST Portal submission. Reconcile it with payment settlements, credit notes/returns, and the tax professional before filing.
+Open **Admin -> GST Report**, select the filing period, and export CSV. The report includes only confirmed product invoices and excludes cancelled orders. It is a filing-oriented sales ledger, not direct GST Portal submission. Reconcile it with payment settlements, credit notes/returns, and the tax professional before filing.
 
 ## Advertising Events
 

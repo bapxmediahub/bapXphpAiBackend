@@ -1,30 +1,15 @@
 <section class="home-hero">
     <div class="container home-hero-inner">
         <div class="hero-copy">
-            <?php if (module_on('consult')): ?>
-            <span class="eyebrow">Vedic astrology · Spiritual guidance · Remedies</span>
-            <h1>Book a Private Consultation</h1>
-            <p class="lede">Connect with an experienced consultant for personalised guidance — horoscope clarity, kundli matching, career insights, and spiritual remedies from the comfort of your home.</p>
-            <?php else: ?>
             <span class="eyebrow">Sacred jewellery · Pooja items · Remedies</span>
             <h1>Authentic Spiritual Products</h1>
             <p class="lede">Sacred jewellery, rudraksha, and pooja essentials — sourced with care and delivered across India, along with a guide to the Panchami temples.</p>
-            <?php endif; ?>
             <div class="hero-actions">
-                <?php if (module_on('consult')): ?>
-                <a href="/consult" class="btn btn-primary">Book a Consultation</a>
-                <?php endif; ?>
                 <?php if (module_on('shop')): ?>
-                <a href="/shop" class="btn <?= module_on('consult') ? 'btn-outline' : 'btn-primary' ?>">Shop Products</a>
+                <a href="/shop" class="btn btn-primary">Shop Products</a>
                 <?php endif; ?>
             </div>
             <div class="hero-stats">
-                <?php if (module_on('consult')): ?>
-                <div>
-                    <div class="hero-stat-value"><?= e((string)count($astrologers ?? [])) ?></div>
-                    <div class="hero-stat-label">Consultants</div>
-                </div>
-                <?php endif; ?>
                 <?php if (module_on('shop')): ?>
                 <div>
                     <div class="hero-stat-value"><?= e((string)count($products)) ?></div>
@@ -32,8 +17,8 @@
                 </div>
                 <?php endif; ?>
                 <div>
-                    <div class="hero-stat-value"><?= module_on('consult') ? 'Instant' : 'Trusted' ?></div>
-                    <div class="hero-stat-label"><?= module_on('consult') ? 'Booking' : 'Sourcing' ?></div>
+                    <div class="hero-stat-value">Trusted</div>
+                    <div class="hero-stat-label">Sourcing</div>
                 </div>
             </div>
         </div>
@@ -90,12 +75,6 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
         Saved Addresses
     </div>
-    <?php if (module_on('consult')): ?>
-    <div class="trust-item">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        Scheduled Consultations
-    </div>
-    <?php endif; ?>
     <div class="trust-item">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
         Spiritual Products
@@ -118,44 +97,48 @@
         <div class="product-grid">
         <?php foreach(array_slice($products, 0, min(4, count($products))) as $item): ?>
             <?php $hasOffer = !empty($item['offer_price']) && $item['offer_price'] < $item['price']; ?>
+            <?php
+                $itemSlug = trim((string)($item['slug'] ?? ''));
+                $productUrl = '/product/' . rawurlencode($itemSlug);
+                $isPurchasable = in_array((string)($item['stock_status'] ?? 'in_stock'), ['in_stock', 'active'], true);
+            ?>
             <article class="product-card reveal">
-                <div class="product-card__image">
+                <a class="product-card__image" href="<?= e($productUrl) ?>" aria-label="View <?= e($item['name']) ?>">
                     <img src="<?= e(webp_src($item['image_url'] ?? placeholder_img($item['name']))) ?>" alt="<?= e($item['name']) ?> — Buy online at Sri Panchami Spiritual, Chennai" decoding="async">
                     <?php if($hasOffer): ?>
                         <span class="product-card__badge product-card__badge--sale">Sale</span>
                     <?php endif; ?>
-                </div>
+                </a>
                 <div class="product-card__body">
-                    <h3><?= e($item['name']) ?></h3>
+                    <h3><a class="product-card__title" href="<?= e($productUrl) ?>"><?= e($item['name']) ?></a></h3>
                     <p class="product-card__desc"><?= e($item['description']) ?></p>
                     <div class="product-card__price-row">
-                        <span class="price">₹<?= e((string)($item['offer_price'] ?: $item['price'] ?: 0)) ?></span>
+                        <span class="price">₹<?= e((string)(($item['offer_price'] ?? 0) ?: ($item['price'] ?? 0))) ?></span>
                         <?php if($hasOffer): ?>
                             <span class="old-price">₹<?= e($item['price']) ?></span>
                             <?php $pct = round((1 - $item['offer_price'] / ($item['price'] ?: 1)) * 100); ?>
                             <span class="discount-pct">-<?= $pct ?>%</span>
                         <?php endif; ?>
                     </div>
-                    <?php $itemQty = $cartQuantities[(string)($item['slug'] ?? '')] ?? 0; ?>
                     <div class="product-card__actions">
-                        <a href="/product/<?= e($item['slug']) ?>" class="btn btn-sm btn-ghost">View →</a>
-                        <div class="product-card__form product-card__stepper" aria-label="<?= e($item['name']) ?> cart quantity">
-                            <form method="post" action="/cart/update">
-                                <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
-                                <input type="hidden" name="action" value="dec">
-                                <input type="hidden" name="redirect" value="/">
-                                <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                                <button type="submit" aria-label="Remove one <?= e($item['name']) ?>" <?= $itemQty <= 0 ? 'disabled' : '' ?>>−</button>
-                            </form>
-                            <span class="qty-input__value"><?= e((string)$itemQty) ?></span>
-                            <form method="post" action="/cart/add">
-                                <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
-                                <input type="hidden" name="qty" value="1">
-                                <input type="hidden" name="redirect" value="/">
-                                <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                                <button type="submit" aria-label="Add one <?= e($item['name']) ?>">+</button>
-                            </form>
-                        </div>
+                        <?php if($isPurchasable): ?>
+                        <form method="post" action="/cart/add" class="product-card__buy-form">
+                            <input type="hidden" name="slug" value="<?= e($itemSlug) ?>">
+                            <input type="hidden" name="qty" value="1">
+                            <input type="hidden" name="redirect" value="/checkout">
+                            <input type="hidden" name="_csrf" value="<?= $csrf ?>">
+                            <button type="submit" class="btn btn-sm btn-primary">Buy Now</button>
+                        </form>
+                        <form method="post" action="/cart/add" class="product-card__add-form">
+                            <input type="hidden" name="slug" value="<?= e($itemSlug) ?>">
+                            <input type="hidden" name="qty" value="1">
+                            <input type="hidden" name="redirect" value="/">
+                            <input type="hidden" name="_csrf" value="<?= $csrf ?>">
+                            <button type="submit" class="btn btn-sm btn-outline">Add to Cart</button>
+                        </form>
+                        <?php else: ?>
+                        <span class="product-card__unavailable">Out of stock</span>
+                        <?php endif; ?>
                     </div>
                 </div>
             </article>
@@ -163,48 +146,6 @@
     </div>
     </div>
 </section>
-
-<?php if (module_on('consult')): ?>
-<section class="section section--full">
-    <div class="section-header">
-        <span class="eyebrow serif-accent">Guidance · Clarity · Remedies</span>
-        <h2 class="section-title">Online Consultation</h2>
-        <p class="lede">Choose an experienced consultant and request a private appointment at your preferred date and time.</p>
-    </div>
-    <?php if(!empty($astrologers)): ?>
-    <div class="astro-carousel" aria-label="Consultants carousel">
-        <div class="astro-carousel-track">
-        <?php foreach(array_values(array_merge($astrologers, $astrologers)) as $astro): ?>
-            <?php
-                $languageText = implode(', ', array_slice(array_values(array_filter($astro['languages'] ?? [])), 0, 2));
-                $experience = trim((string)($astro['experience_years'] ?? ''));
-                $speciality = $astro['speciality'] ?? 'Vedic Astrology';
-            ?>
-            <article class="astro-market-card reveal">
-                <a class="astro-market-photo" href="/consult/<?= e($astro['slug'] ?? '') ?>" aria-label="View <?= e($astro['name'] ?? 'Astrologer') ?>">
-                    <span class="astro-market-photo-frame"><img class="astro-market-photo-img astro-market-photo-img--<?= e($astro['slug'] ?? 'default') ?>" src="<?= e(webp_src($astro['photo_url'] ?? placeholder_img($astro['name'] ?? 'Astrologer'))) ?>" alt="<?= e($astro['name'] ?? 'Astrologer') ?>" loading="lazy"></span>
-                </a>
-                <div class="astro-market-info">
-                    <a href="/consult/<?= e($astro['slug'] ?? '') ?>" class="astro-market-name"><?= e($astro['name'] ?? 'Astrologer') ?></a>
-                    <p class="astro-market-speciality"><?= e($speciality) ?></p>
-                    <?php if($languageText !== '' || $experience !== ''): ?><div class="astro-market-meta"><?php if($languageText !== ''): ?><span><?= e($languageText) ?></span><?php endif; ?><?php if($experience !== ''): ?><span><?= e($experience) ?> years</span><?php endif; ?></div><?php endif; ?>
-                </div>
-                <div class="astro-market-actions">
-                    <div class="astro-action-row">
-                        <a href="/consult/<?= e($astro['slug'] ?? '') ?>" class="astro-action">View profile</a>
-                        <a href="/consult/<?= e($astro['slug'] ?? '') ?>#booking-form" class="astro-action astro-action--primary">Book appointment</a>
-                    </div>
-                </div>
-            </article>
-        <?php endforeach; ?>
-        </div>
-    </div>
-    <?php endif; ?>
-    <div style="text-align:center;">
-        <a href="/consult" class="btn btn-primary">View Consultants</a>
-    </div>
-</section>
-<?php endif; ?>
 
 <section class="section section--alt">
     <div class="container">
@@ -322,13 +263,8 @@ document.addEventListener('DOMContentLoaded', function () {
     <div class="page-cta-card reveal">
         <div>
             <span class="page-cta-card__eyebrow">Need Guidance?</span>
-            <?php if (module_on('consult')): ?>
-            <h3>Start a Consultation Request</h3>
-            <p>Use the contact form for astrology sessions, product questions, temple guidance, or VIP direct astrology visit requests.</p>
-            <?php else: ?>
             <h3>Get in Touch</h3>
             <p>Use the contact form for product questions, order help, or temple guidance.</p>
-            <?php endif; ?>
         </div>
         <a class="btn btn-primary page-cta-card__button" href="/contact#contact-form">Let’s Get Connected →</a>
     </div>
@@ -351,10 +287,10 @@ document.addEventListener('DOMContentLoaded', function () {
         },
         {
             "@type": "Question",
-            "name": "Do you offer Vedic astrology consultation in Chennai?",
+            "name": "Can I ask for help choosing a spiritual product?",
             "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, you can request a scheduled appointment with an expert consultant in Tamil, English, and other Indian languages. Services include kundli matching, horoscope reading, career guidance, and personalized remedies."
+                "text": "Yes. Contact Sri Panchami Spiritual with a product, order, or temple question and our team will help you find the appropriate information."
             }
         },
         {

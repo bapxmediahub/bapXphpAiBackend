@@ -232,6 +232,22 @@ final class MailQueueService {
         return $sent;
     }
 
+    /** Confirm that a customer enquiry reached the store without exposing an owner address. */
+    public function enqueueContactConfirmation(array $submission): ?array {
+        $to = trim((string)($submission['email'] ?? ''));
+        if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) return null;
+        $name = trim((string)($submission['name'] ?? ''));
+        $subject = trim((string)($submission['subject'] ?? 'General enquiry'));
+        $html = self::heading('We received your enquiry')
+            . '<p>Hello ' . e($name !== '' ? $name : 'there') . ', thank you for contacting Sri Panchami Spiritual. Our team will review your message and reply soon.</p>'
+            . self::details([
+                'Reference' => e((string)($submission['id'] ?? '')),
+                'Subject' => e($subject),
+            ])
+            . self::button('Visit the store', $this->siteUrl('/shop'));
+        return $this->enqueue('contact_customer_confirmation', $to, 'We received your enquiry — Sri Panchami Spiritual', $html, null, ['contact_id' => $submission['id'] ?? '']);
+    }
+
     /**
      * Send a copy to the owner. The destination is admin_notification_email, which is
      * deliberately separate from the sending mailbox: customers are written to from

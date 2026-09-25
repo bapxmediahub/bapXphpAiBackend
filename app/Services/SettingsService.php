@@ -6,7 +6,6 @@ final class SettingsService {
 
     /** Modules that can be switched off from Admin → Site Settings. */
     public const MODULES = [
-        'consult' => 'Consultation',
         'shop'    => 'Ecommerce',
         'blog'    => 'Blog',
     ];

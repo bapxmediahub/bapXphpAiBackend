@@ -56,7 +56,7 @@ These are deliberately different and are a common source of confusion:
 | Signup | Welcome email | — |
 | Forgot password | Reset link (**emailed, never shown on screen**) | — |
 | Paid order | Payment confirmation | New-order notification |
-| Consultation booking | Booking received confirmation | New-appointment notification |
+| Contact enquiry | Enquiry received confirmation | New-contact notification |
 
 ## Testing
 

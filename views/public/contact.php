@@ -3,11 +3,11 @@
         <div style="text-align:center; margin-bottom:var(--space-2xl);">
             <span class="eyebrow serif-accent">Contact</span>
             <h1 class="section-title" style="margin-bottom:var(--space-sm);">Sri Panchami Spiritual</h1>
-            <p class="lede" style="margin:0 auto;">Shop spiritual products online. For astrology guidance, use Consult for regular sessions or contact us for VIP direct astrology visits.</p>
+            <p class="lede" style="margin:0 auto;">Shop spiritual products online and contact us for product, order, temple, or general support.</p>
         </div>
         <div class="contact-form-card reveal" id="contact-form" style="scroll-margin-top:110px;">
             <h2 style="font-family:var(--font-serif); text-align:center; margin:0 0 var(--space-sm);">Contact Us</h2>
-            <p style="text-align:center; color:var(--color-text-muted); margin:0 auto var(--space-lg); max-width:620px;">Use this form for astrology consultation requests, product questions, temple guidance, or store support.</p>
+            <p style="text-align:center; color:var(--color-text-muted); margin:0 auto var(--space-lg); max-width:620px;">Use this form for product questions, order support, temple guidance, or general enquiries.</p>
             <?php if(!empty($success)): ?>
                 <script>document.addEventListener('DOMContentLoaded',function(){showToast('Thank you. Sri Panchami Spiritual will contact you soon.','success');});</script>
             <?php endif; ?>
@@ -33,7 +33,6 @@
                         <label for="contact-subject">Subject</label>
                         <select id="contact-subject" name="subject" required>
                             <option value="">Select a subject</option>
-                            <option value="astrology" <?= (($subject ?? '') === 'astrology') ? 'selected' : '' ?>>Astrology Consultation</option>
                             <option value="product">Product Inquiry</option>
                             <option value="temple">Temple Guidance</option>
                             <option value="order">Order Support</option>
@@ -62,7 +61,7 @@
                 <div class="contact-card__body">
                     <span class="contact-card__eyebrow">Shop & visits</span>
                     <h3>Online Store</h3>
-                    <p>Products are available through the online shop.<br>Direct astrology visits are for VIP appointments only.<br>Regular sessions are available through Consult.</p>
+                    <p>Products are available through the online shop. Contact us for product questions, order support, or temple guidance.</p>
                 </div>
             </div>
             <div class="contact-card contact-card--direct contact-direct-panel reveal">
@@ -98,7 +97,7 @@
     "@context": "https://schema.org",
     "@type": "ContactPage",
     "name": "Contact Sri Panchami Spiritual",
-    "description": "Contact Sri Panchami Spiritual for spiritual products, astrology consultation, and pooja services.",
+    "description": "Contact Sri Panchami Spiritual for spiritual products, order support, temple guidance, and pooja services.",
     "url": "https://sripanchamispiritual.com/contact"
 }
 </script>

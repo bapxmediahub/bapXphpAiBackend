@@ -107,6 +107,6 @@ The **Navagraha** (nine planets) are celestial deities that influence every aspe
 
 For overall planetary balance, perform the **Navagraha Shanti Pooja** during auspicious timings. You can also chant the **Navagraha Stotram** daily for protection and harmony from all nine planets.
 
-## Consult Our Expert Astrologers
+## Continue Your Navagraha Practice
 
-Understanding which planets need strengthening requires a detailed analysis of your birth chart. Our experienced Vedic astrologers at Sri Panchami Spiritual can identify your planetary weaknesses and prescribe personalized remedies. [Book a consultation](/consult) today.
+Choose practices and devotional items thoughtfully, and follow the rhythm that feels sustainable for your household. [Browse spiritual products](/shop) for items used in daily worship and Navagraha observance.

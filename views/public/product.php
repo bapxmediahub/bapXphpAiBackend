@@ -58,7 +58,7 @@
                     </div>
                 </div>
                 <div class="product-info__price">
-                    <span class="price">₹<?= e((string)($product['offer_price'] ?: $product['price'] ?: 0)) ?></span>
+                    <span class="price">₹<?= e((string)(($product['offer_price'] ?? 0) ?: ($product['price'] ?? 0))) ?></span>
                     <?php if($hasOffer): ?>
                         <span class="old-price">₹<?= e($product['price']) ?></span>
                         <?php $pct = round((1 - $product['offer_price'] / ($product['price'] ?: 1)) * 100); ?>
@@ -100,9 +100,8 @@
                     </div>
                 <?php endif; ?>
                  <div class="product-info__form">
-                     <form method="post" action="/cart/add" style="display:flex; gap:var(--space-md); align-items:center; width:100%;">
+                     <form id="product-cart-form" method="post" action="/cart/add" style="display:flex; gap:var(--space-md); align-items:center; width:100%;">
                          <input type="hidden" name="slug" value="<?= e($product['slug']) ?>">
-                         <input type="hidden" name="redirect" value="/product/<?= e($product['slug']) ?>">
                          <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
                          <input type="hidden" name="_csrf" value="<?= $csrf ?>">
                          <div class="qty-input">
@@ -111,11 +110,11 @@
                             <input type="number" name="qty" value="1" min="1" max="99" id="qty-input">
                             <button type="button" onclick="this.previousElementSibling.stepUp(); this.previousElementSibling.dispatchEvent(new Event('change'))">+</button>
                         </div>
-                        <button class="btn btn-primary btn-lg" style="flex:1;">Add to Cart</button>
+                        <button name="redirect" value="/product/<?= e(rawurlencode(trim($product['slug']))) ?>" class="btn btn-primary btn-lg" style="flex:1;">Add to Cart</button>
                     </form>
                 </div>
                 <div class="product-info__actions">
-                    <button type="button" class="btn btn-outline btn-lg btn-block" onclick="var f=this.closest('.product-info__form').querySelector('form'); f.querySelector('[name=redirect]').value='/checkout'; f.submit();">Buy Now →</button>
+                    <button type="submit" form="product-cart-form" name="redirect" value="/checkout" class="btn btn-outline btn-lg btn-block">Buy Now →</button>
                 </div>
                 <div class="product-info__features">
                     <div class="product-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> Secure Payment</div>
@@ -137,38 +136,42 @@
             <h2 class="section-title" style="font-size:1.5rem; margin-bottom:var(--space-xl);">Related Products</h2>
             <div class="product-grid">
                 <?php foreach(array_slice($related, 0, 4) as $item): ?>
+                    <?php
+                        $itemSlug = trim((string)($item['slug'] ?? ''));
+                        $productUrl = '/product/' . rawurlencode($itemSlug);
+                        $isPurchasable = in_array((string)($item['stock_status'] ?? 'in_stock'), ['in_stock', 'active'], true);
+                    ?>
                     <article class="product-card reveal">
-                        <div class="product-card__image">
+                        <a class="product-card__image" href="<?= e($productUrl) ?>" aria-label="View <?= e($item['name']) ?>">
                             <img src="<?= e(webp_src($item['image_url'] ?? placeholder_img($item['name']))) ?>" alt="<?= e($item['name']) ?>" decoding="async">
-                        </div>
+                        </a>
                         <div class="product-card__body">
-                            <h3><?= e($item['name']) ?></h3>
+                            <h3><a class="product-card__title" href="<?= e($productUrl) ?>"><?= e($item['name']) ?></a></h3>
                             <div class="product-card__price-row">
-                                <span class="price">₹<?= e((string)($item['offer_price'] ?: $item['price'] ?: 0)) ?></span>
+                                <span class="price">₹<?= e((string)(($item['offer_price'] ?? 0) ?: ($item['price'] ?? 0))) ?></span>
                                 <?php if(!empty($item['offer_price']) && $item['offer_price'] < $item['price']): ?>
                                     <span class="old-price">₹<?= e($item['price']) ?></span>
                                 <?php endif; ?>
                             </div>
-                            <?php $itemQty = $cartQuantities[(string)($item['slug'] ?? '')] ?? 0; ?>
                             <div class="product-card__actions">
-                                <a href="/product/<?= e($item['slug']) ?>" class="btn btn-sm btn-ghost">View →</a>
-                                <div class="product-card__form product-card__stepper" aria-label="<?= e($item['name']) ?> cart quantity">
-                                    <form method="post" action="/cart/update">
-                                        <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
-                                        <input type="hidden" name="action" value="dec">
-                                        <input type="hidden" name="redirect" value="/product/<?= e($product['slug']) ?>">
-                                        <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                                        <button type="submit" aria-label="Remove one <?= e($item['name']) ?>" <?= $itemQty <= 0 ? 'disabled' : '' ?>>−</button>
-                                    </form>
-                                    <span class="qty-input__value"><?= e((string)$itemQty) ?></span>
-                                    <form method="post" action="/cart/add">
-                                        <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
-                                        <input type="hidden" name="qty" value="1">
-                                        <input type="hidden" name="redirect" value="/product/<?= e($product['slug']) ?>">
-                                        <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                                        <button type="submit" aria-label="Add one <?= e($item['name']) ?>">+</button>
-                                    </form>
-                                </div>
+                                <?php if($isPurchasable): ?>
+                                <form method="post" action="/cart/add" class="product-card__buy-form">
+                                    <input type="hidden" name="slug" value="<?= e($itemSlug) ?>">
+                                    <input type="hidden" name="qty" value="1">
+                                    <input type="hidden" name="redirect" value="/checkout">
+                                    <input type="hidden" name="_csrf" value="<?= $csrf ?>">
+                                    <button type="submit" class="btn btn-sm btn-primary">Buy Now</button>
+                                </form>
+                                <form method="post" action="/cart/add" class="product-card__add-form">
+                                    <input type="hidden" name="slug" value="<?= e($itemSlug) ?>">
+                                    <input type="hidden" name="qty" value="1">
+                                    <input type="hidden" name="redirect" value="/product/<?= e($product['slug']) ?>">
+                                    <input type="hidden" name="_csrf" value="<?= $csrf ?>">
+                                    <button type="submit" class="btn btn-sm btn-outline">Add to Cart</button>
+                                </form>
+                                <?php else: ?>
+                                <span class="product-card__unavailable">Out of stock</span>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </article>
