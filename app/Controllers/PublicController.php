@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{BlogService,ProductService,AstrologerService,TempleService,CategoryService,SecretService,SeoService,ContactService,ReviewService,MarkdownRenderer};
+use App\Services\{BlogService,ProductService,TempleService,CategoryService,SecretService,SeoService,ContactService,ReviewService,MarkdownRenderer};
 final class PublicController extends BaseController {
     
     public function home(): void {
@@ -8,11 +8,9 @@ final class PublicController extends BaseController {
         $this->seoKey = 'home';
         $categories = (new CategoryService())->all();
         $products = (new ProductService())->visible();
-        $astrologers = (new AstrologerService())->all();
         $temples = (new TempleService())->all();
         $this->render('public/home', [
             'products' => $products,
-            'astrologers' => $astrologers,
             'temples' => $temples,
             'categories' => $categories,
         ]);
@@ -43,26 +41,11 @@ final class PublicController extends BaseController {
     }
     
     public function consult(): void {
-        $this->requireModule('consult');
-        $this->detectApiRequest();
-        $this->seoKey = 'consult';
-        $reviews = new ReviewService();
-        $this->render('public/consult', ['items' => (new AstrologerService())->all(), 'reviews' => $reviews]);
+        $this->redirect('/shop');
     }
     
     public function consultant(string $slug): void {
-        $this->requireModule('consult');
-        $this->detectApiRequest();
-        $astrologer = (new AstrologerService())->findBySlug($slug);
-        $this->seoKey = 'astrologer';
-        $exp = !empty($astrologer['experience_years']) ? ' with ' . $astrologer['experience_years'] . ' years of experience' : '';
-        $this->seoOverrides = [
-            'title' => ($astrologer['name'] ?? 'Astrologer') . ' – Vedic Astrologer Online Consultation at Sri Panchami Spiritual',
-            'description' => 'Request a scheduled appointment with ' . ($astrologer['name'] ?? 'an experienced consultant') . '.' . (!empty($astrologer['speciality']) ? ' ' . $astrologer['speciality'] . '.' : '') . $exp,
-            'og_image' => $astrologer['photo_url'] ?? '',
-        ];
-        $reviewSummary = (new ReviewService())->summary('astrologer', $slug);
-        $this->render('public/astrologer', compact('slug', 'astrologer', 'reviewSummary'));
+        $this->redirect('/shop');
     }
     
     public function temples(): void { 
@@ -207,7 +190,7 @@ final class PublicController extends BaseController {
         $base = $scheme . '://' . $host;
 
         $pages = [
-            '/', '/about', '/consult', '/temples', '/shop', '/contact', '/blog',
+            '/', '/about', '/temples', '/shop', '/contact', '/blog',
             '/terms', '/privacy', '/spiritual',
         ];
         $products = [];
@@ -248,15 +231,19 @@ final class PublicController extends BaseController {
             $this->validateCsrf();
             $this->checkRateLimit('contact', 3, 120);
             $contactService = new ContactService();
-            $contactService->save([
+            $submission = [
                 'name' => $_POST['name'] ?? '',
                 'email' => $_POST['email'] ?? '',
                 'phone' => $_POST['phone'] ?? '',
                 'subject' => $_POST['subject'] ?? '',
                 'message' => $_POST['message'] ?? '',
-            ]);
+            ];
+            $submission['id'] = $contactService->save($submission);
             // The owner was never told a contact form had been submitted; it only
             // appeared under Admin -> Contacts if someone thought to look.
+            try {
+                (new \App\Services\MailQueueService())->enqueueContactConfirmation($submission);
+            } catch (\Throwable $e) { error_log('Contact receipt failed: ' . $e->getMessage()); }
             try {
                 (new \App\Services\MailQueueService())->notifyAdmin(
                     'New contact form submission',

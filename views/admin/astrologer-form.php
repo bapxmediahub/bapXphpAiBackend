@@ -133,12 +133,7 @@
                         <td><span class="badge badge--<?= ($item['availability_status'] ?? 'available') === 'available' ? 'success' : 'default' ?>"><?= e(ucfirst($item['availability_status'] ?? 'available')) ?></span></td>
                         <td>
                             <div style="display:flex; gap:var(--space-xs); align-items:center;">
-                                <?php if(!empty($item['slug'])): ?>
-                                    <a href="/consult/<?= e($item['slug']) ?>" target="_blank" class="btn btn-sm" style="padding:0.4rem 0.7rem; font-size:0.75rem; gap:0.25rem;">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                                        View
-                                    </a>
-                                <?php endif; ?>
+                                <span style="color:var(--color-text-muted); font-size:0.75rem;">Public booking retired</span>
                                 <button type="button" class="btn btn-sm btn-ghost edit-item" data-item='<?= e(json_encode(array_merge($item, ['__id' => $item['id'] ?? '']), JSON_HEX_APOS)) ?>'>
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                     Edit

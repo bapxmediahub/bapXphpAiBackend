@@ -16,7 +16,7 @@ category: docs
 ## Backend
 
 - PHP controllers in `app/Controllers/` render pages and handle form posts.
-- `/api/*` routes return JSON for the shop, product, astrologer, and temple endpoints.
+- `/api/*` routes return JSON for the shop, product, and temple endpoints.
 - Business logic lives in services under `app/Services/`.
 - Route and dependency documentation is generated from `app/Services/ProjectMapService.php`.
 

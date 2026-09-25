@@ -1,16 +1,15 @@
 ---
 type: doc
-title: Consult Page
-description: Route /consult - show remote consultant profiles with search, language filtering, and one scheduled-booking path.
+title: Retired Consult URL
+description: Route /consult redirects visitors to the spiritual product shop.
 category: page
 ---
-# Consult Page
+# Retired Consult URL
 
 Route: `/consult`
 
 Controller: `PublicController@consult`
 
-Purpose: show remote consultant profiles with search, language filtering, and one scheduled-booking path.
+Purpose: preserve old links while directing visitors to the product shop.
 
-Key checks: cards link to consultant profiles; profile forms post date, time, phone, notes, and CSRF to `/consultation/initiate`; guest submissions redirect to login.
-Cards use stable portrait and action geometry. Languages, experience, speciality, and verified reviews come from remote profile data; missing values are omitted rather than fabricated.
+Key checks: `/consult` and `/consult/{slug}` redirect to `/shop`; no public consultant directory or booking form is rendered.

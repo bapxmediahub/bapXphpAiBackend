@@ -38,16 +38,15 @@ if (isset($pwaFiles[$uri])) {
         exit;
     }
 }
-if ($uri === '/admin/manifest.json' || $uri === '/astrologer/manifest.json') {
-    $isAdmin = $uri === '/admin/manifest.json';
+if ($uri === '/admin/manifest.json') {
     $manifest = [
-        'name' => $isAdmin ? 'SPS Admin' : 'SPS Consultant',
-        'short_name' => $isAdmin ? 'SPS Admin' : 'SPS Con',
-        'description' => $isAdmin ? 'Admin panel for Sri Panchami Spiritual.' : 'Astrologer consultation workspace.',
-        'start_url' => $isAdmin ? '/admin' : '/astrologer',
-        'scope' => $isAdmin ? '/admin/' : '/astrologer/',
+        'name' => 'SPS Admin',
+        'short_name' => 'SPS Admin',
+        'description' => 'Admin panel for Sri Panchami Spiritual.',
+        'start_url' => '/admin',
+        'scope' => '/admin/',
         'display' => 'standalone',
-        'background_color' => $isAdmin ? '#222222' : '#240002',
+        'background_color' => '#222222',
         'theme_color' => '#3a0003',
         'icons' => [
             ['src' => '/assets/images/logo-square.jpeg', 'sizes' => '192x192', 'type' => 'image/jpeg'],
@@ -59,10 +58,9 @@ if ($uri === '/admin/manifest.json' || $uri === '/astrologer/manifest.json') {
     echo json_encode($manifest, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
     exit;
 }
-if ($uri === '/admin/sw.js' || $uri === '/astrologer/sw.js') {
-    $role = $uri === '/admin/sw.js' ? 'admin' : 'consultant';
-    $cacheName = 'sps-cache-' . $role . '-v1';
-    $precache = json_encode($role === 'admin' ? ['/admin', '/login'] : ['/astrologer', '/login']);
+if ($uri === '/admin/sw.js') {
+    $cacheName = 'sps-cache-admin-v1';
+    $precache = json_encode(['/admin', '/login']);
     header('Content-Type: application/javascript; charset=utf-8');
     header('Cache-Control: no-cache');
     echo "const CACHE_NAME = {$cacheName}; const PRECACHE_URLS = {$precache};";
@@ -94,7 +92,7 @@ if ($uri !== null && $uri !== '/' && str_ends_with($uri, '/')) {
 }
 
 // PHP routes (admin + public pages)
-$phpRoutes = ['/','/shop','/shop/','/product','/cart','/checkout','/payment','/support','/about','/contact','/temples','/consult','/consultation','/astrologer','/auth','/login','/logout','/register','/forgot-password','/reset-password','/account','/reviews','/sri-panchami-spiritual','/spiritual','/categories','/terms','/privacy','/blog','/docs','/help','/sitemap.xml'];
+$phpRoutes = ['/','/shop','/shop/','/product','/cart','/checkout','/payment','/support','/about','/contact','/temples','/consult','/consultation','/auth','/login','/logout','/register','/forgot-password','/reset-password','/account','/reviews','/sri-panchami-spiritual','/spiritual','/categories','/terms','/privacy','/blog','/docs','/help','/sitemap.xml'];
 $isPhpRoute = false;
 foreach ($phpRoutes as $route) {
     if (strpos($uri, $route . '/') === 0 || $uri === $route) {

@@ -3,10 +3,10 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 114,
+        "routes": 112,
         "controllers": 12,
         "services": 48,
-        "views": 47,
+        "views": 44,
         "collections": 22
     },
     "routes": [
@@ -36,7 +36,7 @@
             "path": "/account/bookings",
             "name": "account.bookings.legacy",
             "controller": "AccountController@legacyBookings",
-            "view": "account/bookings",
+            "view": "account/orders",
             "services": [
                 "AuthService"
             ]
@@ -78,10 +78,9 @@
             "path": "/account/dashboard/sessions",
             "name": "account.dashboard.sessions",
             "controller": "AccountController@bookings",
-            "view": "account/bookings",
+            "view": "account/orders",
             "services": [
-                "AuthService",
-                "AppointmentService"
+                "AuthService"
             ]
         },
         {
@@ -740,16 +739,6 @@
             ]
         },
         {
-            "method": "GET",
-            "path": "/api/consult",
-            "name": "api.consult",
-            "controller": "ApiController@consult",
-            "view": "public/404",
-            "services": [
-                "ProductService"
-            ]
-        },
-        {
             "method": "POST",
             "path": "/api/consultations/{id}/status",
             "name": "api.consultation.status",
@@ -927,32 +916,25 @@
             "path": "/consult",
             "name": "consult",
             "controller": "PublicController@consult",
-            "view": "public/consult",
-            "services": [
-                "AstrologerService"
-            ]
+            "view": "public/shop",
+            "services": []
         },
         {
             "method": "GET",
             "path": "/consult/{slug}",
             "name": "consult.show",
             "controller": "PublicController@consultant",
-            "view": "public/astrologer",
-            "services": [
-                "AstrologerService"
-            ]
+            "view": "public/shop",
+            "services": []
         },
         {
             "method": "POST",
             "path": "/consultation/initiate",
             "name": "consultation.initiate",
             "controller": "ConsultationController@initiate",
-            "view": "public/astrologer",
+            "view": "public/contact",
             "services": [
-                "AuthService",
-                "AstrologerService",
-                "ResourceService",
-                "MailQueueService"
+                "AuthService"
             ]
         },
         {
@@ -1147,17 +1129,6 @@
         },
         {
             "method": "POST",
-            "path": "/reviews/astrologer",
-            "name": "reviews.astrologer",
-            "controller": "ReviewController@saveAstrologer",
-            "view": "account/bookings",
-            "services": [
-                "ReviewService",
-                "AuthService"
-            ]
-        },
-        {
-            "method": "POST",
             "path": "/reviews/product",
             "name": "reviews.product",
             "controller": "ReviewController@saveProduct",
@@ -1336,7 +1307,6 @@
     ],
     "views": [
         "account/_nav",
-        "account/bookings",
         "account/install",
         "account/invoice",
         "account/order",
@@ -1360,13 +1330,11 @@
         "layouts/app",
         "public/404",
         "public/about",
-        "public/astrologer",
         "public/blog",
         "public/blog-post",
         "public/cart",
         "public/categories",
         "public/checkout",
-        "public/consult",
         "public/contact",
         "public/forgot-password",
         "public/home",

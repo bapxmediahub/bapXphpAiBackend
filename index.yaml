@@ -36,14 +36,14 @@ query_examples:
   - "rg -n -B4 -A12 'type: \"skill\"' index.yaml"
   - "rg -n '<term>' docs/project-index.json map.mmd index.yaml"
 summary:
-  concepts: 404
-  relationships: 234
+  concepts: 400
+  relationships: 228
   by_type:
-    blog: 16
+    blog: 14
     controller: 12
     doc: 35
     image: 148
-    route: 114
+    route: 112
     schema: 22
     service: 48
     skill: 9
@@ -57,15 +57,6 @@ concepts:
       - "spirituality"
     filename: "benefits-of-rudraksha.md"
     header_image: "https://sripanchamispiritual.com/assets/images/blog/rudraksha-benefits.jpg"
-  - id: "blog:book-consultant"
-    type: "blog"
-    title: "Book a consultant appointment"
-    description: "Choose a consultant and request a preferred appointment date and time."
-    resource: "content/blog/posts/book-consultant.md"
-    tags:
-      - "help"
-    filename: "book-consultant.md"
-    header_image: "/assets/images/blog/book-consultant.webp"
   - id: "blog:create-account"
     type: "blog"
     title: "Create and access your account"
@@ -105,20 +96,11 @@ concepts:
   - id: "blog:new-features-july-2026"
     type: "blog"
     title: "New Features at Sri Panchami Spiritual — July 2026 Update"
-    description: "We have simplified consultations to scheduled bookings, improved saved delivery addresses, and expanded customer Help inside the blog."
+    description: "We improved saved delivery addresses, customer Help, and the shopping journey."
     resource: "content/blog/posts/new-features-july-2026.md"
     tags:
       - "news"
     filename: "new-features-july-2026.md"
-    header_image: ""
-  - id: "blog:online-astrology-consultation-guide"
-    type: "blog"
-    title: "How to Prepare for an Online Astrology Consultation — A Complete Guide"
-    description: "New to online astrology consultations? Learn how to prepare and request a scheduled appointment with a Vedic astrology consultant."
-    resource: "content/blog/posts/online-astrology-consultation-guide.md"
-    tags:
-      - "news"
-    filename: "online-astrology-consultation-guide.md"
     header_image: ""
   - id: "blog:order-products"
     type: "blog"
@@ -300,7 +282,7 @@ concepts:
   - id: "doc:about"
     type: "doc"
     title: "About Page"
-    description: "Route /about - describe Sri Panchami Spiritual, the store mission, product authenticity, temple guidance, and astrology support."
+    description: "Route /about - describe Sri Panchami Spiritual, the store mission, product authenticity, and temple guidance."
     resource: "docs/pages/about.md"
     tags:
       - "page"
@@ -327,7 +309,7 @@ concepts:
   - id: "doc:admin-guide"
     type: "doc"
     title: "Admin Guide"
-    description: "Use the dashboard to manage products, categories, coupons, orders, consultant profiles, scheduled appointments, and more."
+    description: "Use the dashboard to manage products, categories, coupons, orders, historical service records, and more."
     resource: "docs/admin-guide.md"
     tags:
       - "docs"
@@ -371,8 +353,8 @@ concepts:
     header_image: ""
   - id: "doc:booking"
     type: "doc"
-    title: "Booking Module"
-    description: "Owns remote astrology session requests and participant rooms."
+    title: "Historical Appointment Records"
+    description: "Owner-only access to appointment records retained after public consultation booking was retired."
     resource: "docs/modules/booking.md"
     tags:
       - "module"
@@ -381,7 +363,7 @@ concepts:
   - id: "doc:catalog"
     type: "doc"
     title: "Catalog Module"
-    description: "Owns product, category, temple, and astrologer catalog reads from MySQL via DatabaseService."
+    description: "Owns product, category, temple, and historical service-record reads from MySQL via DatabaseService."
     resource: "docs/modules/catalog.md"
     tags:
       - "module"
@@ -407,8 +389,8 @@ concepts:
     header_image: ""
   - id: "doc:consult"
     type: "doc"
-    title: "Consult Page"
-    description: "Route /consult - show remote consultant profiles with search, language filtering, and one scheduled-booking path."
+    title: "Retired Consult URL"
+    description: "Route /consult redirects visitors to the spiritual product shop."
     resource: "docs/pages/consult.md"
     tags:
       - "page"
@@ -416,8 +398,8 @@ concepts:
     header_image: ""
   - id: "doc:consultant"
     type: "doc"
-    title: "Consultant Guide"
-    description: "Consultants do not receive application login credentials. The site administrator maintains consultant profiles."
+    title: "Historical Service Record Guide"
+    description: "Public consultation booking is retired; the site administrator retains historical service records."
     resource: "docs/roles/consultant.md"
     tags:
       - "role"
@@ -425,8 +407,8 @@ concepts:
     header_image: ""
   - id: "doc:consultations"
     type: "doc"
-    title: "Consultation Bookings"
-    description: "Customers browse /consult, open a consultant profile, and submit a preferred date, time, phone number, and guidance notes."
+    title: "Historical Appointment Records"
+    description: "Owner-only access to appointments retained after public consultation booking was retired."
     resource: "docs/modules/consultations.md"
     tags:
       - "module"
@@ -435,7 +417,7 @@ concepts:
   - id: "doc:customer"
     type: "doc"
     title: "Customer Guide"
-    description: "Use the customer account to browse products, manage saved addresses, request consultant appointments, and review orders."
+    description: "Use the customer account to browse products, manage saved addresses, and review orders."
     resource: "docs/roles/customer.md"
     tags:
       - "role"
@@ -488,7 +470,7 @@ concepts:
   - id: "doc:home"
     type: "doc"
     title: "Home Page"
-    description: "Route / - storefront landing page with product categories, featured products, ordering steps, consultant bookings, and more."
+    description: "Route / - storefront landing page with product categories, featured products, ordering steps, temple highlights, and more."
     resource: "docs/pages/home.md"
     tags:
       - "page"
@@ -569,7 +551,7 @@ concepts:
   - id: "doc:roles/admin"
     type: "doc"
     title: "Admin Guide"
-    description: "Use the admin panel to manage catalog content, media, astrologer accounts, orders, payments, support, and more."
+    description: "Use the admin panel to manage catalog content, media, historical service records, orders, payments, support, and more."
     resource: "docs/roles/admin.md"
     tags:
       - "role"
@@ -1421,16 +1403,15 @@ concepts:
   - id: "image:assets/images/blog/book-consultant.webp"
     type: "image"
     title: "book-consultant.webp"
-    description: "Image referenced by 1 project resource(s)."
+    description: "Image with no static repository reference detected."
     resource: "assets/images/blog/book-consultant.webp"
     tags:
       - "image"
-      - "used"
+      - "unreferenced"
     filename: "book-consultant.webp"
     mime: "image/webp"
-    usage_count: 1
-    used_in:
-      - "content/blog/posts/book-consultant.md"
+    usage_count: 0
+    used_in: []
   - id: "image:assets/images/blog/create-account.webp"
     type: "image"
     title: "create-account.webp"
@@ -2476,7 +2457,7 @@ concepts:
     controller: "AccountController@legacyBookings"
     services:
       - "AuthService"
-    view: "account/bookings"
+    view: "account/orders"
   - id: "route:get__account_dashboard"
     type: "route"
     title: "GET /account/dashboard"
@@ -2534,8 +2515,7 @@ concepts:
     controller: "AccountController@bookings"
     services:
       - "AuthService"
-      - "AppointmentService"
-    view: "account/bookings"
+    view: "account/orders"
   - id: "route:get__account_orders"
     type: "route"
     title: "GET /account/orders"
@@ -2951,20 +2931,6 @@ concepts:
     services:
       - "CategoryService"
     view: "public/404"
-  - id: "route:get__api_consult"
-    type: "route"
-    title: "GET /api/consult"
-    description: "api.consult"
-    resource: "app/routes.php"
-    tags:
-      - "code"
-      - "route"
-    method: "GET"
-    path: "/api/consult"
-    controller: "ApiController@consult"
-    services:
-      - "ProductService"
-    view: "public/404"
   - id: "route:get__api_product__slug"
     type: "route"
     title: "GET /api/product/{slug}"
@@ -3140,9 +3106,8 @@ concepts:
     method: "GET"
     path: "/consult"
     controller: "PublicController@consult"
-    services:
-      - "AstrologerService"
-    view: "public/consult"
+    services: []
+    view: "public/shop"
   - id: "route:get__consult__slug"
     type: "route"
     title: "GET /consult/{slug}"
@@ -3154,9 +3119,8 @@ concepts:
     method: "GET"
     path: "/consult/{slug}"
     controller: "PublicController@consultant"
-    services:
-      - "AstrologerService"
-    view: "public/astrologer"
+    services: []
+    view: "public/shop"
   - id: "route:get__contact"
     type: "route"
     title: "GET /contact"
@@ -3972,10 +3936,7 @@ concepts:
     controller: "ConsultationController@initiate"
     services:
       - "AuthService"
-      - "AstrologerService"
-      - "ResourceService"
-      - "MailQueueService"
-    view: "public/astrologer"
+    view: "public/contact"
   - id: "route:post__contact"
     type: "route"
     title: "POST /contact"
@@ -4094,21 +4055,6 @@ concepts:
     services:
       - "PasswordResetService"
     view: "public/reset-password"
-  - id: "route:post__reviews_astrologer"
-    type: "route"
-    title: "POST /reviews/astrologer"
-    description: "reviews.astrologer"
-    resource: "app/routes.php"
-    tags:
-      - "code"
-      - "route"
-    method: "POST"
-    path: "/reviews/astrologer"
-    controller: "ReviewController@saveAstrologer"
-    services:
-      - "ReviewService"
-      - "AuthService"
-    view: "account/bookings"
   - id: "route:post__reviews_product"
     type: "route"
     title: "POST /reviews/product"
@@ -4827,9 +4773,6 @@ concepts:
       - "skill"
 relationships:
   - from: "controller:AccountController"
-    to: "service:AppointmentService"
-    relation: "uses"
-  - from: "controller:AccountController"
     to: "service:AuthService"
     relation: "uses"
   - from: "controller:AccountController"
@@ -4983,19 +4926,10 @@ relationships:
     to: "service:TaxService"
     relation: "uses"
   - from: "controller:ConsultationController"
-    to: "service:AstrologerService"
-    relation: "uses"
-  - from: "controller:ConsultationController"
     to: "service:AuthService"
     relation: "uses"
   - from: "controller:ConsultationController"
     to: "service:ConsultationService"
-    relation: "uses"
-  - from: "controller:ConsultationController"
-    to: "service:MailQueueService"
-    relation: "uses"
-  - from: "controller:ConsultationController"
-    to: "service:ResourceService"
     relation: "uses"
   - from: "controller:PublicController"
     to: "service:AddressService"
@@ -5154,9 +5088,6 @@ relationships:
     to: "controller:ApiController"
     relation: "handled_by"
   - from: "route:get__api_categories"
-    to: "controller:ApiController"
-    relation: "handled_by"
-  - from: "route:get__api_consult"
     to: "controller:ApiController"
     relation: "handled_by"
   - from: "route:get__api_product__slug"
@@ -5383,9 +5314,6 @@ relationships:
     relation: "handled_by"
   - from: "route:post__reset_password"
     to: "controller:AuthController"
-    relation: "handled_by"
-  - from: "route:post__reviews_astrologer"
-    to: "controller:ReviewController"
     relation: "handled_by"
   - from: "route:post__reviews_product"
     to: "controller:ReviewController"

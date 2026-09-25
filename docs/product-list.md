@@ -75,4 +75,3 @@ This catalog is based on the product details supplied for the ecommerce store.
 
 - Ecommerce payments are direct card or UPI payments through Razorpay.
 - Cash on delivery is not available.
-- Consultation credits cannot be used for ecommerce products.

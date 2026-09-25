@@ -5,7 +5,7 @@
             <header class="account-install__header">
                 <span class="eyebrow">Your account</span>
                 <h1>Install Sri Panchami Spiritual</h1>
-                <p>Keep the shop, orders, and consultation bookings available from your home screen or desktop app menu.</p>
+                <p>Keep the shop, orders, and temple guidance available from your home screen or desktop app menu.</p>
             </header>
 
             <section class="account-install__status" aria-live="polite" data-pwa-state="checking">

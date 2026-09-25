@@ -132,7 +132,7 @@
 
         <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">Outbound Email (SMTP)</h2>
         <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">
-            Transactional email (order confirmations, shipment, review requests) is sent through SMTP when configured. Credentials are stored encrypted in the project secret store and are never read from <code>.env</code>. Leave blank to fall back to PHP <code>mail()</code> with a domain-local <code>noreply@</code> sender.
+            Transactional email is sent through the saved SMTP mailbox. Credentials are stored in the project secret store. SMTP is required; failed delivery remains visible in Email Outbox for diagnosis and retry.
         </p>
         <div class="admin-form__row">
             <label>SMTP Host<input name="smtp_host" value="<?= e($secrets['smtp_host']??'') ?>" placeholder="smtp.hostinger.com"></label>

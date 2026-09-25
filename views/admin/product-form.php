@@ -92,6 +92,19 @@
                 <label>Description
                     <textarea name="description" id="field-description" rows="4"></textarea>
                 </label>
+                <p class="pf-section">Product details</p>
+                <label>Key Features
+                    <textarea name="highlights" id="field-highlights" rows="4" placeholder="One feature per line"></textarea>
+                </label>
+                <p class="pf-hint">Shown as the Key Features list on the product page.</p>
+                <label>Product Description Points
+                    <textarea name="description_points" id="field-description_points" rows="5" placeholder="One customer-facing detail per line"></textarea>
+                </label>
+                <p class="pf-hint">Use short, scannable points rather than repeating the main description.</p>
+                <label>Specifications
+                    <textarea name="specifications" id="field-specifications" rows="5" placeholder="Material: Brass&#10;Package includes: 1 pendant"></textarea>
+                </label>
+                <p class="pf-hint">Enter one <strong>label: value</strong> pair per line.</p>
             </div>
             <div style="display:grid; gap:var(--space-lg);">
                 <div>
@@ -202,6 +215,16 @@ function parseImages(value) {
     if (Array.isArray(value)) return value.filter(Boolean);
     if (typeof value === 'string') return value.split(/\n+/).map(s => s.trim()).filter(Boolean);
     return [];
+}
+
+function lines(value) {
+    if (Array.isArray(value)) return value.filter(Boolean).join('\n');
+    return '';
+}
+
+function specificationLines(value) {
+    if (!value || Array.isArray(value) || typeof value !== 'object') return '';
+    return Object.entries(value).filter(([, detail]) => detail !== null && detail !== '').map(([label, detail]) => label + ': ' + (Array.isArray(detail) ? detail.join(', ') : detail)).join('\n');
 }
 
 function renderGallery() {
@@ -332,6 +355,9 @@ document.querySelectorAll('.edit-item').forEach(button => {
         document.getElementById('field-hsn_code').value = item.hsn_code || '';
         document.getElementById('field-gst_rate').value = item.gst_rate || '';
         document.getElementById('field-description').value = item.description || '';
+        document.getElementById('field-highlights').value = lines(item.highlights);
+        document.getElementById('field-description_points').value = lines(item.description_points);
+        document.getElementById('field-specifications').value = specificationLines(item.specifications);
         galleryImages = parseImages(item.image_urls || item.image_url || []);
         renderGallery();
         if (galleryImages.length > 0) updateFeatured();

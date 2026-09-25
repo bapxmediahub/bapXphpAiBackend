@@ -50,6 +50,10 @@
                                         </div>
                                     </form>
                                 </div>
+                            <?php elseif(($collection ?? '') === 'appointments'): ?>
+                                <strong><?= e($item['customer_email'] ?? 'Customer') ?></strong>
+                                <span style="display:block;color:var(--color-text-muted);"><?= e(trim(($item['preferred_date'] ?? '') . ' ' . ($item['preferred_time'] ?? ''))) ?></span>
+                                <span style="display:block;"><?= e($item['astrologer_slug'] ?? '') ?> · <?= e(str_replace('_', ' ', $item['mode'] ?? 'booking')) ?></span>
                             <?php elseif(($collection ?? '') === 'orders' && !empty($item['id'])): ?>
                                 <a href="/admin/orders/<?= e($item['id']) ?>"><?= e($item['customer_email'] ?? 'Order') ?></a>
                                 <span style="color:var(--color-text-muted);"> · ₹<?= e((string)($item['total'] ?? 0)) ?></span>

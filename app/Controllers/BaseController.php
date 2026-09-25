@@ -122,7 +122,7 @@ abstract class BaseController {
             $slug = $line['slug'] ?? '';
             if (isset($products[$slug])) {
                 $p = $products[$slug];
-                $price = (int)($p['offer_price'] ?: $p['price'] ?: 0);
+                $price = (int)(($p['offer_price'] ?? 0) ?: ($p['price'] ?? 0));
                 $qty = (int)($line['qty'] ?? 1);
                 $items[] = ['product' => $p, 'slug' => $slug, 'name' => $p['name'], 'image_url' => $p['image_url'] ?? '', 'category' => $p['category'] ?? '', 'price' => $p['price'], 'offer_price' => $p['offer_price'] ?? null, 'qty' => $qty, 'line_total' => $price * $qty];
             }

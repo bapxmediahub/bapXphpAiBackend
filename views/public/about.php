@@ -3,23 +3,23 @@
         <div class="section-header">
             <span class="eyebrow serif-accent">Our Story</span>
             <h1 class="section-title" style="margin-bottom:var(--space-sm);">About Sri Panchami Spiritual</h1>
-            <p class="lede">A sacred space dedicated to spiritual growth, inner peace, and divine connection. Serving devotees across Chennai and India with authentic spiritual products and expert Vedic astrology guidance.</p>
+            <p class="lede">A sacred space dedicated to spiritual growth, inner peace, and divine connection. Serving devotees across Chennai and India with authentic spiritual products and temple guidance.</p>
         </div>
         <div class="about-story-grid">
             <div class="about-story-card reveal">
                 <h3>Our Mission</h3>
-                <p>To guide individuals on a meaningful spiritual journey through traditional Vedic wisdom, authentic devotional practices, genuine spiritual products, and expert astrological guidance.</p>
+                <p>To support meaningful spiritual journeys through traditional Vedic wisdom, authentic devotional practices, and genuine spiritual products.</p>
             </div>
             <div class="about-story-card reveal">
                 <h3>Our Vision</h3>
-                <p>Making sacred products and trusted spiritual guidance accessible to devotees across India, from devotional jewellery and pooja samagri to expert kundli matching and horoscope readings.</p>
+                <p>Making sacred products and trusted spiritual guidance accessible to devotees across India, from devotional jewellery and pooja samagri to temple traditions.</p>
             </div>
         </div>
         <div class="about-feature-grid">
             <article class="about-feature-card reveal">
                 <span class="about-feature-card__icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><path d="M12 8v8"/><path d="M8 12h8"/></svg></span>
-                <h3>Spiritual Guidance</h3>
-                <p>Expert Vedic astrology consultation for your life journey.</p>
+                <h3>Spiritual Practice</h3>
+                <p>Thoughtful products and traditions for your devotional journey.</p>
             </article>
             <article class="about-feature-card reveal">
                 <span class="about-feature-card__icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><circle cx="12" cy="12" r="3"/><path d="M12 5v2"/><path d="M12 17v2"/><path d="M5 12h2"/><path d="M17 12h2"/></svg></span>
@@ -69,9 +69,9 @@
         </div>
         <div class="page-cta-card reveal" style="margin-top:var(--space-2xl);">
             <div>
-                <span class="page-cta-card__eyebrow">Need Guidance?</span>
-                <h3>Start a Consultation Request</h3>
-                <p>Use the contact form for astrology sessions, product questions, temple guidance, or VIP direct astrology visit requests.</p>
+                <span class="page-cta-card__eyebrow">Need help?</span>
+                <h3>Send a General Enquiry</h3>
+                <p>Use the contact form for product questions, order support, temple guidance, or general store enquiries.</p>
             </div>
             <a class="btn btn-primary page-cta-card__button" href="/contact#contact-form">Let’s Get Connected →</a>
         </div>
@@ -83,7 +83,7 @@
     "@context": "https://schema.org",
     "@type": "AboutPage",
     "name": "About Sri Panchami Spiritual",
-    "description": "Learn about Sri Panchami Spiritual — Chennai's trusted store for authentic rudraksha, pooja items, spiritual jewellery, and expert Vedic astrology consultation.",
+    "description": "Learn about Sri Panchami Spiritual — Chennai's trusted store for authentic rudraksha, pooja items, spiritual jewellery, and temple traditions.",
     "url": "https://sripanchamispiritual.com/about",
     "mainEntity": {
         "@type": "LocalBusiness",

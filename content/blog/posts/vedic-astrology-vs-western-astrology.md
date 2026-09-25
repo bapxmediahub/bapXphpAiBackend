@@ -46,7 +46,7 @@ Both systems offer valuable insights. Many serious astrology students learn both
 - **Choose Vedic astrology** if you want precise life event predictions, timing of major transitions, and a spiritually grounded framework
 - **Choose Western astrology** if you're interested in psychological insight, personality exploration, and a more flexible interpretive approach
 
-At **Sri Panchami Spiritual**, our expert astrologers are trained in Vedic Jyotish and use precise sidereal calculations for consultations. [Book a session](/consult) to discover what the stars reveal about your life path.
+At **Sri Panchami Spiritual**, we share resources for people exploring Vedic traditions and devotional practice. [Browse spiritual products](/shop) chosen for everyday worship.
 
 ## Final Thoughts
 

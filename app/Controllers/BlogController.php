@@ -28,7 +28,10 @@ final class BlogController extends BaseController
         $blogService = new BlogService();
         $post = $blogService->find($slug);
 
-        if ($post === null) {
+        // `find()` also serves the editor, so an unpublished post must be rejected
+        // here as well as omitted from the index. Otherwise a retired article stays
+        // publicly available to anyone with its old URL.
+        if ($post === null || empty($post['published'])) {
             $this->renderNotFound();
             return;
         }

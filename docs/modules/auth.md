@@ -12,10 +12,9 @@ Main files: `AuthController.php`, `AuthService.php`, `EnvService.php`, `PublicCo
 
 ## Login
 
-- Single unified login page (`/login`) serving all three roles: admin, astrologer, customer.
+- Single unified login page (`/login`) serving admin and customer roles.
 - Role-based redirect after authentication:
   - **admin** → `/admin`
-  - Consultant profiles are not login accounts; central admin coordinates appointments.
   - **customer** → `/` (home)
 - Admin credentials managed via `EnvService` through the MySQL `settings` collection (editable via Admin → Settings).
 
@@ -29,7 +28,7 @@ Main files: `AuthController.php`, `AuthService.php`, `EnvService.php`, `PublicCo
 ## Registration
 
 - Public registration creates `customer` role users only.
-- Consultant profiles are admin-created in Admin → Astrologers; these are profiles, not login accounts.
+- Historical service records are owner-only; public consultation booking is retired.
 - Private routes redirect guests to `/login`.
 
 ## Data Storage

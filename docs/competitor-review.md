@@ -17,7 +17,7 @@ Reference reviewed: [Deiveegaa Enterprises](https://deiveegaa.com/).
 
 ## Sri Panchami Direction
 
-Sri Panchami is broader: spiritual products, scheduled consultations, temples, and guidance. Match the competitor's commercial clarity without copying its branding or claims:
+Sri Panchami is broader: spiritual products, temples, and guidance. Match the competitor's commercial clarity without copying its branding or claims:
 
 - Keep products and cart state easy to reach on every viewport.
 - Give every product specific materials, dimensions, usage, care, fulfillment, and return information when verified.

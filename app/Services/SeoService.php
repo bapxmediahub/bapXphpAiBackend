@@ -45,11 +45,11 @@ final class SeoService {
 
     private function defaults(string $key): array {
         $brand = 'Sri Panchami Spiritual';
-        $desc = 'Shop authentic spiritual products and request scheduled consultations with verified consultants.';
+        $desc = 'Shop authentic spiritual products, sacred jewellery, pooja items, and devotional essentials.';
         $maps = [
             'home' => [
-                'title' => $brand . ' – Online Astrology Consultation, Spiritual Products & Temple Guide',
-                'description' => 'Shop authentic spiritual products, rudraksha, pooja items, and sacred jewellery, or request a scheduled consultation.',
+                'title' => $brand . ' – Spiritual Products, Sacred Jewellery & Temple Guide',
+                'description' => 'Shop authentic spiritual products, rudraksha, pooja items, and sacred jewellery for your devotional practice.',
                 'og_type' => 'website',
                 'robots' => 'index, follow',
             ],
@@ -66,14 +66,14 @@ final class SeoService {
                 'robots' => 'index, follow',
             ],
             'consult' => [
-                'title' => 'Book a Vedic Astrology Consultation Online',
-                'description' => 'Request a scheduled appointment with a verified Vedic astrology consultant for personalised guidance.',
+                'title' => 'Spiritual Products & Temple Guidance',
+                'description' => 'Discover authentic spiritual products, devotional essentials, and temple guidance from Sri Panchami Spiritual.',
                 'og_type' => 'website',
                 'robots' => 'index, follow',
             ],
             'astrologer' => [
-                'title' => 'Vedic Astrologer Online Consultation',
-                'description' => 'Request a scheduled appointment with an experienced Vedic astrology consultant.',
+                'title' => 'Spiritual Products & Temple Guidance',
+                'description' => 'Discover authentic spiritual products, devotional essentials, and temple guidance from Sri Panchami Spiritual.',
                 'og_type' => 'profile',
                 'robots' => 'index, follow',
             ],
@@ -90,14 +90,14 @@ final class SeoService {
                 'robots' => 'index, follow',
             ],
             'about' => [
-                'title' => 'About ' . $brand . ' – Chennai\'s Trusted Spiritual Store & Astrology Platform',
-                'description' => 'Learn about ' . $brand . ', Chennai\'s trusted destination for authentic spiritual products, Vedic astrology consultations, and temple guidance since 2020.',
+                'title' => 'About ' . $brand . ' – Chennai\'s Trusted Spiritual Store',
+                'description' => 'Learn about ' . $brand . ', Chennai\'s trusted destination for authentic spiritual products and temple guidance since 2020.',
                 'og_type' => 'website',
                 'robots' => 'index, follow',
             ],
             'contact' => [
-                'title' => 'Contact ' . $brand . ' – Get in Touch for Spiritual Products & Astrology',
-                'description' => 'Reach out to ' . $brand . ' for inquiries about spiritual products, astrology consultations, temple pooja services, or bulk orders. Call or email us.',
+                'title' => 'Contact ' . $brand . ' – Spiritual Products & Support',
+                'description' => 'Reach out to ' . $brand . ' for inquiries about spiritual products, temple pooja services, order support, or bulk orders. Call or email us.',
                 'og_type' => 'website',
                 'robots' => 'index, follow',
             ],
@@ -121,25 +121,25 @@ final class SeoService {
             ],
             'privacy' => [
                 'title' => 'Privacy Policy – ' . $brand,
-                'description' => 'Read the privacy policy of ' . $brand . '. Learn how we collect, use, and protect your personal information when you use our spiritual products and astrology services.',
+                'description' => 'Read the privacy policy of ' . $brand . '. Learn how we collect, use, and protect your personal information when you use our spiritual products and support services.',
                 'og_type' => 'website',
                 'robots' => 'index, follow',
             ],
             'terms' => [
                 'title' => 'Terms & Conditions – ' . $brand,
-                'description' => 'Read the terms and conditions of ' . $brand . '. Understand the guidelines for using our astrology consultation services and purchasing spiritual products.',
+                'description' => 'Read the terms and conditions of ' . $brand . '. Understand the guidelines for purchasing spiritual products and using our website.',
                 'og_type' => 'website',
                 'robots' => 'index, follow',
             ],
             'login' => [
                 'title' => 'Sign In – ' . $brand,
-                'description' => 'Sign in to your ' . $brand . ' account to manage orders, saved delivery addresses, and consultation bookings.',
+                'description' => 'Sign in to your ' . $brand . ' account to manage orders and saved delivery addresses.',
                 'og_type' => 'website',
                 'robots' => 'noindex, follow',
             ],
             'register' => [
                 'title' => 'Create Account – ' . $brand,
-                'description' => 'Create your ' . $brand . ' account to save delivery addresses, order spiritual products, and book consultations.',
+                'description' => 'Create your ' . $brand . ' account to save delivery addresses and order spiritual products.',
                 'og_type' => 'website',
                 'robots' => 'noindex, follow',
             ],
@@ -157,7 +157,7 @@ final class SeoService {
             ],
             'account' => [
                 'title' => 'My Account – ' . $brand,
-                'description' => 'Manage your ' . $brand . ' account, view product orders, and track consultation bookings.',
+                'description' => 'Manage your ' . $brand . ' account, view product orders, and track deliveries.',
                 'og_type' => 'website',
                 'robots' => 'noindex, nofollow',
             ],
@@ -205,7 +205,7 @@ final class SeoService {
             '@context' => 'https://schema.org',
             '@type' => ['Organization', 'OnlineStore'],
             'name' => $this->siteName,
-            'description' => 'Authentic spiritual products, sacred jewellery, expert Vedic astrology consultation, and temple guidance.',
+            'description' => 'Authentic spiritual products, sacred jewellery, pooja essentials, and temple guidance.',
             'url' => $this->pageUrl(''),
             'telephone' => $this->telephone,
             'email' => 'support@sripanchamispiritual.com',
@@ -267,7 +267,7 @@ final class SeoService {
             '@context' => 'https://schema.org',
             '@type' => 'AboutPage',
             'name' => 'About ' . $this->siteName,
-            'description' => 'Learn about ' . $this->siteName . ', Chennai\'s trusted destination for authentic spiritual products and Vedic astrology consultations.',
+            'description' => 'Learn about ' . $this->siteName . ', Chennai\'s trusted destination for authentic spiritual products and temple guidance.',
             'mainEntity' => $this->organizationSchema(),
         ];
     }
@@ -277,7 +277,7 @@ final class SeoService {
             '@context' => 'https://schema.org',
             '@type' => 'ContactPage',
             'name' => 'Contact ' . $this->siteName,
-            'description' => 'Get in touch with ' . $this->siteName . ' for spiritual products, astrology consultations, and temple pooja services.',
+            'description' => 'Get in touch with ' . $this->siteName . ' for spiritual products, order support, and temple pooja services.',
             'mainEntity' => $this->organizationSchema(),
         ];
     }

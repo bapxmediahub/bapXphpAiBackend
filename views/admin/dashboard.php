@@ -18,7 +18,7 @@
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         </div>
         <div class="admin-stat__value"><?= (int)($bookingCount ?? 0) ?></div>
-        <div class="admin-stat__label">Bookings</div>
+        <div class="admin-stat__label">Saved Sessions</div>
     </div>
 </div>
 
@@ -86,10 +86,11 @@ $__googleSiteKitEnabled = $__gaConfigured || $__adsConfigured || $__gsvConfigure
     </div>
     <div class="admin-card">
         <h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20"/><path d="M2 12h20"/></svg> Services</h2>
-        <p>Manage astrologers, remote session requests, and temples.</p>
+        <p>Review saved sessions and manage service records.</p>
         <div class="admin-card__actions">
             <a href="/admin/astrologers" class="btn btn-sm btn-ghost">Astrologers</a>
             <a href="/admin/appointments" class="btn btn-sm btn-ghost">Sessions</a>
+            <a href="/admin/consultation-analytics" class="btn btn-sm btn-ghost">Analytics</a>
             <a href="/admin/temples" class="btn btn-sm btn-ghost">Temples</a>
         </div>
     </div>
@@ -102,5 +103,34 @@ $__googleSiteKitEnabled = $__gaConfigured || $__adsConfigured || $__gsvConfigure
             <a href="/admin/settings" class="btn btn-sm btn-ghost">Settings</a>
             <a href="/admin/integrations" class="btn btn-sm btn-ghost">Integrations</a>
         </div>
+    </div>
+</div>
+
+<div class="admin-card" style="margin-top:var(--space-lg);">
+    <div style="display:flex; align-items:baseline; justify-content:space-between; gap:var(--space-md); margin-bottom:var(--space-md);">
+        <div>
+            <h2 style="font-size:1.1rem; margin:0;">Recent Sessions</h2>
+            <p style="color:var(--color-text-muted); margin:var(--space-xs) 0 0;">Historical appointment requests are retained here for follow-up.</p>
+        </div>
+        <a href="/admin/appointments" class="btn btn-sm btn-ghost">View all</a>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Customer</th><th>Requested for</th><th>Status</th><th>Submitted</th></tr></thead>
+            <tbody>
+            <?php if (empty($appointments)): ?>
+                <tr><td colspan="4" style="text-align:center; color:var(--color-text-muted); padding:var(--space-lg);">No saved session requests yet.</td></tr>
+            <?php else: ?>
+                <?php foreach ($appointments as $appointment): ?>
+                <tr>
+                    <td><?= e((string)($appointment['customer_email'] ?? 'Guest')) ?></td>
+                    <td><?= e(trim((string)($appointment['preferred_date'] ?? '') . ' ' . (string)($appointment['preferred_time'] ?? '')) ?: 'Not specified') ?></td>
+                    <td><?= e(ucfirst(str_replace('_', ' ', (string)($appointment['status'] ?? 'requested')))) ?></td>
+                    <td><?= e(substr((string)($appointment['created_at'] ?? ''), 0, 10) ?: '—') ?></td>
+                </tr>
+                <?php endforeach; ?>
+            <?php endif; ?>
+            </tbody>
+        </table>
     </div>
 </div>

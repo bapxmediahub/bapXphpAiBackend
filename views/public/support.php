@@ -2,7 +2,7 @@
     <div class="container">
         <span class="eyebrow serif-accent">Support</span>
         <h1 class="section__title">How can we help?</h1>
-        <p class="lede">Find quick answers about products, orders, delivery addresses, payments, and consultant bookings.</p>
+        <p class="lede">Find quick answers about products, orders, delivery addresses, and payments.</p>
 
         <div class="support-grid">
             <?php if (!empty($supportNav)): ?>
@@ -24,10 +24,6 @@
             <article class="support-card">
                 <h2>Saved addresses</h2>
                 <p>Your signup address becomes the default at checkout. Select another saved address or enter and optionally save a different delivery address for an order.</p>
-            </article>
-            <article class="support-card">
-                <h2>Consultant bookings</h2>
-                <p>Browse consultants on the <a href="/consult">consultation marketplace</a>, choose a profile, and request your preferred appointment date and time.</p>
             </article>
             <article class="support-card">
                 <h2>Orders &amp; shipping</h2>

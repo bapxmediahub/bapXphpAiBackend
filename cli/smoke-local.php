@@ -45,8 +45,9 @@ try {
         '/cart' => 200,
         '/checkout' => 200,
         '/contact' => 200,
-        '/consult' => 200,
-        '/consult/shrikanth-purushothaman' => 200,
+        '/consult' => 302,
+        '/consult/shrikanth-purushothaman' => 302,
+        '/api/consult' => 302,
         '/temples' => 200,
         '/sri-panchami-spiritual' => 200,
         '/forgot-password' => 200,
@@ -109,7 +110,6 @@ try {
         '/api/shop',
         '/api/categories',
         '/api/product/karuppasami-dollar',
-        '/api/consult',
         '/api/temples',
     ] as $path) {
         $response = httpRequest($base . $path);

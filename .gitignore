@@ -12,6 +12,8 @@ tmp/
 tmp/
 .env.mysql
 .env.test-user
+.playwright-cli/
+output/playwright/
 /server.log
 /content/blog/cache/
 null

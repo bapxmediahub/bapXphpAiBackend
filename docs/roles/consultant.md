@@ -1,11 +1,9 @@
 ---
 type: doc
-title: Consultant Guide
-description: Consultants do not receive application login credentials. The site administrator maintains consultant profiles.
+title: Historical Service Record Guide
+description: Public consultation booking is retired; the site administrator retains historical service records.
 category: role
 ---
-# Consultant Guide
+# Historical Service Record Guide
 
-Consultants do not receive application login credentials. The site administrator maintains consultant profiles, receives appointment notifications through the configured SMTP mailbox, and coordinates confirmations directly.
-
-Consultation messages and call signaling use authenticated PHP APIs backed by the remote database.
+Public consultation booking is retired. The site administrator retains historical appointment records under Admin → Sessions and can follow up outside the storefront when appropriate.

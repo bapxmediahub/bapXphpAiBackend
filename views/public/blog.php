@@ -3,7 +3,7 @@
     <header class="blog-editorial__header">
       <span class="eyebrow serif-accent">Ideas, rituals and guidance</span>
       <h1 class="page-title"><?= e($categoryName ?? 'Sri Panchami Journal') ?></h1>
-      <p>Practical spiritual guidance, astrology explainers, and thoughtful updates from our consultants and team.</p>
+      <p>Practical spiritual guidance, astrology explainers, and thoughtful updates from our team.</p>
     </header>
 
     <?php if (!empty($categories)): ?>
