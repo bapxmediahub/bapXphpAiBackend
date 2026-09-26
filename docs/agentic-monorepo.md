@@ -40,6 +40,33 @@ For each change, the agent selects the affected map path and verifies the origin
 
 Agents should not need a separate MCP server or global skill install to understand this repo. The operating rules live with the code.
 
+## Monitoring and evaluation
+
+Both PHP agent surfaces record `agent.run` events in hosted `audit_events` through
+`AuditLogService`. Events contain the surface, bounded outcome and elapsed
+milliseconds, with a system actor. They do not store questions, answers, customer
+identifiers, credentials or model reasoning. The owner dashboard aggregates the
+last 24 hours, separating model replies, fallbacks, sign-in guidance, drafts and
+errors. No traffic and unavailable monitoring are shown explicitly.
+
+Operational success is not answer quality. Before and after an agent change, use
+the built-in Browser to ask a catalogue question, a delivery-policy question, a
+signed-out personal-order question, a retired-booking question and an owner count
+question. Compare answers and navigation actions with the current hosted data;
+check that each request produces the expected monitoring outcome. A fallback is
+not evidence that the provider worked, and a correct count must match the data.
+Do not submit payments or publish drafts during these checks.
+
+Turn confirmed failures into reproducible issue cases and regression checks.
+Regenerate maps with `./bapXphp update`, run `./bapXphp ci`, review PR checks, and
+repeat the affected Browser flows after deployment. Use the same representative
+questions when changing prompts or models so regressions can be compared.
+
+This approach follows [Anthropic's agent evaluation guidance](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+and [OpenAI's agent evaluation guidance](https://developers.openai.com/api/docs/guides/agent-evals):
+combine operational traces with outcome checks and representative evaluation cases.
+It does not add a hosted agent framework or a third agent surface.
+
 ## NotebookLM Comparison
 
 This workflow adopts the documented source-grounding pattern, not an undocumented claim about NotebookLM internals:

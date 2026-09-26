@@ -495,6 +495,13 @@ document.addEventListener('submit',async function(event){
     try{var response=await fetch(form.getAttribute('action'),{method:'POST',body:new FormData(form),headers:{Accept:'application/json'}});var data=await response.json().catch(function(){return null;});if(!data)throw new Error('Something went wrong. Please refresh and try again.');if(!response.ok)throw new Error(data.error||'Unable to update cart.');var stepper=form.closest('.product-card__stepper'),value=stepper.querySelector('.qty-input__value'),minus=stepper.querySelector('form[action="/cart/update"] button'),badge=document.querySelector('.cart-count'),tray=document.getElementById('mobile-cart-tray'),trayCount=document.getElementById('mobile-cart-count'),trayLabel=document.getElementById('mobile-cart-label');value.textContent=data.quantity;if(minus)minus.disabled=data.quantity<=0;if(badge)badge.textContent=data.cart_count;if(tray){tray.hidden=data.cart_count<=0;if(trayCount)trayCount.textContent=data.cart_count;if(trayLabel)trayLabel.textContent=data.cart_count===1?'item':'items';}}
     catch(error){showToast(error.message,'error');}finally{button.disabled=form.getAttribute('action')==='/cart/update'&&Number(form.closest('.product-card__stepper').querySelector('.qty-input__value').textContent)<=0;}
 });
+document.addEventListener('click',function(event){
+    var button=event.target.closest('[data-quantity-step]');if(!button)return;
+    var input=button.closest('.qty-input').querySelector('input[name="qty"]');if(!input)return;
+    var current=Number(input.value)||1,min=Number(input.min)||1,max=Number(input.max)||99;
+    input.value=Math.min(max,Math.max(min,current+Number(button.dataset.quantityStep)));
+    input.dispatchEvent(new Event('change',{bubbles:true}));
+});
 </script>
 <div id="toast-container" role="alert" aria-live="polite"></div>
 </body>

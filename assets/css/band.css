@@ -832,6 +832,15 @@ nav a:hover { color: var(--color-maroon); }
 .product-card__title:hover,
 .product-card__title:focus-visible { color: var(--color-primary); text-decoration: underline; }
 .product-card__unavailable { color: var(--color-text-muted); font-size: 0.8rem; font-weight: 600; }
+.product-purchase { width: 100%; min-width: 0; margin: 0; display: grid; gap: 10px; }
+.product-purchase__quantity { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; font-size: 0.8rem; color: var(--color-text-muted); }
+.product-purchase .qty-input { min-height: 44px; border-radius: 8px; }
+.product-purchase .qty-input button { width: 44px; min-height: 44px; padding: 0; }
+.product-purchase .qty-input input { width: 38px; min-width: 0; padding: 0; font-size: 1rem; }
+.product-purchase__buttons { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.product-purchase__buttons .btn { width: 100%; min-width: 0; min-height: 44px; padding: 8px 4px; font-size: 0.8rem; white-space: normal; line-height: 1.25; }
+.product-purchase__in-cart { font-size: 0.78rem; color: var(--color-maroon); text-decoration: underline; }
+.product-purchase button:focus-visible, .product-purchase input:focus-visible { outline: 2px solid var(--color-maroon); outline-offset: 2px; }
 .product-card__actions .btn-ghost { padding: 0 0.7rem; flex: none; height: 30px; min-height: 30px; border-radius: 999px; font-size: 0.8rem; border-width: 1.5px; text-transform: none; letter-spacing: 0; position: static; overflow: visible; }
 .product-card__actions .product-card__form { display: flex; align-items: center; gap: 6px; margin-left: auto; }
 .product-card__stepper {

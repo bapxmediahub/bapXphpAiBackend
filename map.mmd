@@ -14,7 +14,7 @@ flowchart LR
     arch_views["> Views: 44"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 20"]:::arch
-    arch_gaps["> Gaps: 9"]:::arch
+    arch_gaps["> Gaps: 5"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -324,20 +324,15 @@ flowchart LR
   end
 
   subgraph GAPS["Gaps & Missing Links"]
-    gap_e1fbc2af09["unwired_services: AgentAttachmentService"]:::gap
-    gap_ae5276ce59["unwired_services: AgentDraftService"]:::gap
-    gap_17878faf6e["unwired_services: AgentToolRegistry"]:::gap
-    gap_b7c884aaea["unwired_services: AiReplyCleaner"]:::gap
-    gap_c99ac2d6fa["unwired_services: CourierService"]:::gap
-    gap_5f994ad529["unwired_services: ProjectMapService"]:::gap
-    gap_858139bc3d["unwired_services: StoragePermissionService"]:::gap
+    gap_652f833397["unwired_services: CourierService"]:::gap
+    gap_2001143d96["unwired_services: ProjectMapService"]:::gap
+    gap_54bf9b88d4["unwired_services: StoragePermissionService"]:::gap
     gap_6b9c2b4b5a["POST /admin/blog/enhance-title — missing AuditLogService"]:::gap
     gap_b4217badec["POST /admin/blog/enhance-content — missing AuditLogService"]:::gap
   end
 
   route_get --> controller_publiccontroller
   controller_publiccontroller --> service_productservice
-  controller_publiccontroller --> service_astrologerservice
   controller_publiccontroller --> service_templeservice
   controller_publiccontroller --> service_categoryservice
   controller_publiccontroller -. renders .-> view_public_home
@@ -475,8 +470,8 @@ flowchart LR
   controller_consultationcontroller --> service_consultationservice
   controller_consultationcontroller -. renders .-> view_admin_list
   route_get_admin --> controller_admincontroller
-  controller_admincontroller --> service_orderservice
-  controller_admincontroller --> service_appointmentservice
+  controller_admincontroller --> service_resourceservice
+  controller_admincontroller --> service_auditlogservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_dashboard
   route_get_admin_products --> controller_admincontroller
@@ -563,6 +558,12 @@ flowchart LR
   route_post_admin_agent_ask --> controller_admincontroller
   controller_admincontroller --> service_secretservice
   controller_admincontroller --> service_databaseservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_agentattachmentservice
+  controller_admincontroller --> service_agentdraftservice
+  controller_admincontroller --> service_agenttoolregistry
+  controller_admincontroller --> service_aireplycleaner
+  controller_admincontroller --> service_aiclient
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_agent
   route_get_admin_contact_submissions --> controller_admincontroller
@@ -735,6 +736,9 @@ flowchart LR
   controller_supportcontroller --> service_supportbotservice
   controller_supportcontroller --> service_agentcontextservice
   controller_supportcontroller --> service_supportticketservice
+  controller_supportcontroller --> service_auditlogservice
+  controller_supportcontroller --> service_aiclient
+  controller_supportcontroller --> service_aireplycleaner
   controller_supportcontroller -. renders .-> view_public_support
   route_get_docs --> controller_publiccontroller
   controller_publiccontroller -. renders .-> view_public_blog
@@ -874,12 +878,8 @@ flowchart LR
   tool_validate_project_map --> systematic_map
   tool_smoke_local --> ROUTES_PUBLIC
   tool_smoke_local --> ROUTES_ADMIN
-  gap_e1fbc2af09 -. missing .-> service_agentattachmentservice
-  gap_ae5276ce59 -. missing .-> service_agentdraftservice
-  gap_17878faf6e -. missing .-> service_agenttoolregistry
-  gap_b7c884aaea -. missing .-> service_aireplycleaner
-  gap_c99ac2d6fa -. missing .-> service_courierservice
-  gap_5f994ad529 -. missing .-> service_projectmapservice
-  gap_858139bc3d -. missing .-> service_storagepermissionservice
+  gap_652f833397 -. missing .-> service_courierservice
+  gap_2001143d96 -. missing .-> service_projectmapservice
+  gap_54bf9b88d4 -. missing .-> service_storagepermissionservice
   gap_6b9c2b4b5a -. missing .-> controller_admincontroller
   gap_b4217badec -. missing .-> controller_admincontroller

@@ -16,6 +16,9 @@ final class AdminController extends BaseController {
         // an owner responsibility. Keep them visible from the admin dashboard rather
         // than making their recovery depend on a public-site module flag.
         $appointments = (new ResourceService('appointments'))->all();
+        $agentMonitoring = null;
+        try { $agentMonitoring = AuditLogService::agentSummary((new AuditLogService())->all()); }
+        catch (\Throwable) { /* Monitoring must not prevent dashboard access. */ }
         usort($appointments, static fn(array $a, array $b): int => strcmp(
             (string)($b['created_at'] ?? $b['preferred_date'] ?? ''),
             (string)($a['created_at'] ?? $a['preferred_date'] ?? '')
@@ -26,6 +29,7 @@ final class AdminController extends BaseController {
             'orderCount' => $orderCount,
             'bookingCount' => count($appointments),
             'appointments' => array_slice($appointments, 0, 5),
+            'agentMonitoring' => $agentMonitoring,
         ]);
     }
     public function products(): void{
@@ -124,6 +128,7 @@ final class AdminController extends BaseController {
     public function agentAsk(): void{
         $message = trim((string)($_POST['message'] ?? ''));
         if ($message === '') {$this->jsonResponse(['error'=>'Message is required'],400); return;}
+        $startedAt = microtime(true);
         try {
             // @terms, @privacy, @some-article and @filename.jpg pull that document into
             // the prompt. Resolved here so both a draft command and an ordinary question
@@ -141,6 +146,7 @@ final class AdminController extends BaseController {
                     $attachments['context']
                 );
                 $draft['missing'] = $attachments['missing'];
+                (new AuditLogService())->agentRun('admin', 'draft', $startedAt);
                 $this->jsonResponse(['draft' => $draft]);
                 return;
             }
@@ -215,8 +221,10 @@ final class AdminController extends BaseController {
             } else {
                 $answer = "AI model not configured. Go to Admin → Integrations and set api_endpoint, ai_api_key, and agent_model.";
             }
+            (new AuditLogService())->agentRun('admin', empty($modelConfig['apiKey']) || \App\Services\AiClient::isError($answer) ? 'error' : 'model', $startedAt);
             $this->jsonResponse(['answer'=>$answer, 'missing'=>$attachments['missing']]);
         } catch (\Throwable $e) {
+            (new AuditLogService())->agentRun('admin', 'error', $startedAt);
             $this->jsonResponse(['error'=>'Agent error: '.$e->getMessage()],500);
         }
     }
@@ -669,15 +677,17 @@ final class AdminController extends BaseController {
         if (array_key_exists('specifications', $_POST)) {
             $data['specifications'] = $this->parseSpecifications((string)$_POST['specifications']);
         }
-        $images=$this->splitList((string)($data['image_urls'] ?? ''));
-        if (!empty($data['image_url'])) array_unshift($images, (string)$data['image_url']);
+        // Explicit empty gallery fields clear images; omitted fields preserve them.
+        // Existing database galleries are arrays, not strings.
+        $gallery = $_POST['image_urls'] ?? $data['image_urls'] ?? [];
+        $images = is_array($gallery) ? $gallery : $this->splitList((string)$gallery);
+        $featured = trim((string)($_POST['image_url'] ?? $data['image_url'] ?? ''));
+        if ($featured !== '') array_unshift($images, $featured);
         $uploaded=$this->uploadedMedia('products');
         $uploadedPaths=array_column($uploaded, 'url');
         $images=array_values(array_unique(array_filter(array_merge($images, $uploadedPaths))));
-        if (!empty($images)) {
-            $data['image_url']=$images[0];
-            $data['image_urls']=$images;
-        }
+        $data['image_url']=$images[0] ?? '';
+        $data['image_urls']=$images;
         $record=(new ResourceService('products'))->save($data);
         $entityName = (string)($record['name'] ?? $record['slug'] ?? '');
         if ($uploaded) (new MediaService())->recordUsage($uploaded, 'products', (string)($record['id'] ?? ''), $entityName);

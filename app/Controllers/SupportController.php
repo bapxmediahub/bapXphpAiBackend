@@ -28,11 +28,13 @@ final class SupportController extends BaseController {
             return;
         }
         $limiter->hit('support:' . $ip);
+        $startedAt = microtime(true);
         try {
             $user = (new AuthService())->user();
             $answer = (new SupportBotService())->answer($_POST['message'] ?? '', $user);
             $this->jsonResponse($answer);
         } catch (\Throwable $e) {
+            (new \App\Services\AuditLogService())->agentRun('support', 'error', $startedAt);
             $this->jsonResponse(['error' => 'Unable to answer right now. Please try again.'], 400);
         }
     }

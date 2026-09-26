@@ -1,3 +1,20 @@
+<div class="admin-card" style="margin-bottom:var(--space-lg);">
+    <h2>Agent monitoring · last 24 hours</h2>
+    <p>Track response paths and failures for customer support and owner chat. Model responses still need quality review; these counts do not measure answer accuracy.</p>
+    <?php if (($agentMonitoring ?? null) === null): ?>
+        <p role="status">Monitoring is temporarily unavailable.</p>
+    <?php else: ?>
+        <div class="table-wrap"><table>
+            <thead><tr><th>Agent</th><th>Requests</th><th>Model</th><th>Fallback</th><th>Sign-in guidance</th><th>Drafts</th><th>Errors</th><th>Average time</th></tr></thead>
+            <tbody><?php foreach ($agentMonitoring as $surface => $metrics): ?>
+                <tr><th><?= $surface === 'support' ? 'Customer support' : 'Owner / admin' ?></th>
+                <?php foreach (['requests', 'model', 'fallback', 'private_account', 'draft', 'error'] as $metric): ?><td><?= (int)$metrics[$metric] ?></td><?php endforeach; ?>
+                <td><?= $metrics['average_ms'] === null ? 'No requests yet' : e(number_format($metrics['average_ms'] / 1000, 2)) . ' s' ?></td></tr>
+            <?php endforeach; ?></tbody>
+        </table></div>
+        <p style="font-size:0.8rem;color:var(--color-text-muted);">Monitoring records timing and outcome only. Questions, answers and customer identities are not stored in these events.</p>
+    <?php endif; ?>
+</div>
 <div class="admin-stats">
     <div class="admin-stat">
         <div class="admin-stat__icon">

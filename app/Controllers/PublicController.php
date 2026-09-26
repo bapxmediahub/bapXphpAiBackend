@@ -142,13 +142,12 @@ final class PublicController extends BaseController {
         $total = $this->cartTotal($items);
         // Prices are GST-inclusive, so show the tax already contained in the total.
         $settings = (new \App\Services\SettingsService())->public();
-        $gstRate = \App\Services\TaxService::rateFor($items[0]['product'] ?? [], $settings);
-        $gstAmount = $gstRate > 0 ? round($total - ($total / (1 + $gstRate / 100)), 2) : 0.0;
+        $summary = \App\Services\TaxService::cartSummary($items, $settings);
         $this->render('public/cart', [
             'items' => $items,
             'total' => $total,
-            'gstRate' => rtrim(rtrim(number_format($gstRate, 2, '.', ''), '0'), '.'),
-            'gstAmount' => $gstAmount,
+            'gstAmount' => $summary['gst_amount'],
+            'itemCount' => $summary['item_count'],
         ]);
     }
     
