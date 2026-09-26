@@ -102,6 +102,19 @@ it against that service's own documentation and record the URL beside the code.
 This is a web app and a PWA. **Verify in a browser, not the terminal** — desktop and
 375px mobile. Terminal checks cover generators, schema and tests only.
 
+When working from Codex or ChatGPT Work, use the built-in **Browser** through its
+computer-use controls for local and live UI verification. Do not use an external
+Playwright CLI, standalone browser driver, or substitute terminal HTTP checks for
+the browser workflow. Keep UI actions grounded in the current browser state.
+
+After route, schema, controller, view or workflow changes, run `./bapXphp update`
+to regenerate `map.mmd`, `docs/systematic-map.mmd`, and the indexes. Fix stale
+expectations to match the agreed behavior; never weaken validation to hide a defect.
+Run `./bapXphp ci` before the PR and verify GitHub checks before merging. After
+deployment, repeat the affected flows in the live Browser and attach the evidence
+to the original issues. A merge or an SMTP acceptance message alone does not prove
+deployment or inbox delivery.
+
 Local browser-test credentials and the fixed customer test ID are stored in
 `.env.test-user`. The file is gitignored; read it locally when authentication is
 required, and never copy its credential values into tracked files, command output,

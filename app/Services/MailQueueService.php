@@ -95,7 +95,7 @@ final class MailQueueService {
             . '<div style="font-family:' . $b['sans'] . ';font-size:11px;color:' . $b['muted'] . ';padding:14px 8px 0;max-width:600px;">'
             . ($isAdmin
                 ? 'Automated store notification. Change the recipient in Admin &rarr; Integrations.'
-                : 'You received this because you have an account or placed an order with ' . e($siteName) . '.')
+                : 'You received this following an account, order, or enquiry activity with ' . e($siteName) . '.')
             . '</div>'
             . '</td></tr></table></body></html>';
     }
@@ -208,7 +208,7 @@ final class MailQueueService {
         $invoiceHtml = '';
         if (!empty($order['invoice_number'])) {
             $invoiceHtml = '<p>Invoice: <strong>' . e((string)($order['invoice_number'] ?? '')) . '</strong> — '
-                . '<a href="' . rtrim(($_ENV['APP_URL'] ?? 'https://' . ($_SERVER['HTTP_HOST'] ?? 'localhost')), '/') . '/account/orders/' . e((string)($order['id'] ?? '')) . '/invoice">View invoice</a></p>';
+                . '<a href="' . e($this->siteUrl('/account/orders/' . rawurlencode((string)($order['id'] ?? '')) . '/invoice')) . '">View invoice</a></p>';
         }
         $subject = 'Order confirmed — Sri Panchami Spiritual';
         $html = self::heading('Thank you, your order is confirmed')
@@ -218,7 +218,8 @@ final class MailQueueService {
                 'Invoice' => e((string)($order['invoice_number'] ?? '')),
                 'Total'   => '₹' . e((string)($order['total'] ?? 0)),
             ])
-            . self::button('View your order', $this->siteUrl('/account/dashboard/orders'))
+            . self::orderItemsHtml($order['items'] ?? [])
+            . self::button('View your order', $this->siteUrl('/account/orders/' . rawurlencode((string)($order['id'] ?? ''))))
             . $invoiceHtml;
         $sent = $this->enqueue('payment_confirmation', $to, $subject, $html, null, ['order_id' => $order['id'] ?? '']);
         $this->notifyAdmin(
@@ -230,6 +231,18 @@ final class MailQueueService {
             ['order_id' => $order['id'] ?? '']
         );
         return $sent;
+    }
+
+    /** Render saved order lines without inventing prices or product claims. */
+    public static function orderItemsHtml(array $items): string {
+        if (!$items) return '';
+        $html = '<h2 style="font-size:18px;color:' . self::BRAND['maroon'] . ';">Your items</h2><ul style="padding-left:20px;">';
+        foreach ($items as $item) {
+            if (!is_array($item)) continue;
+            $html .= '<li style="margin-bottom:8px;">' . e((string)($item['name'] ?? 'Product'))
+                . ' &times; ' . e((string)($item['qty'] ?? 1)) . '</li>';
+        }
+        return $html . '</ul>';
     }
 
     /** Confirm that a customer enquiry reached the store without exposing an owner address. */

@@ -25,6 +25,20 @@ final class TaxService {
         return trim((string)($settings['default_hsn_code'] ?? self::DEFAULT_HSN_CODE));
     }
 
+    /** Cart amounts use each product's rate, including mixed-rate baskets. */
+    public static function cartSummary(array $items, array $settings): array {
+        $total = $tax = 0.0;
+        $quantity = 0;
+        foreach ($items as $item) {
+            $gross = (float)($item['line_total'] ?? 0);
+            $rate = self::rateFor($item['product'] ?? $item, $settings);
+            $total += $gross;
+            $tax += $rate > 0 ? $gross - $gross / (1 + $rate / 100) : 0;
+            $quantity += (int)($item['qty'] ?? 0);
+        }
+        return ['total' => round($total, 2), 'gst_amount' => round($tax, 2), 'item_count' => $quantity];
+    }
+
     public function snapshot(array $items, float $discount, string $shippingState, array $settings): array {
         $supplierState = trim((string)($settings['gst_state'] ?? 'Tamil Nadu'));
         $interstate = $this->stateKey($shippingState) !== $this->stateKey($supplierState);

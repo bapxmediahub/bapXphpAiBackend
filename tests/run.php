@@ -290,7 +290,7 @@ $tests['cart does not expose unfinished coupon placeholder ui'] = function (): v
 $tests['product cards link to details and expose buy-now plus add-to-cart actions'] = function (): void {
     foreach (['views/public/shop.php', 'views/public/home.php', 'views/public/product.php'] as $path) {
         $view = file_get_contents(app_path($path));
-        foreach (['product-card__image', 'product-card__title', 'product-card__buy-form', 'product-card__add-form', 'Buy Now', 'Add to Cart'] as $needle) {
+        foreach (['product-card__image', 'product-card__title', 'product-purchase', 'data-quantity-step="-1"', 'data-quantity-step="1"', 'name="qty"', 'Buy Now', 'Add to Cart'] as $needle) {
             assertTrue(str_contains($view, $needle), "{$path} should expose {$needle} on product cards");
         }
         assertTrue(!str_contains($view, 'product-card__stepper'), "{$path} should not retain the old quantity stepper on product cards");
@@ -1855,6 +1855,52 @@ $tests['product payment remains production gated after wallet removal'] = functi
         assertTrue(str_contains($secrets, $needle), "Remote integration secrets should include {$needle}");
     }
     assertTrue(!is_file(app_path('app/Controllers/WalletController.php')) && !is_file(app_path('views/account/wallet.php')), 'Wallet controller and customer view should be removed');
+};
+
+$tests['agent monitoring counts bounded outcomes without treating fallbacks as model success'] = function (): void {
+    $now = strtotime('2026-09-25T12:00:00Z');
+    $event = static fn($surface, $outcome, $duration, $at = '2026-09-25T11:00:00Z') => [
+        'event' => 'agent.run', 'created_at' => $at,
+        'meta' => ['surface' => $surface, 'outcome' => $outcome, 'duration_ms' => $duration],
+    ];
+    $rows = App\Services\AuditLogService::agentSummary([
+        $event('support', 'model', 100), $event('support', 'fallback', 300),
+        $event('support', 'private_account', 50), $event('admin', 'error', 500),
+        $event('admin', 'draft', 200), $event('support', 'model', 1000, '2026-09-23T11:00:00Z'),
+        $event('support', 'model', 1000, '2026-09-26T11:00:00Z'),
+        $event('unknown', 'model', 100), $event('admin', 'invalid', 100),
+        ['event' => 'email.test', 'created_at' => '2026-09-25T11:00:00Z'],
+    ], $now);
+    assertSame(3, $rows['support']['requests'], 'Only recent valid support runs count');
+    assertSame(1, $rows['support']['model'], 'Fallbacks and private guidance are not model responses');
+    assertSame(1, $rows['support']['fallback'], 'Fallbacks remain visible');
+    assertSame(150, $rows['support']['average_ms'], 'Average uses valid request durations');
+    assertSame(1, $rows['admin']['error'], 'Admin provider failures stay visible');
+    assertSame(1, $rows['admin']['draft'], 'Admin drafts are a separate path');
+    assertSame(null, App\Services\AuditLogService::agentSummary([], $now)['admin']['average_ms'], 'No traffic is not zero-latency success');
+};
+
+$tests['cart summary recalculates quantities and mixed product tax rates'] = function (): void {
+    $summary = App\Services\TaxService::cartSummary([
+        ['line_total' => 105, 'qty' => 1, 'product' => ['gst_rate' => 5]],
+        ['line_total' => 236, 'qty' => 2, 'product' => ['gst_rate' => 18]],
+    ], []);
+    assertSame(341.0, $summary['total'], 'Cart total sums every line');
+    assertSame(41.0, $summary['gst_amount'], 'Mixed rates must not use only the first product rate');
+    assertSame(3, $summary['item_count'], 'Item count includes multiple units of one product');
+    $changed = App\Services\TaxService::cartSummary([
+        ['line_total' => 998, 'qty' => 2, 'product' => ['gst_rate' => 5]],
+    ], []);
+    assertSame(47.52, $changed['gst_amount'], 'Decremented quantity changes included tax');
+    assertSame(0.0, App\Services\TaxService::cartSummary([], [])['gst_amount'], 'Empty cart has no tax');
+};
+
+$tests['order email renders purchased quantities and escapes product text'] = function (): void {
+    $html = App\Services\MailQueueService::orderItemsHtml([['name' => '<script>unsafe</script>', 'qty' => 3]]);
+    assertTrue(str_contains($html, '&times; 3'), 'Receipt shows purchased quantity');
+    assertTrue(str_contains($html, '&lt;script&gt;'), 'Product text is escaped in email');
+    assertTrue(!str_contains($html, '<script>'), 'Receipt cannot embed product scripts');
+    assertSame('', App\Services\MailQueueService::orderItemsHtml([]), 'Missing order lines are not fabricated');
 };
 
 foreach ($tests as $name => $test) {

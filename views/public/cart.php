@@ -47,7 +47,7 @@
                 <div class="cart-summary">
                     <h2>Order Summary</h2>
                     <div class="cart-summary__row">
-                        <span data-cart-summary-label>Subtotal (<?= count($items) ?> item<?= count($items) !== 1 ? 's' : '' ?>)</span>
+                        <span data-cart-summary-label>Subtotal (<?= $itemCount ?> item<?= $itemCount !== 1 ? 's' : '' ?>)</span>
                         <span data-cart-subtotal>₹<?= e((string)($total ?? 0)) ?></span>
                     </div>
                     <div class="cart-summary__row">
@@ -56,7 +56,7 @@
                     </div>
                     <?php if (!empty($gstAmount)): ?>
                     <div class="cart-summary__row">
-                        <span>GST (<?= e((string)$gstRate) ?>% incl.)</span>
+                        <span>GST (included)</span>
                         <span data-cart-gst>₹<?= e(number_format((float)$gstAmount, 2)) ?></span>
                     </div>
                     <?php endif; ?>
@@ -97,7 +97,9 @@
             var rows=document.querySelectorAll('[data-cart-item]'),total=0;
             rows.forEach(function(item){total+=Number(item.dataset.unitPrice||0)*Number(item.querySelector('.cart-item__qty-val').textContent||0);});
             var subtotal=document.querySelector('[data-cart-subtotal]'),grand=document.querySelector('[data-cart-total]'),label=document.querySelector('[data-cart-summary-label]'),badge=document.querySelector('.cart-count');
-            if(subtotal)subtotal.textContent='₹'+total;if(grand)grand.textContent='₹'+total;if(label)label.textContent='Subtotal ('+rows.length+' item'+(rows.length===1?'':'s')+')';if(badge)badge.textContent=data.cart_count;
+            var summary=data.summary, gst=document.querySelector('[data-cart-gst]');
+            if(subtotal)subtotal.textContent='₹'+summary.total;if(grand)grand.textContent='₹'+summary.total;if(label)label.textContent='Subtotal ('+summary.item_count+' item'+(summary.item_count===1?'':'s')+')';if(badge)badge.textContent=data.cart_count;
+            if(gst)gst.textContent='₹'+Number(summary.gst_amount).toFixed(2);
             if(!rows.length){var layout=document.querySelector('.cart-layout');if(layout)layout.parentElement.innerHTML='<div class="cart-empty-state"><h1>Your Cart is Empty</h1><p>Discover our spiritual products and add items to your cart.</p><a href="/shop" class="btn btn-primary">Browse Shop</a></div>';}
         }catch(error){if(window.showToast)showToast(error.message,'error');else form.submit();}
         finally{button.disabled=false;}

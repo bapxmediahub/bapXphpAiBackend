@@ -9,6 +9,8 @@ final class SupportBotService {
     ) {}
 
     public function answer(string $message, ?array $user): array {
+        $startedAt = microtime(true);
+        $outcome = 'fallback';
         $message = trim($message);
         if ($message === '') throw new \InvalidArgumentException('Message is required.');
         $context = $this->customerContext($user);
@@ -20,11 +22,15 @@ final class SupportBotService {
         $reply = (!$context['signed_in'] && $this->isPrivateAccountQuestion($message))
             ? $this->fallbackReply($message, $context)
             : null;
+        if ($reply !== null) $outcome = 'private_account';
         if ($reply === null) {
             $aiReply = $this->modelReply($message, $context);
             if ($aiReply !== null) {
                 $candidate = $this->cleanReply($aiReply);
-                if (!$this->looksInternal($candidate)) $reply = $candidate;
+                if (!$this->looksInternal($candidate) && trim($candidate) !== '') {
+                    $reply = $candidate;
+                    $outcome = 'model';
+                }
             }
         }
         $reply ??= $this->fallbackReply($message, $context);
@@ -40,6 +46,7 @@ final class SupportBotService {
         }
         $actions = $this->extractActions($reply);
         if ($actions !== []) $result['actions'] = $actions;
+        (new AuditLogService($this->store))->agentRun('support', $outcome, $startedAt);
         return $result;
     }
 

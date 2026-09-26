@@ -1,7 +1,7 @@
 <div class="auth-page">
     <div class="auth-visual">
         <h2>Welcome Back</h2>
-        <p>Sign in to access your spiritual journey, manage bookings, and explore sacred collections.</p>
+        <p>Sign in to track your orders, manage delivery addresses, and explore sacred collections.</p>
     </div>
     <div class="auth-form-container">
         <div class="auth-card">

@@ -23,7 +23,7 @@ final class CommerceController extends BaseController {
             $this->flash('That product is no longer available.','error');
             $this->redirect('/shop');
         }
-        if (($product['stock_status'] ?? '') !== 'in_stock') {
+        if (!in_array($product['stock_status'] ?? '', ['in_stock', 'active'], true)) {
             if ($this->wantsJson()) $this->jsonResponse(['error' => 'This product is currently out of stock.'], 409);
             $this->flash('This product is currently out of stock.', 'error');
             $this->redirect('/shop');
@@ -32,7 +32,7 @@ final class CommerceController extends BaseController {
         $found = false;
         foreach ($_SESSION['cart'] as &$item) {
             if (($item['slug'] ?? '') === $slug) {
-                $item['qty'] = (int)($item['qty'] ?? 1) + $qty;
+                $item['qty'] = min(99, (int)($item['qty'] ?? 1) + $qty);
                 $found = true;
                 break;
             }
@@ -95,7 +95,8 @@ final class CommerceController extends BaseController {
             $cartCount += $itemQty;
             if (($item['slug'] ?? '') === $slug) $quantity = $itemQty;
         }
-        return ['slug' => $slug, 'quantity' => $quantity, 'cart_count' => $cartCount];
+        $summary = TaxService::cartSummary($this->resolveCartItems(), (new SettingsService())->public());
+        return ['slug' => $slug, 'quantity' => $quantity, 'cart_count' => $cartCount, 'summary' => $summary];
     }
     public function createOrder(): void {
         $this->isApiRequest = true;

@@ -63,19 +63,19 @@
                                 </div>
                                 <div class="product-card__actions">
                                     <?php if($isPurchasable): ?>
-                                    <form method="post" action="/cart/add" class="product-card__buy-form">
+                                    <form method="post" action="/cart/add" class="product-purchase">
                                         <input type="hidden" name="slug" value="<?= e($itemSlug) ?>">
-                                        <input type="hidden" name="qty" value="1">
-                                        <input type="hidden" name="redirect" value="/checkout">
                                         <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                                        <button type="submit" class="btn btn-sm btn-primary">Buy Now</button>
-                                    </form>
-                                    <form method="post" action="/cart/add" class="product-card__add-form">
-                                        <input type="hidden" name="slug" value="<?= e($itemSlug) ?>">
-                                        <input type="hidden" name="qty" value="1">
-                                        <input type="hidden" name="redirect" value="/shop">
-                                        <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                                        <button type="submit" class="btn btn-sm btn-outline">Add to Cart</button>
+                                        <div class="product-purchase__quantity"><span>Quantity</span><div class="qty-input">
+                                            <button type="button" data-quantity-step="-1" aria-label="Decrease quantity for <?= e($item['name']) ?>">−</button>
+                                            <input type="number" name="qty" value="1" min="1" max="99" inputmode="numeric" aria-label="Quantity for <?= e($item['name']) ?>">
+                                            <button type="button" data-quantity-step="1" aria-label="Increase quantity for <?= e($item['name']) ?>">+</button>
+                                        </div></div>
+                                        <div class="product-purchase__buttons">
+                                            <button type="submit" name="redirect" value="/checkout" class="btn btn-sm btn-primary">Buy Now</button>
+                                            <button type="submit" name="redirect" value="/shop" class="btn btn-sm btn-outline">Add to Cart</button>
+                                        </div>
+                                        <?php if (($cartQuantities[$itemSlug] ?? 0) > 0): ?><a class="product-purchase__in-cart" href="/cart"><?= (int)$cartQuantities[$itemSlug] ?> in cart · Edit quantity</a><?php endif; ?>
                                     </form>
                                     <?php else: ?>
                                     <span class="product-card__unavailable">Out of stock</span>

@@ -7,13 +7,16 @@
     .pf-section{margin:var(--space-md) 0 0;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--color-text-muted);border-bottom:1px solid var(--color-border);padding-bottom:0.3rem}
     .pf-section:first-of-type{margin-top:0}
     .pf-hint{margin:0;font-size:0.75rem;color:var(--color-text-muted)}
+    .pf-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,340px);gap:var(--space-xl);align-items:start}
+    .pf-grid>div{min-width:0}
+    @media(max-width:900px){.pf-grid{grid-template-columns:minmax(0,1fr)}}
     </style>
     <form id="product-form" method="post" action="/admin/<?= e($collection) ?>/save" class="admin-form" enctype="multipart/form-data">
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
         <input type="hidden" name="id" id="resource-id">
         <input type="hidden" name="image_url" id="field-image_url">
         <textarea name="image_urls" id="field-image_urls" style="display:none"></textarea>
-        <div style="display:grid; grid-template-columns: 1fr 340px; gap: var(--space-xl); align-items:start;">
+        <div class="pf-grid">
             <div style="display:grid; gap:var(--space-sm);">
                 <?php // Grouped into named sections. A flat column put the tax fields
                       // between stock and description, so there was nothing to scan for. ?>
