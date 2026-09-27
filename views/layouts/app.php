@@ -495,7 +495,7 @@ document.addEventListener('submit',async function(event){
     if(control.dataset.busy==='true')return;
     control.dataset.busy='true';control.querySelectorAll('button').forEach(function(b){b.disabled=true;});
     try{
-        var response=await fetch(form.action,{method:'POST',body:new FormData(form),headers:{Accept:'application/json'}});
+        var response=await fetch(form.getAttribute('action'),{method:'POST',body:new FormData(form),headers:{Accept:'application/json'}});
         var data=await response.json();if(!response.ok)throw new Error(data.error||'Unable to update cart.');
         document.querySelectorAll('[data-cart-control]').forEach(function(card){
             if(card.dataset.slug!==data.slug)return;
