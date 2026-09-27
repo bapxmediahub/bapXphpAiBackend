@@ -290,10 +290,11 @@ $tests['cart does not expose unfinished coupon placeholder ui'] = function (): v
 $tests['product cards link to details and expose buy-now plus add-to-cart actions'] = function (): void {
     foreach (['views/public/shop.php', 'views/public/home.php', 'views/public/product.php'] as $path) {
         $view = file_get_contents(app_path($path));
-        foreach (['product-card__image', 'product-card__title', 'product-purchase', 'data-quantity-step="-1"', 'data-quantity-step="1"', 'name="qty"', 'Buy Now', 'Add to Cart'] as $needle) {
+        foreach (['product-card__image', 'product-card__title', 'product-purchase', 'data-cart-add', 'data-cart-change', 'data-cart-quantity', 'Buy Now', 'Add to Cart'] as $needle) {
             assertTrue(str_contains($view, $needle), "{$path} should expose {$needle} on product cards");
         }
         assertTrue(!str_contains($view, 'product-card__stepper'), "{$path} should not retain the old quantity stepper on product cards");
+        assertTrue(!str_contains($view, 'product-purchase__quantity'), "{$path} must not show a separate pre-add quantity selector");
     }
     $shop = file_get_contents(app_path('views/public/shop.php'));
     assertTrue(str_contains($shop, 'rawurlencode($itemSlug)'), 'Shop product links should survive legacy whitespace in stored slugs');
