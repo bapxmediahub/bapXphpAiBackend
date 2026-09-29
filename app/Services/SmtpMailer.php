@@ -52,11 +52,20 @@ final class SmtpMailer {
             'Content-Type: multipart/alternative; boundary="' . $boundary . '"',
         ];
         return implode("\r\n", $headers)
-            . "\r\n\r\n--{$boundary}\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n"
-            . $plain
-            . "\r\n\r\n--{$boundary}\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n"
-            . $html
+            . "\r\n\r\n--{$boundary}\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n"
+            . self::encodeBody($plain)
+            . "\r\n\r\n--{$boundary}\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n"
+            . self::encodeBody($html)
             . "\r\n\r\n--{$boundary}--\r\n";
+    }
+
+    private static function encodeBody(string $body): string {
+        // RFC 2045 sections 6.6/6.8: canonical CRLF and at most 76 encoded
+        // characters per line. Raw one-line HTML exceeded SMTP line limits and
+        // could be rewritten in transit, invalidating the provider's DKIM hash.
+        // https://www.rfc-editor.org/rfc/rfc2045#section-6.8
+        $canonical = preg_replace('/\r\n|\r|\n/', "\r\n", $body);
+        return rtrim(chunk_split(base64_encode($canonical), 76, "\r\n"), "\r\n");
     }
 
     public function send(string $to, string $subject, string $html): void {

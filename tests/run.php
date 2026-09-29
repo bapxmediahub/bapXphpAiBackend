@@ -1903,6 +1903,17 @@ $tests['order email renders purchased quantities and escapes product text'] = fu
     assertSame('', App\Services\MailQueueService::orderItemsHtml([]), 'Missing order lines are not fabricated');
 };
 
+$tests['smtp encodes long unicode HTML into bounded transport safe MIME lines'] = function (): void {
+    $mailer = new App\Services\SmtpMailer(['mail_from_email' => 'support@example.com']);
+    $html = '<p>' . str_repeat('₹499 — devotional product ', 500) . "</p>\n<p>Next line</p>";
+    $message = $mailer->buildMessage('test@example.com', 'Encoding test', $html);
+    assertSame(2, substr_count($message, 'Content-Transfer-Encoding: base64'), 'Both MIME alternatives declare their encoding');
+    preg_match('/Content-Type: text\/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n(.*?)\r\n\r\n--/s', $message, $match);
+    assertTrue(isset($match[1]), 'HTML MIME part exists');
+    assertSame(str_replace("\n", "\r\n", $html), base64_decode($match[1], true), 'Unicode HTML survives transport encoding without changes');
+    foreach (explode("\r\n", $match[1]) as $line) assertTrue(strlen($line) <= 76, 'Encoded body lines stay within MIME limits');
+};
+
 foreach ($tests as $name => $test) {
     try {
         $test();
