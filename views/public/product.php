@@ -19,6 +19,13 @@
             $gallery = array_values(array_unique(array_filter(array_map(fn($image) => webp_src(trim((string)$image)), $gallery))));
             if (empty($gallery)) $gallery[] = placeholder_img($product['name']);
         ?>
+        <?php if (!empty($adminPreview)): ?>
+            <div class="container product-copy-block" role="note">
+                <h2>Admin preview · Not for sale</h2>
+                <p>This preview does not publish the product. Purchase controls are disabled.</p>
+                <a href="/admin/products" class="btn btn-outline">Back to products</a>
+            </div>
+        <?php endif; ?>
         <div class="product-detail">
             <div class="product-gallery reveal">
                 <div class="product-gallery__main" id="gallery-main" style="position:relative;">
@@ -99,6 +106,7 @@
                         </dl>
                     </div>
                 <?php endif; ?>
+                <?php if (empty($adminPreview)): ?>
                  <div class="product-info__form">
                      <form id="product-cart-form" method="post" action="/cart/add" style="display:flex; gap:var(--space-md); align-items:center; width:100%;">
                          <input type="hidden" name="slug" value="<?= e($product['slug']) ?>">
@@ -122,6 +130,7 @@
                     <div class="product-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Authentic Product</div>
                     <div class="product-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> Blessed & Energized</div>
                 </div>
+                <?php endif; ?>
             </div>
         </div>
         <?php if (!empty($related) && is_array($related)): ?>

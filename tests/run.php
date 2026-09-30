@@ -1316,6 +1316,23 @@ $tests['a product can be hidden without deleting it, and an offer expires'] = fu
         'findBySlug should withhold a hidden product unless explicitly asked');
 };
 
+$tests['admin product preview protects hidden catalog content and disables purchase'] = function (): void {
+    $controller = file_get_contents(app_path('app/Controllers/PublicController.php'));
+    $start = strpos($controller, 'public function product(');
+    $end = strpos($controller, 'public function cart(', $start);
+    $method = substr($controller, $start, $end - $start);
+    assertTrue(str_contains($method, "\$adminPreview = (\$_GET['preview'] ?? '') === '1';"), 'Preview must be explicit');
+    assertTrue(strpos($method, '->requireAdmin()') < strpos($method, '->findBySlug($slug, $adminPreview)'), 'Authorize before reading hidden product');
+    assertTrue(str_contains($method, 'X-Robots-Tag: noindex, nofollow'), 'Preview must not be indexed');
+    $auth = file_get_contents(app_path('app/Services/AuthService.php'));
+    assertTrue(str_contains($auth, 'Cache-Control: no-store'), 'Admin authorization must disable shared caching');
+    $form = file_get_contents(app_path('views/admin/product-form.php'));
+    assertTrue(str_contains($form, '?preview=1') && str_contains($form, 'rawurlencode(trim($item[\'slug\']))'), 'Admin preview links must encode slugs');
+    $view = file_get_contents(app_path('views/public/product.php'));
+    assertTrue(str_contains($view, 'Admin preview · Not for sale'), 'Preview must be clearly labeled');
+    assertTrue(strpos($view, 'if (empty($adminPreview))') < strpos($view, 'id="product-cart-form"'), 'Preview must not render purchase controls');
+};
+
 $tests['a coupon obeys its dates, spend range and usage limits'] = function (): void {
     $service = new \App\Services\CouponService();
     $now = new \DateTimeImmutable('2026-08-06 12:00:00');
