@@ -1316,6 +1316,14 @@ $tests['a product can be hidden without deleting it, and an offer expires'] = fu
         'findBySlug should withhold a hidden product unless explicitly asked');
 };
 
+$tests['product breadcrumb uses the category identifier accepted by the shop'] = function (): void {
+    $product = file_get_contents(app_path('views/public/product.php'));
+    assertTrue(str_contains($product, "rawurlencode(trim((string)\$product['category']))"), 'Category filter must use the encoded stored category, not an absent category_slug');
+    assertTrue(!str_contains($product, "\$product['category_slug']"), 'Missing derived field must not generate an empty category filter');
+    $controller = file_get_contents(app_path('app/Controllers/PublicController.php'));
+    assertTrue(str_contains($controller, "\$categoryList[] = \$item['category'] ?? '';"), 'Breadcrumb and shop must use the same category identifier');
+};
+
 $tests['both chat surfaces share accessible bounded request status'] = function (): void {
     $status = file_get_contents(app_path('assets/agent-status.js'));
     assertTrue(str_contains($status, "createElement('details')") && str_contains($status, "createElement('summary')"), 'Status toggle must use keyboard-accessible native disclosure');
