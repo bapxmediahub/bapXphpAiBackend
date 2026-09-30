@@ -38,6 +38,10 @@ final class AgentContextService {
             'url' => '/product/' . ($item['slug'] ?? ''),
             'price' => $item['offer_price'] ?? $item['price'] ?? null,
             'stock_status' => $item['stock_status'] ?? '',
+            'description' => mb_substr(strip_tags((string)($item['description'] ?? '')), 0, 2000),
+            'highlights' => $item['highlights'] ?? [],
+            'description_points' => $item['description_points'] ?? [],
+            'specifications' => $item['specifications'] ?? [],
         // Visible only, and priced through the offer window: the support bot must never
         // recommend a product the shopper cannot buy, or quote an offer that has ended.
         ], array_slice((new ProductService($this->store))->visible(), 0, 20));

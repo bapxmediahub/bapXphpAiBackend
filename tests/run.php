@@ -1903,6 +1903,32 @@ $tests['order email renders purchased quantities and escapes product text'] = fu
     assertSame('', App\Services\MailQueueService::orderItemsHtml([]), 'Missing order lines are not fabricated');
 };
 
+$tests['support product questions retain public specifications and reject unrelated articles'] = function (): void {
+    $bot = new App\Services\SupportBotService();
+    $fallback = (new ReflectionMethod($bot, 'publicGuestReply'))->getClosure($bot);
+    $article = (new ReflectionMethod($bot, 'matchArticle'))->getClosure($bot);
+    $context = ['site' => ['products' => [[
+        'name' => 'Kariya Sakthi Aragaja Mai', 'url' => '/product/aragaja',
+        'description' => 'Sacred fragrance paste.', 'specifications' => ['Pack size' => '25 g'],
+    ]]], 'articles' => [[
+        'title' => 'What is Sade Sati?', 'url' => '/blog/sade-sati', 'summary' => 'Astrology guide',
+    ]]];
+    $question = 'What is Kariya Sakthi Aragaja Mai and what is its pack size?';
+    assertSame(null, $article($question, $context), 'Common question words must not match astrology articles');
+    $reply = $fallback($question, $context);
+    assertTrue(str_contains($reply, 'Pack size: 25 g'), 'Fallback uses the product specification');
+    assertTrue(str_contains($reply, '/product/aragaja'), 'Fallback links the matched product');
+    assertTrue(!str_contains($reply, 'Sade Sati'), 'Product answer must not substitute an unrelated article');
+    $context['site']['products'][0]['specifications'] = [];
+    $reply = $fallback($question, $context);
+    assertTrue(!str_contains($reply, '25 g') && str_contains($reply, '/contact'), 'Missing facts are not invented');
+    $source = file_get_contents(app_path('app/Services/AgentContextService.php'));
+    foreach (['description', 'highlights', 'description_points', 'specifications'] as $field) {
+        assertTrue(str_contains($source, "'" . $field . "' =>"), 'Public product details must reach model context');
+        assertTrue(in_array($field, (new App\Services\SchemaService())->agentContextFields('products'), true), 'Product detail must be allowlisted by schema');
+    }
+};
+
 $tests['smtp encodes long unicode HTML into bounded transport safe MIME lines'] = function (): void {
     $mailer = new App\Services\SmtpMailer(['mail_from_email' => 'support@example.com']);
     $html = '<p>' . str_repeat('₹499 — devotional product ', 500) . "</p>\n<p>Next line</p>";
