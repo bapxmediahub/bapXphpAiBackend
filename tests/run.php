@@ -657,6 +657,8 @@ $tests['support assistant widget uses browser session memory and google model se
     }
     $client = file_get_contents(app_path('app/Services/AiClient.php'));
     assertTrue(str_contains($client, 'getModelConfig'), 'AiClient should resolve endpoint and model from Admin → Integrations');
+    assertTrue(!str_contains($client, 'curl_close($ch)'), 'PHP 8.5 transport must not emit obsolete curl_close warnings into JSON');
+    assertTrue(str_contains($client, 'CURLOPT_TIMEOUT => 20'), 'Provider wait must leave PHP request time for fallback and monitoring');
     $admin = file_get_contents(app_path('app/Controllers/AdminController.php'));
     assertTrue(str_contains($admin, 'AiClient') && !str_contains($admin, 'x-goog-api-key'),
         'Admin agent should share the same client rather than keep a second provider call');
