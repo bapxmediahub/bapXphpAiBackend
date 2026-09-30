@@ -490,17 +490,24 @@ supportClose.addEventListener('click',function(){supportToggle(false);});}
 if(supportForm){supportForm.addEventListener('submit',async function(e){e.preventDefault();var data=new FormData(supportForm),msg=data.get('message');if(supportLog){supportLog.insertAdjacentHTML('beforeend','<p><strong>You:</strong> '+supportEscape(msg)+'</p>');}supportSaveLog();supportForm.reset();try{var r=await fetch('/support/ask',{method:'POST',body:data});var j=await r.json();if(supportLog){supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> '+supportReplyHtml(j.reply||j.error||'Unable to answer right now.')+'</p>'+(j.actions?supportActionsHtml(j.actions):''));}}catch(err){if(supportLog){supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> Unable to answer right now.</p>');}}supportSaveLog();if(supportLog){supportLog.scrollTop=supportLog.scrollHeight;}});}
 function showToast(msg,type){type=type||'info';var c=document.getElementById('toast-container');if(!c){c=document.createElement('div');c.id='toast-container';document.body.appendChild(c);}var t=document.createElement('div');t.className='toast toast--'+type;var icons={success:'✓',error:'✕',warning:'⚠',info:'ℹ'};t.innerHTML='<span class="toast__icon">'+(icons[type]||'ℹ')+'</span><span class="toast__text">'+msg+'</span><button class="toast__close" aria-label="Dismiss">&times;</button>';t.querySelector('.toast__close').addEventListener('click',function(e){e.stopPropagation();dismiss(t);});t.addEventListener('click',function(){dismiss(t);});c.appendChild(t);var timer=setTimeout(function(){dismiss(t);},4000);function dismiss(el){if(el.classList.contains('toast--out'))return;el.classList.add('toast--out');clearTimeout(timer);setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},250);}}
 document.addEventListener('submit',async function(event){
-    var form=event.target.closest('.product-card__stepper form');if(!form||!window.fetch)return;
-    event.preventDefault();var button=form.querySelector('button');button.disabled=true;
-    try{var response=await fetch(form.getAttribute('action'),{method:'POST',body:new FormData(form),headers:{Accept:'application/json'}});var data=await response.json().catch(function(){return null;});if(!data)throw new Error('Something went wrong. Please refresh and try again.');if(!response.ok)throw new Error(data.error||'Unable to update cart.');var stepper=form.closest('.product-card__stepper'),value=stepper.querySelector('.qty-input__value'),minus=stepper.querySelector('form[action="/cart/update"] button'),badge=document.querySelector('.cart-count'),tray=document.getElementById('mobile-cart-tray'),trayCount=document.getElementById('mobile-cart-count'),trayLabel=document.getElementById('mobile-cart-label');value.textContent=data.quantity;if(minus)minus.disabled=data.quantity<=0;if(badge)badge.textContent=data.cart_count;if(tray){tray.hidden=data.cart_count<=0;if(trayCount)trayCount.textContent=data.cart_count;if(trayLabel)trayLabel.textContent=data.cart_count===1?'item':'items';}}
-    catch(error){showToast(error.message,'error');}finally{button.disabled=form.getAttribute('action')==='/cart/update'&&Number(form.closest('.product-card__stepper').querySelector('.qty-input__value').textContent)<=0;}
-});
-document.addEventListener('click',function(event){
-    var button=event.target.closest('[data-quantity-step]');if(!button)return;
-    var input=button.closest('.qty-input').querySelector('input[name="qty"]');if(!input)return;
-    var current=Number(input.value)||1,min=Number(input.min)||1,max=Number(input.max)||99;
-    input.value=Math.min(max,Math.max(min,current+Number(button.dataset.quantityStep)));
-    input.dispatchEvent(new Event('change',{bubbles:true}));
+    var form=event.target.closest('[data-cart-add],[data-cart-change]');if(!form||!window.fetch)return;
+    event.preventDefault();var control=form.closest('[data-cart-control]');
+    if(control.dataset.busy==='true')return;
+    control.dataset.busy='true';control.querySelectorAll('button').forEach(function(b){b.disabled=true;});
+    try{
+        var response=await fetch(form.getAttribute('action'),{method:'POST',body:new FormData(form),headers:{Accept:'application/json'}});
+        var data=await response.json();if(!response.ok)throw new Error(data.error||'Unable to update cart.');
+        document.querySelectorAll('[data-cart-control]').forEach(function(card){
+            if(card.dataset.slug!==data.slug)return;
+            card.querySelector('[data-cart-add]').hidden=data.quantity>0;
+            card.querySelector('[data-cart-stepper]').hidden=data.quantity<=0;
+            card.querySelector('[data-cart-quantity]').textContent=data.quantity;
+        });
+        var badge=document.querySelector('.cart-count'),tray=document.getElementById('mobile-cart-tray'),count=document.getElementById('mobile-cart-count'),label=document.getElementById('mobile-cart-label');
+        if(badge)badge.textContent=data.cart_count;if(tray)tray.hidden=data.cart_count<=0;
+        if(count)count.textContent=data.cart_count;if(label)label.textContent=data.cart_count===1?'item':'items';
+    }catch(error){showToast(error.message||'Unable to update cart.','error');}
+    finally{delete control.dataset.busy;control.querySelectorAll('button').forEach(function(b){b.disabled=false;});}
 });
 </script>
 <div id="toast-container" role="alert" aria-live="polite"></div>

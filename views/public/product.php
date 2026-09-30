@@ -155,20 +155,35 @@
                             </div>
                             <div class="product-card__actions">
                                 <?php if($isPurchasable): ?>
-                                <form method="post" action="/cart/add" class="product-purchase">
+                        <?php $inCart = (int)($cartQuantities[$itemSlug] ?? 0); ?>
+                        <div class="product-purchase" data-cart-control data-slug="<?= e($itemSlug) ?>">
+                            <form method="post" action="/cart/add">
+                                <input type="hidden" name="slug" value="<?= e($itemSlug) ?>">
+                                <input type="hidden" name="_csrf" value="<?= $csrf ?>">
+                                <input type="hidden" name="redirect" value="/checkout">
+                                <button class="btn btn-sm btn-primary" type="submit">Buy Now</button>
+                            </form>
+                            <div class="product-cart-control">
+                                <form method="post" action="/cart/add" data-cart-add <?= $inCart > 0 ? 'hidden' : '' ?>>
                                     <input type="hidden" name="slug" value="<?= e($itemSlug) ?>">
                                     <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                                    <div class="product-purchase__quantity"><span>Quantity</span><div class="qty-input">
-                                        <button type="button" data-quantity-step="-1" aria-label="Decrease quantity for <?= e($item['name']) ?>">−</button>
-                                        <input type="number" name="qty" value="1" min="1" max="99" inputmode="numeric" aria-label="Quantity for <?= e($item['name']) ?>">
-                                        <button type="button" data-quantity-step="1" aria-label="Increase quantity for <?= e($item['name']) ?>">+</button>
-                                    </div></div>
-                                    <div class="product-purchase__buttons">
-                                        <button type="submit" name="redirect" value="/checkout" class="btn btn-sm btn-primary">Buy Now</button>
-                                        <button type="submit" name="redirect" value="<?= e('/product/' . rawurlencode(trim($product['slug']))) ?>" class="btn btn-sm btn-outline">Add to Cart</button>
-                                    </div>
-                                    <?php if (($cartQuantities[$itemSlug] ?? 0) > 0): ?><a class="product-purchase__in-cart" href="/cart"><?= (int)$cartQuantities[$itemSlug] ?> in cart · Edit quantity</a><?php endif; ?>
+                                    <input type="hidden" name="redirect" value="<?= e('/product/' . rawurlencode(trim($product['slug']))) ?>">
+                                    <button class="btn btn-sm btn-outline" type="submit">Add to Cart</button>
                                 </form>
+                                <div class="product-cart-control__stepper" data-cart-stepper <?= $inCart > 0 ? '' : 'hidden' ?>>
+                                    <?php foreach (['dec' => '−', 'inc' => '+'] as $cartAction => $symbol): ?>
+                                    <?php if ($cartAction === 'inc'): ?><output data-cart-quantity aria-live="polite" aria-label="Quantity in cart for <?= e($item['name']) ?>"><?= $inCart ?></output><?php endif; ?>
+                                    <form method="post" action="/cart/update" data-cart-change>
+                                        <input type="hidden" name="slug" value="<?= e($itemSlug) ?>">
+                                        <input type="hidden" name="_csrf" value="<?= $csrf ?>">
+                                        <input type="hidden" name="action" value="<?= $cartAction ?>">
+                                        <input type="hidden" name="redirect" value="<?= e('/product/' . rawurlencode(trim($product['slug']))) ?>">
+                                        <button type="submit" aria-label="<?= $cartAction === 'dec' ? 'Decrease' : 'Increase' ?> cart quantity for <?= e($item['name']) ?>"><?= $symbol ?></button>
+                                    </form>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        </div>
                                 <?php else: ?>
                                 <span class="product-card__unavailable">Out of stock</span>
                                 <?php endif; ?>
