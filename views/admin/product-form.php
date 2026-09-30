@@ -184,9 +184,9 @@
                         <td>
                             <div style="display:flex; gap:var(--space-xs); align-items:center;">
                                 <?php if(!empty($item['slug'])): ?>
-                                    <a href="/product/<?= e($item['slug']) ?>" target="_blank" class="btn btn-sm" style="padding:0.4rem 0.7rem; font-size:0.75rem; gap:0.25rem;">
+                                    <a href="/product/<?= e(rawurlencode(trim($item['slug']))) ?>?preview=1" target="_blank" rel="noopener" class="btn btn-sm" style="padding:0.4rem 0.7rem; font-size:0.75rem; gap:0.25rem;">
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                                        View
+                                        Preview
                                     </a>
                                 <?php endif; ?>
                                 <button type="button" class="btn btn-sm btn-ghost edit-item" data-item='<?= e(json_encode(array_merge($item, ['__id' => $item['id'] ?? '']), JSON_HEX_APOS)) ?>'>

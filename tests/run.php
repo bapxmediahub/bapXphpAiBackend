@@ -1316,6 +1316,41 @@ $tests['a product can be hidden without deleting it, and an offer expires'] = fu
         'findBySlug should withhold a hidden product unless explicitly asked');
 };
 
+$tests['both chat surfaces share accessible bounded request status'] = function (): void {
+    $status = file_get_contents(app_path('assets/agent-status.js'));
+    assertTrue(str_contains($status, "createElement('details')") && str_contains($status, "createElement('summary')"), 'Status toggle must use keyboard-accessible native disclosure');
+    assertTrue(str_contains($status, 'performance.now()') && str_contains($status, 'clearInterval(timer)'), 'Elapsed timer must stop on completion');
+    assertTrue(str_contains($status, 'not internal model reasoning') && str_contains($status, 'Request failed'), 'Status must not expose thoughts or imply success on error');
+    foreach (['views/layouts/app.php', 'views/admin/agent.php'] as $path) {
+        $source = file_get_contents(app_path($path));
+        assertTrue(str_contains($source, 'window.AgentRequestStatus.start('), "{$path} must use shared request status");
+        assertTrue(str_contains($source, 'progress.finish(failed)') && str_contains($source, '35000'), "{$path} must settle status and bound waiting");
+    }
+    $css = file_get_contents(app_path('assets/css/band.css'));
+    assertTrue(str_contains($css, '.ai-request-status summary:focus-visible') && str_contains($css, 'prefers-reduced-motion'), 'Status needs focus and reduced-motion behavior');
+    $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
+    assertTrue(str_contains($controller, "['error'=>\$answer, 'missing'=>\$attachments['missing']],502"), 'Provider failures must not be returned as successful answers');
+    $admin = file_get_contents(app_path('views/layouts/admin.php'));
+    assertTrue(str_contains($admin, 'min-width: 0;') && str_contains($admin, 'flex-wrap: wrap; gap: var(--space-sm)'), 'Admin grid and mobile header must shrink without horizontal overflow');
+};
+
+$tests['admin product preview protects hidden catalog content and disables purchase'] = function (): void {
+    $controller = file_get_contents(app_path('app/Controllers/PublicController.php'));
+    $start = strpos($controller, 'public function product(');
+    $end = strpos($controller, 'public function cart(', $start);
+    $method = substr($controller, $start, $end - $start);
+    assertTrue(str_contains($method, "\$adminPreview = (\$_GET['preview'] ?? '') === '1';"), 'Preview must be explicit');
+    assertTrue(strpos($method, '->requireAdmin()') < strpos($method, '->findBySlug($slug, $adminPreview)'), 'Authorize before reading hidden product');
+    assertTrue(str_contains($method, 'X-Robots-Tag: noindex, nofollow'), 'Preview must not be indexed');
+    $auth = file_get_contents(app_path('app/Services/AuthService.php'));
+    assertTrue(str_contains($auth, 'Cache-Control: no-store'), 'Admin authorization must disable shared caching');
+    $form = file_get_contents(app_path('views/admin/product-form.php'));
+    assertTrue(str_contains($form, '?preview=1') && str_contains($form, 'rawurlencode(trim($item[\'slug\']))'), 'Admin preview links must encode slugs');
+    $view = file_get_contents(app_path('views/public/product.php'));
+    assertTrue(str_contains($view, 'Admin preview · Not for sale'), 'Preview must be clearly labeled');
+    assertTrue(strpos($view, 'if (empty($adminPreview))') < strpos($view, 'id="product-cart-form"'), 'Preview must not render purchase controls');
+};
+
 $tests['a coupon obeys its dates, spend range and usage limits'] = function (): void {
     $service = new \App\Services\CouponService();
     $now = new \DateTimeImmutable('2026-08-06 12:00:00');

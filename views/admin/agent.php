@@ -100,7 +100,7 @@
 
 /* The composer sits inside a wrapper so the @ list can float above it. */
 .agent-composer-wrap { position:relative; }
-.agent-attach { flex:0 0 auto; background:none; border:1px solid var(--color-border); border-radius:10px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--color-text-muted); }
+.agent-attach { flex:0 0 auto; background:none; border:1px solid var(--color-border); border-radius:8px; width:44px; height:44px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--color-text-muted); }
 .agent-attach:hover { color:var(--color-maroon); border-color:var(--color-maroon); }
 .agent-mentions { display:none; position:absolute; bottom:calc(100% + 6px); left:0; right:0; max-height:240px; overflow-y:auto; background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-md); box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:20; }
 .agent-mentions.is-open { display:block; }
@@ -130,10 +130,10 @@
 .agent-suggestion { font-size:0.78rem; padding:6px 12px; border-radius:999px; border:1px solid var(--color-border); background:var(--color-white); color:var(--color-text-muted); cursor:pointer; transition:all var(--transition-base); font-family:inherit; }
 .agent-suggestion:hover { border-color:var(--color-gold); color:var(--color-ink); background:var(--color-gold-light); }
 
-.agent-composer { display:flex; align-items:flex-end; gap:var(--space-xs); border:1px solid var(--color-border); border-radius:22px; padding:6px 6px 6px 16px; background:var(--color-white); transition:border-color var(--transition-base), box-shadow var(--transition-base); }
+.agent-composer { display:flex; align-items:flex-end; gap:var(--space-xs); border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:6px; background:var(--color-white); transition:border-color var(--transition-base), box-shadow var(--transition-base); }
 .agent-composer:focus-within { border-color:var(--color-gold); box-shadow:0 0 0 3px rgba(209,179,104,0.18); }
-.agent-composer textarea { flex:1; border:0; outline:0; resize:none; font-family:inherit; font-size:0.9rem; line-height:1.5; padding:8px 0; max-height:160px; background:transparent; color:var(--color-ink); }
-.agent-send { flex:0 0 auto; width:36px; height:36px; border-radius:50%; border:1px solid var(--color-gold); background:var(--color-maroon); color:var(--color-gold); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; transition:opacity var(--transition-base); }
+.agent-composer textarea { flex:1; min-width:0; border:0; outline:0; resize:none; font-family:inherit; font-size:0.9rem; line-height:1.5; padding:8px 0; max-height:160px; background:transparent; color:var(--color-ink); }
+.agent-send { flex:0 0 auto; width:44px; height:44px; border-radius:8px; border:1px solid var(--color-gold); background:var(--color-maroon); color:var(--color-gold); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; transition:opacity var(--transition-base); }
 .agent-send:disabled { opacity:0.45; cursor:not-allowed; }
 .agent-hint { margin:var(--space-2xs) 0 0; font-size:0.72rem; color:var(--color-text-muted); text-align:right; }
 
@@ -328,14 +328,20 @@
     window.askAgent = async function (e) {
         e.preventDefault();
         const msg = input.value.trim();
-        if (!msg) return false;
+        if (!msg || submit.disabled) return false;
 
         addRow('user', escapeHtml(msg).replace(/\n/g, '<br>'));
         input.value = ''; autoGrow();
         input.disabled = true; submit.disabled = true;
         suggestions.style.display = 'none';
 
-        const thinking = addRow('bot', '<span class="agent-typing"><i></i><i></i><i></i></span>');
+        const thinking = addRow('bot', '');
+        const progress = window.AgentRequestStatus.start(thinking);
+        const response = document.createElement('div');
+        thinking.appendChild(response);
+        let failed = false;
+        const abort = new AbortController();
+        const timeout = setTimeout(() => abort.abort(), 35000);
 
         try {
             const body = 'message=' + encodeURIComponent(msg)
@@ -344,25 +350,30 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: body,
-                credentials: 'same-origin'
+                credentials: 'same-origin',
+                signal: abort.signal
             });
             const data = await resp.json().catch(() => ({ error: 'The server returned an unreadable response.' }));
-            if (data.error) {
+            if (!resp.ok || data.error) {
+                failed = true;
                 thinking.className = 'agent-bubble agent-bubble--error';
-                thinking.textContent = data.error;
+                response.textContent = data.error || 'The request failed. Please try again.';
             } else if (data.draft) {
-                thinking.innerHTML = '';
-                thinking.appendChild(buildDraftForm(data.draft));
+                response.appendChild(buildDraftForm(data.draft));
             } else {
-                thinking.innerHTML = renderMarkdown(data.answer || 'No response.');
+                response.innerHTML = renderMarkdown(data.answer || 'No response.');
             }
             if (data.missing && data.missing.length) {
                 addRow('bot', 'I could not find ' + data.missing.map(m => '<code>@' + escapeHtml(m) + '</code>').join(', ')
                     + '. Type <code>@</code> to see what is available.');
             }
         } catch (err) {
+            failed = true;
             thinking.className = 'agent-bubble agent-bubble--error';
-            thinking.textContent = 'Could not reach the server. Check your connection and try again.';
+            response.textContent = 'Could not reach the server. Check your connection and try again.';
+        } finally {
+            clearTimeout(timeout);
+            progress.finish(failed);
         }
 
         input.disabled = false; submit.disabled = false;

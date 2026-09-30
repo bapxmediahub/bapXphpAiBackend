@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{BlogService,ProductService,TempleService,CategoryService,SecretService,SeoService,ContactService,ReviewService,MarkdownRenderer};
+use App\Services\{AuthService,BlogService,ProductService,TempleService,CategoryService,SecretService,SeoService,ContactService,ReviewService,MarkdownRenderer};
 final class PublicController extends BaseController {
     
     public function home(): void {
@@ -112,7 +112,12 @@ final class PublicController extends BaseController {
     
     public function product(string $slug): void {
         $this->detectApiRequest();
-        $product = (new ProductService())->findBySlug($slug);
+        $adminPreview = ($_GET['preview'] ?? '') === '1';
+        if ($adminPreview) {
+            (new AuthService())->requireAdmin();
+            header('X-Robots-Tag: noindex, nofollow');
+        }
+        $product = (new ProductService())->findBySlug($slug, $adminPreview);
         // A missing product used to render the template with a null record and return
         // HTTP 200 — a soft 404. Search engines index those as real pages and keep
         // crawling dead URLs.
@@ -130,9 +135,15 @@ final class PublicController extends BaseController {
                 'og_image' => $product['image_url'] ?? '',
                 'json_ld' => '<script type="application/ld+json">' . json_encode($schema) . '</script>',
             ];
+            if ($adminPreview) {
+                $related = [];
+                $this->seoOverrides['robots'] = 'noindex, nofollow';
+                $this->seoOverrides['json_ld'] = '';
+                $this->seoOverrides['title'] = 'Admin preview – ' . ($product['name'] ?? 'Product');
+            }
         }
         $reviewSummary = (new ReviewService())->summary('product', $slug);
-        $this->render('public/product', compact('product', 'related', 'reviewSummary'));
+        $this->render('public/product', compact('product', 'related', 'reviewSummary', 'adminPreview'));
     }
     
     public function cart(): void {

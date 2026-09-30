@@ -227,6 +227,7 @@ echo $critical;
 ?>
 </style>
 <link rel="stylesheet" href="/assets/css/band.css?v=<?= filemtime(__DIR__ . '/../../assets/css/band.css') ?>">
+<script src="/assets/agent-status.js?v=<?= filemtime(__DIR__ . '/../../assets/agent-status.js') ?>" defer></script>
 <style>
 <?php
 $__palette_semantic = [
@@ -404,7 +405,7 @@ if ($__flash):
         <?php if(empty($_SESSION['user'])): ?><p>Sign in to ask about your personal order data.</p><?php endif; ?>
     </div>
     <form class="support-panel__form" id="support-form">
-        <textarea name="message" rows="3" required placeholder="Ask about a product, order, address, or temple"></textarea>
+        <textarea name="message" rows="3" required aria-label="Support message" placeholder="Ask about a product, order, address, or temple"></textarea>
         <button class="btn btn-primary btn-sm">Send</button>
     </form>
 </section>
@@ -487,7 +488,30 @@ function supportLoadLog(){try{if(!supportPanel||!supportLog)return;var saved=ses
 if(supportFab&&supportPanel){supportLoadLog();
 supportFab.addEventListener('click',function(){supportToggle(supportPanel.hidden);});
 supportClose.addEventListener('click',function(){supportToggle(false);});}
-if(supportForm){supportForm.addEventListener('submit',async function(e){e.preventDefault();var data=new FormData(supportForm),msg=data.get('message');if(supportLog){supportLog.insertAdjacentHTML('beforeend','<p><strong>You:</strong> '+supportEscape(msg)+'</p>');}supportSaveLog();supportForm.reset();try{var r=await fetch('/support/ask',{method:'POST',body:data});var j=await r.json();if(supportLog){supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> '+supportReplyHtml(j.reply||j.error||'Unable to answer right now.')+'</p>'+(j.actions?supportActionsHtml(j.actions):''));}}catch(err){if(supportLog){supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> Unable to answer right now.</p>');}}supportSaveLog();if(supportLog){supportLog.scrollTop=supportLog.scrollHeight;}});}
+if(supportForm){supportForm.addEventListener('submit',async function(e){
+    e.preventDefault();
+    if(supportForm.dataset.busy==='true')return;
+    var data=new FormData(supportForm),msg=String(data.get('message')||'').trim();
+    if(!msg||!supportLog)return;
+    supportForm.dataset.busy='true';
+    var controls=Array.from(supportForm.querySelectorAll('textarea,button'));
+    controls.forEach(function(control){control.disabled=true;});
+    supportLog.insertAdjacentHTML('beforeend','<p><strong>You:</strong> '+supportEscape(msg)+'</p>');
+    supportSaveLog();supportForm.reset();
+    var progress=window.AgentRequestStatus.start(supportLog),failed=false;
+    supportLog.scrollTop=supportLog.scrollHeight;
+    var abort=new AbortController(),timeout=setTimeout(function(){abort.abort();},35000);
+    try{
+        var r=await fetch('/support/ask',{method:'POST',body:data,signal:abort.signal});
+        var j=await r.json();failed=!r.ok||!!j.error;
+        supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> '+supportReplyHtml(j.reply||j.error||'Unable to answer right now.')+'</p>'+(j.actions?supportActionsHtml(j.actions):''));
+    }catch(err){failed=true;supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> Unable to answer right now. Please try again.</p>');}
+    finally{
+        clearTimeout(timeout);progress.finish(failed);
+        supportForm.dataset.busy='false';controls.forEach(function(control){control.disabled=false;});
+        supportSaveLog();supportLog.scrollTop=supportLog.scrollHeight;
+    }
+});}
 function showToast(msg,type){type=type||'info';var c=document.getElementById('toast-container');if(!c){c=document.createElement('div');c.id='toast-container';document.body.appendChild(c);}var t=document.createElement('div');t.className='toast toast--'+type;var icons={success:'✓',error:'✕',warning:'⚠',info:'ℹ'};t.innerHTML='<span class="toast__icon">'+(icons[type]||'ℹ')+'</span><span class="toast__text">'+msg+'</span><button class="toast__close" aria-label="Dismiss">&times;</button>';t.querySelector('.toast__close').addEventListener('click',function(e){e.stopPropagation();dismiss(t);});t.addEventListener('click',function(){dismiss(t);});c.appendChild(t);var timer=setTimeout(function(){dismiss(t);},4000);function dismiss(el){if(el.classList.contains('toast--out'))return;el.classList.add('toast--out');clearTimeout(timer);setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},250);}}
 document.addEventListener('submit',async function(event){
     var form=event.target.closest('[data-cart-add],[data-cart-change]');if(!form||!window.fetch)return;

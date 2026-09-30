@@ -221,7 +221,12 @@ final class AdminController extends BaseController {
             } else {
                 $answer = "AI model not configured. Go to Admin → Integrations and set api_endpoint, ai_api_key, and agent_model.";
             }
-            (new AuditLogService())->agentRun('admin', empty($modelConfig['apiKey']) || \App\Services\AiClient::isError($answer) ? 'error' : 'model', $startedAt);
+            $failed = empty($modelConfig['apiKey']) || \App\Services\AiClient::isError($answer);
+            (new AuditLogService())->agentRun('admin', $failed ? 'error' : 'model', $startedAt);
+            if ($failed) {
+                $this->jsonResponse(['error'=>$answer, 'missing'=>$attachments['missing']],502);
+                return;
+            }
             $this->jsonResponse(['answer'=>$answer, 'missing'=>$attachments['missing']]);
         } catch (\Throwable $e) {
             (new AuditLogService())->agentRun('admin', 'error', $startedAt);
