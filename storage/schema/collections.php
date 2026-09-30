@@ -44,7 +44,7 @@
             'admin_managed' => true,
             'media_fields' => ['image_url', 'image_urls'],
             'admin_fields' => ['slug', 'name', 'description', 'highlights', 'description_points', 'specifications', 'category', 'image_url', 'image_urls', 'price', 'offer_price', 'offer_starts_at', 'offer_ends_at', 'hsn_code', 'gst_rate', 'stock_status', 'status'],
-            'agent_context' => ['id', 'slug', 'name', 'category', 'categories', 'price', 'offer_price', 'hsn_code', 'gst_rate', 'stock_status'],
+            'agent_context' => ['id', 'slug', 'name', 'description', 'highlights', 'description_points', 'specifications', 'category', 'categories', 'price', 'offer_price', 'hsn_code', 'gst_rate', 'stock_status'],
             'fields' => [
                 'id' => ['type' => 'string', 'required' => true],
                 'slug' => ['type' => 'slug', 'required' => true],

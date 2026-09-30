@@ -284,12 +284,17 @@ final class AiClient
             CURLOPT_POST => true,
             CURLOPT_HTTPHEADER => $headers,
             CURLOPT_POSTFIELDS => $payload,
-            CURLOPT_TIMEOUT => 30,
+            // Leave time within the usual 30-second PHP request budget for the
+            // caller's grounded fallback and outcome monitoring.
+            CURLOPT_TIMEOUT => 20,
             CURLOPT_CONNECTTIMEOUT => 10,
         ]);
         $body = curl_exec($ch);
         $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        // CurlHandle is released automatically in PHP 8; curl_close is a no-op
+        // deprecated in 8.5 and its warning can corrupt JSON responses.
+        // https://www.php.net/manual/en/function.curl-close.php
+        unset($ch);
         return $body;
     }
 
