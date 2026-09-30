@@ -16,7 +16,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SPS Admin">
 <link rel="apple-touch-icon" href="/assets/images/logo-square.jpeg">
-<link rel="stylesheet" href="/assets/css/band.css">
+<link rel="stylesheet" href="/assets/css/band.css?v=<?= filemtime(__DIR__.'/../../assets/css/band.css') ?>">
 <script src="/assets/agent-status.js?v=<?= filemtime(__DIR__.'/../../assets/agent-status.js') ?>" defer></script>
 <style>
 .admin-shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
