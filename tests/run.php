@@ -1316,6 +1316,24 @@ $tests['a product can be hidden without deleting it, and an offer expires'] = fu
         'findBySlug should withhold a hidden product unless explicitly asked');
 };
 
+$tests['both chat surfaces share accessible bounded request status'] = function (): void {
+    $status = file_get_contents(app_path('assets/agent-status.js'));
+    assertTrue(str_contains($status, "createElement('details')") && str_contains($status, "createElement('summary')"), 'Status toggle must use keyboard-accessible native disclosure');
+    assertTrue(str_contains($status, 'performance.now()') && str_contains($status, 'clearInterval(timer)'), 'Elapsed timer must stop on completion');
+    assertTrue(str_contains($status, 'not internal model reasoning') && str_contains($status, 'Request failed'), 'Status must not expose thoughts or imply success on error');
+    foreach (['views/layouts/app.php', 'views/admin/agent.php'] as $path) {
+        $source = file_get_contents(app_path($path));
+        assertTrue(str_contains($source, 'window.AgentRequestStatus.start('), "{$path} must use shared request status");
+        assertTrue(str_contains($source, 'progress.finish(failed)') && str_contains($source, '35000'), "{$path} must settle status and bound waiting");
+    }
+    $css = file_get_contents(app_path('assets/css/band.css'));
+    assertTrue(str_contains($css, '.ai-request-status summary:focus-visible') && str_contains($css, 'prefers-reduced-motion'), 'Status needs focus and reduced-motion behavior');
+    $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
+    assertTrue(str_contains($controller, "['error'=>\$answer, 'missing'=>\$attachments['missing']],502"), 'Provider failures must not be returned as successful answers');
+    $admin = file_get_contents(app_path('views/layouts/admin.php'));
+    assertTrue(str_contains($admin, 'min-width: 0;') && str_contains($admin, 'flex-wrap: wrap; gap: var(--space-sm)'), 'Admin grid and mobile header must shrink without horizontal overflow');
+};
+
 $tests['admin product preview protects hidden catalog content and disables purchase'] = function (): void {
     $controller = file_get_contents(app_path('app/Controllers/PublicController.php'));
     $start = strpos($controller, 'public function product(');

@@ -17,6 +17,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
 <meta name="apple-mobile-web-app-title" content="SPS Admin">
 <link rel="apple-touch-icon" href="/assets/images/logo-square.jpeg">
 <link rel="stylesheet" href="/assets/css/band.css">
+<script src="/assets/agent-status.js?v=<?= filemtime(__DIR__.'/../../assets/agent-status.js') ?>" defer></script>
 <style>
 .admin-shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
 .admin-sidebar { background: var(--color-ink); color: rgba(255,255,255,0.6); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
@@ -38,7 +39,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
 .admin-sidebar__footer { padding: var(--space-md) var(--space-lg); border-top: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: var(--space-xs); }
 .admin-sidebar__footer a { display: flex; align-items: center; gap: var(--space-sm); font-size: 0.8rem; color: rgba(255,255,255,0.4); transition: color var(--transition-base); }
 .admin-sidebar__footer a:hover { color: var(--color-error); }
-.admin-main { background: var(--color-bg-alt); min-height: 100vh; }
+.admin-main { background: var(--color-bg-alt); min-height: 100vh; min-width: 0; }
 .admin-topbar { background: var(--color-white); border-bottom: 1px solid var(--color-border); padding: var(--space-md) var(--space-xl); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
 .admin-topbar h1 { font-family: var(--font-serif); font-size: 1.25rem; margin: 0; color: var(--color-ink); }
 .admin-topbar__actions { display: flex; align-items: center; gap: var(--space-sm); }
@@ -48,7 +49,9 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
     .admin-sidebar { display: none; position: fixed; top: 0; left: 0; bottom: 0; width: 260px; z-index: 1000; }
     .admin-sidebar.open { display: flex; }
     #sidebarToggle { display: inline-flex !important; }
-    .admin-topbar { padding: var(--space-sm) var(--space-md); }
+    .admin-topbar { padding: var(--space-sm) var(--space-md); flex-wrap: wrap; gap: var(--space-sm); }
+    .admin-topbar h1 { flex: 1; min-width: 0; font-size: 1rem; overflow-wrap: anywhere; }
+    .admin-topbar__actions { width: 100%; justify-content: flex-end; }
     .admin-body { padding: var(--space-md); }
 }
 </style>
