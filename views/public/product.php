@@ -47,7 +47,7 @@
             </div>
             <div class="product-info">
                  <nav class="breadcrumb" aria-label="Breadcrumb">
-                    <a href="/">Home</a> / <a href="/shop">Shop</a><?php if(!empty($product['category'])): ?> / <a href="/shop?category=<?= e($product['category_slug'] ?? '') ?>"><?= e($product['category']) ?></a><?php endif; ?> / <span style="color:var(--color-ink);"><?= e($product['name']) ?></span>
+                    <a href="/">Home</a> / <a href="/shop">Shop</a><?php if(!empty($product['category'])): ?> / <a href="/shop?category=<?= e(rawurlencode(trim((string)$product['category']))) ?>"><?= e($product['category']) ?></a><?php endif; ?> / <span style="color:var(--color-ink);"><?= e($product['name']) ?></span>
                 </nav>
                 <?php if(!empty($product['category'])): ?>
                     <span class="eyebrow serif-accent" style="font-size:0.75rem; display:block; margin-bottom:var(--space-xs);"><?= e($product['category']) ?></span>
