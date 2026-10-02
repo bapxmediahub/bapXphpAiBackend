@@ -532,6 +532,11 @@ $tests['admin integrations explain api setup and support bot keys'] = function (
         assertTrue(str_contains($view, $needle), "Integrations page should include {$needle}");
     }
     assertTrue(!str_contains($view, 'name="support_bot_google_api_endpoint"'), 'Admin should not need to enter the Google API endpoint manually');
+    assertTrue(str_contains($view, 'Public consultation booking is retired.'), 'Integration guidance should match the retired public booking journey');
+    assertTrue(str_contains($view, 'Historical service records remain available to the owner'), 'Retired public services should not imply removal of historical admin records');
+    foreach (['Customers will only see shop, booking', 'new orders and bookings', 'This site is ecommerce plus direct astrology services.'] as $retiredCopy) {
+        assertTrue(!str_contains($view, $retiredCopy), 'Integration guidance must not advertise retired services: '.$retiredCopy);
+    }
 };
 
 $tests['google oauth callback uses canonical configured app url'] = function (): void {

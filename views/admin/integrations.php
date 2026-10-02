@@ -1,6 +1,6 @@
 <div class="admin-card" style="border-left:4px solid var(--color-gold); margin-bottom:var(--space-lg);">
     <h2 style="font-size:1rem; margin:0 0 var(--space-sm);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> API Setup</h2>
-    <p style="margin:0; color:var(--color-text-muted); font-size:0.9rem;">These settings are for the website owner only. Customers will only see shop, booking, text session, and direct call session screens. All site secrets (payments, email, analytics, and AI) are stored encrypted in the project secret store and managed from this page &mdash; they are never kept in <code>.env</code>.</p>
+    <p style="margin:0; color:var(--color-text-muted); font-size:0.9rem;">These settings are for the website owner only. Customers use the shop, product pages, cart, account, temple guides, and editorial content. Public consultation booking is retired. All site secrets (payments, email, analytics, and AI) are stored encrypted in the project secret store and managed from this page &mdash; they are never kept in <code>.env</code>.</p>
 </div>
 <div class="admin-card">
     <form method="post" action="/admin/integrations/save" class="admin-form">
@@ -162,14 +162,14 @@
             full mailbox address, e.g. <code>support@sripanchamispiritual.com</code> — providers
             reject a From Email that does not match the authenticated mailbox.
             <strong>Admin Notification Email</strong> is different: it is where <em>you</em> get told
-            about new orders and bookings, so it can be a personal inbox such as a Gmail address.
+            about new orders and contact enquiries, so it can be a personal inbox such as a Gmail address.
             Customers are always written to from the From Email, and replies come back there.
             Mail is sent immediately when generated — no cron job is involved.
         </p>
 
         <div class="admin-card" style="background:var(--color-bg-alt); margin-top:var(--space-xl); padding:var(--space-md);">
             <h3 style="font-size:0.9rem; margin:0 0 var(--space-sm);">Platform Scope</h3>
-            <p style="margin:0; color:var(--color-text-muted); font-size:0.85rem;">This site is ecommerce plus direct astrology services. It supports product sales, text sessions, and direct call sessions. Video calls, Google Meet, and Google Calendar setup are intentionally skipped.</p>
+            <p style="margin:0; color:var(--color-text-muted); font-size:0.85rem;">This site is a spiritual-products storefront supported by temple guides and editorial content. Public consultation booking, text sessions, and direct call sessions are retired. Historical service records remain available to the owner in the admin panel.</p>
         </div>
         <button class="btn btn-primary" style="margin-top:var(--space-lg);">Save Integrations</button>
     </form>
