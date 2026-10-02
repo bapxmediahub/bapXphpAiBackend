@@ -1316,6 +1316,13 @@ $tests['a product can be hidden without deleting it, and an offer expires'] = fu
         'findBySlug should withhold a hidden product unless explicitly asked');
 };
 
+$tests['admin forms constrain populated controls to mobile grid tracks'] = function (): void {
+    $css = file_get_contents(app_path('assets/css/band.css'));
+    assertTrue(str_contains($css, '.admin-form__row { display: grid; min-width: 0; grid-template-columns: repeat(2, minmax(0, 1fr))'), 'Desktop tracks must not expand to input intrinsic width');
+    assertTrue(str_contains($css, '.admin-form > *, .admin-form__row > * { min-width: 0; overflow-wrap: anywhere; }'), 'Form items must shrink and long status text must wrap');
+    assertTrue(str_contains($css, '.admin-form__row { grid-template-columns: minmax(0, 1fr); }'), 'Mobile tracks must have a zero minimum');
+};
+
 $tests['AI transport diagnostics distinguish causes without assuming the provider was unreachable'] = function (): void {
     $client = App\Services\AiClient::class;
     foreach ([28 => 'timed out', 6 => 'resolve', 7 => 'establish a connection', 35 => 'TLS handshake', 60 => 'certificate verification', 77 => 'certificate verification', 0 => 'No complete HTTP response'] as $code => $expected) {
