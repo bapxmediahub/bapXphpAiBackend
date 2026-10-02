@@ -1316,6 +1316,17 @@ $tests['a product can be hidden without deleting it, and an offer expires'] = fu
         'findBySlug should withhold a hidden product unless explicitly asked');
 };
 
+$tests['AI transport diagnostics distinguish causes without assuming the provider was unreachable'] = function (): void {
+    $client = App\Services\AiClient::class;
+    foreach ([28 => 'timed out', 6 => 'resolve', 7 => 'establish a connection', 35 => 'TLS handshake', 60 => 'certificate verification', 77 => 'certificate verification', 0 => 'No complete HTTP response'] as $code => $expected) {
+        $message = $client::describeFailure(0, false, $code);
+        assertTrue(str_contains($message, $expected), 'Transport error should identify its bounded cause');
+        assertTrue(!str_contains($message, 'never reached'), 'HTTP 0 cannot prove that no request reached the provider');
+        assertTrue($client::isError($message), 'Transport failure must remain an agent error');
+    }
+    assertTrue(str_contains($client::describeFailure(500, '{"error":{"message":"Internal error"}}', 0), 'Internal error'), 'Provider response diagnostics must remain intact');
+};
+
 $tests['product breadcrumb uses the category identifier accepted by the shop'] = function (): void {
     $product = file_get_contents(app_path('views/public/product.php'));
     assertTrue(str_contains($product, "rawurlencode(trim((string)\$product['category']))"), 'Category filter must use the encoded stored category, not an absent category_slug');

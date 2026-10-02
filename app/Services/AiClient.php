@@ -20,6 +20,7 @@ namespace App\Services;
 final class AiClient
 {
     private const ERROR_PREFIXES = ['AI request failed', 'No AI API key'];
+    private int $transportError = 0;
 
     public function __construct(private SecretService $secrets = new SecretService()) {}
 
@@ -86,7 +87,7 @@ final class AiClient
             ], JSON_UNESCAPED_SLASHES);
 
             $body = $this->post($url, $payload, $headers, $status);
-            if ($status !== 200 || $body === false) return self::describeFailure($status, $body);
+            if ($status !== 200 || $body === false) return self::describeFailure($status, $body, $this->transportError);
 
             $result = json_decode((string)$body, true);
             $parts = $result['candidates'][0]['content']['parts'] ?? [];
@@ -170,7 +171,7 @@ final class AiClient
             ], JSON_UNESCAPED_SLASHES);
             $headers = ['Content-Type: application/json', 'x-goog-api-key: ' . $key];
             $body = $this->post($url, $payload, $headers, $status);
-            if ($status !== 200 || $body === false) return self::describeFailure($status, $body);
+            if ($status !== 200 || $body === false) return self::describeFailure($status, $body, $this->transportError);
             $result = json_decode((string)$body, true);
             return self::answerFromParts($result['candidates'][0]['content']['parts'] ?? []);
         }
@@ -189,7 +190,7 @@ final class AiClient
             $headers[] = 'Authorization: Bearer ' . $key;
         }
         $body = $this->post($url, $payload, $headers, $status);
-        if ($status !== 200 || $body === false) return self::describeFailure($status, $body);
+        if ($status !== 200 || $body === false) return self::describeFailure($status, $body, $this->transportError);
         $result = json_decode((string)$body, true);
         return (string)($result['choices'][0]['message']['content'] ?? '');
     }
@@ -290,6 +291,8 @@ final class AiClient
             CURLOPT_CONNECTTIMEOUT => 10,
         ]);
         $body = curl_exec($ch);
+        // Keep a bounded cause, never raw cURL diagnostics which can contain URLs.
+        $this->transportError = curl_errno($ch);
         $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
         // CurlHandle is released automatically in PHP 8; curl_close is a no-op
         // deprecated in 8.5 and its warning can corrupt JSON responses.
@@ -303,7 +306,7 @@ final class AiClient
      * "the model does not exist" and "the key was rejected" need different fixes and
      * a bare status code told the admin neither.
      */
-    public static function describeFailure(int $status, $body): string
+    public static function describeFailure(int $status, $body, int $transportError = 0): string
     {
         $detail = '';
         $decoded = is_string($body) ? json_decode($body, true) : null;
@@ -318,7 +321,16 @@ final class AiClient
             in_array($status, [401, 403], true) => ' The API key was rejected. Set a valid ai_api_key in Admin → Integrations.',
             $status === 404 => ' The model or endpoint does not exist for this provider.',
             $status === 429 => ' Rate limit or quota exceeded for this API key.',
-            $status === 0   => ' The request never reached the provider. Check outbound network access.',
+            // https://curl.se/libcurl/c/libcurl-errors.html
+            // A timeout does not prove the provider never received the request.
+            $status === 0 => match ($transportError) {
+                28 => ' The AI request timed out before a complete response was received. Try again later; this does not prove the provider was unreachable.',
+                5, 6 => ' The server could not resolve the provider or proxy hostname. Check DNS and the configured endpoint.',
+                7 => ' The server could not establish a connection to the provider or proxy. Check outbound network access.',
+                35 => ' The TLS handshake failed. Check server TLS configuration; do not disable certificate verification.',
+                60, 77 => ' TLS certificate verification failed. Check the server CA trust configuration; do not disable certificate verification.',
+                default => ' No complete HTTP response was received. Check server transport diagnostics and try again later.',
+            },
             default => '',
         };
         return trim('AI request failed (HTTP ' . $status . ').' . $hint . ($detail !== '' ? ' ' . $detail : ''));
