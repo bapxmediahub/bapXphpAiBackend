@@ -13,7 +13,7 @@ final class BlogController extends BaseController
 
         $blogService = new BlogService();
         $posts = $blogService->all();
-        $categories = $blogService->categories();
+        $categories = $blogService->categories(false);
 
         $this->render('public/blog', [
             'posts' => $posts,
@@ -31,7 +31,7 @@ final class BlogController extends BaseController
         // `find()` also serves the editor, so an unpublished post must be rejected
         // here as well as omitted from the index. Otherwise a retired article stays
         // publicly available to anyone with its old URL.
-        if ($post === null || empty($post['published'])) {
+        if ($post === null || empty($post['published']) || $blogService->categoryIsRetiredPublic((string)($post['category'] ?? ''))) {
             $this->renderNotFound();
             return;
         }
@@ -62,7 +62,12 @@ final class BlogController extends BaseController
 
         $blogService = new BlogService();
         $posts = $blogService->all();
-        $categories = $blogService->categories();
+        $categories = $blogService->categories(false);
+
+        if ($blogService->categoryIsRetiredPublic($slug)) {
+            $this->renderNotFound();
+            return;
+        }
 
         $filtered = array_values(array_filter($posts, fn($p) => ($p['category'] ?? '') === $slug));
 

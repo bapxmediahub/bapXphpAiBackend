@@ -286,44 +286,46 @@ document.addEventListener('DOMContentLoaded', function () {
     </div>
 </section>
 
-<!-- FAQ Schema for SEO -->
-<script type="application/ld+json">
-{
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-        {
-            "@type": "Question",
-            "name": "Where can I buy original rudraksha online in Chennai?",
-            "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Sri Panchami Spiritual offers certified original rudraksha beads and malas online with free shipping across India. Order online through our web store."
-            }
-        },
-        {
-            "@type": "Question",
-            "name": "Can I ask for help choosing a spiritual product?",
-            "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Yes. Contact Sri Panchami Spiritual with a product, order, or temple question and our team will help you find the appropriate information."
-            }
-        },
-        {
-            "@type": "Question",
-            "name": "What pooja items do you sell online?",
-            "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "We sell a complete range of pooja samagri including brass items, dhoop sticks, agarbatti, camphor, kumkum, havan samagri, pooja thalis, and complete pooja kits for all occasions."
-            }
-        },
-        {
-            "@type": "Question",
-            "name": "Is free shipping available on spiritual products?",
-            "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Yes, we offer free shipping on all spiritual products across India. Orders are carefully packed and delivered to your doorstep."
-            }
-        }
-    ]
-}
-</script>
+<?php $homeFaq = [
+    [
+        'question' => 'How do I order a spiritual product?',
+        'answer' => 'Choose a product, add it to your cart or select Buy Now, enter your delivery details at checkout, and complete the available online payment step.',
+    ],
+    [
+        'question' => 'What details can I check before I order?',
+        'answer' => 'Each product page can show its description, key features, specifications, price, availability, and images. Contact support if you need help with a product detail.',
+    ],
+    [
+        'question' => 'Where can I track an order?',
+        'answer' => 'After signing in, open My Orders from your account dashboard to review the order status and any shipment tracking details that are available.',
+    ],
+    [
+        'question' => 'How can I get product or temple guidance?',
+        'answer' => 'Use the contact form for product questions, order support, or temple guidance. The support team can also help with store navigation.',
+    ],
+]; ?>
+<section class="section section--alt home-faq" aria-labelledby="home-faq-title">
+    <div class="container home-faq__inner">
+        <div class="section-header">
+            <h2 class="section-title" id="home-faq-title">Frequently asked questions</h2>
+            <p class="lede">Helpful answers for shopping, orders, and temple guidance.</p>
+        </div>
+        <div class="home-faq__list">
+            <?php foreach ($homeFaq as $faq): ?>
+            <details class="home-faq__item">
+                <summary><?= e($faq['question']) ?></summary>
+                <p><?= e($faq['answer']) ?></p>
+            </details>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+<script type="application/ld+json"><?= json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'FAQPage',
+    'mainEntity' => array_map(static fn(array $faq): array => [
+        '@type' => 'Question',
+        'name' => $faq['question'],
+        'acceptedAnswer' => ['@type' => 'Answer', 'text' => $faq['answer']],
+    ], $homeFaq),
+], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?></script>

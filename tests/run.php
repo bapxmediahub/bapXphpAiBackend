@@ -1351,7 +1351,8 @@ $tests['both chat surfaces share accessible bounded request status'] = function 
     $status = file_get_contents(app_path('assets/agent-status.js'));
     assertTrue(str_contains($status, "createElement('details')") && str_contains($status, "createElement('summary')"), 'Status toggle must use keyboard-accessible native disclosure');
     assertTrue(str_contains($status, 'performance.now()') && str_contains($status, 'clearInterval(timer)'), 'Elapsed timer must stop on completion');
-    assertTrue(str_contains($status, 'not internal model reasoning') && str_contains($status, 'Request failed'), 'Status must not expose thoughts or imply success on error');
+    assertTrue(str_contains($status, "label.hidden = true") && str_contains($status, "Response completed in"), 'Completed thinking state should reduce to duration only');
+    assertTrue(!str_contains($status, 'server processing') && !str_contains($status, 'Response ready'), 'Status must not show processing explanations or completion labels');
     foreach (['views/layouts/app.php', 'views/admin/agent.php'] as $path) {
         $source = file_get_contents(app_path($path));
         assertTrue(str_contains($source, 'window.AgentRequestStatus.start('), "{$path} must use shared request status");
@@ -1363,6 +1364,25 @@ $tests['both chat surfaces share accessible bounded request status'] = function 
     assertTrue(str_contains($controller, "['error'=>\$answer, 'missing'=>\$attachments['missing']],502"), 'Provider failures must not be returned as successful answers');
     $admin = file_get_contents(app_path('views/layouts/admin.php'));
     assertTrue(str_contains($admin, 'min-width: 0;') && str_contains($admin, 'flex-wrap: wrap; gap: var(--space-sm)'), 'Admin grid and mobile header must shrink without horizontal overflow');
+};
+
+$tests['public blog retires astrology category and default SEO without deleting owner records'] = function (): void {
+    $service = file_get_contents(app_path('app/Services/BlogService.php'));
+    $controller = file_get_contents(app_path('app/Controllers/BlogController.php'));
+    $seo = file_get_contents(app_path('app/Services/SeoService.php'));
+    $blog = file_get_contents(app_path('views/public/blog.php'));
+    $categories = file_get_contents(app_path('content/blog/categories.yaml'));
+    assertTrue(str_contains($service, "RETIRED_PUBLIC_CATEGORIES = ['astrology']"), 'Blog service must retire astrology from public output without deleting post records');
+    assertTrue(str_contains($controller, 'categoryIsRetiredPublic') && str_contains($controller, 'renderNotFound'), 'Retired direct post and category URLs must return 404');
+    assertTrue(!str_contains($seo, 'astrology articles') && !str_contains($seo, 'vedic astrology blog'), 'Blog defaults must not lead with retired astrology terms');
+    assertTrue(!str_contains($blog, 'astrology explainers') && !str_contains($categories, 'slug: astrology'), 'Public blog copy and category list must not advertise astrology');
+};
+
+$tests['homepage FAQ is visible and matches its structured data'] = function (): void {
+    $home = file_get_contents(app_path('views/public/home.php'));
+    assertTrue(str_contains($home, '$homeFaq') && str_contains($home, 'Frequently asked questions'), 'Homepage should visibly render its FAQ content');
+    assertTrue(str_contains($home, "'@type' => 'FAQPage'") && str_contains($home, 'array_map(static fn(array $faq)'), 'FAQ JSON-LD should be generated from the visible FAQ source');
+    assertTrue(!str_contains($home, 'free shipping on all spiritual products') && !str_contains($home, 'certified original rudraksha'), 'FAQ must not make unverified shipping or certification claims');
 };
 
 $tests['admin product preview protects hidden catalog content and disables purchase'] = function (): void {

@@ -17,11 +17,8 @@
             const bar = document.createElement('progress');
             bar.className = 'ai-request-status__progress';
             bar.setAttribute('aria-label', 'Waiting for response');
-            const note = document.createElement('p');
-            note.className = 'ai-request-status__note';
-            note.textContent = 'Request sent. Waiting for an answer using permitted site and account information. This shows request status, not internal model reasoning.';
             summary.append(label, elapsed);
-            detail.append(summary, bar, note);
+            detail.append(summary, bar);
             parent.append(detail);
             const update = function () { elapsed.textContent = Math.floor((performance.now() - started) / 1000) + ' sec'; };
             update();
@@ -34,10 +31,10 @@
                     clearInterval(timer);
                     update();
                     detail.dataset.state = failed ? 'error' : 'complete';
-                    label.textContent = failed ? 'Request failed' : 'Response ready';
-                    note.textContent = failed
-                        ? 'The request did not complete successfully. You can retry; no success is implied.'
-                        : 'The response is shown below. Elapsed time includes network and server processing; it is not a measure of answer accuracy.';
+                    // Once the animation ends, duration is the only visible status.
+                    // The response itself presents the success or error outcome.
+                    label.hidden = true;
+                    summary.setAttribute('aria-label', (failed ? 'Request failed after ' : 'Response completed in ') + elapsed.textContent);
                     bar.remove();
                     detail.open = false;
                 }
