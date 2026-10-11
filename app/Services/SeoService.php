@@ -166,14 +166,14 @@ final class SeoService {
                 'description' => 'Read the latest blog posts, feature updates, and spiritual guides from ' . $brand . '.',
                 'og_type' => 'website',
                 'robots' => 'index, follow',
-                'keywords' => 'spiritual blog, astrology articles, vedic astrology blog, rudraksha guide, pooja tips',
+                'keywords' => 'spiritual blog, rudraksha guide, pooja tips, temple guidance, devotional practice',
             ],
             'blog.post' => [
                 'title' => 'Blog Post – ' . $brand,
                 'description' => 'Read articles, guides, and updates from ' . $brand . '.',
                 'og_type' => 'article',
                 'robots' => 'index, follow',
-                'keywords' => 'astrology, spirituality, vedic astrology, spiritual products',
+                'keywords' => 'spirituality, devotional practice, temple guidance, spiritual products',
             ],
             'blog.category' => [
                 'title' => 'Blog Category – ' . $brand,

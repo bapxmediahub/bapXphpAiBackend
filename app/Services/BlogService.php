@@ -13,6 +13,10 @@ final class BlogService {
     private const MODULE_CATEGORIES = [
         'shop' => ['shop', 'products', 'orders'],
     ];
+    // These records remain available in the owner editor for audit and an explicit
+    // future decision. They must not keep attracting a product-led storefront into
+    // astrology search results or public category navigation.
+    private const RETIRED_PUBLIC_CATEGORIES = ['astrology'];
 
     /**
      * @param bool $all true for the admin, which must see hidden posts to unhide them.
@@ -27,6 +31,7 @@ final class BlogService {
             if (!$all) {
                 if (empty($post['published'])) continue;
                 if ($this->categoryIsDisabled((string)($post['category'] ?? ''))) continue;
+                if ($this->categoryIsRetiredPublic((string)($post['category'] ?? ''))) continue;
             }
             $posts[] = $post;
         }
@@ -42,15 +47,20 @@ final class BlogService {
         }
         return false;
     }
+    public function categoryIsRetiredPublic(string $category): bool {
+        return in_array(strtolower(trim($category)), self::RETIRED_PUBLIC_CATEGORIES, true);
+    }
     public function find(string $slug): ?array {
         $file = $this->postsDir . '/' . $slug . '.md';
         return is_file($file) ? $this->parseFile($file) : null;
     }
-    public function categories(): array {
+    public function categories(bool $includeRetired = true): array {
         if (!is_file($this->categoriesFile)) return [];
         $yaml = @file_get_contents($this->categoriesFile);
         if ($yaml === false || $yaml === '') return [];
-        return $this->parseYamlList($yaml);
+        $categories = $this->parseYamlList($yaml);
+        if ($includeRetired) return $categories;
+        return array_values(array_filter($categories, fn(array $category): bool => !$this->categoryIsRetiredPublic((string)($category['slug'] ?? ''))));
     }
     public function save(array $data): array {
         $slug = $data['slug'] ?? '';

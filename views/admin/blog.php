@@ -37,7 +37,7 @@
         <label>Summary <textarea name="summary" id="edit-summary" rows="2" style="width:100%"></textarea></label>
         <label>Display order <input type="number" name="order" id="edit-order" min="0" step="1" style="width:100%"></label>
         <label class="admin-blog-editor__wide">Excerpt <textarea name="excerpt" id="edit-excerpt" rows="2" style="width:100%"></textarea></label>
-        <label class="admin-blog-editor__wide">SEO Keywords <input type="text" name="keywords" id="edit-keywords" placeholder="astrology, spirituality, vedic astrology" style="width:100%"><small>Comma-separated keywords for search engine indexing.</small></label>
+        <label class="admin-blog-editor__wide">SEO Keywords <input type="text" name="keywords" id="edit-keywords" placeholder="rudraksha, pooja items, temple guidance" style="width:100%"><small>Comma-separated keywords for search engine indexing.</small></label>
         <?php // Both are filled in on save from today's date and the signed-in admin.
               // They stay here for backdating a post or crediting someone else. ?>
         <label>Published At <input type="date" name="published_at" id="edit-date" style="width:100%"><small>Leave blank for today.</small></label>
