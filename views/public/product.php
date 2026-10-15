@@ -29,7 +29,7 @@
         <div class="product-detail">
             <div class="product-gallery reveal">
                 <div class="product-gallery__main" id="gallery-main" style="position:relative;">
-                    <img id="product-main-image" src="<?= e($gallery[0]) ?>" alt="<?= e($product['name']) ?>" style="transition:opacity 0.2s ease;">
+                    <img id="product-main-image" src="<?= e($gallery[0]) ?>" data-product-image-fallback="<?= e(placeholder_img($product['name'])) ?>" alt="<?= e($product['name']) ?>" style="transition:opacity 0.2s ease;">
                     <?php if(count($gallery) > 1): ?>
                         <button type="button" id="gallery-prev" aria-label="Previous image" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);width:40px;height:40px;border:0;border-radius:50%;background:rgba(255,255,255,0.85);color:var(--color-ink);cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-md);opacity:0;transition:opacity 0.2s ease;z-index:2;">‹</button>
                         <button type="button" id="gallery-next" aria-label="Next image" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);width:40px;height:40px;border:0;border-radius:50%;background:rgba(255,255,255,0.85);color:var(--color-ink);cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-md);opacity:0;transition:opacity 0.2s ease;z-index:2;">›</button>
@@ -152,7 +152,7 @@
                     ?>
                     <article class="product-card reveal">
                         <a class="product-card__image" href="<?= e($productUrl) ?>" aria-label="View <?= e($item['name']) ?>">
-                            <img src="<?= e(webp_src($item['image_url'] ?? placeholder_img($item['name']))) ?>" alt="<?= e($item['name']) ?>" decoding="async">
+                            <img src="<?= e(webp_src($item['image_url'] ?? placeholder_img($item['name']))) ?>" data-product-image-fallback="<?= e(placeholder_img($item['name'])) ?>" alt="<?= e($item['name']) ?>" decoding="async">
                         </a>
                         <div class="product-card__body">
                             <h3><a class="product-card__title" href="<?= e($productUrl) ?>"><?= e($item['name']) ?></a></h3>

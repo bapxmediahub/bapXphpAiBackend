@@ -36,13 +36,13 @@ query_examples:
   - "rg -n -B4 -A12 'type: \"skill\"' index.yaml"
   - "rg -n '<term>' docs/project-index.json map.mmd index.yaml"
 summary:
-  concepts: 400
+  concepts: 402
   relationships: 234
   by_type:
     blog: 14
     controller: 12
     doc: 35
-    image: 148
+    image: 150
     route: 112
     schema: 22
     service: 48
@@ -1638,6 +1638,32 @@ concepts:
       - "assets/css/band.css"
       - "views/public/blog-post.php"
       - "views/public/blog.php"
+  - id: "image:assets/images/hero/guruji-portrait-cutout.png"
+    type: "image"
+    title: "guruji-portrait-cutout.png"
+    description: "Image referenced by 2 project resource(s)."
+    resource: "assets/images/hero/guruji-portrait-cutout.png"
+    tags:
+      - "image"
+      - "used"
+    filename: "guruji-portrait-cutout.png"
+    mime: "image/png"
+    usage_count: 2
+    used_in:
+      - "assets/css/band.css"
+      - "views/public/home.php"
+  - id: "image:assets/images/hero/guruji.png"
+    type: "image"
+    title: "guruji.png"
+    description: "Image with no static repository reference detected."
+    resource: "assets/images/hero/guruji.png"
+    tags:
+      - "image"
+      - "unreferenced"
+    filename: "guruji.png"
+    mime: "image/png"
+    usage_count: 0
+    used_in: []
   - id: "image:assets/images/hero/varahi/varahi-01.png"
     type: "image"
     title: "varahi-01.png"

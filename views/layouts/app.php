@@ -174,7 +174,9 @@ main{padding-bottom:0}
 .flash--error{background:#fde8e9;color:var(--color-error)}
 .flash--info{background:#eff6ff;color:#3b82f6}
 .reveal{opacity:1;transform:none}
-.reveal.revealed{opacity:1;transform:translateY(0)}
+.motion-ready .reveal{opacity:0;transform:translateY(16px);transition:opacity .45s ease,transform .45s ease}
+.motion-ready .reveal.revealed{opacity:1;transform:translateY(0)}
+@media(prefers-reduced-motion:reduce){.motion-ready .reveal{opacity:1;transform:none;transition:none}}
 @media(max-width:860px){
 nav{display:none;position:absolute;top:100%;left:0;right:0;background:rgba(255,255,255,0.98);flex-direction:column;padding:var(--space-lg);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-lg)}
 nav a{font-size:0.95rem;padding:var(--space-sm) var(--space-md);border-radius:var(--radius-md)}
@@ -454,7 +456,7 @@ if ($__flash):
                 </ul>
             </div>
         </div>
-        <div class="footer-bottom">&copy; <?= date('Y') ?> Sri Panchami Spiritual &middot; <a href="/terms">Terms</a> &middot; <a href="/privacy">Privacy</a> &middot; developed with &#10084;&#65039; by <a href="https://www.instagram.com/bapxmediahub/" target="_blank" rel="noopener noreferrer">@bapxmediahub</a></div>
+        <div class="footer-bottom">&copy; <?= date('Y') ?> Sri Panchami Spiritual &middot; <a href="/terms">Terms</a> &middot; <a href="/privacy">Privacy</a> &middot; developed with &#10084;&#65039; by <a href="https://mediahub.bapx.in/" target="_blank" rel="noopener noreferrer">@bapxmediahub</a></div>
     </div>
 </footer>
 <?php endif; ?>
@@ -476,8 +478,16 @@ var h=document.getElementById('site-header');
 var s=document.createElement('div');s.style.cssText='height:1px;position:absolute;top:0';
 document.body.prepend(s);
 new IntersectionObserver(function(e){h.classList.toggle('scrolled',!e[0].isIntersecting);},{threshold:0}).observe(s);
+var motionEnabled=!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(motionEnabled){document.documentElement.classList.add('motion-ready');}
 var io=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('revealed');io.unobserve(e.target);}});},{threshold:0.1,rootMargin:'0px 0px -50px 0px'});
 document.querySelectorAll('.reveal,.panel,.product-card,.astrologer-card').forEach(function(el){io.observe(el);});
+document.addEventListener('error',function(event){
+    var image=event.target;
+    if(!(image instanceof HTMLImageElement)||!image.dataset.productImageFallback||image.dataset.fallbackApplied==='true')return;
+    image.dataset.fallbackApplied='true';
+    image.src=image.dataset.productImageFallback;
+},true);
 var supportFab=document.querySelector('.support-fab'),supportPanel=document.getElementById('support-panel'),supportClose=document.querySelector('.support-panel__close'),supportForm=document.getElementById('support-form'),supportLog=document.getElementById('support-log');
 function supportEscape(value){return String(value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c];});}
 function supportReplyHtml(value){var safe=supportEscape(value);var allowed=/\/(?:shop|cart|checkout|temples|contact|blog(?:\/[a-z0-9-]+|\/category\/[a-z0-9-]+)?|product\/[a-z0-9-]+|account\/dashboard(?:\/orders|\/install)?)(?=$|[\s.,)])/g;return safe.replace(allowed,function(path){return '<a class="support-action" href="'+path+'">Open '+supportEscape(path.replace(/^\//,'').replace(/[-/]/g,' '))+'</a>';});}
