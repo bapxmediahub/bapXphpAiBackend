@@ -36,13 +36,13 @@ query_examples:
   - "rg -n -B4 -A12 'type: \"skill\"' index.yaml"
   - "rg -n '<term>' docs/project-index.json map.mmd index.yaml"
 summary:
-  concepts: 402
+  concepts: 406
   relationships: 234
   by_type:
     blog: 14
     controller: 12
     doc: 35
-    image: 150
+    image: 154
     route: 112
     schema: 22
     service: 48
@@ -1989,6 +1989,54 @@ concepts:
       - "image"
       - "unreferenced"
     filename: "karuppasami-dollar-back-png-38db6232.webp"
+    mime: "image/webp"
+    usage_count: 0
+    used_in: []
+  - id: "image:assets/images/media/2026/10/chatgpt-image-oct-5-2026-04-29-29-pm-1d57ccf5.webp"
+    type: "image"
+    title: "chatgpt-image-oct-5-2026-04-29-29-pm-1d57ccf5.webp"
+    description: "Image with no static repository reference detected."
+    resource: "assets/images/media/2026/10/chatgpt-image-oct-5-2026-04-29-29-pm-1d57ccf5.webp"
+    tags:
+      - "image"
+      - "unreferenced"
+    filename: "chatgpt-image-oct-5-2026-04-29-29-pm-1d57ccf5.webp"
+    mime: "image/webp"
+    usage_count: 0
+    used_in: []
+  - id: "image:assets/images/media/2026/10/chatgpt-image-oct-5-2026-05-52-05-pm-f79323f3.webp"
+    type: "image"
+    title: "chatgpt-image-oct-5-2026-05-52-05-pm-f79323f3.webp"
+    description: "Image with no static repository reference detected."
+    resource: "assets/images/media/2026/10/chatgpt-image-oct-5-2026-05-52-05-pm-f79323f3.webp"
+    tags:
+      - "image"
+      - "unreferenced"
+    filename: "chatgpt-image-oct-5-2026-05-52-05-pm-f79323f3.webp"
+    mime: "image/webp"
+    usage_count: 0
+    used_in: []
+  - id: "image:assets/images/media/2026/10/chatgpt-image-oct-6-2026-04-38-06-pm-09c12e68.webp"
+    type: "image"
+    title: "chatgpt-image-oct-6-2026-04-38-06-pm-09c12e68.webp"
+    description: "Image with no static repository reference detected."
+    resource: "assets/images/media/2026/10/chatgpt-image-oct-6-2026-04-38-06-pm-09c12e68.webp"
+    tags:
+      - "image"
+      - "unreferenced"
+    filename: "chatgpt-image-oct-6-2026-04-38-06-pm-09c12e68.webp"
+    mime: "image/webp"
+    usage_count: 0
+    used_in: []
+  - id: "image:assets/images/media/2026/10/sequence-02-00-00-58-10-still001-9367f376.webp"
+    type: "image"
+    title: "sequence-02-00-00-58-10-still001-9367f376.webp"
+    description: "Image with no static repository reference detected."
+    resource: "assets/images/media/2026/10/sequence-02-00-00-58-10-still001-9367f376.webp"
+    tags:
+      - "image"
+      - "unreferenced"
+    filename: "sequence-02-00-00-58-10-still001-9367f376.webp"
     mime: "image/webp"
     usage_count: 0
     used_in: []
