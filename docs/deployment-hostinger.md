@@ -22,6 +22,20 @@ category: docs
 
 8. Smoke test public pages, account redirects, admin login, API endpoints, checkout configuration, and the mail queue.
 
+### Preserve uploaded media
+
+New uploads are saved in `.sps-media` beside `public_html`, outside the Git deployment
+checkout. Their metadata and original-image URLs are stored in MySQL `media_files`.
+The existing `/assets/images/media/YYYY/MM/filename` URLs are served by the constrained
+image handler in `index.php` when a file is not part of the checkout. Bundled images
+continue to be served directly.
+
+Back up both MySQL and the sibling `.sps-media` directory. Deploy code into
+`public_html` only; do not replace or clear `.sps-media`. If the host prevents PHP
+from creating the sibling directory, uploads report a storage-permission error and
+the product form retains its fields. Existing legacy YAML is read-only compatibility
+input and is never the destination for new metadata.
+
 The hosted shell requires `git` and PHP. It does **not** require GitHub CLI
 (`gh`). hPanel auto-deploy performs the normal production pull. For manual
 diagnosis or recovery:

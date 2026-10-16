@@ -6,6 +6,26 @@ if (PHP_SAPI === 'cli-server' && is_file($file)) {
     return false;
 }
 
+// Uploaded image binaries live outside the deployment checkout. Keep their
+// existing public URLs while serving only the tightly constrained image path.
+if (str_starts_with((string)$uri, '/assets/images/media/') && !is_file($file)) {
+    require_once __DIR__ . '/app/Services/MediaService.php';
+    $uploaded = \App\Services\MediaService::storedPathForUrl((string)$uri);
+    if ($uploaded !== null) {
+        header('Content-Type: ' . (mime_content_type($uploaded) ?: 'application/octet-stream'));
+        header('Content-Length: ' . (string)filesize($uploaded));
+        header('X-Content-Type-Options: nosniff');
+        header('Cache-Control: public, max-age=31536000, immutable');
+        readfile($uploaded);
+    } else {
+        http_response_code(404);
+        header('Content-Type: text/plain; charset=utf-8');
+        header('Cache-Control: no-store');
+        echo 'Image not found';
+    }
+    exit;
+}
+
 // Fallback static file serving for local dev when php -S is started from a different cwd.
 if (PHP_SAPI === 'cli-server' && preg_match('#^/(assets|storage)/#', $uri) === 1) {
     $asset = realpath(__DIR__ . $uri);

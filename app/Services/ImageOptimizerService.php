@@ -30,6 +30,9 @@ final class ImageOptimizerService {
         $base = pathinfo($sourcePath, PATHINFO_FILENAME);
 
         $webpPath = $targetDir . '/' . $base . '.webp';
+        if (!empty($opts['preserve_source']) && $webpPath === $sourcePath) {
+            $webpPath = $targetDir . '/' . $base . '-optimized.webp';
+        }
 
         $ratio = min($maxW / $srcW, $maxH / $srcH, 1);
         $dstW = (int)round($srcW * $ratio);

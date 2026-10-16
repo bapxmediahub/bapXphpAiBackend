@@ -6,7 +6,8 @@ final class MediaService {
     private string $storageDir;
 
     public function __construct(
-        private ImageOptimizerService $optimizer = new ImageOptimizerService()
+        private ImageOptimizerService $optimizer = new ImageOptimizerService(),
+        private DatabaseService $store = new DatabaseService()
     ) {
         $this->storageDir = storage_path('media');
     }
@@ -23,6 +24,22 @@ final class MediaService {
         'shared'      => 'assets/images/media',
     ];
 
+    /** Domain-local upload storage lives beside, rather than inside, the code
+     * checkout. Deploying a fresh public_html cannot replace these image files. */
+    public static function persistentDirectory(): string {
+        return dirname(__DIR__, 3) . '/.sps-media';
+    }
+
+    public static function storedPathForUrl(string $url): ?string {
+        $path = (string)(parse_url($url, PHP_URL_PATH) ?? '');
+        if (!preg_match('#^/assets/images/media/([0-9]{4}/[0-9]{2}/[a-z0-9][a-z0-9._-]*\.(?:png|jpe?g|webp|gif))$#i', $path, $match)) return null;
+        if (str_contains($match[1], '..')) return null;
+        $persistent = self::persistentDirectory() . '/' . $match[1];
+        if (is_file($persistent) && is_readable($persistent)) return $persistent;
+        $legacy = dirname(__DIR__, 2) . $path;
+        return is_file($legacy) && is_readable($legacy) ? $legacy : null;
+    }
+
     /** Inspect the actual hosted files behind product records; URLs alone do not
      * prove an upload survived. Only administrators receive this inventory. */
     public function productImageHealth(array $products): array {
@@ -34,7 +51,7 @@ final class MediaService {
             foreach ($urls as $url) {
                 $path = (string)(parse_url((string)$url, PHP_URL_PATH) ?? '');
                 if (!str_starts_with($path, '/assets/images/') || str_contains($path, '..')) continue;
-                $file = app_path(ltrim($path, '/'));
+                $file = self::storedPathForUrl($path) ?? app_path(ltrim($path, '/'));
                 $readable = is_file($file) && is_readable($file) && @getimagesize($file) !== false;
                 if ($readable) continue;
                 $originals = [];
@@ -150,12 +167,12 @@ final class MediaService {
         }
         if (!in_array($context, self::CONTEXTS, true)) $context = 'shared';
         $folder = 'assets/images/media/' . date('Y/m');
-        $dir = app_path($folder);
+        $dir = self::persistentDirectory() . '/' . date('Y/m');
         if ((!is_dir($dir) && !@mkdir($dir, 0775, true)) || !is_writable($dir)) {
             throw new \InvalidArgumentException('Image storage is not writable. Ask hosting support to restore upload-folder permissions, then retry.');
         }
         $uploaded = [];
-        $records = $this->readYaml($context);
+        $records = $this->readCatalogue($context);
         foreach ($files['name'] as $i => $original) {
             if (($files['error'][$i] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) continue;
             $ext = strtolower(pathinfo((string)$original, PATHINFO_EXTENSION));
@@ -171,7 +188,7 @@ final class MediaService {
             }
             // Keep the uploaded original as a recovery source. Optimisation is
             // optional; an unavailable encoder must not lose a valid product photo.
-            try { $webpPath = $this->optimizer->optimize($destPath, $dir, ['max_width' => 1920, 'max_height' => 1920, 'quality' => 80]); }
+            try { $webpPath = $this->optimizer->optimize($destPath, $dir, ['max_width' => 1920, 'max_height' => 1920, 'quality' => 80, 'preserve_source' => true]); }
             catch (\Throwable) { $webpPath = null; }
             $url = '/' . $folder . '/';
             if ($webpPath && is_file($webpPath) && filesize($webpPath) > 0 && @getimagesize($webpPath)) {
@@ -182,6 +199,7 @@ final class MediaService {
                     'filename' => $webpFilename,
                     'original_name' => (string)$original,
                     'url' => $url,
+                    'original_url' => '/' . $folder . '/' . $filename,
                     'description' => $description ?? '',
                     'context' => $context,
                     'mime' => 'image/webp',
@@ -195,6 +213,7 @@ final class MediaService {
                     'filename' => $filename,
                     'original_name' => (string)$original,
                     'url' => $url,
+                    'original_url' => $url,
                     'description' => $description ?? '',
                     'context' => $context,
                     'mime' => $this->allowed[$ext],
@@ -205,7 +224,7 @@ final class MediaService {
             $records[] = $record;
             $uploaded[] = $record;
         }
-        if ($uploaded) $this->writeYaml($context, $records);
+        if ($uploaded) $this->writeCatalogue($context, $records);
         return $uploaded;
     }
 
@@ -213,14 +232,14 @@ final class MediaService {
         $contexts = $context ? [$context] : ['shared','products','temples','astrologers'];
         foreach ($contexts as $ctx) {
             $filePath = '';
-            $records = array_values(array_filter($this->readYaml($ctx), function($r) use ($id, &$filePath) {
+            $records = array_values(array_filter($this->readCatalogue($ctx), function($r) use ($id, &$filePath) {
                 if (($r['id'] ?? '') === $id) { $filePath = $r['url'] ?? ''; return false; }
                 return true;
             }));
             if ($filePath !== '') {
-                $fullPath = app_path(ltrim($filePath, '/'));
+                $fullPath = self::storedPathForUrl($filePath) ?? app_path(ltrim($filePath, '/'));
                 if (is_file($fullPath)) @unlink($fullPath);
-                $this->writeYaml($ctx, $records);
+                $this->store->delete('media_files', $id);
                 return;
             }
         }
@@ -234,7 +253,7 @@ final class MediaService {
             $grouped[$ctx][] = $m['id'] ?? '';
         }
         foreach ($grouped as $ctx => $ids) {
-            $records = $this->readYaml($ctx);
+            $records = $this->readCatalogue($ctx);
             $changed = false;
             foreach ($records as &$r) {
                 if (in_array($r['id'] ?? '', $ids, true)) {
@@ -253,7 +272,7 @@ final class MediaService {
                     }
                 }
             }
-            if ($changed) $this->writeYaml($ctx, $records);
+            if ($changed) $this->writeCatalogue($ctx, $records);
         }
     }
 
@@ -273,7 +292,7 @@ final class MediaService {
     }
 
     private function readWithAliases(string $context): array {
-        $records = $this->readYaml($context);
+        $records = $this->readCatalogue($context);
         foreach ($records as &$r) {
             if (!isset($r['path']) && isset($r['url'])) {
                 $r['path'] = $r['url'];
@@ -282,38 +301,28 @@ final class MediaService {
         return $records;
     }
 
-    private function writeYaml(string $context, array $records): void {
-        if (!is_dir($this->storageDir)) mkdir($this->storageDir, 0775, true);
-        $lines = ["media:"];
-        foreach ($records as $r) {
-            $lines[] = "  - id: " . ($r['id'] ?? '');
-            $lines[] = "    filename: " . ($r['filename'] ?? '');
-            $lines[] = "    original_name: " . ($r['original_name'] ?? '');
-            $lines[] = "    url: " . ($r['url'] ?? '');
-            $lines[] = "    description: " . $this->escapeYaml($r['description'] ?? '');
-            $lines[] = "    context: " . ($r['context'] ?? 'shared');
-            $lines[] = "    mime: " . ($r['mime'] ?? '');
-            if (!empty($r['used_in'])) {
-                $lines[] = "    used_in:";
-                foreach ($r['used_in'] as $u) {
-                    $lines[] = "      - type: " . ($u['type'] ?? '');
-                    $lines[] = "        id: " . ($u['id'] ?? '');
-                    $lines[] = "        name: " . $this->escapeYaml($u['name'] ?? '');
-                }
-            }
-            $lines[] = "    created_at: " . ($r['created_at'] ?? '');
+    private function readCatalogue(string $context): array {
+        $records = [];
+        // Read legacy YAML only for compatibility; new and edited metadata live
+        // solely in hosted MySQL, with existing database records taking priority.
+        foreach (array_merge($this->readYaml($context), $this->store->read('media_files')) as $record) {
+            if (($record['context'] ?? 'shared') !== $context) continue;
+            $key = (string)($record['id'] ?? $record['url'] ?? '');
+            if ($key !== '') $records[$key] = array_merge($records[$key] ?? [], $record);
         }
-        $lines[] = '';
-        if (file_put_contents($this->filePath($context), implode("\n", $lines), LOCK_EX) === false) {
-            throw new \InvalidArgumentException('The media library could not save this upload. Ask hosting support to check storage permissions and space.');
-        }
+        return array_values($records);
     }
 
-    private function escapeYaml(string $value): string {
-        if ($value === '' || preg_match('/[:\{\}\[\],&\*#\?\|\-<>=!%@`\n"\']/', $value)) {
-            return '"' . str_replace(['"', "\n"], ['\"', '\n'], $value) . '"';
+    private function writeCatalogue(string $context, array $records): void {
+        try {
+            foreach ($records as $record) {
+                $record['context'] = $context;
+                $this->store->upsert('media_files', $record);
+            }
+        } catch (\Throwable $error) {
+            error_log('Media catalogue save failed: ' . $error->getMessage());
+            throw new \InvalidArgumentException('The media library could not save this upload. Retry after checking the database connection.');
         }
-        return $value;
     }
 
     private function parseYamlItems(string $yaml): array {
