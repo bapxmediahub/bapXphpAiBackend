@@ -712,13 +712,15 @@ $tests['home page rejects malformed remote categories and retains complete sales
 
 $tests['product cards retain responsive image presentation'] = function (): void {
     $css=file_get_contents(app_path('assets/css/band.css'));
-    foreach(['.product-card__image', 'display: block;', 'aspect-ratio: 1;', '.product-card__title'] as $needle) {
+    foreach(['.product-card__image', 'display: block;', 'aspect-ratio: 1;', '.product-card__title', 'grid-template-columns: repeat(3, minmax(0, 260px));'] as $needle) {
         assertTrue(str_contains($css, $needle), "Product card CSS should include {$needle}");
     }
     foreach (['views/public/home.php', 'views/public/shop.php', 'views/public/product.php'] as $viewPath) {
         $view = file_get_contents(app_path($viewPath));
-        assertTrue(str_contains($view, 'product-card__image') && str_contains($view, 'product-card__title'), "{$viewPath} should link product image and title to the product page");
+        assertTrue(str_contains($view, 'product-card__image') && str_contains($view, 'product-card__title') && str_contains($view, 'data-product-image-fallback'), "{$viewPath} should link product image, title, and fallback to the product page");
     }
+    $layout = file_get_contents(app_path('views/layouts/app.php'));
+    assertTrue(str_contains($layout, 'image.dataset.productImageFallback') && str_contains($layout, 'motion-ready'), 'The layout should recover failed product media and enhance scroll motion only when enabled');
 };
 
 $tests['home hero leads with spiritual products and a working shop cta'] = function (): void {
@@ -1587,6 +1589,11 @@ $tests['historical appointment lifecycle remains available to the owner only'] =
 $tests['home hero rotates all supplied varahi images'] = function (): void {
     assertMinCount(8, glob(app_path('assets/images/hero/varahi/varahi-*.png')) ?: [], 'Hero should include at least 8 Varahi images');
     fileContains('views/public/home.php', 'data-varahi-slider', 'Home should render the Varahi image slider');
+    assertTrue(is_file(app_path('assets/images/hero/guruji.png')), 'Hero should retain the supplied Guruji portrait asset');
+    assertTrue(is_file(app_path('assets/images/hero/guruji-portrait-cutout.png')), 'Hero should retain the transparent Guruji presentation asset');
+    fileContains('views/public/home.php', "'src' => '/assets/images/hero/guruji-portrait-cutout.png'", 'Guruji should lead the hero carousel');
+    fileContains('views/public/home.php', 'data-current-slide="guruji"', 'Guruji should receive its responsive hero state before JavaScript runs');
+    fileContains('views/layouts/app.php', 'https://mediahub.bapx.in/', 'Footer studio credit should lead to the requested media hub');
 };
 
 $tests['admin product and astrologer forms expose editable owner fields'] = function (): void {

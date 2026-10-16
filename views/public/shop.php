@@ -42,7 +42,7 @@
                         ?>
                         <article class="product-card reveal">
                             <a class="product-card__image" href="<?= e($productUrl) ?>" aria-label="View <?= e($item['name']) ?>">
-                                <img src="<?= e(webp_src($item['image_url'] ?? placeholder_img($item['name']))) ?>" alt="<?= e($item['name']) ?>" decoding="async">
+                                <img src="<?= e(webp_src($item['image_url'] ?? placeholder_img($item['name']))) ?>" data-product-image-fallback="<?= e(placeholder_img($item['name'])) ?>" alt="<?= e($item['name']) ?>" decoding="async">
                                 <?php if($hasOffer): ?>
                                     <span class="product-card__badge product-card__badge--sale">Sale</span>
                                 <?php endif; ?>

@@ -22,16 +22,32 @@
                 </div>
             </div>
         </div>
-        <div class="hero-deity" data-varahi-slider>
+        <?php
+            // The supplied Guruji portrait leads the carousel; the existing deity
+            // images remain available in their original order afterwards.
+            $heroSlides = [[
+                'src' => '/assets/images/hero/guruji-portrait-cutout.png',
+                'alt' => 'Guruji devotional portrait',
+                'class' => 'hero-guruji',
+            ]];
+            for ($slide = 1; $slide <= 10; $slide++) {
+                $heroSlides[] = [
+                    'src' => '/assets/images/hero/varahi/varahi-' . str_pad((string)$slide, 2, '0', STR_PAD_LEFT) . '.webp',
+                    'alt' => 'Sri Maha Varahi Amman devotional image ' . $slide,
+                    'class' => '',
+                ];
+            }
+        ?>
+        <div class="hero-deity" data-varahi-slider data-current-slide="guruji">
             <div class="deity-frame">
-                <?php for($slide=1;$slide<=10;$slide++): ?>
-                    <img class="varahi-slide <?= $slide===1?'is-active':'' ?>" src="/assets/images/hero/varahi/varahi-<?= str_pad((string)$slide,2,'0',STR_PAD_LEFT) ?>.webp" alt="Sri Maha Varahi Amman devotional image <?= $slide ?>" width="480" height="640" <?= $slide===1?'fetchpriority="high"':'loading="lazy"' ?>>
-                <?php endfor; ?>
+                <?php foreach ($heroSlides as $index => $slide): ?>
+                    <img class="varahi-slide <?= e($slide['class']) ?> <?= $index === 0 ? 'is-active' : '' ?>" src="<?= e($slide['src']) ?>" alt="<?= e($slide['alt']) ?>" width="480" height="640" <?= $index === 0 ? 'fetchpriority="high"' : 'loading="lazy"' ?>>
+                <?php endforeach; ?>
             </div>
-            <div class="varahi-dots" role="tablist" aria-label="Varahi slides">
-                <?php for($dot=1;$dot<=10;$dot++): ?>
-                    <button class="varahi-dot <?= $dot===1?'is-active':'' ?>" type="button" role="tab" aria-label="Slide <?= $dot ?>" <?= $dot===1?'aria-current="true"':'aria-current="false"' ?> data-slide="<?= $dot-1 ?>"></button>
-                <?php endfor; ?>
+            <div class="varahi-dots" role="tablist" aria-label="Homepage devotional slides">
+                <?php foreach ($heroSlides as $index => $slide): ?>
+                    <button class="varahi-dot <?= $index === 0 ? 'is-active' : '' ?>" type="button" role="tab" aria-label="Slide <?= $index + 1 ?>: <?= e($slide['alt']) ?>" <?= $index === 0 ? 'aria-current="true"' : 'aria-current="false"' ?> data-slide="<?= $index ?>"></button>
+                <?php endforeach; ?>
             </div>
         </div>
     </div>
@@ -51,6 +67,7 @@
         slides[index].classList.add('is-active');
         dots[index].classList.add('is-active');
         dots[index].setAttribute('aria-current', 'true');
+        root.dataset.currentSlide = slides[index].classList.contains('hero-guruji') ? 'guruji' : 'deity';
     };
     const play = () => {
         if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -104,7 +121,7 @@
             ?>
             <article class="product-card reveal">
                 <a class="product-card__image" href="<?= e($productUrl) ?>" aria-label="View <?= e($item['name']) ?>">
-                    <img src="<?= e(webp_src($item['image_url'] ?? placeholder_img($item['name']))) ?>" alt="<?= e($item['name']) ?> — Buy online at Sri Panchami Spiritual, Chennai" decoding="async">
+                    <img src="<?= e(webp_src($item['image_url'] ?? placeholder_img($item['name']))) ?>" data-product-image-fallback="<?= e(placeholder_img($item['name'])) ?>" alt="<?= e($item['name']) ?> — Buy online at Sri Panchami Spiritual, Chennai" decoding="async">
                     <?php if($hasOffer): ?>
                         <span class="product-card__badge product-card__badge--sale">Sale</span>
                     <?php endif; ?>
