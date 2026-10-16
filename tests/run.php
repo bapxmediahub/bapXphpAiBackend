@@ -860,6 +860,52 @@ $tests['bapXphp product media workflow is safe and mapped'] = function (): void 
     assertTrue(str_contains($map, "toolId('import-product-images')"), 'Project map should connect product image import tooling');
 };
 
+$tests['failed image uploads reject the save with actionable feedback'] = function (): void {
+    $media = new \App\Services\MediaService();
+    foreach ([UPLOAD_ERR_INI_SIZE => 'size limit', UPLOAD_ERR_PARTIAL => 'partly uploaded', UPLOAD_ERR_CANT_WRITE => 'upload storage'] as $code => $expected) {
+        try {
+            $media->upload(['name'=>['product.png'], 'error'=>[$code], 'tmp_name'=>['']]);
+            assertTrue(false, 'An unsuccessful PHP upload must not return success');
+        } catch (\InvalidArgumentException $error) {
+            assertTrue(str_contains($error->getMessage(), $expected), 'The owner should receive the specific upload failure');
+        }
+    }
+    try {
+        $media->upload(['name'=>['fake.png'], 'error'=>[UPLOAD_ERR_OK], 'tmp_name'=>[app_path('CLAUDE.md')]]);
+        assertTrue(false, 'Renaming a non-image must not accept it as product media');
+    } catch (\InvalidArgumentException $error) {
+        assertTrue(str_contains($error->getMessage(), 'valid JPG'), 'Invalid image bytes should have actionable feedback');
+    }
+};
+
+$tests['product image checks distinguish records from files and find originals'] = function (): void {
+    $checks = (new \App\Services\MediaService())->productImageHealth([
+        ['name'=>'Present', 'image_url'=>'/assets/images/products/lakshmi-dollar-front.webp'],
+        ['name'=>'Missing derivative', 'image_url'=>'/assets/images/products/lakshmi-dollar-front.gif'],
+        ['name'=>'Remote', 'image_url'=>'https://example.com/photo.png'],
+    ]);
+    assertSame(1, count($checks), 'Existing photos and external images should not be falsely reported missing');
+    assertSame('File missing', $checks[0]['status'], 'A saved database path is not proof that a file exists');
+    assertTrue(in_array('/assets/images/products/lakshmi-dollar-front.png', $checks[0]['originals'], true), 'The inspector should locate the existing original of a missing derivative');
+};
+
+$tests['image optimisation publishes a decodable WebP without destroying source'] = function (): void {
+    if (!function_exists('imagewebp')) return;
+    $directory = sys_get_temp_dir() . '/sps-image-test-' . bin2hex(random_bytes(6));
+    mkdir($directory);
+    $source = $directory . '/photo.webp';
+    $image = imagecreatetruecolor(12, 16);
+    imagewebp($image, $source);
+    try {
+        $result = (new \App\Services\ImageOptimizerService())->optimize($source);
+        assertSame($source, $result, 'Re-uploaded WebP should retain its public filename');
+        assertSame([12,16], array_slice(getimagesize($source), 0, 2), 'In-place conversion must leave a complete decodable photo');
+    } finally {
+        foreach (glob($directory . '/*') ?: [] as $file) unlink($file);
+        rmdir($directory);
+    }
+};
+
 $tests['account pages expose product reviews only after a shipped order is due'] = function (): void {
     assertTrue(!is_file(app_path('views/account/bookings.php')), 'Retired customer session history should not expose reviews');
     $ordersView = file_get_contents(app_path('views/account/orders.php'));

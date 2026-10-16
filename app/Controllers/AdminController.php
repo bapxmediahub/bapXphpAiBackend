@@ -33,7 +33,9 @@ final class AdminController extends BaseController {
         ]);
     }
     public function products(): void{
-        $this->render('admin/product-form',['pageTitle'=>'Products','title'=>'Products','collection'=>'products','items'=>(new ResourceService('products'))->all(),'categories'=>(new ResourceService('categories'))->all(),'mediaFiles'=>$this->mediaFor('products')]);
+        $draft = $_SESSION['product_form_draft'] ?? null;
+        unset($_SESSION['product_form_draft']);
+        $this->render('admin/product-form',['pageTitle'=>'Products','title'=>'Products','collection'=>'products','items'=>(new ResourceService('products'))->all(),'categories'=>(new ResourceService('categories'))->all(),'mediaFiles'=>$this->mediaFor('products'),'draft'=>$draft]);
     }
     public function saveProduct(): void{$this->saveProductRecord();}
     public function deleteProduct(): void{$this->delete('products');}
@@ -389,7 +391,11 @@ final class AdminController extends BaseController {
     }
     public function emailInbox(): void{$this->render('admin/mailbox',['pageTitle'=>'Email Inbox','title'=>'Email Inbox','box'=>'inbox','items'=>(new MailStorageService())->inbox()]);}
     public function emailOutbox(): void{$this->render('admin/mailbox',['pageTitle'=>'Email Outbox','title'=>'Email Outbox','box'=>'outbox','items'=>(new MailStorageService())->outbox()]);}
-    public function media(): void{$this->render('admin/media',['pageTitle'=>'Media Library','items'=>(new MediaService())->all()]);}
+    public function media(): void{
+        $media = new MediaService();
+        $this->render('admin/media',['pageTitle'=>'Media Library','items'=>$media->all(),
+            'imageHealth'=>$media->productImageHealth((new ResourceService('products'))->all())]);
+    }
     /**
      * Every upload in the admin lands in the media library, whichever screen sent it.
      *
@@ -398,7 +404,12 @@ final class AdminController extends BaseController {
      * this admin so a crafted form cannot bounce anyone off-site.
      */
     public function uploadMedia(): void{
-        $uploaded=(new MediaService())->upload($_FILES['media_files'] ?? [], $_POST['context'] ?? 'shared', $_POST['description'] ?? null);
+        try {
+            $uploaded=(new MediaService())->upload($_FILES['media_files'] ?? [], $_POST['context'] ?? 'shared', $_POST['description'] ?? null);
+        } catch (\InvalidArgumentException $error) {
+            $this->flash($error->getMessage(), 'error');
+            $this->redirect('/admin/media');
+        }
         (new AuditLogService())->record('upload','media','',['count'=>count($uploaded),'context'=>$_POST['context'] ?? 'shared']);
         $names = array_filter(array_map(fn($f) => basename((string)($f['url'] ?? $f['path'] ?? '')), $uploaded));
         $this->flash(
@@ -688,9 +699,19 @@ final class AdminController extends BaseController {
         $images = is_array($gallery) ? $gallery : $this->splitList((string)$gallery);
         $featured = trim((string)($_POST['image_url'] ?? $data['image_url'] ?? ''));
         if ($featured !== '') array_unshift($images, $featured);
-        $uploaded=$this->uploadedMedia('products');
+        try { $uploaded=$this->uploadedMedia('products'); }
+        catch (\InvalidArgumentException $error) {
+            $draft = $_POST;
+            unset($draft['_csrf']);
+            $_SESSION['product_form_draft'] = $draft;
+            $this->flash($error->getMessage() . ' Your product details are kept below. Select the image again before saving.', 'error');
+            $this->redirect('/admin/products');
+        }
         $uploadedPaths=array_column($uploaded, 'url');
-        $images=array_values(array_unique(array_filter(array_merge($images, $uploadedPaths))));
+        $images=array_values(array_unique(array_filter((string)($_POST['upload_featured'] ?? '') === '1'
+            ? array_merge($uploadedPaths, $images)
+            : array_merge($images, $uploadedPaths))));
+        unset($data['upload_featured']);
         $data['image_url']=$images[0] ?? '';
         $data['image_urls']=$images;
         $record=(new ResourceService('products'))->save($data);

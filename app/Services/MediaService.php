@@ -23,6 +23,52 @@ final class MediaService {
         'shared'      => 'assets/images/media',
     ];
 
+    /** Inspect the actual hosted files behind product records; URLs alone do not
+     * prove an upload survived. Only administrators receive this inventory. */
+    public function productImageHealth(array $products): array {
+        $result = [];
+        foreach ($products as $product) {
+            $gallery = $product['image_urls'] ?? [];
+            if (!is_array($gallery)) $gallery = preg_split('/[\r\n,]+/', (string)$gallery) ?: [];
+            $urls = array_unique(array_filter(array_merge([(string)($product['image_url'] ?? '')], $gallery)));
+            foreach ($urls as $url) {
+                $path = (string)(parse_url((string)$url, PHP_URL_PATH) ?? '');
+                if (!str_starts_with($path, '/assets/images/') || str_contains($path, '..')) continue;
+                $file = app_path(ltrim($path, '/'));
+                $readable = is_file($file) && is_readable($file) && @getimagesize($file) !== false;
+                if ($readable) continue;
+                $originals = [];
+                $base = preg_replace('/\.(webp|png|jpe?g|gif)$/i', '', $file);
+                foreach (['png', 'jpg', 'jpeg', 'webp', 'gif'] as $extension) {
+                    $candidate = $base . '.' . $extension;
+                    if (is_file($candidate) && @getimagesize($candidate)) {
+                        $originals[] = '/' . ltrim(substr($candidate, strlen(app_path())), '/');
+                    }
+                }
+                // Some older uploads used storage/media instead of the public
+                // asset folder. Check exact basenames there without exposing files.
+                $storageMatches = [];
+                $storage = storage_path();
+                if (is_dir($storage)) {
+                    $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($storage, \FilesystemIterator::SKIP_DOTS));
+                    $sourceName = preg_replace('/-[a-f0-9]{8}$/i', '', pathinfo($path, PATHINFO_FILENAME));
+                    foreach ($iterator as $entry) {
+                        if (!$entry->isFile() || !in_array(strtolower($entry->getExtension()), ['png','jpg','jpeg','webp','gif'], true)) continue;
+                        $name = trim((string)preg_replace('/[^a-z0-9]+/', '-', strtolower(pathinfo($entry->getFilename(), PATHINFO_FILENAME))), '-');
+                        if (($name === pathinfo($path, PATHINFO_FILENAME) || $name === $sourceName)
+                            && @getimagesize($entry->getPathname())) {
+                            $storageMatches[] = substr($entry->getPathname(), strlen(app_path()) + 1);
+                        }
+                    }
+                }
+                $result[] = ['product' => (string)($product['name'] ?? ''), 'url' => $path,
+                    'status' => is_file($file) ? 'File exists but is not a readable image' : 'File missing',
+                    'originals' => array_values(array_unique($originals)), 'storage_matches' => $storageMatches];
+            }
+        }
+        return $result;
+    }
+
     public function all(?string $context = null): array {
         $contexts = $context ? [$context] : self::CONTEXTS;
         $all = [];
@@ -81,9 +127,33 @@ final class MediaService {
 
     public function upload(array $files, string $context = 'shared', ?string $description = null, array $usedIn = []): array {
         if (empty($files['name']) || !is_array($files['name'])) return [];
+        // Validate the complete selection before moving any files. A rejected file
+        // must never be reported as a successful upload or a successful product save.
+        foreach ($files['name'] as $i => $original) {
+            $error = (int)($files['error'][$i] ?? UPLOAD_ERR_NO_FILE);
+            if ($error === UPLOAD_ERR_NO_FILE) continue;
+            $name = basename((string)$original);
+            if ($error !== UPLOAD_ERR_OK) {
+                $reason = match ($error) {
+                    UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'exceeds the hosting upload size limit. Choose a smaller image.',
+                    UPLOAD_ERR_PARTIAL => 'was only partly uploaded. Select it again and retry.',
+                    default => 'could not be received. Retry or ask hosting support to check upload storage.',
+                };
+                throw new \InvalidArgumentException($name . ' ' . $reason);
+            }
+            $ext = strtolower(pathinfo((string)$original, PATHINFO_EXTENSION));
+            $tmp = (string)($files['tmp_name'][$i] ?? '');
+            $mime = is_file($tmp) ? (mime_content_type($tmp) ?: '') : '';
+            if (!isset($this->allowed[$ext]) || $mime !== $this->allowed[$ext] || !@getimagesize($tmp)) {
+                throw new \InvalidArgumentException($name . ': choose a valid JPG, PNG, WebP or GIF image.');
+            }
+        }
+        if (!in_array($context, self::CONTEXTS, true)) $context = 'shared';
         $folder = 'assets/images/media/' . date('Y/m');
         $dir = app_path($folder);
-        if (!is_dir($dir)) mkdir($dir, 0775, true);
+        if ((!is_dir($dir) && !@mkdir($dir, 0775, true)) || !is_writable($dir)) {
+            throw new \InvalidArgumentException('Image storage is not writable. Ask hosting support to restore upload-folder permissions, then retry.');
+        }
         $uploaded = [];
         $records = $this->readYaml($context);
         foreach ($files['name'] as $i => $original) {
@@ -96,11 +166,15 @@ final class MediaService {
             $base = strtolower(trim(preg_replace('/[^a-z0-9]+/i', '-', pathinfo((string)$original, PATHINFO_FILENAME)), '-')) ?: 'media';
             $filename = $base . '-' . bin2hex(random_bytes(4)) . '.' . $ext;
             $destPath = $dir . '/' . $filename;
-            if (!move_uploaded_file($tmp, $destPath)) continue;
-            $webpPath = $this->optimizer->optimize($destPath, $dir, ['max_width' => 1920, 'max_height' => 1920, 'quality' => 80]);
+            if (!move_uploaded_file($tmp, $destPath)) {
+                throw new \InvalidArgumentException(basename((string)$original) . ' could not be saved. Check hosting storage space and retry.');
+            }
+            // Keep the uploaded original as a recovery source. Optimisation is
+            // optional; an unavailable encoder must not lose a valid product photo.
+            try { $webpPath = $this->optimizer->optimize($destPath, $dir, ['max_width' => 1920, 'max_height' => 1920, 'quality' => 80]); }
+            catch (\Throwable) { $webpPath = null; }
             $url = '/' . $folder . '/';
-            if ($webpPath && is_file($webpPath)) {
-                if ($webpPath !== $destPath) unlink($destPath);
+            if ($webpPath && is_file($webpPath) && filesize($webpPath) > 0 && @getimagesize($webpPath)) {
                 $webpFilename = basename($webpPath);
                 $url .= $webpFilename;
                 $record = [
@@ -230,7 +304,9 @@ final class MediaService {
             $lines[] = "    created_at: " . ($r['created_at'] ?? '');
         }
         $lines[] = '';
-        file_put_contents($this->filePath($context), implode("\n", $lines), LOCK_EX);
+        if (file_put_contents($this->filePath($context), implode("\n", $lines), LOCK_EX) === false) {
+            throw new \InvalidArgumentException('The media library could not save this upload. Ask hosting support to check storage permissions and space.');
+        }
     }
 
     private function escapeYaml(string $value): string {

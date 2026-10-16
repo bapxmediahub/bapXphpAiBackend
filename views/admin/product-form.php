@@ -8,13 +8,16 @@
     .pf-section:first-of-type{margin-top:0}
     .pf-hint{margin:0;font-size:0.75rem;color:var(--color-text-muted)}
     .pf-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,340px);gap:var(--space-xl);align-items:start}
-    .pf-grid>div{min-width:0}
+    .pf-grid>div{min-width:0;grid-template-columns:minmax(0,1fr)}
+    .pf-grid label{min-width:0}
+    .pf-grid input,.pf-grid select,.pf-grid textarea{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
     @media(max-width:900px){.pf-grid{grid-template-columns:minmax(0,1fr)}}
     </style>
     <form id="product-form" method="post" action="/admin/<?= e($collection) ?>/save" class="admin-form" enctype="multipart/form-data">
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
         <input type="hidden" name="id" id="resource-id">
         <input type="hidden" name="image_url" id="field-image_url">
+        <input type="hidden" name="upload_featured" id="upload-featured" value="0">
         <textarea name="image_urls" id="field-image_urls" style="display:none"></textarea>
         <div class="pf-grid">
             <div style="display:grid; gap:var(--space-sm);">
@@ -116,16 +119,17 @@
                         <span style="color:var(--color-text-muted); font-size:0.8rem;" id="featured-placeholder">No image</span>
                         <img id="featured-img" src="" alt="" style="display:none; width:100%; height:100%; object-fit:cover; position:absolute; inset:0;">
                     </div>
-                    <button type="button" class="btn btn-sm btn-ghost" onclick="document.getElementById('gallery-file-input').click()" style="width:100%;">Upload Featured</button>
+                    <button type="button" class="btn btn-sm btn-ghost" onclick="document.getElementById('upload-featured').value='1'; document.getElementById('gallery-file-input').click()" style="width:100%;">Upload Featured</button>
                 </div>
                 <div>
                     <label style="display:block; margin-bottom:var(--space-xs); font-weight:600; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em;">Gallery <span id="gallery-count" style="font-weight:400; color:var(--color-text-muted); text-transform:none;">(0)</span></label>
                     <div id="gallery-grid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--space-xs); margin-bottom:var(--space-xs); min-height:80px;"></div>
                     <div style="display:flex; gap:var(--space-xs);">
-                        <button type="button" class="btn btn-sm btn-ghost" onclick="document.getElementById('gallery-file-input').click()" style="flex:1;">+ Add Images</button>
+                        <button type="button" class="btn btn-sm btn-ghost" onclick="document.getElementById('upload-featured').value='0'; document.getElementById('gallery-file-input').click()" style="flex:1;">+ Add Images</button>
                         <button type="button" class="btn btn-sm btn-ghost" id="open-media-library" style="flex:1;">From Library</button>
                     </div>
                     <input type="file" id="gallery-file-input" name="media_files[]" accept="image/png,image/jpeg,image/webp,image/gif" multiple style="display:none">
+                    <p class="pf-hint">Selected images upload when you save the product. Upload Featured makes the first selected image the main photo.</p>
                 </div>
                 <?php if(!empty($mediaFiles)): ?>
                 <div class="admin-media-picker" style="margin-top:var(--space-sm); display:none;">
@@ -172,7 +176,7 @@
                         </td>
                         <td style="max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600;"><?= e($item['name'] ?? '') ?></td>
                         <td><?= e($item['category'] ?? '—') ?></td>
-                        <td>₹<?= e((string)($item['offer_price'] ?: $item['price'] ?: '0')) ?></td>
+                        <td>₹<?= e((string)(($item['offer_price'] ?? 0) ?: ($item['price'] ?? 0))) ?></td>
                         <td>
                             <span class="badge badge--<?= ($item['stock_status'] ?? 'in_stock') === 'in_stock' ? 'success' : 'default' ?>"><?= e(ucwords(str_replace('_', ' ', $item['stock_status'] ?? 'in_stock'))) ?></span>
                             <?php // A hidden product still appears here — that is the point of
@@ -222,10 +226,11 @@ function parseImages(value) {
 
 function lines(value) {
     if (Array.isArray(value)) return value.filter(Boolean).join('\n');
-    return '';
+    return typeof value === 'string' ? value : '';
 }
 
 function specificationLines(value) {
+    if (typeof value === 'string') return value;
     if (!value || Array.isArray(value) || typeof value !== 'object') return '';
     return Object.entries(value).filter(([, detail]) => detail !== null && detail !== '').map(([label, detail]) => label + ': ' + (Array.isArray(detail) ? detail.join(', ') : detail)).join('\n');
 }
@@ -340,11 +345,11 @@ function resetForm() {
     });
 }
 
-document.querySelectorAll('.edit-item').forEach(button => {
-    button.addEventListener('click', () => {
-        const item = JSON.parse(button.dataset.item || '{}');
-        document.getElementById('resource-id').value = item.__id || '';
-        document.getElementById('save-btn').textContent = 'Update Product';
+function fillProductForm(item) {
+        document.getElementById('gallery-file-input').value = '';
+        document.getElementById('upload-featured').value = '0';
+        document.getElementById('resource-id').value = item.__id || item.id || '';
+        document.getElementById('save-btn').textContent = (item.__id || item.id) ? 'Update Product' : 'Save Product';
         document.getElementById('field-slug').value = item.slug || '';
         document.getElementById('field-name').value = item.name || '';
         setCategoryChips(item.category || '');
@@ -366,8 +371,13 @@ document.querySelectorAll('.edit-item').forEach(button => {
         if (galleryImages.length > 0) updateFeatured();
         else { document.getElementById('field-image_url').value = ''; document.getElementById('featured-img').style.display = 'none'; document.getElementById('featured-placeholder').style.display = 'inline'; }
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+}
+document.querySelectorAll('.edit-item').forEach(button => {
+    button.addEventListener('click', () => fillProductForm(JSON.parse(button.dataset.item || '{}')));
 });
+<?php if (!empty($draft)): ?>
+fillProductForm(<?= json_encode($draft, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>);
+<?php endif; ?>
 
 document.getElementById('open-media-library').addEventListener('click', () => {
     const picker = document.querySelector('.admin-media-picker');
@@ -378,11 +388,18 @@ document.querySelectorAll('.use-media').forEach(btn => {
 });
 document.getElementById('gallery-file-input').addEventListener('change', () => {
     const preview = document.getElementById('gallery-grid');
-    [...document.getElementById('gallery-file-input').files].forEach(file => {
+    renderGallery();
+    [...document.getElementById('gallery-file-input').files].forEach((file, index) => {
         const url = URL.createObjectURL(file);
+        if (index === 0 && document.getElementById('upload-featured').value === '1') {
+            const featured = document.getElementById('featured-img');
+            featured.src = url;
+            featured.style.display = 'block';
+            document.getElementById('featured-placeholder').style.display = 'none';
+        }
         const div = document.createElement('div');
         div.style.cssText = 'position:relative; aspect-ratio:1; border-radius:var(--radius-sm); overflow:hidden; border:2px solid var(--color-gold); opacity:0.6;';
-        div.innerHTML = '<img src="' + url + '" alt="' + file.name + '" style="width:100%;height:100%;object-fit:cover;display:block;">'
+        div.innerHTML = '<img src="' + url + '" alt="New product image" style="width:100%;height:100%;object-fit:cover;display:block;">'
             + '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.3);color:#fff;font-size:0.65rem;font-weight:600;text-transform:uppercase;">New</div>';
         preview.appendChild(div);
     });
