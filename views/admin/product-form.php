@@ -8,7 +8,9 @@
     .pf-section:first-of-type{margin-top:0}
     .pf-hint{margin:0;font-size:0.75rem;color:var(--color-text-muted)}
     .pf-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,340px);gap:var(--space-xl);align-items:start}
-    .pf-grid>div{min-width:0}
+    .pf-grid>div{min-width:0;grid-template-columns:minmax(0,1fr)}
+    .pf-grid label{min-width:0}
+    .pf-grid input,.pf-grid select,.pf-grid textarea{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
     @media(max-width:900px){.pf-grid{grid-template-columns:minmax(0,1fr)}}
     </style>
     <form id="product-form" method="post" action="/admin/<?= e($collection) ?>/save" class="admin-form" enctype="multipart/form-data">
