@@ -1,3 +1,22 @@
+<?php if (isset($imageHealth)): ?>
+<div class="admin-card">
+    <h2>Product image checks</h2>
+    <?php if (!$imageHealth): ?>
+        <p>All local product image files are present and readable.</p>
+    <?php else: ?>
+        <p><?= count($imageHealth) ?> product image reference<?= count($imageHealth) === 1 ? '' : 's' ?> need attention. These checks inspect the files on this server and look for matching originals in public images and storage.</p>
+        <div class="table-wrap"><table><thead><tr><th>Product</th><th>Saved image</th><th>File check</th><th>Original found</th></tr></thead><tbody>
+        <?php foreach ($imageHealth as $check): ?>
+            <tr><td><?= e($check['product']) ?></td><td><code><?= e($check['url']) ?></code></td><td><?= e($check['status']) ?></td><td>
+                <?php foreach ($check['originals'] as $original): ?><a href="<?= e($original) ?>" target="_blank" rel="noopener"><?= e(basename($original)) ?></a><br><?php endforeach; ?>
+                <?php foreach ($check['storage_matches'] as $original): ?><code><?= e($original) ?></code><br><?php endforeach; ?>
+                <?php if (!$check['originals'] && !$check['storage_matches']): ?>No matching original in images or storage<?php endif; ?>
+            </td></tr>
+        <?php endforeach; ?>
+        </tbody></table></div>
+    <?php endif; ?>
+</div>
+<?php endif; ?>
 <div class="admin-card">
     <h2>Upload Media</h2>
     <form method="post" action="/admin/media/upload" enctype="multipart/form-data" class="admin-form">

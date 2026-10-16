@@ -11,6 +11,7 @@ final class ImageOptimizerService {
 
     public function optimize(string $sourcePath, ?string $destDir = null, array $opts = []): ?string {
         if (!is_file($sourcePath)) return null;
+        if (!function_exists('imagewebp')) return null;
         $maxW = $opts['max_width'] ?? self::MAX_WIDTH;
         $maxH = $opts['max_height'] ?? self::MAX_HEIGHT;
         $quality = $opts['quality'] ?? self::WEBP_QUALITY;
@@ -45,9 +46,17 @@ final class ImageOptimizerService {
             $dst = $src;
         }
 
-        imagewebp($dst, $webpPath, $quality);
-
-        if (!is_file($webpPath)) return null;
+        // Write beside the destination and publish only a complete decodable file.
+        // WebP uploads can have the same input/output path, so writing in place
+        // risks destroying the only original if encoding fails midway.
+        $temporary = tempnam($targetDir, '.image-');
+        if ($temporary === false) return null;
+        try {
+            if (!imagewebp($dst, $temporary, $quality) || !filesize($temporary) || !@getimagesize($temporary)) return null;
+            if (!rename($temporary, $webpPath)) return null;
+        } finally {
+            if (is_file($temporary)) unlink($temporary);
+        }
 
         return $webpPath;
     }
