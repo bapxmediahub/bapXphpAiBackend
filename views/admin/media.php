@@ -1,6 +1,7 @@
 <?php if (isset($imageHealth)): ?>
 <div class="admin-card">
     <h2>Product image checks</h2>
+    <p><?= !empty($uploadStorageReady) ? 'Upload storage is ready outside the deployment folder.' : 'Upload storage needs attention: the persistent upload folder is not writable.' ?></p>
     <?php if (!$imageHealth): ?>
         <p>All local product image files are present and readable.</p>
     <?php else: ?>

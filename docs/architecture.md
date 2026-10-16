@@ -27,6 +27,9 @@ category: docs
 - Runtime data is remote-only: `.env` supplies direct hosted MySQL credentials to `DatabaseService`; when direct access is unavailable, the CLI/application use `APP_URL/remotedb`. The local checkout is not a customer-data fallback.
 - Blog posts are file-based: `content/blog/posts/*.md` with YAML frontmatter.
 - Media metadata lives in MySQL `media_files` collection.
+- New upload binaries live in the domain-local `.sps-media` directory beside the
+  deployment checkout; `index.php` serves their existing public media URLs.
+  Legacy media YAML is read-only compatibility input.
 - `AgentContextService` builds safe user-specific context for the support/model assistant.
 
 ## Current Data Flow

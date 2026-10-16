@@ -394,7 +394,10 @@ final class AdminController extends BaseController {
     public function media(): void{
         $media = new MediaService();
         $this->render('admin/media',['pageTitle'=>'Media Library','items'=>$media->all(),
-            'imageHealth'=>$media->productImageHealth((new ResourceService('products'))->all())]);
+            'imageHealth'=>$media->productImageHealth((new ResourceService('products'))->all()),
+            'uploadStorageReady'=>is_dir(MediaService::persistentDirectory())
+                ? is_writable(MediaService::persistentDirectory())
+                : is_writable(dirname(MediaService::persistentDirectory()))]);
     }
     /**
      * Every upload in the admin lands in the media library, whichever screen sent it.

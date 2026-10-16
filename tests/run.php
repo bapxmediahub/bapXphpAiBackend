@@ -900,9 +900,32 @@ $tests['image optimisation publishes a decodable WebP without destroying source'
         $result = (new \App\Services\ImageOptimizerService())->optimize($source);
         assertSame($source, $result, 'Re-uploaded WebP should retain its public filename');
         assertSame([12,16], array_slice(getimagesize($source), 0, 2), 'In-place conversion must leave a complete decodable photo');
+        $originalHash = hash_file('sha256', $source);
+        $preserved = (new \App\Services\ImageOptimizerService())->optimize($source, null, ['preserve_source'=>true]);
+        assertTrue($preserved !== $source && is_file($preserved), 'Preserving uploads should produce a separate optimised image');
+        assertSame($originalHash, hash_file('sha256', $source), 'The uploaded original must remain byte-for-byte recoverable');
     } finally {
         foreach (glob($directory . '/*') ?: [] as $file) unlink($file);
         rmdir($directory);
+    }
+};
+
+$tests['persistent product image URLs survive a replacement code checkout'] = function (): void {
+    $directory = \App\Services\MediaService::persistentDirectory() . '/2099/01';
+    $created = !is_dir($directory);
+    if ($created) mkdir($directory, 0775, true);
+    $name = 'fixture-' . bin2hex(random_bytes(6)) . '.webp';
+    $destination = $directory . '/' . $name;
+    copy(app_path('assets/images/products/lakshmi-dollar-front.webp'), $destination);
+    try {
+        $url = '/assets/images/media/2099/01/' . $name;
+        assertTrue(!is_file(app_path(ltrim($url, '/'))), 'The fixture must not exist in the deployment checkout');
+        assertSame($destination, \App\Services\MediaService::storedPathForUrl($url), 'Public URLs should resolve to domain-local persistent storage');
+        assertSame(null, \App\Services\MediaService::storedPathForUrl('/assets/images/media/2099/01/../../runtime-key.php'), 'The public image resolver must reject traversal');
+        assertSame(null, \App\Services\MediaService::storedPathForUrl('/assets/images/media/2099/01/config.php'), 'The public image resolver must reject non-image files');
+    } finally {
+        unlink($destination);
+        if ($created) { rmdir($directory); if (count(scandir(dirname($directory))) === 2) rmdir(dirname($directory)); }
     }
 };
 

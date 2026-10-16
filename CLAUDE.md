@@ -57,8 +57,10 @@ target is absent, and state that absence as a finding.
 - **Runtime store:** hosted MySQL only for admin-editable records. Do not create local
   product, category, consultant, order, user, setting, media-metadata or secret copies.
   Blog posts are Markdown with YAML frontmatter in `content/blog/posts/`; image
-  binaries remain files. `MediaService` still has a local YAML catalogue: this is a
-  known migration gap, not an approved second runtime store.
+  binaries remain files. New uploaded binaries live in the domain-local
+  `.sps-media` directory beside the code checkout and retain public
+  `/assets/images/media/…` URLs. `MediaService` writes metadata to hosted MySQL
+  `media_files`; legacy YAML is read-only compatibility input.
 - **Agents:** exactly two pure-PHP application surfaces — customer support and
   owner/admin chat. Admin agent context must
   go through `AgentContextService`; never expose all users' data.
