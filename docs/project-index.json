@@ -3,7 +3,7 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 112,
+        "routes": 113,
         "controllers": 12,
         "services": 48,
         "views": 44,
@@ -1033,6 +1033,16 @@
             "name": "logout",
             "controller": "AuthController@logout",
             "view": "public/login",
+            "services": [
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/orders",
+            "name": "orders.legacy",
+            "controller": "AccountController@legacyOrders",
+            "view": "account/orders",
             "services": [
                 "AuthService"
             ]
