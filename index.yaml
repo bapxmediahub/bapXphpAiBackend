@@ -36,14 +36,14 @@ query_examples:
   - "rg -n -B4 -A12 'type: \"skill\"' index.yaml"
   - "rg -n '<term>' docs/project-index.json map.mmd index.yaml"
 summary:
-  concepts: 406
-  relationships: 235
+  concepts: 407
+  relationships: 236
   by_type:
     blog: 14
     controller: 12
     doc: 35
     image: 154
-    route: 112
+    route: 113
     schema: 22
     service: 48
     skill: 9
@@ -3275,6 +3275,20 @@ concepts:
     services:
       - "AuthService"
     view: "public/login"
+  - id: "route:get__orders"
+    type: "route"
+    title: "GET /orders"
+    description: "orders.legacy"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/orders"
+    controller: "AccountController@legacyOrders"
+    services:
+      - "AuthService"
+    view: "account/orders"
   - id: "route:get__payment_stripe_return"
     type: "route"
     title: "GET /payment/stripe/return"
@@ -5246,6 +5260,9 @@ relationships:
     relation: "handled_by"
   - from: "route:get__logout"
     to: "controller:AuthController"
+    relation: "handled_by"
+  - from: "route:get__orders"
+    to: "controller:AccountController"
     relation: "handled_by"
   - from: "route:get__payment_stripe_return"
     to: "controller:CommerceController"

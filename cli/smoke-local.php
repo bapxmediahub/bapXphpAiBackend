@@ -55,6 +55,7 @@ try {
         '/auth/google' => 302,
         '/logout' => 302,
         '/account/orders' => 302,
+        '/orders' => 302,
         '/account/bookings' => 302,
         '/account/wallet' => 404,
         '/recharge' => 404,
@@ -72,6 +73,9 @@ try {
         }
         if ($expected === 200 && str_contains($response['body'], 'Page not found')) {
             $failures[] = "GET {$path} rendered fallback missing-page content";
+        }
+        if ($path === '/orders' && !in_array('Location: /login', $response['headers'], true)) {
+            $failures[] = 'GET /orders must require login instead of exposing order history to a guest';
         }
     }
 
