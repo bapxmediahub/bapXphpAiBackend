@@ -7,8 +7,8 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 112 routes, 12 controllers, 48 services, 44 views, 0 data files, 20 tools"]
-    arch_routes["> Routes: 112 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 113 routes, 12 controllers, 48 services, 44 views, 0 data files, 20 tools"]
+    arch_routes["> Routes: 113 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
     arch_svc["> Services: 48"]:::arch
     arch_views["> Views: 44"]:::arch
@@ -46,6 +46,7 @@ flowchart LR
     route_get_account_dashboard_sessions["GET /account/dashboard/sessions — Retired session URL — redirects to orders"]:::route
     route_get_account_dashboard_install["GET /account/dashboard/install — Install App — customer installation guidance"]:::route
     route_get_account_orders["GET /account/orders — Legacy account orders redirect"]:::route
+    route_get_orders["GET /orders — Legacy order history URL — requires login and redirects to account orders"]:::route
     route_get_account_orders_orderid_invoice["GET /account/orders/{orderId}/invoice"]:::route
     route_get_account_orders_orderid["GET /account/orders/{orderId}"]:::route
     route_get_account_bookings["GET /account/bookings — Legacy account booking URL — redirects to orders"]:::route
@@ -449,6 +450,9 @@ flowchart LR
   controller_accountcontroller --> service_authservice
   controller_accountcontroller -. renders .-> view_account_install
   route_get_account_orders --> controller_accountcontroller
+  controller_accountcontroller --> service_authservice
+  controller_accountcontroller -. renders .-> view_account_orders
+  route_get_orders --> controller_accountcontroller
   controller_accountcontroller --> service_authservice
   controller_accountcontroller -. renders .-> view_account_orders
   route_get_account_orders_orderid_invoice --> controller_accountcontroller
