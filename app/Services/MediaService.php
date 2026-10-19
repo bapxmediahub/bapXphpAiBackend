@@ -13,13 +13,12 @@ final class MediaService {
     }
 
     /** Contexts the library knows about. 'blog' was missing, so blog uploads vanished. */
-    private const CONTEXTS = ['shared', 'products', 'temples', 'astrologers', 'blog'];
+    private const CONTEXTS = ['shared', 'products', 'temples', 'blog'];
 
     /** Asset folders scanned so images shipped with the site appear alongside uploads. */
     private const ASSET_DIRS = [
         'products'    => 'assets/images/products',
         'temples'     => 'assets/images/temples',
-        'astrologers' => 'assets/images/astrologers',
         'blog'        => 'assets/images/blog',
         'shared'      => 'assets/images/media',
     ];
@@ -87,6 +86,7 @@ final class MediaService {
     }
 
     public function all(?string $context = null): array {
+        if ($context !== null && !in_array($context, self::CONTEXTS, true)) return [];
         $contexts = $context ? [$context] : self::CONTEXTS;
         $all = [];
         foreach ($contexts as $ctx) {
@@ -99,7 +99,8 @@ final class MediaService {
         $byPath = [];
         foreach ($all as $item) {
             $key = (string)($item['url'] ?? $item['path'] ?? '');
-            if ($key !== '') $byPath[$key] = $item;
+            // Old metadata may use a shared context for retired profile portraits.
+            if ($key !== '' && !str_starts_with((string)parse_url($key, PHP_URL_PATH), '/assets/images/astrologers/')) $byPath[$key] = $item;
         }
         foreach ($this->scanAssetFiles($context) as $file) {
             if (!isset($byPath[$file['url']])) $byPath[$file['url']] = $file;
@@ -229,7 +230,7 @@ final class MediaService {
     }
 
     public function delete(string $id, ?string $context = null): void {
-        $contexts = $context ? [$context] : ['shared','products','temples','astrologers'];
+        $contexts = $context ? [$context] : self::CONTEXTS;
         foreach ($contexts as $ctx) {
             $filePath = '';
             $records = array_values(array_filter($this->readCatalogue($ctx), function($r) use ($id, &$filePath) {
@@ -390,7 +391,7 @@ final class MediaService {
     private function scanExistingAssets(): array {
         $base = app_path('assets/images');
         $items = [];
-        foreach (['products', 'temples', 'astrologers'] as $context) {
+        foreach (['products', 'temples'] as $context) {
             $dir = $base . '/' . $context;
             if (!is_dir($dir)) continue;
             foreach (glob($dir . '/*.{jpg,jpeg,png,webp,gif,svg}', GLOB_BRACE) ?: [] as $file) {

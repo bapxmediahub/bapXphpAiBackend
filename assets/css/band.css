@@ -821,7 +821,7 @@ nav a:hover { color: var(--color-maroon); }
     overflow: hidden;
     flex: 1;
 }
-.product-card__price-row { display: flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-sm); }
+.product-card__price-row { display: flex; align-items: center; gap: var(--space-xs); margin-top: auto; padding-top: var(--space-xs); margin-bottom: var(--space-sm); }
 .product-card .price { font-weight: 700; color: var(--color-maroon); font-size: 1.15rem; }
 .product-card .old-price { text-decoration: line-through; color: var(--color-text-muted); font-size: 0.85rem; }
 .product-card .discount-pct {
