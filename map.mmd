@@ -7,14 +7,14 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 113 routes, 12 controllers, 48 services, 44 views, 0 data files, 20 tools"]
-    arch_routes["> Routes: 113 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 111 routes, 12 controllers, 48 services, 43 views, 0 data files, 20 tools"]
+    arch_routes["> Routes: 111 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
     arch_svc["> Services: 48"]:::arch
-    arch_views["> Views: 44"]:::arch
+    arch_views["> Views: 43"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 20"]:::arch
-    arch_gaps["> Gaps: 5"]:::arch
+    arch_gaps["> Gaps: 6"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -102,7 +102,7 @@ flowchart LR
     route_get_admin_orders_id["GET /admin/orders/{id} — Admin — order detail, status update"]:::route
     route_post_admin_orders_id_status["POST /admin/orders/{id}/status — Admin — update order status + email"]:::route
     route_get_admin_shipping["GET /admin/shipping — Admin — shipping settings"]:::route
-    route_get_admin_astrologers["GET /admin/astrologers — Admin — manage astrologers"]:::route
+    route_get_admin_astrologers["GET /admin/astrologers — Retired admin profile URL — redirects to dashboard"]:::route
     route_get_admin_appointments["GET /admin/appointments — Admin — session list"]:::route
     route_get_admin_consultation_analytics["GET /admin/consultation-analytics — Admin — consultation metrics"]:::route
     route_get_admin_tax_report["GET /admin/tax-report"]:::route
@@ -130,8 +130,6 @@ flowchart LR
     route_post_admin_categories_delete["POST /admin/categories/delete — Admin — delete category"]:::route
     route_post_admin_coupons_save["POST /admin/coupons/save — Admin — create/update coupon"]:::route
     route_post_admin_coupons_delete["POST /admin/coupons/delete — Admin — delete coupon"]:::route
-    route_post_admin_astrologers_save["POST /admin/astrologers/save — Admin — create/update astrologer"]:::route
-    route_post_admin_astrologers_delete["POST /admin/astrologers/delete — Admin — delete astrologer"]:::route
     route_post_admin_temples_save["POST /admin/temples/save — Admin — create/update temple"]:::route
     route_post_admin_temples_delete["POST /admin/temples/delete — Admin — delete temple"]:::route
     route_post_admin_integrations_test_email["POST /admin/integrations/test-email"]:::route
@@ -229,7 +227,6 @@ flowchart LR
     view_account_orders["account/orders"]:::code
     view_admin_agent["admin/agent"]:::code
     view_admin_appearance["admin/appearance"]:::code
-    view_admin_astrologer_form["admin/astrologer-form"]:::code
     view_admin_blog["admin/blog"]:::code
     view_admin_consultation_analytics["admin/consultation-analytics"]:::code
     view_admin_dashboard["admin/dashboard"]:::code
@@ -325,9 +322,10 @@ flowchart LR
   end
 
   subgraph GAPS["Gaps & Missing Links"]
-    gap_652f833397["unwired_services: CourierService"]:::gap
-    gap_2001143d96["unwired_services: ProjectMapService"]:::gap
-    gap_54bf9b88d4["unwired_services: StoragePermissionService"]:::gap
+    gap_4321d51b65["unwired_services: AstrologerService"]:::gap
+    gap_785e99a166["unwired_services: CourierService"]:::gap
+    gap_d35c2ce4d6["unwired_services: ProjectMapService"]:::gap
+    gap_95525e3d98["unwired_services: StoragePermissionService"]:::gap
     gap_6b9c2b4b5a["POST /admin/blog/enhance-title — missing AuditLogService"]:::gap
     gap_b4217badec["POST /admin/blog/enhance-content — missing AuditLogService"]:::gap
   end
@@ -512,10 +510,8 @@ flowchart LR
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_settings
   route_get_admin_astrologers --> controller_admincontroller
-  controller_admincontroller --> service_astrologerservice
-  controller_admincontroller --> service_schemaservice
   controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_astrologer_form
+  controller_admincontroller -. renders .-> view_admin_dashboard
   route_get_admin_appointments --> controller_admincontroller
   controller_admincontroller --> service_appointmentservice
   controller_admincontroller --> service_authservice
@@ -650,16 +646,6 @@ flowchart LR
   controller_admincontroller --> service_auditlogservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_resource
-  route_post_admin_astrologers_save --> controller_admincontroller
-  controller_admincontroller --> service_resourceservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_astrologer_form
-  route_post_admin_astrologers_delete --> controller_admincontroller
-  controller_admincontroller --> service_resourceservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_astrologer_form
   route_post_admin_temples_save --> controller_admincontroller
   controller_admincontroller --> service_resourceservice
   controller_admincontroller --> service_auditlogservice
@@ -854,7 +840,6 @@ flowchart LR
   service_resourceservice --> collection_orders
   service_resourceservice --> collection_appointments
   service_resourceservice --> collection_categories
-  service_resourceservice --> collection_astrologers
   service_databaseservice --> collection_users
   service_databaseservice --> collection_addresses
   service_databaseservice --> collection_products
@@ -883,8 +868,9 @@ flowchart LR
   tool_validate_project_map --> systematic_map
   tool_smoke_local --> ROUTES_PUBLIC
   tool_smoke_local --> ROUTES_ADMIN
-  gap_652f833397 -. missing .-> service_courierservice
-  gap_2001143d96 -. missing .-> service_projectmapservice
-  gap_54bf9b88d4 -. missing .-> service_storagepermissionservice
+  gap_4321d51b65 -. missing .-> service_astrologerservice
+  gap_785e99a166 -. missing .-> service_courierservice
+  gap_d35c2ce4d6 -. missing .-> service_projectmapservice
+  gap_95525e3d98 -. missing .-> service_storagepermissionservice
   gap_6b9c2b4b5a -. missing .-> controller_admincontroller
   gap_b4217badec -. missing .-> controller_admincontroller

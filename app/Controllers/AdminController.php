@@ -80,12 +80,7 @@ final class AdminController extends BaseController {
     }
     public function shipping(): void{$this->render('admin/settings',['pageTitle' => 'Shipping', 'title' => 'Shipping']);}
     public function astrologers(): void{
-        $this->render('admin/astrologer-form',['pageTitle'=>'Astrologers','title'=>'Astrologers','collection'=>'astrologers','items'=>(new ResourceService('astrologers'))->all(),'mediaFiles'=>$this->mediaFor('astrologers')]);
-    }
-    public function saveAstrologer(): void{$this->save('astrologers');}
-    public function deleteAstrologer(): void{
-        $id=(string)($_POST['id']??'');
-        (new ResourceService('astrologers'))->delete($id); (new AuditLogService())->record('delete','astrologers',$id); $this->flash('Deleted.','info'); $this->redirect('/admin/astrologers');
+        $this->redirect('/admin');
     }
     public function appointments(): void{$this->list('Sessions','appointments');}
     public function consultationAnalytics(): void{$this->render('admin/consultation-analytics',['pageTitle'=>'Consultation Analytics','metrics'=>(new ConsultationService())->analytics()]);}

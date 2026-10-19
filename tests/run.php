@@ -674,7 +674,10 @@ $tests['admin retains historical service records without public consultant profi
     $dashboard = file_get_contents(app_path('views/admin/dashboard.php'));
     $layout = file_get_contents(app_path('views/layouts/admin.php'));
     assertTrue(str_contains($dashboard, 'Recent Sessions') && str_contains($dashboard, '/admin/appointments'), 'Admin dashboard should link to retained session records');
-    assertTrue(str_contains($layout, '/admin/astrologers') && str_contains($layout, '/admin/appointments'), 'Admin navigation should retain owner service records');
+    assertTrue(!str_contains($layout, 'href="/admin/astrologers"') && str_contains($layout, '/admin/appointments'), 'Admin navigation should retain history without retired profile management');
+    assertTrue(!str_contains($dashboard, '/admin/astrologers'), 'Dashboard must not restore retired profile management');
+    assertTrue((new App\Services\MediaService())->all('astrologers') === [], 'Retired media context must return no portraits');
+    assertTrue(!is_dir(app_path('assets/images/astrologers/client')), 'Retired bundled client portraits must be removed');
 };
 
 $tests['home page does not expose a consultant marketplace'] = function (): void {
@@ -1665,10 +1668,12 @@ $tests['home hero rotates all supplied varahi images'] = function (): void {
     fileContains('views/layouts/app.php', 'https://mediahub.bapx.in/', 'Footer studio credit should lead to the requested media hub');
 };
 
-$tests['admin product and astrologer forms expose editable owner fields'] = function (): void {
+$tests['admin product form exposes editable fields without retired profile editor'] = function (): void {
     $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
     $productForm = file_get_contents(app_path('views/admin/product-form.php'));
-    $astroForm = file_get_contents(app_path('views/admin/astrologer-form.php'));
+    assertTrue(!is_file(app_path('views/admin/astrologer-form.php')), 'Retired profile form must not remain available');
+    routeMissing('/admin/astrologers/save', 'Retired profile save route must be unavailable');
+    routeMissing('/admin/astrologers/delete', 'Retired profile delete route must be unavailable');
     $resourceView = file_get_contents(app_path('views/admin/resource.php'));
     $productView = file_get_contents(app_path('views/public/product.php'));
     $auditService = file_get_contents(app_path('app/Services/AuditLogService.php'));
@@ -1680,8 +1685,6 @@ $tests['admin product and astrologer forms expose editable owner fields'] = func
     assertTrue(str_contains($productForm, 'multiple'), 'Product image upload should accept multiple files');
     assertTrue(str_contains($productForm, 'foreach($mediaFiles as $media)'), 'Media picker should show all files by upload time, not only the latest page');
     assertTrue(str_contains($productForm, 'class="admin-media-picker"'), 'Product forms should expose a media library picker');
-    assertTrue(str_contains($astroForm, 'foreach($mediaFiles as $media)'), 'Astrologer media picker should show all files by upload time');
-    assertTrue(str_contains($astroForm, 'class="admin-media-picker"'), 'Astrologer forms should expose a media library picker');
     assertTrue(str_contains($resourceView, "['image_url', 'photo_url']"), 'Local asset image fields should not use URL inputs that reject /assets paths');
     assertTrue(!str_contains($resourceView, 'let el = document.getElementById'), 'Generated admin edit script should not redeclare let for every field');
     assertTrue(str_contains($productView, 'image_urls'), 'Product page should render product image galleries');
@@ -1694,10 +1697,6 @@ $tests['admin product and astrologer forms expose editable owner fields'] = func
     assertTrue(str_contains($controller, 'parseSpecifications'), 'Admin save should parse product specifications into structured data');
     assertTrue(str_contains($controller, 'AuditLogService'), 'Admin mutations should write audit log records');
     assertTrue(str_contains($auditService, 'function record'), 'Audit log service should be able to record admin changes');
-    foreach (['slug', 'email', 'experience_years', 'slot_minutes', 'languages', 'working_days', 'speciality'] as $field) {
-        assertTrue(str_contains($astroForm, $field), "Astrologer admin form should expose {$field}");
-    }
-    foreach (['username', 'message_credit_cost', 'call_credit_per_second', 'payout_percentage'] as $field) assertTrue(!str_contains($astroForm, 'name="' . $field . '"'), "Consultant form should not expose removed credential/rate field {$field}");
 };
 
 $tests['admin sidebar exposes every admin menu'] = function (): void {
@@ -1707,7 +1706,6 @@ $tests['admin sidebar exposes every admin menu'] = function (): void {
         '/admin/products',
         '/admin/categories',
         '/admin/coupons',
-        '/admin/astrologers',
         '/admin/appointments',
         '/admin/temples',
         '/admin/orders',

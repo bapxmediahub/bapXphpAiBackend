@@ -2,6 +2,12 @@
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $file = __DIR__ . $uri;
 
+if (str_starts_with((string)$uri, '/assets/images/astrologers/')) {
+    http_response_code(410);
+    header('Cache-Control: no-store');
+    exit('This image has been retired.');
+}
+
 if (PHP_SAPI === 'cli-server' && is_file($file)) {
     return false;
 }

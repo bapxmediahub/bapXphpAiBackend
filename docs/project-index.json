@@ -3,10 +3,10 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 113,
+        "routes": 111,
         "controllers": 12,
         "services": 48,
-        "views": 44,
+        "views": 43,
         "collections": 22
     },
     "routes": [
@@ -198,34 +198,8 @@
             "path": "/admin/astrologers",
             "name": "admin.astrologers",
             "controller": "AdminController@astrologers",
-            "view": "admin/astrologer-form",
+            "view": "admin/dashboard",
             "services": [
-                "AstrologerService",
-                "SchemaService",
-                "AuthService"
-            ]
-        },
-        {
-            "method": "POST",
-            "path": "/admin/astrologers/delete",
-            "name": "admin.astrologers.delete",
-            "controller": "AdminController@deleteAstrologer",
-            "view": "admin/astrologer-form",
-            "services": [
-                "ResourceService",
-                "AuditLogService",
-                "AuthService"
-            ]
-        },
-        {
-            "method": "POST",
-            "path": "/admin/astrologers/save",
-            "name": "admin.astrologers.save",
-            "controller": "AdminController@saveAstrologer",
-            "view": "admin/astrologer-form",
-            "services": [
-                "ResourceService",
-                "AuditLogService",
                 "AuthService"
             ]
         },
@@ -1331,7 +1305,6 @@
         "account/orders",
         "admin/agent",
         "admin/appearance",
-        "admin/astrologer-form",
         "admin/blog",
         "admin/consultation-analytics",
         "admin/dashboard",
@@ -1408,6 +1381,7 @@
         "navigation_without_get_route": [],
         "unwired_controllers": [],
         "unwired_services": [
+            "AstrologerService",
             "CourierService",
             "ProjectMapService",
             "StoragePermissionService"

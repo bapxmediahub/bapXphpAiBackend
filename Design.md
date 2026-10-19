@@ -92,9 +92,6 @@ components:
     backgroundColor: "{colors.surface}"
     rounded: "{rounded.sm}"
     padding: 16px
-  card-astrologer:
-    backgroundColor: "{colors.on-primary}"
-    rounded: "{rounded.sm}"
   input:
     backgroundColor: "{colors.on-primary}"
     rounded: "{rounded.sm}"
@@ -150,7 +147,7 @@ Four shadow steps exist (`--shadow-sm/md/lg/xl` in `band.css`), each with exactl
 |---|---|
 | `sm` | Resting state for cards and inputs |
 | `md` | Raised buttons; hovered product cards |
-| `lg` | Hovered astrologer cards and feature/value cards |
+| `lg` | Hovered feature/value cards |
 | `xl` | Modals, drawers, popovers only |
 
 Rules:
@@ -186,13 +183,13 @@ Shape should stay consistent within a component family -- don't mix `sm` and `lg
 - **Product cards (`product-card`):** linked image/title, short description, price, Buy Now and one stateful cart control. Initially show Add to Cart; adding one unit replaces it in place with `− quantity +`. The number is the actual cart quantity. Each press updates the cart immediately; decrementing the final unit restores Add to Cart. Keep 44px targets, native form fallback, visible focus and disabled controls during requests. Do not show a separate Quantity row or redundant in-cart link.
 - **Cart quantity:** provide `−` and `+` controls beside every product, update line totals and the cart count, and remove the line when decreased to zero. Repeated additions of the same product merge into one line. Distinguish selecting a quantity to add from editing the quantity already in the cart.
 - **Commerce responsiveness:** use `minmax(0, 1fr)` for purchase-button columns, wrap quantity labels when space is tight, and keep keyboard focus visible. Verify home, shop, product and cart at 375px and desktop in the built-in Browser. Do not shrink purchase controls to 30px to force them onto one row.
-- **Consultant cards (`card-astrologer`):** white, `8px` radius, face-forward portrait, name, speciality, language/experience metadata, review summary when present, and one clear profile/booking action. Every card uses equal media and content tracks so rows align.
+- **Product action alignment:** related-product prices and purchase controls sit at the bottom of equal-height cards. Long names remain readable without shifting buttons between columns.
 - **Hero:** product-first offer over actual devotional imagery. The primary action opens the shop. Public consultation booking is retired. Desktop text is left aligned. Mobile uses one column, a compact image, and must reveal the next content band without requiring a full-screen scroll.
 - **Authentication:** login and registration are task pages, not marketing pages. Use a centered form surface, suppress the public footer, and keep the complete form visible on common mobile heights.
 - **Product details:** keep the short introduction, feature bullets, detailed description, and labelled specification rows in separate readable sections. Admin-created products use the same fields and layout as existing products; never paste table markup into a plain-text description. Omit empty sections instead of fabricating claims.
 - **Account:** use a persistent internal menu and one unframed content region. Orders, addresses, and installation are tasks, not promotional cards.
 - **Admin:** optimize for scanning and repeated action: compact sidebar, clear tables, consistent forms, explicit save state, and no marketing-style hero composition.
-- **Admin platform guidance:** describe the product-led public journey consistently. Historical service records may remain owner-accessible, but integration help must not advertise retired public booking, text sessions, or direct calls.
+- **Admin platform guidance:** describe the product-led public journey consistently. Astrologer profile management, navigation and portrait media are retired. Historical session records remain owner-accessible, but must not reintroduce profile editing or portrait pickers. Integration help must not advertise retired public booking, text sessions, or direct calls.
 - **Admin form sizing:** use zero-minimum grid tracks and shrinkable labels/controls. Long integration endpoints or credentials must stay within the field, never widen the page. Check 375px with populated fields without exposing their values in screenshots or reports.
 - **Admin product preview:** render saved images and structured content through the existing product-detail layout. Clearly label the view as an admin-only preview, disable purchase controls, and provide Back to products. Hidden products remain absent from public listings and ordinary URLs; previews are uncached and not indexed.
 - **AI request status (both chat surfaces):** immediately show a keyboard-operable Thinking… row and elapsed seconds while waiting. Never show raw model reasoning, fabricated stages, or processing-language explanations. After the animation ends, retain only the elapsed duration; the adjacent answer or error message communicates outcome. Use the shared warm-white/maroon component, 44px summary targets, tabular time digits, and an indeterminate progress control. Respect reduced motion, prevent duplicate submits, and restore the composer on every completion path.

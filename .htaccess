@@ -1,6 +1,9 @@
 Options -Indexes
 RewriteEngine On
 
+# Retired portraits must remain unavailable even if a deployment retains old files.
+RewriteRule ^assets/images/astrologers/ - [G,L]
+
 # Block access to .env, .git, and other sensitive dotfiles
 RedirectMatch 403 \.env(\.|$)
 RedirectMatch 403 \.git$
