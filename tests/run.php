@@ -2867,6 +2867,23 @@ $tests['GST register preserves review rows and makes spreadsheet cells safe'] = 
         && str_contains($rows[1][18], 'State conflict'), 'Refunds and missing/conflicting snapshots are surfaced');
 };
 
+$tests['Enterprise can recover verified ticket counts after model synthesis fails'] = static function (): void {
+    $previousMode = getenv('BAPX_TEST_MODE');
+    putenv('BAPX_TEST_MODE=1');
+    try {
+        $tools = new \App\Services\AgentToolRegistry();
+        assertSame(null, $tools->ticketLookupFallback(), 'No fallback before a completed ticket lookup');
+        $tools->run('support_enquiries', ['status'=>'open']);
+        $tools->run('support_enquiries', ['status'=>'answered']);
+        $tools->run('support_enquiries', ['status'=>'invalid']);
+        $answer = $tools->ticketLookupFallback();
+        assertTrue(str_contains($answer, '0 open support tickets') && str_contains($answer, '0 answered support tickets'), 'Recover each successful result with its scope');
+        assertTrue(!str_contains($answer, 'invalid'), 'Exclude failed calls from the recovered answer');
+    } finally {
+        putenv($previousMode === false ? 'BAPX_TEST_MODE' : 'BAPX_TEST_MODE=' . $previousMode);
+    }
+};
+
 $tests['support ticket data is scoped and does not expose conversation bodies'] = static function (): void {
     $query = \App\Services\SupportBotService::ticketLookupRequest('How many of my tickets are closed?');
     assertSame('closed', $query['status'] ?? null, 'Status after the noun must constrain the lookup');

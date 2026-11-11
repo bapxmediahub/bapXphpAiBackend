@@ -393,6 +393,16 @@ final class AdminController extends BaseController {
                 $answer = "AI model not configured. Go to Admin → Integrations and set api_endpoint, ai_api_key, and agent_model.";
             }
             $failed = empty($modelConfig['apiKey']) || \App\Services\AiClient::isError($answer);
+            $fallback = $failed || $reason === 'rejected_response' ? $tools->ticketLookupFallback() : null;
+            if ($fallback !== null) {
+                (new AuditLogService())->agentRun('admin', 'fallback', $startedAt, $reason, $attempts, $tools->activity());
+                $this->jsonResponse([
+                    'answer' => $fallback,
+                    'missing' => $attachments['missing'],
+                    'run' => $this->agentRunMeta('fallback', $startedAt, $tools, $attempts),
+                ]);
+                return;
+            }
             (new AuditLogService())->agentRun('admin', $failed ? 'error' : ($reason === 'rejected_response' ? 'fallback' : 'model'), $startedAt, $reason, $attempts, $tools->activity());
             if ($failed) {
                 $this->jsonResponse([
