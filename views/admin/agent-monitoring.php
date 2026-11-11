@@ -51,6 +51,7 @@
         <?php foreach ($metrics['recent_runs'] as $run): ?>
             <details class="agent-monitor-run">
                 <summary><time datetime="<?= e($run['at']) ?>"><?= e($run['at']) ?></time> · <?= e(str_replace('_', ' ', $run['outcome'])) ?> · <?= e(number_format($run['duration_ms'] / 1000, 2)) ?> s</summary>
+                <?php if ($run['trace_id']): ?><p>Run reference <code><?= e($run['trace_id']) ?></code></p><?php endif; ?>
                 <?php if ($run['reason']): ?><p>Outcome detail: <?= e(str_replace('_', ' ', $run['reason'])) ?></p><?php endif; ?>
                 <?php if ($run['attempts']): ?>
                     <ol aria-label="Provider attempts">
@@ -62,7 +63,7 @@
                 <?php if ($run['tools']): ?>
                     <ul aria-label="Tool outcomes">
                         <?php foreach ($run['tools'] as $tool): ?>
-                            <li><?= e(str_replace('_', ' ', $tool['name'])) ?> · <?= e($tool['status']) ?> · <?= (int)$tool['duration_ms'] ?> ms</li>
+                            <li><?= e(str_replace('_', ' ', $tool['name'])) ?> · <?= e($tool['status']) ?><?php if (!empty($tool['reason'])): ?> · <?= e(str_replace('_', ' ', $tool['reason'])) ?><?php endif; ?> · <?= (int)$tool['duration_ms'] ?> ms</li>
                         <?php endforeach; ?>
                     </ul>
                 <?php endif; ?>

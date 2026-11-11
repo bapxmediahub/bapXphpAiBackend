@@ -219,6 +219,12 @@ final class AgentToolRegistry
             $this->activity[] = [
                 'name' => $name,
                 'status' => isset($result['error']) ? 'error' : 'complete',
+                'reason' => match ($result['error'] ?? null) {
+                    null => null,
+                    'Invalid lookup parameters.' => 'invalid_parameters',
+                    self::DATE_ERROR, 'Use valid sales dates (YYYY-MM-DD) through today.' => 'invalid_date_range',
+                    default => 'lookup_rejected',
+                },
                 'duration_ms' => (int)round((microtime(true) - $startedAt) * 1000),
             ];
             if ($name === 'support_enquiries' && !isset($result['error'])) {
@@ -239,6 +245,7 @@ final class AgentToolRegistry
             $this->activity[] = [
                 'name' => $name,
                 'status' => 'error',
+                'reason' => 'lookup_unavailable',
                 'duration_ms' => (int)round((microtime(true) - $startedAt) * 1000),
             ];
             return ['error' => 'That lookup is temporarily unavailable.'];

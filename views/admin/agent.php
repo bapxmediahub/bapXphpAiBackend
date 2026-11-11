@@ -203,7 +203,8 @@
             body.appendChild(row);
         };
         add('Route', routeLabel);
-        (run.tools || []).forEach(function (tool) { add('Tool · ' + tool.name, tool.status + ' · ' + tool.duration_ms + ' ms'); });
+        if (run.trace_id) add('Run reference', run.trace_id);
+        (run.tools || []).forEach(function (tool) { add('Tool · ' + tool.name, tool.status + (tool.reason ? ' · ' + tool.reason.replaceAll('_', ' ') : '') + ' · ' + tool.duration_ms + ' ms'); });
         (run.attempts || []).forEach(function (attempt, index) {
             add('Model attempt ' + (index + 1) + ' · ' + attempt.model, 'HTTP ' + attempt.status + ' · ' + attempt.duration_ms + ' ms');
         });

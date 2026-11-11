@@ -9,7 +9,7 @@ final class AuditLogService {
     }
 
     /** Operational metadata only: never retain prompts, replies, identities or secrets. */
-    public function agentRun(string $surface, string $outcome, float $startedAt, ?string $reason = null, array $attempts = [], array $tools = []): void {
+    public function agentRun(string $surface, string $outcome, float $startedAt, ?string $reason = null, array $attempts = [], array $tools = [], ?string $traceId = null): void {
         if (!in_array($surface, ['support', 'admin'], true)) return;
         if (!in_array($outcome, ['model', 'local', 'fallback', 'private_account', 'draft', 'error'], true)) return;
         $allowedReasons = ['not_configured', 'timeout', 'transport', 'authentication', 'rate_limit', 'provider_server', 'provider_request', 'provider_response', 'empty_response', 'rejected_response', 'internal_error'];
@@ -19,9 +19,14 @@ final class AuditLogService {
             'reason' => in_array($reason, $allowedReasons, true) ? $reason : null,
             'duration_ms' => max(0, (int)round((microtime(true) - $startedAt) * 1000)),
         ];
+        if (($trace = self::validTraceId($traceId)) !== null) $meta['trace_id'] = $trace;
         if ($attempts !== []) $meta['provider_attempts'] = self::providerAttempts($attempts);
         if ($tools !== []) $meta['tool_activity'] = self::toolActivity($tools);
         $this->record('run', 'agent', $surface, $meta, ['email' => 'system', 'name' => 'Agent monitoring']);
+    }
+
+    private static function validTraceId(mixed $value): ?string {
+        return is_string($value) && preg_match('/^[a-f0-9]{16}$/D', $value) ? $value : null;
     }
 
     private static function providerAttempts(array $attempts): array {
@@ -45,11 +50,15 @@ final class AuditLogService {
             if (!is_array($tool)
                 || !in_array($tool['name'] ?? null, ['find_order', 'product_status', 'sales_summary', 'support_enquiries', 'search_articles', 'coupon_status', 'gst_register_summary', 'store_count', 'customer_ticket_lookup'], true)
                 || !in_array($tool['status'] ?? null, ['complete', 'error'], true)) continue;
-            $safe[] = [
+            $entry = [
                 'name' => $tool['name'],
                 'status' => $tool['status'],
                 'duration_ms' => max(0, (int)($tool['duration_ms'] ?? 0)),
             ];
+            if (in_array($tool['reason'] ?? null, ['invalid_parameters', 'invalid_date_range', 'lookup_unavailable', 'lookup_rejected'], true)) {
+                $entry['reason'] = $tool['reason'];
+            }
+            $safe[] = $entry;
         }
         return $safe;
     }
@@ -91,6 +100,7 @@ final class AuditLogService {
             $summary[$surface]['duration_ms'] += $duration;
             $summary[$surface]['recent_runs'][] = [
                 'at' => $created,
+                'trace_id' => self::validTraceId($meta['trace_id'] ?? null),
                 'timestamp' => $timestamp,
                 'outcome' => $outcome,
                 'reason' => is_string($reason) && isset($summary[$surface]['reasons'][$reason]) ? $reason : null,

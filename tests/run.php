@@ -1711,7 +1711,7 @@ $tests['both chat surfaces share accessible bounded request status'] = function 
     assertTrue(
         str_contains($controller, "'error'=>\$answer")
         && str_contains($controller, "'missing'=>\$attachments['missing']")
-        && str_contains($controller, "'run'=>\$this->agentRunMeta('error'")
+        && str_contains($controller, "'run'=>\$this->agentRunMeta(\$traceId, 'error'")
         && str_contains($controller, '],502'),
         'Provider failures must remain non-2xx while returning a secret-safe operator trace'
     );
@@ -2380,15 +2380,16 @@ $tests['agent monitoring summarizes latency and strips tool payloads'] = functio
     $runs = [];
     foreach ([100, 200, 2300] as $duration) {
         $runs[] = ['event' => 'agent.run', 'created_at' => date('c', $now - 1), 'meta' => [
-            'surface' => 'admin', 'outcome' => 'model', 'duration_ms' => $duration,
+            'surface' => 'admin', 'outcome' => 'model', 'duration_ms' => $duration, 'trace_id' => '0011223344556677',
             'tool_activity' => [
-                ['name' => 'product_status', 'status' => 'complete', 'duration_ms' => 25, 'arguments' => 'private'],
+                ['name' => 'product_status', 'status' => 'complete', 'duration_ms' => 25, 'arguments' => 'private', 'reason' => 'private'],
                 ['name' => 'private fixture', 'status' => 'error', 'duration_ms' => 8],
             ],
         ]];
     }
     $row = App\Services\AuditLogService::agentSummary($runs, $now)['admin'];
     assertSame(2300, $row['p95_ms'], 'Nearest rank p95 includes the slow tail');
+    assertSame('0011223344556677', $row['recent_runs'][0]['trace_id'], 'Monitoring correlates with the chat response reference');
     assertSame([['name' => 'product_status', 'status' => 'complete', 'duration_ms' => 25]], $row['recent_runs'][0]['tools'], 'Trace keeps only approved tool metadata');
 };
 

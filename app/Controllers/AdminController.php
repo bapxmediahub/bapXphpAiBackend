@@ -344,6 +344,11 @@ final class AdminController extends BaseController {
             $this->jsonResponse(['error' => 'Enter a question of up to 2,000 characters.'], 400);
             return;
         }
+        // The constructor has already checked admin access and CSRF. This request
+        // only reads session state, so release the lock before calling providers.
+        session_write_close();
+        $traceId = bin2hex(random_bytes(8));
+        header('X-Agent-Trace: ' . $traceId);
         $startedAt = microtime(true);
         try {
             // @terms, @privacy, @some-article and @filename.jpg pull that document into
@@ -362,8 +367,8 @@ final class AdminController extends BaseController {
                     $attachments['context']
                 );
                 $draft['missing'] = $attachments['missing'];
-                (new AuditLogService())->agentRun('admin', 'draft', $startedAt);
-                $this->jsonResponse(['draft' => $draft, 'run' => $this->agentRunMeta('draft', $startedAt)]);
+                (new AuditLogService())->agentRun('admin', 'draft', $startedAt, traceId: $traceId);
+                $this->jsonResponse(['draft' => $draft, 'run' => $this->agentRunMeta($traceId, 'draft', $startedAt)]);
                 return;
             }
             $secrets = new SecretService();
@@ -373,11 +378,11 @@ final class AdminController extends BaseController {
             // allowlisted sales tool supplies a deterministic, privacy-safe answer.
             $localAnswer = $attachments['context'] === '' ? $tools->aggregateAnswer($message) : null;
             if ($localAnswer !== null) {
-                (new AuditLogService())->agentRun('admin', 'local', $startedAt, tools: $tools->activity());
+                (new AuditLogService())->agentRun('admin', 'local', $startedAt, tools: $tools->activity(), traceId: $traceId);
                 $this->jsonResponse([
                     'answer' => $localAnswer,
                     'missing' => $attachments['missing'],
-                    'run' => $this->agentRunMeta('local', $startedAt, $tools),
+                    'run' => $this->agentRunMeta($traceId, 'local', $startedAt, $tools),
                 ]);
                 return;
             }
@@ -395,32 +400,32 @@ final class AdminController extends BaseController {
             $failed = empty($modelConfig['apiKey']) || \App\Services\AiClient::isError($answer);
             $fallback = $failed || $reason === 'rejected_response' ? $tools->ticketLookupFallback() : null;
             if ($fallback !== null) {
-                (new AuditLogService())->agentRun('admin', 'fallback', $startedAt, $reason, $attempts, $tools->activity());
+                (new AuditLogService())->agentRun('admin', 'fallback', $startedAt, $reason, $attempts, $tools->activity(), $traceId);
                 $this->jsonResponse([
                     'answer' => $fallback,
                     'missing' => $attachments['missing'],
-                    'run' => $this->agentRunMeta('fallback', $startedAt, $tools, $attempts),
+                    'run' => $this->agentRunMeta($traceId, 'fallback', $startedAt, $tools, $attempts),
                 ]);
                 return;
             }
-            (new AuditLogService())->agentRun('admin', $failed ? 'error' : ($reason === 'rejected_response' ? 'fallback' : 'model'), $startedAt, $reason, $attempts, $tools->activity());
+            (new AuditLogService())->agentRun('admin', $failed ? 'error' : ($reason === 'rejected_response' ? 'fallback' : 'model'), $startedAt, $reason, $attempts, $tools->activity(), $traceId);
             if ($failed) {
                 $this->jsonResponse([
                     'error'=>$answer,
                     'missing'=>$attachments['missing'],
-                    'run'=>$this->agentRunMeta('error', $startedAt, $tools, $attempts),
+                    'run'=>$this->agentRunMeta($traceId, 'error', $startedAt, $tools, $attempts),
                 ],502);
                 return;
             }
             $this->jsonResponse([
                 'answer'=>$answer,
                 'missing'=>$attachments['missing'],
-                'run'=>$this->agentRunMeta('model', $startedAt, $tools, $attempts),
+                'run'=>$this->agentRunMeta($traceId, 'model', $startedAt, $tools, $attempts),
             ]);
         } catch (\Throwable $e) {
-            (new AuditLogService())->agentRun('admin', 'error', $startedAt, 'internal_error');
+            (new AuditLogService())->agentRun('admin', 'error', $startedAt, 'internal_error', traceId: $traceId);
             error_log('Owner agent request failed (' . get_class($e) . ')');
-            $this->jsonResponse(['error' => 'The owner agent could not complete this request. Please try again.'], 500);
+            $this->jsonResponse(['error' => 'The owner agent could not complete this request. Please try again.', 'run' => $this->agentRunMeta($traceId, 'error', $startedAt)], 500);
         }
     }
 
@@ -432,6 +437,7 @@ final class AdminController extends BaseController {
      * @return array<string,mixed>
      */
     private function agentRunMeta(
+        string $traceId,
         string $route,
         float $startedAt,
         ?\App\Services\AgentToolRegistry $tools = null,
@@ -444,6 +450,7 @@ final class AdminController extends BaseController {
         ], $attempts);
         return [
             'route' => $route,
+            'trace_id' => $traceId,
             'elapsed_ms' => (int)round((microtime(true) - $startedAt) * 1000),
             'tools' => $tools?->activity() ?? [],
             'sources' => $tools?->sourceLinks() ?? [],
