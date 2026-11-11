@@ -32,6 +32,9 @@
                 </p>
             </div>
         </div>
+        <?php if (!empty($order['fulfillment_review_required'])): ?>
+            <p role="alert"><strong>Fulfillment review required.</strong> Payment was received, but product availability changed. Contact the customer and confirm stock or arrange a refund before fulfilling this order.</p>
+        <?php endif; ?>
         <?php if (!empty($order['tax_review_required'])): ?>
             <p role="alert"><strong>Tax review required.</strong> Payment was confirmed, but no invoice was issued because delivery or supplier state was missing or invalid. Review the order and supplier settings with your accountant.</p>
         <?php endif; ?>
@@ -40,11 +43,14 @@
             <div>
                 <label for="order-status" style="display:block; font-size:0.78rem; font-weight:700; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:var(--space-xs);">Update Status</label>
                 <select id="order-status" name="status">
-                    <?php foreach(['confirmed','processing','shipped','delivered','cancelled'] as $status): ?>
+                    <?php foreach(['on_hold','confirmed','processing','shipped','delivered','cancelled'] as $status): ?>
                         <option value="<?= e($status) ?>" <?= (($order['status'] ?? '') === $status ? 'selected' : '') ?>><?= e(ucfirst($status)) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
+            <?php if (!empty($order['fulfillment_review_required'])): ?>
+                <label><input type="checkbox" name="availability_confirmed" value="1"> I have confirmed availability with the customer before fulfilling this order.</label>
+            <?php endif; ?>
             <button class="btn btn-primary" type="submit">Save Status</button>
 
             <div id="ship-fields" style="flex:1 1 100%; display:none; gap:var(--space-sm); flex-wrap:wrap; padding:var(--space-md); margin-top:var(--space-sm); background:var(--color-bg-alt); border:1px solid var(--color-border); border-radius:var(--radius-md);">

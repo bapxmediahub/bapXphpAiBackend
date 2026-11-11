@@ -357,10 +357,13 @@ final class CommerceController extends BaseController {
 
         $orderItems = $pendingOrder['items'] ?? [];
         $products = $testPorts === null ? (new ProductService())->bySlug() : ($testPorts['products'])();
+        $unavailable = [];
+        $missingProduct = false;
         foreach ($orderItems as $item) {
             $product = $products[$item['slug'] ?? ''] ?? null;
+            if ($product === null) $missingProduct = true;
             if (!in_array($product['stock_status'] ?? '', ['in_stock', 'active'], true)) {
-                throw new \RuntimeException(($item['name'] ?? 'A product') . ' is no longer available.');
+                $unavailable[] = (string)($item['name'] ?? 'A product');
             }
         }
 
@@ -372,12 +375,14 @@ final class CommerceController extends BaseController {
             return $item;
         }, $orderItems);
         $settings = $testPorts === null ? (new SettingsService())->public() : ($testPorts['settings'])();
-        $tax = (new TaxService())->snapshotForVerifiedPayment($itemsWithRates, 0, (string)($pendingOrder['shipping_state'] ?? ''), $settings);
+        $tax = $missingProduct ? null : (new TaxService())->snapshotForVerifiedPayment($itemsWithRates, 0, (string)($pendingOrder['shipping_state'] ?? ''), $settings);
         $invoice = $tax !== null ? (new TaxService())->nextInvoice($existingOrders) : null;
         $localId = bin2hex(random_bytes(8));
         $order = array_merge([
             'id' => $localId,
-            'status' => 'confirmed',
+            'status' => $unavailable ? 'on_hold' : 'confirmed',
+            'fulfillment_review_required' => !empty($unavailable),
+            'fulfillment_review_reason' => $unavailable ? 'Product availability changed after checkout' : '',
             'total' => $pendingOrder['total'],
             'payment_id' => $paymentId,
             'payment_email_status' => 'pending',
@@ -393,7 +398,7 @@ final class CommerceController extends BaseController {
             'discount' => $pendingOrder['discount'] ?? 0,
             'customer_gstin' => $pendingOrder['customer_gstin'] ?? '',
             'tax_review_required' => $tax === null,
-            'tax_review_reason' => $tax === null ? 'Missing or invalid delivery or supplier state at payment confirmation' : '',
+            'tax_review_reason' => $tax === null ? ($missingProduct ? 'Product tax details unavailable at payment confirmation' : 'Missing or invalid delivery or supplier state at payment confirmation') : '',
             'created_at' => date('c'),
         ], $gatewayFields);
         if ($tax !== null && $invoice !== null) {

@@ -101,10 +101,11 @@ final class AdminController extends BaseController {
             'tracking_id'  => (string)($_POST['tracking_id'] ?? ''),
             'tracking_url' => (string)($_POST['tracking_url'] ?? ''),
             'courier_name' => (string)($_POST['courier_name'] ?? ''),
+            'availability_confirmed' => !empty($_POST['availability_confirmed']),
         ];
         try {
             (new OrderService())->updateStatus($id, $status, null, $tracking);
-            (new AuditLogService())->record('save','order.status',$id,['status'=>$status,'tracking_id'=>$tracking['tracking_id']]);
+            (new AuditLogService())->record('save','order.status',$id,['status'=>$status,'tracking_id'=>$tracking['tracking_id'],'availability_confirmed'=>$tracking['availability_confirmed']]);
             $this->flash('Order status updated.','success');
         } catch (\InvalidArgumentException $e) {
             // Surface the real reason — a missing tracking ID used to read as a generic

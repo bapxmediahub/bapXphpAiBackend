@@ -29,6 +29,16 @@ final class OrderService {
      * mistyped URL. A link supplied explicitly is still honoured, for a courier that is
      * not on the list yet.
      */
+    /** Resolve a paid order hold only after an owner confirms availability. */
+    public static function reviewFulfillment(array $order, string $status, bool $confirmed, \DateTimeImmutable $now): array {
+        if (!empty($order['fulfillment_review_required']) && in_array($status, ['confirmed', 'processing', 'packed', 'shipped', 'delivered'], true)) {
+            if (!$confirmed) throw new \InvalidArgumentException('Confirm availability before fulfilling this held order.');
+            $order['fulfillment_review_required'] = false;
+            $order['fulfillment_reviewed_at'] = $now->format('c');
+        }
+        return $order;
+    }
+
     public function updateStatus(string $id, string $status, ?\DateTimeImmutable $now = null, array $tracking = []): array {
         // Validate before touching the database: the tracking rule does not depend on
         // the order, and failing first avoids a pointless read (and lets the rule be
@@ -53,6 +63,7 @@ final class OrderService {
 
         foreach ($orders as &$order) {
             if (($order['id'] ?? '') !== $id) continue;
+            $order = self::reviewFulfillment($order, $status, !empty($tracking['availability_confirmed']), $now);
             $order['status'] = $status;
             $order['updated_at'] = $now->format('c');
             if (in_array($status, ['shipped', 'delivered'], true)) {

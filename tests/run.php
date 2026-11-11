@@ -2184,6 +2184,45 @@ $tests['verified legacy payment is persisted once without a fabricated invoice']
     assertSame(1, count($records), 'Retry creates no duplicate order');
 };
 
+$tests['verified payment survives stock changes and callback retry'] = function (): void {
+    $saved = []; $stock = 'out_of_stock';
+    $ports = [
+        'readOrders' => function () use (&$saved) { return array_values($saved); },
+        'products' => function () use (&$stock) { return ['item'=>['stock_status'=>$stock,'gst_rate'=>5]]; },
+        'settings' => fn() => ['gst_state'=>'Tamil Nadu'],
+        'saveOrder' => function ($order) use (&$saved) { $saved[$order['id']] = $order; },
+    ];
+    $pending = ['total'=>105, 'customer_email'=>'test@example.invalid', 'customer_name'=>'Test', 'customer_phone'=>'',
+        'shipping_address'=>'Test', 'shipping_city'=>'Test', 'shipping_pincode'=>'000000', 'shipping_state'=>'Tamil Nadu',
+        'items'=>[['slug'=>'item','name'=>'Test','qty'=>1,'line_total'=>105]]];
+    $persist = (new ReflectionMethod(\App\Controllers\CommerceController::class, 'persistVerifiedOrder'))->getClosure(new \App\Controllers\CommerceController());
+    $id = $persist($pending, 'payment-test', ['razorpay_order_id'=>'gateway-test'], $ports);
+    assertSame(1, count($saved), 'Verified payment must be recorded despite stock changes');
+    assertSame('on_hold', $saved[$id]['status'] ?? '', 'Order requires review, not automatic fulfilment');
+    assertTrue(!empty($saved[$id]['fulfillment_review_required']), 'Review flag must be present');
+    assertSame('payment-test', $saved[$id]['payment_id'] ?? '', 'Payment identifier is retained');
+    $stock = 'in_stock';
+    assertSame($id, $persist($pending, 'payment-test', ['razorpay_order_id'=>'gateway-test'], $ports), 'Retry remains idempotent after stock changes');
+    assertSame(1, count($saved), 'Retry must not create another order');
+    $missingPorts = $ports; $missingPorts['products'] = fn() => [];
+    $missingId = $persist($pending, 'second-payment-test', [], $missingPorts);
+    assertTrue(!empty($saved[$missingId]['fulfillment_review_required']), 'Missing product requires fulfillment review');
+    assertTrue(!empty($saved[$missingId]['tax_review_required']), 'Missing product tax details require review');
+    assertTrue(empty($saved[$missingId]['invoice_number']), 'Missing product must not cause fabricated tax invoice');
+};
+
+$tests['fulfillment hold requires explicit review before shipping'] = function (): void {
+    $order = ['fulfillment_review_required'=>true]; $now = new DateTimeImmutable('2026-11-11T00:00:00Z');
+    $blocked = false;
+    try { \App\Services\OrderService::reviewFulfillment($order, 'shipped', false, $now); } catch (InvalidArgumentException) { $blocked = true; }
+    assertTrue($blocked, 'Held order cannot be shipped without confirmed availability');
+    $resolved = \App\Services\OrderService::reviewFulfillment($order, 'processing', true, $now);
+    assertTrue(!$resolved['fulfillment_review_required'], 'Explicit confirmation clears hold');
+    assertTrue(!empty($resolved['fulfillment_reviewed_at']), 'Review time is retained');
+    $cancelled = \App\Services\OrderService::reviewFulfillment($order, 'cancelled', false, $now);
+    assertTrue($cancelled['fulfillment_review_required'], 'Cancellation does not falsely claim stock was confirmed');
+};
+
 $tests['cart summary recalculates quantities and mixed product tax rates'] = function (): void {
     $summary = App\Services\TaxService::cartSummary([
         ['line_total' => 105, 'qty' => 1, 'product' => ['gst_rate' => 5]],
