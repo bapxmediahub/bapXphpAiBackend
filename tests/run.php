@@ -831,7 +831,7 @@ $tests['verified payments remain recoverable when order persistence fails'] = fu
     assertTrue(str_contains($commerce, "'[order-persistence-failed] payment_id='"), 'Failed order writes should produce an operator-visible error with payment correlation');
     assertTrue(str_contains($commerce, "'payment_verified' => true"), 'The checkout response should distinguish a verified payment from a persisted order');
     assertTrue(str_contains($commerce, 'Your cart has been preserved.'), 'Customers should be told that failed order persistence did not clear their cart');
-    $persistPosition = strpos($commerce, "\$db->upsert('orders', \$order)");
+    $persistPosition = strpos($commerce, "\$db->insertIfAbsent('orders', \$order)");
     $clearPosition = strpos($commerce, "unset(\$_SESSION['pending_order'], \$_SESSION['cart'])");
     assertTrue($persistPosition !== false && $clearPosition !== false && $persistPosition < $clearPosition, 'Checkout state must only be cleared after the order write succeeds');
 };
@@ -1617,9 +1617,9 @@ $tests['an unpaid checkout never registers an order'] = function (): void {
     // held it in the session; both now do.
     $commerce = file_get_contents(app_path('app/Controllers/CommerceController.php'));
     $beforeVerify = substr($commerce, 0, strpos($commerce, 'public function verifyPayment'));
-    assertTrue(!str_contains($beforeVerify, "upsert('orders'"),
+    assertTrue(!str_contains($beforeVerify, "insertIfAbsent('orders'"),
         'No order may be written before the payment is verified');
-    assertTrue(substr_count($commerce, "upsert('orders'") === 1,
+    assertTrue(substr_count($commerce, "insertIfAbsent('orders'") === 1,
         'Orders should be written in exactly one place, after verification');
     assertTrue(str_contains($beforeVerify, "\$_SESSION['pending_order']"),
         'An unpaid checkout should be held in the session');
@@ -1638,7 +1638,7 @@ $tests['Stripe return verifies and lands on the order confirmation'] = function 
     assertTrue(str_contains($commerce, "['amount_total'] ?? 0) === \$expected"), 'Stripe return should verify the paid amount');
     assertTrue(str_contains($commerce, "['currency'] ?? '')) === 'inr'"), 'Stripe return should verify INR');
     assertTrue(str_contains($commerce, "?placed=1"), 'Stripe success should land on the order-specific thank-you state');
-    assertTrue(substr_count($commerce, "upsert('orders'") === 1, 'Both gateways should share one order persistence boundary');
+    assertTrue(substr_count($commerce, "insertIfAbsent('orders'") === 1, 'Both gateways should share one atomic order persistence boundary');
 };
 
 $tests['shipping an order requires a courier tracking id and link'] = function (): void {
@@ -2218,6 +2218,69 @@ $tests['verified legacy payment is persisted once without a fabricated invoice']
     assertSame(5.0, $records[$id]['items'][0]['gst_rate'] ?? null, 'Tax rate is frozen for later owner review');
     assertSame($id, $persist($pending, 'test-paid-id', [], $ports), 'Repeated gateway callbacks are idempotent');
     assertSame(1, count($records), 'Retry creates no duplicate order');
+};
+
+$tests['verified payment survives concurrent stock changes with one atomic order'] = function (): void {
+    $stored = []; $stock = 'out_of_stock';
+    $insertOrder = function (array $order) use (&$stored): array {
+        $id = $order['id'];
+        if (isset($stored[$id])) return ['inserted'=>false, 'record'=>$stored[$id]];
+        $stored[$id] = $order;
+        return ['inserted'=>true, 'record'=>$order];
+    };
+    $ports = [
+        // Both simulated callbacks have a stale pre-insert read, as concurrent requests can.
+        'readOrders' => fn() => [],
+        'products' => function () use (&$stock) { return ['item'=>['stock_status'=>$stock,'gst_rate'=>5,'hsn_code'=>'8306']]; },
+        'settings' => fn() => ['gst_state'=>'Tamil Nadu'],
+        'insertOrder' => $insertOrder,
+    ];
+    $pending = ['total'=>105, 'customer_email'=>'test@example.invalid', 'customer_name'=>'Test', 'customer_phone'=>'',
+        'shipping_address'=>'Test', 'shipping_city'=>'Test', 'shipping_pincode'=>'000000', 'shipping_state'=>'Tamil Nadu',
+        'items'=>[['slug'=>'item','name'=>'Test','qty'=>1,'line_total'=>105]]];
+    $persist = (new ReflectionMethod(\App\Controllers\CommerceController::class, 'persistVerifiedOrder'))->getClosure(new \App\Controllers\CommerceController());
+    $first = $persist($pending, 'payment-race-test', ['razorpay_order_id'=>'gateway-test'], $ports);
+    $stock = 'in_stock';
+    $second = $persist($pending, 'payment-race-test', ['razorpay_order_id'=>'gateway-test'], $ports);
+    assertSame($first, $second, 'Concurrent callbacks derive the same payment-bound order id');
+    assertSame(1, count($stored), 'Atomic insert keeps one paid order despite stale callback reads');
+    assertSame('on_hold', $stored[$first]['status'] ?? '', 'The first availability exception remains on hold');
+    assertTrue(!empty($stored[$first]['fulfillment_review_required']), 'Stock change remains visible for owner review');
+    assertSame('payment-race-test', $stored[$first]['payment_id'] ?? '', 'Verified payment identity is retained');
+
+    $missingPorts = $ports;
+    $missingPorts['products'] = fn() => [];
+    $missing = $persist($pending, 'missing-product-payment', [], $missingPorts);
+    assertTrue(!empty($stored[$missing]['fulfillment_review_required']), 'Missing product requires fulfillment review');
+    assertTrue(!empty($stored[$missing]['tax_review_required']), 'Missing product tax inputs require review');
+    assertTrue(empty($stored[$missing]['invoice_number']), 'Missing product cannot create a fabricated invoice');
+    try { (new App\Services\TaxService())->reviewedOrder($stored[$missing], array_values($stored), 'Tamil Nadu', ['gst_state'=>'Tamil Nadu']); assertTrue(false, 'Missing product tax inputs must not be guessed during review'); }
+    catch (InvalidArgumentException $error) { assertTrue(str_contains($error->getMessage(), 'HSN and GST rate'), 'Owner is told which tax inputs must be restored'); }
+
+    $stock = 'out_of_stock';
+    $stripe = $persist($pending, 'stripe-payment-race', ['stripe_session_id'=>'cs_test_race'], $ports);
+    assertSame($stripe, $persist($pending, 'stripe-payment-race', ['stripe_session_id'=>'cs_test_race'], $ports), 'Stripe callback retry converges on its first stored order');
+    assertSame('cs_test_race', $stored[$stripe]['stripe_session_id'] ?? '', 'Stripe identity remains attached to the held order');
+    assertTrue(!empty($stored[$stripe]['fulfillment_review_required']), 'Stripe stock change uses the same fulfillment hold');
+
+    $dbSource = file_get_contents(app_path('app/Services/DatabaseService.php'));
+    $remoteSource = file_get_contents(app_path('app/Controllers/RemoteDbController.php'));
+    assertTrue(str_contains($dbSource, 'INSERT IGNORE INTO') && str_contains($remoteSource, "insert_if_absent"), 'Direct MySQL and remotedb expose the same atomic insert boundary');
+    $commerceSource = file_get_contents(app_path('app/Controllers/CommerceController.php'));
+    assertTrue(str_contains($commerceSource, "!empty(\$insert['inserted'])"), 'Only the winning callback queues confirmation mail');
+    assertSame(2, substr_count($commerceSource, '$this->persistVerifiedOrder('), 'Razorpay and Stripe share the atomic persistence boundary');
+};
+
+$tests['fulfillment hold requires explicit owner confirmation'] = function (): void {
+    $order = ['fulfillment_review_required'=>true, 'fulfillment_review_reason'=>'Stock changed'];
+    $now = new DateTimeImmutable('2026-11-11T00:00:00Z');
+    try { \App\Services\OrderService::reviewFulfillment($order, 'shipped', false, $now); assertTrue(false, 'Held order must not ship silently'); }
+    catch (InvalidArgumentException $error) { assertTrue(str_contains($error->getMessage(), 'Confirm availability'), 'Owner receives a useful hold message'); }
+    $resolved = \App\Services\OrderService::reviewFulfillment($order, 'processing', true, $now);
+    assertTrue(empty($resolved['fulfillment_review_required']) && empty($resolved['fulfillment_review_reason']), 'Explicit confirmation clears the hold');
+    assertSame($now->format('c'), $resolved['fulfillment_reviewed_at'], 'Review time is retained');
+    $cancelled = \App\Services\OrderService::reviewFulfillment($order, 'cancelled', false, $now);
+    assertTrue(!empty($cancelled['fulfillment_review_required']), 'Cancellation does not falsely claim availability was confirmed');
 };
 
 $tests['owner can correct a paid tax review record and issue one immutable invoice'] = function (): void {

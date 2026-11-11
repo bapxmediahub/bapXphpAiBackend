@@ -146,6 +146,9 @@ final class TaxService {
     public function reviewedOrder(array $order, array $orders, string $shippingState, array $settings, ?\DateTimeImmutable $at = null): array {
         if (empty($order['tax_review_required'])) throw new \InvalidArgumentException('This order does not require tax recovery.');
         if (!empty($order['invoice_number'])) throw new \InvalidArgumentException('This order already has an issued invoice.');
+        if (str_contains((string)($order['tax_review_reason'] ?? ''), 'Product tax details unavailable')) {
+            throw new \InvalidArgumentException('Product tax details are unavailable. Restore the original HSN and GST rate before issuing an invoice.');
+        }
         if (trim((string)($order['payment_id'] ?? $order['stripe_session_id'] ?? '')) === '') {
             throw new \InvalidArgumentException('Only a verified paid order can receive a recovered invoice.');
         }

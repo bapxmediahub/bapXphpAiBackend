@@ -345,6 +345,8 @@ final class CommerceController extends BaseController {
 
     /** Persist either gateway through one idempotent, tax-aware order boundary. */
     private function persistVerifiedOrder(array $pendingOrder, string $paymentId, array $gatewayFields, ?array $testPorts = null): string {
+        $paymentId = trim($paymentId);
+        if ($paymentId === '') throw new \InvalidArgumentException('Verified payment id is required.');
         // Optional private ports permit deterministic tests without touching hosted records.
         $db = $testPorts === null ? new DatabaseService() : null;
         $existingOrders = $testPorts === null ? $db->read('orders') : ($testPorts['readOrders'])();
@@ -357,10 +359,13 @@ final class CommerceController extends BaseController {
 
         $orderItems = $pendingOrder['items'] ?? [];
         $products = $testPorts === null ? (new ProductService())->bySlug() : ($testPorts['products'])();
+        $unavailable = [];
+        $missingProduct = false;
         foreach ($orderItems as $item) {
             $product = $products[$item['slug'] ?? ''] ?? null;
+            if ($product === null) $missingProduct = true;
             if (!in_array($product['stock_status'] ?? '', ['in_stock', 'active'], true)) {
-                throw new \RuntimeException(($item['name'] ?? 'A product') . ' is no longer available.');
+                $unavailable[] = (string)($item['name'] ?? 'A product');
             }
         }
 
@@ -372,12 +377,16 @@ final class CommerceController extends BaseController {
             return $item;
         }, $orderItems);
         $settings = $testPorts === null ? (new SettingsService())->public() : ($testPorts['settings'])();
-        $tax = (new TaxService())->snapshotForVerifiedPayment($itemsWithRates, 0, (string)($pendingOrder['shipping_state'] ?? ''), $settings);
+        $tax = $missingProduct ? null : (new TaxService())->snapshotForVerifiedPayment($itemsWithRates, 0, (string)($pendingOrder['shipping_state'] ?? ''), $settings);
         $invoice = $tax !== null ? (new TaxService())->nextInvoice($existingOrders) : null;
-        $localId = bin2hex(random_bytes(8));
+        // Every callback for one verified payment converges on the same primary key.
+        // insertIfAbsent then makes the first persisted snapshot the atomic winner.
+        $localId = substr(hash('sha256', 'verified-payment:' . $paymentId), 0, 16);
         $order = array_merge([
             'id' => $localId,
-            'status' => 'confirmed',
+            'status' => $unavailable ? 'on_hold' : 'confirmed',
+            'fulfillment_review_required' => !empty($unavailable),
+            'fulfillment_review_reason' => $unavailable ? 'Product availability changed after checkout' : '',
             'total' => $pendingOrder['total'],
             'payment_id' => $paymentId,
             'payment_email_status' => 'pending',
@@ -395,16 +404,24 @@ final class CommerceController extends BaseController {
             'discount' => $pendingOrder['discount'] ?? 0,
             'customer_gstin' => $pendingOrder['customer_gstin'] ?? '',
             'tax_review_required' => $tax === null,
-            'tax_review_reason' => $tax === null ? 'Missing or invalid delivery or supplier state at payment confirmation' : '',
+            'tax_review_reason' => $tax === null ? ($missingProduct ? 'Product tax details unavailable at payment confirmation' : 'Missing or invalid delivery or supplier state at payment confirmation') : '',
             'created_at' => date('c'),
         ], $gatewayFields);
         if ($tax !== null && $invoice !== null) {
             unset($tax['total']); // Gateway-verified total remains authoritative.
             $order = array_merge($order, $tax, $invoice);
         }
-        if ($testPorts === null) $db->upsert('orders', $order);
-        else ($testPorts['saveOrder'])($order);
-        try { if ($testPorts === null) (new MailQueueService())->enqueuePaymentConfirmation($order); }
+        if ($testPorts === null) {
+            $insert = $db->insertIfAbsent('orders', $order);
+        } elseif (isset($testPorts['insertOrder'])) {
+            $insert = ($testPorts['insertOrder'])($order);
+        } else {
+            ($testPorts['saveOrder'])($order);
+            $insert = ['inserted' => true, 'record' => $order];
+        }
+        $stored = $insert['record'] ?? $order;
+        $localId = (string)($stored['id'] ?? $localId);
+        try { if ($testPorts === null && !empty($insert['inserted'])) (new MailQueueService())->enqueuePaymentConfirmation($stored); }
         catch (\Throwable $error) { error_log('Payment confirmation mail could not be queued.'); }
         unset($_SESSION['pending_order'], $_SESSION['cart']);
         return $localId;

@@ -29,6 +29,7 @@
                                     // reads as "Order placed" to a shopper.
                                     $__raw = (string)($order['status'] ?? 'pending');
                                     $__map = [
+                                        'on_hold'    => ['On hold', 'default'],
                                         'pending'    => ['Order placed', 'default'],
                                         'confirmed'  => ['Order placed', 'default'],
                                         'processing' => ['Processing', 'default'],

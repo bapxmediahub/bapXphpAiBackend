@@ -95,6 +95,14 @@ final class RemoteDbController {
                 echo json_encode(['success' => true, 'record' => $saved]);
                 return;
             }
+            if ($action === 'insert_if_absent') {
+                $record = $input['record'] ?? null;
+                if (!is_array($record) || empty($record['id'])) throw new \InvalidArgumentException('Record id is required.');
+                $result = $store->insertIfAbsent($collection, $record);
+                http_response_code(200);
+                echo json_encode(['success' => true] + $result);
+                return;
+            }
             if ($action === 'delete') {
                 $id = trim((string)($input['id'] ?? ''));
                 if ($id === '') throw new \InvalidArgumentException('Record id is required.');

@@ -30,6 +30,17 @@ final class OrderService {
     public const DELIVERY_DAYS_DOMESTIC = '1 to 14 days';
     public const DELIVERY_DAYS_INTERNATIONAL = 'up to 24 days';
 
+    /** Resolve a paid order hold only after the owner confirms availability. */
+    public static function reviewFulfillment(array $order, string $status, bool $confirmed, \DateTimeImmutable $now): array {
+        if (!empty($order['fulfillment_review_required']) && in_array($status, ['confirmed', 'processing', 'packed', 'shipped', 'delivered'], true)) {
+            if (!$confirmed) throw new \InvalidArgumentException('Confirm availability before fulfilling this held order.');
+            $order['fulfillment_review_required'] = false;
+            $order['fulfillment_review_reason'] = '';
+            $order['fulfillment_reviewed_at'] = $now->format('c');
+        }
+        return $order;
+    }
+
     /**
      * @param array $tracking ['tracking_id' => string, 'tracking_url' => string]
      *
@@ -66,6 +77,7 @@ final class OrderService {
 
         foreach ($orders as &$order) {
             if (($order['id'] ?? '') !== $id) continue;
+            $order = self::reviewFulfillment($order, $status, !empty($tracking['availability_confirmed']), $now);
             $order['status'] = $status;
             $order['updated_at'] = $now->format('c');
             if (in_array($status, ['shipped', 'delivered'], true)) {
