@@ -101,6 +101,10 @@ final class CommerceController extends BaseController {
     public function createOrder(): void {
         $this->isApiRequest = true;
         $this->validateCsrf();
+        $phone = trim((string)($_POST['phone'] ?? ''));
+        if (!\App\Services\AuthService::validPhone($phone)) {
+            $this->jsonResponse(['error' => 'Enter a valid phone number for delivery before payment.'], 422);
+        }
         $secrets = (new SecretService())->all();
         $items = $this->resolveCartItems();
         if (empty($items)) {
@@ -158,7 +162,7 @@ final class CommerceController extends BaseController {
                 'total' => $cartTotal,
                 'customer_email' => $_SESSION['user']['email'] ?? ($_POST['email'] ?? 'guest'),
                 'customer_name' => trim((string)($_POST['name'] ?? ($_SESSION['user']['name'] ?? ''))),
-                'customer_phone' => trim((string)($_POST['phone'] ?? '')),
+                'customer_phone' => $phone,
                 'shipping_address' => trim((string)($_POST['address'] ?? '')),
                 'shipping_city' => trim((string)($_POST['city'] ?? '')),
                 'shipping_pincode' => trim((string)($_POST['pincode'] ?? '')),
@@ -217,7 +221,7 @@ final class CommerceController extends BaseController {
             'discount' => $discount,
             'customer_email' => $_SESSION['user']['email'] ?? ($_POST['email'] ?? 'guest'),
             'customer_name' => trim((string)($_POST['name'] ?? ($_SESSION['user']['name'] ?? ''))),
-            'customer_phone' => trim((string)($_POST['phone'] ?? '')),
+            'customer_phone' => $phone,
             'shipping_address' => trim((string)($_POST['address'] ?? '')),
             'shipping_city' => trim((string)($_POST['city'] ?? '')),
             'shipping_pincode' => trim((string)($_POST['pincode'] ?? '')),

@@ -2467,6 +2467,13 @@ $tests['checkout captures and preserves a validated delivery state'] = function 
     assertTrue(str_contains($addresses, "'state' => \$state"), 'Saved addresses preserve validated state');
 };
 
+$tests['customer phone validation accepts formatted numbers and rejects placeholders'] = function (): void {
+    assertTrue(\App\Services\AuthService::validPhone('+91 98765 43210'), 'Formatted international number is valid');
+    foreach (['', '-------', '12', 'call me 9876543210', '1234567890123456'] as $invalid) {
+        assertTrue(!\App\Services\AuthService::validPhone($invalid), 'Missing or invalid checkout number must be rejected');
+    }
+};
+
 $tests['order email renders purchased quantities and escapes product text'] = function (): void {
     $html = App\Services\MailQueueService::orderItemsHtml([['name' => '<script>unsafe</script>', 'qty' => 3]]);
     assertTrue(str_contains($html, '&times; 3'), 'Receipt shows purchased quantity');

@@ -3,10 +3,10 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 120,
+        "routes": 122,
         "controllers": 12,
         "services": 48,
-        "views": 46,
+        "views": 47,
         "collections": 22
     },
     "routes": [
@@ -104,6 +104,28 @@
                 "AuthService",
                 "OrderService",
                 "ReviewService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/account/dashboard/profile",
+            "name": "account.dashboard.profile",
+            "controller": "AccountController@profile",
+            "view": "account/profile",
+            "services": [
+                "AuthService",
+                "DatabaseService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/account/dashboard/profile",
+            "name": "account.profile.save",
+            "controller": "AccountController@saveProfile",
+            "view": "account/profile",
+            "services": [
+                "AuthService",
+                "DatabaseService"
             ]
         },
         {
@@ -1416,6 +1438,7 @@
         "account/invoice",
         "account/order",
         "account/orders",
+        "account/profile",
         "admin/agent",
         "admin/appearance",
         "admin/blog",

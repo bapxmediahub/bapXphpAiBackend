@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AddressService,AuthService,OrderService,ReviewService,SettingsService,TaxService};
+use App\Services\{AddressService,AuthService,DatabaseService,OrderService,ReviewService,SettingsService,TaxService};
 final class AccountController extends BaseController {
     public function __construct() {
         (new AuthService())->requireUser();
@@ -10,6 +10,48 @@ final class AccountController extends BaseController {
     public function dashboard(): void { $this->redirect('/account/dashboard/orders'); }
     public function legacyOrders(): void { $this->redirect('/account/dashboard/orders'); }
     public function legacyBookings(): void { $this->redirect('/account/dashboard/orders'); }
+
+    public function profile(): void {
+        $profile = $this->profileRecord(new DatabaseService());
+        if ($profile === null) { $this->renderNotFound(); return; }
+        $this->render('account/profile', [
+            'profile' => array_intersect_key($profile, array_flip(['name', 'email', 'phone', 'picture', 'gender', 'date_of_birth'])),
+        ]);
+    }
+
+    public function saveProfile(): void {
+        $this->validateCsrf();
+        $store = new DatabaseService();
+        $record = $this->profileRecord($store);
+        if ($record === null) { $this->renderNotFound(); return; }
+        $name = trim((string)($_POST['name'] ?? ''));
+        $phone = trim((string)($_POST['phone'] ?? ''));
+        $gender = (string)($_POST['gender'] ?? '');
+        $birth = (string)($_POST['date_of_birth'] ?? '');
+        $date = preg_match('/^\d{4}-\d{2}-\d{2}$/D', $birth) ? \DateTimeImmutable::createFromFormat('!Y-m-d', $birth) : false;
+        if ($name === '' || mb_strlen($name) > 100
+            || ($phone !== '' && !AuthService::validPhone($phone))
+            || !in_array($gender, ['', 'female', 'male', 'other', 'prefer_not_to_say'], true)
+            || ($birth !== '' && (!$date || $date->format('Y-m-d') !== $birth || $date > new \DateTimeImmutable('today')))) {
+            $this->flash('Check your name, phone number, gender and date of birth.', 'error');
+        } else {
+            $store->upsert('users', ['id' => $record['id'], 'name' => $name, 'phone' => $phone,
+                'gender' => $gender, 'date_of_birth' => $birth]);
+            $_SESSION['user']['name'] = $name;
+            $_SESSION['user']['phone'] = $phone;
+            $this->flash('Profile saved.', 'success');
+        }
+        $this->redirect('/account/dashboard/profile');
+    }
+
+    private function profileRecord(DatabaseService $store): ?array {
+        $session = $_SESSION['user'] ?? [];
+        $id = (string)($session['sub'] ?? '');
+        if ($id === '' || $id === 'env-admin') return null;
+        $record = $store->find('users', $id);
+        return $record !== null && strcasecmp((string)($record['email'] ?? ''), (string)($session['email'] ?? '')) === 0
+            ? $record : null;
+    }
 
     public function addresses(): void {
         $service = new AddressService();
