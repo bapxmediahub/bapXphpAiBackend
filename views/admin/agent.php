@@ -131,9 +131,11 @@
     const submit = document.getElementById('agent-submit');
     const suggestions = document.getElementById('agent-suggestions');
     const clear = document.getElementById('agent-clear');
+    let previousReport = null;
     clear.addEventListener('click', function () {
         if (submit.disabled) return;
         messages.replaceChildren();
+        previousReport = null;
         suggestions.style.display = '';
         clear.hidden = true;
         input.value = '';
@@ -360,8 +362,13 @@
         const timeout = setTimeout(() => abort.abort(), 35000);
 
         try {
-            const body = 'message=' + encodeURIComponent(msg)
-                + '&_csrf=' + encodeURIComponent(document.querySelector('#agent-form input[name="_csrf"]')?.value || '');
+            const body = new URLSearchParams({
+                message: msg,
+                _csrf: document.querySelector('#agent-form input[name="_csrf"]')?.value || ''
+            });
+            if (previousReport) {
+                for (const key of ['tool', 'from', 'to']) body.set('previous_report[' + key + ']', previousReport[key]);
+            }
             const resp = await fetch('/admin/agent/ask', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -388,6 +395,7 @@
                     response.appendChild(line);
                 }
             }
+            previousReport = data.run?.report_context || null;
             appendRunMeta(thinking, data.run);
             if (data.missing && data.missing.length) {
                 addRow('bot', 'I could not find ' + data.missing.map(m => '<code>@' + escapeHtml(m) + '</code>').join(', ')

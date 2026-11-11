@@ -34,6 +34,7 @@ final class AgentToolRegistry
     }
 
     private array $sources = [];
+    private array $reportContexts = [];
     private array $completedTicketSummaries = [];
 
     public function ticketLookupFallback(): ?string
@@ -50,12 +51,33 @@ final class AgentToolRegistry
         return array_values($this->sources);
     }
 
+    public function reportContext(): ?array
+    {
+        return count($this->reportContexts) === 1 ? reset($this->reportContexts) : null;
+    }
+
+    public function followUpContext(): ?array
+    {
+        if (!self::refersToPreviousPeriod($this->ownerQuestion) || $this->previousReport === null) return null;
+        $tool = $this->previousReport['tool'] ?? null;
+        if (!in_array($tool, ['support_enquiries', 'gst_register_summary', 'sales_summary'], true)
+            || !isset($this->previousReport['from'], $this->previousReport['to'])) return null;
+        $range = self::reportDates($this->previousReport, $tool === 'sales_summary' ? 36500 : 366);
+        return $range === null ? null : $range + ['tool' => $tool];
+    }
+
+    private static function refersToPreviousPeriod(string $question): bool
+    {
+        return (bool)preg_match('/\b(?:that|(?:the |that )?same) (?:date range|period|dates)\b/i', $question);
+    }
+
     public function __construct(
         private DatabaseService $store = new DatabaseService(),
         private ?ProductService $products = null,
         private ?OrderService $orders = null,
         private string $ownerQuestion = '',
-        private ?string $probeProductSlug = null
+        private ?string $probeProductSlug = null,
+        private ?array $previousReport = null
     ) {
         $this->products ??= new ProductService($this->store);
         $this->orders ??= new OrderService($this->store);
@@ -238,6 +260,10 @@ final class AgentToolRegistry
                     default => null,
                 };
                 if ($label !== null) $this->sources[$result['report_url']] = ['label' => $label, 'path' => $result['report_url']];
+                if ($label !== null && isset($result['from'], $result['to'])) {
+                    $context = ['tool' => $name, 'from' => $result['from'], 'to' => $result['to']];
+                    $this->reportContexts[implode(':', $context)] = $context;
+                }
             }
             return $result;
         } catch (\Throwable $e) {
@@ -262,6 +288,20 @@ final class AgentToolRegistry
      */
     public function aggregateAnswer(string $question): ?string
     {
+        if (self::refersToPreviousPeriod($question)) {
+            $context = $this->followUpContext();
+            if ($context === null) return 'Which dates should I use? The previous answer did not establish one report period.';
+            if ($context['tool'] === 'support_enquiries'
+                && preg_match('/^\s*(?:and\s+)?(?:how many|count)\s+(?:support tickets\s+)?(?:were |are )?(open|answered|closed|unanswered)(?: support tickets?)?\s+(?:in|during|for)\s+(?:that|(?:the |that )?same)\s+(?:period|date range|dates)[?!.\s]*$/iD', $question, $match)) {
+                $result = $this->run('support_enquiries', [
+                    'status' => strtolower($match[1]),
+                    'from' => $context['from'],
+                    'to' => $context['to'],
+                ]);
+                return $result['error'] ?? self::ticketSummary($result);
+            }
+            return null;
+        }
         if (($report = $this->reportAnswer($question)) !== null) return $report;
         if (preg_match('/\b(?:gst|tax invoice|support tickets?|enquir(?:y|ies)|inquir(?:y|ies))\b/i', $question)) return null;
         $intent = self::aggregateIntent($question);

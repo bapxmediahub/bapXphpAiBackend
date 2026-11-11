@@ -2919,6 +2919,27 @@ $tests['Enterprise report tools use the requested inclusive relative period'] = 
     }
 };
 
+$tests['Enterprise ticket follow-up retains the previous report period'] = static function (): void {
+    $previousMode = getenv('BAPX_TEST_MODE');
+    putenv('BAPX_TEST_MODE=1');
+    try {
+        $question = 'And how many were answered in that same period?';
+        $previous = (new \App\Services\AgentToolRegistry())->run('support_enquiries', [
+            'from' => '2026-09-01', 'to' => '2026-09-07', 'status' => 'open',
+        ]);
+        $tools = new \App\Services\AgentToolRegistry(ownerQuestion: $question, previousReport: [
+            'tool' => 'support_enquiries', 'from' => $previous['from'], 'to' => $previous['to'],
+        ]);
+        $answer = $tools->aggregateAnswer($question);
+        assertTrue(str_contains($answer, 'answered support tickets') && str_contains($answer, '2026-09-01 to 2026-09-07'),
+            'Follow-up preserves the prior date range and applies the new status');
+        $fresh = new \App\Services\AgentToolRegistry(ownerQuestion: $question);
+        assertTrue(str_contains($fresh->aggregateAnswer($question), 'Which dates'), 'A fresh chat asks for dates');
+    } finally {
+        putenv($previousMode === false ? 'BAPX_TEST_MODE' : 'BAPX_TEST_MODE=' . $previousMode);
+    }
+};
+
 $tests['support ticket data is scoped and does not expose conversation bodies'] = static function (): void {
     $query = \App\Services\SupportBotService::ticketLookupRequest('How many of my tickets are closed?');
     assertSame('closed', $query['status'] ?? null, 'Status after the noun must constrain the lookup');
