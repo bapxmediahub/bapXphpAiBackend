@@ -1,10 +1,6 @@
 <?php
 namespace App\Services;
 final class SecretService {
-    // Stable, low-latency model with function calling, selected after live connection
-    // and tool-loop probes: https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash-lite
-    public const DEFAULT_MODEL = 'gemini-3.5-flash-lite';
-
     public function __construct(private ?DatabaseService $store = null) {}
     public function razorpayReadyForCurrentHost(array $secrets): bool {
         return !empty($secrets['razorpay_key_id']) && !empty($secrets['razorpay_key_secret']);
@@ -73,7 +69,7 @@ final class SecretService {
         $endpoint = $this->firstValue($secrets, ['api_endpoint'], ['BAPX_AI_ENDPOINT']);
         $apiKey = $this->firstValue($secrets, ['ai_api_key', 'agent_api_key', 'support_bot_google_api_key'], ['AI_API_KEY', 'AGENT_API_KEY', 'BAPX_AI_API_KEY']);
         $model = $this->firstValue($secrets, ['agent_model', 'support_bot_model'], ['AGENT_MODEL', 'BAPX_AI_MODEL']);
-        if ($model === '') $model = self::DEFAULT_MODEL;
+        if ($model === '') $model = 'gemma-4-31b-it';
         if ($endpoint === '') {
             if (str_contains($model, 'gemini') || str_contains($model, 'gemma')) {
                 $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/';

@@ -7,7 +7,7 @@ namespace App\Services;
  * There used to be two. AdminController resolved the endpoint and model through
  * SecretService::getModelConfig(), so it used whatever was saved in Admin →
  * Integrations. SupportBotService built its own URL, hardcoding
- * generativelanguage.googleapis.com and defaulting to one fixed model, so it ignored
+ * generativelanguage.googleapis.com and defaulting to gemma-4-31b-it, so it ignored
  * that configuration entirely: changing the model in the admin fixed the admin agent
  * and left the customer-facing widget calling a model that answered 404. Every reply
  * on the public site fell back to a canned menu, and nothing in the UI said why.
@@ -201,7 +201,7 @@ final class AiClient
         $this->transferTimings = [];
         $config = $this->secrets->getModelConfig();
         $endpoint = rtrim((string)($config['endpoint'] ?? 'https://api.openai.com/v1'), '/');
-        $model = $modelOverride ?? (string)($config['model'] ?? SecretService::DEFAULT_MODEL);
+        $model = $modelOverride ?? (string)($config['model'] ?? 'gemma-4-31b-it');
         $key = trim((string)($config['apiKey'] ?? ''));
         $provider = (string)($config['provider'] ?? 'openai');
 
