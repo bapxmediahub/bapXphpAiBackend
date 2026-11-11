@@ -36,8 +36,8 @@ query_examples:
   - "rg -n -B4 -A12 'type: \"skill\"' index.yaml"
   - "rg -n '<term>' docs/project-index.json map.mmd index.yaml"
 summary:
-  concepts: 352
-  relationships: 249
+  concepts: 353
+  relationships: 250
   by_type:
     blog: 14
     controller: 12
@@ -45,7 +45,7 @@ summary:
     image: 89
     route: 123
     schema: 22
-    service: 48
+    service: 49
     skill: 9
 concepts:
   - id: "blog:benefits-of-rudraksha"
@@ -2240,6 +2240,8 @@ concepts:
     controller: "AdminController@taxReport"
     services:
       - "OrderService"
+      - "ProductService"
+      - "StoreStatsService"
       - "TaxService"
       - "AuthService"
     view: "admin/tax-report"
@@ -4153,6 +4155,14 @@ concepts:
     tags:
       - "code"
       - "service"
+  - id: "service:StoreStatsService"
+    type: "service"
+    title: "StoreStatsService"
+    description: "Service: StoreStatsService"
+    resource: "app/Services/StoreStatsService.php"
+    tags:
+      - "code"
+      - "service"
   - id: "service:SupportBotService"
     type: "service"
     title: "SupportBotService"
@@ -4359,6 +4369,9 @@ relationships:
     relation: "uses"
   - from: "controller:AdminController"
     to: "service:SmtpMailer"
+    relation: "uses"
+  - from: "controller:AdminController"
+    to: "service:StoreStatsService"
     relation: "uses"
   - from: "controller:AdminController"
     to: "service:SupportTicketService"

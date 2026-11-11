@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AuditLogService,MailQueueService,AuthService,BlogDraftService,ConsultationService,EnvService,MailStorageService,MarkdownRenderer,MediaService,OrderService,ResourceService,SchemaService,SecretService,SettingsService,StoragePermissionService};
+use App\Services\{AuditLogService,MailQueueService,AuthService,BlogDraftService,ConsultationService,EnvService,MailStorageService,MarkdownRenderer,MediaService,OrderService,ResourceService,SchemaService,SecretService,SettingsService,StoragePermissionService,StoreStatsService};
 final class AdminController extends BaseController {
     protected string $layout = 'admin';
     public function __construct() {
@@ -718,23 +718,35 @@ final class AdminController extends BaseController {
         $this->jsonResponse(['content' => trim($result)]);
     }
     public function taxReport(): void{
-        $orders = (new OrderService())->all();
-        $orders = array_values(array_filter($orders, fn($o) => !empty($o['invoice_number'])));
-        $settings = (new SettingsService())->public();
-        $from = (string)($_GET['from'] ?? '');
-        $to = (string)($_GET['to'] ?? '');
-        if ($from !== '') $orders = array_values(array_filter($orders, fn($o) => ($o['invoice_date'] ?? '') >= $from));
-        if ($to !== '') $orders = array_values(array_filter($orders, fn($o) => ($o['invoice_date'] ?? '') <= $to . 'T23:59:59'));
-        if (($_GET['format'] ?? '') === 'csv') {
+        $filter = static fn(string $key): string => is_string($_GET[$key] ?? null) ? $_GET[$key] : '';
+        $range = StoreStatsService::dateRange($filter('from'), $filter('to'));
+        $from = $range['from'];
+        $to = $range['to'];
+        $report = $filter('report');
+        $requestedGroup = $filter('group');
+        $format = $filter('format');
+        $reportType = isset(StoreStatsService::REPORT_TYPES[$report]) ? $report : ($format === 'csv' ? 'tax' : 'sales');
+        $group = isset(StoreStatsService::GROUPS[$requestedGroup]) ? $requestedGroup : 'day';
+        $allowedStatuses = ['pending','on_hold','confirmed','processing','packed','shipped','delivered'];
+        $status = in_array($filter('status'), $allowedStatuses, true) ? $filter('status') : '';
+        $allOrders = $reportType === 'stock' ? [] : (new OrderService())->all();
+        $settings = $reportType === 'tax' ? (new SettingsService())->public() : [];
+
+        $taxOrders = $reportType === 'tax' ? array_values(array_filter($allOrders, static fn(array $order): bool =>
+            !empty($order['invoice_number'])
+            && substr((string)($order['invoice_date'] ?? ''), 0, 10) >= $from
+            && substr((string)($order['invoice_date'] ?? ''), 0, 10) <= $to
+        )) : [];
+        if ($reportType === 'tax' && $format === 'csv') {
             header('Content-Type: text/csv; charset=utf-8');
             header('Content-Disposition: attachment; filename="gst-tax-report.csv"');
             $handle = fopen('php://output', 'w');
             fputcsv($handle, ['Invoice','Date','Customer','Place of Supply','Taxable','CGST','SGST','IGST','Total','Review']);
-            foreach ($orders as $o) fputcsv($handle, [$o['invoice_number']??'',substr($o['invoice_date']??'',0,10),$o['customer_email']??'',$o['place_of_supply']??'',$o['taxable_value']??0,$o['cgst_total']??0,$o['sgst_total']??0,$o['igst_total']??0,$o['total']??0,\App\Services\TaxService::invoiceReviewReason($o, $settings)??'']);
+            foreach ($taxOrders as $o) fputcsv($handle, [$o['invoice_number']??'',substr($o['invoice_date']??'',0,10),$o['customer_email']??'',$o['place_of_supply']??'',$o['taxable_value']??0,$o['cgst_total']??0,$o['sgst_total']??0,$o['igst_total']??0,$o['total']??0,\App\Services\TaxService::invoiceReviewReason($o, $settings)??'']);
             fclose($handle); exit;
         }
         $totals = ['taxable'=>0,'cgst'=>0,'sgst'=>0,'igst'=>0,'tax'=>0,'gross'=>0];
-        foreach ($orders as $o) {
+        foreach ($taxOrders as $o) {
             $totals['taxable'] += (float)($o['taxable_value'] ?? 0);
             $totals['cgst']    += (float)($o['cgst_total'] ?? 0);
             $totals['sgst']    += (float)($o['sgst_total'] ?? 0);
@@ -743,8 +755,23 @@ final class AdminController extends BaseController {
             $totals['gross']   += (float)($o['total'] ?? 0);
         }
         $invoiceReviewReasons = [];
-        foreach ($orders as $o) if ($reason = \App\Services\TaxService::invoiceReviewReason($o, $settings)) $invoiceReviewReasons[(string)($o['id'] ?? $o['invoice_number'] ?? '')] = $reason;
-        $this->render('admin/tax-report', ['pageTitle'=>'GST Tax Report','title'=>'GST Product Sales Report','orders'=>$orders,'from'=>$from,'to'=>$to,'totals'=>$totals,'invoiceReviewReasons'=>$invoiceReviewReasons]);
+        foreach ($taxOrders as $o) if ($reason = \App\Services\TaxService::invoiceReviewReason($o, $settings)) $invoiceReviewReasons[(string)($o['id'] ?? $o['invoice_number'] ?? '')] = $reason;
+
+        $reportRows = match ($reportType) {
+            'products' => StoreStatsService::productsPurchased($allOrders, $from, $to, $status),
+            'stock' => StoreStatsService::stock((new \App\Services\ProductService())->all()),
+            'customers' => StoreStatsService::customers($allOrders, $from, $to, $status),
+            'coupons' => StoreStatsService::coupons($allOrders, $from, $to, $status),
+            'tax' => $taxOrders,
+            default => StoreStatsService::sales($allOrders, $from, $to, $group, $status),
+        };
+        $this->render('admin/tax-report', [
+            'pageTitle'=>'Reports', 'title'=>'Commerce Reports', 'orders'=>$taxOrders,
+            'from'=>$from, 'to'=>$to, 'totals'=>$totals, 'invoiceReviewReasons'=>$invoiceReviewReasons,
+            'reportType'=>$reportType, 'reportTypes'=>StoreStatsService::REPORT_TYPES,
+            'group'=>$group, 'groups'=>StoreStatsService::GROUPS, 'status'=>$status,
+            'allowedStatuses'=>$allowedStatuses, 'reportRows'=>$reportRows,
+        ]);
     }
     private function list(string $title, ?string $collection = null): void{$this->render('admin/list',['pageTitle' => $title, 'title' => $title, 'collection' => $collection, 'items'=>$collection ? (new ResourceService($collection))->all() : []]);}
     private function resource(string $title,string $collection,array $fields): void{$this->render('admin/resource',['pageTitle' => $title, 'title' => $title, 'collection' => $collection, 'fields' => $fields, 'items'=>(new ResourceService($collection))->all(), 'mediaFiles'=>$this->mediaFor($collection)]);}

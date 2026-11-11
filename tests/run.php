@@ -1592,6 +1592,56 @@ $tests['verified refunds stay separate from fulfillment and are visible on custo
     assertTrue(str_contains($detail, 'remains paid'), 'Customer detail must explain the balance on a partial refund');
 };
 
+$tests['commerce reports group net paid sales and expose product customer coupon stock and tax views'] = function (): void {
+    $orders = [
+        [
+            'id'=>'one', 'created_at'=>'2026-11-02T10:00:00+05:30', 'status'=>'delivered',
+            'payment_id'=>'pay_one', 'customer_email'=>'one@example.com', 'total'=>1000,
+            'items'=>[['name'=>'Pendant','qty'=>2,'line_total'=>1000]],
+            'coupon_code'=>'BLESS', 'discount'=>100, 'verified_refunds'=>[['id'=>'rfnd_one','amount_paise'=>20000]],
+        ],
+        [
+            'id'=>'two', 'created_at'=>'2026-11-19T10:00:00+05:30', 'status'=>'shipped',
+            'payment_id'=>'pay_two', 'customer_email'=>'two@example.com', 'total'=>500,
+            'items'=>[['name'=>'Ring','qty'=>1,'line_total'=>500]], 'verified_refunds'=>[],
+        ],
+        ['id'=>'cancelled','created_at'=>'2026-11-20','status'=>'cancelled','payment_id'=>'pay_cancelled','total'=>900],
+        ['id'=>'unpaid','created_at'=>'2026-11-20','status'=>'pending','payment_id'=>'','total'=>700],
+        ['id'=>'old','created_at'=>'2026-10-01','status'=>'delivered','payment_id'=>'pay_old','total'=>300],
+    ];
+    $sales = \App\Services\StoreStatsService::sales($orders, '2026-11-01', '2026-11-30', 'month');
+    assertSame(1, count($sales), 'Monthly grouping produces one November bucket');
+    assertSame('2026-11', $sales[0]['period'], 'Month label is deterministic');
+    assertSame(2, $sales[0]['orders'], 'Only paid, non-cancelled orders are counted');
+    assertSame(3, $sales[0]['units'], 'Purchased quantities are summed');
+    assertSame(1500.0, $sales[0]['gross'], 'Gross sales retain recorded paid totals');
+    assertSame(200.0, $sales[0]['refunded'], 'Verified refunds are visible');
+    assertSame(1300.0, $sales[0]['net'], 'Net sales deduct verified refunds');
+
+    $products = \App\Services\StoreStatsService::productsPurchased($orders, '2026-11-01', '2026-11-30');
+    assertSame('Pendant', $products[0]['product'], 'Products are ranked by units');
+    assertSame(2, $products[0]['units'], 'Product quantity is retained');
+    assertSame(800.0, $products[0]['net'], 'Order refund ratio is reflected in product net sales');
+    $customers = \App\Services\StoreStatsService::customers($orders, '2026-11-01', '2026-11-30');
+    assertSame(800.0, $customers[0]['net'], 'Customer report uses net revenue');
+    $coupons = \App\Services\StoreStatsService::coupons($orders, '2026-11-01', '2026-11-30');
+    assertSame(['coupon'=>'BLESS','uses'=>1,'discount'=>100.0,'net'=>800.0], $coupons[0], 'Coupon report connects usage, discount and net sales');
+    $stock = \App\Services\StoreStatsService::stock([['name'=>'Pendant','stock_status'=>'in_stock','price'=>999,'offer_price'=>899]]);
+    assertSame(899.0, $stock[0]['offer_price'], 'Stock report keeps current catalogue pricing');
+    assertSame(['from'=>'2026-11-05','to'=>'2026-11-20'], \App\Services\StoreStatsService::dateRange('2026-11-20','2026-11-05'), 'Reversed dates are normalised');
+
+    $view = file_get_contents(app_path('views/admin/tax-report.php'));
+    foreach (['name="report"', 'name="from"', 'name="to"', 'name="status"', 'name="group"', 'Net sales', 'GST'] as $needle) {
+        assertTrue(str_contains($view, $needle), "Commerce report UI should include {$needle}");
+    }
+    $service = file_get_contents(app_path('app/Services/StoreStatsService.php'));
+    foreach (['Sales', 'Products purchased', 'Product stock', 'Customer orders', 'Coupons', 'GST tax'] as $label) {
+        assertTrue(str_contains($service, $label), "Report selector should include {$label}");
+    }
+    $map = file_get_contents(app_path('app/Services/ProjectMapService.php'));
+    assertTrue(str_contains($map, "'StoreStatsService'"), 'Project inventory must wire the shared reporting service');
+};
+
 $tests['product breadcrumb uses the category identifier accepted by the shop'] = function (): void {
     $product = file_get_contents(app_path('views/public/product.php'));
     assertTrue(str_contains($product, "rawurlencode(trim((string)\$product['category']))"), 'Category filter must use the encoded stored category, not an absent category_slug');
