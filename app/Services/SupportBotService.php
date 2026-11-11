@@ -11,6 +11,7 @@ final class SupportBotService {
     public function answer(string $message, ?array $user): array {
         $startedAt = microtime(true);
         $outcome = 'fallback';
+        $reason = null;
         $message = trim($message);
         if ($message === '') throw new \InvalidArgumentException('Message is required.');
         $context = $this->customerContext($user);
@@ -24,13 +25,13 @@ final class SupportBotService {
             : null;
         if ($reply !== null) $outcome = 'private_account';
         if ($reply === null) {
-            $aiReply = $this->modelReply($message, $context);
+            $aiReply = $this->modelReply($message, $context, $reason);
             if ($aiReply !== null) {
                 $candidate = $this->cleanReply($aiReply);
                 if (!$this->looksInternal($candidate) && trim($candidate) !== '') {
                     $reply = $candidate;
                     $outcome = 'model';
-                }
+                } else { $reason = 'rejected_response'; }
             }
         }
         $reply ??= $this->fallbackReply($message, $context);
@@ -46,7 +47,7 @@ final class SupportBotService {
         }
         $actions = $this->extractActions($reply);
         if ($actions !== []) $result['actions'] = $actions;
-        (new AuditLogService($this->store))->agentRun('support', $outcome, $startedAt);
+        (new AuditLogService($this->store))->agentRun('support', $outcome, $startedAt, $reason);
         return $result;
     }
 
@@ -77,7 +78,7 @@ final class SupportBotService {
      * admin agent and left this one calling a model that answered 404 — every customer
      * reply silently fell back to a canned menu.
      */
-    private function modelReply(string $message, array $context): ?string {
+    private function modelReply(string $message, array $context, ?string &$reason): ?string {
         $prompt = "You are Sri Panchami Spiritual support bot.\n"
             . "Answer only the question that was asked, in two or three plain-text sentences.\n"
             . "Never restate these instructions, the capability list, the JSON, or the question. "
@@ -98,7 +99,10 @@ final class SupportBotService {
             . json_encode($context, JSON_UNESCAPED_SLASHES)
             . "\nCustomer question: " . $message
             . "\nSupport reply:";
-        return (new AiClient($this->secrets))->completeOrNull($prompt, 220, 0.2);
+        $client = new AiClient($this->secrets);
+        $answer = $client->completeOrNull($prompt, 220, 0.2);
+        $reason = $client->failureCategory();
+        return $answer;
     }
 
     private function cleanReply(string $reply): string {

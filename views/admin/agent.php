@@ -3,7 +3,7 @@
         <div>
             <h2 class="agent-head__title">AI Agent</h2>
             <p class="agent-head__sub">
-                Ask about users, orders, revenue, top customers or products, or paste content to draft a blog post.
+                Ask about store totals, revenue and products, or draft a blog post. For an order lookup, include the full order ID or customer email.
             </p>
         </div>
         <div class="agent-head__meta">
@@ -27,7 +27,7 @@
         <div class="agent-row agent-row--bot">
             <div class="agent-avatar agent-avatar--bot" aria-hidden="true">AI</div>
             <div class="agent-bubble agent-bubble--bot">
-                Ask me about users, revenue, top customers or products — or give me content and I'll draft a blog post.
+                Ask me about store totals, revenue or products. To look up an order, include the full order ID or customer email.
             </div>
         </div>
     </div>

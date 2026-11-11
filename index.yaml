@@ -37,7 +37,7 @@ query_examples:
   - "rg -n '<term>' docs/project-index.json map.mmd index.yaml"
 summary:
   concepts: 344
-  relationships: 237
+  relationships: 238
   by_type:
     blog: 14
     controller: 12
@@ -4705,6 +4705,9 @@ relationships:
     relation: "stores"
   - from: "service:AgentContextService"
     to: "schema:orders"
+    relation: "stores"
+  - from: "service:AgentContextService"
+    to: "schema:products"
     relation: "stores"
   - from: "service:AgentContextService"
     to: "schema:settings"

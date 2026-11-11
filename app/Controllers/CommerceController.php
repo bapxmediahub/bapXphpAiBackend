@@ -117,6 +117,10 @@ final class CommerceController extends BaseController {
                 $this->jsonResponse(['error' => e($item['name']) . ' is currently unavailable.'], 400);
             }
         }
+        $shippingState = TaxService::normaliseState((string)($_POST['state'] ?? ''));
+        if ($shippingState === null) {
+            $this->jsonResponse(['error' => 'Select a valid delivery state before payment.'], 422);
+        }
         $paymentMethod = trim($_POST['payment_method'] ?? 'razorpay');
         if (!empty($_SESSION['user']['email']) && !empty($_POST['save_address']) && trim((string)($_POST['address_name'] ?? '')) !== '') {
             (new \App\Services\AddressService())->save($_SESSION['user']['email'], $_POST);
@@ -154,7 +158,7 @@ final class CommerceController extends BaseController {
                 'shipping_address' => trim((string)($_POST['address'] ?? '')),
                 'shipping_city' => trim((string)($_POST['city'] ?? '')),
                 'shipping_pincode' => trim((string)($_POST['pincode'] ?? '')),
-                'shipping_state' => trim((string)($_POST['state'] ?? '')),
+                'shipping_state' => $shippingState,
                 'customer_gstin' => trim((string)($_POST['customer_gstin'] ?? '')),
                 'items' => array_map(fn($i) => ['slug' => $i['slug'], 'name' => $i['name'], 'qty' => $i['qty'], 'line_total' => $i['line_total']], $items),
                 'stripe_session_id' => $stripeSession['id'] ?? '',
@@ -213,7 +217,7 @@ final class CommerceController extends BaseController {
             'shipping_address' => trim((string)($_POST['address'] ?? '')),
             'shipping_city' => trim((string)($_POST['city'] ?? '')),
             'shipping_pincode' => trim((string)($_POST['pincode'] ?? '')),
-            'shipping_state' => trim((string)($_POST['state'] ?? '')),
+            'shipping_state' => $shippingState,
             'customer_gstin' => trim((string)($_POST['customer_gstin'] ?? '')),
         ];
         $this->jsonResponse([

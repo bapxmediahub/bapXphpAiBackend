@@ -109,6 +109,7 @@ final class AdminController extends BaseController {
         // The template uses this only as a fallback for old invoices without snapshots.
         // Never fill an issued invoice with current supplier settings.
         $settings = [];
+        $invoiceReviewReason = \App\Services\TaxService::invoiceReviewReason($order, (new SettingsService())->public());
         $download = isset($_GET['download']) && $_GET['download'] === '1';
         if ($download) {
             $filename = preg_replace('/[^A-Za-z0-9._-]+/', '-', (string)$order['invoice_number']);
@@ -120,7 +121,7 @@ final class AdminController extends BaseController {
             return;
         }
         $adminInvoice = true;
-        $this->render('account/invoice', compact('order', 'settings', 'adminInvoice'));
+        $this->render('account/invoice', compact('order', 'settings', 'adminInvoice', 'invoiceReviewReason'));
     }
     public function saveOrderStatus(string $id): void{
         $status = (string)($_POST['status'] ?? 'confirmed');
@@ -212,85 +213,25 @@ final class AdminController extends BaseController {
                 return;
             }
             $secrets = new SecretService();
-            $db = new \App\Services\DatabaseService();
             $modelConfig = $secrets->getModelConfig();
-            $orders = $db->read('orders');
-            $users = $db->read('users');
-            $products = $db->read('products');
-            $userCount = count($users);
-            $orderCount = count($orders);
-            $productCount = count($products);
-            $astrologerCount = count($db->read('astrologers'));
-            $appointmentCount = count($db->read('appointments'));
-            $ticketCount = count($db->read('support_tickets'));
-            $totalRevenue = array_sum(array_column($orders, 'total'));
-            $confirmedOrders = array_filter($orders, fn($o) => ($o['status'] ?? '') === 'confirmed');
-            $pendingOrders = array_filter($orders, fn($o) => ($o['status'] ?? '') === 'pending');
-            $confirmedRevenue = array_sum(array_column($confirmedOrders, 'total'));
-            $pendingRevenue = array_sum(array_column($pendingOrders, 'total'));
-            $avgOrderValue = $orderCount > 0 ? $totalRevenue / $orderCount : 0;
-            $revenueByUser = [];
-            foreach ($confirmedOrders as $o) {
-                $email = $o['customer_email'] ?? 'guest';
-                $revenueByUser[$email] = ($revenueByUser[$email] ?? 0) + (float)($o['total'] ?? 0);
-            }
-            arsort($revenueByUser);
-            $topUsers = array_slice($revenueByUser, 0, 5);
-            $topUsersStr = '';
-            foreach ($topUsers as $email => $amount) {
-                $topUsersStr .= "\n  - {$email}: ₹" . number_format($amount, 2);
-            }
-            // Per-product sales. "Which products sell best?" could not be answered before,
-            // because only a product count reached the model.
-            $unitsBySlug = [];
-            $revenueBySlug = [];
-            foreach ($confirmedOrders as $o) {
-                foreach (($o['items'] ?? []) as $item) {
-                    $key = (string)($item['name'] ?? $item['slug'] ?? '');
-                    if ($key === '') continue;
-                    $qty = (int)($item['qty'] ?? 1);
-                    $unitsBySlug[$key] = ($unitsBySlug[$key] ?? 0) + $qty;
-                    $revenueBySlug[$key] = ($revenueBySlug[$key] ?? 0) + (float)($item['line_total'] ?? 0);
-                }
-            }
-            arsort($unitsBySlug);
-            $topProductsStr = '';
-            foreach (array_slice($unitsBySlug, 0, 5, true) as $name => $units) {
-                $topProductsStr .= "\n  - {$name}: {$units} sold, ₹" . number_format($revenueBySlug[$name] ?? 0, 2);
-            }
-            if ($topProductsStr === '') $topProductsStr = "\n  - no confirmed sales yet";
-
-            $context = "You are the admin AI assistant. You have full access to site data.\n\n"
-                . "Site data:\n"
-                . "- Total users: {$userCount}\n"
-                . "- Total orders: {$orderCount} (confirmed: " . count($confirmedOrders) . ", pending: " . count($pendingOrders) . ")\n"
-                . "- Products: {$productCount}\n"
-                . "- Astrologers: {$astrologerCount}\n"
-                . "- Appointments: {$appointmentCount}\n"
-                . "- Support tickets: {$ticketCount}\n"
-                . "- Total revenue: ₹" . number_format($totalRevenue, 2) . "\n"
-                . "- Confirmed revenue: ₹" . number_format($confirmedRevenue, 2) . "\n"
-                . "- Pending revenue (unconfirmed): ₹" . number_format($pendingRevenue, 2) . "\n"
-                . "- Average order value: ₹" . number_format($avgOrderValue, 2) . "\n"
-                . "- Top 5 products by units sold:" . $topProductsStr . "\n"
-                . "- Top 5 customers by revenue:" . $topUsersStr
-                . ($attachments['context'] !== '' ? "\n\nDocuments the owner attached with @:" . $attachments['context'] : '')
-                . "\n\nUse this data to answer. Never repeat it back unless asked for it. "
-                . "Never list customer email addresses unless the question is specifically about customers.";
+            $context = (new \App\Services\AgentContextService())->forOwnerAnalytics()
+                . ($attachments['context'] !== '' ? "\n\nDocuments the owner attached with @:" . $attachments['context'] : '');
+            $reason = null;
             if (!empty($modelConfig['apiKey'])) {
-                $answer = $this->callAiApi($modelConfig, $message, $context);
+                $answer = $this->callAiApi($modelConfig, $message, $context, $reason);
             } else {
+                $reason = 'not_configured';
                 $answer = "AI model not configured. Go to Admin → Integrations and set api_endpoint, ai_api_key, and agent_model.";
             }
             $failed = empty($modelConfig['apiKey']) || \App\Services\AiClient::isError($answer);
-            (new AuditLogService())->agentRun('admin', $failed ? 'error' : 'model', $startedAt);
+            (new AuditLogService())->agentRun('admin', $failed ? 'error' : ($reason === 'rejected_response' ? 'fallback' : 'model'), $startedAt, $reason);
             if ($failed) {
                 $this->jsonResponse(['error'=>$answer, 'missing'=>$attachments['missing']],502);
                 return;
             }
             $this->jsonResponse(['answer'=>$answer, 'missing'=>$attachments['missing']]);
         } catch (\Throwable $e) {
-            (new AuditLogService())->agentRun('admin', 'error', $startedAt);
+            (new AuditLogService())->agentRun('admin', 'error', $startedAt, 'internal_error');
             $this->jsonResponse(['error'=>'Agent error: '.$e->getMessage()],500);
         }
     }
@@ -319,7 +260,7 @@ final class AdminController extends BaseController {
      * admin had configured here. This method keeps the admin's prompt and its
      * error-to-screen behaviour.
      */
-    private function callAiApi(array $config, string $message, string $context): string {
+    private function callAiApi(array $config, string $message, string $context, ?string &$reason = null): string {
         // "Answer directly / give only the final answer" produced a bare "5" for
         // "how many enquiries came for orders" — and that 5 was the order count from
         // the statistics blob, not enquiries, of which there are none. A number with no
@@ -342,9 +283,11 @@ final class AdminController extends BaseController {
         // With tools the agent can answer "where is order 9426" — the data was always
         // there, but nothing let the model ask for it.
         $client = new \App\Services\AiClient();
-        $tools = new \App\Services\AgentToolRegistry();
+        $tools = new \App\Services\AgentToolRegistry(ownerQuestion: $message);
         $answer = $client->completeWithTools($prompt, $tools);
+        $reason = $client->failureCategory();
         if (\App\Services\AiClient::isError($answer)) return $answer;
+        if (trim($answer) === '') return 'AI request failed: the provider returned no answer. Please try again.';
 
         // A bare figure is the failure this persona exists to prevent, so it is caught
         // rather than trusted. One retry, then whatever comes back is shown — an
@@ -355,9 +298,16 @@ final class AdminController extends BaseController {
                 . "Say what that number counts, which data you checked to get it, and how you interpreted the question.",
                 $tools
             );
-            if (!\App\Services\AiClient::isError($retry) && trim($retry) !== '') $answer = $retry;
+            if (!\App\Services\AiClient::isError($retry) && trim($retry) !== '') {
+                $answer = $retry;
+                $reason = $client->failureCategory();
+            } // A failed retry is discarded: the original answer is still shown.
         }
-        return $this->cleanAnswer($answer);
+        $clean = $this->cleanAnswer($answer);
+        if ($clean === 'I could not produce a clear answer to that. Try asking it a different way.') {
+            $reason = 'rejected_response';
+        }
+        return $clean;
     }
 
     /** A reply that is only a number, with nothing saying what it counts. */
@@ -686,6 +636,7 @@ final class AdminController extends BaseController {
     public function taxReport(): void{
         $orders = (new OrderService())->all();
         $orders = array_values(array_filter($orders, fn($o) => !empty($o['invoice_number'])));
+        $settings = (new SettingsService())->public();
         $from = (string)($_GET['from'] ?? '');
         $to = (string)($_GET['to'] ?? '');
         if ($from !== '') $orders = array_values(array_filter($orders, fn($o) => ($o['invoice_date'] ?? '') >= $from));
@@ -694,8 +645,8 @@ final class AdminController extends BaseController {
             header('Content-Type: text/csv; charset=utf-8');
             header('Content-Disposition: attachment; filename="gst-tax-report.csv"');
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['Invoice','Date','Customer','Place of Supply','Taxable','CGST','SGST','IGST','Total']);
-            foreach ($orders as $o) fputcsv($handle, [$o['invoice_number']??'',substr($o['invoice_date']??'',0,10),$o['customer_email']??'',$o['place_of_supply']??'',$o['taxable_value']??0,$o['cgst_total']??0,$o['sgst_total']??0,$o['igst_total']??0,$o['total']??0]);
+            fputcsv($handle, ['Invoice','Date','Customer','Place of Supply','Taxable','CGST','SGST','IGST','Total','Review']);
+            foreach ($orders as $o) fputcsv($handle, [$o['invoice_number']??'',substr($o['invoice_date']??'',0,10),$o['customer_email']??'',$o['place_of_supply']??'',$o['taxable_value']??0,$o['cgst_total']??0,$o['sgst_total']??0,$o['igst_total']??0,$o['total']??0,\App\Services\TaxService::invoiceReviewReason($o, $settings)??'']);
             fclose($handle); exit;
         }
         $totals = ['taxable'=>0,'cgst'=>0,'sgst'=>0,'igst'=>0,'tax'=>0,'gross'=>0];
@@ -707,7 +658,9 @@ final class AdminController extends BaseController {
             $totals['tax']     += (float)($o['cgst_total'] ?? 0) + (float)($o['sgst_total'] ?? 0) + (float)($o['igst_total'] ?? 0);
             $totals['gross']   += (float)($o['total'] ?? 0);
         }
-        $this->render('admin/tax-report', ['pageTitle'=>'GST Tax Report','title'=>'GST Product Sales Report','orders'=>$orders,'from'=>$from,'to'=>$to,'totals'=>$totals]);
+        $invoiceReviewReasons = [];
+        foreach ($orders as $o) if ($reason = \App\Services\TaxService::invoiceReviewReason($o, $settings)) $invoiceReviewReasons[(string)($o['id'] ?? $o['invoice_number'] ?? '')] = $reason;
+        $this->render('admin/tax-report', ['pageTitle'=>'GST Tax Report','title'=>'GST Product Sales Report','orders'=>$orders,'from'=>$from,'to'=>$to,'totals'=>$totals,'invoiceReviewReasons'=>$invoiceReviewReasons]);
     }
     private function list(string $title, ?string $collection = null): void{$this->render('admin/list',['pageTitle' => $title, 'title' => $title, 'collection' => $collection, 'items'=>$collection ? (new ResourceService($collection))->all() : []]);}
     private function resource(string $title,string $collection,array $fields): void{$this->render('admin/resource',['pageTitle' => $title, 'title' => $title, 'collection' => $collection, 'fields' => $fields, 'items'=>(new ResourceService($collection))->all(), 'mediaFiles'=>$this->mediaFor($collection)]);}

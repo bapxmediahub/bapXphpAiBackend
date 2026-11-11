@@ -5,6 +5,14 @@ final class TaxService {
     /** Devotional statuettes of base metal, HSN 8306 — 5% since the Sept 2025 GST 2.0 handicraft reform. */
     public const DEFAULT_GST_RATE = 5.0;
     public const DEFAULT_HSN_CODE = '8306';
+    private const INDIAN_STATES = [
+        'Andaman and Nicobar Islands', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar',
+        'Chandigarh', 'Chhattisgarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Goa',
+        'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu and Kashmir', 'Jharkhand', 'Karnataka',
+        'Kerala', 'Ladakh', 'Lakshadweep', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya',
+        'Mizoram', 'Nagaland', 'Odisha', 'Puducherry', 'Punjab', 'Rajasthan', 'Sikkim',
+        'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+    ];
 
     /**
      * GST rate for a line. Falls back to the store default when the product has none.
@@ -40,7 +48,10 @@ final class TaxService {
     }
 
     public function snapshot(array $items, float $discount, string $shippingState, array $settings): array {
-        $supplierState = trim((string)($settings['gst_state'] ?? 'Tamil Nadu'));
+        $supplierState = self::normaliseState((string)($settings['gst_state'] ?? 'Tamil Nadu'));
+        $shippingState = self::normaliseState($shippingState);
+        if ($supplierState === null) throw new \InvalidArgumentException('The supplier GST state is missing or invalid. Update Admin → Settings before issuing invoices.');
+        if ($shippingState === null) throw new \InvalidArgumentException('Select a valid delivery state before payment so GST can be classified correctly.');
         $interstate = $this->stateKey($shippingState) !== $this->stateKey($supplierState);
         $grossBeforeDiscount = array_sum(array_map(fn($item) => (float)($item['line_total'] ?? 0), $items));
         $discount = max(0, min($discount, $grossBeforeDiscount));
@@ -80,7 +91,7 @@ final class TaxService {
 
         return [
             'supply_type' => $interstate ? 'interstate' : 'intrastate',
-            'place_of_supply' => trim($shippingState) ?: $supplierState,
+            'place_of_supply' => $shippingState,
             'taxable_value' => $this->money($taxableTotal),
             'cgst_total' => $this->money($cgstTotal),
             'sgst_total' => $this->money($sgstTotal),
@@ -119,6 +130,31 @@ final class TaxService {
             'invoice_number' => sprintf('SPS/%s/%05d', $financialYear, $sequence),
             'invoice_date' => $at->format('c'),
         ];
+    }
+
+    public static function states(): array { return self::INDIAN_STATES; }
+
+    public static function normaliseState(string $state): ?string {
+        $key = strtolower(preg_replace('/[^a-z]/i', '', trim($state)));
+        if ($key === '') return null;
+        $aliases = ['orissa' => 'odisha', 'nctofdelhi' => 'delhi', 'pondicherry' => 'puducherry', 'uttaranchal' => 'uttarakhand'];
+        $key = $aliases[$key] ?? $key;
+        foreach (self::INDIAN_STATES as $canonical) {
+            if (strtolower(preg_replace('/[^a-z]/i', '', $canonical)) === $key) return $canonical;
+        }
+        return null;
+    }
+
+    /** Existing invoices are immutable; return a reason so an accountant can audit them. */
+    public static function invoiceReviewReason(array $order, array $settings): ?string {
+        $shipping = self::normaliseState((string)($order['shipping_state'] ?? ''));
+        if ($shipping === null) return 'Missing or invalid delivery state';
+        $supplier = self::normaliseState((string)($order['supplier']['state'] ?? $settings['gst_state'] ?? ''));
+        if ($supplier === null) return 'Missing or invalid supplier state';
+        $expectedType = $shipping === $supplier ? 'intrastate' : 'interstate';
+        if (strtolower((string)($order['supply_type'] ?? '')) !== $expectedType) return 'Supply type conflicts with delivery state';
+        if (self::normaliseState((string)($order['place_of_supply'] ?? '')) !== $shipping) return 'Place of supply conflicts with delivery state';
+        return null;
     }
 
     private function stateKey(string $state): string { return strtolower(preg_replace('/[^a-z]/i', '', $state)); }

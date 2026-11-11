@@ -1270,6 +1270,22 @@ $tests['every module toggle in the code refers to a module that exists'] = funct
     }
 };
 
+$tests['owner agent context and order tools protect customer identities'] = function (): void {
+    $context = App\Services\AgentContextService::ownerAnalyticsFromRecords([
+        ['status'=>'confirmed', 'total'=>200, 'customer_email'=>'alice@example.test', 'items'=>[['name'=>'Ring','qty'=>2,'line_total'=>200]]],
+        ['status'=>'confirmed', 'total'=>100, 'customer_email'=>'bob@example.test', 'items'=>[['name'=>'Ring','qty'=>1,'line_total'=>100]]],
+    ], 2, 1, 0, 0);
+    assertTrue(!str_contains($context, 'alice@example.test') && !str_contains($context, 'bob@example.test'), 'Analytics must not send customer emails');
+    assertTrue(str_contains($context, '3 sold') && str_contains($context, '300.00'), 'Aggregate sales remain available');
+    $registry = new App\Services\AgentToolRegistry(ownerQuestion: 'How many orders are there?');
+    assertTrue(isset($registry->run('find_order', ['customer_email'=>'alice@example.test'])['error']), 'Model cannot invent an email lookup');
+    assertTrue(isset($registry->run('find_order', ['order_id'=>'a123'])['error']), 'Model cannot invent an order id lookup');
+    assertTrue(App\Services\AgentToolRegistry::ownerRequestedLookup('Show order a123456789abcdef', 'a123456789abcdef', ''), 'Explicit full order id is allowed');
+    assertTrue(!App\Services\AgentToolRegistry::ownerRequestedLookup('Show order a123456789abcdef', 'a123', ''), 'An ID prefix is not an explicit exact identifier');
+    assertTrue(!App\Services\AgentToolRegistry::ownerRequestedLookup('Show orders for alice@example.test', '', 'bob@example.test'), 'Another customer is not allowed');
+    assertTrue(App\Services\AgentToolRegistry::ownerRequestedLookup('Show orders for alice@example.test', '', 'alice@example.test'), 'Explicit customer lookup remains available');
+};
+
 $tests['the admin agent can look things up instead of guessing'] = function (): void {
     $registry = new \App\Services\AgentToolRegistry();
     $names = array_column($registry->declarations(), 'name');
@@ -2051,6 +2067,22 @@ $tests['support assistant answers signed-out visitors instead of printing a menu
     }
 };
 
+$tests['agent failure categories are bounded and aggregated'] = function (): void {
+    assertSame('timeout', \App\Services\AiClient::classifyFailure(0, 28), 'Timeout is distinguishable');
+    assertSame('authentication', \App\Services\AiClient::classifyFailure(403, 0), 'Provider authentication is distinguishable');
+    assertSame('rate_limit', \App\Services\AiClient::classifyFailure(429, 0), 'Rate limiting is distinguishable');
+    $now = time();
+    $events = [
+        ['event'=>'agent.run', 'created_at'=>date('c', $now), 'meta'=>['surface'=>'support','outcome'=>'fallback','duration_ms'=>21000,'reason'=>'timeout']],
+        ['event'=>'agent.run', 'created_at'=>date('c', $now), 'meta'=>['surface'=>'admin','outcome'=>'error','duration_ms'=>10,'reason'=>'provider_request']],
+        ['event'=>'agent.run', 'created_at'=>date('c', $now), 'meta'=>['surface'=>'admin','outcome'=>'error','reason'=>'private user text']],
+    ];
+    $summary = \App\Services\AuditLogService::agentSummary($events, $now);
+    assertSame(1, $summary['support']['reasons']['timeout'] ?? 0, 'Support reason appears in summary');
+    assertSame(1, $summary['admin']['reasons']['provider_request'] ?? 0, 'Admin reason appears in summary');
+    assertTrue(!isset($summary['admin']['reasons']['private user text']), 'Arbitrary text cannot appear as a reason');
+};
+
 $tests['support fallback explains tracking without claiming a personal order lookup'] = function (): void {
     $bot = new App\Services\SupportBotService();
     $fallback = (new ReflectionMethod($bot, 'fallbackReply'))->getClosure($bot);
@@ -2108,6 +2140,9 @@ $tests['issued invoice renders its supplier snapshot and escapes names'] = funct
     assertTrue(str_contains($html, '33SNAPSHOT'), 'Issued supplier GSTIN must be shown');
     assertTrue(!str_contains($html, '33NEWSETTING'), 'Current GSTIN must not replace invoice snapshot');
     assertTrue(str_contains($html, '&lt;script&gt;Customer&lt;/script&gt;'), 'Customer data is escaped');
+    $invoiceReviewReason = 'Missing or invalid delivery state';
+    ob_start(); require app_path('views/account/invoice.php'); $reviewHtml = ob_get_clean();
+    assertTrue(str_contains($reviewHtml, 'Tax classification review required'), 'Invoice output warns when an issued snapshot needs review');
     $routes = ProjectMapService::registry()['routes'];
     $matching = array_values(array_filter($routes, static fn($route) => $route['path'] === '/admin/orders/{id}/invoice'));
     assertSame('AdminController@orderInvoice', $matching[0]['controller'] ?? '', 'Invoice is served by the admin controller');
@@ -2126,6 +2161,50 @@ $tests['cart summary recalculates quantities and mixed product tax rates'] = fun
     ], []);
     assertSame(47.52, $changed['gst_amount'], 'Decremented quantity changes included tax');
     assertSame(0.0, App\Services\TaxService::cartSummary([], [])['gst_amount'], 'Empty cart has no tax');
+};
+
+$tests['tax invoices require a valid delivery state and classify supply consistently'] = function (): void {
+    $tax = new App\Services\TaxService();
+    $items = [['slug'=>'item','name'=>'Item','line_total'=>105,'unit_price'=>105,'qty'=>1,'gst_rate'=>5]];
+    $settings = ['gst_state'=>'Tamil Nadu','gstin'=>'33ABCDE1234F1Z5'];
+    $intra = $tax->snapshot($items, 0, 'Tamil Nadu', $settings);
+    assertSame('intrastate', $intra['supply_type'], 'Tamil Nadu delivery from a Tamil Nadu supplier uses intrastate tax');
+    assertSame('Tamil Nadu', $intra['place_of_supply'], 'Invoice place of supply uses the validated delivery state');
+    assertTrue($intra['cgst_total'] > 0 && $intra['sgst_total'] > 0 && $intra['igst_total'] === 0.0, 'Intrastate GST splits into CGST and SGST');
+    $inter = $tax->snapshot($items, 0, 'Telangana', $settings);
+    assertSame('interstate', $inter['supply_type'], 'Telangana delivery from a Tamil Nadu supplier uses interstate tax');
+    assertTrue($inter['igst_total'] > 0 && $inter['cgst_total'] === 0.0 && $inter['sgst_total'] === 0.0, 'Interstate GST uses IGST only');
+    foreach (['', 'Not a state'] as $invalid) {
+        try { $tax->snapshot($items, 0, $invalid, $settings); assertTrue(false, 'Invalid delivery state must stop invoice creation'); }
+        catch (InvalidArgumentException $error) { assertTrue(str_contains($error->getMessage(), 'valid delivery state'), 'Invalid state error should tell checkout what is required'); }
+    }
+    assertSame('Odisha', App\Services\TaxService::normaliseState('Orissa'), 'A recognised legacy state name normalises to its official value');
+};
+
+$tests['historical tax inconsistencies are flagged without rewriting invoices'] = function (): void {
+    $settings = ['gst_state'=>'Tamil Nadu'];
+    $blank = ['shipping_state'=>'','place_of_supply'=>'Tamil Nadu','supply_type'=>'interstate'];
+    assertSame('Missing or invalid delivery state', App\Services\TaxService::invoiceReviewReason($blank, $settings), 'Blank historical state is flagged for review');
+    $wrong = ['shipping_state'=>'Telangana','place_of_supply'=>'Tamil Nadu','supply_type'=>'interstate'];
+    assertSame('Place of supply conflicts with delivery state', App\Services\TaxService::invoiceReviewReason($wrong, $settings), 'Contradictory historical place of supply is flagged');
+    $clear = ['shipping_state'=>'Telangana','place_of_supply'=>'Telangana','supply_type'=>'interstate'];
+    assertSame(null, App\Services\TaxService::invoiceReviewReason($clear, $settings), 'Consistent historical invoice needs no review');
+    $report = file_get_contents(app_path('views/admin/tax-report.php'));
+    assertTrue(str_contains($report, 'require accountant review') && str_contains($report, 'not been rewritten'), 'Tax report should surface immutable historical invoices requiring review');
+};
+
+$tests['checkout captures and preserves a validated delivery state'] = function (): void {
+    $schema = require app_path('storage/schema/collections.php');
+    assertTrue(!empty($schema['collections']['addresses']['fields']['state']['required']), 'Saved address schema requires state');
+    assertTrue(!empty($schema['collections']['orders']['fields']['shipping_state']['required']), 'Order schema requires shipping state');
+    $checkout = file_get_contents(app_path('views/public/checkout.php'));
+    assertTrue(str_contains($checkout, 'name="state" required') && str_contains($checkout, 'TaxService::states()'), 'Checkout uses a required official state selector');
+    assertTrue(str_contains($checkout, "['name', 'email', 'phone', 'address', 'city', 'pincode', 'state']"), 'Browser validation includes delivery state');
+    assertTrue(str_contains($checkout, "state: form.querySelector('[name=\"state\"]')"), 'Payment request includes delivery state');
+    $commerce = file_get_contents(app_path('app/Controllers/CommerceController.php'));
+    assertTrue(str_contains($commerce, 'TaxService::normaliseState') && substr_count($commerce, "'shipping_state' => \$shippingState") === 2, 'Both payment gateways store the same canonical delivery state');
+    $addresses = file_get_contents(app_path('app/Services/AddressService.php'));
+    assertTrue(str_contains($addresses, "'state' => \$state"), 'Saved addresses preserve validated state');
 };
 
 $tests['order email renders purchased quantities and escapes product text'] = function (): void {

@@ -15,6 +15,46 @@ final class AgentContextService {
         ];
     }
 
+    /** Owner analytics contain aggregate figures only; never include customer identifiers. */
+    public function forOwnerAnalytics(): string {
+        return self::ownerAnalyticsFromRecords($this->store->read('orders'), count($this->store->read('users')),
+            count($this->store->read('products')), count($this->store->read('appointments')), count($this->store->read('support_tickets')));
+    }
+
+    public static function ownerAnalyticsFromRecords(array $orders, int $userCount, int $productCount, int $appointmentCount, int $ticketCount): string {
+        $confirmed = array_filter($orders, fn($o) => ($o['status'] ?? '') === 'confirmed');
+        $pending = array_filter($orders, fn($o) => ($o['status'] ?? '') === 'pending');
+        $total = array_sum(array_column($orders, 'total'));
+        $units = [];
+        $revenue = [];
+        foreach ($confirmed as $order) {
+            foreach (($order['items'] ?? []) as $item) {
+                $name = (string)($item['name'] ?? $item['slug'] ?? '');
+                if ($name === '') continue;
+                $units[$name] = ($units[$name] ?? 0) + (int)($item['qty'] ?? 1);
+                $revenue[$name] = ($revenue[$name] ?? 0) + (float)($item['line_total'] ?? 0);
+            }
+        }
+        arsort($units);
+        $top = '';
+        foreach (array_slice($units, 0, 5, true) as $name => $count) {
+            $top .= "\n  - {$name}: {$count} sold, ₹" . number_format($revenue[$name] ?? 0, 2);
+        }
+        if ($top === '') $top = "\n  - no confirmed sales yet";
+        $orderCount = count($orders);
+        return "Site data (aggregate statistics):\n"
+            . '- Total users: ' . $userCount . "\n"
+            . '- Total orders: ' . $orderCount . ' (confirmed: ' . count($confirmed) . ', pending: ' . count($pending) . ")\n"
+            . '- Products: ' . $productCount . "\n"
+            . '- Appointments: ' . $appointmentCount . "\n"
+            . '- Support tickets: ' . $ticketCount . "\n"
+            . '- Total revenue: ₹' . number_format($total, 2) . "\n"
+            . '- Confirmed revenue: ₹' . number_format(array_sum(array_column($confirmed, 'total')), 2) . "\n"
+            . '- Pending revenue (unconfirmed): ₹' . number_format(array_sum(array_column($pending, 'total')), 2) . "\n"
+            . '- Average order value: ₹' . number_format($orderCount ? $total / $orderCount : 0, 2) . "\n"
+            . '- Top 5 products by units sold:' . $top;
+    }
+
     private function owned(string $collection, string $field, string $email): array {
         $records = array_values(array_filter($this->store->read($collection), fn($item) => strtolower((string)($item[$field] ?? '')) === $email));
         $fields = $this->schema->agentContextFields($collection);
