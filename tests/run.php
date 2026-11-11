@@ -2117,6 +2117,7 @@ $tests['special collection selection retains only selected visible products'] = 
     $service = new \App\Services\CategoryService();
     $products = [['id'=>'one', 'name'=>'One'], ['id'=>'two', 'name'=>'Two']];
     assertSame(['two'], array_column($service->collectionProducts(['product_ids'=>['two', 'missing']], $products), 'id'), 'Selection must not invent or expose products absent from visible catalogue');
+    assertSame(['two', 'one'], array_column($service->collectionProducts(['product_ids'=>['two', 'one']], $products), 'id'), 'Collection product order must follow the owner-selected order');
     assertSame([], $service->collectionProducts(['product_ids'=>[]], $products), 'Empty collection must not include all products');
 };
 
