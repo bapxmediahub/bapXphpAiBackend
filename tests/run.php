@@ -727,10 +727,11 @@ $tests['home hero leads with spiritual products and a working shop cta'] = funct
     $view = file_get_contents(app_path('views/public/home.php'));
     assertTrue(!str_contains($view, 'Spiritual Products Online in Chennai'), 'Home hero headline should not say products online in Chennai');
     assertTrue(!str_contains($view, 'Remote Astrology Consultation</a>'), 'Home hero astrology button should use shorter text');
-    foreach (['Authentic Spiritual Products', 'href="/shop"', '>Shop Products</a>', 'count($products)'] as $needle) {
+    foreach (['Authentic Spiritual Products', 'href="/shop"', '>Shop Products</a>'] as $needle) {
         assertTrue(str_contains($view, $needle), "Home hero should include {$needle}");
     }
     assertTrue(!str_contains($view, 'href="/consult"'), 'Home hero should not link to retired consultation pages');
+    assertTrue(!str_contains($view, 'Trusted SOURCING'), 'Hero should not make unverified sourcing claims');
     assertTrue(!str_contains($view, '<div class="hero-stat-value">3</div>'), 'Home hero stat value should not be stale');
 };
 

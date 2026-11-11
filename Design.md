@@ -100,6 +100,8 @@ components:
 
 ## Overview
 
+Homepage merchandising uses a high-contrast devotional hero with real brand imagery and an accessible slide selector. Product sections retain actual commerce actions and must not imply repeat purchasing from sales totals. Admin collection editing uses searchable product rows, a persistent selection count, distinct homepage and shop visibility controls, and visible keyboard focus. Mobile layouts preserve devotional image scale and avoid horizontal overflow.
+
 Sri Panchami Spiritual is a spiritual-products storefront. The primary customer journey is discover products -> review product details -> add to cart or buy now -> manage the order. Temple guides and editorial content support that journey. This file is the canonical visual contract for everything customer-facing in `views/` and `assets/css/band.css`.
 
 Commercial references such as Deiveegaa are used to audit product clarity, imagery, pricing, policies, testimonials, FAQs, and checkout visibility. Do not copy their visual identity or unverified product claims; use the comparison to expose missing commerce information and interaction wiring.

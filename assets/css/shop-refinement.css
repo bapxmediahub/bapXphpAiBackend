@@ -1,0 +1,28 @@
+/* Calm editorial catalogue treatment; purchase controls retain their shared behaviour. */
+.shop-layout .shop-sidebar-card { background: transparent; border: 0; border-radius: 0; padding: 12px 0; }
+.shop-layout .shop-filters h3 { color: #65473d; letter-spacing: .1em; }
+.shop-layout .filter-group { gap: 4px; }
+.shop-layout .filter-chip { border-radius: 6px; padding: 10px 12px; min-height: 44px; display: flex; align-items: center; }
+.shop-layout .filter-chip.active { color: #3a0003; background: #f1e5ce; font-weight: 700; }
+.shop-layout .filter-chip:focus-visible { outline: 3px solid #916b30; outline-offset: 2px; }
+.shop-layout .shop-toolbar { border-bottom: 1px solid #dfd2bd; padding-bottom: 20px; margin-bottom: 26px; }
+.shop-layout .shop-toolbar h1 { color: #321014; }
+.shop-layout .product-card { border-color: #e6d9c4; box-shadow: 0 4px 18px rgba(58,0,3,.05); }
+.shop-layout .product-card__image { background: #f5f1e9; }
+.shop-layout .product-card__body { padding: 20px; }
+.shop-layout .product-card h3 { line-height: 1.4; margin-bottom: 10px; }
+.shop-layout .product-card__title:focus-visible, .shop-layout .product-card__image:focus-visible { outline: 3px solid #916b30; outline-offset: -3px; }
+.shop-layout .product-card__desc { color: #5d554e; line-height: 1.55; }
+.shop-layout .product-card__price-row { gap: 8px; padding-top: 14px; margin-bottom: 16px; }
+.shop-layout .product-card__actions { margin-top: 0; }
+.shop-layout .product-card:hover { transform: translateY(-3px); }
+@media (max-width: 744px) {
+    .shop-layout .shop-sidebar-card { padding: 0; }
+    .shop-layout .filter-group { display: flex; flex-wrap: wrap; }
+    .shop-layout .shop-toolbar { margin-bottom: 18px; padding-bottom: 14px; }
+    .shop-layout .product-card__body { padding: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .shop-layout .product-card, .shop-layout .product-card__image img { transition: none; }
+    .shop-layout .product-card:hover, .shop-layout .product-card:hover .product-card__image img { transform: none; }
+}

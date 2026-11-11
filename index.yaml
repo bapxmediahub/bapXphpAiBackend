@@ -822,16 +822,17 @@ concepts:
   - id: "image:assets/images/hero-temple-bg.webp"
     type: "image"
     title: "hero-temple-bg.webp"
-    description: "Image referenced by 3 project resource(s)."
+    description: "Image referenced by 4 project resource(s)."
     resource: "assets/images/hero-temple-bg.webp"
     tags:
       - "image"
       - "used"
     filename: "hero-temple-bg.webp"
     mime: "image/webp"
-    usage_count: 3
+    usage_count: 4
     used_in:
       - "assets/css/band.css"
+      - "assets/css/home-editorial.css"
       - "views/public/blog-post.php"
       - "views/public/blog.php"
   - id: "image:assets/images/hero/guruji-portrait-cutout.png"
