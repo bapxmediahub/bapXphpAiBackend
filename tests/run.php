@@ -147,12 +147,12 @@ $tests['project map grounds shared navigation in registered get routes'] = funct
 };
 
 $tests['agent workflow diagnoses before issue tracking and stays source grounded'] = function (): void {
-    $contract = file_get_contents(app_path('CLAUDE.md'));
+    $contract = file_get_contents(app_path('AGENTS.md'));
     $readme = file_get_contents(app_path('README.md'));
     foreach (['Work order', 'evidence-backed', 'Inspect existing implementations before creating', 'Verify in a browser'] as $needle) {
-        assertTrue(str_contains($contract, $needle), "CLAUDE.md should include {$needle}");
+        assertTrue(str_contains($contract, $needle), "AGENTS.md should include {$needle}");
     }
-    assertTrue(str_contains($readme, 'AGENTS.md') || str_contains($readme, 'CLAUDE.md'), 'README should reference the agent contract instead of duplicating its workflow');
+    assertTrue(str_contains($readme, 'AGENTS.md') || str_contains($readme, 'AGENTS.md'), 'README should reference the agent contract instead of duplicating its workflow');
 };
 
 $tests['independent deployment repository and runtime artifacts are properly managed'] = function (): void {
@@ -179,12 +179,12 @@ $tests['repo has agent-readable schema and built-in skills'] = function (): void
     assertTrue((new SchemaService())->adminFields('products') !== [], 'SchemaService should expose admin fields');
     foreach ([
         'AGENTS.md',
-        '.claude/skills/backend-php-mysql/SKILL.md',
-        '.claude/skills/schema/SKILL.md',
-        '.claude/skills/admin-ui/SKILL.md',
-        '.claude/skills/frontend-php/SKILL.md',
-        '.claude/skills/deployment/SKILL.md',
-        '.claude/skills/docs/SKILL.md',
+        '.agents/skills/backend-php-mysql/SKILL.md',
+        '.agents/skills/schema/SKILL.md',
+        '.agents/skills/admin-ui/SKILL.md',
+        '.agents/skills/frontend-php/SKILL.md',
+        '.agents/skills/deployment/SKILL.md',
+        '.agents/skills/docs/SKILL.md',
     ] as $path) {
         assertTrue(is_file(app_path($path)), "Built-in agent instruction file should exist: {$path}");
     }
@@ -198,13 +198,10 @@ $tests['repo has agent-readable schema and built-in skills'] = function (): void
     foreach (['example-Agent.md', '.codex'] as $path) {
         assertTrue(!file_exists(app_path($path)), "Obsolete duplicated agent instruction path should not exist: {$path}");
     }
-    // CLAUDE.md now holds the contract and AGENTS.md is the pointer, so the roles are
-    // the reverse of the earlier arrangement. Assert exactly one of them carries the
-    // rules, which is what stops the two from drifting apart.
-    assertTrue(file_exists(app_path('CLAUDE.md')), 'CLAUDE.md must exist and carry the binding contract');
+    assertTrue(file_exists(app_path('AGENTS.md')), 'AGENTS.md must exist and carry the binding contract');
     $agentsMd = (string)file_get_contents(app_path('AGENTS.md'));
-    assertTrue(str_contains($agentsMd, 'CLAUDE.md'), 'AGENTS.md must point at CLAUDE.md as the binding contract');
-    assertTrue(substr_count($agentsMd, "\n") < 40, 'AGENTS.md must stay a short pointer, not a second copy of the contract');
+    assertTrue(str_contains($agentsMd, '## Testing') && str_contains($agentsMd, '## Work order'), 'AGENTS.md must carry the complete contract');
+    assertTrue(!file_exists(app_path('CLAUDE.md')), 'The old duplicate contract must not remain');
     assertTrue(!is_dir(app_path('.agents/handoffs')) && !is_dir(app_path('.agents/workflows')), 'Removed agent orchestration must not return');
 };
 
@@ -225,18 +222,18 @@ $tests['application exposes exactly admin chat and customer support agents'] = f
 };
 
 $tests['every project skill has portable frontmatter and no empty reference placeholder'] = function (): void {
-    $skillFiles = glob(app_path('.claude/skills/*/SKILL.md')) ?: [];
+    $skillFiles = glob(app_path('.agents/skills/*/SKILL.md')) ?: [];
     assertTrue(count($skillFiles) >= 8, 'All canonical project skills should be present');
     foreach ($skillFiles as $file) {
         $text = (string)file_get_contents($file);
         assertTrue((bool)preg_match('/\A---\nname: [a-z0-9]+(?:-[a-z0-9]+)*\ndescription: .+\n---\n/s', $text), basename(dirname($file)) . ' should have only portable name/description frontmatter first');
         assertTrue(!str_contains($text, 'type: skill'), basename(dirname($file)) . ' should not use ignored type frontmatter');
     }
-    assertTrue(!(bool)glob(app_path('.claude/skills/*/references/.gitkeep')), 'Skills should not carry empty reference placeholders');
-    assertTrue(!is_dir(app_path('.claude/skills/backend-json')), 'Obsolete backend-json skill name should not return');
-    assertTrue(!is_dir(app_path('.agents/skills')), 'Canonical skills should not be duplicated under .agents');
+    assertTrue(!(bool)glob(app_path('.agents/skills/*/references/.gitkeep')), 'Skills should not carry empty reference placeholders');
+    assertTrue(!is_dir(app_path('.agents/skills/backend-json')), 'Obsolete backend-json skill name should not return');
+    assertTrue(!is_dir(app_path('.claude/skills')), 'Canonical skills should not be duplicated under .claude');
     $cliSkills = shell_exec('cd ' . escapeshellarg(app_path()) . ' && ./bapXphp skills 2>&1') ?: '';
-    assertTrue(str_contains($cliSkills, 'backend-php-mysql'), 'CLI skill discovery should include canonical .claude skills');
+    assertTrue(str_contains($cliSkills, 'backend-php-mysql'), 'CLI skill discovery should include canonical .agents skills');
     assertTrue(!str_contains($cliSkills, 'backend-json'), 'CLI skill discovery should not expose the obsolete backend-json name');
 };
 
@@ -247,7 +244,7 @@ $tests['knowledge index keeps type-qualified concepts collision-free'] = functio
     foreach (array_keys($schema['collections']) as $collection) {
         assertTrue(isset($concepts['schema:' . $collection]), "Knowledge index should include schema:{$collection}");
     }
-    foreach (glob(app_path('.claude/skills/*/SKILL.md')) ?: [] as $file) {
+    foreach (glob(app_path('.agents/skills/*/SKILL.md')) ?: [] as $file) {
         $name = basename(dirname($file));
         assertTrue(isset($concepts['skill:' . $name]), "Knowledge index should include skill:{$name}");
     }
@@ -874,7 +871,7 @@ $tests['failed image uploads reject the save with actionable feedback'] = functi
         }
     }
     try {
-        $media->upload(['name'=>['fake.png'], 'error'=>[UPLOAD_ERR_OK], 'tmp_name'=>[app_path('CLAUDE.md')]]);
+        $media->upload(['name'=>['fake.png'], 'error'=>[UPLOAD_ERR_OK], 'tmp_name'=>[app_path('AGENTS.md')]]);
         assertTrue(false, 'Renaming a non-image must not accept it as product media');
     } catch (\InvalidArgumentException $error) {
         assertTrue(str_contains($error->getMessage(), 'valid JPG'), 'Invalid image bytes should have actionable feedback');
@@ -1777,8 +1774,8 @@ $tests['php 404 page uses themed template classes'] = function (): void {
 
 $tests['documentation has deployment agent instructions and no one-line placeholder pages'] = function (): void {
     assertTrue(is_file(app_path('AGENTS.md')), 'Agent operating guide pointer should exist');
-    assertTrue(is_file(app_path('CLAUDE.md')), 'Binding agent contract should exist');
-    $agent = file_get_contents(app_path('CLAUDE.md'));
+    assertTrue(is_file(app_path('AGENTS.md')), 'Binding agent contract should exist');
+    $agent = file_get_contents(app_path('AGENTS.md'));
     foreach (['Repository', 'docs/systematic-map.mmd', 'bapXphp ci', 'Before pushing to `main`'] as $needle) {
         assertTrue(str_contains($agent, $needle), "Agent contract should mention {$needle}");
     }
@@ -1808,8 +1805,8 @@ $tests['pull requests use non mutating CI with fresh project and documentation m
 };
 
 $tests['repository operations use git and GitHub Actions without duplicate agent folders'] = function (): void {
-    assertTrue(is_file(app_path('.claude/skills/git/SKILL.md')), 'Plain Git skill should exist');
-    assertTrue(!is_file(app_path('.claude/skills/gh-cli/SKILL.md')), 'GitHub CLI skill should be removed');
+    assertTrue(is_file(app_path('.agents/skills/git/SKILL.md')), 'Plain Git skill should exist');
+    assertTrue(!is_file(app_path('.agents/skills/gh-cli/SKILL.md')), 'GitHub CLI skill should be removed');
     assertTrue(is_dir(app_path('.claude')), 'Agent tooling should live in .claude');
     assertTrue(!is_dir(app_path('.agents/handoffs')) && !is_dir(app_path('.agents/workflows')) && !is_dir(app_path('.agents/ops')), 'Legacy handoff and orchestration folders should not exist');
     assertTrue(is_file(app_path('.github/workflows/branch-pr.yml')), 'Branch pushes should have an Actions-owned PR workflow');
@@ -1819,8 +1816,8 @@ $tests['repository operations use git and GitHub Actions without duplicate agent
         app_path('AGENTS.md'),
         app_path('README.md'),
         app_path('cli/bapXphp'),
-        app_path('.claude/skills/git/SKILL.md'),
-        app_path('.claude/skills/deployment/SKILL.md'),
+        app_path('.agents/skills/git/SKILL.md'),
+        app_path('.agents/skills/deployment/SKILL.md'),
     ];
     foreach ($activeFiles as $path) {
         $source = file_get_contents($path);
@@ -1834,7 +1831,7 @@ $tests['repository operations use git and GitHub Actions without duplicate agent
     assertTrue(str_contains($branchPr, "github.repository == 'bapxmediahub/bapXphpAiBackend'"), 'Automatic PR creation should run only in the deployment working repository');
     assertTrue(str_contains($branchPr, 'actions/create-github-app-token@v2') && str_contains($branchPr, 'error.status === 403'), 'Automatic PR creation should use the bapXai App when configured and explain disabled token permissions');
 
-    $agents = file_get_contents(app_path('CLAUDE.md'));
+    $agents = file_get_contents(app_path('AGENTS.md'));
     assertTrue(str_contains($agents, '`bapxmediahub/bapXphpAiBackend` is the only working repository'), 'Agent contract should pin work to the deployment repository');
     assertTrue(str_contains($agents, 'repository is independent and unforked'), 'Agent contract should record the independent repository state');
     assertTrue(str_contains($agents, 'Do not add an upstream remote'), 'Agent contract should prohibit stale fork synchronization');

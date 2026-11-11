@@ -14,7 +14,7 @@ blog posts, and file-based images. There is no SPA or frontend build step.
 
 | Question | First source | Then verify |
 |---|---|---|
-| What are the agent rules? | `CLAUDE.md` (`AGENTS.md` is the pointer) | matching `.claude/skills/*/SKILL.md` |
+| What are the agent rules? | `AGENTS.md` (`AGENTS.md` is the pointer) | matching `.agents/skills/*/SKILL.md` |
 | Does a route/service/view/collection exist? | `docs/project-index.json` | original PHP/schema file |
 | How is a request wired? | `map.mmd` | `app/routes.php` → controller → service → view |
 | Where is a blog or image? | `index.yaml` narrow concept/filename search | returned Markdown/image path |

@@ -8,7 +8,7 @@ category: docs
 # Documentation Index
 
 Start with the root [`README.md`](../README.md) for human navigation and
-[`CLAUDE.md`](../CLAUDE.md) for the binding agent contract.
+[`AGENTS.md`](../AGENTS.md) for the binding agent contract.
 
 ## Generated navigation
 

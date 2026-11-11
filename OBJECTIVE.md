@@ -16,5 +16,5 @@ Maintain one clear product architecture:
 - no additional application agent or external agent runtime.
 
 Work from verified open GitHub issues. Confirm every claim against current source and a
-reproduction before implementing it. Keep `README.md`, `CLAUDE.md`, skills, maps, and
+reproduction before implementing it. Keep `README.md`, `AGENTS.md`, skills, maps, and
 indexes aligned with the code that actually ships.
