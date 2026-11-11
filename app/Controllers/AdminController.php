@@ -207,7 +207,14 @@ final class AdminController extends BaseController {
         $this->redirect('/admin/settings');
     }
     public function saveAdminCredentials(): void{(new EnvService())->saveAdminCredentials($_POST); (new AuditLogService())->record('save','admin-credentials','env'); $this->flash('Admin credentials saved.','success'); $this->redirect('/admin/settings');}
-    public function integrations(): void{$this->render('admin/integrations',['pageTitle' => 'Integrations', 'secrets'=>(new SecretService())->all()]);}
+    public function integrations(): void {
+        $secrets = new SecretService();
+        $this->render('admin/integrations', [
+            'pageTitle' => 'Integrations',
+            'secrets' => $secrets->all(),
+            'comparisonModel' => self::comparisonModel($secrets->getModelConfig()),
+        ]);
+    }
     public function saveIntegrations(): void{(new SecretService())->save($_POST); (new AuditLogService())->record('save','integrations','secrets'); $this->flash('Integration settings saved.','success'); $this->redirect('/admin/integrations');}
     public function agent(): void{
         $secrets = new SecretService();
@@ -483,18 +490,31 @@ final class AdminController extends BaseController {
     public function testAi(): void{
         $this->validateCsrf();
         $config = (new SecretService())->getModelConfig();
+        // Compare the documented Gemma variants on the same endpoint and credentials.
+        // https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api#supported-models
+        $override = ($_POST['probe'] ?? '') === 'compare' ? self::comparisonModel($config) : null;
+        $model = $override ?? (string)($config['model'] ?? '');
         $client = new \App\Services\AiClient();
-        $answer = $client->complete('Reply with exactly: connection ok', 32, 0.0);
+        $answer = $client->complete('Reply with exactly: connection ok', 32, 0.0, $override);
         $ok = !\App\Services\AiClient::isError($answer) && trim($answer) !== '';
         $_SESSION['ai_test_result'] = [
             'ok' => $ok,
-            'model' => (string)($config['model'] ?? ''),
+            'model' => $model,
             'endpoint' => (string)($config['endpoint'] ?? ''),
             'message' => $ok ? trim($answer) : ($answer !== '' ? $answer : 'The provider returned an empty response.'),
             'timings' => $client->transferTimings(),
         ];
-        (new AuditLogService())->record('test','ai',(string)($config['model'] ?? ''),['result'=>$ok ? 'ok' : 'failed']);
+        (new AuditLogService())->record('test','ai',$model,['result'=>$ok ? 'ok' : 'failed']);
         $this->redirect('/admin/integrations');
+    }
+
+    private static function comparisonModel(array $config): ?string {
+        if (($config['provider'] ?? '') !== 'google') return null;
+        return match ($config['model'] ?? '') {
+            'gemma-4-31b-it' => 'gemma-4-26b-a4b-it',
+            'gemma-4-26b-a4b-it' => 'gemma-4-31b-it',
+            default => null,
+        };
     }
 
     public function testEmail(): void{

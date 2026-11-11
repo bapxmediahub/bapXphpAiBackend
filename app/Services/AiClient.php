@@ -189,13 +189,13 @@ final class AiClient
     }
 
     /** Model text, or a sentence explaining why there is none. */
-    public function complete(string $prompt, int $maxTokens = 1024, float $temperature = 0.3): string
+    public function complete(string $prompt, int $maxTokens = 1024, float $temperature = 0.3, ?string $modelOverride = null): string
     {
         $this->failureCategory = null;
         $this->transferTimings = [];
         $config = $this->secrets->getModelConfig();
         $endpoint = rtrim((string)($config['endpoint'] ?? 'https://api.openai.com/v1'), '/');
-        $model = (string)($config['model'] ?? 'gemma-4-31b-it');
+        $model = $modelOverride ?? (string)($config['model'] ?? 'gemma-4-31b-it');
         $key = trim((string)($config['apiKey'] ?? ''));
         $provider = (string)($config['provider'] ?? 'openai');
 
