@@ -399,7 +399,7 @@ final class AiClient
     }
 
     /**
-     * Try the preferred Gemma model three times before moving to the other one.
+     * Try the preferred Gemma model up to three times before moving to the other one.
      *
      * Attempts are deliberately bounded to 30 seconds in total (3x6s + 12s), below
      * the chat UI's 35-second deadline. After a tool call, subsequent rounds stay on
@@ -419,7 +419,10 @@ final class AiClient
     ) {
         $initialModel = $activeModel;
         $body = false;
+        $rateLimitedModel = null;
         foreach (self::googleAttemptPlan($activeModel, $modelLocked) as $attempt) {
+            $model = $attempt['model'];
+            if ($model === $rateLimitedModel) continue;
             $timeoutMs = $attempt['timeout_ms'];
             if ($deadline !== null) {
                 $timeoutMs = min($timeoutMs, (int)(($deadline - hrtime(true)) / 1_000_000));
@@ -430,7 +433,6 @@ final class AiClient
                     return false;
                 }
             }
-            $model = $attempt['model'];
             $url = $endpoint . '/' . rawurlencode($model) . ':generateContent';
             $body = $this->post($url, $payload, $headers, $status, $timeoutMs, true, $model);
             if ($status === 200 && $body !== false) {
@@ -439,6 +441,9 @@ final class AiClient
                 return $body;
             }
             if (!self::canFailOver($status, $this->transportError)) return $body;
+            // Limits can be model-specific and may last beyond this request's deadline.
+            // https://ai.google.dev/gemini-api/docs/rate-limits
+            if ($status === 429) $rateLimitedModel = $model;
         }
         return $body;
     }
@@ -494,7 +499,7 @@ final class AiClient
             $status === 400 => ' The provider rejected the request. Check the integration configuration.',
             in_array($status, [401, 403], true) => ' The API key was rejected. Set a valid ai_api_key in Admin → Integrations.',
             $status === 404 => ' The configured model or endpoint was not found. Check the integration configuration.',
-            $status === 429 => ' Rate limit or quota exceeded for this API key.',
+            $status === 429 => ' Rate limit or quota exceeded for this Google project or model.',
             in_array($status, [500, 503], true) => ' The provider could not complete the request. Try again later.',
             // https://curl.se/libcurl/c/libcurl-errors.html
             // A timeout does not prove the provider never received the request.
