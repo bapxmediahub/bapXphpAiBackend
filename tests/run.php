@@ -311,6 +311,22 @@ $tests['shop supports plain vertical filters and multi category products'] = fun
     assertTrue(str_contains($css, '.filter-group { display: grid') && str_contains($css, 'background: transparent'), 'Shop filter links should be plain vertical links without boxed chips');
 };
 
+$tests['shop discovery combines keywords and orders by current purchase price'] = function (): void {
+    $service = new \App\Services\ProductService(
+        new \App\Services\DatabaseService(),
+        new \DateTimeImmutable('2026-11-11')
+    );
+    $products = [
+        ['slug' => 'expired', 'name' => 'Rudraksha Necklace', 'description' => 'Sacred seeds', 'price' => 800, 'offer_price' => 150, 'offer_ends_at' => '2026-11-10'],
+        ['slug' => 'running', 'name' => 'Rudraksha Pendant', 'description' => 'Handcrafted &amp; sacred', 'price' => 900, 'offer_price' => 400],
+        ['slug' => 'mala', 'name' => 'Tulsi Mala', 'description' => 'Sacred beads', 'price' => 300],
+    ];
+    $sorted = $service->discover($products, 'SACRED rudraksha', 'price-asc');
+    assertSame(['running', 'expired'], array_column($sorted, 'slug'), 'Search requires every keyword and sorts by the active purchase price');
+    assertSame(['expired', 'running', 'mala'], array_column($service->discover($products, '', ''), 'slug'), 'Featured order preserves catalogue or collection order');
+    assertSame([], $service->discover($products, 'missing', ''), 'A missing search term yields no products');
+};
+
 $tests['public catalog card images are not lazy deferred'] = function (): void {
     foreach (['views/public/home.php', 'views/public/shop.php', 'views/public/product.php', 'views/public/temples.php'] as $path) {
         $view = file_get_contents(app_path($path));
