@@ -2277,7 +2277,7 @@ concepts:
       - "TempleService"
       - "SchemaService"
       - "AuthService"
-    view: "admin/resource"
+    view: "admin/temples"
   - id: "route:get__api"
     type: "route"
     title: "GET /api"

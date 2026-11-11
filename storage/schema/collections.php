@@ -109,7 +109,7 @@
             'primary_key' => 'id',
             'admin_managed' => true,
             'media_fields' => ['image_url'],
-            'admin_fields' => ['name', 'description', 'image_url', 'address', 'map_url'],
+            'admin_fields' => ['name', 'description', 'image_url', 'address', 'timings', 'phone', 'map_url', 'map_embed_url'],
             'agent_context' => ['slug', 'name', 'address', 'timings', 'phone'],
             'fields' => [
                 'id' => ['type' => 'string'],
@@ -120,6 +120,7 @@
                 'address' => ['type' => 'text'],
                 'timings' => ['type' => 'string'],
                 'phone' => ['type' => 'string'],
+                'map_url' => ['type' => 'url'],
                 'map_link' => ['type' => 'url'],
                 'map_embed_url' => ['type' => 'url'],
             ],

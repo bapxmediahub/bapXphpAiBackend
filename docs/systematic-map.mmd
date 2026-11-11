@@ -7,11 +7,11 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 124 routes, 12 controllers, 49 services, 49 views, 0 data files, 20 tools"]
+  subgraph ARCH["Architecture Overview — 124 routes, 12 controllers, 49 services, 50 views, 0 data files, 20 tools"]
     arch_routes["> Routes: 124 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
     arch_svc["> Services: 49"]:::arch
-    arch_views["> Views: 49"]:::arch
+    arch_views["> Views: 50"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 20"]:::arch
     arch_gaps["> Gaps: 6"]:::arch
@@ -258,6 +258,7 @@ flowchart LR
     view_admin_resource["admin/resource"]:::code
     view_admin_settings["admin/settings"]:::code
     view_admin_tax_report["admin/tax-report"]:::code
+    view_admin_temples["admin/temples"]:::code
     view_layouts_admin["layouts/admin"]:::code
     view_layouts_app["layouts/app"]:::code
     view_public_404["public/404"]:::code
@@ -601,7 +602,7 @@ flowchart LR
   controller_admincontroller --> service_templeservice
   controller_admincontroller --> service_schemaservice
   controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_resource
+  controller_admincontroller -. renders .-> view_admin_temples
   route_get_admin_settings --> controller_admincontroller
   controller_admincontroller --> service_settingsservice
   controller_admincontroller --> service_authservice

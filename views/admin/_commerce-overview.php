@@ -46,18 +46,49 @@ foreach ($reportRows as $index => $row) {
         <div class="report-kpi"><span>Units sold</span><strong><?= e((string)$salesTotals['units']) ?></strong></div>
     </div>
 </section>
+<?php
+$productPeak = max(1, ...array_map(static fn(array $row): float => (float)$row['net'], $productRows));
+$statusColors = ['#71313b', '#166a62', '#9b5428', '#62488e', '#40627e', '#675647', '#8a4664', '#476a3f'];
+$statusTotal = array_sum($orderStatusCounts);
+$statusSegments = [];
+$statusLegend = [];
+$offset = 0;
+foreach ($orderStatusCounts as $label => $count) {
+    $color = $statusColors[count($statusLegend) % count($statusColors)];
+    $end = $offset + $count / $statusTotal * 100;
+    $statusSegments[] = sprintf('%s %.4F%% %.4F%%', $color, $offset, $end);
+    $statusLegend[] = ['name' => ucfirst(str_replace('_', ' ', $label)), 'count' => $count, 'color' => $color];
+    $offset = $end;
+}
+?>
 <div class="report-grid">
-    <section class="report-panel"><h2>Top products by net revenue</h2><p>Products contributing most in the selected period.</p>
-        <div class="table-wrap"><table><thead><tr><th>Product</th><th>Orders</th><th>Units</th><th>Net revenue</th></tr></thead><tbody>
-        <?php foreach ($productRows as $row): ?><tr><td><?= e($row['product']) ?></td><td><?= e((string)$row['orders']) ?></td><td><?= e((string)$row['units']) ?></td><td><strong><?= e($money($row['net'])) ?></strong></td></tr><?php endforeach; ?>
-        <?php if (!$productRows): ?><tr><td colspan="4">No purchased products in this period.</td></tr><?php endif; ?>
-        </tbody></table></div>
+    <section class="report-panel">
+        <h2>Top products by net revenue</h2>
+        <?php if ($productRows): ?>
+            <ol class="dashboard-product-bars">
+                <?php foreach ($productRows as $row): ?>
+                    <li>
+                        <div><span><?= e($row['product']) ?></span><strong><?= e($money($row['net'])) ?></strong></div>
+                        <div class="dashboard-product-bar" aria-hidden="true"><span style="width:<?= (float)round(100 * $row['net'] / $productPeak, 2) ?>%"></span></div>
+                        <small><?= (int)$row['units'] ?> units</small>
+                    </li>
+                <?php endforeach; ?>
+            </ol>
+        <?php else: ?><p>No purchased products in this period.</p><?php endif; ?>
     </section>
-    <section class="report-panel"><h2>Order status & refunds</h2><p>Operational outcomes for paid orders.</p>
-        <div class="table-wrap"><table><thead><tr><th>Status</th><th>Orders</th></tr></thead><tbody>
-        <?php foreach ($orderStatusCounts as $label => $count): ?><tr><td><?= e(ucfirst(str_replace('_',' ',$label))) ?></td><td><?= e((string)$count) ?></td></tr><?php endforeach; ?>
-        <?php if (!$orderStatusCounts): ?><tr><td colspan="2">No paid orders in this period.</td></tr><?php endif; ?>
-        </tbody></table></div>
-        <p><strong><?= e($money($salesTotals['refunded'])) ?></strong> in verified refunds is already deducted from net revenue.</p>
+    <section class="report-panel">
+        <h2>Paid orders by status</h2>
+        <?php if ($statusLegend): ?>
+            <div class="dashboard-status-chart">
+                <div class="dashboard-status-ring" style="--segments:<?= e(implode(', ', $statusSegments)) ?>" aria-hidden="true">
+                    <div><strong><?= $statusTotal ?></strong><span>paid orders</span></div>
+                </div>
+                <ul class="dashboard-status-legend" aria-label="Paid order status counts">
+                    <?php foreach ($statusLegend as $status): ?>
+                        <li><i style="--swatch:<?= e($status['color']) ?>" aria-hidden="true"></i><span><?= e($status['name']) ?></span><strong><?= (int)$status['count'] ?></strong></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php else: ?><p>No paid orders in this period.</p><?php endif; ?>
     </section>
 </div>

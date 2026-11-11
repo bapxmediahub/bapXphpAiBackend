@@ -53,6 +53,7 @@ $__gsvConfigured = !empty($__secretsGa['google_site_verification']);
 $__googleSiteKitEnabled = $__gaConfigured || $__adsConfigured || $__gsvConfigured;
 ?>
 
+<div id="web-analytics">
 <?php if ($__googleSiteKitEnabled): ?>
 <div class="admin-card" style="margin-bottom:var(--space-lg); border-left:3px solid var(--color-gold);">
     <h2 style="display:flex; align-items:center; gap:var(--space-sm); font-size:1rem;">
@@ -96,6 +97,7 @@ $__googleSiteKitEnabled = $__gaConfigured || $__adsConfigured || $__gsvConfigure
     </p>
 </div>
 <?php endif; ?>
+</div>
 
 <div class="admin-quick-grid">
     <div class="admin-card">

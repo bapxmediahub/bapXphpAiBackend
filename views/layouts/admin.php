@@ -79,19 +79,6 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
                     <a href="/admin/support-tickets" <?= $agentNavPath === '/admin/support-tickets' ? 'class="active" aria-current="page"' : '' ?>>AI Support Tickets</a>
                 </div>
             </details>
-            <?php if ($__modules['shop']): ?>
-            <button type="button" class="admin-nav-toggle" data-target="menu-catalog" aria-controls="menu-catalog" aria-expanded="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-                Catalog
-                <svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
-            </button>
-            <div class="admin-submenu" id="menu-catalog">
-                <a href="/admin/products" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/products') === 0 ? 'active' : '') ?>">Products</a>
-                <a href="/admin/categories" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/categories') === 0 ? 'active' : '') ?>">Categories</a>
-                <a href="/admin/collections" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/collections') === 0 ? 'active' : '') ?>">Special Collections</a>
-                <a href="/admin/coupons" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/coupons') === 0 ? 'active' : '') ?>">Coupons</a>
-            </div>
-            <?php endif; ?>
             <button type="button" class="admin-nav-toggle" data-target="menu-services" aria-controls="menu-services" aria-expanded="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20"/><path d="M2 12h20"/></svg>
                 Services
@@ -99,8 +86,6 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
             </button>
             <div class="admin-submenu" id="menu-services">
                 <a href="/admin/appointments" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/appointments') === 0 ? 'active' : '') ?>">Sessions</a>
-                <a href="/admin/consultation-analytics" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/consultation-analytics') === 0 ? 'active' : '') ?>">Analytics</a>
-                <a href="/admin/temples" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/temples') === 0 ? 'active' : '') ?>">Temples</a>
             </div>
             <?php if ($__modules['blog']): ?>
             <a href="/admin/blog" class="admin-nav-top <?= (strpos($_SERVER['REQUEST_URI'], '/admin/blog') === 0 ? 'active' : '') ?>">
@@ -116,10 +101,27 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
             <div class="admin-submenu" id="menu-commerce">
                 <a href="/admin/orders" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/orders') === 0 ? 'active' : '') ?>">Orders</a>
                 <a href="/admin/shipping" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/shipping') === 0 ? 'active' : '') ?>">Shipping</a>
-                <a href="/admin/tax-report" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/tax-report') === 0 ? 'active' : '') ?>">Reports</a>
                 <a href="/admin/contact-submissions" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/contact-submissions') === 0 ? 'active' : '') ?>">Contacts</a>
-                <a href="/admin/email-inbox" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/email-inbox') === 0 ? 'active' : '') ?>">Email Inbox</a>
-                <a href="/admin/email-outbox" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/email-outbox') === 0 ? 'active' : '') ?>">Email Outbox</a>
+                <?php if ($__modules['shop']): ?>
+                    <span class="admin-nav-section-label">Catalog</span>
+                <a href="/admin/products" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/products') === 0 ? 'active' : '') ?>">Products</a>
+                <a href="/admin/categories" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/categories') === 0 ? 'active' : '') ?>">Categories</a>
+                <a href="/admin/collections" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/collections') === 0 ? 'active' : '') ?>">Special Collections</a>
+                <a href="/admin/coupons" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/coupons') === 0 ? 'active' : '') ?>">Coupons</a>
+                <?php endif; ?>
+            </div>
+            <button type="button" class="admin-nav-toggle" data-target="menu-analytics" aria-controls="menu-analytics" aria-expanded="true">Analytics</button>
+            <div class="admin-submenu" id="menu-analytics">
+                <a href="/admin#dashboard-commerce-title">Commerce overview</a>
+                <a href="/admin/tax-report" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/tax-report') === 0 ? 'active' : '') ?>">Commerce Reports</a>
+                <a href="/admin/consultation-analytics" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/consultation-analytics') === 0 ? 'active' : '') ?>">Session analytics</a>
+                <a href="/admin#web-analytics">Web analytics</a>
+            </div>
+            <button type="button" class="admin-nav-toggle" data-target="menu-email" aria-controls="menu-email" aria-expanded="true">Email</button>
+            <div class="admin-submenu" id="menu-email">
+                <a href="/admin/email-inbox" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/email-inbox') === 0 ? 'active' : '') ?>">Inbox</a>
+                <a href="/admin/email-outbox" class="<?= ($agentNavPath === '/admin/email-outbox' && ($_GET['type'] ?? '') !== 'newsletter' ? 'active' : '') ?>">Outbox</a>
+                <a href="/admin/email-outbox?type=newsletter" class="<?= $agentNavPath === '/admin/email-outbox' && ($_GET['type'] ?? '') === 'newsletter' ? 'active' : '' ?>">Newsletters</a>
             </div>
             <button type="button" class="admin-nav-toggle" data-target="menu-appearance" aria-controls="menu-appearance" aria-expanded="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
@@ -127,6 +129,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
                 <svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
             <div class="admin-submenu" id="menu-appearance">
+                <a href="/admin/temples" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/temples') === 0 ? 'active' : '') ?>">Temples</a>
                 <a href="/admin/media" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/media') === 0 ? 'active' : '') ?>">Media Library</a>
                 <a href="/admin/appearance" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/appearance') === 0 ? 'active' : '') ?>">Logo & Favicon</a>
             </div>

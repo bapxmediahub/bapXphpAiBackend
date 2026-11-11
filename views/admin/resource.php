@@ -1,16 +1,21 @@
+<?php $templeForm ??= false; $editing ??= []; ?>
 <div class="admin-card">
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:var(--space-sm); margin-bottom:var(--space-lg);">
         <h2 style="margin:0; font-size:1.1rem;"><?= e($title) ?></h2>
-        <span class="badge badge--default"><?= count($items) ?> record<?= count($items) !== 1 ? 's' : '' ?></span>
+        <?php if ($templeForm): ?>
+            <a href="/admin/temples">All temples</a>
+        <?php else: ?>
+            <span class="badge badge--default"><?= count($items) ?> record<?= count($items) !== 1 ? 's' : '' ?></span>
+        <?php endif; ?>
     </div>
     <form id="resource-form" method="post" action="/admin/<?= e($collection) ?>/save" class="admin-form" enctype="multipart/form-data">
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
-        <input type="hidden" name="id" id="resource-id">
+        <input type="hidden" name="id" id="resource-id" value="<?= e($editing['id'] ?? '') ?>">
         <div class="admin-form__row" style="grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));">
             <?php foreach($fields as $field): ?>
                 <label><?= e(ucwords(str_replace('_',' ',$field))) ?>
                     <?php if($field === 'description' || $field === 'image_urls'): ?>
-                        <textarea name="<?= e($field) ?>" id="field-<?= e($field) ?>" rows="3"></textarea>
+                        <textarea name="<?= e($field) ?>" id="field-<?= e($field) ?>" rows="3"><?= e($editing[$field] ?? '') ?></textarea>
                     <?php elseif($field === 'active'): ?>
                         <label style="flex-direction:row; align-items:center; gap:var(--space-xs); text-transform:none; font-weight:400;">
                             <input type="checkbox" name="<?= e($field) ?>" id="field-<?= e($field) ?>" value="1" checked> Active
@@ -31,7 +36,7 @@
                     <?php elseif(str_contains($field, '_spend') || str_contains($field, '_limit') || str_contains($field, 'discount')): ?>
                         <input type="number" name="<?= e($field) ?>" id="field-<?= e($field) ?>" placeholder="Leave blank for no limit" step="any" min="0">
                     <?php elseif(str_contains($field, '_url') && !in_array($field, ['image_url', 'photo_url'], true)): ?>
-                        <input type="url" name="<?= e($field) ?>" id="field-<?= e($field) ?>" placeholder="https://...">
+                        <input type="url" name="<?= e($field) ?>" id="field-<?= e($field) ?>" placeholder="https://..." value="<?= e($editing[$field] ?? '') ?>">
                     <?php elseif(str_contains($field, 'price') || str_contains($field, 'amount') || str_contains($field, 'value') || str_contains($field, '_prm') || str_contains($field, '_percentage') || $field === 'slot_minutes' || $field === 'experience_years'): ?>
                         <input type="number" name="<?= e($field) ?>" id="field-<?= e($field) ?>" placeholder="0" step="any">
                     <?php elseif(str_contains($field, '_days') || str_contains($field, 'modes') || str_contains($field, 'languages')): ?>
@@ -45,7 +50,7 @@
                             <option value="draft">Draft</option>
                         </select>
                     <?php else: ?>
-                        <input type="text" name="<?= e($field) ?>" id="field-<?= e($field) ?>" placeholder="">
+                        <input type="text" name="<?= e($field) ?>" id="field-<?= e($field) ?>" value="<?= e($editing[$field] ?? '') ?>" <?= $templeForm && $field === 'name' ? 'required' : '' ?>>
                     <?php endif; ?>
                 </label>
             <?php endforeach; ?>
@@ -82,12 +87,18 @@
             <?php endif; ?>
         <?php endif; ?>
         <div style="margin-top:var(--space-md); display:flex; gap:var(--space-sm);">
+            <?php if ($templeForm): ?>
+                <button type="submit" class="btn btn-primary" id="save-btn"><?= !empty($editing['id']) ? 'Update Temple' : 'Save Temple' ?></button>
+                <a class="btn btn-ghost" href="/admin/temples">Cancel</a>
+            <?php else: ?>
             <button type="submit" class="btn btn-primary" id="save-btn">Save <?= e(singular_label($title)) ?></button>
             <button type="reset" class="btn btn-ghost" onclick="document.getElementById('resource-id').value=''; document.getElementById('save-btn').textContent='Save <?= e(singular_label($title)) ?>';">Clear</button>
+            <?php endif; ?>
         </div>
     </form>
 </div>
 
+<?php if (!$templeForm): ?>
 <div class="admin-card">
     <div class="table-wrap">
         <table>
@@ -137,6 +148,7 @@
         </table>
     </div>
 </div>
+<?php endif; ?>
 <script>
 document.querySelectorAll('.edit-item').forEach(button => {
     button.addEventListener('click', () => {

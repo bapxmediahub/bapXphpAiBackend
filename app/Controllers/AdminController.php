@@ -195,8 +195,72 @@ final class AdminController extends BaseController {
     }
     public function appointments(): void{$this->list('Sessions','appointments');}
     public function consultationAnalytics(): void{$this->render('admin/consultation-analytics',['pageTitle'=>'Consultation Analytics','metrics'=>(new ConsultationService())->analytics()]);}
-    public function temples(): void{$this->resource('Temples','temples',$this->schemaFields('temples',['name','description','image_url','address','map_url']));}
-    public function saveTemple(): void{$this->save('temples');}
+    public function temples(): void {
+        $store = new \App\Services\DatabaseService();
+        $editId = is_string($_GET['edit'] ?? null) ? $_GET['edit'] : '';
+        $editing = $editId !== '' ? $store->find('temples', $editId) : null;
+        if ($editId !== '' && !$editing) {
+            $this->flash('Temple could not be found.', 'error');
+            $this->redirect('/admin/temples');
+        }
+        if ($editing || ($_GET['new'] ?? '') === '1') {
+            $title = $editing ? 'Edit Temple' : 'Add Temple';
+            $templeForm = true;
+            $collection = 'temples';
+            $fields = $this->schemaFields('temples', ['name', 'description', 'image_url', 'address', 'timings', 'phone', 'map_url', 'map_embed_url']);
+            if ($editing && empty($editing['map_url'])) $editing['map_url'] = $editing['map_link'] ?? '';
+            $draft = $_SESSION['temple_form_draft'] ?? [];
+            unset($_SESSION['temple_form_draft']);
+            if (($draft['id'] ?? null) === $editId) $editing = array_replace($editing ?? [], $draft);
+            $mediaFiles = $this->mediaFor('temples');
+            $this->render('admin/resource', compact('title', 'templeForm', 'collection', 'fields', 'editing', 'mediaFiles'));
+            return;
+        }
+        $items = (new ResourceService('temples', $store))->all();
+        $this->render('admin/temples', compact('items'));
+    }
+
+    public function saveTemple(): void {
+        $store = new \App\Services\DatabaseService();
+        $id = is_string($_POST['id'] ?? null) ? $_POST['id'] : '';
+        $existing = $id !== '' ? $store->find('temples', $id) : null;
+        if ($id !== '' && !$existing) {
+            $this->flash('Temple could not be found.', 'error');
+            $this->redirect('/admin/temples');
+        }
+        $fields = $this->schemaFields('temples', ['name', 'description', 'image_url', 'address', 'timings', 'phone', 'map_url', 'map_embed_url']);
+        $draft = ['id' => $id];
+        foreach ($fields as $field) {
+            if (is_string($_POST[$field] ?? null)) $draft[$field] = trim($_POST[$field]);
+        }
+        $data = array_replace($existing ?? [], $draft);
+        try {
+            if (($data['name'] ?? '') === '') throw new \InvalidArgumentException('Enter the temple name.');
+            foreach (['map_url', 'map_embed_url'] as $field) {
+                $url = $data[$field] ?? '';
+                if ($url !== '' && !\App\Services\TempleService::directionsUrl(['map_url' => $url])) {
+                    throw new \InvalidArgumentException('Enter a valid HTTP or HTTPS map URL.');
+                }
+            }
+            if (array_key_exists('map_url', $draft)) unset($data['map_link']);
+            if (!$existing) {
+                $data['id'] = bin2hex(random_bytes(8));
+                $slug = strtolower(trim((string)preg_replace('/[^a-z0-9]+/i', '-', $data['name']), '-'));
+                $data['slug'] = $slug !== '' && !$store->find('temples', $slug, 'slug') ? $slug : 'temple-' . $data['id'];
+            }
+            $uploaded = $this->uploadedMedia('temples');
+            if ($uploaded) $data['image_url'] = $uploaded[0]['url'];
+            $record = (new ResourceService('temples', $store))->save($data);
+            if ($uploaded) (new MediaService())->recordUsage($uploaded, 'temples', $record['id'], $data['name']);
+            (new AuditLogService())->record('save', 'temples', $record['id']);
+            $this->flash('Temple saved.', 'success');
+        } catch (\InvalidArgumentException $error) {
+            $_SESSION['temple_form_draft'] = $draft;
+            $this->flash($error->getMessage(), 'error');
+            $this->redirect('/admin/temples?' . ($id !== '' ? 'edit=' . rawurlencode($id) : 'new=1'));
+        }
+        $this->redirect('/admin/temples');
+    }
     public function deleteTemple(): void{$this->delete('temples');}
     public function settings(): void{$this->render('admin/settings',['pageTitle' => 'Settings', 'title' => 'Site Settings', 'settings'=>(new SettingsService())->public(), 'adminCredentials'=>(new EnvService())->adminCredentials()]);}
     public function saveSettings(): void{
@@ -521,7 +585,15 @@ final class AdminController extends BaseController {
         $this->redirect('/admin/support-tickets');
     }
     public function emailInbox(): void{$this->render('admin/mailbox',['pageTitle'=>'Email Inbox','title'=>'Email Inbox','box'=>'inbox','items'=>(new MailStorageService())->inbox()]);}
-    public function emailOutbox(): void{$this->render('admin/mailbox',['pageTitle'=>'Email Outbox','title'=>'Email Outbox','box'=>'outbox','items'=>(new MailStorageService())->outbox()]);}
+    public function emailOutbox(): void {
+        $newsletter = ($_GET['type'] ?? '') === 'newsletter';
+        $items = (new MailStorageService())->outbox();
+        if ($newsletter) {
+            $items = array_values(array_filter($items, static fn(array $item): bool => ($item['source'] ?? '') === 'blog_newsletter'));
+        }
+        $title = $newsletter ? 'Newsletters' : 'Email Outbox';
+        $this->render('admin/mailbox', ['pageTitle' => $title, 'title' => $title, 'box' => 'outbox', 'items' => $items, 'newsletter' => $newsletter]);
+    }
     public function media(): void{
         $media = new MediaService();
         $this->render('admin/media',['pageTitle'=>'Media Library','items'=>$media->all(),

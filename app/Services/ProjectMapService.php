@@ -79,7 +79,7 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/admin/appointments','name'=>'admin.appointments','page'=>'admin/list','controller'=>'AdminController@appointments','services'=>['AppointmentService']],
             ['method'=>'GET','path'=>'/admin/consultation-analytics','name'=>'admin.consultation-analytics','page'=>'admin/consultation-analytics','controller'=>'AdminController@consultationAnalytics','services'=>['ConsultationService']],
             ['method'=>'GET','path'=>'/admin/tax-report','name'=>'admin.tax-report','page'=>'admin/tax-report','controller'=>'AdminController@taxReport','services'=>['OrderService','ProductService','StoreStatsService','TaxService']],
-            ['method'=>'GET','path'=>'/admin/temples','name'=>'admin.temples','page'=>'admin/resource','controller'=>'AdminController@temples','services'=>['TempleService','SchemaService']],
+            ['method'=>'GET','path'=>'/admin/temples','name'=>'admin.temples','page'=>'admin/temples','controller'=>'AdminController@temples','services'=>['TempleService','SchemaService']],
             ['method'=>'GET','path'=>'/admin/settings','name'=>'admin.settings','page'=>'admin/settings','controller'=>'AdminController@settings','services'=>['SettingsService']],
             ['method'=>'POST','path'=>'/admin/settings/save','name'=>'admin.settings.save','page'=>'admin/settings','controller'=>'AdminController@saveSettings','services'=>['SettingsService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/settings/admin-credentials','name'=>'admin.settings.admin-credentials','page'=>'admin/settings','controller'=>'AdminController@saveAdminCredentials','services'=>['EnvService','AuditLogService']],
