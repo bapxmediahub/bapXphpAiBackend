@@ -2743,20 +2743,6 @@ tr:hover td { background: var(--color-bg-alt); }
 .trust-item svg { flex: 0 0 auto; }
 .trust-item:focus-visible { outline: 2px solid var(--color-maroon); outline-offset: 2px; }
 
-.home-order-steps { max-width: 1000px; margin: var(--space-xl) auto 0; }
-.home-order-step {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    margin-bottom: var(--space-sm);
-    border: 1px solid var(--color-gold);
-    border-radius: 50%;
-    color: var(--color-maroon);
-    font-weight: 800;
-}
-.home-order-actions { display: flex; justify-content: center; gap: var(--space-sm); margin-top: var(--space-xl); flex-wrap: wrap; }
 .trust-item:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-sm);
@@ -4069,8 +4055,8 @@ body { background: var(--color-bg); }
     .home-hero .varahi-dots { gap: 0; margin-top: 4px; }
     .home-hero .varahi-dot { width: 20px; height: 20px; }
     .trust-bar { min-height: 96px; padding: 16px 16px 32px; }
-    .trust-bar__inner { grid-template-columns: repeat(3, 56px); gap: clamp(20px, 10vw, 40px); }
-    .trust-item { position: relative; width: 56px; min-height: 48px; padding: 0; color: var(--color-maroon); cursor: pointer; }
+    .trust-bar__inner { position: relative; grid-template-columns: repeat(3, 56px); gap: clamp(20px, 10vw, 40px); }
+    .trust-item { position: static; width: 56px; min-height: 48px; padding: 0; color: var(--color-maroon); cursor: pointer; }
     .trust-item:hover { transform: none; box-shadow: none; }
     .trust-item svg { width: 24px; height: 24px; }
     .trust-item__label {
@@ -4079,7 +4065,7 @@ body { background: var(--color-bg); }
         left: 50%;
         z-index: 2;
         width: max-content;
-        max-width: 132px;
+        max-width: calc(100% - 12px);
         padding: 3px 6px;
         border-radius: var(--radius-xs);
         background: var(--color-white);
