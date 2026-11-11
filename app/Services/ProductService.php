@@ -70,7 +70,9 @@ final class ProductService
         // and the remote database bridge.
         $rows = $this->store->query("SELECT JSON_EXTRACT(_data, '$.items') AS items, JSON_EXTRACT(_data, '$.status') AS status FROM orders
             WHERE JSON_TYPE(JSON_EXTRACT(_data, '$.payment_id')) = 'STRING'
-              AND TRIM(JSON_UNQUOTE(JSON_EXTRACT(_data, '$.payment_id'))) <> ''");
+              AND TRIM(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+                  JSON_UNQUOTE(JSON_EXTRACT(_data, '$.payment_id')),
+                  CHAR(0), ''), CHAR(9), ''), CHAR(10), ''), CHAR(11), ''), CHAR(13), '')) <> ''");
         $orders = array_map(static fn(array $row): array => [
             'payment_id' => 'verified',
             'status' => json_decode((string)($row['status'] ?? ''), true),
