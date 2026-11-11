@@ -26,7 +26,7 @@ final class SupportBotService {
                 'actions' => $this->extractActions($reply),
             ];
         }
-        $context = $this->customerContext($user);
+        $context = $this->customerContext($user, $message);
         // A guest reaches the model too. Assigning them a canned reply first meant the
         // AI never ran for the public widget, so every question returned the same menu.
         // Their prompt carries no personal data: forUserEmail('') yields user => null
@@ -63,15 +63,13 @@ final class SupportBotService {
         return $result;
     }
 
-    private function customerContext(?array $user): array {
+    private function customerContext(?array $user, string $message): array {
         $cart = array_map(fn($item) => [
             'slug' => $item['slug'] ?? '',
             'qty' => (int)($item['qty'] ?? 0),
             'name' => $item['name'] ?? '',
         ], array_values($_SESSION['cart'] ?? []));
-        $base = empty($user['email'])
-            ? $this->agentContext->forUserEmail('')
-            : $this->agentContext->forUserEmail((string)$user['email']);
+        $base = $this->agentContext->forUserEmail((string)($user['email'] ?? ''), $message);
         // Articles let the agent answer "what is this app?" from real content instead of
         // falling back to a navigation list. BlogService::all() already withholds
         // unpublished posts and posts whose module is off.
@@ -216,7 +214,7 @@ final class SupportBotService {
         // the model is unavailable. Use only the same public catalog facts.
         foreach ($site['products'] ?? [] as $product) {
             $name = trim((string)($product['name'] ?? ''));
-            if ($name === '' || !$this->matchesNamedProduct($message, $product)) continue;
+            if ($name === '' || !AgentContextService::matchesNamedProduct($message, $product)) continue;
             $details = trim(strip_tags((string)($product['description'] ?? '')));
             $facts = [];
             foreach ($product['specifications'] ?? [] as $key => $value) {
@@ -262,23 +260,6 @@ final class SupportBotService {
             return "I can help with:\n- Browsing products at /shop\n- Your orders at /account/dashboard/orders\n- Contact us at /contact\nWhat would you like to know more about?";
         }
         return 'I can help with products at /shop, temples at /temples, and orders at /account/dashboard/orders. What would you like help with?';
-    }
-
-    /** Match only exact public catalogue aliases, not loose words that can collide. */
-    private function matchesNamedProduct(string $message, array $product): bool
-    {
-        $normalise = static fn(string $value): string => trim((string)preg_replace('/[^a-z0-9]+/i', ' ', mb_strtolower($value)));
-        $haystack = ' ' . $normalise($message) . ' ';
-        $aliases = [
-            $normalise((string)($product['name'] ?? '')),
-            $normalise((string)($product['slug'] ?? '')),
-        ];
-        foreach (array_unique(array_filter($aliases)) as $alias) {
-            // Requiring at least two words avoids treating a generic one-word slug such
-            // as "ring" or "paste" as a named-product request.
-            if (str_word_count($alias) >= 2 && str_contains($haystack, ' ' . $alias . ' ')) return true;
-        }
-        return false;
     }
 
     /**
