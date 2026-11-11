@@ -7,8 +7,8 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 114 routes, 12 controllers, 48 services, 45 views, 0 data files, 20 tools"]
-    arch_routes["> Routes: 114 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 116 routes, 12 controllers, 48 services, 45 views, 0 data files, 20 tools"]
+    arch_routes["> Routes: 116 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
     arch_svc["> Services: 48"]:::arch
     arch_views["> Views: 45"]:::arch
@@ -100,8 +100,10 @@ flowchart LR
     route_get_admin_collections["GET /admin/collections"]:::route
     route_get_admin_coupons["GET /admin/coupons — Admin — manage coupons"]:::route
     route_get_admin_orders["GET /admin/orders — Admin — order list"]:::route
+    route_get_admin_orders_id_invoice["GET /admin/orders/{id}/invoice"]:::route
     route_get_admin_orders_id["GET /admin/orders/{id} — Admin — order detail, status update"]:::route
     route_post_admin_orders_id_status["POST /admin/orders/{id}/status — Admin — update order status + email"]:::route
+    route_post_admin_orders_id_tax_review["POST /admin/orders/{id}/tax-review — Admin — correct paid order state and issue reviewed invoice"]:::route
     route_get_admin_shipping["GET /admin/shipping — Admin — shipping settings"]:::route
     route_get_admin_astrologers["GET /admin/astrologers — Retired admin profile URL — redirects to dashboard"]:::route
     route_get_admin_appointments["GET /admin/appointments — Admin — session list"]:::route
@@ -503,14 +505,26 @@ flowchart LR
   controller_admincontroller --> service_orderservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_list
+  route_get_admin_orders_id_invoice --> controller_admincontroller
+  controller_admincontroller --> service_orderservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_account_invoice
   route_get_admin_orders_id --> controller_admincontroller
   controller_admincontroller --> service_orderservice
   controller_admincontroller --> service_shippingservice
+  controller_admincontroller --> service_taxservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_detail
   route_post_admin_orders_id_status --> controller_admincontroller
   controller_admincontroller --> service_orderservice
   controller_admincontroller --> service_mailqueueservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_detail
+  route_post_admin_orders_id_tax_review --> controller_admincontroller
+  controller_admincontroller --> service_orderservice
+  controller_admincontroller --> service_taxservice
+  controller_admincontroller --> service_settingsservice
   controller_admincontroller --> service_auditlogservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_detail

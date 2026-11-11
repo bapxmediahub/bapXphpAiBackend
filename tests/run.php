@@ -2151,6 +2151,41 @@ $tests['agent monitoring counts bounded outcomes without treating fallbacks as m
     assertSame(null, App\Services\AuditLogService::agentSummary([], $now)['admin']['average_ms'], 'No traffic is not zero-latency success');
 };
 
+$tests['downloadable invoice response preserves snapshot and review warning'] = function (): void {
+    $order = [
+        'invoice_number' => "SPS/TEST/1\"\r\nInjected: yes", 'invoice_date' => '2026-11-11',
+        'supplier' => ['trade_name' => 'Original & Co', 'gstin' => '33SNAPSHOT'],
+        'customer_name' => '<script>bad()</script>', 'tax_lines' => [], 'total' => 105,
+    ];
+    $build = new ReflectionMethod(App\Controllers\AdminController::class, 'invoiceDownload');
+    $response = $build->invoke(null, $order, 'Missing or invalid delivery state');
+    assertSame('Content-Type: text/html; charset=utf-8', $response['headers'][0], 'Download has HTML content type');
+    assertSame('Content-Disposition: attachment; filename="invoice-SPS-TEST-1-Injected-yes.html"', $response['headers'][1], 'Download filename is safe and denotes an attachment');
+    $html = $response['body'];
+    assertTrue(str_starts_with($html, '<!doctype html>') && str_contains($html, '</html>'), 'Download is a standalone document');
+    assertTrue(str_contains($html, '<style>') && !preg_match('/<(?:link|script)\b[^>]+(?:href|src)=/i', $html), 'Download has embedded styling and no external assets');
+    assertTrue(str_contains($html, '33SNAPSHOT') && str_contains($html, 'Original &amp; Co'), 'Issued supplier snapshot appears escaped');
+    assertTrue(str_contains($html, '&lt;script&gt;bad()&lt;/script&gt;') && !str_contains($html, '<script>bad()'), 'Customer input is escaped');
+    assertTrue(str_contains($html, 'Tax classification review required'), 'Review warning is retained in the downloaded document');
+};
+
+$tests['issued invoice renders its supplier snapshot and escapes names'] = function (): void {
+    $order = ['invoice_number'=>'SPS/TEST/00001', 'invoice_date'=>'2026-11-11',
+        'supplier'=>['gstin'=>'33SNAPSHOT', 'trade_name'=>'Original supplier'],
+        'customer_name'=>'<script>Customer</script>', 'tax_lines'=>[], 'total'=>105];
+    $settings = ['gstin'=>'33NEWSETTING', 'gst_trade_name'=>'New supplier'];
+    ob_start(); require app_path('views/account/invoice.php'); $html = ob_get_clean();
+    assertTrue(str_contains($html, '33SNAPSHOT'), 'Issued supplier GSTIN must be shown');
+    assertTrue(!str_contains($html, '33NEWSETTING'), 'Current GSTIN must not replace invoice snapshot');
+    assertTrue(str_contains($html, '&lt;script&gt;Customer&lt;/script&gt;'), 'Customer data is escaped');
+    $invoiceReviewReason = 'Missing or invalid delivery state';
+    ob_start(); require app_path('views/account/invoice.php'); $reviewHtml = ob_get_clean();
+    assertTrue(str_contains($reviewHtml, 'Tax classification review required'), 'Invoice output warns when an issued snapshot needs review');
+    $routes = ProjectMapService::registry()['routes'];
+    $matching = array_values(array_filter($routes, static fn($route) => $route['path'] === '/admin/orders/{id}/invoice'));
+    assertSame('AdminController@orderInvoice', $matching[0]['controller'] ?? '', 'Invoice is served by the admin controller');
+};
+
 $tests['verified payment tax review preserves missing-state orders without issuing an invoice'] = function (): void {
     $tax = new \App\Services\TaxService();
     $items = [['name'=>'Test item','qty'=>1,'line_total'=>105,'gst_rate'=>5]];
@@ -2180,6 +2215,7 @@ $tests['verified legacy payment is persisted once without a fabricated invoice']
     assertSame(105, $records[$id]['total'] ?? null, 'Verified amount is preserved');
     assertTrue(!empty($records[$id]['tax_review_required']), 'Owner sees the review flag');
     assertTrue(empty($records[$id]['invoice_number']), 'No unverified invoice is issued');
+    assertSame(5.0, $records[$id]['items'][0]['gst_rate'] ?? null, 'Tax rate is frozen for later owner review');
     assertSame($id, $persist($pending, 'test-paid-id', [], $ports), 'Repeated gateway callbacks are idempotent');
     assertSame(1, count($records), 'Retry creates no duplicate order');
 };
@@ -2209,6 +2245,12 @@ $tests['verified payment survives stock changes and callback retry'] = function 
     assertTrue(!empty($saved[$missingId]['fulfillment_review_required']), 'Missing product requires fulfillment review');
     assertTrue(!empty($saved[$missingId]['tax_review_required']), 'Missing product tax details require review');
     assertTrue(empty($saved[$missingId]['invoice_number']), 'Missing product must not cause fabricated tax invoice');
+    try {
+        (new \App\Services\TaxService())->reviewedOrder($saved[$missingId], [], 'Tamil Nadu', ['gst_state'=>'Tamil Nadu']);
+        assertTrue(false, 'Changing delivery state must not issue an invoice for missing product tax details');
+    } catch (InvalidArgumentException $error) {
+        assertTrue(str_contains($error->getMessage(), 'missing product tax details'), 'The owner receives a product-specific recovery explanation');
+    }
 };
 
 $tests['fulfillment hold requires explicit review before shipping'] = function (): void {
@@ -2221,6 +2263,34 @@ $tests['fulfillment hold requires explicit review before shipping'] = function (
     assertTrue(!empty($resolved['fulfillment_reviewed_at']), 'Review time is retained');
     $cancelled = \App\Services\OrderService::reviewFulfillment($order, 'cancelled', false, $now);
     assertTrue($cancelled['fulfillment_review_required'], 'Cancellation does not falsely claim stock was confirmed');
+};
+
+$tests['owner can correct a paid tax review record and issue one immutable invoice'] = function (): void {
+    $tax = new App\Services\TaxService();
+    $order = [
+        'id'=>'review-order', 'payment_id'=>'pay_verified', 'total'=>105, 'discount'=>0,
+        'tax_review_required'=>true, 'tax_review_reason'=>'Missing delivery state',
+        'items'=>[['slug'=>'item','name'=>'Item','qty'=>1,'line_total'=>105]],
+    ];
+    $settings = ['gst_state'=>'Tamil Nadu','gstin'=>'33ABCDE1234F1Z5','default_gst_rate'=>5,'default_hsn_code'=>'8306'];
+    $reviewed = $tax->reviewedOrder($order, [$order], 'Telangana', $settings, new DateTimeImmutable('2026-11-11T10:00:00+05:30'));
+    assertSame('Telangana', $reviewed['shipping_state'], 'Owner-selected delivery state is canonicalised');
+    assertSame('interstate', $reviewed['supply_type'], 'Corrected interstate delivery uses IGST');
+    assertTrue(($reviewed['igst_total'] ?? 0) > 0 && ($reviewed['cgst_total'] ?? 0) === 0.0, 'Recovered invoice contains the correct tax split');
+    assertTrue(!empty($reviewed['invoice_number']) && empty($reviewed['tax_review_required']), 'Recovery issues one invoice and clears the review flag');
+    assertSame(105, $reviewed['total'], 'Gateway-confirmed total remains unchanged');
+    foreach ([
+        array_merge($order, ['payment_id'=>'']),
+        array_merge($order, ['invoice_number'=>'SPS/2627/00001']),
+        array_merge($order, ['tax_review_required'=>false]),
+    ] as $invalid) {
+        try { $tax->reviewedOrder($invalid, [$invalid], 'Telangana', $settings); assertTrue(false, 'Unsafe recovery must be rejected'); }
+        catch (InvalidArgumentException) {}
+    }
+    $routes = App\Services\ProjectMapService::registry()['routes'];
+    $recovery = array_values(array_filter($routes, fn($route) => $route['method'] === 'POST' && $route['path'] === '/admin/orders/{id}/tax-review'));
+    assertSame(1, count($recovery), 'Tax recovery route is registered once');
+    assertTrue(in_array('AuditLogService', $recovery[0]['services'], true), 'Tax recovery is auditable');
 };
 
 $tests['cart summary recalculates quantities and mixed product tax rates'] = function (): void {

@@ -5,6 +5,7 @@ final class TaxService {
     /** Devotional statuettes of base metal, HSN 8306 — 5% since the Sept 2025 GST 2.0 handicraft reform. */
     public const DEFAULT_GST_RATE = 5.0;
     public const DEFAULT_HSN_CODE = '8306';
+    public const MISSING_PRODUCT_TAX_DETAILS = 'Product tax details unavailable at payment confirmation';
     private const INDIAN_STATES = [
         'Andaman and Nicobar Islands', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar',
         'Chandigarh', 'Chhattisgarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Goa',
@@ -137,6 +138,39 @@ final class TaxService {
             'invoice_number' => sprintf('SPS/%s/%05d', $financialYear, $sequence),
             'invoice_date' => $at->format('c'),
         ];
+    }
+
+    /**
+     * Turn one paid, unissued review record into an immutable invoice snapshot.
+     * This is pure so the recovery rules can be tested without touching hosted data.
+     */
+    public function reviewedOrder(array $order, array $orders, string $shippingState, array $settings, ?\DateTimeImmutable $at = null): array {
+        if (empty($order['tax_review_required'])) throw new \InvalidArgumentException('This order does not require tax recovery.');
+        if (!empty($order['invoice_number'])) throw new \InvalidArgumentException('This order already has an issued invoice.');
+        if (($order['tax_review_reason'] ?? '') === self::MISSING_PRODUCT_TAX_DETAILS) {
+            throw new \InvalidArgumentException('Verify the missing product tax details with your accountant before issuing an invoice.');
+        }
+        if (trim((string)($order['payment_id'] ?? $order['stripe_session_id'] ?? '')) === '') {
+            throw new \InvalidArgumentException('Only a verified paid order can receive a recovered invoice.');
+        }
+        $shippingState = self::normaliseState($shippingState) ?? throw new \InvalidArgumentException('Select a valid delivery state before issuing the invoice.');
+        $items = $order['items'] ?? [];
+        if (!is_array($items) || $items === []) throw new \InvalidArgumentException('The paid order has no saved items to invoice.');
+        $items = array_map(function (array $item) use ($settings): array {
+            $item['gst_rate'] = self::rateFor($item, $settings);
+            $item['hsn_code'] = self::hsnFor($item, $settings);
+            $item['unit_price'] = (float)($item['unit_price'] ?? 0) ?: (float)($item['line_total'] ?? 0) / max(1, (int)($item['qty'] ?? 1));
+            return $item;
+        }, $items);
+        $tax = $this->snapshot($items, (float)($order['discount'] ?? 0), $shippingState, $settings);
+        $invoice = $this->nextInvoice($orders, $at);
+        unset($tax['total']); // The gateway-confirmed order total remains authoritative.
+        return array_merge($order, $tax, $invoice, [
+            'items' => $items,
+            'shipping_state' => $shippingState,
+            'tax_review_required' => false,
+            'tax_review_reason' => '',
+        ]);
     }
 
     public static function states(): array { return self::INDIAN_STATES; }

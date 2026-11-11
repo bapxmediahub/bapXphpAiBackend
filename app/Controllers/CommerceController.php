@@ -393,12 +393,14 @@ final class CommerceController extends BaseController {
             'shipping_city' => $pendingOrder['shipping_city'],
             'shipping_pincode' => $pendingOrder['shipping_pincode'],
             'shipping_state' => $pendingOrder['shipping_state'] ?? '',
-            'items' => $orderItems,
+            // Preserve the rate/HSN/unit-price inputs even when state is unavailable,
+            // so a later reviewed invoice does not depend on changed catalogue data.
+            'items' => $itemsWithRates,
             'coupon_code' => $pendingOrder['coupon_code'] ?? '',
             'discount' => $pendingOrder['discount'] ?? 0,
             'customer_gstin' => $pendingOrder['customer_gstin'] ?? '',
             'tax_review_required' => $tax === null,
-            'tax_review_reason' => $tax === null ? ($missingProduct ? 'Product tax details unavailable at payment confirmation' : 'Missing or invalid delivery or supplier state at payment confirmation') : '',
+            'tax_review_reason' => $tax === null ? ($missingProduct ? TaxService::MISSING_PRODUCT_TAX_DETAILS : 'Missing or invalid delivery or supplier state at payment confirmation') : '',
             'created_at' => date('c'),
         ], $gatewayFields);
         if ($tax !== null && $invoice !== null) {

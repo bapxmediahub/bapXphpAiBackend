@@ -93,7 +93,48 @@ final class AdminController extends BaseController {
         foreach ($orders as $item) {
             if (($item['id'] ?? '') === $id) { $order = $item; break; }
         }
-        $this->render('admin/detail',['pageTitle' => 'Order '.$id, 'title' => 'Order '.$id, 'order' => $order]);
+        $this->render('admin/detail',['pageTitle' => 'Order '.$id, 'title' => 'Order '.$id, 'order' => $order, 'taxStates' => \App\Services\TaxService::states()]);
+    }
+    /** Issued invoice snapshots are private and must not change with today's settings. */
+    public function orderInvoice(string $id): void {
+        $order = null;
+        foreach ((new OrderService())->all() as $candidate) {
+            if ((string)($candidate['id'] ?? '') === $id && !empty($candidate['invoice_number'])) {
+                $order = $candidate;
+                break;
+            }
+        }
+        if (!$order) { http_response_code(404); echo 'Invoice not found.'; return; }
+        header('Cache-Control: private, no-store');
+        // The template uses this only as a fallback for old invoices without snapshots.
+        // Never fill an issued invoice with current supplier settings.
+        $settings = [];
+        $invoiceReviewReason = \App\Services\TaxService::invoiceReviewReason($order, (new SettingsService())->public());
+        $download = isset($_GET['download']) && $_GET['download'] === '1';
+        if ($download) {
+            $downloadResponse = self::invoiceDownload($order, $invoiceReviewReason);
+            foreach ($downloadResponse['headers'] as $header) header($header);
+            echo $downloadResponse['body'];
+            return;
+        }
+        $adminInvoice = true;
+        $this->render('account/invoice', compact('order', 'settings', 'adminInvoice', 'invoiceReviewReason'));
+    }
+    /** Build a self-contained download from the issued snapshot, with no runtime assets. */
+    private static function invoiceDownload(array $order, ?string $invoiceReviewReason): array {
+        $filename = preg_replace('/[^A-Za-z0-9._-]+/', '-', (string)$order['invoice_number']);
+        $settings = [];
+        ob_start();
+        echo '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Tax invoice</title><style>body{font:15px/1.5 Arial,sans-serif;color:#222;margin:2rem} .invoice-sheet{max-width:1000px;margin:auto}.invoice-head,.invoice-parties{display:flex;justify-content:space-between;gap:2rem;flex-wrap:wrap}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:.5rem;text-align:left}.table-wrap{overflow:auto}.invoice-totals{margin-left:auto;max-width:350px}.invoice-totals p{display:flex;justify-content:space-between}@media print{.no-print{display:none}body{margin:0}}</style></head><body>';
+        require app_path('views/account/invoice.php');
+        echo '</body></html>';
+        return [
+            'headers' => [
+                'Content-Type: text/html; charset=utf-8',
+                'Content-Disposition: attachment; filename="invoice-' . $filename . '.html"',
+            ],
+            'body' => ob_get_clean(),
+        ];
     }
     public function saveOrderStatus(string $id): void{
         $status = (string)($_POST['status'] ?? 'confirmed');
@@ -113,6 +154,22 @@ final class AdminController extends BaseController {
             $this->flash($e->getMessage(),'error');
         } catch (\Throwable) {
             $this->flash('Unable to update order status.','error');
+        }
+        $this->redirect('/admin/orders/'.$id);
+    }
+    public function resolveOrderTaxReview(string $id): void{
+        try {
+            $updated = (new OrderService())->resolveTaxReview($id, (string)($_POST['shipping_state'] ?? ''), (new SettingsService())->public());
+            (new AuditLogService())->record('save', 'order.tax-review', $id, [
+                'shipping_state' => $updated['shipping_state'] ?? '',
+                'invoice_number' => $updated['invoice_number'] ?? '',
+            ]);
+            $this->flash('Delivery state corrected and invoice issued.', 'success');
+        } catch (\InvalidArgumentException $error) {
+            $this->flash($error->getMessage(), 'error');
+        } catch (\Throwable $error) {
+            error_log('Tax review recovery failed for order ' . $id . ': ' . $error->getMessage());
+            $this->flash('Unable to issue the invoice. Check the order and GST settings, then try again.', 'error');
         }
         $this->redirect('/admin/orders/'.$id);
     }

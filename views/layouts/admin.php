@@ -165,7 +165,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
             <?php
             $__path = parse_url($_SERVER['REQUEST_URI'] ?? '/admin', PHP_URL_PATH);
             $__segments = array_values(array_filter(explode('/', $__path)));
-            $__crumb = '';
+            $__crumb = '/admin';
             $__labelMap = [
                 'products'=>'Products','categories'=>'Categories','coupons'=>'Coupons',
                 'orders'=>'Orders','shipping'=>'Shipping','tax-report'=>'Tax Report','astrologers'=>'Astrologers',
