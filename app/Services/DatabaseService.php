@@ -200,6 +200,32 @@ final class DatabaseService {
         });
     }
 
+    public function recordOrderRefund(string $id, string $paymentId, string $refundId, int $amount): array {
+        if ($this->isTestMode()) throw new \RuntimeException('Order writes are disabled in test mode.');
+        if ($this->isRemote()) {
+            return $this->remoteMutation('record_order_refund', 'orders', [
+                'id' => $id, 'payment_id' => $paymentId, 'refund_id' => $refundId, 'amount_paise' => $amount,
+            ])['result'];
+        }
+        return $this->withOrderInvoiceLock(function () use ($id, $paymentId, $refundId, $amount): array {
+            $order = $this->find('orders', $id);
+            if ($order === null || $paymentId === '' || ($order['payment_id'] ?? '') !== $paymentId) {
+                throw new \InvalidArgumentException('The order payment could not be matched.');
+            }
+            foreach ($order['verified_refunds'] ?? [] as $refund) {
+                if ($refund['id'] === $refundId) {
+                    if ($refund['amount_paise'] !== $amount) throw new \InvalidArgumentException('Refund amount conflicts with the saved record.');
+                    return $order;
+                }
+            }
+            if ($amount <= 0 || OrderService::refundedPaise($order) + $amount > (int)round((float)($order['total'] ?? 0) * 100)) {
+                throw new \InvalidArgumentException('Refunds cannot exceed the recorded order total.');
+            }
+            $order['verified_refunds'][] = ['id' => $refundId, 'amount_paise' => $amount];
+            return $this->upsert('orders', $order);
+        });
+    }
+
     public function updateOrderStatus(string $id, string $status, \DateTimeImmutable $now, array $tracking): array {
         if ($this->isTestMode()) throw new \RuntimeException('Order writes are disabled in test mode.');
         if ($this->isRemote()) {

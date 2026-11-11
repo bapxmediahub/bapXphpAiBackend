@@ -66,6 +66,7 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/admin/orders/{id}/invoice','name'=>'admin.order.invoice','page'=>'account/invoice','controller'=>'AdminController@orderInvoice','services'=>['OrderService']],
             ['method'=>'GET','path'=>'/admin/orders/{id}','name'=>'admin.order.show','page'=>'admin/detail','controller'=>'AdminController@order','services'=>['OrderService','ShippingService','TaxService']],
             ['method'=>'POST','path'=>'/admin/orders/{id}/status','name'=>'admin.order.status','page'=>'admin/detail','controller'=>'AdminController@saveOrderStatus','services'=>['OrderService','MailQueueService','AuditLogService']],
+            ['method'=>'POST','path'=>'/admin/orders/{id}/refund','name'=>'admin.order.refund','page'=>'admin/detail','controller'=>'AdminController@importOrderRefund','services'=>['OrderService','SecretService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/orders/{id}/tax-review','name'=>'admin.order.tax-review','page'=>'admin/detail','controller'=>'AdminController@resolveOrderTaxReview','services'=>['OrderService','TaxService','SettingsService','AuditLogService']],
             ['method'=>'GET','path'=>'/admin/shipping','name'=>'admin.shipping','page'=>'admin/settings','controller'=>'AdminController@shipping','services'=>['ShippingService','SettingsService']],
             ['method'=>'GET','path'=>'/admin/astrologers','name'=>'admin.astrologers','page'=>'admin/dashboard','controller'=>'AdminController@astrologers','services'=>[]],

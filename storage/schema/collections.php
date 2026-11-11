@@ -155,6 +155,7 @@
                 'tax_review_reason' => ['type' => 'string'],
                 'invoice_date' => ['type' => 'string'],
                 'payment_id' => ['type' => 'string'],
+                'verified_refunds' => ['type' => 'array'],
                 'payment_email_status' => ['type' => 'string'],
                 'razorpay_order_id' => ['type' => 'string'],
                 'stripe_session_id' => ['type' => 'string'],

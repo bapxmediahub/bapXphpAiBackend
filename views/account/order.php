@@ -29,6 +29,13 @@ $__first = $__name !== '' ? explode(' ', $__name)[0] : '';
     <div class="account-layout">
         <?php require __DIR__ . '/_nav.php'; ?>
         <div class="account-content">
+            <?php $refundedPaise = \App\Services\OrderService::refundedPaise($order); ?>
+            <?php if ($refundedPaise > 0): ?>
+                <p class="flash flash--success">
+                    <?= $refundedPaise >= (int)round((float)($order['total'] ?? 0) * 100) ? 'Fully refunded' : 'Partially refunded' ?>
+                    · ₹<?= e(number_format($refundedPaise / 100, 2)) ?>
+                </p>
+            <?php endif; ?>
 
             <?php if (!empty($justPlaced)): ?>
                 <div class="order-thanks">
