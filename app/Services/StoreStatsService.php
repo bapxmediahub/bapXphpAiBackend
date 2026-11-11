@@ -4,6 +4,24 @@ namespace App\Services;
 /** Deterministic commerce reporting shared by admin screens and future dashboard cards. */
 final class StoreStatsService
 {
+    public static function topProducts(array $orders, string $from, string $to, string $status = ''): array
+    {
+        $rows = self::productsPurchased($orders, $from, $to, $status);
+        usort($rows, static fn(array $a, array $b): int => ($b['net'] <=> $a['net']) ?: strcmp($a['product'], $b['product']));
+        return array_slice($rows, 0, 6);
+    }
+
+    public static function orderStatusCounts(array $orders, string $from, string $to, string $status = ''): array
+    {
+        $counts = [];
+        foreach (self::paidOrders($orders, $from, $to, $status) as $order) {
+            $label = strtolower((string)($order['status'] ?? 'unknown'));
+            $counts[$label] = ($counts[$label] ?? 0) + 1;
+        }
+        arsort($counts);
+        return $counts;
+    }
+
     public const REPORT_TYPES = [
         'sales' => 'Sales',
         'products' => 'Products purchased',

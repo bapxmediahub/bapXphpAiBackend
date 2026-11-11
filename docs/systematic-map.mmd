@@ -7,11 +7,11 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 123 routes, 12 controllers, 49 services, 47 views, 0 data files, 20 tools"]
-    arch_routes["> Routes: 123 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 124 routes, 12 controllers, 49 services, 49 views, 0 data files, 20 tools"]
+    arch_routes["> Routes: 124 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
     arch_svc["> Services: 49"]:::arch
-    arch_views["> Views: 47"]:::arch
+    arch_views["> Views: 49"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 20"]:::arch
     arch_gaps["> Gaps: 6"]:::arch
@@ -100,7 +100,7 @@ flowchart LR
   end
 
   subgraph ROUTES_ADMIN["ADMIN Routes"]
-    route_get_admin["GET /admin — Admin dashboard — counts overview"]:::route
+    route_get_admin["GET /admin — Admin dashboard — commerce analytics and operations"]:::route
     route_get_admin_products["GET /admin/products — Admin — manage products"]:::route
     route_get_admin_categories["GET /admin/categories — Admin — manage categories"]:::route
     route_get_admin_collections["GET /admin/collections"]:::route
@@ -122,6 +122,7 @@ flowchart LR
     route_post_admin_settings_admin_credentials["POST /admin/settings/admin-credentials — Admin — save admin login"]:::route
     route_get_admin_integrations["GET /admin/integrations — Admin — API keys, integrations"]:::route
     route_get_admin_agent["GET /admin/agent"]:::route
+    route_get_admin_agent_monitoring["GET /admin/agent/monitoring"]:::route
     route_post_admin_agent_ask["POST /admin/agent/ask"]:::route
     route_get_admin_contact_submissions["GET /admin/contact-submissions — Admin — contact form entries"]:::route
     route_post_admin_contact_submissions_save["POST /admin/contact_submissions/save — Admin — save contact submission"]:::route
@@ -240,7 +241,9 @@ flowchart LR
     view_account_order["account/order"]:::code
     view_account_orders["account/orders"]:::code
     view_account_profile["account/profile"]:::code
+    view_admin_commerce_overview["admin/_commerce-overview"]:::code
     view_admin_agent["admin/agent"]:::code
+    view_admin_agent_monitoring["admin/agent-monitoring"]:::code
     view_admin_appearance["admin/appearance"]:::code
     view_admin_blog["admin/blog"]:::code
     view_admin_collections["admin/collections"]:::code
@@ -516,7 +519,8 @@ flowchart LR
   controller_consultationcontroller -. renders .-> view_admin_list
   route_get_admin --> controller_admincontroller
   controller_admincontroller --> service_resourceservice
-  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_orderservice
+  controller_admincontroller --> service_storestatsservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_dashboard
   route_get_admin_products --> controller_admincontroller
@@ -623,6 +627,11 @@ flowchart LR
   controller_admincontroller --> service_databaseservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_agent
+  route_get_admin_agent_monitoring --> controller_admincontroller
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_databaseservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_agent_monitoring
   route_post_admin_agent_ask --> controller_admincontroller
   controller_admincontroller --> service_secretservice
   controller_admincontroller --> service_databaseservice
@@ -920,9 +929,9 @@ flowchart LR
   service_supportticketservice --> collection_support_tickets
   service_templeservice --> collection_temples
   service_resourceservice --> collection_products
-  service_resourceservice --> collection_orders
   service_resourceservice --> collection_appointments
   service_resourceservice --> collection_categories
+  service_resourceservice --> collection_orders
   service_databaseservice --> collection_users
   service_databaseservice --> collection_addresses
   service_databaseservice --> collection_products

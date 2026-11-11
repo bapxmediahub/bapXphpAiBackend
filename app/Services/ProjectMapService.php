@@ -7,7 +7,7 @@ final class ProjectMapService {
 
     public const SHARED_CONTROLLERS = ['BaseController'];
     public const SHARED_SERVICES = ['SeoService', 'SmtpMailer', 'ImageOptimizerService', 'DocsMapService', 'GitHubDocService', 'RateLimiter', 'KnowledgeGraphService'];
-    public const SHARED_VIEWS = ['account/_nav', 'layouts/admin', 'layouts/app', 'public/404', 'admin/environment', 'public/home-collections'];
+    public const SHARED_VIEWS = ['account/_nav', 'layouts/admin', 'layouts/app', 'public/404', 'admin/environment', 'public/home-collections', 'admin/_commerce-overview'];
     public const KNOWN_UNWIRED_COLLECTIONS = ['wallet_transactions'];
 
     public static function registry(): array {
@@ -63,7 +63,7 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/account/orders/{orderId}','name'=>'account.order','page'=>'account/order','controller'=>'AccountController@order','services'=>['AuthService','OrderService','SettingsService']],
             ['method'=>'GET','path'=>'/account/bookings','name'=>'account.bookings.legacy','page'=>'account/orders','controller'=>'AccountController@legacyBookings','services'=>['AuthService']],
             ['method'=>'POST','path'=>'/api/consultations/{id}/status','name'=>'api.consultation.status','page'=>'admin/list','controller'=>'ConsultationController@status','services'=>['AuthService','ConsultationService']],
-            ['method'=>'GET','path'=>'/admin','name'=>'admin.dashboard','page'=>'admin/dashboard','controller'=>'AdminController@dashboard','services'=>['ResourceService','AuditLogService']],
+            ['method'=>'GET','path'=>'/admin','name'=>'admin.dashboard','page'=>'admin/dashboard','controller'=>'AdminController@dashboard','services'=>['ResourceService','OrderService','StoreStatsService']],
             ['method'=>'GET','path'=>'/admin/products','name'=>'admin.products','page'=>'admin/product-form','controller'=>'AdminController@products','services'=>['ProductService','SchemaService']],
             ['method'=>'GET','path'=>'/admin/categories','name'=>'admin.categories','page'=>'admin/resource','controller'=>'AdminController@categories','services'=>['CategoryService']],
             ['method'=>'GET','path'=>'/admin/collections','name'=>'admin.collections','page'=>'admin/collections','controller'=>'AdminController@collections','services'=>['CategoryService','ProductService']],
@@ -85,6 +85,7 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/admin/settings/admin-credentials','name'=>'admin.settings.admin-credentials','page'=>'admin/settings','controller'=>'AdminController@saveAdminCredentials','services'=>['EnvService','AuditLogService']],
             ['method'=>'GET','path'=>'/admin/integrations','name'=>'admin.integrations','page'=>'admin/integrations','controller'=>'AdminController@integrations','services'=>['SettingsService','PaymentService','SecretService']],
             ['method'=>'GET','path'=>'/admin/agent','name'=>'admin.agent','page'=>'admin/agent','controller'=>'AdminController@agent','services'=>['SecretService','DatabaseService']],
+            ['method'=>'GET','path'=>'/admin/agent/monitoring','name'=>'admin.agent.monitoring','page'=>'admin/agent-monitoring','controller'=>'AdminController@agentMonitoring','services'=>['AuditLogService','DatabaseService']],
             ['method'=>'POST','path'=>'/admin/agent/ask','name'=>'admin.agent.ask','page'=>'admin/agent','controller'=>'AdminController@agentAsk','services'=>['SecretService','DatabaseService','AuditLogService','AgentAttachmentService','AgentDraftService','AgentToolRegistry','AiReplyCleaner','AiClient']],
             ['method'=>'GET','path'=>'/admin/contact-submissions','name'=>'admin.contact-submissions','page'=>'admin/resource','controller'=>'AdminController@contactSubmissions','services'=>['ContactService']],
             ['method'=>'POST','path'=>'/admin/contact_submissions/save','name'=>'admin.contact-submissions.save','page'=>'admin/resource','controller'=>'AdminController@saveContactSubmission','services'=>['ResourceService','AuditLogService']],
@@ -286,7 +287,7 @@ final class ProjectMapService {
             '/support/ask|POST' => 'Support bot — AI-powered Q&A',
 
 
-            '/admin'            => 'Admin dashboard — counts overview',
+            '/admin'            => 'Admin dashboard — commerce analytics and operations',
             '/admin/products'   => 'Admin — manage products',
             '/admin/categories' => 'Admin — manage categories',
             '/admin/coupons'    => 'Admin — manage coupons',

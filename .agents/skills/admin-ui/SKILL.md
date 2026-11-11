@@ -13,9 +13,8 @@ description: Use when editing owner/admin pages, CRUD forms, media library, envi
 
 ## Admin Panel Agent
 
-The interface at `/admin/agent` is the Owner Agent operational workspace. Desktop may
-present it as a window, side panel, full page or minimized dock; mobile uses a dedicated
-full-page composition. Treat it as read-only unless controller code explicitly
+The interface at `/admin/agent` is the Enterprise Agent chat workspace.
+The same navigation group links to `/admin/agent/monitoring` and the AI Support Tickets queue. Treat it as read-only unless controller code explicitly
 implements and authorizes a mutation. Draft cards are editable proposals and must say
 that nothing changes until the owner reviews and confirms.
 

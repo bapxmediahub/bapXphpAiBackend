@@ -3,10 +3,10 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 123,
+        "routes": 124,
         "controllers": 12,
         "services": 49,
-        "views": 47,
+        "views": 49,
         "collections": 22
     },
     "routes": [
@@ -193,7 +193,8 @@
             "view": "admin/dashboard",
             "services": [
                 "ResourceService",
-                "AuditLogService",
+                "OrderService",
+                "StoreStatsService",
                 "AuthService"
             ]
         },
@@ -224,6 +225,18 @@
                 "AgentToolRegistry",
                 "AiReplyCleaner",
                 "AiClient",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/agent/monitoring",
+            "name": "admin.agent.monitoring",
+            "controller": "AdminController@agentMonitoring",
+            "view": "admin/agent-monitoring",
+            "services": [
+                "AuditLogService",
+                "DatabaseService",
                 "AuthService"
             ]
         },
@@ -1454,7 +1467,9 @@
         "account/order",
         "account/orders",
         "account/profile",
+        "admin/_commerce-overview",
         "admin/agent",
+        "admin/agent-monitoring",
         "admin/appearance",
         "admin/blog",
         "admin/collections",

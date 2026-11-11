@@ -1,3 +1,26 @@
+<section class="report-workspace dashboard-commerce" aria-labelledby="dashboard-commerce-title">
+    <div class="report-head">
+        <div>
+            <h1 id="dashboard-commerce-title">Commerce overview</h1>
+            <p><time datetime="<?= e($from) ?>"><?= e($from) ?></time> to <time datetime="<?= e($to) ?>"><?= e($to) ?></time></p>
+        </div>
+        <a class="btn btn-outline" href="/admin/tax-report?<?= e(http_build_query(['report' => 'sales', 'from' => $from, 'to' => $to, 'group' => $period === 90 ? 'week' : 'day'])) ?>">Open Commerce Reports</a>
+    </div>
+    <nav class="dashboard-commerce__periods" aria-label="Analytics period">
+        <?php foreach ([7, 30, 90] as $days): ?>
+            <a href="/admin?period=<?= $days ?>" class="btn btn-sm <?= $period === $days ? 'btn-primary' : 'btn-outline' ?>" <?= $period === $days ? 'aria-current="page"' : '' ?>>Last <?= $days ?> days</a>
+        <?php endforeach; ?>
+    </nav>
+    <?php $money = static fn($amount): string => '₹' . number_format((float)$amount, 2); ?>
+    <?php require __DIR__ . '/_commerce-overview.php'; ?>
+    <nav class="dashboard-commerce__periods" aria-label="Detailed reports">
+        <?php foreach (\App\Services\StoreStatsService::REPORT_TYPES as $type => $label): ?>
+            <?php if ($type === 'sales') continue; ?>
+            <a class="btn btn-sm btn-outline" href="/admin/tax-report?<?= e(http_build_query(['report' => $type, 'from' => $from, 'to' => $to])) ?>"><?= e($label) ?></a>
+        <?php endforeach; ?>
+    </nav>
+</section>
+
 <div class="admin-stats">
     <div class="admin-stat">
         <div class="admin-stat__icon">
@@ -22,46 +45,6 @@
     </div>
 </div>
 
-<div class="admin-card" style="margin-bottom:var(--space-lg);">
-    <h2>Agent monitoring · last 24 hours</h2>
-    <p>Track response paths and failures for customer support and owner chat. Model responses still need quality review; these counts do not measure answer accuracy.</p>
-    <?php if (($agentMonitoring ?? null) === null): ?>
-        <p role="status">Monitoring is temporarily unavailable.</p>
-    <?php else: ?>
-        <div class="table-wrap"><table>
-            <thead><tr><th>Agent</th><th>Requests</th><th>Model</th><th>Local data</th><th>Fallback</th><th>Sign-in guidance</th><th>Drafts</th><th>Errors</th><th>Average time</th></tr></thead>
-            <tbody><?php foreach ($agentMonitoring as $surface => $metrics): ?>
-                <tr><th><?= $surface === 'support' ? 'Customer support' : 'Owner / admin' ?></th>
-                <?php foreach (['requests', 'model', 'local', 'fallback', 'private_account', 'draft', 'error'] as $metric): ?><td><?= (int)$metrics[$metric] ?></td><?php endforeach; ?>
-                <td><?= $metrics['average_ms'] === null ? 'No requests yet' : e(number_format($metrics['average_ms'] / 1000, 2)) . ' s' ?></td></tr>
-            <?php endforeach; ?></tbody>
-        </table></div>
-        <p style="font-size:0.8rem;color:var(--color-text-muted);">Monitoring records timing, outcomes, failure categories and provider attempt metadata. It omits questions, answers, provider messages, customer identities and secrets.</p>
-        <?php foreach ($agentMonitoring as $surface => $metrics): ?>
-            <p><strong><?= $surface === 'support' ? 'Customer support' : 'Owner / admin' ?> failure reasons:</strong>
-            <?php if (empty($metrics['reasons'])): ?>No categorized failures recorded.<?php else: ?>
-                <?php foreach ($metrics['reasons'] as $category => $count): ?><?= e(str_replace('_', ' ', $category)) ?>: <?= (int)$count ?>; <?php endforeach; ?>
-            <?php endif; ?></p>
-            <?php if ($run = $metrics['latest_provider_run']): ?>
-                <details>
-                    <summary><?= $surface === 'support' ? 'Customer support' : 'Owner / admin' ?> latest provider run · <?= e($run['outcome']) ?></summary>
-                    <p><time datetime="<?= e($run['at']) ?>"><?= e($run['at']) ?></time></p>
-                    <div class="table-wrap"><table>
-                        <thead><tr><th>Attempt</th><th>Model</th><th>HTTP status</th><th>Transport error</th><th>Elapsed</th></tr></thead>
-                        <tbody><?php foreach ($run['attempts'] as $index => $attempt): ?>
-                            <tr><th><?= $index + 1 ?></th>
-                                <td><?= e($attempt['model'] ?? 'Unavailable') ?></td>
-                                <td><?= $attempt['status'] ?: 'No response' ?></td>
-                                <td><?= $attempt['curl_error'] ?: 'None' ?></td>
-                                <td><?= e(number_format($attempt['total_ms'] / 1000, 2)) ?> s</td>
-                            </tr>
-                        <?php endforeach; ?></tbody>
-                    </table></div>
-                </details>
-            <?php endif; ?>
-        <?php endforeach; ?>
-    <?php endif; ?>
-</div>
 <?php
 $__secretsGa = (new \App\Services\SecretService())->all();
 $__gaConfigured = !empty($__secretsGa['google_analytics_id']);

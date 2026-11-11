@@ -2357,6 +2357,23 @@ $tests['agent monitoring counts bounded outcomes without treating fallbacks as m
     assertSame(null, App\Services\AuditLogService::agentSummary([], $now)['admin']['average_ms'], 'No traffic is not zero-latency success');
 };
 
+$tests['agent monitoring summarizes latency and strips tool payloads'] = function (): void {
+    $now = strtotime('2026-11-11T12:00:00Z');
+    $runs = [];
+    foreach ([100, 200, 2300] as $duration) {
+        $runs[] = ['event' => 'agent.run', 'created_at' => date('c', $now - 1), 'meta' => [
+            'surface' => 'admin', 'outcome' => 'model', 'duration_ms' => $duration,
+            'tool_activity' => [
+                ['name' => 'product_status', 'status' => 'complete', 'duration_ms' => 25, 'arguments' => 'private'],
+                ['name' => 'private fixture', 'status' => 'error', 'duration_ms' => 8],
+            ],
+        ]];
+    }
+    $row = App\Services\AuditLogService::agentSummary($runs, $now)['admin'];
+    assertSame(2300, $row['p95_ms'], 'Nearest rank p95 includes the slow tail');
+    assertSame([['name' => 'product_status', 'status' => 'complete', 'duration_ms' => 25]], $row['recent_runs'][0]['tools'], 'Trace keeps only approved tool metadata');
+};
+
 $tests['monitoring attributes attempts to the latest provider run even after a local answer'] = function (): void {
     $event = static fn(string $at, string $outcome, array $attempts): array => [
         'event' => 'agent.run',

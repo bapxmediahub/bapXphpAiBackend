@@ -70,10 +70,15 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                 Dashboard
             </a>
-            <a href="/admin/agent" class="admin-nav-top admin-nav-agent <?= (strpos($_SERVER['REQUEST_URI'], '/admin/agent') === 0 ? 'active' : '') ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a4 4 0 01-4 4H8l-5 3V7a4 4 0 014-4h10a4 4 0 014 4z"/><path d="M8 9h8M8 13h5"/></svg>
-                <span>Owner Agent<small><?= !empty($__agentConnected) ? 'Connected' : 'Scoped assistant' ?></small></span>
-            </a>
+            <?php $agentNavPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH); ?>
+            <details class="admin-agent-nav" <?= in_array($agentNavPath, ['/admin/agent', '/admin/agent/monitoring', '/admin/support-tickets'], true) ? 'open' : '' ?>>
+                <summary class="admin-nav-top admin-nav-agent">Enterprise Agent</summary>
+                <div class="admin-nav-group">
+                    <a href="/admin/agent" <?= $agentNavPath === '/admin/agent' ? 'class="active" aria-current="page"' : '' ?>>Chat</a>
+                    <a href="/admin/agent/monitoring" <?= $agentNavPath === '/admin/agent/monitoring' ? 'class="active" aria-current="page"' : '' ?>>Agent Monitoring</a>
+                    <a href="/admin/support-tickets" <?= $agentNavPath === '/admin/support-tickets' ? 'class="active" aria-current="page"' : '' ?>>AI Support Tickets</a>
+                </div>
+            </details>
             <?php if ($__modules['shop']): ?>
             <button type="button" class="admin-nav-toggle" data-target="menu-catalog" aria-controls="menu-catalog" aria-expanded="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
@@ -113,7 +118,6 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
                 <a href="/admin/shipping" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/shipping') === 0 ? 'active' : '') ?>">Shipping</a>
                 <a href="/admin/tax-report" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/tax-report') === 0 ? 'active' : '') ?>">Reports</a>
                 <a href="/admin/contact-submissions" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/contact-submissions') === 0 ? 'active' : '') ?>">Contacts</a>
-                <a href="/admin/support-tickets" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/support-tickets') === 0 ? 'active' : '') ?>">Support</a>
                 <a href="/admin/email-inbox" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/email-inbox') === 0 ? 'active' : '') ?>">Email Inbox</a>
                 <a href="/admin/email-outbox" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/email-outbox') === 0 ? 'active' : '') ?>">Email Outbox</a>
             </div>
@@ -175,9 +179,9 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
                 'orders'=>'Orders','shipping'=>'Shipping','tax-report'=>'Reports','astrologers'=>'Astrologers',
                 'appointments'=>'Sessions',
                 'consultation-analytics'=>'Analytics','temples'=>'Temples',
-                'settings'=>'Site Settings','integrations'=>'Integrations','agent'=>'Owner Agent',
+                'settings'=>'Site Settings','integrations'=>'Integrations','agent'=>'Enterprise Agent','monitoring'=>'Agent Monitoring',
                 'backups'=>'Backups','audit-log'=>'Audit Log',
-                'contact-submissions'=>'Contacts','support-tickets'=>'Support',
+                'contact-submissions'=>'Contacts','support-tickets'=>'AI Support Tickets',
                 'email-inbox'=>'Email Inbox','email-outbox'=>'Email Outbox',
                 'appearance'=>'Logo & Favicon','media'=>'Media Library',
                 'environment'=>'Environment','developer'=>'Developer',
