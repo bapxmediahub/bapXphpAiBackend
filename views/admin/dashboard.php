@@ -36,7 +36,13 @@
                 <td><?= $metrics['average_ms'] === null ? 'No requests yet' : e(number_format($metrics['average_ms'] / 1000, 2)) . ' s' ?></td></tr>
             <?php endforeach; ?></tbody>
         </table></div>
-        <p style="font-size:0.8rem;color:var(--color-text-muted);">Monitoring records timing and outcome only. Questions, answers and customer identities are not stored in these events.</p>
+        <p style="font-size:0.8rem;color:var(--color-text-muted);">Only timing, outcome and a limited failure category are recorded. Questions, answers, provider messages, customer identities and secrets are not stored.</p>
+        <?php foreach ($agentMonitoring as $surface => $metrics): ?>
+            <p><strong><?= $surface === 'support' ? 'Customer support' : 'Owner / admin' ?> failure reasons:</strong>
+            <?php if (empty($metrics['reasons'])): ?>No categorized failures recorded.<?php else: ?>
+                <?php foreach ($metrics['reasons'] as $category => $count): ?><?= e(str_replace('_', ' ', $category)) ?>: <?= (int)$count ?>; <?php endforeach; ?>
+            <?php endif; ?></p>
+        <?php endforeach; ?>
     <?php endif; ?>
 </div>
 <?php

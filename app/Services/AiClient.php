@@ -21,6 +21,21 @@ final class AiClient
 {
     private const ERROR_PREFIXES = ['AI request failed', 'No AI API key'];
     private int $transportError = 0;
+    private ?string $failureCategory = null;
+
+    /** Bounded operational category; never includes provider messages or credentials. */
+    public function failureCategory(): ?string { return $this->failureCategory; }
+
+    public static function classifyFailure(int $status, int $transportError): string {
+        return match (true) {
+            $transportError === 28 => 'timeout',
+            $status === 0 => 'transport',
+            $status === 401 || $status === 403 => 'authentication',
+            $status === 429 => 'rate_limit',
+            $status >= 500 => 'provider_server',
+            default => 'provider_request',
+        };
+    }
 
     public function __construct(private SecretService $secrets = new SecretService()) {}
 
@@ -62,12 +77,13 @@ final class AiClient
         float $temperature = 0.3,
         int $maxRounds = 4
     ): string {
+        $this->failureCategory = null;
         $config = $this->secrets->getModelConfig();
         if (($config['provider'] ?? '') !== 'google') return $this->complete($prompt, $maxTokens, $temperature);
 
         $key = trim((string)($config['apiKey'] ?? ''));
-        if ($key === '') return 'No AI API key is configured. Set ai_api_key in Admin → Integrations, then try again.';
-        if (!function_exists('curl_init')) return 'AI request failed: cURL is not available on this server.';
+        if ($key === '') { $this->failureCategory = 'not_configured'; return 'No AI API key is configured. Set ai_api_key in Admin → Integrations, then try again.'; }
+        if (!function_exists('curl_init')) { $this->failureCategory = 'transport'; return 'AI request failed: cURL is not available on this server.'; }
 
         $endpoint = rtrim((string)($config['endpoint'] ?? ''), '/');
         $url = $endpoint . '/' . rawurlencode((string)($config['model'] ?? '')) . ':generateContent';
@@ -96,7 +112,7 @@ final class AiClient
             foreach ($parts as $part) {
                 if (isset($part['functionCall']['name'])) $calls[] = $part['functionCall'];
             }
-            if ($calls === []) return self::answerFromParts($parts);
+            if ($calls === []) { $answer = self::answerFromParts($parts); if (trim($answer) === '') $this->failureCategory = 'empty_response'; return $answer; }
 
             // Keep the model's own turn in the history, or the next request has a
             // function response answering a call the conversation no longer contains.
@@ -171,6 +187,7 @@ final class AiClient
     /** Model text, or a sentence explaining why there is none. */
     public function complete(string $prompt, int $maxTokens = 1024, float $temperature = 0.3): string
     {
+        $this->failureCategory = null;
         $config = $this->secrets->getModelConfig();
         $endpoint = rtrim((string)($config['endpoint'] ?? 'https://api.openai.com/v1'), '/');
         $model = (string)($config['model'] ?? 'gemma-4-31b-it');
@@ -180,9 +197,11 @@ final class AiClient
         // Fail fast rather than sending a request that is certain to be rejected — an
         // absent key returned an opaque HTTP 400 that read as a model problem.
         if ($key === '') {
+            $this->failureCategory = 'not_configured';
             return 'No AI API key is configured. Set ai_api_key in Admin → Integrations, then try again.';
         }
         if (!function_exists('curl_init')) {
+            $this->failureCategory = 'transport';
             return 'AI request failed: cURL is not available on this server.';
         }
 
@@ -216,7 +235,9 @@ final class AiClient
             $body = $this->post($url, $payload, $headers, $status);
             if ($status !== 200 || $body === false) return self::describeFailure($status, $body, $this->transportError);
             $result = json_decode((string)$body, true);
-            return self::answerFromParts($result['candidates'][0]['content']['parts'] ?? []);
+            $answer = self::answerFromParts($result['candidates'][0]['content']['parts'] ?? []);
+            if (trim($answer) === '') $this->failureCategory = 'empty_response';
+            return $answer;
         }
 
         $url = $endpoint . '/chat/completions';
@@ -235,7 +256,9 @@ final class AiClient
         $body = $this->post($url, $payload, $headers, $status);
         if ($status !== 200 || $body === false) return self::describeFailure($status, $body, $this->transportError);
         $result = json_decode((string)$body, true);
-        return (string)($result['choices'][0]['message']['content'] ?? '');
+        $answer = (string)($result['choices'][0]['message']['content'] ?? '');
+        if (trim($answer) === '') $this->failureCategory = 'empty_response';
+        return $answer;
     }
 
     private const ANSWER_OPEN = '<final_answer>';
@@ -337,6 +360,7 @@ final class AiClient
         // Keep a bounded cause, never raw cURL diagnostics which can contain URLs.
         $this->transportError = curl_errno($ch);
         $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $this->failureCategory = ($body === false || $status !== 200) ? self::classifyFailure($status, $this->transportError) : null;
         // CurlHandle is released automatically in PHP 8; curl_close is a no-op
         // deprecated in 8.5 and its warning can corrupt JSON responses.
         // https://www.php.net/manual/en/function.curl-close.php
