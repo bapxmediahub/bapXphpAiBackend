@@ -14,7 +14,7 @@ blog posts, and file-based images. There is no SPA or frontend build step.
 
 | Question | First source | Then verify |
 |---|---|---|
-| What are the agent rules? | `AGENTS.md` (`AGENTS.md` is the pointer) | matching `.agents/skills/*/SKILL.md` |
+| What are the agent rules? | `AGENTS.md` | matching `.agents/skills/*/SKILL.md` |
 | Does a route/service/view/collection exist? | `docs/project-index.json` | original PHP/schema file |
 | How is a request wired? | `map.mmd` | `app/routes.php` → controller → service → view |
 | Where is a blog or image? | `index.yaml` narrow concept/filename search | returned Markdown/image path |
@@ -22,12 +22,14 @@ blog posts, and file-based images. There is no SPA or frontend build step.
 | What is a live editable value? | hosted MySQL through `DatabaseService` | lowercase `/remotedb` fallback |
 | What controls UI? | `Design.md` | `assets/css/band.css` and PHP view |
 
-Do not read all of `index.yaml`. Read its first 90 lines, copy the applicable narrow
-query, open the returned original source, and stop when the source answers the question.
+Read the `index.yaml` header, run the relevant narrow query, then open the original
+source. Match routes by HTTP method and exact pattern. The route ID search uses `rg`
+when `jq` is unavailable.
 
 ```bash
-sed -n '1,90p' index.yaml
-rg -n -B4 -A14 'path: "/shop"' index.yaml
+sed -n '1,/^concepts:/p' index.yaml
+jq --arg method POST --arg path /contact '.routes[] | select(.method == $method and .path == $path)' docs/project-index.json
+rg -n -A14 '^  - id: "route:post__contact"$' index.yaml
 rg -n -B4 -A14 'id: "schema:products"' index.yaml
 rg -n -B4 -A12 'filename: "<image-name>"' index.yaml
 ```
@@ -125,8 +127,9 @@ php -l path/to/changed.php
 ./bapXphp ci
 ```
 
-For UI changes, test the actual route at desktop and 375px mobile. Terminal smoke tests
-do not replace browser validation.
+For UI changes, use the built-in Browser to test the actual route at desktop and
+375 px. See the [release workflow](docs/deployment-hostinger.md#release-workflow)
+for the review, merge, and production checks.
 
 ## Deployment
 
