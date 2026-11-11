@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="/assets/css/shop-refinement.css?v=<?= filemtime(__DIR__ . '/../../assets/css/shop-refinement.css') ?>">
 <section class="section">
     <?php
         $cartQuantities = [];
