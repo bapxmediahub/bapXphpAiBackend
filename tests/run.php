@@ -4,6 +4,7 @@ require __DIR__ . '/../app/bootstrap.php';
 use App\Services\EnvService;
 use App\Services\CategoryService;
 use App\Services\DatabaseService;
+use App\Services\MailQueueService;
 use App\Services\PaymentService;
 use App\Services\ProjectMapService;
 use App\Services\ReviewService;
@@ -1000,6 +1001,17 @@ $tests['contact form sends customer confirmation and owner notification'] = func
     foreach (['contact_customer_confirmation', 'We received your enquiry', "['contact_id'"] as $needle) {
         assertTrue(str_contains($mail, $needle), "Contact confirmation should include {$needle}");
     }
+    assertTrue(MailQueueService::contactLooksLikeAppointment(['subject' => 'Astrology question', 'message' => '']), 'Astrology subjects should be classified for the owner');
+    assertTrue(MailQueueService::contactLooksLikeAppointment(['subject' => 'General Question', 'message' => 'Can I make an appointment?']), 'Appointment language in the message should be classified for the owner');
+    assertTrue(!MailQueueService::contactLooksLikeAppointment(['subject' => 'Order Support', 'message' => 'Where is my parcel?']), 'Ordinary commerce enquiries should remain general');
+    $appointment = MailQueueService::contactOwnerNotification(['id' => 'contact_test', 'subject' => 'General Question', 'message' => 'I need an appointment']);
+    assertSame('New consultation or appointment enquiry', $appointment['subject'], 'Appointment enquiries should be obvious in the owner inbox');
+    assertSame('appointment_enquiry', $appointment['meta']['contact_kind'], 'Appointment owner mail should carry auditable classification metadata');
+    assertSame('contact_test', $appointment['meta']['contact_id'], 'Owner mail should retain the saved contact reference');
+    $general = MailQueueService::contactOwnerNotification(['subject' => 'Order Support', 'message' => 'Where is my parcel?']);
+    assertSame('New contact form submission', $general['subject'], 'Ordinary contact mail should keep the general owner subject');
+    assertSame('general_enquiry', $general['meta']['contact_kind'], 'Ordinary owner mail should keep general classification metadata');
+    assertTrue(str_contains($controller, 'contactOwnerNotification'), 'Contact handler should use the tested owner notification builder');
 };
 
 $tests['registration creates a default delivery address'] = function (): void {
