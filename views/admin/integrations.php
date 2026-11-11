@@ -243,8 +243,10 @@ unset($_SESSION['ai_test_result']);
     <form class="admin-form" method="post" action="/admin/integrations/test-ai">
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
         <button class="btn btn-secondary">Test AI Connection</button>
-        <?php if (!empty($comparisonModel)): ?>
-            <button class="btn btn-secondary" name="probe" value="compare">Test <?= e($comparisonModel) ?></button>
+        <?php if (!empty($comparisonModels)): ?>
+            <?php foreach ($comparisonModels as $comparisonModel): ?>
+                <button class="btn btn-secondary" name="probe" value="<?= e($comparisonModel) ?>">Test <?= e($comparisonModel) ?></button>
+            <?php endforeach; ?>
             <small>This runs one connection test without changing the saved model.</small>
         <?php endif; ?>
     </form>

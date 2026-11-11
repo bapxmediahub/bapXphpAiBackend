@@ -212,7 +212,7 @@ final class AdminController extends BaseController {
         $this->render('admin/integrations', [
             'pageTitle' => 'Integrations',
             'secrets' => $secrets->all(),
-            'comparisonModel' => self::comparisonModel($secrets->getModelConfig()),
+            'comparisonModels' => self::comparisonModels($secrets->getModelConfig()),
         ]);
     }
     public function saveIntegrations(): void{(new SecretService())->save($_POST); (new AuditLogService())->record('save','integrations','secrets'); $this->flash('Integration settings saved.','success'); $this->redirect('/admin/integrations');}
@@ -492,7 +492,8 @@ final class AdminController extends BaseController {
         $config = (new SecretService())->getModelConfig();
         // Compare the documented Gemma variants on the same endpoint and credentials.
         // https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api#supported-models
-        $override = ($_POST['probe'] ?? '') === 'compare' ? self::comparisonModel($config) : null;
+        $probe = $_POST['probe'] ?? '';
+        $override = in_array($probe, self::comparisonModels($config), true) ? $probe : null;
         $model = $override ?? (string)($config['model'] ?? '');
         $client = new \App\Services\AiClient();
         $answer = $client->complete('Reply with exactly: connection ok', 32, 0.0, $override);
@@ -508,13 +509,11 @@ final class AdminController extends BaseController {
         $this->redirect('/admin/integrations');
     }
 
-    private static function comparisonModel(array $config): ?string {
-        if (($config['provider'] ?? '') !== 'google') return null;
-        return match ($config['model'] ?? '') {
-            'gemma-4-31b-it' => 'gemma-4-26b-a4b-it',
-            'gemma-4-26b-a4b-it' => 'gemma-4-31b-it',
-            default => null,
-        };
+    private static function comparisonModels(array $config): array {
+        if (($config['provider'] ?? '') !== 'google') return [];
+        // https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash-lite
+        $models = ['gemma-4-31b-it', 'gemma-4-26b-a4b-it', 'gemini-3.5-flash-lite'];
+        return array_diff($models, [$config['model'] ?? '']);
     }
 
     public function testEmail(): void{
