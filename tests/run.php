@@ -2428,6 +2428,9 @@ $tests['support product questions retain public specifications and reject unrela
     $context['site']['products'][0]['specifications'] = [];
     $reply = $fallback($question, $context);
     assertTrue(!str_contains($reply, '25 g') && str_contains($reply, '/contact'), 'Missing facts are not invented');
+    $comparison = $fallback('Can you explain the difference between a pendant and a mala for everyday devotional use?', $context);
+    assertTrue(str_contains($comparison, '/contact'), 'Unanswered comparisons give customers a way to get help');
+    assertTrue(!str_contains($comparison, 'Available products include') && !str_contains($comparison, 'Aragaja'), 'Comparison fallback does not suggest unrelated products');
     $source = file_get_contents(app_path('app/Services/AgentContextService.php'));
     foreach (['description', 'highlights', 'description_points', 'specifications'] as $field) {
         assertTrue(str_contains($source, "'" . $field . "' =>"), 'Public product details must reach model context');
