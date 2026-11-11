@@ -4002,8 +4002,8 @@ body { background: var(--color-bg); }
     .home-hero .varahi-dots { gap: 0; margin-top: 4px; }
     .home-hero .varahi-dot { width: 20px; height: 20px; }
     .trust-bar { min-height: 96px; padding: 16px 16px 32px; }
-    .trust-bar__inner { grid-template-columns: repeat(3, 56px); gap: clamp(20px, 10vw, 40px); }
-    .trust-item { position: relative; width: 56px; min-height: 48px; padding: 0; color: var(--color-maroon); cursor: pointer; }
+    .trust-bar__inner { position: relative; grid-template-columns: repeat(3, 56px); gap: clamp(20px, 10vw, 40px); }
+    .trust-item { position: static; width: 56px; min-height: 48px; padding: 0; color: var(--color-maroon); cursor: pointer; }
     .trust-item:hover { transform: none; box-shadow: none; }
     .trust-item svg { width: 24px; height: 24px; }
     .trust-item__label {
@@ -4012,7 +4012,7 @@ body { background: var(--color-bg); }
         left: 50%;
         z-index: 2;
         width: max-content;
-        max-width: 132px;
+        max-width: calc(100% - 12px);
         padding: 3px 6px;
         border-radius: var(--radius-xs);
         background: var(--color-white);
