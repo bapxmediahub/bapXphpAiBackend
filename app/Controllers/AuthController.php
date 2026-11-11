@@ -65,7 +65,9 @@ final class AuthController extends BaseController {
     $address = trim($_POST['address'] ?? '');
     $city = trim($_POST['city'] ?? '');
     $pincode = trim($_POST['pincode'] ?? '');
+    $state = \App\Services\TaxService::normaliseState((string)($_POST['state'] ?? ''));
     if ($password === '' || $email === '' || $name === '' || $phone === '' || $address === '' || $city === '' || $pincode === '') { $this->flash('Account and delivery address fields are required.','error'); $this->redirect('/register'); }
+    if ($state === null) { $this->flash('Select a valid delivery state.','error'); $this->redirect('/register'); }
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) { $this->flash('Invalid email address.','error'); $this->redirect('/register'); }
     if ($password !== $confirm) { $this->flash('Passwords do not match.','error'); $this->redirect('/register'); }
     if (empty($_POST['accept_terms'])) { $this->flash('You must accept the Terms of Service and Privacy Policy to register.','error'); $this->redirect('/register'); }
@@ -76,7 +78,7 @@ final class AuthController extends BaseController {
     $role = 'customer';
     $record = ['id'=>$id,'email'=>$email,'name'=>$name,'role'=>$role,'password_hash'=>password_hash($password,PASSWORD_DEFAULT),'accepted_terms_at'=>date('c')];
     $store->upsert('users',$record,'id');
-    (new AddressService($store))->save($email, ['address_name'=>'Home','name'=>$name,'phone'=>$phone,'address'=>$address,'city'=>$city,'pincode'=>$pincode,'is_default'=>true]);
+    (new AddressService($store))->save($email, ['address_name'=>'Home','name'=>$name,'phone'=>$phone,'address'=>$address,'city'=>$city,'pincode'=>$pincode,'state'=>$state,'is_default'=>true]);
     session_regenerate_id(true);
     $_SESSION['user'] = ['sub'=>$id,'email'=>$email,'name'=>$name,'role'=>$role];
     try {

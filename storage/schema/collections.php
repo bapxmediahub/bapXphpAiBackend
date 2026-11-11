@@ -148,6 +148,8 @@
                 'invoice_sequence' => ['type' => 'number'],
                 'invoice_financial_year' => ['type' => 'string'],
                 'invoice_number' => ['type' => 'string'],
+                'tax_review_required' => ['type' => 'boolean'],
+                'tax_review_reason' => ['type' => 'string'],
                 'invoice_date' => ['type' => 'string'],
                 'payment_id' => ['type' => 'string'],
                 'payment_email_status' => ['type' => 'string'],

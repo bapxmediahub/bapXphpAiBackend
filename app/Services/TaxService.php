@@ -47,6 +47,13 @@ final class TaxService {
         return ['total' => round($total, 2), 'gst_amount' => round($tax, 2), 'item_count' => $quantity];
     }
 
+    /** Preserve a verified payment even if an older in-flight checkout lacks tax state.
+     * No invoice may be issued until an owner reviews the missing information. */
+    public function snapshotForVerifiedPayment(array $items, float $discount, string $shippingState, array $settings): ?array {
+        if (self::normaliseState($shippingState) === null || self::normaliseState((string)($settings['gst_state'] ?? 'Tamil Nadu')) === null) return null;
+        return $this->snapshot($items, $discount, $shippingState, $settings);
+    }
+
     public function snapshot(array $items, float $discount, string $shippingState, array $settings): array {
         $supplierState = self::normaliseState((string)($settings['gst_state'] ?? 'Tamil Nadu'));
         $shippingState = self::normaliseState($shippingState);

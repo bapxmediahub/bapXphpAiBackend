@@ -167,7 +167,10 @@
                             const data = option && option.dataset.address ? JSON.parse(option.dataset.address) : {};
                             ['name', 'phone', 'address', 'city', 'pincode', 'state'].forEach(function (field) {
                                 const input = document.querySelector('[name="' + field + '"]');
-                                if (input && data[field === 'name' ? 'recipient_name' : field] !== undefined) input.value = data[field === 'name' ? 'recipient_name' : field];
+                                if (!input) return;
+                                const value = data[field === 'name' ? 'recipient_name' : field];
+                                if (field === 'state') input.value = value || '';
+                                else if (value !== undefined) input.value = value;
                             });
                             const addressName = document.querySelector('[name="address_name"]');
                             const save = document.querySelector('[name="save_address"]');
