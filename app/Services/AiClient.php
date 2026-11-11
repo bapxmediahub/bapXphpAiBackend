@@ -100,18 +100,16 @@ final class AiClient
 
             // Keep the model's own turn in the history, or the next request has a
             // function response answering a call the conversation no longer contains.
-            $contents[] = ['role' => 'model', 'parts' => $parts];
+            $contents[] = ['role' => 'model', 'parts' => self::googleToolHistoryParts($parts)];
 
             $responses = [];
             foreach ($calls as $call) {
                 $name = (string)$call['name'];
                 $args = is_array($call['args'] ?? null) ? $call['args'] : [];
-                $responses[] = ['functionResponse' => [
-                    'name' => $name,
-                    'response' => $tools->has($name)
-                        ? $tools->run($name, $args)
-                        : ['error' => 'No such tool: ' . $name],
-                ]];
+                $result = $tools->has($name)
+                    ? $tools->run($name, $args)
+                    : ['error' => 'No such tool: ' . $name];
+                $responses[] = self::googleFunctionResponse($call, $result);
             }
             $contents[] = ['role' => 'user', 'parts' => $responses];
         }
@@ -123,6 +121,51 @@ final class AiClient
             $maxTokens,
             $temperature
         );
+    }
+
+    /**
+     * Preserve Google's object-shaped function arguments when replaying model history.
+     *
+     * The API returns an empty argument object as `{}`. json_decode(..., true) turns it
+     * into PHP's empty array, and json_encode then changes it to `[]`. Google rejects
+     * that second-round payload because FunctionCall.args uses the Struct/object shape.
+     * Only the empty ambiguous value is converted; real nested argument lists remain
+     * lists. Schema: https://ai.google.dev/api/generate-content#FunctionCall
+     *
+     * @param array<int,array<string,mixed>> $parts
+     * @return array<int,array<string,mixed>>
+     */
+    public static function googleToolHistoryParts(array $parts): array
+    {
+        foreach ($parts as &$part) {
+            if (isset($part['functionCall'])
+                && is_array($part['functionCall'])
+                && array_key_exists('args', $part['functionCall'])
+                && $part['functionCall']['args'] === []) {
+                $part['functionCall']['args'] = new \stdClass();
+            }
+        }
+        unset($part);
+        return $parts;
+    }
+
+    /**
+     * Build the object-shaped response paired to a Google function call.
+     *
+     * @param array<string,mixed> $call
+     * @param array<mixed> $result
+     * @return array{functionResponse:array<string,mixed>}
+     */
+    public static function googleFunctionResponse(array $call, array $result): array
+    {
+        $response = [
+            'name' => (string)($call['name'] ?? ''),
+            // FunctionResponse.response is also a Struct. Keep list-valued tool output
+            // under an object key rather than sending a top-level JSON list.
+            'response' => array_is_list($result) ? ['result' => $result] : $result,
+        ];
+        if (trim((string)($call['id'] ?? '')) !== '') $response['id'] = (string)$call['id'];
+        return ['functionResponse' => $response];
     }
 
     /** Model text, or a sentence explaining why there is none. */
