@@ -345,49 +345,57 @@ final class AiClient
     /** @return string|false */
     private function post(string $url, string $payload, array $headers, ?int &$status)
     {
-        $ch = curl_init($url);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_HTTPHEADER => $headers,
-            CURLOPT_POSTFIELDS => $payload,
-            // Leave time within the usual 30-second PHP request budget for the
-            // caller's grounded fallback and outcome monitoring.
-            CURLOPT_TIMEOUT => 20,
-            CURLOPT_CONNECTTIMEOUT => 10,
-        ]);
-        $body = curl_exec($ch);
-        // Keep a bounded cause, never raw cURL diagnostics which can contain URLs.
-        $this->transportError = curl_errno($ch);
-        $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        // A single short retry can recover transient provider failures without adding
+        // another full timeout to the request. This is a per-post budget, not a
+        // deadline for all tool rounds in an owner-agent conversation.
+        // https://ai.google.dev/gemini-api/docs/generate-content/api-errors
+        $deadline = hrtime(true) + 20_000_000_000;
+        $attempt = 0;
+        do {
+            $remainingMs = max(1, (int)(($deadline - hrtime(true)) / 1_000_000));
+            $timeoutMs = $attempt === 0 ? $remainingMs : min(5000, $remainingMs);
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST => true,
+                CURLOPT_HTTPHEADER => $headers,
+                CURLOPT_POSTFIELDS => $payload,
+                CURLOPT_TIMEOUT_MS => $timeoutMs,
+                CURLOPT_CONNECTTIMEOUT_MS => min(10000, $timeoutMs),
+            ]);
+            $body = curl_exec($ch);
+            $this->transportError = curl_errno($ch);
+            $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            unset($ch);
+            $attempt++;
+            // Only retry a received transient server error, not timeout, transport,
+            // authentication or quota failures. Leave >=1 second for a useful retry.
+            $retry = self::retryTransient($attempt, $status, $body !== false,
+                (int)(($deadline - hrtime(true)) / 1_000_000));
+            if ($retry) usleep(random_int(150_000, 200_000));
+        } while ($retry);
         $this->failureCategory = ($body === false || $status !== 200) ? self::classifyFailure($status, $this->transportError) : null;
-        // CurlHandle is released automatically in PHP 8; curl_close is a no-op
-        // deprecated in 8.5 and its warning can corrupt JSON responses.
-        // https://www.php.net/manual/en/function.curl-close.php
-        unset($ch);
         return $body;
     }
 
+    private static function retryTransient(int $attempt, int $status, bool $bodyReceived, int $remainingMs): bool
+    {
+        return $attempt === 1 && $bodyReceived && in_array($status, [500, 503], true)
+            && $remainingMs > 1200;
+    }
+
     /**
-     * A failure the admin can act on. The provider's own message is kept, because
-     * "the model does not exist" and "the key was rejected" need different fixes and
-     * a bare status code told the admin neither.
+     * Provide actionable status guidance without exposing provider response bodies,
+     * which may contain sensitive request data or infrastructure details.
      */
     public static function describeFailure(int $status, $body, int $transportError = 0): string
     {
-        $detail = '';
-        $decoded = is_string($body) ? json_decode($body, true) : null;
-        if (is_array($decoded)) {
-            $detail = (string)($decoded['error']['message'] ?? $decoded['error']['type'] ?? $decoded['message'] ?? '');
-        }
-        if ($detail === '' && is_string($body) && trim($body) !== '') {
-            $detail = mb_substr(trim(strip_tags($body)), 0, 300);
-        }
         $hint = match (true) {
-            $status === 400 => ' Check the model name and that the API key is set in Admin → Integrations.',
+            $status === 400 => ' The provider rejected the request. Check the integration configuration.',
             in_array($status, [401, 403], true) => ' The API key was rejected. Set a valid ai_api_key in Admin → Integrations.',
-            $status === 404 => ' The model or endpoint does not exist for this provider.',
+            $status === 404 => ' The configured model or endpoint was not found. Check the integration configuration.',
             $status === 429 => ' Rate limit or quota exceeded for this API key.',
+            in_array($status, [500, 503], true) => ' The provider could not complete the request. Try again later.',
             // https://curl.se/libcurl/c/libcurl-errors.html
             // A timeout does not prove the provider never received the request.
             $status === 0 => match ($transportError) {
@@ -400,6 +408,6 @@ final class AiClient
             },
             default => '',
         };
-        return trim('AI request failed (HTTP ' . $status . ').' . $hint . ($detail !== '' ? ' ' . $detail : ''));
+        return trim('AI request failed (HTTP ' . $status . ').' . $hint);
     }
 }

@@ -660,7 +660,7 @@ $tests['support assistant widget uses browser session memory and google model se
     $client = file_get_contents(app_path('app/Services/AiClient.php'));
     assertTrue(str_contains($client, 'getModelConfig'), 'AiClient should resolve endpoint and model from Admin → Integrations');
     assertTrue(!str_contains($client, 'curl_close($ch)'), 'PHP 8.5 transport must not emit obsolete curl_close warnings into JSON');
-    assertTrue(str_contains($client, 'CURLOPT_TIMEOUT => 20'), 'Provider wait must leave PHP request time for fallback and monitoring');
+    assertTrue(str_contains($client, '20_000_000_000') && str_contains($client, 'CURLOPT_TIMEOUT_MS => $timeoutMs'), 'Provider attempts must share a 20-second per-post deadline');
     $admin = file_get_contents(app_path('app/Controllers/AdminController.php'));
     assertTrue(str_contains($admin, 'AiClient') && !str_contains($admin, 'x-goog-api-key'),
         'Admin agent should share the same client rather than keep a second provider call');
@@ -1468,7 +1468,15 @@ $tests['AI transport diagnostics distinguish causes without assuming the provide
         assertTrue(!str_contains($message, 'never reached'), 'HTTP 0 cannot prove that no request reached the provider');
         assertTrue($client::isError($message), 'Transport failure must remain an agent error');
     }
-    assertTrue(str_contains($client::describeFailure(500, '{"error":{"message":"Internal error"}}', 0), 'Internal error'), 'Provider response diagnostics must remain intact');
+    $message = $client::describeFailure(500, '{"error":{"message":"private prompt and secret"}}', 0);
+    assertTrue(str_contains($message, 'HTTP 500'), 'Provider status should remain visible');
+    assertTrue(!str_contains($message, 'private prompt') && !str_contains($message, 'secret'), 'Provider response bodies must not be displayed');
+    $retry = new ReflectionMethod($client, 'retryTransient');
+    foreach ([500, 503] as $status) assertTrue($retry->invoke(null, 1, $status, true, 5000), 'Transient server errors may retry once');
+    foreach ([400, 401, 429, 504] as $status) assertTrue(!$retry->invoke(null, 1, $status, true, 5000), 'Client, quota and deadline errors must not retry');
+    assertTrue(!$retry->invoke(null, 2, 500, true, 5000), 'A second retry is not allowed');
+    assertTrue(!$retry->invoke(null, 1, 500, false, 5000), 'Transport failures must not retry');
+    assertTrue(!$retry->invoke(null, 1, 503, true, 1200), 'Insufficient budget must skip retry');
 };
 
 $tests['product breadcrumb uses the category identifier accepted by the shop'] = function (): void {
