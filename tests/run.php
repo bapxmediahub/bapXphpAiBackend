@@ -1295,10 +1295,29 @@ $tests['the admin agent can look things up instead of guessing'] = function (): 
     assertTrue(str_contains($client, 'functionResponse'), 'Tool results should be returned to the model');
     assertTrue(str_contains($client, "\$round < \$maxRounds"),
         'The tool loop must be bounded, or a looping model holds the request open until PHP times out');
-    assertTrue(str_contains($client, "'role' => 'model', 'parts' => \$parts"),
+    assertTrue(str_contains($client, "'role' => 'model', 'parts' => self::googleToolHistoryParts(\$parts)"),
         'The model turn must stay in the history, or the function response answers a call the conversation no longer has');
     $admin = file_get_contents(app_path('app/Controllers/AdminController.php'));
     assertTrue(str_contains($admin, 'completeWithTools'), 'The admin agent should use the tool loop');
+};
+
+$tests['google tool history preserves object arguments and call ids'] = function (): void {
+    $parts = \App\Services\AiClient::googleToolHistoryParts([
+        ['thought' => true, 'text' => 'checking'],
+        ['functionCall' => ['id' => 'call-1', 'name' => 'sales_summary', 'args' => []]],
+        ['functionCall' => ['name' => 'search_articles', 'args' => ['tags' => ['shop', 'help']]]],
+    ]);
+    $json = json_encode($parts, JSON_THROW_ON_ERROR);
+    assertTrue(str_contains($json, '"args":{}'), 'An empty Google function args object must not become a rejected JSON list');
+    assertTrue(str_contains($json, '"tags":["shop","help"]'), 'Nested list arguments must remain JSON lists');
+
+    $response = \App\Services\AiClient::googleFunctionResponse(
+        ['id' => 'call-1', 'name' => 'sales_summary'],
+        [['month' => '2026-11', 'orders' => 3]]
+    );
+    assertSame('call-1', $response['functionResponse']['id'] ?? null, 'The response must echo the provider call id');
+    assertSame('sales_summary', $response['functionResponse']['name'] ?? null, 'The response must name the requested function');
+    assertTrue(isset($response['functionResponse']['response']['result']), 'List-valued tool results must be wrapped in a response object');
 };
 
 $tests['the model answer is separated from the model thinking out loud'] = function (): void {
