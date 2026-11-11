@@ -268,7 +268,7 @@ final class AdminController extends BaseController {
                 );
                 $draft['missing'] = $attachments['missing'];
                 (new AuditLogService())->agentRun('admin', 'draft', $startedAt);
-                $this->jsonResponse(['draft' => $draft]);
+                $this->jsonResponse(['draft' => $draft, 'run' => $this->agentRunMeta('draft', $startedAt)]);
                 return;
             }
             $secrets = new SecretService();
@@ -279,7 +279,11 @@ final class AdminController extends BaseController {
             $localAnswer = $attachments['context'] === '' ? $tools->aggregateAnswer($message) : null;
             if ($localAnswer !== null) {
                 (new AuditLogService())->agentRun('admin', 'local', $startedAt);
-                $this->jsonResponse(['answer' => $localAnswer, 'missing' => $attachments['missing']]);
+                $this->jsonResponse([
+                    'answer' => $localAnswer,
+                    'missing' => $attachments['missing'],
+                    'run' => $this->agentRunMeta('local', $startedAt, $tools),
+                ]);
                 return;
             }
             $context = (new \App\Services\AgentContextService())->forOwnerAnalytics()
@@ -295,15 +299,49 @@ final class AdminController extends BaseController {
             $failed = empty($modelConfig['apiKey']) || \App\Services\AiClient::isError($answer);
             (new AuditLogService())->agentRun('admin', $failed ? 'error' : ($reason === 'rejected_response' ? 'fallback' : 'model'), $startedAt, $reason, $attempts);
             if ($failed) {
-                $this->jsonResponse(['error'=>$answer, 'missing'=>$attachments['missing']],502);
+                $this->jsonResponse([
+                    'error'=>$answer,
+                    'missing'=>$attachments['missing'],
+                    'run'=>$this->agentRunMeta('error', $startedAt, $tools, $attempts),
+                ],502);
                 return;
             }
-            $this->jsonResponse(['answer'=>$answer, 'missing'=>$attachments['missing']]);
+            $this->jsonResponse([
+                'answer'=>$answer,
+                'missing'=>$attachments['missing'],
+                'run'=>$this->agentRunMeta('model', $startedAt, $tools, $attempts),
+            ]);
         } catch (\Throwable $e) {
             (new AuditLogService())->agentRun('admin', 'error', $startedAt, 'internal_error');
             error_log('Owner agent request failed (' . get_class($e) . ')');
             $this->jsonResponse(['error' => 'The owner agent could not complete this request. Please try again.'], 500);
         }
+    }
+
+    /**
+     * Owner-visible request evidence. Provider bodies, prompts, secrets and model
+     * reasoning are deliberately excluded; this is an operational trace, not a log
+     * viewer.
+     *
+     * @return array<string,mixed>
+     */
+    private function agentRunMeta(
+        string $route,
+        float $startedAt,
+        ?\App\Services\AgentToolRegistry $tools = null,
+        array $attempts = []
+    ): array {
+        $safeAttempts = array_map(static fn(array $attempt): array => [
+            'model' => (string)($attempt['model'] ?? ''),
+            'status' => (int)($attempt['status'] ?? 0),
+            'duration_ms' => (int)round((float)($attempt['total_ms'] ?? 0)),
+        ], $attempts);
+        return [
+            'route' => $route,
+            'elapsed_ms' => (int)round((microtime(true) - $startedAt) * 1000),
+            'tools' => $tools?->activity() ?? [],
+            'attempts' => $safeAttempts,
+        ];
     }
     /**
      * One-shot model call for the blog Enhance buttons. Reuses the configured agent
@@ -765,12 +803,22 @@ final class AdminController extends BaseController {
             'tax' => $taxOrders,
             default => StoreStatsService::sales($allOrders, $from, $to, $group, $status),
         };
+        $productRows = StoreStatsService::productsPurchased($allOrders, $from, $to, $status);
+        $orderStatusCounts = [];
+        foreach ($allOrders as $order) {
+            $created = substr((string)($order['created_at'] ?? $order['invoice_date'] ?? ''), 0, 10);
+            if ($created < $from || $created > $to || trim((string)($order['payment_id'] ?? '')) === '') continue;
+            $orderStatus = strtolower((string)($order['status'] ?? 'unknown'));
+            $orderStatusCounts[$orderStatus] = ($orderStatusCounts[$orderStatus] ?? 0) + 1;
+        }
+        arsort($orderStatusCounts);
         $this->render('admin/tax-report', [
             'pageTitle'=>'Reports', 'title'=>'Commerce Reports', 'orders'=>$taxOrders,
             'from'=>$from, 'to'=>$to, 'totals'=>$totals, 'invoiceReviewReasons'=>$invoiceReviewReasons,
             'reportType'=>$reportType, 'reportTypes'=>StoreStatsService::REPORT_TYPES,
             'group'=>$group, 'groups'=>StoreStatsService::GROUPS, 'status'=>$status,
             'allowedStatuses'=>$allowedStatuses, 'reportRows'=>$reportRows,
+            'productRows'=>$productRows, 'orderStatusCounts'=>$orderStatusCounts,
         ]);
     }
     private function list(string $title, ?string $collection = null): void{$this->render('admin/list',['pageTitle' => $title, 'title' => $title, 'collection' => $collection, 'items'=>$collection ? (new ResourceService($collection))->all() : []]);}

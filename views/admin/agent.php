@@ -1,33 +1,36 @@
-<div class="admin-card">
-    <div class="agent-head">
-        <div>
-            <h2 class="agent-head__title">AI Agent</h2>
-            <p class="agent-head__sub">
-                Ask about store totals, revenue and products, or draft a blog post. For an order lookup, include the full order ID or customer email.
-            </p>
+<div class="owner-agent-page" id="owner-agent-page">
+<section class="owner-agent-window" aria-labelledby="owner-agent-title">
+    <header class="owner-agent-bar">
+        <h1 id="owner-agent-title">Owner Agent</h1>
+        <span class="owner-agent-status"><i></i><?= !empty($modelConfig['configured']) ? 'Connected' : 'Setup required' ?></span>
+        <span class="agent-chip agent-chip--muted"><?= e($modelConfig['model'] ?? 'gemma-4-31b-it') ?></span>
+        <span class="owner-agent-bar__spacer"></span>
+        <div class="agent-layout-actions" aria-label="Agent layout">
+            <button type="button" data-layout="window" aria-pressed="true">Window</button>
+            <button type="button" data-layout="panel" aria-pressed="false">Side panel</button>
+            <button type="button" data-layout="full" aria-pressed="false">Full page</button>
+            <button type="button" data-layout="minimized" aria-pressed="false" aria-label="Minimize Owner Agent">—</button>
         </div>
-        <div class="agent-head__meta">
-            <span class="agent-chip <?= !empty($modelConfig['configured']) ? 'agent-chip--ok' : 'agent-chip--warn' ?>">
-                <?= !empty($modelConfig['configured']) ? 'Connected' : 'No API key' ?>
-            </span>
-            <span class="agent-chip agent-chip--muted"><?= e($modelConfig['model'] ?? 'gemma-4-31b-it') ?></span>
-        </div>
-    </div>
-
-    <?php if (empty($modelConfig['configured'])): ?>
-        <div class="agent-notice">
-            <strong>No API key configured.</strong>
-            Set <code>ai_api_key</code> in <a href="/admin/integrations">Admin → Integrations</a> to enable the agent.
-        </div>
-    <?php endif; ?>
-</div>
-
-<div class="admin-card agent-shell">
+    </header>
+    <div class="owner-agent-grid">
+        <aside class="agent-history" aria-label="Recent conversations">
+            <button type="button" class="agent-new-chat">+ New chat</button>
+            <h2>Recent conversations</h2>
+            <div class="agent-history-list">
+                <button type="button" class="active">Today’s order summary</button>
+                <button type="button">Prepare shipping update</button>
+                <button type="button">Check product stock</button>
+                <button type="button">Explain revenue change</button>
+            </div>
+        </aside>
+        <div class="agent-work">
+            <div class="agent-context-bar"><strong>Scoped context</strong><span>Store analytics and only the records requested in this conversation.</span></div>
+            <?php if (empty($modelConfig['configured'])): ?><div class="agent-notice"><strong>No API key configured.</strong> Set the Google API key in <a href="/admin/integrations">Integrations</a>.</div><?php endif; ?>
     <div id="agent-messages" class="agent-messages" role="log" aria-live="polite" aria-label="Conversation">
         <div class="agent-row agent-row--bot">
             <div class="agent-avatar agent-avatar--bot" aria-hidden="true">AI</div>
             <div class="agent-bubble agent-bubble--bot">
-                Ask me about store totals, revenue or products. To look up an order, include the full order ID or customer email.
+                Ask about orders, revenue, products, support enquiries, or draft content. I only use scoped admin data and never save a draft until you review it.
             </div>
         </div>
     </div>
@@ -59,6 +62,19 @@
         Enter to send · Shift+Enter for a new line · <code>@terms</code> or <code>@filename</code> to attach ·
         <code>/create-blog</code> and <code>/add-product</code> to draft
     </p>
+        </div>
+        <aside class="agent-scope" aria-label="Scoped context controls">
+            <h2>Scoped context</h2>
+            <div class="agent-scope-list">
+                <label class="agent-scope-item"><input type="checkbox" checked><span><strong>Store analytics</strong><small>Aggregate orders and revenue; no customer identities.</small></span></label>
+                <label class="agent-scope-item"><input type="checkbox" checked><span><strong>Products</strong><small>Active catalogue, price and stock status.</small></span></label>
+                <label class="agent-scope-item"><input type="checkbox" checked><span><strong>Requested record</strong><small>Only an order or customer explicitly named by the owner.</small></span></label>
+            </div>
+            <div class="agent-privacy"><strong>Privacy boundary</strong><br>The Owner Agent never receives all customer records, provider messages, secrets, or raw model reasoning.</div>
+        </aside>
+    </div>
+</section>
+</div>
 
     <?php // Uploads here land in the media library, the same as every other admin upload. ?>
     <form id="agent-upload-form" action="/admin/media/upload" method="post" enctype="multipart/form-data" hidden>
@@ -67,7 +83,6 @@
         <input type="hidden" name="redirect" value="/admin/agent">
         <input type="file" id="agent-upload-input" name="media_files[]" accept="image/*" multiple>
     </form>
-</div>
 
 <script id="agent-attachables" type="application/json"><?= json_encode($attachables ?? [], JSON_UNESCAPED_SLASHES) ?></script>
 
@@ -195,6 +210,27 @@
         messages.appendChild(row);
         messages.scrollTop = messages.scrollHeight;
         return bubble;
+    }
+
+    function appendRunMeta(bubble, run) {
+        if (!run || !bubble) return;
+        const details = document.createElement('details');
+        details.className = 'agent-run';
+        const routeLabel = {local:'Local data',model:'Gemma model',draft:'Draft builder',error:'Failed request'}[run.route] || 'Request';
+        details.innerHTML = '<summary>' + escapeHtml(routeLabel) + ' · ' + escapeHtml(String(run.elapsed_ms || 0)) + ' ms</summary>';
+        const body = document.createElement('div');
+        body.className = 'agent-run__body';
+        const add = function (label, value) {
+            const row = document.createElement('div'); row.className = 'agent-run__item';
+            row.innerHTML = '<span>' + escapeHtml(label) + '</span><span>' + escapeHtml(value) + '</span>';
+            body.appendChild(row);
+        };
+        (run.tools || []).forEach(function (tool) { add('Tool · ' + tool.name, tool.status + ' · ' + tool.duration_ms + ' ms'); });
+        (run.attempts || []).forEach(function (attempt, index) {
+            add('Model attempt ' + (index + 1) + ' · ' + attempt.model, 'HTTP ' + attempt.status + ' · ' + attempt.duration_ms + ' ms');
+        });
+        if (!(run.tools || []).length && !(run.attempts || []).length) add('Route', routeLabel);
+        details.appendChild(body); bubble.appendChild(details);
     }
 
     function autoGrow() {
@@ -363,6 +399,7 @@
             } else {
                 response.innerHTML = renderMarkdown(data.answer || 'No response.');
             }
+            appendRunMeta(thinking, data.run);
             if (data.missing && data.missing.length) {
                 addRow('bot', 'I could not find ' + data.missing.map(m => '<code>@' + escapeHtml(m) + '</code>').join(', ')
                     + '. Type <code>@</code> to see what is available.');
@@ -381,5 +418,22 @@
         messages.scrollTop = messages.scrollHeight;
         return false;
     };
+
+    document.querySelectorAll('.agent-layout-actions [data-layout]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const page = document.getElementById('owner-agent-page');
+            const layout = button.dataset.layout === 'minimized' && page.classList.contains('is-minimized')
+                ? 'window' : button.dataset.layout;
+            page.classList.toggle('is-panel', layout === 'panel');
+            page.classList.toggle('is-minimized', layout === 'minimized');
+            document.querySelectorAll('.agent-layout-actions [data-layout]').forEach(function (item) {
+                item.setAttribute('aria-pressed', String(layout === item.dataset.layout || (layout === 'window' && item.dataset.layout === 'window')));
+            });
+            if (button.dataset.layout === 'minimized') {
+                button.setAttribute('aria-label', layout === 'minimized' ? 'Restore Owner Agent' : 'Minimize Owner Agent');
+                button.textContent = layout === 'minimized' ? '□' : '—';
+            }
+        });
+    });
 })();
 </script>

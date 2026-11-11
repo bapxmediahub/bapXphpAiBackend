@@ -1360,6 +1360,10 @@ $tests['the admin agent can look things up instead of guessing'] = function (): 
     assertTrue(isset($registry->run('no_such_tool', [])['error']), 'An unknown tool returns an error');
     assertTrue(isset($registry->run('find_order', [])['error']), 'find_order needs an id or an email');
     assertTrue(isset($registry->run('coupon_status', [])['error']), 'coupon_status needs a code');
+    $activity = $registry->activity();
+    assertSame(3, count($activity), 'Every attempted owner tool is represented in the operator trace');
+    assertSame(['name'=>'coupon_status','status'=>'error'], array_intersect_key($activity[2], ['name'=>1,'status'=>1]), 'Tool trace exposes only the tool outcome contract');
+    assertTrue(is_int($activity[2]['duration_ms']) && $activity[2]['duration_ms'] >= 0, 'Tool trace includes a bounded elapsed duration');
 
     // Read-only. An agent that could change the shop on its own would be one prompt
     // away from hiding a product, with the reply as the owner's first notice.
@@ -1664,7 +1668,13 @@ $tests['both chat surfaces share accessible bounded request status'] = function 
     $css = file_get_contents(app_path('assets/css/band.css'));
     assertTrue(str_contains($css, '.ai-request-status summary:focus-visible') && str_contains($css, 'prefers-reduced-motion'), 'Status needs focus and reduced-motion behavior');
     $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
-    assertTrue(str_contains($controller, "['error'=>\$answer, 'missing'=>\$attachments['missing']],502"), 'Provider failures must not be returned as successful answers');
+    assertTrue(
+        str_contains($controller, "'error'=>\$answer")
+        && str_contains($controller, "'missing'=>\$attachments['missing']")
+        && str_contains($controller, "'run'=>\$this->agentRunMeta('error'")
+        && str_contains($controller, '],502'),
+        'Provider failures must remain non-2xx while returning a secret-safe operator trace'
+    );
     $admin = file_get_contents(app_path('views/layouts/admin.php'));
     assertTrue(str_contains($admin, 'min-width: 0;') && str_contains($admin, 'flex-wrap: wrap; gap: var(--space-sm)'), 'Admin grid and mobile header must shrink without horizontal overflow');
 };

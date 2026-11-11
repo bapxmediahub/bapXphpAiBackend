@@ -36,7 +36,7 @@ query_examples:
   - "rg -n -B4 -A12 'type: \"skill\"' index.yaml"
   - "rg -n '<term>' docs/project-index.json map.mmd index.yaml"
 summary:
-  concepts: 353
+  concepts: 354
   relationships: 250
   by_type:
     blog: 14
@@ -46,7 +46,7 @@ summary:
     route: 123
     schema: 22
     service: 49
-    skill: 9
+    skill: 10
 concepts:
   - id: "blog:benefits-of-rudraksha"
     type: "blog"
@@ -4256,6 +4256,13 @@ concepts:
     title: "schema"
     description: "Use when changing MySQL database collections, fields, admin forms, media fields, or agent context payloads."
     resource: ".agents/skills/schema/SKILL.md"
+    tags:
+      - "skill"
+  - id: "skill:visual-workspaces"
+    type: "skill"
+    title: "visual-workspaces"
+    description: "Use when redesigning Sri Panchami public storytelling, admin analytics, dashboards, charts, agent workspaces, or responsive operational layouts."
+    resource: ".agents/skills/visual-workspaces/SKILL.md"
     tags:
       - "skill"
 relationships:
