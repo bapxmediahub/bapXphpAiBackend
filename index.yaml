@@ -38,7 +38,7 @@ query_examples:
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
   concepts: 358
-  relationships: 255
+  relationships: 256
   by_type:
     blog: 14
     controller: 12
@@ -2870,6 +2870,8 @@ concepts:
       - "AgentAttachmentService"
       - "AgentDraftService"
       - "AgentToolRegistry"
+      - "AgentContextService"
+      - "GstRegisterService"
       - "AiReplyCleaner"
       - "AiClient"
       - "AuthService"
@@ -4343,6 +4345,9 @@ relationships:
     relation: "uses"
   - from: "controller:AdminController"
     to: "service:AgentAttachmentService"
+    relation: "uses"
+  - from: "controller:AdminController"
+    to: "service:AgentContextService"
     relation: "uses"
   - from: "controller:AdminController"
     to: "service:AgentDraftService"

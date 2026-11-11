@@ -1,7 +1,7 @@
 <section class="enterprise-chat" aria-labelledby="enterprise-agent-title">
     <header class="enterprise-chat__intro">
         <h1 id="enterprise-agent-title">Enterprise Agent</h1>
-        <p>Ask about orders, revenue, stock, or support enquiries. Drafts are saved only after you review them.</p>
+        <p>Ask about orders, sales, GST, stock, or support tickets.</p>
         <?php if (empty($modelConfig['configured'])): ?>
             <p class="agent-notice">Connect a model in <a href="/admin/integrations">Integrations</a> for questions that need one.</p>
         <?php endif; ?>
@@ -11,7 +11,7 @@
     <div id="agent-messages" class="agent-messages" role="log" aria-live="polite" aria-label="Conversation"></div>
 
     <div class="agent-suggestions" id="agent-suggestions">
-        <?php foreach (['Which products sell best?', 'What is the revenue this month?', '/create-blog benefits of rudraksha', '/add-product brass oil lamp'] as $__s): ?>
+        <?php foreach (['Which products sell best?', 'What is the revenue this month?', 'How many open support tickets are there?', 'Summarize GST this month'] as $__s): ?>
             <button type="button" class="agent-suggestion" data-q="<?= e($__s) ?>"><?= e($__s) ?></button>
         <?php endforeach; ?>
     </div>
@@ -25,7 +25,7 @@
                     title="Upload an image — it is added to the media library">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
             </button>
-            <textarea id="agent-input" name="message" rows="1" required
+            <textarea id="agent-input" name="message" rows="1" maxlength="2000" required
                       placeholder="Ask about your store…"
                       aria-label="Message"></textarea>
             <button type="submit" class="agent-send" id="agent-submit" aria-label="Send">
@@ -190,8 +190,11 @@
         if (!run || !bubble) return;
         const details = document.createElement('details');
         details.className = 'agent-run';
-        const routeLabel = {local:'Local data',model:'Gemma model',draft:'Draft builder',error:'Failed request'}[run.route] || 'Request';
-        details.innerHTML = '<summary>' + escapeHtml(routeLabel) + ' · ' + escapeHtml(String(run.elapsed_ms || 0)) + ' ms</summary>';
+        const routeLabel = {local:'Local data',model:'Model response',draft:'Draft builder',error:'Failed request'}[run.route] || 'Request';
+        const summary = document.createElement('summary');
+        summary.textContent = (Math.max(0, Number(run.elapsed_ms) || 0) / 1000).toFixed(2) + ' s';
+        summary.setAttribute('aria-label', summary.textContent + ', show request details');
+        details.appendChild(summary);
         const body = document.createElement('div');
         body.className = 'agent-run__body';
         const add = function (label, value) {
@@ -199,11 +202,11 @@
             row.innerHTML = '<span>' + escapeHtml(label) + '</span><span>' + escapeHtml(value) + '</span>';
             body.appendChild(row);
         };
+        add('Route', routeLabel);
         (run.tools || []).forEach(function (tool) { add('Tool · ' + tool.name, tool.status + ' · ' + tool.duration_ms + ' ms'); });
         (run.attempts || []).forEach(function (attempt, index) {
             add('Model attempt ' + (index + 1) + ' · ' + attempt.model, 'HTTP ' + attempt.status + ' · ' + attempt.duration_ms + ' ms');
         });
-        if (!(run.tools || []).length && !(run.attempts || []).length) add('Route', routeLabel);
         details.appendChild(body); bubble.appendChild(details);
     }
 
@@ -374,6 +377,15 @@
                 response.appendChild(buildDraftForm(data.draft));
             } else {
                 response.innerHTML = renderMarkdown(data.answer || 'No response.');
+                for (const source of data.run?.sources || []) {
+                    if (typeof source.path !== 'string' || !source.path.startsWith('/admin/')) continue;
+                    const line = document.createElement('p');
+                    const link = document.createElement('a');
+                    link.href = source.path;
+                    link.textContent = source.label;
+                    line.appendChild(link);
+                    response.appendChild(line);
+                }
             }
             appendRunMeta(thinking, data.run);
             if (data.missing && data.missing.length) {

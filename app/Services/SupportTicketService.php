@@ -9,7 +9,17 @@ final class SupportTicketService {
     }
 
     public function forUser(string $email): array {
-        return array_values(array_filter($this->all(), fn($t) => ($t['customer_email'] ?? '') === $email));
+        $email = trim($email);
+        if ($email === '') return [];
+        $rows = $this->store->query('SELECT id, _data FROM support_tickets WHERE _owner = ?', [$email]);
+        $tickets = [];
+        foreach ($rows as $row) {
+            $ticket = json_decode((string)($row['_data'] ?? ''), true);
+            if (!is_array($ticket) || strcasecmp(trim((string)($ticket['customer_email'] ?? '')), $email) !== 0) continue;
+            $ticket['id'] = (string)$row['id'];
+            $tickets[] = $ticket;
+        }
+        return $tickets;
     }
 
     public function create(string $customerEmail, string $message, string $context = ''): array {

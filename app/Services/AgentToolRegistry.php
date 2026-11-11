@@ -33,6 +33,14 @@ final class AgentToolRegistry
         return $this->activity;
     }
 
+    private array $sources = [];
+
+    /** @return list<array{label:string,path:string}> */
+    public function sourceLinks(): array
+    {
+        return array_values($this->sources);
+    }
+
     public function __construct(
         private DatabaseService $store = new DatabaseService(),
         private ?ProductService $products = null,
@@ -77,27 +85,41 @@ final class AgentToolRegistry
             ],
             [
                 'name' => 'sales_summary',
-                'description' => 'Revenue and order counts over a number of days, with the best selling products.',
+                'description' => 'Verified paid orders, net revenue after verified refunds, status counts and best sellers by units. Use dates, a number of days, or a named period.',
                 'parameters' => [
                     'type' => 'object',
-                    'properties' => [
-                        'days' => ['type' => 'integer', 'description' => 'How many days back to include. Defaults to 30.'],
+                    'properties' => self::DATE_PROPERTIES + [
+                        'days' => ['type' => 'integer', 'description' => 'How many calendar days to include through today. Defaults to 30.'],
+                        'period' => ['type' => 'string', 'enum' => ['this_month', 'all_time']],
                     ],
                 ],
             ],
             [
-                'name' => 'support_enquiries',
-                'description' => 'Customer support enquiries: how many there are, their status split, and how many '
-                    . 'concern orders, delivery, payment or refunds. Use this for any question about enquiries, '
-                    . 'tickets or what customers are asking. Says plainly when there are none.',
+                'name' => 'gst_register_summary',
+                'description' => 'Read the GST invoice register for a date range, including the number of issued invoices and review flags, taxable value, and GST totals. Includes the admin report link.',
                 'parameters' => [
                     'type' => 'object',
-                    'properties' => [
-                        'topic' => [
-                            'type' => 'string',
-                            'description' => 'Narrow to a topic: orders, delivery, payment, refund, product. Omit for all.',
-                        ],
+                    'properties' => self::DATE_PROPERTIES,
+                ],
+            ],
+            [
+                'name' => 'support_enquiries',
+                'description' => 'Count recorded customer support tickets by date created, topic and current status. Includes the support queue link and the keywords behind topic counts.',
+                'parameters' => [
+                    'type' => 'object',
+                    'properties' => self::DATE_PROPERTIES + [
+                        'topic' => ['type' => 'string', 'enum' => array_keys(self::ENQUIRY_TOPICS)],
+                        'status' => ['type' => 'string', 'enum' => self::TICKET_STATUSES],
                     ],
+                ],
+            ],
+            [
+                'name' => 'store_count',
+                'description' => 'Count recorded users, products or appointments. Returns a total without record details.',
+                'parameters' => [
+                    'type' => 'object',
+                    'properties' => ['entity' => ['type' => 'string', 'enum' => AgentContextService::OWNER_COUNT_ENTITIES]],
+                    'required' => ['entity'],
                 ],
             ],
             [
@@ -131,10 +153,32 @@ final class AgentToolRegistry
 
     public function has(string $name): bool
     {
+        return $this->toolParameters($name) !== null;
+    }
+
+    private function toolParameters(string $name): ?array
+    {
         foreach ($this->declarations() as $tool) {
-            if ($tool['name'] === $name) return true;
+            if ($tool['name'] === $name) return $tool['parameters'];
         }
-        return false;
+        return null;
+    }
+
+    /** Provider tool arguments are untrusted, even when generated from our schema. */
+    private function validArguments(string $name, array $args): bool
+    {
+        $schema = $this->toolParameters($name);
+        if ($schema === null || array_diff($schema['required'] ?? [], array_keys($args))) return false;
+        foreach ($args as $key => $value) {
+            $property = $schema['properties'][$key] ?? [];
+            $validType = match ($property['type'] ?? '') {
+                'integer' => is_int($value),
+                'string' => is_string($value) && mb_strlen($value) <= 256,
+                default => false,
+            };
+            if (!$validType || (isset($property['enum']) && !in_array($value, $property['enum'], true))) return false;
+        }
+        return true;
     }
 
     /**
@@ -152,20 +196,31 @@ final class AgentToolRegistry
         }
         $startedAt = microtime(true);
         try {
-            $result = match ($name) {
+            $result = $this->validArguments($name, $args) ? match ($name) {
                 'find_order' => $this->findOrder($args),
                 'product_status' => $this->productStatus($args),
                 'sales_summary' => $this->salesSummary($args),
+                'gst_register_summary' => $this->gstRegisterSummary($args),
+                'store_count' => (new AgentContextService($this->store))->ownerCount($args['entity'] ?? null),
                 'support_enquiries' => $this->supportEnquiries($args),
                 'search_articles' => $this->searchArticles($args),
                 'coupon_status' => $this->couponStatus($args),
-                default => ['error' => 'No such tool: ' . $name],
-            };
+                default => ['error' => 'Lookup unavailable.'],
+            } : ['error' => 'Invalid lookup parameters.'];
             $this->activity[] = [
                 'name' => $name,
                 'status' => isset($result['error']) ? 'error' : 'complete',
                 'duration_ms' => (int)round((microtime(true) - $startedAt) * 1000),
             ];
+            if (!isset($result['error']) && isset($result['report_url'])) {
+                $label = match ($name) {
+                    'gst_register_summary' => 'GST invoice register',
+                    'support_enquiries' => 'AI Support Tickets',
+                    'sales_summary' => 'Sales report',
+                    default => null,
+                };
+                if ($label !== null) $this->sources[$result['report_url']] = ['label' => $label, 'path' => $result['report_url']];
+            }
             return $result;
         } catch (\Throwable $e) {
             error_log('Agent tool ' . $name . ' failed (' . get_class($e) . ')');
@@ -188,15 +243,20 @@ final class AgentToolRegistry
      */
     public function aggregateAnswer(string $question): ?string
     {
+        if (($report = $this->reportAnswer($question)) !== null) return $report;
+        if (preg_match('/\b(?:gst|tax invoice|support tickets?|enquir(?:y|ies)|inquir(?:y|ies))\b/i', $question)) return null;
         $intent = self::aggregateIntent($question);
         if ($intent === null) return null;
         $days = self::aggregateDays($question);
-        $args = $days === 0
-            ? ['since' => (new \DateTimeImmutable('first day of this month midnight'))->format('c')]
-            : ['days' => $days];
+        $args = match (true) {
+            $days === 0 => ['period' => 'this_month'],
+            $days >= 36500 => ['period' => 'all_time'],
+            default => ['days' => $days],
+        };
         $summary = $intent === 'order_count'
             ? ['orders' => $this->countOrders($days)]
-            : $this->salesSummary($args);
+            : $this->run('sales_summary', $args);
+        if (isset($summary['error'])) return $summary['error'];
         return self::aggregateAnswerFromSummary($question, $summary, $days);
     }
 
@@ -240,26 +300,26 @@ final class AgentToolRegistry
         $revenue = max(0, (float)($summary['revenue'] ?? 0));
         if ($intent === 'revenue') {
             return 'Recorded sales revenue ' . $period . ' is ₹' . number_format($revenue, 2)
-                . " across {$orders} orders. Cancelled and refunded orders are excluded. "
-                . 'Next step: review the Orders list if you need the status breakdown.';
+                . " across {$orders} paid orders after verified refunds.";
         }
 
         $best = is_array($summary['best_sellers'] ?? null) ? $summary['best_sellers'] : [];
         if ($best === []) {
             return 'There are no sold product units to rank ' . $period
-                . '. Cancelled and refunded orders are excluded. Next step: check recent Orders for payment or fulfilment holds.';
+                . ' in the paid orders included by the sales report.';
         }
         $items = [];
         foreach (array_slice($best, 0, 5, true) as $name => $units) {
             $items[] = trim((string)$name) . ' — ' . max(0, (int)$units) . ' unit' . ((int)$units === 1 ? '' : 's');
         }
         return 'Best sellers by units ' . $period . ': ' . implode('; ', $items)
-            . '. Cancelled and refunded orders are excluded. Next step: check stock for the leading products.';
+            . '. Units reflect paid orders before returns.';
     }
 
     private static function aggregateIntent(string $question): ?string
     {
-        if (preg_match('/\b(?:best[ -]?sell(?:er|ers|ing)?|top[ -]?sell(?:er|ers|ing)?|products?\s+sell(?:s|ing)?\s+(?:the\s+)?(?:best|most))\b/i', $question)) {
+        $period = '(?: (?:in |over |for )?(?:the )?(?:(?:last|past) [1-9]\d{0,3} days?|this month|all[ -]time|ever|overall))?';
+        if (preg_match('/^\s*(?:(?:show(?: me)?(?: the)? |list(?: the)? )?(?:best[ -]?sell(?:ers?|ing products)|top[ -]?sell(?:ers?|ing products))|(?:which|what) products sell(?: the)? (?:best|most))' . $period . '[?!.]*\s*$/i', $question)) {
             return 'best_sellers';
         }
         $orderCountPattern = '/^\s*
@@ -269,7 +329,7 @@ final class AgentToolRegistry
                 (?:(?:last|past)\ [1-9]\d{0,3}\ days?|this\ month|all[ -]time|ever|overall))?
             [?!.]*\s*$/ix';
         if (preg_match($orderCountPattern, $question)) return 'order_count';
-        if (preg_match('/\b(?:revenue|sales total|total sales|sales value)\b/i', $question)) return 'revenue';
+        if (preg_match('/^\s*(?:(?:what is|show(?: me)?|calculate) (?:our |the )?)?(?:total |net )?(?:revenue|sales total|total sales|sales value)' . $period . '[?!.]*\s*$/i', $question)) return 'revenue';
         return null;
     }
 
@@ -375,122 +435,218 @@ final class AgentToolRegistry
 
     private function salesSummary(array $args): array
     {
-        $days = (int)($args['days'] ?? 30);
-        if ($days < 1) $days = 30;
-        try {
-            $since = !empty($args['since'])
-                ? new \DateTimeImmutable((string)$args['since'])
-                : (new \DateTimeImmutable())->modify('-' . $days . ' days');
-        } catch (\Throwable) {
-            $since = (new \DateTimeImmutable())->modify('-30 days');
-            $days = 30;
+        $today = new \DateTimeImmutable('today', new \DateTimeZone('Asia/Kolkata'));
+        $period = $args['period'] ?? null;
+        $days = $args['days'] ?? null;
+        $hasDates = isset($args['from']) || isset($args['to']);
+        if (($period !== null && ($days !== null || $hasDates)) || ($days !== null && $hasDates)) {
+            return ['error' => 'Choose sales dates, a number of days, or a named period.'];
+        }
+        if ($days !== null && (!is_int($days) || $days < 1 || $days > 36500)) {
+            return ['error' => 'Use a positive whole number of sales days up to 36500.'];
+        }
+        if ($period !== null && !in_array($period, ['this_month', 'all_time'], true)) {
+            return ['error' => 'Choose this_month or all_time for the named sales period.'];
         }
 
-        $counted = 0;
-        $revenue = 0.0;
-        $byStatus = [];
-        $units = [];
-        foreach ($this->orders->all() as $order) {
-            $created = trim((string)($order['created_at'] ?? ''));
-            if ($created !== '') {
-                try { if (new \DateTimeImmutable($created) < $since) continue; }
-                catch (\Throwable) {}
-            }
-            $status = (string)($order['status'] ?? 'unknown');
-            $byStatus[$status] = ($byStatus[$status] ?? 0) + 1;
-            $counted++;
-            // Refunded and cancelled orders are not revenue.
-            if (in_array($status, ['cancelled', 'refunded'], true)) continue;
-            $refundedPaise = OrderService::refundedPaise($order);
-            $net = max(0, (float)($order['total'] ?? 0) - $refundedPaise / 100);
-            $revenue += $net;
-            if ($net <= 0 && $refundedPaise > 0) continue;
-            foreach (($order['items'] ?? []) as $item) {
-                $key = (string)($item['name'] ?? $item['slug'] ?? '');
-                if ($key === '') continue;
-                $units[$key] = ($units[$key] ?? 0) + (int)($item['qty'] ?? 1);
-            }
-        }
-        arsort($units);
-        return [
-            'days' => $days,
-            'orders' => $counted,
-            'orders_by_status' => $byStatus,
-            'revenue' => round($revenue, 2),
+        $range = match ($period) {
+            'this_month' => ['from' => $today->modify('first day of this month')->format('Y-m-d'), 'to' => $today->format('Y-m-d')],
+            'all_time' => ['from' => '0001-01-01', 'to' => $today->format('Y-m-d')],
+            default => self::reportDates($days === null ? $args : ['from' => $today->modify('-' . ($days - 1) . ' days')->format('Y-m-d')], 36500),
+        };
+        if ($range === null) return ['error' => 'Use valid sales dates (YYYY-MM-DD) through today.'];
+
+        return self::salesFacts($this->orders->all(), $range);
+    }
+
+    public static function salesFacts(array $orders, array $range): array
+    {
+        $from = $range['from'];
+        $to = $range['to'];
+        $sales = StoreStatsService::sales($orders, $from, $to);
+        $products = array_slice(StoreStatsService::productsPurchased($orders, $from, $to), 0, 5);
+        return $range + [
+            'orders' => array_sum(array_column($sales, 'orders')),
+            'orders_by_status' => StoreStatsService::orderStatusCounts($orders, $from, $to),
+            'revenue' => round(array_sum(array_column($sales, 'net')), 2),
             'currency' => 'INR',
-            'best_sellers' => array_slice($units, 0, 5, true),
+            'best_sellers' => array_column($products, 'units', 'product'),
+            'report_url' => '/admin/tax-report?' . http_build_query(['report' => 'sales'] + $range),
         ];
     }
 
-    /** Words that mark an enquiry as being about a topic. */
-    private const ENQUIRY_TOPICS = [
-        'orders'   => ['order', 'ordered', 'purchase', 'invoice'],
-        'delivery' => ['deliver', 'delivery', 'shipping', 'shipment', 'shipped', 'courier', 'track', 'tracking', 'parcel'],
-        'payment'  => ['payment', 'paid', 'card', 'upi', 'razorpay', 'charge'],
-        'refund'   => ['refund', 'cancel', 'cancellation', 'return', 'money back'],
-        'product'  => ['product', 'pendant', 'ring', 'stock', 'size', 'item'],
+    private const DATE_PROPERTIES = [
+        'from' => ['type' => 'string', 'description' => 'Inclusive start date YYYY-MM-DD. Defaults to 29 days before today.'],
+        'to' => ['type' => 'string', 'description' => 'Inclusive end date YYYY-MM-DD. Defaults to today (India time).'],
     ];
 
-    /**
-     * Support enquiries, counted and grouped.
-     *
-     * "How many enquiries came for orders" previously answered 5 — which was the order
-     * count from the statistics blob, not enquiries at all. There were none to count.
-     * This returns the real figure, says so when it is zero, and states the words it
-     * matched on, because "order-related" is an interpretation and the owner should be
-     * able to see which one was used.
-     */
+    private const DATE_ERROR = 'Use valid start and end dates (YYYY-MM-DD) covering at most 366 days through today.';
+    private const TICKET_STATUSES = ['open', 'answered', 'closed', 'unanswered'];
+
+    /** Topic matching uses whole words from the original customer enquiry. */
+    private const ENQUIRY_TOPICS = [
+        'orders'   => ['order', 'orders', 'ordered', 'purchase', 'invoice'],
+        'delivery' => ['deliver', 'delivered', 'delivery', 'shipping', 'shipment', 'shipped', 'courier', 'track', 'tracking', 'parcel'],
+        'payment'  => ['payment', 'payments', 'paid', 'card', 'upi', 'razorpay', 'charge'],
+        'refund'   => ['refund', 'refunds', 'cancel', 'cancellation', 'return', 'money back'],
+        'product'  => ['product', 'products', 'pendant', 'ring', 'stock', 'size', 'item'],
+    ];
+
+    /** Recognize only simple count and summary requests so qualifiers reach the model. */
+    private function reportAnswer(string $question): ?string
+    {
+        $question = strtolower(trim($question, " \t\n\r?! ."));
+        $period = '';
+        if (preg_match('/(?:\s+(?:in|for|over))?\s+(?:the\s+)?(this month|last month|(?:last|past) [1-9]\d{0,2} days?)$/D', $question, $matches, PREG_OFFSET_CAPTURE)) {
+            $period = $matches[1][0];
+            $question = substr($question, 0, $matches[0][1]);
+        }
+
+        $tool = null;
+        $filters = [];
+        if (preg_match('/^(?:(?:show(?: me)?(?: the)?|summarize|what is the) )?gst (?:invoice register|register|summary|reconciliation|total|totals|tax total|invoice totals)$/D', $question)
+            || preg_match('/^(?:summarize|summarise) gst$/D', $question)
+            || preg_match('/^how many (?:gst )?invoices (?:need review|require review|were issued)$/D', $question)) {
+            $tool = 'gst_register_summary';
+        } elseif (preg_match('/^(?:how many|count) (?:(open|answered|closed|unanswered) )?(?:(?:support|customer) )?(?:tickets?|enquir(?:y|ies)|inquir(?:y|ies))(?: (?:came )?(?:about|for) (orders?|delivery|payment|refunds?|products?))?(?: are there| do we have)?$/D', $question, $matches)) {
+            $tool = 'support_enquiries';
+            if (!empty($matches[1])) $filters['status'] = $matches[1];
+            if (!empty($matches[2])) {
+                $topic = rtrim($matches[2], 's');
+                $filters['topic'] = $topic === 'order' ? 'orders' : $topic;
+            }
+        } elseif ($period === '' && preg_match('/^(?:how many|count|total) (?:registered )?(users|accounts|products|appointments)(?: (?:are there|do we have))?$/D', $question, $matches)) {
+            $entity = $matches[1] === 'accounts' ? 'users' : $matches[1];
+            $result = $this->run('store_count', ['entity' => $entity]);
+            return $result['error'] ?? 'Recorded ' . $entity . ': ' . $result['count'] . '.';
+        }
+        if ($tool === null) return null;
+
+        $today = new \DateTimeImmutable('today', new \DateTimeZone('Asia/Kolkata'));
+        if ($period === 'this month') $filters['from'] = $today->modify('first day of this month')->format('Y-m-d');
+        if ($period === 'last month') {
+            $filters['from'] = $today->modify('first day of last month')->format('Y-m-d');
+            $filters['to'] = $today->modify('last day of last month')->format('Y-m-d');
+        }
+        if (preg_match('/\d+/', $period, $days)) {
+            $filters['from'] = $today->modify('-' . ((int)$days[0] - 1) . ' days')->format('Y-m-d');
+        }
+
+        $result = $this->run($tool, $filters);
+        if (isset($result['error'])) return $result['error'];
+        $dates = $result['from'] . ' to ' . $result['to'];
+        if ($tool === 'support_enquiries') {
+            $status = isset($filters['status']) ? $filters['status'] . ' ' : '';
+            $topic = isset($filters['topic']) ? ' about ' . $filters['topic'] : '';
+            return "There were {$result['total']} {$status}support tickets{$topic} created from {$dates}."
+                . ($topic !== '' ? ' Topic counts use keywords in the original enquiry.' : '');
+        }
+
+        $totals = $result['totals'];
+        $money = static fn(float $amount): string => '₹' . number_format($amount, 2);
+        return "From {$dates}, the register has {$result['issued_invoices']} issued invoices. "
+            . "The invoice lines export flags {$result['review_invoices']} for review. "
+            . 'Taxable value is ' . $money($totals['taxable']) . ' and total GST is ' . $money($totals['tax'])
+            . ' (CGST ' . $money($totals['cgst']) . ', SGST ' . $money($totals['sgst']) . ', IGST ' . $money($totals['igst']) . ').';
+    }
+
+    private static function reportDates(array $args, int $maxDays = 366): ?array
+    {
+        $today = new \DateTimeImmutable('today', new \DateTimeZone('Asia/Kolkata'));
+        $from = $args['from'] ?? $today->modify('-29 days')->format('Y-m-d');
+        $to = $args['to'] ?? $today->format('Y-m-d');
+        foreach ([$from, $to] as $value) {
+            if (!is_string($value) || !preg_match('/^\d{4}-\d{2}-\d{2}$/D', $value)) return null;
+            $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d', $value, $today->getTimezone());
+            if ($parsed === false || $parsed->format('Y-m-d') !== $value) return null;
+        }
+        if ($from > $to || $to > $today->format('Y-m-d')) return null;
+        $earliest = (new \DateTimeImmutable($to, $today->getTimezone()))->modify('-' . ($maxDays - 1) . ' days')->format('Y-m-d');
+        return $from >= $earliest ? ['from' => $from, 'to' => $to] : null;
+    }
+
+    private function gstRegisterSummary(array $args): array
+    {
+        $range = self::reportDates($args);
+        if ($range === null) return ['error' => self::DATE_ERROR];
+        $orders = GstRegisterService::ordersForPeriod($this->orders->all(), $range['from'], $range['to']);
+        $settings = (new SettingsService($this->store))->public();
+        $reasons = GstRegisterService::reviewReasons($orders, $settings);
+
+        return $range + [
+            'issued_invoices' => count($orders),
+            'delivery_state_review_invoices' => count($reasons),
+            'review_invoices' => GstRegisterService::reviewCount($orders, $reasons),
+            'totals' => GstRegisterService::totals($orders),
+            'currency' => 'INR',
+            'report_url' => '/admin/tax-report?' . http_build_query(['report' => 'tax'] + $range),
+        ];
+    }
+
     private function supportEnquiries(array $args): array
     {
-        $topic = strtolower(trim((string)($args['topic'] ?? '')));
-        $tickets = [];
-        foreach ((new SupportTicketService($this->store))->all() as $ticket) {
-            // A record holding nothing but an id is not an enquiry. Production has one,
-            // and counting it would overstate a number the owner acts on.
-            if (count(array_filter($ticket, fn($v, $k) => $k !== 'id' && $v !== '' && $v !== null, ARRAY_FILTER_USE_BOTH)) === 0) continue;
-            $tickets[] = $ticket;
+        $range = self::reportDates($args);
+        if ($range === null) return ['error' => self::DATE_ERROR];
+        $topic = $args['topic'] ?? '';
+        $status = $args['status'] ?? '';
+        if (!is_string($topic) || ($topic !== '' && !isset(self::ENQUIRY_TOPICS[$topic]))) {
+            return ['error' => 'Choose an available support ticket topic.'];
+        }
+        if (!is_string($status) || ($status !== '' && !in_array($status, self::TICKET_STATUSES, true))) {
+            return ['error' => 'Choose open, answered, closed or unanswered for support ticket status.'];
         }
 
-        if ($tickets === []) {
-            return [
-                'total' => 0,
-                'message' => 'No customer support enquiries have been recorded yet. '
-                    . 'The support_tickets collection is empty apart from one placeholder row holding only an id.',
-            ];
-        }
+        return self::supportEnquiryCounts((new SupportTicketService($this->store))->all(), $range, $topic, $status);
+    }
 
+    public static function supportEnquiryCounts(array $tickets, array $range, string $topic = '', string $status = ''): array
+    {
+        $total = 0;
         $byStatus = [];
         $byTopic = array_fill_keys(array_keys(self::ENQUIRY_TOPICS), 0);
         $unanswered = 0;
-        $matched = [];
+        $zone = new \DateTimeZone('Asia/Kolkata');
+        $patterns = array_map(
+            static fn(array $words): string => '/\b(?:' . implode('|', array_map(static fn(string $word): string => preg_quote($word, '/'), $words)) . ')\b/iu',
+            self::ENQUIRY_TOPICS
+        );
         foreach ($tickets as $ticket) {
-            $status = (string)($ticket['status'] ?? 'open');
-            $byStatus[$status] = ($byStatus[$status] ?? 0) + 1;
-            if (trim((string)($ticket['reply'] ?? '')) === '') $unanswered++;
-            $blob = strtolower(trim((string)($ticket['message'] ?? '') . ' ' . (string)($ticket['reply'] ?? '')));
-            foreach (self::ENQUIRY_TOPICS as $name => $words) {
-                foreach ($words as $word) {
-                    if (!str_contains($blob, $word)) continue;
-                    $byTopic[$name]++;
-                    if ($name === $topic || $topic === '') $matched[] = ['id' => (string)($ticket['id'] ?? ''), 'status' => $status];
-                    break;
-                }
+            $message = trim((string)($ticket['message'] ?? ''));
+            if ($message === '') continue;
+            $createdAt = (string)($ticket['created_at'] ?? '');
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}(?:$|[T ])/D', $createdAt)) continue;
+            try {
+                $date = (new \DateTimeImmutable($createdAt, $zone))->setTimezone($zone)->format('Y-m-d');
+            } catch (\Exception) {
+                continue;
             }
-        }
+            if ($date < $range['from'] || $date > $range['to']) continue;
 
-        $out = [
-            'total' => count($tickets),
+            $ticketStatus = $ticket['status'] ?? 'open';
+            if (!in_array($ticketStatus, ['open', 'answered', 'closed'], true)) $ticketStatus = 'unknown';
+            $awaitingReply = $ticketStatus === 'open' && trim((string)($ticket['reply'] ?? '')) === '';
+            if ($status !== '' && ($status === 'unanswered' ? !$awaitingReply : $status !== $ticketStatus)) continue;
+
+            $topics = [];
+            foreach ($patterns as $name => $pattern) {
+                if (preg_match($pattern, $message)) $topics[] = $name;
+            }
+            if ($topic !== '' && !in_array($topic, $topics, true)) continue;
+            foreach ($topics as $name) $byTopic[$name]++;
+            $total++;
+            $byStatus[$ticketStatus] = ($byStatus[$ticketStatus] ?? 0) + 1;
+            if ($awaitingReply) $unanswered++;
+        }
+        return $range + [
+            'total' => $total,
             'by_status' => $byStatus,
             'by_topic' => $byTopic,
             'awaiting_reply' => $unanswered,
+            'topic' => $topic,
+            'status' => $status,
             'topic_words_used' => self::ENQUIRY_TOPICS,
+            'report_url' => '/admin/support-tickets',
         ];
-        if ($topic !== '') {
-            $out['topic'] = $topic;
-            $out['matching'] = $byTopic[$topic] ?? 0;
-            $out['matching_tickets'] = array_slice($matched, 0, 20);
-        }
-        return $out;
     }
 
     /**
