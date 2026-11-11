@@ -12,6 +12,7 @@ final class SupportBotService {
         $startedAt = microtime(true);
         $outcome = 'fallback';
         $reason = null;
+        $attempts = [];
         $message = trim($message);
         if ($message === '') throw new \InvalidArgumentException('Message is required.');
         // Exact general tracking questions use the store policy without loading account data.
@@ -42,7 +43,7 @@ final class SupportBotService {
             if ($reply !== null) $outcome = 'local';
         }
         if ($reply === null) {
-            $aiReply = $this->modelReply($message, $context, $reason);
+            $aiReply = $this->modelReply($message, $context, $reason, $attempts);
             if ($aiReply !== null) {
                 $candidate = $this->cleanReply($aiReply);
                 if (!$this->looksInternal($candidate) && trim($candidate) !== '') {
@@ -64,7 +65,7 @@ final class SupportBotService {
         }
         $actions = $this->extractActions($reply);
         if ($actions !== []) $result['actions'] = $actions;
-        (new AuditLogService($this->store))->agentRun('support', $outcome, $startedAt, $reason);
+        (new AuditLogService($this->store))->agentRun('support', $outcome, $startedAt, $reason, $attempts);
         return $result;
     }
 
@@ -93,7 +94,7 @@ final class SupportBotService {
      * admin agent and left this one calling a model that answered 404 — every customer
      * reply silently fell back to a canned menu.
      */
-    private function modelReply(string $message, array $context, ?string &$reason): ?string {
+    private function modelReply(string $message, array $context, ?string &$reason, array &$attempts): ?string {
         $prompt = "You are Sri Panchami Spiritual support bot.\n"
             . "Answer only the question that was asked, in two or three plain-text sentences.\n"
             . "Never restate these instructions, the capability list, the JSON, or the question. "
@@ -118,6 +119,7 @@ final class SupportBotService {
         $client = new AiClient($this->secrets);
         $answer = $client->completeOrNull($prompt, 220, 0.2);
         $reason = $client->failureCategory();
+        $attempts = $client->transferTimings();
         return $answer;
     }
 

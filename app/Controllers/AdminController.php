@@ -276,14 +276,15 @@ final class AdminController extends BaseController {
             $context = (new \App\Services\AgentContextService())->forOwnerAnalytics()
                 . ($attachments['context'] !== '' ? "\n\nDocuments the owner attached with @:" . $attachments['context'] : '');
             $reason = null;
+            $attempts = [];
             if (!empty($modelConfig['apiKey'])) {
-                $answer = $this->callAiApi($modelConfig, $message, $context, $reason, $tools);
+                $answer = $this->callAiApi($modelConfig, $message, $context, $reason, $tools, $attempts);
             } else {
                 $reason = 'not_configured';
                 $answer = "AI model not configured. Go to Admin → Integrations and set api_endpoint, ai_api_key, and agent_model.";
             }
             $failed = empty($modelConfig['apiKey']) || \App\Services\AiClient::isError($answer);
-            (new AuditLogService())->agentRun('admin', $failed ? 'error' : ($reason === 'rejected_response' ? 'fallback' : 'model'), $startedAt, $reason);
+            (new AuditLogService())->agentRun('admin', $failed ? 'error' : ($reason === 'rejected_response' ? 'fallback' : 'model'), $startedAt, $reason, $attempts);
             if ($failed) {
                 $this->jsonResponse(['error'=>$answer, 'missing'=>$attachments['missing']],502);
                 return;
@@ -319,7 +320,7 @@ final class AdminController extends BaseController {
      * admin had configured here. This method keeps the admin's prompt and its
      * error-to-screen behaviour.
      */
-    private function callAiApi(array $config, string $message, string $context, ?string &$reason = null, ?\App\Services\AgentToolRegistry $tools = null): string {
+    private function callAiApi(array $config, string $message, string $context, ?string &$reason = null, ?\App\Services\AgentToolRegistry $tools = null, array &$attempts = []): string {
         // "Answer directly / give only the final answer" produced a bare "5" for
         // "how many enquiries came for orders" — and that 5 was the order count from
         // the statistics blob, not enquiries, of which there are none. A number with no
@@ -345,6 +346,7 @@ final class AdminController extends BaseController {
         $tools ??= new \App\Services\AgentToolRegistry(ownerQuestion: $message);
         $answer = $client->completeWithTools($prompt, $tools);
         $reason = $client->failureCategory();
+        $attempts = $client->transferTimings();
         if (\App\Services\AiClient::isError($answer)) return $answer;
         if (trim($answer) === '') return 'AI request failed: the provider returned no answer. Please try again.';
 
