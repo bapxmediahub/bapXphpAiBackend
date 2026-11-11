@@ -110,9 +110,7 @@ final class AiClient
      * The loop is bounded. A model that keeps calling tools would otherwise hold the
      * request open until PHP's time limit, and the owner would watch a spinner.
      *
-     * Only Google is wired up: it is the configured provider, and a tool protocol
-     * written for a provider nobody uses is a guess that would go stale untested.
-     * Other providers fall back to a plain completion, which still answers.
+     * Each provider uses its own tool message format and the same tool registry.
      */
     public function completeWithTools(
         string $prompt,
@@ -126,7 +124,9 @@ final class AiClient
         $this->transferTimings = [];
         $this->toolCalls = 0;
         $config = $this->secrets->getModelConfig();
-        if (($config['provider'] ?? '') !== 'google') return $this->complete($prompt, $maxTokens, $temperature);
+        if ($config['provider'] === 'openai_compatible') {
+            return $this->completeCompatible($config, $prompt, $maxTokens, $modelOverride, $tools, $maxRounds);
+        }
 
         $key = trim((string)($config['apiKey'] ?? ''));
         if ($key === '') { $this->failureCategory = 'not_configured'; return 'No AI API key is configured. Set ai_api_key in Admin → Integrations, then try again.'; }
@@ -296,25 +296,115 @@ final class AiClient
             return $answer;
         }
 
-        $url = $endpoint . '/chat/completions';
-        $payload = json_encode([
-            'model' => $model,
-            'messages' => [['role' => 'user', 'content' => $prompt]],
-            'max_tokens' => $maxTokens,
-        ], JSON_UNESCAPED_SLASHES);
-        $headers = ['Content-Type: application/json'];
-        if ($provider === 'anthropic') {
-            $headers[] = 'x-api-key: ' . $key;
-            $headers[] = 'anthropic-version: 2023-06-01';
-        } else {
-            $headers[] = 'Authorization: Bearer ' . $key;
+        return $this->completeCompatible($config, $prompt, $maxTokens, $modelOverride);
+    }
+
+    /**
+     * OpenAI Chat Completions tool calls are replayed with the original assistant
+     * tool-call IDs and one role=tool result per call.
+     * https://developers.openai.com/api/docs/guides/function-calling
+     */
+    private function completeCompatible(
+        array $config,
+        string $prompt,
+        int $maxTokens,
+        ?string $modelOverride,
+        ?AgentToolRegistry $tools = null,
+        int $maxRounds = 0
+    ): string {
+        if (!$config['configured']) {
+            $this->failureCategory = 'not_configured';
+            return 'No AI API key or valid provider configuration is available in Admin → Integrations.';
         }
-        $body = $this->post($url, $payload, $headers, $status);
-        if ($status !== 200 || $body === false) return self::describeFailure($status, $body, $this->transportError);
-        $result = json_decode((string)$body, true);
-        $answer = (string)($result['choices'][0]['message']['content'] ?? '');
-        if (trim($answer) === '') $this->failureCategory = 'empty_response';
-        return $answer;
+        if (!function_exists('curl_init')) {
+            $this->failureCategory = 'transport';
+            return 'AI request failed: cURL is not available on this server.';
+        }
+        $host = parse_url($config['endpoint'], PHP_URL_HOST);
+        $port = parse_url($config['endpoint'], PHP_URL_PORT) ?? 443;
+        $addresses = dns_get_record($host, DNS_A | DNS_AAAA) ?: [];
+        $resolve = [];
+        foreach ($addresses as $record) {
+            $ip = $record['ip'] ?? $record['ipv6'] ?? '';
+            if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_GLOBAL_RANGE)) continue;
+            $resolve[] = str_contains($ip, ':') ? '[' . $ip . ']' : $ip;
+        }
+        if ($resolve === []) {
+            $this->failureCategory = 'provider_request';
+            return 'AI request failed: the compatible endpoint must resolve to a public address.';
+        }
+        // Pin the validated addresses so DNS cannot change the destination between
+        // validation and connection. Do not follow redirects or use a proxy here.
+        $options = [
+            CURLOPT_RESOLVE => [$host . ':' . $port . ':' . implode(',', array_unique($resolve))],
+            CURLOPT_PROXY => '',
+            CURLOPT_FOLLOWLOCATION => false,
+        ];
+        $headers = ['Content-Type: application/json', 'Authorization: Bearer ' . $config['apiKey']];
+        $url = $config['endpoint'] . '/chat/completions';
+        $models = in_array($modelOverride, $config['models'], true) ? [$modelOverride] : $config['models'];
+        $messages = [['role' => 'user', 'content' => $prompt]];
+        $declarations = $tools === null ? [] : array_map(
+            static fn(array $declaration): array => ['type' => 'function', 'function' => $declaration],
+            $tools->declarations()
+        );
+        $deadline = hrtime(true) + self::TOOL_CONVERSATION_TIMEOUT_NS;
+        $status = 0;
+        $body = false;
+        foreach ($models as $model) {
+            for ($round = 0; $round <= $maxRounds; $round++) {
+                $remainingMs = (int)(($deadline - hrtime(true)) / 1_000_000);
+                if ($remainingMs <= 0) {
+                    $this->failureCategory = 'timeout';
+                    return self::describeFailure(0, false, 28);
+                }
+                $payload = ['model' => $model, 'messages' => $messages];
+                $payload[parse_url($url, PHP_URL_HOST) === 'api.openai.com' ? 'max_completion_tokens' : 'max_tokens'] = $maxTokens;
+                if ($declarations !== []) {
+                    $payload['tools'] = $declarations;
+                    $payload['tool_choice'] = $round < $maxRounds ? 'auto' : 'none';
+                }
+                $body = $this->post($url, json_encode($payload, JSON_THROW_ON_ERROR), $headers, $status,
+                    min($remainingMs, 12000), true, $model, $options);
+                if ($status !== 200 || $body === false) {
+                    if ($round === 0 && self::canFailOver($status, $this->transportError)) break;
+                    return self::describeFailure($status, $body, $this->transportError);
+                }
+                $message = json_decode($body, true)['choices'][0]['message'] ?? [];
+                $calls = $message['tool_calls'] ?? [];
+                if ($calls === [] || $tools === null || $round === $maxRounds) {
+                    $answer = (string)($message['content'] ?? '');
+                    if (trim($answer) !== '') return self::fencedAnswer($answer) ?? $answer;
+                    $this->failureCategory = 'empty_response';
+                    if ($round === 0) break;
+                    return '';
+                }
+                $assistant = ['role' => 'assistant', 'content' => $message['content'] ?? null, 'tool_calls' => []];
+                $responses = [];
+                foreach (array_slice($calls, 0, 8) as $call) {
+                    $id = $call['id'] ?? '';
+                    $name = $call['function']['name'] ?? '';
+                    $arguments = $call['function']['arguments'] ?? '';
+                    if (!is_string($id) || $id === '' || !is_string($name) || !is_string($arguments)) continue;
+                    $args = json_decode($arguments, true);
+                    $result = is_array($args) && $tools->has($name)
+                        ? $tools->run($name, $args)
+                        : ['error' => 'Invalid tool call'];
+                    if (!isset($result['error'])) $this->toolCalls++;
+                    $assistant['tool_calls'][] = ['id' => $id, 'type' => 'function',
+                        'function' => ['name' => $name, 'arguments' => $arguments]];
+                    $responses[] = ['role' => 'tool', 'tool_call_id' => $id,
+                        'content' => json_encode($result, JSON_THROW_ON_ERROR)];
+                }
+                if ($responses === []) {
+                    $this->failureCategory = 'empty_response';
+                    return '';
+                }
+                $messages[] = $assistant;
+                array_push($messages, ...$responses);
+            }
+        }
+        return $status === 200 ? '' : self::describeFailure($status, $body, $this->transportError);
     }
 
     private const ANSWER_OPEN = '<final_answer>';
@@ -456,12 +546,13 @@ final class AiClient
         ?int &$status,
         int $timeoutMs = 20000,
         bool $appendTiming = false,
-        ?string $model = null
+        ?string $model = null,
+        array $options = []
     )
     {
         if (!$appendTiming) $this->transferTimings = [];
         $ch = curl_init($url);
-        curl_setopt_array($ch, [
+        curl_setopt_array($ch, $options + [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST => true,
             CURLOPT_HTTPHEADER => $headers,

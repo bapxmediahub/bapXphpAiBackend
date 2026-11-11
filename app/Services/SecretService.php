@@ -52,7 +52,23 @@ final class SecretService {
             // merge is impossible, so refuse rather than overwrite with a subset.
             throw new \RuntimeException('Could not read existing settings, so nothing was saved. Try again.');
         }
+        foreach (['ai_api_key', 'ai_compatible_key'] as $field) {
+            if (array_key_exists('ai_provider', $values) && ($values[$field] ?? null) === '') unset($values[$field]);
+        }
         $merged = array_replace($existing, $values);
+        $config = self::compatibleConfig($merged);
+        $oldEndpoint = self::compatibleConfig($existing)['endpoint'];
+        if ($oldEndpoint !== $config['endpoint'] && !array_key_exists('ai_compatible_key', $values)) {
+            unset($merged['ai_compatible_key']);
+            $config = self::compatibleConfig($merged);
+        }
+        if (($merged['ai_provider'] ?? '') === 'openai_compatible') {
+            if (!$config['configured']) {
+                throw new \InvalidArgumentException('Enter a public HTTPS API URL, an API key and one to five valid model IDs.');
+            }
+            $merged['ai_compatible_url'] = $config['endpoint'];
+            $merged['ai_compatible_models'] = implode("\n", $config['models']);
+        }
         $iv = random_bytes(16);
         $plain = json_encode($this->normalize($merged), JSON_THROW_ON_ERROR);
         $cipher = openssl_encrypt($plain, 'aes-256-cbc', $this->key(), OPENSSL_RAW_DATA, $iv);
@@ -71,9 +87,10 @@ final class SecretService {
     }
     public function getModelConfig(): array {
         $secrets = $this->all();
+        if (($secrets['ai_provider'] ?? '') === 'openai_compatible') return self::compatibleConfig($secrets);
         $apiKey = $this->firstValue($secrets, ['ai_api_key', 'agent_api_key', 'support_bot_google_api_key'], ['AI_API_KEY', 'AGENT_API_KEY', 'BAPX_AI_API_KEY']);
         $model = $this->firstValue($secrets, ['agent_model', 'support_bot_model'], ['AGENT_MODEL', 'BAPX_AI_MODEL']);
-        // The product deliberately supports only Google's two hosted Gemma 4 models.
+        // The native Google configuration uses the two hosted Gemma 4 models.
         // Google does not publish a Gemma 4 27B Gemini API identifier; the documented
         // smaller hosted model is the 26B A4B variant.
         // https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api#supported-models
@@ -82,6 +99,35 @@ final class SecretService {
         $provider = 'google';
         return compact('provider', 'model', 'endpoint', 'apiKey') + ['configured' => $apiKey !== ''];
     }
+    public static function validModelId(string $model): bool {
+        return preg_match('~\A[A-Za-z0-9][A-Za-z0-9._:/@+\-]{0,199}\z~', $model) === 1;
+    }
+
+    public static function compatibleConfig(array $settings): array {
+        $endpoint = rtrim(trim((string)($settings['ai_compatible_url'] ?? '')), '/');
+        if (str_ends_with($endpoint, '/chat/completions')) $endpoint = substr($endpoint, 0, -strlen('/chat/completions'));
+        $parts = parse_url($endpoint);
+        $host = $parts['host'] ?? '';
+        $validEndpoint = filter_var($endpoint, FILTER_VALIDATE_URL)
+            && ($parts['scheme'] ?? '') === 'https'
+            && str_contains($host, '.')
+            && !filter_var($host, FILTER_VALIDATE_IP)
+            && !isset($parts['user']) && !isset($parts['pass']) && !isset($parts['query']) && !isset($parts['fragment']);
+        $models = array_values(array_unique(array_filter(array_map('trim', preg_split('/[\r\n,]+/', (string)($settings['ai_compatible_models'] ?? ''))), 'strlen')));
+        $validModels = count($models) >= 1 && count($models) <= 5
+            && count(array_filter($models, self::validModelId(...))) === count($models);
+        $apiKey = trim((string)($settings['ai_compatible_key'] ?? ''));
+        $configured = $validEndpoint && $validModels && $apiKey !== '' && !preg_match('/[\r\n]/', $apiKey);
+        return [
+            'provider' => 'openai_compatible',
+            'endpoint' => $validEndpoint ? $endpoint : '',
+            'apiKey' => $configured ? $apiKey : '',
+            'models' => $validModels ? $models : [],
+            'model' => $validModels ? $models[0] : '',
+            'configured' => $configured,
+        ];
+    }
+
     private function decodeRecord(array $record): array {
         $iv = base64_decode((string)($record['iv'] ?? ''), true);
         $cipher = base64_decode((string)($record['ciphertext'] ?? ''), true);

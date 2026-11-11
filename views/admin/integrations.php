@@ -59,27 +59,32 @@
         </div>
         <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Only sign-in permissions are used. Calendar and Google Meet are not used for this platform.</p>
 
-        <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">AI Model (Agent + Support Bot)</h2>
-        <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">
-            Both site agents use the Google Gemini API with an automatic two-model Gemma router.
-        </p>
+        <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">AI Provider</h2>
+        <p>Customer support and owner chat share this provider. The compatible endpoint must support Chat Completions. Owner chat also uses function calling.</p>
         <div class="admin-form__row">
-            <label>Agent Name<input name="agent_name" value="<?= e($secrets['agent_name']??'Agent') ?>" placeholder="Agent"></label>
-            <label>API Endpoint (Google)<input name="api_endpoint" value="<?= e(\App\Services\SecretService::GOOGLE_ENDPOINT) ?>" readonly></label>
-            <label>API Key<input type="password" name="ai_api_key" value="<?= e($secrets['ai_api_key']??$secrets['agent_api_key']??$secrets['support_bot_google_api_key']??'') ?>" placeholder="AIza..." autocomplete="new-password"></label>
-        </div>
-        <div class="admin-form__row">
-            <label>Primary model
-                <input value="Gemma 4 31B" readonly aria-describedby="ai-router-note">
-                <input type="hidden" name="agent_model" value="<?= e(\App\Services\SecretService::PRIMARY_MODEL) ?>">
+            <label>Provider
+                <select name="ai_provider">
+                    <option value="google" <?= ($secrets['ai_provider'] ?? '') !== 'openai_compatible' ? 'selected' : '' ?>>Google Gemini API</option>
+                    <option value="openai_compatible" <?= ($secrets['ai_provider'] ?? '') === 'openai_compatible' ? 'selected' : '' ?>>OpenAI-compatible API</option>
+                </select>
             </label>
+            <label>Agent Name<input name="agent_name" value="<?= e($secrets['agent_name'] ?? 'Agent') ?>"></label>
         </div>
+        <fieldset>
+            <legend>Google Gemini API</legend>
+            <p><?= e(\App\Services\SecretService::PRIMARY_MODEL) ?> is tried first, with <?= e(\App\Services\SecretService::FALLBACK_MODEL) ?> as fallback. A rate limit triggers immediate fallback.</p>
+            <label>Google API Key<input type="password" name="ai_api_key" placeholder="Leave blank to keep saved key" autocomplete="new-password"></label>
+        </fieldset>
+        <fieldset>
+            <legend>OpenAI-compatible API</legend>
+            <label>API Base URL<input type="url" name="ai_compatible_url" value="<?= e($secrets['ai_compatible_url'] ?? '') ?>" placeholder="https://api.openai.com/v1"></label>
+            <label>Compatible API Key<input type="password" name="ai_compatible_key" placeholder="Leave blank to keep saved key" autocomplete="new-password"></label>
+            <label>Model IDs in fallback order
+                <textarea name="ai_compatible_models" rows="4" aria-describedby="compatible-model-help"><?= e($secrets['ai_compatible_models'] ?? '') ?></textarea>
+            </label>
+            <p id="compatible-model-help">Enter one to five model IDs, one per line. The first is tried first. Use a key issued for this endpoint.</p>
+        </fieldset>
         <input type="hidden" name="support_bot_purge_policy" value="always_purge">
-        <p id="ai-router-note" style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.85rem;">
-            Uses <strong><?= e(\App\Services\SecretService::PRIMARY_MODEL) ?></strong> first. After up to three retryable API failures,
-            the request automatically moves to <strong><?= e(\App\Services\SecretService::FALLBACK_MODEL) ?></strong>. A rate-limit response switches models immediately.
-            Google endpoint: <code>https://generativelanguage.googleapis.com/v1beta/models/</code>.
-        </p>
 
         <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">WebRTC TURN Server</h2>
         <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">

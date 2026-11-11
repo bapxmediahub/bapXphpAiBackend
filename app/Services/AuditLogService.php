@@ -25,11 +25,11 @@ final class AuditLogService {
 
     private static function providerAttempts(array $attempts): array {
         $safe = [];
-        foreach (array_slice($attempts, 0, 8) as $attempt) {
+        foreach (array_slice($attempts, 0, 9) as $attempt) {
             if (!is_array($attempt)) continue;
             $model = $attempt['model'] ?? null;
             $safe[] = [
-                'model' => in_array($model, SecretService::GOOGLE_MODELS, true) ? $model : null,
+                'model' => is_string($model) && SecretService::validModelId($model) ? $model : null,
                 'status' => (int)($attempt['status'] ?? 0),
                 'curl_error' => (int)($attempt['curl_error'] ?? 0),
                 'total_ms' => max(0, (int)round((float)($attempt['total_ms'] ?? 0))),
