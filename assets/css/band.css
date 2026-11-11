@@ -2407,10 +2407,11 @@ tr:hover td { background: var(--color-bg-alt); }
     max-width: 100%;
 }
 .contact-form-card { background: var(--color-white); border: 1px solid var(--color-border-light); border-radius: var(--radius-lg); padding: var(--space-xl); margin-bottom: var(--space-xl); }
-.contact-form { display: grid; gap: var(--space-md); }
-.contact-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+.contact-form { display: grid; gap: var(--space-md); min-width: 0; }
+.contact-form__row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-md); min-width: 0; }
+.contact-form .form-group { min-width: 0; }
 .contact-form label { display: flex; flex-direction: column; gap: var(--space-2xs); font-size: 0.8rem; font-weight: 600; color: var(--color-ink); text-transform: uppercase; letter-spacing: 0.05em; }
-.contact-form input, .contact-form select, .contact-form textarea { padding: 0.75rem 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.95rem; font-family: inherit; color: var(--color-ink); background: var(--color-white); transition: border-color var(--transition-base), box-shadow var(--transition-base); }
+.contact-form input, .contact-form select, .contact-form textarea { width: 100%; max-width: 100%; box-sizing: border-box; padding: 0.75rem 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.95rem; font-family: inherit; color: var(--color-ink); background: var(--color-white); transition: border-color var(--transition-base), box-shadow var(--transition-base); }
 .contact-form input:focus, .contact-form select:focus, .contact-form textarea:focus { outline: none; border-color: var(--color-gold); box-shadow: 0 0 0 3px rgba(58, 0, 3,0.1); }
 
 /* ── About ── */
@@ -4040,6 +4041,8 @@ body { background: var(--color-bg); }
     }
     .trust-item.is-label-visible .trust-item__label,
     .trust-item:focus-visible .trust-item__label { opacity: 1; transform: translate(-50%, 0); }
+    .contact-form-card { padding: var(--space-md); }
+    .contact-form__row { grid-template-columns: minmax(0, 1fr); }
     .product-card__image { aspect-ratio: 4 / 3; }
     .contact-card { min-height: 0; }
 }

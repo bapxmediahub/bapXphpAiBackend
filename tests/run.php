@@ -479,8 +479,12 @@ $tests['contact page exposes general enquiry form and confirmation delivery'] = 
     assertTrue(!str_contains($view, 'Visit Our Store'), 'Contact page should not invite general ecommerce customers to visit the store directly');
     $controller = file_get_contents(app_path('app/Controllers/PublicController.php'));
     $mail = file_get_contents(app_path('app/Services/MailQueueService.php'));
+    $css = file_get_contents(app_path('assets/css/band.css'));
     assertTrue(str_contains($controller, 'enqueueContactConfirmation') && str_contains($controller, 'notifyAdmin'), 'Contact submissions should notify the customer and owner');
     assertTrue(str_contains($mail, 'contact_customer_confirmation') && str_contains($mail, 'We received your enquiry'), 'Mail queue should define the contact confirmation email');
+    foreach (['grid-template-columns: repeat(2, minmax(0, 1fr))', '.contact-form .form-group { min-width: 0; }', '.contact-form__row { grid-template-columns: minmax(0, 1fr); }'] as $needle) {
+        assertTrue(str_contains($css, $needle), "Contact form CSS should include {$needle}");
+    }
 };
 
 $tests['about page uses focused responsive cards'] = function (): void {
