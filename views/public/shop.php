@@ -16,12 +16,16 @@
                         <?php foreach($categories as $cat): ?>
                             <a href="/shop?category=<?= e($cat['slug'] ?? '') ?>" class="filter-chip <?= ($category === ($cat['slug'] ?? '')) ? 'active' : '' ?>"><?= e($cat['name'] ?? 'Category') ?></a>
                         <?php endforeach; ?>
+                        <?php foreach (($shopCollections ?? []) as $cat): ?>
+                            <a href="/shop?category=<?= e(rawurlencode($cat['slug'])) ?>" class="filter-chip <?= $category === $cat['slug'] ? 'active' : '' ?>"><?= e($cat['name']) ?></a>
+                        <?php endforeach; ?>
                     </div>
                 </div>
             </div>
         </aside>
         <div>
             <div class="shop-toolbar">
+                <?php if (!empty($selectedCollection)): ?><h1><?= e($selectedCollection['name']) ?></h1><?php endif; ?>
                 <span class="shop-toolbar__count"><?= count($items) ?> product<?= count($items) !== 1 ? 's' : '' ?></span>
             </div>
             <?php if(empty($items)): ?>

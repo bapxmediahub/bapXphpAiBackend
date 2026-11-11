@@ -3,10 +3,10 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 111,
+        "routes": 114,
         "controllers": 12,
         "services": 48,
-        "views": 43,
+        "views": 45,
         "collections": 22
     },
     "routes": [
@@ -327,6 +327,45 @@
             "view": "admin/resource",
             "services": [
                 "ResourceService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/collections",
+            "name": "admin.collections",
+            "controller": "AdminController@collections",
+            "view": "admin/collections",
+            "services": [
+                "CategoryService",
+                "ProductService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/collections/delete",
+            "name": "admin.collections.delete",
+            "controller": "AdminController@deleteCollection",
+            "view": "admin/collections",
+            "services": [
+                "ResourceService",
+                "CategoryService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/collections/save",
+            "name": "admin.collections.save",
+            "controller": "AdminController@saveCollection",
+            "view": "admin/collections",
+            "services": [
+                "ResourceService",
+                "CategoryService",
+                "ProductService",
                 "AuditLogService",
                 "AuthService"
             ]
@@ -1306,6 +1345,7 @@
         "admin/agent",
         "admin/appearance",
         "admin/blog",
+        "admin/collections",
         "admin/consultation-analytics",
         "admin/dashboard",
         "admin/detail",
@@ -1329,6 +1369,7 @@
         "public/contact",
         "public/forgot-password",
         "public/home",
+        "public/home-collections",
         "public/login",
         "public/privacy",
         "public/product",

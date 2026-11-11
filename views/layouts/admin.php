@@ -77,6 +77,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
             <div class="admin-submenu" id="menu-catalog">
                 <a href="/admin/products" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/products') === 0 ? 'active' : '') ?>">Products</a>
                 <a href="/admin/categories" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/categories') === 0 ? 'active' : '') ?>">Categories</a>
+                <a href="/admin/collections" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/collections') === 0 ? 'active' : '') ?>">Special Collections</a>
                 <a href="/admin/coupons" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/coupons') === 0 ? 'active' : '') ?>">Coupons</a>
             </div>
             <?php endif; ?>

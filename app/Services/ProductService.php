@@ -39,6 +39,34 @@ final class ProductService
         return array_values(array_filter($this->all(), fn(array $p): bool => empty($p['is_hidden'])));
     }
 
+    /** Rank only visible products using quantities from verified, non-cancelled orders. */
+    public static function rankBestSellers(array $products, array $orders, int $limit = 4): array
+    {
+        $counts = [];
+        foreach ($orders as $order) {
+            if (trim((string)($order['payment_id'] ?? '')) === '' || in_array(strtolower((string)($order['status'] ?? '')), ['cancelled', 'refunded', 'failed'], true)) continue;
+            $items = $order['items'] ?? [];
+            if (!is_array($items)) continue;
+            foreach ($items as $item) {
+                if (!is_array($item)) continue;
+                $slug = trim((string)($item['slug'] ?? ''));
+                $qty = (int)($item['qty'] ?? 0);
+                if ($slug !== '' && $qty > 0) $counts[$slug] = ($counts[$slug] ?? 0) + $qty;
+            }
+        }
+        $ranked = array_values(array_filter($products, static fn(array $p): bool => empty($p['is_hidden']) && ($counts[trim((string)($p['slug'] ?? ''))] ?? 0) > 0));
+        usort($ranked, static function (array $a, array $b) use ($counts): int {
+            $left = trim((string)$a['slug']); $right = trim((string)$b['slug']);
+            return ($counts[$right] <=> $counts[$left]) ?: strcmp($left, $right);
+        });
+        return array_slice($ranked, 0, max(0, $limit));
+    }
+
+    public function bestSellers(array $products, int $limit = 4): array
+    {
+        return self::rankBestSellers($products, $this->store->read('orders'), $limit);
+    }
+
     /**
      * A hidden product is not found by slug either: leaving the URL live would keep it
      * buyable by anyone holding the link, which is not what "hidden" means.

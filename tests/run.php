@@ -704,7 +704,7 @@ $tests['home page rejects malformed remote categories and retains complete sales
     assertSame('pendant', $kept[0]['slug'], 'The first complete category should survive filtering');
     assertSame('ring', $kept[1]['slug'], 'A category is kept only when both slug and name are present');
     $view = file_get_contents(app_path('views/public/home.php'));
-    foreach (['Most Liked By People', 'How Your Order Works', 'Panchami Temples Guide', 'Faith · Trust · Tradition'] as $heading) {
+    foreach (['Top Selling Products', 'How Your Order Works', 'Panchami Temples Guide', 'Faith · Trust · Tradition'] as $heading) {
         assertTrue(str_contains($view, $heading), "Home should retain the {$heading} section");
     }
     assertTrue(!str_contains($view, 'Online Consultation'), 'Home should not retain the retired consultation section');
@@ -2098,6 +2098,26 @@ $tests['smtp encodes long unicode HTML into bounded transport safe MIME lines'] 
     assertTrue(isset($match[1]), 'HTML MIME part exists');
     assertSame(str_replace("\n", "\r\n", $html), base64_decode($match[1], true), 'Unicode HTML survives transport encoding without changes');
     foreach (explode("\r\n", $match[1]) as $line) assertTrue(strlen($line) <= 76, 'Encoded body lines stay within MIME limits');
+};
+
+$tests['best sellers count verified non-cancelled product quantities'] = function (): void {
+    $products = [['slug'=>'a'], ['slug'=>'b'], ['slug'=>'hidden','is_hidden'=>true], ['slug'=>'unsold']];
+    $orders = [
+        ['payment_id'=>'pay_1','status'=>'confirmed','items'=>[['slug'=>'a','qty'=>1],['slug'=>'b','qty'=>3],['slug'=>'hidden','qty'=>100]]],
+        ['payment_id'=>'pay_2','status'=>'delivered','items'=>[['slug'=>'a','qty'=>3]]],
+        ['payment_id'=>'','status'=>'confirmed','items'=>[['slug'=>'b','qty'=>100]]],
+        ['payment_id'=>'pay_3','status'=>'cancelled','items'=>[['slug'=>'b','qty'=>100]]],
+    ];
+    $ranked = \App\Services\ProductService::rankBestSellers($products, $orders);
+    assertTrue(array_column($ranked, 'slug') === ['a','b'], 'Only verified non-cancelled quantities should rank visible products');
+    assertTrue(\App\Services\ProductService::rankBestSellers($products, []) === [], 'No orders should produce no unsupported best-seller claims');
+};
+
+$tests['special collection selection retains only selected visible products'] = function (): void {
+    $service = new \App\Services\CategoryService();
+    $products = [['id'=>'one', 'name'=>'One'], ['id'=>'two', 'name'=>'Two']];
+    assertSame(['two'], array_column($service->collectionProducts(['product_ids'=>['two', 'missing']], $products), 'id'), 'Selection must not invent or expose products absent from visible catalogue');
+    assertSame([], $service->collectionProducts(['product_ids'=>[]], $products), 'Empty collection must not include all products');
 };
 
 foreach ($tests as $name => $test) {

@@ -6,11 +6,18 @@ final class PublicController extends BaseController {
     public function home(): void {
         $this->detectApiRequest();
         $this->seoKey = 'home';
-        $categories = (new CategoryService())->all();
-        $products = (new ProductService())->visible();
+        $categoryService = new CategoryService();
+        $categories = $categoryService->all();
+        $productService = new ProductService();
+        $products = $productService->visible();
+        try { $bestSellers = $productService->bestSellers($products); }
+        catch (\Throwable $e) { $bestSellers = []; error_log('Best sellers unavailable: ' . $e->getMessage()); }
+        $homeCollections = $categoryService->homeCollections($products);
         $temples = (new TempleService())->all();
         $this->render('public/home', [
             'products' => $products,
+            'bestSellers' => $bestSellers,
+            'homeCollections' => $homeCollections,
             'temples' => $temples,
             'categories' => $categories,
         ]);
@@ -70,10 +77,17 @@ final class PublicController extends BaseController {
     public function shop(): void {
         $this->detectApiRequest();
         $category = $_GET['category'] ?? '';
-        $categories = (new CategoryService())->all();
+        $categoryService = new CategoryService();
+        $categories = $categoryService->all();
+        $collections = $categoryService->collections();
+        $shopCollections = array_values(array_filter($collections, fn($c) => !empty($c['show_shop'])));
+        $selectedCollection = null;
+        foreach ($collections as $c) if (($c['slug'] ?? '') === $category && (!empty($c['show_home']) || !empty($c['show_shop']))) $selectedCollection = $c;
         $items = (new ProductService())->visible();
         $this->seoKey = 'shop';
-        if ($category) {
+        if ($selectedCollection) {
+            $items = $categoryService->collectionProducts($selectedCollection, $items);
+        } elseif ($category) {
             $items = array_values(array_filter($items, function ($item) use ($category) {
                 $categoryList = $item['categories'] ?? [$item['category'] ?? ''];
                 if (!is_array($categoryList)) {
@@ -96,7 +110,7 @@ final class PublicController extends BaseController {
                 ];
             }
         }
-        $this->render('public/shop', compact('items', 'categories', 'category'));
+        $this->render('public/shop', compact('items', 'categories', 'category', 'shopCollections', 'selectedCollection'));
     }
 
     public function categories(): void {

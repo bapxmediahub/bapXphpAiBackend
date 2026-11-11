@@ -36,14 +36,14 @@ query_examples:
   - "rg -n -B4 -A12 'type: \"skill\"' index.yaml"
   - "rg -n '<term>' docs/project-index.json map.mmd index.yaml"
 summary:
-  concepts: 340
-  relationships: 232
+  concepts: 343
+  relationships: 236
   by_type:
     blog: 14
     controller: 12
     doc: 35
     image: 89
-    route: 111
+    route: 114
     schema: 22
     service: 48
     skill: 9
@@ -1962,6 +1962,22 @@ concepts:
       - "CategoryService"
       - "AuthService"
     view: "admin/resource"
+  - id: "route:get__admin_collections"
+    type: "route"
+    title: "GET /admin/collections"
+    description: "admin.collections"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/admin/collections"
+    controller: "AdminController@collections"
+    services:
+      - "CategoryService"
+      - "ProductService"
+      - "AuthService"
+    view: "admin/collections"
   - id: "route:get__admin_consultation_analytics"
     type: "route"
     title: "GET /admin/consultation-analytics"
@@ -2870,6 +2886,41 @@ concepts:
       - "AuditLogService"
       - "AuthService"
     view: "admin/resource"
+  - id: "route:post__admin_collections_delete"
+    type: "route"
+    title: "POST /admin/collections/delete"
+    description: "admin.collections.delete"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/admin/collections/delete"
+    controller: "AdminController@deleteCollection"
+    services:
+      - "ResourceService"
+      - "CategoryService"
+      - "AuditLogService"
+      - "AuthService"
+    view: "admin/collections"
+  - id: "route:post__admin_collections_save"
+    type: "route"
+    title: "POST /admin/collections/save"
+    description: "admin.collections.save"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/admin/collections/save"
+    controller: "AdminController@saveCollection"
+    services:
+      - "ResourceService"
+      - "CategoryService"
+      - "ProductService"
+      - "AuditLogService"
+      - "AuthService"
+    view: "admin/collections"
   - id: "route:post__admin_contact_submissions_delete"
     type: "route"
     title: "POST /admin/contact_submissions/delete"
@@ -4336,6 +4387,9 @@ relationships:
   - from: "route:get__admin_categories"
     to: "controller:AdminController"
     relation: "handled_by"
+  - from: "route:get__admin_collections"
+    to: "controller:AdminController"
+    relation: "handled_by"
   - from: "route:get__admin_consultation_analytics"
     to: "controller:AdminController"
     relation: "handled_by"
@@ -4517,6 +4571,12 @@ relationships:
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:post__admin_categories_save"
+    to: "controller:AdminController"
+    relation: "handled_by"
+  - from: "route:post__admin_collections_delete"
+    to: "controller:AdminController"
+    relation: "handled_by"
+  - from: "route:post__admin_collections_save"
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:post__admin_contact_submissions_delete"
@@ -4716,6 +4776,9 @@ relationships:
     relation: "stores"
   - from: "service:PasswordResetService"
     to: "schema:users"
+    relation: "stores"
+  - from: "service:ProductService"
+    to: "schema:orders"
     relation: "stores"
   - from: "service:ProductService"
     to: "schema:products"
