@@ -72,7 +72,7 @@
                 <label for="order-status" style="display:block; font-size:0.78rem; font-weight:700; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:var(--space-xs);">Update Status</label>
                 <select id="order-status" name="status">
                     <?php foreach(['on_hold','confirmed','processing','shipped','delivered','cancelled'] as $status): ?>
-                        <option value="<?= e($status) ?>" <?= (($order['status'] ?? '') === $status ? 'selected' : '') ?>><?= e(ucfirst($status)) ?></option>
+                        <option value="<?= e($status) ?>" <?= (($order['status'] ?? '') === $status ? 'selected' : '') ?>><?= e(ucfirst(str_replace('_', ' ', $status))) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
