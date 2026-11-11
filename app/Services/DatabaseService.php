@@ -151,6 +151,54 @@ final class DatabaseService {
             throw $e;
         }
     }
+    /** Serialize order creation and invoice numbering on the database host. */
+    private function withOrderInvoiceLock(callable $operation): array {
+        $pdo = $this->db();
+        $lock = $pdo->query("SELECT GET_LOCK(CONCAT('sps:orders:', SHA1(DATABASE())), 5)");
+        if ((int)$lock->fetchColumn() !== 1) {
+            throw new \RuntimeException('Order persistence is busy. Please retry.');
+        }
+        try {
+            return $operation();
+        } finally {
+            $pdo->query("SELECT RELEASE_LOCK(CONCAT('sps:orders:', SHA1(DATABASE())))");
+        }
+    }
+
+    public function saveVerifiedOrder(array $order, bool $issueInvoice): array {
+        if ($this->isTestMode()) throw new \RuntimeException('Order writes are disabled in test mode.');
+        if ($this->isRemote()) {
+            return $this->remoteMutation('save_verified_order', 'orders', ['record' => $order, 'issue_invoice' => $issueInvoice])['result'];
+        }
+        return $this->withOrderInvoiceLock(function () use ($order, $issueInvoice): array {
+            $orders = $this->read('orders');
+            foreach ($orders as $existing) {
+                if (($existing['payment_id'] ?? '') === $order['payment_id']
+                    || (!empty($order['stripe_session_id']) && ($existing['stripe_session_id'] ?? '') === $order['stripe_session_id'])) {
+                    return ['record' => $existing, 'created' => false];
+                }
+            }
+            if ($issueInvoice) $order = array_merge($order, (new TaxService())->nextInvoice($orders));
+            return ['record' => $this->upsert('orders', $order), 'created' => true];
+        });
+    }
+
+    public function resolveOrderTaxReview(string $id, string $shippingState, array $settings): array {
+        if ($this->isTestMode()) throw new \RuntimeException('Order writes are disabled in test mode.');
+        if ($this->isRemote()) {
+            return $this->remoteMutation('resolve_order_tax_review', 'orders', ['id' => $id, 'state' => $shippingState, 'settings' => $settings])['result'];
+        }
+        return $this->withOrderInvoiceLock(function () use ($id, $shippingState, $settings): array {
+            $orders = $this->read('orders');
+            foreach ($orders as $order) {
+                if ((string)($order['id'] ?? '') !== $id) continue;
+                $updated = (new TaxService())->reviewedOrder($order, $orders, $shippingState, $settings);
+                return $this->upsert('orders', $updated);
+            }
+            throw new \InvalidArgumentException('Order not found.');
+        });
+    }
+
     public function upsert(string $table, array $record, string $key = 'id'): array {
         if ($this->isTestMode()) {
             $record['id'] ??= bin2hex(random_bytes(8));

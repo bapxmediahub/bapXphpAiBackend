@@ -87,6 +87,20 @@ final class RemoteDbController {
         }
         try {
             $store = $this->store;
+            if ($collection === 'orders' && $action === 'save_verified_order') {
+                $record = $input['record'] ?? null;
+                if (!is_array($record) || empty($record['id']) || empty($record['payment_id'])) {
+                    throw new \InvalidArgumentException('Order and payment identifiers are required.');
+                }
+                $result = $store->saveVerifiedOrder($record, ($input['issue_invoice'] ?? false) === true);
+                echo json_encode(['success' => true, 'result' => $result]);
+                return;
+            }
+            if ($collection === 'orders' && $action === 'resolve_order_tax_review') {
+                $result = $store->resolveOrderTaxReview((string)($input['id'] ?? ''), (string)($input['state'] ?? ''), $input['settings'] ?? []);
+                echo json_encode(['success' => true, 'result' => $result]);
+                return;
+            }
             if ($action === 'upsert') {
                 $record = $input['record'] ?? null;
                 if (!is_array($record) || empty($record['id'])) throw new \InvalidArgumentException('Record id is required.');

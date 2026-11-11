@@ -376,7 +376,6 @@ final class CommerceController extends BaseController {
         }, $orderItems);
         $settings = $testPorts === null ? (new SettingsService())->public() : ($testPorts['settings'])();
         $tax = $missingProduct ? null : (new TaxService())->snapshotForVerifiedPayment($itemsWithRates, 0, (string)($pendingOrder['shipping_state'] ?? ''), $settings);
-        $invoice = $tax !== null ? (new TaxService())->nextInvoice($existingOrders) : null;
         $localId = bin2hex(random_bytes(8));
         $order = array_merge([
             'id' => $localId,
@@ -403,13 +402,21 @@ final class CommerceController extends BaseController {
             'tax_review_reason' => $tax === null ? ($missingProduct ? TaxService::MISSING_PRODUCT_TAX_DETAILS : 'Missing or invalid delivery or supplier state at payment confirmation') : '',
             'created_at' => date('c'),
         ], $gatewayFields);
-        if ($tax !== null && $invoice !== null) {
+        if ($tax !== null) {
             unset($tax['total']); // Gateway-verified total remains authoritative.
-            $order = array_merge($order, $tax, $invoice);
+            $order = array_merge($order, $tax);
         }
-        if ($testPorts === null) $db->upsert('orders', $order);
-        else ($testPorts['saveOrder'])($order);
-        try { if ($testPorts === null) (new MailQueueService())->enqueuePaymentConfirmation($order); }
+        if ($testPorts === null) {
+            $saved = $db->saveVerifiedOrder($order, $tax !== null);
+            $order = $saved['record'];
+            $localId = (string)$order['id'];
+            $created = $saved['created'];
+        } else {
+            if ($tax !== null) $order = array_merge($order, (new TaxService())->nextInvoice($existingOrders));
+            ($testPorts['saveOrder'])($order);
+            $created = true;
+        }
+        try { if ($testPorts === null && $created) (new MailQueueService())->enqueuePaymentConfirmation($order); }
         catch (\Throwable $error) { error_log('Payment confirmation mail could not be queued.'); }
         unset($_SESSION['pending_order'], $_SESSION['cart']);
         return $localId;
