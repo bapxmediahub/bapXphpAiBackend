@@ -36,6 +36,10 @@ final class SupportBotService {
             ? $this->fallbackReply($message, $context)
             : null;
         if ($reply !== null) $outcome = 'private_account';
+        if ($reply === null && module_on('shop')) {
+            $reply = self::catalogFactReply($message, $context['site']['products'] ?? []);
+            if ($reply !== null) $outcome = 'local';
+        }
         if ($reply === null) {
             $aiReply = $this->modelReply($message, $context, $reason);
             if ($aiReply !== null) {
@@ -201,6 +205,27 @@ final class SupportBotService {
             error_log('Article context failed: ' . $e->getMessage());
             return [];
         }
+    }
+
+    /** Exact catalog questions can be answered with the same current data as the shop. */
+    public static function catalogFactReply(string $message, array $products): ?string {
+        foreach ($products as $product) {
+            $name = trim((string)($product['name'] ?? ''));
+            $slug = (string)($product['slug'] ?? '');
+            if ($name === '' || $slug === '') continue;
+            $alias = '(?:' . preg_quote($name, '~') . '|' . preg_quote($slug, '~') . ')';
+            $describe = preg_match('~^what does (?:the )?' . $alias . ' depict(?:,? and what is its (?:current )?price)?[?!.]*$~iu', $message);
+            $priceOnly = preg_match('~^(?:what is the (?:current )?price of|how much is) (?:the )?' . $alias . '[?!.]*$~iu', $message);
+            if (!$describe && !$priceOnly) continue;
+            $details = trim(strip_tags((string)($product['description'] ?? '')));
+            $price = $product['price'] ?? null;
+            $wantsPrice = $priceOnly || preg_match('/\bprice[?!.]*$/i', $message);
+            if (($describe && $details === '') || ($wantsPrice && (!is_numeric($price) || (float)$price <= 0))) return null;
+            $reply = $describe ? $name . ': ' . mb_strimwidth($details, 0, 320, '…') : $name . '.';
+            if ($wantsPrice) $reply .= ' Current price: ₹' . number_format((float)$price, 2) . '.';
+            return $reply . ' View the product at /product/' . rawurlencode($slug) . '.';
+        }
+        return null;
     }
 
     private function publicGuestReply(string $message, array $context): string {

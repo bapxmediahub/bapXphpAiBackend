@@ -2510,6 +2510,23 @@ $tests['order email renders purchased quantities and escapes product text'] = fu
     assertSame('', App\Services\MailQueueService::orderItemsHtml([]), 'Missing order lines are not fabricated');
 };
 
+$tests['support answers exact catalog facts without needing the model'] = function (): void {
+    $product = ['name' => 'Sri Karuppasamy Pendant', 'slug' => 'karuppasami-dollar',
+        'description' => 'Depicts Sri Karuppasamy seated on a horse.', 'price' => 899];
+    $reply = \App\Services\SupportBotService::catalogFactReply(
+        'What does the Sri Karuppasamy Pendant depict, and what is its current price?', [$product]
+    );
+    assertTrue(str_contains((string)$reply, 'horse') && str_contains((string)$reply, '₹899.00')
+        && str_contains((string)$reply, '/product/karuppasami-dollar'), 'Use the stored description, price and link');
+    assertSame(null, \App\Services\SupportBotService::catalogFactReply(
+        'Compare the Sri Karuppasamy Pendant with a mala.', [$product]
+    ), 'Open comparisons still go to the model');
+    $product['price'] = null;
+    assertSame(null, \App\Services\SupportBotService::catalogFactReply(
+        'How much is the Sri Karuppasamy Pendant?', [$product]
+    ), 'Missing prices must not be invented');
+};
+
 $tests['support context selects a named product before applying the catalogue cap'] = function (): void {
     $catalogue = array_fill(0, 28, ['name' => 'Unrelated Ring', 'slug' => 'unrelated-ring']);
     $pendant = ['name' => 'Sri Karuppasamy Pendant', 'slug' => 'karuppasami-dollar'];
