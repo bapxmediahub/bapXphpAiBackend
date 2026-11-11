@@ -188,20 +188,22 @@ final class AdminController extends BaseController {
             $modelConfig = $secrets->getModelConfig();
             $context = (new \App\Services\AgentContextService())->forOwnerAnalytics()
                 . ($attachments['context'] !== '' ? "\n\nDocuments the owner attached with @:" . $attachments['context'] : '');
+            $reason = null;
             if (!empty($modelConfig['apiKey'])) {
-                $answer = $this->callAiApi($modelConfig, $message, $context);
+                $answer = $this->callAiApi($modelConfig, $message, $context, $reason);
             } else {
+                $reason = 'not_configured';
                 $answer = "AI model not configured. Go to Admin → Integrations and set api_endpoint, ai_api_key, and agent_model.";
             }
             $failed = empty($modelConfig['apiKey']) || \App\Services\AiClient::isError($answer);
-            (new AuditLogService())->agentRun('admin', $failed ? 'error' : 'model', $startedAt);
+            (new AuditLogService())->agentRun('admin', $failed ? 'error' : ($reason === 'rejected_response' ? 'fallback' : 'model'), $startedAt, $reason);
             if ($failed) {
                 $this->jsonResponse(['error'=>$answer, 'missing'=>$attachments['missing']],502);
                 return;
             }
             $this->jsonResponse(['answer'=>$answer, 'missing'=>$attachments['missing']]);
         } catch (\Throwable $e) {
-            (new AuditLogService())->agentRun('admin', 'error', $startedAt);
+            (new AuditLogService())->agentRun('admin', 'error', $startedAt, 'internal_error');
             $this->jsonResponse(['error'=>'Agent error: '.$e->getMessage()],500);
         }
     }
@@ -230,7 +232,7 @@ final class AdminController extends BaseController {
      * admin had configured here. This method keeps the admin's prompt and its
      * error-to-screen behaviour.
      */
-    private function callAiApi(array $config, string $message, string $context): string {
+    private function callAiApi(array $config, string $message, string $context, ?string &$reason = null): string {
         // "Answer directly / give only the final answer" produced a bare "5" for
         // "how many enquiries came for orders" — and that 5 was the order count from
         // the statistics blob, not enquiries, of which there are none. A number with no
@@ -255,7 +257,9 @@ final class AdminController extends BaseController {
         $client = new \App\Services\AiClient();
         $tools = new \App\Services\AgentToolRegistry(ownerQuestion: $message);
         $answer = $client->completeWithTools($prompt, $tools);
+        $reason = $client->failureCategory();
         if (\App\Services\AiClient::isError($answer)) return $answer;
+        if (trim($answer) === '') return 'AI request failed: the provider returned no answer. Please try again.';
 
         // A bare figure is the failure this persona exists to prevent, so it is caught
         // rather than trusted. One retry, then whatever comes back is shown — an
@@ -266,9 +270,16 @@ final class AdminController extends BaseController {
                 . "Say what that number counts, which data you checked to get it, and how you interpreted the question.",
                 $tools
             );
-            if (!\App\Services\AiClient::isError($retry) && trim($retry) !== '') $answer = $retry;
+            if (!\App\Services\AiClient::isError($retry) && trim($retry) !== '') {
+                $answer = $retry;
+                $reason = $client->failureCategory();
+            } // A failed retry is discarded: the original answer is still shown.
         }
-        return $this->cleanAnswer($answer);
+        $clean = $this->cleanAnswer($answer);
+        if ($clean === 'I could not produce a clear answer to that. Try asking it a different way.') {
+            $reason = 'rejected_response';
+        }
+        return $clean;
     }
 
     /** A reply that is only a number, with nothing saying what it counts. */
