@@ -152,8 +152,8 @@ final class AgentToolRegistry
                 default => ['error' => 'No such tool: ' . $name],
             };
         } catch (\Throwable $e) {
-            error_log('Agent tool ' . $name . ' failed: ' . $e->getMessage());
-            return ['error' => 'That lookup failed: ' . $e->getMessage()];
+            error_log('Agent tool ' . $name . ' failed (' . get_class($e) . ')');
+            return ['error' => 'That lookup is temporarily unavailable.'];
         }
     }
 

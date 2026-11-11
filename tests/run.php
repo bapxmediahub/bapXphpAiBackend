@@ -2301,6 +2301,25 @@ $tests['monitoring attributes attempts to the latest provider run even after a l
     ], $summary['admin']['latest_provider_run'], 'Monitoring retains the chronological provider sequence and only operational metadata');
 };
 
+$tests['owner tools keep unexpected exception details out of model results'] = function (): void {
+    $registry = new App\Services\AgentToolRegistry();
+    $query = new class implements Stringable {
+        public function __toString(): string {
+            throw new RuntimeException('private fixture marker');
+        }
+    };
+    assertSame(
+        ['error' => 'That lookup is temporarily unavailable.'],
+        $registry->run('search_articles', ['query' => $query]),
+        'Unexpected exceptions should produce a bounded tool error'
+    );
+    assertSame(
+        ['error' => 'Give something to search for.'],
+        $registry->run('search_articles', ['query' => '']),
+        'An expected validation error should remain useful'
+    );
+};
+
 $tests['owner aggregate questions answer from allowlisted local sales data'] = function (): void {
     $summary = [
         'orders' => 4,
