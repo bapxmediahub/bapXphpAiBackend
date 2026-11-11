@@ -3,10 +3,10 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 117,
+        "routes": 120,
         "controllers": 12,
         "services": 48,
-        "views": 45,
+        "views": 46,
         "collections": 22
     },
     "routes": [
@@ -48,6 +48,40 @@
             "view": "account/orders",
             "services": [
                 "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/account/dashboard/addresses",
+            "name": "account.dashboard.addresses",
+            "controller": "AccountController@addresses",
+            "view": "account/addresses",
+            "services": [
+                "AuthService",
+                "AddressService",
+                "TaxService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/account/dashboard/addresses/delete",
+            "name": "account.addresses.delete",
+            "controller": "AccountController@deleteAddress",
+            "view": "account/addresses",
+            "services": [
+                "AuthService",
+                "AddressService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/account/dashboard/addresses/save",
+            "name": "account.addresses.save",
+            "controller": "AccountController@saveAddress",
+            "view": "account/addresses",
+            "services": [
+                "AuthService",
+                "AddressService"
             ]
         },
         {
@@ -1377,6 +1411,7 @@
     ],
     "views": [
         "account/_nav",
+        "account/addresses",
         "account/install",
         "account/invoice",
         "account/order",
