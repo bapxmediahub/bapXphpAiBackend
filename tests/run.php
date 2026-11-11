@@ -2933,6 +2933,12 @@ $tests['Enterprise ticket follow-up retains the previous report period'] = stati
         $answer = $tools->aggregateAnswer($question);
         assertTrue(str_contains($answer, 'answered support tickets about refund') && str_contains($answer, '2026-09-01 to 2026-09-07'),
             'Follow-up preserves the prior date range and applies the new status');
+        $qualified = 'How many tickets in that same period were answered?';
+        $qualifiedTools = new \App\Services\AgentToolRegistry(ownerQuestion: $qualified, previousReport: $tools->reportContext());
+        assertTrue(str_contains($qualifiedTools->aggregateAnswer($qualified), 'answered support tickets about refund'), 'A status after the period keeps the report scope');
+        $orders = new \App\Services\AgentToolRegistry(ownerQuestion: 'How many orders this month?');
+        $orders->aggregateAnswer('How many orders this month?');
+        assertSame(date('Y-m-01'), $orders->reportContext()['from'] ?? null, 'Direct order count establishes a report period');
         $fresh = new \App\Services\AgentToolRegistry(ownerQuestion: $question);
         assertTrue(str_contains($fresh->aggregateAnswer($question), 'Which dates'), 'A fresh chat asks for dates');
         $comparison = 'Compare sales this month with the same period last year';

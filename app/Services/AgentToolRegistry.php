@@ -80,7 +80,11 @@ final class AgentToolRegistry
 
     private static function refersToPreviousPeriod(string $question): bool
     {
-        return (bool)preg_match('/\b(?:that|(?:the |that )?same) (?:date range|period|dates)[?!.\s]*$/iD', $question);
+        return (bool)preg_match(
+            '/\b(?:that|(?:the |that )?same) (?:date range|period|dates)\b'
+            . '(?!\s+(?:(?:last|this|next|previous|prior)\s+(?:week|month|quarter|year)|(?:in|of)\s+\d{4}))/i',
+            $question
+        );
     }
 
     public function __construct(
@@ -304,10 +308,14 @@ final class AgentToolRegistry
         if (self::refersToPreviousPeriod($question)) {
             $context = $this->followUpContext();
             if ($context === null) return 'Which dates should I use? The previous answer did not establish one report period.';
+            $status = '(open|answered|closed|unanswered)';
+            $period = '(?:in|during|for) (?:that|(?:the |that )?same) (?:period|date range|dates)';
+            $statusFirst = '(?:how many|count) (?:support tickets )?(?:were |are )?' . $status . '(?: support tickets?)? ' . $period;
+            $periodFirst = 'how many (?:support )?tickets ' . $period . ' (?:were|are) ' . $status;
             if ($context['tool'] === 'support_enquiries'
-                && preg_match('/^\s*(?:and\s+)?(?:how many|count)\s+(?:support tickets\s+)?(?:were |are )?(open|answered|closed|unanswered)(?: support tickets?)?\s+(?:in|during|for)\s+(?:that|(?:the |that )?same)\s+(?:period|date range|dates)[?!.\s]*$/iD', $question, $match)) {
+                && preg_match('/^\s*(?:and )?(?:' . $statusFirst . '|' . $periodFirst . ')[?!.\s]*$/iD', $question, $match)) {
                 $result = $this->run('support_enquiries', [
-                    'status' => strtolower($match[1]),
+                    'status' => strtolower($match[1] ?: $match[2]),
                     'from' => $context['from'],
                     'to' => $context['to'],
                 ] + (isset($context['topic']) ? ['topic' => $context['topic']] : []));
@@ -335,16 +343,22 @@ final class AgentToolRegistry
     private function countOrders(int $days): int
     {
         $orders = $this->orders->all();
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('Asia/Kolkata'));
+        $since = match (true) {
+            $days >= 36500 => new \DateTimeImmutable('0001-01-01', $now->getTimezone()),
+            $days === 0 => $now->modify('first day of this month midnight'),
+            default => $now->modify('midnight')->modify('-' . ($days - 1) . ' days'),
+        };
+        $context = ['tool' => 'sales_summary', 'from' => $since->format('Y-m-d'), 'to' => $now->format('Y-m-d')];
+        $this->reportContexts[implode(':', $context)] = $context;
         if ($days >= 36500) return count($orders);
 
-        $now = new \DateTimeImmutable();
-        $since = $days === 0 ? $now->modify('first day of this month midnight') : $now->modify("-{$days} days");
         $count = 0;
         foreach ($orders as $order) {
             $created = trim((string)($order['created_at'] ?? ''));
             if ($created === '') continue;
             try {
-                $date = new \DateTimeImmutable($created);
+                $date = new \DateTimeImmutable($created, $now->getTimezone());
                 if ($date >= $since && $date <= $now) $count++;
             } catch (\Exception) {
                 continue;
