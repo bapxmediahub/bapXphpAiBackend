@@ -61,7 +61,7 @@
         <?php if (!empty($order['invoice_number'])): ?>
             <p><strong>Invoice <?= e((string)$order['invoice_number']) ?></strong></p>
             <p><a class="btn btn-outline" href="/admin/orders/<?= e(rawurlencode((string)$order['id'])) ?>/invoice">View invoice</a>
-            <a class="btn btn-primary" href="/admin/orders/<?= e(rawurlencode((string)$order['id'])) ?>/invoice?download=1">Download invoice (HTML)</a></p>
+            <a class="btn btn-primary" download href="/admin/orders/<?= e(rawurlencode((string)$order['id'])) ?>/invoice?download=1">Download invoice (HTML)</a></p>
             <p>Open the downloaded invoice and choose Print to save it as a PDF.</p>
         <?php elseif (empty($order['tax_review_required'])): ?>
             <p>An invoice is available after payment is confirmed.</p>
