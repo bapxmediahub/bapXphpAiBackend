@@ -572,6 +572,9 @@ final class AiClient
             CURLOPT_TIMEOUT_MS => $timeoutMs,
             CURLOPT_CONNECTTIMEOUT_MS => min(10000, $timeoutMs),
         ]);
+        // A provider wait can exceed the database idle timeout. The next tool
+        // lookup or audit write should open a fresh MySQL connection.
+        DatabaseService::releaseIdleConnection();
         $body = curl_exec($ch);
         $this->transportError = curl_errno($ch);
         $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);

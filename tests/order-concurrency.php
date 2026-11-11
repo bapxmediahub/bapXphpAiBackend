@@ -38,7 +38,20 @@ if (($argv[1] ?? '') === 'worker') {
     exit;
 }
 
+$beforeWait = $store->connection();
+$beforeWait->beginTransaction();
+DatabaseService::releaseIdleConnection();
+if ($store->connection() !== $beforeWait || !$beforeWait->inTransaction()) {
+    throw new RuntimeException('Releasing an idle connection must preserve an active transaction.');
+}
+$beforeWait->rollBack();
+DatabaseService::releaseIdleConnection();
 $pdo = $store->connection();
+if ($pdo === $beforeWait || (new DatabaseService(true))->connection() !== $pdo) {
+    throw new RuntimeException('The next lookup must reconnect and reuse the fresh request connection.');
+}
+unset($beforeWait);
+
 $pdo->exec('CREATE TABLE orders (
     id VARCHAR(64) PRIMARY KEY, _data JSON NOT NULL, _owner VARCHAR(255),
     _status VARCHAR(64), _created_at VARCHAR(40), _updated_at VARCHAR(40)
