@@ -373,7 +373,11 @@ final class AdminController extends BaseController {
             }
             $secrets = new SecretService();
             $modelConfig = $secrets->getModelConfig();
-            $tools = new \App\Services\AgentToolRegistry(ownerQuestion: $message);
+            $previousReport = $_POST['previous_report'] ?? null;
+            $tools = new \App\Services\AgentToolRegistry(
+                ownerQuestion: $message,
+                previousReport: is_array($previousReport) ? $previousReport : null
+            );
             // Straight aggregate questions do not need a model round trip. The same
             // allowlisted sales tool supplies a deterministic, privacy-safe answer.
             $localAnswer = $attachments['context'] === '' ? $tools->aggregateAnswer($message) : null;
@@ -389,6 +393,11 @@ final class AdminController extends BaseController {
             $context = $attachments['context'] !== ''
                 ? "Documents the owner attached with @ (reference material):\n" . $attachments['context']
                 : '';
+            if (($period = $tools->followUpContext()) !== null) {
+                $context .= "\nPrevious report: {$period['tool']}, {$period['from']} to {$period['to']} inclusive. "
+                    . "Use these dates for lookups referring to that same period.";
+                if (isset($period['topic'])) $context .= " The previous ticket topic was {$period['topic']}.";
+            }
             $reason = null;
             $attempts = [];
             if (!empty($modelConfig['apiKey'])) {
@@ -454,6 +463,8 @@ final class AdminController extends BaseController {
             'elapsed_ms' => (int)round((microtime(true) - $startedAt) * 1000),
             'tools' => $tools?->activity() ?? [],
             'sources' => $tools?->sourceLinks() ?? [],
+            'report_context' => $tools?->reportContext(),
+            'report_context_changed' => $tools?->hasReportContext() ?? false,
             'attempts' => $safeAttempts,
         ];
     }
