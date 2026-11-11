@@ -16,6 +16,7 @@
         $money = static fn($amount): string => is_numeric($amount)
             ? '₹' . number_format((float)$amount, 2)
             : 'Not recorded';
+        $refundSummary = \App\Services\OrderService::refundSummary($order);
         ?>
         <div class="admin-detail-grid">
             <div>
@@ -37,6 +38,10 @@
             <div>
                 <strong>Payment</strong>
                 <p><?= e($order['payment_id'] ?? 'Not recorded') ?></p>
+            </div>
+            <div>
+                <strong>Refund status</strong>
+                <p><?= e($refundSummary['label']) ?><?php if ($refundSummary['state'] !== 'none'): ?> · <?= e($money($refundSummary['refunded_paise'] / 100)) ?><?php endif; ?></p>
             </div>
             <div>
                 <strong>Shipping Address</strong>
@@ -173,14 +178,21 @@
         </div>
         <?php if (!empty($order['payment_id'])): ?>
             <h3>Refunds</h3>
+            <p><strong><?= e($refundSummary['label']) ?></strong>
+                · Refunded <?= e($money($refundSummary['refunded_paise'] / 100)) ?>
+                · Remaining paid <?= e($money($refundSummary['remaining_paise'] / 100)) ?></p>
             <?php foreach ($order['verified_refunds'] ?? [] as $refund): ?>
                 <p><?= e($refund['id']) ?> · <?= e($money($refund['amount_paise'] / 100)) ?></p>
             <?php endforeach; ?>
+            <?php if ($refundSummary['state'] !== 'full'): ?>
             <form class="admin-form" method="post" action="/admin/orders/<?= e(rawurlencode((string)$order['id'])) ?>/refund">
                 <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
                 <label>Completed gateway refund reference <input name="refund_id" required maxlength="128"></label>
                 <button class="btn btn-secondary" type="submit">Verify and record refund</button>
             </form>
+            <?php else: ?>
+                <p>This order is fully refunded; no additional refund can be recorded.</p>
+            <?php endif; ?>
         <?php endif; ?>
     <?php endif; ?>
 </div>
