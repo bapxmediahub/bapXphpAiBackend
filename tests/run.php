@@ -756,6 +756,16 @@ $tests['home temple guide uses admin driven dissolve carousel'] = function (): v
     assertTrue(str_contains($css, 'transition: opacity 1.6s ease-in-out'), 'Home temple carousel should use a slow smooth dissolve transition');
 };
 
+$tests['temple listing and metadata are location neutral'] = function (): void {
+    $view = file_get_contents(app_path('views/public/temples.php'));
+    $seo = file_get_contents(app_path('app/Services/SeoService.php'));
+    assertTrue(str_contains($view, '>Our Temples</h1>'), 'Temple listing should use a location-neutral heading');
+    assertTrue(str_contains($view, 'across Tamil Nadu'), 'Temple listing should welcome records from across Tamil Nadu');
+    assertTrue(!str_contains($view, 'Our Temples in Chennai'), 'Temple listing should not claim all temples are in Chennai');
+    assertTrue(!str_contains($seo, "'title' => 'Temples in Chennai"), 'Temple metadata should not claim all temples are in Chennai');
+    assertTrue(str_contains($seo, "'title' => 'Temples in Tamil Nadu"), 'Temple metadata should describe the statewide listing');
+};
+
 $tests['review service stores five star reviews and calculates averages'] = function (): void {
     $service = new ReviewService();
     assertTrue(method_exists($service, 'saveAstrologerReview'), 'ReviewService should have saveAstrologerReview');
@@ -1410,6 +1420,21 @@ $tests['a product can be hidden without deleting it, and an offer expires'] = fu
     $source = file_get_contents(app_path('app/Services/ProductService.php'));
     assertTrue(str_contains($source, 'if (!$includeHidden && !empty($item[\'is_hidden\'])) return null;'),
         'findBySlug should withhold a hidden product unless explicitly asked');
+};
+
+$tests['product descriptions cannot contradict structured zodiac facts'] = function (): void {
+    $wrong = [
+        'description' => 'Dhanu Rasi Pushparagam is a Yellow Sapphire associated with Sagittarius.',
+        'specifications' => ['Gemstone' => 'Pavazham (Red Coral)', 'Rasi' => 'Vrishchik (Scorpio)'],
+    ];
+    $right = [
+        'description' => 'A Viruchigam Rasi Pavazham ring with a distinctive Red Coral stone.',
+        'specifications' => ['Gemstone' => 'Pavazham (Red Coral)', 'Rasi' => 'Vrishchik (Scorpio)'],
+    ];
+    assertTrue(str_contains((string)\App\Services\ProductService::contentConflict($wrong), 'conflicts'), 'A pasted Dhanu or Pushparagam description should be rejected for a Vrishchik red-coral product');
+    assertSame(null, \App\Services\ProductService::contentConflict($right), 'A description matching the structured zodiac and gemstone facts should pass');
+    $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
+    assertTrue(str_contains($controller, 'ProductService::contentConflict($data)'), 'Admin product saves should apply the structured-content guard');
 };
 
 $tests['admin forms constrain populated controls to mobile grid tracks'] = function (): void {
@@ -2150,10 +2175,18 @@ $tests['best sellers count verified non-cancelled product quantities'] = functio
         ['payment_id'=>'pay_2','status'=>'delivered','items'=>[['slug'=>'a','qty'=>3]]],
         ['payment_id'=>'','status'=>'confirmed','items'=>[['slug'=>'b','qty'=>100]]],
         ['payment_id'=>'pay_3','status'=>'cancelled','items'=>[['slug'=>'b','qty'=>100]]],
+        ['payment_id'=>'   ','status'=>'confirmed','items'=>[['slug'=>'b','qty'=>100]]],
+        ['payment_id'=>'pay_4','status'=>'REFUNDED','items'=>[['slug'=>'b','qty'=>100]]],
+        ['payment_id'=>'pay_5','status'=>'failed','items'=>[['slug'=>'b','qty'=>100]]],
     ];
     $ranked = \App\Services\ProductService::rankBestSellers($products, $orders);
     assertTrue(array_column($ranked, 'slug') === ['a','b'], 'Only verified non-cancelled quantities should rank visible products');
     assertTrue(\App\Services\ProductService::rankBestSellers($products, []) === [], 'No orders should produce no unsupported best-seller claims');
+};
+
+$tests['project map includes orders used by bestseller query'] = function (): void {
+    $dependencies = \App\Services\ProjectMapService::serviceCollections();
+    assertTrue(in_array('orders', $dependencies['ProductService'] ?? [], true), 'Static SQL reads must remain visible in the generated service map');
 };
 
 $tests['special collection selection retains only selected visible products'] = function (): void {

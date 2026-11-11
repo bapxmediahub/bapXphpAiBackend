@@ -544,6 +544,11 @@ final class ProjectMapService {
         $mapping = [];
         static $collectionPattern = '/(\$this->store\s*->\s*(?:find|read|create|write|upsert|delete)\s*\(\s*)([\'"])([a-z_]+)\2\s*[\),]/';
         static $resourcePattern = '/new\s+ResourceService\s*\(\s*([\'"])([a-z_]+)\1\s*\)/';
+        // Static SQL reads are collection dependencies too. Restrict the result to
+        // canonical collections so aliases and unrelated tables are not mapped.
+        static $sqlPattern = '/\$this->store\s*->\s*query\s*\(\s*"[^"]*?\bFROM\s+`?([a-z_]+)`?/i';
+        $schema = require app_path('storage/schema/collections.php');
+        $knownCollections = array_keys($schema['collections'] ?? []);
 
         foreach (self::phpFiles(app_path('app/Services')) as $file) {
             $content = file_get_contents($file);
@@ -553,6 +558,11 @@ final class ProjectMapService {
             preg_match_all($collectionPattern, $content, $direct, PREG_SET_ORDER);
             foreach ($direct as $m) {
                 $collections[$m[3]] = true;
+            }
+            preg_match_all($sqlPattern, $content, $sqlReads, PREG_SET_ORDER);
+            foreach ($sqlReads as $m) {
+                $collection = strtolower($m[1]);
+                if (in_array($collection, $knownCollections, true)) $collections[$collection] = true;
             }
 
             if ($collections) {

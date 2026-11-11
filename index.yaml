@@ -506,7 +506,7 @@ concepts:
   - id: "doc:pages/temples"
     type: "doc"
     title: "Temples Page"
-    description: "Route /temples - show JSON-backed temple entries with image, address, pooja details, and detail links."
+    description: "Route /temples - show MySQL-backed temple entries with image, address, pooja details, and detail links."
     resource: "docs/pages/temples.md"
     tags:
       - "page"
