@@ -93,7 +93,7 @@ final class AdminController extends BaseController {
         foreach ($orders as $item) {
             if (($item['id'] ?? '') === $id) { $order = $item; break; }
         }
-        $this->render('admin/detail',['pageTitle' => 'Order '.$id, 'title' => 'Order '.$id, 'order' => $order]);
+        $this->render('admin/detail',['pageTitle' => 'Order '.$id, 'title' => 'Order '.$id, 'order' => $order, 'taxStates' => \App\Services\TaxService::states()]);
     }
     /** Issued invoice snapshots are private and must not change with today's settings. */
     public function orderInvoice(string $id): void {
@@ -153,6 +153,22 @@ final class AdminController extends BaseController {
             $this->flash($e->getMessage(),'error');
         } catch (\Throwable) {
             $this->flash('Unable to update order status.','error');
+        }
+        $this->redirect('/admin/orders/'.$id);
+    }
+    public function resolveOrderTaxReview(string $id): void{
+        try {
+            $updated = (new OrderService())->resolveTaxReview($id, (string)($_POST['shipping_state'] ?? ''), (new SettingsService())->public());
+            (new AuditLogService())->record('save', 'order.tax-review', $id, [
+                'shipping_state' => $updated['shipping_state'] ?? '',
+                'invoice_number' => $updated['invoice_number'] ?? '',
+            ]);
+            $this->flash('Delivery state corrected and invoice issued.', 'success');
+        } catch (\InvalidArgumentException $error) {
+            $this->flash($error->getMessage(), 'error');
+        } catch (\Throwable $error) {
+            error_log('Tax review recovery failed for order ' . $id . ': ' . $error->getMessage());
+            $this->flash('Unable to issue the invoice. Check the order and GST settings, then try again.', 'error');
         }
         $this->redirect('/admin/orders/'.$id);
     }

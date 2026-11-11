@@ -36,14 +36,14 @@ query_examples:
   - "rg -n -B4 -A12 'type: \"skill\"' index.yaml"
   - "rg -n '<term>' docs/project-index.json map.mmd index.yaml"
 summary:
-  concepts: 344
-  relationships: 238
+  concepts: 345
+  relationships: 239
   by_type:
     blog: 14
     controller: 12
     doc: 35
     image: 89
-    route: 115
+    route: 116
     schema: 22
     service: 48
     skill: 9
@@ -2115,6 +2115,7 @@ concepts:
     services:
       - "OrderService"
       - "ShippingService"
+      - "TaxService"
       - "AuthService"
     view: "admin/detail"
   - id: "route:get__admin_orders__id__invoice"
@@ -3081,6 +3082,24 @@ concepts:
     services:
       - "OrderService"
       - "MailQueueService"
+      - "AuditLogService"
+      - "AuthService"
+    view: "admin/detail"
+  - id: "route:post__admin_orders__id__tax_review"
+    type: "route"
+    title: "POST /admin/orders/{id}/tax-review"
+    description: "admin.order.tax-review"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/admin/orders/{id}/tax-review"
+    controller: "AdminController@resolveOrderTaxReview"
+    services:
+      - "OrderService"
+      - "TaxService"
+      - "SettingsService"
       - "AuditLogService"
       - "AuthService"
     view: "admin/detail"
@@ -4623,6 +4642,9 @@ relationships:
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:post__admin_orders__id__status"
+    to: "controller:AdminController"
+    relation: "handled_by"
+  - from: "route:post__admin_orders__id__tax_review"
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:post__admin_products_delete"

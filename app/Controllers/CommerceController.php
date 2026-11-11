@@ -388,7 +388,9 @@ final class CommerceController extends BaseController {
             'shipping_city' => $pendingOrder['shipping_city'],
             'shipping_pincode' => $pendingOrder['shipping_pincode'],
             'shipping_state' => $pendingOrder['shipping_state'] ?? '',
-            'items' => $orderItems,
+            // Preserve the rate/HSN/unit-price inputs even when state is unavailable,
+            // so a later reviewed invoice does not depend on changed catalogue data.
+            'items' => $itemsWithRates,
             'coupon_code' => $pendingOrder['coupon_code'] ?? '',
             'discount' => $pendingOrder['discount'] ?? 0,
             'customer_gstin' => $pendingOrder['customer_gstin'] ?? '',
