@@ -2527,6 +2527,19 @@ $tests['support answers exact catalog facts without needing the model'] = functi
     ), 'Missing prices must not be invented');
 };
 
+$tests['support comparison uses two distinct catalog examples'] = function (): void {
+    $products = [
+        ['name' => 'Pendant with Malai', 'slug' => 'with-malai', 'description' => 'Includes a five-metal chain.'],
+        ['name' => 'Sri Karuppasamy Pendant', 'slug' => 'karuppasami-dollar', 'description' => 'Depicts the deity on a horse.'],
+    ];
+    $question = 'Can you explain the difference between a pendant and a mala for everyday devotional use?';
+    $reply = \App\Services\SupportBotService::catalogComparisonReply($question, $products);
+    assertTrue(str_contains((string)$reply, 'five-metal chain') && str_contains((string)$reply, 'deity on a horse'),
+        'Both examples must use their stored facts');
+    assertSame(null, \App\Services\SupportBotService::catalogComparisonReply($question, [$products[0]]),
+        'One product cannot stand in for both types');
+};
+
 $tests['support context selects a named product before applying the catalogue cap'] = function (): void {
     $catalogue = array_fill(0, 28, ['name' => 'Unrelated Ring', 'slug' => 'unrelated-ring']);
     $pendant = ['name' => 'Sri Karuppasamy Pendant', 'slug' => 'karuppasami-dollar'];

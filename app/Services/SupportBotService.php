@@ -37,7 +37,8 @@ final class SupportBotService {
             : null;
         if ($reply !== null) $outcome = 'private_account';
         if ($reply === null && module_on('shop')) {
-            $reply = self::catalogFactReply($message, $context['site']['products'] ?? []);
+            $products = $context['site']['products'] ?? [];
+            $reply = self::catalogFactReply($message, $products) ?? self::catalogComparisonReply($message, $products);
             if ($reply !== null) $outcome = 'local';
         }
         if ($reply === null) {
@@ -227,6 +228,30 @@ final class SupportBotService {
             return $reply . ' View the product at /product/' . rawurlencode($slug) . '.';
         }
         return null;
+    }
+
+    public static function catalogComparisonReply(string $message, array $products): ?string {
+        $question = '~^(?:(?:can you explain )?the difference between|how does) (?:a )?pendant (?:and|differ from) (?:a )?mala(?:i)?(?: for everyday devotional use)?[?!.]*$~i';
+        $commonQuestion = '~^what(?: is|\x27s) the difference between (?:a )?pendant and (?:a )?mala(?:i)?(?: for everyday devotional use)?[?!.]*$~i';
+        if (!preg_match($question, $message) && !preg_match($commonQuestion, $message)) return null;
+
+        $examples = [];
+        foreach ($products as $product) {
+            $name = trim((string)($product['name'] ?? ''));
+            $slug = trim((string)($product['slug'] ?? ''));
+            $details = trim(strip_tags((string)($product['description'] ?? '')));
+            if ($name === '' || $slug === '' || $details === '') continue;
+            $example = $name . ': ' . mb_strimwidth($details, 0, 300, '…') . ' /product/' . rawurlencode($slug);
+            if (preg_match('/\bmalai?s?\b|\bmalas?\b/i', $name)) {
+                $examples['mala'] ??= $example;
+            } elseif (preg_match('/\bpendant\b/i', $name)) {
+                $examples['pendant'] ??= $example;
+            }
+        }
+        if (!isset($examples['pendant'], $examples['mala'])) return null;
+        return "Here’s how two listings in our shop differ in design.\n"
+            . 'Pendant example — ' . $examples['pendant'] . "\n"
+            . 'Mala example — ' . $examples['mala'];
     }
 
     private function publicGuestReply(string $message, array $context): string {
