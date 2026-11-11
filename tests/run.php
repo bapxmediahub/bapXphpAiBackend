@@ -2136,6 +2136,7 @@ $tests['agent monitoring counts bounded outcomes without treating fallbacks as m
     ];
     $rows = App\Services\AuditLogService::agentSummary([
         $event('support', 'model', 100), $event('support', 'fallback', 300),
+        $event('admin', 'local', 40),
         $event('support', 'private_account', 50), $event('admin', 'error', 500),
         $event('admin', 'draft', 200), $event('support', 'model', 1000, '2026-09-23T11:00:00Z'),
         $event('support', 'model', 1000, '2026-09-26T11:00:00Z'),
@@ -2145,10 +2146,27 @@ $tests['agent monitoring counts bounded outcomes without treating fallbacks as m
     assertSame(3, $rows['support']['requests'], 'Only recent valid support runs count');
     assertSame(1, $rows['support']['model'], 'Fallbacks and private guidance are not model responses');
     assertSame(1, $rows['support']['fallback'], 'Fallbacks remain visible');
+    assertSame(1, $rows['admin']['local'], 'Deterministic aggregate answers are not mislabeled as model success or fallback');
     assertSame(150, $rows['support']['average_ms'], 'Average uses valid request durations');
     assertSame(1, $rows['admin']['error'], 'Admin provider failures stay visible');
     assertSame(1, $rows['admin']['draft'], 'Admin drafts are a separate path');
     assertSame(null, App\Services\AuditLogService::agentSummary([], $now)['admin']['average_ms'], 'No traffic is not zero-latency success');
+};
+
+$tests['owner aggregate questions answer from allowlisted local sales data'] = function (): void {
+    $summary = [
+        'orders' => 4,
+        'revenue' => 1875.5,
+        'best_sellers' => ['Brass Lamp' => 3, 'Rudraksha Mala' => 1],
+    ];
+    $best = App\Services\AgentToolRegistry::aggregateAnswerFromSummary('Which products sell best?', $summary, 30);
+    assertTrue(str_contains((string)$best, 'Brass Lamp — 3 units'), 'Best-seller answer should state the locally counted units');
+    assertTrue(str_contains((string)$best, 'last 30 days') && str_contains((string)$best, 'Cancelled and refunded orders are excluded'), 'Answer should state its period and counting rule');
+    $revenue = App\Services\AgentToolRegistry::aggregateAnswerFromSummary('What is the revenue this month?', $summary, 0);
+    assertTrue(str_contains((string)$revenue, '₹1,875.50') && str_contains((string)$revenue, '4 orders') && str_contains((string)$revenue, 'this month'), 'Revenue answer should state value, order count and calendar period');
+    assertSame(null, App\Services\AgentToolRegistry::aggregateAnswerFromSummary('Where is order abc?', $summary), 'Specific lookups must stay on the scoped model/tool path');
+    $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
+    assertTrue(str_contains($controller, "agentRun('admin', 'local'"), 'Owner aggregate path must be monitored distinctly');
 };
 
 $tests['downloadable invoice response preserves snapshot and review warning'] = function (): void {
