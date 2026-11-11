@@ -77,14 +77,18 @@ final class PublicController extends BaseController {
     
     public function shop(): void {
         $this->detectApiRequest();
-        $category = $_GET['category'] ?? '';
+        $category = is_string($_GET['category'] ?? null) ? trim($_GET['category']) : '';
+        $search = is_string($_GET['q'] ?? null) ? mb_substr(trim($_GET['q']), 0, 120) : '';
+        $sortOptions = ['' => 'Featured', 'price-asc' => 'Price: low to high', 'price-desc' => 'Price: high to low', 'name' => 'Name: A–Z'];
+        $sort = is_string($_GET['sort'] ?? null) && isset($sortOptions[$_GET['sort']]) ? $_GET['sort'] : '';
         $categoryService = new CategoryService();
         $categories = $categoryService->all();
         $collections = $categoryService->collections();
         $shopCollections = array_values(array_filter($collections, fn($c) => !empty($c['show_shop'])));
         $selectedCollection = null;
         foreach ($collections as $c) if (($c['slug'] ?? '') === $category && (!empty($c['show_home']) || !empty($c['show_shop']))) $selectedCollection = $c;
-        $items = (new ProductService())->visible();
+        $productService = new ProductService();
+        $items = $productService->visible();
         $this->seoKey = 'shop';
         if ($selectedCollection) {
             $items = $categoryService->collectionProducts($selectedCollection, $items);
@@ -111,7 +115,11 @@ final class PublicController extends BaseController {
                 ];
             }
         }
-        $this->render('public/shop', compact('items', 'categories', 'category', 'shopCollections', 'selectedCollection'));
+        $items = $productService->discover($items, $search, $sort);
+        if (isset($_GET['q']) || isset($_GET['sort'])) $this->seoOverrides['robots'] = 'noindex, follow';
+        $this->render('public/shop', compact(
+            'items', 'categories', 'category', 'shopCollections', 'selectedCollection', 'search', 'sort', 'sortOptions'
+        ));
     }
 
     public function categories(): void {

@@ -53,6 +53,35 @@ final class ProductService
         return array_values(array_filter($this->all(), fn(array $p): bool => empty($p['is_hidden'])));
     }
 
+    /** Search and order the visible products in the current category or collection. */
+    public function discover(array $products, string $search, string $sort): array
+    {
+        $keywords = preg_split('/\s+/u', trim($search), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        if ($keywords !== []) {
+            $products = array_values(array_filter($products, static function (array $product) use ($keywords): bool {
+                $categories = (array)($product['categories'] ?? []);
+                $text = implode(' ', [
+                    $product['name'] ?? '',
+                    str_replace(['-', '_'], ' ', $product['slug'] ?? ''),
+                    $product['category'] ?? '',
+                    implode(' ', $categories),
+                    html_entity_decode(strip_tags($product['description'] ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+                ]);
+                foreach ($keywords as $keyword) {
+                    if (mb_stripos($text, $keyword) === false) return false;
+                }
+                return true;
+            }));
+        }
+        if ($sort === 'name') {
+            usort($products, static fn(array $a, array $b): int => strnatcasecmp($a['name'] ?? '', $b['name'] ?? ''));
+        } elseif ($sort === 'price-asc' || $sort === 'price-desc') {
+            $direction = $sort === 'price-asc' ? 1 : -1;
+            usort($products, fn(array $a, array $b): int => $direction * ($this->priceOf($a) <=> $this->priceOf($b)));
+        }
+        return $products;
+    }
+
     /** Rank only visible products using quantities from verified, non-cancelled orders. */
     public static function rankBestSellers(array $products, array $orders, int $limit = 4): array
     {
