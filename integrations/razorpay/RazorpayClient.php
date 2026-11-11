@@ -3,7 +3,16 @@ namespace App\Integrations\Razorpay;
 final class RazorpayClient {
     public function __construct(private string $keyId, private string $keySecret){}
     public function fetchPayment(string $paymentId): array {
-        $ch = curl_init('https://api.razorpay.com/v1/payments/' . $paymentId);
+        return $this->get('payments/' . rawurlencode($paymentId));
+    }
+
+    // https://razorpay.com/docs/api/refunds/fetch-with-id
+    public function fetchRefund(string $refundId): array {
+        return $this->get('refunds/' . rawurlencode($refundId));
+    }
+
+    private function get(string $path): array {
+        $ch = curl_init('https://api.razorpay.com/v1/' . $path);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER => ['Content-Type: application/json'],

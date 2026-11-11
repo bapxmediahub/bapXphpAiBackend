@@ -3,7 +3,7 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 116,
+        "routes": 117,
         "controllers": 12,
         "services": 48,
         "views": 45,
@@ -579,6 +579,19 @@
             "view": "account/invoice",
             "services": [
                 "OrderService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/orders/{id}/refund",
+            "name": "admin.order.refund",
+            "controller": "AdminController@importOrderRefund",
+            "view": "admin/detail",
+            "services": [
+                "OrderService",
+                "SecretService",
+                "AuditLogService",
                 "AuthService"
             ]
         },

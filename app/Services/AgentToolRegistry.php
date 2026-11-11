@@ -344,7 +344,10 @@ final class AgentToolRegistry
             $counted++;
             // Refunded and cancelled orders are not revenue.
             if (in_array($status, ['cancelled', 'refunded'], true)) continue;
-            $revenue += (float)($order['total'] ?? 0);
+            $refundedPaise = OrderService::refundedPaise($order);
+            $net = max(0, (float)($order['total'] ?? 0) - $refundedPaise / 100);
+            $revenue += $net;
+            if ($net <= 0 && $refundedPaise > 0) continue;
             foreach (($order['items'] ?? []) as $item) {
                 $key = (string)($item['name'] ?? $item['slug'] ?? '');
                 if ($key === '') continue;

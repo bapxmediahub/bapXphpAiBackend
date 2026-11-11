@@ -157,6 +157,19 @@ final class AdminController extends BaseController {
         }
         $this->redirect('/admin/orders/'.$id);
     }
+    public function importOrderRefund(string $id): void {
+        try {
+            (new OrderService())->importRefund($id, trim((string)($_POST['refund_id'] ?? '')));
+            (new AuditLogService())->record('save', 'order.refund', $id);
+            $this->flash('Verified refund recorded.', 'success');
+        } catch (\InvalidArgumentException $error) {
+            $this->flash($error->getMessage(), 'error');
+        } catch (\Throwable) {
+            $this->flash('The refund could not be verified. Check the gateway settings and try again.', 'error');
+        }
+        $this->redirect('/admin/orders/' . rawurlencode($id));
+    }
+
     public function resolveOrderTaxReview(string $id): void{
         try {
             $updated = (new OrderService())->resolveTaxReview($id, (string)($_POST['shipping_state'] ?? ''), (new SettingsService())->public());

@@ -38,7 +38,16 @@ final class StripeClient {
         return $decoded;
     }
     public function retrieveSession(string $sessionId): array {
-        $ch = curl_init('https://api.stripe.com/v1/checkout/sessions/'.$sessionId);
+        return $this->get('checkout/sessions/' . rawurlencode($sessionId));
+    }
+
+    // https://docs.stripe.com/api/refunds/retrieve
+    public function fetchRefund(string $refundId): array {
+        return $this->get('refunds/' . rawurlencode($refundId));
+    }
+
+    private function get(string $path): array {
+        $ch = curl_init('https://api.stripe.com/v1/' . $path);
         curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_USERPWD=>$this->secretKey.':',CURLOPT_TIMEOUT=>20]);
         $body = curl_exec($ch);
         $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);

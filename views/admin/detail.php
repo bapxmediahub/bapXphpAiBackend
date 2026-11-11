@@ -171,5 +171,16 @@
                 </tfoot>
             </table>
         </div>
+        <?php if (!empty($order['payment_id'])): ?>
+            <h3>Refunds</h3>
+            <?php foreach ($order['verified_refunds'] ?? [] as $refund): ?>
+                <p><?= e($refund['id']) ?> · <?= e($money($refund['amount_paise'] / 100)) ?></p>
+            <?php endforeach; ?>
+            <form class="admin-form" method="post" action="/admin/orders/<?= e(rawurlencode((string)$order['id'])) ?>/refund">
+                <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+                <label>Completed gateway refund reference <input name="refund_id" required maxlength="128"></label>
+                <button class="btn btn-secondary" type="submit">Verify and record refund</button>
+            </form>
+        <?php endif; ?>
     <?php endif; ?>
 </div>

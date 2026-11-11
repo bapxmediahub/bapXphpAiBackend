@@ -13,6 +13,44 @@ final class OrderService {
         return $this->store->read('orders');
     }
 
+    public function importRefund(string $id, string $refundId): array {
+        $order = $this->store->find('orders', $id);
+        if ($order === null) throw new \InvalidArgumentException('Order not found.');
+        $payment = (string)($order['payment_id'] ?? '');
+        $stripe = !empty($order['stripe_session_id']);
+        $prefix = $stripe ? 're_' : 'rfnd_';
+        if (strlen($refundId) > 128 || !preg_match('/^' . $prefix . '[a-zA-Z0-9]+$/D', $refundId)) {
+            throw new \InvalidArgumentException('Enter a refund reference beginning with ' . $prefix . '.');
+        }
+        $secrets = (new SecretService())->all();
+        if ($stripe) {
+            $client = new \App\Integrations\Stripe\StripeClient((string)($secrets['stripe_secret_key'] ?? ''));
+            if (!empty($order['stripe_session_id']) && $payment === $order['stripe_session_id']) {
+                $session = $client->retrieveSession($payment);
+                $payment = (string)($session['payment_intent'] ?? '');
+            }
+        } else {
+            $client = new \App\Integrations\Razorpay\RazorpayClient(
+                (string)($secrets['razorpay_key_id'] ?? ''), (string)($secrets['razorpay_key_secret'] ?? '')
+            );
+        }
+        if (!str_starts_with($payment, $stripe ? 'pi_' : 'pay_')) {
+            throw new \InvalidArgumentException('This order has no supported payment reference.');
+        }
+        $refund = $client->fetchRefund($refundId);
+        if (($refund['id'] ?? '') !== $refundId || ($refund[$stripe ? 'payment_intent' : 'payment_id'] ?? '') !== $payment
+            || strtoupper((string)($refund['currency'] ?? '')) !== 'INR'
+            || ($refund['status'] ?? '') !== ($stripe ? 'succeeded' : 'processed')
+            || !is_int($refund['amount'] ?? null) || $refund['amount'] <= 0) {
+            throw new \InvalidArgumentException('The gateway did not confirm a completed INR refund for this payment.');
+        }
+        return $this->store->recordOrderRefund($id, (string)$order['payment_id'], $refundId, $refund['amount']);
+    }
+
+    public static function refundedPaise(array $order): int {
+        return array_sum(array_column($order['verified_refunds'] ?? [], 'amount_paise'));
+    }
+
     /** Correct a paid review record and issue its first immutable tax snapshot. */
     public function resolveTaxReview(string $id, string $shippingState, array $settings): array {
         return $this->store->resolveOrderTaxReview($id, $shippingState, $settings);

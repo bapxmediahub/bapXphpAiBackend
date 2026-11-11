@@ -36,14 +36,14 @@ query_examples:
   - "rg -n -B4 -A12 'type: \"skill\"' index.yaml"
   - "rg -n '<term>' docs/project-index.json map.mmd index.yaml"
 summary:
-  concepts: 345
-  relationships: 239
+  concepts: 346
+  relationships: 240
   by_type:
     blog: 14
     controller: 12
     doc: 35
     image: 89
-    route: 116
+    route: 117
     schema: 22
     service: 48
     skill: 9
@@ -3068,6 +3068,23 @@ concepts:
       - "AuditLogService"
       - "AuthService"
     view: "admin/media"
+  - id: "route:post__admin_orders__id__refund"
+    type: "route"
+    title: "POST /admin/orders/{id}/refund"
+    description: "admin.order.refund"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/admin/orders/{id}/refund"
+    controller: "AdminController@importOrderRefund"
+    services:
+      - "OrderService"
+      - "SecretService"
+      - "AuditLogService"
+      - "AuthService"
+    view: "admin/detail"
   - id: "route:post__admin_orders__id__status"
     type: "route"
     title: "POST /admin/orders/{id}/status"
@@ -4639,6 +4656,9 @@ relationships:
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:post__admin_media_upload"
+    to: "controller:AdminController"
+    relation: "handled_by"
+  - from: "route:post__admin_orders__id__refund"
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:post__admin_orders__id__status"

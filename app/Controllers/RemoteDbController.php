@@ -101,6 +101,14 @@ final class RemoteDbController {
                 echo json_encode(['success' => true, 'result' => $result]);
                 return;
             }
+            if ($collection === 'orders' && $action === 'record_order_refund') {
+                $result = $store->recordOrderRefund(
+                    (string)($input['id'] ?? ''), (string)($input['payment_id'] ?? ''),
+                    (string)($input['refund_id'] ?? ''), (int)($input['amount_paise'] ?? 0)
+                );
+                echo json_encode(['success' => true, 'result' => $result]);
+                return;
+            }
             if ($collection === 'orders' && $action === 'update_order_status') {
                 $result = $store->updateOrderStatus(
                     (string)($input['id'] ?? ''), (string)($input['status'] ?? ''),
