@@ -4,14 +4,14 @@ namespace App\Services;
 final class AgentContextService {
     public function __construct(private DatabaseService $store = new DatabaseService(), private SchemaService $schema = new SchemaService()) {}
 
-    public function forUserEmail(string $email): array {
+    public function forUserEmail(string $email, string $message = ''): array {
         $email = strtolower(trim($email));
-        if ($email === '') return ['user'=>null, 'orders'=>[], 'settings'=>$this->publicSettings(), 'site'=>$this->siteContext()];
+        if ($email === '') return ['user'=>null, 'orders'=>[], 'settings'=>$this->publicSettings(), 'site'=>$this->siteContext($message)];
         return [
             'user' => $this->firstOwned('users', 'email', $email),
             'orders' => $this->owned('orders', 'customer_email', $email),
             'settings' => $this->publicSettings(),
-            'site' => $this->siteContext(),
+            'site' => $this->siteContext($message),
         ];
     }
 
@@ -71,7 +71,30 @@ final class AgentContextService {
         return array_intersect_key($settings, array_flip(['currency', 'timezone', 'shipping_mode', 'flat_rate']));
     }
 
-    private function siteContext(): array {
+    /** Match only exact public catalogue aliases, not loose words that can collide. */
+    public static function matchesNamedProduct(string $message, array $product): bool
+    {
+        $normalise = static fn(string $value): string => trim((string)preg_replace('/[^a-z0-9]+/i', ' ', mb_strtolower($value)));
+        $haystack = ' ' . $normalise($message) . ' ';
+        $aliases = [
+            $normalise((string)($product['name'] ?? '')),
+            $normalise((string)($product['slug'] ?? '')),
+        ];
+        foreach (array_unique(array_filter($aliases)) as $alias) {
+            // Requiring at least two words avoids treating a generic one-word slug such
+            // as "ring" or "paste" as a named-product request.
+            if (str_word_count($alias) >= 2 && str_contains($haystack, ' ' . $alias . ' ')) return true;
+        }
+        return false;
+    }
+
+    /** Prefer exact matches across the visible catalogue before applying the prompt cap. */
+    public static function supportProducts(array $visibleProducts, string $message): array {
+        $matches = array_filter($visibleProducts, static fn(array $product): bool => self::matchesNamedProduct($message, $product));
+        return array_slice($matches ?: $visibleProducts, 0, 20);
+    }
+
+    private function siteContext(string $message): array {
         $products = array_map(fn($item) => [
             'name' => $item['name'] ?? '',
             'slug' => $item['slug'] ?? '',
@@ -84,7 +107,7 @@ final class AgentContextService {
             'specifications' => $item['specifications'] ?? [],
         // Visible only, and priced through the offer window: the support bot must never
         // recommend a product the shopper cannot buy, or quote an offer that has ended.
-        ], array_slice((new ProductService($this->store))->visible(), 0, 20));
+        ], self::supportProducts((new ProductService($this->store))->visible(), $message));
         return [
             'pages' => [
                 'shop' => '/shop',

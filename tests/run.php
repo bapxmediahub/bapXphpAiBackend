@@ -2484,6 +2484,17 @@ $tests['order email renders purchased quantities and escapes product text'] = fu
     assertSame('', App\Services\MailQueueService::orderItemsHtml([]), 'Missing order lines are not fabricated');
 };
 
+$tests['support context selects a named product before applying the catalogue cap'] = function (): void {
+    $catalogue = array_fill(0, 28, ['name' => 'Unrelated Ring', 'slug' => 'unrelated-ring']);
+    $pendant = ['name' => 'Sri Karuppasamy Pendant', 'slug' => 'karuppasami-dollar'];
+    $catalogue[] = $pendant;
+    assertSame([$pendant], \App\Services\AgentContextService::supportProducts(
+        $catalogue, 'What does the Sri Karuppasamy Pendant depict, and what is its current price?'
+    ), 'Product 29 must be included when named');
+    assertSame(20, count(\App\Services\AgentContextService::supportProducts($catalogue, 'What do you sell?')),
+        'General catalog prompts remain bounded');
+};
+
 $tests['support product questions retain public specifications and reject unrelated articles'] = function (): void {
     $bot = new App\Services\SupportBotService();
     $fallback = (new ReflectionMethod($bot, 'publicGuestReply'))->getClosure($bot);
