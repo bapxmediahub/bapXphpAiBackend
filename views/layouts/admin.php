@@ -106,7 +106,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
             <div class="admin-submenu" id="menu-commerce">
                 <a href="/admin/orders" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/orders') === 0 ? 'active' : '') ?>">Orders</a>
                 <a href="/admin/shipping" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/shipping') === 0 ? 'active' : '') ?>">Shipping</a>
-                <a href="/admin/tax-report" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/tax-report') === 0 ? 'active' : '') ?>">Tax Report</a>
+                <a href="/admin/tax-report" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/tax-report') === 0 ? 'active' : '') ?>">Reports</a>
                 <a href="/admin/contact-submissions" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/contact-submissions') === 0 ? 'active' : '') ?>">Contacts</a>
                 <a href="/admin/support-tickets" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/support-tickets') === 0 ? 'active' : '') ?>">Support</a>
                 <a href="/admin/email-inbox" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/email-inbox') === 0 ? 'active' : '') ?>">Email Inbox</a>
@@ -168,7 +168,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
             $__crumb = '/admin';
             $__labelMap = [
                 'products'=>'Products','categories'=>'Categories','coupons'=>'Coupons',
-                'orders'=>'Orders','shipping'=>'Shipping','tax-report'=>'Tax Report','astrologers'=>'Astrologers',
+                'orders'=>'Orders','shipping'=>'Shipping','tax-report'=>'Reports','astrologers'=>'Astrologers',
                 'appointments'=>'Sessions',
                 'consultation-analytics'=>'Analytics','temples'=>'Temples',
                 'settings'=>'Site Settings','integrations'=>'Integrations',

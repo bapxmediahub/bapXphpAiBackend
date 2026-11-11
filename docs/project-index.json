@@ -5,7 +5,7 @@
     "summary": {
         "routes": 123,
         "controllers": 12,
-        "services": 48,
+        "services": 49,
         "views": 47,
         "collections": 22
     },
@@ -805,6 +805,8 @@
             "view": "admin/tax-report",
             "services": [
                 "OrderService",
+                "ProductService",
+                "StoreStatsService",
                 "TaxService",
                 "AuthService"
             ]
@@ -1438,6 +1440,7 @@
         "ShippingService",
         "SmtpMailer",
         "StoragePermissionService",
+        "StoreStatsService",
         "SupportBotService",
         "SupportTicketService",
         "TaxService",
