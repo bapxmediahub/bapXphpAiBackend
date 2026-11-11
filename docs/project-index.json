@@ -3,7 +3,7 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 115,
+        "routes": 116,
         "controllers": 12,
         "services": 48,
         "views": 45,
@@ -567,6 +567,7 @@
             "services": [
                 "OrderService",
                 "ShippingService",
+                "TaxService",
                 "AuthService"
             ]
         },
@@ -590,6 +591,20 @@
             "services": [
                 "OrderService",
                 "MailQueueService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/orders/{id}/tax-review",
+            "name": "admin.order.tax-review",
+            "controller": "AdminController@resolveOrderTaxReview",
+            "view": "admin/detail",
+            "services": [
+                "OrderService",
+                "TaxService",
+                "SettingsService",
                 "AuditLogService",
                 "AuthService"
             ]

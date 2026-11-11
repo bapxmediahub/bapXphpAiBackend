@@ -2215,8 +2215,37 @@ $tests['verified legacy payment is persisted once without a fabricated invoice']
     assertSame(105, $records[$id]['total'] ?? null, 'Verified amount is preserved');
     assertTrue(!empty($records[$id]['tax_review_required']), 'Owner sees the review flag');
     assertTrue(empty($records[$id]['invoice_number']), 'No unverified invoice is issued');
+    assertSame(5.0, $records[$id]['items'][0]['gst_rate'] ?? null, 'Tax rate is frozen for later owner review');
     assertSame($id, $persist($pending, 'test-paid-id', [], $ports), 'Repeated gateway callbacks are idempotent');
     assertSame(1, count($records), 'Retry creates no duplicate order');
+};
+
+$tests['owner can correct a paid tax review record and issue one immutable invoice'] = function (): void {
+    $tax = new App\Services\TaxService();
+    $order = [
+        'id'=>'review-order', 'payment_id'=>'pay_verified', 'total'=>105, 'discount'=>0,
+        'tax_review_required'=>true, 'tax_review_reason'=>'Missing delivery state',
+        'items'=>[['slug'=>'item','name'=>'Item','qty'=>1,'line_total'=>105]],
+    ];
+    $settings = ['gst_state'=>'Tamil Nadu','gstin'=>'33ABCDE1234F1Z5','default_gst_rate'=>5,'default_hsn_code'=>'8306'];
+    $reviewed = $tax->reviewedOrder($order, [$order], 'Telangana', $settings, new DateTimeImmutable('2026-11-11T10:00:00+05:30'));
+    assertSame('Telangana', $reviewed['shipping_state'], 'Owner-selected delivery state is canonicalised');
+    assertSame('interstate', $reviewed['supply_type'], 'Corrected interstate delivery uses IGST');
+    assertTrue(($reviewed['igst_total'] ?? 0) > 0 && ($reviewed['cgst_total'] ?? 0) === 0.0, 'Recovered invoice contains the correct tax split');
+    assertTrue(!empty($reviewed['invoice_number']) && empty($reviewed['tax_review_required']), 'Recovery issues one invoice and clears the review flag');
+    assertSame(105, $reviewed['total'], 'Gateway-confirmed total remains unchanged');
+    foreach ([
+        array_merge($order, ['payment_id'=>'']),
+        array_merge($order, ['invoice_number'=>'SPS/2627/00001']),
+        array_merge($order, ['tax_review_required'=>false]),
+    ] as $invalid) {
+        try { $tax->reviewedOrder($invalid, [$invalid], 'Telangana', $settings); assertTrue(false, 'Unsafe recovery must be rejected'); }
+        catch (InvalidArgumentException) {}
+    }
+    $routes = App\Services\ProjectMapService::registry()['routes'];
+    $recovery = array_values(array_filter($routes, fn($route) => $route['method'] === 'POST' && $route['path'] === '/admin/orders/{id}/tax-review'));
+    assertSame(1, count($recovery), 'Tax recovery route is registered once');
+    assertTrue(in_array('AuditLogService', $recovery[0]['services'], true), 'Tax recovery is auditable');
 };
 
 $tests['cart summary recalculates quantities and mixed product tax rates'] = function (): void {

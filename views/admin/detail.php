@@ -33,7 +33,23 @@
             </div>
         </div>
         <?php if (!empty($order['tax_review_required'])): ?>
-            <p role="alert"><strong>Tax review required.</strong> Payment was confirmed, but no invoice was issued because delivery or supplier state was missing or invalid. Review the order and supplier settings with your accountant.</p>
+            <div role="alert" style="padding:var(--space-md); border:1px solid var(--color-warning); border-radius:var(--radius-sm); background:var(--color-bg-alt); margin:var(--space-md) 0;">
+                <p style="margin:0 0 var(--space-sm);"><strong>Tax review required.</strong> Payment was confirmed, but no invoice was issued because delivery or supplier state was missing or invalid.</p>
+                <form method="post" action="/admin/orders/<?= e(rawurlencode((string)$order['id'])) ?>/tax-review" style="display:flex; gap:var(--space-sm); align-items:end; flex-wrap:wrap;">
+                    <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+                    <div style="flex:1 1 260px; min-width:0;">
+                        <label for="tax-review-state" style="display:block; font-size:0.8rem; font-weight:600; margin-bottom:var(--space-xs);">Verified delivery state</label>
+                        <select id="tax-review-state" name="shipping_state" required style="width:100%;">
+                            <option value="">Select state or union territory…</option>
+                            <?php foreach (($taxStates ?? []) as $__state): ?>
+                                <option value="<?= e($__state) ?>" <?= (\App\Services\TaxService::normaliseState((string)($order['shipping_state'] ?? '')) === $__state ? 'selected' : '') ?>><?= e($__state) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" type="submit">Issue corrected invoice</button>
+                </form>
+                <p style="margin:var(--space-sm) 0 0; color:var(--color-text-muted); font-size:0.85rem;">Confirm the delivery state from the paid order record. This creates the stored tax snapshot once; issued invoices cannot be rewritten.</p>
+            </div>
         <?php endif; ?>
         <?php if (!empty($order['invoice_number'])): ?>
             <p><strong>Invoice <?= e((string)$order['invoice_number']) ?></strong></p>
