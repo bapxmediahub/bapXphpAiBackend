@@ -124,7 +124,7 @@ final class StoreStatsService
     {
         return array_values(array_filter($orders, static function (array $order) use ($from, $to, $status): bool {
             $date = substr(self::orderDate($order), 0, 10);
-            if ($date === '' || $date < $from || $date > $to) return false;
+            if (!self::validDate($date) || $date < $from || $date > $to) return false;
             $orderStatus = strtolower((string)($order['status'] ?? ''));
             if ($status !== '' && $orderStatus !== $status) return false;
             if (in_array($orderStatus, ['cancelled', 'failed'], true)) return false;

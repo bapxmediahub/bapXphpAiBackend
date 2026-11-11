@@ -718,22 +718,26 @@ final class AdminController extends BaseController {
         $this->jsonResponse(['content' => trim($result)]);
     }
     public function taxReport(): void{
-        $allOrders = (new OrderService())->all();
-        $settings = (new SettingsService())->public();
-        $range = StoreStatsService::dateRange((string)($_GET['from'] ?? ''), (string)($_GET['to'] ?? ''));
+        $filter = static fn(string $key): string => is_string($_GET[$key] ?? null) ? $_GET[$key] : '';
+        $range = StoreStatsService::dateRange($filter('from'), $filter('to'));
         $from = $range['from'];
         $to = $range['to'];
-        $reportType = isset(StoreStatsService::REPORT_TYPES[$_GET['report'] ?? '']) ? (string)$_GET['report'] : 'sales';
-        $group = isset(StoreStatsService::GROUPS[$_GET['group'] ?? '']) ? (string)$_GET['group'] : 'day';
+        $report = $filter('report');
+        $requestedGroup = $filter('group');
+        $format = $filter('format');
+        $reportType = isset(StoreStatsService::REPORT_TYPES[$report]) ? $report : ($format === 'csv' ? 'tax' : 'sales');
+        $group = isset(StoreStatsService::GROUPS[$requestedGroup]) ? $requestedGroup : 'day';
         $allowedStatuses = ['pending','on_hold','confirmed','processing','packed','shipped','delivered'];
-        $status = in_array((string)($_GET['status'] ?? ''), $allowedStatuses, true) ? (string)$_GET['status'] : '';
+        $status = in_array($filter('status'), $allowedStatuses, true) ? $filter('status') : '';
+        $allOrders = $reportType === 'stock' ? [] : (new OrderService())->all();
+        $settings = $reportType === 'tax' ? (new SettingsService())->public() : [];
 
-        $taxOrders = array_values(array_filter($allOrders, static fn(array $order): bool =>
+        $taxOrders = $reportType === 'tax' ? array_values(array_filter($allOrders, static fn(array $order): bool =>
             !empty($order['invoice_number'])
             && substr((string)($order['invoice_date'] ?? ''), 0, 10) >= $from
             && substr((string)($order['invoice_date'] ?? ''), 0, 10) <= $to
-        ));
-        if ($reportType === 'tax' && ($_GET['format'] ?? '') === 'csv') {
+        )) : [];
+        if ($reportType === 'tax' && $format === 'csv') {
             header('Content-Type: text/csv; charset=utf-8');
             header('Content-Disposition: attachment; filename="gst-tax-report.csv"');
             $handle = fopen('php://output', 'w');
