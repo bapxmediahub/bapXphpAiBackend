@@ -1,20 +1,3 @@
-<div class="admin-card" style="margin-bottom:var(--space-lg);">
-    <h2>Agent monitoring · last 24 hours</h2>
-    <p>Track response paths and failures for customer support and owner chat. Model responses still need quality review; these counts do not measure answer accuracy.</p>
-    <?php if (($agentMonitoring ?? null) === null): ?>
-        <p role="status">Monitoring is temporarily unavailable.</p>
-    <?php else: ?>
-        <div class="table-wrap"><table>
-            <thead><tr><th>Agent</th><th>Requests</th><th>Model</th><th>Fallback</th><th>Sign-in guidance</th><th>Drafts</th><th>Errors</th><th>Average time</th></tr></thead>
-            <tbody><?php foreach ($agentMonitoring as $surface => $metrics): ?>
-                <tr><th><?= $surface === 'support' ? 'Customer support' : 'Owner / admin' ?></th>
-                <?php foreach (['requests', 'model', 'fallback', 'private_account', 'draft', 'error'] as $metric): ?><td><?= (int)$metrics[$metric] ?></td><?php endforeach; ?>
-                <td><?= $metrics['average_ms'] === null ? 'No requests yet' : e(number_format($metrics['average_ms'] / 1000, 2)) . ' s' ?></td></tr>
-            <?php endforeach; ?></tbody>
-        </table></div>
-        <p style="font-size:0.8rem;color:var(--color-text-muted);">Monitoring records timing and outcome only. Questions, answers and customer identities are not stored in these events.</p>
-    <?php endif; ?>
-</div>
 <div class="admin-stats">
     <div class="admin-stat">
         <div class="admin-stat__icon">
@@ -39,6 +22,23 @@
     </div>
 </div>
 
+<div class="admin-card" style="margin-bottom:var(--space-lg);">
+    <h2>Agent monitoring · last 24 hours</h2>
+    <p>Track response paths and failures for customer support and owner chat. Model responses still need quality review; these counts do not measure answer accuracy.</p>
+    <?php if (($agentMonitoring ?? null) === null): ?>
+        <p role="status">Monitoring is temporarily unavailable.</p>
+    <?php else: ?>
+        <div class="table-wrap"><table>
+            <thead><tr><th>Agent</th><th>Requests</th><th>Model</th><th>Fallback</th><th>Sign-in guidance</th><th>Drafts</th><th>Errors</th><th>Average time</th></tr></thead>
+            <tbody><?php foreach ($agentMonitoring as $surface => $metrics): ?>
+                <tr><th><?= $surface === 'support' ? 'Customer support' : 'Owner / admin' ?></th>
+                <?php foreach (['requests', 'model', 'fallback', 'private_account', 'draft', 'error'] as $metric): ?><td><?= (int)$metrics[$metric] ?></td><?php endforeach; ?>
+                <td><?= $metrics['average_ms'] === null ? 'No requests yet' : e(number_format($metrics['average_ms'] / 1000, 2)) . ' s' ?></td></tr>
+            <?php endforeach; ?></tbody>
+        </table></div>
+        <p style="font-size:0.8rem;color:var(--color-text-muted);">Monitoring records timing and outcome only. Questions, answers and customer identities are not stored in these events.</p>
+    <?php endif; ?>
+</div>
 <?php
 $__secretsGa = (new \App\Services\SecretService())->all();
 $__gaConfigured = !empty($__secretsGa['google_analytics_id']);
@@ -94,10 +94,11 @@ $__googleSiteKitEnabled = $__gaConfigured || $__adsConfigured || $__gsvConfigure
 <div class="admin-quick-grid">
     <div class="admin-card">
         <h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Catalog</h2>
-        <p>Manage products, categories, and discount coupons.</p>
+        <p>Manage products, categories, collections, and discount coupons.</p>
         <div class="admin-card__actions">
             <a href="/admin/products" class="btn btn-sm btn-ghost">Products</a>
             <a href="/admin/categories" class="btn btn-sm btn-ghost">Categories</a>
+            <a href="/admin/collections" class="btn btn-sm btn-ghost">Special Collections</a>
             <a href="/admin/coupons" class="btn btn-sm btn-ghost">Coupons</a>
         </div>
     </div>
