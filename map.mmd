@@ -831,11 +831,12 @@ flowchart LR
   tool_import_product_images --> service_databaseservice
   tool_import_product_images --> collection_products
   service_addressservice --> collection_addresses
-  service_agentcontextservice --> collection_settings
   service_agentcontextservice --> collection_users
   service_agentcontextservice --> collection_orders
+  service_agentcontextservice --> collection_products
   service_agentcontextservice --> collection_appointments
   service_agentcontextservice --> collection_support_tickets
+  service_agentcontextservice --> collection_settings
   service_appointmentservice --> collection_appointments
   service_astrologerservice --> collection_astrologers
   service_auditlogservice --> collection_audit_events

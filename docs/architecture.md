@@ -30,7 +30,7 @@ category: docs
 - New upload binaries live in the domain-local `.sps-media` directory beside the
   deployment checkout; `index.php` serves their existing public media URLs.
   Legacy media YAML is read-only compatibility input.
-- `AgentContextService` builds safe user-specific context for the support/model assistant.
+- `AgentContextService` builds schema-filtered customer context for support and identifier-free aggregate context for the owner agent. Identifying order lookups require an exact id or email written literally in the owner's question; model-selected prefixes are refused server-side.
 
 ## Current Data Flow
 

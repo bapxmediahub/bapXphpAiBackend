@@ -1312,6 +1312,44 @@ $tests['the admin agent can look things up instead of guessing'] = function (): 
     assertTrue(str_contains($admin, 'completeWithTools'), 'The admin agent should use the tool loop');
 };
 
+$tests['owner agent context and order tools minimise customer identifiers'] = function (): void {
+    $orders = [
+        ['id'=>'a1b2c3d4e5f60718','customer_email'=>'alice@example.test','status'=>'confirmed','total'=>105,'shipping_city'=>'Chennai','tracking_id'=>'TRACK-A','courier_name'=>'Courier A','items'=>[['name'=>'Lamp','qty'=>1,'line_total'=>105]]],
+        ['id'=>'b1c2d3e4f5a60718','customer_email'=>'bob@example.test','status'=>'pending','total'=>210,'shipping_city'=>'Hyderabad','tracking_id'=>'TRACK-B','courier_name'=>'Courier B','items'=>[['name'=>'Ring','qty'=>1,'line_total'=>210]]],
+    ];
+    $summary = \App\Services\AgentContextService::ownerSummaryFromCollections(
+        [['email'=>'alice@example.test'],['email'=>'bob@example.test']], $orders, [['name'=>'Lamp']], [], []
+    );
+    $summaryJson = json_encode($summary, JSON_THROW_ON_ERROR);
+    foreach (['alice@example.test','bob@example.test','a1b2c3d4e5f60718','b1c2d3e4f5a60718','Chennai','Hyderabad','TRACK-A','TRACK-B'] as $identifier) {
+        assertTrue(!str_contains($summaryJson, $identifier), "Aggregate owner context must omit {$identifier}");
+    }
+    assertSame(2, $summary['orders']['total'], 'Aggregate owner context retains useful order counts');
+    assertSame(315.0, $summary['revenue']['total'], 'Aggregate owner context retains useful revenue totals');
+
+    $unrelated = \App\Services\AgentToolRegistry::scopedOrderLookup($orders, ['customer_email'=>'alice@example.test'], 'How many orders did we receive?');
+    assertTrue(isset($unrelated['error']), 'A model-selected customer email absent from the owner question is refused');
+    $invented = \App\Services\AgentToolRegistry::scopedOrderLookup($orders, ['order_id'=>'b1c2d3e4f5a60718'], 'Where is order a1b2c3d4e5f60718?');
+    assertTrue(isset($invented['error']), 'A model-selected order id absent from the owner question is refused');
+    $prefix = \App\Services\AgentToolRegistry::scopedOrderLookup($orders, ['order_id'=>'a1b2'], 'Where is order a1b2?');
+    assertSame(0, $prefix['found'], 'An explicitly written prefix cannot fan out into an order match');
+
+    $exact = \App\Services\AgentToolRegistry::scopedOrderLookup($orders, ['order_id'=>'a1b2c3d4e5f60718'], 'Where is order a1b2c3d4e5f60718?');
+    assertSame(1, $exact['found'], 'An exact order id explicitly written by the owner can be looked up');
+    $exactJson = json_encode($exact, JSON_THROW_ON_ERROR);
+    assertTrue(str_contains($exactJson, 'TRACK-A'), 'A tracking question receives tracking for the exact requested order');
+    assertTrue(!str_contains($exactJson, 'alice@example.test') && !str_contains($exactJson, 'Chennai'), 'Exact order status does not add an email or city the owner did not request');
+
+    $customer = \App\Services\AgentToolRegistry::scopedOrderLookup($orders, ['customer_email'=>'alice@example.test'], 'Show orders for alice@example.test');
+    assertSame(1, $customer['found'], 'An exact customer email explicitly written by the owner scopes its own orders');
+    assertTrue(!str_contains(json_encode($customer, JSON_THROW_ON_ERROR), 'bob@example.test'), 'A requested customer lookup cannot expose another customer');
+
+    $admin = file_get_contents(app_path('app/Controllers/AdminController.php'));
+    assertTrue(str_contains($admin, 'AgentContextService())->forOwnerSummary()'), 'Owner prompt context must use AgentContextService');
+    assertTrue(!str_contains($admin, 'Top 5 customers by revenue') && !str_contains($admin, '$revenueByUser'), 'Owner prompts must not precompute customer identifiers');
+    assertTrue(str_contains($admin, 'AgentToolRegistry(ownerQuestion: $message)'), 'Tool authorization must receive the literal owner question');
+};
+
 $tests['google tool history preserves object arguments and call ids'] = function (): void {
     $parts = \App\Services\AiClient::googleToolHistoryParts([
         ['thought' => true, 'text' => 'checking'],

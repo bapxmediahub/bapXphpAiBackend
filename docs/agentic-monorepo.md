@@ -86,5 +86,5 @@ Agent-native backend platforms expose database, auth, storage, deployments, logs
 - Auth: PHP services with admin credentials in settings (Admin → Settings) and API secrets in encrypted store (Admin → Integrations)
 - Storage: local media library
 - Deployment: Hostinger Git auto-deploy
-- Model context: `AgentContextService`
+- Model context: `AgentContextService` (customer-owned records for support; aggregate-only metrics for ordinary owner questions). Owner order tools enforce exact identifiers from the literal owner question before returning scoped data.
 - Logs/audit: MySQL audit events via AuditLogService and admin pages

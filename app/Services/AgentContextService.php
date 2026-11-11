@@ -15,6 +15,56 @@ final class AgentContextService {
         ];
     }
 
+    /** Aggregate owner context only; no user, order, email, address or tracking rows. */
+    public function forOwnerSummary(): array {
+        return self::ownerSummaryFromCollections(
+            $this->store->read('users'),
+            $this->store->read('orders'),
+            $this->store->read('products'),
+            $this->store->read('appointments'),
+            $this->store->read('support_tickets')
+        );
+    }
+
+    /** Pure aggregation boundary, kept public so privacy behavior is fixture-testable. */
+    public static function ownerSummaryFromCollections(array $users, array $orders, array $products, array $appointments, array $tickets): array {
+        $confirmed = array_values(array_filter($orders, static fn(array $o): bool => ($o['status'] ?? '') === 'confirmed'));
+        $pending = array_values(array_filter($orders, static fn(array $o): bool => ($o['status'] ?? '') === 'pending'));
+        $totalRevenue = array_sum(array_map(static fn(array $o): float => (float)($o['total'] ?? 0), $orders));
+        $confirmedRevenue = array_sum(array_map(static fn(array $o): float => (float)($o['total'] ?? 0), $confirmed));
+        $pendingRevenue = array_sum(array_map(static fn(array $o): float => (float)($o['total'] ?? 0), $pending));
+        $units = $revenue = [];
+        foreach ($confirmed as $order) {
+            foreach (($order['items'] ?? []) as $item) {
+                if (!is_array($item)) continue;
+                $name = trim((string)($item['name'] ?? $item['slug'] ?? ''));
+                if ($name === '') continue;
+                $units[$name] = ($units[$name] ?? 0) + max(0, (int)($item['qty'] ?? 1));
+                $revenue[$name] = ($revenue[$name] ?? 0) + (float)($item['line_total'] ?? 0);
+            }
+        }
+        arsort($units);
+        $topProducts = [];
+        foreach (array_slice($units, 0, 5, true) as $name => $quantity) {
+            $topProducts[] = ['name' => $name, 'units' => $quantity, 'revenue' => round((float)($revenue[$name] ?? 0), 2)];
+        }
+        return [
+            'users' => count($users),
+            'orders' => ['total'=>count($orders), 'confirmed'=>count($confirmed), 'pending'=>count($pending)],
+            'products' => count($products),
+            'appointments' => count($appointments),
+            'support_tickets' => count($tickets),
+            'revenue' => [
+                'total'=>round($totalRevenue, 2),
+                'confirmed'=>round($confirmedRevenue, 2),
+                'pending'=>round($pendingRevenue, 2),
+                'average_order'=>count($orders) > 0 ? round($totalRevenue / count($orders), 2) : 0.0,
+            ],
+            'top_products' => $topProducts,
+            'privacy_scope' => 'Aggregate owner metrics only. No customer or order identifiers are included.',
+        ];
+    }
+
     private function owned(string $collection, string $field, string $email): array {
         $records = array_values(array_filter($this->store->read($collection), fn($item) => strtolower((string)($item[$field] ?? '')) === $email));
         $fields = $this->schema->agentContextFields($collection);

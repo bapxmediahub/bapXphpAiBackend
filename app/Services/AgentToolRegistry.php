@@ -27,7 +27,8 @@ final class AgentToolRegistry
     public function __construct(
         private DatabaseService $store = new DatabaseService(),
         private ?ProductService $products = null,
-        private ?OrderService $orders = null
+        private ?OrderService $orders = null,
+        private string $ownerQuestion = ''
     ) {
         $this->products ??= new ProductService($this->store);
         $this->orders ??= new OrderService($this->store);
@@ -43,12 +44,12 @@ final class AgentToolRegistry
         return [
             [
                 'name' => 'find_order',
-                'description' => 'Look up one order by its id, or the most recent orders for a customer email. '
-                    . 'Returns status, total, items, courier and tracking.',
+                'description' => 'Look up one order by its complete exact id, or recent orders for a customer email, '
+                    . 'only when that exact id or email appears in the owner question. Returns tracking or city only when requested.',
                 'parameters' => [
                     'type' => 'object',
                     'properties' => [
-                        'order_id' => ['type' => 'string', 'description' => 'The order id, whole or the first few characters.'],
+                        'order_id' => ['type' => 'string', 'description' => 'The complete exact order id written in the owner question.'],
                         'customer_email' => ['type' => 'string', 'description' => 'Email of the customer whose orders to list.'],
                     ],
                 ],
@@ -151,23 +152,39 @@ final class AgentToolRegistry
 
     private function findOrder(array $args): array
     {
+        return self::scopedOrderLookup($this->orders->all(), $args, $this->ownerQuestion);
+    }
+
+    /**
+     * Server-side scope gate: the model cannot select an identifier the owner did not
+     * literally provide, and an order prefix can never fan out into customer records.
+     */
+    public static function scopedOrderLookup(array $orders, array $args, string $ownerQuestion): array
+    {
         $id = strtolower(trim((string)($args['order_id'] ?? '')));
         $email = strtolower(trim((string)($args['customer_email'] ?? '')));
         if ($id === '' && $email === '') return ['error' => 'Give an order id or a customer email.'];
+        $question = mb_strtolower($ownerQuestion);
+        if ($id !== '' && !str_contains($question, $id)) return ['error' => 'The complete order id must appear in the owner question.'];
+        if ($email !== '' && (!filter_var($email, FILTER_VALIDATE_EMAIL) || !str_contains($question, $email))) {
+            return ['error' => 'The exact customer email must appear in the owner question.'];
+        }
 
         $matches = [];
-        foreach ($this->orders->all() as $order) {
+        $includeCity = preg_match('/\b(?:city|address|location)\b/i', $ownerQuestion) === 1;
+        $includeTracking = preg_match('/\b(?:track|tracking|courier|delivery|shipment|shipped|where)\b/i', $ownerQuestion) === 1;
+        foreach ($orders as $order) {
             $orderId = strtolower((string)($order['id'] ?? ''));
-            if ($id !== '' && !str_starts_with($orderId, $id)) continue;
+            if ($id !== '' && $orderId !== $id) continue;
             if ($email !== '' && strtolower((string)($order['customer_email'] ?? '')) !== $email) continue;
-            $matches[] = $this->summariseOrder($order);
+            $matches[] = self::summariseOrder($order, $includeCity, $includeTracking);
             if (count($matches) >= 10) break;
         }
         if ($matches === []) return ['found' => 0, 'message' => 'No order matched.'];
         return ['found' => count($matches), 'orders' => $matches];
     }
 
-    private function summariseOrder(array $order): array
+    private static function summariseOrder(array $order, bool $includeCity, bool $includeTracking): array
     {
         $items = [];
         foreach (($order['items'] ?? []) as $item) {
@@ -177,17 +194,19 @@ final class AgentToolRegistry
                 'line_total' => (float)($item['line_total'] ?? 0),
             ];
         }
-        return [
+        $summary = [
             'id' => (string)($order['id'] ?? ''),
             'status' => (string)($order['status'] ?? ''),
             'total' => (float)($order['total'] ?? 0),
             'placed_on' => substr((string)($order['created_at'] ?? ''), 0, 10),
-            'customer_email' => (string)($order['customer_email'] ?? ''),
-            'shipping_city' => (string)($order['shipping_city'] ?? ''),
-            'courier' => (string)($order['courier_name'] ?? ''),
-            'tracking_id' => (string)($order['tracking_id'] ?? ''),
             'items' => $items,
         ];
+        if ($includeCity) $summary['shipping_city'] = (string)($order['shipping_city'] ?? '');
+        if ($includeTracking) {
+            $summary['courier'] = (string)($order['courier_name'] ?? '');
+            $summary['tracking_id'] = (string)($order['tracking_id'] ?? '');
+        }
+        return $summary;
     }
 
     private function productStatus(array $args): array
