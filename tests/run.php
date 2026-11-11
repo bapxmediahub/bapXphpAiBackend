@@ -524,9 +524,11 @@ $tests['admin integrations explain api setup and support bot keys'] = function (
         'name="razorpay_live_key_secret"',
         'Active Key ID',
         'https://console.cloud.google.com/apis/credentials',
-        'agent_api_key',
-        'agent_model',
-        'https://generativelanguage.googleapis.com/v1beta/models/',
+        'name="ai_provider"',
+        'name="ai_api_key"',
+        'name="ai_compatible_url"',
+        'name="ai_compatible_key"',
+        'name="ai_compatible_models"',
         'support_bot_purge_policy',
         'always_purge',
     ] as $needle) {
@@ -541,6 +543,23 @@ $tests['admin integrations explain api setup and support bot keys'] = function (
     assertTrue(str_contains($view, 'Historical service records remain available to the owner'), 'Retired public services should not imply removal of historical admin records');
     foreach (['Customers will only see shop, booking', 'new orders and bookings', 'This site is ecommerce plus direct astrology services.'] as $retiredCopy) {
         assertTrue(!str_contains($view, $retiredCopy), 'Integration guidance must not advertise retired services: '.$retiredCopy);
+    }
+};
+
+$tests['compatible provider normalizes a shared URL and ordered model IDs'] = function (): void {
+    $settings = [
+        'ai_compatible_url' => 'https://example.com/v1/chat/completions/',
+        'ai_compatible_key' => 'fixture-key',
+        'ai_compatible_models' => "vendor/first\nvendor/second, vendor/first",
+    ];
+    $config = App\Services\SecretService::compatibleConfig($settings);
+    assertSame(true, $config['configured'], 'A complete compatible configuration is enabled');
+    assertSame('https://example.com/v1', $config['endpoint'], 'The completions path is appended once');
+    assertSame(['vendor/first', 'vendor/second'], $config['models'], 'Model order is stable and duplicates are removed');
+    foreach (['http://example.com/v1', 'https://127.0.0.1/v1', 'https://example.com/v1?key=secret', 'https://user@example.com/v1'] as $url) {
+        $invalid = App\Services\SecretService::compatibleConfig(array_replace($settings, ['ai_compatible_url' => $url]));
+        assertSame(false, $invalid['configured'], 'Unsafe endpoint is rejected');
+        assertSame('', $invalid['apiKey'], 'Invalid settings do not release an API key');
     }
 };
 
@@ -1538,7 +1557,7 @@ $tests['AI transport diagnostics distinguish causes without assuming the provide
             ['model' => 'gemma-4-26b-a4b-it', 'timeout_ms' => 12000],
         ],
         $client::googleAttemptPlan('gemma-4-31b-it'),
-        'The router must fail over only after exactly three primary API failures'
+        'The standard retry plan allows up to three primary attempts before fallback'
     );
     assertSame(
         [['model' => 'gemma-4-26b-a4b-it', 'timeout_ms' => 12000]],
@@ -2306,6 +2325,51 @@ $tests['agent monitoring counts bounded outcomes without treating fallbacks as m
     assertSame(null, App\Services\AuditLogService::agentSummary([], $now)['admin']['average_ms'], 'No traffic is not zero-latency success');
 };
 
+$tests['monitoring attributes attempts to the latest provider run even after a local answer'] = function (): void {
+    $event = static fn(string $at, string $outcome, array $attempts): array => [
+        'event' => 'agent.run',
+        'created_at' => $at,
+        'meta' => ['surface' => 'admin', 'outcome' => $outcome, 'provider_attempts' => $attempts],
+    ];
+    $primary = App\Services\SecretService::PRIMARY_MODEL;
+    $fallback = App\Services\SecretService::FALLBACK_MODEL;
+    $summary = App\Services\AuditLogService::agentSummary([
+        $event('2026-09-25T16:30:00+05:30', 'model', [['model' => $primary, 'status' => 200]]),
+        $event('2026-09-25T11:20:00Z', 'local', []),
+        $event('2026-09-25T11:10:00Z', 'error', [
+            ['model' => $primary, 'status' => 0, 'curl_error' => 28, 'total_ms' => 6000.4],
+            ['model' => $fallback, 'status' => 500, 'total_ms' => 718.6, 'raw_body' => 'private'],
+        ]),
+    ], strtotime('2026-09-25T12:00:00Z'));
+    assertSame([
+        'at' => '2026-09-25T11:10:00Z',
+        'outcome' => 'error',
+        'attempts' => [
+            ['model' => $primary, 'status' => 0, 'curl_error' => 28, 'total_ms' => 6000],
+            ['model' => $fallback, 'status' => 500, 'curl_error' => 0, 'total_ms' => 719],
+        ],
+    ], $summary['admin']['latest_provider_run'], 'Monitoring retains the chronological provider sequence and only operational metadata');
+};
+
+$tests['owner tools keep unexpected exception details out of model results'] = function (): void {
+    $registry = new App\Services\AgentToolRegistry();
+    $query = new class implements Stringable {
+        public function __toString(): string {
+            throw new RuntimeException('private fixture marker');
+        }
+    };
+    assertSame(
+        ['error' => 'That lookup is temporarily unavailable.'],
+        $registry->run('search_articles', ['query' => $query]),
+        'Unexpected exceptions should produce a bounded tool error'
+    );
+    assertSame(
+        ['error' => 'Give something to search for.'],
+        $registry->run('search_articles', ['query' => '']),
+        'An expected validation error should remain useful'
+    );
+};
+
 $tests['owner aggregate questions answer from allowlisted local sales data'] = function (): void {
     $summary = [
         'orders' => 4,
@@ -2318,6 +2382,11 @@ $tests['owner aggregate questions answer from allowlisted local sales data'] = f
     $revenue = App\Services\AgentToolRegistry::aggregateAnswerFromSummary('What is the revenue this month?', $summary, 0);
     assertTrue(str_contains((string)$revenue, '₹1,875.50') && str_contains((string)$revenue, '4 orders') && str_contains((string)$revenue, 'this month'), 'Revenue answer should state value, order count and calendar period');
     assertSame(null, App\Services\AgentToolRegistry::aggregateAnswerFromSummary('Where is order abc?', $summary), 'Specific lookups must stay on the scoped model/tool path');
+    $count = App\Services\AgentToolRegistry::aggregateAnswerFromSummary('How many orders have we had in the last 30 days?', $summary, 30);
+    assertSame('The store recorded 4 orders in the last 30 days. Includes all statuses with a recorded creation date in that period.', $count, 'Order count uses the selected date range and explains its scope');
+    foreach (['How many refunded orders were placed this month?', 'How many orders were placed yesterday?', 'How many orders did we receive from this customer?'] as $scoped) {
+        assertSame(null, App\Services\AgentToolRegistry::aggregateAnswerFromSummary($scoped, $summary), 'The generic count must not silently ignore a qualifier');
+    }
     $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
     assertTrue(str_contains($controller, "agentRun('admin', 'local'"), 'Owner aggregate path must be monitored distinctly');
 };
@@ -2560,6 +2629,41 @@ $tests['order email renders purchased quantities and escapes product text'] = fu
     assertSame('', App\Services\MailQueueService::orderItemsHtml([]), 'Missing order lines are not fabricated');
 };
 
+$tests['support answers exact catalog facts without needing the model'] = function (): void {
+    $product = ['name' => 'Sri Karuppasamy Pendant', 'slug' => 'karuppasami-dollar',
+        'description' => 'Depicts Sri Karuppasamy seated on a horse.', 'price' => 899];
+    $reply = \App\Services\SupportBotService::catalogFactReply(
+        'What does the Sri Karuppasamy Pendant depict, and what is its current price?', [$product]
+    );
+    assertTrue(str_contains((string)$reply, 'horse') && str_contains((string)$reply, '₹899.00')
+        && str_contains((string)$reply, '/product/karuppasami-dollar'), 'Use the stored description, price and link');
+    assertSame(null, \App\Services\SupportBotService::catalogFactReply(
+        'Compare the Sri Karuppasamy Pendant with a mala.', [$product]
+    ), 'Open comparisons still go to the model');
+    $product['price'] = null;
+    assertSame(null, \App\Services\SupportBotService::catalogFactReply(
+        'How much is the Sri Karuppasamy Pendant?', [$product]
+    ), 'Missing prices must not be invented');
+};
+
+$tests['support comparison uses two distinct catalog examples'] = function (): void {
+    $products = [
+        ['name' => 'Pendant with Malai', 'slug' => 'with-malai', 'description' => 'Includes a five-metal chain.'],
+        ['name' => 'Sri Karuppasamy Pendant', 'slug' => 'karuppasami-dollar', 'description' => 'Depicts the deity on a horse.'],
+    ];
+    $question = 'Can you explain the difference between a pendant and a mala for everyday devotional use?';
+    $reply = \App\Services\SupportBotService::catalogComparisonReply($question, $products);
+    assertTrue(str_contains((string)$reply, 'five-metal chain') && str_contains((string)$reply, 'deity on a horse'),
+        'Both examples must use their stored facts');
+    assertSame(null, \App\Services\SupportBotService::catalogComparisonReply($question, [$products[0]]),
+        'One product cannot stand in for both types');
+    $bot = new \App\Services\SupportBotService();
+    $actions = (new ReflectionMethod($bot, 'extractActions'))->getClosure($bot);
+    assertSame(['/product/Ayyappan%20Pendant', '/product/with-malai'], array_column(
+        $actions('See /product/Ayyappan%20Pendant and /product/with-malai.'), 'path'
+    ), 'Product links must preserve the saved slug and its encoded spaces');
+};
+
 $tests['support context selects a named product before applying the catalogue cap'] = function (): void {
     $catalogue = array_fill(0, 28, ['name' => 'Unrelated Ring', 'slug' => 'unrelated-ring']);
     $pendant = ['name' => 'Sri Karuppasamy Pendant', 'slug' => 'karuppasami-dollar'];
@@ -2569,6 +2673,11 @@ $tests['support context selects a named product before applying the catalogue ca
     ), 'Product 29 must be included when named');
     assertSame(20, count(\App\Services\AgentContextService::supportProducts($catalogue, 'What do you sell?')),
         'General catalog prompts remain bounded');
+    $mala = ['name' => 'Ayyappa Dollar with Impon Malai', 'slug' => 'ayyappa-dollar-with-impon-malai'];
+    $catalogue[] = $mala;
+    assertSame([$pendant, $mala], \App\Services\AgentContextService::supportProducts(
+        $catalogue, 'Can you explain the difference between a pendant and a mala?'
+    ), 'Generic comparison includes both catalog types, including the Malai spelling');
 };
 
 $tests['support product questions retain public specifications and reject unrelated articles'] = function (): void {
