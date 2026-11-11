@@ -2163,7 +2163,133 @@ tr:hover td { background: var(--color-bg-alt); }
 }
 .temple-feature-list {
     display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-lg);
+}
+.temple-directory .section-title,
+.temple-visit .section-title {
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 4vw, 3.25rem);
+    line-height: 1.15;
+}
+.temple-directory-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--color-white);
+    box-shadow: var(--shadow-sm);
+}
+.temple-directory-card__image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    background: var(--color-bg-alt);
+}
+.temple-directory-card__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: var(--space-lg);
+}
+.temple-directory-card__body h2,
+.temple-directory__contact h2,
+.temple-visit__content h2 {
+    margin: 0 0 var(--space-xs);
+    font-family: var(--font-serif);
+    font-size: clamp(1.25rem, 2vw, 1.6rem);
+    line-height: 1.25;
+}
+.temple-directory-card__body p {
+    margin: 0 0 var(--space-md);
+    color: var(--color-text-muted);
+    overflow-wrap: anywhere;
+}
+.temple-directory-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-xs);
+}
+.temple-directory-card__actions .btn {
+    min-height: 48px;
+}
+.temple-directory-card__body .temple-directory-card__actions {
+    margin-top: auto;
+}
+.temple-directory__contact {
+    margin-top: var(--space-xl);
+}
+.temple-directory__empty {
+    text-align: center;
+}
+.temple-visit__back {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-bottom: var(--space-md);
+}
+.temple-visit__overview {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
     gap: var(--space-xl);
+}
+.temple-visit__overview:has(> :only-child) {
+    grid-template-columns: minmax(0, 1fr);
+}
+.temple-visit__info {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+.temple-visit__facts {
+    display: grid;
+    gap: var(--space-sm);
+    margin: var(--space-md) 0;
+}
+.temple-visit__facts dt {
+    color: var(--color-primary);
+    font-weight: 700;
+}
+.temple-visit__facts dd {
+    margin: 0;
+    color: var(--color-text-muted);
+}
+.temple-visit__image {
+    display: block;
+    width: 100%;
+    max-height: 28rem;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+}
+.temple-visit__content {
+    max-width: 65ch;
+    margin-top: var(--space-xl);
+}
+.temple-visit__content p,
+.temple-visit__content ul {
+    margin-bottom: var(--space-lg);
+}
+.temple-visit__map {
+    display: block;
+    width: 100%;
+    height: 300px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+@media (max-width: 1000px) {
+    .temple-feature-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+    .temple-feature-list,
+    .temple-visit__overview { grid-template-columns: minmax(0, 1fr); }
+    .temple-directory-card__body { padding: var(--space-md); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .temple-carousel--single .temple-feature-card { transition: none; }
 }
 .temple-feature-card {
     display: grid;
@@ -2693,16 +2819,6 @@ tr:hover td { background: var(--color-bg-alt); }
     box-shadow: var(--shadow-lg);
     border-color: rgba(58, 0, 3,0.55);
 }
-.temple-carousel--single .temple-feature-card.reveal {
-    opacity: 0;
-    transform: none;
-    transition: opacity 1.6s ease-in-out, visibility 1.6s ease-in-out;
-}
-.temple-carousel--single .temple-feature-card.reveal.is-active {
-    opacity: 1;
-    transform: none;
-}
-
 /* ── Animations ── */
 @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }

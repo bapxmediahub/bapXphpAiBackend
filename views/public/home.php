@@ -223,15 +223,15 @@
     <div class="section-header">
         <span class="eyebrow serif-accent">Sacred Spaces · Divine Energy</span>
         <h2 class="section-title">Panchami Temples Guide</h2>
-        <p class="lede">Explore temple guides for divine blessings, traditional pooja details, and spiritual routes around Chennai. <a href="/temples">Click here</a></p>
+        <p class="lede"><a href="/temples">Browse the temple directory</a> for locations and visit details.</p>
     </div>
     <div class="temple-carousel temple-carousel--single" data-temple-slider aria-label="Temple guide carousel">
         <div class="temple-carousel-track">
         <?php foreach(array_values($temples) as $index => $temple): ?>
-            <a class="showcase-card temple-feature-card reveal <?= $index === 0 ? 'is-active' : '' ?>" href="/temples/<?= e($temple['slug'] ?? '') ?>" aria-label="View <?= e($temple['name'] ?? 'Temple') ?>">
+            <a class="showcase-card temple-feature-card <?= $index === 0 ? 'is-active' : '' ?>" href="/temples/<?= e(rawurlencode((string)($temple['slug'] ?? ''))) ?>" aria-label="View <?= e($temple['name'] ?? 'Temple') ?>">
                 <div class="temple-feature-card__media">
                     <?php if(!empty($temple['image_url'])): ?>
-                        <img src="<?= e(webp_src($temple['image_url'])) ?>" alt="<?= e($temple['name']) ?> — Temple guide at Sri Panchami Spiritual, Chennai" decoding="async">
+                        <img src="<?= e(webp_src($temple['image_url'])) ?>" alt="" decoding="async">
                     <?php else: ?>
                         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
                     <?php endif; ?>
@@ -267,7 +267,9 @@ document.addEventListener('DOMContentLoaded', function () {
     var slides = Array.prototype.slice.call(slider.querySelectorAll('.temple-feature-card'));
     if (slides.length < 2) return;
     var index = 0;
+    var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     setInterval(function () {
+        if (reducedMotion.matches || slider.matches(':hover, :focus-within') || document.hidden) return;
         slides[index].classList.remove('is-active');
         index = (index + 1) % slides.length;
         slides[index].classList.add('is-active');

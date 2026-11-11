@@ -775,7 +775,7 @@ $tests['home temple guide uses admin driven dissolve carousel'] = function (): v
     assertTrue(!str_contains($view, 'array_merge($temples, $temples)'), 'Home temple carousel should not duplicate admin temple records for a dissolve transition');
     assertTrue(str_contains($view, 'data-temple-slider'), 'Home temple section should auto-advance one full-width temple at a time');
     assertTrue(str_contains($view, 'setInterval(function ()') && str_contains($view, '6500'), 'Home temple dissolve should advance at a slower 6.5 second pace');
-    assertTrue(str_contains($view, '<a href="/temples">Click here</a>'), 'Home temple section should link to all temples inline from the lede sentence');
+    assertTrue(str_contains($view, '<a href="/temples">Browse the temple directory</a>'), 'Home temple section should link to all temples inline from the lede sentence');
     assertTrue(!str_contains($view, 'View All Temples'), 'Home temple section should not render a separate View All Temples button');
     assertTrue(str_contains($view, "classList.remove('is-active')") && str_contains($view, "classList.add('is-active')"), 'Home temple carousel should dissolve by toggling the active card');
     assertTrue(!str_contains($view, 'translateX'), 'Home temple carousel should not slide or animate backward');
@@ -785,6 +785,15 @@ $tests['home temple guide uses admin driven dissolve carousel'] = function (): v
     assertTrue(str_contains($css, '.temple-carousel--single .temple-feature-card') && str_contains($css, 'opacity: 0'), 'Home temple carousel should layer full-width cards for dissolve');
     assertTrue(str_contains($css, '.temple-carousel--single .temple-feature-card.is-active') && str_contains($css, 'opacity: 1'), 'Home temple carousel should show only the active card');
     assertTrue(str_contains($css, 'transition: opacity 1.6s ease-in-out'), 'Home temple carousel should use a slow smooth dissolve transition');
+};
+
+$tests['temple directions use editor and legacy map fields'] = function (): void {
+    $legacy = 'https://www.google.com/maps/search/?api=1&query=Temple';
+    $updated = 'https://maps.app.goo.gl/Temple';
+    assertSame($updated, \App\Services\TempleService::directionsUrl(['map_url' => $updated, 'map_link' => $legacy]), 'Saved editor URL should take priority');
+    assertSame($legacy, \App\Services\TempleService::directionsUrl(['map_link' => $legacy]), 'Legacy temple records should retain directions');
+    assertSame($legacy, \App\Services\TempleService::directionsUrl(['map_url' => 'javascript:alert(1)', 'map_link' => $legacy]), 'Invalid editor URL should fall back to a valid legacy link');
+    assertSame(null, \App\Services\TempleService::directionsUrl(['address' => 'Temple street']), 'An address should not be treated as a saved directions link');
 };
 
 $tests['temple listing and metadata are location neutral'] = function (): void {
