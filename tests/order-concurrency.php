@@ -43,6 +43,38 @@ $pdo->exec('CREATE TABLE orders (
     id VARCHAR(64) PRIMARY KEY, _data JSON NOT NULL, _owner VARCHAR(255),
     _status VARCHAR(64), _created_at VARCHAR(40), _updated_at VARCHAR(40)
 )');
+$pdo->exec('CREATE TABLE addresses LIKE orders');
+
+$addresses = new \App\Services\AddressService($store);
+$customer = 'address-owner@example.test';
+$other = 'other-customer@example.test';
+$addressInput = [
+    'address_name' => 'Home', 'name' => 'Fixture Customer', 'address' => 'Fixture Street',
+    'city' => 'Chennai', 'state' => 'Tamil Nadu', 'pincode' => '600001',
+];
+$home = $addresses->save($customer, $addressInput);
+$work = $addresses->save($customer, ['address_name' => 'Work', 'is_default' => true] + $addressInput);
+$edited = $addresses->save($customer, ['address_name' => 'Updated work'] + $addressInput, $work['id']);
+if ($edited['id'] !== $work['id'] || count($addresses->forCustomer($customer)) !== 2
+    || $addresses->forCustomer($customer)[0]['id'] !== $work['id']) {
+    throw new RuntimeException('Editing an address must preserve its identity and default selection.');
+}
+foreach ([
+    fn() => $addresses->owned($other, $work['id']),
+    fn() => $addresses->save($other, $addressInput, $work['id']),
+    fn() => $addresses->delete($other, $work['id']),
+] as $operation) {
+    try {
+        $operation();
+        throw new RuntimeException('A customer must not access another customer’s address.');
+    } catch (InvalidArgumentException) {}
+}
+$addresses->delete($customer, $work['id']);
+$remaining = $addresses->forCustomer($customer);
+if (count($remaining) !== 1 || $remaining[0]['id'] !== $home['id'] || empty($remaining[0]['is_default'])) {
+    throw new RuntimeException('Removing the default address must promote the remaining address.');
+}
+echo "Address ownership and default selection passed.\n";
 
 $race = static function (string $firstPayment, string $secondPayment, string $prefix, string $mode = 'direct', ?string $recoveryId = null) use ($pdo): array {
     if ((int)$pdo->query("SELECT GET_LOCK(CONCAT('sps:orders:', SHA1(DATABASE())), 0)")->fetchColumn() !== 1) {

@@ -22,6 +22,14 @@ final class AddressService {
     }
 
     public function delete(string $email, string $id): void {
+        $email = strtolower(trim($email));
+        $this->store->mutateAddressBook($email, 'delete_customer_address', ['id' => $id], function () use ($email, $id): array {
+            $this->deleteOwned($email, $id);
+            return [];
+        });
+    }
+
+    private function deleteOwned(string $email, string $id): void {
         $address = $this->owned($email, $id);
         $this->store->delete('addresses', $id);
         if (!empty($address['is_default'])) {
@@ -33,6 +41,13 @@ final class AddressService {
     }
 
     public function save(string $email, array $input, string $id = ''): array {
+        $email = strtolower(trim($email));
+        $fields = array_intersect_key($input, array_flip(['address_name', 'name', 'phone', 'address', 'city', 'pincode', 'state', 'is_default']));
+        return $this->store->mutateAddressBook($email, 'save_customer_address', ['id' => $id, 'fields' => $fields],
+            fn(): array => $this->saveOwned($email, $fields, $id));
+    }
+
+    private function saveOwned(string $email, array $input, string $id): array {
         $email = strtolower(trim($email));
         $name = trim((string)($input['address_name'] ?? ''));
         $address = trim((string)($input['address'] ?? ''));

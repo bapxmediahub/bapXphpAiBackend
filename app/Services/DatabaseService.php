@@ -151,6 +151,32 @@ final class DatabaseService {
             throw $e;
         }
     }
+    /** Keep address ownership and default selection consistent on the database host. */
+    public function mutateAddressBook(string $email, string $action, array $payload, callable $operation): array {
+        if ($email === '') throw new \InvalidArgumentException('A customer account is required.');
+        if ($this->isTestMode()) return $operation();
+        if ($this->isRemote()) {
+            return $this->remoteMutation($action, 'addresses', ['email' => $email] + $payload)['result'];
+        }
+        $pdo = $this->db();
+        $name = 'sps:addresses:' . sha1($email);
+        $lock = $pdo->prepare('SELECT GET_LOCK(?, 5)');
+        $lock->execute([$name]);
+        if ((int)$lock->fetchColumn() !== 1) throw new \RuntimeException('Address book is busy. Please retry.');
+        try {
+            $pdo->beginTransaction();
+            $result = $operation();
+            $pdo->commit();
+            return $result;
+        } catch (\Throwable $error) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            throw $error;
+        } finally {
+            $release = $pdo->prepare('SELECT RELEASE_LOCK(?)');
+            $release->execute([$name]);
+        }
+    }
+
     /** Serialize order creation and invoice numbering on the database host. */
     private function withOrderInvoiceLock(callable $operation): array {
         $pdo = $this->db();
