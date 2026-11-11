@@ -34,7 +34,7 @@ final class SupportController extends BaseController {
             $answer = (new SupportBotService())->answer($_POST['message'] ?? '', $user);
             $this->jsonResponse($answer);
         } catch (\Throwable $e) {
-            (new \App\Services\AuditLogService())->agentRun('support', 'error', $startedAt);
+            (new \App\Services\AuditLogService())->agentRun('support', 'error', $startedAt, 'internal_error');
             $this->jsonResponse(['error' => 'Unable to answer right now. Please try again.'], 400);
         }
     }

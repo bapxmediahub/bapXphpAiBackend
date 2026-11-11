@@ -2051,6 +2051,22 @@ $tests['support assistant answers signed-out visitors instead of printing a menu
     }
 };
 
+$tests['agent failure categories are bounded and aggregated'] = function (): void {
+    assertSame('timeout', \App\Services\AiClient::classifyFailure(0, 28), 'Timeout is distinguishable');
+    assertSame('authentication', \App\Services\AiClient::classifyFailure(403, 0), 'Provider authentication is distinguishable');
+    assertSame('rate_limit', \App\Services\AiClient::classifyFailure(429, 0), 'Rate limiting is distinguishable');
+    $now = time();
+    $events = [
+        ['event'=>'agent.run', 'created_at'=>date('c', $now), 'meta'=>['surface'=>'support','outcome'=>'fallback','duration_ms'=>21000,'reason'=>'timeout']],
+        ['event'=>'agent.run', 'created_at'=>date('c', $now), 'meta'=>['surface'=>'admin','outcome'=>'error','duration_ms'=>10,'reason'=>'provider_request']],
+        ['event'=>'agent.run', 'created_at'=>date('c', $now), 'meta'=>['surface'=>'admin','outcome'=>'error','reason'=>'private user text']],
+    ];
+    $summary = \App\Services\AuditLogService::agentSummary($events, $now);
+    assertSame(1, $summary['support']['reasons']['timeout'] ?? 0, 'Support reason appears in summary');
+    assertSame(1, $summary['admin']['reasons']['provider_request'] ?? 0, 'Admin reason appears in summary');
+    assertTrue(!isset($summary['admin']['reasons']['private user text']), 'Arbitrary text cannot appear as a reason');
+};
+
 $tests['support fallback explains tracking without claiming a personal order lookup'] = function (): void {
     $bot = new App\Services\SupportBotService();
     $fallback = (new ReflectionMethod($bot, 'fallbackReply'))->getClosure($bot);
