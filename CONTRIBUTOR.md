@@ -6,7 +6,7 @@ category: root
 
 # Contributing
 
-Read `CLAUDE.md`, then use `README.md` and the generated indexes to locate the
+Read `AGENTS.md`, then use `README.md` and the generated indexes to locate the
 smallest owning source. Do not introduce parallel implementations or local copies of
 hosted MySQL data.
 

@@ -303,7 +303,7 @@ cmd_understand() {
   fi
 
   # ── Skills ──
-  local skills_root="$ROOT/.claude/skills"
+  local skills_root="$ROOT/.agents/skills"
   printf "${B}── Skills ──────────────────────────────────${N}\n"
   if [ -d "$skills_root" ]; then
     for skill_dir in "$skills_root"/*/; do
@@ -722,7 +722,7 @@ cmd_map_val() {
 
 # ── Skills ──────────────────────────────────────────────────────
 cmd_skills() {
-  local skills_root="$ROOT/.claude/skills"
+  local skills_root="$ROOT/.agents/skills"
   if [ ! -d "$skills_root" ]; then
     warn "Skills directory not found: $skills_root"
     return
@@ -2073,7 +2073,7 @@ cmd_skill() {
   local name="${1:-}"
   [ -z "$name" ] && cmd_skills && return
 
-  local skill_file="$ROOT/.claude/skills/$name/SKILL.md"
+  local skill_file="$ROOT/.agents/skills/$name/SKILL.md"
   if [ -f "$skill_file" ]; then
     echo "── $name ──"
     cat "$skill_file"
