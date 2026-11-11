@@ -50,12 +50,21 @@ git rev-parse HEAD
 Do not run issue, PR, or review conversations from Hostinger. Those
 belong to GitHub Actions and the GitHub web interface.
 
-One-time Git auto-deploy from `main` is configured — commits to GitHub main deploy automatically. Merge only after local validation passes:
+## Release workflow
 
-```bash
-bapXphp update
-bapXphp ci
-```
+1. Work from the linked issue on a branch. Run `./bapXphp update` for generated
+   inventory changes and `./bapXphp ci` before opening the PR.
+2. For a UI change, use the built-in Browser to exercise the affected route and
+   interactions on desktop and at 375 px. Record the routes, actions, and results
+   in the PR. Use local fixture data for submissions that would change live data.
+3. Review the PR diff and resolve review findings. Check that GitHub validation
+   passed for the commit under review. Rerun affected checks after fixes or conflicts.
+4. Merge into `main` and check the main-branch validation run. Hostinger pulls
+   `main` automatically. For UI releases, revisit the affected flows in the built-in
+   Browser and verify a change specific to the release on the live site.
+5. Record the merge commit, tested live URLs, observed results, and any steps
+   that still need verification in the linked issue. Close it after its
+   acceptance checks are verified.
 
 ## Repository Architecture
 
