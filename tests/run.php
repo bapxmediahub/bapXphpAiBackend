@@ -2898,6 +2898,11 @@ $tests['Enterprise report tools use the requested inclusive relative period'] = 
         assertSame($today->modify('-6 days')->format('Y-m-d'), $result['from'], 'Last seven days includes today and six prior dates');
         assertSame($today->format('Y-m-d'), $result['to'], 'The report ends today in India time');
 
+        $tools = new \App\Services\AgentToolRegistry(ownerQuestion: 'Give me daily ticket counts for the last 7 days.');
+        $day = $today->format('Y-m-d');
+        $result = $tools->run('support_enquiries', ['from'=>$day, 'to'=>$day]);
+        assertSame($day, $result['from'], 'Deliberate daily subranges are preserved');
+
         $tools = new \App\Services\AgentToolRegistry(ownerQuestion: 'Compare the last 7 days with the last 30 days.');
         $start = $today->modify('-29 days')->format('Y-m-d');
         $result = $tools->run('support_enquiries', ['from'=>$start]);

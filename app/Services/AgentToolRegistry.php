@@ -604,8 +604,15 @@ final class AgentToolRegistry
         if ($days < 1 || $days > 366) return $args;
 
         $today = new \DateTimeImmutable('today', new \DateTimeZone('Asia/Kolkata'));
+        $end = $today->format('Y-m-d');
+        $extraDay = $today->modify('-' . $days . ' days')->format('Y-m-d');
+        if (isset($args['from']) || isset($args['to'])) {
+            // Correct the observed inclusive off-by-one. Preserve deliberate subranges
+            // such as a model asking for one day at a time for a daily breakdown.
+            if (($args['from'] ?? null) !== $extraDay || ($args['to'] ?? $end) !== $end) return $args;
+        }
         $args['from'] = $today->modify('-' . ($days - 1) . ' days')->format('Y-m-d');
-        $args['to'] = $today->format('Y-m-d');
+        $args['to'] = $end;
         return $args;
     }
 
