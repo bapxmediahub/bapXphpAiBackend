@@ -2170,6 +2170,10 @@ $tests['owner aggregate questions answer from allowlisted local sales data'] = f
 };
 
 $tests['downloadable invoice response preserves snapshot and review warning'] = function (): void {
+    foreach (['views/admin/detail.php', 'views/admin/tax-report.php', 'views/account/invoice.php'] as $view) {
+        $source = file_get_contents(app_path($view));
+        assertTrue(preg_match('/<a[^\n]+\bdownload\b[^\n]+\?download=1/', $source) === 1, "{$view} should explicitly request a browser download");
+    }
     $order = [
         'invoice_number' => "SPS/TEST/1\"\r\nInjected: yes", 'invoice_date' => '2026-11-11',
         'supplier' => ['trade_name' => 'Original & Co', 'gstin' => '33SNAPSHOT'],
