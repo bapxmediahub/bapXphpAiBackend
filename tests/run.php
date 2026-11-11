@@ -835,7 +835,7 @@ $tests['checkout payment verification preserves shipping contact details'] = fun
     assertTrue(str_contains($checkout, 'typeof Razorpay === \'undefined\''), 'Checkout should not try to open Razorpay when its script is unavailable');
     assertTrue(str_contains($checkout, 'saved-address'), 'Checkout should expose saved addresses when available');
     assertTrue(str_contains($checkout, 'save_address'), 'Checkout should support saving a named address');
-    assertTrue(str_contains(file_get_contents(app_path('app/Services/AddressService.php')), "read('addresses')"), 'Saved addresses should use the shared remote database service');
+    assertTrue(str_contains(file_get_contents(app_path('app/Services/AddressService.php')), '->customerAddresses($email)'), 'Saved addresses should use the shared owner-scoped database query');
 };
 
 $tests['verified payments remain recoverable when order persistence fails'] = function (): void {
