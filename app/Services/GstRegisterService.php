@@ -8,6 +8,49 @@ final class GstRegisterService {
         'Taxable (INR)', 'CGST (INR)', 'SGST (INR)', 'IGST (INR)', 'Line total (INR)', 'Review',
     ];
 
+    /** Select the same issued invoices for the report, exports and Enterprise tool. */
+    public static function ordersForPeriod(array $orders, string $from, string $to): array {
+        return array_values(array_filter($orders, static function (array $order) use ($from, $to): bool {
+            $date = substr((string)($order['invoice_date'] ?? ''), 0, 10);
+            return !empty($order['invoice_number']) && $date >= $from && $date <= $to;
+        }));
+    }
+
+    public static function totals(array $orders): array {
+        $totals = ['taxable' => 0.0, 'cgst' => 0.0, 'sgst' => 0.0, 'igst' => 0.0, 'tax' => 0.0, 'gross' => 0.0];
+        foreach ($orders as $order) {
+            $totals['taxable'] += (float)($order['taxable_value'] ?? 0);
+            $totals['cgst'] += (float)($order['cgst_total'] ?? 0);
+            $totals['sgst'] += (float)($order['sgst_total'] ?? 0);
+            $totals['igst'] += (float)($order['igst_total'] ?? 0);
+            $totals['gross'] += (float)($order['total'] ?? 0);
+        }
+        $totals['tax'] = $totals['cgst'] + $totals['sgst'] + $totals['igst'];
+        return array_map(static fn(float $amount): float => round($amount, 2), $totals);
+    }
+
+    public static function reviewReasons(array $orders, array $settings): array {
+        $reasons = [];
+        foreach ($orders as $order) {
+            $reason = TaxService::invoiceReviewReason($order, $settings);
+            if ($reason !== null) $reasons[(string)($order['id'] ?? $order['invoice_number'])] = $reason;
+        }
+        return $reasons;
+    }
+
+    /** Aggregate all review notes that the line export shows, once per invoice. */
+    public static function reviewCount(array $orders, array $reviewReasons): int {
+        $count = 0;
+        foreach ($orders as $order) {
+            foreach (self::lines([$order], $reviewReasons) as $line) {
+                if ($line[array_key_last($line)] === '') continue;
+                $count++;
+                break;
+            }
+        }
+        return $count;
+    }
+
     public static function text(string $value): string {
         // Keep spreadsheet programs from interpreting stored text as a formula.
         return preg_match('/^[\x00-\x20]*[=+@-]|^[\t\r\n]/', $value) ? "'" . $value : $value;

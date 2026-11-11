@@ -223,6 +223,8 @@
                 "AgentAttachmentService",
                 "AgentDraftService",
                 "AgentToolRegistry",
+                "AgentContextService",
+                "GstRegisterService",
                 "AiReplyCleaner",
                 "AiClient",
                 "AuthService"

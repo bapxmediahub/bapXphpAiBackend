@@ -23,6 +23,7 @@ final class AiClient
     private const PRIMARY_ATTEMPT_TIMEOUT_MS = 6000;
     private const FALLBACK_ATTEMPT_TIMEOUT_MS = 12000;
     private const TOOL_CONVERSATION_TIMEOUT_NS = 32_000_000_000;
+    private const MAX_TOOL_CALLS_PER_ROUND = 8;
     private const ERROR_PREFIXES = ['AI request failed', 'No AI API key'];
     private int $transportError = 0;
     private ?string $failureCategory = null;
@@ -170,6 +171,11 @@ final class AiClient
             }
             if ($calls === [] || $finalRound) { $answer = self::answerFromParts($parts); if (trim($answer) === '') $this->failureCategory = 'empty_response'; return $answer; }
 
+            if (count($calls) > self::MAX_TOOL_CALLS_PER_ROUND) {
+                $this->failureCategory = 'provider_response';
+                return 'AI request failed: the model requested too many lookups in one step.';
+            }
+
             // Keep the model's own turn in the history, or the next request has a
             // function response answering a call the conversation no longer contains.
             $contents[] = ['role' => 'model', 'parts' => self::googleToolHistoryParts($parts)];
@@ -178,10 +184,10 @@ final class AiClient
             $responses = [];
             foreach ($calls as $call) {
                 $name = (string)$call['name'];
-                $args = is_array($call['args'] ?? null) ? $call['args'] : [];
-                $result = $tools->has($name)
+                $args = $call['args'] ?? [];
+                $result = is_array($args) && ($args === [] || !array_is_list($args)) && $tools->has($name)
                     ? $tools->run($name, $args)
-                    : ['error' => 'No such tool: ' . $name];
+                    : ['error' => 'Invalid tool call'];
                 if (!isset($result['error'])) $this->toolCalls++;
                 $responses[] = self::googleFunctionResponse($call, $result);
             }
@@ -379,15 +385,21 @@ final class AiClient
                     if ($round === 0) break;
                     return '';
                 }
+                if (!is_array($calls) || count($calls) > self::MAX_TOOL_CALLS_PER_ROUND) {
+                    $this->failureCategory = 'provider_response';
+                    return 'AI request failed: the model returned an invalid set of lookups.';
+                }
                 $assistant = ['role' => 'assistant', 'content' => $message['content'] ?? null, 'tool_calls' => []];
                 $responses = [];
-                foreach (array_slice($calls, 0, 8) as $call) {
+                foreach ($calls as $call) {
                     $id = $call['id'] ?? '';
                     $name = $call['function']['name'] ?? '';
                     $arguments = $call['function']['arguments'] ?? '';
                     if (!is_string($id) || $id === '' || !is_string($name) || !is_string($arguments)) continue;
+                    // Chat Completions supplies a JSON object encoded as a string.
+                    // https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create
                     $args = json_decode($arguments, true);
-                    $result = is_array($args) && $tools->has($name)
+                    $result = str_starts_with(ltrim($arguments), '{') && is_array($args) && $tools->has($name)
                         ? $tools->run($name, $args)
                         : ['error' => 'Invalid tool call'];
                     if (!isset($result['error'])) $this->toolCalls++;

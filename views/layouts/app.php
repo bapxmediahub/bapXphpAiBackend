@@ -403,11 +403,11 @@ if ($__flash):
         <button type="button" class="support-panel__close" aria-label="Close support">×</button>
     </div>
     <div class="support-panel__body" id="support-log" aria-live="polite">
-        <p>Ask about products, orders, delivery addresses, or temple guidance.</p>
-        <?php if(empty($_SESSION['user'])): ?><p>Sign in to ask about your personal order data.</p><?php endif; ?>
+        <p>Ask about products, delivery, orders, or support tickets.</p>
+        <?php if(empty($_SESSION['user'])): ?><p>Sign in to check your orders or support tickets.</p><?php endif; ?>
     </div>
     <form class="support-panel__form" id="support-form">
-        <textarea name="message" rows="3" required aria-label="Support message" placeholder="Ask about a product, order, address, or temple"></textarea>
+        <textarea name="message" rows="3" required aria-label="Support message" placeholder="Ask about a product, order, or ticket"></textarea>
         <button class="btn btn-primary btn-sm">Send</button>
     </form>
 </section>

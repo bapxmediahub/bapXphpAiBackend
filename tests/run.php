@@ -683,7 +683,7 @@ $tests['support assistant widget uses browser session memory and google model se
     $layout = file_get_contents(app_path('views/layouts/app.php'));
     $service = file_get_contents(app_path('app/Services/SupportBotService.php'));
     routeExists('/support/ask', 'Support ask route should be registered');
-    foreach (['support-fab', 'support-panel', '/support/ask', 'products, orders, delivery addresses, or temple guidance', 'sessionStorage', 'data-support-key'] as $needle) {
+    foreach (['support-fab', 'support-panel', '/support/ask', 'products, delivery, orders, or support tickets', 'sessionStorage', 'data-support-key'] as $needle) {
         assertTrue(str_contains($layout, $needle), "Support widget should include {$needle}");
     }
     foreach (['Customer context JSON', 'browser_session'] as $needle) {
@@ -1274,12 +1274,24 @@ $tests['the admin agent grounds a count instead of returning the nearest number'
     assertTrue(isset($registry->run('search_articles', [])['error']), 'search_articles needs a query');
 
     $source = file_get_contents(app_path('app/Services/AgentToolRegistry.php'));
-    assertTrue(str_contains($source, 'ARRAY_FILTER_USE_BOTH'),
-        'A record holding nothing but an id is not an enquiry and must not be counted');
-    assertTrue(str_contains($source, 'No customer support enquiries have been recorded yet'),
-        'Zero enquiries should be stated plainly, not left for the model to phrase');
-    assertTrue(str_contains($source, "'topic_words_used' => self::ENQUIRY_TOPICS"),
-        'The words behind an interpretation should travel with the count');
+    $range = ['from'=>'2026-11-01', 'to'=>'2026-11-30'];
+    $tickets = [
+        ['id'=>'placeholder'],
+        ['id'=>'secret-reference', 'customer_email'=>'private@example.test', 'message'=>'Where is my order?', 'created_at'=>'2026-11-01T10:00:00+05:30', 'status'=>'open'],
+        ['id'=>'closed', 'message'=>'This is an order question', 'created_at'=>'2026-11-01T10:00:00+05:30', 'status'=>'closed'],
+        ['id'=>'different-topic', 'message'=>'Thank you for the reorder notice', 'reply'=>'Order shipped', 'created_at'=>'2026-11-01T10:00:00+05:30', 'status'=>'open'],
+        ['id'=>'too-early', 'message'=>'Where is my order?', 'created_at'=>'2026-10-31T10:00:00+05:30', 'status'=>'open'],
+    ];
+    $result = \App\Services\AgentToolRegistry::supportEnquiryCounts($tickets, $range, 'orders', 'unanswered');
+    assertSame(1, $result['total'], 'The scoped count should use dates, original enquiry text and current status');
+    assertSame(['open'=>1], $result['by_status'], 'Unanswered excludes closed tickets even if they have no reply');
+    assertTrue(isset($result['topic_words_used']['orders']), 'Explain the topic interpretation');
+    assertTrue(!str_contains(json_encode($result), 'secret-reference') && !str_contains(json_encode($result), 'private@example.test'), 'Report results must remain aggregate');
+    assertTrue(isset($registry->run('support_enquiries', ['status'=>'pending'])['error']), 'Reject unrecognized ticket filters');
+    assertTrue(isset($registry->run('gst_register_summary', ['from'=>'2026-02-31'])['error']), 'Reject invalid dates before reading orders');
+    assertTrue(isset($registry->run('store_count', ['entity'=>'secrets'])['error']), 'Reject collections outside the fixed count allowlist');
+    assertSame(null, $registry->aggregateAnswer('Compare revenue and GST last month'), 'Compound requests need model-selected data instead of one local summary');
+    assertSame(null, $registry->aggregateAnswer('What was our revenue yesterday?'), 'Do not substitute a default period for an unsupported local filter');
     assertTrue(str_contains($source, 'blog->all(false)') || str_contains($source, "BlogService())->all(false)"),
         'Article search must use the public filter so an unpublished post cannot be cited');
     // Still read-only, now that two more tools exist.
@@ -1304,9 +1316,9 @@ $tests['the admin agent grounds a count instead of returning the nearest number'
     }
 
     $admin = file_get_contents(app_path('app/Controllers/AdminController.php'));
-    assertTrue(str_contains($admin, 'say what it counts, where it came from'),
+    assertTrue(str_contains($admin, 'Use the matching read-only tool before making any claim'),
         'The admin persona should require a number to carry its source');
-    assertTrue(str_contains($admin, 'Never substitute a different number'),
+    assertTrue(str_contains($admin, 'distinguish empty results from failed lookups'),
         'The persona should forbid answering with whatever number is to hand');
     assertTrue(!str_contains($admin, 'You are the admin assistant for this store. Answer the question directly.'),
         'The prompt that produced the one-word answer should be gone');
@@ -2400,7 +2412,7 @@ $tests['monitoring attributes attempts to the latest provider run even after a l
     ], $summary['admin']['latest_provider_run'], 'Monitoring retains the chronological provider sequence and only operational metadata');
 };
 
-$tests['owner tools keep unexpected exception details out of model results'] = function (): void {
+$tests['owner tools reject malformed model arguments before execution'] = function (): void {
     $registry = new App\Services\AgentToolRegistry();
     $query = new class implements Stringable {
         public function __toString(): string {
@@ -2408,9 +2420,9 @@ $tests['owner tools keep unexpected exception details out of model results'] = f
         }
     };
     assertSame(
-        ['error' => 'That lookup is temporarily unavailable.'],
+        ['error' => 'Invalid lookup parameters.'],
         $registry->run('search_articles', ['query' => $query]),
-        'Unexpected exceptions should produce a bounded tool error'
+        'Reject an invalid argument before its string conversion can run'
     );
     assertSame(
         ['error' => 'Give something to search for.'],
@@ -2427,15 +2439,26 @@ $tests['owner aggregate questions answer from allowlisted local sales data'] = f
     ];
     $best = App\Services\AgentToolRegistry::aggregateAnswerFromSummary('Which products sell best?', $summary, 30);
     assertTrue(str_contains((string)$best, 'Brass Lamp — 3 units'), 'Best-seller answer should state the locally counted units');
-    assertTrue(str_contains((string)$best, 'last 30 days') && str_contains((string)$best, 'Cancelled and refunded orders are excluded'), 'Answer should state its period and counting rule');
+    assertTrue(str_contains((string)$best, 'last 30 days') && str_contains((string)$best, 'paid orders before returns'), 'Answer should state its period and counting rule');
     $revenue = App\Services\AgentToolRegistry::aggregateAnswerFromSummary('What is the revenue this month?', $summary, 0);
-    assertTrue(str_contains((string)$revenue, '₹1,875.50') && str_contains((string)$revenue, '4 orders') && str_contains((string)$revenue, 'this month'), 'Revenue answer should state value, order count and calendar period');
+    assertTrue(str_contains((string)$revenue, '₹1,875.50') && str_contains((string)$revenue, '4 paid orders') && str_contains((string)$revenue, 'this month'), 'Revenue answer should state value, order count and calendar period');
     assertSame(null, App\Services\AgentToolRegistry::aggregateAnswerFromSummary('Where is order abc?', $summary), 'Specific lookups must stay on the scoped model/tool path');
     $count = App\Services\AgentToolRegistry::aggregateAnswerFromSummary('How many orders have we had in the last 30 days?', $summary, 30);
     assertSame('The store recorded 4 orders in the last 30 days. Includes all statuses with a recorded creation date in that period.', $count, 'Order count uses the selected date range and explains its scope');
     foreach (['How many refunded orders were placed this month?', 'How many orders were placed yesterday?', 'How many orders did we receive from this customer?'] as $scoped) {
         assertSame(null, App\Services\AgentToolRegistry::aggregateAnswerFromSummary($scoped, $summary), 'The generic count must not silently ignore a qualifier');
     }
+    $fixture = [
+        ['created_at'=>'2026-11-10','status'=>'confirmed','payment_id'=>'paid','total'=>100.50,
+            'items'=>[['name'=>'Brass Lamp','qty'=>1,'line_total'=>100.50]]],
+        ['created_at'=>'2026-11-11','status'=>'pending','total'=>700,
+            'items'=>[['name'=>'Unpaid item','qty'=>4,'line_total'=>700]]],
+        ['created_at'=>'2026-10-31','status'=>'confirmed','payment_id'=>'old','total'=>500],
+    ];
+    $facts = App\Services\AgentToolRegistry::salesFacts($fixture, ['from'=>'2026-11-01','to'=>'2026-11-30']);
+    assertSame(1, $facts['orders'], 'Sales counts only include verified payments in the requested range');
+    assertSame(100.50, $facts['revenue'], 'Unpaid or out-of-period orders must not inflate revenue');
+    assertSame(['Brass Lamp'=>1], $facts['best_sellers'], 'An unpaid item cannot rank as a best seller');
     $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
     assertTrue(str_contains($controller, "agentRun('admin', 'local'"), 'Owner aggregate path must be monitored distinctly');
 };
@@ -2827,6 +2850,14 @@ $tests['GST register preserves review rows and makes spreadsheet cells safe'] = 
             'tax_lines'=>[['name'=>' =1+1','qty'=>1,'taxable_value'=>100]]],
         ['id'=>'two','invoice_number'=>'INV-2'],
     ];
+    $issued = $orders;
+    $issued[0] += ['invoice_date'=>'2026-11-10','taxable_value'=>100,'cgst_total'=>9,'sgst_total'=>9,'total'=>118];
+    $issued[1] += ['invoice_date'=>'2026-10-31','taxable_value'=>500,'igst_total'=>90,'total'=>590];
+    $period = \App\Services\GstRegisterService::ordersForPeriod($issued, '2026-11-01', '2026-11-30');
+    assertSame(['one'], array_column($period, 'id'), 'The register and agent period exclude out-of-period invoices');
+    assertSame(['taxable'=>100.0,'cgst'=>9.0,'sgst'=>9.0,'igst'=>0.0,'tax'=>18.0,'gross'=>118.0],
+        \App\Services\GstRegisterService::totals($period), 'GST totals come from the same issued invoice snapshots');
+    assertSame(1, \App\Services\GstRegisterService::reviewCount($period, []), 'The GST tool reports review flags from the line export');
     $rows = iterator_to_array(\App\Services\GstRegisterService::lines($orders, ['two'=>'State conflict']));
     assertSame(array_fill(0, 2, count(\App\Services\GstRegisterService::HEADERS)), array_map('count', $rows), 'Rows align with CSV headers, including missing snapshots');
     assertSame('Review', $rows[0][5], 'Invalid GSTIN must not be grouped as B2B or B2C');
@@ -2834,6 +2865,23 @@ $tests['GST register preserves review rows and makes spreadsheet cells safe'] = 
     assertSame('100.00', $rows[0][13], 'Taxable amount comes from the issued line');
     assertTrue(str_contains($rows[0][18], 'credit note') && str_contains($rows[1][18], 'No issued tax lines')
         && str_contains($rows[1][18], 'State conflict'), 'Refunds and missing/conflicting snapshots are surfaced');
+};
+
+$tests['support ticket data is scoped and does not expose conversation bodies'] = static function (): void {
+    $query = \App\Services\SupportBotService::ticketLookupRequest('How many of my tickets are closed?');
+    assertSame('closed', $query['status'] ?? null, 'Status after the noun must constrain the lookup');
+    assertSame(null, \App\Services\SupportBotService::ticketLookupRequest('Open a new support ticket'), 'Creation stays separate from lookup');
+    $facts = \App\Services\AgentContextService::supportTicketFacts([
+        ['id'=>'aaaaaaaaaaaaaaaa', 'status'=>'closed', 'created_at'=>'2026-10-12T10:00:00+05:30',
+            'customer_email'=>'private@example.test', 'message'=>'Raw ticket message', 'reply'=>'Private reply'],
+        ['id'=>'bbbbbbbbbbbbbbbb', 'status'=>'open', 'created_at'=>'2026-10-12T10:00:00+05:30'],
+        ['id'=>'cccccccccccccccc', 'status'=>'closed', 'created_at'=>'2026-09-01T10:00:00+05:30'],
+    ], null, $query['status'], ['2026-10-01', '2026-10-31']);
+    assertSame(1, $facts['count'], 'The results respect status and creation dates');
+    assertSame(['reference', 'status', 'created_date', 'updated_date'], array_keys($facts['recent'][0]), 'Only allowlisted ticket metadata reaches the model');
+    $guest = (new \App\Services\SupportBotService())->answer('Show my support tickets', null);
+    assertSame(null, $guest['ticket_id'], 'Guest ticket lookup must not create a record');
+    assertTrue(str_contains($guest['reply'], '/login'), 'Guest receives sign-in guidance');
 };
 
 foreach ($tests as $name => $test) {

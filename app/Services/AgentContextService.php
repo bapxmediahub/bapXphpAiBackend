@@ -6,13 +6,56 @@ final class AgentContextService {
 
     public function forUserEmail(string $email, string $message = ''): array {
         $email = strtolower(trim($email));
-        if ($email === '') return ['user'=>null, 'orders'=>[], 'settings'=>$this->publicSettings(), 'site'=>$this->siteContext($message)];
         return [
-            'user' => $this->firstOwned('users', 'email', $email),
-            'orders' => $this->owned('orders', 'customer_email', $email),
+            'orders' => $email !== '' ? $this->supportOrders($email, $message) : [],
             'settings' => $this->publicSettings(),
             'site' => $this->siteContext($message),
         ];
+    }
+
+    public function forSupportTickets(string $email, ?string $reference, ?string $status, ?array $period = null): array {
+        $tickets = (new SupportTicketService($this->store))->forUser($email);
+        return self::supportTicketFacts($tickets, $reference, $status, $period);
+    }
+
+    /** Only system-generated ticket metadata may be sent to the provider. */
+    public static function supportTicketFacts(array $tickets, ?string $reference, ?string $status, ?array $period = null): array {
+        usort($tickets, static fn(array $a, array $b): int =>
+            (strtotime((string)($b['created_at'] ?? '')) ?: 0) <=> (strtotime((string)($a['created_at'] ?? '')) ?: 0));
+        $matches = [];
+        $counts = ['open' => 0, 'answered' => 0, 'closed' => 0, 'unknown' => 0];
+        foreach ($tickets as $ticket) {
+            $id = strtolower((string)($ticket['id'] ?? ''));
+            if (!preg_match('/^[a-f0-9]{16}$/D', $id)) continue;
+            if ($reference !== null && $id !== $reference) continue;
+            $state = strtolower((string)($ticket['status'] ?? ''));
+            if (!isset($counts[$state])) $state = 'unknown';
+            if ($status !== null && $status !== $state) continue;
+            $created = self::recordDate($ticket['created_at'] ?? null);
+            if ($period !== null && ($created === null || $created < $period[0] || $created > $period[1])) continue;
+            $counts[$state]++;
+            $matches[] = [
+                'reference' => $id,
+                'status' => $state,
+                'created_date' => $created,
+                'updated_date' => self::recordDate($ticket['updated_at'] ?? null),
+            ];
+        }
+        return ['count' => count($matches), 'counts_by_status' => $counts, 'recent' => array_slice($matches, 0, 5)];
+    }
+
+    private static function recordDate(mixed $value): ?string {
+        if (!is_string($value) || !preg_match('/^\d{4}-\d{2}-\d{2}(?:$|[T ])/', $value)) return null;
+        $date = substr($value, 0, 10);
+        [$year, $month, $day] = array_map('intval', explode('-', $date));
+        return checkdate($month, $day, $year) ? $date : null;
+    }
+
+    public const OWNER_COUNT_ENTITIES = ['users', 'products', 'appointments'];
+
+    public function ownerCount(mixed $entity): array {
+        if (!in_array($entity, self::OWNER_COUNT_ENTITIES, true)) return ['error' => 'Choose users, products or appointments.'];
+        return ['entity' => $entity, 'count' => count($this->store->read($entity))];
     }
 
     /** Owner analytics contain aggregate figures only; never include customer identifiers. */
@@ -55,15 +98,28 @@ final class AgentContextService {
             . '- Top 5 products by units sold:' . $top;
     }
 
-    private function owned(string $collection, string $field, string $email): array {
-        $records = array_values(array_filter($this->store->read($collection), fn($item) => strtolower((string)($item[$field] ?? '')) === $email));
-        $fields = $this->schema->agentContextFields($collection);
-        return $fields ? array_map(fn($item) => array_intersect_key($item, array_flip($fields)), $records) : $records;
-    }
-
-    private function firstOwned(string $collection, string $field, string $email): ?array {
-        $records = $this->owned($collection, $field, $email);
-        return $records[0] ?? null;
+    /** Share the order state needed for support without delivery addresses or payment identifiers. */
+    private function supportOrders(string $email, string $message): array {
+        $orders = array_values(array_filter($this->store->read('orders'), static fn(array $order): bool =>
+            strtolower(trim((string)($order['customer_email'] ?? ''))) === $email));
+        if (preg_match('/\b(?:order\s*#?\s*)?([a-f0-9]{16})\b/i', $message, $match)) {
+            $orders = array_values(array_filter($orders, static fn(array $order): bool =>
+                strcasecmp((string)($order['id'] ?? ''), $match[1]) === 0));
+        }
+        usort($orders, static fn(array $a, array $b): int =>
+            (strtotime((string)($b['created_at'] ?? '')) ?: 0) <=> (strtotime((string)($a['created_at'] ?? '')) ?: 0));
+        $schemaFields = $this->schema->agentContextFields('orders');
+        $safeFields = array_flip(array_intersect($schemaFields, ['id', 'status', 'total', 'shipped_at', 'invoice_number', 'invoice_date']));
+        return array_map(static function (array $order) use ($safeFields, $schemaFields): array {
+            $facts = array_intersect_key($order, $safeFields);
+            if (in_array('items', $schemaFields, true)) {
+                $facts['items'] = array_map(static fn(array $item): array => [
+                    'name' => mb_substr(strip_tags((string)($item['name'] ?? '')), 0, 120),
+                    'quantity' => (int)($item['qty'] ?? 0),
+                ], array_slice(array_filter((array)($order['items'] ?? []), 'is_array'), 0, 10));
+            }
+            return $facts;
+        }, array_slice($orders, 0, 5));
     }
 
     private function publicSettings(): array {

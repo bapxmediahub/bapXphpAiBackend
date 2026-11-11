@@ -12,7 +12,7 @@ final class AuditLogService {
     public function agentRun(string $surface, string $outcome, float $startedAt, ?string $reason = null, array $attempts = [], array $tools = []): void {
         if (!in_array($surface, ['support', 'admin'], true)) return;
         if (!in_array($outcome, ['model', 'local', 'fallback', 'private_account', 'draft', 'error'], true)) return;
-        $allowedReasons = ['not_configured', 'timeout', 'transport', 'authentication', 'rate_limit', 'provider_server', 'provider_request', 'empty_response', 'rejected_response', 'internal_error'];
+        $allowedReasons = ['not_configured', 'timeout', 'transport', 'authentication', 'rate_limit', 'provider_server', 'provider_request', 'provider_response', 'empty_response', 'rejected_response', 'internal_error'];
         $meta = [
             'surface' => $surface,
             'outcome' => $outcome,
@@ -43,7 +43,7 @@ final class AuditLogService {
         $safe = [];
         foreach (array_slice($tools, 0, 32) as $tool) {
             if (!is_array($tool)
-                || !in_array($tool['name'] ?? null, ['find_order', 'product_status', 'sales_summary', 'support_enquiries', 'search_articles', 'coupon_status'], true)
+                || !in_array($tool['name'] ?? null, ['find_order', 'product_status', 'sales_summary', 'support_enquiries', 'search_articles', 'coupon_status', 'gst_register_summary', 'store_count', 'customer_ticket_lookup'], true)
                 || !in_array($tool['status'] ?? null, ['complete', 'error'], true)) continue;
             $safe[] = [
                 'name' => $tool['name'],
@@ -83,7 +83,7 @@ final class AuditLogService {
             }
             $summary[$surface][$outcome]++;
             $reason = $meta['reason'] ?? null;
-            if (is_string($reason) && in_array($reason, ['not_configured', 'timeout', 'transport', 'authentication', 'rate_limit', 'provider_server', 'provider_request', 'empty_response', 'rejected_response', 'internal_error'], true)) {
+            if (is_string($reason) && in_array($reason, ['not_configured', 'timeout', 'transport', 'authentication', 'rate_limit', 'provider_server', 'provider_request', 'provider_response', 'empty_response', 'rejected_response', 'internal_error'], true)) {
                 $summary[$surface]['reasons'][$reason] = ($summary[$surface]['reasons'][$reason] ?? 0) + 1;
             }
             $duration = max(0, (int)($meta['duration_ms'] ?? 0));
