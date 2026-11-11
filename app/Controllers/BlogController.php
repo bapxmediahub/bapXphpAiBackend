@@ -2,7 +2,6 @@
 namespace App\Controllers;
 
 use App\Services\BlogService;
-use App\Services\MarkdownRenderer;
 
 final class BlogController extends BaseController
 {
@@ -11,15 +10,7 @@ final class BlogController extends BaseController
         $this->detectApiRequest();
         $this->seoKey = 'blog';
 
-        $blogService = new BlogService();
-        $posts = $blogService->all();
-        $categories = $blogService->categories(false);
-
-        $this->render('public/blog', [
-            'posts' => $posts,
-            'categories' => $categories,
-            'activeCategory' => null,
-        ]);
+        $this->renderIndex(new BlogService());
     }
 
     public function show(string $slug): void
@@ -52,6 +43,7 @@ final class BlogController extends BaseController
             'content' => $content,
             'meta' => $post,
             'slug' => $slug,
+            'categoryNames' => array_column($blogService->categories(false), 'name', 'slug'),
         ]);
     }
 
@@ -61,34 +53,37 @@ final class BlogController extends BaseController
         $this->seoKey = 'blog.category';
 
         $blogService = new BlogService();
-        $posts = $blogService->all();
-        $categories = $blogService->categories(false);
-
         if ($blogService->categoryIsRetiredPublic($slug)) {
             $this->renderNotFound();
             return;
         }
 
-        $filtered = array_values(array_filter($posts, fn($p) => ($p['category'] ?? '') === $slug));
+        $this->renderIndex($blogService, $slug);
+    }
 
-        $categoryName = $slug;
-        foreach ($categories as $cat) {
-            if (($cat['slug'] ?? '') === $slug) {
-                $categoryName = $cat['name'] ?? $slug;
-                break;
-            }
+    private function renderIndex(BlogService $blogService, ?string $activeCategory = null): void
+    {
+        $posts = $blogService->all();
+        $categories = $blogService->categories(false);
+        $search = is_string($_GET['q'] ?? null) ? mb_substr(trim($_GET['q']), 0, 120) : '';
+        $categoryNames = array_column($categories, 'name', 'slug');
+        $categoryName = $categoryNames[$activeCategory] ?? $activeCategory;
+
+        if ($activeCategory !== null) {
+            $posts = array_values(array_filter($posts, static fn(array $post): bool => ($post['category'] ?? '') === $activeCategory));
+            $this->seoOverrides = [
+                'title' => $categoryName . ' — Blog',
+                'description' => 'Browse ' . $categoryName . ' articles and updates.',
+            ];
+        } else {
+            $posts = array_values(array_filter($posts, static fn(array $post): bool => ($post['category'] ?? '') !== 'help'));
         }
 
-        $this->seoOverrides = [
-            'title' => $categoryName . ' — Blog',
-            'description' => 'Browse ' . $categoryName . ' articles and updates.',
-        ];
+        if ($search !== '') {
+            $posts = $blogService->search($posts, $search);
+            $this->seoOverrides['robots'] = 'noindex, follow';
+        }
 
-        $this->render('public/blog', [
-            'posts' => $filtered,
-            'categories' => $categories,
-            'activeCategory' => $slug,
-            'categoryName' => $categoryName,
-        ]);
+        $this->render('public/blog', compact('posts', 'categories', 'categoryNames', 'activeCategory', 'categoryName', 'search'));
     }
 }

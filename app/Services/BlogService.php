@@ -39,6 +39,25 @@ final class BlogService {
         return $posts;
     }
 
+    /** Search within the already filtered public posts without changing their order. */
+    public function search(array $posts, string $query): array {
+        $words = preg_split('/\s+/u', trim($query), -1, PREG_SPLIT_NO_EMPTY);
+        if (!$words) return $posts;
+
+        return array_values(array_filter($posts, static function (array $post) use ($words): bool {
+            $text = implode(' ', [
+                $post['title'] ?? '',
+                $post['excerpt'] ?? '',
+                $post['keywords'] ?? '',
+                html_entity_decode(strip_tags($post['html'] ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+            ]);
+            foreach ($words as $word) {
+                if (mb_stripos($text, $word) === false) return false;
+            }
+            return true;
+        }));
+    }
+
     public function categoryIsDisabled(string $category): bool {
         $category = strtolower(trim($category));
         if ($category === '') return false;
