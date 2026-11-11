@@ -21,6 +21,8 @@
                 'must_change_password' => ['type' => 'boolean'],
                 'password_changed_at' => ['type' => 'datetime'],
                 'password_hash' => ['type' => 'secret'],
+                'reset_token_hash' => ['type' => 'secret'],
+                'reset_token_expires_at' => ['type' => 'datetime'],
                 'accepted_terms_at' => ['type' => 'datetime'],
             ],
         ],

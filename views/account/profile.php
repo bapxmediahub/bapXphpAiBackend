@@ -31,6 +31,19 @@ $showPicture = filter_var($picture, FILTER_VALIDATE_URL) && parse_url($picture, 
                 <input id="profile-birth" name="date_of_birth" type="date" autocomplete="bday" max="<?= e(date('Y-m-d')) ?>" value="<?= e($profile['date_of_birth'] ?? '') ?>">
                 <div><button class="btn btn-primary" type="submit">Save profile</button></div>
             </form>
+            <?php if (!empty($hasPassword)): ?>
+                <form method="post" class="form-group" action="/account/dashboard/profile/password">
+                    <h2>Change password</h2>
+                    <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+                    <label for="current-password">Current password</label>
+                    <input id="current-password" name="current_password" type="password" autocomplete="current-password" required>
+                    <label for="new-password">New password</label>
+                    <input id="new-password" name="new_password" type="password" autocomplete="new-password" minlength="8" required>
+                    <label for="confirm-password">Confirm new password</label>
+                    <input id="confirm-password" name="confirm_password" type="password" autocomplete="new-password" minlength="8" required>
+                    <div><button class="btn btn-primary" type="submit">Change password</button></div>
+                </form>
+            <?php endif; ?>
             <p><a href="/forgot-password">Reset account password</a></p>
         </div>
     </div>
