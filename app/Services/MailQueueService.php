@@ -263,6 +263,32 @@ final class MailQueueService {
         return $this->enqueue('contact_customer_confirmation', $to, 'We received your enquiry — Sri Panchami Spiritual', $html, null, ['contact_id' => $submission['id'] ?? '']);
     }
 
+    /** Identify appointment-style contact enquiries without restoring public booking. */
+    public static function contactLooksLikeAppointment(array $submission): bool {
+        $text = trim((string)($submission['subject'] ?? '') . ' ' . (string)($submission['message'] ?? ''));
+        return $text !== '' && preg_match('/\b(?:appointment|consult(?:ation)?|astrolog(?:y|er|ical))\b/i', $text) === 1;
+    }
+
+    /** Build the owner copy and audit metadata for a saved contact submission. */
+    public static function contactOwnerNotification(array $submission): array {
+        $appointmentRequest = self::contactLooksLikeAppointment($submission);
+        return [
+            'subject' => $appointmentRequest ? 'New consultation or appointment enquiry' : 'New contact form submission',
+            'html' => '<p>' . ($appointmentRequest
+                ? 'A consultation or appointment enquiry came in through the contact form.'
+                : 'A new message came in through the contact form.') . '</p><dl>'
+                . '<dt>Name</dt><dd>' . e((string)($submission['name'] ?? '')) . '</dd>'
+                . '<dt>Email</dt><dd>' . e((string)($submission['email'] ?? '')) . '</dd>'
+                . '<dt>Phone</dt><dd>' . e((string)($submission['phone'] ?? '')) . '</dd>'
+                . '<dt>Subject</dt><dd>' . e((string)($submission['subject'] ?? '')) . '</dd>'
+                . '<dt>Message</dt><dd>' . nl2br(e((string)($submission['message'] ?? '')), false) . '</dd></dl>',
+            'meta' => [
+                'contact_id' => (string)($submission['id'] ?? ''),
+                'contact_kind' => $appointmentRequest ? 'appointment_enquiry' : 'general_enquiry',
+            ],
+        ];
+    }
+
     /**
      * Send a copy to the owner. The destination is admin_notification_email, which is
      * deliberately separate from the sending mailbox: customers are written to from
