@@ -18,7 +18,8 @@ final class AddressService {
         $address = trim((string)($input['address'] ?? ''));
         $city = trim((string)($input['city'] ?? ''));
         $pincode = trim((string)($input['pincode'] ?? ''));
-        if ($email === '' || $name === '' || $address === '' || $city === '' || $pincode === '') throw new \InvalidArgumentException('A name, address, city, and PIN code are required to save an address.');
+        $state = TaxService::normaliseState((string)($input['state'] ?? ''));
+        if ($email === '' || $name === '' || $address === '' || $city === '' || $pincode === '' || $state === null) throw new \InvalidArgumentException('A name, address, city, valid state, and PIN code are required to save an address.');
         $existing = $this->forCustomer($email);
         $isDefault = !empty($input['is_default']) || $existing === [];
         if ($isDefault) {
@@ -32,7 +33,7 @@ final class AddressService {
         return $this->store->upsert('addresses', [
             'id' => bin2hex(random_bytes(8)), 'customer_email' => $email, 'name' => $name,
             'recipient_name' => trim((string)($input['name'] ?? '')), 'phone' => trim((string)($input['phone'] ?? '')),
-            'address' => $address, 'city' => $city, 'pincode' => $pincode,
+            'address' => $address, 'city' => $city, 'pincode' => $pincode, 'state' => $state,
             'is_default' => $isDefault, 'created_at' => date('c'), 'updated_at' => date('c'),
         ]);
     }
