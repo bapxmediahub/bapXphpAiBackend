@@ -493,17 +493,26 @@ final class AdminController extends BaseController {
         // Compare the documented Gemma variants on the same endpoint and credentials.
         // https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api#supported-models
         $probe = $_POST['probe'] ?? '';
-        $override = in_array($probe, self::comparisonModels($config), true) ? $probe : null;
+        $toolsProbe = $probe === 'flash-lite-tools' && ($config['provider'] ?? '') === 'google';
+        $override = $toolsProbe ? 'gemini-3.5-flash-lite' : (in_array($probe, self::comparisonModels($config), true) ? $probe : null);
         $model = $override ?? (string)($config['model'] ?? '');
         $client = new \App\Services\AiClient();
-        $answer = $client->complete('Reply with exactly: connection ok', 32, 0.0, $override);
-        $ok = !\App\Services\AiClient::isError($answer) && trim($answer) !== '';
+        $answer = $toolsProbe
+            ? $client->completeWithTools(
+                'Call product_status for the exact slug karuppasami-dollar, then report its current price in one sentence.',
+                new \App\Services\AgentToolRegistry(probeProductSlug: 'karuppasami-dollar'),
+                128, 0.0, 2, $override
+            )
+            : $client->complete('Reply with exactly: connection ok', 32, 0.0, $override);
+        $ok = !\App\Services\AiClient::isError($answer) && trim($answer) !== ''
+            && (!$toolsProbe || $client->toolCalls() > 0);
         $_SESSION['ai_test_result'] = [
             'ok' => $ok,
             'model' => $model,
             'endpoint' => (string)($config['endpoint'] ?? ''),
             'message' => $ok ? trim($answer) : ($answer !== '' ? $answer : 'The provider returned an empty response.'),
             'timings' => $client->transferTimings(),
+            'tool_calls' => $toolsProbe ? $client->toolCalls() : null,
         ];
         (new AuditLogService())->record('test','ai',$model,['result'=>$ok ? 'ok' : 'failed']);
         $this->redirect('/admin/integrations');

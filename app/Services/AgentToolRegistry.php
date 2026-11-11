@@ -28,7 +28,8 @@ final class AgentToolRegistry
         private DatabaseService $store = new DatabaseService(),
         private ?ProductService $products = null,
         private ?OrderService $orders = null,
-        private string $ownerQuestion = ''
+        private string $ownerQuestion = '',
+        private ?string $probeProductSlug = null
     ) {
         $this->products ??= new ProductService($this->store);
         $this->orders ??= new OrderService($this->store);
@@ -41,7 +42,7 @@ final class AgentToolRegistry
      */
     public function declarations(): array
     {
-        return [
+        $declarations = [
             [
                 'name' => 'find_order',
                 'description' => 'Look up one order by its exact full id, or the most recent orders for a customer email explicitly provided by the owner. '
@@ -115,6 +116,8 @@ final class AgentToolRegistry
                 ],
             ],
         ];
+        if ($this->probeProductSlug === null) return $declarations;
+        return array_values(array_filter($declarations, static fn(array $tool): bool => $tool['name'] === 'product_status'));
     }
 
     public function has(string $name): bool
@@ -134,6 +137,10 @@ final class AgentToolRegistry
      */
     public function run(string $name, array $args): array
     {
+        if ($this->probeProductSlug !== null) {
+            if ($name !== 'product_status') return ['error' => 'Tool unavailable in probe.'];
+            $args = ['slug' => $this->probeProductSlug];
+        }
         try {
             return match ($name) {
                 'find_order' => $this->findOrder($args),
