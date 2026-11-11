@@ -70,11 +70,11 @@
             <label>API Key<input type="password" name="ai_api_key" value="<?= e($secrets['ai_api_key']??$secrets['agent_api_key']??$secrets['support_bot_google_api_key']??'') ?>" placeholder="sk-... or AIza..." autocomplete="new-password"></label>
         </div>
         <div class="admin-form__row">
-            <label>Model<input name="agent_model" value="<?= e($secrets['agent_model']??$secrets['support_bot_model']??'gemma-4-31b-it') ?>" placeholder="gemma-4-31b-it"></label>
+            <label>Model<input name="agent_model" value="<?= e($secrets['agent_model']??$secrets['support_bot_model']??\App\Services\SecretService::DEFAULT_MODEL) ?>" placeholder="<?= e(\App\Services\SecretService::DEFAULT_MODEL) ?>"></label>
         </div>
         <input type="hidden" name="support_bot_purge_policy" value="always_purge">
         <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.85rem;">
-            Current model: <strong><?= e($secrets['agent_model'] ?? $secrets['support_bot_model'] ?? 'gemma-4-31b-it') ?></strong>.
+            Current model: <strong><?= e($secrets['agent_model'] ?? $secrets['support_bot_model'] ?? \App\Services\SecretService::DEFAULT_MODEL) ?></strong>.
             OpenRouter: endpoint <code>https://openrouter.ai/api/v1</code>.
             Google: endpoint <code>https://generativelanguage.googleapis.com/v1beta/models/</code>.
         </p>
@@ -254,4 +254,17 @@ unset($_SESSION['ai_test_result']);
             <small>This runs one connection test without changing the saved model.</small>
         <?php endif; ?>
     </form>
+    <?php $activeModel = $secrets['agent_model'] ?? $secrets['support_bot_model'] ?? \App\Services\SecretService::DEFAULT_MODEL; ?>
+    <?php if ($activeModel !== \App\Services\SecretService::DEFAULT_MODEL): ?>
+        <form class="admin-form" method="post" action="/admin/integrations/save" style="margin-top:var(--space-md);">
+            <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+            <input type="hidden" name="agent_model" value="<?= e(\App\Services\SecretService::DEFAULT_MODEL) ?>">
+            <button class="btn btn-primary">Use <?= e(\App\Services\SecretService::DEFAULT_MODEL) ?> for both agents</button>
+            <small>This changes only the saved model. API keys and all other integration settings remain untouched.</small>
+        </form>
+    <?php else: ?>
+        <p style="margin:var(--space-md) 0 0; color:var(--color-success, #15803d); font-weight:600;">
+            <?= e(\App\Services\SecretService::DEFAULT_MODEL) ?> is active for both agents.
+        </p>
+    <?php endif; ?>
 </div>

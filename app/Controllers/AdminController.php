@@ -215,7 +215,13 @@ final class AdminController extends BaseController {
             'comparisonModels' => self::comparisonModels($secrets->getModelConfig()),
         ]);
     }
-    public function saveIntegrations(): void{(new SecretService())->save($_POST); (new AuditLogService())->record('save','integrations','secrets'); $this->flash('Integration settings saved.','success'); $this->redirect('/admin/integrations');}
+    public function saveIntegrations(): void{
+        $this->validateCsrf();
+        (new SecretService())->save($_POST);
+        (new AuditLogService())->record('save','integrations','secrets',['fields'=>array_values(array_diff(array_keys($_POST), ['_csrf']))]);
+        $this->flash('Integration settings saved.','success');
+        $this->redirect('/admin/integrations');
+    }
     public function agent(): void{
         $secrets = new SecretService();
         $modelConfig = $secrets->getModelConfig();

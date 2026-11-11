@@ -526,7 +526,6 @@ $tests['admin integrations explain api setup and support bot keys'] = function (
         'https://console.cloud.google.com/apis/credentials',
         'agent_api_key',
         'agent_model',
-        'gemma-4-31b-it',
         'https://generativelanguage.googleapis.com/v1beta/models/',
         'support_bot_purge_policy',
         'always_purge',
@@ -536,6 +535,10 @@ $tests['admin integrations explain api setup and support bot keys'] = function (
     assertTrue(!str_contains($view, 'name="support_bot_google_api_endpoint"'), 'Admin should not need to enter the Google API endpoint manually');
     assertTrue(str_contains($view, 'Public consultation booking is retired.'), 'Integration guidance should match the retired public booking journey');
     assertTrue(str_contains($view, 'Historical service records remain available to the owner'), 'Retired public services should not imply removal of historical admin records');
+    assertTrue(str_contains($view, 'This changes only the saved model. API keys and all other integration settings remain untouched.'), 'Model promotion should not resubmit unrelated credentials');
+    assertTrue(str_contains($view, 'SecretService::DEFAULT_MODEL'), 'Integration model defaults should use the shared configured model');
+    $admin = file_get_contents(app_path('app/Controllers/AdminController.php'));
+    assertTrue(str_contains($admin, 'function saveIntegrations') && str_contains($admin, '$this->validateCsrf()'), 'Saving integrations should validate CSRF before changing the active model');
     foreach (['Customers will only see shop, booking', 'new orders and bookings', 'This site is ecommerce plus direct astrology services.'] as $retiredCopy) {
         assertTrue(!str_contains($view, $retiredCopy), 'Integration guidance must not advertise retired services: '.$retiredCopy);
     }
@@ -2159,7 +2162,7 @@ $tests['product payment remains production gated after wallet removal'] = functi
     assertTrue(str_contains($secrets, 'razorpayReadyForCurrentHost'), 'Selected Razorpay credentials should be checked against the current host');
     assertTrue(str_contains($secrets, "=== 'live'"), 'Production hosts should require live Razorpay mode');
     assertTrue(str_contains($secrets, "?? '') === 'app_secrets'") && str_contains($secrets, 'array_filter($env'), 'Remote app_secrets should override environment fallbacks and legacy rows');
-    foreach (['openssl_encrypt', 'openssl_decrypt', "'iv' =>", "'ciphertext' =>", "'agent_api_key'", "'gemma-4-31b-it'", "'configured' =>"] as $needle) {
+    foreach (['openssl_encrypt', 'openssl_decrypt', "'iv' =>", "'ciphertext' =>", "'agent_api_key'", "'gemini-3.5-flash-lite'", "'configured' =>"] as $needle) {
         assertTrue(str_contains($secrets, $needle), "Remote integration secrets should include {$needle}");
     }
     assertTrue(!is_file(app_path('app/Controllers/WalletController.php')) && !is_file(app_path('views/account/wallet.php')), 'Wallet controller and customer view should be removed');
