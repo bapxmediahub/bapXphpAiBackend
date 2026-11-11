@@ -483,13 +483,15 @@ final class AdminController extends BaseController {
     public function testAi(): void{
         $this->validateCsrf();
         $config = (new SecretService())->getModelConfig();
-        $answer = (new \App\Services\AiClient())->complete('Reply with exactly: connection ok', 32, 0.0);
+        $client = new \App\Services\AiClient();
+        $answer = $client->complete('Reply with exactly: connection ok', 32, 0.0);
         $ok = !\App\Services\AiClient::isError($answer) && trim($answer) !== '';
         $_SESSION['ai_test_result'] = [
             'ok' => $ok,
             'model' => (string)($config['model'] ?? ''),
             'endpoint' => (string)($config['endpoint'] ?? ''),
             'message' => $ok ? trim($answer) : ($answer !== '' ? $answer : 'The provider returned an empty response.'),
+            'timings' => $client->transferTimings(),
         ];
         (new AuditLogService())->record('test','ai',(string)($config['model'] ?? ''),['result'=>$ok ? 'ok' : 'failed']);
         $this->redirect('/admin/integrations');

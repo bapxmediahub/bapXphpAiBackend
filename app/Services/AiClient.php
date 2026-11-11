@@ -22,9 +22,13 @@ final class AiClient
     private const ERROR_PREFIXES = ['AI request failed', 'No AI API key'];
     private int $transportError = 0;
     private ?string $failureCategory = null;
+    private array $transferTimings = [];
 
     /** Bounded operational category; never includes provider messages or credentials. */
     public function failureCategory(): ?string { return $this->failureCategory; }
+
+    /** Numeric milestones only, measured from the start of each attempt. */
+    public function transferTimings(): array { return $this->transferTimings; }
 
     public static function classifyFailure(int $status, int $transportError): string {
         return match (true) {
@@ -188,6 +192,7 @@ final class AiClient
     public function complete(string $prompt, int $maxTokens = 1024, float $temperature = 0.3): string
     {
         $this->failureCategory = null;
+        $this->transferTimings = [];
         $config = $this->secrets->getModelConfig();
         $endpoint = rtrim((string)($config['endpoint'] ?? 'https://api.openai.com/v1'), '/');
         $model = (string)($config['model'] ?? 'gemma-4-31b-it');
@@ -345,6 +350,7 @@ final class AiClient
     /** @return string|false */
     private function post(string $url, string $payload, array $headers, ?int &$status)
     {
+        $this->transferTimings = [];
         // A single short retry can recover transient provider failures without adding
         // another full timeout to the request. This is a per-post budget, not a
         // deadline for all tool rounds in an owner-agent conversation.
@@ -366,6 +372,17 @@ final class AiClient
             $body = curl_exec($ch);
             $this->transportError = curl_errno($ch);
             $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            // PHP reports these milestones in seconds and uses zero for unreached stages.
+            // https://www.php.net/manual/en/function.curl-getinfo.php
+            $this->transferTimings[] = [
+                'status' => $status,
+                'curl_error' => $this->transportError,
+                'dns_ms' => 1000 * curl_getinfo($ch, CURLINFO_NAMELOOKUP_TIME),
+                'connect_ms' => 1000 * curl_getinfo($ch, CURLINFO_CONNECT_TIME),
+                'ready_ms' => 1000 * curl_getinfo($ch, CURLINFO_PRETRANSFER_TIME),
+                'first_byte_ms' => 1000 * curl_getinfo($ch, CURLINFO_STARTTRANSFER_TIME),
+                'total_ms' => 1000 * curl_getinfo($ch, CURLINFO_TOTAL_TIME),
+            ];
             unset($ch);
             $attempt++;
             // Only retry a received transient server error, not timeout, transport,

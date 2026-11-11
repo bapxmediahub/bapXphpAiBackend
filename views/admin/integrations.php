@@ -225,6 +225,19 @@ unset($_SESSION['ai_test_result']);
                 <?= e((string)($aiTest['model'] ?? '')) ?> · <?= e((string)($aiTest['endpoint'] ?? '')) ?>
             </div>
             <div style="margin-top:var(--space-2xs); font-size:0.85rem; white-space:pre-wrap;"><?= e((string)$aiTest['message']) ?></div>
+            <?php if (!empty($aiTest['timings'])): ?>
+                <p>Elapsed from the start of each attempt.</p>
+                <ol>
+                <?php foreach ($aiTest['timings'] as $timing): ?>
+                    <li>
+                        HTTP <?= (int)$timing['status'] ?>, cURL <?= (int)$timing['curl_error'] ?>.
+                        <?php foreach (['dns_ms' => 'DNS', 'connect_ms' => 'Connection', 'ready_ms' => 'Ready to transfer', 'first_byte_ms' => 'First byte', 'total_ms' => 'Total'] as $key => $label): ?>
+                            <?= e($label) ?> <?= $timing[$key] > 0 ? number_format($timing[$key], 1) . ' ms' : '—' ?>.
+                        <?php endforeach; ?>
+                    </li>
+                <?php endforeach; ?>
+                </ol>
+            <?php endif; ?>
         </div>
     <?php endif; ?>
     <form class="admin-form" method="post" action="/admin/integrations/test-ai">
