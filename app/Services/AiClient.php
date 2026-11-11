@@ -19,6 +19,9 @@ namespace App\Services;
  */
 final class AiClient
 {
+    private const PRIMARY_FAILURES_BEFORE_FAILOVER = 3;
+    private const PRIMARY_ATTEMPT_TIMEOUT_MS = 6000;
+    private const FALLBACK_ATTEMPT_TIMEOUT_MS = 12000;
     private const ERROR_PREFIXES = ['AI request failed', 'No AI API key'];
     private int $transportError = 0;
     private ?string $failureCategory = null;
@@ -41,6 +44,40 @@ final class AiClient
             $status >= 500 => 'provider_server',
             default => 'provider_request',
         };
+    }
+
+    /** @return array{0:string,1:string} primary first, then the other Gemma model */
+    public static function googleModelPair(string $preferred): array
+    {
+        $primary = in_array($preferred, SecretService::GOOGLE_MODELS, true)
+            ? $preferred
+            : SecretService::PRIMARY_MODEL;
+        $fallback = $primary === SecretService::PRIMARY_MODEL
+            ? SecretService::FALLBACK_MODEL
+            : SecretService::PRIMARY_MODEL;
+        return [$primary, $fallback];
+    }
+
+    /** @return array<int,array{model:string,timeout_ms:int}> */
+    public static function googleAttemptPlan(string $preferred, bool $fallbackLocked = false): array
+    {
+        [$primary, $fallback] = self::googleModelPair($preferred);
+        if ($fallbackLocked) {
+            return [['model' => $primary, 'timeout_ms' => self::FALLBACK_ATTEMPT_TIMEOUT_MS]];
+        }
+        $plan = array_fill(0, self::PRIMARY_FAILURES_BEFORE_FAILOVER, [
+            'model' => $primary,
+            'timeout_ms' => self::PRIMARY_ATTEMPT_TIMEOUT_MS,
+        ]);
+        $plan[] = ['model' => $fallback, 'timeout_ms' => self::FALLBACK_ATTEMPT_TIMEOUT_MS];
+        return $plan;
+    }
+
+    /** Authentication and malformed requests cannot be repaired by changing models. */
+    public static function canFailOver(int $status, int $transportError): bool
+    {
+        return $transportError !== 0 || $status === 0 || $status === 404 || $status === 408
+            || $status === 429 || $status >= 500;
     }
 
     public function __construct(private SecretService $secrets = new SecretService()) {}
@@ -85,6 +122,7 @@ final class AiClient
         ?string $modelOverride = null
     ): string {
         $this->failureCategory = null;
+        $this->transferTimings = [];
         $this->toolCalls = 0;
         $config = $this->secrets->getModelConfig();
         if (($config['provider'] ?? '') !== 'google') return $this->complete($prompt, $maxTokens, $temperature);
@@ -94,7 +132,8 @@ final class AiClient
         if (!function_exists('curl_init')) { $this->failureCategory = 'transport'; return 'AI request failed: cURL is not available on this server.'; }
 
         $endpoint = rtrim((string)($config['endpoint'] ?? ''), '/');
-        $url = $endpoint . '/' . rawurlencode($modelOverride ?? (string)($config['model'] ?? '')) . ':generateContent';
+        $activeModel = $modelOverride ?? (string)($config['model'] ?? SecretService::PRIMARY_MODEL);
+        $fallbackLocked = false;
         $headers = ['Content-Type: application/json', 'x-goog-api-key: ' . $key];
 
         $contents = [['role' => 'user', 'parts' => [['text' => $this->withAnswerFence($prompt)]]]];
@@ -110,7 +149,9 @@ final class AiClient
                 ],
             ], JSON_UNESCAPED_SLASHES);
 
-            $body = $this->post($url, $payload, $headers, $status);
+            $body = $this->postGoogleRouted(
+                $endpoint, $activeModel, $payload, $headers, $status, $fallbackLocked
+            );
             if ($status !== 200 || $body === false) return self::describeFailure($status, $body, $this->transportError);
 
             $result = json_decode((string)$body, true);
@@ -145,7 +186,7 @@ final class AiClient
             $prompt . "\n\nAnswer now from what you already know. Do not ask for more lookups.",
             $maxTokens,
             $temperature,
-            $modelOverride
+            $activeModel
         );
     }
 
@@ -201,7 +242,7 @@ final class AiClient
         $this->transferTimings = [];
         $config = $this->secrets->getModelConfig();
         $endpoint = rtrim((string)($config['endpoint'] ?? 'https://api.openai.com/v1'), '/');
-        $model = $modelOverride ?? (string)($config['model'] ?? 'gemma-4-31b-it');
+        $model = $modelOverride ?? (string)($config['model'] ?? SecretService::PRIMARY_MODEL);
         $key = trim((string)($config['apiKey'] ?? ''));
         $provider = (string)($config['provider'] ?? 'openai');
 
@@ -224,7 +265,6 @@ final class AiClient
         $prompt = $this->withAnswerFence($prompt);
 
         if ($provider === 'google') {
-            $url = $endpoint . '/' . rawurlencode($model) . ':generateContent';
             $payload = json_encode([
                 'contents' => [['parts' => [['text' => $prompt]]]],
                 'generationConfig' => [
@@ -243,7 +283,10 @@ final class AiClient
                 ],
             ], JSON_UNESCAPED_SLASHES);
             $headers = ['Content-Type: application/json', 'x-goog-api-key: ' . $key];
-            $body = $this->post($url, $payload, $headers, $status);
+            $fallbackLocked = false;
+            $body = $this->postGoogleRouted(
+                $endpoint, $model, $payload, $headers, $status, $fallbackLocked
+            );
             if ($status !== 200 || $body === false) return self::describeFailure($status, $body, $this->transportError);
             $result = json_decode((string)$body, true);
             $answer = self::answerFromParts($result['candidates'][0]['content']['parts'] ?? []);
@@ -353,58 +396,78 @@ final class AiClient
         return false;
     }
 
-    /** @return string|false */
-    private function post(string $url, string $payload, array $headers, ?int &$status)
-    {
-        $this->transferTimings = [];
-        // A single short retry can recover transient provider failures without adding
-        // another full timeout to the request. This is a per-post budget, not a
-        // deadline for all tool rounds in an owner-agent conversation.
-        // https://ai.google.dev/gemini-api/docs/generate-content/api-errors
-        $deadline = hrtime(true) + 20_000_000_000;
-        $attempt = 0;
-        do {
-            $remainingMs = max(1, (int)(($deadline - hrtime(true)) / 1_000_000));
-            $timeoutMs = $attempt === 0 ? $remainingMs : min(5000, $remainingMs);
-            $ch = curl_init($url);
-            curl_setopt_array($ch, [
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_POST => true,
-                CURLOPT_HTTPHEADER => $headers,
-                CURLOPT_POSTFIELDS => $payload,
-                CURLOPT_TIMEOUT_MS => $timeoutMs,
-                CURLOPT_CONNECTTIMEOUT_MS => min(10000, $timeoutMs),
-            ]);
-            $body = curl_exec($ch);
-            $this->transportError = curl_errno($ch);
-            $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            // PHP reports these milestones in seconds and uses zero for unreached stages.
-            // https://www.php.net/manual/en/function.curl-getinfo.php
-            $this->transferTimings[] = [
-                'status' => $status,
-                'curl_error' => $this->transportError,
-                'dns_ms' => 1000 * curl_getinfo($ch, CURLINFO_NAMELOOKUP_TIME),
-                'connect_ms' => 1000 * curl_getinfo($ch, CURLINFO_CONNECT_TIME),
-                'ready_ms' => 1000 * curl_getinfo($ch, CURLINFO_PRETRANSFER_TIME),
-                'first_byte_ms' => 1000 * curl_getinfo($ch, CURLINFO_STARTTRANSFER_TIME),
-                'total_ms' => 1000 * curl_getinfo($ch, CURLINFO_TOTAL_TIME),
-            ];
-            unset($ch);
-            $attempt++;
-            // Only retry a received transient server error, not timeout, transport,
-            // authentication or quota failures. Leave >=1 second for a useful retry.
-            $retry = self::retryTransient($attempt, $status, $body !== false,
-                (int)(($deadline - hrtime(true)) / 1_000_000));
-            if ($retry) usleep(random_int(150_000, 200_000));
-        } while ($retry);
-        $this->failureCategory = ($body === false || $status !== 200) ? self::classifyFailure($status, $this->transportError) : null;
+    /**
+     * Try the preferred Gemma model three times before moving to the other one.
+     *
+     * Attempts are deliberately bounded to 30 seconds in total (3x6s + 12s), below
+     * the chat UI's 35-second deadline. Once a tool conversation moves to fallback it
+     * stays there for its remaining rounds, so function-call history is never replayed
+     * to a different model. Invalid credentials and malformed payloads fail immediately
+     * because switching models cannot repair them.
+     *
+     * @return string|false
+     */
+    private function postGoogleRouted(
+        string $endpoint,
+        string &$activeModel,
+        string $payload,
+        array $headers,
+        ?int &$status,
+        bool &$fallbackLocked
+    ) {
+        $initialModel = $activeModel;
+        $body = false;
+        foreach (self::googleAttemptPlan($activeModel, $fallbackLocked) as $attempt) {
+            $model = $attempt['model'];
+            $url = $endpoint . '/' . rawurlencode($model) . ':generateContent';
+            $body = $this->post($url, $payload, $headers, $status, $attempt['timeout_ms'], true);
+            if ($status === 200 && $body !== false) {
+                $activeModel = $model;
+                if ($model !== $initialModel) $fallbackLocked = true;
+                return $body;
+            }
+            if (!self::canFailOver($status, $this->transportError)) return $body;
+        }
         return $body;
     }
 
-    private static function retryTransient(int $attempt, int $status, bool $bodyReceived, int $remainingMs): bool
+    /** @return string|false */
+    private function post(
+        string $url,
+        string $payload,
+        array $headers,
+        ?int &$status,
+        int $timeoutMs = 20000,
+        bool $appendTiming = false
+    )
     {
-        return $attempt === 1 && $bodyReceived && in_array($status, [500, 503], true)
-            && $remainingMs > 1200;
+        if (!$appendTiming) $this->transferTimings = [];
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_POSTFIELDS => $payload,
+            CURLOPT_TIMEOUT_MS => $timeoutMs,
+            CURLOPT_CONNECTTIMEOUT_MS => min(10000, $timeoutMs),
+        ]);
+        $body = curl_exec($ch);
+        $this->transportError = curl_errno($ch);
+        $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        // PHP reports these milestones in seconds and uses zero for unreached stages.
+        // https://www.php.net/manual/en/function.curl-getinfo.php
+        $this->transferTimings[] = [
+            'status' => $status,
+            'curl_error' => $this->transportError,
+            'dns_ms' => 1000 * curl_getinfo($ch, CURLINFO_NAMELOOKUP_TIME),
+            'connect_ms' => 1000 * curl_getinfo($ch, CURLINFO_CONNECT_TIME),
+            'ready_ms' => 1000 * curl_getinfo($ch, CURLINFO_PRETRANSFER_TIME),
+            'first_byte_ms' => 1000 * curl_getinfo($ch, CURLINFO_STARTTRANSFER_TIME),
+            'total_ms' => 1000 * curl_getinfo($ch, CURLINFO_TOTAL_TIME),
+        ];
+        unset($ch);
+        $this->failureCategory = ($body === false || $status !== 200) ? self::classifyFailure($status, $this->transportError) : null;
+        return $body;
     }
 
     /**

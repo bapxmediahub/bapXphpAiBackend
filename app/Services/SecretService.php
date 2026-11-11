@@ -1,6 +1,11 @@
 <?php
 namespace App\Services;
 final class SecretService {
+    public const PRIMARY_MODEL = 'gemma-4-31b-it';
+    public const FALLBACK_MODEL = 'gemma-4-26b-a4b-it';
+    public const GOOGLE_MODELS = [self::PRIMARY_MODEL, self::FALLBACK_MODEL];
+    public const GOOGLE_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models';
+
     public function __construct(private ?DatabaseService $store = null) {}
     public function razorpayReadyForCurrentHost(array $secrets): bool {
         return !empty($secrets['razorpay_key_id']) && !empty($secrets['razorpay_key_secret']);
@@ -66,28 +71,15 @@ final class SecretService {
     }
     public function getModelConfig(): array {
         $secrets = $this->all();
-        $endpoint = $this->firstValue($secrets, ['api_endpoint'], ['BAPX_AI_ENDPOINT']);
         $apiKey = $this->firstValue($secrets, ['ai_api_key', 'agent_api_key', 'support_bot_google_api_key'], ['AI_API_KEY', 'AGENT_API_KEY', 'BAPX_AI_API_KEY']);
         $model = $this->firstValue($secrets, ['agent_model', 'support_bot_model'], ['AGENT_MODEL', 'BAPX_AI_MODEL']);
-        if ($model === '') $model = 'gemma-4-31b-it';
-        if ($endpoint === '') {
-            if (str_contains($model, 'gemini') || str_contains($model, 'gemma')) {
-                $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/';
-            } else {
-                $endpoint = 'https://api.openai.com/v1';
-            }
-        }
-        $provider = 'openai';
-        if (str_contains($endpoint, 'googleapis')) {
-            $provider = 'google';
-            // Google's generateContent lives under /models/. Saving the endpoint without
-            // that segment builds .../v1beta/<model>:generateContent, which 404s with
-            // "the model or endpoint does not exist". Accept either form.
-            $trimmed = rtrim($endpoint, '/');
-            if (!str_ends_with($trimmed, '/models')) $endpoint = $trimmed . '/models';
-            else $endpoint = $trimmed;
-        }
-        elseif (str_contains($endpoint, 'anthropic')) $provider = 'anthropic';
+        // The product deliberately supports only Google's two hosted Gemma 4 models.
+        // Google does not publish a Gemma 4 27B Gemini API identifier; the documented
+        // smaller hosted model is the 26B A4B variant.
+        // https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api#supported-models
+        if (!in_array($model, self::GOOGLE_MODELS, true)) $model = self::PRIMARY_MODEL;
+        $endpoint = self::GOOGLE_ENDPOINT;
+        $provider = 'google';
         return compact('provider', 'model', 'endpoint', 'apiKey') + ['configured' => $apiKey !== ''];
     }
     private function decodeRecord(array $record): array {
