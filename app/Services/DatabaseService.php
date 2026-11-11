@@ -164,6 +164,7 @@ final class DatabaseService {
         $lock->execute([$name]);
         if ((int)$lock->fetchColumn() !== 1) throw new \RuntimeException('Address book is busy. Please retry.');
         try {
+            $this->ensureAddressTable();
             $pdo->beginTransaction();
             $result = $operation();
             $pdo->commit();
@@ -174,6 +175,33 @@ final class DatabaseService {
         } finally {
             $release = $pdo->prepare('SELECT RELEASE_LOCK(?)');
             $release->execute([$name]);
+        }
+    }
+
+    public function customerAddresses(string $email): array {
+        if ($this->isTestMode()) return [];
+        if ($this->isRemote()) {
+            return $this->remoteMutation('list_customer_addresses', 'addresses', ['email' => $email])['result'];
+        }
+        $this->ensureAddressTable();
+        $statement = $this->db()->prepare('SELECT id, _data FROM addresses WHERE _owner = ?');
+        $statement->execute([$email]);
+        return array_map(static fn(array $row): array => array_merge(
+            json_decode($row['_data'], true, flags: JSON_THROW_ON_ERROR), ['id' => $row['id']]
+        ), $statement->fetchAll(\PDO::FETCH_ASSOC));
+    }
+
+    private function ensureAddressTable(): void {
+        try {
+            $this->db()->query('SELECT id FROM addresses LIMIT 0');
+        } catch (\PDOException $error) {
+            if (($error->errorInfo[0] ?? null) !== '42S02') throw $error;
+            $this->db()->exec('CREATE TABLE IF NOT EXISTS addresses (
+                id VARCHAR(36) PRIMARY KEY, _data JSON NOT NULL,
+                _owner VARCHAR(255) DEFAULT NULL, _status VARCHAR(50) DEFAULT NULL,
+                _created_at DATETIME DEFAULT NULL, _updated_at DATETIME DEFAULT NULL,
+                INDEX idx_owner (_owner), INDEX idx_status (_status), INDEX idx_created (_created_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
         }
     }
 

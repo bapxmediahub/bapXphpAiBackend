@@ -87,6 +87,11 @@ final class RemoteDbController {
         }
         try {
             $store = $this->store;
+            if ($collection === 'addresses' && $action === 'list_customer_addresses') {
+                $result = (new \App\Services\AddressService($store))->forCustomer((string)($input['email'] ?? ''));
+                echo json_encode(['success' => true, 'result' => $result]);
+                return;
+            }
             if ($collection === 'addresses' && in_array($action, ['save_customer_address', 'delete_customer_address'], true)) {
                 $service = new \App\Services\AddressService($store);
                 $email = (string)($input['email'] ?? '');

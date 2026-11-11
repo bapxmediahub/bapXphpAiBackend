@@ -43,7 +43,6 @@ $pdo->exec('CREATE TABLE orders (
     id VARCHAR(64) PRIMARY KEY, _data JSON NOT NULL, _owner VARCHAR(255),
     _status VARCHAR(64), _created_at VARCHAR(40), _updated_at VARCHAR(40)
 )');
-$pdo->exec('CREATE TABLE addresses LIKE orders');
 
 $addresses = new \App\Services\AddressService($store);
 $customer = 'address-owner@example.test';

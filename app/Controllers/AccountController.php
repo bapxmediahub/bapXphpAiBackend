@@ -14,6 +14,7 @@ final class AccountController extends BaseController {
     public function addresses(): void {
         $service = new AddressService();
         $email = (string)($_SESSION['user']['email'] ?? '');
+        $addresses = $service->forCustomer($email);
         $id = (string)($_GET['edit'] ?? '');
         try {
             $editing = $id !== '' ? $service->owned($email, $id) : [];
@@ -22,7 +23,7 @@ final class AccountController extends BaseController {
             return;
         }
         $this->render('account/addresses', [
-            'addresses' => $service->forCustomer($email),
+            'addresses' => $addresses,
             'editing' => $editing,
             'states' => TaxService::states(),
         ]);
