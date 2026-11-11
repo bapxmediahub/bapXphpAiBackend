@@ -1471,6 +1471,12 @@ $tests['AI transport diagnostics distinguish causes without assuming the provide
     $message = $client::describeFailure(500, '{"error":{"message":"private prompt and secret"}}', 0);
     assertTrue(str_contains($message, 'HTTP 500'), 'Provider status should remain visible');
     assertTrue(!str_contains($message, 'private prompt') && !str_contains($message, 'secret'), 'Provider response bodies must not be displayed');
+    $retry = new ReflectionMethod($client, 'retryTransient');
+    foreach ([500, 503] as $status) assertTrue($retry->invoke(null, 1, $status, true, 5000), 'Transient server errors may retry once');
+    foreach ([400, 401, 429, 504] as $status) assertTrue(!$retry->invoke(null, 1, $status, true, 5000), 'Client, quota and deadline errors must not retry');
+    assertTrue(!$retry->invoke(null, 2, 500, true, 5000), 'A second retry is not allowed');
+    assertTrue(!$retry->invoke(null, 1, 500, false, 5000), 'Transport failures must not retry');
+    assertTrue(!$retry->invoke(null, 1, 503, true, 1200), 'Insufficient budget must skip retry');
 };
 
 $tests['product breadcrumb uses the category identifier accepted by the shop'] = function (): void {

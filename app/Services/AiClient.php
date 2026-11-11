@@ -370,12 +370,18 @@ final class AiClient
             $attempt++;
             // Only retry a received transient server error, not timeout, transport,
             // authentication or quota failures. Leave >=1 second for a useful retry.
-            $retry = $attempt === 1 && $body !== false && in_array($status, [500, 503], true)
-                && $deadline - hrtime(true) > 1_200_000_000;
+            $retry = self::retryTransient($attempt, $status, $body !== false,
+                (int)(($deadline - hrtime(true)) / 1_000_000));
             if ($retry) usleep(random_int(150_000, 200_000));
         } while ($retry);
         $this->failureCategory = ($body === false || $status !== 200) ? self::classifyFailure($status, $this->transportError) : null;
         return $body;
+    }
+
+    private static function retryTransient(int $attempt, int $status, bool $bodyReceived, int $remainingMs): bool
+    {
+        return $attempt === 1 && $bodyReceived && in_array($status, [500, 503], true)
+            && $remainingMs > 1200;
     }
 
     /**
