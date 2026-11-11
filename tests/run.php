@@ -2060,6 +2060,20 @@ $tests['agent monitoring counts bounded outcomes without treating fallbacks as m
     assertSame(null, App\Services\AuditLogService::agentSummary([], $now)['admin']['average_ms'], 'No traffic is not zero-latency success');
 };
 
+$tests['issued invoice renders its supplier snapshot and escapes names'] = function (): void {
+    $order = ['invoice_number'=>'SPS/TEST/00001', 'invoice_date'=>'2026-11-11',
+        'supplier'=>['gstin'=>'33SNAPSHOT', 'trade_name'=>'Original supplier'],
+        'customer_name'=>'<script>Customer</script>', 'tax_lines'=>[], 'total'=>105];
+    $settings = ['gstin'=>'33NEWSETTING', 'gst_trade_name'=>'New supplier'];
+    ob_start(); require app_path('views/account/invoice.php'); $html = ob_get_clean();
+    assertTrue(str_contains($html, '33SNAPSHOT'), 'Issued supplier GSTIN must be shown');
+    assertTrue(!str_contains($html, '33NEWSETTING'), 'Current GSTIN must not replace invoice snapshot');
+    assertTrue(str_contains($html, '&lt;script&gt;Customer&lt;/script&gt;'), 'Customer data is escaped');
+    $routes = ProjectMapService::registry()['routes'];
+    $matching = array_values(array_filter($routes, static fn($route) => $route['path'] === '/admin/orders/{id}/invoice'));
+    assertSame('AdminController@orderInvoice', $matching[0]['controller'] ?? '', 'Invoice is served by the admin controller');
+};
+
 $tests['cart summary recalculates quantities and mixed product tax rates'] = function (): void {
     $summary = App\Services\TaxService::cartSummary([
         ['line_total' => 105, 'qty' => 1, 'product' => ['gst_rate' => 5]],
