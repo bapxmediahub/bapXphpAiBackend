@@ -2658,20 +2658,6 @@ tr:hover td { background: var(--color-bg-alt); }
 .trust-item svg { flex: 0 0 auto; }
 .trust-item:focus-visible { outline: 2px solid var(--color-maroon); outline-offset: 2px; }
 
-.home-order-steps { max-width: 1000px; margin: var(--space-xl) auto 0; }
-.home-order-step {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    margin-bottom: var(--space-sm);
-    border: 1px solid var(--color-gold);
-    border-radius: 50%;
-    color: var(--color-maroon);
-    font-weight: 800;
-}
-.home-order-actions { display: flex; justify-content: center; gap: var(--space-sm); margin-top: var(--space-xl); flex-wrap: wrap; }
 .trust-item:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-sm);
