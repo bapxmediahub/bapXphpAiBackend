@@ -2871,6 +2871,16 @@ $tests['support ticket data is scoped and does not expose conversation bodies'] 
     $query = \App\Services\SupportBotService::ticketLookupRequest('How many of my tickets are closed?');
     assertSame('closed', $query['status'] ?? null, 'Status after the noun must constrain the lookup');
     assertSame(null, \App\Services\SupportBotService::ticketLookupRequest('Open a new support ticket'), 'Creation stays separate from lookup');
+    assertSame(null, \App\Services\SupportBotService::ticketLookupRequest('I have a problem with my order, please create a support ticket'),
+        'Ticket creation after an introductory clause still reaches escalation');
+    $periodQuestion = 'Show my support tickets from last month';
+    $periodLookup = \App\Services\SupportBotService::ticketLookupRequest($periodQuestion);
+    $statusReply = new ReflectionMethod(\App\Services\SupportBotService::class, 'ticketStatusReply');
+    assertSame(null, $statusReply->invoke(null, $periodQuestion, [
+        'recent' => [['reference'=>'aaaaaaaaaaaaaaaa'], ['reference'=>'bbbbbbbbbbbbbbbb']],
+        'count' => 2,
+    ], $periodLookup), 'A period list must not short circuit to the latest ticket');
+
     $facts = \App\Services\AgentContextService::supportTicketFacts([
         ['id'=>'aaaaaaaaaaaaaaaa', 'status'=>'closed', 'created_at'=>'2026-10-12T10:00:00+05:30',
             'customer_email'=>'private@example.test', 'message'=>'Raw ticket message', 'reply'=>'Private reply'],

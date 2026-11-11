@@ -71,8 +71,10 @@ final class SupportBotService {
     /** Recognize questions about existing tickets without treating ticket creation as a lookup. */
     public static function ticketLookupRequest(string $message): ?array {
         if (!preg_match('/\b(?:tickets?|support (?:requests?|enquir(?:y|ies)|inquir(?:y|ies)))\b/i', $message)) return null;
-        if (preg_match('/^(?:please\s+|(?:can|could|would) you\s+|i (?:want|need) to\s+)*(?:(?:create|raise|submit|file)\b|open\s+(?:a|one|me|this|the)\b)/i', $message)
-            || preg_match('/^i (?:need|want|would like) (?:a new|another) (?:support )?ticket\b/i', $message)) return null;
+        $creationVerb = '(?:create|raise|submit|file|open)';
+        $ticketObject = '(?:a |one |me |this |the |new |another )*(?:support )?(?:ticket|request)\b';
+        if (preg_match('/(?:^|[,.;!]\s*|\bplease\s+|\b(?:can|could|would) you\s+|\bi (?:want|need) to\s+)'
+            . '(?:please\s+)?' . $creationVerb . '\s+' . $ticketObject . '/i', $message)) return null;
         $reference = preg_match('/\b([a-f0-9]{16})\b/i', $message, $match) ? strtolower($match[1]) : null;
         if ($reference === null && !preg_match('/\b(?:my|our|this|status|latest|last|recent|any|how many|count|list|show|track|update|open|answered|closed)\b/i', $message)) return null;
         $status = null;
@@ -182,7 +184,7 @@ final class SupportBotService {
         if (preg_match('/\b(?:what did (?:they|you|support) say|what was (?:the|their) (?:reply|response)|(?:read|show|quote) (?:the |their )?(?:reply|response))\b/i', $message)) {
             return 'For the contents of a ticket reply, contact our support team at /contact and include ticket #' . $ticket['reference'] . '.';
         }
-        if ($lookup['reference'] !== null || preg_match('/\b(?:latest|last)\b|\bstatus\b(?!.*\btickets\b)/i', $message)) {
+        if ($lookup['reference'] !== null || preg_match('/\b(?:latest|last\s+(?:support\s+)?ticket)\b|\bstatus\b(?!.*\btickets\b)/i', $message)) {
             $created = $ticket['created_date'] !== null ? ' Opened on ' . $ticket['created_date'] . '.' : '';
             $updated = $ticket['updated_date'] !== null ? ' Last updated on ' . $ticket['updated_date'] . '.' : '';
             return 'Ticket #' . $ticket['reference'] . ' has status ' . $ticket['status'] . '.' . $created . $updated;
