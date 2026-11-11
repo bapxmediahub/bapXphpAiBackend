@@ -1355,8 +1355,10 @@ $tests['the admin agent can look things up instead of guessing'] = function (): 
     $client = file_get_contents(app_path('app/Services/AiClient.php'));
     assertTrue(str_contains($client, 'functionDeclarations'), 'Tools should be declared to the provider');
     assertTrue(str_contains($client, 'functionResponse'), 'Tool results should be returned to the model');
-    assertTrue(str_contains($client, "\$round < \$maxRounds"),
-        'The tool loop must be bounded, or a looping model holds the request open until PHP times out');
+    assertTrue(str_contains($client, "\$round <= \$maxRounds")
+        && str_contains($client, "'mode' => 'NONE'")
+        && str_contains($client, 'TOOL_CONVERSATION_TIMEOUT_NS'),
+        'The tool loop must have a shared deadline and end with a text-only round');
     assertTrue(str_contains($client, "'role' => 'model', 'parts' => self::googleToolHistoryParts(\$parts)"),
         'The model turn must stay in the history, or the function response answers a call the conversation no longer has');
     $admin = file_get_contents(app_path('app/Controllers/AdminController.php'));

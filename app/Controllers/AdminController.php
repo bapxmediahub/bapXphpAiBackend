@@ -507,12 +507,15 @@ final class AdminController extends BaseController {
         $client = new \App\Services\AiClient();
         $answer = $client->complete('Reply with exactly: connection ok', 32, 0.0);
         $ok = !\App\Services\AiClient::isError($answer) && trim($answer) !== '';
+        $timings = $client->transferTimings();
+        $lastAttempt = end($timings);
+        $answeringModel = $ok ? ($lastAttempt['model'] ?? $model) : $model;
         $_SESSION['ai_test_result'] = [
             'ok' => $ok,
-            'model' => $model,
+            'model' => $answeringModel,
             'endpoint' => (string)($config['endpoint'] ?? ''),
             'message' => $ok ? trim($answer) : ($answer !== '' ? $answer : 'The provider returned an empty response.'),
-            'timings' => $client->transferTimings(),
+            'timings' => $timings,
             'tool_calls' => null,
         ];
         (new AuditLogService())->record('test','ai',$model,['result'=>$ok ? 'ok' : 'failed']);

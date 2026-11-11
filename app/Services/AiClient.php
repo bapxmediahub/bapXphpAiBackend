@@ -22,6 +22,7 @@ final class AiClient
     private const PRIMARY_FAILURES_BEFORE_FAILOVER = 3;
     private const PRIMARY_ATTEMPT_TIMEOUT_MS = 6000;
     private const FALLBACK_ATTEMPT_TIMEOUT_MS = 12000;
+    private const TOOL_CONVERSATION_TIMEOUT_NS = 32_000_000_000;
     private const ERROR_PREFIXES = ['AI request failed', 'No AI API key'];
     private int $transportError = 0;
     private ?string $failureCategory = null;
@@ -31,7 +32,7 @@ final class AiClient
     /** Bounded operational category; never includes provider messages or credentials. */
     public function failureCategory(): ?string { return $this->failureCategory; }
 
-    /** Numeric milestones only, measured from the start of each attempt. */
+    /** Model identifier and numeric milestones for each attempt. */
     public function transferTimings(): array { return $this->transferTimings; }
     public function toolCalls(): int { return $this->toolCalls; }
 
@@ -59,10 +60,10 @@ final class AiClient
     }
 
     /** @return array<int,array{model:string,timeout_ms:int}> */
-    public static function googleAttemptPlan(string $preferred, bool $fallbackLocked = false): array
+    public static function googleAttemptPlan(string $preferred, bool $modelLocked = false): array
     {
         [$primary, $fallback] = self::googleModelPair($preferred);
-        if ($fallbackLocked) {
+        if ($modelLocked) {
             return [['model' => $primary, 'timeout_ms' => self::FALLBACK_ATTEMPT_TIMEOUT_MS]];
         }
         $plan = array_fill(0, self::PRIMARY_FAILURES_BEFORE_FAILOVER, [
@@ -133,13 +134,15 @@ final class AiClient
 
         $endpoint = rtrim((string)($config['endpoint'] ?? ''), '/');
         $activeModel = $modelOverride ?? (string)($config['model'] ?? SecretService::PRIMARY_MODEL);
-        $fallbackLocked = false;
+        $modelLocked = false;
         $headers = ['Content-Type: application/json', 'x-goog-api-key: ' . $key];
 
         $contents = [['role' => 'user', 'parts' => [['text' => $this->withAnswerFence($prompt)]]]];
 
-        for ($round = 0; $round < $maxRounds; $round++) {
-            $payload = json_encode([
+        $deadline = hrtime(true) + self::TOOL_CONVERSATION_TIMEOUT_NS;
+        for ($round = 0; $round <= $maxRounds; $round++) {
+            $finalRound = $round === $maxRounds;
+            $request = [
                 'contents' => $contents,
                 'tools' => [['functionDeclarations' => $tools->declarations()]],
                 'generationConfig' => [
@@ -147,10 +150,14 @@ final class AiClient
                     'maxOutputTokens' => $maxTokens,
                     'thinkingConfig' => ['thinkingLevel' => 'MINIMAL'],
                 ],
-            ], JSON_UNESCAPED_SLASHES);
+            ];
+            // Keep the tool responses in history while asking for a final text answer.
+            // https://ai.google.dev/gemini-api/docs/function-calling
+            if ($finalRound) $request['toolConfig'] = ['functionCallingConfig' => ['mode' => 'NONE']];
+            $payload = json_encode($request, JSON_UNESCAPED_SLASHES);
 
             $body = $this->postGoogleRouted(
-                $endpoint, $activeModel, $payload, $headers, $status, $fallbackLocked
+                $endpoint, $activeModel, $payload, $headers, $status, $modelLocked, $deadline
             );
             if ($status !== 200 || $body === false) return self::describeFailure($status, $body, $this->transportError);
 
@@ -161,11 +168,12 @@ final class AiClient
             foreach ($parts as $part) {
                 if (isset($part['functionCall']['name'])) $calls[] = $part['functionCall'];
             }
-            if ($calls === []) { $answer = self::answerFromParts($parts); if (trim($answer) === '') $this->failureCategory = 'empty_response'; return $answer; }
+            if ($calls === [] || $finalRound) { $answer = self::answerFromParts($parts); if (trim($answer) === '') $this->failureCategory = 'empty_response'; return $answer; }
 
             // Keep the model's own turn in the history, or the next request has a
             // function response answering a call the conversation no longer contains.
             $contents[] = ['role' => 'model', 'parts' => self::googleToolHistoryParts($parts)];
+            $modelLocked = true;
 
             $responses = [];
             foreach ($calls as $call) {
@@ -180,14 +188,8 @@ final class AiClient
             $contents[] = ['role' => 'user', 'parts' => $responses];
         }
 
-        // Out of rounds: ask once more with no tools, so the owner gets an answer
-        // built from what was already looked up rather than an empty reply.
-        return $this->complete(
-            $prompt . "\n\nAnswer now from what you already know. Do not ask for more lookups.",
-            $maxTokens,
-            $temperature,
-            $activeModel
-        );
+        $this->failureCategory = 'empty_response';
+        return '';
     }
 
     /**
@@ -283,9 +285,9 @@ final class AiClient
                 ],
             ], JSON_UNESCAPED_SLASHES);
             $headers = ['Content-Type: application/json', 'x-goog-api-key: ' . $key];
-            $fallbackLocked = false;
+            $modelLocked = false;
             $body = $this->postGoogleRouted(
-                $endpoint, $model, $payload, $headers, $status, $fallbackLocked
+                $endpoint, $model, $payload, $headers, $status, $modelLocked
             );
             if ($status !== 200 || $body === false) return self::describeFailure($status, $body, $this->transportError);
             $result = json_decode((string)$body, true);
@@ -400,9 +402,8 @@ final class AiClient
      * Try the preferred Gemma model three times before moving to the other one.
      *
      * Attempts are deliberately bounded to 30 seconds in total (3x6s + 12s), below
-     * the chat UI's 35-second deadline. Once a tool conversation moves to fallback it
-     * stays there for its remaining rounds, so function-call history is never replayed
-     * to a different model. Invalid credentials and malformed payloads fail immediately
+     * the chat UI's 35-second deadline. After a tool call, subsequent rounds stay on
+     * the model that issued it, so model-specific history is never replayed elsewhere. Invalid credentials and malformed payloads fail immediately
      * because switching models cannot repair them.
      *
      * @return string|false
@@ -413,17 +414,28 @@ final class AiClient
         string $payload,
         array $headers,
         ?int &$status,
-        bool &$fallbackLocked
+        bool &$modelLocked,
+        ?int $deadline = null
     ) {
         $initialModel = $activeModel;
         $body = false;
-        foreach (self::googleAttemptPlan($activeModel, $fallbackLocked) as $attempt) {
+        foreach (self::googleAttemptPlan($activeModel, $modelLocked) as $attempt) {
+            $timeoutMs = $attempt['timeout_ms'];
+            if ($deadline !== null) {
+                $timeoutMs = min($timeoutMs, (int)(($deadline - hrtime(true)) / 1_000_000));
+                if ($timeoutMs <= 0) {
+                    $status = 0;
+                    $this->transportError = 28;
+                    $this->failureCategory = 'timeout';
+                    return false;
+                }
+            }
             $model = $attempt['model'];
             $url = $endpoint . '/' . rawurlencode($model) . ':generateContent';
-            $body = $this->post($url, $payload, $headers, $status, $attempt['timeout_ms'], true);
+            $body = $this->post($url, $payload, $headers, $status, $timeoutMs, true, $model);
             if ($status === 200 && $body !== false) {
                 $activeModel = $model;
-                if ($model !== $initialModel) $fallbackLocked = true;
+                if ($model !== $initialModel) $modelLocked = true;
                 return $body;
             }
             if (!self::canFailOver($status, $this->transportError)) return $body;
@@ -438,7 +450,8 @@ final class AiClient
         array $headers,
         ?int &$status,
         int $timeoutMs = 20000,
-        bool $appendTiming = false
+        bool $appendTiming = false,
+        ?string $model = null
     )
     {
         if (!$appendTiming) $this->transferTimings = [];
@@ -457,6 +470,7 @@ final class AiClient
         // PHP reports these milestones in seconds and uses zero for unreached stages.
         // https://www.php.net/manual/en/function.curl-getinfo.php
         $this->transferTimings[] = [
+            'model' => $model,
             'status' => $status,
             'curl_error' => $this->transportError,
             'dns_ms' => 1000 * curl_getinfo($ch, CURLINFO_NAMELOOKUP_TIME),
