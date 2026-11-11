@@ -16,13 +16,22 @@ final class CategoryService
 
     public function collections(): array
     {
-        return array_values(array_filter($this->store->read('categories'), fn(array $c): bool => !empty($c['is_collection'])));
+        $collections = array_values(array_filter($this->store->read('categories'), fn(array $c): bool => !empty($c['is_collection'])));
+        usort($collections, static fn(array $left, array $right): int =>
+            ((int)($left['sort_order'] ?? 0) <=> (int)($right['sort_order'] ?? 0))
+            ?: strcasecmp((string)($left['name'] ?? ''), (string)($right['name'] ?? ''))
+        );
+        return $collections;
     }
 
     public function collectionProducts(array $collection, array $products): array
     {
-        $ids = is_array($collection['product_ids'] ?? null) ? $collection['product_ids'] : [];
-        return array_values(array_filter($products, fn(array $p): bool => in_array((string)($p['id'] ?? ''), $ids, true)));
+        $ids = is_array($collection['product_ids'] ?? null) ? array_map('strval', $collection['product_ids']) : [];
+        $productsById = [];
+        foreach ($products as $product) $productsById[(string)($product['id'] ?? '')] = $product;
+        $ordered = [];
+        foreach ($ids as $id) if (isset($productsById[$id])) $ordered[] = $productsById[$id];
+        return $ordered;
     }
 
     public function homeCollections(array $products): array

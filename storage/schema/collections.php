@@ -255,6 +255,7 @@
                 'is_collection' => ['type' => 'boolean'],
                 'show_home' => ['type' => 'boolean'],
                 'show_shop' => ['type' => 'boolean'],
+                'sort_order' => ['type' => 'number'],
                 'product_ids' => ['type' => 'array', 'items' => 'string'],
             ],
         ],

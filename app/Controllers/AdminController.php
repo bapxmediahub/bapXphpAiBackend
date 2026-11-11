@@ -55,10 +55,17 @@ final class AdminController extends BaseController {
         if ($id !== '' && !$existing) { $this->flash('Collection not found.', 'error'); $this->redirect('/admin/collections'); }
         $valid = array_fill_keys(array_map(fn($p)=>(string)$p['id'], (new \App\Services\ProductService())->all()), true);
         $ids = array_values(array_unique(array_filter(array_map('strval', (array)($_POST['product_ids'] ?? [])), fn($id)=>isset($valid[$id]))));
+        $submittedOrder = is_array($_POST['product_order'] ?? null) ? $_POST['product_order'] : [];
+        $originalPosition = array_flip($ids);
+        usort($ids, static function (string $left, string $right) use ($submittedOrder, $originalPosition): int {
+            $leftOrder = max(0, (int)($submittedOrder[$left] ?? 0));
+            $rightOrder = max(0, (int)($submittedOrder[$right] ?? 0));
+            return ($leftOrder <=> $rightOrder) ?: ($originalPosition[$left] <=> $originalPosition[$right]);
+        });
         $record = $existing ?? ['id'=>bin2hex(random_bytes(8)), 'slug'=>'collection-'.bin2hex(random_bytes(6))];
-        $record = array_merge($record, ['name'=>$name, 'is_collection'=>true, 'show_home'=>isset($_POST['show_home']), 'show_shop'=>isset($_POST['show_shop']), 'product_ids'=>$ids]);
+        $record = array_merge($record, ['name'=>$name, 'is_collection'=>true, 'show_home'=>isset($_POST['show_home']), 'show_shop'=>isset($_POST['show_shop']), 'sort_order'=>max(0, (int)($_POST['sort_order'] ?? 0)), 'product_ids'=>$ids]);
         (new ResourceService('categories'))->save($record);
-        (new AuditLogService())->record('save','collections',$record['id'],['fields'=>['name','show_home','show_shop','product_ids']]);
+        (new AuditLogService())->record('save','collections',$record['id'],['fields'=>['name','show_home','show_shop','sort_order','product_ids']]);
         $this->flash('Collection saved.', 'success'); $this->redirect('/admin/collections');
     }
     public function deleteCollection(): void {
