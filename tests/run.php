@@ -1270,6 +1270,22 @@ $tests['every module toggle in the code refers to a module that exists'] = funct
     }
 };
 
+$tests['owner agent context and order tools protect customer identities'] = function (): void {
+    $context = App\Services\AgentContextService::ownerAnalyticsFromRecords([
+        ['status'=>'confirmed', 'total'=>200, 'customer_email'=>'alice@example.test', 'items'=>[['name'=>'Ring','qty'=>2,'line_total'=>200]]],
+        ['status'=>'confirmed', 'total'=>100, 'customer_email'=>'bob@example.test', 'items'=>[['name'=>'Ring','qty'=>1,'line_total'=>100]]],
+    ], 2, 1, 0, 0);
+    assertTrue(!str_contains($context, 'alice@example.test') && !str_contains($context, 'bob@example.test'), 'Analytics must not send customer emails');
+    assertTrue(str_contains($context, '3 sold') && str_contains($context, '300.00'), 'Aggregate sales remain available');
+    $registry = new App\Services\AgentToolRegistry(ownerQuestion: 'How many orders are there?');
+    assertTrue(isset($registry->run('find_order', ['customer_email'=>'alice@example.test'])['error']), 'Model cannot invent an email lookup');
+    assertTrue(isset($registry->run('find_order', ['order_id'=>'a123'])['error']), 'Model cannot invent an order id lookup');
+    assertTrue(App\Services\AgentToolRegistry::ownerRequestedLookup('Show order a123456789abcdef', 'a123456789abcdef', ''), 'Explicit full order id is allowed');
+    assertTrue(!App\Services\AgentToolRegistry::ownerRequestedLookup('Show order a123456789abcdef', 'a123', ''), 'An ID prefix is not an explicit exact identifier');
+    assertTrue(!App\Services\AgentToolRegistry::ownerRequestedLookup('Show orders for alice@example.test', '', 'bob@example.test'), 'Another customer is not allowed');
+    assertTrue(App\Services\AgentToolRegistry::ownerRequestedLookup('Show orders for alice@example.test', '', 'alice@example.test'), 'Explicit customer lookup remains available');
+};
+
 $tests['the admin agent can look things up instead of guessing'] = function (): void {
     $registry = new \App\Services\AgentToolRegistry();
     $names = array_column($registry->declarations(), 'name');

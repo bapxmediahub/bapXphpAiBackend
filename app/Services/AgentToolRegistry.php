@@ -27,7 +27,8 @@ final class AgentToolRegistry
     public function __construct(
         private DatabaseService $store = new DatabaseService(),
         private ?ProductService $products = null,
-        private ?OrderService $orders = null
+        private ?OrderService $orders = null,
+        private string $ownerQuestion = ''
     ) {
         $this->products ??= new ProductService($this->store);
         $this->orders ??= new OrderService($this->store);
@@ -43,12 +44,12 @@ final class AgentToolRegistry
         return [
             [
                 'name' => 'find_order',
-                'description' => 'Look up one order by its id, or the most recent orders for a customer email. '
+                'description' => 'Look up one order by its exact full id, or the most recent orders for a customer email explicitly provided by the owner. '
                     . 'Returns status, total, items, courier and tracking.',
                 'parameters' => [
                     'type' => 'object',
                     'properties' => [
-                        'order_id' => ['type' => 'string', 'description' => 'The order id, whole or the first few characters.'],
+                        'order_id' => ['type' => 'string', 'description' => 'The full order id explicitly provided by the owner.'],
                         'customer_email' => ['type' => 'string', 'description' => 'Email of the customer whose orders to list.'],
                     ],
                 ],
@@ -155,16 +156,30 @@ final class AgentToolRegistry
         $email = strtolower(trim((string)($args['customer_email'] ?? '')));
         if ($id === '' && $email === '') return ['error' => 'Give an order id or a customer email.'];
 
+        if (!self::ownerRequestedLookup($this->ownerQuestion, $id, $email)) return ['error' => 'The owner must explicitly request this exact order id or customer email.'];
+
         $matches = [];
         foreach ($this->orders->all() as $order) {
             $orderId = strtolower((string)($order['id'] ?? ''));
-            if ($id !== '' && !str_starts_with($orderId, $id)) continue;
+            if ($id !== '' && $orderId !== $id) continue;
             if ($email !== '' && strtolower((string)($order['customer_email'] ?? '')) !== $email) continue;
             $matches[] = $this->summariseOrder($order);
             if (count($matches) >= 10) break;
         }
         if ($matches === []) return ['found' => 0, 'message' => 'No order matched.'];
         return ['found' => count($matches), 'orders' => $matches];
+    }
+
+    /** Reject identifiers invented by the model; the owner must name them in this request. */
+    public static function ownerRequestedLookup(string $question, string $id, string $email): bool
+    {
+        if ($id === '' && $email === '') return false;
+        if (!preg_match('/\b(?:order|orders|tracking|shipment|delivery|purchase|customer)\b/i', $question)) return false;
+        foreach ([$id, $email] as $identifier) {
+            if ($identifier === '') continue;
+            if (!preg_match('/(?<![a-z0-9@._-])' . preg_quote($identifier, '/') . '(?![a-z0-9@._-])/i', $question)) return false;
+        }
+        return true;
     }
 
     private function summariseOrder(array $order): array

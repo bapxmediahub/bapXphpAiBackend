@@ -23,15 +23,13 @@ run the CLI, or trigger deployments.
 The admin-agent flow:
 1. `GET /admin/agent` calls `AdminController::agent()` and renders the page.
 2. `POST /admin/agent/ask` calls `AdminController::agentAsk()`, which builds aggregate counts directly with
-   `DatabaseService`; it does not use `AgentContextService`.
+   `AgentContextService`, and binds order lookups to identifiers supplied in the owner’s question.
 3. `SecretService` supplies `agent_api_key`, `agent_model`, and `api_endpoint`.
 4. The controller returns JSON; JavaScript in `views/admin/agent.php` renders the response.
 
 ### Agent Permissions
 
-Keep context aggregate, allowlisted and purpose-specific. The current top-customer
-email summary is a privacy gap and must be removed or anonymized; do not describe it
-as safe merely because the route is admin-only. Do not expose passwords, secrets,
+Keep context aggregate, allowlisted and purpose-specific. Do not include customer identifiers in aggregate summaries; exact order or customer lookups must be explicitly requested by the owner. Do not expose passwords, secrets,
 full user lists, payment data, or unrelated customer records. A future write
 operation needs an explicit controller/service contract, authorization, confirmation,
 CSRF protection and audit event; a prompt alone is never authorization.
