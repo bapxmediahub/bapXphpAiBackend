@@ -225,6 +225,9 @@ unset($_SESSION['ai_test_result']);
                 <?= e((string)($aiTest['model'] ?? '')) ?> · <?= e((string)($aiTest['endpoint'] ?? '')) ?>
             </div>
             <div style="margin-top:var(--space-2xs); font-size:0.85rem; white-space:pre-wrap;"><?= e((string)$aiTest['message']) ?></div>
+            <?php if (isset($aiTest['tool_calls'])): ?>
+                <p>Tool calls completed: <?= (int)$aiTest['tool_calls'] ?></p>
+            <?php endif; ?>
             <?php if (!empty($aiTest['timings'])): ?>
                 <p>Elapsed from the start of each attempt.</p>
                 <ol>
@@ -247,6 +250,7 @@ unset($_SESSION['ai_test_result']);
             <?php foreach ($comparisonModels as $comparisonModel): ?>
                 <button class="btn btn-secondary" name="probe" value="<?= e($comparisonModel) ?>">Test <?= e($comparisonModel) ?></button>
             <?php endforeach; ?>
+            <button class="btn btn-secondary" name="probe" value="flash-lite-tools">Test Flash-Lite product lookup</button>
             <small>This runs one connection test without changing the saved model.</small>
         <?php endif; ?>
     </form>

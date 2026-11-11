@@ -23,12 +23,14 @@ final class AiClient
     private int $transportError = 0;
     private ?string $failureCategory = null;
     private array $transferTimings = [];
+    private int $toolCalls = 0;
 
     /** Bounded operational category; never includes provider messages or credentials. */
     public function failureCategory(): ?string { return $this->failureCategory; }
 
     /** Numeric milestones only, measured from the start of each attempt. */
     public function transferTimings(): array { return $this->transferTimings; }
+    public function toolCalls(): int { return $this->toolCalls; }
 
     public static function classifyFailure(int $status, int $transportError): string {
         return match (true) {
@@ -79,9 +81,11 @@ final class AiClient
         AgentToolRegistry $tools,
         int $maxTokens = 1024,
         float $temperature = 0.3,
-        int $maxRounds = 4
+        int $maxRounds = 4,
+        ?string $modelOverride = null
     ): string {
         $this->failureCategory = null;
+        $this->toolCalls = 0;
         $config = $this->secrets->getModelConfig();
         if (($config['provider'] ?? '') !== 'google') return $this->complete($prompt, $maxTokens, $temperature);
 
@@ -90,7 +94,7 @@ final class AiClient
         if (!function_exists('curl_init')) { $this->failureCategory = 'transport'; return 'AI request failed: cURL is not available on this server.'; }
 
         $endpoint = rtrim((string)($config['endpoint'] ?? ''), '/');
-        $url = $endpoint . '/' . rawurlencode((string)($config['model'] ?? '')) . ':generateContent';
+        $url = $endpoint . '/' . rawurlencode($modelOverride ?? (string)($config['model'] ?? '')) . ':generateContent';
         $headers = ['Content-Type: application/json', 'x-goog-api-key: ' . $key];
 
         $contents = [['role' => 'user', 'parts' => [['text' => $this->withAnswerFence($prompt)]]]];
@@ -129,6 +133,7 @@ final class AiClient
                 $result = $tools->has($name)
                     ? $tools->run($name, $args)
                     : ['error' => 'No such tool: ' . $name];
+                if (!isset($result['error'])) $this->toolCalls++;
                 $responses[] = self::googleFunctionResponse($call, $result);
             }
             $contents[] = ['role' => 'user', 'parts' => $responses];
@@ -139,7 +144,8 @@ final class AiClient
         return $this->complete(
             $prompt . "\n\nAnswer now from what you already know. Do not ask for more lookups.",
             $maxTokens,
-            $temperature
+            $temperature,
+            $modelOverride
         );
     }
 
