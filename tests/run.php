@@ -2051,6 +2051,20 @@ $tests['support assistant answers signed-out visitors instead of printing a menu
     }
 };
 
+$tests['support fallback explains tracking without claiming a personal order lookup'] = function (): void {
+    $bot = new App\Services\SupportBotService();
+    $fallback = (new ReflectionMethod($bot, 'fallbackReply'))->getClosure($bot);
+    $policies = (new ReflectionMethod($bot, 'policies'))->invoke($bot);
+    foreach ([true, false] as $signedIn) {
+        $context = ['signed_in' => $signedIn, 'orders' => [], 'policies' => $policies];
+        $reply = $fallback('How can I track an order?', $context);
+        assertTrue(str_contains($reply, 'tracking') && str_contains($reply, '/account/dashboard/orders'), 'General tracking help should explain the shipping email and orders page');
+        assertTrue(!str_contains($reply, 'could not find orders'), 'A general question does not ask for a personal lookup');
+    }
+    $guestReply = $fallback('Where is my order?', ['signed_in' => false, 'orders' => [], 'policies' => $policies]);
+    assertTrue(str_contains($guestReply, 'sign in'), 'Personal order lookups remain protected');
+};
+
 $tests['product payment remains production gated after wallet removal'] = function (): void {
     $secrets = file_get_contents(app_path('app/Services/SecretService.php'));
     assertTrue(str_contains($secrets, 'razorpayReadyForCurrentHost'), 'Selected Razorpay credentials should be checked against the current host');

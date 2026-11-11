@@ -114,6 +114,11 @@ final class SupportBotService {
 
     private function fallbackReply(string $message, array $context): string {
         $lower = strtolower($message);
+        // General tracking instructions apply to guests and customers alike; the
+        // presence of the word "order" alone does not request an account lookup.
+        if (!$this->isPrivateAccountQuestion($message) && preg_match('/\btrack(?:ing)?\b/i', $message) && preg_match('/\b(?:order|parcel|package|shipment)\b/i', $message)) {
+            return (string)($context['policies']['tracking'] ?? $this->policies()['tracking']);
+        }
         if (!$context['signed_in']) {
             if ($this->isPrivateAccountQuestion($lower)) {
                 return 'Please sign in to ask about your personal orders. I can still explain products, checkout, and delivery.';
@@ -303,7 +308,7 @@ final class SupportBotService {
             '/\b(?:my|our|this)\s+(?:order|orders|delivery|shipment|package|parcel|payment|refund)\b/i',
             $message
         ) || (bool)preg_match(
-            '/\border\s+(?:history|status|number|id)\b|\btrack\s+(?:my|the|this)\b|\border\s+#?\d+/i',
+            '/\border\s+(?:history|status|number|id)\b|\btrack\s+(?:my|this)\b|\border\s+#?\d+/i',
             $message
         );
     }
