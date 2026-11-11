@@ -2087,8 +2087,8 @@ $tests['support product questions retain public specifications and reject unrela
     $fallback = (new ReflectionMethod($bot, 'publicGuestReply'))->getClosure($bot);
     $article = (new ReflectionMethod($bot, 'matchArticle'))->getClosure($bot);
     $context = ['site' => ['products' => [[
-        'name' => 'Kariya Sakthi Aragaja Mai', 'url' => '/product/aragaja',
-        'description' => 'Sacred fragrance paste.', 'specifications' => ['Pack size' => '25 g'],
+        'name' => 'Kariya Sakthi Aragaja Mai', 'slug' => 'kariya-sakthi-aragaja-mai', 'url' => '/product/aragaja',
+        'price' => 850, 'description' => 'Sacred fragrance paste.', 'specifications' => ['Pack size' => '25 g'],
     ]]], 'articles' => [[
         'title' => 'What is Sade Sati?', 'url' => '/blog/sade-sati', 'summary' => 'Astrology guide',
     ]]];
@@ -2096,6 +2096,7 @@ $tests['support product questions retain public specifications and reject unrela
     assertSame(null, $article($question, $context), 'Common question words must not match astrology articles');
     $reply = $fallback($question, $context);
     assertTrue(str_contains($reply, 'Pack size: 25 g'), 'Fallback uses the product specification');
+    assertTrue(str_contains($reply, '₹850'), 'Fallback quotes the current public catalogue price');
     assertTrue(str_contains($reply, '/product/aragaja'), 'Fallback links the matched product');
     assertTrue(!str_contains($reply, 'Sade Sati'), 'Product answer must not substitute an unrelated article');
     $context['site']['products'][0]['specifications'] = [];
@@ -2106,6 +2107,14 @@ $tests['support product questions retain public specifications and reject unrela
         assertTrue(str_contains($source, "'" . $field . "' =>"), 'Public product details must reach model context');
         assertTrue(in_array($field, (new App\Services\SchemaService())->agentContextFields('products'), true), 'Product detail must be allowlisted by schema');
     }
+
+    $context['site']['products'][0] = [
+        'name' => 'Lakshmi Kubera Padi with Kubera Numbers | Traditional Gold Finish Pooja Stand',
+        'slug' => 'lakshmi-kubera-padi', 'url' => '/product/lakshmi-kubera-padi', 'price' => 799,
+    ];
+    $reply = $fallback('What is Lakshmi Kubera Padi and what is its current price?', $context);
+    assertTrue(str_contains($reply, 'Lakshmi Kubera Padi with Kubera Numbers'), 'A natural product question should match its exact multi-word slug alias');
+    assertTrue(str_contains($reply, '₹799'), 'Slug-alias matches retain the current catalogue price');
 };
 
 $tests['smtp encodes long unicode HTML into bounded transport safe MIME lines'] = function (): void {
