@@ -712,7 +712,7 @@ $tests['home page rejects malformed remote categories and retains complete sales
 
 $tests['product cards retain responsive image presentation'] = function (): void {
     $css=file_get_contents(app_path('assets/css/band.css'));
-    foreach(['.product-card__image', 'display: block;', 'aspect-ratio: 1;', '.product-card__title', 'grid-template-columns: repeat(3, minmax(0, 260px));'] as $needle) {
+    foreach(['.product-card__image', 'display: block;', 'aspect-ratio: 1;', '.product-card__title'] as $needle) {
         assertTrue(str_contains($css, $needle), "Product card CSS should include {$needle}");
     }
     foreach (['views/public/home.php', 'views/public/shop.php', 'views/public/product.php'] as $viewPath) {
@@ -2032,6 +2032,19 @@ $tests['public navigation uses brand home link and mobile cart tray'] = function
     assertTrue(str_contains($css, '.mobile-cart-tray') && str_contains($css, 'bottom:78px'), 'Mobile cart tray should sit above bottom navigation');
     assertTrue(str_contains($css, '.support-fab{right:24px;bottom:24px}') && str_contains($css, '.mobile-cart-tray{position:fixed;right:24px;bottom:88px'), 'Desktop support should align directly below the cart tray');
     assertSame(substr_count($css, '{'), substr_count($css, '}'), 'Stylesheet should have balanced rule braces');
+};
+
+$tests['homepage trust bar is centered and reveals mobile labels accessibly'] = function (): void {
+    $home = file_get_contents(app_path('views/public/home.php'));
+    $css = file_get_contents(app_path('assets/css/band.css'));
+    assertTrue(str_contains($home, 'class="trust-bar__inner"'), 'Trust items should share one centered content rail');
+    assertSame(3, substr_count($home, ' data-trust-item>'), 'Trust bar should expose three interactive trust items');
+    foreach (['Secure Payments', 'Saved Addresses', 'Spiritual Products', 'aria-controls="trust-label-', "setAttribute('aria-expanded'", "addEventListener('click'"] as $needle) {
+        assertTrue(str_contains($home, $needle), "Trust bar should include {$needle}");
+    }
+    foreach (['.trust-bar__inner', 'width: min(100%, 900px)', 'grid-template-columns: repeat(3, 56px)', '.trust-item.is-label-visible .trust-item__label', '.trust-item:focus-visible .trust-item__label'] as $needle) {
+        assertTrue(str_contains($css, $needle), "Trust bar CSS should include {$needle}");
+    }
 };
 
 $tests['support assistant exposes only allowlisted internal navigation actions'] = function (): void {
