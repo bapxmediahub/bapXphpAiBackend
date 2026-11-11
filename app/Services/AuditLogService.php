@@ -11,7 +11,7 @@ final class AuditLogService {
     /** Operational metadata only: never retain prompts, replies, identities or secrets. */
     public function agentRun(string $surface, string $outcome, float $startedAt, ?string $reason = null): void {
         if (!in_array($surface, ['support', 'admin'], true)) return;
-        if (!in_array($outcome, ['model', 'fallback', 'private_account', 'draft', 'error'], true)) return;
+        if (!in_array($outcome, ['model', 'local', 'fallback', 'private_account', 'draft', 'error'], true)) return;
         $allowedReasons = ['not_configured', 'timeout', 'transport', 'authentication', 'rate_limit', 'provider_server', 'provider_request', 'empty_response', 'rejected_response', 'internal_error'];
         $this->record('run', 'agent', $surface, [
             'surface' => $surface,
@@ -25,7 +25,7 @@ final class AuditLogService {
         $cutoff = ($now ?? time()) - 86400;
         $summary = [];
         foreach (['support', 'admin'] as $surface) {
-            $summary[$surface] = ['requests' => 0, 'model' => 0, 'fallback' => 0, 'private_account' => 0, 'draft' => 0, 'error' => 0, 'duration_ms' => 0, 'last_seen' => '', 'reasons' => []];
+            $summary[$surface] = ['requests' => 0, 'model' => 0, 'local' => 0, 'fallback' => 0, 'private_account' => 0, 'draft' => 0, 'error' => 0, 'duration_ms' => 0, 'last_seen' => '', 'reasons' => []];
         }
         foreach ($events as $event) {
             if (($event['event'] ?? '') !== 'agent.run') continue;
@@ -35,7 +35,7 @@ final class AuditLogService {
             $outcome = $meta['outcome'] ?? '';
             $created = (string)($event['created_at'] ?? '');
             $timestamp = strtotime($created);
-            if (!isset($summary[$surface]) || !in_array($outcome, ['model', 'fallback', 'private_account', 'draft', 'error'], true) || $timestamp === false || $timestamp < $cutoff || $timestamp > ($now ?? time())) continue;
+            if (!isset($summary[$surface]) || !in_array($outcome, ['model', 'local', 'fallback', 'private_account', 'draft', 'error'], true) || $timestamp === false || $timestamp < $cutoff || $timestamp > ($now ?? time())) continue;
             $summary[$surface]['requests']++;
             $summary[$surface][$outcome]++;
             $reason = $meta['reason'] ?? null;
