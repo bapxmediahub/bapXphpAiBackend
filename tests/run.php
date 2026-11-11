@@ -1284,6 +1284,18 @@ $tests['owner agent context and order tools protect customer identities'] = func
     assertTrue(!App\Services\AgentToolRegistry::ownerRequestedLookup('Show order a123456789abcdef', 'a123', ''), 'An ID prefix is not an explicit exact identifier');
     assertTrue(!App\Services\AgentToolRegistry::ownerRequestedLookup('Show orders for alice@example.test', '', 'bob@example.test'), 'Another customer is not allowed');
     assertTrue(App\Services\AgentToolRegistry::ownerRequestedLookup('Show orders for alice@example.test', '', 'alice@example.test'), 'Explicit customer lookup remains available');
+
+    $orders = [
+        ['id'=>'a123456789abcdef', 'customer_email'=>'alice@example.test', 'shipping_city'=>'Vellore', 'courier_name'=>'SafeShip', 'tracking_id'=>'TRACK-ALICE', 'status'=>'confirmed', 'total'=>200, 'items'=>[]],
+        ['id'=>'b987654321fedcba', 'customer_email'=>'bob@example.test', 'shipping_city'=>'Chennai', 'courier_name'=>'OtherShip', 'tracking_id'=>'TRACK-BOB', 'status'=>'pending', 'total'=>100, 'items'=>[]],
+    ];
+    $plain = App\Services\AgentToolRegistry::scopedOrderLookup($orders, ['order_id'=>'a123456789abcdef'], 'Show order a123456789abcdef');
+    assertSame(1, $plain['found'], 'An exact owner-requested order remains available');
+    assertTrue(!isset($plain['orders'][0]['customer_email'], $plain['orders'][0]['shipping_city'], $plain['orders'][0]['tracking_id']), 'An ordinary lookup must not send unrequested email, city or tracking data');
+    assertTrue(!str_contains(json_encode($plain), 'bob@example.test') && !str_contains(json_encode($plain), 'TRACK-BOB'), 'A scoped lookup must not expose another customer');
+    $tracked = App\Services\AgentToolRegistry::scopedOrderLookup($orders, ['order_id'=>'a123456789abcdef'], 'Where is order a123456789abcdef? Show tracking and delivery city.');
+    assertSame('Vellore', $tracked['orders'][0]['shipping_city'], 'Delivery city is available when explicitly requested');
+    assertSame('TRACK-ALICE', $tracked['orders'][0]['tracking_id'], 'Tracking is available when explicitly requested');
 };
 
 $tests['the admin agent can look things up instead of guessing'] = function (): void {
