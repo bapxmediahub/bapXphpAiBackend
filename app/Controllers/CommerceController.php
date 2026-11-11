@@ -378,7 +378,6 @@ final class CommerceController extends BaseController {
         }, $orderItems);
         $settings = $testPorts === null ? (new SettingsService())->public() : ($testPorts['settings'])();
         $tax = $missingProduct ? null : (new TaxService())->snapshotForVerifiedPayment($itemsWithRates, 0, (string)($pendingOrder['shipping_state'] ?? ''), $settings);
-        $invoice = $tax !== null ? (new TaxService())->nextInvoice($existingOrders) : null;
         // Every callback for one verified payment converges on the same primary key.
         // insertIfAbsent then makes the first persisted snapshot the atomic winner.
         $localId = substr(hash('sha256', 'verified-payment:' . $paymentId), 0, 16);
@@ -407,12 +406,16 @@ final class CommerceController extends BaseController {
             'tax_review_reason' => $tax === null ? ($missingProduct ? 'Product tax details unavailable at payment confirmation' : 'Missing or invalid delivery or supplier state at payment confirmation') : '',
             'created_at' => date('c'),
         ], $gatewayFields);
-        if ($tax !== null && $invoice !== null) {
+        if ($tax !== null) {
             unset($tax['total']); // Gateway-verified total remains authoritative.
-            $order = array_merge($order, $tax, $invoice);
+            $order = array_merge($order, $tax);
+        }
+        if ($testPorts !== null && $tax !== null) {
+            $order = array_merge($order, (new TaxService())->nextInvoice($existingOrders));
         }
         if ($testPorts === null) {
-            $insert = $db->insertIfAbsent('orders', $order);
+            $saved = $db->saveVerifiedOrder($order, $tax !== null);
+            $insert = ['inserted' => $saved['created'], 'record' => $saved['record']];
         } elseif (isset($testPorts['insertOrder'])) {
             $insert = ($testPorts['insertOrder'])($order);
         } else {

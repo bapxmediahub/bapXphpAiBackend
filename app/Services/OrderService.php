@@ -15,15 +15,7 @@ final class OrderService {
 
     /** Correct a paid review record and issue its first immutable tax snapshot. */
     public function resolveTaxReview(string $id, string $shippingState, array $settings): array {
-        $orders = $this->all();
-        $order = null;
-        foreach ($orders as $candidate) {
-            if ((string)($candidate['id'] ?? '') === $id) { $order = $candidate; break; }
-        }
-        if ($order === null) throw new \InvalidArgumentException('Order not found.');
-        $updated = (new TaxService())->reviewedOrder($order, $orders, $shippingState, $settings);
-        $this->store->upsert('orders', $updated);
-        return $updated;
+        return $this->store->resolveOrderTaxReview($id, $shippingState, $settings);
     }
 
     /** Working days a customer should expect, quoted in the shipment email. */
