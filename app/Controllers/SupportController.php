@@ -18,12 +18,16 @@ final class SupportController extends BaseController {
         }
         $limiter->hit('support:' . $ip);
         $startedAt = microtime(true);
+        $user = (new AuthService())->user();
+        // The agent reads the in-memory cart snapshot and does not change the session.
+        session_write_close();
+        $traceId = bin2hex(random_bytes(8));
+        header('X-Agent-Trace: ' . $traceId);
         try {
-            $user = (new AuthService())->user();
-            $answer = (new SupportBotService())->answer($_POST['message'] ?? '', $user);
+            $answer = (new SupportBotService(traceId: $traceId))->answer($_POST['message'] ?? '', $user);
             $this->jsonResponse($answer);
         } catch (\Throwable $e) {
-            (new \App\Services\AuditLogService())->agentRun('support', 'error', $startedAt, 'internal_error');
+            (new \App\Services\AuditLogService())->agentRun('support', 'error', $startedAt, 'internal_error', traceId: $traceId);
             $this->jsonResponse(['error' => 'Unable to answer right now. Please try again.'], 400);
         }
     }

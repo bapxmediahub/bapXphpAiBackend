@@ -5,7 +5,8 @@ final class SupportBotService {
     public function __construct(
         private SecretService $secrets = new SecretService(),
         private DatabaseService $store = new DatabaseService(),
-        private AgentContextService $agentContext = new AgentContextService()
+        private AgentContextService $agentContext = new AgentContextService(),
+        private ?string $traceId = null
     ) {}
 
     public function answer(string $message, ?array $user): array {
@@ -23,7 +24,7 @@ final class SupportBotService {
         if (preg_match('/^(?:how (?:can|do) i|where can i) track (?:an order|orders)[?!.]*$/i', $message)
             && module_on('shop')) {
             $reply = $this->policies()['tracking'];
-            (new AuditLogService($this->store))->agentRun('support', 'local', $startedAt);
+            (new AuditLogService($this->store))->agentRun('support', 'local', $startedAt, traceId: $this->traceId);
             return [
                 'reply' => $reply,
                 'ticket_id' => null,
@@ -64,7 +65,7 @@ final class SupportBotService {
         }
         $actions = $this->extractActions($reply);
         if ($actions !== []) $result['actions'] = $actions;
-        (new AuditLogService($this->store))->agentRun('support', $outcome, $startedAt, $reason, $attempts);
+        (new AuditLogService($this->store))->agentRun('support', $outcome, $startedAt, $reason, $attempts, traceId: $this->traceId);
         return $result;
     }
 
@@ -165,7 +166,7 @@ final class SupportBotService {
                 $reply ??= self::ticketListReply($facts, $lookup['status'], $lookup['period']);
             }
         }
-        (new AuditLogService($this->store))->agentRun('support', $outcome, $startedAt, $reason, $attempts, $tools);
+        (new AuditLogService($this->store))->agentRun('support', $outcome, $startedAt, $reason, $attempts, $tools, $this->traceId);
         return [
             'reply' => $reply, 'ticket_id' => null, 'memory' => 'browser_session', 'actions' => $this->extractActions($reply),
         ];
