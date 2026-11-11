@@ -524,9 +524,11 @@ $tests['admin integrations explain api setup and support bot keys'] = function (
         'name="razorpay_live_key_secret"',
         'Active Key ID',
         'https://console.cloud.google.com/apis/credentials',
-        'agent_api_key',
-        'agent_model',
-        'https://generativelanguage.googleapis.com/v1beta/models/',
+        'name="ai_provider"',
+        'name="ai_api_key"',
+        'name="ai_compatible_url"',
+        'name="ai_compatible_key"',
+        'name="ai_compatible_models"',
         'support_bot_purge_policy',
         'always_purge',
     ] as $needle) {
@@ -541,6 +543,23 @@ $tests['admin integrations explain api setup and support bot keys'] = function (
     assertTrue(str_contains($view, 'Historical service records remain available to the owner'), 'Retired public services should not imply removal of historical admin records');
     foreach (['Customers will only see shop, booking', 'new orders and bookings', 'This site is ecommerce plus direct astrology services.'] as $retiredCopy) {
         assertTrue(!str_contains($view, $retiredCopy), 'Integration guidance must not advertise retired services: '.$retiredCopy);
+    }
+};
+
+$tests['compatible provider normalizes a shared URL and ordered model IDs'] = function (): void {
+    $settings = [
+        'ai_compatible_url' => 'https://example.com/v1/chat/completions/',
+        'ai_compatible_key' => 'fixture-key',
+        'ai_compatible_models' => "vendor/first\nvendor/second, vendor/first",
+    ];
+    $config = App\Services\SecretService::compatibleConfig($settings);
+    assertSame(true, $config['configured'], 'A complete compatible configuration is enabled');
+    assertSame('https://example.com/v1', $config['endpoint'], 'The completions path is appended once');
+    assertSame(['vendor/first', 'vendor/second'], $config['models'], 'Model order is stable and duplicates are removed');
+    foreach (['http://example.com/v1', 'https://127.0.0.1/v1', 'https://example.com/v1?key=secret', 'https://user@example.com/v1'] as $url) {
+        $invalid = App\Services\SecretService::compatibleConfig(array_replace($settings, ['ai_compatible_url' => $url]));
+        assertSame(false, $invalid['configured'], 'Unsafe endpoint is rejected');
+        assertSame('', $invalid['apiKey'], 'Invalid settings do not release an API key');
     }
 };
 

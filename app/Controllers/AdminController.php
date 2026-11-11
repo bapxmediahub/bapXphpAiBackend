@@ -228,7 +228,16 @@ final class AdminController extends BaseController {
             'comparisonModels' => self::comparisonModels($secrets->getModelConfig()),
         ]);
     }
-    public function saveIntegrations(): void{(new SecretService())->save($_POST); (new AuditLogService())->record('save','integrations','secrets'); $this->flash('Integration settings saved.','success'); $this->redirect('/admin/integrations');}
+    public function saveIntegrations(): void {
+        try {
+            (new SecretService())->save($_POST);
+            (new AuditLogService())->record('save', 'integrations', 'secrets');
+            $this->flash('Integration settings saved.', 'success');
+        } catch (\InvalidArgumentException $error) {
+            $this->flash($error->getMessage(), 'error');
+        }
+        $this->redirect('/admin/integrations');
+    }
     public function agent(): void{
         $secrets = new SecretService();
         $modelConfig = $secrets->getModelConfig();
@@ -507,7 +516,9 @@ final class AdminController extends BaseController {
         $config = (new SecretService())->getModelConfig();
         $model = (string)($config['model'] ?? \App\Services\SecretService::PRIMARY_MODEL);
         $client = new \App\Services\AiClient();
-        $answer = $client->complete('Reply with exactly: connection ok', 32, 0.0);
+        $probe = (string)($_POST['probe'] ?? '');
+        $override = in_array($probe, self::comparisonModels($config), true) ? $probe : null;
+        $answer = $client->complete('Reply with exactly: connection ok', 128, 0.0, $override);
         $ok = !\App\Services\AiClient::isError($answer) && trim($answer) !== '';
         $timings = $client->transferTimings();
         $lastAttempt = end($timings);
@@ -525,7 +536,7 @@ final class AdminController extends BaseController {
     }
 
     private static function comparisonModels(array $config): array {
-        return [];
+        return $config['models'] ?? [];
     }
 
     public function testEmail(): void{
