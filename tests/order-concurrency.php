@@ -25,6 +25,8 @@ if (($argv[1] ?? '') === 'worker') {
     fflush(STDOUT);
     if ($argv[3] === 'recover') {
         $result = $store->resolveOrderTaxReview($argv[2], 'Tamil Nadu', ['gst_state' => 'Tamil Nadu']);
+    } elseif ($argv[3] === 'status') {
+        $result = $store->updateOrderStatus($argv[2], 'processing', new DateTimeImmutable(), []);
     } else {
         $result = $store->saveVerifiedOrder([
             'id' => $argv[2],
@@ -49,7 +51,7 @@ $race = static function (string $firstPayment, string $secondPayment, string $pr
     $workers = [];
     try {
         foreach ([$firstPayment, $secondPayment] as $index => $payment) {
-            $id = $payment === 'recover' ? $recoveryId : $prefix . $index;
+            $id = in_array($payment, ['recover', 'status'], true) ? $recoveryId : $prefix . $index;
             $process = proc_open([PHP_BINARY, __FILE__, 'worker', $id, $payment, $mode], [
                 0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w'],
             ], $pipes);
@@ -124,6 +126,12 @@ try {
         throw new RuntimeException('Callback and tax recovery through the bridge must issue distinct invoices.');
     }
     echo "Concurrent remote bridge payment and tax recovery passed.\n";
+    [$paid, $fulfilled] = $race('pay_fulfillment', 'status', 'fulfillment', 'remote', 'tax-review');
+    if (!$paid['created'] || $fulfilled['status'] !== 'processing'
+        || $fulfilled['invoice_number'] !== $recovered['invoice_number'] || count($store->read('orders')) !== 7) {
+        throw new RuntimeException('A fulfillment update must preserve the invoice and a concurrent paid order.');
+    }
+    echo "Concurrent remote bridge payment and fulfillment update passed.\n";
 } finally {
     proc_terminate($bridge);
     proc_close($bridge);

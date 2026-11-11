@@ -200,6 +200,30 @@ final class DatabaseService {
         });
     }
 
+    public function updateOrderStatus(string $id, string $status, \DateTimeImmutable $now, array $tracking): array {
+        if ($this->isTestMode()) throw new \RuntimeException('Order writes are disabled in test mode.');
+        if ($this->isRemote()) {
+            return $this->remoteMutation('update_order_status', 'orders', [
+                'id' => $id, 'status' => $status, 'now' => $now->format('c'), 'tracking' => $tracking,
+            ])['result'];
+        }
+        return $this->withOrderInvoiceLock(function () use ($id, $status, $now, $tracking): array {
+            $order = $this->find('orders', $id);
+            if ($order === null) throw new \RuntimeException('Order not found.');
+            $order = OrderService::reviewFulfillment($order, $status, !empty($tracking['availability_confirmed']), $now);
+            $order['status'] = $status;
+            $order['updated_at'] = $now->format('c');
+            if (in_array($status, ['shipped', 'delivered'], true)) {
+                foreach (['tracking_id', 'tracking_url', 'courier_name'] as $field) {
+                    if (!empty($tracking[$field])) $order[$field] = trim((string)$tracking[$field]);
+                }
+                $order['shipped_at'] ??= $now->format('c');
+                $order['review_request_after_at'] = (new \DateTimeImmutable($order['shipped_at']))->modify('+10 days')->format('c');
+            }
+            return $this->upsert('orders', $order);
+        });
+    }
+
     public function upsert(string $table, array $record, string $key = 'id'): array {
         if ($this->isTestMode()) {
             $record['id'] ??= bin2hex(random_bytes(8));

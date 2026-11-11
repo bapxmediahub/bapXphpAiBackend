@@ -63,33 +63,11 @@ final class OrderService {
             if (!filter_var($trackingUrl, FILTER_VALIDATE_URL)) throw new \InvalidArgumentException('The courier tracking link must be a valid URL.');
         }
 
-        $orders = $this->all();
-        $updated = null;
-        $now ??= new \DateTimeImmutable();
-
-        foreach ($orders as &$order) {
-            if (($order['id'] ?? '') !== $id) continue;
-            $order = self::reviewFulfillment($order, $status, !empty($tracking['availability_confirmed']), $now);
-            $order['status'] = $status;
-            $order['updated_at'] = $now->format('c');
-            if (in_array($status, ['shipped', 'delivered'], true)) {
-                if (!empty($tracking['tracking_id'])) $order['tracking_id'] = trim((string)$tracking['tracking_id']);
-                if (!empty($tracking['tracking_url'])) $order['tracking_url'] = trim((string)$tracking['tracking_url']);
-                if (!empty($tracking['courier_name'])) $order['courier_name'] = trim((string)$tracking['courier_name']);
-                $order['shipped_at'] = $order['shipped_at'] ?? $now->format('c');
-                $shippedAt = new \DateTimeImmutable($order['shipped_at']);
-                $order['review_request_after_at'] = $shippedAt->modify('+10 days')->format('c');
-                $this->mailQueue->enqueueShipmentNotification($order);
-                $this->mailQueue->enqueueProductReviewRequest($order, 10);
-            }
-            $updated = $order;
-            break;
+        $updated = $this->store->updateOrderStatus($id, $status, $now ?? new \DateTimeImmutable(), $tracking);
+        if (in_array($status, ['shipped', 'delivered'], true)) {
+            $this->mailQueue->enqueueShipmentNotification($updated);
+            $this->mailQueue->enqueueProductReviewRequest($updated, 10);
         }
-        unset($order);
-        if (!$updated) {
-            throw new \RuntimeException('Order not found.');
-        }
-        $this->store->write('orders', $orders);
         return $updated;
     }
 }
