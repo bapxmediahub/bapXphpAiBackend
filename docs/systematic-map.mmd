@@ -7,11 +7,11 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 111 routes, 12 controllers, 48 services, 43 views, 0 data files, 20 tools"]
-    arch_routes["> Routes: 111 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 114 routes, 12 controllers, 48 services, 45 views, 0 data files, 20 tools"]
+    arch_routes["> Routes: 114 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
     arch_svc["> Services: 48"]:::arch
-    arch_views["> Views: 43"]:::arch
+    arch_views["> Views: 45"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 20"]:::arch
     arch_gaps["> Gaps: 6"]:::arch
@@ -97,6 +97,7 @@ flowchart LR
     route_get_admin["GET /admin — Admin dashboard — counts overview"]:::route
     route_get_admin_products["GET /admin/products — Admin — manage products"]:::route
     route_get_admin_categories["GET /admin/categories — Admin — manage categories"]:::route
+    route_get_admin_collections["GET /admin/collections"]:::route
     route_get_admin_coupons["GET /admin/coupons — Admin — manage coupons"]:::route
     route_get_admin_orders["GET /admin/orders — Admin — order list"]:::route
     route_get_admin_orders_id["GET /admin/orders/{id} — Admin — order detail, status update"]:::route
@@ -127,6 +128,8 @@ flowchart LR
     route_post_admin_products_save["POST /admin/products/save — Admin — create/update product"]:::route
     route_post_admin_products_delete["POST /admin/products/delete — Admin — delete product"]:::route
     route_post_admin_categories_save["POST /admin/categories/save — Admin — create/update category"]:::route
+    route_post_admin_collections_save["POST /admin/collections/save"]:::route
+    route_post_admin_collections_delete["POST /admin/collections/delete"]:::route
     route_post_admin_categories_delete["POST /admin/categories/delete — Admin — delete category"]:::route
     route_post_admin_coupons_save["POST /admin/coupons/save — Admin — create/update coupon"]:::route
     route_post_admin_coupons_delete["POST /admin/coupons/delete — Admin — delete coupon"]:::route
@@ -228,6 +231,7 @@ flowchart LR
     view_admin_agent["admin/agent"]:::code
     view_admin_appearance["admin/appearance"]:::code
     view_admin_blog["admin/blog"]:::code
+    view_admin_collections["admin/collections"]:::code
     view_admin_consultation_analytics["admin/consultation-analytics"]:::code
     view_admin_dashboard["admin/dashboard"]:::code
     view_admin_detail["admin/detail"]:::code
@@ -251,6 +255,7 @@ flowchart LR
     view_public_contact["public/contact"]:::code
     view_public_forgot_password["public/forgot-password"]:::code
     view_public_home["public/home"]:::code
+    view_public_home_collections["public/home-collections"]:::code
     view_public_login["public/login"]:::code
     view_public_privacy["public/privacy"]:::code
     view_public_product["public/product"]:::code
@@ -485,6 +490,11 @@ flowchart LR
   controller_admincontroller --> service_categoryservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_resource
+  route_get_admin_collections --> controller_admincontroller
+  controller_admincontroller --> service_categoryservice
+  controller_admincontroller --> service_productservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_collections
   route_get_admin_coupons --> controller_admincontroller
   controller_admincontroller --> service_couponservice
   controller_admincontroller --> service_authservice
@@ -631,6 +641,19 @@ flowchart LR
   controller_admincontroller --> service_auditlogservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_resource
+  route_post_admin_collections_save --> controller_admincontroller
+  controller_admincontroller --> service_resourceservice
+  controller_admincontroller --> service_categoryservice
+  controller_admincontroller --> service_productservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_collections
+  route_post_admin_collections_delete --> controller_admincontroller
+  controller_admincontroller --> service_resourceservice
+  controller_admincontroller --> service_categoryservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_collections
   route_post_admin_categories_delete --> controller_admincontroller
   controller_admincontroller --> service_resourceservice
   controller_admincontroller --> service_auditlogservice
@@ -830,6 +853,7 @@ flowchart LR
   service_orderservice --> collection_orders
   service_passwordresetservice --> collection_users
   service_productservice --> collection_products
+  service_productservice --> collection_orders
   service_reviewservice --> collection_reviews
   service_reviewservice --> collection_appointments
   service_reviewservice --> collection_orders

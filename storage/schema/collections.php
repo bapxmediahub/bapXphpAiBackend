@@ -252,6 +252,10 @@
                 'name' => ['type' => 'string', 'required' => true],
                 'description' => ['type' => 'text'],
                 'image_url' => ['type' => 'local_or_remote_path'],
+                'is_collection' => ['type' => 'boolean'],
+                'show_home' => ['type' => 'boolean'],
+                'show_shop' => ['type' => 'boolean'],
+                'product_ids' => ['type' => 'array', 'items' => 'string'],
             ],
         ],
         'coupons' => [

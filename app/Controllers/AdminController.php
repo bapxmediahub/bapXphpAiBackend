@@ -39,9 +39,39 @@ final class AdminController extends BaseController {
     }
     public function saveProduct(): void{$this->saveProductRecord();}
     public function deleteProduct(): void{$this->delete('products');}
-    public function categories(): void{$this->resource('Categories','categories',['name','description']);}
+    public function categories(): void{$this->render('admin/resource',['pageTitle'=>'Categories','title'=>'Categories','collection'=>'categories','fields'=>['name','description'],'items'=>(new \App\Services\CategoryService())->all(),'mediaFiles'=>[]]);}
     public function saveCategory(): void{$this->save('categories');}
     public function deleteCategory(): void{$this->delete('categories');}
+    public function collections(): void {
+        $this->render('admin/collections', ['pageTitle'=>'Special Collections', 'collections'=>(new \App\Services\CategoryService())->collections(), 'products'=>(new \App\Services\ProductService())->all()]);
+    }
+    public function saveCollection(): void {
+        $name = trim((string)($_POST['name'] ?? ''));
+        if ($name === '') { $this->flash('Enter a collection title.', 'error'); $this->redirect('/admin/collections'); }
+        $service = new \App\Services\CategoryService();
+        $id = (string)($_POST['id'] ?? '');
+        $existing = null;
+        foreach ($service->collections() as $row) if (($row['id'] ?? '') === $id && $id !== '') $existing = $row;
+        if ($id !== '' && !$existing) { $this->flash('Collection not found.', 'error'); $this->redirect('/admin/collections'); }
+        $valid = array_fill_keys(array_map(fn($p)=>(string)$p['id'], (new \App\Services\ProductService())->all()), true);
+        $ids = array_values(array_unique(array_filter(array_map('strval', (array)($_POST['product_ids'] ?? [])), fn($id)=>isset($valid[$id]))));
+        $record = $existing ?? ['id'=>bin2hex(random_bytes(8)), 'slug'=>'collection-'.bin2hex(random_bytes(6))];
+        $record = array_merge($record, ['name'=>$name, 'is_collection'=>true, 'show_home'=>isset($_POST['show_home']), 'show_shop'=>isset($_POST['show_shop']), 'product_ids'=>$ids]);
+        (new ResourceService('categories'))->save($record);
+        (new AuditLogService())->record('save','collections',$record['id'],['fields'=>['name','show_home','show_shop','product_ids']]);
+        $this->flash('Collection saved.', 'success'); $this->redirect('/admin/collections');
+    }
+    public function deleteCollection(): void {
+        $id = (string)($_POST['id'] ?? '');
+        foreach ((new \App\Services\CategoryService())->collections() as $row) {
+            if ($id !== '' && ($row['id'] ?? '') === $id) {
+                (new ResourceService('categories'))->delete($id);
+                (new AuditLogService())->record('delete','collections',$id);
+                $this->flash('Collection deleted. Products were not deleted.', 'success'); $this->redirect('/admin/collections');
+            }
+        }
+        $this->flash('Collection not found.', 'error'); $this->redirect('/admin/collections');
+    }
     public function coupons(): void{$this->resource('Coupons','coupons',[
         'code','discount_type','discount_value','max_discount',
         'starts_at','ends_at','min_spend','max_spend',

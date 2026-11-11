@@ -108,11 +108,11 @@
             $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16));
         ?>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-xl); flex-wrap:wrap; gap:var(--space-sm);">
-            <h2 class="section-title" style="margin:0;">Most Liked By People</h2>
+            <h2 class="section-title" style="margin:0;">Top Selling Products</h2>
             <a href="/shop" class="btn btn-sm btn-ghost">View Shop</a>
         </div>
         <div class="product-grid">
-        <?php foreach(array_slice($products, 0, min(4, count($products))) as $item): ?>
+        <?php foreach(($bestSellers ?? []) as $item): ?>
             <?php $hasOffer = !empty($item['offer_price']) && $item['offer_price'] < $item['price']; ?>
             <?php
                 $itemSlug = trim((string)($item['slug'] ?? ''));
@@ -175,9 +175,12 @@
                 </div>
             </article>
         <?php endforeach; ?>
+        <?php if (empty($bestSellers)): ?><p>Our top sellers will appear here as orders are completed. <a href="/shop">Browse all products</a>.</p><?php endif; ?>
     </div>
     </div>
 </section>
+
+<?php require app_path('views/public/home-collections.php'); ?>
 
 <section class="section section--alt">
     <div class="container">
