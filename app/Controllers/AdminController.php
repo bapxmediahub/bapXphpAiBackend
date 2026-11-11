@@ -728,6 +728,13 @@ final class AdminController extends BaseController {
         if (array_key_exists('specifications', $_POST)) {
             $data['specifications'] = $this->parseSpecifications((string)$_POST['specifications']);
         }
+        if ($conflict = \App\Services\ProductService::contentConflict($data)) {
+            $draft = $_POST;
+            unset($draft['_csrf']);
+            $_SESSION['product_form_draft'] = $draft;
+            $this->flash($conflict . ' Correct the description or specifications before saving.', 'error');
+            $this->redirect('/admin/products');
+        }
         // Explicit empty gallery fields clear images; omitted fields preserve them.
         // Existing database galleries are arrays, not strings.
         $gallery = $_POST['image_urls'] ?? $data['image_urls'] ?? [];

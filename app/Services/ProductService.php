@@ -22,6 +22,20 @@ namespace App\Services;
  */
 final class ProductService
 {
+    private const RASI_TERMS = [
+        ['mesham', 'aries'], ['rishabam', 'taurus'], ['mithunam', 'gemini'],
+        ['kadagam', 'cancer'], ['simmam', 'leo'], ['kanni', 'virgo'],
+        ['thulam', 'libra'], ['viruchigam', 'vrishchik', 'scorpio'],
+        ['dhanusu', 'dhanu', 'sagittarius'], ['magaram', 'capricorn'],
+        ['kumbam', 'aquarius'], ['meenam', 'pisces'],
+    ];
+    private const GEMSTONE_TERMS = [
+        ['red coral', 'pavazham', 'sivapu pavalam'],
+        ['yellow sapphire', 'pushparagam'], ['blue sapphire', 'neelam'],
+        ['emerald', 'maragatham'], ['pearl', 'muthu'], ['ruby', 'manikyam'],
+        ['hessonite', 'gomed'], ["cat's eye", 'cats eye', 'vaiduryam'], ['diamond'],
+    ];
+
     public function __construct(
         private DatabaseService $store = new DatabaseService(),
         private ?\DateTimeImmutable $now = null
@@ -111,6 +125,44 @@ final class ProductService
     {
         $items = array_filter($this->store->read('products'), fn($i) => ($i['id'] ?? '') !== $id);
         $this->store->write('products', array_values($items));
+    }
+
+    /**
+     * Detect a pasted description that names a different structured zodiac or stone.
+     * The structured specification remains the owner's source of truth; this guard
+     * deliberately reports only explicit contradictions and makes no product claims.
+     */
+    public static function contentConflict(array $product): ?string
+    {
+        $description = strtolower(trim((string)($product['description'] ?? '')));
+        $specifications = is_array($product['specifications'] ?? null) ? $product['specifications'] : [];
+        if ($description === '' || $specifications === []) return null;
+        $normalised = [];
+        foreach ($specifications as $label => $value) $normalised[strtolower(trim((string)$label))] = strtolower(trim((string)$value));
+        foreach ([
+            ['label' => 'Rasi', 'value' => ($normalised['rasi'] ?? ''), 'groups' => self::RASI_TERMS],
+            ['label' => 'Gemstone', 'value' => ($normalised['gemstone'] ?? ''), 'groups' => self::GEMSTONE_TERMS],
+        ] as $check) {
+            $expected = self::matchingTermGroup($check['value'], $check['groups']);
+            if ($expected === null) continue;
+            foreach ($check['groups'] as $terms) {
+                if ($terms === $expected) continue;
+                foreach ($terms as $term) {
+                    if (preg_match('/\b' . preg_quote($term, '/') . '\b/i', $description)) {
+                        return 'Description conflicts with the ' . $check['label'] . ' specification: it mentions “' . $term . '”.';
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private static function matchingTermGroup(string $value, array $groups): ?array
+    {
+        foreach ($groups as $terms) {
+            foreach ($terms as $term) if (str_contains($value, $term)) return $terms;
+        }
+        return null;
     }
 
     /**
