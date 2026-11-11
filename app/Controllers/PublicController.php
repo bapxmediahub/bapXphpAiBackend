@@ -63,6 +63,7 @@ final class PublicController extends BaseController {
     
     public function temple(string $slug): void { 
         $this->detectApiRequest();
+        $slug = rawurldecode($slug);
         $temple = (new TempleService())->findBySlug($slug);
         if (!$temple) $this->renderNotFound();
         $this->seoKey = 'temple';
