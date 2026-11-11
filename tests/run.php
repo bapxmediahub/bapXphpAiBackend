@@ -2103,6 +2103,14 @@ $tests['agent failure categories are bounded and aggregated'] = function (): voi
     assertTrue(!isset($summary['admin']['reasons']['private user text']), 'Arbitrary text cannot appear as a reason');
 };
 
+$tests['general tracking uses the store policy directly'] = function (): void {
+    $bot = new App\Services\SupportBotService();
+    $result = $bot->answer('How can I track an order?', null);
+    assertTrue(str_contains($result['reply'], 'tracking ID'), 'General tracking explains the courier information');
+    assertTrue(str_contains($result['reply'], '/account/dashboard/orders'), 'General tracking directs shoppers to My Orders');
+    assertSame(null, $result['ticket_id'], 'General tracking does not create a ticket');
+};
+
 $tests['support fallback explains tracking without claiming a personal order lookup'] = function (): void {
     $bot = new App\Services\SupportBotService();
     $fallback = (new ReflectionMethod($bot, 'fallbackReply'))->getClosure($bot);
