@@ -167,12 +167,37 @@ final class AgentToolRegistry
      */
     public function aggregateAnswer(string $question): ?string
     {
-        if (self::aggregateIntent($question) === null) return null;
+        $intent = self::aggregateIntent($question);
+        if ($intent === null) return null;
         $days = self::aggregateDays($question);
         $args = $days === 0
             ? ['since' => (new \DateTimeImmutable('first day of this month midnight'))->format('c')]
             : ['days' => $days];
-        return self::aggregateAnswerFromSummary($question, $this->salesSummary($args), $days);
+        $summary = $intent === 'order_count'
+            ? ['orders' => $this->countOrders($days)]
+            : $this->salesSummary($args);
+        return self::aggregateAnswerFromSummary($question, $summary, $days);
+    }
+
+    private function countOrders(int $days): int
+    {
+        $orders = $this->orders->all();
+        if ($days >= 36500) return count($orders);
+
+        $now = new \DateTimeImmutable();
+        $since = $days === 0 ? $now->modify('first day of this month midnight') : $now->modify("-{$days} days");
+        $count = 0;
+        foreach ($orders as $order) {
+            $created = trim((string)($order['created_at'] ?? ''));
+            if ($created === '') continue;
+            try {
+                $date = new \DateTimeImmutable($created);
+                if ($date >= $since && $date <= $now) $count++;
+            } catch (\Exception) {
+                continue;
+            }
+        }
+        return $count;
     }
 
     /** @param array<string,mixed> $summary */
@@ -187,6 +212,10 @@ final class AgentToolRegistry
             default => "in the last {$days} days",
         };
         $orders = max(0, (int)($summary['orders'] ?? 0));
+        if ($intent === 'order_count') {
+            $scope = $days >= 36500 ? 'Includes all recorded statuses.' : 'Includes all statuses with a recorded creation date in that period.';
+            return "The store recorded {$orders} " . ($orders === 1 ? 'order' : 'orders') . " {$period}. " . $scope;
+        }
         $revenue = max(0, (float)($summary['revenue'] ?? 0));
         if ($intent === 'revenue') {
             return 'Recorded sales revenue ' . $period . ' is ₹' . number_format($revenue, 2)
@@ -212,6 +241,13 @@ final class AgentToolRegistry
         if (preg_match('/\b(?:best[ -]?sell(?:er|ers|ing)?|top[ -]?sell(?:er|ers|ing)?|products?\s+sell(?:s|ing)?\s+(?:the\s+)?(?:best|most))\b/i', $question)) {
             return 'best_sellers';
         }
+        $orderCountPattern = '/^\s*
+            (?:how\ many\ orders(?:\ (?:have\ we\ had|did\ we\ get|were\ placed|did\ we\ receive))?
+                |(?:what\ is\ the\ )?(?:total\ orders|order\ count))
+            (?:\ (?:in\ |over\ |for\ )?(?:the\ )?
+                (?:(?:last|past)\ [1-9]\d{0,3}\ days?|this\ month|all[ -]time|ever|overall))?
+            [?!.]*\s*$/ix';
+        if (preg_match($orderCountPattern, $question)) return 'order_count';
         if (preg_match('/\b(?:revenue|sales total|total sales|sales value)\b/i', $question)) return 'revenue';
         return null;
     }
