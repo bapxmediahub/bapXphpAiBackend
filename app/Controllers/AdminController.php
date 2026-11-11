@@ -89,6 +89,21 @@ final class AdminController extends BaseController {
     ]);}
     public function saveCoupon(): void{$this->save('coupons');}
     public function deleteCoupon(): void{$this->delete('coupons');}
+    public function users(): void {
+        header('Cache-Control: private, no-store');
+        $query = is_string($_GET['q'] ?? null) ? substr(trim($_GET['q']), 0, 150) : '';
+        $users = (new ResourceService('users'))->all();
+        if ($query !== '') $users = array_filter($users, static fn($u) =>
+            stripos((string)($u['name'] ?? ''), $query) !== false || stripos((string)($u['email'] ?? ''), $query) !== false);
+        usort($users, static fn($a, $b) => strcasecmp((string)($a['name'] ?? ''), (string)($b['name'] ?? ''))
+            ?: strcasecmp((string)($a['email'] ?? ''), (string)($b['email'] ?? '')));
+        $count = count($users);
+        $pages = max(1, (int)ceil($count / 25));
+        $page = max(1, min($pages, is_string($_GET['page'] ?? null) ? (int)$_GET['page'] : 1));
+        $users = array_slice($users, ($page - 1) * 25, 25);
+        if ($users) $users = \App\Services\UserOrderHistoryService::forUsers($users, (new OrderService())->all());
+        $this->render('admin/users', ['pageTitle'=>'Users'] + compact('users', 'count', 'pages', 'page', 'query'));
+    }
     public function orders(): void{$this->list('Orders','orders');}
     public function order(string $id): void{
         $orders = (new ResourceService('orders'))->all();
@@ -848,7 +863,7 @@ final class AdminController extends BaseController {
         $report = $filter('report');
         $requestedGroup = $filter('group');
         $format = $filter('format');
-        $reportType = isset(StoreStatsService::REPORT_TYPES[$report]) ? $report : ($format === 'csv' ? 'tax' : 'sales');
+        $reportType = isset(StoreStatsService::REPORT_TYPES[$report]) ? $report : (in_array($format, ['csv', 'lines'], true) ? 'tax' : 'sales');
         $group = isset(StoreStatsService::GROUPS[$requestedGroup]) ? $requestedGroup : 'day';
         $allowedStatuses = ['pending','on_hold','confirmed','processing','packed','shipped','delivered'];
         $status = in_array($filter('status'), $allowedStatuses, true) ? $filter('status') : '';
@@ -860,13 +875,31 @@ final class AdminController extends BaseController {
             && substr((string)($order['invoice_date'] ?? ''), 0, 10) >= $from
             && substr((string)($order['invoice_date'] ?? ''), 0, 10) <= $to
         )) : [];
-        if ($reportType === 'tax' && $format === 'csv') {
+        $invoiceReviewReasons = [];
+        foreach ($taxOrders as $o) if ($reason = \App\Services\TaxService::invoiceReviewReason($o, $settings)) $invoiceReviewReasons[(string)($o['id'] ?? $o['invoice_number'])] = $reason;
+        if ($reportType === 'tax' && in_array($format, ['csv', 'lines'], true)) {
+            $lineExport = $format === 'lines';
+            $filename = $lineExport ? "gst-invoice-lines-$from-to-$to.csv" : 'gst-tax-report.csv';
+            header('Cache-Control: private, no-store');
             header('Content-Type: text/csv; charset=utf-8');
-            header('Content-Disposition: attachment; filename="gst-tax-report.csv"');
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['Invoice','Date','Customer','Place of Supply','Taxable','CGST','SGST','IGST','Total','Review']);
-            foreach ($taxOrders as $o) fputcsv($handle, [$o['invoice_number']??'',substr($o['invoice_date']??'',0,10),$o['customer_email']??'',$o['place_of_supply']??'',$o['taxable_value']??0,$o['cgst_total']??0,$o['sgst_total']??0,$o['igst_total']??0,$o['total']??0,\App\Services\TaxService::invoiceReviewReason($o, $settings)??'']);
-            fclose($handle); exit;
+            $write = static fn(array $row) => fputcsv($handle, $row, ',', '"', '');
+            if ($lineExport) {
+                $write(\App\Services\GstRegisterService::HEADERS);
+                foreach (\App\Services\GstRegisterService::lines($taxOrders, $invoiceReviewReasons) as $row) $write($row);
+            } else {
+                $write(['Invoice','Date','Customer','Place of Supply','Taxable','CGST','SGST','IGST','Total','Review']);
+                foreach ($taxOrders as $o) {
+                    $text = \App\Services\GstRegisterService::text(...);
+                    $write([$text((string)$o['invoice_number']), $text(substr((string)$o['invoice_date'], 0, 10)),
+                        $text((string)($o['customer_email'] ?? '')), $text((string)($o['place_of_supply'] ?? '')),
+                        (float)($o['taxable_value'] ?? 0), (float)($o['cgst_total'] ?? 0), (float)($o['sgst_total'] ?? 0),
+                        (float)($o['igst_total'] ?? 0), (float)($o['total'] ?? 0),
+                        $invoiceReviewReasons[(string)($o['id'] ?? $o['invoice_number'])] ?? '']);
+                }
+            }
+            fclose($handle); return;
         }
         $totals = ['taxable'=>0,'cgst'=>0,'sgst'=>0,'igst'=>0,'tax'=>0,'gross'=>0];
         foreach ($taxOrders as $o) {
@@ -877,9 +910,6 @@ final class AdminController extends BaseController {
             $totals['tax']     += (float)($o['cgst_total'] ?? 0) + (float)($o['sgst_total'] ?? 0) + (float)($o['igst_total'] ?? 0);
             $totals['gross']   += (float)($o['total'] ?? 0);
         }
-        $invoiceReviewReasons = [];
-        foreach ($taxOrders as $o) if ($reason = \App\Services\TaxService::invoiceReviewReason($o, $settings)) $invoiceReviewReasons[(string)($o['id'] ?? $o['invoice_number'] ?? '')] = $reason;
-
         $reportRows = match ($reportType) {
             'products' => StoreStatsService::productsPurchased($allOrders, $from, $to, $status),
             'stock' => StoreStatsService::stock((new \App\Services\ProductService())->all()),

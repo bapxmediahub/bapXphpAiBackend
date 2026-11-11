@@ -37,16 +37,16 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 355
-  relationships: 251
+  concepts: 358
+  relationships: 255
   by_type:
     blog: 14
     controller: 12
     doc: 35
     image: 89
-    route: 124
+    route: 125
     schema: 22
-    service: 49
+    service: 51
     skill: 10
 concepts:
   - id: "blog:benefits-of-rudraksha"
@@ -2260,6 +2260,7 @@ concepts:
       - "ProductService"
       - "StoreStatsService"
       - "TaxService"
+      - "GstRegisterService"
       - "AuthService"
     view: "admin/tax-report"
   - id: "route:get__admin_temples"
@@ -2278,6 +2279,23 @@ concepts:
       - "SchemaService"
       - "AuthService"
     view: "admin/temples"
+  - id: "route:get__admin_users"
+    type: "route"
+    title: "GET /admin/users"
+    description: "admin.users"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/admin/users"
+    controller: "AdminController@users"
+    services:
+      - "ResourceService"
+      - "OrderService"
+      - "UserOrderHistoryService"
+      - "AuthService"
+    view: "admin/users"
   - id: "route:get__api"
     type: "route"
     title: "GET /api"
@@ -4004,6 +4022,14 @@ concepts:
     tags:
       - "code"
       - "service"
+  - id: "service:GstRegisterService"
+    type: "service"
+    title: "GstRegisterService"
+    description: "Service: GstRegisterService"
+    resource: "app/Services/GstRegisterService.php"
+    tags:
+      - "code"
+      - "service"
   - id: "service:ImageOptimizerService"
     type: "service"
     title: "ImageOptimizerService"
@@ -4212,6 +4238,14 @@ concepts:
     tags:
       - "code"
       - "service"
+  - id: "service:UserOrderHistoryService"
+    type: "service"
+    title: "UserOrderHistoryService"
+    description: "Service: UserOrderHistoryService"
+    resource: "app/Services/UserOrderHistoryService.php"
+    tags:
+      - "code"
+      - "service"
   - id: "skill:admin-ui"
     type: "skill"
     title: "admin-ui"
@@ -4356,6 +4390,9 @@ relationships:
     to: "service:EnvService"
     relation: "uses"
   - from: "controller:AdminController"
+    to: "service:GstRegisterService"
+    relation: "uses"
+  - from: "controller:AdminController"
     to: "service:MailQueueService"
     relation: "uses"
   - from: "controller:AdminController"
@@ -4405,6 +4442,9 @@ relationships:
     relation: "uses"
   - from: "controller:AdminController"
     to: "service:TempleService"
+    relation: "uses"
+  - from: "controller:AdminController"
+    to: "service:UserOrderHistoryService"
     relation: "uses"
   - from: "controller:ApiController"
     to: "service:CategoryService"
@@ -4635,6 +4675,9 @@ relationships:
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:get__admin_temples"
+    to: "controller:AdminController"
+    relation: "handled_by"
+  - from: "route:get__admin_users"
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:get__api"
@@ -5017,6 +5060,9 @@ relationships:
     relation: "stores"
   - from: "service:ResourceService"
     to: "schema:products"
+    relation: "stores"
+  - from: "service:ResourceService"
+    to: "schema:users"
     relation: "stores"
   - from: "service:ReviewService"
     to: "schema:appointments"

@@ -7,11 +7,11 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 124 routes, 12 controllers, 49 services, 50 views, 0 data files, 20 tools"]
-    arch_routes["> Routes: 124 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 125 routes, 12 controllers, 51 services, 51 views, 0 data files, 20 tools"]
+    arch_routes["> Routes: 125 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
-    arch_svc["> Services: 49"]:::arch
-    arch_views["> Views: 50"]:::arch
+    arch_svc["> Services: 51"]:::arch
+    arch_views["> Views: 51"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 20"]:::arch
     arch_gaps["> Gaps: 6"]:::arch
@@ -105,6 +105,7 @@ flowchart LR
     route_get_admin_categories["GET /admin/categories — Admin — manage categories"]:::route
     route_get_admin_collections["GET /admin/collections"]:::route
     route_get_admin_coupons["GET /admin/coupons — Admin — manage coupons"]:::route
+    route_get_admin_users["GET /admin/users"]:::route
     route_get_admin_orders["GET /admin/orders — Admin — order list"]:::route
     route_get_admin_orders_id_invoice["GET /admin/orders/{id}/invoice"]:::route
     route_get_admin_orders_id["GET /admin/orders/{id} — Admin — order detail, status update"]:::route
@@ -205,6 +206,7 @@ flowchart LR
     service_docsmapservice["DocsMapService"]:::code
     service_envservice["EnvService"]:::code
     service_githubdocservice["GitHubDocService"]:::code
+    service_gstregisterservice["GstRegisterService"]:::code
     service_imageoptimizerservice["ImageOptimizerService"]:::code
     service_knowledgegraphservice["KnowledgeGraphService"]:::code
     service_mailqueueservice["MailQueueService"]:::code
@@ -231,6 +233,7 @@ flowchart LR
     service_supportticketservice["SupportTicketService"]:::code
     service_taxservice["TaxService"]:::code
     service_templeservice["TempleService"]:::code
+    service_userorderhistoryservice["UserOrderHistoryService"]:::code
   end
 
   subgraph VIEWS["Views"]
@@ -259,6 +262,7 @@ flowchart LR
     view_admin_settings["admin/settings"]:::code
     view_admin_tax_report["admin/tax-report"]:::code
     view_admin_temples["admin/temples"]:::code
+    view_admin_users["admin/users"]:::code
     view_layouts_admin["layouts/admin"]:::code
     view_layouts_app["layouts/app"]:::code
     view_public_404["public/404"]:::code
@@ -542,6 +546,12 @@ flowchart LR
   controller_admincontroller --> service_couponservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_resource
+  route_get_admin_users --> controller_admincontroller
+  controller_admincontroller --> service_resourceservice
+  controller_admincontroller --> service_orderservice
+  controller_admincontroller --> service_userorderhistoryservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_users
   route_get_admin_orders --> controller_admincontroller
   controller_admincontroller --> service_orderservice
   controller_admincontroller --> service_authservice
@@ -596,6 +606,7 @@ flowchart LR
   controller_admincontroller --> service_productservice
   controller_admincontroller --> service_storestatsservice
   controller_admincontroller --> service_taxservice
+  controller_admincontroller --> service_gstregisterservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_tax_report
   route_get_admin_temples --> controller_admincontroller
@@ -932,6 +943,7 @@ flowchart LR
   service_resourceservice --> collection_products
   service_resourceservice --> collection_appointments
   service_resourceservice --> collection_categories
+  service_resourceservice --> collection_users
   service_resourceservice --> collection_orders
   service_databaseservice --> collection_users
   service_databaseservice --> collection_addresses

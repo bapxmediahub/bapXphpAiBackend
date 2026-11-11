@@ -3,10 +3,10 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 124,
+        "routes": 125,
         "controllers": 12,
-        "services": 49,
-        "views": 50,
+        "services": 51,
+        "views": 51,
         "collections": 22
     },
     "routes": [
@@ -821,6 +821,7 @@
                 "ProductService",
                 "StoreStatsService",
                 "TaxService",
+                "GstRegisterService",
                 "AuthService"
             ]
         },
@@ -857,6 +858,19 @@
             "services": [
                 "ResourceService",
                 "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/users",
+            "name": "admin.users",
+            "controller": "AdminController@users",
+            "view": "admin/users",
+            "services": [
+                "ResourceService",
+                "OrderService",
+                "UserOrderHistoryService",
                 "AuthService"
             ]
         },
@@ -1432,6 +1446,7 @@
         "DocsMapService",
         "EnvService",
         "GitHubDocService",
+        "GstRegisterService",
         "ImageOptimizerService",
         "KnowledgeGraphService",
         "MailQueueService",
@@ -1457,7 +1472,8 @@
         "SupportBotService",
         "SupportTicketService",
         "TaxService",
-        "TempleService"
+        "TempleService",
+        "UserOrderHistoryService"
     ],
     "views": [
         "account/_nav",
@@ -1485,6 +1501,7 @@
         "admin/settings",
         "admin/tax-report",
         "admin/temples",
+        "admin/users",
         "layouts/admin",
         "layouts/app",
         "public/404",
