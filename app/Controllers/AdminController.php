@@ -503,39 +503,24 @@ final class AdminController extends BaseController {
     public function testAi(): void{
         $this->validateCsrf();
         $config = (new SecretService())->getModelConfig();
-        // Compare the documented Gemma variants on the same endpoint and credentials.
-        // https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api#supported-models
-        $probe = $_POST['probe'] ?? '';
-        $toolsProbe = $probe === 'flash-lite-tools' && ($config['provider'] ?? '') === 'google';
-        $override = $toolsProbe ? 'gemini-3.5-flash-lite' : (in_array($probe, self::comparisonModels($config), true) ? $probe : null);
-        $model = $override ?? (string)($config['model'] ?? '');
+        $model = (string)($config['model'] ?? \App\Services\SecretService::PRIMARY_MODEL);
         $client = new \App\Services\AiClient();
-        $answer = $toolsProbe
-            ? $client->completeWithTools(
-                'Call product_status for the exact slug karuppasami-dollar, then report its current price in one sentence.',
-                new \App\Services\AgentToolRegistry(probeProductSlug: 'karuppasami-dollar'),
-                128, 0.0, 2, $override
-            )
-            : $client->complete('Reply with exactly: connection ok', 32, 0.0, $override);
-        $ok = !\App\Services\AiClient::isError($answer) && trim($answer) !== ''
-            && (!$toolsProbe || $client->toolCalls() > 0);
+        $answer = $client->complete('Reply with exactly: connection ok', 32, 0.0);
+        $ok = !\App\Services\AiClient::isError($answer) && trim($answer) !== '';
         $_SESSION['ai_test_result'] = [
             'ok' => $ok,
             'model' => $model,
             'endpoint' => (string)($config['endpoint'] ?? ''),
             'message' => $ok ? trim($answer) : ($answer !== '' ? $answer : 'The provider returned an empty response.'),
             'timings' => $client->transferTimings(),
-            'tool_calls' => $toolsProbe ? $client->toolCalls() : null,
+            'tool_calls' => null,
         ];
         (new AuditLogService())->record('test','ai',$model,['result'=>$ok ? 'ok' : 'failed']);
         $this->redirect('/admin/integrations');
     }
 
     private static function comparisonModels(array $config): array {
-        if (($config['provider'] ?? '') !== 'google') return [];
-        // https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash-lite
-        $models = ['gemma-4-31b-it', 'gemma-4-26b-a4b-it', 'gemini-3.5-flash-lite'];
-        return array_diff($models, [$config['model'] ?? '']);
+        return [];
     }
 
     public function testEmail(): void{

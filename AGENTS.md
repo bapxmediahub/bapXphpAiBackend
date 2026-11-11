@@ -109,12 +109,10 @@ web before asserting that a model, endpoint or API field does not exist.** Sayin
 model name looks wrong" without checking sends the owner chasing a configuration problem
 that is not there.
 
-- `gemma-4-31b-it` **is a real, current model** on the Gemini API, served from
-  `https://generativelanguage.googleapis.com/v1beta/models`. It is the configured model
-  for both agents. Proof:
-  <https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api> and
-  <https://huggingface.co/google/gemma-4-31B-it>. It was wrongly called fake twice
-  during development; the real defect was ours, in response parsing.
+- The product uses only Google's two hosted Gemma 4 models:
+  `gemma-4-31b-it` is primary and `gemma-4-26b-a4b-it` is automatic fallback after
+  three retryable API failures. Google does not publish a hosted Gemma 4 27B identifier.
+  Proof: <https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api#supported-models>.
 - It is a **reasoning model**. Its reply may contain the model thinking out loud, either
   as parts flagged `"thought": true` or as prose before the answer. Read the answer with
   `AiClient::answerFromParts()`; never take `parts[0]`, which is usually the reasoning.

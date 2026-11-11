@@ -526,12 +526,15 @@ $tests['admin integrations explain api setup and support bot keys'] = function (
         'https://console.cloud.google.com/apis/credentials',
         'agent_api_key',
         'agent_model',
-        'gemma-4-31b-it',
         'https://generativelanguage.googleapis.com/v1beta/models/',
         'support_bot_purge_policy',
         'always_purge',
     ] as $needle) {
         assertTrue(str_contains($view, $needle), "Integrations page should include {$needle}");
+    }
+    $secrets = file_get_contents(app_path('app/Services/SecretService.php'));
+    foreach (['gemma-4-31b-it', 'gemma-4-26b-a4b-it'] as $model) {
+        assertTrue(str_contains($secrets, $model), "Gemma router should include {$model}");
     }
     assertTrue(!str_contains($view, 'name="support_bot_google_api_endpoint"'), 'Admin should not need to enter the Google API endpoint manually');
     assertTrue(str_contains($view, 'Public consultation booking is retired.'), 'Integration guidance should match the retired public booking journey');
@@ -665,7 +668,11 @@ $tests['support assistant widget uses browser session memory and google model se
     $client = file_get_contents(app_path('app/Services/AiClient.php'));
     assertTrue(str_contains($client, 'getModelConfig'), 'AiClient should resolve endpoint and model from Admin → Integrations');
     assertTrue(!str_contains($client, 'curl_close($ch)'), 'PHP 8.5 transport must not emit obsolete curl_close warnings into JSON');
-    assertTrue(str_contains($client, '20_000_000_000') && str_contains($client, 'CURLOPT_TIMEOUT_MS => $timeoutMs'), 'Provider attempts must share a 20-second per-post deadline');
+    assertTrue(str_contains($client, 'PRIMARY_FAILURES_BEFORE_FAILOVER = 3')
+        && str_contains($client, 'PRIMARY_ATTEMPT_TIMEOUT_MS = 6000')
+        && str_contains($client, 'FALLBACK_ATTEMPT_TIMEOUT_MS = 12000')
+        && str_contains($client, 'CURLOPT_TIMEOUT_MS => $timeoutMs'),
+        'Three bounded primary attempts and one fallback must fit the 35-second browser deadline');
     $admin = file_get_contents(app_path('app/Controllers/AdminController.php'));
     assertTrue(str_contains($admin, 'AiClient') && !str_contains($admin, 'x-goog-api-key'),
         'Admin agent should share the same client rather than keep a second provider call');
@@ -1499,12 +1506,43 @@ $tests['AI transport diagnostics distinguish causes without assuming the provide
     $message = $client::describeFailure(500, '{"error":{"message":"private prompt and secret"}}', 0);
     assertTrue(str_contains($message, 'HTTP 500'), 'Provider status should remain visible');
     assertTrue(!str_contains($message, 'private prompt') && !str_contains($message, 'secret'), 'Provider response bodies must not be displayed');
-    $retry = new ReflectionMethod($client, 'retryTransient');
-    foreach ([500, 503] as $status) assertTrue($retry->invoke(null, 1, $status, true, 5000), 'Transient server errors may retry once');
-    foreach ([400, 401, 429, 504] as $status) assertTrue(!$retry->invoke(null, 1, $status, true, 5000), 'Client, quota and deadline errors must not retry');
-    assertTrue(!$retry->invoke(null, 2, 500, true, 5000), 'A second retry is not allowed');
-    assertTrue(!$retry->invoke(null, 1, 500, false, 5000), 'Transport failures must not retry');
-    assertTrue(!$retry->invoke(null, 1, 503, true, 1200), 'Insufficient budget must skip retry');
+    foreach ([0, 404, 408, 429, 500, 503, 504] as $status) {
+        assertTrue($client::canFailOver($status, 0), "HTTP {$status} may be repaired by the other Gemma model");
+    }
+    foreach ([400, 401, 403, 422] as $status) {
+        assertTrue(!$client::canFailOver($status, 0), "HTTP {$status} must fail immediately rather than repeat an invalid request");
+    }
+    assertTrue($client::canFailOver(0, 28), 'Transport failures count toward Gemma failover');
+    assertSame(
+        ['gemma-4-31b-it', 'gemma-4-26b-a4b-it'],
+        $client::googleModelPair('gemma-4-31b-it'),
+        '31B routes to 26B A4B after the failure threshold'
+    );
+    assertSame(
+        ['gemma-4-26b-a4b-it', 'gemma-4-31b-it'],
+        $client::googleModelPair('gemma-4-26b-a4b-it'),
+        'The router always selects the other supported Gemma model'
+    );
+    assertSame(
+        ['gemma-4-31b-it', 'gemma-4-26b-a4b-it'],
+        $client::googleModelPair('unsupported-model'),
+        'Unsupported saved models are forced back to the Gemma-only pair'
+    );
+    assertSame(
+        [
+            ['model' => 'gemma-4-31b-it', 'timeout_ms' => 6000],
+            ['model' => 'gemma-4-31b-it', 'timeout_ms' => 6000],
+            ['model' => 'gemma-4-31b-it', 'timeout_ms' => 6000],
+            ['model' => 'gemma-4-26b-a4b-it', 'timeout_ms' => 12000],
+        ],
+        $client::googleAttemptPlan('gemma-4-31b-it'),
+        'The router must fail over only after exactly three primary API failures'
+    );
+    assertSame(
+        [['model' => 'gemma-4-26b-a4b-it', 'timeout_ms' => 12000]],
+        $client::googleAttemptPlan('gemma-4-26b-a4b-it', true),
+        'A tool conversation that failed over must stay on its fallback model'
+    );
 };
 
 $tests['product breadcrumb uses the category identifier accepted by the shop'] = function (): void {

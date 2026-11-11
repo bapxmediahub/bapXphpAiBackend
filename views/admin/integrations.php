@@ -61,22 +61,24 @@
 
         <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">AI Model (Agent + Support Bot)</h2>
         <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">
-            Configure an OpenAI-compatible API for the site AI agent and the support bot.
-            Works with OpenAI, OpenRouter, or any OpenAI-compatible provider.
+            Both site agents use the Google Gemini API with an automatic two-model Gemma router.
         </p>
         <div class="admin-form__row">
             <label>Agent Name<input name="agent_name" value="<?= e($secrets['agent_name']??'Agent') ?>" placeholder="Agent"></label>
-            <label>API Endpoint (base URL)<input name="api_endpoint" value="<?= e($secrets['api_endpoint']??'') ?>" placeholder="https://api.openai.com/v1"></label>
-            <label>API Key<input type="password" name="ai_api_key" value="<?= e($secrets['ai_api_key']??$secrets['agent_api_key']??$secrets['support_bot_google_api_key']??'') ?>" placeholder="sk-... or AIza..." autocomplete="new-password"></label>
+            <label>API Endpoint (Google)<input name="api_endpoint" value="<?= e(\App\Services\SecretService::GOOGLE_ENDPOINT) ?>" readonly></label>
+            <label>API Key<input type="password" name="ai_api_key" value="<?= e($secrets['ai_api_key']??$secrets['agent_api_key']??$secrets['support_bot_google_api_key']??'') ?>" placeholder="AIza..." autocomplete="new-password"></label>
         </div>
         <div class="admin-form__row">
-            <label>Model<input name="agent_model" value="<?= e($secrets['agent_model']??$secrets['support_bot_model']??'gemma-4-31b-it') ?>" placeholder="gemma-4-31b-it"></label>
+            <label>Primary model
+                <input value="Gemma 4 31B" readonly aria-describedby="ai-router-note">
+                <input type="hidden" name="agent_model" value="<?= e(\App\Services\SecretService::PRIMARY_MODEL) ?>">
+            </label>
         </div>
         <input type="hidden" name="support_bot_purge_policy" value="always_purge">
-        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.85rem;">
-            Current model: <strong><?= e($secrets['agent_model'] ?? $secrets['support_bot_model'] ?? 'gemma-4-31b-it') ?></strong>.
-            OpenRouter: endpoint <code>https://openrouter.ai/api/v1</code>.
-            Google: endpoint <code>https://generativelanguage.googleapis.com/v1beta/models/</code>.
+        <p id="ai-router-note" style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.85rem;">
+            Uses <strong><?= e(\App\Services\SecretService::PRIMARY_MODEL) ?></strong> first. After three retryable API failures,
+            the request automatically moves to <strong><?= e(\App\Services\SecretService::FALLBACK_MODEL) ?></strong>.
+            Google endpoint: <code>https://generativelanguage.googleapis.com/v1beta/models/</code>.
         </p>
 
         <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">WebRTC TURN Server</h2>
@@ -250,7 +252,6 @@ unset($_SESSION['ai_test_result']);
             <?php foreach ($comparisonModels as $comparisonModel): ?>
                 <button class="btn btn-secondary" name="probe" value="<?= e($comparisonModel) ?>">Test <?= e($comparisonModel) ?></button>
             <?php endforeach; ?>
-            <button class="btn btn-secondary" name="probe" value="flash-lite-tools">Test Flash-Lite product lookup</button>
             <small>This runs one connection test without changing the saved model.</small>
         <?php endif; ?>
     </form>
