@@ -109,20 +109,24 @@ web before asserting that a model, endpoint or API field does not exist.** Sayin
 model name looks wrong" without checking sends the owner chasing a configuration problem
 that is not there.
 
-- `gemma-4-31b-it` **is a real, current model** on the Gemini API, served from
-  `https://generativelanguage.googleapis.com/v1beta/models`. It is the configured model
-  for both agents. Proof:
+- `gemini-3.5-flash-lite` is the configured model for both agents. Google documents it
+  as a stable, low-latency model with function calling. Proof:
+  <https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash-lite> and
+  <https://ai.google.dev/gemini-api/docs/function-calling>.
+- `gemma-4-31b-it` **is a real, current comparison model** on the Gemini API, served
+  from `https://generativelanguage.googleapis.com/v1beta/models`. Proof:
   <https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api> and
   <https://huggingface.co/google/gemma-4-31B-it>. It was wrongly called fake twice
   during development; the real defect was ours, in response parsing.
-- It is a **reasoning model**. Its reply may contain the model thinking out loud, either
+- These are **reasoning models**. A reply may contain model thinking out loud, either
   as parts flagged `"thought": true` or as prose before the answer. Read the answer with
   `AiClient::answerFromParts()`; never take `parts[0]`, which is usually the reasoning.
   Reference: <https://github.com/google-gemini/cookbook/issues/1198>.
-- Gemma 4 on the Gemini API supports `MINIMAL` and `HIGH` through
-  `generationConfig.thinkingConfig.thinkingLevel`. `AiClient` uses `MINIMAL` and
-  still filters any reasoning from the returned text. Reference:
-  <https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api#thinking>.
+- Gemma 4 and Gemini 3.x on the Gemini API support thinking configuration;
+  `AiClient` uses `generationConfig.thinkingConfig.thinkingLevel` with `MINIMAL`
+  and still filters any reasoning from the returned text. References:
+  <https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api#thinking> and
+  <https://ai.google.dev/gemini-api/docs/whats-new-gemini-3.5>.
 
 The general rule: when a fact about an external service decides what you change, verify
 it against that service's own documentation and record the URL beside the code.

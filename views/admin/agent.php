@@ -10,7 +10,7 @@
             <span class="agent-chip <?= !empty($modelConfig['configured']) ? 'agent-chip--ok' : 'agent-chip--warn' ?>">
                 <?= !empty($modelConfig['configured']) ? 'Connected' : 'No API key' ?>
             </span>
-            <span class="agent-chip agent-chip--muted"><?= e($modelConfig['model'] ?? 'gemma-4-31b-it') ?></span>
+            <span class="agent-chip agent-chip--muted"><?= e($modelConfig['model'] ?? \App\Services\SecretService::DEFAULT_MODEL) ?></span>
         </div>
     </div>
 
