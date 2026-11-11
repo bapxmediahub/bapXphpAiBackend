@@ -73,19 +73,43 @@
 </script>
 
 <div class="trust-bar">
-    <div class="trust-item">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-        Secure Payments
-    </div>
-    <div class="trust-item">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-        Saved Addresses
-    </div>
-    <div class="trust-item">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-        Spiritual Products
+    <div class="trust-bar__inner">
+        <button class="trust-item" type="button" aria-expanded="false" aria-controls="trust-label-payments" data-trust-item>
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            <span class="trust-item__label" id="trust-label-payments">Secure Payments</span>
+        </button>
+        <button class="trust-item" type="button" aria-expanded="false" aria-controls="trust-label-addresses" data-trust-item>
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+            <span class="trust-item__label" id="trust-label-addresses">Saved Addresses</span>
+        </button>
+        <button class="trust-item" type="button" aria-expanded="false" aria-controls="trust-label-products" data-trust-item>
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            <span class="trust-item__label" id="trust-label-products">Spiritual Products</span>
+        </button>
     </div>
 </div>
+<script>
+(() => {
+    const items = [...document.querySelectorAll('[data-trust-item]')];
+    const mobile = matchMedia('(max-width: 743px)');
+    const syncMode = () => items.forEach(item => {
+        if (mobile.matches) item.setAttribute('aria-expanded', item.classList.contains('is-label-visible') ? 'true' : 'false');
+        else item.removeAttribute('aria-expanded');
+    });
+    items.forEach(item => item.addEventListener('click', () => {
+        const reveal = !item.classList.contains('is-label-visible');
+        items.forEach(other => other.classList.remove('is-label-visible'));
+        item.classList.toggle('is-label-visible', reveal);
+        syncMode();
+    }));
+    items.forEach(item => item.addEventListener('focus', () => {
+        items.forEach(other => { if (other !== item) other.classList.remove('is-label-visible'); });
+        syncMode();
+    }));
+    mobile.addEventListener?.('change', syncMode);
+    syncMode();
+})();
+</script>
 
 <section class="section home-bestsellers">
     <div class="container">
