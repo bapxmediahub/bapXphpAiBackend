@@ -587,9 +587,31 @@ final class AgentToolRegistry
         return $from >= $earliest ? ['from' => $from, 'to' => $to] : null;
     }
 
+    /** Bind a single relative calendar window to the owner's words, in India time. */
+    private function withOwnerRelativeWindow(array $args): array
+    {
+        $words = ['one'=>1, 'two'=>2, 'three'=>3, 'four'=>4, 'five'=>5,
+            'six'=>6, 'seven'=>7, 'eight'=>8, 'nine'=>9, 'ten'=>10];
+        $number = '\d{1,3}|' . implode('|', array_keys($words));
+        $pattern = '/\b(?:last|past)\s+(' . $number . ')\s+days?\b/i';
+        if (preg_match_all($pattern, $this->ownerQuestion, $matches) !== 1) return $args;
+        $rest = preg_replace($pattern, '', $this->ownerQuestion);
+        if (preg_match('/\b(?:since|between|before|after|yesterday|previous|excluding|except|last|past|week|month|quarter|year)\b|\d{4}-\d{2}-\d{2}/i', $rest)) {
+            return $args;
+        }
+        $value = strtolower($matches[1][0]);
+        $days = $words[$value] ?? (int)$value;
+        if ($days < 1 || $days > 366) return $args;
+
+        $today = new \DateTimeImmutable('today', new \DateTimeZone('Asia/Kolkata'));
+        $args['from'] = $today->modify('-' . ($days - 1) . ' days')->format('Y-m-d');
+        $args['to'] = $today->format('Y-m-d');
+        return $args;
+    }
+
     private function gstRegisterSummary(array $args): array
     {
-        $range = self::reportDates($args);
+        $range = self::reportDates($this->withOwnerRelativeWindow($args));
         if ($range === null) return ['error' => self::DATE_ERROR];
         $orders = GstRegisterService::ordersForPeriod($this->orders->all(), $range['from'], $range['to']);
         $settings = (new SettingsService($this->store))->public();
@@ -607,7 +629,7 @@ final class AgentToolRegistry
 
     private function supportEnquiries(array $args): array
     {
-        $range = self::reportDates($args);
+        $range = self::reportDates($this->withOwnerRelativeWindow($args));
         if ($range === null) return ['error' => self::DATE_ERROR];
         $topic = $args['topic'] ?? '';
         $status = $args['status'] ?? '';

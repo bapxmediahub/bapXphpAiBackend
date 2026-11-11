@@ -2884,6 +2884,29 @@ $tests['Enterprise can recover verified ticket counts after model synthesis fail
     }
 };
 
+$tests['Enterprise report tools use the requested inclusive relative period'] = static function (): void {
+    $previousMode = getenv('BAPX_TEST_MODE');
+    putenv('BAPX_TEST_MODE=1');
+    try {
+        $tools = new \App\Services\AgentToolRegistry(ownerQuestion: 'Compare open and answered support tickets from the last seven days.');
+        $today = new DateTimeImmutable('today', new DateTimeZone('Asia/Kolkata'));
+        $result = $tools->run('support_enquiries', [
+            'from'=>$today->modify('-7 days')->format('Y-m-d'),
+            'to'=>$today->format('Y-m-d'),
+            'status'=>'open',
+        ]);
+        assertSame($today->modify('-6 days')->format('Y-m-d'), $result['from'], 'Last seven days includes today and six prior dates');
+        assertSame($today->format('Y-m-d'), $result['to'], 'The report ends today in India time');
+
+        $tools = new \App\Services\AgentToolRegistry(ownerQuestion: 'Compare the last 7 days with the last 30 days.');
+        $start = $today->modify('-29 days')->format('Y-m-d');
+        $result = $tools->run('support_enquiries', ['from'=>$start]);
+        assertSame($start, $result['from'], 'Multiple requested windows keep the tool-specific dates');
+    } finally {
+        putenv($previousMode === false ? 'BAPX_TEST_MODE' : 'BAPX_TEST_MODE=' . $previousMode);
+    }
+};
+
 $tests['support ticket data is scoped and does not expose conversation bodies'] = static function (): void {
     $query = \App\Services\SupportBotService::ticketLookupRequest('How many of my tickets are closed?');
     assertSame('closed', $query['status'] ?? null, 'Status after the noun must constrain the lookup');
