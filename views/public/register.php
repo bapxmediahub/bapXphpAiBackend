@@ -31,6 +31,12 @@
                     <div class="form-group"><label>PIN code</label><input type="text" name="pincode" required inputmode="numeric" placeholder="600001"></div>
                 </div>
                 <div class="form-group">
+                    <label for="register-state">State / Union Territory</label>
+                    <select id="register-state" name="state" required><option value="">Select delivery state</option>
+                        <?php foreach (\App\Services\TaxService::states() as $state): ?><option value="<?= e($state) ?>"><?= e($state) ?></option><?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label>Password</label>
                     <input type="password" name="password" required placeholder="••••••••" minlength="6">
                 </div>

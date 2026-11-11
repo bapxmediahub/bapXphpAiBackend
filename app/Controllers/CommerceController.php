@@ -121,6 +121,10 @@ final class CommerceController extends BaseController {
         if ($shippingState === null) {
             $this->jsonResponse(['error' => 'Select a valid delivery state before payment.'], 422);
         }
+        $supplierSettings = (new SettingsService())->public();
+        if (TaxService::normaliseState((string)($supplierSettings['gst_state'] ?? 'Tamil Nadu')) === null) {
+            $this->jsonResponse(['error' => 'Checkout is temporarily unavailable. Please contact the store.'], 503);
+        }
         $paymentMethod = trim($_POST['payment_method'] ?? 'razorpay');
         if (!empty($_SESSION['user']['email']) && !empty($_POST['save_address']) && trim((string)($_POST['address_name'] ?? '')) !== '') {
             (new \App\Services\AddressService())->save($_SESSION['user']['email'], $_POST);
@@ -340,9 +344,10 @@ final class CommerceController extends BaseController {
     }
 
     /** Persist either gateway through one idempotent, tax-aware order boundary. */
-    private function persistVerifiedOrder(array $pendingOrder, string $paymentId, array $gatewayFields): string {
-        $db = new DatabaseService();
-        $existingOrders = $db->read('orders');
+    private function persistVerifiedOrder(array $pendingOrder, string $paymentId, array $gatewayFields, ?array $testPorts = null): string {
+        // Optional private ports permit deterministic tests without touching hosted records.
+        $db = $testPorts === null ? new DatabaseService() : null;
+        $existingOrders = $testPorts === null ? $db->read('orders') : ($testPorts['readOrders'])();
         foreach ($existingOrders as $existing) {
             if (($existing['payment_id'] ?? '') === $paymentId) return (string)$existing['id'];
             if (!empty($gatewayFields['stripe_session_id']) && ($existing['stripe_session_id'] ?? '') === $gatewayFields['stripe_session_id']) {
@@ -351,7 +356,7 @@ final class CommerceController extends BaseController {
         }
 
         $orderItems = $pendingOrder['items'] ?? [];
-        $products = (new ProductService())->bySlug();
+        $products = $testPorts === null ? (new ProductService())->bySlug() : ($testPorts['products'])();
         foreach ($orderItems as $item) {
             $product = $products[$item['slug'] ?? ''] ?? null;
             if (!in_array($product['stock_status'] ?? '', ['in_stock', 'active'], true)) {
@@ -366,9 +371,9 @@ final class CommerceController extends BaseController {
             $item['unit_price'] = (float)($item['line_total'] ?? 0) / max(1, (int)($item['qty'] ?? 1));
             return $item;
         }, $orderItems);
-        $settings = (new SettingsService())->public();
-        $tax = (new TaxService())->snapshot($itemsWithRates, 0, (string)($pendingOrder['shipping_state'] ?? ''), $settings);
-        $invoice = (new TaxService())->nextInvoice($existingOrders);
+        $settings = $testPorts === null ? (new SettingsService())->public() : ($testPorts['settings'])();
+        $tax = (new TaxService())->snapshotForVerifiedPayment($itemsWithRates, 0, (string)($pendingOrder['shipping_state'] ?? ''), $settings);
+        $invoice = $tax !== null ? (new TaxService())->nextInvoice($existingOrders) : null;
         $localId = bin2hex(random_bytes(8));
         $order = array_merge([
             'id' => $localId,
@@ -386,24 +391,19 @@ final class CommerceController extends BaseController {
             'items' => $orderItems,
             'coupon_code' => $pendingOrder['coupon_code'] ?? '',
             'discount' => $pendingOrder['discount'] ?? 0,
-            'tax_lines' => $tax['tax_lines'],
-            'taxable_value' => $tax['taxable_value'],
-            'cgst_total' => $tax['cgst_total'],
-            'sgst_total' => $tax['sgst_total'],
-            'igst_total' => $tax['igst_total'],
-            'tax_total' => $tax['tax_total'],
-            'supply_type' => $tax['supply_type'],
-            'place_of_supply' => $tax['place_of_supply'],
-            'supplier' => $tax['supplier'],
             'customer_gstin' => $pendingOrder['customer_gstin'] ?? '',
-            'invoice_sequence' => $invoice['invoice_sequence'],
-            'invoice_financial_year' => $invoice['invoice_financial_year'],
-            'invoice_number' => $invoice['invoice_number'],
-            'invoice_date' => $invoice['invoice_date'],
+            'tax_review_required' => $tax === null,
+            'tax_review_reason' => $tax === null ? 'Missing or invalid delivery or supplier state at payment confirmation' : '',
             'created_at' => date('c'),
         ], $gatewayFields);
-        $db->upsert('orders', $order);
-        (new MailQueueService())->enqueuePaymentConfirmation($order);
+        if ($tax !== null && $invoice !== null) {
+            unset($tax['total']); // Gateway-verified total remains authoritative.
+            $order = array_merge($order, $tax, $invoice);
+        }
+        if ($testPorts === null) $db->upsert('orders', $order);
+        else ($testPorts['saveOrder'])($order);
+        try { if ($testPorts === null) (new MailQueueService())->enqueuePaymentConfirmation($order); }
+        catch (\Throwable $error) { error_log('Payment confirmation mail could not be queued.'); }
         unset($_SESSION['pending_order'], $_SESSION['cart']);
         return $localId;
     }

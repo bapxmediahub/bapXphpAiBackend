@@ -2131,6 +2131,39 @@ $tests['agent monitoring counts bounded outcomes without treating fallbacks as m
     assertSame(null, App\Services\AuditLogService::agentSummary([], $now)['admin']['average_ms'], 'No traffic is not zero-latency success');
 };
 
+$tests['verified payment tax review preserves missing-state orders without issuing an invoice'] = function (): void {
+    $tax = new \App\Services\TaxService();
+    $items = [['name'=>'Test item','qty'=>1,'line_total'=>105,'gst_rate'=>5]];
+    assertSame(null, $tax->snapshotForVerifiedPayment($items, 0, '', ['gst_state'=>'Tamil Nadu']), 'Legacy checkout without state requires review');
+    assertSame(null, $tax->snapshotForVerifiedPayment($items, 0, 'Tamil Nadu', ['gst_state'=>'invalid']), 'Invalid supplier state requires review');
+    $valid = $tax->snapshotForVerifiedPayment($items, 0, 'Karnataka', ['gst_state'=>'Tamil Nadu']);
+    assertSame('interstate', $valid['supply_type'] ?? '', 'Valid paid checkout still receives correct classification');
+    $controller = file_get_contents(app_path('app/Controllers/CommerceController.php'));
+    assertTrue(str_contains($controller, "'tax_review_required' => \$tax === null"), 'Paid records carry review flag when classification is unavailable');
+};
+
+$tests['verified legacy payment is persisted once without a fabricated invoice'] = function (): void {
+    $records = [];
+    $ports = [
+        'readOrders' => function () use (&$records) { return array_values($records); },
+        'products' => fn() => ['test-product'=>['stock_status'=>'in_stock','gst_rate'=>5]],
+        'settings' => fn() => ['gst_state'=>'Tamil Nadu'],
+        'saveOrder' => function ($order) use (&$records) { $records[$order['id']] = $order; },
+    ];
+    $pending = ['total'=>105, 'customer_email'=>'test@example.invalid', 'customer_name'=>'Test', 'customer_phone'=>'',
+        'shipping_address'=>'Test', 'shipping_city'=>'Test', 'shipping_pincode'=>'000000',
+        'items'=>[['slug'=>'test-product','name'=>'Test','qty'=>1,'line_total'=>105]]];
+    $persist = (new ReflectionMethod(\App\Controllers\CommerceController::class, 'persistVerifiedOrder'))->getClosure(new \App\Controllers\CommerceController());
+    $id = $persist($pending, 'test-paid-id', [], $ports);
+    assertSame(1, count($records), 'Verified payment must be saved');
+    assertSame('test-paid-id', $records[$id]['payment_id'] ?? '', 'Payment identifier is preserved');
+    assertSame(105, $records[$id]['total'] ?? null, 'Verified amount is preserved');
+    assertTrue(!empty($records[$id]['tax_review_required']), 'Owner sees the review flag');
+    assertTrue(empty($records[$id]['invoice_number']), 'No unverified invoice is issued');
+    assertSame($id, $persist($pending, 'test-paid-id', [], $ports), 'Repeated gateway callbacks are idempotent');
+    assertSame(1, count($records), 'Retry creates no duplicate order');
+};
+
 $tests['cart summary recalculates quantities and mixed product tax rates'] = function (): void {
     $summary = App\Services\TaxService::cartSummary([
         ['line_total' => 105, 'qty' => 1, 'product' => ['gst_rate' => 5]],

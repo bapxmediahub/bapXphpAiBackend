@@ -3997,3 +3997,9 @@ body { background: var(--color-bg); }
     .motion-ready .reveal { opacity: 1; transform: none; transition: none; }
     .product-card, .product-card__image img, .contact-card { transition: none; }
 }
+
+/* Registration must fit narrow screens even with long state names and terms. */
+.auth-form-container, .auth-card, .auth-form, .auth-form .form-group { min-width: 0; }
+.auth-form select { width: 100%; max-width: 100%; }
+.auth-form .checkbox-label { white-space: normal; line-height: 1.5; align-items: flex-start; }
+@media (max-width: 743px) { .auth-form-container { padding: var(--space-md); } }
