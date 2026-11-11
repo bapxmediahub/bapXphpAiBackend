@@ -3,14 +3,28 @@
     <?php if(empty($order)): ?>
         <p style="color:var(--color-text-muted);">Order not found.</p>
     <?php else: ?>
+        <?php
+        $items = $order['items'] ?? [];
+        $subtotal = $items !== [] ? 0.0 : null;
+        foreach ($items as $item) {
+            if (!is_numeric($item['line_total'] ?? null)) {
+                $subtotal = null;
+                break;
+            }
+            $subtotal += (float)$item['line_total'];
+        }
+        $money = static fn($amount): string => is_numeric($amount)
+            ? '₹' . number_format((float)$amount, 2)
+            : 'Not recorded';
+        ?>
         <div class="admin-detail-grid">
             <div>
                 <strong>Status</strong>
                 <p><?= e(ucfirst(str_replace('_', ' ', (string)($order['status'] ?? 'pending')))) ?></p>
             </div>
             <div>
-                <strong>Total</strong>
-                <p>₹<?= e((string)($order['total'] ?? 0)) ?></p>
+                <strong>Order date</strong>
+                <p><?= e(!empty($order['created_at']) ? substr((string)$order['created_at'], 0, 10) : 'Not recorded') ?></p>
             </div>
             <div>
                 <strong>Customer</strong>
@@ -133,16 +147,28 @@
         <h3 style="font-size:1rem; margin:var(--space-lg) 0 var(--space-sm);">Items</h3>
         <div class="table-wrap">
             <table>
-                <thead><tr><th>Product</th><th>Qty</th><th>Total</th></tr></thead>
+                <thead><tr><th>Product</th><th>Unit price</th><th>Qty</th><th>Line total</th></tr></thead>
                 <tbody>
-                    <?php foreach(($order['items'] ?? []) as $item): ?>
+                    <?php foreach ($items as $item): ?>
+                        <?php
+                        $quantity = (int)($item['qty'] ?? 0);
+                        $lineTotal = $item['line_total'] ?? null;
+                        $unitPrice = $item['unit_price'] ?? ($quantity > 0 && is_numeric($lineTotal) ? (float)$lineTotal / $quantity : null);
+                        ?>
                         <tr>
                             <td><?= e($item['name'] ?? $item['slug'] ?? 'Product') ?></td>
-                            <td><?= e((string)($item['qty'] ?? 1)) ?></td>
-                            <td>₹<?= e((string)($item['line_total'] ?? 0)) ?></td>
+                            <td><?= e($money($unitPrice)) ?></td>
+                            <td><?= e($quantity > 0 ? (string)$quantity : 'Not recorded') ?></td>
+                            <td><?= e($money($lineTotal)) ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
+                <tfoot>
+                    <tr><th scope="row" colspan="3">Items subtotal</th><td><?= e($money($subtotal)) ?></td></tr>
+                    <tr><th scope="row" colspan="3">Discount</th><td><?= e($money($order['discount'] ?? null)) ?></td></tr>
+                    <tr><th scope="row" colspan="3">Shipping</th><td><?= e($money($order['shipping_total'] ?? null)) ?></td></tr>
+                    <tr><th scope="row" colspan="3">Order total</th><td><?= e($money($order['total'] ?? null)) ?></td></tr>
+                </tfoot>
             </table>
         </div>
     <?php endif; ?>
