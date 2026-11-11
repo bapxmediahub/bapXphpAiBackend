@@ -249,20 +249,36 @@ final class PublicController extends BaseController {
     public function contact(): void {
         $this->detectApiRequest();
         $this->seoKey = 'contact';
-        $success = false;
-        $subject = $_GET['subject'] ?? '';
+        $subjects = [
+            'product' => 'Product Inquiry',
+            'temple' => 'Temple Guidance',
+            'order' => 'Order Support',
+            'general' => 'General Question',
+        ];
+        $submission = array_fill_keys(['name', 'email', 'phone', 'subject', 'message'], '');
+        $submission['subject'] = is_string($_GET['subject'] ?? null) ? $_GET['subject'] : '';
+        $errors = [];
+        $success = !empty($_SESSION['contact_received']);
+        unset($_SESSION['contact_received']);
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->validateCsrf();
+            foreach ($submission as $field => $value) {
+                $submission[$field] = is_string($_POST[$field] ?? null) ? trim($_POST[$field]) : '';
+            }
+
+            if ($submission['name'] === '') $errors['name'] = 'Enter your name.';
+            if (!filter_var($submission['email'], FILTER_VALIDATE_EMAIL)) $errors['email'] = 'Enter a valid email address.';
+            if (!isset($subjects[$submission['subject']])) $errors['subject'] = 'Select a subject.';
+            if ($submission['message'] === '') $errors['message'] = 'Enter your message.';
+            if ($errors) {
+                http_response_code(422);
+                $this->render('public/contact', ['success' => false, 'subjects' => $subjects, 'submission' => $submission, 'errors' => $errors]);
+                return;
+            }
+
             $this->checkRateLimit('contact', 3, 120);
-            $contactService = new ContactService();
-            $submission = [
-                'name' => $_POST['name'] ?? '',
-                'email' => $_POST['email'] ?? '',
-                'phone' => $_POST['phone'] ?? '',
-                'subject' => $_POST['subject'] ?? '',
-                'message' => $_POST['message'] ?? '',
-            ];
-            $submission['id'] = $contactService->save($submission);
+            $submission['id'] = (new ContactService())->save($submission);
             $mailQueue = new \App\Services\MailQueueService();
             $ownerNotification = \App\Services\MailQueueService::contactOwnerNotification($submission);
             // The owner was never told a contact form had been submitted; it only
@@ -277,9 +293,10 @@ final class PublicController extends BaseController {
                     $ownerNotification['meta']
                 );
             } catch (\Throwable $e) { error_log('Contact notification failed: ' . $e->getMessage()); }
-            $success = true;
+            $_SESSION['contact_received'] = true;
+            $this->redirect('/contact#contact-form');
         }
-        $this->render('public/contact', ['success' => $success, 'subject' => $subject]);
+        $this->render('public/contact', ['success' => $success, 'subjects' => $subjects, 'submission' => $submission, 'errors' => $errors]);
     }
     
     public function login(): void { 

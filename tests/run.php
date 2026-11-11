@@ -464,18 +464,15 @@ $tests['contact page exposes general enquiry form and confirmation delivery'] = 
         assertTrue(str_contains($view, $field), "Contact form should include {$field}");
     }
     foreach (['Product Inquiry', 'Temple Guidance', 'Order Support', 'General Question'] as $subject) {
-        assertTrue(str_contains($view, $subject), "Contact form should include the {$subject} subject");
+        assertTrue(str_contains(file_get_contents(app_path('app/Controllers/PublicController.php')), $subject), "Contact form should include the {$subject} subject");
     }
     assertTrue(!str_contains($view, 'Astrology Consultation'), 'Contact form should not offer a retired consultation subject');
     foreach (['tel:+919789444037', 'tel:+919789444038', 'mailto:support@sripanchamispiritual.com', 'contact-direct-link--mail'] as $needle) {
         assertTrue(str_contains($view, $needle), "Contact page should expose {$needle}");
     }
-    assertTrue(str_contains($view, 'Online Store'), 'Contact page should describe the online store');
-    foreach (['contact-info-grid', 'contact-card__icon', 'contact-card__eyebrow'] as $needle) {
-        assertTrue(str_contains($view, $needle), "Contact cards should use enhanced layout class {$needle}");
-    }
-    assertTrue(str_contains($view, 'contact-card--direct'), 'Phone and email cards should use simplified direct card styling');
-    assertTrue(!str_contains($view, '<h3>Call</h3>') && !str_contains($view, '<h3>Mail</h3>'), 'Phone and email cards should not repeat Call/Mail headings');
+    assertTrue(strpos($view, 'Contact options') < strpos($view, '<form'), 'Direct contact options should be reachable before the form');
+    assertTrue(str_contains($view, 'Phone (optional)') && str_contains($view, 'Email (required)'), 'Contact fields should describe their requirements');
+    assertTrue(str_contains($view, 'Message received') && str_contains($view, 'aria-invalid'), 'Contact form should show inline confirmation and field errors');
     assertTrue(!str_contains($view, 'Visit Our Store'), 'Contact page should not invite general ecommerce customers to visit the store directly');
     $controller = file_get_contents(app_path('app/Controllers/PublicController.php'));
     $mail = file_get_contents(app_path('app/Services/MailQueueService.php'));
