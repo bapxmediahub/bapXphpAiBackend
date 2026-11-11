@@ -150,6 +150,75 @@ final class AgentToolRegistry
         }
     }
 
+    /**
+     * Answer the common aggregate questions which are already backed by an allowlisted
+     * local tool. Sending these to the provider adds latency and a failure point without
+     * adding judgement: the owner asked for a figure the application can calculate.
+     *
+     * Returns null for anything that needs language interpretation or a scoped lookup,
+     * so those requests continue through the configured model and privacy checks.
+     */
+    public function aggregateAnswer(string $question): ?string
+    {
+        if (self::aggregateIntent($question) === null) return null;
+        $days = self::aggregateDays($question);
+        $args = $days === 0
+            ? ['since' => (new \DateTimeImmutable('first day of this month midnight'))->format('c')]
+            : ['days' => $days];
+        return self::aggregateAnswerFromSummary($question, $this->salesSummary($args), $days);
+    }
+
+    /** @param array<string,mixed> $summary */
+    public static function aggregateAnswerFromSummary(string $question, array $summary, int $days = 30): ?string
+    {
+        $intent = self::aggregateIntent($question);
+        if ($intent === null) return null;
+
+        $period = match (true) {
+            $days === 0 => 'this month',
+            $days >= 36500 => 'across all recorded orders',
+            default => "in the last {$days} days",
+        };
+        $orders = max(0, (int)($summary['orders'] ?? 0));
+        $revenue = max(0, (float)($summary['revenue'] ?? 0));
+        if ($intent === 'revenue') {
+            return 'Recorded sales revenue ' . $period . ' is ₹' . number_format($revenue, 2)
+                . " across {$orders} orders. Cancelled and refunded orders are excluded. "
+                . 'Next step: review the Orders list if you need the status breakdown.';
+        }
+
+        $best = is_array($summary['best_sellers'] ?? null) ? $summary['best_sellers'] : [];
+        if ($best === []) {
+            return 'There are no sold product units to rank ' . $period
+                . '. Cancelled and refunded orders are excluded. Next step: check recent Orders for payment or fulfilment holds.';
+        }
+        $items = [];
+        foreach (array_slice($best, 0, 5, true) as $name => $units) {
+            $items[] = trim((string)$name) . ' — ' . max(0, (int)$units) . ' unit' . ((int)$units === 1 ? '' : 's');
+        }
+        return 'Best sellers by units ' . $period . ': ' . implode('; ', $items)
+            . '. Cancelled and refunded orders are excluded. Next step: check stock for the leading products.';
+    }
+
+    private static function aggregateIntent(string $question): ?string
+    {
+        if (preg_match('/\b(?:best[ -]?sell(?:er|ers|ing)?|top[ -]?sell(?:er|ers|ing)?|products?\s+sell(?:s|ing)?\s+(?:the\s+)?(?:best|most))\b/i', $question)) {
+            return 'best_sellers';
+        }
+        if (preg_match('/\b(?:revenue|sales total|total sales|sales value)\b/i', $question)) return 'revenue';
+        return null;
+    }
+
+    private static function aggregateDays(string $question): int
+    {
+        if (preg_match('/\b(?:all[ -]?time|ever|overall)\b/i', $question)) return 36500;
+        if (preg_match('/\b(?:last|past)\s+(\d{1,4})\s+days?\b/i', $question, $match)) {
+            return max(1, min(36500, (int)$match[1]));
+        }
+        if (preg_match('/\bthis\s+month\b/i', $question)) return 0;
+        return 30;
+    }
+
     private function findOrder(array $args): array
     {
         return self::scopedOrderLookup($this->orders->all(), $args, $this->ownerQuestion);
@@ -244,7 +313,14 @@ final class AgentToolRegistry
     {
         $days = (int)($args['days'] ?? 30);
         if ($days < 1) $days = 30;
-        $since = (new \DateTimeImmutable())->modify('-' . $days . ' days');
+        try {
+            $since = !empty($args['since'])
+                ? new \DateTimeImmutable((string)$args['since'])
+                : (new \DateTimeImmutable())->modify('-' . $days . ' days');
+        } catch (\Throwable) {
+            $since = (new \DateTimeImmutable())->modify('-30 days');
+            $days = 30;
+        }
 
         $counted = 0;
         $revenue = 0.0;

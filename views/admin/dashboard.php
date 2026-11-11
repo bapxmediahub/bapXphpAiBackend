@@ -29,10 +29,10 @@
         <p role="status">Monitoring is temporarily unavailable.</p>
     <?php else: ?>
         <div class="table-wrap"><table>
-            <thead><tr><th>Agent</th><th>Requests</th><th>Model</th><th>Policy answer</th><th>Fallback</th><th>Sign-in guidance</th><th>Drafts</th><th>Errors</th><th>Average time</th></tr></thead>
+            <thead><tr><th>Agent</th><th>Requests</th><th>Model</th><th>Local data</th><th>Fallback</th><th>Sign-in guidance</th><th>Drafts</th><th>Errors</th><th>Average time</th></tr></thead>
             <tbody><?php foreach ($agentMonitoring as $surface => $metrics): ?>
                 <tr><th><?= $surface === 'support' ? 'Customer support' : 'Owner / admin' ?></th>
-                <?php foreach (['requests', 'model', 'policy', 'fallback', 'private_account', 'draft', 'error'] as $metric): ?><td><?= (int)$metrics[$metric] ?></td><?php endforeach; ?>
+                <?php foreach (['requests', 'model', 'local', 'fallback', 'private_account', 'draft', 'error'] as $metric): ?><td><?= (int)$metrics[$metric] ?></td><?php endforeach; ?>
                 <td><?= $metrics['average_ms'] === null ? 'No requests yet' : e(number_format($metrics['average_ms'] / 1000, 2)) . ' s' ?></td></tr>
             <?php endforeach; ?></tbody>
         </table></div>

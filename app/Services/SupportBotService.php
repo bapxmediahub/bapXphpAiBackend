@@ -18,7 +18,7 @@ final class SupportBotService {
         if (preg_match('/^(?:how (?:can|do) i|where can i) track (?:an order|orders)[?!.]*$/i', $message)
             && module_on('shop')) {
             $reply = $this->policies()['tracking'];
-            (new AuditLogService($this->store))->agentRun('support', 'policy', $startedAt);
+            (new AuditLogService($this->store))->agentRun('support', 'local', $startedAt);
             return [
                 'reply' => $reply,
                 'ticket_id' => null,
