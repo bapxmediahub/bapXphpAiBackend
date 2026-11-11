@@ -78,8 +78,8 @@ final class SeoService {
                 'robots' => 'index, follow',
             ],
             'temples' => [
-                'title' => 'Temples in Chennai – Temple Guide, Timings, Address & Pooja Services',
-                'description' => 'Explore temples in Chennai with detailed guides including timings, addresses, and available pooja services. Plan your temple visit with ' . $brand . '.',
+                'title' => 'Temples in Tamil Nadu – Temple Guide, Address & Pooja Services',
+                'description' => 'Explore temples across Tamil Nadu with detailed guides including addresses and available visitor information. Plan your temple visit with ' . $brand . '.',
                 'og_type' => 'website',
                 'robots' => 'index, follow',
             ],

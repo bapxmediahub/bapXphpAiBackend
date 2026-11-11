@@ -755,6 +755,16 @@ $tests['home temple guide uses admin driven dissolve carousel'] = function (): v
     assertTrue(str_contains($css, 'transition: opacity 1.6s ease-in-out'), 'Home temple carousel should use a slow smooth dissolve transition');
 };
 
+$tests['temple listing and metadata are location neutral'] = function (): void {
+    $view = file_get_contents(app_path('views/public/temples.php'));
+    $seo = file_get_contents(app_path('app/Services/SeoService.php'));
+    assertTrue(str_contains($view, '>Our Temples</h1>'), 'Temple listing should use a location-neutral heading');
+    assertTrue(str_contains($view, 'across Tamil Nadu'), 'Temple listing should welcome records from across Tamil Nadu');
+    assertTrue(!str_contains($view, 'Our Temples in Chennai'), 'Temple listing should not claim all temples are in Chennai');
+    assertTrue(!str_contains($seo, "'title' => 'Temples in Chennai"), 'Temple metadata should not claim all temples are in Chennai');
+    assertTrue(str_contains($seo, "'title' => 'Temples in Tamil Nadu"), 'Temple metadata should describe the statewide listing');
+};
+
 $tests['review service stores five star reviews and calculates averages'] = function (): void {
     $service = new ReviewService();
     assertTrue(method_exists($service, 'saveAstrologerReview'), 'ReviewService should have saveAstrologerReview');
