@@ -152,18 +152,29 @@ final class AgentToolRegistry
 
     private function findOrder(array $args): array
     {
+        return self::scopedOrderLookup($this->orders->all(), $args, $this->ownerQuestion);
+    }
+
+    /**
+     * Keep provider-bound order data within both the identifier and fields the owner
+     * explicitly requested. Public for fixture-based privacy tests; it performs no I/O.
+     */
+    public static function scopedOrderLookup(array $orders, array $args, string $ownerQuestion): array
+    {
         $id = strtolower(trim((string)($args['order_id'] ?? '')));
         $email = strtolower(trim((string)($args['customer_email'] ?? '')));
         if ($id === '' && $email === '') return ['error' => 'Give an order id or a customer email.'];
 
-        if (!self::ownerRequestedLookup($this->ownerQuestion, $id, $email)) return ['error' => 'The owner must explicitly request this exact order id or customer email.'];
+        if (!self::ownerRequestedLookup($ownerQuestion, $id, $email)) return ['error' => 'The owner must explicitly request this exact order id or customer email.'];
 
         $matches = [];
-        foreach ($this->orders->all() as $order) {
+        $includeCity = preg_match('/\b(?:city|address|location)\b/i', $ownerQuestion) === 1;
+        $includeTracking = preg_match('/\b(?:track|tracking|courier|delivery|shipment|shipped|where)\b/i', $ownerQuestion) === 1;
+        foreach ($orders as $order) {
             $orderId = strtolower((string)($order['id'] ?? ''));
             if ($id !== '' && $orderId !== $id) continue;
             if ($email !== '' && strtolower((string)($order['customer_email'] ?? '')) !== $email) continue;
-            $matches[] = $this->summariseOrder($order);
+            $matches[] = self::summariseOrder($order, $includeCity, $includeTracking);
             if (count($matches) >= 10) break;
         }
         if ($matches === []) return ['found' => 0, 'message' => 'No order matched.'];
@@ -182,7 +193,7 @@ final class AgentToolRegistry
         return true;
     }
 
-    private function summariseOrder(array $order): array
+    private static function summariseOrder(array $order, bool $includeCity, bool $includeTracking): array
     {
         $items = [];
         foreach (($order['items'] ?? []) as $item) {
@@ -192,17 +203,19 @@ final class AgentToolRegistry
                 'line_total' => (float)($item['line_total'] ?? 0),
             ];
         }
-        return [
+        $summary = [
             'id' => (string)($order['id'] ?? ''),
             'status' => (string)($order['status'] ?? ''),
             'total' => (float)($order['total'] ?? 0),
             'placed_on' => substr((string)($order['created_at'] ?? ''), 0, 10),
-            'customer_email' => (string)($order['customer_email'] ?? ''),
-            'shipping_city' => (string)($order['shipping_city'] ?? ''),
-            'courier' => (string)($order['courier_name'] ?? ''),
-            'tracking_id' => (string)($order['tracking_id'] ?? ''),
             'items' => $items,
         ];
+        if ($includeCity) $summary['shipping_city'] = (string)($order['shipping_city'] ?? '');
+        if ($includeTracking) {
+            $summary['courier'] = (string)($order['courier_name'] ?? '');
+            $summary['tracking_id'] = (string)($order['tracking_id'] ?? '');
+        }
+        return $summary;
     }
 
     private function productStatus(array $args): array
