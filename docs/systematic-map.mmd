@@ -7,8 +7,8 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 122 routes, 12 controllers, 48 services, 47 views, 0 data files, 20 tools"]
-    arch_routes["> Routes: 122 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 123 routes, 12 controllers, 48 services, 47 views, 0 data files, 20 tools"]
+    arch_routes["> Routes: 123 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
     arch_svc["> Services: 48"]:::arch
     arch_views["> Views: 47"]:::arch
@@ -47,6 +47,7 @@ flowchart LR
     route_get_account_dashboard_install["GET /account/dashboard/install — Install App — customer installation guidance"]:::route
     route_get_account_dashboard_profile["GET /account/dashboard/profile"]:::route
     route_post_account_dashboard_profile["POST /account/dashboard/profile"]:::route
+    route_post_account_dashboard_profile_password["POST /account/dashboard/profile/password"]:::route
     route_get_account_dashboard_addresses["GET /account/dashboard/addresses"]:::route
     route_post_account_dashboard_addresses_save["POST /account/dashboard/addresses/save"]:::route
     route_post_account_dashboard_addresses_delete["POST /account/dashboard/addresses/delete"]:::route
@@ -469,6 +470,11 @@ flowchart LR
   route_post_account_dashboard_profile --> controller_accountcontroller
   controller_accountcontroller --> service_authservice
   controller_accountcontroller --> service_databaseservice
+  controller_accountcontroller -. renders .-> view_account_profile
+  route_post_account_dashboard_profile_password --> controller_accountcontroller
+  controller_accountcontroller --> service_authservice
+  controller_accountcontroller --> service_databaseservice
+  controller_accountcontroller --> service_passwordresetservice
   controller_accountcontroller -. renders .-> view_account_profile
   route_get_account_dashboard_addresses --> controller_accountcontroller
   controller_accountcontroller --> service_authservice

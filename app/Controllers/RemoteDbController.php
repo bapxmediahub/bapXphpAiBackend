@@ -87,6 +87,12 @@ final class RemoteDbController {
         }
         try {
             $store = $this->store;
+            if ($collection === 'users' && $action === 'patch_user') {
+                $updated = $store->patchUser((string)($input['id'] ?? ''), $input['fields'] ?? [],
+                    $input['credential'] ?? null, $input['expected'] ?? null);
+                echo json_encode(['success' => true, 'updated' => $updated]);
+                return;
+            }
             if ($collection === 'addresses' && $action === 'list_customer_addresses') {
                 $result = (new \App\Services\AddressService($store))->forCustomer((string)($input['email'] ?? ''));
                 echo json_encode(['success' => true, 'result' => $result]);

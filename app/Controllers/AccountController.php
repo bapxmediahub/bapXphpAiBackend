@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AddressService,AuthService,DatabaseService,OrderService,ReviewService,SettingsService,TaxService};
+use App\Services\{AddressService,AuthService,DatabaseService,OrderService,PasswordResetService,ReviewService,SettingsService,TaxService};
 final class AccountController extends BaseController {
     public function __construct() {
         (new AuthService())->requireUser();
@@ -16,6 +16,7 @@ final class AccountController extends BaseController {
         if ($profile === null) { $this->renderNotFound(); return; }
         $this->render('account/profile', [
             'profile' => array_intersect_key($profile, array_flip(['name', 'email', 'phone', 'picture', 'gender', 'date_of_birth'])),
+            'hasPassword' => !empty($profile['password_hash']),
         ]);
     }
 
@@ -35,11 +36,34 @@ final class AccountController extends BaseController {
             || ($birth !== '' && (!$date || $date->format('Y-m-d') !== $birth || $date > new \DateTimeImmutable('today')))) {
             $this->flash('Check your name, phone number, gender and date of birth.', 'error');
         } else {
-            $store->upsert('users', ['id' => $record['id'], 'name' => $name, 'phone' => $phone,
+            $store->patchUser((string)$record['id'], ['name' => $name, 'phone' => $phone,
                 'gender' => $gender, 'date_of_birth' => $birth]);
             $_SESSION['user']['name'] = $name;
             $_SESSION['user']['phone'] = $phone;
             $this->flash('Profile saved.', 'success');
+        }
+        $this->redirect('/account/dashboard/profile');
+    }
+
+    public function changePassword(): void {
+        $this->validateCsrf();
+        if (!$this->checkRateLimit('account-password', 5, 300)) return;
+        $store = new DatabaseService();
+        $record = $this->profileRecord($store);
+        if ($record === null) { $this->renderNotFound(); return; }
+        $old = (string)($_POST['current_password'] ?? '');
+        $new = (string)($_POST['new_password'] ?? '');
+        $hash = (string)($record['password_hash'] ?? '');
+        if ($hash === '' || !password_verify($old, $hash)) {
+            $this->flash('The current password could not be verified.', 'error');
+        } elseif ($new !== (string)($_POST['confirm_password'] ?? '') || strlen($new) < 8 || strlen($new) > 72 || str_contains($new, "\0")) {
+            $this->flash('Enter matching new passwords between 8 and 72 bytes.', 'error');
+        } elseif ($store->patchUser((string)$record['id'], PasswordResetService::passwordFields($new, new \DateTimeImmutable()), 'password_hash', $hash)) {
+            session_regenerate_id(true);
+            $_SESSION['user']['must_change_password'] = false;
+            $this->flash('Password changed.', 'success');
+        } else {
+            $this->flash('The password changed in another request. Please try again.', 'error');
         }
         $this->redirect('/account/dashboard/profile');
     }

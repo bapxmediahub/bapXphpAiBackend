@@ -74,6 +74,22 @@ if (count($remaining) !== 1 || $remaining[0]['id'] !== $home['id'] || empty($rem
     throw new RuntimeException('Removing the default address must promote the remaining address.');
 }
 echo "Address ownership and default selection passed.\n";
+$pdo->exec('CREATE TABLE users LIKE orders');
+$oldHash = password_hash('old-fixture-password', PASSWORD_DEFAULT);
+$store->upsert('users', ['id' => 'password-fixture', 'email' => 'fixture@example.test',
+    'name' => 'Original name', 'password_hash' => $oldHash, 'reset_token_hash' => 'old-reset']);
+$store->patchUser('password-fixture', ['name' => 'Updated name']);
+$fields = \App\Services\PasswordResetService::passwordFields('new-fixture-password', new DateTimeImmutable());
+if (!$store->patchUser('password-fixture', $fields, 'password_hash', $oldHash)
+    || $store->patchUser('password-fixture', $fields, 'password_hash', $oldHash)
+    || $store->patchUser('password-fixture', $fields, 'reset_token_hash', 'old-reset')) {
+    throw new RuntimeException('Password updates must reject stale credentials and invalidate outstanding reset tokens.');
+}
+$updatedUser = $store->find('users', 'password-fixture');
+if ($updatedUser['name'] !== 'Updated name' || !password_verify('new-fixture-password', $updatedUser['password_hash'])) {
+    throw new RuntimeException('Password updates must preserve the saved profile.');
+}
+echo "Credential replacement and reset invalidation passed.\n";
 
 $race = static function (string $firstPayment, string $secondPayment, string $prefix, string $mode = 'direct', ?string $recoveryId = null) use ($pdo): array {
     if ((int)$pdo->query("SELECT GET_LOCK(CONCAT('sps:orders:', SHA1(DATABASE())), 0)")->fetchColumn() !== 1) {

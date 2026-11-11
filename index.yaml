@@ -36,14 +36,14 @@ query_examples:
   - "rg -n -B4 -A12 'type: \"skill\"' index.yaml"
   - "rg -n '<term>' docs/project-index.json map.mmd index.yaml"
 summary:
-  concepts: 351
-  relationships: 247
+  concepts: 352
+  relationships: 249
   by_type:
     blog: 14
     controller: 12
     doc: 35
     image: 89
-    route: 122
+    route: 123
     schema: 22
     service: 48
     skill: 9
@@ -2799,6 +2799,22 @@ concepts:
       - "AuthService"
       - "DatabaseService"
     view: "account/profile"
+  - id: "route:post__account_dashboard_profile_password"
+    type: "route"
+    title: "POST /account/dashboard/profile/password"
+    description: "account.profile.password"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/account/dashboard/profile/password"
+    controller: "AccountController@changePassword"
+    services:
+      - "AuthService"
+      - "DatabaseService"
+      - "PasswordResetService"
+    view: "account/profile"
   - id: "route:post__admin_agent_ask"
     type: "route"
     title: "POST /admin/agent/ask"
@@ -4246,6 +4262,9 @@ relationships:
     to: "service:OrderService"
     relation: "uses"
   - from: "controller:AccountController"
+    to: "service:PasswordResetService"
+    relation: "uses"
+  - from: "controller:AccountController"
     to: "service:ReviewService"
     relation: "uses"
   - from: "controller:AccountController"
@@ -4690,6 +4709,9 @@ relationships:
     to: "controller:AccountController"
     relation: "handled_by"
   - from: "route:post__account_dashboard_profile"
+    to: "controller:AccountController"
+    relation: "handled_by"
+  - from: "route:post__account_dashboard_profile_password"
     to: "controller:AccountController"
     relation: "handled_by"
   - from: "route:post__admin_agent_ask"

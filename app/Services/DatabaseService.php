@@ -304,6 +304,35 @@ final class DatabaseService {
         });
     }
 
+    /** Patch only the intended user fields. Compare credentials before replacing them. */
+    public function patchUser(string $id, array $fields, ?string $credential = null, ?string $expected = null): bool {
+        $fields = array_intersect_key($fields, array_flip([
+            'name', 'phone', 'gender', 'date_of_birth', 'password_hash',
+            'password_changed_at', 'must_change_password', 'reset_token_hash', 'reset_token_expires_at',
+        ]));
+        if ($id === '' || $fields === []) return false;
+        if ($credential !== null && !in_array($credential, ['password_hash', 'reset_token_hash'], true)) {
+            throw new \InvalidArgumentException('Unsupported credential check.');
+        }
+        if ($this->isTestMode()) return false;
+        if ($this->isRemote()) {
+            $result = $this->remoteMutation('patch_user', 'users', [
+                'id' => $id, 'fields' => $fields, 'credential' => $credential, 'expected' => $expected,
+            ]);
+            return ($result['updated'] ?? false) === true;
+        }
+        $sql = "UPDATE users SET _data = JSON_MERGE_PATCH(_data, ?), _updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+        $params = [json_encode($fields, JSON_THROW_ON_ERROR), $id];
+        if ($credential !== null) {
+            $sql .= " AND BINARY JSON_UNQUOTE(JSON_EXTRACT(_data, ?)) = BINARY ?";
+            $params[] = '$.' . $credential;
+            $params[] = $expected;
+        }
+        $statement = $this->db()->prepare($sql);
+        $statement->execute($params);
+        return $statement->rowCount() > 0;
+    }
+
     public function upsert(string $table, array $record, string $key = 'id'): array {
         if ($this->isTestMode()) {
             $record['id'] ??= bin2hex(random_bytes(8));

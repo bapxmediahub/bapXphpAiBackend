@@ -3,7 +3,7 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 122,
+        "routes": 123,
         "controllers": 12,
         "services": 48,
         "views": 47,
@@ -126,6 +126,18 @@
             "services": [
                 "AuthService",
                 "DatabaseService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/account/dashboard/profile/password",
+            "name": "account.profile.password",
+            "controller": "AccountController@changePassword",
+            "view": "account/profile",
+            "services": [
+                "AuthService",
+                "DatabaseService",
+                "PasswordResetService"
             ]
         },
         {
