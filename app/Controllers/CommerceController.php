@@ -344,9 +344,10 @@ final class CommerceController extends BaseController {
     }
 
     /** Persist either gateway through one idempotent, tax-aware order boundary. */
-    private function persistVerifiedOrder(array $pendingOrder, string $paymentId, array $gatewayFields): string {
-        $db = new DatabaseService();
-        $existingOrders = $db->read('orders');
+    private function persistVerifiedOrder(array $pendingOrder, string $paymentId, array $gatewayFields, ?array $testPorts = null): string {
+        // Optional private ports permit deterministic tests without touching hosted records.
+        $db = $testPorts === null ? new DatabaseService() : null;
+        $existingOrders = $testPorts === null ? $db->read('orders') : ($testPorts['readOrders'])();
         foreach ($existingOrders as $existing) {
             if (($existing['payment_id'] ?? '') === $paymentId) return (string)$existing['id'];
             if (!empty($gatewayFields['stripe_session_id']) && ($existing['stripe_session_id'] ?? '') === $gatewayFields['stripe_session_id']) {
@@ -355,7 +356,7 @@ final class CommerceController extends BaseController {
         }
 
         $orderItems = $pendingOrder['items'] ?? [];
-        $products = (new ProductService())->bySlug();
+        $products = $testPorts === null ? (new ProductService())->bySlug() : ($testPorts['products'])();
         foreach ($orderItems as $item) {
             $product = $products[$item['slug'] ?? ''] ?? null;
             if (!in_array($product['stock_status'] ?? '', ['in_stock', 'active'], true)) {
@@ -370,7 +371,7 @@ final class CommerceController extends BaseController {
             $item['unit_price'] = (float)($item['line_total'] ?? 0) / max(1, (int)($item['qty'] ?? 1));
             return $item;
         }, $orderItems);
-        $settings = (new SettingsService())->public();
+        $settings = $testPorts === null ? (new SettingsService())->public() : ($testPorts['settings'])();
         $tax = (new TaxService())->snapshotForVerifiedPayment($itemsWithRates, 0, (string)($pendingOrder['shipping_state'] ?? ''), $settings);
         $invoice = $tax !== null ? (new TaxService())->nextInvoice($existingOrders) : null;
         $localId = bin2hex(random_bytes(8));
@@ -399,8 +400,9 @@ final class CommerceController extends BaseController {
             unset($tax['total']); // Gateway-verified total remains authoritative.
             $order = array_merge($order, $tax, $invoice);
         }
-        $db->upsert('orders', $order);
-        try { (new MailQueueService())->enqueuePaymentConfirmation($order); }
+        if ($testPorts === null) $db->upsert('orders', $order);
+        else ($testPorts['saveOrder'])($order);
+        try { if ($testPorts === null) (new MailQueueService())->enqueuePaymentConfirmation($order); }
         catch (\Throwable $error) { error_log('Payment confirmation mail could not be queued.'); }
         unset($_SESSION['pending_order'], $_SESSION['cart']);
         return $localId;

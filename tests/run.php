@@ -2110,6 +2110,28 @@ $tests['verified payment tax review preserves missing-state orders without issui
     assertTrue(str_contains($controller, "'tax_review_required' => \$tax === null"), 'Paid records carry review flag when classification is unavailable');
 };
 
+$tests['verified legacy payment is persisted once without a fabricated invoice'] = function (): void {
+    $records = [];
+    $ports = [
+        'readOrders' => function () use (&$records) { return array_values($records); },
+        'products' => fn() => ['test-product'=>['stock_status'=>'in_stock','gst_rate'=>5]],
+        'settings' => fn() => ['gst_state'=>'Tamil Nadu'],
+        'saveOrder' => function ($order) use (&$records) { $records[$order['id']] = $order; },
+    ];
+    $pending = ['total'=>105, 'customer_email'=>'test@example.invalid', 'customer_name'=>'Test', 'customer_phone'=>'',
+        'shipping_address'=>'Test', 'shipping_city'=>'Test', 'shipping_pincode'=>'000000',
+        'items'=>[['slug'=>'test-product','name'=>'Test','qty'=>1,'line_total'=>105]]];
+    $persist = (new ReflectionMethod(\App\Controllers\CommerceController::class, 'persistVerifiedOrder'))->getClosure(new \App\Controllers\CommerceController());
+    $id = $persist($pending, 'test-paid-id', [], $ports);
+    assertSame(1, count($records), 'Verified payment must be saved');
+    assertSame('test-paid-id', $records[$id]['payment_id'] ?? '', 'Payment identifier is preserved');
+    assertSame(105, $records[$id]['total'] ?? null, 'Verified amount is preserved');
+    assertTrue(!empty($records[$id]['tax_review_required']), 'Owner sees the review flag');
+    assertTrue(empty($records[$id]['invoice_number']), 'No unverified invoice is issued');
+    assertSame($id, $persist($pending, 'test-paid-id', [], $ports), 'Repeated gateway callbacks are idempotent');
+    assertSame(1, count($records), 'Retry creates no duplicate order');
+};
+
 $tests['cart summary recalculates quantities and mixed product tax rates'] = function (): void {
     $summary = App\Services\TaxService::cartSummary([
         ['line_total' => 105, 'qty' => 1, 'product' => ['gst_rate' => 5]],
