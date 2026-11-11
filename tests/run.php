@@ -2256,6 +2256,32 @@ $tests['agent monitoring counts bounded outcomes without treating fallbacks as m
     assertSame(null, App\Services\AuditLogService::agentSummary([], $now)['admin']['average_ms'], 'No traffic is not zero-latency success');
 };
 
+$tests['monitoring attributes attempts to the latest provider run even after a local answer'] = function (): void {
+    $event = static fn(string $at, string $outcome, array $attempts): array => [
+        'event' => 'agent.run',
+        'created_at' => $at,
+        'meta' => ['surface' => 'admin', 'outcome' => $outcome, 'provider_attempts' => $attempts],
+    ];
+    $primary = App\Services\SecretService::PRIMARY_MODEL;
+    $fallback = App\Services\SecretService::FALLBACK_MODEL;
+    $summary = App\Services\AuditLogService::agentSummary([
+        $event('2026-09-25T16:30:00+05:30', 'model', [['model' => $primary, 'status' => 200]]),
+        $event('2026-09-25T11:20:00Z', 'local', []),
+        $event('2026-09-25T11:10:00Z', 'error', [
+            ['model' => $primary, 'status' => 0, 'curl_error' => 28, 'total_ms' => 6000.4],
+            ['model' => $fallback, 'status' => 500, 'total_ms' => 718.6, 'raw_body' => 'private'],
+        ]),
+    ], strtotime('2026-09-25T12:00:00Z'));
+    assertSame([
+        'at' => '2026-09-25T11:10:00Z',
+        'outcome' => 'error',
+        'attempts' => [
+            ['model' => $primary, 'status' => 0, 'curl_error' => 28, 'total_ms' => 6000],
+            ['model' => $fallback, 'status' => 500, 'curl_error' => 0, 'total_ms' => 719],
+        ],
+    ], $summary['admin']['latest_provider_run'], 'Monitoring retains the chronological provider sequence and only operational metadata');
+};
+
 $tests['owner aggregate questions answer from allowlisted local sales data'] = function (): void {
     $summary = [
         'orders' => 4,

@@ -9,23 +9,40 @@ final class AuditLogService {
     }
 
     /** Operational metadata only: never retain prompts, replies, identities or secrets. */
-    public function agentRun(string $surface, string $outcome, float $startedAt, ?string $reason = null): void {
+    public function agentRun(string $surface, string $outcome, float $startedAt, ?string $reason = null, array $attempts = []): void {
         if (!in_array($surface, ['support', 'admin'], true)) return;
         if (!in_array($outcome, ['model', 'local', 'fallback', 'private_account', 'draft', 'error'], true)) return;
         $allowedReasons = ['not_configured', 'timeout', 'transport', 'authentication', 'rate_limit', 'provider_server', 'provider_request', 'empty_response', 'rejected_response', 'internal_error'];
-        $this->record('run', 'agent', $surface, [
+        $meta = [
             'surface' => $surface,
             'outcome' => $outcome,
             'reason' => in_array($reason, $allowedReasons, true) ? $reason : null,
             'duration_ms' => max(0, (int)round((microtime(true) - $startedAt) * 1000)),
-        ], ['email' => 'system', 'name' => 'Agent monitoring']);
+        ];
+        if ($attempts !== []) $meta['provider_attempts'] = self::providerAttempts($attempts);
+        $this->record('run', 'agent', $surface, $meta, ['email' => 'system', 'name' => 'Agent monitoring']);
+    }
+
+    private static function providerAttempts(array $attempts): array {
+        $safe = [];
+        foreach (array_slice($attempts, 0, 8) as $attempt) {
+            if (!is_array($attempt)) continue;
+            $model = $attempt['model'] ?? null;
+            $safe[] = [
+                'model' => in_array($model, SecretService::GOOGLE_MODELS, true) ? $model : null,
+                'status' => (int)($attempt['status'] ?? 0),
+                'curl_error' => (int)($attempt['curl_error'] ?? 0),
+                'total_ms' => max(0, (int)round((float)($attempt['total_ms'] ?? 0))),
+            ];
+        }
+        return $safe;
     }
 
     public static function agentSummary(array $events, ?int $now = null): array {
         $cutoff = ($now ?? time()) - 86400;
         $summary = [];
         foreach (['support', 'admin'] as $surface) {
-            $summary[$surface] = ['requests' => 0, 'model' => 0, 'local' => 0, 'fallback' => 0, 'private_account' => 0, 'draft' => 0, 'error' => 0, 'duration_ms' => 0, 'last_seen' => '', 'reasons' => []];
+            $summary[$surface] = ['requests' => 0, 'model' => 0, 'local' => 0, 'fallback' => 0, 'private_account' => 0, 'draft' => 0, 'error' => 0, 'duration_ms' => 0, 'last_seen' => '', 'reasons' => [], 'latest_provider_run' => null];
         }
         foreach ($events as $event) {
             if (($event['event'] ?? '') !== 'agent.run') continue;
@@ -37,6 +54,15 @@ final class AuditLogService {
             $timestamp = strtotime($created);
             if (!isset($summary[$surface]) || !in_array($outcome, ['model', 'local', 'fallback', 'private_account', 'draft', 'error'], true) || $timestamp === false || $timestamp < $cutoff || $timestamp > ($now ?? time())) continue;
             $summary[$surface]['requests']++;
+            $attempts = $meta['provider_attempts'] ?? [];
+            $latest = $summary[$surface]['latest_provider_run'];
+            if (is_array($attempts) && $attempts !== [] && ($latest === null || $timestamp > strtotime($latest['at']))) {
+                $summary[$surface]['latest_provider_run'] = [
+                    'at' => $created,
+                    'outcome' => $outcome,
+                    'attempts' => self::providerAttempts($attempts),
+                ];
+            }
             $summary[$surface][$outcome]++;
             $reason = $meta['reason'] ?? null;
             if (is_string($reason) && in_array($reason, ['not_configured', 'timeout', 'transport', 'authentication', 'rate_limit', 'provider_server', 'provider_request', 'empty_response', 'rejected_response', 'internal_error'], true)) {
