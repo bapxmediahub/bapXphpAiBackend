@@ -831,7 +831,7 @@ $tests['verified payments remain recoverable when order persistence fails'] = fu
     assertTrue(str_contains($commerce, "'[order-persistence-failed] payment_id='"), 'Failed order writes should produce an operator-visible error with payment correlation');
     assertTrue(str_contains($commerce, "'payment_verified' => true"), 'The checkout response should distinguish a verified payment from a persisted order');
     assertTrue(str_contains($commerce, 'Your cart has been preserved.'), 'Customers should be told that failed order persistence did not clear their cart');
-    $persistPosition = strpos($commerce, "\$db->insertIfAbsent('orders', \$order)");
+    $persistPosition = strpos($commerce, '$db->saveVerifiedOrder(');
     $clearPosition = strpos($commerce, "unset(\$_SESSION['pending_order'], \$_SESSION['cart'])");
     assertTrue($persistPosition !== false && $clearPosition !== false && $persistPosition < $clearPosition, 'Checkout state must only be cleared after the order write succeeds');
 };
@@ -1617,9 +1617,9 @@ $tests['an unpaid checkout never registers an order'] = function (): void {
     // held it in the session; both now do.
     $commerce = file_get_contents(app_path('app/Controllers/CommerceController.php'));
     $beforeVerify = substr($commerce, 0, strpos($commerce, 'public function verifyPayment'));
-    assertTrue(!str_contains($beforeVerify, "insertIfAbsent('orders'"),
+    assertTrue(!str_contains($beforeVerify, "saveVerifiedOrder(") && !str_contains($beforeVerify, "upsert('orders'"),
         'No order may be written before the payment is verified');
-    assertTrue(substr_count($commerce, "insertIfAbsent('orders'") === 1,
+    assertTrue(substr_count($commerce, "->saveVerifiedOrder(") === 1,
         'Orders should be written in exactly one place, after verification');
     assertTrue(str_contains($beforeVerify, "\$_SESSION['pending_order']"),
         'An unpaid checkout should be held in the session');
@@ -1638,7 +1638,7 @@ $tests['Stripe return verifies and lands on the order confirmation'] = function 
     assertTrue(str_contains($commerce, "['amount_total'] ?? 0) === \$expected"), 'Stripe return should verify the paid amount');
     assertTrue(str_contains($commerce, "['currency'] ?? '')) === 'inr'"), 'Stripe return should verify INR');
     assertTrue(str_contains($commerce, "?placed=1"), 'Stripe success should land on the order-specific thank-you state');
-    assertTrue(substr_count($commerce, "insertIfAbsent('orders'") === 1, 'Both gateways should share one atomic order persistence boundary');
+    assertTrue(substr_count($commerce, "->saveVerifiedOrder(") === 1, 'Both gateways should share one order persistence boundary');
 };
 
 $tests['shipping an order requires a courier tracking id and link'] = function (): void {

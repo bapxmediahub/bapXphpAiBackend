@@ -17,6 +17,21 @@ jobs:
     if: github.actor != 'ci-ai-bot' && endsWith(github.repository, 'bapXphpAiBackend')
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      order-test-mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: sps_ci_root_fixture
+          MYSQL_DATABASE: sps_order_test
+          MYSQL_USER: sps_test
+          MYSQL_PASSWORD: sps_ci_fixture
+        ports:
+          - 33068:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,3 +42,5 @@ jobs:
           extensions: curl, json, mbstring, pdo_mysql
       - name: Validate code, tests, maps, and routes
         run: ./bapXphp ci
+      - name: Test concurrent verified payments against isolated MySQL
+        run: php tests/order-concurrency.php
