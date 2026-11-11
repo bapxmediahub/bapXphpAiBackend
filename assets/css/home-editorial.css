@@ -1,26 +1,24 @@
 /* Homepage-only editorial treatment; commerce controls remain shared components. */
 .home-hero {
     min-height: 0;
-    padding: 56px 0 48px;
+    padding: 48px 0;
     background-color: #50191d;
     background-image: url('/assets/images/hero-temple-bg.webp');
     background-blend-mode: multiply;
     background-position: center;
     background-size: cover;
 }
-.home-hero-inner { min-height: 480px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; }
-.home-hero .hero-copy { max-width: 590px; }
+.home-hero-inner { min-height: 464px; grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr); gap: 48px; }
+.home-hero .hero-copy { max-width: 620px; }
 .home-hero .eyebrow { font-size: .72rem; letter-spacing: .13em; color: #ecd8a0; }
-.home-hero h1 { max-width: 560px; font-size: 3.25rem; line-height: 1.1; text-shadow: none; margin-bottom: 20px; }
+.home-hero h1 { max-width: 560px; font-size: 3rem; line-height: 1.1; text-shadow: none; margin-bottom: 20px; }
 .home-hero .lede { max-width: 510px; font-size: 1rem; line-height: 1.7; color: #f8f1e8; margin-bottom: 28px; }
 .home-hero .hero-actions .btn-primary { background: #f7edd4; color: #3a0003; border: 1px solid #f7edd4; min-height: 48px; }
 .home-hero .hero-actions .btn-primary:hover { background: #fffaf0; color: #3a0003; }
 .home-hero .hero-actions .btn-primary:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
-.home-hero .deity-frame { width: min(380px, 32vw); }
-.home-hero .varahi-dots { gap: 2px; flex-wrap: wrap; max-width: 360px; }
-.home-hero .varahi-dot { width: 28px; height: 28px; position: relative; background: transparent; transform: none; }
-.home-hero .varahi-dot::after { content: ''; position: absolute; width: 8px; height: 8px; top: 10px; left: 10px; border-radius: 50%; background: rgba(255,255,255,.55); }
-.home-hero .varahi-dot.is-active::after { background: #e5c978; }
+.home-hero .deity-frame { width: min(320px, 28vw); }
+.home-hero .varahi-dots { gap: 2px; flex-wrap: wrap; max-width: 280px; }
+.home-hero .varahi-dot { width: 22px; height: 22px; position: relative; background: transparent; transform: none; }
 .home-hero .varahi-dot:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
 .home-bestsellers { background: #faf7f0; }
 .home-bestsellers__heading { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 32px; }
@@ -30,16 +28,16 @@
 .home-bestsellers__heading .btn { flex: none; min-height: 44px; }
 .home-bestsellers .product-card { height: 100%; }
 @media (max-width: 744px) {
-    .home-hero { padding: 24px 16px 28px; }
-    .home-hero-inner { min-height: 0; grid-template-columns: minmax(0, 1fr); gap: 14px; padding-top: 0; text-align: center; }
+    .home-hero { padding: 20px 16px 28px; }
+    .home-hero-inner { min-height: 0; grid-template-columns: minmax(0, 1fr); gap: 10px; padding-top: 0; text-align: center; }
     .home-hero .hero-deity { order: -1; }
-    .home-hero .deity-frame { width: min(64vw, 224px); }
-    .home-hero .hero-deity[data-current-slide="guruji"] .deity-frame { width: min(68vw, 240px); }
-    .home-hero h1 { font-size: 1.75rem; margin: 0 auto 12px; }
-    .home-hero .lede { font-size: .9rem; line-height: 1.55; margin: 0 auto 18px; }
+    .home-hero .deity-frame { width: min(46vw, 160px); }
+    .home-hero .hero-deity[data-current-slide="guruji"] .deity-frame { width: min(50vw, 176px); }
+    .home-hero h1 { font-size: 1.6rem; margin: 0 auto 10px; }
+    .home-hero .lede { font-size: .88rem; line-height: 1.5; margin: 0 auto 14px; }
     .home-hero .hero-actions { justify-content: center; }
     .home-hero .varahi-dots { gap: 0; margin-top: 4px; }
-    .home-hero .varahi-dot { width: 27px; height: 27px; }
+    .home-hero .varahi-dot { width: 20px; height: 20px; }
     .home-bestsellers__heading { align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
 }
 @media (prefers-reduced-motion: reduce) {

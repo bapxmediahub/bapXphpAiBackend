@@ -490,8 +490,8 @@ nav a:hover { color: var(--color-maroon); }
 /* ── Home Page ── */
 .home-hero {
     position: relative;
-    min-height: 700px;
-    padding: 56px 0;
+    min-height: 560px;
+    padding: 48px 0;
     background: var(--color-maroon-deep) url('/assets/images/hero-temple-bg.webp') center/cover no-repeat;
     color: var(--color-white);
     overflow: hidden;
@@ -510,12 +510,12 @@ nav a:hover { color: var(--color-maroon); }
 
 .home-hero-inner {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
     align-items: center;
-    gap: var(--space-xl);
+    gap: var(--space-2xl);
 }
 
-.hero-copy { max-width: 750px; z-index: 2; }
+.hero-copy { max-width: 620px; z-index: 2; }
 
 .eyebrow {
     font-size: 0.85rem;
@@ -541,7 +541,7 @@ nav a:hover { color: var(--color-maroon); }
 
 .home-hero h1 {
     font-family: var(--font-display);
-    font-size: 3.5rem;
+    font-size: 3rem;
     line-height: 1.08;
     margin: 0 0 var(--space-lg) 0;
     color: var(--color-white);
@@ -597,7 +597,7 @@ nav a:hover { color: var(--color-maroon); }
 
 .deity-frame {
     position: relative;
-    width: min(380px, 32vw);
+    width: min(320px, 28vw);
     aspect-ratio: 3 / 4;
     overflow: visible;
     border-radius: var(--radius-md);
@@ -617,21 +617,35 @@ nav a:hover { color: var(--color-maroon); }
 .varahi-dots {
     display: flex;
     justify-content: center;
-    gap: 10px;
-    margin-top: var(--space-md);
+    gap: 2px;
+    margin-top: var(--space-sm);
     padding: 0;
 }
 .varahi-dot {
-    width: 12px;
-    height: 12px;
+    position: relative;
+    width: 22px;
+    height: 22px;
     border: 0;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.35);
+    border-radius: 4px;
+    background: transparent;
     cursor: pointer;
-    transition: background var(--transition-divine), transform var(--transition-divine);
+    padding: 0;
 }
-.varahi-dot:hover { background: rgba(255,255,255,0.7); transform: scale(1.25); }
-.varahi-dot.is-active { background: var(--color-gold); transform: scale(1.15); }
+.varahi-dot::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.42);
+    transform: translate(-50%, -50%);
+    transition: width var(--transition-base), background var(--transition-base);
+}
+.varahi-dot:hover::before { background: rgba(255,255,255,0.78); }
+.varahi-dot.is-active::before { width: 14px; background: var(--color-gold); }
+.varahi-dot:focus-visible { outline: 2px solid var(--color-white); outline-offset: 1px; }
 
 .hero-stats {
     display: flex;
@@ -3984,8 +3998,17 @@ body { background: var(--color-bg); }
 }
 
 @media (max-width: 743px) {
-    .home-hero .deity-frame { width: min(60vw, 224px); }
-    .home-hero .hero-deity[data-current-slide="guruji"] .deity-frame { width: min(64vw, 240px); }
+    .home-hero { padding: 20px 16px 28px; }
+    .home-hero-inner { gap: 10px; padding-top: 0; }
+    .home-hero .deity-frame { width: min(46vw, 160px); }
+    .home-hero .hero-deity[data-current-slide="guruji"] .deity-frame { width: min(50vw, 176px); }
+    .home-hero .eyebrow { margin-bottom: 8px; font-size: 0.68rem; letter-spacing: 0.12em; }
+    .home-hero h1 { margin-bottom: 10px; font-size: 1.6rem; }
+    .home-hero .lede { max-width: 34rem; margin: 0 auto 14px; font-size: 0.88rem; line-height: 1.5; }
+    .home-hero .hero-actions { margin-bottom: 0; }
+    .home-hero .hero-actions .btn { width: auto; min-width: 180px; }
+    .home-hero .varahi-dots { gap: 0; margin-top: 4px; }
+    .home-hero .varahi-dot { width: 20px; height: 20px; }
     .trust-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-sm); padding: var(--space-lg) var(--space-md); }
     .trust-item:last-child { grid-column: 1 / -1; }
     .trust-item { min-height: 48px; }
