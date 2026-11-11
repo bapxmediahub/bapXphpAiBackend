@@ -206,6 +206,9 @@ final class SupportBotService {
     }
 
     private function publicGuestReply(string $message, array $context): string {
+        if (preg_match('/\b(?:compare|comparison|difference between|differ from|versus|vs)\b/i', $message)) {
+            return 'I can’t compare those for you right now. If you share the product names and what you want to compare at /contact, our team can help.';
+        }
         $site = $context['site'] ?? [];
         $pages = $site['pages'] ?? [];
         $products = array_slice($site['products'] ?? [], 0, 5);
