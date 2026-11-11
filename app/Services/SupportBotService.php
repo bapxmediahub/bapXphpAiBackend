@@ -96,18 +96,22 @@ final class SupportBotService {
             $days = (int)$match[1];
             if ($days < 1 || $days > 365) return [];
             $start = $today->modify('-' . ($days - 1) . ' days');
-        } elseif (preg_match('/\b(this|last) (week|month)\b/i', $message, $match)) {
+        } elseif (preg_match('/\b(this|last) (week|month|year)\b/i', $message, $match)) {
             $last = strtolower($match[1]) === 'last';
-            $week = strtolower($match[2]) === 'week';
-            $start = $today->modify($week ? 'monday this week' : 'first day of this month');
+            $unit = strtolower($match[2]);
+            $start = match ($unit) {
+                'week' => $today->modify('monday this week'),
+                'month' => $today->modify('first day of this month'),
+                'year' => $today->setDate((int)$today->format('Y'), 1, 1),
+            };
             if ($last) {
                 $end = $start->modify('-1 day');
-                $start = $start->modify($week ? '-1 week' : '-1 month');
+                $start = $start->modify('-1 ' . $unit);
             }
         } elseif (preg_match('/\byesterday\b/i', $message)) {
             $start = $end = $today->modify('-1 day');
         } elseif (!preg_match('/\btoday\b/i', $message)) {
-            return preg_match('/\b(?:since|between|before|after|earlier this|last|past|previous)\s+(?:\d|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|week|month|year)/i', $message)
+            return preg_match('/\b(?:since|between|before|after|earlier this|this|last|past|previous)\s+(?:\d|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|week|month|year|quarter|financial|fiscal)/i', $message)
                 || preg_match('/\b(?:in|during)\s+(?:january|february|march|april|may|june|july|august|september|october|november|december|\d{4})\b/i', $message)
                 || preg_match('/\b\d{4}-\d{2}-\d{2}\b/i', $message) ? [] : null;
         }
@@ -124,7 +128,7 @@ final class SupportBotService {
             $reply = 'Sign in to check the status of your support tickets at /login.';
             $outcome = 'private_account';
         } elseif ($lookup['period'] === []) {
-            $reply = 'I can filter by when tickets were opened. Try today, last week, last month or the past 30 days.';
+            $reply = 'I can filter by when tickets were opened. Try today, last week, last month, this year or the past 30 days.';
         } else {
             $lookupStartedAt = microtime(true);
             try {

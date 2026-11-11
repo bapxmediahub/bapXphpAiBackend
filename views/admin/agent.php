@@ -190,7 +190,7 @@
         if (!run || !bubble) return;
         const details = document.createElement('details');
         details.className = 'agent-run';
-        const routeLabel = {local:'Local data',model:'Model response',draft:'Draft builder',error:'Failed request'}[run.route] || 'Request';
+        const routeLabel = {local:'Local data',model:'Model response',fallback:'Completed lookups',draft:'Draft builder',error:'Failed request'}[run.route] || 'Request';
         const summary = document.createElement('summary');
         summary.textContent = (Math.max(0, Number(run.elapsed_ms) || 0) / 1000).toFixed(2) + ' s';
         summary.setAttribute('aria-label', summary.textContent + ', show request details');

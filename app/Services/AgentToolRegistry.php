@@ -34,6 +34,15 @@ final class AgentToolRegistry
     }
 
     private array $sources = [];
+    private array $completedTicketSummaries = [];
+
+    public function ticketLookupFallback(): ?string
+    {
+        if (!$this->completedTicketSummaries) return null;
+        return "The model could not finish its summary. These ticket lookups completed:\n"
+            . implode("\n", array_map(static fn(string $summary): string => '- ' . $summary,
+                array_slice(array_keys($this->completedTicketSummaries), 0, 8)));
+    }
 
     /** @return list<array{label:string,path:string}> */
     public function sourceLinks(): array
@@ -212,6 +221,9 @@ final class AgentToolRegistry
                 'status' => isset($result['error']) ? 'error' : 'complete',
                 'duration_ms' => (int)round((microtime(true) - $startedAt) * 1000),
             ];
+            if ($name === 'support_enquiries' && !isset($result['error'])) {
+                $this->completedTicketSummaries[self::ticketSummary($result)] = true;
+            }
             if (!isset($result['error']) && isset($result['report_url'])) {
                 $label = match ($name) {
                     'gst_register_summary' => 'GST invoice register',
@@ -535,12 +547,7 @@ final class AgentToolRegistry
         $result = $this->run($tool, $filters);
         if (isset($result['error'])) return $result['error'];
         $dates = $result['from'] . ' to ' . $result['to'];
-        if ($tool === 'support_enquiries') {
-            $status = isset($filters['status']) ? $filters['status'] . ' ' : '';
-            $topic = isset($filters['topic']) ? ' about ' . $filters['topic'] : '';
-            return "There were {$result['total']} {$status}support tickets{$topic} created from {$dates}."
-                . ($topic !== '' ? ' Topic counts use keywords in the original enquiry.' : '');
-        }
+        if ($tool === 'support_enquiries') return self::ticketSummary($result);
 
         $totals = $result['totals'];
         $money = static fn(float $amount): string => '₹' . number_format($amount, 2);
@@ -548,6 +555,21 @@ final class AgentToolRegistry
             . "The invoice lines export flags {$result['review_invoices']} for review. "
             . 'Taxable value is ' . $money($totals['taxable']) . ' and total GST is ' . $money($totals['tax'])
             . ' (CGST ' . $money($totals['cgst']) . ', SGST ' . $money($totals['sgst']) . ', IGST ' . $money($totals['igst']) . ').';
+    }
+
+    private static function ticketSummary(array $result): string
+    {
+        $status = $result['status'] !== '' ? $result['status'] . ' ' : '';
+        $topic = $result['topic'] !== '' ? ' about ' . $result['topic'] : '';
+        $dates = $result['from'] . ' to ' . $result['to'];
+        $summary = "There were {$result['total']} {$status}support tickets{$topic} created from {$dates}.";
+        if ($status === '' && $result['by_status'] !== []) {
+            $counts = [];
+            foreach ($result['by_status'] as $state => $count) $counts[] = $count . ' ' . $state;
+            $summary .= ' Current statuses: ' . implode(', ', $counts) . '.';
+        }
+        if ($topic !== '') $summary .= ' Topic counts use keywords in the original enquiry.';
+        return $summary;
     }
 
     private static function reportDates(array $args, int $maxDays = 366): ?array
