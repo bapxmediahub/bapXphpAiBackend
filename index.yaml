@@ -36,14 +36,14 @@ query_examples:
   - "rg -n -B4 -A12 'type: \"skill\"' index.yaml"
   - "rg -n '<term>' docs/project-index.json map.mmd index.yaml"
 summary:
-  concepts: 349
-  relationships: 244
+  concepts: 351
+  relationships: 247
   by_type:
     blog: 14
     controller: 12
     doc: 35
     image: 89
-    route: 120
+    route: 122
     schema: 22
     service: 48
     skill: 9
@@ -1812,6 +1812,21 @@ concepts:
       - "OrderService"
       - "ReviewService"
     view: "account/orders"
+  - id: "route:get__account_dashboard_profile"
+    type: "route"
+    title: "GET /account/dashboard/profile"
+    description: "account.dashboard.profile"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/account/dashboard/profile"
+    controller: "AccountController@profile"
+    services:
+      - "AuthService"
+      - "DatabaseService"
+    view: "account/profile"
   - id: "route:get__account_dashboard_sessions"
     type: "route"
     title: "GET /account/dashboard/sessions"
@@ -2769,6 +2784,21 @@ concepts:
       - "AuthService"
       - "AddressService"
     view: "account/addresses"
+  - id: "route:post__account_dashboard_profile"
+    type: "route"
+    title: "POST /account/dashboard/profile"
+    description: "account.profile.save"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/account/dashboard/profile"
+    controller: "AccountController@saveProfile"
+    services:
+      - "AuthService"
+      - "DatabaseService"
+    view: "account/profile"
   - id: "route:post__admin_agent_ask"
     type: "route"
     title: "POST /admin/agent/ask"
@@ -4210,6 +4240,9 @@ relationships:
     to: "service:AuthService"
     relation: "uses"
   - from: "controller:AccountController"
+    to: "service:DatabaseService"
+    relation: "uses"
+  - from: "controller:AccountController"
     to: "service:OrderService"
     relation: "uses"
   - from: "controller:AccountController"
@@ -4458,6 +4491,9 @@ relationships:
   - from: "route:get__account_dashboard_orders"
     to: "controller:AccountController"
     relation: "handled_by"
+  - from: "route:get__account_dashboard_profile"
+    to: "controller:AccountController"
+    relation: "handled_by"
   - from: "route:get__account_dashboard_sessions"
     to: "controller:AccountController"
     relation: "handled_by"
@@ -4651,6 +4687,9 @@ relationships:
     to: "controller:AccountController"
     relation: "handled_by"
   - from: "route:post__account_dashboard_addresses_save"
+    to: "controller:AccountController"
+    relation: "handled_by"
+  - from: "route:post__account_dashboard_profile"
     to: "controller:AccountController"
     relation: "handled_by"
   - from: "route:post__admin_agent_ask"

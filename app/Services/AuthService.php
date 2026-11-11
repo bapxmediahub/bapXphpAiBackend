@@ -2,6 +2,12 @@
 namespace App\Services;
 
 final class AuthService {
+    public static function validPhone(string $phone): bool {
+        if (!preg_match('/^\+?[0-9 ()-]{7,25}$/D', $phone)) return false;
+        $digits = strlen(preg_replace('/\D/', '', $phone));
+        return $digits >= 7 && $digits <= 15;
+    }
+
     public function user(): ?array {
         return $_SESSION['user'] ?? null;
     }

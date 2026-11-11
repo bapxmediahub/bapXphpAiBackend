@@ -51,7 +51,7 @@
                         <?php endif; ?>
                         <div class="form-group" style="margin-top:var(--space-md);">
                             <label>Phone</label>
-                            <input type="tel" id="checkout-phone" name="phone" placeholder="+91 XXXXX XXXXX" required>
+                            <input type="tel" id="checkout-phone" name="phone" autocomplete="tel" value="<?= e($_SESSION['user']['phone'] ?? '') ?>" placeholder="+91 XXXXX XXXXX" required>
                         </div>
                         <div class="form-group" style="margin-top:var(--space-md);">
                             <label>Address</label>
