@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="/assets/css/home-editorial.css?v=<?= filemtime(__DIR__ . '/../../assets/css/home-editorial.css') ?>">
 <section class="home-hero">
     <div class="container home-hero-inner">
         <div class="hero-copy">
@@ -8,18 +9,6 @@
                 <?php if (module_on('shop')): ?>
                 <a href="/shop" class="btn btn-primary">Shop Products</a>
                 <?php endif; ?>
-            </div>
-            <div class="hero-stats">
-                <?php if (module_on('shop')): ?>
-                <div>
-                    <div class="hero-stat-value"><?= e((string)count($products)) ?></div>
-                    <div class="hero-stat-label">Products</div>
-                </div>
-                <?php endif; ?>
-                <div>
-                    <div class="hero-stat-value">Trusted</div>
-                    <div class="hero-stat-label">Sourcing</div>
-                </div>
             </div>
         </div>
         <?php
@@ -98,7 +87,7 @@
     </div>
 </div>
 
-<section class="section">
+<section class="section home-bestsellers">
     <div class="container">
         <?php
             $cartQuantities = [];
@@ -107,8 +96,12 @@
             }
             $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16));
         ?>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-xl); flex-wrap:wrap; gap:var(--space-sm);">
+        <div class="home-bestsellers__heading">
+            <div>
+            <span class="home-bestsellers__eyebrow">Discover our collection</span>
             <h2 class="section-title" style="margin:0;">Top Selling Products</h2>
+            <p>Explore our most purchased devotional pieces.</p>
+            </div>
             <a href="/shop" class="btn btn-sm btn-ghost">View Shop</a>
         </div>
         <div class="product-grid">

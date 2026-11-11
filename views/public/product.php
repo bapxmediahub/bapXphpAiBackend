@@ -114,9 +114,9 @@
                          <input type="hidden" name="_csrf" value="<?= $csrf ?>">
                          <div class="qty-input">
 
-                            <button type="button" onclick="this.nextElementSibling.stepDown(); this.nextElementSibling.dispatchEvent(new Event('change'))">−</button>
-                            <input type="number" name="qty" value="1" min="1" max="99" id="qty-input">
-                            <button type="button" onclick="this.previousElementSibling.stepUp(); this.previousElementSibling.dispatchEvent(new Event('change'))">+</button>
+                            <button type="button" aria-label="Decrease quantity" onclick="this.nextElementSibling.stepDown(); this.nextElementSibling.dispatchEvent(new Event('change'))">−</button>
+                            <input type="number" name="qty" value="1" min="1" max="99" id="qty-input" aria-label="Quantity">
+                            <button type="button" aria-label="Increase quantity" onclick="this.previousElementSibling.stepUp(); this.previousElementSibling.dispatchEvent(new Event('change'))">+</button>
                         </div>
                         <button name="redirect" value="/product/<?= e(rawurlencode(trim($product['slug']))) ?>" class="btn btn-primary btn-lg" style="flex:1;">Add to Cart</button>
                     </form>

@@ -17,6 +17,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
 <meta name="apple-mobile-web-app-title" content="SPS Admin">
 <link rel="apple-touch-icon" href="/assets/images/logo-square.jpeg">
 <link rel="stylesheet" href="/assets/css/band.css?v=<?= filemtime(__DIR__.'/../../assets/css/band.css') ?>">
+<link rel="stylesheet" href="/assets/css/admin-refinement.css?v=<?= filemtime(__DIR__.'/../../assets/css/admin-refinement.css') ?>">
 <script src="/assets/agent-status.js?v=<?= filemtime(__DIR__.'/../../assets/agent-status.js') ?>" defer></script>
 <style>
 .admin-shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
@@ -144,7 +145,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
     </aside>
     <main class="admin-main">
         <div class="admin-topbar">
-            <button class="btn btn-sm btn-ghost" id="sidebarToggle" style="display:none; margin-right:var(--space-sm);">
+            <button class="btn btn-sm btn-ghost" id="sidebarToggle" aria-label="Open navigation" aria-controls="admin-sidebar" aria-expanded="false" style="display:none; margin-right:var(--space-sm);">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             </button>
             <h1><?= e($pageTitle ?? 'Dashboard') ?></h1>
@@ -211,10 +212,12 @@ function showToast(msg,type){type=type||'info';var c=document.getElementById('to
 const sidebar = document.getElementById('admin-sidebar');
 const toggle = document.getElementById('sidebarToggle');
 if (toggle) {
-    toggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+    toggle.addEventListener('click', () => { const open = sidebar.classList.toggle('open'); toggle.setAttribute('aria-expanded', String(open)); toggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation'); });
     document.addEventListener('click', (e) => {
         if (window.innerWidth <= 768 && !sidebar.contains(e.target) && !toggle.contains(e.target)) {
             sidebar.classList.remove('open');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.setAttribute('aria-label', 'Open navigation');
         }
     });
 }

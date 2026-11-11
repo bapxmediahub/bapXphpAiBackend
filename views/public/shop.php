@@ -12,12 +12,12 @@
                 <div class="shop-filters">
                     <h3>Categories</h3>
                     <div class="filter-group">
-                        <a href="/shop" class="filter-chip <?= ($category ?? '') === '' ? 'active' : '' ?>">All</a>
+                        <a href="/shop" class="filter-chip <?= ($category ?? '') === '' ? 'active' : '' ?>" <?= ($category ?? '') === '' ? 'aria-current="page"' : '' ?>>All</a>
                         <?php foreach($categories as $cat): ?>
-                            <a href="/shop?category=<?= e($cat['slug'] ?? '') ?>" class="filter-chip <?= ($category === ($cat['slug'] ?? '')) ? 'active' : '' ?>"><?= e($cat['name'] ?? 'Category') ?></a>
+                            <a href="/shop?category=<?= e(rawurlencode((string)($cat['slug'] ?? ''))) ?>" class="filter-chip <?= ($category === ($cat['slug'] ?? '')) ? 'active' : '' ?>" <?= ($category === ($cat['slug'] ?? '')) ? 'aria-current="page"' : '' ?>><?= e($cat['name'] ?? 'Category') ?></a>
                         <?php endforeach; ?>
                         <?php foreach (($shopCollections ?? []) as $cat): ?>
-                            <a href="/shop?category=<?= e(rawurlencode($cat['slug'])) ?>" class="filter-chip <?= $category === $cat['slug'] ? 'active' : '' ?>"><?= e($cat['name']) ?></a>
+                            <a href="/shop?category=<?= e(rawurlencode($cat['slug'])) ?>" class="filter-chip <?= $category === $cat['slug'] ? 'active' : '' ?>" <?= $category === $cat['slug'] ? 'aria-current="page"' : '' ?>><?= e($cat['name']) ?></a>
                         <?php endforeach; ?>
                     </div>
                 </div>
@@ -25,7 +25,18 @@
         </aside>
         <div>
             <div class="shop-toolbar">
-                <?php if (!empty($selectedCollection)): ?><h1><?= e($selectedCollection['name']) ?></h1><?php endif; ?>
+                <?php
+                    $shopHeading = !empty($selectedCollection) ? (string)$selectedCollection['name'] : 'Shop';
+                    if (empty($selectedCollection) && ($category ?? '') !== '') {
+                        foreach ($categories as $cat) {
+                            if (($cat['slug'] ?? '') === $category || ($cat['name'] ?? '') === $category) {
+                                $shopHeading = (string)$cat['name'];
+                                break;
+                            }
+                        }
+                    }
+                ?>
+                <h1><?= e($shopHeading) ?></h1>
                 <span class="shop-toolbar__count"><?= count($items) ?> product<?= count($items) !== 1 ? 's' : '' ?></span>
             </div>
             <?php if(empty($items)): ?>
