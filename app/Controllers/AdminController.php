@@ -11,14 +11,18 @@ final class AdminController extends BaseController {
 
     public function dashboard(): void{
         $productCount = count((new ResourceService('products'))->all());
-        $orderCount = count((new ResourceService('orders'))->all());
+        $allOrders = (new OrderService())->all();
+        $period = is_string($_GET['period'] ?? null) && in_array($_GET['period'], ['7', '30', '90'], true) ? (int)$_GET['period'] : 30;
+        $today = new \DateTimeImmutable('today');
+        $from = $today->modify('-' . ($period - 1) . ' days')->format('Y-m-d');
+        $to = $today->format('Y-m-d');
+        $reportRows = StoreStatsService::sales($allOrders, $from, $to, $period === 90 ? 'week' : 'day');
+        $productRows = StoreStatsService::topProducts($allOrders, $from, $to);
+        $orderStatusCounts = StoreStatsService::orderStatusCounts($allOrders, $from, $to);
         // Public consultation booking has been retired, but historical requests remain
         // an owner responsibility. Keep them visible from the admin dashboard rather
         // than making their recovery depend on a public-site module flag.
         $appointments = (new ResourceService('appointments'))->all();
-        $agentMonitoring = null;
-        try { $agentMonitoring = AuditLogService::agentSummary((new AuditLogService())->all()); }
-        catch (\Throwable) { /* Monitoring must not prevent dashboard access. */ }
         usort($appointments, static fn(array $a, array $b): int => strcmp(
             (string)($b['created_at'] ?? $b['preferred_date'] ?? ''),
             (string)($a['created_at'] ?? $a['preferred_date'] ?? '')
@@ -26,11 +30,10 @@ final class AdminController extends BaseController {
         $this->render('admin/dashboard', [
             'pageTitle' => 'Dashboard',
             'productCount' => $productCount,
-            'orderCount' => $orderCount,
+            'orderCount' => count($allOrders),
             'bookingCount' => count($appointments),
             'appointments' => array_slice($appointments, 0, 5),
-            'agentMonitoring' => $agentMonitoring,
-        ]);
+        ] + compact('period', 'from', 'to', 'reportRows', 'productRows', 'orderStatusCounts'));
     }
     public function products(): void{
         $draft = $_SESSION['product_form_draft'] ?? null;
@@ -192,8 +195,72 @@ final class AdminController extends BaseController {
     }
     public function appointments(): void{$this->list('Sessions','appointments');}
     public function consultationAnalytics(): void{$this->render('admin/consultation-analytics',['pageTitle'=>'Consultation Analytics','metrics'=>(new ConsultationService())->analytics()]);}
-    public function temples(): void{$this->resource('Temples','temples',$this->schemaFields('temples',['name','description','image_url','address','map_url']));}
-    public function saveTemple(): void{$this->save('temples');}
+    public function temples(): void {
+        $store = new \App\Services\DatabaseService();
+        $editId = is_string($_GET['edit'] ?? null) ? $_GET['edit'] : '';
+        $editing = $editId !== '' ? $store->find('temples', $editId) : null;
+        if ($editId !== '' && !$editing) {
+            $this->flash('Temple could not be found.', 'error');
+            $this->redirect('/admin/temples');
+        }
+        if ($editing || ($_GET['new'] ?? '') === '1') {
+            $title = $editing ? 'Edit Temple' : 'Add Temple';
+            $templeForm = true;
+            $collection = 'temples';
+            $fields = $this->schemaFields('temples', ['name', 'description', 'image_url', 'address', 'timings', 'phone', 'map_url', 'map_embed_url']);
+            if ($editing && empty($editing['map_url'])) $editing['map_url'] = $editing['map_link'] ?? '';
+            $draft = $_SESSION['temple_form_draft'] ?? [];
+            unset($_SESSION['temple_form_draft']);
+            if (($draft['id'] ?? null) === $editId) $editing = array_replace($editing ?? [], $draft);
+            $mediaFiles = $this->mediaFor('temples');
+            $this->render('admin/resource', compact('title', 'templeForm', 'collection', 'fields', 'editing', 'mediaFiles'));
+            return;
+        }
+        $items = (new ResourceService('temples', $store))->all();
+        $this->render('admin/temples', compact('items'));
+    }
+
+    public function saveTemple(): void {
+        $store = new \App\Services\DatabaseService();
+        $id = is_string($_POST['id'] ?? null) ? $_POST['id'] : '';
+        $existing = $id !== '' ? $store->find('temples', $id) : null;
+        if ($id !== '' && !$existing) {
+            $this->flash('Temple could not be found.', 'error');
+            $this->redirect('/admin/temples');
+        }
+        $fields = $this->schemaFields('temples', ['name', 'description', 'image_url', 'address', 'timings', 'phone', 'map_url', 'map_embed_url']);
+        $draft = ['id' => $id];
+        foreach ($fields as $field) {
+            if (is_string($_POST[$field] ?? null)) $draft[$field] = trim($_POST[$field]);
+        }
+        $data = array_replace($existing ?? [], $draft);
+        try {
+            if (($data['name'] ?? '') === '') throw new \InvalidArgumentException('Enter the temple name.');
+            foreach (['map_url', 'map_embed_url'] as $field) {
+                $url = $data[$field] ?? '';
+                if ($url !== '' && !\App\Services\TempleService::directionsUrl(['map_url' => $url])) {
+                    throw new \InvalidArgumentException('Enter a valid HTTP or HTTPS map URL.');
+                }
+            }
+            if (array_key_exists('map_url', $draft)) unset($data['map_link']);
+            if (!$existing) {
+                $data['id'] = bin2hex(random_bytes(8));
+                $slug = strtolower(trim((string)preg_replace('/[^a-z0-9]+/i', '-', $data['name']), '-'));
+                $data['slug'] = $slug !== '' && !$store->find('temples', $slug, 'slug') ? $slug : 'temple-' . $data['id'];
+            }
+            $uploaded = $this->uploadedMedia('temples');
+            if ($uploaded) $data['image_url'] = $uploaded[0]['url'];
+            $record = (new ResourceService('temples', $store))->save($data);
+            if ($uploaded) (new MediaService())->recordUsage($uploaded, 'temples', $record['id'], $data['name']);
+            (new AuditLogService())->record('save', 'temples', $record['id']);
+            $this->flash('Temple saved.', 'success');
+        } catch (\InvalidArgumentException $error) {
+            $_SESSION['temple_form_draft'] = $draft;
+            $this->flash($error->getMessage(), 'error');
+            $this->redirect('/admin/temples?' . ($id !== '' ? 'edit=' . rawurlencode($id) : 'new=1'));
+        }
+        $this->redirect('/admin/temples');
+    }
     public function deleteTemple(): void{$this->delete('temples');}
     public function settings(): void{$this->render('admin/settings',['pageTitle' => 'Settings', 'title' => 'Site Settings', 'settings'=>(new SettingsService())->public(), 'adminCredentials'=>(new EnvService())->adminCredentials()]);}
     public function saveSettings(): void{
@@ -238,13 +305,23 @@ final class AdminController extends BaseController {
         }
         $this->redirect('/admin/integrations');
     }
+    public function agentMonitoring(): void {
+        $agentMonitoring = null;
+        try {
+            $agentMonitoring = AuditLogService::agentSummary((new AuditLogService())->all());
+        } catch (\Throwable) {
+            // Keep the monitoring page available when the audit store is unavailable.
+        }
+        $this->render('admin/agent-monitoring', compact('agentMonitoring') + ['pageTitle' => 'Agent Monitoring']);
+    }
+
     public function agent(): void{
         $secrets = new SecretService();
         $modelConfig = $secrets->getModelConfig();
         // Everything the owner may write @ against, so the chat can autocomplete rather
         // than making them remember slugs and filenames.
         $attachables = (new \App\Services\AgentAttachmentService())->catalogue();
-        $this->render('admin/agent',['pageTitle'=>'AI Agent','modelConfig'=>$modelConfig,'attachables'=>$attachables]);
+        $this->render('admin/agent',['pageTitle'=>'Enterprise Agent','modelConfig'=>$modelConfig,'attachables'=>$attachables]);
     }
     public function agentAsk(): void{
         $message = trim((string)($_POST['message'] ?? ''));
@@ -278,7 +355,7 @@ final class AdminController extends BaseController {
             // allowlisted sales tool supplies a deterministic, privacy-safe answer.
             $localAnswer = $attachments['context'] === '' ? $tools->aggregateAnswer($message) : null;
             if ($localAnswer !== null) {
-                (new AuditLogService())->agentRun('admin', 'local', $startedAt);
+                (new AuditLogService())->agentRun('admin', 'local', $startedAt, tools: $tools->activity());
                 $this->jsonResponse([
                     'answer' => $localAnswer,
                     'missing' => $attachments['missing'],
@@ -297,7 +374,7 @@ final class AdminController extends BaseController {
                 $answer = "AI model not configured. Go to Admin → Integrations and set api_endpoint, ai_api_key, and agent_model.";
             }
             $failed = empty($modelConfig['apiKey']) || \App\Services\AiClient::isError($answer);
-            (new AuditLogService())->agentRun('admin', $failed ? 'error' : ($reason === 'rejected_response' ? 'fallback' : 'model'), $startedAt, $reason, $attempts);
+            (new AuditLogService())->agentRun('admin', $failed ? 'error' : ($reason === 'rejected_response' ? 'fallback' : 'model'), $startedAt, $reason, $attempts, $tools->activity());
             if ($failed) {
                 $this->jsonResponse([
                     'error'=>$answer,
@@ -493,7 +570,7 @@ final class AdminController extends BaseController {
     public function contactSubmissions(): void{$this->resource('Contact Submissions','contact_submissions',['name','email','phone','subject','message','status']);}
     public function saveContactSubmission(): void{$this->save('contact_submissions');}
     public function deleteContactSubmission(): void{$this->delete('contact_submissions');}
-    public function supportTickets(): void{$this->render('admin/list',['pageTitle'=>'Support Tickets','title'=>'Support Tickets','collection'=>'support_tickets','items'=>(new \App\Services\SupportTicketService())->all()]);}
+    public function supportTickets(): void{$this->render('admin/list',['pageTitle'=>'AI Support Tickets','title'=>'AI Support Tickets','collection'=>'support_tickets','items'=>(new \App\Services\SupportTicketService())->all()]);}
     public function saveSupportTicket(): void{
         $id=(string)($_POST['id']??'');
         $reply=trim((string)($_POST['reply']??''));
@@ -508,7 +585,15 @@ final class AdminController extends BaseController {
         $this->redirect('/admin/support-tickets');
     }
     public function emailInbox(): void{$this->render('admin/mailbox',['pageTitle'=>'Email Inbox','title'=>'Email Inbox','box'=>'inbox','items'=>(new MailStorageService())->inbox()]);}
-    public function emailOutbox(): void{$this->render('admin/mailbox',['pageTitle'=>'Email Outbox','title'=>'Email Outbox','box'=>'outbox','items'=>(new MailStorageService())->outbox()]);}
+    public function emailOutbox(): void {
+        $newsletter = ($_GET['type'] ?? '') === 'newsletter';
+        $items = (new MailStorageService())->outbox();
+        if ($newsletter) {
+            $items = array_values(array_filter($items, static fn(array $item): bool => ($item['source'] ?? '') === 'blog_newsletter'));
+        }
+        $title = $newsletter ? 'Newsletters' : 'Email Outbox';
+        $this->render('admin/mailbox', ['pageTitle' => $title, 'title' => $title, 'box' => 'outbox', 'items' => $items, 'newsletter' => $newsletter]);
+    }
     public function media(): void{
         $media = new MediaService();
         $this->render('admin/media',['pageTitle'=>'Media Library','items'=>$media->all(),
@@ -803,15 +888,8 @@ final class AdminController extends BaseController {
             'tax' => $taxOrders,
             default => StoreStatsService::sales($allOrders, $from, $to, $group, $status),
         };
-        $productRows = StoreStatsService::productsPurchased($allOrders, $from, $to, $status);
-        $orderStatusCounts = [];
-        foreach ($allOrders as $order) {
-            $created = substr((string)($order['created_at'] ?? $order['invoice_date'] ?? ''), 0, 10);
-            if ($created < $from || $created > $to || trim((string)($order['payment_id'] ?? '')) === '') continue;
-            $orderStatus = strtolower((string)($order['status'] ?? 'unknown'));
-            $orderStatusCounts[$orderStatus] = ($orderStatusCounts[$orderStatus] ?? 0) + 1;
-        }
-        arsort($orderStatusCounts);
+        $productRows = $reportType === 'sales' ? StoreStatsService::topProducts($allOrders, $from, $to, $status) : [];
+        $orderStatusCounts = $reportType === 'sales' ? StoreStatsService::orderStatusCounts($allOrders, $from, $to, $status) : [];
         $this->render('admin/tax-report', [
             'pageTitle'=>'Reports', 'title'=>'Commerce Reports', 'orders'=>$taxOrders,
             'from'=>$from, 'to'=>$to, 'totals'=>$totals, 'invoiceReviewReasons'=>$invoiceReviewReasons,

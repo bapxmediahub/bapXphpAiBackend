@@ -1,39 +1,14 @@
-<div class="owner-agent-page" id="owner-agent-page">
-<section class="owner-agent-window" aria-labelledby="owner-agent-title">
-    <header class="owner-agent-bar">
-        <h1 id="owner-agent-title">Owner Agent</h1>
-        <span class="owner-agent-status"><i></i><?= !empty($modelConfig['configured']) ? 'Connected' : 'Setup required' ?></span>
-        <span class="agent-chip agent-chip--muted"><?= e($modelConfig['model'] ?? 'gemma-4-31b-it') ?></span>
-        <span class="owner-agent-bar__spacer"></span>
-        <div class="agent-layout-actions" aria-label="Agent layout">
-            <button type="button" data-layout="window" aria-pressed="true">Window</button>
-            <button type="button" data-layout="panel" aria-pressed="false">Side panel</button>
-            <button type="button" data-layout="full" aria-pressed="false">Full page</button>
-            <button type="button" data-layout="minimized" aria-pressed="false" aria-label="Minimize Owner Agent">—</button>
-        </div>
+<section class="enterprise-chat" aria-labelledby="enterprise-agent-title">
+    <header class="enterprise-chat__intro">
+        <h1 id="enterprise-agent-title">Enterprise Agent</h1>
+        <p>Ask about orders, revenue, stock, or support enquiries. Drafts are saved only after you review them.</p>
+        <?php if (empty($modelConfig['configured'])): ?>
+            <p class="agent-notice">Connect a model in <a href="/admin/integrations">Integrations</a> for questions that need one.</p>
+        <?php endif; ?>
     </header>
-    <div class="owner-agent-grid">
-        <aside class="agent-history" aria-label="Recent conversations">
-            <button type="button" class="agent-new-chat">+ New chat</button>
-            <h2>Recent conversations</h2>
-            <div class="agent-history-list">
-                <button type="button" class="active">Today’s order summary</button>
-                <button type="button">Prepare shipping update</button>
-                <button type="button">Check product stock</button>
-                <button type="button">Explain revenue change</button>
-            </div>
-        </aside>
-        <div class="agent-work">
-            <div class="agent-context-bar"><strong>Scoped context</strong><span>Store analytics and only the records requested in this conversation.</span></div>
-            <?php if (empty($modelConfig['configured'])): ?><div class="agent-notice"><strong>No API key configured.</strong> Set the Google API key in <a href="/admin/integrations">Integrations</a>.</div><?php endif; ?>
-    <div id="agent-messages" class="agent-messages" role="log" aria-live="polite" aria-label="Conversation">
-        <div class="agent-row agent-row--bot">
-            <div class="agent-avatar agent-avatar--bot" aria-hidden="true">AI</div>
-            <div class="agent-bubble agent-bubble--bot">
-                Ask about orders, revenue, products, support enquiries, or draft content. I only use scoped admin data and never save a draft until you review it.
-            </div>
-        </div>
-    </div>
+    <div class="enterprise-chat__thread">
+        <button type="button" class="agent-suggestion enterprise-chat__clear" id="agent-clear" hidden>New chat</button>
+    <div id="agent-messages" class="agent-messages" role="log" aria-live="polite" aria-label="Conversation"></div>
 
     <div class="agent-suggestions" id="agent-suggestions">
         <?php foreach (['Which products sell best?', 'What is the revenue this month?', '/create-blog benefits of rudraksha', '/add-product brass oil lamp'] as $__s): ?>
@@ -51,7 +26,7 @@
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
             </button>
             <textarea id="agent-input" name="message" rows="1" required
-                      placeholder="Ask anything, @attach a page or image, or type /create-blog…"
+                      placeholder="Ask about your store…"
                       aria-label="Message"></textarea>
             <button type="submit" class="agent-send" id="agent-submit" aria-label="Send">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
@@ -62,19 +37,8 @@
         Enter to send · Shift+Enter for a new line · <code>@terms</code> or <code>@filename</code> to attach ·
         <code>/create-blog</code> and <code>/add-product</code> to draft
     </p>
-        </div>
-        <aside class="agent-scope" aria-label="Scoped context controls">
-            <h2>Scoped context</h2>
-            <div class="agent-scope-list">
-                <label class="agent-scope-item"><input type="checkbox" checked><span><strong>Store analytics</strong><small>Aggregate orders and revenue; no customer identities.</small></span></label>
-                <label class="agent-scope-item"><input type="checkbox" checked><span><strong>Products</strong><small>Active catalogue, price and stock status.</small></span></label>
-                <label class="agent-scope-item"><input type="checkbox" checked><span><strong>Requested record</strong><small>Only an order or customer explicitly named by the owner.</small></span></label>
-            </div>
-            <div class="agent-privacy"><strong>Privacy boundary</strong><br>The Owner Agent never receives all customer records, provider messages, secrets, or raw model reasoning.</div>
-        </aside>
     </div>
 </section>
-</div>
 
     <?php // Uploads here land in the media library, the same as every other admin upload. ?>
     <form id="agent-upload-form" action="/admin/media/upload" method="post" enctype="multipart/form-data" hidden>
@@ -84,7 +48,7 @@
         <input type="file" id="agent-upload-input" name="media_files[]" accept="image/*" multiple>
     </form>
 
-<script id="agent-attachables" type="application/json"><?= json_encode($attachables ?? [], JSON_UNESCAPED_SLASHES) ?></script>
+<script id="agent-attachables" type="application/json"><?= json_encode($attachables ?? [], JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_INVALID_UTF8_SUBSTITUTE) ?></script>
 
 <style>
 .agent-head { display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-md); flex-wrap:wrap; }
@@ -166,6 +130,16 @@
     const messages = document.getElementById('agent-messages');
     const submit = document.getElementById('agent-submit');
     const suggestions = document.getElementById('agent-suggestions');
+    const clear = document.getElementById('agent-clear');
+    clear.addEventListener('click', function () {
+        if (submit.disabled) return;
+        messages.replaceChildren();
+        suggestions.style.display = '';
+        clear.hidden = true;
+        input.value = '';
+        autoGrow();
+        input.focus();
+    });
 
     function escapeHtml(s) {
         return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
@@ -272,7 +246,7 @@
 
         const csrf = document.createElement('input');
         csrf.type = 'hidden'; csrf.name = '_csrf';
-        csrf.value = document.querySelector('input[name="_csrf"]')?.value || '';
+        csrf.value = document.querySelector('#agent-form input[name="_csrf"]')?.value || '';
         form.appendChild(csrf);
 
         (draft.fields || []).forEach(function (field) {
@@ -370,6 +344,8 @@
         input.value = ''; autoGrow();
         input.disabled = true; submit.disabled = true;
         suggestions.style.display = 'none';
+        clear.hidden = false;
+        clear.disabled = true;
 
         const thinking = addRow('bot', '');
         const progress = window.AgentRequestStatus.start(thinking);
@@ -381,7 +357,7 @@
 
         try {
             const body = 'message=' + encodeURIComponent(msg)
-                + '&_csrf=' + encodeURIComponent(document.querySelector('input[name="_csrf"]')?.value || '');
+                + '&_csrf=' + encodeURIComponent(document.querySelector('#agent-form input[name="_csrf"]')?.value || '');
             const resp = await fetch('/admin/agent/ask', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -413,27 +389,11 @@
             progress.finish(failed);
         }
 
-        input.disabled = false; submit.disabled = false;
+        input.disabled = false; submit.disabled = false; clear.disabled = false;
         input.focus();
         messages.scrollTop = messages.scrollHeight;
         return false;
     };
 
-    document.querySelectorAll('.agent-layout-actions [data-layout]').forEach(function (button) {
-        button.addEventListener('click', function () {
-            const page = document.getElementById('owner-agent-page');
-            const layout = button.dataset.layout === 'minimized' && page.classList.contains('is-minimized')
-                ? 'window' : button.dataset.layout;
-            page.classList.toggle('is-panel', layout === 'panel');
-            page.classList.toggle('is-minimized', layout === 'minimized');
-            document.querySelectorAll('.agent-layout-actions [data-layout]').forEach(function (item) {
-                item.setAttribute('aria-pressed', String(layout === item.dataset.layout || (layout === 'window' && item.dataset.layout === 'window')));
-            });
-            if (button.dataset.layout === 'minimized') {
-                button.setAttribute('aria-label', layout === 'minimized' ? 'Restore Owner Agent' : 'Minimize Owner Agent');
-                button.textContent = layout === 'minimized' ? '□' : '—';
-            }
-        });
-    });
 })();
 </script>

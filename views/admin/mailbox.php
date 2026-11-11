@@ -1,10 +1,17 @@
 <div class="admin-card">
     <h2 style="font-size:1.1rem; margin:0 0 var(--space-md);"><?= e($title ?? 'Email') ?></h2>
     <p style="color:var(--color-text-muted); margin:0 0 var(--space-lg);">
+        <?php if (!empty($newsletter)): ?>
+            Blog newsletter messages and their delivery status.
+        <?php else: ?>
         <?= ($box ?? '') === 'outbox'
-            ? 'Outbound messages are stored here when the app queues payment, shipping, review, and account emails.'
+            ? 'Outbound messages are stored here when the app queues payment, shipping, review, account, and newsletter emails.'
             : 'Inbound website messages are stored here from the contact form so the admin panel does not depend on an external mailbox.' ?>
+        <?php endif; ?>
     </p>
+    <?php if (!empty($newsletter) && (new \App\Services\SettingsService())->moduleEnabled('blog')): ?>
+        <p><a href="/admin/blog">Open Blog editor</a> to prepare an article and notify subscribers.</p>
+    <?php endif; ?>
     <div class="table-wrap">
         <table>
             <thead>

@@ -37,14 +37,14 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 354
-  relationships: 250
+  concepts: 355
+  relationships: 251
   by_type:
     blog: 14
     controller: 12
     doc: 35
     image: 89
-    route: 123
+    route: 124
     schema: 22
     service: 49
     skill: 10
@@ -1901,7 +1901,8 @@ concepts:
     controller: "AdminController@dashboard"
     services:
       - "ResourceService"
-      - "AuditLogService"
+      - "OrderService"
+      - "StoreStatsService"
       - "AuthService"
     view: "admin/dashboard"
   - id: "route:get__admin_agent"
@@ -1920,6 +1921,22 @@ concepts:
       - "DatabaseService"
       - "AuthService"
     view: "admin/agent"
+  - id: "route:get__admin_agent_monitoring"
+    type: "route"
+    title: "GET /admin/agent/monitoring"
+    description: "admin.agent.monitoring"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/admin/agent/monitoring"
+    controller: "AdminController@agentMonitoring"
+    services:
+      - "AuditLogService"
+      - "DatabaseService"
+      - "AuthService"
+    view: "admin/agent-monitoring"
   - id: "route:get__admin_appearance"
     type: "route"
     title: "GET /admin/appearance"
@@ -2260,7 +2277,7 @@ concepts:
       - "TempleService"
       - "SchemaService"
       - "AuthService"
-    view: "admin/resource"
+    view: "admin/temples"
   - id: "route:get__api"
     type: "route"
     title: "GET /api"
@@ -4549,6 +4566,9 @@ relationships:
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:get__admin_agent"
+    to: "controller:AdminController"
+    relation: "handled_by"
+  - from: "route:get__admin_agent_monitoring"
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:get__admin_appearance"
