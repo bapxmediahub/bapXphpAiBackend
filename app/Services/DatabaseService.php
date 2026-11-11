@@ -11,7 +11,6 @@ final class DatabaseService {
      * intermittent 503s. PHP tears the connection down at the end of the request.
      */
     private static ?\PDO $sharedPdo = null;
-    private ?\PDO $pdo = null;
     private ?bool $remoteOnly = null;
     private array $cfg = [];
     public function __construct(private bool $forceDirect = false) {
@@ -68,9 +67,15 @@ final class DatabaseService {
         return $result;
     }
 
+    /** Close the request's idle connection before a long external call. */
+    public static function releaseIdleConnection(): void {
+        if (self::$sharedPdo !== null && !self::$sharedPdo->inTransaction()) {
+            self::$sharedPdo = null;
+        }
+    }
+
     private function db(): \PDO {
-        if ($this->pdo === null) {
-            if (self::$sharedPdo !== null) return $this->pdo = self::$sharedPdo;
+        if (self::$sharedPdo === null) {
             $this->cfg = require app_path('config/database.php');
             foreach (['host', 'dbname', 'user', 'pass'] as $required) {
                 if (trim((string)($this->cfg[$required] ?? '')) === '') {
@@ -81,13 +86,13 @@ final class DatabaseService {
             // doubling connection pressure under exactly the conditions where the limit
             // is already being hit. PDO's own timeout reports an unreachable server.
             $dsn = 'mysql:host=' . $this->cfg['host'] . ';port=' . $this->cfg['port'] . ';dbname=' . $this->cfg['dbname'] . ';charset=utf8mb4';
-            $this->pdo = self::$sharedPdo = new \PDO($dsn, $this->cfg['user'], $this->cfg['pass'], [
+            self::$sharedPdo = new \PDO($dsn, $this->cfg['user'], $this->cfg['pass'], [
                 \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
                 \PDO::ATTR_TIMEOUT => 5,
                 \PDO::ATTR_PERSISTENT => false,
             ]);
         }
-        return $this->pdo;
+        return self::$sharedPdo;
     }
 
     private function isRemote(): bool {
