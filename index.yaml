@@ -1264,18 +1264,17 @@ concepts:
   - id: "image:assets/images/og-image.jpg"
     type: "image"
     title: "og-image.jpg"
-    description: "Image referenced by 3 project resource(s)."
+    description: "Image referenced by 2 project resource(s)."
     resource: "assets/images/og-image.jpg"
     tags:
       - "image"
       - "used"
     filename: "og-image.jpg"
     mime: "image/jpeg"
-    usage_count: 3
+    usage_count: 2
     used_in:
       - "app/Services/SeoService.php"
       - "views/layouts/app.php"
-      - "views/public/blog.php"
   - id: "image:assets/images/products/karuppasami-dollar-back.webp"
     type: "image"
     title: "karuppasami-dollar-back.webp"
