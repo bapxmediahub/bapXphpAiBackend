@@ -301,7 +301,8 @@ final class AdminController extends BaseController {
             $this->jsonResponse(['answer'=>$answer, 'missing'=>$attachments['missing']]);
         } catch (\Throwable $e) {
             (new AuditLogService())->agentRun('admin', 'error', $startedAt, 'internal_error');
-            $this->jsonResponse(['error'=>'Agent error: '.$e->getMessage()],500);
+            error_log('Owner agent request failed (' . get_class($e) . ')');
+            $this->jsonResponse(['error' => 'The owner agent could not complete this request. Please try again.'], 500);
         }
     }
     /**
