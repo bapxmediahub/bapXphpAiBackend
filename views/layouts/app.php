@@ -77,7 +77,7 @@ main{padding-bottom:0}
 .container{max-width:1300px;margin:0 auto;padding:0 var(--space-xl)}
 .section{padding:64px 0}
 .section--alt{background:var(--color-bg-alt)}
-.home-hero{position:relative;min-height:90vh;padding:64px 5vw;background:var(--color-maroon-deep);color:var(--color-white);overflow:hidden}
+.home-hero{position:relative;min-height:560px;padding:48px 5vw;background:var(--color-maroon-deep);color:var(--color-white);overflow:hidden}
 .hero-copy h1{font-family:Inter,system-ui,sans-serif;font-size:1.75rem;line-height:1.2;margin:0 0 var(--space-md);color:var(--color-ink)}
 .lede{font-size:1rem;line-height:1.7;color:var(--color-text-muted);margin-bottom:var(--space-lg)}
  .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-xs);min-height:48px;padding:0 24px;border-radius:8px;font-weight:600;cursor:pointer;border:0;text-decoration:none;font-size:0.85rem;white-space:nowrap;line-height:1.4;transition:background 0.2s ease,border-color 0.2s ease}
@@ -182,7 +182,7 @@ nav{display:none;position:absolute;top:100%;left:0;right:0;background:rgba(255,2
 nav a{font-size:0.95rem;padding:var(--space-sm) var(--space-md);border-radius:var(--radius-md)}
 nav.open{display:flex}
 .menu-toggle{display:block}
-.home-hero{grid-template-columns:1fr;text-align:center;width:100vw;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);padding:var(--space-2xl) var(--space-md) var(--space-lg)}
+.home-hero{grid-template-columns:1fr;text-align:center;width:100vw;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);padding:20px 16px 28px}
 .hero-actions{justify-content:center}
 .category-grid{grid-template-columns:repeat(2,minmax(0,128px));justify-content:center;gap:var(--space-md)}
 .temple-scroll{grid-auto-columns:minmax(82vw,1fr);gap:var(--space-md);padding-left:var(--space-sm);padding-right:var(--space-sm)}
@@ -223,7 +223,7 @@ nav.open{display:flex}
 .footer-grid{grid-template-columns:1fr}
 .hero-actions{flex-direction:column;align-items:center}
 }
-@media(max-width:743px){.site-header{min-height:64px;padding:8px 12px}.section{padding:48px 0}.home-hero{min-height:auto;padding:48px 16px}.astro-search,.astro-filter{min-height:56px}.consultation-pricing-card{grid-template-columns:1fr;gap:var(--space-md);padding:var(--space-md)}.consultation-pricing-card__rates{gap:var(--space-sm)}.consultation-pricing-card__rates div{min-width:0;flex:1;padding-left:var(--space-sm)}}
+@media(max-width:743px){.site-header{min-height:64px;padding:8px 12px}.section{padding:48px 0}.home-hero{min-height:auto;padding:20px 16px 28px}.astro-search,.astro-filter{min-height:56px}.consultation-pricing-card{grid-template-columns:1fr;gap:var(--space-md);padding:var(--space-md)}.consultation-pricing-card__rates{gap:var(--space-sm)}.consultation-pricing-card__rates div{min-width:0;flex:1;padding-left:var(--space-sm)}}
 ';
 echo $critical;
 ?>
