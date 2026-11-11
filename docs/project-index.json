@@ -3,7 +3,7 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 114,
+        "routes": 115,
         "controllers": 12,
         "services": 48,
         "views": 45,
@@ -567,6 +567,17 @@
             "services": [
                 "OrderService",
                 "ShippingService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/orders/{id}/invoice",
+            "name": "admin.order.invoice",
+            "controller": "AdminController@orderInvoice",
+            "view": "account/invoice",
+            "services": [
+                "OrderService",
                 "AuthService"
             ]
         },

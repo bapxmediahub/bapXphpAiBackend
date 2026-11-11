@@ -2151,6 +2151,41 @@ $tests['agent monitoring counts bounded outcomes without treating fallbacks as m
     assertSame(null, App\Services\AuditLogService::agentSummary([], $now)['admin']['average_ms'], 'No traffic is not zero-latency success');
 };
 
+$tests['downloadable invoice response preserves snapshot and review warning'] = function (): void {
+    $order = [
+        'invoice_number' => "SPS/TEST/1\"\r\nInjected: yes", 'invoice_date' => '2026-11-11',
+        'supplier' => ['trade_name' => 'Original & Co', 'gstin' => '33SNAPSHOT'],
+        'customer_name' => '<script>bad()</script>', 'tax_lines' => [], 'total' => 105,
+    ];
+    $build = new ReflectionMethod(App\Controllers\AdminController::class, 'invoiceDownload');
+    $response = $build->invoke(null, $order, 'Missing or invalid delivery state');
+    assertSame('Content-Type: text/html; charset=utf-8', $response['headers'][0], 'Download has HTML content type');
+    assertSame('Content-Disposition: attachment; filename="invoice-SPS-TEST-1-Injected-yes.html"', $response['headers'][1], 'Download filename is safe and denotes an attachment');
+    $html = $response['body'];
+    assertTrue(str_starts_with($html, '<!doctype html>') && str_contains($html, '</html>'), 'Download is a standalone document');
+    assertTrue(str_contains($html, '<style>') && !preg_match('/<(?:link|script)\b[^>]+(?:href|src)=/i', $html), 'Download has embedded styling and no external assets');
+    assertTrue(str_contains($html, '33SNAPSHOT') && str_contains($html, 'Original &amp; Co'), 'Issued supplier snapshot appears escaped');
+    assertTrue(str_contains($html, '&lt;script&gt;bad()&lt;/script&gt;') && !str_contains($html, '<script>bad()'), 'Customer input is escaped');
+    assertTrue(str_contains($html, 'Tax classification review required'), 'Review warning is retained in the downloaded document');
+};
+
+$tests['issued invoice renders its supplier snapshot and escapes names'] = function (): void {
+    $order = ['invoice_number'=>'SPS/TEST/00001', 'invoice_date'=>'2026-11-11',
+        'supplier'=>['gstin'=>'33SNAPSHOT', 'trade_name'=>'Original supplier'],
+        'customer_name'=>'<script>Customer</script>', 'tax_lines'=>[], 'total'=>105];
+    $settings = ['gstin'=>'33NEWSETTING', 'gst_trade_name'=>'New supplier'];
+    ob_start(); require app_path('views/account/invoice.php'); $html = ob_get_clean();
+    assertTrue(str_contains($html, '33SNAPSHOT'), 'Issued supplier GSTIN must be shown');
+    assertTrue(!str_contains($html, '33NEWSETTING'), 'Current GSTIN must not replace invoice snapshot');
+    assertTrue(str_contains($html, '&lt;script&gt;Customer&lt;/script&gt;'), 'Customer data is escaped');
+    $invoiceReviewReason = 'Missing or invalid delivery state';
+    ob_start(); require app_path('views/account/invoice.php'); $reviewHtml = ob_get_clean();
+    assertTrue(str_contains($reviewHtml, 'Tax classification review required'), 'Invoice output warns when an issued snapshot needs review');
+    $routes = ProjectMapService::registry()['routes'];
+    $matching = array_values(array_filter($routes, static fn($route) => $route['path'] === '/admin/orders/{id}/invoice'));
+    assertSame('AdminController@orderInvoice', $matching[0]['controller'] ?? '', 'Invoice is served by the admin controller');
+};
+
 $tests['verified payment tax review preserves missing-state orders without issuing an invoice'] = function (): void {
     $tax = new \App\Services\TaxService();
     $items = [['name'=>'Test item','qty'=>1,'line_total'=>105,'gst_rate'=>5]];

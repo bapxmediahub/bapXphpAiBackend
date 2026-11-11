@@ -35,6 +35,14 @@
         <?php if (!empty($order['tax_review_required'])): ?>
             <p role="alert"><strong>Tax review required.</strong> Payment was confirmed, but no invoice was issued because delivery or supplier state was missing or invalid. Review the order and supplier settings with your accountant.</p>
         <?php endif; ?>
+        <?php if (!empty($order['invoice_number'])): ?>
+            <p><strong>Invoice <?= e((string)$order['invoice_number']) ?></strong></p>
+            <p><a class="btn btn-outline" href="/admin/orders/<?= e(rawurlencode((string)$order['id'])) ?>/invoice">View invoice</a>
+            <a class="btn btn-primary" href="/admin/orders/<?= e(rawurlencode((string)$order['id'])) ?>/invoice?download=1">Download invoice (HTML)</a></p>
+            <p>Open the downloaded invoice and choose Print to save it as a PDF.</p>
+        <?php elseif (empty($order['tax_review_required'])): ?>
+            <p>An invoice is available after payment is confirmed.</p>
+        <?php endif; ?>
         <form method="post" action="/admin/orders/<?= e((string)($order['id'] ?? '')) ?>/status" style="margin:var(--space-lg) 0; display:flex; gap:var(--space-sm); align-items:end; flex-wrap:wrap;" onsubmit="if(document.getElementById('order-status').value==='cancelled'&&!confirm('Cancel this order? This will mark it as cancelled and cannot be undone.'))return false">
             <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
             <div>

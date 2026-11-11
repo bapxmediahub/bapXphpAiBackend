@@ -79,7 +79,7 @@
     <h2 style="font-size:1rem; margin:0 0 var(--space-sm);">GST Configuration</h2>
     <p style="margin:0 0 var(--space-lg); font-size:0.85rem; color:var(--color-text-muted);">
         Prices are GST-inclusive. The default rate below applies to any product that does not
-        set its own rate on the product form. Confirm the rate and HSN code with your accountant.
+        set its own rate on the product form. Confirm the rate and HSN code with your accountant. Supplier details are saved on new invoices; existing issued invoices keep their original details.
     </p>
     <form class="admin-form" method="post" action="/admin/settings/save">
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
@@ -97,8 +97,8 @@
         </div>
         <div class="admin-form__row">
             <div class="form-group">
-                <label>GSTIN</label>
-                <input type="text" name="gstin" value="<?= e($settings['gstin'] ?? '') ?>" placeholder="33ABCDE1234F1Z5" maxlength="15">
+                <label for="supplier-gstin">Supplier GSTIN (tax number)</label>
+                <input id="supplier-gstin" type="text" name="gstin" value="<?= e($settings['gstin'] ?? '') ?>" placeholder="33ABCDE1234F1Z5" maxlength="15">
             </div>
             <div class="form-group">
                 <label>State Code</label>

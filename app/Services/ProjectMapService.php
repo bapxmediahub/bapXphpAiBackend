@@ -63,6 +63,7 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/admin/collections','name'=>'admin.collections','page'=>'admin/collections','controller'=>'AdminController@collections','services'=>['CategoryService','ProductService']],
             ['method'=>'GET','path'=>'/admin/coupons','name'=>'admin.coupons','page'=>'admin/resource','controller'=>'AdminController@coupons','services'=>['CouponService']],
             ['method'=>'GET','path'=>'/admin/orders','name'=>'admin.orders','page'=>'admin/list','controller'=>'AdminController@orders','services'=>['OrderService']],
+            ['method'=>'GET','path'=>'/admin/orders/{id}/invoice','name'=>'admin.order.invoice','page'=>'account/invoice','controller'=>'AdminController@orderInvoice','services'=>['OrderService']],
             ['method'=>'GET','path'=>'/admin/orders/{id}','name'=>'admin.order.show','page'=>'admin/detail','controller'=>'AdminController@order','services'=>['OrderService','ShippingService']],
             ['method'=>'POST','path'=>'/admin/orders/{id}/status','name'=>'admin.order.status','page'=>'admin/detail','controller'=>'AdminController@saveOrderStatus','services'=>['OrderService','MailQueueService','AuditLogService']],
             ['method'=>'GET','path'=>'/admin/shipping','name'=>'admin.shipping','page'=>'admin/settings','controller'=>'AdminController@shipping','services'=>['ShippingService','SettingsService']],
