@@ -258,7 +258,7 @@ final class AdminController extends BaseController {
                 $answer = "AI model not configured. Go to Admin → Integrations and set api_endpoint, ai_api_key, and agent_model.";
             }
             $failed = empty($modelConfig['apiKey']) || \App\Services\AiClient::isError($answer);
-            (new AuditLogService())->agentRun('admin', $failed ? 'error' : 'model', $startedAt, $failed ? $reason : null);
+            (new AuditLogService())->agentRun('admin', $failed ? 'error' : ($reason === 'rejected_response' ? 'fallback' : 'model'), $startedAt, $reason);
             if ($failed) {
                 $this->jsonResponse(['error'=>$answer, 'missing'=>$attachments['missing']],502);
                 return;
@@ -332,9 +332,16 @@ final class AdminController extends BaseController {
                 . "Say what that number counts, which data you checked to get it, and how you interpreted the question.",
                 $tools
             );
-            if (!\App\Services\AiClient::isError($retry) && trim($retry) !== '') $answer = $retry;
+            if (!\App\Services\AiClient::isError($retry) && trim($retry) !== '') {
+                $answer = $retry;
+                $reason = $client->failureCategory();
+            } // A failed retry is discarded: the original answer is still shown.
         }
-        return $this->cleanAnswer($answer);
+        $clean = $this->cleanAnswer($answer);
+        if ($clean === 'I could not produce a clear answer to that. Try asking it a different way.') {
+            $reason = 'rejected_response';
+        }
+        return $clean;
     }
 
     /** A reply that is only a number, with nothing saying what it counts. */
