@@ -18,6 +18,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
 <link rel="apple-touch-icon" href="/assets/images/logo-square.jpeg">
 <link rel="stylesheet" href="/assets/css/band.css?v=<?= filemtime(__DIR__.'/../../assets/css/band.css') ?>">
 <link rel="stylesheet" href="/assets/css/admin-refinement.css?v=<?= filemtime(__DIR__.'/../../assets/css/admin-refinement.css') ?>">
+<link rel="stylesheet" href="/assets/css/admin-workspaces.css?v=<?= filemtime(__DIR__.'/../../assets/css/admin-workspaces.css') ?>">
 <script src="/assets/agent-status.js?v=<?= filemtime(__DIR__.'/../../assets/agent-status.js') ?>" defer></script>
 <style>
 .admin-shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
@@ -61,13 +62,17 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
 <div class="admin-shell">
     <aside class="admin-sidebar" id="admin-sidebar">
         <div class="admin-sidebar__brand">
-            <span>Sri Panchami Spiritual</span>
-            <small>Admin Panel</small>
+            <img src="/assets/images/logo-square.jpeg" alt="" width="42" height="42">
+            <div><span>Sri Panchami Spiritual</span><small>Owner workspace</small></div>
         </div>
         <nav class="admin-sidebar__nav" id="admin-nav">
             <a href="/admin" class="admin-nav-top <?= ($_SERVER['REQUEST_URI'] === '/admin' ? 'active' : '') ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                 Dashboard
+            </a>
+            <a href="/admin/agent" class="admin-nav-top admin-nav-agent <?= (strpos($_SERVER['REQUEST_URI'], '/admin/agent') === 0 ? 'active' : '') ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a4 4 0 01-4 4H8l-5 3V7a4 4 0 014-4h10a4 4 0 014 4z"/><path d="M8 9h8M8 13h5"/></svg>
+                <span>Owner Agent<small><?= !empty($__agentConnected) ? 'Connected' : 'Scoped assistant' ?></small></span>
             </a>
             <?php if ($__modules['shop']): ?>
             <button type="button" class="admin-nav-toggle" data-target="menu-catalog" aria-controls="menu-catalog" aria-expanded="true">
@@ -128,7 +133,6 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
             </button>
             <div class="admin-submenu" id="menu-settings">
                 <a href="/admin/integrations" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/integrations') === 0 ? 'active' : '') ?>">Integrations</a>
-                <a href="/admin/agent" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/agent') === 0 ? 'active' : '') ?>">AI Agent</a>
                 <a href="/admin/settings" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/settings') === 0 ? 'active' : '') ?>">Site Settings</a>
             </div>
         </nav>
@@ -171,7 +175,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
                 'orders'=>'Orders','shipping'=>'Shipping','tax-report'=>'Reports','astrologers'=>'Astrologers',
                 'appointments'=>'Sessions',
                 'consultation-analytics'=>'Analytics','temples'=>'Temples',
-                'settings'=>'Site Settings','integrations'=>'Integrations',
+                'settings'=>'Site Settings','integrations'=>'Integrations','agent'=>'Owner Agent',
                 'backups'=>'Backups','audit-log'=>'Audit Log',
                 'contact-submissions'=>'Contacts','support-tickets'=>'Support',
                 'email-inbox'=>'Email Inbox','email-outbox'=>'Email Outbox',

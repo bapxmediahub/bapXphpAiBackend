@@ -24,6 +24,15 @@ namespace App\Services;
  */
 final class AgentToolRegistry
 {
+    /** @var array<int,array{name:string,status:string,duration_ms:int}> */
+    private array $activity = [];
+
+    /** @return array<int,array{name:string,status:string,duration_ms:int}> */
+    public function activity(): array
+    {
+        return $this->activity;
+    }
+
     public function __construct(
         private DatabaseService $store = new DatabaseService(),
         private ?ProductService $products = null,
@@ -141,8 +150,9 @@ final class AgentToolRegistry
             if ($name !== 'product_status') return ['error' => 'Tool unavailable in probe.'];
             $args = ['slug' => $this->probeProductSlug];
         }
+        $startedAt = microtime(true);
         try {
-            return match ($name) {
+            $result = match ($name) {
                 'find_order' => $this->findOrder($args),
                 'product_status' => $this->productStatus($args),
                 'sales_summary' => $this->salesSummary($args),
@@ -151,8 +161,19 @@ final class AgentToolRegistry
                 'coupon_status' => $this->couponStatus($args),
                 default => ['error' => 'No such tool: ' . $name],
             };
+            $this->activity[] = [
+                'name' => $name,
+                'status' => isset($result['error']) ? 'error' : 'complete',
+                'duration_ms' => (int)round((microtime(true) - $startedAt) * 1000),
+            ];
+            return $result;
         } catch (\Throwable $e) {
             error_log('Agent tool ' . $name . ' failed (' . get_class($e) . ')');
+            $this->activity[] = [
+                'name' => $name,
+                'status' => 'error',
+                'duration_ms' => (int)round((microtime(true) - $startedAt) * 1000),
+            ];
             return ['error' => 'That lookup is temporarily unavailable.'];
         }
     }

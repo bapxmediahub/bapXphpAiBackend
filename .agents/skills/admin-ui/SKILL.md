@@ -13,10 +13,11 @@ description: Use when editing owner/admin pages, CRUD forms, media library, envi
 
 ## Admin Panel Agent
 
-The interface at `/admin/agent` sends a prompt plus a bounded site summary to the
-configured AI endpoint. Treat it as a read-only assistant unless controller code
-explicitly implements and authorizes a mutation. It does not currently edit blogs,
-run the CLI, or trigger deployments.
+The interface at `/admin/agent` is the Owner Agent operational workspace. Desktop may
+present it as a window, side panel, full page or minimized dock; mobile uses a dedicated
+full-page composition. Treat it as read-only unless controller code explicitly
+implements and authorizes a mutation. Draft cards are editable proposals and must say
+that nothing changes until the owner reviews and confirms.
 
 ### Implementation Pattern
 
@@ -26,6 +27,10 @@ The admin-agent flow:
    `AgentContextService`, and binds order lookups to identifiers supplied in the owner’s question.
 3. `SecretService` supplies `agent_api_key`, `agent_model`, and `api_endpoint`.
 4. The controller returns JSON; JavaScript in `views/admin/agent.php` renders the response.
+
+The response may include a secret-safe `run` summary: route, total elapsed time,
+allowlisted tool name/status/duration, and model attempt/status/duration. Never include
+prompts, provider bodies, secrets, customer identities, or model reasoning in this trace.
 
 ### Agent Permissions
 
@@ -47,6 +52,10 @@ Configured in Admin → Integrations with these fields stored in MySQL `secrets`
 ## Testing
 
 Log into `/admin` and click through the page you changed, including its form submit and delete paths. Admin forms post several independent forms to one action, so confirm a partial submit does not blank the fields belonging to the other forms. Then `./bapXphp test`.
+
+For reports and agents, verify desktop and exact 375px separately. A mobile workspace is
+not a squeezed desktop: remove side rails, keep the scoped-context summary visible, keep
+the composer above the safe area, and prevent horizontal tables.
 
 ## Keeping this skill current
 
