@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AuthService,OrderService,ReviewService,SettingsService};
+use App\Services\{AuthService,OrderService,ReviewService,SettingsService,TaxService};
 final class AccountController extends BaseController {
     public function __construct() {
         (new AuthService())->requireUser();
@@ -65,7 +65,8 @@ final class AccountController extends BaseController {
         }
         if (!$order) { http_response_code(404); echo 'Invoice not found.'; return; }
         $settings = (new SettingsService())->public();
-        $this->render('account/invoice', compact('order', 'settings'));
+        $invoiceReviewReason = TaxService::invoiceReviewReason($order, $settings);
+        $this->render('account/invoice', compact('order', 'settings', 'invoiceReviewReason'));
     }
 
 }

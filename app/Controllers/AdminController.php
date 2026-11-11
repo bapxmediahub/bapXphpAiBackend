@@ -659,6 +659,7 @@ final class AdminController extends BaseController {
     public function taxReport(): void{
         $orders = (new OrderService())->all();
         $orders = array_values(array_filter($orders, fn($o) => !empty($o['invoice_number'])));
+        $settings = (new SettingsService())->public();
         $from = (string)($_GET['from'] ?? '');
         $to = (string)($_GET['to'] ?? '');
         if ($from !== '') $orders = array_values(array_filter($orders, fn($o) => ($o['invoice_date'] ?? '') >= $from));
@@ -667,8 +668,8 @@ final class AdminController extends BaseController {
             header('Content-Type: text/csv; charset=utf-8');
             header('Content-Disposition: attachment; filename="gst-tax-report.csv"');
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['Invoice','Date','Customer','Place of Supply','Taxable','CGST','SGST','IGST','Total']);
-            foreach ($orders as $o) fputcsv($handle, [$o['invoice_number']??'',substr($o['invoice_date']??'',0,10),$o['customer_email']??'',$o['place_of_supply']??'',$o['taxable_value']??0,$o['cgst_total']??0,$o['sgst_total']??0,$o['igst_total']??0,$o['total']??0]);
+            fputcsv($handle, ['Invoice','Date','Customer','Place of Supply','Taxable','CGST','SGST','IGST','Total','Review']);
+            foreach ($orders as $o) fputcsv($handle, [$o['invoice_number']??'',substr($o['invoice_date']??'',0,10),$o['customer_email']??'',$o['place_of_supply']??'',$o['taxable_value']??0,$o['cgst_total']??0,$o['sgst_total']??0,$o['igst_total']??0,$o['total']??0,\App\Services\TaxService::invoiceReviewReason($o, $settings)??'']);
             fclose($handle); exit;
         }
         $totals = ['taxable'=>0,'cgst'=>0,'sgst'=>0,'igst'=>0,'tax'=>0,'gross'=>0];
@@ -680,7 +681,9 @@ final class AdminController extends BaseController {
             $totals['tax']     += (float)($o['cgst_total'] ?? 0) + (float)($o['sgst_total'] ?? 0) + (float)($o['igst_total'] ?? 0);
             $totals['gross']   += (float)($o['total'] ?? 0);
         }
-        $this->render('admin/tax-report', ['pageTitle'=>'GST Tax Report','title'=>'GST Product Sales Report','orders'=>$orders,'from'=>$from,'to'=>$to,'totals'=>$totals]);
+        $invoiceReviewReasons = [];
+        foreach ($orders as $o) if ($reason = \App\Services\TaxService::invoiceReviewReason($o, $settings)) $invoiceReviewReasons[(string)($o['id'] ?? $o['invoice_number'] ?? '')] = $reason;
+        $this->render('admin/tax-report', ['pageTitle'=>'GST Tax Report','title'=>'GST Product Sales Report','orders'=>$orders,'from'=>$from,'to'=>$to,'totals'=>$totals,'invoiceReviewReasons'=>$invoiceReviewReasons]);
     }
     private function list(string $title, ?string $collection = null): void{$this->render('admin/list',['pageTitle' => $title, 'title' => $title, 'collection' => $collection, 'items'=>$collection ? (new ResourceService($collection))->all() : []]);}
     private function resource(string $title,string $collection,array $fields): void{$this->render('admin/resource',['pageTitle' => $title, 'title' => $title, 'collection' => $collection, 'fields' => $fields, 'items'=>(new ResourceService($collection))->all(), 'mediaFiles'=>$this->mediaFor($collection)]);}
