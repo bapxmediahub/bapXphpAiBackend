@@ -36,14 +36,14 @@ query_examples:
   - "rg -n -B4 -A12 'type: \"skill\"' index.yaml"
   - "rg -n '<term>' docs/project-index.json map.mmd index.yaml"
 summary:
-  concepts: 346
-  relationships: 240
+  concepts: 349
+  relationships: 244
   by_type:
     blog: 14
     controller: 12
     doc: 35
     image: 89
-    route: 117
+    route: 120
     schema: 22
     service: 48
     skill: 9
@@ -1766,6 +1766,22 @@ concepts:
     services:
       - "AuthService"
     view: "account/orders"
+  - id: "route:get__account_dashboard_addresses"
+    type: "route"
+    title: "GET /account/dashboard/addresses"
+    description: "account.dashboard.addresses"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/account/dashboard/addresses"
+    controller: "AccountController@addresses"
+    services:
+      - "AuthService"
+      - "AddressService"
+      - "TaxService"
+    view: "account/addresses"
   - id: "route:get__account_dashboard_install"
     type: "route"
     title: "GET /account/dashboard/install"
@@ -2723,6 +2739,36 @@ concepts:
     controller: "PublicController@terms"
     services: []
     view: "public/terms"
+  - id: "route:post__account_dashboard_addresses_delete"
+    type: "route"
+    title: "POST /account/dashboard/addresses/delete"
+    description: "account.addresses.delete"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/account/dashboard/addresses/delete"
+    controller: "AccountController@deleteAddress"
+    services:
+      - "AuthService"
+      - "AddressService"
+    view: "account/addresses"
+  - id: "route:post__account_dashboard_addresses_save"
+    type: "route"
+    title: "POST /account/dashboard/addresses/save"
+    description: "account.addresses.save"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/account/dashboard/addresses/save"
+    controller: "AccountController@saveAddress"
+    services:
+      - "AuthService"
+      - "AddressService"
+    view: "account/addresses"
   - id: "route:post__admin_agent_ask"
     type: "route"
     title: "POST /admin/agent/ask"
@@ -4158,6 +4204,9 @@ concepts:
       - "skill"
 relationships:
   - from: "controller:AccountController"
+    to: "service:AddressService"
+    relation: "uses"
+  - from: "controller:AccountController"
     to: "service:AuthService"
     relation: "uses"
   - from: "controller:AccountController"
@@ -4400,6 +4449,9 @@ relationships:
   - from: "route:get__account_dashboard"
     to: "controller:AccountController"
     relation: "handled_by"
+  - from: "route:get__account_dashboard_addresses"
+    to: "controller:AccountController"
+    relation: "handled_by"
   - from: "route:get__account_dashboard_install"
     to: "controller:AccountController"
     relation: "handled_by"
@@ -4594,6 +4646,12 @@ relationships:
     relation: "handled_by"
   - from: "route:get__terms"
     to: "controller:PublicController"
+    relation: "handled_by"
+  - from: "route:post__account_dashboard_addresses_delete"
+    to: "controller:AccountController"
+    relation: "handled_by"
+  - from: "route:post__account_dashboard_addresses_save"
+    to: "controller:AccountController"
     relation: "handled_by"
   - from: "route:post__admin_agent_ask"
     to: "controller:AdminController"

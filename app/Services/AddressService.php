@@ -12,7 +12,27 @@ final class AddressService {
         return $addresses;
     }
 
-    public function save(string $email, array $input): array {
+    public function owned(string $email, string $id): array {
+        $email = strtolower(trim($email));
+        $address = $id !== '' ? $this->store->find('addresses', $id) : null;
+        if ($email === '' || $address === null || strtolower((string)($address['customer_email'] ?? '')) !== $email) {
+            throw new \InvalidArgumentException('Saved address not found.');
+        }
+        return $address;
+    }
+
+    public function delete(string $email, string $id): void {
+        $address = $this->owned($email, $id);
+        $this->store->delete('addresses', $id);
+        if (!empty($address['is_default'])) {
+            $next = $this->forCustomer($email)[0] ?? null;
+            if ($next !== null && empty($next['is_default'])) {
+                $this->store->upsert('addresses', ['id' => $next['id'], 'is_default' => true]);
+            }
+        }
+    }
+
+    public function save(string $email, array $input, string $id = ''): array {
         $email = strtolower(trim($email));
         $name = trim((string)($input['address_name'] ?? ''));
         $address = trim((string)($input['address'] ?? ''));
@@ -20,21 +40,22 @@ final class AddressService {
         $pincode = trim((string)($input['pincode'] ?? ''));
         $state = TaxService::normaliseState((string)($input['state'] ?? ''));
         if ($email === '' || $name === '' || $address === '' || $city === '' || $pincode === '' || $state === null) throw new \InvalidArgumentException('A name, address, city, valid state, and PIN code are required to save an address.');
+        $current = $id !== '' ? $this->owned($email, $id) : null;
         $existing = $this->forCustomer($email);
-        $isDefault = !empty($input['is_default']) || $existing === [];
+        $isDefault = !empty($input['is_default']) || !empty($current['is_default']) || $existing === [];
         if ($isDefault) {
             foreach ($existing as $row) {
-                if (empty($row['is_default'])) continue;
+                if (($row['id'] ?? '') === $id || empty($row['is_default'])) continue;
                 $row['is_default'] = false;
                 $row['updated_at'] = date('c');
                 $this->store->upsert('addresses', $row);
             }
         }
         return $this->store->upsert('addresses', [
-            'id' => bin2hex(random_bytes(8)), 'customer_email' => $email, 'name' => $name,
+            'id' => $current['id'] ?? bin2hex(random_bytes(8)), 'customer_email' => $email, 'name' => $name,
             'recipient_name' => trim((string)($input['name'] ?? '')), 'phone' => trim((string)($input['phone'] ?? '')),
             'address' => $address, 'city' => $city, 'pincode' => $pincode, 'state' => $state,
-            'is_default' => $isDefault, 'created_at' => date('c'), 'updated_at' => date('c'),
+            'is_default' => $isDefault, 'created_at' => $current['created_at'] ?? date('c'), 'updated_at' => date('c'),
         ]);
     }
 }

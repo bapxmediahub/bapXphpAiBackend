@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AuthService,OrderService,ReviewService,SettingsService,TaxService};
+use App\Services\{AddressService,AuthService,OrderService,ReviewService,SettingsService,TaxService};
 final class AccountController extends BaseController {
     public function __construct() {
         (new AuthService())->requireUser();
@@ -10,6 +10,45 @@ final class AccountController extends BaseController {
     public function dashboard(): void { $this->redirect('/account/dashboard/orders'); }
     public function legacyOrders(): void { $this->redirect('/account/dashboard/orders'); }
     public function legacyBookings(): void { $this->redirect('/account/dashboard/orders'); }
+
+    public function addresses(): void {
+        $service = new AddressService();
+        $email = (string)($_SESSION['user']['email'] ?? '');
+        $id = (string)($_GET['edit'] ?? '');
+        try {
+            $editing = $id !== '' ? $service->owned($email, $id) : [];
+        } catch (\InvalidArgumentException) {
+            $this->renderNotFound();
+            return;
+        }
+        $this->render('account/addresses', [
+            'addresses' => $service->forCustomer($email),
+            'editing' => $editing,
+            'states' => TaxService::states(),
+        ]);
+    }
+
+    public function saveAddress(): void {
+        $this->validateCsrf();
+        try {
+            (new AddressService())->save((string)($_SESSION['user']['email'] ?? ''), $_POST, (string)($_POST['address_id'] ?? ''));
+            $this->flash('Address saved.', 'success');
+        } catch (\InvalidArgumentException $error) {
+            $this->flash($error->getMessage(), 'error');
+        }
+        $this->redirect('/account/dashboard/addresses');
+    }
+
+    public function deleteAddress(): void {
+        $this->validateCsrf();
+        try {
+            (new AddressService())->delete((string)($_SESSION['user']['email'] ?? ''), (string)($_POST['address_id'] ?? ''));
+            $this->flash('Address removed.', 'success');
+        } catch (\InvalidArgumentException $error) {
+            $this->flash($error->getMessage(), 'error');
+        }
+        $this->redirect('/account/dashboard/addresses');
+    }
 
     public function orders(): void {
         $userEmail = $_SESSION['user']['email'] ?? '';
