@@ -91,7 +91,20 @@ final class AgentContextService {
     /** Prefer exact matches across the visible catalogue before applying the prompt cap. */
     public static function supportProducts(array $visibleProducts, string $message): array {
         $matches = array_filter($visibleProducts, static fn(array $product): bool => self::matchesNamedProduct($message, $product));
+        if (self::isProductComparison($message)) {
+            foreach (['pendants?', 'malas?|malais?', 'rings?', 'bracelets?', 'statues?|idols?'] as $type) {
+                $pattern = '/\b(?:' . $type . ')\b/i';
+                if (!preg_match($pattern, $message)) continue;
+                $examples = array_filter($visibleProducts, static fn(array $product): bool =>
+                    preg_match($pattern, (string)($product['name'] ?? '')));
+                $matches += array_slice($examples, 0, 3, true);
+            }
+        }
         return array_slice($matches ?: $visibleProducts, 0, 20);
+    }
+
+    public static function isProductComparison(string $message): bool {
+        return (bool)preg_match('/\b(?:compare|comparison|difference between|differ from|versus|vs)\b/i', $message);
     }
 
     private function siteContext(string $message): array {

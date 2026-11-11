@@ -2536,6 +2536,11 @@ $tests['support context selects a named product before applying the catalogue ca
     ), 'Product 29 must be included when named');
     assertSame(20, count(\App\Services\AgentContextService::supportProducts($catalogue, 'What do you sell?')),
         'General catalog prompts remain bounded');
+    $mala = ['name' => 'Ayyappa Dollar with Impon Malai', 'slug' => 'ayyappa-dollar-with-impon-malai'];
+    $catalogue[] = $mala;
+    assertSame([$pendant, $mala], \App\Services\AgentContextService::supportProducts(
+        $catalogue, 'Can you explain the difference between a pendant and a mala?'
+    ), 'Generic comparison includes both catalog types, including the Malai spelling');
 };
 
 $tests['support product questions retain public specifications and reject unrelated articles'] = function (): void {
