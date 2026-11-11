@@ -210,9 +210,10 @@ final class MailQueueService {
             $invoiceHtml = '<p>Invoice: <strong>' . e((string)($order['invoice_number'] ?? '')) . '</strong> — '
                 . '<a href="' . e($this->siteUrl('/account/orders/' . rawurlencode((string)($order['id'] ?? '')) . '/invoice')) . '">View invoice</a></p>';
         }
-        $subject = 'Order confirmed — Sri Panchami Spiritual';
-        $html = self::heading('Thank you, your order is confirmed')
-            . '<p>Vanakkam ' . e((string)($order['customer_name'] ?? '')) . ', we have received your payment and are preparing your order.</p>'
+        $held = !empty($order['fulfillment_review_required']);
+        $subject = $held ? 'Payment received — order under review' : 'Order confirmed — Sri Panchami Spiritual';
+        $html = self::heading($held ? 'Payment received — order under review' : 'Thank you, your order is confirmed')
+            . '<p>Vanakkam ' . e((string)($order['customer_name'] ?? '')) . ($held ? ', we have received your payment. We are checking product availability and will contact you about your order.' : ', we have received your payment and are preparing your order.') . '</p>'
             . self::details([
                 'Order'   => e((string)($order['id'] ?? '')),
                 'Invoice' => e((string)($order['invoice_number'] ?? '')),
@@ -225,6 +226,7 @@ final class MailQueueService {
         $this->notifyAdmin(
             'New order ' . (string)($order['id'] ?? ''),
             '<p>A new paid order has come in.</p>'
+            . ($held ? '<p><strong>On hold: product availability requires review before fulfillment.</strong></p>' : '')
             . '<p>Order: <strong>' . e((string)($order['id'] ?? '')) . '</strong><br>'
             . 'Customer: ' . e((string)($order['customer_name'] ?? '')) . ' &lt;' . e($to) . '&gt;<br>'
             . 'Total: ₹' . e((string)($order['total'] ?? 0)) . '</p>',

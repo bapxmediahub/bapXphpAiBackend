@@ -184,6 +184,26 @@ final class DatabaseService {
         }
         return $record;
     }
+    /** Atomically keep the first record for an id and return the stored winner. */
+    public function insertIfAbsent(string $table, array $record): array {
+        $id = trim((string)($record['id'] ?? ''));
+        if ($id === '') throw new \InvalidArgumentException('Record id is required.');
+        if ($this->isTestMode()) return ['inserted' => true, 'record' => $record];
+        if ($this->isRemote()) {
+            $result = $this->remoteMutation('insert_if_absent', $table, ['record' => $record]);
+            return ['inserted' => !empty($result['inserted']), 'record' => $result['record'] ?? $record];
+        }
+        $clean = preg_replace('/[^a-z_]/', '', $table);
+        $owner = $record['customer_email'] ?? $record['email'] ?? $record['user_id'] ?? null;
+        $status = $record['status'] ?? null;
+        $created = $record['created_at'] ?? date('c');
+        $updated = $record['updated_at'] ?? $created;
+        $stmt = $this->db()->prepare("INSERT IGNORE INTO {$clean} (id, _data, _owner, _status, _created_at, _updated_at) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$id, json_encode($record), $owner, $status, $created, $updated]);
+        $inserted = $stmt->rowCount() === 1;
+        self::$remoteQueryCache = [];
+        return ['inserted' => $inserted, 'record' => $inserted ? $record : ($this->find($table, $id) ?? $record)];
+    }
     public function delete(string $table, string $value, string $key = 'id'): void {
         if ($this->isTestMode()) return;
         if ($this->isRemote()) {

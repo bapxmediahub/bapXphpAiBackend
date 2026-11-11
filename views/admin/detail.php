@@ -32,9 +32,15 @@
                 </p>
             </div>
         </div>
+        <?php if (!empty($order['fulfillment_review_required'])): ?>
+            <p role="alert"><strong>Fulfillment review required.</strong> Payment was received, but product availability changed. Contact the customer and confirm stock or arrange a refund before fulfilling this order.</p>
+        <?php endif; ?>
         <?php if (!empty($order['tax_review_required'])): ?>
             <div role="alert" style="padding:var(--space-md); border:1px solid var(--color-warning); border-radius:var(--radius-sm); background:var(--color-bg-alt); margin:var(--space-md) 0;">
                 <p style="margin:0 0 var(--space-sm);"><strong>Tax review required.</strong> Payment was confirmed, but no invoice was issued because delivery or supplier state was missing or invalid.</p>
+                <?php if (str_contains((string)($order['tax_review_reason'] ?? ''), 'Product tax details unavailable')): ?>
+                    <p style="margin:0;">The purchased product record was unavailable at confirmation. Restore the original HSN and GST rate before issuing an invoice; do not guess tax details.</p>
+                <?php else: ?>
                 <form method="post" action="/admin/orders/<?= e(rawurlencode((string)$order['id'])) ?>/tax-review" style="display:flex; gap:var(--space-sm); align-items:end; flex-wrap:wrap;">
                     <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
                     <div style="flex:1 1 260px; min-width:0;">
@@ -49,6 +55,7 @@
                     <button class="btn btn-primary" type="submit">Issue corrected invoice</button>
                 </form>
                 <p style="margin:var(--space-sm) 0 0; color:var(--color-text-muted); font-size:0.85rem;">Confirm the delivery state from the paid order record. This creates the stored tax snapshot once; issued invoices cannot be rewritten.</p>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
         <?php if (!empty($order['invoice_number'])): ?>
@@ -64,11 +71,14 @@
             <div>
                 <label for="order-status" style="display:block; font-size:0.78rem; font-weight:700; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:var(--space-xs);">Update Status</label>
                 <select id="order-status" name="status">
-                    <?php foreach(['confirmed','processing','shipped','delivered','cancelled'] as $status): ?>
+                    <?php foreach(['on_hold','confirmed','processing','shipped','delivered','cancelled'] as $status): ?>
                         <option value="<?= e($status) ?>" <?= (($order['status'] ?? '') === $status ? 'selected' : '') ?>><?= e(ucfirst($status)) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
+            <?php if (!empty($order['fulfillment_review_required'])): ?>
+                <label style="flex:1 1 100%;"><input type="checkbox" name="availability_confirmed" value="1"> I confirmed product availability before fulfilling this paid order.</label>
+            <?php endif; ?>
             <button class="btn btn-primary" type="submit">Save Status</button>
 
             <div id="ship-fields" style="flex:1 1 100%; display:none; gap:var(--space-sm); flex-wrap:wrap; padding:var(--space-md); margin-top:var(--space-sm); background:var(--color-bg-alt); border:1px solid var(--color-border); border-radius:var(--radius-md);">

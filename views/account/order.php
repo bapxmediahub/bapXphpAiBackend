@@ -9,6 +9,7 @@
  */
 $__raw = (string)($order['status'] ?? 'pending');
 $__map = [
+    'on_hold'    => ['On hold', 'default', 'We received your payment and are checking product availability.'],
     'pending'    => ['Order placed', 'default', 'We have your order and are getting it ready.'],
     'confirmed'  => ['Order placed', 'default', 'We have your order and are getting it ready.'],
     'processing' => ['Processing', 'default', 'We are packing your order now.'],
@@ -37,8 +38,12 @@ $__first = $__name !== '' ? explode(' ', $__name)[0] : '';
                     </svg>
                     <h1>Thank you<?= $__first !== '' ? ', ' . e($__first) : '' ?>.</h1>
                     <p>
+                        <?php if ($__raw === 'on_hold'): ?>
+                            Your payment went through. We are checking product availability and will contact you with an update.
+                        <?php else: ?>
                         Your payment went through and your order is confirmed. We are preparing it with care,
                         and you will get an email the moment it is on its way.
+                        <?php endif; ?>
                     </p>
                     <p class="order-thanks__meta">
                         Order <strong><?= e((string)($order['id'] ?? '')) ?></strong>
