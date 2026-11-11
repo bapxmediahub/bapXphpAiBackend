@@ -110,6 +110,10 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
                 <a href="/admin/coupons" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/coupons') === 0 ? 'active' : '') ?>">Coupons</a>
                 <?php endif; ?>
             </div>
+            <a href="/admin/users" class="admin-nav-top<?= $agentNavPath === '/admin/users' ? ' active' : '' ?>"<?= $agentNavPath === '/admin/users' ? ' aria-current="page"' : '' ?>>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="7" r="4"/><path d="M2 21v-3a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v3m1-18a4 4 0 0 1 0 8m5 10v-3a4 4 0 0 0-3-4"/></svg>
+                Users
+            </a>
             <button type="button" class="admin-nav-toggle" data-target="menu-analytics" aria-controls="menu-analytics" aria-expanded="true">Analytics</button>
             <div class="admin-submenu" id="menu-analytics">
                 <a href="/admin#dashboard-commerce-title">Commerce overview</a>

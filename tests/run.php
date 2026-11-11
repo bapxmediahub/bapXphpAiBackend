@@ -2807,6 +2807,35 @@ $tests['special collection selection retains only selected visible products'] = 
     assertSame([], $service->collectionProducts(['product_ids'=>[]], $products), 'Empty collection must not include all products');
 };
 
+$tests['user history matches checkout email and orders by instant'] = static function (): void {
+    $history = \App\Services\UserOrderHistoryService::forUsers(
+        [['email'=>'buyer@example.test'], ['email'=>'']],
+        [
+            ['id'=>'early','customer_email'=>' Buyer@example.test ','created_at'=>'2026-10-30T11:00:00+05:30'],
+            ['id'=>'late','customer_email'=>'buyer@example.test','created_at'=>'2026-10-30T10:00:00Z'],
+            ['id'=>'unclaimed','customer_email'=>'','created_at'=>'2026-10-30T10:00:00Z'],
+        ]
+    );
+    assertSame(['late','early'], array_column($history[0]['orders'], 'id'), 'Checkout email matching and time-zone-aware order');
+    assertSame('15:30 +05:30', $history[0]['orders'][0]['date']->format('H:i P'), 'Order timestamp in IST');
+    assertSame([], $history[1]['orders'], 'Blank email must never claim orders');
+};
+
+$tests['GST register preserves review rows and makes spreadsheet cells safe'] = static function (): void {
+    $orders = [
+        ['id'=>'one','invoice_number'=>'INV-1','customer_gstin'=>'invalid','verified_refunds'=>[['amount'=>500]],
+            'tax_lines'=>[['name'=>' =1+1','qty'=>1,'taxable_value'=>100]]],
+        ['id'=>'two','invoice_number'=>'INV-2'],
+    ];
+    $rows = iterator_to_array(\App\Services\GstRegisterService::lines($orders, ['two'=>'State conflict']));
+    assertSame(array_fill(0, 2, count(\App\Services\GstRegisterService::HEADERS)), array_map('count', $rows), 'Rows align with CSV headers, including missing snapshots');
+    assertSame('Review', $rows[0][5], 'Invalid GSTIN must not be grouped as B2B or B2C');
+    assertSame("' =1+1", $rows[0][9], 'Formula-like product title is escaped');
+    assertSame('100.00', $rows[0][13], 'Taxable amount comes from the issued line');
+    assertTrue(str_contains($rows[0][18], 'credit note') && str_contains($rows[1][18], 'No issued tax lines')
+        && str_contains($rows[1][18], 'State conflict'), 'Refunds and missing/conflicting snapshots are surfaced');
+};
+
 foreach ($tests as $name => $test) {
     try {
         $test();

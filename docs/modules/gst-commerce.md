@@ -25,11 +25,35 @@ Checkout requires a valid Indian state or Union Territory before starting paymen
 - A confirmed Razorpay product order receives a financial-year invoice number.
 - Customers can open and print the invoice from **My Orders**.
 
-## Filing Report
+## Invoice reconciliation
 
-Open **Admin -> GST Report**, select the filing period, and export CSV. The report includes only confirmed product invoices and excludes cancelled orders. It is a filing-oriented sales ledger, not direct GST Portal submission. Reconcile it with payment settlements, credit notes/returns, and the tax professional before filing.
+Open **Admin → Analytics → Commerce Reports**, select **GST**, and apply the invoice date range.
+The totals CSV contains one row per issued invoice. The lines CSV contains one row per recorded tax line and
+includes supplier and recipient GSTIN, a provisional recipient classification, place of supply, HSN, quantity,
+rate and tax amounts. If an issued invoice has no lines, the export keeps a row with a review note.
+Invoice snapshots stay intact; a gateway refund is flagged for review and is not a GST credit note.
 
-Issued invoices with missing or contradictory state data are flagged for accountant review in the screen and CSV. The application does not silently rewrite an issued invoice.
+Before calling an export filing ready, reconcile invoices and cancellations against the documents-issued sequence,
+confirm valid HSN and unit codes, map eligible outward supplies into the current portal tables, and account for
+credit/debit notes and amendments separately. GSTN's [Table 12 and 13 advisory](https://tutorial.gst.gov.in/downloads/news/updated_advisory_hsn_table12_25042025.pdf)
+describes separate B2B/B2C HSN summaries and documents-issued reporting. Validate the resulting files with the
+current GST utility and the accountant before filing. The CSVs in this screen do not do that validation.
+
+## Admin order lookup
+
+**Admin → Users** lists registered accounts, with expandable orders placed under the same checkout email.
+Dates use India Standard Time; orders without an available creation timestamp say so. Guest orders without a
+matching registered account remain under **Commerce → Orders**. Issued bills open from either screen and can
+be printed or saved as PDF.
+
+## Enterprise Agent follow-up
+
+The existing PHP tool registry already scopes exact order lookups and serves aggregate sales. Reuse the same
+invoice reconciliation calculations in a dedicated, read-only GST summary tool. Validate a bounded date range
+on the server, return aggregate amounts and review counts with a report link, and omit recipient data.
+Log tool outcome and latency, and test permission boundaries, refund handling and agreement with the admin report.
+Keep filtering and aggregating in PHP; the model can explain the result but should not calculate tax, query
+arbitrary SQL or file a return. See [OpenAI function calling](https://developers.openai.com/api/docs/guides/function-calling).
 
 ## Advertising Events
 
