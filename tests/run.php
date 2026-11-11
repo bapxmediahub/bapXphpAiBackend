@@ -449,6 +449,12 @@ $tests['env defines site and direct database connectivity without application se
     assertTrue(str_contains($auth, "'role'=>'admin'"), 'Successful admin login should create an admin session');
 };
 
+$tests['admin login rejects plaintext password storage'] = function (): void {
+    $source = file_get_contents(app_path('app/Controllers/AuthController.php'));
+    assertTrue(str_contains($source, 'password_verify($password, $admin[\'password\'])'), 'Admin login must verify a stored password hash');
+    assertTrue(!str_contains($source, 'hash_equals'), 'AuthController must not accept a plaintext password');
+};
+
 $tests['admin settings can update env admin credentials'] = function (): void {
     $view = file_get_contents(app_path('views/admin/settings.php'));
     $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));

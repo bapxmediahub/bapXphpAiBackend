@@ -97,10 +97,7 @@ final class AuthController extends BaseController {
     if ($email === '' || $password === '') { $this->flash('Username or email and password required.','error'); $this->redirect('/login'); }
     $admin = (new EnvService())->adminCredentials();
     if ($admin['email'] !== '' && $admin['password'] !== '' && $email === $admin['email']) {
-        if (password_verify($password, $admin['password']) || hash_equals($admin['password'], $password)) {
-            if (hash_equals($admin['password'], $password) && ($admin['source'] ?? '') === 'settings') {
-                (new EnvService())->saveAdminCredentials(['admin_password' => $password]);
-            }
+        if (password_verify($password, $admin['password'])) {
             session_regenerate_id(true);
             $_SESSION['user'] = ['sub'=>'env-admin','email'=>$admin['email'],'name'=>$admin['username'] ?: 'Admin','role'=>'admin'];
             try { (new MailQueueService())->enqueueLoginNotification($admin['email'], $admin['username'] ?: 'Admin', 'admin'); }
