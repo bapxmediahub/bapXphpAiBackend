@@ -56,19 +56,31 @@ final class AgentToolRegistry
         return count($this->reportContexts) === 1 ? reset($this->reportContexts) : null;
     }
 
+    public function hasReportContext(): bool
+    {
+        return $this->reportContexts !== [];
+    }
+
     public function followUpContext(): ?array
     {
         if (!self::refersToPreviousPeriod($this->ownerQuestion) || $this->previousReport === null) return null;
         $tool = $this->previousReport['tool'] ?? null;
         if (!in_array($tool, ['support_enquiries', 'gst_register_summary', 'sales_summary'], true)
             || !isset($this->previousReport['from'], $this->previousReport['to'])) return null;
-        $range = self::reportDates($this->previousReport, $tool === 'sales_summary' ? 36500 : 366);
-        return $range === null ? null : $range + ['tool' => $tool];
+        $limit = $tool === 'sales_summary' ? self::salesDateLimit($this->previousReport) : 366;
+        $range = self::reportDates($this->previousReport, $limit);
+        if ($range === null) return null;
+        $context = $range + ['tool' => $tool];
+        $topic = $this->previousReport['topic'] ?? '';
+        if ($tool === 'support_enquiries' && is_string($topic) && isset(self::ENQUIRY_TOPICS[$topic])) {
+            $context['topic'] = $topic;
+        }
+        return $context;
     }
 
     private static function refersToPreviousPeriod(string $question): bool
     {
-        return (bool)preg_match('/\b(?:that|(?:the |that )?same) (?:date range|period|dates)\b/i', $question);
+        return (bool)preg_match('/\b(?:that|(?:the |that )?same) (?:date range|period|dates)[?!.\s]*$/iD', $question);
     }
 
     public function __construct(
@@ -262,6 +274,7 @@ final class AgentToolRegistry
                 if ($label !== null) $this->sources[$result['report_url']] = ['label' => $label, 'path' => $result['report_url']];
                 if ($label !== null && isset($result['from'], $result['to'])) {
                     $context = ['tool' => $name, 'from' => $result['from'], 'to' => $result['to']];
+                    if ($name === 'support_enquiries' && $result['topic'] !== '') $context['topic'] = $result['topic'];
                     $this->reportContexts[implode(':', $context)] = $context;
                 }
             }
@@ -297,7 +310,7 @@ final class AgentToolRegistry
                     'status' => strtolower($match[1]),
                     'from' => $context['from'],
                     'to' => $context['to'],
-                ]);
+                ] + (isset($context['topic']) ? ['topic' => $context['topic']] : []));
                 return $result['error'] ?? self::ticketSummary($result);
             }
             return null;
@@ -511,7 +524,7 @@ final class AgentToolRegistry
         $range = match ($period) {
             'this_month' => ['from' => $today->modify('first day of this month')->format('Y-m-d'), 'to' => $today->format('Y-m-d')],
             'all_time' => ['from' => '0001-01-01', 'to' => $today->format('Y-m-d')],
-            default => self::reportDates($days === null ? $args : ['from' => $today->modify('-' . ($days - 1) . ' days')->format('Y-m-d')], 36500),
+            default => self::reportDates($days === null ? $args : ['from' => $today->modify('-' . ($days - 1) . ' days')->format('Y-m-d')], self::salesDateLimit($args)),
         };
         if ($range === null) return ['error' => 'Use valid sales dates (YYYY-MM-DD) through today.'];
 
@@ -617,6 +630,12 @@ final class AgentToolRegistry
         }
         if ($topic !== '') $summary .= ' Topic counts use keywords in the original enquiry.';
         return $summary;
+    }
+
+    private static function salesDateLimit(array $args): int
+    {
+        // The sales tool represents all time with this explicit lower bound.
+        return ($args['from'] ?? null) === '0001-01-01' ? 3_660_000 : 36_500;
     }
 
     private static function reportDates(array $args, int $maxDays = 366): ?array

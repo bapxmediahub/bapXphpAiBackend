@@ -367,7 +367,9 @@
                 _csrf: document.querySelector('#agent-form input[name="_csrf"]')?.value || ''
             });
             if (previousReport) {
-                for (const key of ['tool', 'from', 'to']) body.set('previous_report[' + key + ']', previousReport[key]);
+                for (const key of ['tool', 'from', 'to', 'topic']) {
+                    if (typeof previousReport[key] === 'string') body.set('previous_report[' + key + ']', previousReport[key]);
+                }
             }
             const resp = await fetch('/admin/agent/ask', {
                 method: 'POST',
@@ -395,7 +397,7 @@
                     response.appendChild(line);
                 }
             }
-            previousReport = data.run?.report_context || null;
+            if (data.run?.report_context_changed) previousReport = data.run.report_context || null;
             appendRunMeta(thinking, data.run);
             if (data.missing && data.missing.length) {
                 addRow('bot', 'I could not find ' + data.missing.map(m => '<code>@' + escapeHtml(m) + '</code>').join(', ')

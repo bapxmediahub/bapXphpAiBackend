@@ -396,6 +396,7 @@ final class AdminController extends BaseController {
             if (($period = $tools->followUpContext()) !== null) {
                 $context .= "\nPrevious report: {$period['tool']}, {$period['from']} to {$period['to']} inclusive. "
                     . "Use these dates for lookups referring to that same period.";
+                if (isset($period['topic'])) $context .= " The previous ticket topic was {$period['topic']}.";
             }
             $reason = null;
             $attempts = [];
@@ -463,6 +464,7 @@ final class AdminController extends BaseController {
             'tools' => $tools?->activity() ?? [],
             'sources' => $tools?->sourceLinks() ?? [],
             'report_context' => $tools?->reportContext(),
+            'report_context_changed' => $tools?->hasReportContext() ?? false,
             'attempts' => $safeAttempts,
         ];
     }

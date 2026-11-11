@@ -2925,16 +2925,23 @@ $tests['Enterprise ticket follow-up retains the previous report period'] = stati
     try {
         $question = 'And how many were answered in that same period?';
         $previous = (new \App\Services\AgentToolRegistry())->run('support_enquiries', [
-            'from' => '2026-09-01', 'to' => '2026-09-07', 'status' => 'open',
+            'from' => '2026-09-01', 'to' => '2026-09-07', 'status' => 'open', 'topic' => 'refund',
         ]);
         $tools = new \App\Services\AgentToolRegistry(ownerQuestion: $question, previousReport: [
-            'tool' => 'support_enquiries', 'from' => $previous['from'], 'to' => $previous['to'],
+            'tool' => 'support_enquiries', 'from' => $previous['from'], 'to' => $previous['to'], 'topic' => $previous['topic'],
         ]);
         $answer = $tools->aggregateAnswer($question);
-        assertTrue(str_contains($answer, 'answered support tickets') && str_contains($answer, '2026-09-01 to 2026-09-07'),
+        assertTrue(str_contains($answer, 'answered support tickets about refund') && str_contains($answer, '2026-09-01 to 2026-09-07'),
             'Follow-up preserves the prior date range and applies the new status');
         $fresh = new \App\Services\AgentToolRegistry(ownerQuestion: $question);
         assertTrue(str_contains($fresh->aggregateAnswer($question), 'Which dates'), 'A fresh chat asks for dates');
+        $comparison = 'Compare sales this month with the same period last year';
+        assertSame(null, $fresh->aggregateAnswer($comparison), 'A self-contained comparison reaches the model');
+        $sales = new \App\Services\AgentToolRegistry(ownerQuestion: 'Show best sellers for that same period', previousReport: [
+            'tool' => 'sales_summary', 'from' => '0001-01-01', 'to' => '2026-09-07',
+        ]);
+        assertSame('0001-01-01', $sales->followUpContext()['from'] ?? null, 'All-time sales context can be reused');
+
     } finally {
         putenv($previousMode === false ? 'BAPX_TEST_MODE' : 'BAPX_TEST_MODE=' . $previousMode);
     }
