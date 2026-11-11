@@ -235,6 +235,7 @@ unset($_SESSION['ai_test_result']);
                 <ol>
                 <?php foreach ($aiTest['timings'] as $timing): ?>
                     <li>
+                        <?php if (!empty($timing['model'])): ?><?= e($timing['model']) ?> · <?php endif; ?>
                         HTTP <?= (int)$timing['status'] ?>, cURL <?= (int)$timing['curl_error'] ?>.
                         <?php foreach (['dns_ms' => 'DNS', 'connect_ms' => 'Connection', 'ready_ms' => 'Ready to transfer', 'first_byte_ms' => 'First byte', 'total_ms' => 'Total'] as $key => $label): ?>
                             <?= e($label) ?> <?= $timing[$key] > 0 ? number_format($timing[$key], 1) . ' ms' : '—' ?>.
