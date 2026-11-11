@@ -192,13 +192,15 @@ final class SupportBotService {
         // the model is unavailable. Use only the same public catalog facts.
         foreach ($site['products'] ?? [] as $product) {
             $name = trim((string)($product['name'] ?? ''));
-            if ($name === '' || !str_contains(mb_strtolower($message), mb_strtolower($name))) continue;
+            if ($name === '' || !$this->matchesNamedProduct($message, $product)) continue;
             $details = trim(strip_tags((string)($product['description'] ?? '')));
             $facts = [];
             foreach ($product['specifications'] ?? [] as $key => $value) {
                 if (is_scalar($value)) $facts[] = strip_tags((string)$key . ': ' . (string)$value);
             }
             $reply = $name . ($details !== '' ? ': ' . $details : '.');
+            $price = (float)($product['price'] ?? 0);
+            if ($price > 0) $reply .= ' Current price: ₹' . rtrim(rtrim(number_format($price, 2, '.', ''), '0'), '.') . '.';
             if ($facts !== []) $reply .= ' Listed specifications: ' . implode('; ', $facts) . '.';
             $reply .= ' For any detail not listed, please ask us at /contact. View the product at ' . (string)($product['url'] ?? '/shop') . '.';
             return $reply;
@@ -236,6 +238,23 @@ final class SupportBotService {
             return "I can help with:\n- Browsing products at /shop\n- Your orders at /account/dashboard/orders\n- Contact us at /contact\nWhat would you like to know more about?";
         }
         return 'I can help with products at /shop, temples at /temples, and orders at /account/dashboard/orders. What would you like help with?';
+    }
+
+    /** Match only exact public catalogue aliases, not loose words that can collide. */
+    private function matchesNamedProduct(string $message, array $product): bool
+    {
+        $normalise = static fn(string $value): string => trim((string)preg_replace('/[^a-z0-9]+/i', ' ', mb_strtolower($value)));
+        $haystack = ' ' . $normalise($message) . ' ';
+        $aliases = [
+            $normalise((string)($product['name'] ?? '')),
+            $normalise((string)($product['slug'] ?? '')),
+        ];
+        foreach (array_unique(array_filter($aliases)) as $alias) {
+            // Requiring at least two words avoids treating a generic one-word slug such
+            // as "ring" or "paste" as a named-product request.
+            if (str_word_count($alias) >= 2 && str_contains($haystack, ' ' . $alias . ' ')) return true;
+        }
+        return false;
     }
 
     /**
