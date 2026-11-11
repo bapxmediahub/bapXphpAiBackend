@@ -2145,6 +2145,11 @@ $tests['best sellers count verified non-cancelled product quantities'] = functio
     assertTrue(\App\Services\ProductService::rankBestSellers($products, []) === [], 'No orders should produce no unsupported best-seller claims');
 };
 
+$tests['project map includes orders used by bestseller query'] = function (): void {
+    $dependencies = \App\Services\ProjectMapService::serviceCollections();
+    assertTrue(in_array('orders', $dependencies['ProductService'] ?? [], true), 'Static SQL reads must remain visible in the generated service map');
+};
+
 $tests['special collection selection retains only selected visible products'] = function (): void {
     $service = new \App\Services\CategoryService();
     $products = [['id'=>'one', 'name'=>'One'], ['id'=>'two', 'name'=>'Two']];
