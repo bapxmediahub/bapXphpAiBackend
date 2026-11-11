@@ -111,7 +111,7 @@ that is not there.
 
 - The product uses only Google's two hosted Gemma 4 models:
   `gemma-4-31b-it` is primary and `gemma-4-26b-a4b-it` is automatic fallback after
-  three retryable API failures. Google does not publish a hosted Gemma 4 27B identifier.
+  up to three retryable API failures, or immediately when the primary returns HTTP 429. Google does not publish a hosted Gemma 4 27B identifier.
   Proof: <https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api#supported-models>.
 - It is a **reasoning model**. Its reply may contain the model thinking out loud, either
   as parts flagged `"thought": true` or as prose before the answer. Read the answer with

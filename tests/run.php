@@ -1538,7 +1538,7 @@ $tests['AI transport diagnostics distinguish causes without assuming the provide
             ['model' => 'gemma-4-26b-a4b-it', 'timeout_ms' => 12000],
         ],
         $client::googleAttemptPlan('gemma-4-31b-it'),
-        'The router must fail over only after exactly three primary API failures'
+        'The standard retry plan allows up to three primary attempts before fallback'
     );
     assertSame(
         [['model' => 'gemma-4-26b-a4b-it', 'timeout_ms' => 12000]],

@@ -76,8 +76,8 @@
         </div>
         <input type="hidden" name="support_bot_purge_policy" value="always_purge">
         <p id="ai-router-note" style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.85rem;">
-            Uses <strong><?= e(\App\Services\SecretService::PRIMARY_MODEL) ?></strong> first. After three retryable API failures,
-            the request automatically moves to <strong><?= e(\App\Services\SecretService::FALLBACK_MODEL) ?></strong>.
+            Uses <strong><?= e(\App\Services\SecretService::PRIMARY_MODEL) ?></strong> first. After up to three retryable API failures,
+            the request automatically moves to <strong><?= e(\App\Services\SecretService::FALLBACK_MODEL) ?></strong>. A rate-limit response switches models immediately.
             Google endpoint: <code>https://generativelanguage.googleapis.com/v1beta/models/</code>.
         </p>
 
