@@ -119,10 +119,10 @@ that is not there.
   as parts flagged `"thought": true` or as prose before the answer. Read the answer with
   `AiClient::answerFromParts()`; never take `parts[0]`, which is usually the reasoning.
   Reference: <https://github.com/google-gemini/cookbook/issues/1198>.
-- `thinkingConfig.includeThoughts: false` is silently ignored by this model family, and
-  `thinkingLevel` is rejected outright by this endpoint (HTTP 400, `Unknown name
-  "thinkingLevel"`). Filter the reasoning out of the response instead of trying to
-  switch it off.
+- Gemma 4 on the Gemini API supports `MINIMAL` and `HIGH` through
+  `generationConfig.thinkingConfig.thinkingLevel`. `AiClient` uses `MINIMAL` and
+  still filters any reasoning from the returned text. Reference:
+  <https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api#thinking>.
 
 The general rule: when a fact about an external service decides what you change, verify
 it against that service's own documentation and record the URL beside the code.
