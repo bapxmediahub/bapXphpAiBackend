@@ -290,7 +290,7 @@ final class SupportBotService {
             $productLinks = '';
             foreach (array_slice($products, 0, 3) as $p) {
                 $slug = $p['slug'] ?? '';
-                if ($slug) $productLinks .= ' /product/' . $slug;
+                if ($slug) $productLinks .= ' /product/' . rawurlencode($slug);
             }
             return 'Available products include ' . $list . '. Browse all at /shop' . $productLinks . '. To buy: go to /shop, click a product, add to cart, then proceed to /checkout to pay with card or UPI.';
         }
@@ -373,11 +373,11 @@ final class SupportBotService {
     }
 
     private function extractActions(string $reply): array {
-        preg_match_all('/\/(?:shop|cart|checkout|temples|contact|blog(?:\/[a-z0-9-]+|\/category\/[a-z0-9-]+)?|product\/[a-z0-9-]+|account\/dashboard(?:\/orders|\/install)?)(?=[\s.,)\/  ]|$)/i', $reply, $matches);
+        preg_match_all('/\/(?:shop|cart|checkout|temples|contact|blog(?:\/[a-z0-9-]+|\/category\/[a-z0-9-]+)?|product\/(?:[a-z0-9-]|%20)+|account\/dashboard(?:\/orders|\/install)?)(?=[\s.,)\/  ]|$)/i', $reply, $matches);
         $seen = [];
         $actions = [];
         foreach ($matches[0] as $path) {
-            $path = strtolower($path);
+            $path = strncasecmp($path, '/product/', 9) === 0 ? '/product/' . substr($path, 9) : strtolower($path);
             if (in_array($path, $seen, true)) continue;
             $seen[] = $path;
             $label = match (true) {
@@ -387,7 +387,7 @@ final class SupportBotService {
                 $path === '/contact' => 'Contact Us',
                 $path === '/temples' => 'View Temples',
                 $path === '/blog' => 'Read Blog',
-                default => 'Open ' . trim(preg_replace('/^\/+/', '', str_replace(['-', '/'], ' ', $path)))
+                default => 'Open ' . trim(preg_replace('/^\/+/', '', str_replace(['-', '/'], ' ', rawurldecode($path))))
             };
             $actions[] = ['type' => 'navigate', 'label' => $label, 'path' => $path];
         }

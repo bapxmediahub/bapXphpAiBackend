@@ -111,7 +111,7 @@ final class AgentContextService {
         $products = array_map(fn($item) => [
             'name' => $item['name'] ?? '',
             'slug' => $item['slug'] ?? '',
-            'url' => '/product/' . ($item['slug'] ?? ''),
+            'url' => '/product/' . rawurlencode((string)($item['slug'] ?? '')),
             'price' => $item['offer_price'] ?? $item['price'] ?? null,
             'stock_status' => $item['stock_status'] ?? '',
             'description' => mb_substr(strip_tags((string)($item['description'] ?? '')), 0, 2000),

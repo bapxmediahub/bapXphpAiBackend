@@ -2538,6 +2538,11 @@ $tests['support comparison uses two distinct catalog examples'] = function (): v
         'Both examples must use their stored facts');
     assertSame(null, \App\Services\SupportBotService::catalogComparisonReply($question, [$products[0]]),
         'One product cannot stand in for both types');
+    $bot = new \App\Services\SupportBotService();
+    $actions = (new ReflectionMethod($bot, 'extractActions'))->getClosure($bot);
+    assertSame(['/product/Ayyappan%20Pendant', '/product/with-malai'], array_column(
+        $actions('See /product/Ayyappan%20Pendant and /product/with-malai.'), 'path'
+    ), 'Product links must preserve the saved slug and its encoded spaces');
 };
 
 $tests['support context selects a named product before applying the catalogue cap'] = function (): void {
