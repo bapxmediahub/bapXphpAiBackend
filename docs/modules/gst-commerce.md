@@ -18,6 +18,8 @@ This workflow applies only to paid ecommerce product orders.
 
 Storefront prices are treated as GST-inclusive. At checkout the order records the delivery state and optional customer GSTIN. The order stores an immutable product-tax snapshot containing HSN, rate, taxable value, CGST, SGST, IGST, total tax, place of supply, and supplier identity.
 
+Checkout requires a valid Indian state or Union Territory before starting payment. `TaxService` refuses to create a tax snapshot when the delivery or supplier state is missing or invalid; it never substitutes the supplier state while classifying the supply another way.
+
 - Tamil Nadu delivery uses an intrastate CGST/SGST split.
 - Delivery to another state uses IGST.
 - A confirmed Razorpay product order receives a financial-year invoice number.
@@ -26,6 +28,8 @@ Storefront prices are treated as GST-inclusive. At checkout the order records th
 ## Filing Report
 
 Open **Admin -> GST Report**, select the filing period, and export CSV. The report includes only confirmed product invoices and excludes cancelled orders. It is a filing-oriented sales ledger, not direct GST Portal submission. Reconcile it with payment settlements, credit notes/returns, and the tax professional before filing.
+
+Issued invoices with missing or contradictory state data are flagged for accountant review in the screen and CSV. The application does not silently rewrite an issued invoice.
 
 ## Advertising Events
 

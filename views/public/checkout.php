@@ -67,6 +67,15 @@
                                 <input type="text" id="checkout-pincode" name="pincode" placeholder="600001" required>
                             </div>
                         </div>
+                        <div class="form-group" style="margin-top:var(--space-md);">
+                            <label for="checkout-state">State / Union Territory</label>
+                            <select id="checkout-state" name="state" required>
+                                <option value="">Select delivery state</option>
+                                <?php foreach (\App\Services\TaxService::states() as $state): ?>
+                                    <option value="<?= e($state) ?>"><?= e($state) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
                         <?php if (!empty($_SESSION['user']['email'])): ?>
                         <div class="checkout-form__row" style="margin-top:var(--space-md); align-items:end;">
                             <div class="form-group"><label for="address-name">Address name</label><input type="text" id="address-name" name="address_name" placeholder="Home, Office, Parents"></div>
@@ -156,7 +165,7 @@
                         if (savedAddress) savedAddress.addEventListener('change', function () {
                             const option = this.options[this.selectedIndex];
                             const data = option && option.dataset.address ? JSON.parse(option.dataset.address) : {};
-                            ['name', 'phone', 'address', 'city', 'pincode'].forEach(function (field) {
+                            ['name', 'phone', 'address', 'city', 'pincode', 'state'].forEach(function (field) {
                                 const input = document.querySelector('[name="' + field + '"]');
                                 if (input && data[field === 'name' ? 'recipient_name' : field] !== undefined) input.value = data[field === 'name' ? 'recipient_name' : field];
                             });
@@ -172,7 +181,7 @@
                             button.addEventListener('click', async () => {
                                 const method = document.querySelector('input[name="payment_method"]:checked');
                                 const paymentMethod = method ? method.value : 'razorpay';
-                                const fields = ['name', 'email', 'phone', 'address', 'city', 'pincode'];
+                                const fields = ['name', 'email', 'phone', 'address', 'city', 'pincode', 'state'];
                                 for (const field of fields) {
                                     if (!form.querySelector(`[name="${field}"]`).reportValidity()) return;
                                 }
@@ -189,6 +198,7 @@
                                     address: form.querySelector('[name="address"]').value,
                                     city: form.querySelector('[name="city"]').value,
                                     pincode: form.querySelector('[name="pincode"]').value,
+                                    state: form.querySelector('[name="state"]').value,
                                     address_name: form.querySelector('[name="address_name"]')?.value || '',
                                     save_address: form.querySelector('[name="save_address"]')?.checked ? '1' : ''
                                     ,is_default: form.querySelector('[name="is_default"]')?.checked ? '1' : ''
