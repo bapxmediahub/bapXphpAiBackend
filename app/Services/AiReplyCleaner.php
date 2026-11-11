@@ -4,7 +4,7 @@ namespace App\Services;
 /**
  * Strips a model's working notes from its answer.
  *
- * Reasoning models can restate their role, context and constraints before answering, so a
+ * gemma-4-31b-it restates its role, context and constraints before answering, so a
  * one-sentence reply arrives wrapped in ten bullets of scaffold. That plan is working
  * memory, not output — no assistant should show it to a user.
  *
