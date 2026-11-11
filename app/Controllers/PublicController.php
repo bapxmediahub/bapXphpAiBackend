@@ -63,6 +63,7 @@ final class PublicController extends BaseController {
     
     public function temple(string $slug): void { 
         $this->detectApiRequest();
+        $slug = rawurldecode($slug);
         $temple = (new TempleService())->findBySlug($slug);
         if (!$temple) $this->renderNotFound();
         $this->seoKey = 'temple';
@@ -76,14 +77,18 @@ final class PublicController extends BaseController {
     
     public function shop(): void {
         $this->detectApiRequest();
-        $category = $_GET['category'] ?? '';
+        $category = is_string($_GET['category'] ?? null) ? trim($_GET['category']) : '';
+        $search = is_string($_GET['q'] ?? null) ? mb_substr(trim($_GET['q']), 0, 120) : '';
+        $sortOptions = ['' => 'Featured', 'price-asc' => 'Price: low to high', 'price-desc' => 'Price: high to low', 'name' => 'Name: A–Z'];
+        $sort = is_string($_GET['sort'] ?? null) && isset($sortOptions[$_GET['sort']]) ? $_GET['sort'] : '';
         $categoryService = new CategoryService();
         $categories = $categoryService->all();
         $collections = $categoryService->collections();
         $shopCollections = array_values(array_filter($collections, fn($c) => !empty($c['show_shop'])));
         $selectedCollection = null;
         foreach ($collections as $c) if (($c['slug'] ?? '') === $category && (!empty($c['show_home']) || !empty($c['show_shop']))) $selectedCollection = $c;
-        $items = (new ProductService())->visible();
+        $productService = new ProductService();
+        $items = $productService->visible();
         $this->seoKey = 'shop';
         if ($selectedCollection) {
             $items = $categoryService->collectionProducts($selectedCollection, $items);
@@ -110,7 +115,11 @@ final class PublicController extends BaseController {
                 ];
             }
         }
-        $this->render('public/shop', compact('items', 'categories', 'category', 'shopCollections', 'selectedCollection'));
+        $items = $productService->discover($items, $search, $sort);
+        if (isset($_GET['q']) || isset($_GET['sort'])) $this->seoOverrides['robots'] = 'noindex, follow';
+        $this->render('public/shop', compact(
+            'items', 'categories', 'category', 'shopCollections', 'selectedCollection', 'search', 'sort', 'sortOptions'
+        ));
     }
 
     public function categories(): void {
@@ -249,20 +258,36 @@ final class PublicController extends BaseController {
     public function contact(): void {
         $this->detectApiRequest();
         $this->seoKey = 'contact';
-        $success = false;
-        $subject = $_GET['subject'] ?? '';
+        $subjects = [
+            'product' => 'Product Inquiry',
+            'temple' => 'Temple Guidance',
+            'order' => 'Order Support',
+            'general' => 'General Question',
+        ];
+        $submission = array_fill_keys(['name', 'email', 'phone', 'subject', 'message'], '');
+        $submission['subject'] = is_string($_GET['subject'] ?? null) ? $_GET['subject'] : '';
+        $errors = [];
+        $success = !empty($_SESSION['contact_received']);
+        unset($_SESSION['contact_received']);
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->validateCsrf();
+            foreach ($submission as $field => $value) {
+                $submission[$field] = is_string($_POST[$field] ?? null) ? trim($_POST[$field]) : '';
+            }
+
+            if ($submission['name'] === '') $errors['name'] = 'Enter your name.';
+            if (!filter_var($submission['email'], FILTER_VALIDATE_EMAIL)) $errors['email'] = 'Enter a valid email address.';
+            if (!isset($subjects[$submission['subject']])) $errors['subject'] = 'Select a subject.';
+            if ($submission['message'] === '') $errors['message'] = 'Enter your message.';
+            if ($errors) {
+                http_response_code(422);
+                $this->render('public/contact', ['success' => false, 'subjects' => $subjects, 'submission' => $submission, 'errors' => $errors]);
+                return;
+            }
+
             $this->checkRateLimit('contact', 3, 120);
-            $contactService = new ContactService();
-            $submission = [
-                'name' => $_POST['name'] ?? '',
-                'email' => $_POST['email'] ?? '',
-                'phone' => $_POST['phone'] ?? '',
-                'subject' => $_POST['subject'] ?? '',
-                'message' => $_POST['message'] ?? '',
-            ];
-            $submission['id'] = $contactService->save($submission);
+            $submission['id'] = (new ContactService())->save($submission);
             $mailQueue = new \App\Services\MailQueueService();
             $ownerNotification = \App\Services\MailQueueService::contactOwnerNotification($submission);
             // The owner was never told a contact form had been submitted; it only
@@ -277,9 +302,10 @@ final class PublicController extends BaseController {
                     $ownerNotification['meta']
                 );
             } catch (\Throwable $e) { error_log('Contact notification failed: ' . $e->getMessage()); }
-            $success = true;
+            $_SESSION['contact_received'] = true;
+            $this->redirect('/contact#contact-form');
         }
-        $this->render('public/contact', ['success' => $success, 'subject' => $subject]);
+        $this->render('public/contact', ['success' => $success, 'subjects' => $subjects, 'submission' => $submission, 'errors' => $errors]);
     }
     
     public function login(): void { 

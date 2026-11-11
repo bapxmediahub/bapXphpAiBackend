@@ -385,14 +385,14 @@ if ($__flash):
 </nav>
 <?php endif; ?>
 
-<?php if ($currentPath !== '/cart'): ?>
+<?php if ($__modules['shop'] && (in_array(rtrim($currentPath, '/'), ['', '/shop', '/categories'], true) || str_starts_with($currentPath, '/product/'))): ?>
 <a href="/cart" class="mobile-cart-tray" id="mobile-cart-tray" <?= $cartCount > 0 ? '' : 'hidden' ?>>
     <span><strong id="mobile-cart-count"><?= (int)$cartCount ?></strong> <span id="mobile-cart-label"><?= $cartCount === 1 ? 'item' : 'items' ?></span> in cart</span>
     <span>View cart <span aria-hidden="true">→</span></span>
 </a>
 <?php endif; ?>
 
-<?php if (!in_array($currentPath, ['/login', '/register'])): ?>
+<?php if (!in_array(rtrim($currentPath, '/'), ['/login', '/register', '/contact'], true)): ?>
 <button class="support-fab" type="button" aria-controls="support-panel" aria-expanded="false" title="Support">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>
     <span class="sr-only">Support</span>

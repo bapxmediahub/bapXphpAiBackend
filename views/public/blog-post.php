@@ -1,4 +1,6 @@
 <?php
+    $categorySlug = (string)($meta['category'] ?? '');
+    $categoryName = $categoryNames[$categorySlug] ?? '';
     $schemaBase = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'sripanchamispiritual.com');
     $schemaUrl = $schemaBase . '/blog/' . ($slug ?? '');
     $schemaImage = $meta['og_image'] ?? $meta['image'] ?? ($seo['og_image'] ?? '');
@@ -39,12 +41,15 @@
 <section class="blog-post-page blog-article">
   <div class="container">
     <nav class="breadcrumbs blog-article__breadcrumbs" aria-label="Breadcrumb">
-      <a href="/blog">Journal</a><span aria-hidden="true">/</span><span><?= e($meta['category'] ?? 'Article') ?></span>
+      <a href="/blog">Journal</a>
+      <?php if ($categoryName !== ''): ?>
+        <span aria-hidden="true">/</span>
+        <a href="/blog/category/<?= e(rawurlencode($categorySlug)) ?>"><?= e($categoryName) ?></a>
+      <?php endif; ?>
     </nav>
 
     <article class="blog-post">
       <header class="blog-post__header">
-        <?php if (!empty($meta['category'])): ?><span class="eyebrow serif-accent"><?= e($meta['category']) ?></span><?php endif; ?>
         <h1><?= e($meta['title'] ?? '') ?></h1>
         <?php if (!empty($meta['excerpt'])): ?><p class="blog-post__dek"><?= e($meta['excerpt']) ?></p><?php endif; ?>
         <div class="blog-post__meta">

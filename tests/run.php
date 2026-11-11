@@ -311,6 +311,22 @@ $tests['shop supports plain vertical filters and multi category products'] = fun
     assertTrue(str_contains($css, '.filter-group { display: grid') && str_contains($css, 'background: transparent'), 'Shop filter links should be plain vertical links without boxed chips');
 };
 
+$tests['shop discovery combines keywords and orders by current purchase price'] = function (): void {
+    $service = new \App\Services\ProductService(
+        new \App\Services\DatabaseService(),
+        new \DateTimeImmutable('2026-11-11')
+    );
+    $products = [
+        ['slug' => 'expired', 'name' => 'Rudraksha Necklace', 'description' => 'Sacred seeds', 'price' => 800, 'offer_price' => 150, 'offer_ends_at' => '2026-11-10'],
+        ['slug' => 'running', 'name' => 'Rudraksha Pendant', 'description' => 'Handcrafted &amp; sacred', 'price' => 900, 'offer_price' => 400],
+        ['slug' => 'mala', 'name' => 'Tulsi Mala', 'description' => 'Sacred beads', 'price' => 300],
+    ];
+    $sorted = $service->discover($products, 'SACRED rudraksha', 'price-asc');
+    assertSame(['running', 'expired'], array_column($sorted, 'slug'), 'Search requires every keyword and sorts by the active purchase price');
+    assertSame(['expired', 'running', 'mala'], array_column($service->discover($products, '', ''), 'slug'), 'Featured order preserves catalogue or collection order');
+    assertSame([], $service->discover($products, 'missing', ''), 'A missing search term yields no products');
+};
+
 $tests['public catalog card images are not lazy deferred'] = function (): void {
     foreach (['views/public/home.php', 'views/public/shop.php', 'views/public/product.php', 'views/public/temples.php'] as $path) {
         $view = file_get_contents(app_path($path));
@@ -464,18 +480,15 @@ $tests['contact page exposes general enquiry form and confirmation delivery'] = 
         assertTrue(str_contains($view, $field), "Contact form should include {$field}");
     }
     foreach (['Product Inquiry', 'Temple Guidance', 'Order Support', 'General Question'] as $subject) {
-        assertTrue(str_contains($view, $subject), "Contact form should include the {$subject} subject");
+        assertTrue(str_contains(file_get_contents(app_path('app/Controllers/PublicController.php')), $subject), "Contact form should include the {$subject} subject");
     }
     assertTrue(!str_contains($view, 'Astrology Consultation'), 'Contact form should not offer a retired consultation subject');
     foreach (['tel:+919789444037', 'tel:+919789444038', 'mailto:support@sripanchamispiritual.com', 'contact-direct-link--mail'] as $needle) {
         assertTrue(str_contains($view, $needle), "Contact page should expose {$needle}");
     }
-    assertTrue(str_contains($view, 'Online Store'), 'Contact page should describe the online store');
-    foreach (['contact-info-grid', 'contact-card__icon', 'contact-card__eyebrow'] as $needle) {
-        assertTrue(str_contains($view, $needle), "Contact cards should use enhanced layout class {$needle}");
-    }
-    assertTrue(str_contains($view, 'contact-card--direct'), 'Phone and email cards should use simplified direct card styling');
-    assertTrue(!str_contains($view, '<h3>Call</h3>') && !str_contains($view, '<h3>Mail</h3>'), 'Phone and email cards should not repeat Call/Mail headings');
+    assertTrue(strpos($view, 'Contact options') < strpos($view, '<form'), 'Direct contact options should be reachable before the form');
+    assertTrue(str_contains($view, 'Phone (optional)') && str_contains($view, 'Email (required)'), 'Contact fields should describe their requirements');
+    assertTrue(str_contains($view, 'Message received') && str_contains($view, 'aria-invalid'), 'Contact form should show inline confirmation and field errors');
     assertTrue(!str_contains($view, 'Visit Our Store'), 'Contact page should not invite general ecommerce customers to visit the store directly');
     $controller = file_get_contents(app_path('app/Controllers/PublicController.php'));
     $mail = file_get_contents(app_path('app/Services/MailQueueService.php'));
@@ -775,7 +788,7 @@ $tests['home temple guide uses admin driven dissolve carousel'] = function (): v
     assertTrue(!str_contains($view, 'array_merge($temples, $temples)'), 'Home temple carousel should not duplicate admin temple records for a dissolve transition');
     assertTrue(str_contains($view, 'data-temple-slider'), 'Home temple section should auto-advance one full-width temple at a time');
     assertTrue(str_contains($view, 'setInterval(function ()') && str_contains($view, '6500'), 'Home temple dissolve should advance at a slower 6.5 second pace');
-    assertTrue(str_contains($view, '<a href="/temples">Click here</a>'), 'Home temple section should link to all temples inline from the lede sentence');
+    assertTrue(str_contains($view, '<a href="/temples">Browse the temple directory</a>'), 'Home temple section should link to all temples inline from the lede sentence');
     assertTrue(!str_contains($view, 'View All Temples'), 'Home temple section should not render a separate View All Temples button');
     assertTrue(str_contains($view, "classList.remove('is-active')") && str_contains($view, "classList.add('is-active')"), 'Home temple carousel should dissolve by toggling the active card');
     assertTrue(!str_contains($view, 'translateX'), 'Home temple carousel should not slide or animate backward');
@@ -785,6 +798,15 @@ $tests['home temple guide uses admin driven dissolve carousel'] = function (): v
     assertTrue(str_contains($css, '.temple-carousel--single .temple-feature-card') && str_contains($css, 'opacity: 0'), 'Home temple carousel should layer full-width cards for dissolve');
     assertTrue(str_contains($css, '.temple-carousel--single .temple-feature-card.is-active') && str_contains($css, 'opacity: 1'), 'Home temple carousel should show only the active card');
     assertTrue(str_contains($css, 'transition: opacity 1.6s ease-in-out'), 'Home temple carousel should use a slow smooth dissolve transition');
+};
+
+$tests['temple directions use editor and legacy map fields'] = function (): void {
+    $legacy = 'https://www.google.com/maps/search/?api=1&query=Temple';
+    $updated = 'https://maps.app.goo.gl/Temple';
+    assertSame($updated, \App\Services\TempleService::directionsUrl(['map_url' => $updated, 'map_link' => $legacy]), 'Saved editor URL should take priority');
+    assertSame($legacy, \App\Services\TempleService::directionsUrl(['map_link' => $legacy]), 'Legacy temple records should retain directions');
+    assertSame($legacy, \App\Services\TempleService::directionsUrl(['map_url' => 'javascript:alert(1)', 'map_link' => $legacy]), 'Invalid editor URL should fall back to a valid legacy link');
+    assertSame(null, \App\Services\TempleService::directionsUrl(['address' => 'Temple street']), 'An address should not be treated as a saved directions link');
 };
 
 $tests['temple listing and metadata are location neutral'] = function (): void {

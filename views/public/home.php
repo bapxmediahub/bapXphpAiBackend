@@ -199,39 +199,50 @@
 
 <?php require app_path('views/public/home-collections.php'); ?>
 
-<section class="section section--alt">
+<?php if (module_on('shop')): ?>
+<section class="section home-order-guide" aria-labelledby="home-order-guide-title">
     <div class="container">
-        <div class="section-header">
-            <span class="eyebrow serif-accent">Simple · Secure · Trackable</span>
-            <h2 class="section-title">How Your Order Works</h2>
-            <p class="lede">Choose an authentic product, pay securely online, and follow the order from your account.</p>
-        </div>
-        <div class="feature-strip home-order-steps">
-            <article><span class="home-order-step">1</span><h3>Choose Products</h3><p>Browse clear product details and add the quantity you need.</p></article>
-            <article><span class="home-order-step">2</span><h3>Select an Address</h3><p>Reuse a saved address or enter a different delivery address at checkout.</p></article>
-            <article><span class="home-order-step">3</span><h3>Pay and Track</h3><p>Complete Razorpay payment and follow confirmation from My Orders.</p></article>
-        </div>
-        <div class="home-order-actions">
-            <a class="btn btn-primary" href="/shop">Browse Products</a>
-            <a class="btn btn-ghost" href="/blog/category/help">Ordering Help</a>
+        <div class="home-order-guide__panel">
+            <h2 id="home-order-guide-title" class="section-title">How Your Order Works</h2>
+            <ol class="home-order-guide__steps" role="list">
+                <li>
+                    <h3>Choose your products</h3>
+                    <p>Add the items and quantities you need to your cart.</p>
+                </li>
+                <li>
+                    <h3>Check out</h3>
+                    <p>Choose a delivery address and pay securely online.</p>
+                </li>
+                <li>
+                    <h3>Track your delivery</h3>
+                    <p>Open My Orders in your account to see your delivery status.</p>
+                </li>
+            </ol>
+            <div class="home-order-guide__actions">
+                <a class="btn btn-primary" href="/shop">Browse products</a>
+                <?php if (module_on('blog')): ?>
+                <a class="home-order-guide__help" href="/blog/order-products">Ordering help</a>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 </section>
+<?php endif; ?>
 
 <?php if(!empty($temples)): ?>
 <section class="section section--alt">
     <div class="section-header">
         <span class="eyebrow serif-accent">Sacred Spaces · Divine Energy</span>
         <h2 class="section-title">Panchami Temples Guide</h2>
-        <p class="lede">Explore temple guides for divine blessings, traditional pooja details, and spiritual routes around Chennai. <a href="/temples">Click here</a></p>
+        <p class="lede"><a href="/temples">Browse the temple directory</a> for locations and visit details.</p>
     </div>
     <div class="temple-carousel temple-carousel--single" data-temple-slider aria-label="Temple guide carousel">
         <div class="temple-carousel-track">
         <?php foreach(array_values($temples) as $index => $temple): ?>
-            <a class="showcase-card temple-feature-card reveal <?= $index === 0 ? 'is-active' : '' ?>" href="/temples/<?= e($temple['slug'] ?? '') ?>" aria-label="View <?= e($temple['name'] ?? 'Temple') ?>">
+            <a class="showcase-card temple-feature-card <?= $index === 0 ? 'is-active' : '' ?>" href="/temples/<?= e(rawurlencode((string)($temple['slug'] ?? ''))) ?>" aria-label="View <?= e($temple['name'] ?? 'Temple') ?>">
                 <div class="temple-feature-card__media">
                     <?php if(!empty($temple['image_url'])): ?>
-                        <img src="<?= e(webp_src($temple['image_url'])) ?>" alt="<?= e($temple['name']) ?> — Temple guide at Sri Panchami Spiritual, Chennai" decoding="async">
+                        <img src="<?= e(webp_src($temple['image_url'])) ?>" alt="" decoding="async">
                     <?php else: ?>
                         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
                     <?php endif; ?>
@@ -267,7 +278,9 @@ document.addEventListener('DOMContentLoaded', function () {
     var slides = Array.prototype.slice.call(slider.querySelectorAll('.temple-feature-card'));
     if (slides.length < 2) return;
     var index = 0;
+    var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     setInterval(function () {
+        if (reducedMotion.matches || slider.matches(':hover, :focus-within') || document.hidden) return;
         slides[index].classList.remove('is-active');
         index = (index + 1) % slides.length;
         slides[index].classList.add('is-active');

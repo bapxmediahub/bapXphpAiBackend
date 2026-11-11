@@ -1,56 +1,64 @@
+<?php
+  $isHelp = $activeCategory === 'help';
+  $indexUrl = $activeCategory === null ? '/blog' : '/blog/category/' . rawurlencode($activeCategory);
+  $query = $search === '' ? '' : '?' . http_build_query(['q' => $search]);
+?>
 <section class="blog-page blog-editorial">
   <div class="container">
     <header class="blog-editorial__header">
-      <span class="eyebrow serif-accent">Ideas, rituals and guidance</span>
       <h1 class="page-title"><?= e($categoryName ?? 'Sri Panchami Journal') ?></h1>
-      <p>Practical spiritual guidance, temple guides, product knowledge, and thoughtful updates from our team.</p>
+      <p><?= $isHelp ? 'Guides for your account, orders, and payments.' : 'Spiritual practice, temple guides, and news from Sri Panchami.' ?></p>
     </header>
 
-    <?php if (!empty($categories)): ?>
-    <div class="blog-categories">
-      <a href="/blog" class="pill <?= $activeCategory === null ? 'pill--active' : '' ?>">All</a>
-      <?php foreach ($categories as $cat): ?>
-        <a href="/blog/category/<?= e($cat['slug'] ?? '') ?>"
-           class="pill <?= $activeCategory === ($cat['slug'] ?? '') ? 'pill--active' : '' ?>">
-          <?= e($cat['name'] ?? $cat['slug'] ?? '') ?>
-        </a>
-      <?php endforeach; ?>
+    <div class="blog-editorial__tools">
+      <nav class="blog-categories" aria-label="Article categories">
+        <a href="<?= e('/blog' . $query) ?>"<?= $activeCategory === null ? ' aria-current="page"' : '' ?>>Journal</a>
+        <?php foreach ($categories as $cat): ?>
+          <?php $categorySlug = (string)($cat['slug'] ?? ''); ?>
+          <a href="<?= e('/blog/category/' . rawurlencode($categorySlug) . $query) ?>"<?= $activeCategory === $categorySlug ? ' aria-current="page"' : '' ?>>
+            <?= e($cat['name'] ?? $categorySlug) ?>
+          </a>
+        <?php endforeach; ?>
+      </nav>
+      <form class="blog-search" action="<?= e($indexUrl) ?>" method="get" role="search" aria-label="Search articles">
+        <label for="blog-search-query" class="sr-only"><?= $isHelp ? 'Search Help' : 'Search articles' ?></label>
+        <input type="search" id="blog-search-query" name="q" maxlength="120" value="<?= e($search) ?>" placeholder="<?= $isHelp ? 'Search Help' : 'Search articles' ?>">
+        <button class="btn btn-primary" type="submit">Search</button>
+      </form>
     </div>
+
+    <?php if ($search !== ''): ?>
+      <div class="blog-search-summary">
+        <p><?= count($posts) ?> <?= count($posts) === 1 ? 'result' : 'results' ?> for “<?= e($search) ?>”</p>
+        <a href="<?= e($indexUrl) ?>">Clear search</a>
+      </div>
     <?php endif; ?>
 
-    <?php if (empty($posts)): ?>
+    <?php if (!$posts): ?>
       <div class="empty-state">
-        <p>No blog posts yet. Check back soon for updates, features, and spiritual insights.</p>
+        <p><?= $search === '' ? 'No articles in this category yet.' : 'No articles match. Try a different search or browse another category.' ?></p>
       </div>
     <?php else: ?>
       <div class="blog-grid">
         <?php foreach ($posts as $index => $post): ?>
-          <?php $postImage = $post['image'] ?? $post['og_image'] ?? ($index === 0 ? '/assets/images/hero-temple-bg.webp' : '/assets/images/og-image.jpg'); ?>
-          <article class="blog-card <?= $index === 0 ? 'blog-card--featured' : '' ?>">
-            <a class="blog-card__media" href="/blog/<?= e($post['slug'] ?? '') ?>" aria-label="Read <?= e($post['title'] ?? 'article') ?>">
-              <img class="blog-card__image" src="<?= e($postImage) ?>" alt="<?= e($post['image_alt'] ?? '') ?>" loading="<?= $index === 0 ? 'eager' : 'lazy' ?>">
+          <?php
+            $postImage = $post['image'] ?? $post['og_image'] ?? '/assets/images/hero-temple-bg.webp';
+            $postUrl = '/blog/' . rawurlencode((string)($post['slug'] ?? ''));
+            $featured = $index === 0 && $activeCategory === null && $search === '';
+            $postCategory = (string)($post['category'] ?? '');
+          ?>
+          <article class="blog-card<?= $featured ? ' blog-card--featured' : '' ?>">
+            <a class="blog-card__media" href="<?= e($postUrl) ?>" aria-label="Read <?= e($post['title'] ?? 'article') ?>">
+              <img class="blog-card__image" src="<?= e($postImage) ?>" alt="<?= e($post['image_alt'] ?? '') ?>" loading="<?= $index === 0 ? 'eager' : 'lazy' ?>" decoding="async">
             </a>
             <div class="blog-card__body">
               <div class="blog-card__kicker">
-                <?php if (!empty($post['category'])): ?><span class="blog-card__category"><?php
-                    $catName = '';
-                    foreach ($categories as $cat) {
-                        if (($cat['slug'] ?? '') === ($post['category'] ?? '')) {
-                            $catName = $cat['name'] ?? '';
-                            break;
-                        }
-                    }
-                    e($catName ?: $post['category']);
-                ?></span><?php endif; ?>
-                <?php if (!empty($post['published_at'])): ?><time class="blog-card__date"><?= e(date('M j, Y', strtotime($post['published_at']))) ?></time><?php endif; ?>
+                <?php if ($postCategory !== ''): ?><span><?= e($categoryNames[$postCategory] ?? $postCategory) ?></span><?php endif; ?>
+                <?php if (!empty($post['published_at'])): ?><time datetime="<?= e($post['published_at']) ?>"><?= e(date('M j, Y', strtotime($post['published_at']))) ?></time><?php endif; ?>
               </div>
-              <h2 class="blog-card__title">
-                <a href="/blog/<?= e($post['slug'] ?? '') ?>"><?= e($post['title'] ?? '') ?></a>
-              </h2>
-              <?php if (!empty($post['excerpt'])): ?>
-                <p class="blog-card__excerpt"><?= e($post['excerpt']) ?></p>
-              <?php endif; ?>
-              <a class="blog-card__read" href="/blog/<?= e($post['slug'] ?? '') ?>">Read article <span aria-hidden="true">→</span></a>
+              <h2 class="blog-card__title"><a href="<?= e($postUrl) ?>"><?= e($post['title'] ?? '') ?></a></h2>
+              <?php if (!empty($post['excerpt'])): ?><p class="blog-card__excerpt"><?= e($post['excerpt']) ?></p><?php endif; ?>
+              <a class="blog-card__read" href="<?= e($postUrl) ?>" aria-label="Read article: <?= e($post['title'] ?? '') ?>">Read article <span aria-hidden="true">→</span></a>
             </div>
           </article>
         <?php endforeach; ?>
