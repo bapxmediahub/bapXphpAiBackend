@@ -1422,6 +1422,21 @@ $tests['a product can be hidden without deleting it, and an offer expires'] = fu
         'findBySlug should withhold a hidden product unless explicitly asked');
 };
 
+$tests['product descriptions cannot contradict structured zodiac facts'] = function (): void {
+    $wrong = [
+        'description' => 'Dhanu Rasi Pushparagam is a Yellow Sapphire associated with Sagittarius.',
+        'specifications' => ['Gemstone' => 'Pavazham (Red Coral)', 'Rasi' => 'Vrishchik (Scorpio)'],
+    ];
+    $right = [
+        'description' => 'A Viruchigam Rasi Pavazham ring with a distinctive Red Coral stone.',
+        'specifications' => ['Gemstone' => 'Pavazham (Red Coral)', 'Rasi' => 'Vrishchik (Scorpio)'],
+    ];
+    assertTrue(str_contains((string)\App\Services\ProductService::contentConflict($wrong), 'conflicts'), 'A pasted Dhanu or Pushparagam description should be rejected for a Vrishchik red-coral product');
+    assertSame(null, \App\Services\ProductService::contentConflict($right), 'A description matching the structured zodiac and gemstone facts should pass');
+    $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
+    assertTrue(str_contains($controller, 'ProductService::contentConflict($data)'), 'Admin product saves should apply the structured-content guard');
+};
+
 $tests['admin forms constrain populated controls to mobile grid tracks'] = function (): void {
     $css = file_get_contents(app_path('assets/css/band.css'));
     assertTrue(str_contains($css, '.admin-form__row { display: grid; min-width: 0; grid-template-columns: repeat(2, minmax(0, 1fr))'), 'Desktop tracks must not expand to input intrinsic width');
