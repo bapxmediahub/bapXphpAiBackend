@@ -2136,6 +2136,9 @@ $tests['best sellers count verified non-cancelled product quantities'] = functio
         ['payment_id'=>'pay_2','status'=>'delivered','items'=>[['slug'=>'a','qty'=>3]]],
         ['payment_id'=>'','status'=>'confirmed','items'=>[['slug'=>'b','qty'=>100]]],
         ['payment_id'=>'pay_3','status'=>'cancelled','items'=>[['slug'=>'b','qty'=>100]]],
+        ['payment_id'=>'   ','status'=>'confirmed','items'=>[['slug'=>'b','qty'=>100]]],
+        ['payment_id'=>'pay_4','status'=>'REFUNDED','items'=>[['slug'=>'b','qty'=>100]]],
+        ['payment_id'=>'pay_5','status'=>'failed','items'=>[['slug'=>'b','qty'=>100]]],
     ];
     $ranked = \App\Services\ProductService::rankBestSellers($products, $orders);
     assertTrue(array_column($ranked, 'slug') === ['a','b'], 'Only verified non-cancelled quantities should rank visible products');

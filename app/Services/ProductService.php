@@ -64,7 +64,19 @@ final class ProductService
 
     public function bestSellers(array $products, int $limit = 4): array
     {
-        return self::rankBestSellers($products, $this->store->read('orders'), $limit);
+        // Order records also contain addresses, contact details and payment identifiers.
+        // Filter paid orders at the database; return only items and status for ranking.
+        // The orders collection stores records as JSON in _data on both direct MySQL
+        // and the remote database bridge.
+        $rows = $this->store->query("SELECT JSON_EXTRACT(_data, '$.items') AS items, JSON_EXTRACT(_data, '$.status') AS status FROM orders
+            WHERE JSON_TYPE(JSON_EXTRACT(_data, '$.payment_id')) = 'STRING'
+              AND TRIM(JSON_UNQUOTE(JSON_EXTRACT(_data, '$.payment_id'))) <> ''");
+        $orders = array_map(static fn(array $row): array => [
+            'payment_id' => 'verified',
+            'status' => json_decode((string)($row['status'] ?? ''), true),
+            'items' => json_decode((string)($row['items'] ?? ''), true),
+        ], $rows);
+        return self::rankBestSellers($products, $orders, $limit);
     }
 
     /**
