@@ -2870,6 +2870,11 @@ $tests['GST register preserves review rows and makes spreadsheet cells safe'] = 
 $tests['support ticket data is scoped and does not expose conversation bodies'] = static function (): void {
     $query = \App\Services\SupportBotService::ticketLookupRequest('How many of my tickets are closed?');
     assertSame('closed', $query['status'] ?? null, 'Status after the noun must constrain the lookup');
+    $yearQuery = \App\Services\SupportBotService::ticketLookupRequest('How many of my support tickets were opened this year?');
+    assertSame([date('Y-01-01'), date('Y-m-d')], $yearQuery['period'], 'Current year must filter ticket counts');
+    $quarterQuery = \App\Services\SupportBotService::ticketLookupRequest('How many of my support tickets were opened this quarter?');
+    assertSame([], $quarterQuery['period'], 'Unsupported period must ask for clarification');
+
     assertSame(null, \App\Services\SupportBotService::ticketLookupRequest('Open a new support ticket'), 'Creation stays separate from lookup');
     assertSame(null, \App\Services\SupportBotService::ticketLookupRequest('I have a problem with my order, please create a support ticket'),
         'Ticket creation after an introductory clause still reaches escalation');
