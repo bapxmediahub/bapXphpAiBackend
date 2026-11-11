@@ -2332,6 +2332,11 @@ $tests['owner aggregate questions answer from allowlisted local sales data'] = f
     $revenue = App\Services\AgentToolRegistry::aggregateAnswerFromSummary('What is the revenue this month?', $summary, 0);
     assertTrue(str_contains((string)$revenue, '₹1,875.50') && str_contains((string)$revenue, '4 orders') && str_contains((string)$revenue, 'this month'), 'Revenue answer should state value, order count and calendar period');
     assertSame(null, App\Services\AgentToolRegistry::aggregateAnswerFromSummary('Where is order abc?', $summary), 'Specific lookups must stay on the scoped model/tool path');
+    $count = App\Services\AgentToolRegistry::aggregateAnswerFromSummary('How many orders have we had in the last 30 days?', $summary, 30);
+    assertSame('The store recorded 4 orders in the last 30 days. Includes all statuses with a recorded creation date in that period.', $count, 'Order count uses the selected date range and explains its scope');
+    foreach (['How many refunded orders were placed this month?', 'How many orders were placed yesterday?', 'How many orders did we receive from this customer?'] as $scoped) {
+        assertSame(null, App\Services\AgentToolRegistry::aggregateAnswerFromSummary($scoped, $summary), 'The generic count must not silently ignore a qualifier');
+    }
     $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
     assertTrue(str_contains($controller, "agentRun('admin', 'local'"), 'Owner aggregate path must be monitored distinctly');
 };
