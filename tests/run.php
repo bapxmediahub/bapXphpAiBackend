@@ -1547,6 +1547,32 @@ $tests['AI transport diagnostics distinguish causes without assuming the provide
     );
 };
 
+$tests['verified refunds stay separate from fulfillment and are visible on customer order surfaces'] = function (): void {
+    $base = ['total' => 1000, 'status' => 'delivered', 'verified_refunds' => []];
+    assertSame('none', \App\Services\OrderService::refundState($base), 'An order without gateway refunds is not refunded');
+    $partial = $base + [];
+    $partial['verified_refunds'] = [['id' => 'rfnd_partial', 'amount_paise' => 25000]];
+    assertSame(
+        ['state'=>'partial', 'label'=>'Partially refunded', 'refunded_paise'=>25000, 'remaining_paise'=>75000],
+        \App\Services\OrderService::refundSummary($partial),
+        'A partial refund must retain the remaining paid balance'
+    );
+    $full = $base;
+    $full['verified_refunds'] = [['id' => 'rfnd_full', 'amount_paise' => 100000]];
+    assertSame('full', \App\Services\OrderService::refundState($full), 'A refund covering the total is fully refunded');
+    assertSame('delivered', $full['status'], 'Refund state must not overwrite fulfillment history');
+
+    $admin = file_get_contents(app_path('views/admin/detail.php'));
+    $detail = file_get_contents(app_path('views/account/order.php'));
+    $list = file_get_contents(app_path('views/account/orders.php'));
+    foreach ([$admin, $detail, $list] as $surface) {
+        assertTrue(str_contains($surface, 'refundSummary'), 'Every order surface must derive the same verified refund label');
+    }
+    assertTrue(str_contains($admin, 'Remaining paid') && str_contains($admin, "state'] !== 'full'"),
+        'Admin detail must show the balance and stop accepting references after a full refund');
+    assertTrue(str_contains($detail, 'remains paid'), 'Customer detail must explain the balance on a partial refund');
+};
+
 $tests['product breadcrumb uses the category identifier accepted by the shop'] = function (): void {
     $product = file_get_contents(app_path('views/public/product.php'));
     assertTrue(str_contains($product, "rawurlencode(trim((string)\$product['category']))"), 'Category filter must use the encoded stored category, not an absent category_slug');

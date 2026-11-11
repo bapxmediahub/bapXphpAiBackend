@@ -51,6 +51,31 @@ final class OrderService {
         return array_sum(array_column($order['verified_refunds'] ?? [], 'amount_paise'));
     }
 
+    /** Payment state stays separate from fulfillment status such as shipped/delivered. */
+    public static function refundState(array $order): string {
+        $refunded = self::refundedPaise($order);
+        if ($refunded <= 0) return 'none';
+        $total = max(0, (int)round((float)($order['total'] ?? 0) * 100));
+        return $total > 0 && $refunded >= $total ? 'full' : 'partial';
+    }
+
+    /** @return array{state:string,label:string,refunded_paise:int,remaining_paise:int} */
+    public static function refundSummary(array $order): array {
+        $refunded = self::refundedPaise($order);
+        $total = max(0, (int)round((float)($order['total'] ?? 0) * 100));
+        $state = self::refundState($order);
+        return [
+            'state' => $state,
+            'label' => match ($state) {
+                'full' => 'Fully refunded',
+                'partial' => 'Partially refunded',
+                default => 'Not refunded',
+            },
+            'refunded_paise' => $refunded,
+            'remaining_paise' => max(0, $total - $refunded),
+        ];
+    }
+
     /** Correct a paid review record and issue its first immutable tax snapshot. */
     public function resolveTaxReview(string $id, string $shippingState, array $settings): array {
         return $this->store->resolveOrderTaxReview($id, $shippingState, $settings);

@@ -29,11 +29,14 @@ $__first = $__name !== '' ? explode(' ', $__name)[0] : '';
     <div class="account-layout">
         <?php require __DIR__ . '/_nav.php'; ?>
         <div class="account-content">
-            <?php $refundedPaise = \App\Services\OrderService::refundedPaise($order); ?>
-            <?php if ($refundedPaise > 0): ?>
+            <?php $refundSummary = \App\Services\OrderService::refundSummary($order); ?>
+            <?php if ($refundSummary['state'] !== 'none'): ?>
                 <p class="flash flash--success">
-                    <?= $refundedPaise >= (int)round((float)($order['total'] ?? 0) * 100) ? 'Fully refunded' : 'Partially refunded' ?>
-                    · ₹<?= e(number_format($refundedPaise / 100, 2)) ?>
+                    <?= e($refundSummary['label']) ?>
+                    · ₹<?= e(number_format($refundSummary['refunded_paise'] / 100, 2)) ?> returned
+                    <?php if ($refundSummary['state'] === 'partial'): ?>
+                        · ₹<?= e(number_format($refundSummary['remaining_paise'] / 100, 2)) ?> remains paid
+                    <?php endif; ?>
                 </p>
             <?php endif; ?>
 

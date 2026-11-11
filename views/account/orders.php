@@ -40,6 +40,12 @@
                                     [$__label, $__tone] = $__map[$__raw] ?? [ucfirst($__raw), 'default'];
                                     ?>
                                     <span class="badge badge--<?= e($__tone) ?>"><?= e($__label) ?></span>
+                                    <?php $__refund = \App\Services\OrderService::refundSummary($order); ?>
+                                    <?php if ($__refund['state'] !== 'none'): ?>
+                                        <span class="badge badge--success" style="display:block; margin-top:var(--space-xs); width:max-content;">
+                                            <?= e($__refund['label']) ?> · ₹<?= e(number_format($__refund['refunded_paise'] / 100, 2)) ?>
+                                        </span>
+                                    <?php endif; ?>
                                 </td>
                                 <td style="font-weight:600; color:var(--color-maroon);">₹<?= e((string)($order['total'] ?? 0)) ?></td>
                                 <td style="font-size:0.85rem; color:var(--color-text-muted);">
