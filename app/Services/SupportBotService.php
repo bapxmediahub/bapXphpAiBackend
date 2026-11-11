@@ -14,6 +14,18 @@ final class SupportBotService {
         $reason = null;
         $message = trim($message);
         if ($message === '') throw new \InvalidArgumentException('Message is required.');
+        // Exact general tracking questions use the store policy without loading account data.
+        if (preg_match('/^(?:how (?:can|do) i|where can i) track (?:an order|orders)[?!.]*$/i', $message)
+            && module_on('shop')) {
+            $reply = $this->policies()['tracking'];
+            (new AuditLogService($this->store))->agentRun('support', 'local', $startedAt);
+            return [
+                'reply' => $reply,
+                'ticket_id' => null,
+                'memory' => 'browser_session',
+                'actions' => $this->extractActions($reply),
+            ];
+        }
         $context = $this->customerContext($user);
         // A guest reaches the model too. Assigning them a canned reply first meant the
         // AI never ran for the public widget, so every question returned the same menu.
