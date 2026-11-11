@@ -101,6 +101,14 @@ final class RemoteDbController {
                 echo json_encode(['success' => true, 'result' => $result]);
                 return;
             }
+            if ($collection === 'orders' && $action === 'update_order_status') {
+                $result = $store->updateOrderStatus(
+                    (string)($input['id'] ?? ''), (string)($input['status'] ?? ''),
+                    new \DateTimeImmutable((string)($input['now'] ?? 'now')), $input['tracking'] ?? []
+                );
+                echo json_encode(['success' => true, 'result' => $result]);
+                return;
+            }
             if ($action === 'upsert') {
                 $record = $input['record'] ?? null;
                 if (!is_array($record) || empty($record['id'])) throw new \InvalidArgumentException('Record id is required.');
