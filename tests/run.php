@@ -196,6 +196,13 @@ $tests['first party telemetry only records allowlisted events and SEO checks are
     assertSame(3,$seo['total_issues'],'Local SEO checks reveal short descriptions, missing images and missing excerpt');
 };
 
+$tests['development fixture remote mutations include authentication without command line secrets'] = static function (): void {
+    $cli = file_get_contents(app_path('cli/bapXphp'));
+    assertTrue(str_contains($cli, '"password"=>getenv("BAPX_MYSQL_PASS")'), 'Remote mutation payloads must authenticate against the existing database bridge');
+    assertTrue(substr_count($cli, '"password"=>getenv("BAPX_MYSQL_PASS")') >= 2, 'Both upsert and delete authenticate');
+    assertTrue(str_contains($cli, 'printf \'%s\' "$payload" | curl'), 'Post body must be sent over stdin, not placed in curl command arguments');
+    assertTrue(str_contains($cli, '--data-binary @-'), 'Remote mutation should stream the authenticated JSON body');
+};
 
 $tests['database service can connect to MySQL'] = function (): void {
     try {
