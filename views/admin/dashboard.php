@@ -20,6 +20,24 @@
         <?php endforeach; ?>
     </nav>
 </section>
+<section class="admin-card" aria-labelledby="insights-title" style="margin:var(--space-lg) 0;">
+    <h2 id="insights-title">Commerce &amp; SEO insights</h2>
+    <p>Measured from saved paid orders and current published content. These are first-party checks, not Search Console impressions or traffic estimates.</p>
+    <div class="admin-stats" style="margin:var(--space-md) 0;">
+        <div class="admin-stat"><div class="admin-stat__value"><?= (int)($commerceInsights['orders'] ?? 0) ?></div><div class="admin-stat__label">Paid orders this period</div></div>
+        <div class="admin-stat"><div class="admin-stat__value">₹<?= e(number_format((float)($commerceInsights['revenue'] ?? 0),2)) ?></div><div class="admin-stat__label">Net sales this period</div></div>
+        <div class="admin-stat"><div class="admin-stat__value"><?= (int)($seoInsights['total_issues'] ?? 0) ?></div><div class="admin-stat__label">Content quality issues</div></div>
+    </div>
+    <?php if (!empty($seoInsights['issues'])): ?>
+    <details><summary>Review <?= (int)$seoInsights['total_issues'] ?> catalog and article quality checks</summary>
+        <div class="table-wrap"><table><thead><tr><th>Type</th><th>Item</th><th>Issue</th></tr></thead><tbody>
+        <?php foreach (array_slice($seoInsights['issues'],0,20) as $issue): ?>
+        <tr><td><?= e($issue['type']) ?></td><td><?= e($issue['item']) ?></td><td><?= e($issue['issue']) ?></td></tr>
+        <?php endforeach; ?>
+        </tbody></table></div>
+    </details>
+    <?php else: ?><p>No catalog or article metadata issues found by these local checks.</p><?php endif; ?>
+</section>
 
 <div class="admin-stats">
     <div class="admin-stat">

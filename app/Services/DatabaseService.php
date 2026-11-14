@@ -448,6 +448,85 @@ final class DatabaseService {
         $stmt->execute($params);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
+    /** Private conversation table; never serve this through a public JSON/asset path. */
+    private function ensureAgentConversations(): void {
+        $this->db()->exec('CREATE TABLE IF NOT EXISTS agent_conversations (
+            id VARCHAR(32) PRIMARY KEY,
+            _data JSON NOT NULL,
+            _owner VARCHAR(255) NOT NULL,
+            _status VARCHAR(30) NOT NULL,
+            _created_at DATETIME NOT NULL,
+            _updated_at DATETIME NOT NULL,
+            INDEX idx_agent_updated (_updated_at),
+            INDEX idx_agent_owner (_owner)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+    }
+
+    /** Serialize concurrent requests, preserve actor ownership, and append a complete turn. */
+    public function appendAgentConversation(string $id, string $surface, array $actor, array $turn): array {
+        if (!preg_match('/^[a-f0-9]{32}$/D', $id) || !in_array($surface,['admin','support'],true)
+            || !in_array($actor['type'] ?? '', ['guest','customer','admin'],true)
+            || trim((string)($actor['id'] ?? '')) === '') {
+            throw new \InvalidArgumentException('Invalid conversation identity');
+        }
+        if ($this->isTestMode()) return ['id'=>$id,'surface'=>$surface,'actor'=>$actor,'turns'=>[$turn]];
+        if ($this->isRemote()) {
+            return $this->remoteMutation('append_agent_turn','agent_conversations', [
+                'id'=>$id,'surface'=>$surface,'actor'=>$actor,'turn'=>$turn
+            ])['result'];
+        }
+        $this->ensureAgentConversations();
+        $pdo = $this->db();
+        $pdo->beginTransaction();
+        try {
+            $pdo->prepare('INSERT IGNORE INTO agent_conversations
+                (id,_data,_owner,_status,_created_at,_updated_at)
+                VALUES (?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())')
+                ->execute([$id, json_encode([
+                    'id'=>$id,'surface'=>$surface,'actor'=>$actor,
+                    'started_at'=>gmdate('c'),'turns'=>[]
+                ],JSON_THROW_ON_ERROR),$actor['type'].':'.$actor['id'],$surface]);
+            $stmt = $pdo->prepare('SELECT _data FROM agent_conversations WHERE id=? FOR UPDATE');
+            $stmt->execute([$id]);
+            $document = json_decode((string)$stmt->fetchColumn(),true,flags:JSON_THROW_ON_ERROR);
+            if (($document['actor']['type'] ?? null) !== $actor['type']
+                || ($document['actor']['id'] ?? null) !== $actor['id']
+                || ($document['surface'] ?? null) !== $surface) {
+                throw new \RuntimeException('Conversation not accessible to this actor');
+            }
+            if (count($document['turns']) >= 200) throw new \RuntimeException('Start a new conversation');
+            $document['turns'][] = $turn;
+            $document['updated_at'] = gmdate('c');
+            $pdo->prepare('UPDATE agent_conversations SET _data=?,_updated_at=UTC_TIMESTAMP() WHERE id=?')
+                ->execute([json_encode($document,JSON_THROW_ON_ERROR|JSON_INVALID_UTF8_SUBSTITUTE),$id]);
+            $pdo->commit();
+            return $document;
+        } catch (\Throwable $e) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    public function agentConversation(string $id): ?array {
+        if (!preg_match('/^[a-f0-9]{32}$/D', $id)) return null;
+        if ($this->isTestMode()) return null;
+        if ($this->isRemote()) return $this->remoteMutation('get_agent_conversation','agent_conversations',['id'=>$id])['result'] ?? null;
+        $this->ensureAgentConversations();
+        $stmt=$this->db()->prepare('SELECT _data FROM agent_conversations WHERE id=?');
+        $stmt->execute([$id]);
+        $data=$stmt->fetchColumn();
+        return $data === false ? null : json_decode((string)$data,true,flags:JSON_THROW_ON_ERROR);
+    }
+
+    public function agentConversations(int $limit = 40): array {
+        $limit=max(1,min(100,$limit));
+        if ($this->isTestMode()) return [];
+        if ($this->isRemote()) return $this->remoteMutation('list_agent_conversations','agent_conversations',['limit'=>$limit])['result'];
+        $this->ensureAgentConversations();
+        $stmt=$this->db()->query('SELECT _data FROM agent_conversations ORDER BY _updated_at DESC LIMIT '.$limit);
+        return array_map(static fn(array $row):array=>json_decode($row['_data'],true,flags:JSON_THROW_ON_ERROR),$stmt->fetchAll(\PDO::FETCH_ASSOC));
+    }
+
     public function connection(): \PDO {
         if ($this->isTestMode()) throw new \RuntimeException('Database connection is disabled in test mode.');
         return $this->db();

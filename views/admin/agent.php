@@ -131,9 +131,11 @@
     const submit = document.getElementById('agent-submit');
     const suggestions = document.getElementById('agent-suggestions');
     const clear = document.getElementById('agent-clear');
+    let conversationId = null;
     clear.addEventListener('click', function () {
         if (submit.disabled) return;
         messages.replaceChildren();
+        conversationId = null;
         suggestions.style.display = '';
         clear.hidden = true;
         input.value = '';
@@ -362,6 +364,7 @@
         try {
             const body = 'message=' + encodeURIComponent(msg)
                 + '&_csrf=' + encodeURIComponent(document.querySelector('#agent-form input[name="_csrf"]')?.value || '');
+            if (conversationId) body.set('conversation_id', conversationId);
             const resp = await fetch('/admin/agent/ask', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -370,6 +373,7 @@
                 signal: abort.signal
             });
             const data = await resp.json().catch(() => ({ error: 'The server returned an unreadable response.' }));
+            if (typeof data.conversation_id === 'string') conversationId = data.conversation_id;
             if (!resp.ok || data.error) {
                 failed = true;
                 thinking.className = 'agent-bubble agent-bubble--error';

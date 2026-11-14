@@ -133,7 +133,11 @@ final class SupportBotService {
         } else {
             $lookupStartedAt = microtime(true);
             try {
-                $facts = $this->agentContext->forSupportTickets($email, $lookup['reference'], $lookup['status'], $lookup['period']);
+                $facts = (new SupportToolRegistry(['email'=>$email], $this->agentContext))
+                    ->run('own_ticket_status', [
+                        'reference'=>$lookup['reference'], 'status'=>$lookup['status'], 'period'=>$lookup['period'],
+                    ]);
+                if (isset($facts['error'])) throw new \RuntimeException('Scoped lookup failed');
                 $toolStatus = 'complete';
             } catch (\Throwable) {
                 $toolStatus = 'error';

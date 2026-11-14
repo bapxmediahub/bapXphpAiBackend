@@ -60,6 +60,59 @@ function assertMinCount(int $min, array $items, string $msg): void {
 $failures = [];
 $tests = [];
 
+$tests['agent capability policies forbid support from enterprise data tools'] = static function (): void {
+    $policy = \App\Services\AgentCapabilityPolicy::class;
+    assertTrue(!$policy::allows('support','find_order', ['role'=>'admin','email'=>'admin@example.invalid']), 'Support cannot inherit enterprise order tools');
+    assertTrue(!$policy::allows('enterprise','sales_summary', ['role'=>'customer','email'=>'customer@example.invalid']), 'Customer cannot access enterprise analytics');
+    assertTrue($policy::allows('enterprise','sales_summary', ['role'=>'admin','email'=>'admin@example.invalid']), 'Admin can access scoped aggregate tool');
+    assertTrue(!$policy::allows('support','own_ticket_status', null), 'Guest cannot read private support tickets');
+    assertTrue($policy::allows('support','public_catalog', null), 'Guests can read public catalogue');
+    assertTrue(!$policy::allows('support','write_file', ['role'=>'admin']), 'Support has no write filesystem capability');
+    $tools = new \App\Services\SupportToolRegistry(null);
+    assertSame(['error'=>'Not permitted'], $tools->run('own_ticket_status', []), 'Missing actor must be rejected before query');
+    assertSame(['error'=>'Invalid policy'], $tools->run('public_policy',['key'=>'internal-secret']), 'Unknown policy rejected');
+};
+
+$tests['agent conversations validate identity and deterministic evaluations'] = static function (): void {
+    $service = new \App\Services\AgentConversationService();
+    $guest = $service::actor('support', null);
+    assertSame('guest', $guest['type'], 'Guest identity is anonymous');
+    assertTrue(strlen($guest['id'])===32, 'Guest ID is securely generated');
+    $record = $service->record('support',$guest,null,'Where is my order?',
+        'Please sign in for your order.',bin2hex(random_bytes(8)),'private_account');
+    assertSame(1,$record['turns'],'Test-mode conversation receives a turn');
+    assertTrue($record['evaluation']['passed'],'Safe non-sensitive support reply passes');
+    assertTrue(!\App\Services\AgentEvaluationService::evaluate('support','help','sk-proj-EXAMPLESECRET123456789',[])['passed'],
+        'An exposed key fails deterministic evaluation');
+    assertTrue(!\App\Services\AgentEvaluationService::evaluate('support','help','<analysis>hidden',[])['passed'],
+        'Exposed scaffolding fails deterministic evaluation');
+    try {
+        $service::actor('admin',['role'=>'customer','email'=>'u@example.invalid']);
+        throw new \RuntimeException('Expected admin authorization rejection');
+    } catch (\RuntimeException $error) {
+        assertSame('Admin access required.', $error->getMessage(), 'Admin role is enforced server-side');
+    }
+};
+
+$tests['first party telemetry only records allowlisted events and SEO checks are deterministic'] = static function (): void {
+    $events = [
+        ['event'=>'commerce.event','created_at'=>date('c'),'meta'=>['event'=>'cart_add']],
+        ['event'=>'commerce.event','created_at'=>date('c'),'meta'=>['event'=>'checkout_initiated']],
+        ['event'=>'commerce.event','created_at'=>date('c'),'meta'=>['event'=>'private_unknown']],
+    ];
+    $counts = \App\Services\SiteTelemetryService::counts($events);
+    assertSame(1,$counts['cart_add'],'Cart events counted');
+    assertSame(1,$counts['checkout_initiated'],'Checkout events counted');
+    assertSame(2,array_sum($counts),'Unknown events excluded');
+    $seo = \App\Services\SiteInsightsService::catalogSeo([
+        ['name'=>'Lamp','slug'=>'lamp','description'=>'Short','image_url'=>'']
+    ],[
+        ['title'=>'Example article','slug'=>'example','excerpt'=>'']
+    ]);
+    assertSame(3,$seo['total_issues'],'Local SEO checks reveal short descriptions, missing images and missing excerpt');
+};
+
+
 $tests['database service can connect to MySQL'] = function (): void {
     try {
         // Quick pre-check: verify the host is reachable before attempting PDO
@@ -1712,7 +1765,7 @@ $tests['both chat surfaces share accessible bounded request status'] = function 
         str_contains($controller, "'error'=>\$answer")
         && str_contains($controller, "'missing'=>\$attachments['missing']")
         && str_contains($controller, "'run'=>\$this->agentRunMeta(\$traceId, 'error'")
-        && str_contains($controller, '],502'),
+        && str_contains($controller, '] + $record,502'),
         'Provider failures must remain non-2xx while returning a secret-safe operator trace'
     );
     $admin = file_get_contents(app_path('views/layouts/admin.php'));

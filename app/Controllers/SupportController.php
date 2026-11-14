@@ -19,16 +19,24 @@ final class SupportController extends BaseController {
         $limiter->hit('support:' . $ip);
         $startedAt = microtime(true);
         $user = (new AuthService())->user();
+        $actor = \App\Services\AgentConversationService::actor('support', $user);
+        $conversationId = is_string($_POST['conversation_id'] ?? null) ? $_POST['conversation_id'] : null;
         // The agent reads the in-memory cart snapshot and does not change the session.
         session_write_close();
         $traceId = bin2hex(random_bytes(8));
         header('X-Agent-Trace: ' . $traceId);
         try {
             $answer = (new SupportBotService(traceId: $traceId))->answer($_POST['message'] ?? '', $user);
-            $this->jsonResponse($answer);
+            $record = (new \App\Services\AgentConversationService())->record(
+                'support', $actor, $conversationId, (string)($_POST['message'] ?? ''),
+                (string)($answer['reply'] ?? ''), $traceId, 'answered',
+                [], isset($answer['ticket_id']) ? (string)$answer['ticket_id'] : null
+            );
+            $this->jsonResponse($answer + $record);
         } catch (\Throwable $e) {
             (new \App\Services\AuditLogService())->agentRun('support', 'error', $startedAt, 'internal_error', traceId: $traceId);
-            $this->jsonResponse(['error' => 'Unable to answer right now. Please try again.'], 400);
+            error_log('Support request or audit persistence failed (' . get_class($e) . ')');
+            $this->jsonResponse(['error' => 'Unable to complete or save the support request. Please retry.'], 503);
         }
     }
 

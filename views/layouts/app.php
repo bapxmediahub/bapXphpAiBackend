@@ -488,7 +488,7 @@ document.addEventListener('error',function(event){
     image.dataset.fallbackApplied='true';
     image.src=image.dataset.productImageFallback;
 },true);
-var supportFab=document.querySelector('.support-fab'),supportPanel=document.getElementById('support-panel'),supportClose=document.querySelector('.support-panel__close'),supportForm=document.getElementById('support-form'),supportLog=document.getElementById('support-log');
+var supportFab=document.querySelector('.support-fab'),supportPanel=document.getElementById('support-panel'),supportClose=document.querySelector('.support-panel__close'),supportForm=document.getElementById('support-form'),supportLog=document.getElementById('support-log'),supportConversationId=null;
 function supportEscape(value){return String(value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c];});}
 function supportReplyHtml(value){var safe=supportEscape(value);var allowed=/\/(?:shop|cart|checkout|temples|contact|blog(?:\/[a-z0-9-]+|\/category\/[a-z0-9-]+)?|product\/(?:[a-z0-9-]|%20)+|account\/dashboard(?:\/orders|\/install)?)(?=$|[\s.,)])/gi;return safe.replace(allowed,function(path){return '<a class="support-action" href="'+path+'">Open '+supportEscape(path.replace(/^\//,'').replace(/%20|[-/]/g,' '))+'</a>';});}
 function supportActionsHtml(actions){if(!actions||!actions.length)return'';var h='<div class="support-actions">';for(var i=0;i<actions.length;i++){var a=actions[i];if(a.type==='navigate'&&a.path){h+='<a class="btn btn-sm btn-outline support-action-btn" href="'+supportEscape(a.path)+'">'+supportEscape(a.label)+'</a>';}}return h+'</div>';}
@@ -502,6 +502,7 @@ if(supportForm){supportForm.addEventListener('submit',async function(e){
     e.preventDefault();
     if(supportForm.dataset.busy==='true')return;
     var data=new FormData(supportForm),msg=String(data.get('message')||'').trim();
+    if(supportConversationId)data.set('conversation_id',supportConversationId);
     if(!msg||!supportLog)return;
     supportForm.dataset.busy='true';
     var controls=Array.from(supportForm.querySelectorAll('textarea,button'));
@@ -514,6 +515,7 @@ if(supportForm){supportForm.addEventListener('submit',async function(e){
     try{
         var r=await fetch('/support/ask',{method:'POST',body:data,signal:abort.signal});
         var j=await r.json();failed=!r.ok||!!j.error;
+        if(typeof j.conversation_id==='string')supportConversationId=j.conversation_id;
         supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> '+supportReplyHtml(j.reply||j.error||'Unable to answer right now.')+'</p>'+(j.actions?supportActionsHtml(j.actions):''));
     }catch(err){failed=true;supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> Unable to answer right now. Please try again.</p>');}
     finally{
