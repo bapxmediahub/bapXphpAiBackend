@@ -62,6 +62,8 @@ $tests = [];
 
 $tests['each chat can produce one private JSON snapshot'] = static function (): void {
     $old = getenv('BAPX_AGENT_JSON_DIR');
+    $oldTestMode = getenv('BAPX_TEST_MODE');
+    putenv('BAPX_TEST_MODE=1');
     $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
     assertTrue(mkdir($root,0700), 'Private test directory exists');
     putenv('BAPX_AGENT_JSON_DIR='.$root);
@@ -80,6 +82,7 @@ $tests['each chat can produce one private JSON snapshot'] = static function (): 
         foreach (glob($root.'/*')?:[] as $f) @unlink($f);
         @rmdir($root);
         putenv($old === false ? 'BAPX_AGENT_JSON_DIR' : 'BAPX_AGENT_JSON_DIR='.$old);
+        putenv($oldTestMode === false ? 'BAPX_TEST_MODE' : 'BAPX_TEST_MODE='.$oldTestMode);
     }
 };
 
@@ -120,6 +123,9 @@ $tests['agent capability policies forbid support from enterprise data tools'] = 
 };
 
 $tests['agent conversations validate identity and deterministic evaluations'] = static function (): void {
+    $oldTestMode = getenv('BAPX_TEST_MODE');
+    putenv('BAPX_TEST_MODE=1');
+    try {
     $service = new \App\Services\AgentConversationService();
     $guest = $service::actor('support', null);
     assertSame('guest', $guest['type'], 'Guest identity is anonymous');
@@ -137,6 +143,9 @@ $tests['agent conversations validate identity and deterministic evaluations'] = 
         throw new \RuntimeException('Expected admin authorization rejection');
     } catch (\RuntimeException $error) {
         assertSame('Admin access required.', $error->getMessage(), 'Admin role is enforced server-side');
+    }
+    } finally {
+        putenv($oldTestMode === false ? 'BAPX_TEST_MODE' : 'BAPX_TEST_MODE='.$oldTestMode);
     }
 };
 
