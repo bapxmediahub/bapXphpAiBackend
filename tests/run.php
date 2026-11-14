@@ -83,6 +83,12 @@ $tests['each chat can produce one private JSON snapshot'] = static function (): 
     }
 };
 
+$tests['monitoring never loads full private transcript bodies for the session list'] = static function (): void {
+    $db = file_get_contents(app_path('app/Services/DatabaseService.php'));
+    assertTrue(str_contains($db,"JSON_LENGTH(JSON_EXTRACT(_data, '$.turns')) AS turn_count"), 'Session list queries metadata only');
+    assertTrue(str_contains($db,"JSON_UNQUOTE(JSON_EXTRACT(_data, '$.passed_turns'))"), 'Evaluation summary is projected without turn bodies');
+};
+
 $tests['agent transcripts redact obvious secrets'] = static function (): void {
     $scrub = \App\Services\AgentTranscriptSanitizer::class;
     $source = 'password=exampleSECRET123 api_key:mykey123 Bearer token1234567890 sk-proj-ABCDEF123456789012';

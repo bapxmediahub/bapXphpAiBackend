@@ -496,6 +496,7 @@ final class DatabaseService {
             }
             if (count($document['turns']) >= 200) throw new \RuntimeException('Start a new conversation');
             $document['turns'][] = $turn;
+            $document['passed_turns'] = (int)($document['passed_turns']??0) + (!empty($turn['evaluation']['passed']) ? 1 : 0);
             $document['updated_at'] = gmdate('c');
             $pdo->prepare('UPDATE agent_conversations SET _data=?,_updated_at=UTC_TIMESTAMP() WHERE id=?')
                 ->execute([json_encode($document,JSON_THROW_ON_ERROR|JSON_INVALID_UTF8_SUBSTITUTE),$id]);
@@ -523,8 +524,22 @@ final class DatabaseService {
         if ($this->isTestMode()) return [];
         if ($this->isRemote()) return $this->remoteMutation('list_agent_conversations','agent_conversations',['limit'=>$limit])['result'];
         $this->ensureAgentConversations();
-        $stmt=$this->db()->query('SELECT _data FROM agent_conversations ORDER BY _updated_at DESC LIMIT '.$limit);
-        return array_map(static fn(array $row):array=>json_decode($row['_data'],true,flags:JSON_THROW_ON_ERROR),$stmt->fetchAll(\PDO::FETCH_ASSOC));
+        // Never hydrate full private chat bodies just to render monitoring rows.
+        $sql = "SELECT id, _owner, _status, _updated_at,
+            JSON_LENGTH(JSON_EXTRACT(_data, '$.turns')) AS turn_count,
+            JSON_UNQUOTE(JSON_EXTRACT(_data, '$.passed_turns')) AS passed_turns
+            FROM agent_conversations ORDER BY _updated_at DESC LIMIT ".$limit;
+        $rows = $this->db()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        return array_map(static function(array $row):array {
+            [$type,$id] = array_pad(explode(':',(string)$row['_owner'],2),2,'');
+            return [
+                'id'=>$row['id'], 'surface'=>$row['_status'],
+                'actor'=>['type'=>$type,'id'=>$id],
+                'updated_at'=>$row['_updated_at'],
+                'turn_count'=>(int)$row['turn_count'],
+                'passed_turns'=>(int)($row['passed_turns']??0),
+            ];
+        },$rows);
     }
 
     public function connection(): \PDO {

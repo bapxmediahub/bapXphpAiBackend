@@ -80,16 +80,16 @@
     <?php if (empty($agentConversations)): ?><p>No persisted conversations available yet.</p><?php else: ?>
     <div class="table-wrap"><table><thead><tr><th>Chat</th><th>Actor</th><th>Last activity (UTC)</th><th>Turns</th><th>Evals passed</th><th>Audit JSON</th></tr></thead><tbody>
     <?php foreach ($agentConversations as $conversation):
-        $turns = $conversation['turns'] ?? [];
-        $passed = count(array_filter($turns, static fn($turn) => !empty($turn['evaluation']['passed'])));
+        $turnCount = (int)($conversation['turn_count'] ?? 0);
+        $passed = (int)($conversation['passed_turns'] ?? 0);
         $cid = (string)($conversation['id'] ?? '');
     ?>
         <tr>
             <td><?= e((string)($conversation['surface'] ?? '')) ?></td>
             <td><?= e((string)($conversation['actor']['type'] ?? '')) ?> · <?= e(mb_substr((string)($conversation['actor']['id'] ?? ''),0,64)) ?></td>
             <td><?= e((string)($conversation['updated_at'] ?? $conversation['started_at'] ?? '')) ?></td>
-            <td><?= count($turns) ?></td>
-            <td><?= $passed ?>/<?= count($turns) ?></td>
+            <td><?= $turnCount ?></td>
+            <td><?= $passed ?>/<?= $turnCount ?></td>
             <td><a href="/admin/agent/conversation/<?= e($cid) ?>">Export JSON</a></td>
         </tr>
     <?php endforeach; ?>
