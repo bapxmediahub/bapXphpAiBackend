@@ -948,10 +948,10 @@ cmd_db_upsert() {
   [ -n "$collection" ] && [ -n "$record" ] || die "Usage: bapXphp db upsert <collection> '<json record>'"
   php -r 'json_decode($argv[1], true, 512, JSON_THROW_ON_ERROR);' "$record" >/dev/null 2>&1 || die "Record must be valid JSON."
   local payload
-  payload=$(php -r 'echo json_encode(["action"=>"upsert","collection"=>$argv[1],"record"=>json_decode($argv[2],true,512,JSON_THROW_ON_ERROR)]);' "$collection" "$record") || die "Unable to encode record."
-  curl -sS --max-time 15 -X POST "$REMOTE_DB_URL" \
+  payload=$(php -r 'echo json_encode(["action"=>"upsert","collection"=>$argv[1],"password"=>getenv("BAPX_MYSQL_PASS"),"record"=>json_decode($argv[2],true,512,JSON_THROW_ON_ERROR)],JSON_THROW_ON_ERROR);' "$collection" "$record") || die "Unable to encode record."
+  printf '%s' "$payload" | curl -sS --max-time 15 -X POST "$REMOTE_DB_URL" \
     -H "Content-Type: application/json" \
-    -d "$payload" \
+    --data-binary @- \
     | php -r '
       $result = json_decode(file_get_contents("php://stdin"), true) ?: [];
       if (empty($result["success"])) { fwrite(STDERR, "Remote mutation failed: " . ($result["error"] ?? "Unknown error") . "\n"); exit(1); }
@@ -963,10 +963,10 @@ cmd_db_delete() {
   local collection="$1" id="$2"
   [ -n "$collection" ] && [ -n "$id" ] || die "Usage: bapXphp db delete <collection> <id>"
   local payload
-  payload=$(php -r 'echo json_encode(["action"=>"delete","collection"=>$argv[1],"id"=>$argv[2]]);' "$collection" "$id")
-  curl -sS --max-time 15 -X POST "$REMOTE_DB_URL" \
+  payload=$(php -r 'echo json_encode(["action"=>"delete","collection"=>$argv[1],"password"=>getenv("BAPX_MYSQL_PASS"),"id"=>$argv[2]],JSON_THROW_ON_ERROR);' "$collection" "$id")
+  printf '%s' "$payload" | curl -sS --max-time 15 -X POST "$REMOTE_DB_URL" \
     -H "Content-Type: application/json" \
-    -d "$payload" \
+    --data-binary @- \
     | php -r '
       $result = json_decode(file_get_contents("php://stdin"), true) ?: [];
       if (empty($result["success"])) { fwrite(STDERR, "Remote mutation failed: " . ($result["error"] ?? "Unknown error") . "\n"); exit(1); }
