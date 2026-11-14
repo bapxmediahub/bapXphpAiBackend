@@ -7,7 +7,7 @@
         "controllers": 12,
         "services": 60,
         "views": 51,
-        "collections": 23
+        "collections": 22
     },
     "routes": [
         {
@@ -1566,7 +1566,6 @@
     ],
     "collections": [
         "addresses",
-        "agent_conversations",
         "appointments",
         "astrologers",
         "audit_events",
@@ -1634,8 +1633,6 @@
                 ]
             }
         ],
-        "unwired_schema_collections": [
-            "agent_conversations"
-        ]
+        "unwired_schema_collections": []
     }
 }

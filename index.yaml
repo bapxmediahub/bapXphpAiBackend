@@ -37,7 +37,7 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 370
+  concepts: 369
   relationships: 270
   by_type:
     blog: 14
@@ -45,7 +45,7 @@ summary:
     doc: 36
     image: 89
     route: 126
-    schema: 23
+    schema: 22
     service: 60
     skill: 10
 concepts:
@@ -3666,16 +3666,6 @@ concepts:
       - "schema"
     data_source: "remotedb"
     collection: "addresses"
-    schema_file: "storage/schema/collections.php"
-  - id: "schema:agent_conversations"
-    type: "schema"
-    title: "agent_conversations"
-    description: "Schema collection: agent_conversations"
-    resource: "storage/schema/collections.php"
-    tags:
-      - "schema"
-    data_source: "remotedb"
-    collection: "agent_conversations"
     schema_file: "storage/schema/collections.php"
   - id: "schema:appointments"
     type: "schema"

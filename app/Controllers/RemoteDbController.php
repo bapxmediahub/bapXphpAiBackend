@@ -141,22 +141,6 @@ final class RemoteDbController {
                 echo json_encode(['success' => true, 'result' => $result]);
                 return;
             }
-            if ($collection === 'agent_conversations') {
-                if ($action === 'append_agent_turn') {
-                    $result = $store->appendAgentConversation(
-                        (string)($input['id'] ?? ''), (string)($input['surface'] ?? ''),
-                        (array)($input['actor'] ?? []), (array)($input['turn'] ?? [])
-                    );
-                } elseif ($action === 'get_agent_conversation') {
-                    $result = $store->agentConversation((string)($input['id'] ?? ''));
-                } elseif ($action === 'list_agent_conversations') {
-                    $result = $store->agentConversations((int)($input['limit'] ?? 40));
-                } else {
-                    throw new \InvalidArgumentException('Unsupported agent conversation operation');
-                }
-                echo json_encode(['success'=>true,'result'=>$result]);
-                return;
-            }
             if ($action === 'upsert') {
                 $record = $input['record'] ?? null;
                 if (!is_array($record) || empty($record['id'])) throw new \InvalidArgumentException('Record id is required.');

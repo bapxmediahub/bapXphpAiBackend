@@ -295,17 +295,6 @@
                 'free_shipping' => ['type' => 'boolean'],
             ],
         ],
-        'agent_conversations' => [
-            'primary_key' => 'id',
-            'admin_managed' => false,
-            'fields' => [
-                'id' => ['type' => 'string'],
-                'surface' => ['type' => 'string'],
-                'actor' => ['type' => 'object'],
-                'turns' => ['type' => 'array'],
-                'created_at' => ['type' => 'datetime'],
-            ],
-        ],
         'audit_events' => [
             'primary_key' => 'id',
             'admin_managed' => false,

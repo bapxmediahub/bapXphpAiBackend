@@ -1,36 +1,53 @@
 # Native PHP agent observability and commerce insights
 
-This implementation requires no paid telemetry or eval service. It extends the existing provider client, MySQL data layer and admin UI.
+The application has two PHP agent surfaces: Support and Enterprise. No paid
+telemetry platform, evaluation service, or separate chat database is required.
 
-## Surfaces and capabilities
-- Support uses `SupportToolRegistry`: published catalog/policy and authenticated customer ticket facts. All private lookups derive identity from PHP authentication; arbitrary SQL, admin tools, file writes and customer selectors are unavailable.
-- Enterprise uses `EnterpriseToolRegistry` on the existing `AgentToolRegistry` read-only allowlist. Admin role is verified by PHP before a lookup. Site changes continue through reviewable draft forms, not raw SQL or file writes.
-- `AgentInstructionService` versions baseline instructions separately for support and enterprise. Text instructions complement, never replace, enforced PHP permissions.
-- `AiClient` retains current model/provider compatibility and bounded tool execution. Provider secrets remain in configured integrations.
+## Capabilities and orchestration
 
-## Conversations and trace retention
-- MySQL `agent_conversations` is created on the database host when first used, using the existing remote DB bridge if needed. The runtime database user needs CREATE TABLE privileges for the first request, or the table must be provisioned in advance.
-- Each conversation is one JSON document in the private MySQL table, with actor type/id, timestamps, turns, tool summaries, provider status/timing and deterministic evaluation checks. Session IDs are random and access is checked against the authenticated actor. Browser-submitted report filters are **not** trusted as server-verified history.
-- The Admin Agent Monitoring page lists recent sessions and allows authenticated administrators to export individual JSON transcripts. The audit_events operational log remains metadata-only; it does not contain full conversation bodies.
-- For **one physical JSON file per chat**, provision a private directory outside document root and the application tree, restrict it to the PHP runtime user (mode 0700), and set `BAPX_AGENT_JSON_DIR` to its absolute path. Files are atomically refreshed as `<conversation-id>.json`, mode 0600. MySQL remains canonical; the file is a recoverable snapshot.
-- Transcripts can contain customer conversations. Establish retention, deletion/export access policy and storage encryption at rest before enabling broadly in production. Never store credentials, payment secrets or hidden model reasoning.
-- An unavailable transcript store currently fails the chat request rather than falsely claiming successful audit persistence. Payment/ticket actions must not be automatically retried in this state.
+- **Support** uses `SupportToolRegistry` with published shop/policy data and the authenticated customer's own scoped ticket records. It cannot run arbitrary SQL or write files.
+- **Enterprise** uses `EnterpriseToolRegistry`, which exposes only the existing named and validated read-only business queries. Drafted changes still require the admin's confirmation through normal forms.
+- `AgentCapabilityPolicy` enforces authorization in PHP, not by trusting model-generated arguments. `AgentInstructionService` supplies separately versioned instructions.
+- `AiClient` continues to handle configured model providers, bounded tool execution, and failover. Business records stay in the existing MySQL collections.
+
+## One JSON file per session
+
+- **Authoritative transcript location:** `storage/agent-conversations/<conversation-id>.json`, where the ID is a random 32-character hex string. No `agent_conversations` table exists and no conversation rows are written to MySQL.
+- On the first message, PHP creates the JSON file. Each additional message appends a turn to that same file. New chats get a new ID. Each JSON document contains the actor type and authenticated ID or anonymous guest token, timestamps, messages, trace IDs, bounded tool/provider metadata and evaluation results. Secrets are redacted before saving.
+- `AgentConversationService` uses a shared `.conversation.lock` and atomic temporary-file rename to prevent concurrent writes from losing turns. The lock is bookkeeping, not an additional conversation record.
+- The PHP runtime must be able to create/write files under `storage/agent-conversations/`. The directory is private (0700 when newly created) and JSON files are restricted to mode 0600. The tracked directory `.htaccess`, root `.htaccess` and built-in PHP server guard deny public access to /storage URLs. Never serve JSON transcripts as static files.
+- All conversation JSON files are ignored by Git and must be retained through hosting deployments. **Back up** `storage/agent-conversations/` separately, alongside the existing MySQL and media backups. They contain customer business data and should have an explicit retention/deletion policy and storage encryption where available.
+- Admin Agent Monitoring lists recent session metadata and offers an authenticated JSON export. It does not load all transcripts into the dashboard or expose them in the public UI.
+- User or admin chat questions and any report follow-up dates are loaded only from a session belonging to the authenticated actor. The browser cannot make another person's conversation accessible merely by supplying its ID.
+- Recording fails visibly when filesystem persistence is unavailable; avoid claiming that a support ticket or other action failed solely because its conversation audit could not be saved.
 
 ## Evaluations
-`AgentEvaluationService` performs deterministic safety/format checks per turn (empty answer, internal scaffold, secret-looking text, unsupported tool names and some enterprise source expectations). These are **basic assertions**, not claims of objective answer accuracy. `tests/run.php` contains permission, transcript, telemetry and SEO regression fixtures. Improve with reference datasets for exact GST/order totals, ownership isolation and instruction following before declaring production-level evaluation coverage.
 
-## Commerce and SEO data
-- First-party `cart_add` and `checkout_initiated` events record minimal metadata using the existing audit_events collection. No IP address, email, cookies or user profiling data is stored in these events.
-- Paid-order counts, net revenue and refunds come from saved orders via `StoreStatsService`. Funnel events are counts, not unique-user conversions.
-- `SiteInsightsService` scans published products/articles for missing titles, short text, image gaps and excerpts. These are site content checks, **not** search impressions, keyword rankings or organic traffic. Existing GA4/Search Console links remain optional; local insights work without them.
+`AgentEvaluationService` performs local deterministic checks for empty answers,
+internal response scaffolding, secret-like text, unsupported tool names and basic
+business lookup requirements. They are checks, **not** proof of factual accuracy or
+quality. Extend with golden financial, privacy and support-resolution fixtures
+before treating them as a production quality score.
 
-## Deployment checks
-Run `BAPX_TEST_MODE=1 php tests/run.php` and the project-map checks, then verify on staging:
-1. Guest/customer/admin sessions cannot read each other's chats or tool data.
-2. Multiple turns retain report scope across unrelated turns; new chat resets it.
-3. MySQL conversation append works through direct and remote paths, including concurrent requests.
-4. Admin export is private, correctly escaped and contains the expected turns.
-5. Checkout/cart events do not affect purchase success or payment verification on telemetry failure.
-6. Dashboard works with no conversations and no commerce events.
+## Commerce and SEO
 
-This branch is not a production deployment and does not claim live end-to-end verification.
+- First-party cart-add and checkout-start counts use the existing operational `audit_events` collection, independently of chat JSON files. No IP, raw prompt or customer email is stored in these event records.
+- Paid-order counts, net revenue and refund totals use `StoreStatsService`. These are business statistics, not unique-user web conversion rates.
+- `SiteInsightsService` checks published product/article metadata for missing titles, short descriptions, images and excerpts. These local checks do **not** measure Google search impressions, traffic or rankings.
+
+## Required verification
+
+Run `./bapXphp update`, `./bapXphp ci`, and `php tests/agent-concurrency.php`.
+The last command uses only a disposable local filesystem directory, creates
+no SQL tables and tests concurrent appends, actor isolation and session lists.
+
+Verify in Playwright on desktop and 375px mobile:
+
+1. Guests and logged-in customers can request support, and consecutive turns land in one JSON file.
+2. Admin Agent new chat resets its conversation ID and old report dates do not leak into another actor's chat.
+3. The admin monitoring view shows only summary metadata. Its authenticated export produces the right JSON, while unauthenticated direct file requests are denied.
+4. Files persist across the Hostinger Git auto-deployment flow.
+5. Cart/checkout telemetry failure never changes payment success or order persistence.
+
+The feature is not production-verified until the live host can write to storage
+and the authenticated end-to-end checks have passed.

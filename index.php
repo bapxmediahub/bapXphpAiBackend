@@ -8,6 +8,14 @@ if (str_starts_with((string)$uri, '/assets/images/astrologers/')) {
     exit('This image has been retired.');
 }
 
+// The built-in PHP server otherwise serves an existing /storage/*.json file
+// before application routing; Apache blocks /storage via .htaccess as well.
+if ($uri === '/storage' || str_starts_with((string)$uri, '/storage/')) {
+    http_response_code(404);
+    header('Cache-Control: no-store');
+    exit('Not found');
+}
+
 if (PHP_SAPI === 'cli-server' && is_file($file)) {
     return false;
 }

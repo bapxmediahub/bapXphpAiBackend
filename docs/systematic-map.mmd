@@ -12,9 +12,9 @@ flowchart LR
     arch_ctrl["> Controllers: 12"]:::arch
     arch_svc["> Services: 60"]:::arch
     arch_views["> Views: 51"]:::arch
-    arch_data["> Collections: 23 schema | 0 files"]:::arch
+    arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 20"]:::arch
-    arch_gaps["> Gaps: 7"]:::arch
+    arch_gaps["> Gaps: 6"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -322,7 +322,6 @@ flowchart LR
     collection_support_tickets["support_tickets"]:::data
     collection_categories["categories"]:::data
     collection_coupons["coupons"]:::data
-    collection_agent_conversations["agent_conversations"]:::data
     collection_audit_events["audit_events"]:::data
     collection_mail_queue["mail_queue"]:::data
     collection_mail_inbox["mail_inbox"]:::data
@@ -364,7 +363,6 @@ flowchart LR
     gap_95525e3d98["unwired_services: StoragePermissionService"]:::gap
     gap_6b9c2b4b5a["POST /admin/blog/enhance-title — missing AuditLogService"]:::gap
     gap_b4217badec["POST /admin/blog/enhance-content — missing AuditLogService"]:::gap
-    gap_59bc84db64["unwired_schema_collections: agent_conversations"]:::gap
   end
 
   route_get --> controller_publiccontroller
@@ -1011,4 +1009,3 @@ flowchart LR
   gap_95525e3d98 -. missing .-> service_storagepermissionservice
   gap_6b9c2b4b5a -. missing .-> controller_admincontroller
   gap_b4217badec -. missing .-> controller_admincontroller
-  gap_59bc84db64 -. missing .-> collection_agent_conversations

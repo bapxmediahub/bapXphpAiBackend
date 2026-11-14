@@ -60,36 +60,41 @@ function assertMinCount(int $min, array $items, string $msg): void {
 $failures = [];
 $tests = [];
 
-$tests['each chat can produce one private JSON snapshot'] = static function (): void {
-    $old = getenv('BAPX_AGENT_JSON_DIR');
-    $oldTestMode = getenv('BAPX_TEST_MODE');
-    putenv('BAPX_TEST_MODE=1');
+$tests['each agent session creates one private JSON file and no MySQL table'] = static function (): void {
     $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
-    assertTrue(mkdir($root,0700), 'Private test directory exists');
-    putenv('BAPX_AGENT_JSON_DIR='.$root);
+    assertTrue(mkdir($root, 0700), 'Private test directory exists');
     try {
-        $service = new \App\Services\AgentConversationService();
-        $record = $service->record('support',['type'=>'guest','id'=>str_repeat('a',32)],
-            null,'What is the policy?','You can check our public policy.',
-            bin2hex(random_bytes(8)),'local');
-        $path = $root.'/'.$record['conversation_id'].'.json';
-        assertTrue(is_file($path),'One private JSON snapshot exists for chat');
-        $doc = json_decode((string)file_get_contents($path),true,flags:JSON_THROW_ON_ERROR);
-        assertSame($record['conversation_id'],$doc['id'],'Snapshot matches stored conversation ID');
-        assertSame('What is the policy?',$doc['turns'][0]['question'],'Snapshot retains actual question');
-        assertTrue((fileperms($path)&077)===0,'Snapshot excludes group and world permissions');
+        $service = new \App\Services\AgentConversationService($root);
+        $record = $service->record('support', ['type'=>'guest','id'=>str_repeat('a',32)],
+            null, 'What is the policy?', 'You can check our public policy.',
+            bin2hex(random_bytes(8)), 'local');
+        $path = $root . '/' . $record['conversation_id'] . '.json';
+        assertTrue(is_file($path), 'A conversation JSON file exists');
+        $document = json_decode((string)file_get_contents($path), true, flags: JSON_THROW_ON_ERROR);
+        assertSame($record['conversation_id'], $document['id'], 'JSON file matches session ID');
+        assertSame('What is the policy?', $document['turns'][0]['question'], 'Transcript retains question');
+        assertTrue((fileperms($path) & 077) === 0, 'Transcript has private file permissions');
+        assertSame(1, count(glob($root.'/*.json') ?: []), 'Exactly one JSON file per chat');
+        $summaries = $service->recent(10);
+        assertSame(1, count($summaries), 'Monitoring lists the session');
+        assertSame(1, $summaries[0]['turn_count'], 'Monitoring includes the turn count');
+        assertTrue(!isset($summaries[0]['turns']), 'Monitoring does not include raw transcript text');
+        $db = file_get_contents(app_path('app/Services/DatabaseService.php'));
+        assertTrue(!str_contains($db, 'agent_conversations'), 'Conversation storage must not create a SQL table');
     } finally {
-        foreach (glob($root.'/*')?:[] as $f) @unlink($f);
+        foreach (glob($root.'/*') ?: [] as $file) @unlink($file);
+        @unlink($root.'/.conversation.lock');
         @rmdir($root);
-        putenv($old === false ? 'BAPX_AGENT_JSON_DIR' : 'BAPX_AGENT_JSON_DIR='.$old);
-        putenv($oldTestMode === false ? 'BAPX_TEST_MODE' : 'BAPX_TEST_MODE='.$oldTestMode);
     }
 };
 
-$tests['monitoring never loads full private transcript bodies for the session list'] = static function (): void {
-    $db = file_get_contents(app_path('app/Services/DatabaseService.php'));
-    assertTrue(str_contains($db,"JSON_LENGTH(JSON_EXTRACT(_data, '$.turns')) AS turn_count"), 'Session list queries metadata only');
-    assertTrue(str_contains($db,"JSON_UNQUOTE(JSON_EXTRACT(_data, '$.passed_turns'))"), 'Evaluation summary is projected without turn bodies');
+$tests['private storage routes cannot serve conversation transcripts'] = static function (): void {
+    $router = file_get_contents(app_path('index.php'));
+    $apache = file_get_contents(app_path('.htaccess'));
+    $directory = file_get_contents(app_path('storage/agent-conversations/.htaccess'));
+    assertTrue(str_contains($router, "str_starts_with((string)\$uri, '/storage/')"), 'Built-in PHP server denies direct storage requests');
+    assertTrue(str_contains($apache, 'storage|tools|tests|docs'), 'Production Apache rules forbid storage URLs');
+    assertTrue(str_contains($directory, 'Require all denied'), 'Conversation directory denies direct HTTP access');
 };
 
 $tests['agent transcripts redact obvious secrets'] = static function (): void {
@@ -123,29 +128,29 @@ $tests['agent capability policies forbid support from enterprise data tools'] = 
 };
 
 $tests['agent conversations validate identity and deterministic evaluations'] = static function (): void {
-    $oldTestMode = getenv('BAPX_TEST_MODE');
-    putenv('BAPX_TEST_MODE=1');
+    $root = sys_get_temp_dir() . '/sps-agent-identity-' . bin2hex(random_bytes(6));
+    assertTrue(mkdir($root, 0700), 'Private actor fixture directory exists');
     try {
-    $service = new \App\Services\AgentConversationService();
-    $guest = $service::actor('support', null);
-    assertSame('guest', $guest['type'], 'Guest identity is anonymous');
-    assertTrue(strlen($guest['id'])===32, 'Guest ID is securely generated');
-    $record = $service->record('support',$guest,null,'Where is my order?',
-        'Please sign in for your order.',bin2hex(random_bytes(8)),'private_account');
-    assertSame(1,$record['turns'],'Test-mode conversation receives a turn');
-    assertTrue($record['evaluation']['passed'],'Safe non-sensitive support reply passes');
-    assertTrue(!\App\Services\AgentEvaluationService::evaluate('support','help','sk-proj-EXAMPLESECRET123456789',[])['passed'],
-        'An exposed key fails deterministic evaluation');
-    assertTrue(!\App\Services\AgentEvaluationService::evaluate('support','help','<analysis>hidden',[])['passed'],
-        'Exposed scaffolding fails deterministic evaluation');
-    try {
-        $service::actor('admin',['role'=>'customer','email'=>'u@example.invalid']);
-        throw new \RuntimeException('Expected admin authorization rejection');
-    } catch (\RuntimeException $error) {
-        assertSame('Admin access required.', $error->getMessage(), 'Admin role is enforced server-side');
-    }
+        $service = new \App\Services\AgentConversationService($root);
+        $guest = $service::actor('support', null);
+        assertSame('guest', $guest['type'], 'Guest identity is anonymous');
+        assertTrue(strlen($guest['id']) === 32, 'Guest ID is securely generated');
+        $record = $service->record('support', $guest, null, 'Where is my order?',
+            'Please sign in for your order.', bin2hex(random_bytes(8)), 'private_account');
+        assertSame(1, $record['turns'], 'Conversation receives a turn');
+        assertTrue($record['evaluation']['passed'], 'Non-sensitive support reply passes');
+        assertTrue(!\App\Services\AgentEvaluationService::evaluate('support','help','sk-proj-EXAMPLESECRET123456789',[])['passed'], 'Secret-like key fails evaluation');
+        assertTrue(!\App\Services\AgentEvaluationService::evaluate('support','help','<analysis>hidden',[])['passed'], 'Exposed scaffolding fails evaluation');
+        try {
+            $service::actor('admin', ['role'=>'customer','email'=>'u@example.invalid']);
+            throw new \RuntimeException('Expected admin authorization rejection');
+        } catch (\RuntimeException $error) {
+            assertSame('Admin access required.', $error->getMessage(), 'Admin role is enforced server-side');
+        }
     } finally {
-        putenv($oldTestMode === false ? 'BAPX_TEST_MODE' : 'BAPX_TEST_MODE='.$oldTestMode);
+        foreach (glob($root.'/*') ?: [] as $file) @unlink($file);
+        @unlink($root.'/.conversation.lock');
+        @rmdir($root);
     }
 };
 
