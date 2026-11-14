@@ -34,6 +34,7 @@ final class AgentToolRegistry
     }
 
     private array $sources = [];
+    private array $reportContexts = [];
     private array $completedTicketSummaries = [];
 
     public function ticketLookupFallback(): ?string
@@ -50,12 +51,49 @@ final class AgentToolRegistry
         return array_values($this->sources);
     }
 
+    public function reportContext(): ?array
+    {
+        return count($this->reportContexts) === 1 ? reset($this->reportContexts) : null;
+    }
+
+    public function hasReportContext(): bool
+    {
+        return $this->reportContexts !== [];
+    }
+
+    public function followUpContext(): ?array
+    {
+        if (!self::refersToPreviousPeriod($this->ownerQuestion) || $this->previousReport === null) return null;
+        $tool = $this->previousReport['tool'] ?? null;
+        if (!in_array($tool, ['support_enquiries', 'gst_register_summary', 'sales_summary'], true)
+            || !isset($this->previousReport['from'], $this->previousReport['to'])) return null;
+        $limit = $tool === 'sales_summary' ? self::salesDateLimit($this->previousReport) : 366;
+        $range = self::reportDates($this->previousReport, $limit);
+        if ($range === null) return null;
+        $context = $range + ['tool' => $tool];
+        $topic = $this->previousReport['topic'] ?? '';
+        if ($tool === 'support_enquiries' && is_string($topic) && isset(self::ENQUIRY_TOPICS[$topic])) {
+            $context['topic'] = $topic;
+        }
+        return $context;
+    }
+
+    private static function refersToPreviousPeriod(string $question): bool
+    {
+        return (bool)preg_match(
+            '/\b(?:that|(?:the |that )?same) (?:date range|period|dates)\b'
+            . '(?!\s+(?:(?:last|this|next|previous|prior)\s+(?:week|month|quarter|year)|(?:in|of)\s+\d{4}))/i',
+            $question
+        );
+    }
+
     public function __construct(
         private DatabaseService $store = new DatabaseService(),
         private ?ProductService $products = null,
         private ?OrderService $orders = null,
         private string $ownerQuestion = '',
-        private ?string $probeProductSlug = null
+        private ?string $probeProductSlug = null,
+        private ?array $previousReport = null
     ) {
         $this->products ??= new ProductService($this->store);
         $this->orders ??= new OrderService($this->store);
@@ -238,6 +276,11 @@ final class AgentToolRegistry
                     default => null,
                 };
                 if ($label !== null) $this->sources[$result['report_url']] = ['label' => $label, 'path' => $result['report_url']];
+                if ($label !== null && isset($result['from'], $result['to'])) {
+                    $context = ['tool' => $name, 'from' => $result['from'], 'to' => $result['to']];
+                    if ($name === 'support_enquiries' && $result['topic'] !== '') $context['topic'] = $result['topic'];
+                    $this->reportContexts[implode(':', $context)] = $context;
+                }
             }
             return $result;
         } catch (\Throwable $e) {
@@ -262,6 +305,24 @@ final class AgentToolRegistry
      */
     public function aggregateAnswer(string $question): ?string
     {
+        if (self::refersToPreviousPeriod($question)) {
+            $context = $this->followUpContext();
+            if ($context === null) return 'Which dates should I use? The previous answer did not establish one report period.';
+            $status = '(open|answered|closed|unanswered)';
+            $period = '(?:in|during|for) (?:that|(?:the |that )?same) (?:period|date range|dates)';
+            $statusFirst = '(?:how many|count) (?:support tickets )?(?:were |are )?' . $status . '(?: support tickets?)? ' . $period;
+            $periodFirst = 'how many (?:support )?tickets ' . $period . ' (?:were|are) ' . $status;
+            if ($context['tool'] === 'support_enquiries'
+                && preg_match('/^\s*(?:and )?(?:' . $statusFirst . '|' . $periodFirst . ')[?!.\s]*$/iD', $question, $match)) {
+                $result = $this->run('support_enquiries', [
+                    'status' => strtolower($match[1] ?: $match[2]),
+                    'from' => $context['from'],
+                    'to' => $context['to'],
+                ] + (isset($context['topic']) ? ['topic' => $context['topic']] : []));
+                return $result['error'] ?? self::ticketSummary($result);
+            }
+            return null;
+        }
         if (($report = $this->reportAnswer($question)) !== null) return $report;
         if (preg_match('/\b(?:gst|tax invoice|support tickets?|enquir(?:y|ies)|inquir(?:y|ies))\b/i', $question)) return null;
         $intent = self::aggregateIntent($question);
@@ -282,16 +343,22 @@ final class AgentToolRegistry
     private function countOrders(int $days): int
     {
         $orders = $this->orders->all();
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('Asia/Kolkata'));
+        $since = match (true) {
+            $days >= 36500 => new \DateTimeImmutable('0001-01-01', $now->getTimezone()),
+            $days === 0 => $now->modify('first day of this month midnight'),
+            default => $now->modify('midnight')->modify('-' . ($days - 1) . ' days'),
+        };
+        $context = ['tool' => 'sales_summary', 'from' => $since->format('Y-m-d'), 'to' => $now->format('Y-m-d')];
+        $this->reportContexts[implode(':', $context)] = $context;
         if ($days >= 36500) return count($orders);
 
-        $now = new \DateTimeImmutable();
-        $since = $days === 0 ? $now->modify('first day of this month midnight') : $now->modify("-{$days} days");
         $count = 0;
         foreach ($orders as $order) {
             $created = trim((string)($order['created_at'] ?? ''));
             if ($created === '') continue;
             try {
-                $date = new \DateTimeImmutable($created);
+                $date = new \DateTimeImmutable($created, $now->getTimezone());
                 if ($date >= $since && $date <= $now) $count++;
             } catch (\Exception) {
                 continue;
@@ -471,7 +538,7 @@ final class AgentToolRegistry
         $range = match ($period) {
             'this_month' => ['from' => $today->modify('first day of this month')->format('Y-m-d'), 'to' => $today->format('Y-m-d')],
             'all_time' => ['from' => '0001-01-01', 'to' => $today->format('Y-m-d')],
-            default => self::reportDates($days === null ? $args : ['from' => $today->modify('-' . ($days - 1) . ' days')->format('Y-m-d')], 36500),
+            default => self::reportDates($days === null ? $args : ['from' => $today->modify('-' . ($days - 1) . ' days')->format('Y-m-d')], self::salesDateLimit($args)),
         };
         if ($range === null) return ['error' => 'Use valid sales dates (YYYY-MM-DD) through today.'];
 
@@ -577,6 +644,12 @@ final class AgentToolRegistry
         }
         if ($topic !== '') $summary .= ' Topic counts use keywords in the original enquiry.';
         return $summary;
+    }
+
+    private static function salesDateLimit(array $args): int
+    {
+        // The sales tool represents all time with this explicit lower bound.
+        return ($args['from'] ?? null) === '0001-01-01' ? 3_660_000 : 36_500;
     }
 
     private static function reportDates(array $args, int $maxDays = 366): ?array
