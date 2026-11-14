@@ -60,6 +60,14 @@ function assertMinCount(int $min, array $items, string $msg): void {
 $failures = [];
 $tests = [];
 
+$tests['development fixture remote mutations include authentication without command line secrets'] = static function (): void {
+    $cli = file_get_contents(app_path('cli/bapXphp'));
+    assertTrue(str_contains($cli, '"password"=>getenv("BAPX_MYSQL_PASS")'), 'Remote mutation payloads must authenticate against the existing database bridge');
+    assertTrue(substr_count($cli, '"password"=>getenv("BAPX_MYSQL_PASS")') >= 2, 'Both upsert and delete authenticate');
+    assertTrue(str_contains($cli, 'printf \'%s\' "$payload" | curl'), 'Post body must be sent over stdin, not placed in curl command arguments');
+    assertTrue(str_contains($cli, '--data-binary @-'), 'Remote mutation should stream the authenticated JSON body');
+};
+
 $tests['database service can connect to MySQL'] = function (): void {
     try {
         // Quick pre-check: verify the host is reachable before attempting PDO
