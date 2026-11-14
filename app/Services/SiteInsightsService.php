@@ -26,6 +26,32 @@ final class SiteInsightsService {
             'issues'=>array_slice($issues,0,75),'total_issues'=>count($issues)];
     }
 
+    /** User and support operation counts from the authoritative application records. */
+    public static function operations(array $users, array $tickets, string $from, string $to): array {
+        $newUsers = 0;
+        foreach ($users as $user) {
+            $created = substr((string)($user['created_at']??''),0,10);
+            if ($created >= $from && $created <= $to) $newUsers++;
+        }
+        $openedTickets = 0;
+        $unresolved = 0;
+        $byStatus = [];
+        foreach ($tickets as $ticket) {
+            $status = strtolower(trim((string)($ticket['status']??'unknown')));
+            $byStatus[$status] = ($byStatus[$status]??0) + 1;
+            if ($status==='open') $unresolved++;
+            $created = substr((string)($ticket['created_at']??''),0,10);
+            if ($created >= $from && $created <= $to) $openedTickets++;
+        }
+        return [
+            'total_users'=>count($users),
+            'new_users'=>$newUsers,
+            'opened_tickets'=>$openedTickets,
+            'open_tickets'=>$unresolved,
+            'ticket_statuses'=>$byStatus,
+        ];
+    }
+
     public static function commerce(array $orders, string $from, string $to): array {
         $sales = StoreStatsService::sales($orders,$from,$to);
         return [

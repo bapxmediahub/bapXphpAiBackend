@@ -60,6 +60,46 @@ function assertMinCount(int $min, array $items, string $msg): void {
 $failures = [];
 $tests = [];
 
+$tests['each chat can produce one private JSON snapshot'] = static function (): void {
+    $old = getenv('BAPX_AGENT_JSON_DIR');
+    $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
+    assertTrue(mkdir($root,0700), 'Private test directory exists');
+    putenv('BAPX_AGENT_JSON_DIR='.$root);
+    try {
+        $service = new \App\Services\AgentConversationService();
+        $record = $service->record('support',['type'=>'guest','id'=>str_repeat('a',32)],
+            null,'What is the policy?','You can check our public policy.',
+            bin2hex(random_bytes(8)),'local');
+        $path = $root.'/'.$record['conversation_id'].'.json';
+        assertTrue(is_file($path),'One private JSON snapshot exists for chat');
+        $doc = json_decode((string)file_get_contents($path),true,flags:JSON_THROW_ON_ERROR);
+        assertSame($record['conversation_id'],$doc['id'],'Snapshot matches stored conversation ID');
+        assertSame('What is the policy?',$doc['turns'][0]['question'],'Snapshot retains actual question');
+        assertTrue((fileperms($path)&077)===0,'Snapshot excludes group and world permissions');
+    } finally {
+        foreach (glob($root.'/*')?:[] as $f) @unlink($f);
+        @rmdir($root);
+        putenv($old === false ? 'BAPX_AGENT_JSON_DIR' : 'BAPX_AGENT_JSON_DIR='.$old);
+    }
+};
+
+$tests['agent transcripts redact obvious secrets'] = static function (): void {
+    $scrub = \App\Services\AgentTranscriptSanitizer::class;
+    $source = 'password=exampleSECRET123 api_key:mykey123 Bearer token1234567890 sk-proj-ABCDEF123456789012';
+    $result = $scrub::scrub($source);
+    assertTrue(!str_contains($result,'exampleSECRET123'), 'Password not persisted in plaintext');
+    assertTrue(!str_contains($result,'mykey123'), 'API key not persisted in plaintext');
+    assertTrue(!str_contains($result,'token1234567890'), 'Bearer secret not persisted in plaintext');
+    assertTrue(!str_contains($result,'ABCDEF123456789012'), 'OpenAI-style key not persisted');
+};
+
+$tests['agent instruction contracts are separate and versioned'] = static function (): void {
+    $service = \App\Services\AgentInstructionService::class;
+    assertTrue(str_contains($service::forSurface('support'), 'authenticated customer'), 'Support instructions enforce customer scope');
+    assertTrue(str_contains($service::forSurface('admin'), 'read-only'), 'Admin instructions enforce tool evidence');
+    assertTrue($service::forSurface('support') !== $service::forSurface('admin'), 'Agents use distinct instructions');
+};
+
 $tests['agent capability policies forbid support from enterprise data tools'] = static function (): void {
     $policy = \App\Services\AgentCapabilityPolicy::class;
     assertTrue(!$policy::allows('support','find_order', ['role'=>'admin','email'=>'admin@example.invalid']), 'Support cannot inherit enterprise order tools');
@@ -92,6 +132,35 @@ $tests['agent conversations validate identity and deterministic evaluations'] = 
     } catch (\RuntimeException $error) {
         assertSame('Admin access required.', $error->getMessage(), 'Admin role is enforced server-side');
     }
+};
+
+$tests['enterprise follow-up retrieves only actor-owned persisted history'] = static function (): void {
+    $doc = ['surface'=>'admin','actor'=>['type'=>'admin','id'=>'u1'],'turns'=>[
+        ['report_context'=>['tool'=>'sales_summary','from'=>'2026-11-01','to'=>'2026-11-07']]
+    ]];
+    $service = new \App\Services\AgentConversationService();
+    $report = $service::previousReportFromDocument($doc,['type'=>'admin','id'=>'u1']);
+    assertSame('2026-11-01',$report['from'],'Server report history is available for same actor');
+    try {
+        $service::previousReportFromDocument($doc,['type'=>'admin','id'=>'u2']);
+        throw new \RuntimeException('Expected actor rejection');
+    } catch (\RuntimeException $e) {
+        assertSame('Conversation not accessible to this actor',$e->getMessage(),'Other admins cannot replay another actor report scope');
+    }
+    assertSame(null,$service->previousReportForActor('bad-id',['type'=>'admin','id'=>'u1']),'Invalid conversation IDs rejected');
+};
+
+$tests['site operations counts are deterministic and date scoped'] = static function (): void {
+    $ops = \App\Services\SiteInsightsService::operations([
+        ['created_at'=>'2026-11-03T10:00:00Z'],['created_at'=>'2026-10-10T10:00:00Z']
+    ],[
+        ['status'=>'open','created_at'=>'2026-11-02T12:00:00Z'],
+        ['status'=>'answered','created_at'=>'2026-10-21T12:00:00Z'],
+    ],'2026-11-01','2026-11-07');
+    assertSame(2,$ops['total_users'],'Total registered users');
+    assertSame(1,$ops['new_users'],'Only new users in exact window');
+    assertSame(1,$ops['opened_tickets'],'Only opened cases within window');
+    assertSame(1,$ops['open_tickets'],'Unresolved cases are counted regardless of creation date');
 };
 
 $tests['first party telemetry only records allowlisted events and SEO checks are deterministic'] = static function (): void {
@@ -2967,6 +3036,40 @@ $tests['Enterprise report tools use the requested inclusive relative period'] = 
         $start = $today->modify('-29 days')->format('Y-m-d');
         $result = $tools->run('support_enquiries', ['from'=>$start]);
         assertSame($start, $result['from'], 'Multiple requested windows keep the tool-specific dates');
+    } finally {
+        putenv($previousMode === false ? 'BAPX_TEST_MODE' : 'BAPX_TEST_MODE=' . $previousMode);
+    }
+};
+
+$tests['Enterprise ticket follow-up retains the previous report period'] = static function (): void {
+    $previousMode = getenv('BAPX_TEST_MODE');
+    putenv('BAPX_TEST_MODE=1');
+    try {
+        $question = 'And how many were answered in that same period?';
+        $previous = (new \App\Services\AgentToolRegistry())->run('support_enquiries', [
+            'from' => '2026-09-01', 'to' => '2026-09-07', 'status' => 'open', 'topic' => 'refund',
+        ]);
+        $tools = new \App\Services\AgentToolRegistry(ownerQuestion: $question, previousReport: [
+            'tool' => 'support_enquiries', 'from' => $previous['from'], 'to' => $previous['to'], 'topic' => $previous['topic'],
+        ]);
+        $answer = $tools->aggregateAnswer($question);
+        assertTrue(str_contains($answer, 'answered support tickets about refund') && str_contains($answer, '2026-09-01 to 2026-09-07'),
+            'Follow-up preserves the prior date range and applies the new status');
+        $qualified = 'How many tickets in that same period were answered?';
+        $qualifiedTools = new \App\Services\AgentToolRegistry(ownerQuestion: $qualified, previousReport: $tools->reportContext());
+        assertTrue(str_contains($qualifiedTools->aggregateAnswer($qualified), 'answered support tickets about refund'), 'A status after the period keeps the report scope');
+        $orders = new \App\Services\AgentToolRegistry(ownerQuestion: 'How many orders this month?');
+        $orders->aggregateAnswer('How many orders this month?');
+        assertSame(date('Y-m-01'), $orders->reportContext()['from'] ?? null, 'Direct order count establishes a report period');
+        $fresh = new \App\Services\AgentToolRegistry(ownerQuestion: $question);
+        assertTrue(str_contains($fresh->aggregateAnswer($question), 'Which dates'), 'A fresh chat asks for dates');
+        $comparison = 'Compare sales this month with the same period last year';
+        assertSame(null, $fresh->aggregateAnswer($comparison), 'A self-contained comparison reaches the model');
+        $sales = new \App\Services\AgentToolRegistry(ownerQuestion: 'Show best sellers for that same period', previousReport: [
+            'tool' => 'sales_summary', 'from' => '0001-01-01', 'to' => '2026-09-07',
+        ]);
+        assertSame('0001-01-01', $sales->followUpContext()['from'] ?? null, 'All-time sales context can be reused');
+
     } finally {
         putenv($previousMode === false ? 'BAPX_TEST_MODE' : 'BAPX_TEST_MODE=' . $previousMode);
     }

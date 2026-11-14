@@ -26,6 +26,8 @@
     <div class="admin-stats" style="margin:var(--space-md) 0;">
         <div class="admin-stat"><div class="admin-stat__value"><?= (int)($commerceInsights['orders'] ?? 0) ?></div><div class="admin-stat__label">Paid orders this period</div></div>
         <div class="admin-stat"><div class="admin-stat__value">₹<?= e(number_format((float)($commerceInsights['revenue'] ?? 0),2)) ?></div><div class="admin-stat__label">Net sales this period</div></div>
+        <div class="admin-stat"><div class="admin-stat__value"><?= (int)($userSupportInsights['new_users'] ?? 0) ?></div><div class="admin-stat__label">New accounts this period</div></div>
+        <div class="admin-stat"><div class="admin-stat__value"><?= (int)($userSupportInsights['open_tickets'] ?? 0) ?></div><div class="admin-stat__label">Open support cases</div></div>
         <div class="admin-stat"><div class="admin-stat__value"><?= (int)($seoInsights['total_issues'] ?? 0) ?></div><div class="admin-stat__label">Content quality issues</div></div>
     </div>
     <?php if (!empty($seoInsights['issues'])): ?>

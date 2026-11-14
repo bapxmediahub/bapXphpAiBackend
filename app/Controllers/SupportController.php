@@ -29,8 +29,8 @@ final class SupportController extends BaseController {
             $answer = (new SupportBotService(traceId: $traceId))->answer($_POST['message'] ?? '', $user);
             $record = (new \App\Services\AgentConversationService())->record(
                 'support', $actor, $conversationId, (string)($_POST['message'] ?? ''),
-                (string)($answer['reply'] ?? ''), $traceId, 'answered',
-                [], isset($answer['ticket_id']) ? (string)$answer['ticket_id'] : null
+                (string)($answer['reply'] ?? ''), $traceId, (string)($answer['run']['outcome'] ?? 'answered'),
+                (array)($answer['run']['tools'] ?? []), isset($answer['ticket_id']) ? (string)$answer['ticket_id'] : null
             );
             $this->jsonResponse($answer + $record);
         } catch (\Throwable $e) {

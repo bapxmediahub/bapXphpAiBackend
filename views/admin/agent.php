@@ -362,8 +362,10 @@
         const timeout = setTimeout(() => abort.abort(), 35000);
 
         try {
-            const body = 'message=' + encodeURIComponent(msg)
-                + '&_csrf=' + encodeURIComponent(document.querySelector('#agent-form input[name="_csrf"]')?.value || '');
+            const body = new URLSearchParams({
+                message: msg,
+                _csrf: document.querySelector('#agent-form input[name="_csrf"]')?.value || ''
+            });
             if (conversationId) body.set('conversation_id', conversationId);
             const resp = await fetch('/admin/agent/ask', {
                 method: 'POST',

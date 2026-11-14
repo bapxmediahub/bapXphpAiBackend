@@ -20,6 +20,9 @@ final class AdminController extends BaseController {
         $to = $today->format('Y-m-d');
         $reportRows = StoreStatsService::sales($allOrders, $from, $to, $period === 90 ? 'week' : 'day');
         $commerceInsights = \App\Services\SiteInsightsService::commerce($allOrders,$from,$to);
+        $userSupportInsights = \App\Services\SiteInsightsService::operations(
+            (new ResourceService('users'))->all(),(new \App\Services\SupportTicketService())->all(),$from,$to
+        );
         $productRows = StoreStatsService::topProducts($allOrders, $from, $to);
         $orderStatusCounts = StoreStatsService::orderStatusCounts($allOrders, $from, $to);
         // Public consultation booking has been retired, but historical requests remain
@@ -36,7 +39,7 @@ final class AdminController extends BaseController {
             'orderCount' => count($allOrders),
             'bookingCount' => count($appointments),
             'appointments' => array_slice($appointments, 0, 5),
-        ] + compact('period', 'from', 'to', 'reportRows', 'productRows', 'orderStatusCounts', 'seoInsights', 'commerceInsights'));
+        ] + compact('period', 'from', 'to', 'reportRows', 'productRows', 'orderStatusCounts', 'seoInsights', 'commerceInsights', 'userSupportInsights'));
     }
     public function products(): void{
         $draft = $_SESSION['product_form_draft'] ?? null;
@@ -401,14 +404,20 @@ final class AdminController extends BaseController {
             }
             $secrets = new SecretService();
             $modelConfig = $secrets->getModelConfig();
-            $tools = new \App\Services\EnterpriseToolRegistry(ownerQuestion: $message);
+            // Previous report scope comes from this actor's persisted chat, never browser input.
+            $previousReport = (new \App\Services\AgentConversationService())
+                ->previousReportForActor($conversationId, $actor);
+            $tools = new \App\Services\EnterpriseToolRegistry(
+                ownerQuestion: $message,
+                previousReport: $previousReport
+            );
             // Straight aggregate questions do not need a model round trip. The same
             // allowlisted sales tool supplies a deterministic, privacy-safe answer.
             $localAnswer = $attachments['context'] === '' ? $tools->aggregateAnswer($message) : null;
             if ($localAnswer !== null) {
                 (new AuditLogService())->agentRun('admin', 'local', $startedAt, tools: $tools->activity(), traceId: $traceId);
                 $record = $this->agentConversationRecord($actor, $conversationId, $message,
-                    $localAnswer, $traceId, 'local', $tools->activity());
+                    $localAnswer, $traceId, 'local', $tools->activity(), $tools->reportContext());
                 $this->jsonResponse([
                     'answer' => $localAnswer,
                     'missing' => $attachments['missing'],
@@ -419,6 +428,11 @@ final class AdminController extends BaseController {
             $context = $attachments['context'] !== ''
                 ? "Documents the owner attached with @ (reference material):\n" . $attachments['context']
                 : '';
+            if (($period = $tools->followUpContext()) !== null) {
+                $context .= "\nPrevious report: {$period['tool']}, {$period['from']} to {$period['to']} inclusive. "
+                    . "Use these dates for lookups referring to that same period.";
+                if (isset($period['topic'])) $context .= " The previous ticket topic was {$period['topic']}.";
+            }
             $reason = null;
             $attempts = [];
             if (!empty($modelConfig['apiKey'])) {
@@ -432,7 +446,7 @@ final class AdminController extends BaseController {
             if ($fallback !== null) {
                 (new AuditLogService())->agentRun('admin', 'fallback', $startedAt, $reason, $attempts, $tools->activity(), $traceId);
                 $record = $this->agentConversationRecord($actor, $conversationId, $message,
-                    $fallback, $traceId, 'fallback', $tools->activity());
+                    $fallback, $traceId, 'fallback', $tools->activity(), $tools->reportContext(), $attempts);
                 $this->jsonResponse([
                     'answer' => $fallback,
                     'missing' => $attachments['missing'],
@@ -443,7 +457,7 @@ final class AdminController extends BaseController {
             (new AuditLogService())->agentRun('admin', $failed ? 'error' : ($reason === 'rejected_response' ? 'fallback' : 'model'), $startedAt, $reason, $attempts, $tools->activity(), $traceId);
             if ($failed) {
                 $record = $this->agentConversationRecord($actor, $conversationId, $message,
-                    $answer, $traceId, 'error', $tools->activity());
+                    $answer, $traceId, 'error', $tools->activity(), $tools->reportContext(), $attempts);
                 $this->jsonResponse([
                     'error'=>$answer,
                     'missing'=>$attachments['missing'],
@@ -452,7 +466,7 @@ final class AdminController extends BaseController {
                 return;
             }
             $record = $this->agentConversationRecord($actor, $conversationId, $message,
-                $answer, $traceId, 'model', $tools->activity());
+                $answer, $traceId, 'model', $tools->activity(), $tools->reportContext(), $attempts);
             $this->jsonResponse([
                 'answer'=>$answer,
                 'missing'=>$attachments['missing'],
@@ -467,10 +481,10 @@ final class AdminController extends BaseController {
 
     private function agentConversationRecord(
         array $actor, ?string $conversationId, string $question, string $answer,
-        string $traceId, string $outcome, array $tools = []
+        string $traceId, string $outcome, array $tools = [], ?array $reportContext = null, array $attempts = []
     ): array {
         return (new \App\Services\AgentConversationService())->record(
-            'admin', $actor, $conversationId, $question, $answer, $traceId, $outcome, $tools
+            'admin', $actor, $conversationId, $question, $answer, $traceId, $outcome, $tools, null, $reportContext, $attempts
         );
     }
 
@@ -499,6 +513,8 @@ final class AdminController extends BaseController {
             'elapsed_ms' => (int)round((microtime(true) - $startedAt) * 1000),
             'tools' => $tools?->activity() ?? [],
             'sources' => $tools?->sourceLinks() ?? [],
+            'report_context' => $tools?->reportContext(),
+            'report_context_changed' => $tools?->hasReportContext() ?? false,
             'attempts' => $safeAttempts,
         ];
     }
@@ -531,7 +547,8 @@ final class AdminController extends BaseController {
         // Tool arguments and access are validated in PHP. The model selects the lookup
         // and explains its result. https://developers.openai.com/api/docs/guides/function-calling
         $today = (new \DateTimeImmutable('now', new \DateTimeZone('Asia/Kolkata')))->format('Y-m-d');
-        $prompt = "You are the Enterprise Agent for Sri Panchami Spiritual. Answer in plain language.\n"
+        $prompt = \App\Services\AgentInstructionService::forSurface('admin') . "\n"
+            . "You are the Enterprise Agent for Sri Panchami Spiritual. Answer in plain language.\n"
             . "The current date in India is {$today}.\n"
             . "Use the matching read-only tool before making any claim about store records or metrics. "
             . "Tools cover orders, products, coupons, sales, GST, support tickets, store counts and published articles. "

@@ -493,8 +493,8 @@ function supportEscape(value){return String(value).replace(/[&<>"']/g,function(c
 function supportReplyHtml(value){var safe=supportEscape(value);var allowed=/\/(?:shop|cart|checkout|temples|contact|blog(?:\/[a-z0-9-]+|\/category\/[a-z0-9-]+)?|product\/(?:[a-z0-9-]|%20)+|account\/dashboard(?:\/orders|\/install)?)(?=$|[\s.,)])/gi;return safe.replace(allowed,function(path){return '<a class="support-action" href="'+path+'">Open '+supportEscape(path.replace(/^\//,'').replace(/%20|[-/]/g,' '))+'</a>';});}
 function supportActionsHtml(actions){if(!actions||!actions.length)return'';var h='<div class="support-actions">';for(var i=0;i<actions.length;i++){var a=actions[i];if(a.type==='navigate'&&a.path){h+='<a class="btn btn-sm btn-outline support-action-btn" href="'+supportEscape(a.path)+'">'+supportEscape(a.label)+'</a>';}}return h+'</div>';}
 function supportToggle(open){if(!supportPanel||!supportFab)return;supportPanel.hidden=!open;supportFab.setAttribute('aria-expanded',open?'true':'false');}
-function supportSaveLog(){try{if(!supportPanel||!supportLog)return;sessionStorage.setItem(supportPanel.dataset.supportKey,supportLog.innerHTML);}catch(e){}}
-function supportLoadLog(){try{if(!supportPanel||!supportLog)return;var saved=sessionStorage.getItem(supportPanel.dataset.supportKey);if(saved){supportLog.innerHTML=saved;}}catch(e){}}
+function supportSaveLog(){try{if(!supportPanel||!supportLog)return;sessionStorage.setItem(supportPanel.dataset.supportKey,supportLog.innerHTML);sessionStorage.setItem(supportPanel.dataset.supportKey+':conversation_id',supportConversationId||'');}catch(e){}}
+function supportLoadLog(){try{if(!supportPanel||!supportLog)return;var saved=sessionStorage.getItem(supportPanel.dataset.supportKey);if(saved){supportLog.innerHTML=saved;}var cid=sessionStorage.getItem(supportPanel.dataset.supportKey+':conversation_id');if(cid&&/^[a-f0-9]{32}$/.test(cid))supportConversationId=cid;}catch(e){}}
 if(supportFab&&supportPanel){supportLoadLog();
 supportFab.addEventListener('click',function(){supportToggle(supportPanel.hidden);});
 supportClose.addEventListener('click',function(){supportToggle(false);});}
