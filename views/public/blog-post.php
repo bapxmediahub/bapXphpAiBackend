@@ -4,6 +4,7 @@
     $schemaBase = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'sripanchamispiritual.com');
     $schemaUrl = $schemaBase . '/blog/' . ($slug ?? '');
     $schemaImage = \App\Services\BlogService::resolvedImageUrl($meta);
+    if (str_starts_with($schemaImage, '/')) $schemaImage = $schemaBase . $schemaImage;
     $schema = [
         '@context' => 'https://schema.org',
         '@graph' => [

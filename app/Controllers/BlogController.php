@@ -35,7 +35,7 @@ final class BlogController extends BaseController
         $this->seoOverrides = [
             'title' => $title,
             'description' => $post['seo_description'] ?? $post['excerpt'] ?? 'Read ' . $title,
-            'og_image' => BlogService::resolvedImageUrl($post),
+            'og_image' => $this->blogOgImageUrl($post),
             'keywords' => $keywords,
         ];
 
@@ -45,6 +45,12 @@ final class BlogController extends BaseController
             'slug' => $slug,
             'categoryNames' => array_column($blogService->categories(false), 'name', 'slug'),
         ]);
+    }
+
+    private function blogOgImageUrl(array $post): string
+    {
+        $image = BlogService::resolvedImageUrl($post);
+        return str_starts_with($image, '/') ? $this->siteUrl($image) : $image;
     }
 
     public function category(string $slug): void

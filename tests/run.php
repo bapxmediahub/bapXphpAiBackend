@@ -81,6 +81,10 @@ $tests['missing hosted blog photos show bundled image instead of broken thumbnai
     assertSame('/assets/images/hero-temple-bg.webp',
         \App\Services\BlogService::resolvedImageUrl(['og_image'=>'/assets/images/../../.env']),
         'Unsafe image paths must not be resolved');
+    assertTrue(str_contains(fileRead('app/Controllers/BlogController.php'), '$this->siteUrl($image)'),
+        'Blog OpenGraph images use a canonical absolute URL');
+    assertTrue(str_contains(fileRead('views/public/blog-post.php'), '$schemaBase . $schemaImage'),
+        'Article structured data uses an absolute image URL');
     foreach (['tulsi-significance-hinduism','navagraha-remedies','pooja-items-for-home','benefits-of-rudraksha'] as $slug) {
         $post = (new \App\Services\BlogService())->find($slug);
         assertTrue($post !== null, 'Legacy article exists');
