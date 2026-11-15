@@ -97,7 +97,11 @@ final class SupportTicketService {
                 $ticket['work_state']='waiting';$ticket['waiting_on']=$waiting;break;
             case 'snooze':
                 if($before==='closed')throw new \InvalidArgumentException('Closed tickets cannot be snoozed.');
-                try{$until=new \DateTimeImmutable((string)($fields['snoozed_until']??''));}catch(\Throwable){throw new \InvalidArgumentException('Invalid snooze time.');}
+                $date=(string)($fields['snoozed_until']??'');
+                if(!preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?(?:Z|[+-]\d{2}:\d{2})?$/D',$date))throw new \InvalidArgumentException('Enter an explicit snooze date and time.');
+                try{$until=new \DateTimeImmutable($date,new \DateTimeZone('UTC'));}catch(\Throwable){throw new \InvalidArgumentException('Invalid snooze time.');}
+                $dateErrors=\DateTimeImmutable::getLastErrors();
+                if(is_array($dateErrors)&&($dateErrors['warning_count']||$dateErrors['error_count']))throw new \InvalidArgumentException('Invalid snooze date.');
                 if($until<=$now||$until>$now->modify('+30 days'))throw new \InvalidArgumentException('Snooze must be within the next 30 days.');
                 $ticket['work_state']='snoozed';$ticket['snoozed_until']=$until->format('c');break;
             default:throw new \InvalidArgumentException('Unknown ticket transition.');

@@ -1,0 +1,560 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-15",
+  "rea_version": "6.8.0",
+  "sources": [
+    {
+      "name": "deepseek-harness",
+      "repo": "deepseek-ai/deepseek-harness",
+      "sha": "39163dd30f703a79079e2d2446545cff3c453738",
+      "commit_date": "2026-11-13T15:37:50+08:00",
+      "tree_paths": 21632
+    },
+    {
+      "name": "langfuse",
+      "repo": "langfuse/langfuse",
+      "sha": "168ededf52afd3642d3594cd0c27c7d394ae77dd",
+      "commit_date": "2026-11-15T10:06:35Z",
+      "tree_paths": 8031
+    },
+    {
+      "name": "chatwoot",
+      "repo": "chatwoot/chatwoot",
+      "sha": "1ef1d2b45ae0a17a35c5f1bd055e4ddf04dadabf",
+      "commit_date": "2026-11-13T17:18:13+05:30",
+      "tree_paths": 10015
+    },
+    {
+      "name": "bagisto",
+      "repo": "bagisto/bagisto",
+      "sha": "c9209260c0f078e1b358c98050fe2e35a0ad75a4",
+      "commit_date": "2026-11-12T17:47:22+05:30",
+      "tree_paths": 4295
+    }
+  ],
+  "scope": "Selected source modules; no claim of whole-product semantic coverage",
+  "references": [
+    {
+      "artifact": "bagisto-checkout-reference.json",
+      "sha256": "0dafbae844ece5eb9cdf7553259d8c3861b71972f88739fcf90eba7f5e001069",
+      "root_sha256": "a9d86c5340ee5e115356c08de231db86397e168ee130afb8804bc0bfa5a653f7",
+      "authority": "historical-reference",
+      "inventory_state": "partial",
+      "files": 65,
+      "parse_failures": 0
+    },
+    {
+      "artifact": "bagisto-product-reference.json",
+      "sha256": "96ea6d40c3ef2bbd4ccb1f95a1d37ecd349fa636c6f5df27db0aad79f65da265",
+      "root_sha256": "476c4dc791fff7eb582495fa14f0b4c8b80b6eed4accec4a6bdf8cae6f7225c4",
+      "authority": "historical-reference",
+      "inventory_state": "partial",
+      "files": 290,
+      "parse_failures": 0
+    },
+    {
+      "artifact": "bagisto-sales-reference.json",
+      "sha256": "21d2f91896c3f80e65ff09f4b3a235ecd29cd322e6c123e7e6f939c2ab803c3d",
+      "root_sha256": "35fb61013e94813c189294f0c88d1a67d01bc9b7b0bd0553e56607766632ada3",
+      "authority": "historical-reference",
+      "inventory_state": "partial",
+      "files": 112,
+      "parse_failures": 0
+    },
+    {
+      "artifact": "chatwoot-outcomes-reference.json",
+      "sha256": "bd9a8312e26e39cb5b8308573fa2246482a826861abe2ad342ab67d901072a27",
+      "root_sha256": "4ead32006b32f425a86d8c5dd21c8d62ff161034f89a95a8883b3e56d034e8e0",
+      "authority": "historical-reference",
+      "inventory_state": "partial",
+      "files": 12,
+      "parse_failures": 0
+    },
+    {
+      "artifact": "chatwoot-support-reference.json",
+      "sha256": "857022adfd4d4fb4200ec9dee004da24bfc2a03b5ee08b622a59a058315cbfe9",
+      "root_sha256": "aba551ad8a56b4f44c623a196e95d2835aa9f1af4a99fff3a83d8791cecb2776",
+      "authority": "historical-reference",
+      "inventory_state": "partial",
+      "files": 122,
+      "parse_failures": 0
+    },
+    {
+      "artifact": "deepseek-session-reference.json",
+      "sha256": "273a80e9b2c4973b26c03855b55414926d5a738662c1d93255f4597814304fd6",
+      "root_sha256": "345bac175214bb505d038a5ec53c37d551a70511089fcf85cb3f77649b35892e",
+      "authority": "historical-reference",
+      "inventory_state": "partial",
+      "files": 11,
+      "parse_failures": 0
+    },
+    {
+      "artifact": "langfuse-otel-reference.json",
+      "sha256": "75cef3731710b4600961746294161f6c5a1e5f764d0c5c61f26a41dddd10184c",
+      "root_sha256": "a48b913c3f338dcaaf10328c5708253fcc9273c9edc71bff2931debaeed4b3db",
+      "authority": "historical-reference",
+      "inventory_state": "partial",
+      "files": 13,
+      "parse_failures": 0
+    },
+    {
+      "artifact": "sps-main-services-reference.json",
+      "sha256": "038a41d660aac6a101aee4673a99b90fe167dcabe82f81afb0f0130500b647a3",
+      "root_sha256": "a25a3bb6a0d2e7f959c3baf489463858531de658e22fbe26aea5cde7202a6ad0",
+      "authority": "historical-reference",
+      "inventory_state": "partial",
+      "files": 51,
+      "parse_failures": 0
+    },
+    {
+      "artifact": "sps-working-agents-reference.json",
+      "sha256": "ab6d6e6072dcdba6fe7820aed68f163786d190c95284234c9cf62a35f9731fb9",
+      "root_sha256": "f2d6d181eb912902761a55b207e072e1bd2650ab11ac1f2b712be43ec9fcf600",
+      "authority": "historical-reference",
+      "inventory_state": "partial",
+      "files": 61,
+      "parse_failures": 0
+    }
+  ],
+  "static_analysis": [
+    {
+      "artifact": "deepseek-analysis-summary.json",
+      "evidence_id": null,
+      "authority": null,
+      "coverage": null,
+      "summary": {
+        "evidence_id": "ev_9a645f5d444c751d5179ccd86706857bd54650816f32539d4d518b69b68b5a72",
+        "subject": {
+          "name": "session-telemetry",
+          "digest": {
+            "sha256": "bf46cfa2e0e9416acd32b13eeb6b4c340df1f9b84e871a31aacc478a5cbe78c2"
+          },
+          "local_path": "/Users/getwinharris/Documents/rea-research/sps-20261115/sources/deepseek-harness/packages/session/session-telemetry",
+          "format": "directory",
+          "architecture": null
+        },
+        "provider": {
+          "id": "rea-analysis-view",
+          "name": "REA analysis view projection",
+          "version": "1"
+        },
+        "analysis_profile": null,
+        "predicate_type": "rea.analysis-view",
+        "operation": "inspect_analysis_view",
+        "parameters": {
+          "parent_evidence_id": "ev_91612ace5674e60eaf0484ac6a8969c2b66801a9557ea848e34344f826ea9a0d",
+          "view": {
+            "kind": "summary"
+          }
+        },
+        "raw_result": null,
+        "normalized_result": {
+          "kind": "summary",
+          "view": {
+            "kind": "summary"
+          },
+          "parent_evidence_id": "ev_91612ace5674e60eaf0484ac6a8969c2b66801a9557ea848e34344f826ea9a0d",
+          "parent_operation": "analyze_javascript_application",
+          "parent_digest": "91612ace5674e60eaf0484ac6a8969c2b66801a9557ea848e34344f826ea9a0d",
+          "view_digest": "58f46377082fe54fcb308847de82a1e2d1447e1741ce8a47acbeaf95a8f831e5",
+          "artifact": {
+            "path": "/Users/getwinharris/Documents/rea-research/sps-20261115/sources/deepseek-harness/packages/session/session-telemetry",
+            "sha256": "bf46cfa2e0e9416acd32b13eeb6b4c340df1f9b84e871a31aacc478a5cbe78c2"
+          },
+          "coverage": {
+            "status": "complete-within-view",
+            "examined": 35,
+            "total": 35,
+            "next_offset": null,
+            "exhausted": true
+          },
+          "limitations": [
+            "Boundary extraction covers unshadowed JSON/global coercions plus parse and validation method candidates.",
+            "Child-process extraction covers asynchronous node:child_process creation, literal argv/env/stdio options, exit/error listeners, and kill signals.",
+            "CommonJS and ESM binding relationships were recovered from inert syntax and resolved only within the inventoried artifact container.",
+            "Configuration extraction covers process.env, process.argv, node:fs reads, and direct logical defaults.",
+            "Event extraction covers EventEmitter-style literal registrations, removals, and dispatch candidates; dynamic names remain unknown.",
+            "Function fingerprints are static candidates; equal digests can remain ambiguous and do not prove behavioral equivalence.",
+            "JavaScript and HTML were parsed as inert text; bundle bootstrap code was never executed.",
+            "Local data flow does not claim control-flow-sensitive reaching definitions or arbitrary dynamic property resolution.",
+            "Promise ownership covers explicit unshadowed Promise construction, static factories, aggregation, chaining, and await syntax only.",
+            "Request extraction covers fetch, WebSocket, node:http/node:https construction, direct option fields, and exact local response consumers.",
+            "Resource extraction covers built-in filesystem/network acquisition and exact local close/destroy/end handles.",
+            "Static imports, entrypoints, workers, endpoints, and storage relationships do not prove runtime execution.",
+            "Static paths and relationships may remain unresolved when expressions are dynamic or obfuscated.",
+            "The semantic graph contains static syntax observations and conservative relationship candidates; it does not claim runtime execution.",
+            "Timer extraction covers global or node:timers scheduling and exact local-handle cancellation.",
+            "Webpack/Rspack factories were recovered from AST literals; REA did not invoke push handlers or bundle bootstrap code."
+          ],
+          "unknowns": [
+            "1871 semantic graph unknowns remain in the parent Evidence.",
+            "Boundary extraction covers unshadowed JSON/global coercions plus parse and validation method candidates.",
+            "Child-process extraction covers asynchronous node:child_process creation, literal argv/env/stdio options, exit/error listeners, and kill signals.",
+            "CommonJS and ESM binding relationships were recovered from inert syntax and resolved only within the inventoried artifact container.",
+            "Configuration extraction covers process.env, process.argv, node:fs reads, and direct logical defaults.",
+            "Event extraction covers EventEmitter-style literal registrations, removals, and dispatch candidates; dynamic names remain unknown.",
+            "Function fingerprints are static candidates; equal digests can remain ambiguous and do not prove behavioral equivalence.",
+            "JavaScript and HTML were parsed as inert text; bundle bootstrap code was never executed.",
+            "Local data flow does not claim control-flow-sensitive reaching definitions or arbitrary dynamic property resolution.",
+            "Promise ownership covers explicit unshadowed Promise construction, static factories, aggregation, chaining, and await syntax only.",
+            "Request extraction covers fetch, WebSocket, node:http/node:https construction, direct option fields, and exact local response consumers.",
+            "Resource extraction covers built-in filesystem/network acquisition and exact local close/destroy/end handles.",
+            "Static imports, entrypoints, workers, endpoints, and storage relationships do not prove runtime execution.",
+            "Static paths and relationships may remain unresolved when expressions are dynamic or obfuscated.",
+            "The semantic graph contains static syntax observations and conservative relationship candidates; it does not claim runtime execution.",
+            "Timer extraction covers global or node:timers scheduling and exact local-handle cancellation.",
+            "Webpack/Rspack factories were recovered from AST literals; REA did not invoke push handlers or bundle bootstrap code.",
+            "semantic_graph.coverage.status is unknown"
+          ],
+          "summary": {
+            "input_path": "/Users/getwinharris/Documents/rea-research/sps-20261115/sources/deepseek-harness/packages/session/session-telemetry",
+            "format": "directory",
+            "root_artifact_sha256": "bf46cfa2e0e9416acd32b13eeb6b4c340df1f9b84e871a31aacc478a5cbe78c2",
+            "statistics": {
+              "relevant_files": 6,
+              "nested_asar_containers": 0,
+              "text_bytes_read": 62727,
+              "invalid_utf8_files": 0,
+              "parsed_javascript_files": 4,
+              "skipped_javascript_files": 0,
+              "visited_ast_nodes": 7735,
+              "findings": 74,
+              "modules": 0,
+              "parse_failures": 0
+            },
+            "electron": {
+              "browser_windows": 0,
+              "explicit_web_preferences": 0,
+              "preload_entrypoints": 0,
+              "context_bridge_apis": 0,
+              "exposed_api_members": 0,
+              "ipc": {
+                "operations": 0,
+                "literal_channels": 0,
+                "dynamic_channel_operations": 0,
+                "renderer_transmissions": 0,
+                "renderer_listeners": 0,
+                "main_handlers": 0,
+                "paired_renderer_transmissions": 0,
+                "ambiguous_renderer_transmissions": 0,
+                "unpaired_literal_renderer_transmissions": 0
+              },
+              "sender_validation_observations": 0,
+              "utility_processes": 0,
+              "resolved_utility_entrypoints": 0,
+              "native_addon_bindings": 0,
+              "resolved_native_addon_bindings": 0
+            },
+            "coverage": {
+              "static_sources": {
+                "sources": 4,
+                "unmeasured_sources": 0,
+                "syntax": {
+                  "complete": 4,
+                  "recovered": 0,
+                  "failed": 0,
+                  "not-examined": 0
+                },
+                "semantics": {
+                  "unknown_sources": 0,
+                  "unexamined_sources": 0
+                },
+                "examination": {
+                  "complete": 4,
+                  "limited": 0,
+                  "not-examined": 0
+                },
+                "electron_applicability": {
+                  "observed": 0,
+                  "unknown": 4
+                }
+              },
+              "application": {
+                "status": "complete",
+                "truncated": false,
+                "omitted_count": 0,
+                "limits": []
+              },
+              "semantic": {
+                "status": "unknown",
+                "truncated": false,
+                "omitted_nodes": 0,
+                "omitted_relations": 0,
+                "limits": [],
+                "families": [
+                  {
+                    "family": "boundary",
+                    "status": "partial",
+                    "retained_relations": 9,
+                    "omitted_relations": 0,
+                    "unknown_count": 0
+                  },
+                  {
+                    "family": "call-flow",
+                    "status": "partial",
+                    "retained_relations": 281,
+                    "omitted_relations": 0,
+                    "unknown_count": 717
+                  },
+                  {
+                    "family": "child-process",
+                    "status": "partial",
+                    "retained_relations": 0,
+                    "omitted_relations": 0,
+                    "unknown_count": 0
+                  },
+                  {
+                    "family": "closure",
+                    "status": "partial",
+                    "retained_relations": 389,
+                    "omitted_relations": 0,
+                    "unknown_count": 0
+                  },
+                  {
+                    "family": "configuration",
+                    "status": "partial",
+                    "retained_relations": 0,
+                    "omitted_relations": 0,
+                    "unknown_count": 0
+                  },
+                  {
+                    "family": "data-flow",
+                    "status": "partial",
+                    "retained_relations": 4053,
+                    "omitted_relations": 0,
+                    "unknown_count": 383
+                  },
+                  {
+                    "family": "event",
+                    "status": "partial",
+                    "retained_relations": 19,
+                    "omitted_relations": 0,
+                    "unknown_count": 1
+                  },
+                  {
+                    "family": "object-flow",
+                    "status": "partial",
+                    "retained_relations": 427,
+                    "omitted_relations": 0,
+                    "unknown_count": 701
+                  },
+                  {
+                    "family": "promise-ownership",
+                    "status": "partial",
+                    "retained_relations": 74,
+                    "omitted_relations": 0,
+                    "unknown_count": 69
+                  },
+                  {
+                    "family": "request",
+                    "status": "partial",
+                    "retained_relations": 0,
+                    "omitted_relations": 0,
+                    "unknown_count": 0
+                  },
+                  {
+                    "family": "resource-lifecycle",
+                    "status": "partial",
+                    "retained_relations": 0,
+                    "omitted_relations": 0,
+                    "unknown_count": 0
+                  },
+                  {
+                    "family": "timer",
+                    "status": "partial",
+                    "retained_relations": 2,
+                    "omitted_relations": 0,
+                    "unknown_count": 0
+                  }
+                ]
+              },
+              "application_unknowns": 0,
+              "semantic_unknowns": 1871
+            },
+            "limitation_count": 16
+          }
+        },
+        "confidence": "derived",
+        "authority": "shipped-artifact",
+        "environment": null,
+        "limitations": [
+          "Boundary extraction covers unshadowed JSON/global coercions plus parse and validation method candidates.",
+          "Child-process extraction covers asynchronous node:child_process creation, literal argv/env/stdio options, exit/error listeners, and kill signals.",
+          "CommonJS and ESM binding relationships were recovered from inert syntax and resolved only within the inventoried artifact container.",
+          "Configuration extraction covers process.env, process.argv, node:fs reads, and direct logical defaults.",
+          "Event extraction covers EventEmitter-style literal registrations, removals, and dispatch candidates; dynamic names remain unknown.",
+          "Function fingerprints are static candidates; equal digests can remain ambiguous and do not prove behavioral equivalence.",
+          "JavaScript and HTML were parsed as inert text; bundle bootstrap code was never executed.",
+          "Local data flow does not claim control-flow-sensitive reaching definitions or arbitrary dynamic property resolution.",
+          "Promise ownership covers explicit unshadowed Promise construction, static factories, aggregation, chaining, and await syntax only.",
+          "Request extraction covers fetch, WebSocket, node:http/node:https construction, direct option fields, and exact local response consumers.",
+          "Resource extraction covers built-in filesystem/network acquisition and exact local close/destroy/end handles.",
+          "Static imports, entrypoints, workers, endpoints, and storage relationships do not prove runtime execution.",
+          "Static paths and relationships may remain unresolved when expressions are dynamic or obfuscated.",
+          "The semantic graph contains static syntax observations and conservative relationship candidates; it does not claim runtime execution.",
+          "Timer extraction covers global or node:timers scheduling and exact local-handle cancellation.",
+          "Webpack/Rspack factories were recovered from AST literals; REA did not invoke push handlers or bundle bootstrap code."
+        ],
+        "relationship_coverage": null,
+        "locations": [
+          {
+            "kind": "artifact-path",
+            "path": "/Users/getwinharris/Documents/rea-research/sps-20261115/sources/deepseek-harness/packages/session/session-telemetry"
+          }
+        ],
+        "evidence_links": [
+          "ev_91612ace5674e60eaf0484ac6a8969c2b66801a9557ea848e34344f826ea9a0d"
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "artifact": "deepseek-coordinator-trace.json",
+      "evidence_id": "ev_2799a2fd5bc9574e215a123e03b53cdbbadd8ea62ebe3aa2110c5025f9f55852",
+      "authority": "analyst-inference",
+      "coverage": {
+        "status": "complete-within-source",
+        "source_graph_status": "complete",
+        "total_seed_matches": 1
+      },
+      "summary": {
+        "matched_seeds": 1,
+        "traced_nodes": 40,
+        "traced_edges": 58,
+        "terminal_paths": 0,
+        "native_handoffs": 0,
+        "observed_facts": 25,
+        "inferred_facts": 88,
+        "unknown_facts": 0,
+        "unavailable_facts": 0
+      },
+      "limitations": [
+        "A trace reports graph relationships, not proof that code executed or that a feature is reachable in every state.",
+        "Native handoffs never open a binary or invoke a provider automatically; snapshot reuse remains provider/profile/target exact.",
+        "Static, native, passive-runtime, inferred, and unknown facts retain their original authority in the returned graph."
+      ]
+    },
+    {
+      "artifact": "deepseek-session-event-trace.json",
+      "evidence_id": "ev_e3b439e17c2d25278eb7b028a6a7cc4a71f9041303c9de08ff24eaa8784592d2",
+      "authority": "analyst-inference",
+      "coverage": {
+        "status": "no-match",
+        "source_graph_status": "complete",
+        "total_seed_matches": 0
+      },
+      "summary": {
+        "matched_seeds": 0,
+        "traced_nodes": 0,
+        "traced_edges": 0,
+        "terminal_paths": 0,
+        "native_handoffs": 0,
+        "observed_facts": 0,
+        "inferred_facts": 0,
+        "unknown_facts": 0,
+        "unavailable_facts": 0
+      },
+      "limitations": [
+        "No graph entity matched the literal seed; this is not evidence that the feature is absent."
+      ]
+    }
+  ],
+  "browser_observations": [
+    {
+      "artifact": "sps-live-shop-support.json",
+      "evidence_id": "ev_3c2fd362b24acc95a254b8ef9edca6760e72a04d3c499058ccb5f6f4b2caf61f",
+      "authority": "controlled-replay",
+      "steps": [
+        {
+          "name": "scenario_start",
+          "status": "completed"
+        },
+        {
+          "name": "shop_ready",
+          "status": "failed"
+        },
+        {
+          "name": "open_support",
+          "status": "cancelled"
+        },
+        {
+          "name": "support_visible",
+          "status": "cancelled"
+        }
+      ],
+      "completeness": {
+        "status": "incomplete",
+        "equality_eligible": false,
+        "missing_sections": [
+          "accessibility",
+          "action",
+          "events",
+          "url"
+        ],
+        "truncated_sections": []
+      },
+      "limitations": [
+        "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+        "Network content is retained only when selected; Playwright response-body bytes are API results and are not guaranteed to match wire bytes.",
+        "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+        "Network content reads settle within 5 seconds each and the observer does not request bodies from unfinished responses.",
+        "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+        "Storage values are hashed only after declared-secret redaction.",
+        "Some network requests had not completed when capture ended; later activity is unknown."
+      ],
+      "browser_cleanup": "terminated-owned-process"
+    },
+    {
+      "artifact": "sps-live-shop-support-v2.json",
+      "evidence_id": "ev_0d9e18fd35d441efb5d4ef6e21c31e307c2c023f4c1b96d3b98b854b13c50d16",
+      "authority": "controlled-replay",
+      "steps": [
+        {
+          "name": "scenario_start",
+          "status": "completed"
+        },
+        {
+          "name": "shop_ready",
+          "status": "completed"
+        },
+        {
+          "name": "open_support",
+          "status": "completed"
+        },
+        {
+          "name": "support_visible",
+          "status": "completed"
+        }
+      ],
+      "completeness": {
+        "status": "incomplete",
+        "equality_eligible": false,
+        "missing_sections": [
+          "events"
+        ],
+        "truncated_sections": []
+      },
+      "limitations": [
+        "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+        "Network content is retained only when selected; Playwright response-body bytes are API results and are not guaranteed to match wire bytes.",
+        "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+        "Network content reads settle within 5 seconds each and the observer does not request bodies from unfinished responses.",
+        "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+        "Storage values are hashed only after declared-secret redaction.",
+        "Some network requests had not completed when capture ended; later activity is unknown."
+      ],
+      "browser_cleanup": "terminated-owned-process"
+    }
+  ],
+  "project_main_sha": "08a988729c90c63d2bc9676829a82baf1850fbc4",
+  "local_draft": {
+    "head_sha": "a5c3418072ad3ab8b01f643b866c4132e51c43cd",
+    "state": "dirty/uncommitted; NOT deployed or fully present on remote PR #241"
+  },
+  "licensing": {
+    "deepseek-harness": "MIT",
+    "bagisto": "MIT",
+    "langfuse": "MIT core; ee/ and corresponding enterprise folders excluded",
+    "chatwoot": "MIT core; enterprise/ excluded"
+  }
+}

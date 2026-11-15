@@ -98,7 +98,7 @@ final class SupportBotService {
         $actions = $this->extractActions($reply);
         if ($actions !== []) $result['actions'] = $actions;
         (new AuditLogService($this->store))->agentRun('support', $outcome, $startedAt, $reason, $attempts, traceId: $this->traceId);
-        $result['knowledge']=['public_product_slugs'=>array_values(array_column((array)($context['site']['products']??[]),'slug'))];
+        $result['knowledge']=['public_product_slugs'=>self::shownProductSlugs($result['reply'],(array)($context['site']['products']??[]))];
         $result['run'] = ['outcome'=>$outcome,'trace_id'=>$this->traceId,'tools'=>[],
             'attempts'=>$attempts,'retrieval'=>$retrieval];
         return $result;
@@ -259,6 +259,16 @@ final class SupportBotService {
             $reply .= "\nTicket #" . $ticket['reference'] . ' is ' . $ticket['status'] . '.';
         }
         return $reply;
+    }
+
+    public static function shownProductSlugs(string $reply,array $products): array {
+        $found=[];
+        foreach($products as $product){
+            $slug=is_array($product)?($product['slug']??null):null;if(!is_string($slug)||$slug==='')continue;
+            $url='/product/'.rawurlencode($slug);
+            if(preg_match('~'.preg_quote($url,'~').'(?=$|[\s.,!?;)\]])~u',$reply,$m,PREG_OFFSET_CAPTURE))$found[$slug]=$m[0][1];
+        }
+        asort($found,SORT_NUMERIC);return array_slice(array_keys($found),0,20);
     }
 
     private static function isOrdinalFollowup(string $message): bool {

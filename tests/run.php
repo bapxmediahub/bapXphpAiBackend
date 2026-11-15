@@ -60,6 +60,15 @@ function assertMinCount(int $min, array $items, string $msg): void {
 $failures = [];
 $tests = [];
 
+$tests['legitimate internal ticket activity is evaluated without exposing it as a model capability'] = static function (): void {
+    $result=\App\Services\AgentEvaluationService::evaluate('support','show my tickets','You have no matching tickets.',[
+        ['name'=>'customer_ticket_lookup','status'=>'complete']],'local');
+    assertTrue($result['checks']['no_invalid_tool_names'],'Observed internal ticket routing is a legitimate evidence label');
+    assertTrue(!\App\Services\AgentCapabilityPolicy::allows('support','customer_ticket_lookup',null),'An audit label never becomes a guest callable capability');
+    $bad=\App\Services\AgentEvaluationService::evaluate('support','help','test', [['name'=>'write_file']]);
+    assertTrue(!$bad['checks']['no_invalid_tool_names'],'Unknown write tools remain rejected');
+};
+
 $tests['support exposed tool contracts match executable capabilities and reject invalid periods'] = static function (): void {
     $tools=new \App\Services\SupportToolRegistry(null);
     assertSame(array_column($tools->declarations(),'name'),\App\Services\AgentCapabilityPolicy::tools('support'),
@@ -216,6 +225,17 @@ $tests['per-chat locks coordinate with a previous deployment global writer'] = s
         flock($legacy,LOCK_UN);fclose($legacy);
         foreach(array_merge(glob($root.'/*')?:[],glob($root.'/.conversation*')?:[]) as $f)if(is_file($f))@unlink($f);@rmdir($root);
     }
+};
+
+$tests['follow-up evidence includes only product links actually shown to the customer'] = static function (): void {
+    $products=[['slug'=>'one'],['slug'=>'two'],['slug'=>'unmentioned']];
+    $result=\App\Services\SupportBotService::shownProductSlugs('Two: /product/two. One: /product/one. Fake: /product/missing.',$products);
+    assertSame(['two','one'],$result,'Persist shown order, not the first 20 retrieval candidates');
+    assertSame([],\App\Services\SupportBotService::shownProductSlugs('No relevant product was found.',$products),'No unseen product is a follow-up referent');
+    $refused=false;
+    try{\App\Services\SupportTicketService::transition(['status'=>'open'],'snooze',['snoozed_until'=>''],['role'=>'admin','sub'=>'a'],new \DateTimeImmutable('2026-11-15T00:00:00Z'));}
+    catch(\InvalidArgumentException){$refused=true;}
+    assertTrue($refused,'A blank date must not silently become a snooze time');
 };
 
 $tests['support action identity and human lifecycle are deterministic and versioned'] = static function (): void {
@@ -559,6 +579,71 @@ $tests['development fixture remote mutations include authentication without comm
     assertTrue(str_contains($cli, '--data-binary @-'), 'Remote mutation should stream the authenticated JSON body');
 };
 
+$tests['missing hosted blog photos show bundled image instead of broken thumbnail'] = static function (): void {
+    $post = ['og_image'=>'https://sripanchamispiritual.com/assets/images/blog/tulsi-significance.jpg'];
+    assertSame('/assets/images/hero-temple-bg.webp', \App\Services\BlogService::resolvedImageUrl($post),
+        'Missing local blog art must use an existing local fallback');
+    assertSame('/assets/images/blog/order-products.webp',
+        \App\Services\BlogService::resolvedImageUrl(['og_image'=>'/assets/images/blog/order-products.webp']),
+        'A real authored blog image must be preserved');
+    assertSame('/assets/images/hero-temple-bg.webp',
+        \App\Services\BlogService::resolvedImageUrl(['og_image'=>'/assets/images/blog/missing.webp']),
+        'Missing relative blog images also use the fallback');
+    assertSame('/assets/images/hero-temple-bg.webp',
+        \App\Services\BlogService::resolvedImageUrl(['og_image'=>'/assets/images/../../.env']),
+        'Unsafe image paths must not be resolved');
+    assertTrue(str_contains(fileRead('app/Controllers/BlogController.php'), '$this->siteUrl($image)'),
+        'Blog OpenGraph images use a canonical absolute URL');
+    assertTrue(str_contains(fileRead('views/public/blog-post.php'), '$schemaBase . $schemaImage'),
+        'Article structured data uses an absolute image URL');
+    foreach (['tulsi-significance-hinduism','navagraha-remedies','pooja-items-for-home','benefits-of-rudraksha'] as $slug) {
+        $post = (new \App\Services\BlogService())->find($slug);
+        assertTrue($post !== null, 'Legacy article exists');
+        $url = \App\Services\BlogService::resolvedImageUrl($post);
+        assertTrue(is_file(app_path(ltrim($url,'/'))), 'Blog card has a real image for '.$slug);
+    }
+};
+
+$tests['blog structured data uses configured canonical origin instead of request host'] = static function (): void {
+    $view=fileRead('views/public/blog-post.php');
+    assertTrue(!str_contains($view, "\$_SERVER['HTTP_HOST']"), 'Article schema must not trust request-host metadata');
+    assertTrue(str_contains(fileRead('app/Controllers/BlogController.php'), "'schemaBase' => rtrim(\$this->siteUrl('/'), '/')"), 'Controller supplies the canonical configured origin');
+    assertTrue(str_contains($view,'$schemaBase . $schemaImage'), 'Image schema remains absolute under that origin');
+};
+
+$tests['admin commerce overview renders empty and populated periods without PHP errors'] = static function (): void {
+    $render = static function(array $reports, array $products, array $statuses): string {
+        $reportRows = $reports;
+        $productRows = $products;
+        $orderStatusCounts = $statuses;
+        $from = '2026-11-01';
+        $to = '2026-11-15';
+        $money = static fn(float $value): string => 'INR ' . number_format($value, 2);
+        ob_start();
+        try {
+            require app_path('views/admin/_commerce-overview.php');
+            return (string) ob_get_clean();
+        } catch (\Throwable $e) {
+            ob_end_clean();
+            throw $e;
+        }
+    };
+    $empty = $render([], [], []);
+    assertTrue(str_contains($empty, 'No paid orders in this period.'), 'An empty period should show the empty-state label');
+    assertTrue(str_contains($empty, 'No purchased products in this period.'), 'An empty product series should render safely');
+    assertTrue(str_contains($empty, 'INR 0.00'), 'An empty period should show zero rather than an exception');
+    $populated = $render(
+        [['period'=>'2026-11-14','orders'=>1,'units'=>2,'gross'=>540.0,'refunded'=>40.0,'net'=>500.0]],
+        [['product'=>'Test item','units'=>2,'net'=>500.0]],
+        ['confirmed'=>1]
+    );
+    assertTrue(str_contains($populated, 'Test item'), 'Populated top-products chart must remain visible');
+    assertTrue(str_contains($populated, 'INR 500.00'), 'Populated totals must remain accurate');
+    assertTrue(str_contains($populated, 'paid orders'), 'Status ring remains visible for positive counts');
+    $zeroStatuses = $render([], [], ['confirmed'=>0]);
+    assertTrue(str_contains($zeroStatuses, 'No paid orders in this period.'), 'Zero-count status buckets must not divide by zero');
+};
+
 $tests['support named festive collection listing uses only collection members'] = static function (): void {
     $collections = [
         ['name'=>'Ayyappa Swamy Festive Sale', 'slug'=>'collection-ayyappa', 'product_ids'=>['a','b']],
@@ -586,6 +671,36 @@ $tests['support named festive collection listing uses only collection members'] 
     assertTrue(str_contains($answer, '/shop?category=collection-ayyappa'), 'Collection-specific shop link is included');
     $empty = \App\Services\SupportBotService::collectionListingReply($match, []);
     assertTrue(str_contains($empty, 'no visible products'), 'Empty collections do not fabricate results');
+};
+
+$tests['media removal is restricted to unused uploaded media with CSRF'] = static function (): void {
+    $media = \App\Services\MediaService::class;
+    $upload = ['id'=>'0123456789abcdef', 'url'=>'/assets/images/media/2026/11/test.webp', 'context'=>'shared'];
+    assertTrue($media::canDeleteRecord($upload), 'Uploaded library record is eligible for deletion review');
+    assertTrue(!$media::canDeleteRecord(['id'=>'file:/assets/images/blog/valid.webp','url'=>'/assets/images/blog/valid.webp','source'=>'file']),
+        'Bundled images are not deletable');
+    assertTrue(!$media::canDeleteRecord($upload + ['source'=>'legacy']), 'Legacy YAML metadata is not deletable');
+    assertTrue(!$media::canDeleteRecord(['id'=>'0123456789abcdef', 'url'=>'/assets/images/products/hero.webp']),
+        'Product assets cannot be deleted from the uploaded-media route');
+    $references = $media::referencesToUrl($upload['url'], [
+        'products'=>[['name'=>'Test product', 'image_url'=>$upload['url']]],
+        'articles'=>[['title'=>'Another post','og_image'=>'/assets/images/blog/other.webp']],
+    ]);
+    assertTrue(count($references)===1 && str_contains($references[0], 'Test product'),
+        'Live referenced images cannot be removed');
+    assertSame([], $media::referencesToUrl($upload['url'], ['products'=>[['image_url'=>'/not-this.webp']]]),
+        'Unrelated content does not block uploads');
+    $routes = \App\Services\ProjectMapService::registry()['routes'];
+    $mediaDelete = array_values(array_filter($routes, static fn($r):bool =>
+        ($r['path']??'')==='/admin/media/delete' && ($r['method']??'')==='POST'));
+    assertSame(1, count($mediaDelete), 'Media deletion is an authenticated admin POST route');
+    $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
+    assertTrue(str_contains($controller, 'public function deleteMedia') && str_contains($controller, '$this->validateCsrf()'),
+        'Media delete controller requires CSRF');
+    $template = file_get_contents(app_path('views/admin/media.php'));
+    assertTrue(str_contains($template, 'Delete upload') && str_contains($template, "name=\"_csrf\""),
+        'Library exposes a confirmation form with CSRF');
+    assertTrue(str_contains($template, 'return confirm('), 'Owner must confirm image deletion');
 };
 
 $tests['database service can connect to MySQL'] = function (): void {
@@ -2736,7 +2851,7 @@ $tests['blog media uses one screenshot crop for cards and article pages'] = func
         assertTrue(str_contains($service, "'{$field}'"), "Blog service should persist {$field}");
         assertTrue(str_contains($admin, 'name="' . $field . '"'), "Admin blog editor should expose {$field}");
     }
-    assertTrue(str_contains($index, "\$post['og_image']") && str_contains($article, "\$meta['og_image']"), 'Card and article should share og_image');
+    assertTrue(str_contains($index, "BlogService::resolvedImageUrl(\$post)") && str_contains($article, "BlogService::resolvedImageUrl(\$meta)"), 'Card and article should resolve the same image with a missing-file fallback');
     assertTrue(str_contains($article, "\$schemaImage ?: 'undefined'") && str_contains($article, 'e($sourceUrl)'), 'Article metadata should tolerate missing images and render the validated source URL');
     foreach (['create-account', 'order-products', 'payments-and-orders'] as $slug) {
         $post = file_get_contents(app_path("content/blog/posts/{$slug}.md"));

@@ -505,6 +505,7 @@ if(supportForm){supportForm.addEventListener('submit',async function(e){
     e.preventDefault();
     if(supportForm.dataset.busy==='true')return;
     var data=new FormData(supportForm),msg=String(data.get('message')||'').trim();
+    if(supportConversationId)data.set('conversation_id',supportConversationId);
     if(!msg||!supportLog)return;
     if(!supportConversationId)supportConversationId=supportRandomId();
     if(!supportPendingRequest||supportPendingRequest.message!==msg){supportPendingRequest={message:msg,id:supportRandomId()};}

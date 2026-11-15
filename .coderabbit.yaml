@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# Requires the installed/enabled CodeRabbit GitHub app; this file cannot install it.
+language: en-US
+enable_free_tier: true
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary_in_walkthrough: true
+  review_status: true
+  auto_review:
+    enabled: true
+    drafts: true
+    auto_incremental_review: true
+    auto_pause_after_reviewed_commits: 5
+  path_filters:
+    - '!assets/images/**'
+    - '!docs/project-index.json'
+    - '!index.yaml'
+    - '!storage/agent-conversations/**'
+  path_instructions:
+    - path: 'app/**/*.php'
+      instructions: >-
+        Review actual PHP authorization, CSRF, side effects and failure paths.
+        Business data belongs in hosted MySQL through DatabaseService. Agent chats,
+        when implemented, are one private JSON file per session, not a SQL mirror.
+        Do not expose credentials, other customers' records or model reasoning.
+        Verify request idempotency and distinguish an operation failure from an
+        audit/persistence failure after the operation has already succeeded.
+    - path: 'views/**/*.php'
+      instructions: >-
+        Check escaping, 375px/mobile behavior, safe zero-data charts, and JavaScript
+        execution. Chat History does not imply that model conversation context is
+        restored. Do not count a reply or silence as confirmed customer resolution.
+    - path: '.github/**'
+      instructions: >-
+        Never execute a pull request head with write tokens or secrets. Review
+        receipts must match the current head SHA. CI success and request comments
+        are not reviews. Preserve human approval and no-auto-merge behavior.

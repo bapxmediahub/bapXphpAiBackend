@@ -8,8 +8,11 @@ final class AgentEvaluationService {
         $checks['response_present'] = trim($answer) !== '';
         $checks['no_internal_scaffold'] = !preg_match('/<\/?(?:think|analysis|final_answer)>|\b(?:system prompt|hidden instruction)\b/i', $answer);
         $checks['no_secret_leak'] = !preg_match('/\bsk-[A-Za-z0-9_-]{16,}|-----BEGIN (?:RSA |EC )?PRIVATE KEY-----/i', $answer);
+        // An internal observed activity label is not an exposed model capability.
+        $activityNames=AgentCapabilityPolicy::tools($surface === 'admin' ? 'enterprise' : 'support');
+        if($surface==='support')$activityNames[]='customer_ticket_lookup';
         $checks['no_invalid_tool_names'] = count(array_filter($tools, static fn(array $t): bool =>
-            !in_array($t['name'] ?? '', AgentCapabilityPolicy::tools($surface === 'admin' ? 'enterprise' : 'support'), true)
+            !in_array($t['name'] ?? '', $activityNames, true)
         )) === 0;
         if ($surface === 'admin' && preg_match('/\b(?:revenue|sales|orders|gst|support tickets?)\b/i', $question)) {
             // Exact local controller reports can be grounded without function calls.

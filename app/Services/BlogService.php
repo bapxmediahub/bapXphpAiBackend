@@ -39,6 +39,33 @@ final class BlogService {
         return $posts;
     }
 
+    /**
+     * A few legacy post frontmatter entries point at images never shipped with the
+     * site. Resolve local media against actual files, including persistent uploads,
+     * before showing a thumbnail or publishing an og:image URL. Keep the original
+     * frontmatter intact so adding the intended art later restores it automatically.
+     */
+    public static function resolvedImageUrl(array $post): string {
+        $fallback = '/assets/images/hero-temple-bg.webp';
+        $source = trim((string)($post['image'] ?? $post['og_image'] ?? ''));
+        if ($source === '') return $fallback;
+        $parts = parse_url($source);
+        if (!is_array($parts)) return $fallback;
+        $scheme = strtolower((string)($parts['scheme'] ?? ''));
+        if ($scheme !== '' && $scheme !== 'https') return $fallback;
+        $host = strtolower((string)($parts['host'] ?? ''));
+        $siteHost = strtolower((string)(parse_url((string)(getenv('APP_URL') ?: 'https://sripanchamispiritual.com'), PHP_URL_HOST) ?: ''));
+        if ($host !== '' && !in_array($host, array_filter([$siteHost, 'www.' . $siteHost]), true)) {
+            return $scheme === 'https' ? $source : $fallback;
+        }
+        $path = (string)($parts['path'] ?? '');
+        if (!preg_match('~^/assets/images/[a-z0-9_/.-]+\.(?:webp|png|jpe?g|gif)$~i', $path)
+            || str_contains($path, '..')) return $fallback;
+        $asset = app_path(ltrim($path, '/'));
+        $persistent = MediaService::storedPathForUrl($path);
+        return (is_file($asset) && is_readable($asset)) || $persistent !== null ? $path : $fallback;
+    }
+
     /** Search within the already filtered public posts without changing their order. */
     public function search(array $posts, string $query): array {
         $words = preg_split('/\s+/u', trim($query), -1, PREG_SPLIT_NO_EMPTY);

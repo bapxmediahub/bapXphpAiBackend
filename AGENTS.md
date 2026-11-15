@@ -187,3 +187,15 @@ Check computed styles rather than trusting a screenshot: an author rule like
 - Before pushing to `main`: run `./bapXphp ci` and confirm it is green. `main` deploys
   to production, so a red build can still ship.
 - Branch, push, open a PR. Never commit directly to `main`.
+
+## Code Review Rules
+
+- Flag unsafe side effects or retries that can duplicate an already-created order,
+  refund or support ticket. Business success and audit delivery are separate;
+  retain explicit idempotency and ownership checks before privileged work.
+- Preserve PHP/MySQL business boundaries and customer isolation. Agent chat
+  persistence, when introduced by its own reviewed feature PR, is one private
+  JSON file per chat, not a new unrestricted SQL/file-write tool.
+- CI success, a bot mention and a completed exact-head review are different
+  evidence. Never approve from a quota error, stale receipt or privileged
+  workflow executing PR code. See `docs/engineering/ai-review-workflow.md`.

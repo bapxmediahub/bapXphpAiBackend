@@ -52,3 +52,14 @@ replayed. Keep provider tokens/usage unavailable when absent, and distinguish
 14-case offline regression scores from real customer satisfaction/accuracy.
 
 Agent capability/instruction changes must regenerate `docs/agent-tool-contracts.md` through `php cli/agent-contracts.php`; `./bapXphp ci` fails if it differs from the executable PHP registry/policy.
+
+## REA source comparison evidence
+
+Record reference commit, file path, license boundary and content hash.
+REA `import-reference-source` is historical-reference evidence with explicit
+coverage limits, not proof of runtime behavior. Distinguish main, published
+PR heads and unfinished local changes. Unsupported/unselected source files
+are unknown, not proved absent. Runtime evidence must state the actual
+scenario and privacy scope. Do not install reference products or copy paid
+enterprise modules into this native-PHP app merely to close a feature list.
+See `docs/research/2026-11-15-rea-agent-commerce-gaps.md`.

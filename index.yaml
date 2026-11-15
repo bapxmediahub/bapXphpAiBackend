@@ -37,17 +37,17 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 377
-  relationships: 277
+  concepts: 384
+  relationships: 283
   by_type:
     blog: 14
     controller: 12
-    doc: 39
+    doc: 44
     image: 89
-    route: 130
+    route: 131
     schema: 22
     service: 61
-    skill: 10
+    skill: 11
 concepts:
   - id: "blog:benefits-of-rudraksha"
     type: "blog"
@@ -280,6 +280,23 @@ concepts:
       - "docs"
     filename: "2026-11-15-agent-evidence-followthrough.md"
     header_image: ""
+  - id: "doc:2026-11-15-rea-agent-commerce-gaps"
+    type: "doc"
+    title: "REA-backed Agent and Commerce Gap Analysis"
+    description: "Pinned open-source comparison and observed reviewer failures; distinguishes main, draft and local unfinished work."
+    resource: "docs/research/2026-11-15-rea-agent-commerce-gaps.md"
+    tags:
+      - "docs"
+    filename: "2026-11-15-rea-agent-commerce-gaps.md"
+    header_image: ""
+  - id: "doc:2026-11-15-rea-review-audit"
+    type: "doc"
+    title: "2026-11-15-rea-review-audit"
+    description: ""
+    resource: "docs/superpowers/plans/2026-11-15-rea-review-audit.md"
+    tags: []
+    filename: "2026-11-15-rea-review-audit.md"
+    header_image: ""
   - id: "doc:README"
     type: "doc"
     title: "Documentation Index"
@@ -351,6 +368,15 @@ concepts:
     tags:
       - "docs"
     filename: "agentic-monorepo.md"
+    header_image: ""
+  - id: "doc:ai-review-workflow"
+    type: "doc"
+    title: "AI Review Evidence Workflow"
+    description: "Trusted post-CI review requests with current-head receipts, explicit quota blocks and no unsafe token fallback."
+    resource: "docs/engineering/ai-review-workflow.md"
+    tags:
+      - "docs"
+    filename: "ai-review-workflow.md"
     header_image: ""
   - id: "doc:architecture"
     type: "doc"
@@ -522,6 +548,15 @@ concepts:
       - "docs"
     filename: "json-storage.md"
     header_image: ""
+  - id: "doc:media-deletion-verification"
+    type: "doc"
+    title: "Media Deletion Verification"
+    description: "Disposable-upload and rollback checks for the guarded Media Library delete action."
+    resource: "docs/engineering/media-deletion-verification.md"
+    tags:
+      - "docs"
+    filename: "media-deletion-verification.md"
+    header_image: ""
   - id: "doc:orders"
     type: "doc"
     title: "Orders Module"
@@ -566,6 +601,15 @@ concepts:
     tags:
       - "module"
     filename: "razorpay.md"
+    header_image: ""
+  - id: "doc:rea-agent-commerce-gap-audit"
+    type: "doc"
+    title: "REA Agent and Commerce Gap Audit"
+    description: "Source-pinned REA findings across DeepSeek Harness, Langfuse core, Chatwoot core and Bagisto, with native PHP adoption targets."
+    resource: "docs/research/rea-agent-commerce-gap-audit.md"
+    tags:
+      - "docs"
+    filename: "rea-agent-commerce-gap-audit.md"
     header_image: ""
   - id: "doc:rea-gap-status"
     type: "doc"
@@ -859,19 +903,18 @@ concepts:
   - id: "image:assets/images/hero-temple-bg.webp"
     type: "image"
     title: "hero-temple-bg.webp"
-    description: "Image referenced by 4 project resource(s)."
+    description: "Image referenced by 3 project resource(s)."
     resource: "assets/images/hero-temple-bg.webp"
     tags:
       - "image"
       - "used"
     filename: "hero-temple-bg.webp"
     mime: "image/webp"
-    usage_count: 4
+    usage_count: 3
     used_in:
+      - "app/Services/BlogService.php"
       - "assets/css/band.css"
       - "assets/css/home-editorial.css"
-      - "views/public/blog-post.php"
-      - "views/public/blog.php"
   - id: "image:assets/images/hero/guruji-portrait-cutout.png"
     type: "image"
     title: "guruji-portrait-cutout.png"
@@ -3291,6 +3334,22 @@ concepts:
       - "AuditLogService"
       - "AuthService"
     view: "admin/integrations"
+  - id: "route:post__admin_media_delete"
+    type: "route"
+    title: "POST /admin/media/delete"
+    description: "admin.media.delete"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/admin/media/delete"
+    controller: "AdminController@deleteMedia"
+    services:
+      - "MediaService"
+      - "AuditLogService"
+      - "AuthService"
+    view: "admin/media"
   - id: "route:post__admin_media_upload"
     type: "route"
     title: "POST /admin/media/upload"
@@ -4506,6 +4565,13 @@ concepts:
     resource: ".agents/skills/git/SKILL.md"
     tags:
       - "skill"
+  - id: "skill:rea-source-audit"
+    type: "skill"
+    title: "rea-source-audit"
+    description: "Use for evidence-based REA comparisons of open-source agent, support, telemetry or commerce code with this PHP repository."
+    resource: ".agents/skills/rea-source-audit/SKILL.md"
+    tags:
+      - "skill"
   - id: "skill:remotedb"
     type: "skill"
     title: "remotedb"
@@ -4828,6 +4894,9 @@ relationships:
   - from: "controller:SupportController"
     to: "service:SupportToolRegistry"
     relation: "uses"
+  - from: "doc:rea-agent-commerce-gap-audit"
+    to: "doc:ai-review-workflow"
+    relation: "references"
   - from: "route:get"
     to: "controller:PublicController"
     relation: "handled_by"
@@ -5131,6 +5200,9 @@ relationships:
   - from: "route:post__admin_integrations_test_email"
     to: "controller:AdminController"
     relation: "handled_by"
+  - from: "route:post__admin_media_delete"
+    to: "controller:AdminController"
+    relation: "handled_by"
   - from: "route:post__admin_media_upload"
     to: "controller:AdminController"
     relation: "handled_by"
@@ -5312,7 +5384,19 @@ relationships:
     to: "schema:mail_outbox"
     relation: "stores"
   - from: "service:MediaService"
+    to: "schema:categories"
+    relation: "stores"
+  - from: "service:MediaService"
     to: "schema:media_files"
+    relation: "stores"
+  - from: "service:MediaService"
+    to: "schema:products"
+    relation: "stores"
+  - from: "service:MediaService"
+    to: "schema:settings"
+    relation: "stores"
+  - from: "service:MediaService"
+    to: "schema:temples"
     relation: "stores"
   - from: "service:OrderService"
     to: "schema:orders"

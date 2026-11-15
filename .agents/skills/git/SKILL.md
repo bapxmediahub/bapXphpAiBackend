@@ -29,7 +29,7 @@ git commit -m "fix: describe the change"
 git push -u origin HEAD
 ```
 
-Pushing `codex/**`, `fix/**`, or `feat/**` lets `branch-pr.yml` create a PR when
+Pushing `codex/**`, `fix/**`, `feat/**`, or `bapX/**` lets `branch-pr.yml` create a PR when
 repository permissions allow it. Validation runs for pull requests and pushes to
 `main`; verify the actual Action result.
 
@@ -52,3 +52,27 @@ commands are recovery and diagnosis tools only.
 ## Keeping this skill current
 
 Update when the branch or review conventions change.
+
+## Reviewer evidence
+
+After current-head CI, inspect the vendor's actual current-commit receipt.
+A green validate job or posted `@codex review`/`@sourcery-ai review`/
+`@coderabbitai review` comment is not a completed review or merge approval.
+Use the trusted default-branch coordinator described in
+`docs/engineering/ai-review-workflow.md`; it never executes PR-head code
+with review credentials. Preserve draft state and human release gates.
+Respect usage limits and missing-app/user-token prerequisites; do not
+reuse unrelated secrets or falsely report a blocked review as passed.
+
+For new source-based comparisons, use `.agents/skills/rea-source-audit/SKILL.md`.
+A review dispatch claim with unknown delivery must not be described as a completed
+request. Inspect it before manual retry; preserve other agents' dirty worktrees.
+
+## Pull-request readiness
+
+Create new implementation PRs **ready for review**, not as drafts, as directed
+by the owner. Keep failing checks, unresolved findings and incomplete runtime
+verification visible in the PR description; ready-for-review is not merge
+approval. Reconcile the latest main before merging and retain all independent
+regressions. Never use blanket ours/theirs resolution for real code; regenerate
+map/index outputs from the reconciled source.

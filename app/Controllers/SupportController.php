@@ -59,7 +59,7 @@ final class SupportController extends BaseController {
             if(!empty($user['email']) && is_string($conversationId) && preg_match('/^[a-f0-9]{32}$/D',$conversationId)) {
                 try {
                     $receipt=(new \App\Services\SupportTicketService())->receipt($user['email'],['conversation_id'=>$conversationId,'trace_id'=>$traceId]);
-                    if($receipt!==null)$this->jsonResponse(['reply'=>'Your earlier request created support ticket #'.$receipt['id'].'. Our team can review it; do not submit a duplicate.',
+                    if($receipt!==null && hash_equals((string)($receipt['request_hash']??''),hash('sha256',$message)))$this->jsonResponse(['reply'=>'Your earlier request created support ticket #'.$receipt['id'].'. Our team can review it; do not submit a duplicate.',
                         'ticket_id'=>$receipt['id'],'conversation_id'=>$conversationId,'replayed'=>true,'request_status'=>'action_recorded_conversation_incomplete'],202);
                 } catch(\Throwable) { /* Keep uncertain actions blocked instead of guessing success. */ }
             }
