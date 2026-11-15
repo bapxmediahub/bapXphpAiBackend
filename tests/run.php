@@ -485,6 +485,17 @@ $tests['public retrieval preserves existing spaced and Unicode slugs as encoded 
     assertTrue(!\App\Services\AgentEvaluationService::publicProductLinksSupported('See /product/Ayyappan%20Pendant-Fake.',[$safe]),'A prefixed invented link does not pass');
 };
 
+$tests['JSON snapshot comparison ignores object key order but preserves values and array order'] = static function (): void {
+    require_once app_path('tests/json-snapshot.php');
+    $a=['status'=>'processing','refunds'=>[['id'=>'fixture','amount'=>2500]]];
+    $b=['refunds'=>[['amount'=>2500,'id'=>'fixture']],'status'=>'processing'];
+    assertTrue($a!==$b,'Original strict PHP comparison rejects reordered JSON objects');
+    assertSame(canonicalJsonSnapshot($a),canonicalJsonSnapshot($b),'Canonical object keys compare equal');
+    $b['refunds'][0]['amount']='2500';assertTrue(canonicalJsonSnapshot($a)!==canonicalJsonSnapshot($b),'Scalar types remain strict');
+    assertTrue(canonicalJsonSnapshot([1,2])!==canonicalJsonSnapshot([2,1]),'JSON array sequence remains significant');
+    $b['refunds'][0]['amount']=2501;assertTrue(canonicalJsonSnapshot($a)!==canonicalJsonSnapshot($b),'Changed refund amount still fails');
+};
+
 $tests['uncaught CLI errors exit nonzero without HTML or sensitive exception bodies'] = static function (): void {
     $fixture=tempnam(sys_get_temp_dir(),'sps-cli-throw-');
     try{
