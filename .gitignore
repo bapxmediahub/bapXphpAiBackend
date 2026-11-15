@@ -21,3 +21,8 @@ homepage.yml
 
 .tmp/
 storage/.bin/kitten-tts/
+
+# Private per-session agent transcripts remain local to hosting storage.
+/storage/agent-conversations/*.json
+/storage/agent-conversations/.conversation.lock
+/storage/agent-conversations/.conversation-*

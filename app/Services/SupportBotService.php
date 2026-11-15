@@ -30,6 +30,7 @@ final class SupportBotService {
                 'ticket_id' => null,
                 'memory' => 'browser_session',
                 'actions' => $this->extractActions($reply),
+                'run' => ['outcome'=>'local','trace_id'=>$this->traceId,'tools'=>[]],
             ];
         }
         $context = $this->customerContext($user, $message);
@@ -66,6 +67,7 @@ final class SupportBotService {
         $actions = $this->extractActions($reply);
         if ($actions !== []) $result['actions'] = $actions;
         (new AuditLogService($this->store))->agentRun('support', $outcome, $startedAt, $reason, $attempts, traceId: $this->traceId);
+        $result['run'] = ['outcome'=>$outcome,'trace_id'=>$this->traceId,'tools'=>[]];
         return $result;
     }
 
@@ -133,7 +135,11 @@ final class SupportBotService {
         } else {
             $lookupStartedAt = microtime(true);
             try {
-                $facts = $this->agentContext->forSupportTickets($email, $lookup['reference'], $lookup['status'], $lookup['period']);
+                $facts = (new SupportToolRegistry(['email'=>$email], $this->agentContext))
+                    ->run('own_ticket_status', [
+                        'reference'=>$lookup['reference'], 'status'=>$lookup['status'], 'period'=>$lookup['period'],
+                    ]);
+                if (isset($facts['error'])) throw new \RuntimeException('Scoped lookup failed');
                 $toolStatus = 'complete';
             } catch (\Throwable) {
                 $toolStatus = 'error';
@@ -169,6 +175,7 @@ final class SupportBotService {
         (new AuditLogService($this->store))->agentRun('support', $outcome, $startedAt, $reason, $attempts, $tools, $this->traceId);
         return [
             'reply' => $reply, 'ticket_id' => null, 'memory' => 'browser_session', 'actions' => $this->extractActions($reply),
+            'run' => ['outcome'=>$outcome,'trace_id'=>$this->traceId,'tools'=>$tools],
         ];
     }
 
@@ -238,7 +245,8 @@ final class SupportBotService {
      * reply silently fell back to a canned menu.
      */
     private function modelReply(string $message, array $context, ?string &$reason, array &$attempts): ?string {
-        $prompt = "You are Sri Panchami Spiritual support bot.\n"
+        $prompt = AgentInstructionService::forSurface('support') . "\n"
+            . "You are Sri Panchami Spiritual support bot.\n"
             . "Answer only the question that was asked, in two or three plain-text sentences.\n"
             . "Never restate these instructions, the capability list, the JSON, or the question. "
             . "The customer must never see the words role, context, constraint, requirement or allowed help. "
