@@ -22,15 +22,25 @@ category: docs
 
 ## Data Persistence
 
-- MySQL is the primary runtime data store, accessed through `DatabaseService`.
-- Collection schema lives in `storage/schema/collections.php`. Data is stored in MySQL tables (not JSON files).
+- Hosted MySQL is the runtime store for business records, through
+  `DatabaseService` and the schema in `storage/schema/collections.php`.
+- One **private JSON file per agent conversation** lives at
+  `storage/agent-conversations/<conversation-id>.json` through
+  `AgentConversationService`. Conversation files are not MySQL tables.
+  Their trace/feedback/evaluation records are stored in the same JSON file.
 - Runtime data is remote-only: `.env` supplies direct hosted MySQL credentials to `DatabaseService`; when direct access is unavailable, the CLI/application use `APP_URL/remotedb`. The local checkout is not a customer-data fallback.
 - Blog posts are file-based: `content/blog/posts/*.md` with YAML frontmatter.
 - Media metadata lives in MySQL `media_files` collection.
 - New upload binaries live in the domain-local `.sps-media` directory beside the
   deployment checkout; `index.php` serves their existing public media URLs.
   Legacy media YAML is read-only compatibility input.
-- `AgentContextService` builds safe user-specific context for the support/model assistant.
+- `AgentContextService` builds safe user-specific support context.
+  `SupportToolRegistry` and `EnterpriseToolRegistry` expose separate
+  capabilities enforced by `AgentCapabilityPolicy`.
+  `AgentTraceService` correlates observed retrieval, named tool calls,
+  provider attempts, deterministic evaluations and the response in the
+  session JSON. `AuditLogService` separately retains metadata-only run
+  events in MySQL `audit_events`. No hosted observability service is needed.
 
 ## Current Data Flow
 
@@ -55,6 +65,9 @@ content/blog/posts/     Blog post markdown files
 docs/                   Project, module, and deployment docs
 storage/schema/         MySQL schema contract (collections.php)
 storage/data/           Optional JSON seed files (one-time sync only)
+storage/agent-conversations/  One private JSON document per support/admin chat
+storage/agent-evals/     Optional offline fixture-eval snapshots (gitignored)
+tests/fixtures/agent-golden*.json  Versioned, deterministic agent fixtures
 views/
   public/               Customer-facing PHP templates
   account/              Signed-in customer pages

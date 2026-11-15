@@ -10,13 +10,21 @@ This repo packages the backend and frontend together for small PHP hosting. The 
 
 ## Data Architecture
 
-Remote MySQL is the only runtime data store. All dynamic data, including users, products, consultants, orders, appointments, reviews, settings, and secrets, lives in MySQL tables and is accessed through `DatabaseService`.
+Remote MySQL remains the single source of truth for **business records**:
+users, products, appointments, orders, reviews, tickets, settings, secrets,
+media metadata and operational audit events. It is accessed through
+`DatabaseService`. The **separate and deliberate** chat-history exception is
+one private JSON document per Support or Enterprise Agent conversation in
+`storage/agent-conversations/` through `AgentConversationService`; there is no
+conversation SQL collection.
 
-File-based storage is used only for:
+Outside the MySQL business collections, maintained file resources include:
 - Blog posts: `content/blog/posts/*.md` with YAML frontmatter
 - Blog categories: `content/blog/categories.yaml`
-- Media metadata: MySQL `media_files` collection (uploaded via Admin → Media)
-- One-time seeding: JSON files in `storage/data/` synced to MySQL via `bapXphp db sync`
+- Media binaries: bundled public assets and persistent uploaded files; uploaded media metadata is in MySQL `media_files`
+- Private Support and Enterprise chat sessions: one `storage/agent-conversations/<id>.json` per chat
+- Offline agent eval experiment summaries (explicit opt-in): `storage/agent-evals/`
+- One-time initialization fixtures: `storage/data/*.json` (`bapXphp db sync` aliases DB initialization; not a runtime data sync)
 
 ## Backend Primitives
 
@@ -48,6 +56,24 @@ milliseconds, with a system actor. They do not store questions, answers, custome
 identifiers, credentials or model reasoning. The owner dashboard aggregates the
 last 24 hours, separating model replies, fallbacks, sign-in guidance, drafts and
 errors. No traffic and unavailable monitoring are shown explicitly.
+
+The Support Agent is scoped to public products/policies and the authenticated
+customer's own approved ticket lookup; Enterprise read-only tools are separately
+allowlisted. Customer feedback on a support reply is written back into the
+same JSON chat as `confirmed_resolved` or `needs_followup` only when the
+customer explicitly votes. A new question resets the current resolution state.
+Unrated responses are not counted as successful resolutions.
+
+Each JSON turn includes a correlated execution trace with observed retrieval
+sources/result counts, validated tool filter fields, sanitized provider
+attempts, deterministic checks and response metadata. The spans share a root
+trace ID; because providers do not expose full wall-clock span boundaries,
+the record explicitly marks grouped-stage order, not a fabricated timeline.
+No raw SQL, private selectors, API keys or model reasoning appear in operational
+traces. `php cli/agent-eval.php` runs the committed golden fixtures without
+calling an LLM; baseline SHA-256 and fixture SHA-256 support reproducible
+comparisons, and CI fails on a regression. These guardrails must never be
+reported as production answer accuracy.
 
 Operational success is not answer quality. Before and after an agent change, use
 the built-in Browser to ask a catalogue question, a delivery-policy question, a

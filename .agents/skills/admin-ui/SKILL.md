@@ -22,10 +22,10 @@ that nothing changes until the owner reviews and confirms.
 
 The admin-agent flow:
 1. `GET /admin/agent` calls `AdminController::agent()` and renders the page.
-2. `POST /admin/agent/ask` calls `AdminController::agentAsk()`, which builds aggregate counts directly with
-   `AgentContextService`, and binds order lookups to identifiers supplied in the owner’s question.
-3. `SecretService` supplies `agent_api_key`, `agent_model`, and `api_endpoint`.
-4. The controller returns JSON; JavaScript in `views/admin/agent.php` renders the response.
+2. `POST /admin/agent/ask` calls `AdminController::agentAsk()`, with admin-only `EnterpriseToolRegistry` named read-only queries, local deterministic aggregates and server-owned follow-up report dates.
+3. `SecretService` supplies provider/model settings. `AiClient` handles provider failover and bounded tools.
+4. `AgentConversationService` saves a single private JSON file per chat. The `History` and `New chat` controls use authenticated `/admin/agent/history` routes to reopen only this admin's sessions; the frontend never reads the raw storage files.
+5. The controller returns JSON; `views/admin/agent.php` safely renders replies, source links, drafts, traces and history.
 
 The response may include a secret-safe `run` summary: route, total elapsed time,
 allowlisted tool name/status/duration, and model attempt/status/duration. Never include
@@ -59,3 +59,33 @@ the composer above the safe area, and prevent horizontal tables.
 ## Keeping this skill current
 
 Update when an admin route, sidebar group, or CRUD form contract changes. The sidebar is gated by `SettingsService::modules()`; re-check both the on and off states.
+
+## Agent monitoring and quality
+
+`/admin/agent/monitoring` displays last-24-hour metadata-only
+operational run counts, provider/tool failure timings and a clearly bounded
+recent sample of conversation feedback states. The offline PHP golden test
+score with its fixture hash is a regression score, **not** live model accuracy.
+A customer must explicitly vote positive before a chat is recorded as
+`confirmed_resolved`; silence is `awaiting_feedback`.
+Admin session exports require authenticated access. Always test New Chat,
+History, feedback and evaluation cards at 1280px and exactly 375px; inspect
+JavaScript page errors and hidden-state computed styles.
+
+## Execution evidence contract
+
+For both agent surfaces, prepare the actor-owned private JSON request before
+executing tools/providers. Persist actual span boundaries through
+`AgentTraceService`; never backfill timestamps or call a produced response
+delivered. Use effective result scope instead of requested filter arguments.
+Unfinished requests are visible in Agent Monitoring and must not be blindly
+replayed. Keep provider tokens/usage unavailable when absent, and distinguish
+14-case offline regression scores from real customer satisfaction/accuracy.
+
+## History and support queue controls
+
+History supports bounded Load more and explicit owner deletion; pending actions
+cannot be deleted. Keep export/deletion auditing enforced server-side. Ticket
+forms must submit the observed version, allowlisted action and CSRF; display
+priority/work state and preserve keyboard-accessible Manage controls. Do not call
+a saved reply sent/delivered unless mail transport evidence exists.

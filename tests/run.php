@@ -60,6 +60,228 @@ function assertMinCount(int $min, array $items, string $msg): void {
 $failures = [];
 $tests = [];
 
+$tests['legitimate internal ticket activity is evaluated without exposing it as a model capability'] = static function (): void {
+    $result=\App\Services\AgentEvaluationService::evaluate('support','show my tickets','You have no matching tickets.',[
+        ['name'=>'customer_ticket_lookup','status'=>'complete']],'local');
+    assertTrue($result['checks']['no_invalid_tool_names'],'Observed internal ticket routing is a legitimate evidence label');
+    assertTrue(!\App\Services\AgentCapabilityPolicy::allows('support','customer_ticket_lookup',null),'An audit label never becomes a guest callable capability');
+    $bad=\App\Services\AgentEvaluationService::evaluate('support','help','test', [['name'=>'write_file']]);
+    assertTrue(!$bad['checks']['no_invalid_tool_names'],'Unknown write tools remain rejected');
+};
+
+$tests['support exposed tool contracts match executable capabilities and reject invalid periods'] = static function (): void {
+    $tools=new \App\Services\SupportToolRegistry(null);
+    assertSame(array_column($tools->declarations(),'name'),\App\Services\AgentCapabilityPolicy::tools('support'),
+        'Activity labels must not appear as invocable support capabilities');
+    assertTrue(!\App\Services\AgentCapabilityPolicy::allows('support','customer_ticket_lookup',null),
+        'Legacy trace label is not an exposed guest tool');
+    $schemas=array_column($tools->declarations(),'parameters','name');
+    assertTrue(isset($schemas['own_ticket_status']['properties']['period']),'Actual supported period is documented in the schema');
+    assertTrue(isset($tools->run('public_catalog',['question'=>''])['error']),'Empty retrieval input does not return arbitrary catalogue entries');
+    $customer=new \App\Services\SupportToolRegistry(['email'=>'fixture@example.invalid']);
+    assertTrue(isset($customer->run('own_ticket_status',['period'=>['2026-99-32','2026-11-01']])['error']), 'Impossible dates fail before any data lookup');
+    assertTrue(isset($customer->run('own_ticket_status',['period'=>['2026-11-15','2026-11-01']])['error']), 'Reversed dates fail before any data lookup');
+};
+
+$tests['trace evidence uses executed scope rather than contradictory requested dates'] = static function (): void {
+    $e = \App\Services\AgentTraceService::toolEvidence('sales_summary',
+        ['from'=>'2026-01-01','to'=>'2026-01-31'],
+        ['from'=>'2026-11-01','to'=>'2026-11-15','orders'=>2]);
+    assertSame('2026-11-01',$e['filters']['from'],'Trace must retain the scope actually queried');
+    assertSame('2026-11-15',$e['filters']['to'],'Final dates override untrusted request dates');
+    $bad = \App\Services\AgentTraceService::toolEvidence('sales_summary',
+        ['from'=>'2026-01-01'],['error'=>'Invalid lookup parameters.']);
+    assertTrue(!isset($bad['filters']['from']),'Rejected arguments are not certified as an executed scope');
+};
+
+$tests['runtime trace records real span boundaries and resets per request'] = static function (): void {
+    $trace=bin2hex(random_bytes(8));
+    \App\Services\AgentTraceService::begin($trace);
+    $retrieval=\App\Services\AgentTraceService::startSpan('retrieval','public_policy');
+    \App\Services\AgentTraceService::endSpan($retrieval,'complete',['result_count'=>1]);
+    $tool=\App\Services\AgentTraceService::startSpan('tool','sales_summary');
+    \App\Services\AgentTraceService::endSpan($tool,'complete',['evidence'=>[
+        'source'=>'orders','filters'=>['from'=>'2026-11-01'],'result_count'=>0]]);
+    $result=\App\Services\AgentTraceService::build($trace,'local',[],[],['version'=>2,'passed'=>true],'No orders.');
+    assertSame('observed_execution',$result['ordering'],'Runtime trace is measured rather than reconstructed stage groups');
+    assertSame($retrieval,$result['spans'][0]['span_id'],'Persist actual span identities, not new post-hoc ones');
+    assertTrue(isset($result['spans'][0]['started_at'],$result['spans'][0]['ended_at']), 'Measured boundaries are present');
+    assertTrue($result['spans'][0]['duration_ms']>=0,'Measured duration is non-negative');
+    assertSame('produced',end($result['spans'])['status'],'Server cannot claim client delivery');
+    \App\Services\AgentTraceService::begin(bin2hex(random_bytes(8)));
+    assertSame([],\App\Services\AgentTraceService::snapshot()['spans'],'Next request has no prior spans');
+    \App\Services\AgentTraceService::reset();
+};
+
+$tests['conversation checkpoint rejects foreign actors before work and completes same file'] = static function (): void {
+    $dir=sys_get_temp_dir().'/sps-checkpoint-'.bin2hex(random_bytes(6));mkdir($dir,0700);
+    $svc=new \App\Services\AgentConversationService($dir);$actor=['type'=>'guest','id'=>'fixture-owner'];
+    $trace=bin2hex(random_bytes(8));
+    try {
+        $prepared=$svc->prepareTurn('support',$actor,null,'Where is my order?',$trace);
+        $id=$prepared['conversation_id'];$doc=$svc->getForAdmin($id);
+        assertSame('running',$doc['pending_turns'][$trace]['status'],'Intent is durable before execution');
+        assertSame(0,count($doc['turns']),'No answer is invented at checkpoint');
+        $rejected=false;
+        try{$svc->prepareTurn('support',['type'=>'guest','id'=>'intruder'],$id,'private',bin2hex(random_bytes(8)));}
+        catch(\RuntimeException){$rejected=true;}
+        assertTrue($rejected,'Foreign actor rejected before any tool/model work');
+        $duplicate=false;
+        try{$svc->prepareTurn('support',$actor,$id,'Where is my order?',$trace);}
+        catch(\LogicException){$duplicate=true;}
+        assertTrue($duplicate,'Uncertain/in-flight request is not automatically replayed');
+        $svc->checkpoint('support',$actor,$id,$trace,['version'=>2,'trace_id'=>$trace,'spans'=>[]]);
+        $done=$svc->record('support',$actor,$id,'Where is my order?','Check My Orders.',$trace,'local');
+        $doc=$svc->getForAdmin($id);
+        assertSame(1,count($doc['turns']),'Prepared request completes one real turn');
+        assertTrue(!isset($doc['pending_turns'][$trace]),'Only final persistence clears the pending marker');
+        assertSame(1,count(glob($dir.'/*.json')?:[]),'No extra conversation or SQL table');
+        $again=$svc->prepareTurn('support',$actor,$id,'Where is my order?',$trace);
+        assertSame($done['turn_id'],$again['replay']['turn_id'],'Same completed request can be replayed without another action');
+    }finally{foreach(glob($dir.'/*')?:[] as $f)@unlink($f);@unlink($dir.'/.conversation.lock');@rmdir($dir);}
+};
+
+$tests['provider usage normalization preserves unavailable fields without private data'] = static function (): void {
+    $empty=\App\Services\AgentTraceService::usageFromResponse('{}');
+    assertSame(null,$empty['input_tokens'],'Missing usage is unavailable, not zero');
+    $google=\App\Services\AgentTraceService::usageFromResponse('{"usageMetadata":{"promptTokenCount":10,"candidatesTokenCount":3,"totalTokenCount":13},"secret":"do-not-record"}');
+    assertSame(10,$google['input_tokens'],'Google prompt usage normalized');
+    assertSame(3,$google['output_tokens'],'Google output usage normalized');
+    $openai=\App\Services\AgentTraceService::usageFromResponse('{"usage":{"prompt_tokens":12,"completion_tokens":4,"prompt_tokens_details":{"cached_tokens":2}}}');
+    assertSame(2,$openai['cached_input_tokens'],'Compatible cached usage retained');
+    assertTrue(!str_contains(json_encode($google),'do-not-record'),'Provider body content is excluded');
+};
+
+$tests['trace enforces provider budget without inventing missing usage'] = static function (): void {
+    $trace=\App\Services\AgentTraceService::class;
+    $trace::begin(bin2hex(random_bytes(8)),null,['max_model_calls'=>1,'max_observed_tokens'=>25,'max_duration_ms'=>10000]);
+    $span=$trace::startSpan('model_attempt','fixture-model');
+    $trace::endSpan($span,'complete',['usage'=>['input_tokens'=>10,'output_tokens'=>5,'total_tokens'=>15,'cached_input_tokens'=>null]]);
+    $trace::endSpan($span,'complete',['usage'=>['input_tokens'=>10,'output_tokens'=>5,'total_tokens'=>15]]);
+    assertSame(15,$trace::snapshot()['budget']['observed_total_tokens'],'Duplicate span completion never doubles usage');
+    $blocked=false;try{$trace::startSpan('model_attempt','fixture-model');}catch(\RuntimeException){$blocked=true;}
+    assertTrue($blocked,'Call budget enforced before executing second request');
+    assertSame(1,$trace::snapshot()['budget']['model_calls'],'A rejected request is not counted as sent');
+    $trace::begin(bin2hex(random_bytes(8)),null,['max_model_calls'=>2]);
+    $span=$trace::startSpan('model_attempt','fixture-model');$trace::endSpan($span,'complete',['usage'=>$trace::usageFromResponse('{}')]);
+    assertSame(false,$trace::snapshot()['budget']['usage_complete'],'Absent provider usage remains explicitly incomplete');
+    $trace::reset();
+};
+
+$tests['tool provenance preserves only approved aggregate facts and code versions'] = static function (): void {
+    $e=\App\Services\AgentTraceService::toolEvidence('sales_summary',['from'=>'wrong'],
+        ['from'=>'2026-11-01','to'=>'2026-11-15','orders'=>2,'revenue'=>150.25,'customer_email'=>'never@log.invalid']);
+    assertSame(150.25,$e['facts']['revenue'],'Actual approved financial aggregate retained for comparison');
+    assertTrue(strlen($e['facts_sha256'])===64 && strlen($e['tool_version_sha256'])===64,'Versioned evidence fingerprint present');
+    assertTrue(!str_contains(json_encode($e),'never@log.invalid'),'Private fields are excluded before hashing or persistence');
+    $e2=\App\Services\AgentTraceService::toolEvidence('sales_summary',[],['from'=>'2026-11-01','to'=>'2026-11-15','orders'=>2,'revenue'=>151.25]);
+    assertTrue($e['facts_sha256']!==$e2['facts_sha256'],'Changed data creates a different retained evidence digest');
+};
+
+$tests['audit outcome distinguishes unavailable store from recorded metadata'] = static function (): void {
+    $success=\App\Services\AuditLogService::deliveryResult(['status'=>'recorded'],true);
+    $failure=\App\Services\AuditLogService::deliveryResult(['status'=>'recorded'],false);
+    assertSame('recorded',$success['status'],'Successful write remains recorded');
+    assertSame('not_persisted',$failure['status'],'Failure never falsely claims durable audit record');
+};
+
+$tests['private JSON history pages and deletion are bounded and actor owned'] = static function (): void {
+    $root=sys_get_temp_dir().'/sps-history-page-'.bin2hex(random_bytes(6));mkdir($root,0700);
+    $svc=new \App\Services\AgentConversationService($root);$owner=['type'=>'admin','id'=>'owner'];$other=['type'=>'admin','id'=>'other'];
+    try {
+        $ids=[];for($i=0;$i<5;$i++){$r=$svc->record('admin',$owner,null,'Question '.$i,'Answer',bin2hex(random_bytes(8)),'local');$ids[]=$r['conversation_id'];}
+        $foreign=$svc->record('admin',$other,null,'Private question','Answer',bin2hex(random_bytes(8)),'local');
+        $page=$svc->historyPage('admin',$owner,2,null);assertSame(2,count($page['conversations']),'Page has requested bound');
+        assertTrue(is_string($page['next_cursor']),'Paging cursor returned');
+        $page2=$svc->historyPage('admin',$owner,2,$page['next_cursor']);
+        assertSame([],array_intersect(array_column($page['conversations'],'id'),array_column($page2['conversations'],'id')),'Pages have no duplicate chats');
+        $denied=false;try{$svc->deleteForActor($foreign['conversation_id'],'admin',$owner);}catch(\RuntimeException){$denied=true;}
+        assertTrue($denied,'Foreign chat deletion rejected');
+        $before=$svc->getForActor($ids[0],'admin',$owner);$backup=json_encode($before,JSON_THROW_ON_ERROR);
+        assertTrue($svc->deleteForActor($ids[0],'admin',$owner),'Owned completed chat deleted');
+        assertSame(null,$svc->getForAdmin($ids[0]),'Deleted transcript no longer accessible');
+        file_put_contents($root.'/'.$ids[0].'.json',$backup);chmod($root.'/'.$ids[0].'.json',0600);
+        $restored=$svc->record('admin',$owner,$ids[0],'Continued','Restored answer',bin2hex(random_bytes(8)),'local');
+        assertSame(2,$restored['turns'],'Restored backup preserves identity and prior turns');
+        $pending=$svc->prepareTurn('admin',$owner,null,'In progress',bin2hex(random_bytes(8)));
+        $denied=false;try{$svc->deleteForActor($pending['conversation_id'],'admin',$owner);}catch(\RuntimeException){$denied=true;}
+        assertTrue($denied,'Uncertain/running action cannot be deleted as ordinary history');
+    } finally {
+        foreach(array_merge(glob($root.'/*')?:[],glob($root.'/.conversation*')?:[]) as $f)if(is_file($f))@unlink($f);
+        @rmdir($root);
+    }
+};
+
+$tests['per-chat locks coordinate with a previous deployment global writer'] = static function (): void {
+    $root=sys_get_temp_dir().'/sps-lock-compat-'.bin2hex(random_bytes(6));mkdir($root,0700);
+    $legacy=fopen($root.'/.conversation.lock','c');flock($legacy,LOCK_EX);
+    $svc=new \App\Services\AgentConversationService($root);$actor=['type'=>'guest','id'=>'fixture'];$blocked=false;
+    try {
+        try{$svc->prepareTurn('support',$actor,null,'test',bin2hex(random_bytes(8)));}
+        catch(\RuntimeException){$blocked=true;}
+        assertTrue($blocked,'A new writer must not race a still-running old deployment writer');
+        assertSame(0,count(glob($root.'/*.json')?:[]),'No checkpoint bypasses the old writer lock');
+    } finally {
+        flock($legacy,LOCK_UN);fclose($legacy);
+        foreach(array_merge(glob($root.'/*')?:[],glob($root.'/.conversation*')?:[]) as $f)if(is_file($f))@unlink($f);@rmdir($root);
+    }
+};
+
+$tests['follow-up evidence includes only product links actually shown to the customer'] = static function (): void {
+    $products=[['slug'=>'one'],['slug'=>'two'],['slug'=>'unmentioned']];
+    $result=\App\Services\SupportBotService::shownProductSlugs('Two: /product/two. One: /product/one. Fake: /product/missing.',$products);
+    assertSame(['two','one'],$result,'Persist shown order, not the first 20 retrieval candidates');
+    assertSame([],\App\Services\SupportBotService::shownProductSlugs('No relevant product was found.',$products),'No unseen product is a follow-up referent');
+    $refused=false;
+    try{\App\Services\SupportTicketService::transition(['status'=>'open'],'snooze',['snoozed_until'=>''],['role'=>'admin','sub'=>'a'],new \DateTimeImmutable('2026-11-15T00:00:00Z'));}
+    catch(\InvalidArgumentException){$refused=true;}
+    assertTrue($refused,'A blank date must not silently become a snooze time');
+};
+
+$tests['support action identity and human lifecycle are deterministic and versioned'] = static function (): void {
+    $service=\App\Services\SupportTicketService::class;
+    $handoff=['conversation_id'=>str_repeat('a',32),'trace_id'=>str_repeat('b',16),'turn_id'=>str_repeat('c',32)];
+    $id=$service::actionIdentity('user@example.invalid',$handoff);
+    assertSame($id,$service::actionIdentity('USER@example.invalid',$handoff),'Same actor/request yields same ticket key');
+    assertTrue($id!==$service::actionIdentity('other@example.invalid',$handoff),'Ticket action is actor scoped');
+    $ticket=['id'=>$id,'status'=>'open','version'=>0,'created_at'=>'2026-11-15T10:00:00+00:00'];
+    $assigned=$service::transition($ticket,'assign',['assigned_admin_id'=>'admin-a','priority'=>'high'],['role'=>'admin','sub'=>'admin-a'],new \DateTimeImmutable('2026-11-15T10:02:00+00:00'));
+    assertSame(1,$assigned['version'],'Mutation increments optimistic version');
+    assertSame('admin-a',$assigned['assigned_admin_id'],'Ownership is explicit');
+    $answered=$service::transition($assigned,'reply',['reply'=>'Verified reply'],['role'=>'admin','sub'=>'admin-a'],new \DateTimeImmutable('2026-11-15T10:05:00+00:00'));
+    assertSame('2026-11-15T10:05:00+00:00',$answered['first_human_response_at'],'First human reply is distinct from bot response');
+    $closed=$service::transition($answered,'close',[],['role'=>'admin','sub'=>'admin-a'],new \DateTimeImmutable('2026-11-15T10:06:00+00:00'));
+    $reopened=$service::transition($closed,'reopen',[],['role'=>'admin','sub'=>'admin-b'],new \DateTimeImmutable('2026-11-15T10:10:00+00:00'));
+    assertSame(1,$reopened['reopen_count'],'Reopen episode tracked');
+    assertSame($answered['first_human_response_at'],$reopened['first_human_response_at'],'Reopen does not rewrite first response');
+    assertSame('open',$reopened['status'],'Reopened ticket becomes actionable');
+    assertSame(4,count($reopened['lifecycle']),'All transitions remain inspectable');
+    $denied=false;try{$service::transition($ticket,'close',[],['role'=>'customer'],new \DateTimeImmutable());}catch(\InvalidArgumentException){$denied=true;}
+    assertTrue($denied,'Customers cannot use staff transitions');
+};
+
+$tests['support context keeps bounded own turns and revalidates ordinal product references'] = static function (): void {
+    $root=sys_get_temp_dir().'/sps-context-'.bin2hex(random_bytes(6));mkdir($root,0700);
+    $svc=new \App\Services\AgentConversationService($root);$actor=['type'=>'guest','id'=>'own'];
+    try {
+        $r=$svc->record('support',$actor,null,'Ayyappa products','Here are two items',bin2hex(random_bytes(8)),'local',[],null,null,[],[],['public_product_slugs'=>['one','two']]);
+        $context=$svc->contextForActor($r['conversation_id'],'support',$actor,2,4000);
+        assertSame(['one','two'],$context['public_product_slugs'],'Ordered verified identities carried forward');
+        $product=\App\Services\SupportBotService::followupProduct('what is the second one made of?', $context['public_product_slugs'],[
+            ['slug'=>'one','name'=>'First'],['slug'=>'two','name'=>'Second','specifications'=>['Material'=>'Brass']]
+        ]);
+        assertSame('two',$product['slug'],'Ordinal resolves to previously listed item');
+        assertSame(null,\App\Services\SupportBotService::followupProduct('what is the second one made of?', $context['public_product_slugs'],[['slug'=>'one','name'=>'First']]),'Missing current product is not fabricated from stale history');
+        assertSame([], $svc->contextForActor(null,'support',$actor)['messages'],'Fresh chat has no inherited context');
+    }finally{foreach(array_merge(glob($root.'/*')?:[],glob($root.'/.conversation*')?:[]) as $f)if(is_file($f))@unlink($f);@rmdir($root);}
+};
+
+$tests['Tamil named festive retrieval matches English collection without guessing generic requests'] = static function (): void {
+    $collections=[['name'=>'Ayyappa Swamy Festive Sale','slug'=>'ayyappa','product_ids'=>['a']],['name'=>'Sassthi Festival Sale','slug'=>'sassthi','product_ids'=>['b']]];
+    assertSame('ayyappa',\App\Services\AgentContextService::requestedCollection('அய்யப்பன் சுவாமி பண்டிகை பொருட்கள்',$collections)['slug'],'Tamil alias maps to real collection');
+    assertSame(null,\App\Services\AgentContextService::requestedCollection('பண்டிகை பொருட்கள்',$collections),'Generic Tamil festival query requires clarification');
+};
+
 $tests['each agent session creates one private JSON file and no MySQL table'] = static function (): void {
     $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
     assertTrue(mkdir($root, 0700), 'Private test directory exists');
@@ -145,6 +367,113 @@ $tests['Enterprise Agent new chat and history are scoped to each admin JSON iden
         foreach (glob($dir.'/*') ?: [] as $file) @unlink($file);
         @unlink($dir.'/.conversation.lock');
         @rmdir($dir);
+    }
+};
+
+$tests['agent runbook skills and storage docs are aligned with PHP code'] = static function (): void {
+    $documents = [
+        'AGENTS.md'=>'storage/agent-conversations',
+        'docs/json-storage.md'=>'one JSON file per chat',
+        'docs/architecture.md'=>'AgentTraceService',
+        'docs/agent-observability.md'=>'AgentEvaluationService',
+        '.agents/skills/backend-php-mysql/SKILL.md'=>'conversation',
+        '.agents/skills/admin-ui/SKILL.md'=>'agent/monitoring',
+        '.agents/skills/deployment/SKILL.md'=>'agent-conversations',
+        '.agents/skills/docs/SKILL.md'=>'documentation-to-code',
+    ];
+    foreach($documents as $file=>$text) {
+        $content=strtolower((string)file_get_contents(app_path($file)));
+        assertTrue(str_contains($content,strtolower($text)),
+            'Documentation includes implemented agent storage/trace contract: '.$file);
+    }
+    foreach ([
+        'app/Services/AgentTraceService.php',
+        'app/Services/AgentEvaluationService.php',
+        'cli/agent-eval.php',
+        'tests/fixtures/agent-golden.json',
+        'tests/fixtures/agent-golden-baseline.json',
+    ] as $file) {
+        assertTrue(is_file(app_path($file)), 'Documented source is present: '.$file);
+    }
+    assertTrue(!str_contains(fileRead('docs/agentic-monorepo.md'),
+        'Remote MySQL is the only runtime data store'), 'Do not claim chat history lives in MySQL');
+    assertTrue(!str_contains(fileRead('docs/json-storage.md'),
+        'All runtime data is stored in MySQL'), 'Chat JSON exception must remain documented');
+    assertTrue(str_contains(fileRead('.agents/skills/backend-php-mysql/SKILL.md'), 'fails closed'),
+        'Security skill reflects actual RemoteDbController authentication');
+};
+
+$tests['agent golden fixtures are reproducible, explicit, and fully passing'] = static function (): void {
+    $suite = \App\Services\AgentEvaluationService::goldenSuite();
+    assertSame(1, $suite['schema_version'], 'Golden dataset has a version');
+    assertTrue($suite['total'] >= 10, 'Golden suite covers multiple agent flows');
+    assertSame($suite['total'], $suite['passing'], 'Golden regression fixtures pass with current code');
+    assertSame('deterministic_fixture_regressions_not_production_accuracy', $suite['metric'],
+        'Golden result never claims live answer correctness');
+    assertTrue(strlen($suite['dataset_hash'])===64, 'Suite is content-addressed for experiment comparisons');
+};
+
+$tests['agent trace correlates retrieval tools providers checks and response without PII'] = static function (): void {
+    $tool = \App\Services\AgentTraceService::toolEvidence('find_order',
+        ['customer_email'=>'customer@example.invalid','order_id'=>'sensitive123'],
+        ['found'=>2,'orders'=>[['id'=>'sensitive123']]]);
+    assertSame('orders',$tool['source'],'Business data source is identified');
+    assertTrue(!str_contains(json_encode($tool),'customer@example.invalid'), 'No email in tool trace');
+    assertTrue(!str_contains(json_encode($tool),'sensitive123'), 'No order ID in tool trace');
+    $run = \App\Services\AgentTraceService::build('0123456789abcdef','model',[
+        ['name'=>'find_order','status'=>'complete','duration_ms'=>12,'evidence'=>$tool]
+    ],[
+        ['model'=>'fixture-model','status'=>200,'total_ms'=>48]
+    ],[
+        'passed'=>true,'version'=>2
+    ],'Two orders found.', [['source'=>'visible_products','result_count'=>3,'status'=>'complete']]);
+    assertSame('0123456789abcdef',$run['trace_id'],'One trace ID connects the steps');
+    assertSame(['retrieval','tool','model_attempt','evaluation','response'],
+        array_column($run['spans'],'type'),'Observed stages are linked');
+    foreach($run['spans'] as $span) {
+        assertSame($run['trace_id'],$span['parent_span_id'],'Every stage points to root');
+        assertTrue(preg_match('/^[a-f0-9]{16}$/D',$span['span_id'])===1,'Each stage has a distinct span ID');
+    }
+    assertTrue(!str_contains(json_encode($run),'sensitive123'),'No private identifier persisted in spans');
+};
+
+$tests['support feedback is explicit and resets on next user question'] = static function (): void {
+    $root=sys_get_temp_dir().'/sps-support-feedback-'.bin2hex(random_bytes(6));
+    assertTrue(mkdir($root,0700),'Private support feedback fixture exists');
+    $service=new \App\Services\AgentConversationService($root);
+    $actor=['type'=>'guest','id'=>'fixture-guest'];
+    try {
+        $first=$service->record('support',$actor,null,'Where do I track my order?','Go to My Orders.',
+            bin2hex(random_bytes(8)),'local');
+        $id=$first['conversation_id'];
+        $status=$service->rateSupportTurn($id,$actor,$first['turn_id'],'helpful');
+        assertSame('confirmed_resolved',$status['resolution_status'],'Only customer confirmation marks resolved');
+        $doc=$service->getForAdmin($id);
+        assertSame('confirmed_resolved',$doc['resolution_status'],'Resolution is persisted in same chat JSON');
+        assertSame(1,count(glob($root.'/*.json')?:[]),'Feedback does not create a second chat file');
+        $second=$service->record('support',$actor,$id,'And refunds?','Please contact support.',
+            bin2hex(random_bytes(8)),'fallback');
+        assertSame('awaiting_feedback',$service->getForAdmin($id)['resolution_status'],
+            'New question invalidates previous confirmation');
+        try {
+            $service->rateSupportTurn($id,$actor,$first['turn_id'],'helpful');
+            throw new \RuntimeException('Expected old-turn rating rejection');
+        } catch (\InvalidArgumentException) {}
+        try {
+            $service->rateSupportTurn($id,['type'=>'guest','id'=>'another'], $second['turn_id'], 'helpful');
+            throw new \RuntimeException('Expected foreign guest rejection');
+        } catch (\RuntimeException $e) {
+            assertSame('Conversation not accessible to this actor',$e->getMessage(),'No cross-guest feedback');
+        }
+        assertSame('needs_followup',$service->rateSupportTurn($id,$actor,$second['turn_id'],'not_helpful')['resolution_status'],
+            'Negative feedback marks unresolved, never assumed resolved');
+        $recent=$service->recent();
+        $summary=\App\Services\AgentEvaluationService::supportOutcomeSummary($recent);
+        assertSame(1,$summary['counts']['needs_followup'],'Dashboard counts explicitly negative feedback');
+        assertSame(0,$summary['counts']['confirmed_resolved'],'Confirmed rate resets for current turn');
+    } finally {
+        foreach(glob($root.'/*')?:[] as $f)@unlink($f);
+        @unlink($root.'/.conversation.lock');@rmdir($root);
     }
 };
 

@@ -7,13 +7,13 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 129 routes, 12 controllers, 60 services, 51 views, 0 data files, 20 tools"]
-    arch_routes["> Routes: 129 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 131 routes, 12 controllers, 61 services, 51 views, 0 data files, 22 tools"]
+    arch_routes["> Routes: 131 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
-    arch_svc["> Services: 60"]:::arch
+    arch_svc["> Services: 61"]:::arch
     arch_views["> Views: 51"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
-    arch_tools["> Tools: 20"]:::arch
+    arch_tools["> Tools: 22"]:::arch
     arch_gaps["> Gaps: 6"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
@@ -97,6 +97,7 @@ flowchart LR
   subgraph ROUTES_SUPPORT["SUPPORT Routes"]
     route_get_support["GET /support"]:::route
     route_post_support_ask["POST /support/ask — Support bot — AI-powered Q&A"]:::route
+    route_post_support_feedback["POST /support/feedback"]:::route
   end
 
   subgraph ROUTES_ADMIN["ADMIN Routes"]
@@ -125,6 +126,7 @@ flowchart LR
     route_get_admin_agent["GET /admin/agent"]:::route
     route_get_admin_agent_history["GET /admin/agent/history"]:::route
     route_get_admin_agent_history_id["GET /admin/agent/history/{id}"]:::route
+    route_post_admin_agent_history_id_delete["POST /admin/agent/history/{id}/delete"]:::route
     route_get_admin_agent_conversation_id["GET /admin/agent/conversation/{id}"]:::route
     route_get_admin_agent_monitoring["GET /admin/agent/monitoring"]:::route
     route_post_admin_agent_ask["POST /admin/agent/ask"]:::route
@@ -196,6 +198,7 @@ flowchart LR
     service_agentevaluationservice["AgentEvaluationService"]:::code
     service_agentinstructionservice["AgentInstructionService"]:::code
     service_agenttoolregistry["AgentToolRegistry"]:::code
+    service_agenttraceservice["AgentTraceService"]:::code
     service_agenttranscriptsanitizer["AgentTranscriptSanitizer"]:::code
     service_aiclient["AiClient"]:::code
     service_aireplycleaner["AiReplyCleaner"]:::code
@@ -337,6 +340,8 @@ flowchart LR
   end
 
   subgraph TOOLS["Tools"]
+    tool_agent_contracts["agent-contracts"]:::tool
+    tool_agent_eval["agent-eval"]:::tool
     tool_blog_image["blog-image"]:::tool
     tool_blog_read["blog-read"]:::tool
     tool_blog_write["blog-write"]:::tool
@@ -662,6 +667,11 @@ flowchart LR
   controller_admincontroller --> service_agentconversationservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_agent
+  route_post_admin_agent_history_id_delete --> controller_admincontroller
+  controller_admincontroller --> service_agentconversationservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_agent
   route_get_admin_agent_conversation_id --> controller_admincontroller
   controller_admincontroller --> service_agentconversationservice
   controller_admincontroller --> service_authservice
@@ -683,6 +693,7 @@ flowchart LR
   controller_admincontroller --> service_agenttoolregistry
   controller_admincontroller --> service_enterprisetoolregistry
   controller_admincontroller --> service_agentconversationservice
+  controller_admincontroller --> service_agenttraceservice
   controller_admincontroller --> service_agentevaluationservice
   controller_admincontroller --> service_agenttranscriptsanitizer
   controller_admincontroller --> service_agentcapabilitypolicy
@@ -720,7 +731,8 @@ flowchart LR
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_list
   route_post_admin_support_tickets_save --> controller_admincontroller
-  controller_admincontroller --> service_resourceservice
+  controller_admincontroller --> service_supportticketservice
+  controller_admincontroller --> service_databaseservice
   controller_admincontroller --> service_auditlogservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_list
@@ -873,10 +885,15 @@ flowchart LR
   controller_supportcontroller --> service_supportticketservice
   controller_supportcontroller --> service_supporttoolregistry
   controller_supportcontroller --> service_agentconversationservice
+  controller_supportcontroller --> service_agenttraceservice
   controller_supportcontroller --> service_agentevaluationservice
   controller_supportcontroller --> service_auditlogservice
   controller_supportcontroller --> service_aiclient
   controller_supportcontroller --> service_aireplycleaner
+  controller_supportcontroller -. renders .-> view_public_support
+  route_post_support_feedback --> controller_supportcontroller
+  controller_supportcontroller --> service_agentconversationservice
+  controller_supportcontroller --> service_ratelimiter
   controller_supportcontroller -. renders .-> view_public_support
   route_get_docs --> controller_publiccontroller
   controller_publiccontroller -. renders .-> view_public_blog

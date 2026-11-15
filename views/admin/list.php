@@ -3,7 +3,7 @@
     <p style="color:var(--color-text-muted); margin:0 0 var(--space-lg);">View <?= e(strtolower($title)) ?> records.</p>
     <?php if(($collection ?? '') === 'support_tickets'): ?>
     <style>
-    .ticket-row{cursor:pointer}.ticket-row:hover{background:var(--color-bg-alt)}.ticket-reply-form{display:none;background:var(--color-bg-alt);padding:var(--space-md);border-radius:var(--radius-md);margin-top:var(--space-xs)}.ticket-reply-form.open{display:block}.ticket-reply-form textarea{width:100%;min-height:80px;padding:var(--space-sm);border:1px solid var(--color-border);border-radius:var(--radius-sm);font-family:inherit;font-size:0.85rem;resize:vertical}.ticket-context{font-size:0.75rem;color:var(--color-text-muted);margin-top:var(--space-xs);padding:var(--space-xs);background:var(--color-bg);border-radius:var(--radius-sm)}.ticket-reply{background:var(--color-bg);padding:var(--space-sm);border-radius:var(--radius-sm);margin-top:var(--space-xs);border-left:3px solid var(--color-gold)}
+    .ticket-row{cursor:default}.ticket-row:hover{background:var(--color-bg-alt)}.ticket-reply-form{display:none;background:var(--color-bg-alt);padding:var(--space-md);border-radius:var(--radius-md);margin-top:var(--space-xs)}.ticket-reply-form.open{display:block}.ticket-reply-form textarea{width:100%;min-height:80px;padding:var(--space-sm);border:1px solid var(--color-border);border-radius:var(--radius-sm);font-family:inherit;font-size:0.85rem;resize:vertical}.ticket-context{font-size:0.75rem;color:var(--color-text-muted);margin-top:var(--space-xs);padding:var(--space-xs);background:var(--color-bg);border-radius:var(--radius-sm)}.ticket-reply{background:var(--color-bg);padding:var(--space-sm);border-radius:var(--radius-sm);margin-top:var(--space-xs);border-left:3px solid var(--color-gold)}
     </style>
     <?php endif; ?>
     <div class="table-wrap">
@@ -20,7 +20,7 @@
                     // Orders, above real orders, with no date and no customer.
                     if (count(array_filter($item, fn($v, $k) => $k !== 'id' && $v !== '' && $v !== null, ARRAY_FILTER_USE_BOTH)) === 0) continue;
                     ?>
-                    <tr class="<?= (($collection ?? '') === 'support_tickets') ? 'ticket-row' : '' ?>" <?= (($collection ?? '') === 'support_tickets') ? 'onclick="toggleTicket(this)"' : '' ?>>
+                    <tr class="<?= (($collection ?? '') === 'support_tickets') ? 'ticket-row' : '' ?>">
                         <td><code style="font-size:0.8rem; background:var(--color-bg-alt); padding:0.2rem 0.5rem; border-radius:var(--radius-sm);"><?= e(substr((string)($item['id'] ?? $item['slug'] ?? $item['code'] ?? 'record'), 0, 16)) ?></code></td>
                         <td>
                             <?php if(($collection ?? '') === 'support_tickets'): ?>
@@ -32,6 +32,11 @@
                         <td>
                             <?php if(($collection ?? '') === 'support_tickets'): ?>
                                 <strong><?= e($item['customer_email'] ?? 'Guest') ?></strong>
+                                <button type="button" class="btn btn-sm btn-ghost" aria-expanded="false" onclick="event.stopPropagation();toggleTicket(this.closest('tr'));this.setAttribute('aria-expanded',this.closest('tr').querySelector('.ticket-reply-form').classList.contains('open')?'true':'false')">Manage ticket</button>
+                                <small style="display:block"><?= e((string)($item['priority']??'normal')) ?> priority · <?= e((string)($item['work_state']??'active')) ?><?php if(!empty($item['assigned_admin_id'])): ?> · Assigned<?php endif; ?></small>
+                                <?php if(preg_match('/^[a-f0-9]{32}$/D',(string)($item['conversation_id']??''))): ?>
+                                    <a href="/admin/agent/conversation/<?= e($item['conversation_id']) ?>" onclick="event.stopPropagation()">Authorized conversation evidence</a>
+                                <?php endif; ?>
                                 <span style="color:var(--color-text-muted); display:block; margin-top:0.2rem;"><?= e(mb_substr((string)($item['message'] ?? ''), 0, 120)) ?></span>
                                 <?php if (!empty($item['context'])): ?>
                                 <div class="ticket-context"><?= e($item['context']) ?></div>
@@ -43,9 +48,14 @@
                                     <form method="POST" action="/admin/support-tickets/save">
                                         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
                                         <input type="hidden" name="id" value="<?= e($item['id'] ?? '') ?>">
-                                        <textarea name="reply" placeholder="Write your reply…" required><?= e($item['reply'] ?? '') ?></textarea>
-                                        <div style="display:flex; gap:var(--space-sm); margin-top:var(--space-sm);">
-                                            <button class="btn btn-primary btn-sm" type="submit">Send Reply</button>
+                                        <input type="hidden" name="version" value="<?= (int)($item['version']??0) ?>">
+                                        <label>Priority <select name="priority"><?php foreach(['low','normal','high','urgent'] as $p): ?><option value="<?= e($p) ?>" <?= ($item['priority']??'normal')===$p?'selected':'' ?>><?= e(ucfirst($p)) ?></option><?php endforeach; ?></select></label>
+                                        <label>Waiting on <select name="waiting_on"><option value="customer">Customer</option><option value="team">Team</option></select></label>
+                                        <label>Snooze until (UTC) <input name="snoozed_until" type="datetime-local"></label>
+                                        <textarea name="reply" placeholder="Write your reply…"><?= e($item['reply'] ?? '') ?></textarea>
+                                        <div style="display:flex; flex-wrap:wrap; gap:var(--space-sm); margin-top:var(--space-sm);">
+                                            <button class="btn btn-primary btn-sm" type="submit" name="action" value="reply">Save reply</button>
+                                            <?php foreach(['assign'=>'Claim ticket','release'=>'Release','wait'=>'Mark waiting','snooze'=>'Snooze','close'=>'Close','reopen'=>'Reopen'] as $action=>$label): ?><button class="btn btn-sm btn-ghost" type="submit" name="action" value="<?= e($action) ?>"><?= e($label) ?></button><?php endforeach; ?>
                                             <button class="btn btn-sm btn-ghost" type="button" onclick="event.stopPropagation();this.closest('.ticket-reply-form').classList.remove('open')">Cancel</button>
                                         </div>
                                     </form>

@@ -74,11 +74,50 @@
 </section>
 <?php endif; ?>
 
+<section class="admin-card" aria-labelledby="agent-quality-title" style="margin-top:var(--space-lg)">
+    <h2 id="agent-quality-title">Verified support feedback &amp; regression evaluations</h2>
+    <p>Customer confirmation is distinct from merely answering a question. These support figures cover the most recent
+        <?= (int)($supportFeedbackSummary['sample_size'] ?? 0) ?> sampled support conversations (up to 40 total chats), not all-time traffic.
+        Unrated conversations are not counted as resolved.</p>
+    <?php $states = ($supportFeedbackSummary['counts'] ?? []); ?>
+    <div class="admin-stats" style="margin:var(--space-md) 0;">
+        <?php foreach ([
+            'confirmed_resolved'=>'Customer confirmed resolved',
+            'needs_followup'=>'Customer requested more help',
+            'escalated'=>'Escalated to support team',
+            'awaiting_feedback'=>'Awaiting feedback',
+            'unknown'=>'Legacy/unclassified'
+        ] as $key=>$label): ?>
+            <div class="admin-stat"><div class="admin-stat__value"><?= (int)($states[$key] ?? 0) ?></div>
+                <div class="admin-stat__label"><?= e($label) ?></div></div>
+        <?php endforeach; ?>
+    </div>
+    <p>Confirmed resolution rate (sample): <?= ($supportFeedbackSummary['confirmed_percent'] ?? null) === null
+        ? 'No support conversations yet' : e(number_format((float)$supportFeedbackSummary['confirmed_percent'],1)).'%' ?>.
+        Negative feedback remains unresolved until the customer confirms an answer; silence is not assumed success.</p>
+    <h3>Offline PHP golden evaluation set</h3>
+    <?php if ($agentGoldenSuite === null): ?>
+        <p role="status">Golden regression fixtures unavailable.</p>
+    <?php else: ?>
+        <p><strong><?= (int)$agentGoldenSuite['passing'] ?>/<?= (int)$agentGoldenSuite['total'] ?> passing</strong>
+            · Dataset SHA-256 <code><?= e(substr($agentGoldenSuite['dataset_hash'],0,12)) ?>…</code>.</p>
+        <p>These fixtures test known decisions and source scopes; they do not certify live factual accuracy,
+            customer satisfaction, or model reasoning quality.</p>
+        <?php if ($agentGoldenSuite['failed']): ?>
+            <details><summary>Inspect failing fixtures (<?= (int)$agentGoldenSuite['failed'] ?>)</summary>
+                <ul><?php foreach ($agentGoldenSuite['results'] as $case): if ($case['passed']) continue; ?>
+                    <li><?= e($case['id']) ?></li>
+                <?php endforeach; ?></ul>
+            </details>
+        <?php endif; ?>
+    <?php endif; ?>
+</section>
+
 <section class="admin-card" aria-labelledby="conversation-audit-title" style="margin-top:var(--space-lg)">
     <h2 id="conversation-audit-title">Conversation audit &amp; evaluations</h2>
     <p>Latest 40 persisted admin/customer/guest conversations. Export requires an authenticated admin session. Basic checks are deterministic, not a guarantee of factual correctness.</p>
     <?php if (empty($agentConversations)): ?><p>No persisted conversations available yet.</p><?php else: ?>
-    <div class="table-wrap"><table><thead><tr><th>Chat</th><th>Actor</th><th>Last activity (UTC)</th><th>Turns</th><th>Evals passed</th><th>Audit JSON</th></tr></thead><tbody>
+    <div class="table-wrap"><table><thead><tr><th>Chat</th><th>Actor</th><th>Last activity (UTC)</th><th>Turns</th><th>Unfinished requests</th><th>Guardrails passed</th><th>Resolution state</th><th>Audit JSON</th></tr></thead><tbody>
     <?php foreach ($agentConversations as $conversation):
         $turnCount = (int)($conversation['turn_count'] ?? 0);
         $passed = (int)($conversation['passed_turns'] ?? 0);
@@ -89,8 +128,30 @@
             <td><?= e((string)($conversation['actor']['type'] ?? '')) ?> · <?= e(mb_substr((string)($conversation['actor']['id'] ?? ''),0,64)) ?></td>
             <td><?= e((string)($conversation['updated_at'] ?? $conversation['started_at'] ?? '')) ?></td>
             <td><?= $turnCount ?></td>
+            <td><?= (int)($conversation['pending_turn_count'] ?? 0) ?><?php if(!empty($conversation['pending_turn_count'])): ?><br><small>Running or interrupted; inspect JSON before retrying actions.</small><?php endif; ?></td>
             <td><?= $passed ?>/<?= $turnCount ?></td>
-            <td><a href="/admin/agent/conversation/<?= e($cid) ?>">Export JSON</a></td>
+            <td><?= e(str_replace('_',' ',(string)($conversation['resolution_status']??'unknown'))) ?></td>
+            <td>
+                <a href="/admin/agent/conversation/<?= e($cid) ?>">Export JSON</a>
+                <?php if(!empty($conversation['trace_steps'])): ?>
+                <details class="agent-trace-inspector" style="max-width:36rem;overflow-wrap:anywhere;margin-top:.5rem">
+                    <summary>Execution evidence · <?= count($conversation['trace_steps']) ?> steps</summary>
+                    <p><strong><?= e((string)($conversation['trace_state']??'completed')) ?></strong>
+                        · <?= e(str_replace('_',' ',(string)($conversation['trace_ordering']??'unavailable'))) ?>.</p>
+                    <ol style="padding-left:1.25rem">
+                    <?php foreach($conversation['trace_steps'] as $step): ?>
+                        <li><strong><?= e((string)($step['type']??'stage')) ?></strong>
+                            <?= e((string)($step['name']??'')) ?> — <?= e((string)($step['status']??'unknown')) ?>
+                            <?php if(isset($step['duration_ms'])): ?> · <?= e(number_format((float)$step['duration_ms'],2)) ?> ms<?php endif; ?>
+                            <?php if(isset($step['http_status'])): ?> · HTTP <?= (int)$step['http_status'] ?><?php endif; ?>
+                            <?php if(isset($step['result_count'])): ?> · <?= (int)$step['result_count'] ?> results<?php endif; ?>
+                        </li>
+                    <?php endforeach; ?>
+                    </ol>
+                    <small>Execution evidence is not proof of factual accuracy or client delivery. Inspect unfinished actions before retrying.</small>
+                </details>
+                <?php endif; ?>
+            </td>
         </tr>
     <?php endforeach; ?>
     </tbody></table></div>

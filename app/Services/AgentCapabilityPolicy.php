@@ -10,7 +10,7 @@ final class AgentCapabilityPolicy {
     public const ENTERPRISE = 'enterprise';
 
     private const SUPPORT_TOOLS = [
-        'public_catalog', 'public_policy', 'own_ticket_status', 'customer_ticket_lookup',
+        'public_catalog', 'public_policy', 'own_ticket_status',
     ];
     private const ENTERPRISE_TOOLS = [
         'find_order', 'product_status', 'sales_summary', 'gst_register_summary',

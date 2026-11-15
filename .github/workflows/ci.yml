@@ -47,7 +47,13 @@ jobs:
         run: node --test tests/review-automation.test.cjs
       - name: Validate code, tests, maps, and routes
         run: ./bapXphp ci
+      - name: Gate deterministic agent fixture regressions without model APIs
+        run: php cli/agent-eval.php
       - name: Test concurrent verified payments against isolated MySQL
         run: php tests/order-concurrency.php
       - name: Test concurrent private JSON conversation appends
         run: php tests/agent-concurrency.php
+      - name: Test interrupted agent checkpoint recovery
+        run: php tests/agent-interruption.php
+      - name: Test duplicate support actions and competing staff against isolated MySQL
+        run: php tests/support-ticket-concurrency.php

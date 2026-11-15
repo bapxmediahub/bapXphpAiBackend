@@ -1731,6 +1731,9 @@ nav a:hover { color: var(--color-maroon); }
 .ai-request-status[data-state="error"] { border-color: var(--color-error); }
 .ai-request-status[data-state="complete"] summary,.ai-request-status[data-state="error"] summary { cursor:default; justify-content:flex-end; }
 .support-panel__form button:disabled { opacity: .6; cursor: wait; }
+.support-feedback { border-top:1px solid var(--color-border); display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:10px 12px; background:var(--color-bg-alt); border-radius:var(--radius-sm); font-size:.82rem; }
+.support-feedback button { border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:6px 9px; background:var(--color-white); color:var(--color-maroon); cursor:pointer; }
+.support-feedback button:disabled { opacity:.5; cursor:wait; }
 .support-panel__form textarea:focus-visible { outline: 2px solid var(--color-maroon); outline-offset: 2px; }
 .agent-row { min-width: 0; }
 .agent-bubble .ai-request-status { margin-bottom: var(--space-sm); }

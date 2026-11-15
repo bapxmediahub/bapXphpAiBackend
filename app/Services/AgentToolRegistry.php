@@ -243,6 +243,7 @@ class AgentToolRegistry
             $args = ['slug' => $this->probeProductSlug];
         }
         $startedAt = microtime(true);
+        $span = AgentTraceService::startSpan('tool',$name);
         try {
             $result = $this->validArguments($name, $args) ? match ($name) {
                 'find_order' => $this->findOrder($args),
@@ -265,7 +266,10 @@ class AgentToolRegistry
                     default => 'lookup_rejected',
                 },
                 'duration_ms' => (int)round((microtime(true) - $startedAt) * 1000),
+                'evidence' => AgentTraceService::toolEvidence($name, $args, $result),
             ];
+            AgentTraceService::endSpan($span,isset($result['error'])?'error':'complete',[
+                'evidence'=>AgentTraceService::toolEvidence($name,$args,$result)]);
             if ($name === 'support_enquiries' && !isset($result['error'])) {
                 $this->completedTicketSummaries[self::ticketSummary($result)] = true;
             }
@@ -285,12 +289,14 @@ class AgentToolRegistry
             }
             return $result;
         } catch (\Throwable $e) {
+            AgentTraceService::endSpan($span,'error');
             error_log('Agent tool ' . $name . ' failed (' . get_class($e) . ')');
             $this->activity[] = [
                 'name' => $name,
                 'status' => 'error',
                 'reason' => 'lookup_unavailable',
                 'duration_ms' => (int)round((microtime(true) - $startedAt) * 1000),
+                'evidence' => AgentTraceService::toolEvidence($name, $args, ['error'=>'lookup_unavailable']),
             ];
             return ['error' => 'That lookup is temporarily unavailable.'];
         }

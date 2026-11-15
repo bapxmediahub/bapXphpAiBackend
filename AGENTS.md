@@ -2,7 +2,7 @@
 
 The binding contract follows this orientation.
 
-Codex and ChatGPT Work: follow its **Testing** section; use the built-in Browser, not an external Playwright runner.
+Codex and ChatGPT Work: follow **Testing**. The owner explicitly authorized Playwright CLI on the connected Mac and remotedb verification for this release workflow.
 
 
 Quick orientation:
@@ -90,8 +90,17 @@ target is absent, and state that absence as a finding.
   `/assets/images/media/…` URLs. `MediaService` writes metadata to hosted MySQL
   `media_files`; legacy YAML is read-only compatibility input.
 - **Agents:** exactly two pure-PHP application surfaces — customer support and
-  owner/admin chat. Admin agent context must
-  go through `AgentContextService`; never expose all users' data.
+  owner/admin chat. Support context uses `AgentContextService` and
+  `SupportToolRegistry`; owner queries use `EnterpriseToolRegistry` with
+  allowlisted, read-only `AgentToolRegistry` operations. `AgentCapabilityPolicy`
+  enforces actor permissions; model instructions are not authorization. Site
+  mutations still require an explicit owner-reviewed form.
+- **Private chat exception to MySQL:** each support/admin conversation is one
+  `storage/agent-conversations/<32-hex-id>.json` file, never a SQL table.
+  `AgentConversationService` owns persistence, access and feedback; `AgentTraceService`
+  records sanitized correlated steps inside that same file. MySQL remains the
+  authority for business records, support tickets, metadata and operational audit
+  events. See `docs/agent-observability.md` and `docs/json-storage.md`.
 
 ## Environment
 
@@ -135,15 +144,22 @@ it against that service's own documentation and record the URL beside the code.
 This is a web app and a PWA. **Verify in a browser, not the terminal** — desktop and
 375px mobile. Terminal checks cover generators, schema and tests only.
 
-When working from Codex or ChatGPT Work, use the built-in **Browser** through its
-computer-use controls for local and live UI verification. Do not use an external
-Playwright CLI, standalone browser driver, or substitute terminal HTTP checks for
-the browser workflow. Keep UI actions grounded in the current browser state.
+Use an actual browser for UI verification. For the connected-Mac workflow the
+owner explicitly selected the installed **Playwright CLI**, with real admin and
+dedicated development-customer logins, desktop and 375px tests. A built-in Browser
+is also suitable where available. Do not substitute terminal HTTP requests for UI
+flows. Use authenticated **remotedb** reads to verify business records. Keep test
+credentials, browser storage state, customer page text and screenshots out of Git
+and public logs; assert counts/booleans rather than dumping private page bodies.
 
 After route, schema, controller, view or workflow changes, run `./bapXphp update`
 to regenerate `map.mmd`, `docs/systematic-map.mmd`, and the indexes. Fix stale
 expectations to match the agreed behavior; never weaken validation to hide a defect.
-Run `./bapXphp ci` before the PR and verify GitHub checks before merging. After
+Run `./bapXphp ci` before the PR, plus `php cli/agent-eval.php` after
+agent/tool/prompt changes and `php tests/agent-concurrency.php` for chat
+storage changes. The offline golden suite is deterministic and has an explicit
+baseline; passing it does **not** certify live factual accuracy or customer
+resolution. Verify GitHub checks before merging. After
 deployment, repeat the affected flows in the live Browser and attach the evidence
 to the original issues. A merge or an SMTP acceptance message alone does not prove
 deployment or inbox delivery.

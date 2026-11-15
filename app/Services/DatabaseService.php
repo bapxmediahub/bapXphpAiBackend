@@ -259,6 +259,24 @@ final class DatabaseService {
         });
     }
 
+    /** Existing business table, optimistic version and row lock; no conversation SQL table. */
+    public function updateSupportTicket(string $id,string $action,array $fields,array $actor,int $expectedVersion): array {
+        if(!preg_match('/^[a-f0-9]{16}$/D',$id)||$expectedVersion<0)throw new \InvalidArgumentException('Invalid ticket/version.');
+        if($this->isTestMode())throw new \RuntimeException('Ticket mutations require a disposable DB integration test.');
+        if($this->isRemote())return $this->remoteMutation('transition_support_ticket','support_tickets',[
+            'id'=>$id,'transition'=>$action,'fields'=>$fields,'actor'=>$actor,'expected_version'=>$expectedVersion])['result'];
+        $pdo=$this->db();$pdo->beginTransaction();
+        try{
+            $query=$pdo->prepare('SELECT id, _data FROM support_tickets WHERE id = ? FOR UPDATE');$query->execute([$id]);
+            $row=$query->fetch(\PDO::FETCH_ASSOC);
+            if(!$row)throw new \InvalidArgumentException('Ticket not found.');
+            $ticket=json_decode($row['_data'],true,512,JSON_THROW_ON_ERROR);$ticket['id']=$row['id'];
+            if((int)($ticket['version']??0)!==$expectedVersion)throw new \InvalidArgumentException('Ticket changed; reload before saving.');
+            $updated=SupportTicketService::transition($ticket,$action,$fields,$actor,new \DateTimeImmutable());
+            $this->upsert('support_tickets',$updated);$pdo->commit();self::$remoteQueryCache=[];return $updated;
+        }catch(\Throwable $error){if($pdo->inTransaction())$pdo->rollBack();throw $error;}
+    }
+
     public function recordOrderRefund(string $id, string $paymentId, string $refundId, int $amount): array {
         if ($this->isTestMode()) throw new \RuntimeException('Order writes are disabled in test mode.');
         if ($this->isRemote()) {

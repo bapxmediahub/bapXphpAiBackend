@@ -24,3 +24,11 @@ description: Use when changing MySQL database collections, fields, admin forms, 
 ## Keeping this skill current
 
 Update `storage/schema/collections.php` **before** changing any collection shape, admin field, or media field — it is canonical and the rest of the tree follows it.
+
+## No SQL collection for agent chats
+
+Do not add `agent_conversations` to
+`storage/schema/collections.php`. Session JSON storage is
+implemented by `AgentConversationService` only.
+`audit_events` in MySQL remains the separate privacy-safe
+operational metadata log.
