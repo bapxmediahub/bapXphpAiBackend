@@ -37,12 +37,12 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 359
+  concepts: 360
   relationships: 261
   by_type:
     blog: 14
     controller: 12
-    doc: 35
+    doc: 36
     image: 89
     route: 126
     schema: 22
@@ -494,6 +494,15 @@ concepts:
     tags:
       - "docs"
     filename: "json-storage.md"
+    header_image: ""
+  - id: "doc:media-deletion-verification"
+    type: "doc"
+    title: "Media Deletion Verification"
+    description: "Disposable-upload and rollback checks for the guarded Media Library delete action."
+    resource: "docs/engineering/media-deletion-verification.md"
+    tags:
+      - "docs"
+    filename: "media-deletion-verification.md"
     header_image: ""
   - id: "doc:orders"
     type: "doc"
