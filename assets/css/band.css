@@ -4155,3 +4155,13 @@ body { background: var(--color-bg); }
 .auth-form select { width: 100%; max-width: 100%; }
 .auth-form .checkbox-label { white-space: normal; line-height: 1.5; align-items: flex-start; }
 @media (max-width: 743px) { .auth-form-container { padding: var(--space-md); } }
+
+/* Consistent task help links: public how-to content, never private operator Markdown. */
+.public-help-hint { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px 22px; margin-top: 24px; margin-bottom: 28px; background: var(--color-bg-alt); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.public-help-hint > div { min-width: 0; }
+.public-help-hint strong { color: var(--color-maroon); font-size: .93rem; }
+.public-help-hint p { color: var(--color-text-muted); font-size: .85rem; line-height: 1.6; margin: 5px 0 0; }
+.public-help-hint .help-context-link { display: inline-flex; flex-shrink: 0; min-height: 44px; gap: 8px; align-items: center; color: var(--color-maroon); font-size: .85rem; font-weight: 600; }
+.support-help-guide { display: block; padding: 10px 14px; min-height: 44px; color: var(--color-maroon); font-size: .82rem; border-top: 1px solid var(--color-border); }
+.public-help-hint a:focus-visible,.support-help-guide:focus-visible { outline: 3px solid var(--color-gold); outline-offset: 2px; }
+@media(max-width:743px){ .public-help-hint { align-items: flex-start; flex-direction: column; gap: 6px; max-width: calc(100% - 32px); } }

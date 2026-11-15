@@ -18,19 +18,19 @@
             "review_note": "Baseline mapped existing catalogue/order/tax sources to their durable module contracts. No commerce implementation or live transaction is changed; the review does not certify tax filing or untested payment receipt."
         },
         "content": {
-            "source_sha256": "b9ca2d3254a748a5eb528016247757f1f8d0407cde71992f9694e01ebd1ed191",
-            "references_sha256": "8d7b4f9ce4e18f58d073ab342a5cd06c6ae0cb75dc071b071cc5808bc9176d56",
-            "review_note": "Compared complete renderer with actual DOM/browser output: narrow rebuilt element/attribute/URL allowlist, literal code protection, image-before-link parsing, safe Tamil/tables, bounded input and escaped fallback. Updated content contract; hostile fixtures were local only and original stored articles unchanged."
+            "source_sha256": "fb04725afc03af6db4a7698abe24d7e029856e8a16651c3b7666dbd88328e187",
+            "references_sha256": "47b0e20be1fa7b699142f7612ed1d4be48cd90ca17378c55e1005c938cd16fcf",
+            "review_note": "Reviewed BlogService/BlogController publication and current customer account/cart/checkout/support controls. Updated three existing Help articles and added manage-account/get-support; preserved real assets and avoided payment or inbox-delivery guarantees. Developer blog guide documents published customer links and their module gate."
         },
         "foundation": {
-            "source_sha256": "b9658e1179b430a83090f3f99f2697d840a7598ce04615d192896e03f6165e58",
-            "references_sha256": "b10d0425c501423bf392d2527e5eeda4f8d53dda9ee49be535962e218e3ff57b",
-            "review_note": "Reviewed bootstrap CLI failure behavior: nonzero bounded diagnostic instead of successful HTML; no web auth change. Deployment guide no longer describes merged JSON runtime as draft. Business MySQL and private chat file boundaries remain intact."
+            "source_sha256": "c686a4570853060ec2e6730b2d4bf8b654ee1249f9cf5714c5d3a8c4e69331a1",
+            "references_sha256": "3f9f0cd91d84bea5c4d5cb0905d1128198c7d7837c9620a4d08d4d219833b2f0",
+            "review_note": "Compared AdminController existing authentication, new bounded Help endpoints, private static-router and Apache denial, and architecture docs. Existing business storage/auth semantics are unchanged; operator Markdown is an explicit private authored-content source separate from runtime prompts and chat JSON."
         },
         "interface": {
-            "source_sha256": "cb7ac7c0ece97abd4c09af8ad37738288caaca8b32e297097a116c0144fb6451",
-            "references_sha256": "cfefb1cbc0567de649b66deffefb8a73c2844b1c14e9062a872be8126bf2f6d8",
-            "review_note": "Reviewed current implemented media deletion and safe empty dashboard behavior; removed stale draft/unmerged claims in operator/module guides. Admin Help UI remains separately scoped to #261."
+            "source_sha256": "37769ac5ff716f3660a3ac31cc9f135e603512dc8e2c8edfd62f402804492e41",
+            "references_sha256": "e4522b62244f342cdf59574b492d50284f8e5876b850d48f09f5e47a7499ed5e",
+            "review_note": "Cross-checked both layouts and Help template/CSS against Design.md and actual browser behavior. Search/category/native details and task anchors preserve no-JS access and private/public separation; scoped Help nav overrides fix inherited mobile hiding. Reviewed screenshots, no horizontal overflow, and no added action/model scripts."
         },
         "mail": {
             "source_sha256": "caed5f4ccf26b2e3315bc122e0568f79a4a25a451cf1bfda017c53c5ac3866d4",
@@ -39,13 +39,18 @@
         },
         "media": {
             "source_sha256": "cd8a64c85c1eecc6c51d01262423e248f88fd14e896b1e3e74c359f937531962",
-            "references_sha256": "3c4f5209b8ba9f78886b6de79772e5af2fc1eefff9b3efa854bedf3a63f00563",
-            "review_note": "Compared existing guarded deletion implementation with its durable test procedure; migrated dated execution/status evidence out of docs. No customer media mutation performed."
+            "references_sha256": "5f7f62f1d1a1183c2b55679165d3d7900eaaa98e3d53b9c1e16fa95788da5145",
+            "review_note": "Media deletion sources are unchanged. Rechecked the existing deletion-verification guide and architecture boundaries; updated only shared developer admin guidance to distinguish private operator Help from business-agent prompts. No new delete permissions, record mutation or unsupported atomic-reference guarantee."
+        },
+        "operator-help": {
+            "source_sha256": "5944c1a57a4120b7b9a75adfb8b27efbe9dd943137cedb959c1bede1d3fd25d1",
+            "references_sha256": "a0611ff02accb371a036b87b7e9044ebb9fc8290614f2c293351637e3a717a7e",
+            "review_note": "Compared all twelve curated guides and five public Help articles with the fixed source manifests, actual form labels, task routes, AuthService roles and Markdown sanitization. Added admin-only search/context UI and raw-path denial; no arbitrary repo viewer or live business mutation. Shared feature dependencies invalidate stale guide reviews independently of ownership."
         },
         "workflow": {
-            "source_sha256": "471e8bfd103d5db9b9fe6bef4760537e12d025a3538b09250257366962715b2a",
-            "references_sha256": "eb89374be651a5acaa5f8b46b4292afdf01c9763bc5e62ccc0a5c1e9c121b087",
-            "review_note": "Verified developer gh versus plain-Git hosting, issue/comment-only task records, moved historical ledgers before deleting them, explicit source/reference review receipts, and actual nonzero CLI exception behavior from #265. Index updates cannot approve prose truth."
+            "source_sha256": "aaf227d12b79b0b6b454bf2c3c1e2a80d28a6ec7e110ab3bdcbbb6c2c1a85755",
+            "references_sha256": "cee956118faf1ab10d71e949d648ed075135c57f1f024bde7f45dc3bfd39bdf7",
+            "review_note": "Reviewed DocumentationReview snapshots/digest safety, exact source ownership rules and fixed Help metadata. Added explicit dependency union with deduplication and a failing-then-passing cross-area source-change regression; source hashes require human rationale, while issues/plans/release evidence stay in GitHub and generated indexes remain discovery only."
         }
     }
 }

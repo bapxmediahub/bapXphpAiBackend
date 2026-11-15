@@ -7,11 +7,11 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 131 routes, 12 controllers, 62 services, 51 views, 0 data files, 24 tools"]
-    arch_routes["> Routes: 131 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 133 routes, 12 controllers, 63 services, 52 views, 0 data files, 24 tools"]
+    arch_routes["> Routes: 133 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
-    arch_svc["> Services: 62"]:::arch
-    arch_views["> Views: 51"]:::arch
+    arch_svc["> Services: 63"]:::arch
+    arch_views["> Views: 52"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 24"]:::arch
     arch_gaps["> Gaps: 7"]:::arch
@@ -102,6 +102,8 @@ flowchart LR
 
   subgraph ROUTES_ADMIN["ADMIN Routes"]
     route_get_admin["GET /admin — Admin dashboard — commerce analytics and operations"]:::route
+    route_get_admin_docs["GET /admin/docs"]:::route
+    route_get_admin_docs_slug["GET /admin/docs/{slug}"]:::route
     route_get_admin_products["GET /admin/products — Admin — manage products"]:::route
     route_get_admin_categories["GET /admin/categories — Admin — manage categories"]:::route
     route_get_admin_collections["GET /admin/collections"]:::route
@@ -190,6 +192,7 @@ flowchart LR
 
   subgraph SERVICES["Services"]
     service_addressservice["AddressService"]:::code
+    service_adminhelpservice["AdminHelpService"]:::code
     service_agentattachmentservice["AgentAttachmentService"]:::code
     service_agentcapabilitypolicy["AgentCapabilityPolicy"]:::code
     service_agentcontextservice["AgentContextService"]:::code
@@ -270,6 +273,7 @@ flowchart LR
     view_admin_consultation_analytics["admin/consultation-analytics"]:::code
     view_admin_dashboard["admin/dashboard"]:::code
     view_admin_detail["admin/detail"]:::code
+    view_admin_help["admin/help"]:::code
     view_admin_integrations["admin/integrations"]:::code
     view_admin_list["admin/list"]:::code
     view_admin_mailbox["admin/mailbox"]:::code
@@ -552,6 +556,15 @@ flowchart LR
   controller_admincontroller --> service_siteinsightsservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_dashboard
+  route_get_admin_docs --> controller_admincontroller
+  controller_admincontroller --> service_adminhelpservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_help
+  route_get_admin_docs_slug --> controller_admincontroller
+  controller_admincontroller --> service_adminhelpservice
+  controller_admincontroller --> service_markdownrenderer
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_help
   route_get_admin_products --> controller_admincontroller
   controller_admincontroller --> service_productservice
   controller_admincontroller --> service_schemaservice

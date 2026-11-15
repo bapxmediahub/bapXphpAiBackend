@@ -358,6 +358,14 @@ if ($__flash):
 <script>document.addEventListener('DOMContentLoaded',function(){showToast(<?= json_encode($__msg) ?>,<?= json_encode($__type) ?>);});</script>
 <?php endif; ?>
 <?php require $viewFile; ?>
+<?php $publicHelp=\App\Services\AdminHelpService::publicContext($currentPath); ?>
+<?php if($publicHelp!==null&&module_on('blog')): ?>
+<aside class="public-help-hint container" aria-label="Help for this task" data-public-context-help>
+    <div><strong><?= e($publicHelp['title']) ?></strong><p><?= e($publicHelp['summary']) ?></p></div>
+    <a class="help-context-link" href="<?= e($publicHelp['url']) ?>">Read guide <span aria-hidden="true">→</span></a>
+</aside>
+<?php endif; ?>
+
 </main>
 
 <?php if (!in_array($currentPath, ['/login', '/register'])): ?>
@@ -408,6 +416,7 @@ if ($__flash):
         <p>Ask about products, delivery, orders, or support tickets.</p>
         <?php if(empty($_SESSION['user'])): ?><p>Sign in to check your orders or support tickets.</p><?php endif; ?>
     </div>
+    <?php if(module_on('blog')): ?><a class="support-help-guide" href="/blog/get-support">Read support guide</a><?php endif; ?>
     <form class="support-panel__form" id="support-form">
         <input type="hidden" name="_csrf" value="<?= e((string)($_SESSION['csrf_token'] ?? '')) ?>">
         <textarea name="message" rows="3" required aria-label="Support message" placeholder="Ask about a product, order, or ticket"></textarea>

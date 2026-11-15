@@ -42,3 +42,17 @@ Reports derive paid revenue/refunds and GST totals from verified orders;
 empty report periods render safe zero-data states. Inspect actual deployed
 behavior after release, not only CI. Historical appointments remain available,
 but public consultation booking is retired.
+
+## Help inside the owner workspace
+
+Open **Help & Docs** from the permanent sidebar or topbar entry. Search task
+words, select a category, open a guide, and use its links to return to the real
+workspace. The expandable **Help for this page** section on admin screens
+points to the relevant task guide. Search and guide navigation work without
+JavaScript; the topbar link remains available on mobile.
+
+Operator instructions are a fixed, authenticated collection, not a browser
+for developer files or private runtime-agent prompts. Customers instead use
+published Help blog articles linked from shop, cart, checkout, account and
+Support. See `admin-help.md` for content ownership, privacy and source-review
+checks. A guide describes a control; it never performs a business action.

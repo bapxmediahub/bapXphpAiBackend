@@ -1,0 +1,13 @@
+## Choose the report and period
+
+Open Commerce Reports. Select the report type, **From**, **To**, order-status filter and grouping where available, then choose **Apply report**. Keep the selected window with any number you share. Dashboard period presets and an explicit report range may describe different populations.
+
+## Read the evidence
+
+Sales reports use recorded paid-commerce facts. Gross, refunded and net amounts are different values; do not sum incompatible cards or assume every order status means payment succeeded. Use the revenue ledger/table alongside charts, including empty periods.
+
+## Review GST records
+
+The GST invoice register is based on issued order snapshots and recorded refunds. Inspect tax-review flags and the underlying order before relying on a row. Downloaded invoices preserve the issued details; later settings must not silently replace them.
+
+These views help operate the store. They do not certify tax filing, bank settlement or search performance. Ask the responsible accountant or team to review unclear records rather than editing history to make totals match.

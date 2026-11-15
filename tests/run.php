@@ -557,6 +557,87 @@ $tests['Markdown images links tables Tamil and code remain useful after sanitiza
     assertTrue(str_contains($html,'<code>**literal**</code>'),'Inline code keeps its literal punctuation');
 };
 
+$tests['admin Help uses only curated operator guides and real application destinations'] = static function (): void {
+    $service=new \App\Services\AdminHelpService();$actor=['role'=>'admin'];
+    $guides=$service->catalog($actor);
+    assertTrue(count($guides)>=10,'Help covers the real owner workflows');
+    $getPaths=array_column(array_filter(\App\Services\ProjectMapService::registry()['routes'],static fn($r):bool=>$r['method']==='GET'),'path');
+    foreach($guides as $guide){
+        assertTrue(is_file(app_path('content/help/admin/'.$guide['slug'].'.md')),'Only curated operator sources are loaded');
+        $read=$service->guide($guide['slug'],$actor);assertTrue(strlen($read['html'])>300,'Guide contains usable task instructions');
+        assertTrue(count($read['toc'])>=2,'Guide offers real section anchors');
+        foreach($guide['links'] as $link)assertTrue(in_array(parse_url($link['url'],PHP_URL_PATH),$getPaths,true),'Task action is a real GET route: '.$link['url']);
+        foreach($guide['sources'] as $source)assertTrue(is_file(app_path($source)),'Guide has inspectable code sources');
+        assertTrue(!str_contains($read['html'],'.env.test-user')&&!str_contains($read['html'],'docs/issues'),'No developer credentials or backlog in operator content');
+    }
+};
+
+$tests['admin Help rejects guests customer roles arbitrary files and unknown slugs'] = static function (): void {
+    $service=new \App\Services\AdminHelpService();
+    foreach([null,['role'=>'customer'],['role'=>'consultant']] as $actor){$denied=false;try{$service->catalog($actor);}catch(RuntimeException){$denied=true;}assertTrue($denied,'Nonadmin cannot read operator guides');}
+    foreach(['../AGENTS.md','.bapX/supportagent.md','getting-started%2f..','not-a-guide','https://example.invalid'] as $slug)assertSame(null,$service->guide($slug,['role'=>'admin']),'Guide path is never user-selected file access');
+    $results=$service->catalog(['role'=>'admin'],'SMTP');assertSame(['email'],array_column($results,'slug'),'Search uses the operator content, not all repo docs');
+    assertSame([],$service->catalog(['role'=>'admin'],'missing-unique-fixture'),'No-result state is honest');
+    assertTrue(count($service->catalog(['role'=>'admin'],'','commerce'))>=2,'Category filters operate without JavaScript');
+};
+
+$tests['context help is role appropriate and bounded to matching route segments'] = static function (): void {
+    $service=\App\Services\AdminHelpService::class;
+    assertSame('orders-shipping',$service::adminContext('/admin/orders/fixture')['slug'],'Order detail links to order workflow');
+    assertSame('agent-monitoring',$service::adminContext('/admin/agent/monitoring')['slug'],'Specific monitor route wins over chat prefix');
+    assertSame('getting-started',$service::adminContext('/admin/orders-other')['slug'],'Prefix lookalike cannot hijack context');
+    assertSame('/blog/payments-and-orders',$service::publicContext('/checkout')['url'],'Customer help never points to private admin guide');
+    assertSame(null,$service::publicContext('/admin/settings'),'No public context for private routes');
+    assertSame(null,$service::publicContext('/checkout-other'),'No accidental prefix match');
+};
+
+$tests['admin help routes navigation and context are integrated with existing private controller'] = static function (): void {
+    $routes=\App\Services\ProjectMapService::registry()['routes'];
+    foreach(['/admin/docs'=>'AdminController@helpIndex','/admin/docs/{slug}'=>'AdminController@helpGuide'] as $path=>$controller){
+        $found=array_values(array_filter($routes,static fn(array $r):bool=>($r['method']??'')==='GET'&&($r['path']??'')===$path));
+        assertSame(1,count($found),'Help route is registered once: '.$path);
+        assertSame($controller,$found[0]['controller'],'Help stays under existing authenticated controller');
+    }
+    assertTrue(is_file(app_path('views/admin/help.php')),'Operator hub and guide view exists');
+    $layout=fileRead('views/layouts/admin.php');
+    assertTrue(str_contains($layout,'Help &amp; Docs')&&str_contains($layout,'Help for this page'),'Both navigation and inline help are wired');
+    assertTrue(str_contains(fileRead('index.php'),'content/help/admin')&&str_contains(fileRead('.htaccess'),'content/help/admin'),'Raw operator sources are denied before static serving');
+};
+
+$tests['every public context help destination is an existing published customer guide'] = static function (): void {
+    $blog=new \App\Services\BlogService();
+    foreach(['/shop','/product/fixture','/cart','/checkout','/account/dashboard/profile','/login','/register','/contact'] as $route){
+        $context=\App\Services\AdminHelpService::publicContext($route);
+        assertTrue($context!==null,'Source page has contextual guidance');
+        $slug=substr($context['url'],strlen('/blog/'));$post=$blog->find($slug);
+        assertTrue($post!==null&&($post['category']??'')==='help'&&($post['published']??false)===true,'No dangling/private customer help destination: '.$route);
+    }
+    assertTrue(str_contains(fileRead('views/layouts/app.php'),'Read support guide'),'Support panel help survives conversation-log updates');
+};
+
+$tests['operator guides are indexed as references without prompt bodies'] = static function (): void {
+    $graph=(new \App\Services\KnowledgeGraphService())->build();
+    $guides=array_values(array_filter($graph['concepts'],static fn(array $r):bool=>($r['type']??'')==='operator_guide'));
+    assertSame(count(\App\Services\AdminHelpService::references()),count($guides),'Every allowed operator guide is discoverable');
+    foreach($guides as $g){assertSame('',(string)($g['body']??''),'Generated index does not duplicate private guide prose');
+        assertTrue(str_starts_with($g['filePath'],'content/help/admin/'),'Original source path retained');}
+};
+
+$tests['help review depends on underlying source even when another area owns that file'] = static function (): void {
+    require_once app_path('cli/lib/DocumentationReview.php');
+    $root=sys_get_temp_dir().'/sps-help-contract-'.bin2hex(random_bytes(6));
+    mkdir($root.'/app',0700,true);mkdir($root.'/docs',0700,true);
+    file_put_contents($root.'/app/Feature.php','<?php // actual source');
+    file_put_contents($root.'/docs/guide.md','How to use the feature.');
+    $rules=['feature'=>['sources'=>['*'],'references'=>['docs/guide.md']],
+        'help'=>['sources'=>[],'dependencies'=>['app/Feature.php'],'references'=>['docs/guide.md']]];
+    try{$r=new DocumentationReview($root,$rules);$before=$r->snapshots();
+        file_put_contents($root.'/app/Feature.php','<?php // changed controls');$after=$r->snapshots();
+        assertTrue($before['help']['source_sha256']!==$after['help']['source_sha256'],'Shared source edits invalidate the help review independently');
+        assertSame(1,$after['help']['source_count'],'Dependency counted once');
+    }finally{unlink($root.'/app/Feature.php');unlink($root.'/docs/guide.md');rmdir($root.'/app');rmdir($root.'/docs');rmdir($root);}
+};
+
 $tests['each agent session creates one private JSON file and no MySQL table'] = static function (): void {
     $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
     assertTrue(mkdir($root, 0700), 'Private test directory exists');

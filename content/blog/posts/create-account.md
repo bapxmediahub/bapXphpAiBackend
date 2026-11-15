@@ -16,10 +16,16 @@ source_url: /register
 
 ## Create your account
 
-Enter your name, email, phone, password, and default delivery address. Accept the Terms and Privacy Policy, then select **Create Account**.
+Open [Register](/register). Enter the requested name, email, phone, password and default delivery address. Read and accept the Terms and Privacy Policy, then choose **Create Account**. Check validation messages instead of submitting the same form repeatedly.
 
-Your address is saved as **Home** and selected automatically during checkout. You remain signed in for up to 30 days unless you log out.
+## Sign in and recover access
 
-## Sign in and log out
+Use [Login](/login) with the identifier and password requested on the form. A configured provider sign-in option may also be available. Use [Forgot password](/forgot-password) when you cannot access a password-based account; follow the message and reset link rather than sharing a password with anyone.
 
-Use **Login** with your email and password. Select **Logout** whenever you want to end the session immediately.
+An on-screen recovery acknowledgement does not guarantee inbox receipt. Check the correct mailbox and spam folder, and contact the team if access is still unavailable. Keep any reset link private.
+
+## Use your account
+
+After signing in, open [My Orders](/account/dashboard/orders) for your purchases. [Saved Addresses](/account/dashboard/addresses) and [My Profile](/account/dashboard/profile) provide the supported account controls. The [account management guide](/blog/manage-account) explains them.
+
+Use **Logout** on a shared device when finished. Browser settings and session expiry can require you to sign in again; do not rely on a shared computer keeping an account open safely.

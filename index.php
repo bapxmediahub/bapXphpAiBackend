@@ -24,7 +24,7 @@ for ($decodePass=0; $decodePass<3; $decodePass++) {
     if ($decoded === $privatePath) break;
     $privatePath = $decoded;
 }
-if (preg_match('~(?:^|/)(?:\.agents|\.bapX)(?:/|$)|^/AGENTS\.md$~i', $privatePath)) {
+if (preg_match('~(?:^|/)(?:\.agents|\.bapX)(?:/|$)|^/AGENTS\.md$|^/content/help/admin(?:/|$)~i', $privatePath)) {
     http_response_code(404);
     header('Cache-Control: no-store');
     exit('Not found');

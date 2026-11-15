@@ -28,7 +28,7 @@ category: docs
   `storage/agent-conversations/<conversation-id>.json` through
   `AgentConversationService`. Conversation files are not MySQL tables.
   Their trace/feedback/evaluation records are stored in the same JSON file.
-- Runtime data is remote-only: `.env` supplies direct hosted MySQL credentials to `DatabaseService`; when direct access is unavailable, the CLI/application use `APP_URL/remotedb`. The local checkout is not a customer-data fallback.
+- Business records are remote-only: `.env` supplies direct hosted MySQL credentials to `DatabaseService`; when direct access is unavailable, the CLI/application use `APP_URL/remotedb`. The local checkout is not a customer-data fallback.
 - Blog posts are file-based: `content/blog/posts/*.md` with YAML frontmatter.
 - Media metadata lives in MySQL `media_files` collection.
 - New upload binaries live in the domain-local `.sps-media` directory beside the
@@ -85,3 +85,14 @@ Markdown. See `docs/runtime-agents.md` for exact file/role/size/HTTP boundaries.
 
 Both PHP layouts use shared `assets/site-motion.js` / `assets/css/site-motion.css`
 as progressive enhancement, preserving semantic HTML and native scrolling.
+
+## Human help surfaces
+
+Authenticated operator instructions are a fixed `AdminHelpService` catalogue
+under `content/help/admin/`, rendered by existing AdminController routes at
+`/admin/docs`. They are neither runtime-agent prompt inputs nor a repository
+file browser. Raw Markdown URLs are denied before static serving. Public help
+remains published articles in `content/blog/posts/` linked by task context.
+The developer graph indexes operator metadata without copying private bodies;
+explicit source dependencies invalidate stale help-document review receipts.
+See `admin-help.md` for the exact boundaries and browser acceptance contract.

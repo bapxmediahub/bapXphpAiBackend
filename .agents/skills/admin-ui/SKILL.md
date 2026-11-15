@@ -97,3 +97,14 @@ agent prompt text lives under `.bapX/`, selected by `AgentInstructionService`
 with a fixed role allowlist. Update `docs/runtime-agents.md`, instruction
 content fingerprints and isolation tests whenever that contract changes.
 Never route a model-supplied path or developer index into live instructions.
+
+## Operator help and section guidance
+
+Keep the stable Help & Docs sidebar/topbar links and `Help for this page`
+context in the existing layout. `AdminHelpService` lists fixed operator files;
+never turn `/admin/docs/{slug}` into arbitrary file/URL loading. Match actual
+labels, routes, permissions and limitations before changing a guide. Check
+both its source metadata and `operator-help` documentation-review dependencies.
+Public help belongs in the existing published Help blog category, not private
+operator text. Test search/categories/anchors/task links with no JavaScript,
+1280px and 375px, plus guest/customer denial and raw/encoded file-path denial.

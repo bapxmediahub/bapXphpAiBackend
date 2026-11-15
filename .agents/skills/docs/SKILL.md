@@ -81,3 +81,13 @@ Run `php cli/docs-check.php --list`, inspect the actual changed sources and thei
 references, update content, then record an honest rationale per changed area.
 `bapXphp update` does not refresh review receipts; `bapXphp ci` rejects stale ones.
 A fingerprint is a drift alarm, not proof that prose accurately describes code.
+
+## Operator and customer help cross-review
+
+`AdminHelpService::references` and `publicReferences` declare exact guide files
+and the code they explain. The `operator-help` contract hashes those feature
+dependencies even when another area owns the underlying source. After changing
+controls, routes, policies or permissions, update the corresponding guide and
+record what was cross-checked. Do not mechanically refresh fingerprints or
+publish a guide for a missing feature. `KnowledgeGraphService` records private
+operator metadata without copying guide bodies; issues/status remain in GitHub.

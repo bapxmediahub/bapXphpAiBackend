@@ -152,6 +152,11 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
                 <a href="/admin/integrations" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/integrations') === 0 ? 'active' : '') ?>">Integrations</a>
                 <a href="/admin/settings" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/settings') === 0 ? 'active' : '') ?>">Site Settings</a>
             </div>
+            <?php $helpPath=(string)(parse_url($_SERVER['REQUEST_URI']??'/admin',PHP_URL_PATH)?:'/admin'); ?>
+            <a data-admin-help-nav href="/admin/docs" class="admin-nav-top <?= $helpPath==='/admin/docs'||str_starts_with($helpPath,'/admin/docs/')?'active':'' ?>"<?= $helpPath==='/admin/docs'?' aria-current="page"':'' ?>>
+                <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h6a3 3 0 0 1 3 3v14a3 3 0 0 0-3-3H4zM13 7a3 3 0 0 1 3-3h5v14h-5a3 3 0 0 0-3 3"/></svg>
+                Help &amp; Docs
+            </a>
         </nav>
         <div class="admin-sidebar__footer">
             <a href="/">
@@ -171,6 +176,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
             </button>
             <h1><?= e($pageTitle ?? 'Dashboard') ?></h1>
             <div class="admin-topbar__actions">
+                <a class="btn btn-sm btn-ghost" data-admin-help-topbar href="/admin/docs">Help &amp; Docs</a>
                 <a href="/" class="btn btn-sm btn-ghost" target="_blank">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                     View Site
@@ -188,7 +194,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
             $__segments = array_values(array_filter(explode('/', $__path)));
             $__crumb = '/admin';
             $__labelMap = [
-                'products'=>'Products','categories'=>'Categories','coupons'=>'Coupons',
+                'docs'=>'Help & Docs','products'=>'Products','categories'=>'Categories','coupons'=>'Coupons',
                 'orders'=>'Orders','shipping'=>'Shipping','tax-report'=>'Reports','astrologers'=>'Astrologers',
                 'appointments'=>'Sessions',
                 'consultation-analytics'=>'Analytics','temples'=>'Temples',
@@ -200,6 +206,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
                 'environment'=>'Environment','developer'=>'Developer',
                 'project-map'=>'Project Map','contact_submissions'=>'Contacts',
             ];
+            foreach(\App\Services\AdminHelpService::references() as $helpReference)$__labelMap[$helpReference['slug']]=$helpReference['title'];
             foreach ($__segments as $__i => $__seg):
                 if ($__seg === 'admin' && $__i === 0) continue;
                 $__crumb .= '/' . $__seg;
@@ -221,6 +228,14 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
             unset($_SESSION['flash']);
         ?>
         <script>document.addEventListener('DOMContentLoaded',function(){showToast(<?= json_encode($__msg) ?>,<?= json_encode($__type) ?>);});</script>
+        <?php endif; ?>
+        <?php $helpContext=\App\Services\AdminHelpService::adminContext($_SERVER['REQUEST_URI']??'/admin'); ?>
+        <?php if($helpPath!=='/admin/docs'&&!str_starts_with($helpPath,'/admin/docs/')): ?>
+        <details class="section-help" data-admin-context-help>
+            <summary>Help for this page <span><?= e($helpContext['title']) ?></span></summary>
+            <p><?= e($helpContext['summary']) ?></p>
+            <a class="help-context-link" href="<?= e($helpContext['url']) ?>">Read this guide <span aria-hidden="true">→</span></a>
+        </details>
         <?php endif; ?>
         <?php require $viewFile; ?>
         </div>

@@ -1,6 +1,6 @@
 <?php
 // First matching group owns the source path. No live records, credentials or issue states.
-return [
+$rules = [
  'agents'=>['sources'=>['app/Services/Agent*.php','app/Services/*ToolRegistry.php','app/Services/Support*.php','app/Services/Ai*.php','app/Controllers/SupportController.php','.bapX/*','cli/agent-*.php','views/admin/agent*.php'],
   'references'=>['docs/agent-observability.md','docs/runtime-agents.md','docs/agent-tool-contracts.md','.agents/skills/backend-php-mysql/SKILL.md']],
  'mail'=>['sources'=>['app/Services/*Mail*.php','app/Services/Smtp*.php','views/admin/mailbox.php'],
@@ -20,3 +20,15 @@ return [
  'foundation'=>['sources'=>['*'],
   'references'=>['docs/architecture.md','docs/json-storage.md','docs/deployment-hostinger.md','.agents/skills/backend-php-mysql/SKILL.md']],
 ];
+
+// Operator help needs its actual feature dependencies, not just its own prose/templates.
+// This is static allowlisted metadata; no private guide body, runtime record or issue state is read.
+require_once __DIR__.'/../app/Services/AdminHelpService.php';
+$guideReferences=array_merge(\App\Services\AdminHelpService::references(),\App\Services\AdminHelpService::publicReferences());
+$dependencies=['app/Controllers/AdminController.php','app/Controllers/AuthController.php','app/Controllers/AccountController.php',
+    'app/Services/ProjectMapService.php','app/Services/KnowledgeGraphService.php','app/Services/MarkdownRenderer.php',
+    'app/Services/BlogService.php','app/Services/SettingsService.php','views/layouts/admin.php','views/layouts/app.php','index.php','.htaccess'];
+$references=['docs/admin-help.md','.agents/skills/admin-ui/SKILL.md','.agents/skills/docs/SKILL.md'];
+foreach($guideReferences as $guide){$dependencies=array_merge($dependencies,$guide['sources']);$references[]=$guide['file'];}
+return ['operator-help'=>['sources'=>['app/Services/AdminHelpService.php','content/help/admin/*','views/admin/help.php'],
+    'dependencies'=>array_values(array_unique($dependencies)),'references'=>array_values(array_unique($references))]]+$rules;
