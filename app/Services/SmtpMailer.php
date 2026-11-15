@@ -33,17 +33,26 @@ final class SmtpMailer {
             && $this->fromEmail() !== '';
     }
 
-    public function buildMessage(string $to, string $subject, string $html): string {
+    public function buildMessage(string $to, string $subject, string $html, ?string $messageId = null): string {
         $fromEmail = $this->fromEmail();
         $fromName = $this->fromName();
         // Replies go to the sending mailbox (support@), not the admin's personal inbox.
         // admin_notification_email is the destination for admin *notifications*, which
         // is a different thing from where a customer's reply should land.
         $replyTo = $this->replyToEmail();
+        foreach ([$to,$fromEmail,$replyTo] as $address) {
+            if (!filter_var($address,FILTER_VALIDATE_EMAIL) || preg_match('/[\r\n\0]/',$address)) throw new \InvalidArgumentException('Invalid email address.');
+        }
+        foreach ([$subject,$fromName] as $header) {
+            if (preg_match('/[\r\n\0]/',$header)) throw new \InvalidArgumentException('Invalid mail header.');
+        }
+        $messageId ??= '<'.bin2hex(random_bytes(16)).'@'.substr(strrchr($fromEmail,'@'),1).'>';
+        if (!preg_match('/^<[A-Za-z0-9._-]{1,100}@[A-Za-z0-9.-]{1,253}>$/D',$messageId)) throw new \InvalidArgumentException('Invalid mail message identity.');
         $boundary = 'sps_' . bin2hex(random_bytes(12));
         $plain = trim(strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", $html)));
         $headers = [
             'Date: ' . date(DATE_RFC2822),
+            'Message-ID: ' . $messageId,
             'To: ' . $to,
             'From: ' . $this->formatAddress($fromEmail, $fromName),
             'Reply-To: ' . $replyTo,
@@ -68,47 +77,60 @@ final class SmtpMailer {
         return rtrim(chunk_split(base64_encode($canonical), 76, "\r\n"), "\r\n");
     }
 
-    public function send(string $to, string $subject, string $html): void {
-        if (!$this->configured()) {
-            throw new \RuntimeException(
-                'SMTP is not configured. Set host, port, username, password and From Email in Admin → Integrations.'
-            );
-        }
+    /** SMTP acknowledgement is transport acceptance, never proof of inbox delivery. */
+    public function send(string $to, string $subject, string $html, ?string $messageId = null): array {
+        if (!$this->configured()) throw new \RuntimeException('SMTP is not configured.');
+        $messageId ??= '<'.bin2hex(random_bytes(16)).'@'.substr(strrchr($this->fromEmail(),'@'),1).'>';
+        // Validate the envelope and MIME headers before opening any connection.
+        $body = preg_replace('/^\./m','..',$this->buildMessage($to,$subject,$html,$messageId));
         $host = (string)$this->settings['smtp_host'];
         $port = (int)$this->settings['smtp_port'];
         $secure = strtolower((string)($this->settings['smtp_encryption'] ?? 'tls'));
         $target = ($secure === 'ssl' ? 'ssl://' : '') . $host . ':' . $port;
-        $socket = @stream_socket_client($target, $errno, $errstr, 20, STREAM_CLIENT_CONNECT);
-        if (!$socket) {
-            throw new \RuntimeException(
-                "Could not connect to {$host}:{$port} ({$errstr}). Check the host and port, and that the "
-                . "server allows outbound SMTP — many hosts block ports 465 and 587 by default."
-            );
-        }
-        stream_set_timeout($socket, 20);
-        $this->expect($socket, [220]);
-        $this->command($socket, 'EHLO ' . ($_SERVER['SERVER_NAME'] ?? 'localhost'), [250]);
-        if ($secure === 'tls') {
-            $this->command($socket, 'STARTTLS', [220]);
-            if (!stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
-                throw new \RuntimeException('Unable to start SMTP TLS.');
+        $socket = @stream_socket_client($target,$errno,$errstr,20,STREAM_CLIENT_CONNECT);
+        if (!$socket) throw new \RuntimeException('Could not connect to configured SMTP host and port.');
+        $awaitingAcceptance=false;
+        try {
+            stream_set_timeout($socket,20);
+            $this->expect($socket,[220]);
+            $domain=$this->cleanDomain((string)($_SERVER['SERVER_NAME']??'localhost'));
+            if (!preg_match('/^[a-z0-9.-]+$/D',$domain)) $domain='localhost';
+            $this->command($socket,'EHLO '.$domain,[250]);
+            if ($secure === 'tls') {
+                $this->command($socket,'STARTTLS',[220]);
+                if (!@stream_socket_enable_crypto($socket,true,STREAM_CRYPTO_METHOD_TLS_CLIENT)) throw new \RuntimeException('Unable to start SMTP TLS.');
+                $this->command($socket,'EHLO '.$domain,[250]);
             }
-            $this->command($socket, 'EHLO ' . ($_SERVER['SERVER_NAME'] ?? 'localhost'), [250]);
+            $this->command($socket,'AUTH LOGIN',[334]);
+            $this->command($socket,base64_encode((string)$this->settings['smtp_username']),[334]);
+            $this->command($socket,base64_encode((string)$this->settings['smtp_password']),[235]);
+            $this->command($socket,'MAIL FROM:<'.$this->fromEmail().'>',[250]);
+            $this->command($socket,'RCPT TO:<'.$to.'>',[250,251]);
+            $this->command($socket,'DATA',[354]);
+            $awaitingAcceptance=true;
+            $this->writeAll($socket,$body."\r\n.\r\n");
+            $this->expect($socket,[250]);
+            $awaitingAcceptance=false;
+            $receipt=['accepted'=>true,'smtp_code'=>250,'message_id'=>$messageId,'accepted_at'=>gmdate('c')];
+            // RFC 5321 §6.1: responsibility transferred at positive DATA acknowledgement.
+            // A lost QUIT acknowledgement must never convert that into a retryable failure.
+            try { stream_set_timeout($socket,2);$this->command($socket,'QUIT',[221]); }
+            catch (\Throwable) { $receipt['cleanup_warning']='quit_unconfirmed'; }
+            return $receipt;
+        } catch (\Throwable $error) {
+            if ($awaitingAcceptance && ($error->getCode()<400 || $error->getCode()>599)) {
+                throw new SmtpDeliveryUncertainException('SMTP acceptance was not observed. Do not resend until the outcome is checked.',0,$error);
+            }
+            throw $error;
+        } finally { if (is_resource($socket)) fclose($socket); }
+    }
+
+    private function writeAll($socket,string $value): void {
+        $offset=0;$length=strlen($value);
+        while($offset<$length){$written=@fwrite($socket,substr($value,$offset));
+            if($written===false||$written===0)throw new \RuntimeException('SMTP connection write failed.');
+            $offset+=$written;
         }
-        $this->command($socket, 'AUTH LOGIN', [334]);
-        $this->command($socket, base64_encode((string)$this->settings['smtp_username']), [334]);
-        $this->command($socket, base64_encode((string)$this->settings['smtp_password']), [235]);
-        $from = $this->fromEmail();
-        $this->command($socket, 'MAIL FROM:<' . $from . '>', [250]);
-        $this->command($socket, 'RCPT TO:<' . $to . '>', [250, 251]);
-        $this->command($socket, 'DATA', [354]);
-        // Dot-stuffing (RFC 5321 §4.5.2): a body line starting with "." would otherwise
-        // be read as the end-of-data marker, silently truncating the message.
-        $body = preg_replace('/^\./m', '..', $this->buildMessage($to, $subject, $html));
-        fwrite($socket, $body . "\r\n.\r\n");
-        $this->expect($socket, [250]);
-        $this->command($socket, 'QUIT', [221]);
-        fclose($socket);
     }
 
     private function formatAddress(string $email, string $name): string {
@@ -145,7 +167,7 @@ final class SmtpMailer {
     }
 
     private function command($socket, string $command, array $codes): string {
-        fwrite($socket, $command . "\r\n");
+        $this->writeAll($socket, $command . "\r\n");
         return $this->expect($socket, $codes);
     }
 
@@ -181,7 +203,7 @@ final class SmtpMailer {
                 in_array($code, [553, 550, 554], true) => ' The sender address was rejected. From Email must match the authenticated mailbox.',
                 default => '',
             };
-            throw new \RuntimeException('SMTP error ' . $code . ': ' . trim($response) . $hint);
+            throw new \RuntimeException('SMTP error ' . $code . ': ' . trim($response) . $hint, $code);
         }
         return $response;
     }

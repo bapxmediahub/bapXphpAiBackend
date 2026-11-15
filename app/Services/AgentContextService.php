@@ -123,7 +123,7 @@ final class AgentContextService {
     }
 
     private function publicSettings(): array {
-        $settings = $this->store->read('settings')[0] ?? [];
+        $settings = (new SettingsService($this->store))->public();
         return array_intersect_key($settings, array_flip(['currency', 'timezone', 'shipping_mode', 'flat_rate']));
     }
 
@@ -178,19 +178,59 @@ final class AgentContextService {
         return $tied ? null : $best;
     }
 
-    /** Prefer exact matches across the visible catalogue before applying the prompt cap. */
-    public static function supportProducts(array $visibleProducts, string $message): array {
-        $matches = array_filter($visibleProducts, static fn(array $product): bool => self::matchesNamedProduct($message, $product));
-        if (self::isProductComparison($message)) {
-            foreach (['pendants?', 'malas?|malais?', 'rings?', 'bracelets?', 'statues?|idols?'] as $type) {
-                $pattern = '/\b(?:' . $type . ')\b/i';
-                if (!preg_match($pattern, $message)) continue;
-                $examples = array_filter($visibleProducts, static fn(array $product): bool =>
-                    preg_match($pattern, (string)($product['name'] ?? '')));
-                $matches += array_slice($examples, 0, 3, true);
+    /** Reproducible, bounded catalogue decisions. No match never means the first 20 products. */
+    public static function catalogueSelection(array $visibleProducts, string $message, array $collections = []): array {
+        $products=array_values(array_filter($visibleProducts,static fn($p):bool=>is_array($p)&&empty($p['is_hidden'])
+            &&preg_match('/^[\p{L}\p{M}\p{N} _.-]{1,160}$/uD',(string)($p['slug']??''))));
+        $collection=null;$chosen=[];$intent='unknown';$status='not_applicable';$reason='not_a_catalogue_request';
+        $collectionQuery=(bool)preg_match('/\b(?:festival|festive|collection|sale)\b|பண்டிகை|திருவிழா|அய்யப்ப|ஐயப்ப|சஷ்டி/iu',$message);
+        if(preg_match('/\b(?:my|latest|recent)\s+(?:support\s+)?tickets?\b/i',$message)){$intent='own_ticket';}
+        elseif(preg_match('/\b(?:my|latest|recent)\s+(?:order|orders|payment|refund)|\border\s*#\s*[a-f0-9]{16}\b/i',$message)){$intent='own_order';}
+        elseif(preg_match('/\b(?:shipping|delivery|dispatch|tracking|refund policy|return policy)\b|விநியோகம்/iu',$message)){$intent='public_policy';}
+        elseif($collectionQuery){
+            $intent='collection';$collection=self::requestedCollection($message,$collections);
+            if($collection!==null){$chosen=(new CategoryService())->collectionProducts($collection,$products);$status=$chosen===[]?'no_match':'matched';$reason='collection_membership';}
+            else{$status='clarification';$reason='collection_not_identified';}
+        }else{
+            $exact=array_values(array_filter($products,static fn(array $p):bool=>self::matchesNamedProduct($message,$p)));
+            if(self::isProductComparison($message)){
+                $intent='comparison';$chosen=$exact;
+                foreach(['pendants?','malas?|malais?','rings?','bracelets?','statues?|idols?'] as $type){
+                    $pattern='/\b(?:'.$type.')\b/i';if(!preg_match($pattern,$message))continue;
+                    $examples=array_filter($products,static fn(array $p):bool=>(bool)preg_match($pattern,(string)($p['name']??'')));
+                    $chosen=array_merge($chosen,array_slice(array_values($examples),0,3));
+                }
+                $chosen=array_values(array_column($chosen,null,'slug'));
+                $status=count($chosen)>=2?'matched':'clarification';$reason='comparison_examples';
+            }elseif($exact!==[]){$intent='catalogue_search';$chosen=$exact;$status='matched';$reason='exact_public_alias';}
+            elseif(preg_match('/^(?:what (?:do you sell|products? (?:do you (?:sell|have)|are available))|(?:show|list|browse)(?: me)? (?:all |your |the )?(?:products?|catalogue|catalog|shop|items?))[?!. ]*$/iu',trim($message))){
+                $intent='catalogue_browse';$chosen=$products;$status=$chosen===[]?'no_match':'matched';$reason='explicit_catalogue_browse';
+            }elseif(preg_match('/\b(?:products?|items?|prices?|cost|sell|stock|available|buy|pendants?|rings?|malas?|malais?|bracelets?|statues?|idols?)\b|விலை|பொருட்|மாலை/iu',$message)){
+                $intent='catalogue_search';
+                $normalize=static function(string $v):array{
+                    $v=mb_strtolower($v);$v=str_replace(['pendants','rings','bracelets','malas','malais','statues','idols','ayyappan','swami'],['pendant','ring','bracelet','mala','malai','statue','idol','ayyappa','swamy'],$v);
+                    return preg_split('/[^\p{L}\p{N}]+/u',$v,-1,PREG_SPLIT_NO_EMPTY)?:[];
+                };
+                $stop=['do','does','you','your','we','have','has','a','an','the','can','could','please','show','me','tell','about','how','much','is','are','in','stock','available','price','prices','cost','sell','buy','product','products','item','items','what','of','for','current','and'];
+                $terms=array_values(array_diff(array_unique($normalize($message)),$stop));
+                if($terms!==[])$chosen=array_values(array_filter($products,static function(array $p)use($terms,$normalize):bool{
+                    $words=$normalize((string)($p['name']??'').' '.(string)$p['slug']);return array_diff($terms,$words)===[];
+                }));
+                $status=$chosen===[]?'no_match':'matched';$reason=$chosen===[]?'no_public_alias_match':'all_query_terms_in_public_name';
             }
         }
-        return array_slice($matches ?: $visibleProducts, 0, 20);
+        $chosen=array_slice($chosen,0,20);$sources=[];
+        foreach($chosen as $product){$updated=$product['updated_at']??null;
+            if(!is_string($updated)||!preg_match('/^\d{4}-\d{2}-\d{2}T/',$updated)||strtotime($updated)===false)$updated=null;
+            $sources[]=['id'=>'product:'.rawurlencode($product['slug']),'last_updated'=>$updated];
+        }
+        return ['version'=>1,'intent'=>$intent,'status'=>$status,'reason'=>$reason,'products'=>$chosen,'collection'=>$collection,
+            'candidate_count'=>count($products),'result_count'=>count($chosen),'sources'=>$sources,
+            'result_sha256'=>hash('sha256',json_encode(array_map(static fn(array $p):array=>array_intersect_key($p,array_flip(['slug','name','price','offer_price','stock_status','updated_at'])),$chosen),JSON_THROW_ON_ERROR|JSON_UNESCAPED_UNICODE))];
+    }
+
+    public static function supportProducts(array $visibleProducts, string $message): array {
+        return self::catalogueSelection($visibleProducts,$message)['products'];
     }
 
     public static function isProductComparison(string $message): bool {
@@ -202,10 +242,8 @@ final class AgentContextService {
         $collection = null;
         $collectionQuery=(bool)preg_match('/\b(?:festival|festive|collection|sale)\b|பண்டிகை|திருவிழா|அய்யப்ப|ஐயப்ப|சஷ்டி/iu',$message);
         $collections=$collectionQuery?(new CategoryService($this->store))->collections():[];
-        if ($collectionQuery) $collection=self::requestedCollection($message,$collections);
-        $selected = $collection !== null
-            ? (new CategoryService($this->store))->collectionProducts($collection, $visibleProducts)
-            : ($collectionQuery ? [] : self::supportProducts($visibleProducts, $message));
+        $selection=self::catalogueSelection($visibleProducts,$message,$collections);
+        $collection=$selection['collection'];$selected=$selection['products'];
         $products = array_map(fn($item) => [
             'name' => $item['name'] ?? '',
             'slug' => $item['slug'] ?? '',
@@ -228,6 +266,7 @@ final class AgentContextService {
                 'orders' => '/account/dashboard/orders',
             ],
             'products' => $products,
+            'retrieval' => array_diff_key($selection,array_flip(['products','collection'])),
             'collection_query'=>$collectionQuery,
             'available_collections'=>array_slice(array_values(array_filter(array_column($collections,'name'),'is_string')),0,12),
             'matched_collection' => $collection !== null

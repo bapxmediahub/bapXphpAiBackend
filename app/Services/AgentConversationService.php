@@ -103,7 +103,8 @@ final class AgentConversationService
         $id = is_string($conversationId) && preg_match(self::ID_PATTERN, $conversationId)
             ? $conversationId : bin2hex(random_bytes(16));
         $evaluationSpan = AgentTraceService::activeTraceId() === $traceId ? AgentTraceService::startSpan('evaluation','deterministic_guardrails') : null;
-        $evaluation = AgentEvaluationService::evaluate($surface, $question, $answer, $tools, $outcome);
+        $retrieval = array_map(static fn(array $entry):array=>AgentTraceService::safeRetrieval($entry),array_slice(array_filter($retrieval,'is_array'),0,8));
+        $evaluation = AgentEvaluationService::evaluate($surface, $question, $answer, $tools, $outcome, $retrieval);
         AgentTraceService::endSpan($evaluationSpan,!empty($evaluation['passed'])?'pass':'needs_review',['version'=>(int)$evaluation['version']]);
         $turn = [
             'turn_id' => bin2hex(random_bytes(16)),
@@ -117,6 +118,7 @@ final class AgentConversationService
                 array_slice(array_filter($tools,'is_array'),0,32)
             )),
             'evaluation' => $evaluation,
+            'retrieval' => $retrieval,
             'model_attempts' => array_values(array_map(static fn(array $attempt): array => [
                 'model' => substr((string)($attempt['model'] ?? ''), 0, 100),
                 'http_status' => (int)($attempt['status'] ?? 0),
@@ -363,7 +365,7 @@ final class AgentConversationService
     private static function safeSlugs(mixed $slugs): array {
         if(!is_array($slugs))return [];
         return array_slice(array_values(array_unique(array_filter($slugs,static fn($s):bool=>is_string($s)
-            &&preg_match('/^[\p{L}\p{N} _.-]{1,160}$/uD',$s)===1))),0,20);
+            &&preg_match('/^[\p{L}\p{M}\p{N} _.-]{1,160}$/uD',$s)===1))),0,20);
     }
     public function contextForActor(?string $id,string $surface,array $actor,int $maxTurns=4,int $maxBytes=8000): array {
         $empty=['messages'=>[],'public_product_slugs'=>[]];if($id===null)return $empty;
@@ -453,6 +455,9 @@ final class AgentConversationService
                 'turn_count' => count($document['turns'] ?? []),
                 'pending_turn_count' => count($document['pending_turns'] ?? []),
                 'passed_turns' => (int)($document['passed_turns'] ?? 0),
+                'intent' => AgentTraceService::safeRetrieval((array)($lastTurn['retrieval'][0]??[]))['intent'],
+                'needs_review' => is_array($pending) || ($document['resolution_status']??'')==='needs_followup' || (isset($lastTurn['evaluation']['passed'])&&!$lastTurn['evaluation']['passed']),
+                'review_reason' => is_array($pending)?'unfinished_request':(($document['resolution_status']??'')==='needs_followup'?'negative_feedback':((isset($lastTurn['evaluation']['passed'])&&!$lastTurn['evaluation']['passed'])?'guardrail_failure':null)),
                 'trace_state' => is_array($pending) ? 'unfinished' : 'completed',
                 'trace_ordering' => (string)($trace['ordering'] ?? 'unavailable'),
                 'trace_steps' => $traceSteps,

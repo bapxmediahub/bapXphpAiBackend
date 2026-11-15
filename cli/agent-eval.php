@@ -39,7 +39,8 @@ $implementationFiles = [
     'app/Services/AgentToolRegistry.php','app/Services/AgentContextService.php',
     'app/Services/SupportBotService.php','app/Services/AgentConversationService.php',
     'app/Services/AgentEvaluationService.php','app/Services/AgentTraceService.php',
-    'app/Services/AiClient.php',
+    'app/Services/AiClient.php','app/Services/CategoryService.php','app/Services/ProductService.php',
+    'app/Services/OrderService.php','app/Services/AuditLogService.php',
 ];
 $implementation = [];
 foreach ($implementationFiles as $source) $implementation[$source] = hash_file('sha256',app_path($source));

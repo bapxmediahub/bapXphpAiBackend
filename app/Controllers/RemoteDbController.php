@@ -141,6 +141,11 @@ final class RemoteDbController {
                 echo json_encode(['success' => true, 'result' => $result]);
                 return;
             }
+            if ($collection === 'mail_queue' && $action === 'transition_mail_delivery') {
+                $result=$store->transitionMailDelivery((string)($input['id']??''),(string)($input['transition']??''),
+                    (string)($input['attempt_id']??''),(array)($input['fields']??[]));
+                echo json_encode(['success'=>true,'record'=>$result]);return;
+            }
             if ($collection === 'support_tickets' && $action === 'transition_support_ticket') {
                 $result=$store->updateSupportTicket((string)($input['id']??''),(string)($input['transition']??''),
                     (array)($input['fields']??[]),(array)($input['actor']??[]),(int)($input['expected_version']??-1));

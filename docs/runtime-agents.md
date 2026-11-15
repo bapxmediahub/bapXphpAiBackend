@@ -89,3 +89,11 @@ Run `php tests/run.php`, `php cli/agent-eval.php`, `./bapXphp update` and
 `./bapXphp ci`. Verify both role manifests, unauthorized/path/symlink denial,
 actual prompt content hashes, ordinary Support and admin flows, and HTTP denial
 for both trees before releasing.
+
+## Next client implementation checklist
+
+See [client-runtime-adaptation.md](client-runtime-adaptation.md) for the exact
+reuse/customization boundaries. `.bapX/` isolation is implemented; automatic
+multi-client provisioning is not. PHP policy constants, model-prompt branding,
+mail templates and per-client data/secrets need explicit review as well as
+Markdown changes. Never copy live customer records or credentials into a fork.

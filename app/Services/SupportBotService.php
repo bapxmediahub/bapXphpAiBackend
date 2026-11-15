@@ -33,15 +33,14 @@ final class SupportBotService {
                 'memory' => 'browser_session',
                 'actions' => $this->extractActions($reply),
                 'run' => ['outcome'=>'local','trace_id'=>$this->traceId,'tools'=>[],
-                    'retrieval'=>[['source'=>'public_policy','result_count'=>1,'status'=>'complete']]],
+                    'retrieval'=>[['intent'=>'public_policy','reason'=>'tracking_policy','result_count'=>1,'status'=>'matched','sources'=>[]]]],
             ];
         }
         $retrievalSpan = AgentTraceService::startSpan('retrieval','support_context');
         $context = $this->customerContext($user, $message);
         $context['conversation_history']=(array)($conversation['messages']??[]);
-        AgentTraceService::endSpan($retrievalSpan,'complete',['result_count'=>count($context['site']['products']??[])]);
-        $retrieval = [['source'=>'visible_products',
-            'result_count'=>count($context['site']['products'] ?? []),'status'=>'complete']];
+        $retrieval=[AgentTraceService::safeRetrieval((array)($context['site']['retrieval']??[]))];
+        AgentTraceService::endSpan($retrievalSpan,'complete',['result_count'=>count($context['site']['products']??[]),'retrieval'=>$retrieval[0]]);
         $reply = (!$context['signed_in'] && $this->isPrivateAccountQuestion($message))
             ? $this->fallbackReply($message, $context)
             : null;
@@ -50,11 +49,16 @@ final class SupportBotService {
             $product=self::followupProduct($message,(array)($conversation['public_product_slugs']??[]),(new ProductService($this->store))->visible());
             $reply=$product===null ? 'Please name the product. I cannot verify that earlier item in the current catalogue.' : self::followupReply($message,$product);
             $context['site']['products']=$product===null?[]:[$product];$outcome='local';
+            $retrieval=[AgentTraceService::safeRetrieval(AgentContextService::catalogueSelection($product===null?[]:[$product],$product===null?'price of unavailable product':(string)$product['name']))];
         }
         if($reply===null && !empty($context['site']['collection_query']) && empty($context['site']['matched_collection'])) {
             $names=(array)($context['site']['available_collections']??[]);
             $reply=$names===[]?'No matching published collection is available. Please check /shop.'
                 :'Which collection would you like: '.implode(', ',array_slice($names,0,6)).'? Please choose one so I do not suggest unrelated products. Browse /shop.';
+            $outcome='local';
+        }
+        if($reply===null&&($retrieval[0]['intent']??'')==='catalogue_search'&&($retrieval[0]['status']??'')==='no_match') {
+            $reply='I could not verify a matching product in the current public catalogue. Please give the exact product name or browse /shop; I will not substitute unrelated items.';
             $outcome='local';
         }
         if ($reply === null && module_on('shop') && is_array($context['site']['matched_collection'] ?? null)) {
@@ -65,6 +69,10 @@ final class SupportBotService {
             );
             if ($reply !== null) $outcome = 'local';
         }
+        if($reply===null&&($retrieval[0]['intent']??'')==='public_policy') {
+            $reply=self::policyAnswer($message,(array)($context['policies']??[]));
+            if($reply!==null)$outcome='local';
+        }
         if ($reply === null && module_on('shop')) {
             $products = $context['site']['products'] ?? [];
             $reply = self::catalogFactReply($message, $products) ?? self::catalogComparisonReply($message, $products);
@@ -74,7 +82,7 @@ final class SupportBotService {
             $aiReply = $this->modelReply($message, $context, $reason, $attempts);
             if ($aiReply !== null) {
                 $candidate = $this->cleanReply($aiReply);
-                if (!$this->looksInternal($candidate) && trim($candidate) !== '') {
+                if (!$this->looksInternal($candidate) && trim($candidate) !== '' && AgentEvaluationService::publicProductLinksSupported($candidate,$retrieval)) {
                     $reply = $candidate;
                     $outcome = 'model';
                 } else { $reason = 'rejected_response'; }
@@ -438,6 +446,19 @@ final class SupportBotService {
             error_log('Article context failed: ' . $e->getMessage());
             return [];
         }
+    }
+
+    /** Fixed public policy answers use supplied source values, never guessed costs or promises. */
+    public static function policyAnswer(string $message,array $policies): ?string {
+        $rule=null;
+        if(preg_match('/\b(?:shipping|delivery)\b.*\b(?:cost|charge|fee|free)|\b(?:cost|charge|fee)\b.*\b(?:shipping|delivery)/i',$message))$rule=['shipping_cost','Shipping cost: ','/checkout'];
+        elseif(preg_match('/\b(?:international|outside india)\b.*\b(?:deliver|delivery|shipping)|\b(?:deliver|delivery|shipping)\b.*\b(?:international|outside india)/i',$message))$rule=['delivery_outside_india','International delivery: ','/contact'];
+        elseif(preg_match('/\b(?:delivery time|how long.*deliver|days.*deliver|deliver.*days|delivery within india)\b/i',$message))$rule=['delivery_within_india','Delivery within India: ','/contact'];
+        elseif(preg_match('/\btracking\b/i',$message))$rule=['tracking','','/account/dashboard/orders'];
+        elseif(preg_match('/\b(?:return|refund) policy\b/i',$message))$rule=['returns_or_problems','','/contact'];
+        if($rule===null||!is_string($policies[$rule[0]]??null)||trim($policies[$rule[0]])==='')return null;
+        $value=trim(strip_tags($policies[$rule[0]]));
+        return $rule[1].rtrim($value,'.').'. See '.$rule[2].'.';
     }
 
     /** Answer collection listing requests from verified shop membership only. */

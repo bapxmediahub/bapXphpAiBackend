@@ -144,7 +144,7 @@ Do not present a nonempty answer or no-secret result as factual correctness.
 The offline golden corpus and approved baseline live in:
 `tests/fixtures/agent-golden.json` and
 `tests/fixtures/agent-golden-baseline.json`.
-The 14 cases include collection selection, generic ambiguity, role denial, empty
+The 27 cases include collection selection, generic ambiguity, role denial, empty
 sales, ticket lookup-vs-creation, follow-up periods, secret-leak rejection,
 executed-scope precedence and provider usage normalization.
 
@@ -165,7 +165,7 @@ require separate grounded validation on real cases.
 
 `AuditLogService` keeps privacy-safe operational run metadata
 in MySQL for the last-24-hour agent dashboard: request count, fallback/error
-status, provider attempts, allowed tool activity, mean and P95 duration.
+status, provider attempts, allowed tool activity, mean, nearest-rank P50 and P95 duration.
 Full chat text is not duplicated in `audit_events`.
 
 Admin Agent Monitoring additionally shows per-chat JSON summary counts,
@@ -246,3 +246,33 @@ validates the server role and file boundaries, then records the actual manifest
 and bundle SHA-256 into the active trace when a prompt is loaded. Local replies
 that never invoke model instructions do not claim a loaded prompt. Offline
 experiment fingerprints include every role-allowlisted Markdown source.
+
+## Retrieval decisions and bounded quality-review queue
+
+`AgentContextService::catalogueSelection` returns an explicit intent, match /
+no-match / clarification state, reason, bounded candidate/result count, public
+product references, available source update timestamps and a result hash.
+Exact aliases and actual named-collection membership take precedence. Explicit
+catalogue browsing remains bounded; a missing specific item never falls back
+to the first 20 unrelated products. Known Tamil collection aliases use the
+same stored membership. Unknown source freshness stays null, not invented from
+the request time. Descriptions cannot select a product by injecting a name
+into instruction-like text.
+
+The same JSON turn retains the sanitized decision and the observed retrieval
+span. Model product links must belong to the retrieved product references;
+invented links fail the deterministic guardrail. This does not establish
+semantic correctness of every sentence, factual accuracy or calibrated confidence.
+Public shipping-policy answers can be resolved locally from approved values.
+
+The 24-hour operational table now separates failed provider **attempts** from
+failed tool **calls** and request errors; each denominator is shown explicitly.
+The human-review view is derived from the latest 40 chat summaries and links
+negative feedback, failed guardrails and unfinished requests to authorized JSON.
+It is not a global support backlog or an adjudicated human quality dataset.
+Silence is never counted as resolved or abandoned without an explicit policy.
+
+Existing public slugs containing spaces or Unicode are retained and URL-encoded
+in source IDs and links. Retrieval guards must not silently drop valid client
+records because an assumed lowercase ASCII slug format is narrower than the
+actual ProductService contract.

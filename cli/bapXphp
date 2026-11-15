@@ -850,7 +850,7 @@ cmd_hooks() {
 # ── Mail & Images ──────────────────────────────────────────────
 cmd_mail_process() {
   require_php
-  php -r 'require "app/bootstrap.php"; $m=new App\\Services\\MailQueueService(); $n=0; foreach($m->due() as $r){ if($m->deliverNow($r)) $n++; } echo "Sent $n queued emails.\n";' 2>&1
+  php -r 'require "app/bootstrap.php"; $m=new App\Services\MailQueueService(); $n=0; foreach(array_slice($m->due(),0,25) as $r){ if($m->deliverNow($r)) $n++; } echo "SMTP accepted $n queued emails. Inbox receipt is unverified.\n";' 2>&1
 }
 
 cmd_images_optimize() {

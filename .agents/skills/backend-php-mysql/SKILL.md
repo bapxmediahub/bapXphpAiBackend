@@ -43,7 +43,7 @@ executing tools/providers. Persist actual span boundaries through
 delivered. Use effective result scope instead of requested filter arguments.
 Unfinished requests are visible in Agent Monitoring and must not be blindly
 replayed. Keep provider tokens/usage unavailable when absent, and distinguish
-14-case offline regression scores from real customer satisfaction/accuracy.
+versioned offline regression scores from real customer satisfaction/accuracy.
 
 ## Support write consistency
 
@@ -61,3 +61,13 @@ agent prompt text lives under `.bapX/`, selected by `AgentInstructionService`
 with a fixed role allowlist. Update `docs/runtime-agents.md`, instruction
 content fingerprints and isolation tests whenever that contract changes.
 Never route a model-supplied path or developer index into live instructions.
+
+## SMTP persistence and retry boundary
+
+A pending queue row must be atomically claimed on the database host before
+SMTP. Only the matching attempt can complete it. Unknown/interrupted attempts
+are never automatically replayed; accepted DATA is not reversed by a lost QUIT
+reply or logging failure. Update individual queue/outbox rows, never replace
+those collections. The recorded `sent` state means SMTP acceptance (or legacy
+sent), not inbox confirmation. Use loopback SMTP and disposable MySQL tests;
+do not replay the customer's backlog or create fake paid orders for QA.

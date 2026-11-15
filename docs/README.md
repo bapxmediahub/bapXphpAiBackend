@@ -88,3 +88,9 @@ before opening implementation issues.
 
 - [Runtime business agents](runtime-agents.md): `.agents/` developer contracts versus private role-scoped `.bapX/` instructions.
 - [Site motion](site-motion.md): shared native-scroll effects, real-control behavior and reduced/no-JS browser verification.
+
+## Operational acceptance and client reuse
+
+- [Client runtime adaptation](client-runtime-adaptation.md): source-grounded next-client checklist and nonportable configuration/data boundaries.
+- [Issue 251 acceptance ledger](engineering/issue-251-acceptance.md): implemented evidence versus remaining quality gates.
+- [Email setup](email-setup.md): SMTP acceptance, queue claims, unknown outcomes and recipient-receipt verification.

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "label": "php-agent-executed-evidence-and-support-scope-v2",
+  "label": "native-php-exact-retrieval-policy-and-evidence-v3",
   "expected": {
     "support_ayyappa_collection": true,
     "support_generic_festival_ambiguous": true,
@@ -15,6 +15,19 @@
     "trace_effective_scope_overrides_requested": true,
     "trace_rejected_parameters_not_certified": true,
     "google_usage_normalization": true,
-    "missing_provider_usage_is_unknown": true
+    "missing_provider_usage_is_unknown": true,
+    "catalogue_tamil_collection_real_membership": true,
+    "catalogue_specific_missing_item_returns_none": true,
+    "catalogue_explicit_browse_is_bounded": true,
+    "catalogue_account_request_has_no_product_fallback": true,
+    "catalogue_injected_description_does_not_select_record": true,
+    "catalogue_hidden_product_never_selected": true,
+    "catalogue_empty_matched_collection_no_substitution": true,
+    "catalogue_ambiguous_festival_requires_choice": true,
+    "supported_public_product_link": true,
+    "invented_public_product_link_rejected": true,
+    "shipping_charge_uses_policy_not_guessed_price": true,
+    "missing_policy_is_not_invented": true,
+    "existing_spaced_public_slug_preserved": true
   }
 }

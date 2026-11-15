@@ -7,14 +7,14 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 131 routes, 12 controllers, 61 services, 51 views, 0 data files, 22 tools"]
+  subgraph ARCH["Architecture Overview — 131 routes, 12 controllers, 62 services, 51 views, 0 data files, 22 tools"]
     arch_routes["> Routes: 131 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
-    arch_svc["> Services: 61"]:::arch
+    arch_svc["> Services: 62"]:::arch
     arch_views["> Views: 51"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 22"]:::arch
-    arch_gaps["> Gaps: 6"]:::arch
+    arch_gaps["> Gaps: 7"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -241,6 +241,7 @@ flowchart LR
     service_shippingservice["ShippingService"]:::code
     service_siteinsightsservice["SiteInsightsService"]:::code
     service_sitetelemetryservice["SiteTelemetryService"]:::code
+    service_smtpdeliveryuncertainexception["SmtpDeliveryUncertainException"]:::code
     service_smtpmailer["SmtpMailer"]:::code
     service_storagepermissionservice["StoragePermissionService"]:::code
     service_storestatsservice["StoreStatsService"]:::code
@@ -368,7 +369,8 @@ flowchart LR
     gap_4321d51b65["unwired_services: AstrologerService"]:::gap
     gap_785e99a166["unwired_services: CourierService"]:::gap
     gap_d35c2ce4d6["unwired_services: ProjectMapService"]:::gap
-    gap_95525e3d98["unwired_services: StoragePermissionService"]:::gap
+    gap_263ec6ea27["unwired_services: SmtpDeliveryUncertainException"]:::gap
+    gap_2f94bb198d["unwired_services: StoragePermissionService"]:::gap
     gap_6b9c2b4b5a["POST /admin/blog/enhance-title — missing AuditLogService"]:::gap
     gap_b4217badec["POST /admin/blog/enhance-content — missing AuditLogService"]:::gap
   end
@@ -680,6 +682,7 @@ flowchart LR
   controller_admincontroller --> service_auditlogservice
   controller_admincontroller --> service_databaseservice
   controller_admincontroller --> service_agentconversationservice
+  controller_admincontroller --> service_agentevaluationservice
   controller_admincontroller --> service_sitetelemetryservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_agent_monitoring
@@ -723,6 +726,7 @@ flowchart LR
   controller_admincontroller -. renders .-> view_admin_mailbox
   route_get_admin_email_outbox --> controller_admincontroller
   controller_admincontroller --> service_mailstorageservice
+  controller_admincontroller --> service_mailqueueservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_mailbox
   route_get_admin_support_tickets --> controller_admincontroller
@@ -978,7 +982,6 @@ flowchart LR
   service_agentcontextservice --> collection_products
   service_agentcontextservice --> collection_appointments
   service_agentcontextservice --> collection_support_tickets
-  service_agentcontextservice --> collection_settings
   service_appointmentservice --> collection_appointments
   service_astrologerservice --> collection_astrologers
   service_auditlogservice --> collection_audit_events
@@ -1043,6 +1046,7 @@ flowchart LR
   gap_4321d51b65 -. missing .-> service_astrologerservice
   gap_785e99a166 -. missing .-> service_courierservice
   gap_d35c2ce4d6 -. missing .-> service_projectmapservice
-  gap_95525e3d98 -. missing .-> service_storagepermissionservice
+  gap_263ec6ea27 -. missing .-> service_smtpdeliveryuncertainexception
+  gap_2f94bb198d -. missing .-> service_storagepermissionservice
   gap_6b9c2b4b5a -. missing .-> controller_admincontroller
   gap_b4217badec -. missing .-> controller_admincontroller

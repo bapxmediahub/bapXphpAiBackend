@@ -199,6 +199,22 @@ final class AgentTraceService
         return $id;
     }
 
+    public static function safeRetrieval(array $entry): array {
+        $intent=in_array($entry['intent']??'',['catalogue_search','catalogue_browse','collection','comparison','public_policy','own_order','own_ticket','unknown'],true)?$entry['intent']:'unknown';
+        $sources=[];
+        foreach(array_slice((array)($entry['sources']??[]),0,20) as $source){
+            if(!is_array($source)||!preg_match('/^product:(?:[a-zA-Z0-9_.-]|%[a-fA-F0-9]{2}){1,640}$/D',(string)($source['id']??'')))continue;
+            $date=$source['last_updated']??null;
+            $sources[]=['id'=>$source['id'],'last_updated'=>is_string($date)&&preg_match('/^\d{4}-\d{2}-\d{2}T/',$date)&&strtotime($date)!==false?$date:null];
+        }
+        return ['version'=>1,'intent'=>$intent,
+            'status'=>in_array($entry['status']??'',['matched','no_match','clarification','not_applicable'],true)?$entry['status']:'not_applicable',
+            'reason'=>preg_match('/^[a-z_]{1,64}$/D',(string)($entry['reason']??''))?$entry['reason']:'unclassified',
+            'candidate_count'=>max(0,(int)($entry['candidate_count']??0)),
+            'result_count'=>max(0,(int)($entry['result_count']??0)),
+            'sources'=>$sources,'result_sha256'=>self::validDigest($entry['result_sha256']??null)];
+    }
+
     public static function endSpan(?string $id, string $status, array $attributes = []): void
     {
         if ($id===null || self::$active===null) return;
@@ -215,6 +231,7 @@ final class AgentTraceService
             if(is_array($attributes['evidence']??null)) {
                 $span['evidence']=self::safeTool(['name'=>$span['name'],'status'=>'complete','evidence'=>$attributes['evidence']])['evidence'];
             }
+            if(is_array($attributes['retrieval']??null))$span['retrieval']=self::safeRetrieval($attributes['retrieval']);
             if(is_array($attributes['usage']??null)) {
                 $span['usage']=[];
                 foreach(['input_tokens','output_tokens','total_tokens','cached_input_tokens'] as $key) {
