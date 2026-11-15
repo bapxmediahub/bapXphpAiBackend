@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AuditLogService,MailQueueService,AuthService,BlogDraftService,ConsultationService,EnvService,MailStorageService,MarkdownRenderer,MediaService,OrderService,ResourceService,SchemaService,SecretService,SettingsService,StoragePermissionService,StoreStatsService};
+use App\Services\{AuditLogService,MailQueueService,AuthService,BlogDraftService,BlogService,ConsultationService,EnvService,MailStorageService,MarkdownRenderer,MediaService,OrderService,ResourceService,SchemaService,SecretService,SettingsService,StoragePermissionService,StoreStatsService};
 final class AdminController extends BaseController {
     protected string $layout = 'admin';
     public function __construct() {
