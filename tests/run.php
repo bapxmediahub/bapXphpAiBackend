@@ -93,6 +93,13 @@ $tests['missing hosted blog photos show bundled image instead of broken thumbnai
     }
 };
 
+$tests['blog structured data uses configured canonical origin instead of request host'] = static function (): void {
+    $view=fileRead('views/public/blog-post.php');
+    assertTrue(!str_contains($view, "\$_SERVER['HTTP_HOST']"), 'Article schema must not trust request-host metadata');
+    assertTrue(str_contains(fileRead('app/Controllers/BlogController.php'), "'schemaBase' => rtrim(\$this->siteUrl('/'), '/')"), 'Controller supplies the canonical configured origin');
+    assertTrue(str_contains($view,'$schemaBase . $schemaImage'), 'Image schema remains absolute under that origin');
+};
+
 $tests['database service can connect to MySQL'] = function (): void {
     try {
         // Quick pre-check: verify the host is reachable before attempting PDO

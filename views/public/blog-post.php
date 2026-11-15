@@ -1,7 +1,8 @@
 <?php
     $categorySlug = (string)($meta['category'] ?? '');
     $categoryName = $categoryNames[$categorySlug] ?? '';
-    $schemaBase = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'sripanchamispiritual.com');
+    // Use the configured canonical origin, not an untrusted request Host header.
+    $schemaBase = rtrim((string)($schemaBase ?? (require app_path('config/database.php'))['app_url']), '/');
     $schemaUrl = $schemaBase . '/blog/' . ($slug ?? '');
     $schemaImage = \App\Services\BlogService::resolvedImageUrl($meta);
     if (str_starts_with($schemaImage, '/')) $schemaImage = $schemaBase . $schemaImage;

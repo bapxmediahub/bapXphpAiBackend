@@ -43,6 +43,7 @@ final class BlogController extends BaseController
             'content' => $content,
             'meta' => $post,
             'slug' => $slug,
+            'schemaBase' => rtrim($this->siteUrl('/'), '/'),
             'categoryNames' => array_column($blogService->categories(false), 'name', 'slug'),
         ]);
     }
