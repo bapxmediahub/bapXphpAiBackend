@@ -525,6 +525,38 @@ $tests['real agent contract checker validates private manifests instead of dupli
     assertTrue(!str_contains($doc,'You are Sri Panchami'),'Developer doc does not duplicate runtime constitution text');
 };
 
+$tests['Markdown strips active attributes dangerous URLs and foreign namespaces'] = static function (): void {
+    $renderer=new \App\Services\MarkdownRenderer();
+    $cases=[
+        '<img src="/assets/images/hero-temple-bg.webp" onerror="window.testMarker=1">',
+        '<div onclick="window.testMarker=1">Read this</div>',
+        '<a href="javascript:window.testMarker=1">Click</a>',
+        '<a href="jav&#x61;script:window.testMarker=1">Click</a>',
+        "<a href=\"java\t script:window.testMarker=1\">Click</a>",
+        '[Click](javascript:window.testMarker=1)',
+        '<svg><a xlink:href="javascript:window.testMarker=1">click</a></svg>',
+        '<math><mtext><img src=x onerror="window.testMarker=1"></mtext></math>',
+        '<iframe srcdoc="<script>window.testMarker=1</script>"></iframe>',
+        '<div style="background:url(javascript:window.testMarker=1)" id="location">safe text</div>',
+    ];
+    foreach($cases as $input){$html=$renderer->render($input);
+        assertTrue(!preg_match('/\s(?:on[a-z]+|srcdoc|style|xlink:href)\s*=/i',$html),'No executable attributes remain');
+        assertTrue(!preg_match('/(?:href|src)\s*=\s*["\'][^"\']*(?:javascript|data|vbscript):/i',$html),'No active URL protocol remains');
+        assertTrue(!preg_match('/<(?:script|iframe|svg|math|object|form)\b/i',$html),'No executable/foreign elements remain');
+    }
+};
+
+$tests['Markdown images links tables Tamil and code remain useful after sanitization'] = static function (): void {
+    $renderer=new \App\Services\MarkdownRenderer();
+    $html=$renderer->render("## Guide\n\n![படம்](/assets/images/hero-temple-bg.webp)\n\n[Shop](/shop) and [Reference](https://example.invalid/guide)\n\n| Name | Price |\n|---|---:|\n| Ayyappa | 100 |\n\n```php\n[not a link](javascript:demo)\n<b>literal</b>\n```\n\n`**literal**`");
+    assertTrue(str_contains($html,'<img ')&&str_contains($html,'alt="படம்"'),'Images are parsed before ordinary links and Tamil survives');
+    assertTrue(str_contains($html,'href="/shop"'),'Internal links remain functional');
+    assertTrue(str_contains($html,'rel="noopener noreferrer"'),'External targets have safe relationship attributes');
+    assertTrue(str_contains($html,'<table>')&&str_contains($html,'text-align:right'),'Table structure and bounded alignment remain');
+    assertTrue(str_contains($html,'[not a link](javascript:demo)')&&str_contains($html,'&lt;b&gt;literal&lt;/b&gt;'),'Code is text, never reinterpreted as Markdown/HTML');
+    assertTrue(str_contains($html,'<code>**literal**</code>'),'Inline code keeps its literal punctuation');
+};
+
 $tests['each agent session creates one private JSON file and no MySQL table'] = static function (): void {
     $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
     assertTrue(mkdir($root, 0700), 'Private test directory exists');

@@ -18,9 +18,9 @@
             "review_note": "Baseline mapped existing catalogue/order/tax sources to their durable module contracts. No commerce implementation or live transaction is changed; the review does not certify tax filing or untested payment receipt."
         },
         "content": {
-            "source_sha256": "69e2120edea55d29d5be299f639eb52d369fe62a317cdbd31c15b61cda2ed169",
-            "references_sha256": "c2b25f88769a4b84906f9135914b214660b656f4ee20b1d4c2fa4908b48efee4",
-            "review_note": "Rechecked BlogService and BlogController local Markdown/category YAML and actual draft/enhance/save responsibilities. Generated docs map now represents those sources. Renderer and SEO bugs have separate GitHub issues #262/#263, not misleading fixed claims."
+            "source_sha256": "b9ca2d3254a748a5eb528016247757f1f8d0407cde71992f9694e01ebd1ed191",
+            "references_sha256": "8d7b4f9ce4e18f58d073ab342a5cd06c6ae0cb75dc071b071cc5808bc9176d56",
+            "review_note": "Compared complete renderer with actual DOM/browser output: narrow rebuilt element/attribute/URL allowlist, literal code protection, image-before-link parsing, safe Tamil/tables, bounded input and escaped fallback. Updated content contract; hostile fixtures were local only and original stored articles unchanged."
         },
         "foundation": {
             "source_sha256": "b9658e1179b430a83090f3f99f2697d840a7598ce04615d192896e03f6165e58",
