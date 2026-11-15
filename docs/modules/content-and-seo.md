@@ -42,8 +42,10 @@ locally, never a production article, when testing rendering boundaries.
 canonical/OpenGraph/Twitter fields. `BaseController` composes those fields and
 public JSON-LD. `BlogController` has explicit canonical/image overrides; generic
 page origin and product availability come from `SeoService` and must be checked
-against actual host/configuration and product data. SEO markup is descriptive
-metadata, not proof of search ranking or measured traffic.
+against configured `APP_URL` and actual product data. The layout consumes these
+resolved fields; it must not rebuild metadata from `HTTP_HOST` or the request's
+TLS header. SEO markup is descriptive metadata, not proof of search ranking or
+measured traffic.
 
 Developer sources: `app/Services/BlogService.php`, `BlogDraftService.php`,
 `MarkdownRenderer.php`, `SeoService.php`, `app/Controllers/BlogController.php`,
@@ -68,3 +70,43 @@ The safety change does not publish or edit stored articles. Test hostile
 fixtures locally and safe actual articles after release. PHP's strip_tags
 manual warns it must not be used alone for XSS prevention; OWASP similarly
 separates HTML sanitization and URL/attribute handling from plain text escaping.
+
+## Configured-origin and product metadata contract
+
+`SeoService` reads the canonical base from the existing database/environment
+configuration (`APP_URL`), never from a request Host header. An optional explicit
+constructor URL is for isolated test/configuration injection. The base must be
+an absolute HTTP(S) URL without credentials, query or fragment. Defaults use
+that origin with the current request path and meaningful query; a valid
+controller canonical override is preserved and also becomes the default OG URL.
+Unsafe URL schemes fall back to the configured page URL. Product route segments
+are URL-encoded once, preserving existing spaced/Unicode slugs.
+
+A default local social image must exist and be a readable image: the bundled
+`og-image.jpg`, otherwise `hero-temple-bg.webp`. Missing/unsafe local overrides
+fall back; actual local/persistent images are resolved to absolute URLs. Valid
+external HTTP(S) image overrides remain supported without server-side fetching,
+so the service does **not** certify external image reachability or ownership.
+The same resolved image feeds default OpenGraph and Twitter metadata.
+
+Product JSON-LD reflects the same purchasable stock states as checkout:
+`in_stock` and legacy `active` produce Schema.org `InStock`; other/missing
+states produce `OutOfStock`. ProductService has already resolved offer windows;
+SEO does not change prices, quantities, visibility or inventory. Admin product
+preview still removes the Offer markup and remains noindex. Organization and
+sitemap origins follow the configured base, and sitemap slugs are encoded.
+Inline service-generated JSON-LD uses JSON-safe tag encoding so schema data
+cannot terminate its script element.
+
+Test untrusted Host/HTTPS values, absolute request forms, legitimate canonical
+and image overrides, missing assets, all supported stock states, encoded slugs
+and account/admin noindex behavior. Read actual public product data for browser
+parity checks, never change stock to obtain a test result. Google may choose a
+different canonical and does not guarantee rich results or rankings merely
+because markup is valid.
+
+Primary references: Google Search Central canonical URL documentation
+(https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls)
+and product snippet guidance
+(https://developers.google.com/search/docs/appearance/structured-data/product-snippet),
+plus Schema.org ItemAvailability (https://schema.org/ItemAvailability).

@@ -18,19 +18,19 @@
             "review_note": "Baseline mapped existing catalogue/order/tax sources to their durable module contracts. No commerce implementation or live transaction is changed; the review does not certify tax filing or untested payment receipt."
         },
         "content": {
-            "source_sha256": "fb04725afc03af6db4a7698abe24d7e029856e8a16651c3b7666dbd88328e187",
-            "references_sha256": "47b0e20be1fa7b699142f7612ed1d4be48cd90ca17378c55e1005c938cd16fcf",
-            "review_note": "Reviewed BlogService/BlogController publication and current customer account/cart/checkout/support controls. Updated three existing Help articles and added manage-account/get-support; preserved real assets and avoided payment or inbox-delivery guarantees. Developer blog guide documents published customer links and their module gate."
+            "source_sha256": "df9530c1fd85ed913b132aa51d3b04ad465cf1c09dc7fdfb0ae68d8b52edf489",
+            "references_sha256": "2da04627305a37990d89081ca5295dc492be9773fb5bff3f4842dc940e4b94a7",
+            "review_note": "Reviewed original SeoService and BlogController override paths plus resolved local/persistent image contracts. Canonical/OG/organization defaults now use configured APP_URL, valid explicit overrides remain, bad URL schemes/local missing images fall back safely, and product schema follows in_stock/active and resolved price. Six regressions cover host/request forms, overrides/noindex, real image paths, stock/slug encoding and inline JSON-LD safety."
         },
         "foundation": {
-            "source_sha256": "c686a4570853060ec2e6730b2d4bf8b654ee1249f9cf5714c5d3a8c4e69331a1",
-            "references_sha256": "3f9f0cd91d84bea5c4d5cb0905d1128198c7d7837c9620a4d08d4d219833b2f0",
-            "review_note": "Compared AdminController existing authentication, new bounded Help endpoints, private static-router and Apache denial, and architecture docs. Existing business storage/auth semantics are unchanged; operator Markdown is an explicit private authored-content source separate from runtime prompts and chat JSON."
+            "source_sha256": "caeeafcdf3893796349062a7bd1d6f8d40867f0b74363724ebf2211a153085af",
+            "references_sha256": "799153a6a616826d7b98803c9e568e6d4d9360142844b4d0c010541081b9295f",
+            "review_note": "Reviewed PublicController product/sitemap and BaseController canonical configuration. Sitemap now uses the same configured origin and safely encoded public slugs; actual product/payment/stock data and controllers are otherwise unchanged. Architecture docs name the canonical authority and avoid search ranking guarantees."
         },
         "interface": {
-            "source_sha256": "37769ac5ff716f3660a3ac31cc9f135e603512dc8e2c8edfd62f402804492e41",
+            "source_sha256": "9264fff8a2f4a3692cde1c9cd571aab13be065a0df4348e40e3a23d6608ef421",
             "references_sha256": "e4522b62244f342cdf59574b492d50284f8e5876b850d48f09f5e47a7499ed5e",
-            "review_note": "Cross-checked both layouts and Help template/CSS against Design.md and actual browser behavior. Search/category/native details and task anchors preserve no-JS access and private/public separation; scoped Help nav overrides fix inherited mobile hiding. Reviewed screenshots, no horizontal overflow, and no added action/model scripts."
+            "review_note": "Compared rendered public head with SeoService output and verified desktop/mobile browser metadata. Removed the layout Host-header bypass and manual organization JSON interpolation, preserving page bodies, forms, customer Help links and private noindex. Five browser cases verify actual public metadata, product prices/current stock and image responses without business mutations."
         },
         "mail": {
             "source_sha256": "caed5f4ccf26b2e3315bc122e0568f79a4a25a451cf1bfda017c53c5ac3866d4",
@@ -39,13 +39,13 @@
         },
         "media": {
             "source_sha256": "cd8a64c85c1eecc6c51d01262423e248f88fd14e896b1e3e74c359f937531962",
-            "references_sha256": "5f7f62f1d1a1183c2b55679165d3d7900eaaa98e3d53b9c1e16fa95788da5145",
-            "review_note": "Media deletion sources are unchanged. Rechecked the existing deletion-verification guide and architecture boundaries; updated only shared developer admin guidance to distinguish private operator Help from business-agent prompts. No new delete permissions, record mutation or unsupported atomic-reference guarantee."
+            "references_sha256": "29f3076cf02c8366be47904a0292e3d262b5813f98e371f93deadcf635b10780",
+            "review_note": "Media deletion and storage behavior are unchanged. Shared architecture text now accurately states configured-origin metadata; SeoService only checks approved local/persistent image paths and does not fetch external URLs or mutate media. Rechecked the existing media verification reference against unchanged media services."
         },
         "operator-help": {
-            "source_sha256": "5944c1a57a4120b7b9a75adfb8b27efbe9dd943137cedb959c1bede1d3fd25d1",
-            "references_sha256": "a0611ff02accb371a036b87b7e9044ebb9fc8290614f2c293351637e3a717a7e",
-            "review_note": "Compared all twelve curated guides and five public Help articles with the fixed source manifests, actual form labels, task routes, AuthService roles and Markdown sanitization. Added admin-only search/context UI and raw-path denial; no arbitrary repo viewer or live business mutation. Shared feature dependencies invalidate stale guide reviews independently of ownership."
+            "source_sha256": "c44d44c5606edb87bf3ba179eea5c55e911f53ad9a82e930898f669dfc5980e0",
+            "references_sha256": "657ea10a8f14b4546e3dfab3207203c801844c3892ff7bab6a8f6581c11be26f",
+            "review_note": "Compared catalogue guide stock/visibility and metadata wording with ProductService, checkout eligibility and updated SeoService. Added SeoService as an explicit catalogue source dependency; guides explain configured domain and cache/ranking limits without promising inventory quantity or search performance. Help routes/auth/text rendering remain unchanged."
         },
         "workflow": {
             "source_sha256": "aaf227d12b79b0b6b454bf2c3c1e2a80d28a6ec7e110ab3bdcbbb6c2c1a85755",

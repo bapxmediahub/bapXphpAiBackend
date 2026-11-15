@@ -22,20 +22,20 @@ $__faviconMime = str_contains($__favicon,'.svg') ? 'image/svg+xml' : 'image/png'
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Sri Panchami Spiritual">
 <link rel="apple-touch-icon" href="/assets/images/logo-square.jpeg">
-<link rel="canonical" href="https://<?= e($_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']) ?>">
+<link rel="canonical" href="<?= e($seo['canonical']) ?>">
 <meta property="og:type" content="<?= e($seo['og_type'] ?? 'website') ?>">
 <meta property="og:site_name" content="<?= e($seo['og_site_name'] ?? 'Sri Panchami Spiritual') ?>">
 <meta property="og:title" content="<?= e($seo['og_title'] ?? $pageTitle) ?>">
 <meta property="og:description" content="<?= e($seo['og_description'] ?? $metaDescription) ?>">
-<meta property="og:url" content="<?= e($seo['og_url'] ?? 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']) ?>">
-<meta property="og:image" content="<?= e($seo['og_image'] ?? 'https://' . $_SERVER['HTTP_HOST'] . '/assets/images/og-image.jpg') ?>">
+<meta property="og:url" content="<?= e($seo['og_url']) ?>">
+<meta property="og:image" content="<?= e($seo['og_image']) ?>">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="en_IN">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="<?= e($seo['twitter_title'] ?? $seo['og_title'] ?? $pageTitle) ?>">
 <meta name="twitter:description" content="<?= e($seo['twitter_description'] ?? $seo['og_description'] ?? $metaDescription) ?>">
-<meta name="twitter:image" content="<?= e($seo['twitter_image'] ?? $seo['og_image'] ?? 'https://' . $_SERVER['HTTP_HOST'] . '/assets/images/og-image.jpg') ?>">
+<meta name="twitter:image" content="<?= e($seo['twitter_image'] ?? $seo['og_image']) ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -255,10 +255,7 @@ echo $__palette_css;
 @media(max-width:900px){.blog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){.document-index,.blog-grid{grid-template-columns:1fr}.blog-page{padding:var(--space-2xl) 0}}
 </style>
 <noscript><link rel="stylesheet" href="/assets/css/band.css?v=<?= filemtime(__DIR__ . '/../../assets/css/band.css') ?>"></noscript>
-<?php $__secrets_org = (new \App\Services\SecretService())->all(); $__phone = $__secrets_org['phone'] ?? ''; $__telephone = $__phone !== '' ? '["' . e($__phone) . '"]' : '["+919789444037","+919789444038"]'; ?>
-<script type="application/ld+json">
-{"@context":"https://schema.org","@type":["Organization","OnlineStore"],"name":"<?= e($seo['og_site_name'] ?? 'Sri Panchami Spiritual') ?>","description":"Authentic spiritual products, sacred jewellery, devotional essentials, and temple guidance.","url":"https://<?= e($_SERVER['HTTP_HOST']) ?>","telephone":<?= $__telephone ?>,"email":"support@sripanchamispiritual.com"}
-</script>
+<?= $seo['organization_json_ld'] ?>
 <?php if (!empty($seo['json_ld'])): ?><?= $seo['json_ld'] ?><?php endif; ?>
 <?php
 $__secrets = (new \App\Services\SecretService())->all();
