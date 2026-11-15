@@ -77,8 +77,11 @@ test('head changes stop dispatch before any untested-head request',async()=>{
 test('dispatch sends distinct literal commands without executable PR content',async()=>{
  const bodies=[];const i=input();i.pr.title='malicious $(touch /tmp/bad)';
  const p=load().planReviews(i);
- await load().dispatch(p,{repo,number:245,sha,api:async()=>i.pr,requestApi:async(path,method,body)=>{assert.equal(method,'POST');bodies.push(body.body);return{id:bodies.length};}});
- assert.equal(bodies.length,3);assert.ok(bodies.every(b=>!b.includes('malicious')));assert.ok(bodies[1].startsWith('@sourcery-ai review\n\n'));
+ await load().dispatch(p,{repo,number:245,sha,api:async()=>i.pr,requestApi:async(path,method,body)=>{assert.ok(['POST','PATCH'].includes(method));bodies.push(body.body);return{id:bodies.length};}});
+ const commands=bodies.filter(b=>b.startsWith('@'));
+ assert.deepEqual(commands,['@codex review','@sourcery-ai review','@coderabbitai review']);
+ assert.ok(bodies.every(b=>!b.includes('malicious')));
+ assert.equal(bodies.filter(b=>b.includes('Preparing ')).length,3);
 });
 test('HTTP errors never disclose token or upstream body',async()=>{
  const api=load().createApi('TOP_SECRET',async()=>({ok:false,status:403,text:async()=> 'TOP_SECRET failed'}));
@@ -89,6 +92,30 @@ test('status report must not equate dispatch to approval',()=>{
  assert.ok(text.includes('not merge approval'));assert.ok(text.includes('missing_review_request_token'));
 });
 
+test('quota discovered on another PR suppresses blind repo-wide retries',()=>{
+ const p=load().planReviews(input({quotaComments:[{user:{login:'chatgpt-codex-connector[bot]'},created_at:'2026-11-15T11:23:56Z',body:'You have reached your Codex usage limits for code reviews.'}]}));
+ assert.ok(!p.requests.some(r=>r.name==='codex'));assert.equal(p.blocked[0].name,'codex');
+});
+test('dispatch claim is separate from Sourcery literal command and survives interruption',async()=>{
+ const i=input(),calls=[];let count=0;
+ await assert.rejects(load().dispatch(load().planReviews(i),{repo,number:245,sha,api:async()=>i.pr,
+   requestApi:async(path,method,body)=>{calls.push({path,method,body});if(++count===2)throw Error('simulated connection error');return{id:1};}
+ }),/simulated/);
+ assert.equal(calls.length,2);assert.ok(calls[0].body.body.includes(load().marker(245,sha,'codex')));
+ assert.equal(calls[1].body.body,'@codex review');
+ const p=load().planReviews(input({comments:[{user:i.actor,body:calls[0].body.body}]}));
+ assert.ok(!p.requests.some(r=>r.name==='codex'));assert.equal(p.requests.length,2);
+});
+test('workflow invokes the tested trusted CLI runner, not the incompatible dispatch wrapper',()=>{
+ const w=fs.readFileSync(path.join(__dirname,'../.github/workflows/ai-review-evidence.yml'),'utf8');
+ assert.ok(w.includes('node .github/scripts/review-automation.cjs'));
+ assert.ok(w.includes('checks: read'));assert.ok(!w.includes('await dispatch({'));
+});
+test('workflow checks out only trusted default branch and never pull_request_target code',()=>{
+ const source=fs.readFileSync(path.join(__dirname,'../.github/workflows/ai-review-evidence.yml'),'utf8');
+ assert.ok(source.includes('github.event.repository.default_branch'));assert.ok(source.includes('persist-credentials: false'));
+ assert.ok(!source.includes('pull_request_target:'));assert.ok(!source.includes('pull_request.head.sha'));assert.ok(!source.includes('workflow_run.head_sha }}'));
+});
 test('workflow never checks out PR head with privileged secrets',()=>{
  const text=fs.readFileSync(path.join(__dirname,'../.github/workflows/ai-review-evidence.yml'),'utf8');
  assert.ok(text.includes('github.event.repository.default_branch'));
@@ -103,14 +130,27 @@ test('CodeRabbit drafts are explicitly included without auto-approving PRs',()=>
  assert.match(text,/drafts:\s*true/);assert.match(text,/auto_incremental_review:\s*true/);
  assert.match(text,/request_changes_workflow:\s*false/);
 });
-test('an authorized human request remains visible during tokenless audit',()=>{
- const c={user:{id:55,login:'maintainer',type:'User'},author_association:'COLLABORATOR',body:load().marker(245,sha,'sourcery')};
- const p=load().planReviews(input({actor:null,hasRequestToken:false,comments:[c]}));
- assert.equal(p.requested.find(r=>r.name==='sourcery').state,'requested_no_current_head_receipt');
+test('branch and CI configuration have one canonical reviewer-test invocation',()=>{
+ const branch=fs.readFileSync(path.join(__dirname,'../.github/workflows/branch-pr.yml'),'utf8');
+ const ci=fs.readFileSync(path.join(__dirname,'../.github/workflows/ci.yml'),'utf8');
+ assert.equal((branch.match(/- 'bapX\/\*\*'/g)||[]).length,1);
+ assert.equal((ci.match(/node --test tests\/review-automation\.test\.cjs/g)||[]).length,1);
+ assert.ok(ci.indexOf('actions/setup-node@v4')<ci.indexOf('node --test tests/review-automation.test.cjs'));
 });
-test('metadata workflow can read checks/comments and serializes manual/CI dispatch',()=>{
- const text=fs.readFileSync(path.join(__dirname,'../.github/workflows/ai-review-evidence.yml'),'utf8');
- assert.ok(text.includes('checks: read'));assert.ok(text.includes('issues: read'));
- assert.ok(text.includes('group: ai-review-coordination'));
- assert.ok(!text.includes('cancel-in-progress: true'));
+test('tokenless audit recognizes an authorized human request, not an unrelated forged marker',()=>{
+ const c={user:{id:55,login:'maintainer',type:'User'},author_association:'COLLABORATOR',body:load().marker(245,sha,'sourcery')};
+ let p=load().planReviews(input({actor:null,hasRequestToken:false,comments:[c]}));
+ assert.equal(p.requested.find(r=>r.name==='sourcery').state,'requested_no_current_head_receipt');
+ c.author_association='NONE';p=load().planReviews(input({actor:null,hasRequestToken:false,comments:[c]}));
+ assert.equal(p.requested.length,0);
+});
+test('an interrupted dispatch claim is not presented as confirmed request delivery',()=>{
+ const i=input();i.comments=[{user:i.actor,body:load().marker(245,sha,'sourcery')+'\nPreparing sourcery review request. Delivery is not yet confirmed; this is not approval.'}];
+ const p=load().planReviews(i);assert.equal(p.requested[0].state,'request_claimed_delivery_unknown');
+ assert.ok(load().markdown(245,sha,p).includes('delivery unknown'));
+});
+test('manual and CI audit use one shared coordination lock with metadata permissions',()=>{
+ const w=fs.readFileSync(path.join(__dirname,'../.github/workflows/ai-review-evidence.yml'),'utf8');
+ assert.ok(w.includes('checks: read'));assert.ok(w.includes('issues: write'));
+ assert.ok(w.includes('group: ai-review-coordination'));assert.ok(w.includes('cancel-in-progress: false'));
 });

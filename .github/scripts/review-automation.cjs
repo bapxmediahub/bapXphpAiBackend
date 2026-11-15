@@ -80,7 +80,7 @@ function planReviews(input) {
   if (!SHA.test(pr.head.sha||'') || !Number.isSafeInteger(pr.number)) return {...empty,reason:'invalid_pr_identity'};
   if (run.head_sha!==pr.head.sha) return {...empty,reason:'stale_ci'};
   const plan={...empty,eligible:true,reason:'ready'};
-  const ownMarker = m=>comments.some(c=>
+  const ownMarker = m=>comments.find(c=>
     ((c.user?.id===actor?.id && actor?.id!=null) ||
      (c.user?.type==='User' && ['OWNER','MEMBER','COLLABORATOR'].includes(c.author_association)))
     && String(c.body||'').includes(m));
@@ -94,8 +94,10 @@ function planReviews(input) {
     if (quotaWarning(provider,[...comments,...quotaComments],now)) {
       plan.blocked.push({name:provider.name,reason:'quota_or_entitlement'});continue;
     }
-    if (batchSent || ownMarker(marker(pr.number,pr.head.sha,provider.name))) {
-      plan.requested.push({name:provider.name,state:'requested_no_current_head_receipt'});continue;
+    const priorRequest=batchSent || ownMarker(marker(pr.number,pr.head.sha,provider.name));
+    if (priorRequest) {
+      const uncertain=/Preparing .* review request|Delivery is not yet confirmed/i.test(String(priorRequest.body||''));
+      plan.requested.push({name:provider.name,state:uncertain?'request_claimed_delivery_unknown':'requested_no_current_head_receipt'});continue;
     }
     if (!hasRequestToken) {
       plan.blocked.push({name:provider.name,reason:'missing_review_request_token'});continue;
@@ -143,10 +145,20 @@ async function dispatch(plan,{api,requestApi,repo,number,sha}) {
     if (current.state!=='open' || current.head?.sha!==sha || current.head.repo?.full_name!==repo) {
       return {sent,stopped:'head_changed_before_request'};
     }
-    const comment=await requestApi(`/repos/${repo}/issues/${number}/comments`,'POST',{
-      body:p.command+'\n\n'+p.marker,
+    // Sourcery requires its command as its own comment. Keep idempotency metadata
+    // separate and claim before dispatch; an interrupted claim must be inspected.
+    const claim=await requestApi(`/repos/${repo}/issues/${number}/comments`,'POST',{
+      body:p.marker+'\n\nPreparing '+p.name+' review request for '+sha+'. Delivery is not yet confirmed; this is not approval.',
     });
+    const checked=await api(`/repos/${repo}/pulls/${number}`);
+    if (checked.state!=='open' || checked.head?.sha!==sha || checked.head.repo?.full_name!==repo) {
+      return {sent,stopped:'head_changed_before_request'};
+    }
+    const comment=await requestApi(`/repos/${repo}/issues/${number}/comments`,'POST',{body:p.command});
     sent.push({name:p.name,comment_id:comment.id,state:'requested_not_reviewed'});
+    await requestApi(`/repos/${repo}/issues/comments/${claim.id}`,'PATCH',{
+      body:p.marker+'\n\nRequested '+p.name+' review for '+sha+'; command comment ID '+comment.id+'. Completion is not verified. This is not approval.',
+    });
   }
   return {sent,stopped:null};
 }
@@ -155,7 +167,7 @@ function markdown(number,sha,plan,sent=[]) {
     const r=plan.reviewed.find(r=>r.name===p.name);
     const b=plan.blocked.find(r=>r.name===p.name);
     const q=sent.find(r=>r.name===p.name)||plan.requested.find(r=>r.name===p.name);
-    const state=r ? `Current-head receipt: ${r.state}` : b ? `Blocked: ${b.reason}` : q ? (q.state==='provider_review_in_progress'?'Provider review in progress':'Requested; completion not verified') : plan.reason;
+    const state=r ? `Current-head receipt: ${r.state}` : b ? `Blocked: ${b.reason}` : q ? (q.state==='provider_review_in_progress'?'Provider review in progress':q.state==='request_claimed_delivery_unknown'?'Claim recorded; delivery unknown—inspect before retry':'Requested; completion not verified') : plan.reason;
     return `| ${p.name} | ${state} |`;
   });
   return ['<!-- sps-ai-review-evidence:v1 -->','## AI reviewer evidence (not merge approval)',

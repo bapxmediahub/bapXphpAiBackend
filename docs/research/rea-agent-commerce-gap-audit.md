@@ -11,6 +11,10 @@ Audit: **15 November 2026**. This is a source-backed gap inventory, not a claim
 that all 28 features have been implemented. P0 is correctness/release safety;
 P1 is operational value; P2 is optional product expansion requiring a real need.
 
+This is a supplemental four-source inventory to PR #253, which independently
+records 27 findings across a broader reference set. The counts use different
+scope/grouping; they must not be added together as unique product gaps.
+
 ## Three project states must not be confused
 
 - Main source: `08a988729c90c63d2bc9676829a82baf1850fbc4`.

@@ -54,9 +54,11 @@ The dependency-free `.github/scripts/review-automation.cjs`:
 3. Requests missing providers only with an explicitly configured real-user
    `REVIEW_REQUEST_TOKEN`. The token is restricted to this repository and its
    purpose; it is not read from project files or logged.
-4. Posts one provider command per current SHA with a trusted per-provider marker:
+4. Claims each provider/current SHA with a separate trusted marker comment, then
+   posts the provider command as its own literal comment:
    `@codex review`, `@sourcery-ai review`, or `@coderabbitai review`.
-   Current-head markers prevent repeat dispatch after an interrupted batch.
+   Current-head markers prevent repeat dispatch after an interrupted batch. A claim
+   without a delivery update is labeled delivery unknown, not requested/reviewed.
 5. Rechecks PR state/head immediately before each command. Forks, stale CI,
    unknown workflow results, forged markers and bot actors cannot trigger it.
 6. Uses the normal Actions token only for a clearly labeled status note, never

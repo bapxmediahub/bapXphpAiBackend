@@ -19,14 +19,14 @@ on:
         options: [audit, request]
 
 permissions:
+  checks: read
+  issues: write
   contents: read
   actions: read
-  checks: read
-  issues: read
-  pull-requests: write
+  pull-requests: read
 
 concurrency:
-  # A manual audit and CI completion must not race a request for the same SHA.
+  # Manual audit and workflow_run must not race a request for the same PR/SHA.
   group: ai-review-coordination
   cancel-in-progress: false
 

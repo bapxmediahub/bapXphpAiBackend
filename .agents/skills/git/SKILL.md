@@ -55,8 +55,15 @@ Update when the branch or review conventions change.
 
 ## Reviewer evidence
 
-After CI, distinguish a review request from an exact-head completed reviewer
-receipt. See `docs/engineering/ai-review-workflow.md`. The metadata coordinator
-requires a trusted default-branch script and a dedicated optional real-user
-credential for commands; Sourcery ignores bot authors. No quota failure or
-missing app/token is a passed review. Do not merge because an audit job is green.
+After current-head CI, inspect the vendor's actual current-commit receipt.
+A green validate job or posted `@codex review`/`@sourcery-ai review`/
+`@coderabbitai review` comment is not a completed review or merge approval.
+Use the trusted default-branch coordinator described in
+`docs/engineering/ai-review-workflow.md`; it never executes PR-head code
+with review credentials. Preserve draft state and human release gates.
+Respect usage limits and missing-app/user-token prerequisites; do not
+reuse unrelated secrets or falsely report a blocked review as passed.
+
+For new source-based comparisons, use `.agents/skills/rea-source-audit/SKILL.md`.
+A review dispatch claim with unknown delivery must not be described as a completed
+request. Inspect it before manual retry; preserve other agents' dirty worktrees.
