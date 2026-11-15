@@ -303,6 +303,8 @@ gtag('js', new Date());
 <?php if ($__adsId !== ''): ?>gtag('config', '<?= e($__adsId) ?>');<?php endif; ?>
 </script>
 <?php endif; ?>
+<link rel="stylesheet" href="/assets/css/site-motion.css?v=<?= filemtime(__DIR__ . '/../../assets/css/site-motion.css') ?>">
+<script src="/assets/site-motion.js?v=<?= filemtime(__DIR__ . '/../../assets/site-motion.js') ?>" defer></script>
 </head>
 <body>
 <?php $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/'; ?>
@@ -475,14 +477,7 @@ document.addEventListener('click',function(e){
     var n=document.getElementById('primary-nav'),t=document.querySelector('.menu-toggle');
     if(!n.contains(e.target)&&!t.contains(e.target)){n.classList.remove('open');t.setAttribute('aria-expanded','false');}
 });
-var h=document.getElementById('site-header');
-var s=document.createElement('div');s.style.cssText='height:1px;position:absolute;top:0';
-document.body.prepend(s);
-new IntersectionObserver(function(e){h.classList.toggle('scrolled',!e[0].isIntersecting);},{threshold:0}).observe(s);
-var motionEnabled=!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-if(motionEnabled){document.documentElement.classList.add('motion-ready');}
-var io=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('revealed');io.unobserve(e.target);}});},{threshold:0.1,rootMargin:'0px 0px -50px 0px'});
-document.querySelectorAll('.reveal,.panel,.product-card,.astrologer-card').forEach(function(el){io.observe(el);});
+// Shared progressive motion is installed by assets/site-motion.js.
 document.addEventListener('error',function(event){
     var image=event.target;
     if(!(image instanceof HTMLImageElement)||!image.dataset.productImageFallback||image.dataset.fallbackApplied==='true')return;

@@ -89,3 +89,11 @@ cannot be deleted. Keep export/deletion auditing enforced server-side. Ticket
 forms must submit the observed version, allowlisted action and CSRF; display
 priority/work state and preserve keyboard-accessible Manage controls. Do not call
 a saved reply sent/delivered unless mail transport evidence exists.
+
+## Developer/runtime instruction separation
+
+This `.agents/` skill is for repository coding tools only. Live business
+agent prompt text lives under `.bapX/`, selected by `AgentInstructionService`
+with a fixed role allowlist. Update `docs/runtime-agents.md`, instruction
+content fingerprints and isolation tests whenever that contract changes.
+Never route a model-supplied path or developer index into live instructions.

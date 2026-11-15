@@ -234,3 +234,14 @@ Shape should stay consistent within a component family -- don't mix `sm` and `lg
 - Elevation tokens: `--shadow-sm/md/lg/xl` plus `--shadow-focus` for the single focus-ring definition.
 - Motion: `--transition-spring` (a restrained expressive-motion curve, `cubic-bezier(0.34, 1.4, 0.64, 1)`) is used for hover lifts on buttons and cards; `--transition-base` still governs color/shadow fades.
 - This file can be linted against the open spec with `npx @google/design.md lint Design.md` if you want machine validation of token references and section order.
+
+## Shared motion and scroll
+
+Motion is progressive and causal: brief card entrances, feedback from real
+controls and visible new messages. Public and operational surfaces share
+`assets/site-motion.js` and `site-motion.css`, with shorter operational timing.
+Never animate fabricated KPI values, hide text pending JavaScript, hijack native
+scrolling or move controls away from keyboard focus. Respect reduced motion
+and data-saving settings, stop hidden/offscreen slide rotation, and preserve
+readable still frames. All primary controls remain functional at 375px.
+See `docs/site-motion.md` for source attribution and browser acceptance.

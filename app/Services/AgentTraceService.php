@@ -128,7 +128,7 @@ final class AgentTraceService
         self::$beganNs=hrtime(true);
         self::$active = ['version'=>self::VERSION, 'trace_id'=>$traceId,
             'ordering'=>'observed_execution', 'started_at'=>self::now(), 'spans'=>[],
-            'instruction_sha256'=>hash_file('sha256',app_path('app/Services/AgentInstructionService.php')),
+            'instruction_sha256'=>null, 'instruction_manifest'=>null,
             'budget'=>[
                 'max_model_calls'=>min(12,max(1,(int)($limits['max_model_calls']??6))),
                 'max_duration_ms'=>min(120000,max(100,(int)($limits['max_duration_ms']??30000))),
@@ -138,6 +138,19 @@ final class AgentTraceService
             'operational_audit'=>['recorded'=>0,'not_persisted'=>0],
         ];
         self::$checkpoint = $checkpoint === null ? null : \Closure::fromCallable($checkpoint);
+    }
+
+    /** Record the exact role bundle actually loaded for a model prompt, not a PHP-file surrogate. */
+    public static function observeInstructionManifest(array $manifest): void
+    {
+        if (self::$active === null) return;
+        if (!in_array($manifest['surface'] ?? '', ['support','admin'], true)
+            || !preg_match('/^[a-f0-9]{64}$/D',(string)($manifest['sha256'] ?? ''))) {
+            throw new \InvalidArgumentException('Invalid runtime instruction fingerprint');
+        }
+        self::$active['instruction_sha256'] = $manifest['sha256'];
+        self::$active['instruction_manifest'] = $manifest;
+        self::persist();
     }
 
     public static function reset(): void { self::$active=null; self::$clocks=[]; self::$checkpoint=null; self::$beganNs=0; }

@@ -20,6 +20,7 @@ final class KnowledgeGraphService {
         $this->indexMissingReferencedImages();
         $this->indexSkillFiles();
         $this->indexAgentsFiles();
+        $this->indexRuntimeInstructionFiles();
         $this->indexCodeConcepts();
 
         return ['concepts' => $this->concepts, 'edges' => $this->edges];
@@ -54,6 +55,8 @@ final class KnowledgeGraphService {
                 'runtime_data' => $appUrl . '/remotedb',
                 'schema' => 'storage/schema/collections.php',
                 'blogs' => 'content/blog/posts/*.md',
+                'developer_instructions' => 'AGENTS.md and .agents/skills/*/SKILL.md',
+                'runtime_instructions' => '.bapX/ via AgentInstructionService role allowlists',
                 'images' => 'assets/images/**/*',
                 'code_map' => 'map.mmd',
                 'documentation_map' => 'docs/map.mmd',
@@ -73,6 +76,7 @@ final class KnowledgeGraphService {
                 ['question' => 'Where is a blog article and what frontmatter does it declare?', 'use' => 'concepts filtered by type=blog, then read its resource'],
                 ['question' => 'Where is an image and which source files reference it?', 'use' => 'concepts filtered by type=image; query by filename or resource'],
                 ['question' => 'What repository instructions or skill apply?', 'use' => 'AGENTS.md, then the matching .agents/skills/<name>/SKILL.md'],
+                ['question' => 'Which live business-agent instruction file applies?', 'use' => 'runtime_instruction references under .bapX; PHP role checks determine what can actually load'],
             ],
             'query_examples' => [
                 'sed -n \'1,/^concepts:/p\' index.yaml',
@@ -96,6 +100,7 @@ final class KnowledgeGraphService {
             '  classDef blog fill:#fef3c7,stroke:#b45309,color:#78350f',
             '  classDef skill fill:#ede9fe,stroke:#6d28d9,color:#3b0764',
             '  classDef agentfile fill:#fce7f3,stroke:#be185d,color:#831843',
+            '  classDef runtime_instruction fill:#fff7ed,stroke:#9a3412,color:#7c2d12',
             '  classDef controller fill:#d1fae5,stroke:#059669,color:#064e3b',
             '  classDef service fill:#a7f3d0,stroke:#047857,color:#064e3b',
             '  classDef schema fill:#dbeafe,stroke:#2563eb,color:#1e3a5f',
@@ -259,6 +264,26 @@ final class KnowledgeGraphService {
                 'used_in' => [$concept['filePath']],
                 'tags' => ['image', 'missing', 'referenced'],
                 'body' => '',
+            ]);
+        }
+    }
+
+    /** Developer discovery metadata only; never a runtime prompt loader or body mirror. */
+    private function indexRuntimeInstructionFiles(): void {
+        $files = [
+            '.bapX/supportagent.md'=>'Support Agent constitution',
+            '.bapX/enterpriseagent.md'=>'Enterprise Agent constitution',
+            '.bapX/bapXcl/skill.md'=>'Shared runtime business skill contract',
+            '.bapX/bapXcl/support/catalog.md'=>'Support catalogue skill',
+            '.bapX/bapXcl/support/policy-and-tickets.md'=>'Support policy and ticket skill',
+            '.bapX/bapXcl/enterprise/reporting.md'=>'Enterprise reporting skill',
+        ];
+        foreach ($files as $relative=>$title) {
+            if (!is_file($this->root.'/'.$relative) || is_link($this->root.'/'.$relative)) continue;
+            $this->addConcept('runtime_instruction:'.$relative, [
+                'type'=>'runtime_instruction','title'=>$title,
+                'description'=>'Private live-agent instruction source; AgentInstructionService enforces the role allowlist.',
+                'filePath'=>$relative,'tags'=>['runtime','private','instructions'],'body'=>'',
             ]);
         }
     }

@@ -39,3 +39,10 @@ reset resolution. The PHP controller validates session ownership so
 browser-supplied conversation IDs cannot access another customer.
 Test the actual browser post/feedback interaction at desktop and 375px,
 including no JavaScript exceptions and saved JSON status on the local fixture.
+
+## Shared scroll/motion
+
+For animations read `.agents/skills/site-motion/SKILL.md` and `docs/site-motion.md`.
+Keep native scroll and actual commerce/form state; no zero-opacity dependency.
+Both layouts use the same progressive asset and respect reduced-motion/no-JS.
+Stageshow's authored illustration kit is not a runtime application framework.

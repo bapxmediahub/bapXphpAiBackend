@@ -63,3 +63,11 @@ are unknown, not proved absent. Runtime evidence must state the actual
 scenario and privacy scope. Do not install reference products or copy paid
 enterprise modules into this native-PHP app merely to close a feature list.
 See `docs/research/2026-11-15-rea-agent-commerce-gaps.md`.
+
+## Developer/runtime instruction separation
+
+This `.agents/` skill is for repository coding tools only. Live business
+agent prompt text lives under `.bapX/`, selected by `AgentInstructionService`
+with a fixed role allowlist. Update `docs/runtime-agents.md`, instruction
+content fingerprints and isolation tests whenever that contract changes.
+Never route a model-supplied path or developer index into live instructions.

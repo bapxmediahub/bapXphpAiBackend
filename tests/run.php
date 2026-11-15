@@ -282,6 +282,67 @@ $tests['Tamil named festive retrieval matches English collection without guessin
     assertSame(null,\App\Services\AgentContextService::requestedCollection('பண்டிகை பொருட்கள்',$collections),'Generic Tamil festival query requires clarification');
 };
 
+$tests['developer knowledge index distinguishes runtime instructions without copying prompt bodies'] = static function (): void {
+    $graph=(new \App\Services\KnowledgeGraphService())->build();
+    $runtime=array_values(array_filter($graph['concepts'],static fn(array $row):bool=>($row['type']??'')==='runtime_instruction'));
+    assertSame(6,count($runtime),'Every fixed runtime instruction document is separately discoverable');
+    foreach($runtime as $row){
+        assertTrue(str_starts_with($row['filePath'],'.bapX/'),'Runtime references use the business-agent tree');
+        assertSame('', $row['body']??'', 'Generated index must not duplicate private runtime prompt bodies');
+    }
+};
+
+$tests['live agent instruction manifests are role scoped to bapX and exclude developer skills'] = static function (): void {
+    $service=\App\Services\AgentInstructionService::class;
+    $support=$service::manifestForSurface('support');
+    $admin=$service::manifestForSurface('admin',['role'=>'admin']);
+    assertTrue(count($support['files'])>=3,'Support instructions include shared and role-specific runtime Markdown');
+    foreach($support['files'] as $file){
+        assertTrue(str_starts_with($file['path'],'.bapX/'),'Only runtime tree can supply a prompt');
+        assertTrue(!str_contains($file['path'],'enterprise'),'Support cannot load Enterprise-only modules');
+        assertSame(64,strlen($file['sha256']),'File content hash retained');
+    }
+    assertSame(64,strlen($support['sha256']),'Actual runtime bundle is fingerprinted');
+    assertTrue($support['sha256']!==$admin['sha256'],'Different role instructions cannot share a fingerprint');
+    assertTrue(str_contains($service::forSurface('support'),'authenticated customer'),'Customer scope is explicit');
+    assertTrue(!str_contains($service::forSurface('support'),'Enterprise-only reporting'),'Enterprise-only instruction content never reaches Support');
+    assertTrue(str_contains($service::forSurface('admin',['role'=>'admin']),'Enterprise-only reporting'),'Authorized admins receive business-reporting skills');
+};
+
+$tests['runtime loader denies unauthorized roles and path-shaped surfaces before file access'] = static function (): void {
+    $service=\App\Services\AgentInstructionService::class;
+    foreach(['../enterpriseagent.md','.agents/skills/git/SKILL.md','https://example.invalid/prompt'] as $surface){
+        $denied=false;try{$service::forSurface($surface,['role'=>'admin']);}catch(\InvalidArgumentException){$denied=true;}
+        assertTrue($denied,'A surface is a role enum, not a filesystem selector');
+    }
+    $denied=false;try{$service::forSurface('admin',['role'=>'customer']);}catch(\RuntimeException){$denied=true;}
+    assertTrue($denied,'Model or browser text cannot grant an Enterprise instruction bundle');
+};
+
+$tests['runtime instruction reader rejects linked and oversized files'] = static function (): void {
+    $root=sys_get_temp_dir().'/sps-runtime-files-'.bin2hex(random_bytes(6));mkdir($root,0700);
+    $outside=$root.'-outside.md';file_put_contents($outside,'OUTSIDE_SECRET_SENTINEL');
+    try {
+        assertTrue(symlink($outside,$root.'/supportagent.md'),'Can create isolated symlink fixture');
+        $method=new ReflectionMethod(\App\Services\AgentInstructionService::class,'readRequiredDocument');
+        $denied=false;try{$method->invoke(null,$root,'supportagent.md');}catch(\RuntimeException){$denied=true;}
+        assertTrue($denied,'Symlinks must fail before instruction content is read');
+        unlink($root.'/supportagent.md');file_put_contents($root.'/supportagent.md',str_repeat('x',20000));
+        $denied=false;try{$method->invoke(null,$root,'supportagent.md');}catch(\RuntimeException){$denied=true;}
+        assertTrue($denied,'Oversized instruction content must fail closed');
+    } finally {@unlink($root.'/supportagent.md');@unlink($outside);@rmdir($root);}
+};
+
+$tests['trace fingerprint identifies actual loaded role-scoped runtime Markdown'] = static function (): void {
+    $service=\App\Services\AgentInstructionService::class;
+    \App\Services\AgentTraceService::begin(bin2hex(random_bytes(8)));
+    try {
+        $service::forSurface('support');$trace=\App\Services\AgentTraceService::snapshot();
+        assertSame($service::manifestForSurface('support')['sha256'],$trace['instruction_sha256'],'Trace must fingerprint loaded Markdown, not only the PHP loader');
+        assertSame('support',$trace['instruction_manifest']['surface'],'Loaded runtime role is recorded without body text');
+    } finally {\App\Services\AgentTraceService::reset();}
+};
+
 $tests['each agent session creates one private JSON file and no MySQL table'] = static function (): void {
     $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
     assertTrue(mkdir($root, 0700), 'Private test directory exists');
@@ -480,8 +541,8 @@ $tests['support feedback is explicit and resets on next user question'] = static
 $tests['agent instruction contracts are separate and versioned'] = static function (): void {
     $service = \App\Services\AgentInstructionService::class;
     assertTrue(str_contains($service::forSurface('support'), 'authenticated customer'), 'Support instructions enforce customer scope');
-    assertTrue(str_contains($service::forSurface('admin'), 'read-only'), 'Admin instructions enforce tool evidence');
-    assertTrue($service::forSurface('support') !== $service::forSurface('admin'), 'Agents use distinct instructions');
+    assertTrue(str_contains($service::forSurface('admin',['role'=>'admin']), 'read-only'), 'Admin instructions enforce tool evidence');
+    assertTrue($service::forSurface('support') !== $service::forSurface('admin',['role'=>'admin']), 'Agents use distinct instructions');
 };
 
 $tests['agent capability policies forbid support from enterprise data tools'] = static function (): void {
