@@ -91,18 +91,52 @@ final class AdminController extends BaseController {
     public function deleteCoupon(): void{$this->delete('coupons');}
     public function users(): void {
         header('Cache-Control: private, no-store');
-        $query = is_string($_GET['q'] ?? null) ? substr(trim($_GET['q']), 0, 150) : '';
-        $users = (new ResourceService('users'))->all();
-        if ($query !== '') $users = array_filter($users, static fn($u) =>
-            stripos((string)($u['name'] ?? ''), $query) !== false || stripos((string)($u['email'] ?? ''), $query) !== false);
-        usort($users, static fn($a, $b) => strcasecmp((string)($a['name'] ?? ''), (string)($b['name'] ?? ''))
-            ?: strcasecmp((string)($a['email'] ?? ''), (string)($b['email'] ?? '')));
+        $query = is_string($_GET['q'] ?? null) ? mb_substr(trim($_GET['q']), 0, 150) : '';
+        $roles = ['customer' => 'Customer', 'admin' => 'Admin', 'astrologer' => 'Legacy consultant', 'unknown' => 'Unspecified'];
+        $activityOptions = ['with_orders' => 'Has orders', 'no_orders' => 'No orders', 'repeat' => 'Two or more orders'];
+        $sortOptions = ['name' => 'Name A–Z', 'recent_order' => 'Latest order', 'order_count' => 'Most orders'];
+        $role = is_string($_GET['role'] ?? null) && isset($roles[$_GET['role']]) ? $_GET['role'] : '';
+        $activity = is_string($_GET['activity'] ?? null) && isset($activityOptions[$_GET['activity']]) ? $_GET['activity'] : '';
+        $sort = is_string($_GET['sort'] ?? null) && isset($sortOptions[$_GET['sort']]) ? $_GET['sort'] : 'name';
+        $sizeOptions = [10, 25, 50];
+        $pageSize = is_string($_GET['per_page'] ?? null) && in_array($_GET['per_page'], ['10', '25', '50'], true) ? (int)$_GET['per_page'] : 25;
+        $directory = \App\Services\UserOrderHistoryService::forUsers((new ResourceService('users'))->all(), (new OrderService())->all());
+        $stats = ['accounts' => count($directory), 'with_orders' => 0, 'repeat' => 0];
+        $users = [];
+        foreach ($directory as $user) {
+            $orderCount = count($user['orders']);
+            if ($orderCount > 0) $stats['with_orders']++;
+            if ($orderCount > 1) $stats['repeat']++;
+            $user['role'] = isset($roles[$user['role']]) ? $user['role'] : 'unknown';
+            if ($role !== '' && $user['role'] !== $role) continue;
+            if ($query !== '' && mb_stripos($user['name'], $query) === false && mb_stripos($user['email'], $query) === false) continue;
+            $matchesActivity = match ($activity) {
+                'with_orders' => $orderCount > 0,
+                'no_orders' => $orderCount === 0,
+                'repeat' => $orderCount > 1,
+                default => true,
+            };
+            if ($matchesActivity) $users[] = $user;
+        }
+        usort($users, static function (array $a, array $b) use ($sort): int {
+            $order = match ($sort) {
+                'recent_order' => (($b['orders'][0]['date'] ?? null)?->getTimestamp() ?? PHP_INT_MIN)
+                    <=> (($a['orders'][0]['date'] ?? null)?->getTimestamp() ?? PHP_INT_MIN),
+                'order_count' => count($b['orders']) <=> count($a['orders']),
+                default => 0,
+            };
+            return $order ?: strcasecmp($a['name'] ?: $a['email'], $b['name'] ?: $b['email'])
+                ?: strcasecmp($a['email'], $b['email']);
+        });
         $count = count($users);
-        $pages = max(1, (int)ceil($count / 25));
+        $pages = max(1, (int)ceil($count / $pageSize));
         $page = max(1, min($pages, is_string($_GET['page'] ?? null) ? (int)$_GET['page'] : 1));
-        $users = array_slice($users, ($page - 1) * 25, 25);
-        if ($users) $users = \App\Services\UserOrderHistoryService::forUsers($users, (new OrderService())->all());
-        $this->render('admin/users', ['pageTitle'=>'Users'] + compact('users', 'count', 'pages', 'page', 'query'));
+        $offset = ($page - 1) * $pageSize;
+        $users = array_slice($users, $offset, $pageSize);
+        $this->render('admin/users', ['pageTitle' => 'Users'] + compact(
+            'users', 'count', 'pages', 'page', 'query', 'role', 'activity', 'sort', 'pageSize',
+            'sizeOptions', 'roles', 'activityOptions', 'sortOptions', 'stats', 'offset'
+        ));
     }
     public function orders(): void{$this->list('Orders','orders');}
     public function order(string $id): void{
