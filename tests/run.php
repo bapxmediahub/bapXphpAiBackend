@@ -68,6 +68,71 @@ $tests['development fixture remote mutations include authentication without comm
     assertTrue(str_contains($cli, '--data-binary @-'), 'Remote mutation should stream the authenticated JSON body');
 };
 
+$tests['missing hosted blog photos show bundled image instead of broken thumbnail'] = static function (): void {
+    $post = ['og_image'=>'https://sripanchamispiritual.com/assets/images/blog/tulsi-significance.jpg'];
+    assertSame('/assets/images/hero-temple-bg.webp', \App\Services\BlogService::resolvedImageUrl($post),
+        'Missing local blog art must use an existing local fallback');
+    assertSame('/assets/images/blog/order-products.webp',
+        \App\Services\BlogService::resolvedImageUrl(['og_image'=>'/assets/images/blog/order-products.webp']),
+        'A real authored blog image must be preserved');
+    assertSame('/assets/images/hero-temple-bg.webp',
+        \App\Services\BlogService::resolvedImageUrl(['og_image'=>'/assets/images/blog/missing.webp']),
+        'Missing relative blog images also use the fallback');
+    assertSame('/assets/images/hero-temple-bg.webp',
+        \App\Services\BlogService::resolvedImageUrl(['og_image'=>'/assets/images/../../.env']),
+        'Unsafe image paths must not be resolved');
+    assertTrue(str_contains(fileRead('app/Controllers/BlogController.php'), '$this->siteUrl($image)'),
+        'Blog OpenGraph images use a canonical absolute URL');
+    assertTrue(str_contains(fileRead('views/public/blog-post.php'), '$schemaBase . $schemaImage'),
+        'Article structured data uses an absolute image URL');
+    foreach (['tulsi-significance-hinduism','navagraha-remedies','pooja-items-for-home','benefits-of-rudraksha'] as $slug) {
+        $post = (new \App\Services\BlogService())->find($slug);
+        assertTrue($post !== null, 'Legacy article exists');
+        $url = \App\Services\BlogService::resolvedImageUrl($post);
+        assertTrue(is_file(app_path(ltrim($url,'/'))), 'Blog card has a real image for '.$slug);
+    }
+};
+
+$tests['blog structured data uses configured canonical origin instead of request host'] = static function (): void {
+    $view=fileRead('views/public/blog-post.php');
+    assertTrue(!str_contains($view, "\$_SERVER['HTTP_HOST']"), 'Article schema must not trust request-host metadata');
+    assertTrue(str_contains(fileRead('app/Controllers/BlogController.php'), "'schemaBase' => rtrim(\$this->siteUrl('/'), '/')"), 'Controller supplies the canonical configured origin');
+    assertTrue(str_contains($view,'$schemaBase . $schemaImage'), 'Image schema remains absolute under that origin');
+};
+
+$tests['admin commerce overview renders empty and populated periods without PHP errors'] = static function (): void {
+    $render = static function(array $reports, array $products, array $statuses): string {
+        $reportRows = $reports;
+        $productRows = $products;
+        $orderStatusCounts = $statuses;
+        $from = '2026-11-01';
+        $to = '2026-11-15';
+        $money = static fn(float $value): string => 'INR ' . number_format($value, 2);
+        ob_start();
+        try {
+            require app_path('views/admin/_commerce-overview.php');
+            return (string) ob_get_clean();
+        } catch (\Throwable $e) {
+            ob_end_clean();
+            throw $e;
+        }
+    };
+    $empty = $render([], [], []);
+    assertTrue(str_contains($empty, 'No paid orders in this period.'), 'An empty period should show the empty-state label');
+    assertTrue(str_contains($empty, 'No purchased products in this period.'), 'An empty product series should render safely');
+    assertTrue(str_contains($empty, 'INR 0.00'), 'An empty period should show zero rather than an exception');
+    $populated = $render(
+        [['period'=>'2026-11-14','orders'=>1,'units'=>2,'gross'=>540.0,'refunded'=>40.0,'net'=>500.0]],
+        [['product'=>'Test item','units'=>2,'net'=>500.0]],
+        ['confirmed'=>1]
+    );
+    assertTrue(str_contains($populated, 'Test item'), 'Populated top-products chart must remain visible');
+    assertTrue(str_contains($populated, 'INR 500.00'), 'Populated totals must remain accurate');
+    assertTrue(str_contains($populated, 'paid orders'), 'Status ring remains visible for positive counts');
+    $zeroStatuses = $render([], [], ['confirmed'=>0]);
+    assertTrue(str_contains($zeroStatuses, 'No paid orders in this period.'), 'Zero-count status buckets must not divide by zero');
+};
+
 $tests['support named festive collection listing uses only collection members'] = static function (): void {
     $collections = [
         ['name'=>'Ayyappa Swamy Festive Sale', 'slug'=>'collection-ayyappa', 'product_ids'=>['a','b']],
@@ -2245,7 +2310,7 @@ $tests['blog media uses one screenshot crop for cards and article pages'] = func
         assertTrue(str_contains($service, "'{$field}'"), "Blog service should persist {$field}");
         assertTrue(str_contains($admin, 'name="' . $field . '"'), "Admin blog editor should expose {$field}");
     }
-    assertTrue(str_contains($index, "\$post['og_image']") && str_contains($article, "\$meta['og_image']"), 'Card and article should share og_image');
+    assertTrue(str_contains($index, "BlogService::resolvedImageUrl(\$post)") && str_contains($article, "BlogService::resolvedImageUrl(\$meta)"), 'Card and article should resolve the same image with a missing-file fallback');
     assertTrue(str_contains($article, "\$schemaImage ?: 'undefined'") && str_contains($article, 'e($sourceUrl)'), 'Article metadata should tolerate missing images and render the validated source URL');
     foreach (['create-account', 'order-products', 'payments-and-orders'] as $slug) {
         $post = file_get_contents(app_path("content/blog/posts/{$slug}.md"));
