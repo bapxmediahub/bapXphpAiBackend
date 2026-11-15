@@ -35,7 +35,7 @@ final class BlogController extends BaseController
         $this->seoOverrides = [
             'title' => $title,
             'description' => $post['seo_description'] ?? $post['excerpt'] ?? 'Read ' . $title,
-            'og_image' => $post['og_image'] ?? null,
+            'og_image' => BlogService::resolvedImageUrl($post),
             'keywords' => $keywords,
         ];
 

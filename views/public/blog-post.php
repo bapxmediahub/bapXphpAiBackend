@@ -3,7 +3,7 @@
     $categoryName = $categoryNames[$categorySlug] ?? '';
     $schemaBase = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'sripanchamispiritual.com');
     $schemaUrl = $schemaBase . '/blog/' . ($slug ?? '');
-    $schemaImage = $meta['og_image'] ?? $meta['image'] ?? ($seo['og_image'] ?? '');
+    $schemaImage = \App\Services\BlogService::resolvedImageUrl($meta);
     $schema = [
         '@context' => 'https://schema.org',
         '@graph' => [
@@ -62,7 +62,7 @@
         </div>
       </header>
 
-      <?php $articleImage = $meta['image'] ?? $meta['og_image'] ?? '/assets/images/hero-temple-bg.webp'; ?>
+      <?php $articleImage = \App\Services\BlogService::resolvedImageUrl($meta); ?>
       <figure class="blog-post__featured"><img src="<?= e($articleImage) ?>" alt="<?= e($meta['image_alt'] ?? '') ?>" loading="eager"></figure>
 
       <div class="blog-post__content">

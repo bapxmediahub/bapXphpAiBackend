@@ -68,6 +68,27 @@ $tests['development fixture remote mutations include authentication without comm
     assertTrue(str_contains($cli, '--data-binary @-'), 'Remote mutation should stream the authenticated JSON body');
 };
 
+$tests['missing hosted blog photos show bundled image instead of broken thumbnail'] = static function (): void {
+    $post = ['og_image'=>'https://sripanchamispiritual.com/assets/images/blog/tulsi-significance.jpg'];
+    assertSame('/assets/images/hero-temple-bg.webp', \App\Services\BlogService::resolvedImageUrl($post),
+        'Missing local blog art must use an existing local fallback');
+    assertSame('/assets/images/blog/order-products.webp',
+        \App\Services\BlogService::resolvedImageUrl(['og_image'=>'/assets/images/blog/order-products.webp']),
+        'A real authored blog image must be preserved');
+    assertSame('/assets/images/hero-temple-bg.webp',
+        \App\Services\BlogService::resolvedImageUrl(['og_image'=>'/assets/images/blog/missing.webp']),
+        'Missing relative blog images also use the fallback');
+    assertSame('/assets/images/hero-temple-bg.webp',
+        \App\Services\BlogService::resolvedImageUrl(['og_image'=>'/assets/images/../../.env']),
+        'Unsafe image paths must not be resolved');
+    foreach (['tulsi-significance-hinduism','navagraha-remedies','pooja-items-for-home','benefits-of-rudraksha'] as $slug) {
+        $post = (new \App\Services\BlogService())->find($slug);
+        assertTrue($post !== null, 'Legacy article exists');
+        $url = \App\Services\BlogService::resolvedImageUrl($post);
+        assertTrue(is_file(app_path(ltrim($url,'/'))), 'Blog card has a real image for '.$slug);
+    }
+};
+
 $tests['database service can connect to MySQL'] = function (): void {
     try {
         // Quick pre-check: verify the host is reachable before attempting PDO
@@ -2216,7 +2237,7 @@ $tests['blog media uses one screenshot crop for cards and article pages'] = func
         assertTrue(str_contains($service, "'{$field}'"), "Blog service should persist {$field}");
         assertTrue(str_contains($admin, 'name="' . $field . '"'), "Admin blog editor should expose {$field}");
     }
-    assertTrue(str_contains($index, "\$post['og_image']") && str_contains($article, "\$meta['og_image']"), 'Card and article should share og_image');
+    assertTrue(str_contains($index, "BlogService::resolvedImageUrl(\$post)") && str_contains($article, "BlogService::resolvedImageUrl(\$meta)"), 'Card and article should resolve the same image with a missing-file fallback');
     assertTrue(str_contains($article, "\$schemaImage ?: 'undefined'") && str_contains($article, 'e($sourceUrl)'), 'Article metadata should tolerate missing images and render the validated source URL');
     foreach (['create-account', 'order-products', 'payments-and-orders'] as $slug) {
         $post = file_get_contents(app_path("content/blog/posts/{$slug}.md"));
