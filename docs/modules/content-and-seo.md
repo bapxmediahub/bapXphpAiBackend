@@ -50,3 +50,21 @@ Developer sources: `app/Services/BlogService.php`, `BlogDraftService.php`,
 `AdminController.php`, `views/admin/blog.php`, `views/public/blog*.php`.
 Current defects, acceptance status and release evidence belong to GitHub issues,
 not a duplicate list in this guide.
+
+## Rendered HTML safety
+
+Markdown output is parsed with DOMDocument and rebuilt from an allowlist of
+formatting/table/link/image tags. Event handlers, script/foreign elements,
+arbitrary IDs/classes/styles and unsafe URL schemes are not retained. The only
+style retained is bounded table-cell text alignment; heading IDs and language
+classes have fixed patterns. Links accept approved web/root/anchor/mail forms;
+images accept root paths or HTTPS, never data/script URLs. Code spans/fences
+are protected as literal text before inline formatting. If DOM is unavailable,
+the renderer returns escaped text rather than potentially active HTML.
+Input is bounded to 1 MiB and sanitizer traversal to 64 levels. This is not a
+full CommonMark implementation and is not a substitute for role authorization.
+
+The safety change does not publish or edit stored articles. Test hostile
+fixtures locally and safe actual articles after release. PHP's strip_tags
+manual warns it must not be used alone for XSS prevention; OWASP similarly
+separates HTML sanitization and URL/attribute handling from plain text escaping.
