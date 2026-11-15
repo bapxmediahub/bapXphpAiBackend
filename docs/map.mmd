@@ -48,6 +48,7 @@ mindmap
     ### Documentation Sources
     DOCS_readme_md["docs/README.md"]
     DOCS_admin_guide_md["docs/admin-guide.md"]
+    DOCS_admin_help_md["docs/admin-help.md"]
     DOCS_agent_observability_md["docs/agent-observability.md"]
     DOCS_agent_tool_contracts_md["docs/agent-tool-contracts.md"]
     DOCS_agentic_monorepo_md["docs/agentic-monorepo.md"]
@@ -88,6 +89,8 @@ mindmap
 
     ### Admin Panel
     ADMIN_admin["GET /admin"]
+    ADMIN_admin_docs["GET /admin/docs"]
+    ADMIN_admin_docs_slug["GET /admin/docs/{slug}"]
     ADMIN_admin_products["GET /admin/products"]
     ADMIN_admin_categories["GET /admin/categories"]
     ADMIN_admin_collections["GET /admin/collections"]
@@ -140,6 +143,7 @@ mindmap
 
     ### Services
     SVC_addressservice["AddressService"]
+    SVC_adminhelpservice["AdminHelpService"]
     SVC_agentattachmentservice["AgentAttachmentService"]
     SVC_agentcapabilitypolicy["AgentCapabilityPolicy"]
     SVC_agentcontextservice["AgentContextService"]
@@ -230,6 +234,7 @@ mindmap
     ### Discovered Documentation Files
     DOCFILE_readme_md["README.md"]
     DOCFILE_admin_guide_md["admin-guide.md"]
+    DOCFILE_admin_help_md["admin-help.md"]
     DOCFILE_agent_observability_md["agent-observability.md"]
     DOCFILE_agent_tool_contracts_md["agent-tool-contracts.md"]
     DOCFILE_agentic_monorepo_md["agentic-monorepo.md"]
@@ -249,4 +254,4 @@ mindmap
     AGENTFILE_agents_md["AGENTS.md"]
 
     ### Coverage Gaps
-    GAP_services_without_schema_collection_mapping_carts["Services without schema collection mapping: CartService, SiteTelemetryService, SecretService, BlogService, AuthService, TaxService, StoreStatsService, SiteInsightsService, SchemaService, UserOrderHistoryService, ShippingService, GstRegisterService, EnvService, PaymentService, AgentConversationService, AgentEvaluationService, AgentAttachmentService, AgentDraftService, AgentInstructionService, AgentToolRegistry, EnterpriseToolRegistry, AgentTraceService, AgentTranscriptSanitizer, AgentCapabilityPolicy, AiReplyCleaner, AiClient, SupportBotService, SupportToolRegistry, MarkdownRenderer, BlogDraftService"]
+    GAP_services_without_schema_collection_mapping_carts["Services without schema collection mapping: CartService, SiteTelemetryService, SecretService, BlogService, AuthService, TaxService, StoreStatsService, SiteInsightsService, AdminHelpService, MarkdownRenderer, SchemaService, UserOrderHistoryService, ShippingService, GstRegisterService, EnvService, PaymentService, AgentConversationService, AgentEvaluationService, AgentAttachmentService, AgentDraftService, AgentInstructionService, AgentToolRegistry, EnterpriseToolRegistry, AgentTraceService, AgentTranscriptSanitizer, AgentCapabilityPolicy, AiReplyCleaner, AiClient, SupportBotService, SupportToolRegistry, BlogDraftService"]

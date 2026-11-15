@@ -3,10 +3,10 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 131,
+        "routes": 133,
         "controllers": 12,
-        "services": 62,
-        "views": 51,
+        "services": 63,
+        "views": 52,
         "collections": 22
     },
     "routes": [
@@ -587,6 +587,29 @@
             "services": [
                 "ResourceService",
                 "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/docs",
+            "name": "admin.docs",
+            "controller": "AdminController@helpIndex",
+            "view": "admin/help",
+            "services": [
+                "AdminHelpService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/docs/{slug}",
+            "name": "admin.docs.guide",
+            "controller": "AdminController@helpGuide",
+            "view": "admin/help",
+            "services": [
+                "AdminHelpService",
+                "MarkdownRenderer",
                 "AuthService"
             ]
         },
@@ -1513,6 +1536,7 @@
     ],
     "services": [
         "AddressService",
+        "AdminHelpService",
         "AgentAttachmentService",
         "AgentCapabilityPolicy",
         "AgentContextService",
@@ -1592,6 +1616,7 @@
         "admin/consultation-analytics",
         "admin/dashboard",
         "admin/detail",
+        "admin/help",
         "admin/integrations",
         "admin/list",
         "admin/mailbox",

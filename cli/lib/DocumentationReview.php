@@ -43,8 +43,12 @@ final class DocumentationReview
             if(!preg_match('/^[a-z][a-z0-9-]{1,40}$/D',$area))throw new RuntimeException('Invalid documentation area');
             $refs=$rule['references']??[];
             if($refs===[])throw new RuntimeException('No documentation references for '.$area);
-            $result[$area]=['source_sha256'=>$this->digest($assigned[$area]),'references_sha256'=>$this->digest($refs),
-                'source_count'=>count($assigned[$area]),'sources'=>$assigned[$area],'references'=>$refs];
+            // A guide depends on shared feature sources even if another area owns them.
+            // Explicit dependencies preserve first-match ownership while invalidating every affected review.
+            $sources=array_values(array_unique(array_merge($assigned[$area],$rule['dependencies']??[])));
+            sort($sources,SORT_STRING);
+            $result[$area]=['source_sha256'=>$this->digest($sources),'references_sha256'=>$this->digest($refs),
+                'source_count'=>count($sources),'sources'=>$sources,'references'=>$refs];
         }
         return $result;
     }

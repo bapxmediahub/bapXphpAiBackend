@@ -22,6 +22,7 @@ final class KnowledgeGraphService {
         $this->indexAgentsFiles();
         $this->indexRuntimeInstructionFiles();
         $this->indexCodeConcepts();
+        $this->indexOperatorGuides();
 
         return ['concepts' => $this->concepts, 'edges' => $this->edges];
     }
@@ -55,6 +56,7 @@ final class KnowledgeGraphService {
                 'runtime_data' => $appUrl . '/remotedb',
                 'schema' => 'storage/schema/collections.php',
                 'blogs' => 'content/blog/posts/*.md',
+                'operator_help' => 'content/help/admin/*.md through AdminHelpService allowlists',
                 'developer_instructions' => 'AGENTS.md and .agents/skills/*/SKILL.md',
                 'runtime_instructions' => '.bapX/ via AgentInstructionService role allowlists',
                 'images' => 'assets/images/**/*',
@@ -76,6 +78,7 @@ final class KnowledgeGraphService {
                 ['question' => 'Where is a blog article and what frontmatter does it declare?', 'use' => 'concepts filtered by type=blog, then read its resource'],
                 ['question' => 'Where is an image and which source files reference it?', 'use' => 'concepts filtered by type=image; query by filename or resource'],
                 ['question' => 'What repository instructions or skill apply?', 'use' => 'AGENTS.md, then the matching .agents/skills/<name>/SKILL.md'],
+                ['question' => 'Which operator guide explains this admin task?', 'use' => 'operator_guide metadata then original allowlisted content/help/admin source; not runtime-agent instructions'],
                 ['question' => 'Which live business-agent instruction file applies?', 'use' => 'runtime_instruction references under .bapX; PHP role checks determine what can actually load'],
             ],
             'query_examples' => [
@@ -101,6 +104,7 @@ final class KnowledgeGraphService {
             '  classDef skill fill:#ede9fe,stroke:#6d28d9,color:#3b0764',
             '  classDef agentfile fill:#fce7f3,stroke:#be185d,color:#831843',
             '  classDef runtime_instruction fill:#fff7ed,stroke:#9a3412,color:#7c2d12',
+            '  classDef operator_guide fill:#f0fdf4,stroke:#166534,color:#14532d',
             '  classDef controller fill:#d1fae5,stroke:#059669,color:#064e3b',
             '  classDef service fill:#a7f3d0,stroke:#047857,color:#064e3b',
             '  classDef schema fill:#dbeafe,stroke:#2563eb,color:#1e3a5f',
@@ -285,6 +289,24 @@ final class KnowledgeGraphService {
                 'description'=>'Private live-agent instruction source; AgentInstructionService enforces the role allowlist.',
                 'filePath'=>$relative,'tags'=>['runtime','private','instructions'],'body'=>'',
             ]);
+        }
+    }
+
+    /** Developer discovery stores references only; app access still requires admin authorization. */
+    private function indexOperatorGuides(): void {
+        foreach (AdminHelpService::references() as $guide) {
+            $file=$this->root.'/'.$guide['file'];
+            if(!is_file($file)||is_link($file))continue;
+            $id='operator_guide:'.$guide['slug'];
+            $this->addConcept($id,['type'=>'operator_guide','title'=>$guide['title'],
+                'description'=>$guide['summary'],'filePath'=>$guide['file'],
+                'tags'=>['operator-help','private',$guide['category']],'body'=>'']);
+            $this->addEdge($id,'service:AdminHelpService','rendered_by');
+            foreach($guide['sources'] as $source){
+                $name=pathinfo($source,PATHINFO_FILENAME);
+                if(str_starts_with($source,'app/Services/'))$this->addEdge($id,'service:'.$name,'explains');
+                elseif(str_starts_with($source,'app/Controllers/'))$this->addEdge($id,'controller:'.$name,'explains');
+            }
         }
     }
 

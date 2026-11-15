@@ -98,3 +98,8 @@ before opening implementation issues.
 - [Evidence-led development workflow](development-workflow.md): GitHub issues only, independent fixes, documentation cross-review and live release acceptance.
 - [Content and SEO services](modules/content-and-seo.md): actual editor/scaffold/model/rendering responsibilities.
 - `source-contracts.json`: reviewed source/reference fingerprints, not a backlog or proof of semantic correctness.
+
+## In-application help
+
+- [Operator Help and customer navigation](admin-help.md): private task guides, public how-to links and cross-source review dependencies.
+- Operator guide metadata is indexed as `operator_guide`; source content remains in `content/help/admin/` behind authenticated application rendering.

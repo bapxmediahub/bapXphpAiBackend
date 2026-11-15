@@ -9,6 +9,25 @@ final class AdminController extends BaseController {
         $this->seoKey = 'admin';
     }
 
+    /** Operator help is a fixed guide collection, never a browser for repo files. */
+    public function helpIndex(): void {
+        $actor=(new AuthService())->user();
+        $query=is_string($_GET['q']??null)?mb_substr(trim($_GET['q']),0,80):'';
+        $category=is_string($_GET['category']??null)?mb_substr($_GET['category'],0,40):'';
+        $help=new \App\Services\AdminHelpService();
+        $this->seoOverrides=['title'=>'Help & Docs','description'=>'Task-based guides for the owner workspace.','robots'=>'noindex, nofollow'];
+        $this->render('admin/help',['guide'=>null,'guides'=>$help->catalog($actor,$query,$category),
+            'helpCategories'=>$help::CATEGORIES,'query'=>$query,'category'=>$category]);
+    }
+
+    public function helpGuide(string $slug): void {
+        $help=new \App\Services\AdminHelpService();
+        $guide=$help->guide($slug,(new AuthService())->user());
+        if($guide===null){$this->renderNotFound();return;}
+        $this->seoOverrides=['title'=>'Help & Docs','description'=>$guide['summary'],'robots'=>'noindex, nofollow'];
+        $this->render('admin/help',['guide'=>$guide,'guides'=>[],'helpCategories'=>$help::CATEGORIES,'query'=>'','category'=>$guide['category']]);
+    }
+
     public function dashboard(): void{
         $catalogProducts = (new ResourceService('products'))->all();
         $productCount = count($catalogProducts);

@@ -46,3 +46,11 @@ For animations read `.agents/skills/site-motion/SKILL.md` and `docs/site-motion.
 Keep native scroll and actual commerce/form state; no zero-opacity dependency.
 Both layouts use the same progressive asset and respect reduced-motion/no-JS.
 Stageshow's authored illustration kit is not a runtime application framework.
+
+## Consistent task help
+
+Public contextual help must link only to a published customer Help article,
+respect the Blog module switch and remain a normal link without JavaScript.
+Operator Help is authenticated and lives in the admin shell. Keep the Support
+guide link outside its replaceable conversation log, and do not insert private
+operator instructions into public layouts or business-agent prompts.

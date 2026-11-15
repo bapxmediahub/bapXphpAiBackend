@@ -26,3 +26,14 @@ original URL is retained for later media replacement. The missing-image fallback
 Tests: verify image decode at desktop and 375px; category/keyword filtering,
 publication hiding and source/link handling; do not infer an image exists from
 a frontmatter URL without an actual file check.
+
+## Customer help articles
+
+The Help category includes account creation/access, product ordering, payment
+confirmation, account/profile/address management and contacting Support.
+`AdminHelpService::publicReferences` binds these published articles to their
+original source contracts for documentation review. Public page-context links
+use only these published customer-facing articles, not operator guides or
+repository documentation. They are suppressed when the Blog module is disabled.
+The operator Help & Docs hub is a separate authenticated route and content
+allowlist; it does not depend on a live model or customer database mutation.

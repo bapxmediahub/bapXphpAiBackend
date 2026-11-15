@@ -72,6 +72,13 @@ area. A non-user-visible change may leave prose unchanged, but needs an honest
 rationale. The command does not certify truth; it prevents an unnoticed source
 change from inheriting a stale review. PR reviewers must still compare actual
 behavior and prose. Do not mechanically acknowledge hashes to make CI green.
+`config/documentation.php` can also declare explicit `dependencies` for a
+review area. Shared feature files still have one first-match owner, but their
+hashes also invalidate every dependent operator-guide review. The fixed help
+manifest supplies the original guide paths and source dependencies; adding a
+file to an index is not approval of its instructions. Dependency files must
+exist and pass the same path/symlink checks as other reviewed sources.
+
 `bapXphp update` regenerates inventories but deliberately **does not** approve
 semantic documentation review. New files are covered by area patterns or the
 foundation area; missing references and forbidden issue-ledger paths fail CI.
