@@ -68,12 +68,12 @@ function quotaWarning(provider, comments, now) {
     && /(?:usage limits? for code reviews|review quota|rate limit exceeded|review rate limit|insufficient credits|quota.*exhaust|paid plan required|seat.*required)/i.test(String(c.body||'')));
 }
 function planReviews(input) {
-  const {repo,pr,run,actor,hasRequestToken,comments=[],reviews=[],checks=[],quotaComments=[],now=new Date().toISOString()}=input;
+  const {repo,pr,run,actor,hasRequestToken,auditOnly=false,comments=[],reviews=[],checks=[],quotaComments=[],now=new Date().toISOString()}=input;
   const empty={eligible:false,requests:[],reviewed:[],blocked:[],requested:[]};
   if (repo!==REPOSITORY || !pr || !run
     || pr.base?.repo?.full_name!==repo || pr.head?.repo?.full_name!==repo
     || run.head_repository?.full_name!==repo) return {...empty,reason:'foreign_repository'};
-  if (pr.state!=='open') return {...empty,reason:'pr_not_open'};
+  if (pr.state!=='open' && !(auditOnly && pr.state==='closed')) return {...empty,reason:'pr_not_open'};
   if (run.name!=='Validate application' || run.event!=='pull_request'
     || (run.path && run.path!=='.github/workflows/ci.yml')) return {...empty,reason:'untrusted_ci'};
   if (run.conclusion!=='success' || (run.status && run.status!=='completed')) return {...empty,reason:'ci_not_successful'};
@@ -102,6 +102,7 @@ function planReviews(input) {
     if (!hasRequestToken) {
       plan.blocked.push({name:provider.name,reason:'missing_review_request_token'});continue;
     }
+    if (auditOnly) {plan.blocked.push({name:provider.name,reason:'read_only_audit_no_request'});continue;}
     if (actor?.type!=='User' || !Number.isSafeInteger(actor.id) || /\[bot\]$/i.test(actor.login||'')) {
       plan.blocked.push({name:provider.name,reason:'review_actor_not_human'});continue;
     }
@@ -123,7 +124,7 @@ function createApi(token, transport=fetch) {
         'X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'},
       signal:AbortSignal.timeout(20000),body:body===undefined?undefined:JSON.stringify(body),redirect:'error',
     });
-    if (!response.ok) throw new Error(`GitHub metadata request failed: HTTP ${response.status}`);
+    if (!response.ok) {const error=new Error(`GitHub metadata request failed: HTTP ${response.status}`);error.status=response.status;throw error;}
     return response.status===204 ? null : response.json();
   };
 }
@@ -176,6 +177,17 @@ function markdown(number,sha,plan,sent=[]) {
     'Missing REVIEW_REQUEST_TOKEN means no bot-comment fallback. Sourcery ignores bot authors. Configure a dedicated least-privilege user token or use native reviewer-app settings; never repurpose unrelated secrets.',
     'Provider quotas/installations/entitlements cannot be repaired by repository code. No credits or subscriptions are purchased by this workflow.'].join('\n');
 }
+async function publishEvidence(api,number,existing,body) {
+  if (!Number.isSafeInteger(number)||number<1) throw new Error('Invalid PR status identity');
+  try {
+    if(existing) await api(`/repos/${REPOSITORY}/issues/comments/${existing.id}`,'PATCH',{body});
+    else await api(`/repos/${REPOSITORY}/issues/${number}/comments`,'POST',{body});
+    return {status:'published'};
+  } catch(error) {
+    if(error.status===403||error.status===404) return {status:'not_published',reason:'github_permission',http_status:error.status};
+    throw error;
+  }
+}
 async function run(environment=process.env) {
   if (environment.GITHUB_REPOSITORY!==REPOSITORY) throw new Error('Wrong repository');
   const event=JSON.parse(fs.readFileSync(environment.GITHUB_EVENT_PATH,'utf8'));
@@ -219,7 +231,7 @@ async function run(environment=process.env) {
     const checkResponse=await api(`/repos/${REPOSITORY}/commits/${pr.head.sha}/check-runs?per_page=100`);
     const checks=checkResponse.check_runs||[];
     const plan=planReviews({repo:REPOSITORY,pr,run,actor,
-      hasRequestToken:mode==='request'&&Boolean(environment.REVIEW_REQUEST_TOKEN),comments,reviews,checks,quotaComments});
+      hasRequestToken:Boolean(environment.REVIEW_REQUEST_TOKEN),auditOnly:mode==='audit',comments,reviews,checks,quotaComments});
     if(credentialError) {plan.requests=[];plan.reason=credentialError;}
     if(!plan.eligible) {console.log(JSON.stringify({pr:number,reason:plan.reason,action:'no_status_change'}));continue;}
     const result=plan.requests.length ? await dispatch(plan,{api,requestApi,repo:REPOSITORY,number,sha:pr.head.sha}) : {sent:[],stopped:null};
@@ -228,10 +240,15 @@ async function run(environment=process.env) {
     console.log(JSON.stringify({pr:number,head:pr.head.sha,reason:plan.reason,reviewed:plan.reviewed,blocked:plan.blocked,sent:result.sent,stopped:result.stopped}));
     // Use the workflow token only for a status note, never to impersonate a user reviewer request.
     const existing=comments.find(c=>c.user?.login==='github-actions[bot]' && String(c.body||'').startsWith('<!-- sps-ai-review-evidence:v1 -->'));
-    if(existing)await api(`/repos/${REPOSITORY}/issues/comments/${existing.id}`,'PATCH',{body});
-    else await api(`/repos/${REPOSITORY}/issues/${number}/comments`,'POST',{body});
+    const publication=await publishEvidence(api,number,existing,body);
+    console.log(JSON.stringify({pr:number,status_note:publication}));
+    if(publication.status!=='published') {
+      const note='Status comment was not published (GitHub HTTP '+publication.http_status+'). The audit is preserved in this workflow summary; no review completion is claimed.';
+      if(environment.GITHUB_STEP_SUMMARY)fs.appendFileSync(environment.GITHUB_STEP_SUMMARY,'\n'+note+'\n');
+      console.log('::warning title=Review audit publication blocked::'+note);
+    }
     if(plan.blocked.length)console.log('::warning title=AI review prerequisite blocked::See the reviewer evidence summary; no completed review is claimed.');
   }
 }
-module.exports={PROVIDERS,marker,planReviews,dispatch,markdown,createApi,receipt,run};
-if(require.main===module)run().catch(()=>{console.error('AI review metadata coordination failed; no approval is implied.');process.exitCode=1;});
+module.exports={PROVIDERS,marker,planReviews,dispatch,markdown,createApi,receipt,publishEvidence,run};
+if(require.main===module)run().catch(error=>{console.error('AI review metadata coordination failed'+(Number.isInteger(error.status)?' (GitHub HTTP '+error.status+')':'')+'; no approval is implied.');process.exitCode=1;});
