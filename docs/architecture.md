@@ -96,3 +96,8 @@ remains published articles in `content/blog/posts/` linked by task context.
 The developer graph indexes operator metadata without copying private bodies;
 explicit source dependencies invalidate stale help-document review receipts.
 See `admin-help.md` for the exact boundaries and browser acceptance contract.
+
+Public canonical, organization, social-image and sitemap URLs use the configured
+`APP_URL`, not request Host/HTTPS headers. The public layout consumes the resolved
+SeoService metadata instead of reconstructing its own origin. This is metadata
+correctness, not a new business-data or search-performance service.

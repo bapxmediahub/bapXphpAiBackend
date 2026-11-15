@@ -218,9 +218,7 @@ final class PublicController extends BaseController {
     
     public function sitemap(): void {
         header('Content-Type: application/xml; charset=utf-8');
-        $host = $_SERVER['HTTP_HOST'] ?? 'sripanchamispiritual.com';
-        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $base = $scheme . '://' . $host;
+        $base = rtrim($this->siteUrl('/'), '/');
 
         $pages = [
             '/', '/about', '/temples', '/shop', '/contact', '/blog',
@@ -235,18 +233,18 @@ final class PublicController extends BaseController {
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
 
         foreach ($pages as $path) {
-            $xml .= '  <url><loc>' . $base . $path . '</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>' . "\n";
+            $xml .= '  <url><loc>' . e($base . $path) . '</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>' . "\n";
         }
 
         foreach ($products as $p) {
             if (!empty($p['slug'])) {
-                $xml .= '  <url><loc>' . $base . '/product/' . e($p['slug']) . '</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>' . "\n";
+                $xml .= '  <url><loc>' . e($base . '/product/' . rawurlencode((string)$p['slug'])) . '</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>' . "\n";
             }
         }
 
         foreach ($blogPosts as $post) {
             if (!empty($post['slug']) && !empty($post['published'])) {
-                $xml .= '  <url><loc>' . $base . '/blog/' . e($post['slug']) . '</loc><lastmod>' . e(substr((string)($post['updated_at'] ?? $post['published_at'] ?? ''), 0, 10)) . '</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>' . "\n";
+                $xml .= '  <url><loc>' . e($base . '/blog/' . rawurlencode((string)$post['slug'])) . '</loc><lastmod>' . e(substr((string)($post['updated_at'] ?? $post['published_at'] ?? ''), 0, 10)) . '</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>' . "\n";
             }
         }
 

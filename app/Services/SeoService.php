@@ -5,21 +5,30 @@ final class SeoService {
     private string $defaultOgImage;
     private string $twitterHandle;
     private array $telephone;
+    private string $baseUrl;
 
-    public function __construct(array $secrets = []) {
+    public function __construct(array $secrets = [], ?string $configuredUrl = null) {
+        $configuredUrl ??= (string)(require app_path('config/database.php'))['app_url'];
+        $parts=parse_url($configuredUrl);
+        if(!self::validWebUrl($configuredUrl)||!is_array($parts)||isset($parts['query'])||isset($parts['fragment'])) {
+            throw new \RuntimeException('A valid canonical APP_URL is required.');
+        }
+        $this->baseUrl=rtrim($configuredUrl,'/');
         $envName = getenv('APP_NAME') ?: 'Sri Panchami Spiritual';
         $this->siteName = $secrets['seo_site_name'] ?? $envName;
-        $this->defaultOgImage = $secrets['seo_default_og_image'] ?? 'https://' . ($_SERVER['HTTP_HOST'] ?? 'sripanchamispiritual.com') . '/assets/images/og-image.jpg';
+        $this->defaultOgImage='';
+        foreach(['/assets/images/og-image.jpg','/assets/images/hero-temple-bg.webp'] as $fallback){
+            if($this->localImageExists($fallback)){$this->defaultOgImage=$this->pageUrl($fallback);break;}
+        }
+        if($this->defaultOgImage==='')throw new \RuntimeException('A shipped social-preview fallback image is required.');
+        $this->defaultOgImage=$this->imageUrl((string)($secrets['seo_default_og_image']??''));
         $this->twitterHandle = $secrets['seo_twitter_handle'] ?? '';
         $phone = $secrets['phone'] ?? getenv('CONTACT_PHONE') ?: '';
         $this->telephone = $phone !== '' ? [$phone] : ['+919789444037', '+919789444038'];
     }
 
     public function page(string $key, array $overrides = []): array {
-        $host = $_SERVER['HTTP_HOST'] ?? 'sripanchamispiritual.com';
-        $uri = $_SERVER['REQUEST_URI'] ?? '/';
-        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $url = $scheme . '://' . $host . $uri;
+        $url = $this->pageUrl((string)($_SERVER['REQUEST_URI'] ?? '/'));
 
         $defaults = $this->defaults($key);
         $meta = array_merge($defaults, $overrides);
@@ -30,11 +39,12 @@ final class SeoService {
             $meta['keywords'] = $defaults['keywords'] ?? '';
         }
 
-        $meta['canonical'] ??= $url;
-        $meta['og_url'] ??= $url;
+        $meta['canonical'] = $this->overrideUrl($meta['canonical'] ?? null) ?? $url;
+        $meta['og_url'] = $this->overrideUrl($meta['og_url'] ?? null) ?? $meta['canonical'];
         $meta['og_site_name'] = $this->siteName;
-        $meta['og_image'] ??= $this->defaultOgImage;
-        $meta['twitter_image'] ??= $meta['og_image'];
+        $meta['og_image'] = $this->imageUrl((string)($meta['og_image'] ?? ''));
+        $meta['twitter_image'] = empty($meta['twitter_image']) ? $meta['og_image'] : $this->imageUrl((string)$meta['twitter_image']);
+        $meta['organization_json_ld'] = $this->jsonLdScript($this->organizationSchema());
         $meta['twitter_title'] ??= $meta['og_title'] ?? $meta['title'];
         $meta['twitter_description'] ??= $meta['og_description'] ?? $meta['description'];
         $meta['og_title'] ??= $meta['title'];
@@ -197,7 +207,7 @@ final class SeoService {
 
     public function jsonLdScript(array $data): string {
         if (!$data) return '';
-        return '<script type="application/ld+json">' . json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . '</script>';
+        return '<script type="application/ld+json">' . json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_INVALID_UTF8_SUBSTITUTE) . '</script>';
     }
 
     public function organizationSchema(): array {
@@ -240,13 +250,14 @@ final class SeoService {
             '@type' => 'Product',
             'name' => $product['name'] ?? '',
             'description' => $product['description'] ?? '',
-            'image' => $product['image_url'] ?? $this->defaultOgImage,
+            'image' => $this->imageUrl((string)($product['image_url'] ?? '')),
             'offers' => [
                 '@type' => 'Offer',
                 'price' => (float)$price,
                 'priceCurrency' => 'INR',
-                'availability' => 'https://schema.org/InStock',
-                'url' => $this->pageUrl('/product/' . ($product['slug'] ?? '')),
+                'availability' => in_array((string)($product['stock_status'] ?? ''), ['in_stock','active'], true)
+                    ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+                'url' => $this->pageUrl('/product/' . rawurlencode((string)($product['slug'] ?? ''))),
             ],
         ];
     }
@@ -299,9 +310,50 @@ final class SeoService {
         ];
     }
 
+    /** Encode route segments once and keep meaningful existing query strings; never derive authority from a request. */
     private function pageUrl(string $path): string {
-        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? 'sripanchamispiritual.com';
-        return $scheme . '://' . $host . '/' . ltrim($path, '/');
+        $parts=parse_url($path);
+        $route=is_array($parts)?(string)($parts['path']??'/'):'/';
+        $route=str_replace(["\r","\n","\0"],'',$route);
+        $route=implode('/',array_map(static fn(string $segment):string=>rawurlencode(rawurldecode($segment)),explode('/',$route)));
+        $query=is_array($parts)&&isset($parts['query'])?'?'.str_replace(["\r","\n","\0"],'',(string)$parts['query']):'';
+        return $this->baseUrl.'/'.ltrim($route,'/').$query;
+    }
+
+    private static function validWebUrl(string $url): bool {
+        $parts=parse_url($url);
+        return is_array($parts)&&in_array(strtolower((string)($parts['scheme']??'')),['http','https'],true)
+            &&!empty($parts['host'])&&!isset($parts['user'])&&!isset($parts['pass'])
+            &&!preg_match('/[\x00-\x20\x7f\\\\]/',$url)&&filter_var($url,FILTER_VALIDATE_URL)!==false;
+    }
+
+    private function overrideUrl(mixed $value): ?string {
+        if(!is_string($value)||trim($value)==='')return null;
+        if(str_starts_with($value,'/')&&!str_starts_with($value,'//'))return $this->pageUrl($value);
+        return self::validWebUrl($value)?explode('#',$value,2)[0]:null;
+    }
+
+    private function localImageExists(string $path): bool {
+        $decoded=rawurldecode($path);
+        if(!preg_match('~^/assets/images/[a-z0-9_/ .-]+\.(?:jpe?g|png|webp|gif)$~iD',$decoded)
+            ||str_contains($decoded,'..'))return false;
+        $file=MediaService::storedPathForUrl($decoded)??app_path(ltrim($decoded,'/'));
+        return is_file($file)&&is_readable($file)&&@getimagesize($file)!==false;
+    }
+
+    /** Existing local images are verified without fetching arbitrary external hosts. */
+    private function imageUrl(string $value): string {
+        $value=trim($value);if($value==='')return $this->defaultOgImage;
+        $parts=parse_url($value);if(!is_array($parts))return $this->defaultOgImage;
+        $base=parse_url($this->baseUrl);
+        if(isset($parts['host'])){
+            if(!self::validWebUrl($value))return $this->defaultOgImage;
+            if(strcasecmp((string)$parts['host'],(string)$base['host'])!==0)return $value;
+        }elseif(isset($parts['scheme'])||str_starts_with($value,'//'))return $this->defaultOgImage;
+        $path='/'.ltrim((string)($parts['path']??''),'/');
+        $basePath=rtrim((string)($base['path']??''),'/');
+        if($basePath!==''&&str_starts_with($path,$basePath.'/'))$path=substr($path,strlen($basePath));
+        if(!$this->localImageExists($path))return $this->defaultOgImage;
+        return $this->pageUrl($path);
     }
 }

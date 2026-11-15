@@ -638,6 +638,79 @@ $tests['help review depends on underlying source even when another area owns tha
     }finally{unlink($root.'/app/Feature.php');unlink($root.'/docs/guide.md');rmdir($root.'/app');rmdir($root.'/docs');rmdir($root);}
 };
 
+$tests['SEO canonical and organization origins come from trusted configuration not request host'] = static function (): void {
+    $server=$_SERVER;
+    try {
+        $_SERVER['HTTP_HOST']='untrusted.example';$_SERVER['HTTPS']='off';$_SERVER['REQUEST_URI']='/shop?category=pooja';
+        $seo=new \App\Services\SeoService([], 'https://configured.example');$m=$seo->page('shop');
+        assertSame('https://configured.example/shop?category=pooja',$m['canonical'],'Canonical uses configured origin and preserves meaningful current query');
+        assertSame($m['canonical'],$m['og_url'],'Canonical and default OG identify the same page');
+        assertSame('https://configured.example/',$seo->organizationSchema()['url'],'Organization origin is not a Host header echo');
+        $_SERVER['REQUEST_URI']='https://spoofed.invalid/product/Real%20Item?preview=1';
+        assertSame('https://configured.example/product/Real%20Item?preview=1',$seo->page('product')['canonical'],'Absolute request form cannot replace configured origin');
+    } finally { $_SERVER=$server; }
+};
+
+$tests['SEO preserves safe page overrides and private noindex while rejecting unsafe URL schemes'] = static function (): void {
+    $server=$_SERVER;
+    try {
+        $_SERVER['REQUEST_URI']='/blog/post';$s=new \App\Services\SeoService([], 'https://configured.example');
+        $m=$s->page('blog.post',['canonical'=>'https://configured.example/blog/original','og_image'=>'https://images.example/approved.webp']);
+        assertSame('https://configured.example/blog/original',$m['canonical'],'Reviewed controller override is retained');
+        assertSame($m['canonical'],$m['og_url'],'Default OG uses the approved canonical override');
+        assertSame('https://images.example/approved.webp',$m['og_image'],'Valid external image override remains supported');
+        $bad=$s->page('product',['canonical'=>'javascript:alert(1)','og_image'=>'data:image/png;base64,unsafe']);
+        assertSame('https://configured.example/blog/post',$bad['canonical'],'Unsafe canonical fails back to configured page URL');
+        assertTrue(str_starts_with($bad['og_image'],'https://configured.example/assets/images/'),'Unsafe image uses shipped fallback');
+        foreach(['admin','account','checkout','login'] as $page)assertTrue(str_contains($s->page($page)['robots'],'noindex'),'Private/transactional indexing behavior preserved: '.$page);
+    } finally { $_SERVER=$server; }
+};
+
+$tests['SEO default social image exists and nonexistent local overrides fall back'] = static function (): void {
+    $s=new \App\Services\SeoService(['seo_default_og_image'=>'/assets/images/does-not-exist-fixture.jpg'],'https://configured.example');
+    $m=$s->page('home');$path=parse_url($m['og_image'],PHP_URL_PATH);
+    assertTrue(is_string($path)&&is_file(app_path(ltrim($path,'/'))),'Default metadata references a real shipped file');
+    assertTrue(str_starts_with($m['og_image'],'https://configured.example/'),'Default image is absolute under configured origin');
+    assertSame($m['og_image'],$m['twitter_image'],'Default Twitter and OG share the same actual image');
+    $valid=$s->page('home',['og_image'=>'/assets/images/blog/create-account.webp']);
+    assertSame('https://configured.example/assets/images/blog/create-account.webp',$valid['og_image'],'Real root-relative image becomes absolute');
+};
+
+$tests['product schema availability follows checkout and preserves valid slug and resolved price'] = static function (): void {
+    $s=new \App\Services\SeoService([],'https://configured.example');
+    $base=['name'=>'Fixture pendant','slug'=>'Ayyappan Pendant','price'=>1000,'offer_price'=>850,'image_url'=>'/assets/images/blog/order-products.webp'];
+    foreach(['in_stock'=>'InStock','active'=>'InStock','out_of_stock'=>'OutOfStock','inactive'=>'OutOfStock','draft'=>'OutOfStock',''=>'OutOfStock'] as $state=>$expected){
+        $data=$s->productSchema($base+['stock_status'=>$state]);
+        assertSame('https://schema.org/'.$expected,$data['offers']['availability'],'Metadata matches buyable stock state: '.$state);
+        assertSame('https://configured.example/product/Ayyappan%20Pendant',$data['offers']['url'],'Existing spaced slug is encoded exactly once');
+        assertSame(850.0,$data['offers']['price'],'Already-resolved offer price is unchanged');
+        assertSame('https://configured.example/assets/images/blog/order-products.webp',$data['image'],'Product image is absolute');
+    }
+};
+
+$tests['public layout renders service metadata rather than rebuilding untrusted origins'] = static function (): void {
+    $layout=fileRead('views/layouts/app.php');
+    assertTrue(str_contains($layout,"e(\$seo['canonical'])"),'Canonical is service-owned including legitimate per-page override');
+    assertTrue(!str_contains($layout,"\$_SERVER['HTTP_HOST']"),'Layout cannot bypass canonical-origin policy');
+    assertTrue(str_contains($layout,"\$seo['organization_json_ld']"),'Organization markup uses the configured service output');
+};
+
+$tests['SEO configuration and inline JSON-LD cannot accept script-shaped URL or data'] = static function (): void {
+    foreach(['javascript:alert(1)','https://user:secret@example.invalid','https://example.invalid/?token=fixture'] as $url){
+        $denied=false;try{new \App\Services\SeoService([],$url);}catch(RuntimeException){$denied=true;}
+        assertTrue($denied,'Invalid configured base URL fails without echoing its value');
+    }
+    $s=new \App\Services\SeoService([],'https://configured.example');
+    $script=$s->jsonLdScript(['name'=>'</script><script>fixture()</script>']);
+    assertSame(1,substr_count($script,'</script>'),'Data cannot terminate the JSON-LD element');
+    $payload=substr($script,strlen('<script type="application/ld+json">'),-strlen('</script>'));
+    assertSame('</script><script>fixture()</script>',json_decode($payload,true,512,JSON_THROW_ON_ERROR)['name'],'Literal schema data survives correct encoding');
+    $controller=fileRead('app/Controllers/PublicController.php');
+    $from=strpos($controller,'public function sitemap()');$to=strpos($controller,'public function contact()',$from);$method=substr($controller,$from,$to-$from);
+    assertTrue(!str_contains($method,"\$_SERVER['HTTP_HOST']"),'Sitemap uses canonical configuration too');
+    assertTrue(str_contains($method,'rawurlencode((string)$p[\'slug\'])'),'Sitemap product URLs preserve encoded public slugs');
+};
+
 $tests['each agent session creates one private JSON file and no MySQL table'] = static function (): void {
     $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
     assertTrue(mkdir($root, 0700), 'Private test directory exists');

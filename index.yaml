@@ -45,7 +45,7 @@ query_examples:
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
   concepts: 412
-  relationships: 324
+  relationships: 325
   by_type:
     blog: 16
     controller: 12
@@ -959,16 +959,17 @@ concepts:
   - id: "image:assets/images/hero-temple-bg.webp"
     type: "image"
     title: "hero-temple-bg.webp"
-    description: "Image referenced by 4 project resource(s)."
+    description: "Image referenced by 5 project resource(s)."
     resource: "assets/images/hero-temple-bg.webp"
     tags:
       - "image"
       - "used"
     filename: "hero-temple-bg.webp"
     mime: "image/webp"
-    usage_count: 4
+    usage_count: 5
     used_in:
       - "app/Services/BlogService.php"
+      - "app/Services/SeoService.php"
       - "assets/css/band.css"
       - "assets/css/home-editorial.css"
       - "content/blog/posts/get-support.md"
@@ -1401,17 +1402,16 @@ concepts:
   - id: "image:assets/images/og-image.jpg"
     type: "image"
     title: "og-image.jpg"
-    description: "Image referenced by 2 project resource(s)."
+    description: "Image referenced by 1 project resource(s)."
     resource: "assets/images/og-image.jpg"
     tags:
       - "image"
       - "used"
     filename: "og-image.jpg"
     mime: "image/jpeg"
-    usage_count: 2
+    usage_count: 1
     used_in:
       - "app/Services/SeoService.php"
-      - "views/layouts/app.php"
   - id: "image:assets/images/products/karuppasami-dollar-back.webp"
     type: "image"
     title: "karuppasami-dollar-back.webp"
@@ -5210,6 +5210,9 @@ relationships:
     relation: "explains"
   - from: "operator_guide:catalogue"
     to: "service:ProductService"
+    relation: "explains"
+  - from: "operator_guide:catalogue"
+    to: "service:SeoService"
     relation: "explains"
   - from: "operator_guide:catalogue"
     to: "service:AdminHelpService"
