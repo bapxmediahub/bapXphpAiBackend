@@ -38,6 +38,14 @@ final class SupportBotService {
             ? $this->fallbackReply($message, $context)
             : null;
         if ($reply !== null) $outcome = 'private_account';
+        if ($reply === null && module_on('shop') && is_array($context['site']['matched_collection'] ?? null)) {
+            // Collection membership comes from stored product_ids, not model guesses.
+            $reply = self::collectionListingReply(
+                $context['site']['matched_collection'],
+                $context['site']['products'] ?? []
+            );
+            if ($reply !== null) $outcome = 'local';
+        }
         if ($reply === null && module_on('shop')) {
             $products = $context['site']['products'] ?? [];
             $reply = self::catalogFactReply($message, $products) ?? self::catalogComparisonReply($message, $products);
@@ -361,6 +369,29 @@ final class SupportBotService {
             error_log('Article context failed: ' . $e->getMessage());
             return [];
         }
+    }
+
+    /** Answer collection listing requests from verified shop membership only. */
+    public static function collectionListingReply(array $collection, array $products): ?string {
+        $name = trim((string)($collection['name'] ?? ''));
+        $slug = trim((string)($collection['slug'] ?? ''));
+        if ($name === '' || $slug === '') return null;
+        $collectionPath = '/shop?category=' . rawurlencode($slug);
+        if ($products === []) {
+            return 'There are no visible products listed in the ' . $name
+                . ' collection right now. Check ' . $collectionPath . ' for updates.';
+        }
+        $details = [];
+        foreach (array_slice($products, 0, 8) as $product) {
+            $productName = trim((string)($product['name'] ?? ''));
+            $productSlug = trim((string)($product['slug'] ?? ''));
+            if ($productName === '' || $productSlug === '') continue;
+            $details[] = $productName . ' — /product/' . rawurlencode($productSlug);
+        }
+        if ($details === []) return 'The ' . $name . ' collection is available at ' . $collectionPath . '.';
+        return 'The ' . $name . ' collection currently lists ' . count($products)
+            . ' visible product(s): ' . implode('; ', $details)
+            . '. Browse this collection at ' . $collectionPath . '.';
     }
 
     /** Exact catalog questions can be answered with the same current data as the shop. */
