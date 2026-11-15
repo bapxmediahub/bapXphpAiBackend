@@ -1,9 +1,11 @@
 <?php
     $categorySlug = (string)($meta['category'] ?? '');
     $categoryName = $categoryNames[$categorySlug] ?? '';
-    $schemaBase = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'sripanchamispiritual.com');
+    // Use the configured canonical origin, not an untrusted request Host header.
+    $schemaBase = rtrim((string)($schemaBase ?? (require app_path('config/database.php'))['app_url']), '/');
     $schemaUrl = $schemaBase . '/blog/' . ($slug ?? '');
-    $schemaImage = $meta['og_image'] ?? $meta['image'] ?? ($seo['og_image'] ?? '');
+    $schemaImage = \App\Services\BlogService::resolvedImageUrl($meta);
+    if (str_starts_with($schemaImage, '/')) $schemaImage = $schemaBase . $schemaImage;
     $schema = [
         '@context' => 'https://schema.org',
         '@graph' => [
@@ -62,7 +64,7 @@
         </div>
       </header>
 
-      <?php $articleImage = $meta['image'] ?? $meta['og_image'] ?? '/assets/images/hero-temple-bg.webp'; ?>
+      <?php $articleImage = \App\Services\BlogService::resolvedImageUrl($meta); ?>
       <figure class="blog-post__featured"><img src="<?= e($articleImage) ?>" alt="<?= e($meta['image_alt'] ?? '') ?>" loading="eager"></figure>
 
       <div class="blog-post__content">

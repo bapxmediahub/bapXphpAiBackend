@@ -42,7 +42,7 @@
       <div class="blog-grid">
         <?php foreach ($posts as $index => $post): ?>
           <?php
-            $postImage = $post['image'] ?? $post['og_image'] ?? '/assets/images/hero-temple-bg.webp';
+            $postImage = \App\Services\BlogService::resolvedImageUrl($post);
             $postUrl = '/blog/' . rawurlencode((string)($post['slug'] ?? ''));
             $featured = $index === 0 && $activeCategory === null && $search === '';
             $postCategory = (string)($post['category'] ?? '');

@@ -114,3 +114,11 @@ Node is CI-only tooling; PHP hosting has no new Node runtime dependency.
 - [CodeRabbit configuration reference](https://docs.coderabbit.ai/reference/configuration)
 - [CodeRabbit schema](https://coderabbit.ai/integrations/schema.v2.json)
 - [GitHub workflow_run security](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_run)
+
+## Ready-for-review default
+
+The branch-PR workflow now explicitly uses `draft: false`, including `bapX/**`
+and `feature/**` implementation branches. This enables review without pretending
+that incomplete work passed validation. Current-head CI, source review and
+affected browser/database tests still gate merge. Existing drafts are marked
+ready only when the owner asks; no code silently bypasses failed checks.

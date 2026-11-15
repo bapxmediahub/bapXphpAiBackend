@@ -49,3 +49,5 @@ jobs:
         run: ./bapXphp ci
       - name: Test concurrent verified payments against isolated MySQL
         run: php tests/order-concurrency.php
+      - name: Test concurrent private JSON conversation appends
+        run: php tests/agent-concurrency.php

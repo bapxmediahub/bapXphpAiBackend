@@ -7,6 +7,7 @@ on:
       - 'fix/**'
       - 'feat/**'
       - 'bapX/**'
+      - 'feature/**'
 
 permissions:
   contents: read
@@ -45,7 +46,7 @@ jobs:
                 return;
               }
               const title = head
-                .replace(/^(codex|fix|feat)\//, '')
+                .replace(/^(codex|fix|feat|feature|bapX)\//, '')
                 .replace(/[-_]+/g, ' ')
                 .replace(/\b\w/g, value => value.toUpperCase());
               const result = await github.rest.pulls.create({
@@ -53,6 +54,7 @@ jobs:
                 title,
                 head,
                 base: 'main',
+                draft: false,
                 body: [
                   'Created automatically from a pushed implementation branch.',
                   '',

@@ -144,6 +144,39 @@ final class AgentContextService {
         return false;
     }
 
+    /**
+     * Identify a specific published collection using its own distinctive words.
+     * Generic phrases such as "festival products" must never select a random sale.
+     */
+    public static function requestedCollection(string $message, array $collections): ?array {
+        $tokens = static function (string $text): array {
+            $text = mb_strtolower($text);
+            $text = str_replace(['ayyappan', 'swami', 'festival', 'sashti', 'sasthi'],
+                ['ayyappa', 'swamy', 'festive', 'sassthi', 'sassthi'], $text);
+            $words = preg_split('/[^a-z0-9]+/', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+            return array_values(array_unique($words));
+        };
+        $query = $tokens($message);
+        $generic = ['sale', 'festive', 'collection', 'special', 'offers'];
+        $best = null;
+        $score = 0;
+        foreach ($collections as $collection) {
+            if (!is_array($collection)) continue;
+            $name = (string)($collection['name'] ?? '');
+            $slug = (string)($collection['slug'] ?? '');
+            if ($name === '' || $slug === '') continue;
+            $overlap = array_intersect($tokens($name), $query);
+            $distinctive = array_diff($overlap, $generic);
+            if (count($overlap) < 2 || $distinctive === []) continue;
+            $count = count($overlap);
+            if ($count > $score) {
+                $best = $collection;
+                $score = $count;
+            }
+        }
+        return $best;
+    }
+
     /** Prefer exact matches across the visible catalogue before applying the prompt cap. */
     public static function supportProducts(array $visibleProducts, string $message): array {
         $matches = array_filter($visibleProducts, static fn(array $product): bool => self::matchesNamedProduct($message, $product));
@@ -164,6 +197,14 @@ final class AgentContextService {
     }
 
     private function siteContext(string $message): array {
+        $visibleProducts = (new ProductService($this->store))->visible();
+        $collection = null;
+        if (preg_match('/\b(?:sale|festival|festive|collection|products?|items?|offers?)\b/i', $message)) {
+            $collection = self::requestedCollection($message, (new CategoryService($this->store))->collections());
+        }
+        $selected = $collection !== null
+            ? (new CategoryService($this->store))->collectionProducts($collection, $visibleProducts)
+            : self::supportProducts($visibleProducts, $message);
         $products = array_map(fn($item) => [
             'name' => $item['name'] ?? '',
             'slug' => $item['slug'] ?? '',
@@ -176,7 +217,7 @@ final class AgentContextService {
             'specifications' => $item['specifications'] ?? [],
         // Visible only, and priced through the offer window: the support bot must never
         // recommend a product the shopper cannot buy, or quote an offer that has ended.
-        ], self::supportProducts((new ProductService($this->store))->visible(), $message));
+        ], array_slice($selected, 0, 20));
         return [
             'pages' => [
                 'shop' => '/shop',
@@ -186,6 +227,9 @@ final class AgentContextService {
                 'orders' => '/account/dashboard/orders',
             ],
             'products' => $products,
+            'matched_collection' => $collection !== null
+                ? ['name'=>(string)$collection['name'], 'slug'=>(string)$collection['slug']]
+                : null,
             'support_scope' => 'Answer only from this JSON context and public site links. Do not access tools, files, admin data, or other users.',
         ];
     }

@@ -73,3 +73,33 @@
     <?php endforeach; ?>
 </section>
 <?php endif; ?>
+
+<section class="admin-card" aria-labelledby="conversation-audit-title" style="margin-top:var(--space-lg)">
+    <h2 id="conversation-audit-title">Conversation audit &amp; evaluations</h2>
+    <p>Latest 40 persisted admin/customer/guest conversations. Export requires an authenticated admin session. Basic checks are deterministic, not a guarantee of factual correctness.</p>
+    <?php if (empty($agentConversations)): ?><p>No persisted conversations available yet.</p><?php else: ?>
+    <div class="table-wrap"><table><thead><tr><th>Chat</th><th>Actor</th><th>Last activity (UTC)</th><th>Turns</th><th>Evals passed</th><th>Audit JSON</th></tr></thead><tbody>
+    <?php foreach ($agentConversations as $conversation):
+        $turnCount = (int)($conversation['turn_count'] ?? 0);
+        $passed = (int)($conversation['passed_turns'] ?? 0);
+        $cid = (string)($conversation['id'] ?? '');
+    ?>
+        <tr>
+            <td><?= e((string)($conversation['surface'] ?? '')) ?></td>
+            <td><?= e((string)($conversation['actor']['type'] ?? '')) ?> · <?= e(mb_substr((string)($conversation['actor']['id'] ?? ''),0,64)) ?></td>
+            <td><?= e((string)($conversation['updated_at'] ?? $conversation['started_at'] ?? '')) ?></td>
+            <td><?= $turnCount ?></td>
+            <td><?= $passed ?>/<?= $turnCount ?></td>
+            <td><a href="/admin/agent/conversation/<?= e($cid) ?>">Export JSON</a></td>
+        </tr>
+    <?php endforeach; ?>
+    </tbody></table></div>
+    <?php endif; ?>
+    <h3>First-party commerce events (30 days)</h3>
+    <p>Counts are successful instrumented actions, not unique visitors or a conversion rate.</p>
+    <div class="admin-stats" style="margin:var(--space-md) 0;">
+    <?php foreach (($commerceTelemetry ?? []) as $event => $count): ?>
+        <div class="admin-stat"><div class="admin-stat__value"><?= (int)$count ?></div><div class="admin-stat__label"><?= e(str_replace('_',' ',ucwords($event,'_'))) ?></div></div>
+    <?php endforeach; ?>
+    </div>
+</section>

@@ -67,3 +67,12 @@ reuse unrelated secrets or falsely report a blocked review as passed.
 For new source-based comparisons, use `.agents/skills/rea-source-audit/SKILL.md`.
 A review dispatch claim with unknown delivery must not be described as a completed
 request. Inspect it before manual retry; preserve other agents' dirty worktrees.
+
+## Pull-request readiness
+
+Create new implementation PRs **ready for review**, not as drafts, as directed
+by the owner. Keep failing checks, unresolved findings and incomplete runtime
+verification visible in the PR description; ready-for-review is not merge
+approval. Reconcile the latest main before merging and retain all independent
+regressions. Never use blanket ours/theirs resolution for real code; regenerate
+map/index outputs from the reconciled source.

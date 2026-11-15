@@ -154,3 +154,9 @@ test('manual and CI audit use one shared coordination lock with metadata permiss
  assert.ok(w.includes('checks: read'));assert.ok(w.includes('issues: write'));
  assert.ok(w.includes('group: ai-review-coordination'));assert.ok(w.includes('cancel-in-progress: false'));
 });
+test('new pull requests are explicitly ready for review rather than drafts',()=>{
+ const workflow=fs.readFileSync(path.join(__dirname,'../.github/workflows/branch-pr.yml'),'utf8');
+ const create=workflow.slice(workflow.indexOf('github.rest.pulls.create('));
+ assert.match(create,/draft:\s*false/);
+ assert.ok(!/draft:\s*true/.test(create));
+});
