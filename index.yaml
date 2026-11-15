@@ -37,16 +37,16 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 371
-  relationships: 272
+  concepts: 373
+  relationships: 276
   by_type:
     blog: 14
     controller: 12
     doc: 36
     image: 89
-    route: 128
+    route: 129
     schema: 22
-    service: 60
+    service: 61
     skill: 10
 concepts:
   - id: "blog:benefits-of-rudraksha"
@@ -301,7 +301,7 @@ concepts:
   - id: "doc:admin-dashboard"
     type: "doc"
     title: "Admin Dashboard"
-    description: "Route /admin - owner dashboard for product, order, and astrology session counts."
+    description: "Route /admin - paid commerce overview, order and product metrics, and recent historical sessions."
     resource: "docs/pages/admin-dashboard.md"
     tags:
       - "page"
@@ -310,7 +310,7 @@ concepts:
   - id: "doc:admin-guide"
     type: "doc"
     title: "Admin Guide"
-    description: "Use the dashboard to manage products, categories, coupons, orders, historical service records, and more."
+    description: "Verified operations for the owner dashboard, business tools, agents, monitoring and content."
     resource: "docs/admin-guide.md"
     tags:
       - "docs"
@@ -318,10 +318,11 @@ concepts:
     header_image: ""
   - id: "doc:agent-observability"
     type: "doc"
-    title: "agent-observability"
-    description: ""
+    title: "Agent Observability and Evaluations"
+    description: "PHP agent permissions, JSON conversation traces, support feedback, and offline golden tests."
     resource: "docs/agent-observability.md"
-    tags: []
+    tags:
+      - "docs"
     filename: "agent-observability.md"
     header_image: ""
   - id: "doc:agentic-monorepo"
@@ -354,7 +355,7 @@ concepts:
   - id: "doc:blog"
     type: "doc"
     title: "Blog"
-    description: "Blog listing page with pagination and single blog post routes."
+    description: "Published blog, help guides, category filtering and article rendering with Markdown source files."
     resource: "docs/pages/blog.md"
     tags:
       - "page"
@@ -497,7 +498,7 @@ concepts:
   - id: "doc:json-storage"
     type: "doc"
     title: "JSON Storage"
-    description: "All runtime data is stored in MySQL tables, accessed through DatabaseService. The schema contract lives in storage/schema/collections.php."
+    description: "Business records remain in MySQL; private agent conversations use one JSON file per chat."
     resource: "docs/json-storage.md"
     tags:
       - "docs"
@@ -2930,6 +2931,7 @@ concepts:
       - "AgentToolRegistry"
       - "EnterpriseToolRegistry"
       - "AgentConversationService"
+      - "AgentTraceService"
       - "AgentEvaluationService"
       - "AgentTranscriptSanitizer"
       - "AgentCapabilityPolicy"
@@ -3664,10 +3666,26 @@ concepts:
       - "SupportTicketService"
       - "SupportToolRegistry"
       - "AgentConversationService"
+      - "AgentTraceService"
       - "AgentEvaluationService"
       - "AuditLogService"
       - "AiClient"
       - "AiReplyCleaner"
+    view: "public/support"
+  - id: "route:post__support_feedback"
+    type: "route"
+    title: "POST /support/feedback"
+    description: "support.feedback"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/support/feedback"
+    controller: "SupportController@feedback"
+    services:
+      - "AgentConversationService"
+      - "RateLimiter"
     view: "public/support"
   - id: "route:post__verify_payment"
     type: "route"
@@ -3976,6 +3994,14 @@ concepts:
     title: "AgentToolRegistry"
     description: "Service: AgentToolRegistry"
     resource: "app/Services/AgentToolRegistry.php"
+    tags:
+      - "code"
+      - "service"
+  - id: "service:AgentTraceService"
+    type: "service"
+    title: "AgentTraceService"
+    description: "Service: AgentTraceService"
+    resource: "app/Services/AgentTraceService.php"
     tags:
       - "code"
       - "service"
@@ -4507,6 +4533,9 @@ relationships:
     to: "service:AgentToolRegistry"
     relation: "uses"
   - from: "controller:AdminController"
+    to: "service:AgentTraceService"
+    relation: "uses"
+  - from: "controller:AdminController"
     to: "service:AgentTranscriptSanitizer"
     relation: "uses"
   - from: "controller:AdminController"
@@ -4729,6 +4758,9 @@ relationships:
     to: "service:AgentEvaluationService"
     relation: "uses"
   - from: "controller:SupportController"
+    to: "service:AgentTraceService"
+    relation: "uses"
+  - from: "controller:SupportController"
     to: "service:AiClient"
     relation: "uses"
   - from: "controller:SupportController"
@@ -4736,6 +4768,9 @@ relationships:
     relation: "uses"
   - from: "controller:SupportController"
     to: "service:AuditLogService"
+    relation: "uses"
+  - from: "controller:SupportController"
+    to: "service:RateLimiter"
     relation: "uses"
   - from: "controller:SupportController"
     to: "service:SeoService"
@@ -5128,6 +5163,9 @@ relationships:
     to: "controller:ReviewController"
     relation: "handled_by"
   - from: "route:post__support_ask"
+    to: "controller:SupportController"
+    relation: "handled_by"
+  - from: "route:post__support_feedback"
     to: "controller:SupportController"
     relation: "handled_by"
   - from: "route:post__verify_payment"

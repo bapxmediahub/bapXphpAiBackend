@@ -42,6 +42,8 @@ jobs:
           extensions: curl, json, mbstring, pdo_mysql
       - name: Validate code, tests, maps, and routes
         run: ./bapXphp ci
+      - name: Gate deterministic agent fixture regressions without model APIs
+        run: php cli/agent-eval.php
       - name: Test concurrent verified payments against isolated MySQL
         run: php tests/order-concurrency.php
       - name: Test concurrent private JSON conversation appends

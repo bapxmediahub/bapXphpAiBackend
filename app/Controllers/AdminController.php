@@ -341,7 +341,16 @@ final class AdminController extends BaseController {
         } catch (\Throwable $e) {
             error_log('Agent session insights unavailable: '.$e::class);
         }
-        $this->render('admin/agent-monitoring', compact('agentMonitoring','agentConversations','commerceTelemetry') + ['pageTitle' => 'Agent Monitoring']);
+        $supportFeedbackSummary = \App\Services\AgentEvaluationService::supportOutcomeSummary($agentConversations);
+        try {
+            $agentGoldenSuite = \App\Services\AgentEvaluationService::goldenSuite();
+        } catch (\Throwable $e) {
+            error_log('Agent golden suite unavailable: '.$e::class);
+            $agentGoldenSuite = null;
+        }
+        $this->render('admin/agent-monitoring',
+            compact('agentMonitoring','agentConversations','commerceTelemetry','supportFeedbackSummary','agentGoldenSuite')
+            + ['pageTitle' => 'Agent Monitoring']);
     }
 
     public function agentHistory(): void {

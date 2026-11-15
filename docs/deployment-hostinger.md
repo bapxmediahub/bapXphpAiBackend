@@ -50,6 +50,22 @@ git rev-parse HEAD
 Do not run issue, PR, or review conversations from Hostinger. Those
 belong to GitHub Actions and the GitHub web interface.
 
+### Preserve private agent sessions and evaluation artifacts
+
+The agent runtime on draft PR #241 stores **one JSON file per chat** under
+`storage/agent-conversations/<id>.json`, not in MySQL. The
+folder is ignored by Git, must be writable by PHP, protected from static
+HTTP access, and backed up independently of business data. Keep it across
+Hostinger code deployments; do not deploy a replacement checkout that erases
+untracked JSON sessions. Check the session count/IDs and permissions before
+and after a staging release. Restoring only MySQL will not restore chats.
+
+`storage/agent-evals/` holds optional data-free local golden
+experiment snapshots. Run `php cli/agent-eval.php` to compare
+the committed fixture baseline offline; no model API or paid service is needed.
+Live acceptance must still test authenticated chat feedback/history,
+actor isolation, trace exports, admin dashboards, and 375px views.
+
 ## Release workflow
 
 1. Work from the linked issue on a branch. Run `./bapXphp update` for generated

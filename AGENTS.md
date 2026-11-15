@@ -90,8 +90,17 @@ target is absent, and state that absence as a finding.
   `/assets/images/media/…` URLs. `MediaService` writes metadata to hosted MySQL
   `media_files`; legacy YAML is read-only compatibility input.
 - **Agents:** exactly two pure-PHP application surfaces — customer support and
-  owner/admin chat. Admin agent context must
-  go through `AgentContextService`; never expose all users' data.
+  owner/admin chat. Support context uses `AgentContextService` and
+  `SupportToolRegistry`; owner queries use `EnterpriseToolRegistry` with
+  allowlisted, read-only `AgentToolRegistry` operations. `AgentCapabilityPolicy`
+  enforces actor permissions; model instructions are not authorization. Site
+  mutations still require an explicit owner-reviewed form.
+- **Private chat exception to MySQL:** each support/admin conversation is one
+  `storage/agent-conversations/<32-hex-id>.json` file, never a SQL table.
+  `AgentConversationService` owns persistence, access and feedback; `AgentTraceService`
+  records sanitized correlated steps inside that same file. MySQL remains the
+  authority for business records, support tickets, metadata and operational audit
+  events. See `docs/agent-observability.md` and `docs/json-storage.md`.
 
 ## Environment
 
@@ -143,7 +152,11 @@ the browser workflow. Keep UI actions grounded in the current browser state.
 After route, schema, controller, view or workflow changes, run `./bapXphp update`
 to regenerate `map.mmd`, `docs/systematic-map.mmd`, and the indexes. Fix stale
 expectations to match the agreed behavior; never weaken validation to hide a defect.
-Run `./bapXphp ci` before the PR and verify GitHub checks before merging. After
+Run `./bapXphp ci` before the PR, plus `php cli/agent-eval.php` after
+agent/tool/prompt changes and `php tests/agent-concurrency.php` for chat
+storage changes. The offline golden suite is deterministic and has an explicit
+baseline; passing it does **not** certify live factual accuracy or customer
+resolution. Verify GitHub checks before merging. After
 deployment, repeat the affected flows in the live Browser and attach the evidence
 to the original issues. A merge or an SMTP acceptance message alone does not prove
 deployment or inbox delivery.

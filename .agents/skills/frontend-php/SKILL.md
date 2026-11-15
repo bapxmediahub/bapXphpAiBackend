@@ -27,3 +27,15 @@ Verify in a browser at desktop **and** 375px mobile — `Design.md` is canonical
 ## Keeping this skill current
 
 Update when `Design.md` tokens, breakpoints, or shared component classes change. Public pages are gated by `module_on()`; re-check with each module both on and off.
+
+## Support agent customer feedback
+
+The public Support widget in `views/layouts/app.php` posts
+`/support/ask` and can send an explicit rating to
+`/support/feedback` with CSRF and the latest turn ID.
+Do not assume a support reply is customer resolution. Positive feedback
+means confirmed resolved, negative means needs follow-up; subsequent turns
+reset resolution. The PHP controller validates session ownership so
+browser-supplied conversation IDs cannot access another customer.
+Test the actual browser post/feedback interaction at desktop and 375px,
+including no JavaScript exceptions and saved JSON status on the local fixture.

@@ -35,14 +35,14 @@ final class AgentConversationService
         string $surface, array $actor, ?string $conversationId,
         string $question, string $answer, string $traceId,
         string $outcome, array $tools = [], ?string $ticketId = null,
-        ?array $reportContext = null, array $attempts = []
+        ?array $reportContext = null, array $attempts = [], array $retrieval = []
     ): array {
         if (!in_array($surface, ['admin', 'support'], true)) {
             throw new \InvalidArgumentException('Invalid agent surface');
         }
         $id = is_string($conversationId) && preg_match(self::ID_PATTERN, $conversationId)
             ? $conversationId : bin2hex(random_bytes(16));
-        $evaluation = AgentEvaluationService::evaluate($surface, $question, $answer, $tools);
+        $evaluation = AgentEvaluationService::evaluate($surface, $question, $answer, $tools, $outcome);
         $turn = [
             'turn_id' => bin2hex(random_bytes(16)),
             'trace_id' => $traceId,
@@ -50,11 +50,10 @@ final class AgentConversationService
             'question' => AgentTranscriptSanitizer::scrub(mb_substr($question, 0, 2000)),
             'answer' => AgentTranscriptSanitizer::scrub(mb_substr($answer, 0, 12000)),
             'outcome' => $outcome,
-            'tools' => array_values(array_map(static fn(array $tool): array => [
-                'name' => (string)($tool['name'] ?? ''),
-                'status' => (string)($tool['status'] ?? ''),
-                'duration_ms' => (int)($tool['duration_ms'] ?? 0),
-            ], array_slice($tools, 0, 32))),
+            'tools' => array_values(array_map(
+                static fn(array $tool): array => AgentTraceService::safeTool($tool),
+                array_slice(array_filter($tools,'is_array'),0,32)
+            )),
             'evaluation' => $evaluation,
             'model_attempts' => array_values(array_map(static fn(array $attempt): array => [
                 'model' => substr((string)($attempt['model'] ?? ''), 0, 100),
@@ -62,6 +61,7 @@ final class AgentConversationService
                 'duration_ms' => max(0, (int)round((float)($attempt['total_ms'] ?? 0))),
             ], array_slice($attempts, 0, 9))),
         ];
+        $turn['trace'] = AgentTraceService::build($traceId,$outcome,$tools,$attempts,$evaluation,$answer,$retrieval);
         if ($ticketId !== null) $turn['ticket_id'] = $ticketId;
         if ($reportContext !== null) $turn['report_context'] = $reportContext;
 
@@ -142,22 +142,74 @@ final class AgentConversationService
                 throw new \RuntimeException('Start a new conversation');
             }
             $document['turns'][] = $turn;
+            // A later customer question invalidates any previous resolution state.
+            $document['resolution_status'] = isset($turn['ticket_id']) ? 'escalated' : 'awaiting_feedback';
             $document['passed_turns'] = (int)($document['passed_turns'] ?? 0)
                 + (!empty($turn['evaluation']['passed']) ? 1 : 0);
             $document['updated_at'] = gmdate('c');
-            $json = json_encode($document, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
-                | JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR);
-            $tmp = tempnam($root, '.conversation-');
-            if ($tmp === false) throw new \RuntimeException('Conversation temporary file unavailable');
-            @chmod($tmp, 0600);
-            if (@file_put_contents($tmp, $json, LOCK_EX) !== strlen($json)
-                || !@rename($tmp, $filename)) {
-                throw new \RuntimeException('Conversation JSON was not saved.');
-            }
+            self::writeAtomic($root, $filename, $document);
             return $document;
         } finally {
             if ($tmp !== false && is_file($tmp)) @unlink($tmp);
             flock($lock, LOCK_UN);
+            fclose($lock);
+        }
+    }
+
+    private static function writeAtomic(string $root, string $filename, array $document): void
+    {
+        $tmp = tempnam($root, '.conversation-');
+        if ($tmp === false) throw new \RuntimeException('Conversation temporary file unavailable');
+        try {
+            @chmod($tmp, 0600);
+            $json = json_encode($document, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
+                | JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR);
+            if (@file_put_contents($tmp, $json, LOCK_EX) !== strlen($json) || !@rename($tmp, $filename)) {
+                throw new \RuntimeException('Conversation JSON was not saved.');
+            }
+        } finally {
+            if (is_file($tmp)) @unlink($tmp);
+        }
+    }
+
+    /** Only explicit feedback on the last answer may confirm a resolved case. */
+    public function rateSupportTurn(string $id, array $actor, string $turnId, string $rating): array
+    {
+        if (!preg_match(self::ID_PATTERN, $id) || !preg_match(self::ID_PATTERN, $turnId)
+            || !in_array($rating, ['helpful','not_helpful'], true)) {
+            throw new \InvalidArgumentException('Invalid support feedback');
+        }
+        $root = $this->root();
+        $lock = @fopen($root . '/.conversation.lock', 'c');
+        if ($lock === false) throw new \RuntimeException('Support feedback unavailable.');
+        try {
+            @chmod($root . '/.conversation.lock', 0600);
+            if (!flock($lock, LOCK_EX)) throw new \RuntimeException('Support feedback lock unavailable.');
+            $filename = $root . '/' . $id . '.json';
+            $document = self::readFile($filename);
+            if ($document === null || !self::ownedBy($document, 'support', $actor)) {
+                throw new \RuntimeException('Conversation not accessible to this actor');
+            }
+            $last = count($document['turns'] ?? []) - 1;
+            if ($last < 0 || ($document['turns'][$last]['turn_id'] ?? '') !== $turnId) {
+                throw new \InvalidArgumentException('Only the latest support reply can be rated.');
+            }
+            if (isset($document['turns'][$last]['feedback'])) {
+                if (($document['turns'][$last]['feedback']['rating'] ?? null) !== $rating) {
+                    throw new \InvalidArgumentException('This answer was already rated.');
+                }
+                return ['resolution_status'=>$document['resolution_status'] ?? 'awaiting_feedback', 'recorded'=>true];
+            }
+            if (($document['resolution_status'] ?? '') === 'escalated') {
+                throw new \InvalidArgumentException('Escalated tickets are reviewed by the support team.');
+            }
+            $document['turns'][$last]['feedback'] = ['rating'=>$rating,'at'=>gmdate('c'),'source'=>'customer_confirmation'];
+            $document['resolution_status'] = $rating === 'helpful' ? 'confirmed_resolved' : 'needs_followup';
+            $document['updated_at'] = gmdate('c');
+            self::writeAtomic($root,$filename,$document);
+            return ['resolution_status'=>$document['resolution_status'],'recorded'=>true];
+        } finally {
+            flock($lock,LOCK_UN);
             fclose($lock);
         }
     }
@@ -247,6 +299,9 @@ final class AgentConversationService
                 'updated_at' => $document['updated_at'] ?? $document['started_at'] ?? '',
                 'turn_count' => count($document['turns'] ?? []),
                 'passed_turns' => (int)($document['passed_turns'] ?? 0),
+                'resolution_status' => in_array($document['resolution_status'] ?? '', [
+                    'awaiting_feedback','confirmed_resolved','needs_followup','escalated'
+                ], true) ? $document['resolution_status'] : 'unknown',
             ];
         }
         return $recent;

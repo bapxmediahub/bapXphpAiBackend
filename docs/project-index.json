@@ -3,9 +3,9 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 128,
+        "routes": 129,
         "controllers": 12,
-        "services": 60,
+        "services": 61,
         "views": 51,
         "collections": 22
     },
@@ -227,6 +227,7 @@
                 "AgentToolRegistry",
                 "EnterpriseToolRegistry",
                 "AgentConversationService",
+                "AgentTraceService",
                 "AgentEvaluationService",
                 "AgentTranscriptSanitizer",
                 "AgentCapabilityPolicy",
@@ -1408,10 +1409,22 @@
                 "SupportTicketService",
                 "SupportToolRegistry",
                 "AgentConversationService",
+                "AgentTraceService",
                 "AgentEvaluationService",
                 "AuditLogService",
                 "AiClient",
                 "AiReplyCleaner"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/support/feedback",
+            "name": "support.feedback",
+            "controller": "SupportController@feedback",
+            "view": "public/support",
+            "services": [
+                "AgentConversationService",
+                "RateLimiter"
             ]
         },
         {
@@ -1481,6 +1494,7 @@
         "AgentEvaluationService",
         "AgentInstructionService",
         "AgentToolRegistry",
+        "AgentTraceService",
         "AgentTranscriptSanitizer",
         "AiClient",
         "AiReplyCleaner",

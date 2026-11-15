@@ -407,6 +407,7 @@ if ($__flash):
         <?php if(empty($_SESSION['user'])): ?><p>Sign in to check your orders or support tickets.</p><?php endif; ?>
     </div>
     <form class="support-panel__form" id="support-form">
+        <input type="hidden" name="_csrf" value="<?= e((string)($_SESSION['csrf_token'] ?? '')) ?>">
         <textarea name="message" rows="3" required aria-label="Support message" placeholder="Ask about a product, order, or ticket"></textarea>
         <button class="btn btn-primary btn-sm">Send</button>
     </form>
@@ -507,6 +508,7 @@ if(supportForm){supportForm.addEventListener('submit',async function(e){
     supportForm.dataset.busy='true';
     var controls=Array.from(supportForm.querySelectorAll('textarea,button'));
     controls.forEach(function(control){control.disabled=true;});
+    supportLog.querySelectorAll('.support-feedback').forEach(function(el){el.remove();});
     supportLog.insertAdjacentHTML('beforeend','<p><strong>You:</strong> '+supportEscape(msg)+'</p>');
     supportSaveLog();supportForm.reset();
     var progress=window.AgentRequestStatus.start(supportLog),failed=false;
@@ -517,11 +519,43 @@ if(supportForm){supportForm.addEventListener('submit',async function(e){
         var j=await r.json();failed=!r.ok||!!j.error;
         if(typeof j.conversation_id==='string')supportConversationId=j.conversation_id;
         supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> '+supportReplyHtml(j.reply||j.error||'Unable to answer right now.')+'</p>'+(j.actions?supportActionsHtml(j.actions):''));
+        if(!failed&&!j.ticket_id&&typeof j.turn_id==='string'&&/^[a-f0-9]{32}$/.test(j.turn_id)){
+            var feedback=document.createElement('div');feedback.className='support-feedback';feedback.dataset.turnId=j.turn_id;
+            feedback.innerHTML='<span>Did this answer your question?</span> <button type="button" data-support-rating="helpful">Yes, resolved</button> <button type="button" data-support-rating="not_helpful">No, need help</button>';
+            supportLog.appendChild(feedback);
+        }
     }catch(err){failed=true;supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> Unable to answer right now. Please try again.</p>');}
     finally{
         clearTimeout(timeout);progress.finish(failed);
         supportForm.dataset.busy='false';controls.forEach(function(control){control.disabled=false;});
         supportSaveLog();supportLog.scrollTop=supportLog.scrollHeight;
+    }
+});}
+if(supportPanel){supportPanel.addEventListener('click',async function(event){
+    var button=event.target.closest('[data-support-rating]');
+    if(!button || !supportPanel.contains(button) || !supportConversationId) return;
+    var feedback=button.closest('.support-feedback');
+    if(!feedback || !/^[a-f0-9]{32}$/.test(feedback.dataset.turnId||''))return;
+    var rating=button.dataset.supportRating;
+    if(rating!=='helpful'&&rating!=='not_helpful')return;
+    var buttons=Array.from(feedback.querySelectorAll('button'));
+    buttons.forEach(function(el){el.disabled=true;});
+    var body=new FormData();
+    body.set('_csrf',supportForm.querySelector('input[name="_csrf"]')?.value||'');
+    body.set('conversation_id',supportConversationId);
+    body.set('turn_id',feedback.dataset.turnId);
+    body.set('rating',rating);
+    try{
+        var response=await fetch('/support/feedback',{method:'POST',body,credentials:'same-origin'});
+        var data=await response.json();
+        if(!response.ok||!data.recorded)throw new Error('Feedback unavailable');
+        feedback.textContent=rating==='helpful'
+            ? 'Thank you. We recorded your confirmation that this answer resolved your question.'
+            : 'Thank you. Your question is marked unresolved. Please continue chatting or contact our support team.';
+        supportSaveLog();
+    }catch(error){
+        feedback.insertAdjacentText('beforeend',' Could not save feedback; please retry.');
+        buttons.forEach(function(el){el.disabled=false;});
     }
 });}
 function showToast(msg,type){type=type||'info';var c=document.getElementById('toast-container');if(!c){c=document.createElement('div');c.id='toast-container';document.body.appendChild(c);}var t=document.createElement('div');t.className='toast toast--'+type;var icons={success:'✓',error:'✕',warning:'⚠',info:'ℹ'};t.innerHTML='<span class="toast__icon">'+(icons[type]||'ℹ')+'</span><span class="toast__text">'+msg+'</span><button class="toast__close" aria-label="Dismiss">&times;</button>';t.querySelector('.toast__close').addEventListener('click',function(e){e.stopPropagation();dismiss(t);});t.addEventListener('click',function(){dismiss(t);});c.appendChild(t);var timer=setTimeout(function(){dismiss(t);},4000);function dismiss(el){if(el.classList.contains('toast--out'))return;el.classList.add('toast--out');clearTimeout(timer);setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},250);}}

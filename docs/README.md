@@ -27,8 +27,10 @@ Generated files point to original sources. Do not hand-edit them.
 - [`architecture.md`](architecture.md)
 - [`deployment-hostinger.md`](deployment-hostinger.md)
 - [`schema.md`](schema.md)
-- [`json-storage.md`](json-storage.md) — historical filename; content must describe
-  the current hosted-MySQL boundary
+- [`json-storage.md`](json-storage.md) — hosted MySQL for business data;
+  one private JSON file per agent conversation
+- [`agent-observability.md`](agent-observability.md) — two agents, permitted
+  tools, correlated traces, customer feedback, golden eval and release checks
 - [`admin-guide.md`](admin-guide.md)
 - [`email-setup.md`](email-setup.md)
 

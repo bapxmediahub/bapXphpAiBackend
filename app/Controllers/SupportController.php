@@ -29,14 +29,46 @@ final class SupportController extends BaseController {
             $answer = (new SupportBotService(traceId: $traceId))->answer($_POST['message'] ?? '', $user);
             $record = (new \App\Services\AgentConversationService())->record(
                 'support', $actor, $conversationId, (string)($_POST['message'] ?? ''),
-                (string)($answer['reply'] ?? ''), $traceId, (string)($answer['run']['outcome'] ?? 'answered'),
-                (array)($answer['run']['tools'] ?? []), isset($answer['ticket_id']) ? (string)$answer['ticket_id'] : null
+                (string)($answer['reply'] ?? ''), $traceId,
+                !empty($answer['ticket_id']) ? 'escalated' : (string)($answer['run']['outcome'] ?? 'answered'),
+                (array)($answer['run']['tools'] ?? []), isset($answer['ticket_id']) ? (string)$answer['ticket_id'] : null,
+                null, (array)($answer['run']['attempts'] ?? []), (array)($answer['run']['retrieval'] ?? [])
             );
             $this->jsonResponse($answer + $record);
         } catch (\Throwable $e) {
             (new \App\Services\AuditLogService())->agentRun('support', 'error', $startedAt, 'internal_error', traceId: $traceId);
             error_log('Support request or audit persistence failed (' . get_class($e) . ')');
             $this->jsonResponse(['error' => 'Unable to complete or save the support request. Please retry.'], 503);
+        }
+    }
+
+    /**
+     * Customer-confirmed support resolution. CSRF + actor-owned conversation and
+     * latest-turn checks; this changes one private JSON file, no SQL/chat table.
+     */
+    public function feedback(): void {
+        $this->isApiRequest = true;
+        $this->validateCsrf();
+        $ip = (string)($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+        $limiter = new \App\Services\RateLimiter();
+        if (!$limiter->check('support-feedback:' . $ip, 20, 60)) {
+            $this->jsonResponse(['error'=>'Too many feedback attempts.'], 429);
+            return;
+        }
+        $limiter->hit('support-feedback:' . $ip);
+        $actor = \App\Services\AgentConversationService::actor('support', (new AuthService())->user());
+        try {
+            $result = (new \App\Services\AgentConversationService())->rateSupportTurn(
+                (string)($_POST['conversation_id'] ?? ''),
+                $actor,
+                (string)($_POST['turn_id'] ?? ''),
+                (string)($_POST['rating'] ?? '')
+            );
+            $this->jsonResponse($result);
+        } catch (\InvalidArgumentException $e) {
+            $this->jsonResponse(['error'=>$e->getMessage()], 400);
+        } catch (\RuntimeException $e) {
+            $this->jsonResponse(['error'=>'This support conversation is unavailable.'], 404);
         }
     }
 

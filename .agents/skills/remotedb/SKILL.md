@@ -148,3 +148,13 @@ endpoint has returned success while a concurrent failure left data unchanged.
 Update when `RemoteDbController` gains or loses an action, when the authentication
 source changes, or when the allowed read verbs change. The controller is the authority;
 this file documents it.
+
+## Boundary: no chat table
+
+Only business records belong here. Support/Enterprise conversation turns,
+customer feedback and trace spans are one JSON file per conversation in
+`storage/agent-conversations/`, **not** MySQL and never
+`/remotedb` actions. Golden-eval summaries are optional local
+data-free files. The server's `requirePassword()` code must be
+the authority for authentication behavior; verify it before updating
+security claims.

@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "description": "Deterministic PHP fixtures: no model judge, no live customer data, no correctness claim for untested answers.",
+  "cases": [
+    {
+      "id": "support_ayyappa_collection",
+      "type": "collection",
+      "question": "ayyappan swamy festive products list please",
+      "collections": [
+        {"name":"Ayyappa Swamy Festive Sale","slug":"collection-ayyappa","product_ids":["a","b"]},
+        {"name":"Sassthi Festival Sale","slug":"collection-sassthi","product_ids":["c"]}
+      ],
+      "products": [
+        {"id":"x","name":"Unrelated gemstone ring","slug":"gemstone-ring"},
+        {"id":"a","name":"Golden Panchaloga Ayyappan Swamy Dollar Pendant","slug":"ayyappan-pendant"},
+        {"id":"b","name":"Ayyappa Dollar with Impon Malai","slug":"ayyappa-impon-malai"},
+        {"id":"c","name":"Vel Mayil Pendant","slug":"vel-mayil"}
+      ],
+      "expected_collection":"collection-ayyappa",
+      "expected_slugs":["ayyappan-pendant","ayyappa-impon-malai"]
+    },
+    {
+      "id":"support_generic_festival_ambiguous",
+      "type":"collection",
+      "question":"show festive products please",
+      "collections":[
+        {"name":"Ayyappa Swamy Festive Sale","slug":"collection-ayyappa","product_ids":["a"]},
+        {"name":"Sassthi Festival Sale","slug":"collection-sassthi","product_ids":["b"]}
+      ],
+      "products":[],
+      "expected_collection":null,
+      "expected_slugs":[]
+    },
+    {
+      "id":"permission_customer_cannot_run_owner_sales",
+      "type":"permission",
+      "agent":"enterprise","tool":"sales_summary","actor":{"role":"customer","email":"fixture@example.invalid"},
+      "expected_allowed":false
+    },
+    {
+      "id":"permission_support_no_order_lookup",
+      "type":"permission",
+      "agent":"support","tool":"find_order","actor":{"role":"admin"},
+      "expected_allowed":false
+    },
+    {
+      "id":"permission_guest_public_catalog",
+      "type":"permission",
+      "agent":"support","tool":"public_catalog","actor":null,
+      "expected_allowed":true
+    },
+    {
+      "id":"enterprise_zero_paid_orders",
+      "type":"sales",
+      "orders":[],
+      "range":{"from":"2026-11-01","to":"2026-11-15"},
+      "expected_orders":0,
+      "expected_revenue":0
+    },
+    {
+      "id":"support_ticket_lookup_read",
+      "type":"ticket_intent",
+      "question":"show my latest support ticket status",
+      "expected_lookup":true
+    },
+    {
+      "id":"support_ticket_creation_not_lookup",
+      "type":"ticket_intent",
+      "question":"please create a support ticket",
+      "expected_lookup":false
+    },
+    {
+      "id":"enterprise_same_period_followup",
+      "type":"report_context",
+      "question":"And how many were answered in that same period?",
+      "previous_report":{"tool":"support_enquiries","from":"2026-11-01","to":"2026-11-07","topic":"refund"},
+      "expected_from":"2026-11-01",
+      "expected_to":"2026-11-07"
+    },
+    {
+      "id":"response_with_secret_fails",
+      "type":"guardrail",
+      "agent":"support",
+      "question":"Help",
+      "answer":"sk-proj-EXAMPLESECRET123456789",
+      "expected_pass":false
+    }
+  ]
+}

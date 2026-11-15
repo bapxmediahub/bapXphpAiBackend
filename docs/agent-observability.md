@@ -1,54 +1,159 @@
-# Native PHP agent observability and commerce insights
+---
+type: doc
+title: Agent Observability and Evaluations
+description: PHP agent permissions, JSON conversation traces, support feedback, and offline golden tests.
+category: docs
+---
 
-The application has two PHP agent surfaces: Support and Enterprise. No paid
-telemetry platform, evaluation service, or separate chat database is required.
+# Two agents: capability, evidence, evaluation, outcome
 
-## Capabilities and orchestration
+These capabilities are implemented on **draft PR #241**, not yet certified on
+production. They run in native PHP: no hosted evaluation service, agent
+framework, extra model subscription or conversation SQL table.
 
-- **Support** uses `SupportToolRegistry` with published shop/policy data and the authenticated customer's own scoped ticket records. It cannot run arbitrary SQL or write files.
-- **Enterprise** uses `EnterpriseToolRegistry`, which exposes only the existing named and validated read-only business queries. Drafted changes still require the admin's confirmation through normal forms.
-- `AgentCapabilityPolicy` enforces authorization in PHP, not by trusting model-generated arguments. `AgentInstructionService` supplies separately versioned instructions.
-- `AiClient` continues to handle configured model providers, bounded tool execution, and failover. Business records stay in the existing MySQL collections.
+## Entrypoints and source of truth
 
-## One JSON file per session
+| Operation | Actual implementation |
+|---|---|
+| Support question | POST `/support/ask`, `SupportController::ask` → `SupportBotService` |
+| Explicit support feedback | POST `/support/feedback` → `AgentConversationService::rateSupportTurn` |
+| Public catalogue and owned ticket data | `AgentContextService`, `SupportToolRegistry`, `SupportTicketService` |
+| Owner question | POST `/admin/agent/ask`, `AdminController::agentAsk` |
+| Named read-only owner tools | `EnterpriseToolRegistry` / `AgentToolRegistry` |
+| Authorization and distinct instructions | `AgentCapabilityPolicy`, `AgentInstructionService` |
+| Provider failover | `AiClient`, configured by `SecretService` |
+| Private chat/ownership | `AgentConversationService` |
+| Sanitized correlated spans | `AgentTraceService` |
+| Deterministic checks | `AgentEvaluationService`, `tests/fixtures/agent-golden*.json` |
+| Operational metadata-only logs | `AuditLogService::agentRun` → existing MySQL `audit_events` |
+| Owner session UI | GET `/admin/agent/history` and `/admin/agent/history/{id}` |
+| Owner monitoring/JSON export | GET `/admin/agent/monitoring`, `/admin/agent/conversation/{id}` |
 
-- **Authoritative transcript location:** `storage/agent-conversations/<conversation-id>.json`, where the ID is a random 32-character hex string. No `agent_conversations` table exists and no conversation rows are written to MySQL.
-- On the first message, PHP creates the JSON file. Each additional message appends a turn to that same file. New chats get a new ID. Each JSON document contains the actor type and authenticated ID or anonymous guest token, timestamps, messages, trace IDs, bounded tool/provider metadata and evaluation results. Secrets are redacted before saving.
-- `AgentConversationService` uses a shared `.conversation.lock` and atomic temporary-file rename to prevent concurrent writes from losing turns. The lock is bookkeeping, not an additional conversation record.
-- The PHP runtime must be able to create/write files under `storage/agent-conversations/`. The directory is private (0700 when newly created) and JSON files are restricted to mode 0600. The tracked directory `.htaccess`, root `.htaccess` and built-in PHP server guard deny public access to /storage URLs. Never serve JSON transcripts as static files.
-- All conversation JSON files are ignored by Git and must be retained through hosting deployments. **Back up** `storage/agent-conversations/` separately, alongside the existing MySQL and media backups. They contain customer business data and should have an explicit retention/deletion policy and storage encryption where available.
-- Admin Agent Monitoring lists recent session metadata and offers an authenticated JSON export. It does not load all transcripts into the dashboard or expose them in the public UI.
-- Enterprise Agent now also has explicit **New chat** and **History** controls. Its history routes return only the currently authenticated admin's own conversations and scrubbed turns. Reopening restores the old ID and messages without creating a second file; selecting New chat resets the ID. The global monitoring/export UI remains a separate, privileged admin audit capability.
-- User or admin chat questions and any report follow-up dates are loaded only from a session belonging to the authenticated actor. The browser cannot make another person's conversation accessible merely by supplying its ID.
-- Recording fails visibly when filesystem persistence is unavailable; avoid claiming that a support ticket or other action failed solely because its conversation audit could not be saved.
+Exactly two PHP agent surfaces exist: customer Support and Enterprise Owner.
+Both reuse `AiClient` but have **different PHP-enforced tool permissions**.
+A browser role, prompt or model-supplied SQL/file path is never an authorization
+grant. Business mutations remain explicit admin forms/drafts with CSRF and audit.
 
-## Evaluations
+## Request and tool lifecycle
 
-`AgentEvaluationService` performs local deterministic checks for empty answers,
-internal response scaffolding, secret-like text, unsupported tool names and basic
-business lookup requirements. They are checks, **not** proof of factual accuracy or
-quality. Extend with golden financial, privacy and support-resolution fixtures
-before treating them as a production quality score.
+**Support:** server-identify guest/customer → rate limit → recognize ticket,
+public policy, named product/collection, or other request → retrieve only
+public visible records or the authenticated customer's own tickets → optionally
+use bounded model synthesis → return answer with trace ID → save one redacted
+turn → wait for explicit customer feedback. A named Ayyappa festive collection
+uses verified collection membership, not the first 20 random product listings.
 
-## Commerce and SEO
+**Enterprise:** verify admin/CSRF → load a previous report only from that
+admin's existing JSON conversation → resolve simple aggregates locally or
+execute named allowlisted read-only PHP tools → assemble sources/result counts
+→ bounded model response/fallback → record trace and evaluation. New Chat clears
+the active ID; History reopens only that admin's previous chats.
 
-- First-party cart-add and checkout-start counts use the existing operational `audit_events` collection, independently of chat JSON files. No IP, raw prompt or customer email is stored in these event records.
-- Paid-order counts, net revenue and refund totals use `StoreStatsService`. These are business statistics, not unique-user web conversion rates.
-- `SiteInsightsService` checks published product/article metadata for missing titles, short descriptions, images and excerpts. These local checks do **not** measure Google search impressions, traffic or rankings.
+## One JSON file per conversation
 
-## Required verification
+The authoritative chat transcript is
 
-Run `./bapXphp update`, `./bapXphp ci`, and `php tests/agent-concurrency.php`.
-The last command uses only a disposable local filesystem directory, creates
-no SQL tables and tests concurrent appends, actor isolation and session lists.
+`storage/agent-conversations/<32-character-hex-id>.json`
 
-Verify in Playwright on desktop and 375px mobile:
+There is no `agent_conversations` MySQL collection or
+`/remotedb` chat mutation. The JSON stores actor type/ID or
+anonymous guest token, message turns, timestamps, sanitized questions/answers,
+trace spans, model/tool attempts, deterministic checks, and optional support
+feedback. A `.conversation.lock` bookkeeping file protects
+atomic updates; it is **not another chat**. PHP must preserve this ignored
+directory across every Hostinger deployment. Files use restricted permissions;
+the site's `/storage/` routes are inaccessible directly over HTTP.
+Back up the directory separately, with retention, deletion and access controls.
 
-1. Guests and logged-in customers can request support, and consecutive turns land in one JSON file.
-2. Admin Agent new chat resets its conversation ID and old report dates do not leak into another actor's chat.
-3. The admin monitoring view shows only summary metadata. Its authenticated export produces the right JSON, while unauthenticated direct file requests are denied.
-4. Files persist across the Hostinger Git auto-deployment flow.
-5. Cart/checkout telemetry failure never changes payment success or order persistence.
+In every turn, `trace_id` is the common root linking observed
+retrieval, named tool calls, sanitized filters/source/result counts, bounded
+provider attempts, deterministic evaluation and final answer metadata.
+`AgentTraceService` gives each span a distinct ID and parent
+trace. **The stages are grouped, not asserted to be chronological**:
+`ordering: grouped_by_stage_not_wall_clock`. Provider SDKs do
+not yet expose every real start/end time; the trace does not fabricate them.
 
-The feature is not production-verified until the live host can write to storage
-and the authenticated end-to-end checks have passed.
+Only allowlisted fields can enter tool evidence: e.g. report `from`
+and `to`, topic/status, source category, result count and an
+approved admin report URL. Email addresses, private order identifiers, raw SQL,
+coupon codes, provider bodies, credentials and hidden reasoning are excluded.
+The conversation text itself remains sensitive business/customer content;
+admin JSON export is protected and must never be linked as a static asset.
+
+## Resolution vs answer
+
+Support's feedback widget sends CSRF, the current conversation ID, latest
+turn ID and one of `helpful` or `not_helpful`.
+PHP checks session ownership and the most recent turn, and records a single
+customer vote **in that same JSON file**. A new question resets prior success.
+
+| Stored current state | Actual meaning |
+|---|---|
+| `awaiting_feedback` | Bot replied; no customer satisfaction established |
+| `confirmed_resolved` | Customer explicitly selected Yes, resolved |
+| `needs_followup` | Customer selected No, need help |
+| `escalated` | The app actually created a ticket for the human team |
+| `unknown` | Historical chat with no classified state |
+
+Silence or the customer closing the widget is **not** assumed resolution.
+The monitoring UI reports these counts on a clearly labeled **recent sample
+of up to 40 chats**, not all traffic. “Support answered” does not equal
+“customer satisfied” or “issue resolved.” Negative feedback remains unresolved
+and customers can continue chatting or contact support.
+
+## Evidence quality and reproducible offline evaluations
+
+`AgentEvaluationService::evaluate` checks only deterministic
+response guardrails. It reports live `factual_accuracy` and
+`groundedness` as `not_evaluated`, not as passing.
+Do not present a nonempty answer or no-secret result as factual correctness.
+
+The offline golden corpus and approved baseline live in:
+`tests/fixtures/agent-golden.json` and
+`tests/fixtures/agent-golden-baseline.json`.
+They include collection selection, generic ambiguity, role denial, empty
+sales, ticket lookup-vs-creation, follow-up periods and secret-leak rejection.
+
+`php cli/agent-eval.php` compares per-case results against the
+baseline, emits fixture and baseline SHA-256 hashes plus PHP/instruction
+versions, and exits nonzero for changed, added, removed or failing cases.
+`php cli/agent-eval.php --json` shows machine-readable output;
+`--write` optionally writes a **data-free** experiment snapshot
+under ignored `storage/agent-evals/`. No paid judge/model call
+occurs. GitHub CI runs this check on the PR.
+
+The current deterministic corpus is a regression gate, not a research
+benchmark. Human-reviewed customer satisfaction, semantic faithfulness,
+privacy, source freshness, financial totals and model performance still
+require separate grounded validation on real cases.
+
+## Monitoring and operations
+
+`AuditLogService` keeps privacy-safe operational run metadata
+in MySQL for the last-24-hour agent dashboard: request count, fallback/error
+status, provider attempts, allowed tool activity, mean and P95 duration.
+Full chat text is not duplicated in `audit_events`.
+
+Admin Agent Monitoring additionally shows per-chat JSON summary counts,
+customer-confirmed vs unresolved support feedback, the offline fixture
+pass count and dataset hash, and authorized transcript export. Reports
+label their denominators, time windows and limitations. Cart/checkout first-
+party counters are action totals, **not** unique-user conversion rates.
+SEO content audits do not claim Google traffic/ranking results.
+
+## Verification and release gate
+
+`./bapXphp update`, `./bapXphp ci`,
+`php cli/agent-eval.php` and
+`php tests/agent-concurrency.php` must pass.
+Desktop and 375px browser testing must cover admin History/New Chat, guest
+Support feedback, role isolation, report follow-ups, correct collection data,
+and privacy of session JSON URLs. Repeat affected flows after Hostinger
+deploy; confirm transcripts survive a release and no production secrets
+or customer conversations are committed.
+
+References (patterns researched, not required installations):
+- [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/).
+- [Open-source Arize Phoenix](https://github.com/Arize-ai/phoenix).
+- [Intercom resolution state definitions](https://www.intercom.com/help/en/articles/7022438-reporting-metrics-attributes).
+- [OWASP AI Agent Security](https://cheatsheetseries.owasp.org/cheatsheets/AI_Agent_Security_Cheat_Sheet.html).

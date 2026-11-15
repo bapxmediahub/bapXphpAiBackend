@@ -1,23 +1,29 @@
 ---
 type: doc
 title: Blog
-description: Blog listing page with pagination and single blog post routes.
+description: Published blog, help guides, category filtering and article rendering with Markdown source files.
 category: page
 ---
-# Blog
 
-Routes:
-- `/blog` — blog listing page with pagination
-- `/blog/{slug}` — single blog post
+# Blog and Help Guides
 
-Controller: `BlogController`
+Routes: `GET /blog`, `GET /blog/{slug}`,
+`GET /blog/category/{slug}`. `BlogController` calls `BlogService` and
+renders `views/public/blog.php` or `views/public/blog-post.php`.
 
-Views: `views/public/blog.php`, `views/public/blog-post.php`
+Articles are stored in `content/blog/posts/*.md` with YAML frontmatter.
+Published posts are filtered by category and optional `q` search; the current
+listing is **not paginated**. `help` category posts are customer documentation,
+with compatibility redirects from `/docs` and `/help/{slug}`.
 
-## Features
+The post title, description, original image metadata, Article JSON-LD and
+OpenGraph properties come from published frontmatter, not MySQL. The admin
+editor uses `BlogService` and a separate media picker. When a legacy article
+references an image absent from the release, its public thumbnail/article
+image and OG metadata must use a real, existing fallback; the underlying
+original URL is retained for later media replacement. That missing-image
+implementation is reviewed separately in PR #247 until merged.
 
-- Posts stored as Markdown with YAML frontmatter in `content/blog/posts/*.md`.
-- Managed via `BlogService` and editable through Admin → Blog editor.
-- Paginated listing (10 per page), newest first.
-- SEO: meta description from post excerpt, canonical URL, Open Graph tags.
-- `help` category posts serve as customer help center guides.
+Tests: verify image decode at desktop and 375px; category/keyword filtering,
+publication hiding and source/link handling; do not infer an image exists from
+a frontmatter URL without an actual file check.

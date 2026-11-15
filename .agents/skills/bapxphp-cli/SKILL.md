@@ -75,3 +75,12 @@ credentials, secret values or customer records.
 
 Update this skill when help, dispatch, an implementation file, or the binding
 contract changes. A help entry without an implementation is a gap, not a feature.
+
+## Agent offline test runner
+
+`php cli/agent-eval.php` verifies the versioned golden JSON
+fixtures against their committed baseline with no provider calls or customer
+data. `--json` prints a machine-readable comparison;
+`--write` creates an optional ignored experiment JSON in
+`storage/agent-evals/`. GitHub CI runs the same deterministic gate.
+Fixture changes and baseline changes must be reviewed together with evidence.

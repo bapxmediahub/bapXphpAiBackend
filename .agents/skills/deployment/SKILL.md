@@ -39,3 +39,15 @@ Confirm `./bapXphp ci` is green **before** merging to `main`. `main` is the Host
 ## Keeping this skill current
 
 Update when the host, deployment trigger, or required PHP version changes.
+
+## Private JSON conversation release gate
+
+On PR #241 and later agent releases, **no conversation SQL migration**:
+protect and preserve `storage/agent-conversations/*.json`
+across Hostinger deployment. Do not overwrite or commit these customer
+transcripts. Verify permissions and HTTP denial for `/storage/`,
+one JSON file per chat, real authenticated History and explicit feedback,
+cross-actor isolation and backup/restore. Run the zero-cost golden fixture
+baseline `php cli/agent-eval.php`, which cannot replace live QA.
+Use a disposable uploaded image for Media Library deletion verification,
+never a customer image.

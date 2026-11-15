@@ -265,6 +265,7 @@ class AgentToolRegistry
                     default => 'lookup_rejected',
                 },
                 'duration_ms' => (int)round((microtime(true) - $startedAt) * 1000),
+                'evidence' => AgentTraceService::toolEvidence($name, $args, $result),
             ];
             if ($name === 'support_enquiries' && !isset($result['error'])) {
                 $this->completedTicketSummaries[self::ticketSummary($result)] = true;
@@ -291,6 +292,7 @@ class AgentToolRegistry
                 'status' => 'error',
                 'reason' => 'lookup_unavailable',
                 'duration_ms' => (int)round((microtime(true) - $startedAt) * 1000),
+                'evidence' => AgentTraceService::toolEvidence($name, $args, ['error'=>'lookup_unavailable']),
             ];
             return ['error' => 'That lookup is temporarily unavailable.'];
         }

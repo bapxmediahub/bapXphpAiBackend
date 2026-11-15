@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "label": "initial-php-agent-deterministic-suite",
+  "expected": {
+    "support_ayyappa_collection": true,
+    "support_generic_festival_ambiguous": true,
+    "permission_customer_cannot_run_owner_sales": true,
+    "permission_support_no_order_lookup": true,
+    "permission_guest_public_catalog": true,
+    "enterprise_zero_paid_orders": true,
+    "support_ticket_lookup_read": true,
+    "support_ticket_creation_not_lookup": true,
+    "enterprise_same_period_followup": true,
+    "response_with_secret_fails": true
+  }
+}

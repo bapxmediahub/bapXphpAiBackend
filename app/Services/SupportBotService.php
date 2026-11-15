@@ -30,10 +30,13 @@ final class SupportBotService {
                 'ticket_id' => null,
                 'memory' => 'browser_session',
                 'actions' => $this->extractActions($reply),
-                'run' => ['outcome'=>'local','trace_id'=>$this->traceId,'tools'=>[]],
+                'run' => ['outcome'=>'local','trace_id'=>$this->traceId,'tools'=>[],
+                    'retrieval'=>[['source'=>'public_policy','result_count'=>1,'status'=>'complete']]],
             ];
         }
         $context = $this->customerContext($user, $message);
+        $retrieval = [['source'=>'visible_products',
+            'result_count'=>count($context['site']['products'] ?? []),'status'=>'complete']];
         $reply = (!$context['signed_in'] && $this->isPrivateAccountQuestion($message))
             ? $this->fallbackReply($message, $context)
             : null;
@@ -75,7 +78,8 @@ final class SupportBotService {
         $actions = $this->extractActions($reply);
         if ($actions !== []) $result['actions'] = $actions;
         (new AuditLogService($this->store))->agentRun('support', $outcome, $startedAt, $reason, $attempts, traceId: $this->traceId);
-        $result['run'] = ['outcome'=>$outcome,'trace_id'=>$this->traceId,'tools'=>[]];
+        $result['run'] = ['outcome'=>$outcome,'trace_id'=>$this->traceId,'tools'=>[],
+            'attempts'=>$attempts,'retrieval'=>$retrieval];
         return $result;
     }
 
@@ -159,6 +163,9 @@ final class SupportBotService {
                 'name' => 'customer_ticket_lookup',
                 'status' => $toolStatus,
                 'duration_ms' => (int)round((microtime(true) - $lookupStartedAt) * 1000),
+                'evidence' => AgentTraceService::toolEvidence('customer_ticket_lookup', [
+                    'reference'=>$lookup['reference'], 'status'=>$lookup['status']
+                ], isset($facts) ? ['count'=>(int)($facts['count']??0)] : ['error'=>'unavailable']),
             ];
             $reply ??= self::ticketStatusReply($message, $facts, $lookup);
             if ($reply === null && isset($facts)) {
@@ -183,7 +190,10 @@ final class SupportBotService {
         (new AuditLogService($this->store))->agentRun('support', $outcome, $startedAt, $reason, $attempts, $tools, $this->traceId);
         return [
             'reply' => $reply, 'ticket_id' => null, 'memory' => 'browser_session', 'actions' => $this->extractActions($reply),
-            'run' => ['outcome'=>$outcome,'trace_id'=>$this->traceId,'tools'=>$tools],
+            'run' => ['outcome'=>$outcome,'trace_id'=>$this->traceId,'tools'=>$tools,
+                'attempts'=>$attempts,'retrieval'=>isset($facts)
+                    ? [['source'=>'support_tickets','result_count'=>(int)($facts['count']??0),'status'=>'complete']]
+                    : []],
         ];
     }
 

@@ -148,6 +148,113 @@ $tests['Enterprise Agent new chat and history are scoped to each admin JSON iden
     }
 };
 
+$tests['agent runbook skills and storage docs are aligned with PHP code'] = static function (): void {
+    $documents = [
+        'AGENTS.md'=>'storage/agent-conversations',
+        'docs/json-storage.md'=>'one JSON file per chat',
+        'docs/architecture.md'=>'AgentTraceService',
+        'docs/agent-observability.md'=>'AgentEvaluationService',
+        '.agents/skills/backend-php-mysql/SKILL.md'=>'conversation',
+        '.agents/skills/admin-ui/SKILL.md'=>'agent/monitoring',
+        '.agents/skills/deployment/SKILL.md'=>'agent-conversations',
+        '.agents/skills/docs/SKILL.md'=>'documentation-to-code',
+    ];
+    foreach($documents as $file=>$text) {
+        $content=strtolower((string)file_get_contents(app_path($file)));
+        assertTrue(str_contains($content,strtolower($text)),
+            'Documentation includes implemented agent storage/trace contract: '.$file);
+    }
+    foreach ([
+        'app/Services/AgentTraceService.php',
+        'app/Services/AgentEvaluationService.php',
+        'cli/agent-eval.php',
+        'tests/fixtures/agent-golden.json',
+        'tests/fixtures/agent-golden-baseline.json',
+    ] as $file) {
+        assertTrue(is_file(app_path($file)), 'Documented source is present: '.$file);
+    }
+    assertTrue(!str_contains(fileRead('docs/agentic-monorepo.md'),
+        'Remote MySQL is the only runtime data store'), 'Do not claim chat history lives in MySQL');
+    assertTrue(!str_contains(fileRead('docs/json-storage.md'),
+        'All runtime data is stored in MySQL'), 'Chat JSON exception must remain documented');
+    assertTrue(str_contains(fileRead('.agents/skills/backend-php-mysql/SKILL.md'), 'fails closed'),
+        'Security skill reflects actual RemoteDbController authentication');
+};
+
+$tests['agent golden fixtures are reproducible, explicit, and fully passing'] = static function (): void {
+    $suite = \App\Services\AgentEvaluationService::goldenSuite();
+    assertSame(1, $suite['schema_version'], 'Golden dataset has a version');
+    assertTrue($suite['total'] >= 10, 'Golden suite covers multiple agent flows');
+    assertSame($suite['total'], $suite['passing'], 'Golden regression fixtures pass with current code');
+    assertSame('deterministic_fixture_regressions_not_production_accuracy', $suite['metric'],
+        'Golden result never claims live answer correctness');
+    assertTrue(strlen($suite['dataset_hash'])===64, 'Suite is content-addressed for experiment comparisons');
+};
+
+$tests['agent trace correlates retrieval tools providers checks and response without PII'] = static function (): void {
+    $tool = \App\Services\AgentTraceService::toolEvidence('find_order',
+        ['customer_email'=>'customer@example.invalid','order_id'=>'sensitive123'],
+        ['found'=>2,'orders'=>[['id'=>'sensitive123']]]);
+    assertSame('orders',$tool['source'],'Business data source is identified');
+    assertTrue(!str_contains(json_encode($tool),'customer@example.invalid'), 'No email in tool trace');
+    assertTrue(!str_contains(json_encode($tool),'sensitive123'), 'No order ID in tool trace');
+    $run = \App\Services\AgentTraceService::build('0123456789abcdef','model',[
+        ['name'=>'find_order','status'=>'complete','duration_ms'=>12,'evidence'=>$tool]
+    ],[
+        ['model'=>'fixture-model','status'=>200,'total_ms'=>48]
+    ],[
+        'passed'=>true,'version'=>2
+    ],'Two orders found.', [['source'=>'visible_products','result_count'=>3,'status'=>'complete']]);
+    assertSame('0123456789abcdef',$run['trace_id'],'One trace ID connects the steps');
+    assertSame(['retrieval','tool','model_attempt','evaluation','response'],
+        array_column($run['spans'],'type'),'Observed stages are linked');
+    foreach($run['spans'] as $span) {
+        assertSame($run['trace_id'],$span['parent_span_id'],'Every stage points to root');
+        assertTrue(preg_match('/^[a-f0-9]{16}$/D',$span['span_id'])===1,'Each stage has a distinct span ID');
+    }
+    assertTrue(!str_contains(json_encode($run),'sensitive123'),'No private identifier persisted in spans');
+};
+
+$tests['support feedback is explicit and resets on next user question'] = static function (): void {
+    $root=sys_get_temp_dir().'/sps-support-feedback-'.bin2hex(random_bytes(6));
+    assertTrue(mkdir($root,0700),'Private support feedback fixture exists');
+    $service=new \App\Services\AgentConversationService($root);
+    $actor=['type'=>'guest','id'=>'fixture-guest'];
+    try {
+        $first=$service->record('support',$actor,null,'Where do I track my order?','Go to My Orders.',
+            bin2hex(random_bytes(8)),'local');
+        $id=$first['conversation_id'];
+        $status=$service->rateSupportTurn($id,$actor,$first['turn_id'],'helpful');
+        assertSame('confirmed_resolved',$status['resolution_status'],'Only customer confirmation marks resolved');
+        $doc=$service->getForAdmin($id);
+        assertSame('confirmed_resolved',$doc['resolution_status'],'Resolution is persisted in same chat JSON');
+        assertSame(1,count(glob($root.'/*.json')?:[]),'Feedback does not create a second chat file');
+        $second=$service->record('support',$actor,$id,'And refunds?','Please contact support.',
+            bin2hex(random_bytes(8)),'fallback');
+        assertSame('awaiting_feedback',$service->getForAdmin($id)['resolution_status'],
+            'New question invalidates previous confirmation');
+        try {
+            $service->rateSupportTurn($id,$actor,$first['turn_id'],'helpful');
+            throw new \RuntimeException('Expected old-turn rating rejection');
+        } catch (\InvalidArgumentException) {}
+        try {
+            $service->rateSupportTurn($id,['type'=>'guest','id'=>'another'], $second['turn_id'], 'helpful');
+            throw new \RuntimeException('Expected foreign guest rejection');
+        } catch (\RuntimeException $e) {
+            assertSame('Conversation not accessible to this actor',$e->getMessage(),'No cross-guest feedback');
+        }
+        assertSame('needs_followup',$service->rateSupportTurn($id,$actor,$second['turn_id'],'not_helpful')['resolution_status'],
+            'Negative feedback marks unresolved, never assumed resolved');
+        $recent=$service->recent();
+        $summary=\App\Services\AgentEvaluationService::supportOutcomeSummary($recent);
+        assertSame(1,$summary['counts']['needs_followup'],'Dashboard counts explicitly negative feedback');
+        assertSame(0,$summary['counts']['confirmed_resolved'],'Confirmed rate resets for current turn');
+    } finally {
+        foreach(glob($root.'/*')?:[] as $f)@unlink($f);
+        @unlink($root.'/.conversation.lock');@rmdir($root);
+    }
+};
+
 $tests['agent instruction contracts are separate and versioned'] = static function (): void {
     $service = \App\Services\AgentInstructionService::class;
     assertTrue(str_contains($service::forSurface('support'), 'authenticated customer'), 'Support instructions enforce customer scope');
