@@ -29,7 +29,7 @@ git commit -m "fix: describe the change"
 git push -u origin HEAD
 ```
 
-Pushing `codex/**`, `fix/**`, or `feat/**` lets `branch-pr.yml` create a PR when
+Pushing `codex/**`, `fix/**`, `feat/**`, or `bapX/**` lets `branch-pr.yml` create a PR when
 repository permissions allow it. Validation runs for pull requests and pushes to
 `main`; verify the actual Action result.
 
@@ -52,3 +52,14 @@ commands are recovery and diagnosis tools only.
 ## Keeping this skill current
 
 Update when the branch or review conventions change.
+
+## Reviewer evidence
+
+After current-head CI, inspect the vendor's actual current-commit receipt.
+A green validate job or posted `@codex review`/`@sourcery-ai review`/
+`@coderabbitai review` comment is not a completed review or merge approval.
+Use the trusted default-branch coordinator described in
+`docs/engineering/ai-review-workflow.md`; it never executes PR-head code
+with review credentials. Preserve draft state and human release gates.
+Respect usage limits and missing-app/user-token prerequisites; do not
+reuse unrelated secrets or falsely report a blocked review as passed.

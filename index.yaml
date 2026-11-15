@@ -37,12 +37,12 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 358
+  concepts: 361
   relationships: 256
   by_type:
     blog: 14
     controller: 12
-    doc: 35
+    doc: 38
     image: 89
     route: 125
     schema: 22
@@ -271,6 +271,23 @@ concepts:
     tags:
       - "code"
       - "controller"
+  - id: "doc:2026-11-15-rea-agent-commerce-gaps"
+    type: "doc"
+    title: "REA-backed Agent and Commerce Gap Analysis"
+    description: "Pinned open-source comparison and observed reviewer failures; distinguishes main, draft and local unfinished work."
+    resource: "docs/research/2026-11-15-rea-agent-commerce-gaps.md"
+    tags:
+      - "docs"
+    filename: "2026-11-15-rea-agent-commerce-gaps.md"
+    header_image: ""
+  - id: "doc:2026-11-15-rea-review-audit"
+    type: "doc"
+    title: "2026-11-15-rea-review-audit"
+    description: ""
+    resource: "docs/superpowers/plans/2026-11-15-rea-review-audit.md"
+    tags: []
+    filename: "2026-11-15-rea-review-audit.md"
+    header_image: ""
   - id: "doc:README"
     type: "doc"
     title: "Documentation Index"
@@ -324,6 +341,15 @@ concepts:
     tags:
       - "docs"
     filename: "agentic-monorepo.md"
+    header_image: ""
+  - id: "doc:ai-review-workflow"
+    type: "doc"
+    title: "AI Review Evidence and Post-CI Coordination"
+    description: "Safe current-commit reviewer coordination with explicit quota, installation and user-token prerequisites."
+    resource: "docs/engineering/ai-review-workflow.md"
+    tags:
+      - "docs"
+    filename: "ai-review-workflow.md"
     header_image: ""
   - id: "doc:architecture"
     type: "doc"

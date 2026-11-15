@@ -32,6 +32,12 @@ Generated files point to original sources. Do not hand-edit them.
 - [`admin-guide.md`](admin-guide.md)
 - [`email-setup.md`](email-setup.md)
 
+## REA research and review operations
+
+- [REA agent and commerce gap analysis](research/2026-11-15-rea-agent-commerce-gaps.md) — source-pinned findings, not implementation claims
+- [REA evidence manifest](research/2026-11-15-rea-evidence.json) — selected source commits, hashes and coverage limitations
+- [AI review workflow](engineering/ai-review-workflow.md) — current-head receipts, draft settings and quota/credential prerequisites
+
 ## Modules
 
 - [`modules/admin.md`](modules/admin.md)

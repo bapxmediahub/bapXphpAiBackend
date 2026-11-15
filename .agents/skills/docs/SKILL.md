@@ -26,3 +26,14 @@ description: Use when editing README, docs, project-map docs, or agent-facing in
 ## Keeping this skill current
 
 Update whenever a route, controller, service or view is added or removed — the generated maps are committed and CI fails when they drift.
+
+## REA source comparison evidence
+
+Record reference commit, file path, license boundary and content hash.
+REA `import-reference-source` is historical-reference evidence with explicit
+coverage limits, not proof of runtime behavior. Distinguish main, published
+PR heads and unfinished local changes. Unsupported/unselected source files
+are unknown, not proved absent. Runtime evidence must state the actual
+scenario and privacy scope. Do not install reference products or copy paid
+enterprise modules into this native-PHP app merely to close a feature list.
+See `docs/research/2026-11-15-rea-agent-commerce-gaps.md`.
