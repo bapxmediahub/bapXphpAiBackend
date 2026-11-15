@@ -37,12 +37,12 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 376
-  relationships: 273
+  concepts: 378
+  relationships: 278
   by_type:
     blog: 14
     controller: 12
-    doc: 40
+    doc: 41
     image: 89
     route: 129
     schema: 22
