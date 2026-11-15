@@ -129,3 +129,22 @@
     .users-row { padding-inline: .6rem; }
     .users-role { padding-inline: .3rem; }
 }
+
+/* Long uploaded filenames must wrap inside their grid track, not widen the page. */
+.admin-media-tile { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.admin-media-tile > * { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+
+/* Mobile navigation owns its modal focus/scroll only while explicitly open. */
+.admin-sidebar__close { display: none; }
+.admin-sidebar-backdrop[hidden] { display: none !important; }
+@media (max-width: 768px) {
+    html.admin-nav-open { overflow: hidden; }
+    .admin-sidebar-backdrop { position: fixed; inset: 0; z-index: 999; background: rgba(34, 24, 24, .42); }
+    .admin-sidebar__close {
+        display: inline-flex; align-items: center; justify-content: center;
+        position: absolute; top: 12px; right: 12px; width: 44px; height: 44px;
+        border: 1px solid rgba(255,255,255,.25); border-radius: var(--radius-sm);
+        color: var(--color-white); background: transparent; cursor: pointer;
+    }
+    .admin-sidebar__close:focus-visible { outline: 3px solid var(--color-gold); outline-offset: 2px; }
+}

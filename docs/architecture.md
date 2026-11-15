@@ -74,3 +74,14 @@ views/
   admin/                Owner/admin pages
   layouts/              Shared layouts
 ```
+
+## Instruction source isolation
+
+Developer skills remain in `.agents/`; live prompts load only a fixed role
+manifest under `.bapX/` through `AgentInstructionService`. `.bapX` is private
+business instruction source, not conversation storage or an unrestricted file
+tool. Runtime traces and offline experiments fingerprint the actual loaded
+Markdown. See `docs/runtime-agents.md` for exact file/role/size/HTTP boundaries.
+
+Both PHP layouts use shared `assets/site-motion.js` / `assets/css/site-motion.css`
+as progressive enhancement, preserving semantic HTML and native scrolling.

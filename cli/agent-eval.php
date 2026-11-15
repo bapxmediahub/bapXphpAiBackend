@@ -43,11 +43,20 @@ $implementationFiles = [
 ];
 $implementation = [];
 foreach ($implementationFiles as $source) $implementation[$source] = hash_file('sha256',app_path($source));
+$instructionManifests = [
+    'support'=>AgentInstructionService::manifestForSurface('support'),
+    // Offline fixture evaluation uses an explicit test role, never a browser input.
+    'admin'=>AgentInstructionService::manifestForSurface('admin',['role'=>'admin']),
+];
+foreach ($instructionManifests as $manifest) {
+    foreach ($manifest['files'] as $file) $implementation[$file['path']] = $file['sha256'];
+}
 $result = [
     'schema_version'=>2,
     'implementation_sha256'=>hash('sha256',json_encode($implementation,JSON_THROW_ON_ERROR)),
     'source_sha256'=>$implementation,
-    'instructions_sha256'=>$implementation['app/Services/AgentInstructionService.php'],
+    'instructions_sha256'=>hash('sha256',json_encode($instructionManifests,JSON_THROW_ON_ERROR)),
+    'instruction_manifests'=>$instructionManifests,
     'created_at'=>gmdate('c'),
     'metric'=>'offline_deterministic_fixtures_only',
     'php_version'=>PHP_VERSION,

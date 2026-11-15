@@ -83,3 +83,8 @@ controller, service, and view listed in `project-index.json` before updating it.
 These supplement the independently prepared 27-entry #253 register; counts describe
 different scopes/grouping, not 55 unique gaps. Deduplicate by acceptance behavior
 before opening implementation issues.
+
+## Runtime boundaries and shared interaction
+
+- [Runtime business agents](runtime-agents.md): `.agents/` developer contracts versus private role-scoped `.bapX/` instructions.
+- [Site motion](site-motion.md): shared native-scroll effects, real-control behavior and reduced/no-JS browser verification.

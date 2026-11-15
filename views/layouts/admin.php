@@ -57,10 +57,16 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
     .admin-body { padding: var(--space-md); }
 }
 </style>
+<link rel="stylesheet" href="/assets/css/site-motion.css?v=<?= filemtime(__DIR__ . '/../../assets/css/site-motion.css') ?>">
+<script src="/assets/site-motion.js?v=<?= filemtime(__DIR__ . '/../../assets/site-motion.js') ?>" defer></script>
 </head>
 <body>
 <div class="admin-shell">
-    <aside class="admin-sidebar" id="admin-sidebar">
+    <div class="admin-sidebar-backdrop" id="admin-sidebar-backdrop" hidden aria-hidden="true"></div>
+    <aside class="admin-sidebar" id="admin-sidebar" aria-label="Owner navigation">
+        <button type="button" id="admin-sidebar-close" class="admin-sidebar__close" aria-label="Close navigation">
+            <svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg>
+        </button>
         <div class="admin-sidebar__brand">
             <img src="/assets/images/logo-square.jpeg" alt="" width="42" height="42">
             <div><span>Sri Panchami Spiritual</span><small>Owner workspace</small></div>
@@ -226,15 +232,45 @@ var installPrompt=null;window.addEventListener('beforeinstallprompt',function(e)
 function showToast(msg,type){type=type||'info';var c=document.getElementById('toast-container');if(!c){c=document.createElement('div');c.id='toast-container';document.body.appendChild(c);}var t=document.createElement('div');t.className='toast toast--'+type;var icons={success:'✓',error:'✕',warning:'⚠',info:'ℹ'};t.innerHTML='<span class="toast__icon">'+(icons[type]||'ℹ')+'</span><span class="toast__text">'+msg+'</span><button class="toast__close" aria-label="Dismiss">&times;</button>';t.querySelector('.toast__close').addEventListener('click',function(e){e.stopPropagation();dismiss(t);});t.addEventListener('click',function(){dismiss(t);});c.appendChild(t);var timer=setTimeout(function(){dismiss(t);},4000);function dismiss(el){if(el.classList.contains('toast--out'))return;el.classList.add('toast--out');clearTimeout(timer);setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},250);}}
 const sidebar = document.getElementById('admin-sidebar');
 const toggle = document.getElementById('sidebarToggle');
-if (toggle) {
-    toggle.addEventListener('click', () => { const open = sidebar.classList.toggle('open'); toggle.setAttribute('aria-expanded', String(open)); toggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation'); });
-    document.addEventListener('click', (e) => {
-        if (window.innerWidth <= 768 && !sidebar.contains(e.target) && !toggle.contains(e.target)) {
-            sidebar.classList.remove('open');
-            toggle.setAttribute('aria-expanded', 'false');
-            toggle.setAttribute('aria-label', 'Open navigation');
-        }
+const closeSidebar = document.getElementById('admin-sidebar-close');
+const sidebarBackdrop = document.getElementById('admin-sidebar-backdrop');
+const adminMain = document.querySelector('.admin-main');
+function setAdminSidebar(open, restoreFocus = true) {
+    const mobile = window.innerWidth <= 768;
+    open = Boolean(open && mobile);
+    sidebar.classList.toggle('open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+    sidebarBackdrop.hidden = !open;
+    document.documentElement.classList.toggle('admin-nav-open', open);
+    if (open) {
+        sidebar.setAttribute('role','dialog');
+        sidebar.setAttribute('aria-modal','true');
+        adminMain.setAttribute('inert','');
+        closeSidebar.focus({preventScroll:true});
+    } else {
+        sidebar.removeAttribute('role');
+        sidebar.removeAttribute('aria-modal');
+        adminMain.removeAttribute('inert');
+        if (mobile && restoreFocus) toggle.focus({preventScroll:true});
+    }
+}
+if (toggle && sidebar && closeSidebar && sidebarBackdrop && adminMain) {
+    toggle.addEventListener('click', () => setAdminSidebar(!sidebar.classList.contains('open')));
+    closeSidebar.addEventListener('click', () => setAdminSidebar(false));
+    sidebarBackdrop.addEventListener('click', () => setAdminSidebar(false));
+    sidebar.addEventListener('click', event => { if (event.target.closest('a[href]') && window.innerWidth <= 768) setAdminSidebar(false, false); });
+    document.addEventListener('keydown', event => {
+        if (!sidebar.classList.contains('open') || window.innerWidth > 768) return;
+        if (event.key === 'Escape') { event.preventDefault(); setAdminSidebar(false); return; }
+        if (event.key !== 'Tab') return;
+        const focusable = Array.from(sidebar.querySelectorAll('a[href],button:not(:disabled),summary,[tabindex="0"]'))
+            .filter(el => el.getClientRects().length > 0 && !el.closest('[hidden]'));
+        const first = focusable[0], last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
     });
+    window.addEventListener('resize', () => { if (window.innerWidth > 768 && sidebar.classList.contains('open')) setAdminSidebar(false, false); }, {passive:true});
 }
 document.querySelectorAll('.admin-nav-toggle').forEach(function(btn){var target=document.getElementById(btn.dataset.target);if(!target)return;var active=!!target.querySelector('a.active');btn.setAttribute('aria-expanded',String(active));target.style.display=active?'':'none';btn.addEventListener('click',function(){var expanded=btn.getAttribute('aria-expanded')==='true';btn.setAttribute('aria-expanded',String(!expanded));target.style.display=expanded?'none':'';});});
 document.querySelectorAll('.table-wrap').forEach(function(wrap){var table=wrap.querySelector('table');if(!table||wrap.hasAttribute('data-no-table-search')||table.querySelector('.admin-search-added'))return;var search=document.createElement('input');search.type='text';search.placeholder='Search\u2026';search.style.cssText='width:100%;max-width:320px;margin-bottom:var(--space-sm);padding:0.5rem 0.75rem;font-size:0.85rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-white);';wrap.parentNode.insertBefore(search,wrap);search.addEventListener('input',function(){var q=this.value.toLowerCase().trim();table.querySelectorAll('tbody tr').forEach(function(row){if(!q||row.textContent.toLowerCase().includes(q)){row.style.display=''}else{row.style.display='none'}});});table.classList.add('admin-search-added');});

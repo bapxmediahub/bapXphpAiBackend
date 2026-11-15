@@ -5,6 +5,8 @@ authoritative_sources:
   runtime_data: "https://sripanchamispiritual.com/remotedb"
   schema: "storage/schema/collections.php"
   blogs: "content/blog/posts/*.md"
+  developer_instructions: "AGENTS.md and .agents/skills/*/SKILL.md"
+  runtime_instructions: ".bapX/ via AgentInstructionService role allowlists"
   images: "assets/images/**/*"
   code_map: "map.mmd"
   documentation_map: "docs/map.mmd"
@@ -29,6 +31,8 @@ discovery:
     use: "concepts filtered by type=image; query by filename or resource"
   - question: "What repository instructions or skill apply?"
     use: "AGENTS.md, then the matching .agents/skills/<name>/SKILL.md"
+  - question: "Which live business-agent instruction file applies?"
+    use: "runtime_instruction references under .bapX; PHP role checks determine what can actually load"
 query_examples:
   - "sed -n '1,/^concepts:/p' index.yaml"
   - "jq --arg method POST --arg path /contact '.routes[] | select(.method == $method and .path == $path)' docs/project-index.json"
@@ -37,17 +41,18 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 384
-  relationships: 283
+  concepts: 394
+  relationships: 284
   by_type:
     blog: 14
     controller: 12
-    doc: 44
+    doc: 47
     image: 89
     route: 131
+    runtime_instruction: 6
     schema: 22
     service: 61
-    skill: 11
+    skill: 12
 concepts:
   - id: "blog:benefits-of-rudraksha"
     type: "blog"
@@ -296,6 +301,14 @@ concepts:
     resource: "docs/superpowers/plans/2026-11-15-rea-review-audit.md"
     tags: []
     filename: "2026-11-15-rea-review-audit.md"
+    header_image: ""
+  - id: "doc:2026-11-15-runtime-boundaries-motion"
+    type: "doc"
+    title: "2026-11-15-runtime-boundaries-motion"
+    description: ""
+    resource: "docs/superpowers/plans/2026-11-15-runtime-boundaries-motion.md"
+    tags: []
+    filename: "2026-11-15-runtime-boundaries-motion.md"
     header_image: ""
   - id: "doc:README"
     type: "doc"
@@ -638,6 +651,15 @@ concepts:
       - "role"
     filename: "admin.md"
     header_image: ""
+  - id: "doc:runtime-agents"
+    type: "doc"
+    title: "Developer Harness and Runtime Business Agent Boundaries"
+    description: "Separate private developer skills from the role-scoped live PHP business-agent Markdown and its evidence hashes."
+    resource: "docs/runtime-agents.md"
+    tags:
+      - "docs"
+    filename: "runtime-agents.md"
+    header_image: ""
   - id: "doc:schema"
     type: "doc"
     title: "Schema Registry"
@@ -655,6 +677,15 @@ concepts:
     tags:
       - "page"
     filename: "shop.md"
+    header_image: ""
+  - id: "doc:site-motion"
+    type: "doc"
+    title: "Shared Motion and Native Scroll Contract"
+    description: "Progressive motion across PHP layouts with reduced-motion, no-JS, static-content and real-control guarantees."
+    resource: "docs/site-motion.md"
+    tags:
+      - "docs"
+    filename: "site-motion.md"
     header_image: ""
   - id: "doc:temples"
     type: "doc"
@@ -3808,6 +3839,60 @@ concepts:
       - "TaxService"
       - "SettingsService"
     view: "public/checkout"
+  - id: "runtime_instruction:.bapX/bapXcl/enterprise/reporting.md"
+    type: "runtime_instruction"
+    title: "Enterprise reporting skill"
+    description: "Private live-agent instruction source; AgentInstructionService enforces the role allowlist."
+    resource: ".bapX/bapXcl/enterprise/reporting.md"
+    tags:
+      - "runtime"
+      - "private"
+      - "instructions"
+  - id: "runtime_instruction:.bapX/bapXcl/skill.md"
+    type: "runtime_instruction"
+    title: "Shared runtime business skill contract"
+    description: "Private live-agent instruction source; AgentInstructionService enforces the role allowlist."
+    resource: ".bapX/bapXcl/skill.md"
+    tags:
+      - "runtime"
+      - "private"
+      - "instructions"
+  - id: "runtime_instruction:.bapX/bapXcl/support/catalog.md"
+    type: "runtime_instruction"
+    title: "Support catalogue skill"
+    description: "Private live-agent instruction source; AgentInstructionService enforces the role allowlist."
+    resource: ".bapX/bapXcl/support/catalog.md"
+    tags:
+      - "runtime"
+      - "private"
+      - "instructions"
+  - id: "runtime_instruction:.bapX/bapXcl/support/policy-and-tickets.md"
+    type: "runtime_instruction"
+    title: "Support policy and ticket skill"
+    description: "Private live-agent instruction source; AgentInstructionService enforces the role allowlist."
+    resource: ".bapX/bapXcl/support/policy-and-tickets.md"
+    tags:
+      - "runtime"
+      - "private"
+      - "instructions"
+  - id: "runtime_instruction:.bapX/enterpriseagent.md"
+    type: "runtime_instruction"
+    title: "Enterprise Agent constitution"
+    description: "Private live-agent instruction source; AgentInstructionService enforces the role allowlist."
+    resource: ".bapX/enterpriseagent.md"
+    tags:
+      - "runtime"
+      - "private"
+      - "instructions"
+  - id: "runtime_instruction:.bapX/supportagent.md"
+    type: "runtime_instruction"
+    title: "Support Agent constitution"
+    description: "Private live-agent instruction source; AgentInstructionService enforces the role allowlist."
+    resource: ".bapX/supportagent.md"
+    tags:
+      - "runtime"
+      - "private"
+      - "instructions"
   - id: "schema:addresses"
     type: "schema"
     title: "addresses"
@@ -4586,6 +4671,13 @@ concepts:
     resource: ".agents/skills/schema/SKILL.md"
     tags:
       - "skill"
+  - id: "skill:site-motion"
+    type: "skill"
+    title: "site-motion"
+    description: "Use for progressive animations, native scrolling, panel and message motion, and reduced-motion/browser checks in the existing PHP public or admin layouts."
+    resource: ".agents/skills/site-motion/SKILL.md"
+    tags:
+      - "skill"
   - id: "skill:visual-workspaces"
     type: "skill"
     title: "visual-workspaces"
@@ -4896,6 +4988,9 @@ relationships:
     relation: "uses"
   - from: "doc:rea-agent-commerce-gap-audit"
     to: "doc:ai-review-workflow"
+    relation: "references"
+  - from: "doc:site-motion"
+    to: "doc:README"
     relation: "references"
   - from: "route:get"
     to: "controller:PublicController"

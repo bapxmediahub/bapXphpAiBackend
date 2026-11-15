@@ -53,3 +53,11 @@ receipts. Staff transitions run through `updateSupportTicket` on the database
 host with a row lock and expected version; do not restore read-all/upsert reply
 or close logic. Test against the disposable CI database and do not infer email
 delivery from a saved reply. Conversation history remains one private JSON file.
+
+## Developer/runtime instruction separation
+
+This `.agents/` skill is for repository coding tools only. Live business
+agent prompt text lives under `.bapX/`, selected by `AgentInstructionService`
+with a fixed role allowlist. Update `docs/runtime-agents.md`, instruction
+content fingerprints and isolation tests whenever that contract changes.
+Never route a model-supplied path or developer index into live instructions.

@@ -40,6 +40,11 @@ This file is the single binding contract for coding agents in this repository.
 - The repository is independent and unforked. Do not add an upstream remote or
   synchronise from any other copy.
 - Canonical project skills live in `.agents/skills/`. Hooks live in `.claude/hooks/`.
+- `.agents/` and this `AGENTS.md` are **developer/coding harness instructions only**.
+  Live business-agent instructions are fixed role-allowlisted Markdown in `.bapX/`,
+  loaded only by `AgentInstructionService`. Support cannot load Enterprise files;
+  do not turn developer skills or generated indexes into live prompt context.
+  See `docs/runtime-agents.md`. Both private trees are denied to direct HTTP access.
 - The product has exactly two PHP agent surfaces: customer support and owner/admin chat.
 
 ## Work order
@@ -181,6 +186,9 @@ Check computed styles rather than trusting a screenshot: an author rule like
 
 - Extend existing controllers, services and views. No parallel implementations.
 - Customer-facing UI follows `Design.md`.
+- Shared motion follows `docs/site-motion.md`: native scrolling, readable no-JS
+  frames and dynamic reduced-motion support. Coding references such as Scrollcraft
+  and Stageshow stay outside runtime business-agent prompt selection.
 - Admin mutations are auditable via `AuditLogService`, which must never break the
   operation it records.
 - Secrets are never committed and never placed in `.env`.

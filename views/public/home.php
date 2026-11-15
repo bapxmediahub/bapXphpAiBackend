@@ -38,39 +38,11 @@
                     <button class="varahi-dot <?= $index === 0 ? 'is-active' : '' ?>" type="button" role="tab" aria-label="Slide <?= $index + 1 ?>: <?= e($slide['alt']) ?>" <?= $index === 0 ? 'aria-current="true"' : 'aria-current="false"' ?> data-slide="<?= $index ?>"></button>
                 <?php endforeach; ?>
             </div>
+            <button type="button" class="hero-motion-toggle" data-slideshow-pause aria-pressed="false" hidden>Pause slides</button>
         </div>
     </div>
 </section>
-<script>
-(() => {
-    const root = document.querySelector('[data-varahi-slider]');
-    if (!root) return;
-    const slides = [...root.querySelectorAll('.varahi-slide')];
-    const dots = [...root.querySelectorAll('.varahi-dot')];
-    let index = 0, timer;
-    const show = n => {
-        slides[index].classList.remove('is-active');
-        dots[index].classList.remove('is-active');
-        dots[index].setAttribute('aria-current', 'false');
-        index = (n + slides.length) % slides.length;
-        slides[index].classList.add('is-active');
-        dots[index].classList.add('is-active');
-        dots[index].setAttribute('aria-current', 'true');
-        root.dataset.currentSlide = slides[index].classList.contains('hero-guruji') ? 'guruji' : 'deity';
-    };
-    const play = () => {
-        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        clearInterval(timer);
-        timer = setInterval(() => show(index + 1), 5000);
-    };
-    dots.forEach(d => {
-        d.addEventListener('click', () => { show(parseInt(d.dataset.slide)); play(); });
-    });
-    root.addEventListener('mouseenter', () => clearInterval(timer));
-    root.addEventListener('mouseleave', play);
-    play();
-})();
-</script>
+
 
 <div class="trust-bar">
     <div class="trust-bar__inner">

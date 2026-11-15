@@ -237,3 +237,12 @@ updates reject stale versions. Its results must be observed in CI before release
 A separate numerical CSAT survey, all-traffic outcome reporting, a mature
 feedback-to-content review workflow and the nine commerce expansion gaps are
 **not** implemented by these changes. See `docs/engineering/rea-gap-status.md`.
+
+## Runtime instruction provenance
+
+Live business instructions now come from the fixed `.bapX/` manifests documented
+in `runtime-agents.md`, never `AGENTS.md` or `.agents/skills/`. `AgentInstructionService`
+validates the server role and file boundaries, then records the actual manifest
+and bundle SHA-256 into the active trace when a prompt is loaded. Local replies
+that never invoke model instructions do not claim a loaded prompt. Offline
+experiment fingerprints include every role-allowlisted Markdown source.
