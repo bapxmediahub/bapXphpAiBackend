@@ -102,6 +102,7 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/admin/appearance/save','name'=>'admin.appearance.save','page'=>'admin/appearance','controller'=>'AdminController@saveAppearance','services'=>['SettingsService','AuditLogService']],
             ['method'=>'GET','path'=>'/admin/media','name'=>'admin.media','page'=>'admin/media','controller'=>'AdminController@media','services'=>['MediaService']],
             ['method'=>'POST','path'=>'/admin/media/upload','name'=>'admin.media.upload','page'=>'admin/media','controller'=>'AdminController@uploadMedia','services'=>['MediaService','AuditLogService']],
+            ['method'=>'POST','path'=>'/admin/media/delete','name'=>'admin.media.delete','page'=>'admin/media','controller'=>'AdminController@deleteMedia','services'=>['MediaService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/products/save','name'=>'admin.products.save','page'=>'admin/product-form','controller'=>'AdminController@saveProduct','services'=>['ResourceService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/products/delete','name'=>'admin.products.delete','page'=>'admin/product-form','controller'=>'AdminController@deleteProduct','services'=>['ResourceService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/categories/save','name'=>'admin.categories.save','page'=>'admin/resource','controller'=>'AdminController@saveCategory','services'=>['ResourceService','AuditLogService']],

@@ -344,6 +344,36 @@ $tests['support named festive collection listing uses only collection members'] 
     assertTrue(str_contains($empty, 'no visible products'), 'Empty collections do not fabricate results');
 };
 
+$tests['media removal is restricted to unused uploaded media with CSRF'] = static function (): void {
+    $media = \App\Services\MediaService::class;
+    $upload = ['id'=>'0123456789abcdef', 'url'=>'/assets/images/media/2026/11/test.webp', 'context'=>'shared'];
+    assertTrue($media::canDeleteRecord($upload), 'Uploaded library record is eligible for deletion review');
+    assertTrue(!$media::canDeleteRecord(['id'=>'file:/assets/images/blog/valid.webp','url'=>'/assets/images/blog/valid.webp','source'=>'file']),
+        'Bundled images are not deletable');
+    assertTrue(!$media::canDeleteRecord($upload + ['source'=>'legacy']), 'Legacy YAML metadata is not deletable');
+    assertTrue(!$media::canDeleteRecord(['id'=>'0123456789abcdef', 'url'=>'/assets/images/products/hero.webp']),
+        'Product assets cannot be deleted from the uploaded-media route');
+    $references = $media::referencesToUrl($upload['url'], [
+        'products'=>[['name'=>'Test product', 'image_url'=>$upload['url']]],
+        'articles'=>[['title'=>'Another post','og_image'=>'/assets/images/blog/other.webp']],
+    ]);
+    assertTrue(count($references)===1 && str_contains($references[0], 'Test product'),
+        'Live referenced images cannot be removed');
+    assertSame([], $media::referencesToUrl($upload['url'], ['products'=>[['image_url'=>'/not-this.webp']]]),
+        'Unrelated content does not block uploads');
+    $routes = \App\Services\ProjectMapService::registry()['routes'];
+    $mediaDelete = array_values(array_filter($routes, static fn($r):bool =>
+        ($r['path']??'')==='/admin/media/delete' && ($r['method']??'')==='POST'));
+    assertSame(1, count($mediaDelete), 'Media deletion is an authenticated admin POST route');
+    $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
+    assertTrue(str_contains($controller, 'public function deleteMedia') && str_contains($controller, '$this->validateCsrf()'),
+        'Media delete controller requires CSRF');
+    $template = file_get_contents(app_path('views/admin/media.php'));
+    assertTrue(str_contains($template, 'Delete upload') && str_contains($template, "name=\"_csrf\""),
+        'Library exposes a confirmation form with CSRF');
+    assertTrue(str_contains($template, 'return confirm('), 'Owner must confirm image deletion');
+};
+
 $tests['database service can connect to MySQL'] = function (): void {
     try {
         // Quick pre-check: verify the host is reachable before attempting PDO
