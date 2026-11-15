@@ -23,7 +23,12 @@ foreach($surfaces as $surface=>$config){
     if($names!==AgentCapabilityPolicy::tools($config['policy']))throw new RuntimeException('Registry/policy capability mismatch: '.$surface);
     $lines[]='## '.$config['title'];$lines[]='';
     $lines[]='Source: `app/Services/'.$config['registry'].'.php`; instruction version '.AgentInstructionService::VERSION.'.';$lines[]='';
-    $lines[]='### Instructions';$lines[]='';$lines[]=AgentInstructionService::forSurface($surface);$lines[]='';
+    // Offline metadata generation has an explicit fixture role; production auth is unchanged.
+    $manifest=AgentInstructionService::manifestForSurface($surface,$surface==='admin'?['role'=>'admin']:null);
+    $lines[]='### Runtime instruction sources';$lines[]='';
+    $lines[]='Private runtime Markdown is not duplicated into developer documentation.';$lines[]='';
+    foreach($manifest['files'] as $file)$lines[]='- `'.$file['path'].'` — SHA-256 `'.$file['sha256'].'`';
+    $lines[]='';$lines[]='Bundle SHA-256: `'.$manifest['sha256'].'`.';$lines[]='';
     foreach($config['tools'] as $tool){
         $lines[]='### `'.$tool['name'].'`';$lines[]='';$lines[]=$tool['description'];$lines[]='';
         $access=$surface==='admin'?'Authenticated admin, enforced server-side.':($tool['name']==='own_ticket_status'?'Authenticated customer; identity comes from PHP, never tool arguments.':'Guest or authenticated customer; published/public data only.');

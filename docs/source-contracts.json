@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "8c422a01713642dfc0866dfd7426bd50e17ba5b66a11584f40fd61a5e1515fe6",
-            "references_sha256": "954237a7baf8b1a98436ee26454d7bbf7191534b872fc128979692a203144358",
-            "review_note": "Baseline source-to-reference ownership checked against current agent instructions, tool-contract generator and JSON observability guides. Removed the duplicate issue ledger; remaining acceptance lives on GitHub #251, not this review receipt."
+            "source_sha256": "4c37d9ff708a4469082951fdf03d1b9822d6252e536b80c5f9e16b992ae19f9c",
+            "references_sha256": "1a2e7d0ca274be7abba1748f770bd1f1e1f3232a759ba76968efd4005c9e7e58",
+            "review_note": "Rechecked role-scoped manifest generator after #265: contract docs list actual private Markdown paths/content hashes without copying prompt bodies; guardrail and JSON session semantics remain unchanged. Current acceptance belongs in GitHub #251."
         },
         "auth": {
             "source_sha256": "fb54a6f0d4394ea91c7544998f57773f0019cc7710093becee637e0d7d059440",
@@ -19,18 +19,18 @@
         },
         "content": {
             "source_sha256": "69e2120edea55d29d5be299f639eb52d369fe62a317cdbd31c15b61cda2ed169",
-            "references_sha256": "2db8e23ed14b8e8f45b18bf34cfd76edc655c382a6fbc7e953e6ffbe11533025",
-            "review_note": "Read BlogService, BlogDraftService, MarkdownRenderer and SeoService plus their controller call sites. Corrected local blog source documentation and explained scaffold/model/save responsibilities. Independent renderer/SEO/scaffold findings are tracked in GitHub, not silently declared fixed."
+            "references_sha256": "c2b25f88769a4b84906f9135914b214660b656f4ee20b1d4c2fa4908b48efee4",
+            "review_note": "Rechecked BlogService and BlogController local Markdown/category YAML and actual draft/enhance/save responsibilities. Generated docs map now represents those sources. Renderer and SEO bugs have separate GitHub issues #262/#263, not misleading fixed claims."
         },
         "foundation": {
-            "source_sha256": "2955251233fce00f3ca045edaad0f0746c18cb0b75b77deeb13b74e0adc2d6fe",
-            "references_sha256": "ca377b4f56b9f968962d5268028748e949e50b85d35eb1614a1bc1b87f2323a0",
-            "review_note": "Baseline source ownership/reference contract checked against PHP routing, hosted business data, private per-chat JSON and deployment documentation. Hashes detect future changes but do not assert exhaustive semantic correctness or issue completion."
+            "source_sha256": "b9658e1179b430a83090f3f99f2697d840a7598ce04615d192896e03f6165e58",
+            "references_sha256": "b10d0425c501423bf392d2527e5eeda4f8d53dda9ee49be535962e218e3ff57b",
+            "review_note": "Reviewed bootstrap CLI failure behavior: nonzero bounded diagnostic instead of successful HTML; no web auth change. Deployment guide no longer describes merged JSON runtime as draft. Business MySQL and private chat file boundaries remain intact."
         },
         "interface": {
             "source_sha256": "cb7ac7c0ece97abd4c09af8ad37738288caaca8b32e297097a116c0144fb6451",
-            "references_sha256": "3940a752e3b88e207c1280b6692ab98882ec61347aba4099745699a910fa7572",
-            "review_note": "Baseline matched existing PHP layout/navigation sources to durable admin/design/motion guides. Missing in-app Admin Help is separately recorded as issue #261, not implemented or certified by this baseline."
+            "references_sha256": "cfefb1cbc0567de649b66deffefb8a73c2844b1c14e9062a872be8126bf2f6d8",
+            "review_note": "Reviewed current implemented media deletion and safe empty dashboard behavior; removed stale draft/unmerged claims in operator/module guides. Admin Help UI remains separately scoped to #261."
         },
         "mail": {
             "source_sha256": "caed5f4ccf26b2e3315bc122e0568f79a4a25a451cf1bfda017c53c5ac3866d4",
@@ -43,9 +43,9 @@
             "review_note": "Compared existing guarded deletion implementation with its durable test procedure; migrated dated execution/status evidence out of docs. No customer media mutation performed."
         },
         "workflow": {
-            "source_sha256": "f31a7b60066ab9d15f920923738a915789a6e31d14b57fca311d05b94573c4d8",
+            "source_sha256": "471e8bfd103d5db9b9fe6bef4760537e12d025a3538b09250257366962715b2a",
             "references_sha256": "eb89374be651a5acaa5f8b46b4292afdf01c9763bc5e62ccc0a5c1e9c121b087",
-            "review_note": "Reviewed issue-first gh development versus plain-Git hosting, explicit source/doc receipts, regenerated index behavior and GitHub-only tracking tests. Map generation no longer claims an unused remote blog source. CI does not auto-approve review hashes."
+            "review_note": "Verified developer gh versus plain-Git hosting, issue/comment-only task records, moved historical ledgers before deleting them, explicit source/reference review receipts, and actual nonzero CLI exception behavior from #265. Index updates cannot approve prose truth."
         }
     }
 }
