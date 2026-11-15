@@ -3,9 +3,9 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 126,
+        "routes": 129,
         "controllers": 12,
-        "services": 51,
+        "services": 60,
         "views": 51,
         "collections": 22
     },
@@ -195,6 +195,7 @@
                 "ResourceService",
                 "OrderService",
                 "StoreStatsService",
+                "SiteInsightsService",
                 "AuthService"
             ]
         },
@@ -222,11 +223,50 @@
                 "AuditLogService",
                 "AgentAttachmentService",
                 "AgentDraftService",
+                "AgentInstructionService",
                 "AgentToolRegistry",
+                "EnterpriseToolRegistry",
+                "AgentConversationService",
+                "AgentEvaluationService",
+                "AgentTranscriptSanitizer",
+                "AgentCapabilityPolicy",
                 "AgentContextService",
                 "GstRegisterService",
                 "AiReplyCleaner",
                 "AiClient",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/agent/conversation/{id}",
+            "name": "admin.agent.conversation",
+            "controller": "AdminController@agentConversation",
+            "view": "admin/agent-monitoring",
+            "services": [
+                "AgentConversationService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/agent/history",
+            "name": "admin.agent.history",
+            "controller": "AdminController@agentHistory",
+            "view": "admin/agent",
+            "services": [
+                "AgentConversationService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/agent/history/{id}",
+            "name": "admin.agent.history.show",
+            "controller": "AdminController@agentHistoryShow",
+            "view": "admin/agent",
+            "services": [
+                "AgentConversationService",
                 "AuthService"
             ]
         },
@@ -239,6 +279,8 @@
             "services": [
                 "AuditLogService",
                 "DatabaseService",
+                "AgentConversationService",
+                "SiteTelemetryService",
                 "AuthService"
             ]
         },
@@ -1010,7 +1052,8 @@
             "view": "public/cart",
             "services": [
                 "CartService",
-                "ProductService"
+                "ProductService",
+                "SiteTelemetryService"
             ]
         },
         {
@@ -1076,7 +1119,8 @@
             "view": "public/checkout",
             "services": [
                 "SecretService",
-                "PaymentService"
+                "PaymentService",
+                "SiteTelemetryService"
             ]
         },
         {
@@ -1374,6 +1418,9 @@
                 "SupportBotService",
                 "AgentContextService",
                 "SupportTicketService",
+                "SupportToolRegistry",
+                "AgentConversationService",
+                "AgentEvaluationService",
                 "AuditLogService",
                 "AiClient",
                 "AiReplyCleaner"
@@ -1439,9 +1486,14 @@
     "services": [
         "AddressService",
         "AgentAttachmentService",
+        "AgentCapabilityPolicy",
         "AgentContextService",
+        "AgentConversationService",
         "AgentDraftService",
+        "AgentEvaluationService",
+        "AgentInstructionService",
         "AgentToolRegistry",
+        "AgentTranscriptSanitizer",
         "AiClient",
         "AiReplyCleaner",
         "AppointmentService",
@@ -1458,6 +1510,7 @@
         "CourierService",
         "DatabaseService",
         "DocsMapService",
+        "EnterpriseToolRegistry",
         "EnvService",
         "GitHubDocService",
         "GstRegisterService",
@@ -1480,11 +1533,14 @@
         "SeoService",
         "SettingsService",
         "ShippingService",
+        "SiteInsightsService",
+        "SiteTelemetryService",
         "SmtpMailer",
         "StoragePermissionService",
         "StoreStatsService",
         "SupportBotService",
         "SupportTicketService",
+        "SupportToolRegistry",
         "TaxService",
         "TempleService",
         "UserOrderHistoryService"

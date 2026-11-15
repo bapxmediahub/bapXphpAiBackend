@@ -7,10 +7,10 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 126 routes, 12 controllers, 51 services, 51 views, 0 data files, 20 tools"]
-    arch_routes["> Routes: 126 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 129 routes, 12 controllers, 60 services, 51 views, 0 data files, 20 tools"]
+    arch_routes["> Routes: 129 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
-    arch_svc["> Services: 51"]:::arch
+    arch_svc["> Services: 60"]:::arch
     arch_views["> Views: 51"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 20"]:::arch
@@ -123,6 +123,9 @@ flowchart LR
     route_post_admin_settings_admin_credentials["POST /admin/settings/admin-credentials — Admin — save admin login"]:::route
     route_get_admin_integrations["GET /admin/integrations — Admin — API keys, integrations"]:::route
     route_get_admin_agent["GET /admin/agent"]:::route
+    route_get_admin_agent_history["GET /admin/agent/history"]:::route
+    route_get_admin_agent_history_id["GET /admin/agent/history/{id}"]:::route
+    route_get_admin_agent_conversation_id["GET /admin/agent/conversation/{id}"]:::route
     route_get_admin_agent_monitoring["GET /admin/agent/monitoring"]:::route
     route_post_admin_agent_ask["POST /admin/agent/ask"]:::route
     route_get_admin_contact_submissions["GET /admin/contact-submissions — Admin — contact form entries"]:::route
@@ -186,9 +189,14 @@ flowchart LR
   subgraph SERVICES["Services"]
     service_addressservice["AddressService"]:::code
     service_agentattachmentservice["AgentAttachmentService"]:::code
+    service_agentcapabilitypolicy["AgentCapabilityPolicy"]:::code
     service_agentcontextservice["AgentContextService"]:::code
+    service_agentconversationservice["AgentConversationService"]:::code
     service_agentdraftservice["AgentDraftService"]:::code
+    service_agentevaluationservice["AgentEvaluationService"]:::code
+    service_agentinstructionservice["AgentInstructionService"]:::code
     service_agenttoolregistry["AgentToolRegistry"]:::code
+    service_agenttranscriptsanitizer["AgentTranscriptSanitizer"]:::code
     service_aiclient["AiClient"]:::code
     service_aireplycleaner["AiReplyCleaner"]:::code
     service_appointmentservice["AppointmentService"]:::code
@@ -205,6 +213,7 @@ flowchart LR
     service_courierservice["CourierService"]:::code
     service_databaseservice["DatabaseService"]:::code
     service_docsmapservice["DocsMapService"]:::code
+    service_enterprisetoolregistry["EnterpriseToolRegistry"]:::code
     service_envservice["EnvService"]:::code
     service_githubdocservice["GitHubDocService"]:::code
     service_gstregisterservice["GstRegisterService"]:::code
@@ -227,11 +236,14 @@ flowchart LR
     service_seoservice["SeoService"]:::code
     service_settingsservice["SettingsService"]:::code
     service_shippingservice["ShippingService"]:::code
+    service_siteinsightsservice["SiteInsightsService"]:::code
+    service_sitetelemetryservice["SiteTelemetryService"]:::code
     service_smtpmailer["SmtpMailer"]:::code
     service_storagepermissionservice["StoragePermissionService"]:::code
     service_storestatsservice["StoreStatsService"]:::code
     service_supportbotservice["SupportBotService"]:::code
     service_supportticketservice["SupportTicketService"]:::code
+    service_supporttoolregistry["SupportToolRegistry"]:::code
     service_taxservice["TaxService"]:::code
     service_templeservice["TempleService"]:::code
     service_userorderhistoryservice["UserOrderHistoryService"]:::code
@@ -409,6 +421,7 @@ flowchart LR
   route_get_cart --> controller_publiccontroller
   controller_publiccontroller --> service_cartservice
   controller_publiccontroller --> service_productservice
+  controller_publiccontroller --> service_sitetelemetryservice
   controller_publiccontroller -. renders .-> view_public_cart
   route_get_checkout --> controller_publiccontroller
   controller_publiccontroller --> service_cartservice
@@ -527,6 +540,7 @@ flowchart LR
   controller_admincontroller --> service_resourceservice
   controller_admincontroller --> service_orderservice
   controller_admincontroller --> service_storestatsservice
+  controller_admincontroller --> service_siteinsightsservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_dashboard
   route_get_admin_products --> controller_admincontroller
@@ -640,9 +654,23 @@ flowchart LR
   controller_admincontroller --> service_databaseservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_agent
+  route_get_admin_agent_history --> controller_admincontroller
+  controller_admincontroller --> service_agentconversationservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_agent
+  route_get_admin_agent_history_id --> controller_admincontroller
+  controller_admincontroller --> service_agentconversationservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_agent
+  route_get_admin_agent_conversation_id --> controller_admincontroller
+  controller_admincontroller --> service_agentconversationservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_agent_monitoring
   route_get_admin_agent_monitoring --> controller_admincontroller
   controller_admincontroller --> service_auditlogservice
   controller_admincontroller --> service_databaseservice
+  controller_admincontroller --> service_agentconversationservice
+  controller_admincontroller --> service_sitetelemetryservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_agent_monitoring
   route_post_admin_agent_ask --> controller_admincontroller
@@ -651,7 +679,13 @@ flowchart LR
   controller_admincontroller --> service_auditlogservice
   controller_admincontroller --> service_agentattachmentservice
   controller_admincontroller --> service_agentdraftservice
+  controller_admincontroller --> service_agentinstructionservice
   controller_admincontroller --> service_agenttoolregistry
+  controller_admincontroller --> service_enterprisetoolregistry
+  controller_admincontroller --> service_agentconversationservice
+  controller_admincontroller --> service_agentevaluationservice
+  controller_admincontroller --> service_agenttranscriptsanitizer
+  controller_admincontroller --> service_agentcapabilitypolicy
   controller_admincontroller --> service_agentcontextservice
   controller_admincontroller --> service_gstregisterservice
   controller_admincontroller --> service_aireplycleaner
@@ -796,6 +830,7 @@ flowchart LR
   route_post_checkout_create_order --> controller_commercecontroller
   controller_commercecontroller --> service_secretservice
   controller_commercecontroller --> service_paymentservice
+  controller_commercecontroller --> service_sitetelemetryservice
   controller_commercecontroller -. renders .-> view_public_checkout
   route_post_payment_verify --> controller_commercecontroller
   controller_commercecontroller --> service_secretservice
@@ -836,6 +871,9 @@ flowchart LR
   controller_supportcontroller --> service_supportbotservice
   controller_supportcontroller --> service_agentcontextservice
   controller_supportcontroller --> service_supportticketservice
+  controller_supportcontroller --> service_supporttoolregistry
+  controller_supportcontroller --> service_agentconversationservice
+  controller_supportcontroller --> service_agentevaluationservice
   controller_supportcontroller --> service_auditlogservice
   controller_supportcontroller --> service_aiclient
   controller_supportcontroller --> service_aireplycleaner
@@ -953,9 +991,9 @@ flowchart LR
   service_supportticketservice --> collection_support_tickets
   service_templeservice --> collection_temples
   service_resourceservice --> collection_products
+  service_resourceservice --> collection_users
   service_resourceservice --> collection_appointments
   service_resourceservice --> collection_categories
-  service_resourceservice --> collection_users
   service_resourceservice --> collection_orders
   service_databaseservice --> collection_users
   service_databaseservice --> collection_addresses

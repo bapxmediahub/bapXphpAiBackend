@@ -41,6 +41,7 @@ final class CommerceController extends BaseController {
         if (!$found) {
             $_SESSION['cart'][] = ['slug' => $slug, 'qty' => $qty];
         }
+        (new \App\Services\SiteTelemetryService())->record('cart_add', ['product'=>$slug]);
         if ($this->wantsJson()) $this->jsonResponse($this->cartState($slug));
         $this->flash('Product added to cart.','success');
         $redirect = $_POST['redirect'] ?? $_SERVER['HTTP_REFERER'] ?? '/shop';
@@ -121,6 +122,7 @@ final class CommerceController extends BaseController {
                 $this->jsonResponse(['error' => e($item['name']) . ' is currently unavailable.'], 400);
             }
         }
+        (new \App\Services\SiteTelemetryService())->record('checkout_initiated');
         $shippingState = TaxService::normaliseState((string)($_POST['state'] ?? ''));
         if ($shippingState === null) {
             $this->jsonResponse(['error' => 'Select a valid delivery state before payment.'], 422);

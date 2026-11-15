@@ -22,7 +22,7 @@ namespace App\Services;
  * specific customer. The statistics context leaked them into unrelated answers once
  * already.
  */
-final class AgentToolRegistry
+class AgentToolRegistry
 {
     /** @var array<int,array{name:string,status:string,duration_ms:int}> */
     private array $activity = [];
@@ -217,7 +217,8 @@ final class AgentToolRegistry
         $schema = $this->toolParameters($name);
         if ($schema === null || array_diff($schema['required'] ?? [], array_keys($args))) return false;
         foreach ($args as $key => $value) {
-            $property = $schema['properties'][$key] ?? [];
+            if (!array_key_exists($key, $schema['properties'])) return false;
+            $property = $schema['properties'][$key];
             $validType = match ($property['type'] ?? '') {
                 'integer' => is_int($value),
                 'string' => is_string($value) && mb_strlen($value) <= 256,

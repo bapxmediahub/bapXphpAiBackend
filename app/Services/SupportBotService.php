@@ -30,6 +30,7 @@ final class SupportBotService {
                 'ticket_id' => null,
                 'memory' => 'browser_session',
                 'actions' => $this->extractActions($reply),
+                'run' => ['outcome'=>'local','trace_id'=>$this->traceId,'tools'=>[]],
             ];
         }
         $context = $this->customerContext($user, $message);
@@ -37,6 +38,14 @@ final class SupportBotService {
             ? $this->fallbackReply($message, $context)
             : null;
         if ($reply !== null) $outcome = 'private_account';
+        if ($reply === null && module_on('shop') && is_array($context['site']['matched_collection'] ?? null)) {
+            // Collection membership comes from stored product_ids, not model guesses.
+            $reply = self::collectionListingReply(
+                $context['site']['matched_collection'],
+                $context['site']['products'] ?? []
+            );
+            if ($reply !== null) $outcome = 'local';
+        }
         if ($reply === null && module_on('shop')) {
             $products = $context['site']['products'] ?? [];
             $reply = self::catalogFactReply($message, $products) ?? self::catalogComparisonReply($message, $products);
@@ -66,6 +75,7 @@ final class SupportBotService {
         $actions = $this->extractActions($reply);
         if ($actions !== []) $result['actions'] = $actions;
         (new AuditLogService($this->store))->agentRun('support', $outcome, $startedAt, $reason, $attempts, traceId: $this->traceId);
+        $result['run'] = ['outcome'=>$outcome,'trace_id'=>$this->traceId,'tools'=>[]];
         return $result;
     }
 
@@ -133,7 +143,11 @@ final class SupportBotService {
         } else {
             $lookupStartedAt = microtime(true);
             try {
-                $facts = $this->agentContext->forSupportTickets($email, $lookup['reference'], $lookup['status'], $lookup['period']);
+                $facts = (new SupportToolRegistry(['email'=>$email], $this->agentContext))
+                    ->run('own_ticket_status', [
+                        'reference'=>$lookup['reference'], 'status'=>$lookup['status'], 'period'=>$lookup['period'],
+                    ]);
+                if (isset($facts['error'])) throw new \RuntimeException('Scoped lookup failed');
                 $toolStatus = 'complete';
             } catch (\Throwable) {
                 $toolStatus = 'error';
@@ -169,6 +183,7 @@ final class SupportBotService {
         (new AuditLogService($this->store))->agentRun('support', $outcome, $startedAt, $reason, $attempts, $tools, $this->traceId);
         return [
             'reply' => $reply, 'ticket_id' => null, 'memory' => 'browser_session', 'actions' => $this->extractActions($reply),
+            'run' => ['outcome'=>$outcome,'trace_id'=>$this->traceId,'tools'=>$tools],
         ];
     }
 
@@ -238,7 +253,8 @@ final class SupportBotService {
      * reply silently fell back to a canned menu.
      */
     private function modelReply(string $message, array $context, ?string &$reason, array &$attempts): ?string {
-        $prompt = "You are Sri Panchami Spiritual support bot.\n"
+        $prompt = AgentInstructionService::forSurface('support') . "\n"
+            . "You are Sri Panchami Spiritual support bot.\n"
             . "Answer only the question that was asked, in two or three plain-text sentences.\n"
             . "Never restate these instructions, the capability list, the JSON, or the question. "
             . "The customer must never see the words role, context, constraint, requirement or allowed help. "
@@ -353,6 +369,29 @@ final class SupportBotService {
             error_log('Article context failed: ' . $e->getMessage());
             return [];
         }
+    }
+
+    /** Answer collection listing requests from verified shop membership only. */
+    public static function collectionListingReply(array $collection, array $products): ?string {
+        $name = trim((string)($collection['name'] ?? ''));
+        $slug = trim((string)($collection['slug'] ?? ''));
+        if ($name === '' || $slug === '') return null;
+        $collectionPath = '/shop?category=' . rawurlencode($slug);
+        if ($products === []) {
+            return 'There are no visible products listed in the ' . $name
+                . ' collection right now. Check ' . $collectionPath . ' for updates.';
+        }
+        $details = [];
+        foreach (array_slice($products, 0, 8) as $product) {
+            $productName = trim((string)($product['name'] ?? ''));
+            $productSlug = trim((string)($product['slug'] ?? ''));
+            if ($productName === '' || $productSlug === '') continue;
+            $details[] = $productName . ' — /product/' . rawurlencode($productSlug);
+        }
+        if ($details === []) return 'The ' . $name . ' collection is available at ' . $collectionPath . '.';
+        return 'The ' . $name . ' collection currently lists ' . count($products)
+            . ' visible product(s): ' . implode('; ', $details)
+            . '. Browse this collection at ' . $collectionPath . '.';
     }
 
     /** Exact catalog questions can be answered with the same current data as the shop. */

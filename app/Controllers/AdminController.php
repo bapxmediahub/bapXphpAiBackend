@@ -10,13 +10,19 @@ final class AdminController extends BaseController {
     }
 
     public function dashboard(): void{
-        $productCount = count((new ResourceService('products'))->all());
+        $catalogProducts = (new ResourceService('products'))->all();
+        $productCount = count($catalogProducts);
+        $seoInsights = \App\Services\SiteInsightsService::catalogSeo($catalogProducts,(new BlogService())->all());
         $allOrders = (new OrderService())->all();
         $period = is_string($_GET['period'] ?? null) && in_array($_GET['period'], ['7', '30', '90'], true) ? (int)$_GET['period'] : 30;
         $today = new \DateTimeImmutable('today');
         $from = $today->modify('-' . ($period - 1) . ' days')->format('Y-m-d');
         $to = $today->format('Y-m-d');
         $reportRows = StoreStatsService::sales($allOrders, $from, $to, $period === 90 ? 'week' : 'day');
+        $commerceInsights = \App\Services\SiteInsightsService::commerce($allOrders,$from,$to);
+        $userSupportInsights = \App\Services\SiteInsightsService::operations(
+            (new ResourceService('users'))->all(),(new \App\Services\SupportTicketService())->all(),$from,$to
+        );
         $productRows = StoreStatsService::topProducts($allOrders, $from, $to);
         $orderStatusCounts = StoreStatsService::orderStatusCounts($allOrders, $from, $to);
         // Public consultation booking has been retired, but historical requests remain
@@ -33,7 +39,7 @@ final class AdminController extends BaseController {
             'orderCount' => count($allOrders),
             'bookingCount' => count($appointments),
             'appointments' => array_slice($appointments, 0, 5),
-        ] + compact('period', 'from', 'to', 'reportRows', 'productRows', 'orderStatusCounts'));
+        ] + compact('period', 'from', 'to', 'reportRows', 'productRows', 'orderStatusCounts', 'seoInsights', 'commerceInsights', 'userSupportInsights'));
     }
     public function products(): void{
         $draft = $_SESSION['product_form_draft'] ?? null;
@@ -91,18 +97,52 @@ final class AdminController extends BaseController {
     public function deleteCoupon(): void{$this->delete('coupons');}
     public function users(): void {
         header('Cache-Control: private, no-store');
-        $query = is_string($_GET['q'] ?? null) ? substr(trim($_GET['q']), 0, 150) : '';
-        $users = (new ResourceService('users'))->all();
-        if ($query !== '') $users = array_filter($users, static fn($u) =>
-            stripos((string)($u['name'] ?? ''), $query) !== false || stripos((string)($u['email'] ?? ''), $query) !== false);
-        usort($users, static fn($a, $b) => strcasecmp((string)($a['name'] ?? ''), (string)($b['name'] ?? ''))
-            ?: strcasecmp((string)($a['email'] ?? ''), (string)($b['email'] ?? '')));
+        $query = is_string($_GET['q'] ?? null) ? mb_substr(trim($_GET['q']), 0, 150) : '';
+        $roles = ['customer' => 'Customer', 'admin' => 'Admin', 'astrologer' => 'Legacy consultant', 'unknown' => 'Unspecified'];
+        $activityOptions = ['with_orders' => 'Has orders', 'no_orders' => 'No orders', 'repeat' => 'Two or more orders'];
+        $sortOptions = ['name' => 'Name A–Z', 'recent_order' => 'Latest order', 'order_count' => 'Most orders'];
+        $role = is_string($_GET['role'] ?? null) && isset($roles[$_GET['role']]) ? $_GET['role'] : '';
+        $activity = is_string($_GET['activity'] ?? null) && isset($activityOptions[$_GET['activity']]) ? $_GET['activity'] : '';
+        $sort = is_string($_GET['sort'] ?? null) && isset($sortOptions[$_GET['sort']]) ? $_GET['sort'] : 'name';
+        $sizeOptions = [10, 25, 50];
+        $pageSize = is_string($_GET['per_page'] ?? null) && in_array($_GET['per_page'], ['10', '25', '50'], true) ? (int)$_GET['per_page'] : 25;
+        $directory = \App\Services\UserOrderHistoryService::forUsers((new ResourceService('users'))->all(), (new OrderService())->all());
+        $stats = ['accounts' => count($directory), 'with_orders' => 0, 'repeat' => 0];
+        $users = [];
+        foreach ($directory as $user) {
+            $orderCount = count($user['orders']);
+            if ($orderCount > 0) $stats['with_orders']++;
+            if ($orderCount > 1) $stats['repeat']++;
+            $user['role'] = isset($roles[$user['role']]) ? $user['role'] : 'unknown';
+            if ($role !== '' && $user['role'] !== $role) continue;
+            if ($query !== '' && mb_stripos($user['name'], $query) === false && mb_stripos($user['email'], $query) === false) continue;
+            $matchesActivity = match ($activity) {
+                'with_orders' => $orderCount > 0,
+                'no_orders' => $orderCount === 0,
+                'repeat' => $orderCount > 1,
+                default => true,
+            };
+            if ($matchesActivity) $users[] = $user;
+        }
+        usort($users, static function (array $a, array $b) use ($sort): int {
+            $order = match ($sort) {
+                'recent_order' => (($b['orders'][0]['date'] ?? null)?->getTimestamp() ?? PHP_INT_MIN)
+                    <=> (($a['orders'][0]['date'] ?? null)?->getTimestamp() ?? PHP_INT_MIN),
+                'order_count' => count($b['orders']) <=> count($a['orders']),
+                default => 0,
+            };
+            return $order ?: strcasecmp($a['name'] ?: $a['email'], $b['name'] ?: $b['email'])
+                ?: strcasecmp($a['email'], $b['email']);
+        });
         $count = count($users);
-        $pages = max(1, (int)ceil($count / 25));
+        $pages = max(1, (int)ceil($count / $pageSize));
         $page = max(1, min($pages, is_string($_GET['page'] ?? null) ? (int)$_GET['page'] : 1));
-        $users = array_slice($users, ($page - 1) * 25, 25);
-        if ($users) $users = \App\Services\UserOrderHistoryService::forUsers($users, (new OrderService())->all());
-        $this->render('admin/users', ['pageTitle'=>'Users'] + compact('users', 'count', 'pages', 'page', 'query'));
+        $offset = ($page - 1) * $pageSize;
+        $users = array_slice($users, $offset, $pageSize);
+        $this->render('admin/users', ['pageTitle' => 'Users'] + compact(
+            'users', 'count', 'pages', 'page', 'query', 'role', 'activity', 'sort', 'pageSize',
+            'sizeOptions', 'roles', 'activityOptions', 'sortOptions', 'stats', 'offset'
+        ));
     }
     public function orders(): void{$this->list('Orders','orders');}
     public function order(string $id): void{
@@ -327,7 +367,56 @@ final class AdminController extends BaseController {
         } catch (\Throwable) {
             // Keep the monitoring page available when the audit store is unavailable.
         }
-        $this->render('admin/agent-monitoring', compact('agentMonitoring') + ['pageTitle' => 'Agent Monitoring']);
+        $agentConversations = [];
+        $commerceTelemetry = [];
+        try {
+            $agentConversations = (new \App\Services\AgentConversationService())->recent(40);
+            $commerceTelemetry = \App\Services\SiteTelemetryService::counts((new AuditLogService())->all());
+        } catch (\Throwable $e) {
+            error_log('Agent session insights unavailable: '.$e::class);
+        }
+        $this->render('admin/agent-monitoring', compact('agentMonitoring','agentConversations','commerceTelemetry') + ['pageTitle' => 'Agent Monitoring']);
+    }
+
+    public function agentHistory(): void {
+        header('Cache-Control: private, no-store');
+        $actor = \App\Services\AgentConversationService::actor('admin', $_SESSION['user'] ?? null);
+        $conversations = (new \App\Services\AgentConversationService())->recentForActor('admin', $actor, 40);
+        $this->jsonResponse(['conversations' => $conversations]);
+    }
+
+    public function agentHistoryShow(string $id): void {
+        header('Cache-Control: private, no-store');
+        $actor = \App\Services\AgentConversationService::actor('admin', $_SESSION['user'] ?? null);
+        try {
+            $document = (new \App\Services\AgentConversationService())->getForActor($id, 'admin', $actor);
+        } catch (\RuntimeException) {
+            $document = null; // Do not reveal whether another actor owns this ID.
+        }
+        if ($document === null) {
+            $this->jsonResponse(['error'=>'Conversation not found'], 404);
+            return;
+        }
+        $turns = array_map(static fn(array $t): array => [
+            'question'=>(string)($t['question'] ?? ''),
+            'answer'=>(string)($t['answer'] ?? ''),
+            'at'=>(string)($t['at'] ?? ''),
+        ], $document['turns'] ?? []);
+        $this->jsonResponse(['conversation_id'=>$document['id'], 'turns'=>$turns]);
+    }
+
+    public function agentConversation(string $id): void {
+        $conversation = (new \App\Services\AgentConversationService())->getForAdmin($id);
+        if ($conversation === null) {
+            http_response_code(404);
+            echo 'Conversation not found';
+            return;
+        }
+        header('Content-Type: application/json; charset=utf-8');
+        header('Content-Disposition: attachment; filename="agent-conversation-' . $id . '.json"');
+        header('Cache-Control: private, no-store');
+        header('X-Content-Type-Options: nosniff');
+        echo json_encode($conversation, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
     }
 
     public function agent(): void{
@@ -344,8 +433,9 @@ final class AdminController extends BaseController {
             $this->jsonResponse(['error' => 'Enter a question of up to 2,000 characters.'], 400);
             return;
         }
-        // The constructor has already checked admin access and CSRF. This request
-        // only reads session state, so release the lock before calling providers.
+        $actor = \App\Services\AgentConversationService::actor('admin', $_SESSION['user'] ?? null);
+        $conversationId = is_string($_POST['conversation_id'] ?? null) ? $_POST['conversation_id'] : null;
+        // The constructor has already checked admin access and CSRF.
         session_write_close();
         $traceId = bin2hex(random_bytes(8));
         header('X-Agent-Trace: ' . $traceId);
@@ -368,26 +458,32 @@ final class AdminController extends BaseController {
                 );
                 $draft['missing'] = $attachments['missing'];
                 (new AuditLogService())->agentRun('admin', 'draft', $startedAt, traceId: $traceId);
-                $this->jsonResponse(['draft' => $draft, 'run' => $this->agentRunMeta($traceId, 'draft', $startedAt)]);
+                $record = $this->agentConversationRecord($actor, $conversationId, $message,
+                    (string)($draft['note'] ?? 'Draft form prepared.'), $traceId, 'draft');
+                $this->jsonResponse(['draft' => $draft, 'run' => $this->agentRunMeta($traceId, 'draft', $startedAt)] + $record);
                 return;
             }
             $secrets = new SecretService();
             $modelConfig = $secrets->getModelConfig();
-            $previousReport = $_POST['previous_report'] ?? null;
-            $tools = new \App\Services\AgentToolRegistry(
+            // Previous report scope comes from this actor's persisted chat, never browser input.
+            $previousReport = (new \App\Services\AgentConversationService())
+                ->previousReportForActor($conversationId, $actor);
+            $tools = new \App\Services\EnterpriseToolRegistry(
                 ownerQuestion: $message,
-                previousReport: is_array($previousReport) ? $previousReport : null
+                previousReport: $previousReport
             );
             // Straight aggregate questions do not need a model round trip. The same
             // allowlisted sales tool supplies a deterministic, privacy-safe answer.
             $localAnswer = $attachments['context'] === '' ? $tools->aggregateAnswer($message) : null;
             if ($localAnswer !== null) {
                 (new AuditLogService())->agentRun('admin', 'local', $startedAt, tools: $tools->activity(), traceId: $traceId);
+                $record = $this->agentConversationRecord($actor, $conversationId, $message,
+                    $localAnswer, $traceId, 'local', $tools->activity(), $tools->reportContext());
                 $this->jsonResponse([
                     'answer' => $localAnswer,
                     'missing' => $attachments['missing'],
                     'run' => $this->agentRunMeta($traceId, 'local', $startedAt, $tools),
-                ]);
+                ] + $record);
                 return;
             }
             $context = $attachments['context'] !== ''
@@ -410,32 +506,47 @@ final class AdminController extends BaseController {
             $fallback = $failed || $reason === 'rejected_response' ? $tools->ticketLookupFallback() : null;
             if ($fallback !== null) {
                 (new AuditLogService())->agentRun('admin', 'fallback', $startedAt, $reason, $attempts, $tools->activity(), $traceId);
+                $record = $this->agentConversationRecord($actor, $conversationId, $message,
+                    $fallback, $traceId, 'fallback', $tools->activity(), $tools->reportContext(), $attempts);
                 $this->jsonResponse([
                     'answer' => $fallback,
                     'missing' => $attachments['missing'],
                     'run' => $this->agentRunMeta($traceId, 'fallback', $startedAt, $tools, $attempts),
-                ]);
+                ] + $record);
                 return;
             }
             (new AuditLogService())->agentRun('admin', $failed ? 'error' : ($reason === 'rejected_response' ? 'fallback' : 'model'), $startedAt, $reason, $attempts, $tools->activity(), $traceId);
             if ($failed) {
+                $record = $this->agentConversationRecord($actor, $conversationId, $message,
+                    $answer, $traceId, 'error', $tools->activity(), $tools->reportContext(), $attempts);
                 $this->jsonResponse([
                     'error'=>$answer,
                     'missing'=>$attachments['missing'],
                     'run'=>$this->agentRunMeta($traceId, 'error', $startedAt, $tools, $attempts),
-                ],502);
+                ] + $record,502);
                 return;
             }
+            $record = $this->agentConversationRecord($actor, $conversationId, $message,
+                $answer, $traceId, 'model', $tools->activity(), $tools->reportContext(), $attempts);
             $this->jsonResponse([
                 'answer'=>$answer,
                 'missing'=>$attachments['missing'],
                 'run'=>$this->agentRunMeta($traceId, 'model', $startedAt, $tools, $attempts),
-            ]);
+            ] + $record);
         } catch (\Throwable $e) {
             (new AuditLogService())->agentRun('admin', 'error', $startedAt, 'internal_error', traceId: $traceId);
             error_log('Owner agent request failed (' . get_class($e) . ')');
             $this->jsonResponse(['error' => 'The owner agent could not complete this request. Please try again.', 'run' => $this->agentRunMeta($traceId, 'error', $startedAt)], 500);
         }
+    }
+
+    private function agentConversationRecord(
+        array $actor, ?string $conversationId, string $question, string $answer,
+        string $traceId, string $outcome, array $tools = [], ?array $reportContext = null, array $attempts = []
+    ): array {
+        return (new \App\Services\AgentConversationService())->record(
+            'admin', $actor, $conversationId, $question, $answer, $traceId, $outcome, $tools, null, $reportContext, $attempts
+        );
     }
 
     /**
@@ -497,7 +608,8 @@ final class AdminController extends BaseController {
         // Tool arguments and access are validated in PHP. The model selects the lookup
         // and explains its result. https://developers.openai.com/api/docs/guides/function-calling
         $today = (new \DateTimeImmutable('now', new \DateTimeZone('Asia/Kolkata')))->format('Y-m-d');
-        $prompt = "You are the Enterprise Agent for Sri Panchami Spiritual. Answer in plain language.\n"
+        $prompt = \App\Services\AgentInstructionService::forSurface('admin') . "\n"
+            . "You are the Enterprise Agent for Sri Panchami Spiritual. Answer in plain language.\n"
             . "The current date in India is {$today}.\n"
             . "Use the matching read-only tool before making any claim about store records or metrics. "
             . "Tools cover orders, products, coupons, sales, GST, support tickets, store counts and published articles. "
@@ -508,7 +620,7 @@ final class AdminController extends BaseController {
             . "Never expose credentials or unrelated customer data. The interface shows source links. "
             . "Do not show your reasoning.\n\n{$context}\n\nOwner question: {$message}";
         $client = new \App\Services\AiClient();
-        $tools ??= new \App\Services\AgentToolRegistry(ownerQuestion: $message);
+        $tools ??= new \App\Services\EnterpriseToolRegistry(ownerQuestion: $message);
         $answer = $client->completeWithTools($prompt, $tools);
         $reason = $client->failureCategory();
         $attempts = $client->transferTimings();
