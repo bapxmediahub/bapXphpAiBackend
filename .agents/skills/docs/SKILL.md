@@ -71,3 +71,13 @@ agent prompt text lives under `.bapX/`, selected by `AgentInstructionService`
 with a fixed role allowlist. Update `docs/runtime-agents.md`, instruction
 content fingerprints and isolation tests whenever that contract changes.
 Never route a model-supplied path or developer index into live instructions.
+
+## No documentation backlog
+
+Do not create `docs/issues`, issue-number acceptance pages or task plans under
+`docs/superpowers/plans`. Use the existing GitHub issue or a new scoped issue via
+`gh`; preserve evidence there. Durable architecture/how-to/research is permitted.
+Run `php cli/docs-check.php --list`, inspect the actual changed sources and their
+references, update content, then record an honest rationale per changed area.
+`bapXphp update` does not refresh review receipts; `bapXphp ci` rejects stale ones.
+A fingerprint is a drift alarm, not proof that prose accurately describes code.

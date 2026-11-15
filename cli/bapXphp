@@ -605,6 +605,9 @@ cmd_ci() {
   echo "── agent-contracts:check ──"
   php "$ROOT/cli/agent-contracts.php" --check 2>&1 || { failed=1; warn "AGENT TOOL DOCUMENTATION STALE"; }
 
+  echo "── documentation-review ──"
+  php "$ROOT/cli/docs-check.php" --check 2>&1 || { failed=1; warn "SOURCE/DOCUMENTATION REVIEW REQUIRED"; }
+
   echo "── map:val ──"
   php "$ROOT/cli/validate-project-map.php" 2>&1 || { failed=1; warn "MAP VALIDATION FAILED"; }
 

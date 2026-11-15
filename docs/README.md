@@ -72,7 +72,6 @@ controller, service, and view listed in `project-index.json` before updating it.
 
 ## Implementation acceptance
 
-- [REA gap status](engineering/rea-gap-status.md) — code-backed completion, limitations and remaining scope for the 28-item register.
 
 ## Supplemental four-source REA audit
 
@@ -92,5 +91,10 @@ before opening implementation issues.
 ## Operational acceptance and client reuse
 
 - [Client runtime adaptation](client-runtime-adaptation.md): source-grounded next-client checklist and nonportable configuration/data boundaries.
-- [Issue 251 acceptance ledger](engineering/issue-251-acceptance.md): implemented evidence versus remaining quality gates.
 - [Email setup](email-setup.md): SMTP acceptance, queue claims, unknown outcomes and recipient-receipt verification.
+
+## Development and content contracts
+
+- [Evidence-led development workflow](development-workflow.md): GitHub issues only, independent fixes, documentation cross-review and live release acceptance.
+- [Content and SEO services](modules/content-and-seo.md): actual editor/scaffold/model/rendering responsibilities.
+- `source-contracts.json`: reviewed source/reference fingerprints, not a backlog or proof of semantic correctness.

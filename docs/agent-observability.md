@@ -236,7 +236,7 @@ updates reject stale versions. Its results must be observed in CI before release
 
 A separate numerical CSAT survey, all-traffic outcome reporting, a mature
 feedback-to-content review workflow and the nine commerce expansion gaps are
-**not** implemented by these changes. See `docs/engineering/rea-gap-status.md`.
+**not** implemented by these changes. Current acceptance and remaining work are tracked in GitHub issue #251; the dated REA source comparison is historical evidence, not the backlog.
 
 ## Runtime instruction provenance
 

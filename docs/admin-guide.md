@@ -34,12 +34,11 @@ factual accuracy. See [agent observability](agent-observability.md).
 ## Other workflows
 
 Media uploads live outside Git releases; their metadata is in MySQL
-`media_files`. The pending customer correction PR #250 introduces guarded
-media deletion; do not remove referenced or bundled images without the
-reviewed workflow.
+`media_files`. The Media Library permits guarded deletion of unused uploads
+with confirmation and CSRF protection. Referenced, bundled and legacy-only
+images are not deletable through that action.
 
 Reports derive paid revenue/refunds and GST totals from verified orders;
-the zero-orders dashboard crash is addressed in draft PR #245. Do not merge
-or claim deployment of draft-only fixes until browser and post-deployment
-checks pass. Existing historical appointments remain available, but public
-consultation booking is retired.
+empty report periods render safe zero-data states. Inspect actual deployed
+behavior after release, not only CI. Historical appointments remain available,
+but public consultation booking is retired.

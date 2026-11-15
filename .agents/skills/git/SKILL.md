@@ -14,7 +14,7 @@ GitHub CLI (`gh`) on the hosted server.
 - Use `bapXphp` only for project-owned operations such as tests, maps, indexes,
   schema, database access, hooks, and AI configuration.
 - GitHub issues, PR creation, review, and merge coordination belong to GitHub Actions
-  or the GitHub API/web interface.
+  or the local `gh` CLI / GitHub API. Use `gh` on the authorized development machine; never require it on Hostinger.
 - Never wrap ordinary Git commands in `bapXphp`.
 - Never force-push or discard unrelated or divergent work.
 
@@ -76,3 +76,11 @@ verification visible in the PR description; ready-for-review is not merge
 approval. Reconcile the latest main before merging and retain all independent
 regressions. Never use blanket ours/theirs resolution for real code; regenerate
 map/index outputs from the reconciled source.
+
+## Issue-first release protocol
+
+The authoritative issue/plan/acceptance record is GitHub, not `docs/`. Search first,
+record evidence before fixing, and keep unrelated bugs in separate issues/PRs.
+Create Ready-for-Review PRs with `Refs #N`; require exact-head CI and cross-reviewed
+documentation receipts. After merge, test the deployed flow and record evidence
+on that issue before closing it. See `docs/development-workflow.md`.

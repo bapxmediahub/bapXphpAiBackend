@@ -52,7 +52,7 @@ belong to GitHub Actions and the GitHub web interface.
 
 ### Preserve private agent sessions and evaluation artifacts
 
-The agent runtime on draft PR #241 stores **one JSON file per chat** under
+The agent runtime stores **one JSON file per chat** under
 `storage/agent-conversations/<id>.json`, not in MySQL. The
 folder is ignored by Git, must be writable by PHP, protected from static
 HTTP access, and backed up independently of business data. Keep it across

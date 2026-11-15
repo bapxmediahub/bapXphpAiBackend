@@ -21,8 +21,7 @@ OpenGraph properties come from published frontmatter, not MySQL. The admin
 editor uses `BlogService` and a separate media picker. When a legacy article
 references an image absent from the release, its public thumbnail/article
 image and OG metadata must use a real, existing fallback; the underlying
-original URL is retained for later media replacement. That missing-image
-implementation is reviewed separately in PR #247 until merged.
+original URL is retained for later media replacement. The missing-image fallback is implemented by `BlogService::resolvedImageUrl`; original references remain available for later artwork replacement.
 
 Tests: verify image decode at desktop and 375px; category/keyword filtering,
 publication hiding and source/link handling; do not infer an image exists from

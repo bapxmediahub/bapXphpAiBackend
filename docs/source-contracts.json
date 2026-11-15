@@ -1,0 +1,51 @@
+{
+    "schema_version": 1,
+    "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
+    "reviews": {
+        "agents": {
+            "source_sha256": "8c422a01713642dfc0866dfd7426bd50e17ba5b66a11584f40fd61a5e1515fe6",
+            "references_sha256": "954237a7baf8b1a98436ee26454d7bbf7191534b872fc128979692a203144358",
+            "review_note": "Baseline source-to-reference ownership checked against current agent instructions, tool-contract generator and JSON observability guides. Removed the duplicate issue ledger; remaining acceptance lives on GitHub #251, not this review receipt."
+        },
+        "auth": {
+            "source_sha256": "fb54a6f0d4394ea91c7544998f57773f0019cc7710093becee637e0d7d059440",
+            "references_sha256": "adab571fbd0bd6bef31020a3fa27c972c68006fe9650292f1773116e19d2c73d",
+            "review_note": "Compared actual AuthController password, registration and OAuth redirects and MySQL writes against auth/OAuth guides; corrected users.json and customer dashboard wording without changing credentials or behavior."
+        },
+        "commerce": {
+            "source_sha256": "ddb6bf29a16d2fae56cbc2ccb48bf85e376dcc42ca2e3794ab1891f05fc6be65",
+            "references_sha256": "cb032f0342d1119ca7036018a342ee0953525490461328d486bc74ebf7546e2f",
+            "review_note": "Baseline mapped existing catalogue/order/tax sources to their durable module contracts. No commerce implementation or live transaction is changed; the review does not certify tax filing or untested payment receipt."
+        },
+        "content": {
+            "source_sha256": "69e2120edea55d29d5be299f639eb52d369fe62a317cdbd31c15b61cda2ed169",
+            "references_sha256": "2db8e23ed14b8e8f45b18bf34cfd76edc655c382a6fbc7e953e6ffbe11533025",
+            "review_note": "Read BlogService, BlogDraftService, MarkdownRenderer and SeoService plus their controller call sites. Corrected local blog source documentation and explained scaffold/model/save responsibilities. Independent renderer/SEO/scaffold findings are tracked in GitHub, not silently declared fixed."
+        },
+        "foundation": {
+            "source_sha256": "2955251233fce00f3ca045edaad0f0746c18cb0b75b77deeb13b74e0adc2d6fe",
+            "references_sha256": "ca377b4f56b9f968962d5268028748e949e50b85d35eb1614a1bc1b87f2323a0",
+            "review_note": "Baseline source ownership/reference contract checked against PHP routing, hosted business data, private per-chat JSON and deployment documentation. Hashes detect future changes but do not assert exhaustive semantic correctness or issue completion."
+        },
+        "interface": {
+            "source_sha256": "cb7ac7c0ece97abd4c09af8ad37738288caaca8b32e297097a116c0144fb6451",
+            "references_sha256": "3940a752e3b88e207c1280b6692ab98882ec61347aba4099745699a910fa7572",
+            "review_note": "Baseline matched existing PHP layout/navigation sources to durable admin/design/motion guides. Missing in-app Admin Help is separately recorded as issue #261, not implemented or certified by this baseline."
+        },
+        "mail": {
+            "source_sha256": "caed5f4ccf26b2e3315bc122e0568f79a4a25a451cf1bfda017c53c5ac3866d4",
+            "references_sha256": "5c5c639b513586622afd09848e3eeacbd00a2041e9439af9940f4a5b8c9395bf",
+            "review_note": "Baseline checked against native SMTP claim/acceptance boundaries and current mail guide; SMTP acceptance is explicitly not inbox receipt. No mail implementation changed in this issue."
+        },
+        "media": {
+            "source_sha256": "cd8a64c85c1eecc6c51d01262423e248f88fd14e896b1e3e74c359f937531962",
+            "references_sha256": "3c4f5209b8ba9f78886b6de79772e5af2fc1eefff9b3efa854bedf3a63f00563",
+            "review_note": "Compared existing guarded deletion implementation with its durable test procedure; migrated dated execution/status evidence out of docs. No customer media mutation performed."
+        },
+        "workflow": {
+            "source_sha256": "f31a7b60066ab9d15f920923738a915789a6e31d14b57fca311d05b94573c4d8",
+            "references_sha256": "eb89374be651a5acaa5f8b46b4292afdf01c9763bc5e62ccc0a5c1e9c121b087",
+            "review_note": "Reviewed issue-first gh development versus plain-Git hosting, explicit source/doc receipts, regenerated index behavior and GitHub-only tracking tests. Map generation no longer claims an unused remote blog source. CI does not auto-approve review hashes."
+        }
+    }
+}
