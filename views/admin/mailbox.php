@@ -12,6 +12,21 @@
     <?php if (!empty($newsletter) && (new \App\Services\SettingsService())->moduleEnabled('blog')): ?>
         <p><a href="/admin/blog">Open Blog editor</a> to prepare an article and notify subscribers.</p>
     <?php endif; ?>
+    <?php if(isset($mailHealth)): ?>
+    <section aria-labelledby="mail-health-title" style="margin-bottom:var(--space-lg)">
+        <h3 id="mail-health-title">Queue health and delivery evidence</h3>
+        <p>All <?= (int)$mailHealth['total'] ?> canonical queue records in this selection.
+            <?= (int)$mailHealth['due_pending'] ?> pending messages are due.
+            This page shows up to 100 of <?= (int)$totalOutbox ?> outbox records.</p>
+        <div class="admin-stats">
+        <?php foreach(['pending'=>'Pending','sending'=>'Attempt in progress or interrupted','sent'=>'SMTP accepted or legacy sent','failed'=>'Not accepted / failed','needs_review'=>'Acceptance unknown: review before retry','unknown'=>'Legacy/unclassified'] as $state=>$label): ?>
+            <div class="admin-stat"><div class="admin-stat__value"><?= (int)$mailHealth['states'][$state] ?></div><div class="admin-stat__label"><?= e($label) ?></div></div>
+        <?php endforeach; ?>
+        </div>
+        <p><strong>Inbox receipt is unverified.</strong> SMTP acceptance is not proof of inbox placement.
+            Unknown or interrupted attempts are never automatically replayed. This view does not retry the historical backlog.</p>
+    </section>
+    <?php endif; ?>
     <div class="table-wrap">
         <table>
             <thead>
@@ -29,7 +44,10 @@
             <?php else: ?>
                 <?php foreach($items as $item): ?>
                     <tr>
-                        <td><?= e(ucfirst(str_replace('_', ' ', (string)($item['status'] ?? 'pending')))) ?></td>
+                        <td><?= e(($box??'')==='outbox' && ($item['status']??'')==='sent' ? 'SMTP accepted / receipt unverified' : ucfirst(str_replace('_',' ',(string)($item['status']??'pending')))) ?>
+                            <?php if(!empty($item['error_code'])): ?><br><small><?= e(str_replace('_',' ',(string)$item['error_code'])) ?></small><?php endif; ?>
+                            <?php if(!empty($item['message_id'])): ?><details><summary>Message reference</summary><code style="overflow-wrap:anywhere"><?= e((string)$item['message_id']) ?></code></details><?php endif; ?>
+                        </td>
                         <td>
                             <?php if(($box ?? '') === 'outbox'): ?>
                                 <strong><?= e($item['to_email'] ?? '') ?></strong>

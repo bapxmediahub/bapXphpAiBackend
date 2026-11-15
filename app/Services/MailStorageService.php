@@ -48,14 +48,9 @@ final class MailStorageService {
     }
 
     public function updateOutboxForQueue(string $queueId, string $status, array $extra = []): void {
-        $records = $this->store->read('mail_outbox');
-        foreach ($records as &$record) {
-            if (($record['queue_id'] ?? '') !== $queueId) continue;
-            $record = array_merge($record, $extra, ['status' => $status]);
-            break;
-        }
-        unset($record);
-        $this->store->write('mail_outbox', $records);
+        $record=$this->store->find('mail_outbox','out_'.$queueId);
+        if($record===null)return;
+        $this->store->upsert('mail_outbox',array_merge($record,$extra,['status'=>$status]));
     }
 
     private function sorted(string $collection): array {

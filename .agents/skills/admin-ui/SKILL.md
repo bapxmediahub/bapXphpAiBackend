@@ -80,7 +80,7 @@ executing tools/providers. Persist actual span boundaries through
 delivered. Use effective result scope instead of requested filter arguments.
 Unfinished requests are visible in Agent Monitoring and must not be blindly
 replayed. Keep provider tokens/usage unavailable when absent, and distinguish
-14-case offline regression scores from real customer satisfaction/accuracy.
+versioned offline regression scores from real customer satisfaction/accuracy.
 
 ## History and support queue controls
 

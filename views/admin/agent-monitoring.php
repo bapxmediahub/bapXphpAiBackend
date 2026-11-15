@@ -6,13 +6,16 @@
         <p role="status">Monitoring is temporarily unavailable.</p>
     <?php else: ?>
         <div class="table-wrap"><table>
-            <thead><tr><th>Agent</th><th>Requests</th><th>Model</th><th>Local data</th><th>Fallback</th><th>Sign-in guidance</th><th>Drafts</th><th>Errors</th><th>Average time</th><th>95th percentile</th><th>Error rate</th></tr></thead>
+            <thead><tr><th>Agent</th><th>Requests</th><th>Model</th><th>Local data</th><th>Fallback</th><th>Sign-in guidance</th><th>Drafts</th><th>Errors</th><th>Average time</th><th>Median (p50)</th><th>95th percentile</th><th>Request error rate</th><th>Provider attempt errors</th><th>Tool errors</th></tr></thead>
             <tbody><?php foreach ($agentMonitoring as $surface => $metrics): ?>
                 <tr><th><?= $surface === 'support' ? 'Customer support' : 'Enterprise Agent' ?></th>
                 <?php foreach (['requests', 'model', 'local', 'fallback', 'private_account', 'draft', 'error'] as $metric): ?><td><?= (int)$metrics[$metric] ?></td><?php endforeach; ?>
                 <td><?= $metrics['average_ms'] === null ? 'No requests yet' : e(number_format($metrics['average_ms'] / 1000, 2)) . ' s' ?></td>
+                <td><?= $metrics['p50_ms'] === null ? '—' : e(number_format($metrics['p50_ms'] / 1000, 2)) . ' s' ?></td>
                 <td><?= $metrics['p95_ms'] === null ? '—' : e(number_format($metrics['p95_ms'] / 1000, 2)) . ' s' ?></td>
-                <td><?= $metrics['requests'] ? e(number_format(100 * $metrics['error'] / $metrics['requests'], 1)) . '%' : '—' ?></td></tr>
+                <td><?= $metrics['requests'] ? e(number_format(100 * $metrics['error'] / $metrics['requests'], 1)) . '%' : '—' ?></td>
+                <td><?= (int)$metrics['provider_error_count'] ?>/<?= (int)$metrics['provider_attempt_count'] ?> attempts</td>
+                <td><?= (int)$metrics['tool_error_count'] ?>/<?= (int)$metrics['tool_call_count'] ?> calls</td></tr>
             <?php endforeach; ?></tbody>
         </table></div>
         <p style="font-size:0.8rem;color:var(--color-text-muted);">Monitoring records timing, outcomes, failure categories and provider attempt metadata. It omits questions, answers, provider messages, customer identities and secrets.</p>
@@ -111,6 +114,22 @@
             </details>
         <?php endif; ?>
     <?php endif; ?>
+</section>
+
+<section class="admin-card" aria-labelledby="agent-review-queue-title" style="margin-top:var(--space-lg)">
+    <h2 id="agent-review-queue-title">Recent conversations needing human review</h2>
+    <p>Sampled from the latest 40 chats, not an all-time backlog. A guardrail failure, negative customer feedback or unfinished action requires investigation; no case is automatically declared resolved.</p>
+    <?php $reviewRows=array_values(array_filter($agentConversations??[],static fn(array $row):bool=>!empty($row['needs_review']))); ?>
+    <?php if($reviewRows===[]): ?><p>No flagged conversations in this recent sample.</p><?php else: ?>
+    <div class="table-wrap"><table><thead><tr><th>Topic</th><th>Reason</th><th>State</th><th>Evidence</th></tr></thead><tbody>
+    <?php foreach($reviewRows as $row): ?>
+        <tr><td><?= e(str_replace('_',' ',(string)($row['intent']??'unknown'))) ?></td>
+            <td><?= e(str_replace('_',' ',(string)($row['review_reason']??'unknown'))) ?></td>
+            <td><?= e(str_replace('_',' ',(string)($row['resolution_status']??'unknown'))) ?></td>
+            <td><a href="/admin/agent/conversation/<?= e((string)$row['id']) ?>">Inspect authorized JSON</a></td></tr>
+    <?php endforeach; ?></tbody></table></div>
+    <?php endif; ?>
+    <p><a href="/admin/support-tickets">Open the human support queue</a>. Chat feedback and ticket closure are separate records.</p>
 </section>
 
 <section class="admin-card" aria-labelledby="conversation-audit-title" style="margin-top:var(--space-lg)">

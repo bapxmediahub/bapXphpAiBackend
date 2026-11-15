@@ -69,7 +69,7 @@ final class AuditLogService {
         $durations = ['support' => [], 'admin' => []];
         $summary = [];
         foreach (['support', 'admin'] as $surface) {
-            $summary[$surface] = ['requests' => 0, 'model' => 0, 'local' => 0, 'fallback' => 0, 'private_account' => 0, 'draft' => 0, 'error' => 0, 'duration_ms' => 0, 'last_seen' => '', 'reasons' => [], 'latest_provider_run' => null, 'recent_runs' => []];
+            $summary[$surface] = ['requests' => 0, 'model' => 0, 'local' => 0, 'fallback' => 0, 'private_account' => 0, 'draft' => 0, 'error' => 0, 'duration_ms' => 0, 'last_seen' => '', 'reasons' => [], 'latest_provider_run' => null, 'recent_runs' => [], 'provider_attempt_count'=>0, 'provider_error_count'=>0, 'tool_call_count'=>0, 'tool_error_count'=>0];
         }
         foreach ($events as $event) {
             if (($event['event'] ?? '') !== 'agent.run') continue;
@@ -82,6 +82,14 @@ final class AuditLogService {
             if (!isset($summary[$surface]) || !in_array($outcome, ['model', 'local', 'fallback', 'private_account', 'draft', 'error'], true) || $timestamp === false || $timestamp < $cutoff || $timestamp > $now) continue;
             $summary[$surface]['requests']++;
             $attempts = $meta['provider_attempts'] ?? [];
+            foreach(self::providerAttempts(is_array($attempts)?$attempts:[]) as $attempt){
+                $summary[$surface]['provider_attempt_count']++;
+                if($attempt['status']<200||$attempt['status']>=300||$attempt['curl_error']!==0)$summary[$surface]['provider_error_count']++;
+            }
+            foreach(self::toolActivity(is_array($meta['tool_activity']??null)?$meta['tool_activity']:[]) as $tool){
+                $summary[$surface]['tool_call_count']++;
+                if($tool['status']==='error')$summary[$surface]['tool_error_count']++;
+            }
             $latest = $summary[$surface]['latest_provider_run'];
             if (is_array($attempts) && $attempts !== [] && ($latest === null || $timestamp > strtotime($latest['at']))) {
                 $summary[$surface]['latest_provider_run'] = [
@@ -114,6 +122,7 @@ final class AuditLogService {
             $count = $row['requests'];
             sort($durations[$surface], SORT_NUMERIC);
             $row['average_ms'] = $count ? (int)round($row['duration_ms'] / $count) : null;
+            $row['p50_ms'] = $count ? $durations[$surface][(int)ceil(0.5*$count)-1] : null;
             $row['p95_ms'] = $count ? $durations[$surface][(int)ceil(0.95 * $count) - 1] : null;
             usort($row['recent_runs'], static fn(array $a, array $b): int => $b['timestamp'] <=> $a['timestamp']);
             $row['recent_runs'] = array_slice($row['recent_runs'], 0, 20);

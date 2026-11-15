@@ -41,17 +41,17 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 394
+  concepts: 398
   relationships: 284
   by_type:
     blog: 14
     controller: 12
-    doc: 47
+    doc: 50
     image: 89
     route: 131
     runtime_instruction: 6
     schema: 22
-    service: 61
+    service: 62
     skill: 12
 concepts:
   - id: "blog:benefits-of-rudraksha"
@@ -285,6 +285,14 @@ concepts:
       - "docs"
     filename: "2026-11-15-agent-evidence-followthrough.md"
     header_image: ""
+  - id: "doc:2026-11-15-operations-agent-closure"
+    type: "doc"
+    title: "2026-11-15-operations-agent-closure"
+    description: ""
+    resource: "docs/superpowers/plans/2026-11-15-operations-agent-closure.md"
+    tags: []
+    filename: "2026-11-15-operations-agent-closure.md"
+    header_image: ""
   - id: "doc:2026-11-15-rea-agent-commerce-gaps"
     type: "doc"
     title: "REA-backed Agent and Commerce Gap Analysis"
@@ -445,6 +453,15 @@ concepts:
       - "page"
     filename: "checkout.md"
     header_image: ""
+  - id: "doc:client-runtime-adaptation"
+    type: "doc"
+    title: "Client Runtime Adaptation Checklist"
+    description: "Source-grounded plan for reusing the PHP business-agent architecture without copying Sri Panchami data, policies or credentials into another client."
+    resource: "docs/client-runtime-adaptation.md"
+    tags:
+      - "docs"
+    filename: "client-runtime-adaptation.md"
+    header_image: ""
   - id: "doc:competitor-review"
     type: "doc"
     title: "Competitor Review"
@@ -551,6 +568,15 @@ concepts:
     tags:
       - "page"
     filename: "integrations.md"
+    header_image: ""
+  - id: "doc:issue-251-acceptance"
+    type: "doc"
+    title: "Native Agent Quality Acceptance Evidence"
+    description: "Source-specific implementation progress and remaining closure gates for issue 251, without confusing passing guardrails with live accuracy."
+    resource: "docs/engineering/issue-251-acceptance.md"
+    tags:
+      - "docs"
+    filename: "issue-251-acceptance.md"
     header_image: ""
   - id: "doc:json-storage"
     type: "doc"
@@ -2092,6 +2118,7 @@ concepts:
       - "AuditLogService"
       - "DatabaseService"
       - "AgentConversationService"
+      - "AgentEvaluationService"
       - "SiteTelemetryService"
       - "AuthService"
     view: "admin/agent-monitoring"
@@ -2258,6 +2285,7 @@ concepts:
     controller: "AdminController@emailOutbox"
     services:
       - "MailStorageService"
+      - "MailQueueService"
       - "AuthService"
     view: "admin/mailbox"
   - id: "route:get__admin_integrations"
@@ -4529,6 +4557,14 @@ concepts:
     tags:
       - "code"
       - "service"
+  - id: "service:SmtpDeliveryUncertainException"
+    type: "service"
+    title: "SmtpDeliveryUncertainException"
+    description: "Service: SmtpDeliveryUncertainException"
+    resource: "app/Services/SmtpDeliveryUncertainException.php"
+    tags:
+      - "code"
+      - "service"
   - id: "service:SmtpMailer"
     type: "service"
     title: "SmtpMailer"
@@ -4989,6 +5025,9 @@ relationships:
   - from: "doc:rea-agent-commerce-gap-audit"
     to: "doc:ai-review-workflow"
     relation: "references"
+  - from: "doc:runtime-agents"
+    to: "doc:client-runtime-adaptation"
+    relation: "references"
   - from: "doc:site-motion"
     to: "doc:README"
     relation: "references"
@@ -5396,9 +5435,6 @@ relationships:
     relation: "stores"
   - from: "service:AgentContextService"
     to: "schema:products"
-    relation: "stores"
-  - from: "service:AgentContextService"
-    to: "schema:settings"
     relation: "stores"
   - from: "service:AgentContextService"
     to: "schema:support_tickets"

@@ -362,6 +362,129 @@ $tests['admin dashboard resolves all services and renders its actual zero-data p
     }
 };
 
+$tests['mail delivery claim has one owner and never replays uncertain or accepted sends'] = static function (): void {
+    $q=\App\Services\MailQueueService::class;$now=new DateTimeImmutable('2026-11-15T12:00:00Z');
+    $row=['id'=>str_repeat('a',16),'status'=>'pending','available_at'=>'2026-11-15T11:59:00Z'];
+    $attempt=str_repeat('b',32);
+    $claimed=$q::transitionDelivery($row,'claim',$attempt,[],$now);
+    assertSame('sending',$claimed['status'],'Claim is durable before network send');
+    assertSame(null,$q::transitionDelivery($claimed,'claim',str_repeat('c',32),[],$now),'Second worker cannot send');
+    assertSame(null,$q::transitionDelivery($claimed,'accepted',str_repeat('c',32),[],$now),'Foreign attempt cannot complete');
+    $uncertain=$q::transitionDelivery($claimed,'uncertain',$attempt,['error_code'=>'smtp_outcome_unknown'],$now);
+    assertSame('needs_review',$uncertain['status'],'Uncertain acceptance requires review');
+    assertSame(null,$q::transitionDelivery($uncertain,'claim',str_repeat('d',32),[],$now),'Uncertainty never auto-retries');
+    $sent=$q::transitionDelivery($claimed,'accepted',$attempt,['message_id'=>'<fixture@example.invalid>'],$now);
+    assertSame('sent',$sent['status'],'Legacy status remains compatible');
+    assertSame('accepted_by_smtp',$sent['delivery_state'],'SMTP acceptance is not inbox receipt');
+    assertSame(null,$q::transitionDelivery($sent,'claim',str_repeat('d',32),[],$now),'Accepted message never sends again');
+    $future=$row;$future['available_at']='2026-11-16T00:00:00Z';
+    assertSame(null,$q::transitionDelivery($future,'claim',$attempt,[],$now),'Future messages are not sent early');
+};
+
+$tests['SMTP rejects header injection and creates a stable message identity'] = static function (): void {
+    $mailer=new \App\Services\SmtpMailer(['mail_from_email'=>'support@example.invalid']);
+    $denied=false;try{$mailer->buildMessage('test@example.invalid',"Hello\r\nBcc: other@example.invalid",'<p>Test</p>');}catch(InvalidArgumentException){$denied=true;}
+    assertTrue($denied,'Subject cannot inject a new header');
+    $denied=false;try{$mailer->buildMessage("test@example.invalid\r\nRCPT TO:<other@example.invalid>",'Test','Test');}catch(InvalidArgumentException){$denied=true;}
+    assertTrue($denied,'Recipient cannot inject SMTP commands');
+    $id='<test-message@example.invalid>';$m=$mailer->buildMessage('test@example.invalid','Receipt test','<p>Safe</p>',$id);
+    assertTrue(str_contains($m,'Message-ID: '.$id),'Supplied stable identity appears in MIME');
+};
+
+$tests['mail status changes are targeted and payment confirmation identity is deterministic'] = static function (): void {
+    $q=\App\Services\MailQueueService::class;
+    $one=$q::deliveryIdentity('payment_confirmation','Test@Example.invalid','paid-order:fixture');
+    assertSame($one,$q::deliveryIdentity('payment_confirmation','test@example.invalid','paid-order:fixture'),'Recipient normalization preserves dedupe identity');
+    assertTrue($one!==$q::deliveryIdentity('admin_notification','test@example.invalid','paid-order:fixture'),'Owner/customer mail are distinct obligations');
+    assertTrue(!str_contains(fileRead('app/Services/MailQueueService.php'),"->write('mail_queue'"),'Mail updates cannot replace whole queue');
+    assertTrue(!str_contains(fileRead('app/Services/MailStorageService.php'),"->write('mail_outbox'"),'Outbox updates cannot replace whole collection');
+};
+
+$tests['mail health labels transport evidence honestly and preserves all state denominators'] = static function (): void {
+    $h=\App\Services\MailQueueService::health([
+        ['status'=>'sent'],['status'=>'sending'],['status'=>'needs_review'],
+        ['status'=>'failed','last_error'=>'SMTP 452 quota exceeded for private@example.invalid'],
+        ['status'=>'pending','available_at'=>'2026-11-15T10:00:00Z'],
+        ['status'=>'pending','available_at'=>'2026-11-16T10:00:00Z'],['unexpected'=>'legacy']
+    ],strtotime('2026-11-15T12:00:00Z'));
+    assertSame(7,$h['total'],'Invalid/legacy records remain in denominator');
+    assertSame(1,$h['due_pending'],'Delayed mail is not misclassified overdue');
+    assertSame(1,$h['states']['unknown'],'Malformed historical rows remain visible');
+    assertSame('unverified',$h['inbox_delivery'],'Recorded sent is not recipient confirmation');
+    assertTrue(!str_contains(json_encode($h),'private@example.invalid'),'Health aggregates contain no recipient or raw provider response');
+};
+
+$tests['support catalogue decisions do not substitute unrelated products on a no-match'] = static function (): void {
+    $service=\App\Services\AgentContextService::class;
+    $products=[['name'=>'Gold Ayyappa Pendant','slug'=>'ayyappa-pendant','price'=>850,'updated_at'=>'2026-11-14T12:00:00Z'],
+        ['name'=>'Green Emerald Ring','slug'=>'emerald-ring','price'=>500]];
+    $no=$service::catalogueSelection($products,'Do you sell Neptune telescope bracelets?');
+    assertSame('no_match',$no['status'],'Unmatched specific query stays unmatched');
+    assertSame([],$no['products'],'No default first-20 fallback');
+    assertSame([],$service::supportProducts($products,'Do you sell Neptune telescope bracelets?'),'Production helper retains no-match semantics');
+    $yes=$service::catalogueSelection($products,'How much is the Gold Ayyappa Pendant?');
+    assertSame(['ayyappa-pendant'],array_column($yes['products'],'slug'),'Only named public product retrieved');
+    assertSame('catalogue_search',$yes['intent'],'Specific catalogue request is explicit');
+    assertSame('2026-11-14T12:00:00Z',$yes['sources'][0]['last_updated'],'Actual source date preserved');
+    assertSame('product:ayyappa-pendant',$yes['sources'][0]['id'],'Public evidence references are stable');
+    assertSame(2,count($service::catalogueSelection($products,'What do you sell?')['products']),'Explicit browse remains available');
+    assertSame([],$service::catalogueSelection($products,'show my latest order')['products'],'Account intent never retrieves random catalogue');
+};
+
+$tests['support Tamil collection evidence stays scoped and unknown freshness is not invented'] = static function (): void {
+    $p=[['id'=>'a','name'=>'Gold Ayyappa Pendant','slug'=>'ayyappa-pendant'],['id'=>'b','name'=>'Unrelated Ring','slug'=>'ring']];
+    $c=[['name'=>'Ayyappa Swamy Festive Sale','slug'=>'ayyappa-sale','product_ids'=>['a']]];
+    $r=\App\Services\AgentContextService::catalogueSelection($p,'அய்யப்பன் சுவாமி பண்டிகை பொருட்கள்',$c);
+    assertSame(['ayyappa-pendant'],array_column($r['products'],'slug'),'Tamil name resolves actual collection membership');
+    assertSame('collection_membership',$r['reason'],'Trace distinguishes a membership lookup from generic matching');
+    assertSame(null,$r['sources'][0]['last_updated'],'No source date means unknown, not retrieval time');
+    $r=\App\Services\AgentContextService::catalogueSelection($p,'festival products',$c);
+    assertSame('clarification',$r['status'],'Generic festival query cannot select an arbitrary sale');
+};
+
+$tests['support source-link evaluation detects invented products without claiming semantic accuracy'] = static function (): void {
+    $source=[['intent'=>'catalogue_search','status'=>'matched','sources'=>[['id'=>'product:known-item','last_updated'=>null]]]];
+    $ok=\App\Services\AgentEvaluationService::evaluate('support','product?','See /product/known-item',[],'local',$source);
+    assertSame(true,$ok['checks']['public_product_links_supported'],'Observed product link is supported');
+    $bad=\App\Services\AgentEvaluationService::evaluate('support','product?','See /product/invented-item',[],'model',$source);
+    assertSame(false,$bad['passed'],'Invented product reference fails guardrail');
+    assertSame('not_evaluated',$ok['factual_accuracy'],'Link correctness is not blanket factual correctness');
+};
+
+$tests['agent operational rates use observed attempt and tool denominators plus median'] = static function (): void {
+    $now=strtotime('2026-11-15T12:00:00Z');$events=[];
+    foreach([10,20,100] as $i=>$ms)$events[]=['event'=>'agent.run','created_at'=>gmdate('c',$now-10),'meta'=>[
+        'surface'=>'admin','outcome'=>'local','duration_ms'=>$ms,
+        'provider_attempts'=>$i===0?[['model'=>'fixture','status'=>500],['model'=>'fixture','status'=>200]]:[],
+        'tool_activity'=>[['name'=>'sales_summary','status'=>$i===2?'error':'complete','duration_ms'=>2]]]];
+    $s=\App\Services\AuditLogService::agentSummary($events,$now)['admin'];
+    assertSame(20,$s['p50_ms'],'Median is nearest-rank over the stated 24-hour request window');
+    assertSame(2,$s['provider_attempt_count'],'Retries count as attempts, not additional conversations');
+    assertSame(1,$s['provider_error_count'],'Provider error count records failed attempt');
+    assertSame(3,$s['tool_call_count'],'Tool denominator is executed calls');
+    assertSame(1,$s['tool_error_count'],'Failed tool is separate from response outcome');
+};
+
+$tests['mail CLI runs safely in test mode with bounded pending processing'] = static function (): void {
+    $output=[];$exit=1;
+    exec('cd '.escapeshellarg(app_path()).' && BAPX_TEST_MODE=1 ./bapXphp mail:process 2>&1',$output,$exit);
+    assertSame(0,$exit,'PHP namespace quoting in the actual CLI command must parse');
+    assertTrue(str_contains(implode("\n",$output),'SMTP accepted 0 queued emails. Inbox receipt is unverified.'),'CLI never claims actual delivery');
+    assertTrue(str_contains(fileRead('cli/bapXphp'),'array_slice($m->due(),0,25)'),'One invocation is bounded to 25 pending records');
+};
+
+$tests['public retrieval preserves existing spaced and Unicode slugs as encoded evidence'] = static function (): void {
+    $products=[['id'=>'a','name'=>'Golden Ayyappan Pendant','slug'=>'Ayyappan Pendant'],
+        ['id'=>'b','name'=>'Tamil Mala','slug'=>'தமிழ் மாலை']];
+    $r=\App\Services\AgentContextService::catalogueSelection($products,'What do you sell?');
+    assertSame(2,count($r['products']),'Valid existing slugs must not disappear from retrieval');
+    $safe=\App\Services\AgentTraceService::safeRetrieval($r);
+    assertSame('product:Ayyappan%20Pendant',$safe['sources'][0]['id'],'Evidence URI encodes actual public slug');
+    assertSame(2,count($safe['sources']),'Unicode source survives the trace sanitizer');
+    assertTrue(\App\Services\AgentEvaluationService::publicProductLinksSupported('See /product/Ayyappan%20Pendant.',[$safe]),'Encoded real link passes');
+    assertTrue(!\App\Services\AgentEvaluationService::publicProductLinksSupported('See /product/Ayyappan%20Pendant-Fake.',[$safe]),'A prefixed invented link does not pass');
+};
+
 $tests['each agent session creates one private JSON file and no MySQL table'] = static function (): void {
     $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
     assertTrue(mkdir($root, 0700), 'Private test directory exists');

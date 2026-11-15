@@ -7,13 +7,20 @@ description: How transactional email is sent, how to configure SMTP, and how to 
 
 ## How sending works
 
-Mail is sent **in the request that generates it**. There is no cron job and no CLI
-script — `cli/process-mail-queue.php` was removed.
+Mail is attempted **in the request that generates it**, unless deliberately
+scheduled for later. The old `cli/process-mail-queue.php` was removed. The
+optional `./bapXphp mail:process` command processes at most 25 due **pending**
+messages; it does not retry failed, already accepted, interrupted or unknown
+attempts. Do not run it against a historical backlog without reviewing recipients,
+events, provider limits and delivery evidence first.
 
 ```
 caller → MailQueueService::enqueue()
-           ├─ writes a row to mail_queue (status: pending)
-           └─ deliverNow() → SmtpMailer::send() → marks sent | failed
+           ├─ canonical mail_queue row (pending), plus best-effort outbox projection
+           └─ atomic per-row claim (sending) → SmtpMailer::send()
+                ├─ final DATA 250 acknowledgement → sent / accepted_by_smtp
+                ├─ definite rejection before acceptance → failed
+                └─ missing acknowledgement after DATA → needs_review / unknown
 ```
 
 The queue row is written **before** delivery is attempted, so a failure leaves an
@@ -21,7 +28,22 @@ auditable record carrying the error rather than disappearing. `deliverNow()` nev
 throws: a mail failure must not break the checkout, signup or password reset that
 triggered it. Failed rows are visible in **Admin → Email Outbox**.
 
-`bapXphp mail:process` retries rows already marked failed. It is optional.
+A legacy `sent` status or a successful SMTP acknowledgement is **not proof of
+inbox delivery**. New records retain a stable Message-ID and explicitly mark
+`inbox_receipt=unverified`. Verify an actual recipient receipt and its headers
+before closing an end-to-end delivery issue.
+
+The database host locks only the relevant row during claim/completion. A second
+worker cannot claim a `sending`, `sent` or `needs_review` message. An interrupted
+worker stays blocked for investigation; there is no automatic expired-lease
+resend. A lost QUIT acknowledgement after accepted DATA does not undo acceptance.
+A status/projection failure after SMTP acceptance is not turned into a retryable
+send failure. Queue/outbox updates no longer replace whole collections.
+
+Paid-order customer and owner notifications use distinct deterministic event
+identities, so repeating the same new-event call does not create new mail. This
+does **not** retroactively deduplicate older random-ID records or guarantee
+exactly-once delivery to external mail providers.
 
 ## Configuration
 
@@ -99,3 +121,27 @@ host -t MX sripanchamispiritual.com
 ```
 
 A misspelled domain returns `NXDOMAIN` and no configuration will make it work.
+
+## Queue health and testing
+
+Admin → Email Outbox reconciles its status against the canonical queue, shows
+pending/due, sending/interrupted, accepted, failed, needs-review and unknown
+counts, and limits the visible message table to 100 rows. It does not process
+or resend anything merely by opening the page. Canonical queue rows remain
+authoritative when their secondary outbox projection is unavailable.
+
+Run `php tests/smtp-protocol.php` for loopback-only SMTP scenarios: accepted,
+accepted then closed before QUIT, explicit DATA rejection, and missing DATA
+acknowledgement. No real mailbox or SMTP credential is used. The CI-only
+`tests/mail-delivery-concurrency.php` uses the isolated MySQL fixture to prove
+one sender among six workers, no replay of unknown outcomes, and preservation
+of unrelated records. It must never point at production MySQL.
+
+Current issue #25 retains an external acceptance gate: a verified order's
+customer and owner recipients must receive their actual confirmations.
+Previous contact, password-reset and admin-test receipts do not prove that
+specific order flow. No test payment or artificial paid-order mutation is
+permitted simply to obtain a passing test.
+
+References: SMTP responsibility after DATA acceptance is defined in RFC 5321
+section 6.1; MIME Base64 line encoding is defined in RFC 2045 section 6.8.

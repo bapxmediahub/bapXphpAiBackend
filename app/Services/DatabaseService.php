@@ -260,6 +260,24 @@ final class DatabaseService {
     }
 
     /** Existing business table, optimistic version and row lock; no conversation SQL table. */
+    /** One locked mail row; a worker claim is never a whole-queue rewrite. */
+    public function transitionMailDelivery(string $id,string $action,string $attempt,array $fields): ?array {
+        if(!preg_match('/^[a-f0-9]{16}$/D',$id))throw new \InvalidArgumentException('Invalid mail identity.');
+        if($this->isTestMode())throw new \RuntimeException('Mail mutations require an isolated database test.');
+        if($this->isRemote())return $this->remoteMutation('transition_mail_delivery','mail_queue',[
+            'id'=>$id,'transition'=>$action,'attempt_id'=>$attempt,'fields'=>$fields])['record'];
+        $pdo=$this->db();$pdo->beginTransaction();
+        try{
+            $query=$pdo->prepare('SELECT id, _data FROM mail_queue WHERE id = ? FOR UPDATE');$query->execute([$id]);
+            $record=$query->fetch(\PDO::FETCH_ASSOC);
+            if(!$record)throw new \InvalidArgumentException('Mail record not found.');
+            $row=json_decode($record['_data'],true,512,JSON_THROW_ON_ERROR);$row['id']=$record['id'];
+            $updated=MailQueueService::transitionDelivery($row,$action,$attempt,$fields,new \DateTimeImmutable());
+            if($updated!==null)$this->upsert('mail_queue',$updated);
+            $pdo->commit();self::$remoteQueryCache=[];return $updated;
+        }catch(\Throwable $error){if($pdo->inTransaction())$pdo->rollBack();throw $error;}
+    }
+
     public function updateSupportTicket(string $id,string $action,array $fields,array $actor,int $expectedVersion): array {
         if(!preg_match('/^[a-f0-9]{16}$/D',$id)||$expectedVersion<0)throw new \InvalidArgumentException('Invalid ticket/version.');
         if($this->isTestMode())throw new \RuntimeException('Ticket mutations require a disposable DB integration test.');

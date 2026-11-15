@@ -5,7 +5,7 @@
     "summary": {
         "routes": 131,
         "controllers": 12,
-        "services": 61,
+        "services": 62,
         "views": 51,
         "collections": 22
     },
@@ -293,6 +293,7 @@
                 "AuditLogService",
                 "DatabaseService",
                 "AgentConversationService",
+                "AgentEvaluationService",
                 "SiteTelemetryService",
                 "AuthService"
             ]
@@ -608,6 +609,7 @@
             "view": "admin/mailbox",
             "services": [
                 "MailStorageService",
+                "MailQueueService",
                 "AuthService"
             ]
         },
@@ -1562,6 +1564,7 @@
         "ShippingService",
         "SiteInsightsService",
         "SiteTelemetryService",
+        "SmtpDeliveryUncertainException",
         "SmtpMailer",
         "StoragePermissionService",
         "StoreStatsService",
@@ -1667,6 +1670,7 @@
             "AstrologerService",
             "CourierService",
             "ProjectMapService",
+            "SmtpDeliveryUncertainException",
             "StoragePermissionService"
         ],
         "unwired_views": [],

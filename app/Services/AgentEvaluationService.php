@@ -3,11 +3,12 @@ namespace App\Services;
 
 /** Free, deterministic checks for critical policies; never ask a paid judge model. */
 final class AgentEvaluationService {
-    public static function evaluate(string $surface, string $question, string $answer, array $tools = [], string $outcome = 'unknown'): array {
+    public static function evaluate(string $surface, string $question, string $answer, array $tools = [], string $outcome = 'unknown', array $retrieval = []): array {
         $checks = [];
         $checks['response_present'] = trim($answer) !== '';
         $checks['no_internal_scaffold'] = !preg_match('/<\/?(?:think|analysis|final_answer)>|\b(?:system prompt|hidden instruction)\b/i', $answer);
         $checks['no_secret_leak'] = !preg_match('/\bsk-[A-Za-z0-9_-]{16,}|-----BEGIN (?:RSA |EC )?PRIVATE KEY-----/i', $answer);
+        if($surface==='support'&&$retrieval!==[])$checks['public_product_links_supported']=self::publicProductLinksSupported($answer,$retrieval);
         // An internal observed activity label is not an exposed model capability.
         $activityNames=AgentCapabilityPolicy::tools($surface === 'admin' ? 'enterprise' : 'support');
         if($surface==='support')$activityNames[]='customer_ticket_lookup';
@@ -27,6 +28,18 @@ final class AgentEvaluationService {
             'factual_accuracy' => 'not_evaluated',
             'groundedness' => 'not_evaluated',
         ];
+    }
+
+    public static function publicProductLinksSupported(string $answer,array $retrieval): bool {
+        $known=[];
+        foreach($retrieval as $entry)foreach((array)($entry['sources']??[]) as $source){
+            $id=(string)($source['id']??'');if(str_starts_with($id,'product:'))$known[]=substr($id,8);
+        }
+        preg_match_all('~/product/([^\s<>"\'\[\]\(\)]+)~u',$answer,$matches);
+        foreach($matches[1] as $slug){
+            if(!in_array($slug,$known,true)&&!in_array(rtrim($slug,'.,;!'),$known,true))return false;
+        }
+        return true;
     }
 
     /** Repeatable golden fixtures. No provider calls or live MySQL access. */
@@ -65,6 +78,9 @@ final class AgentEvaluationService {
         return match ($case['type'] ?? null) {
             'trace_scope' => AgentTraceService::toolEvidence((string)$case['tool'],(array)$case['args'],(array)$case['result'])['filters'] === (array)$case['expected_filters'],
             'usage' => AgentTraceService::usageFromResponse(json_encode($case['response'],JSON_THROW_ON_ERROR)) === $case['expected'],
+            'catalogue_decision' => self::fixtureCatalogueDecision($case),
+            'public_links' => self::publicProductLinksSupported((string)$case['answer'],[['sources'=>$case['sources']]]) === (bool)$case['expected_pass'],
+            'policy_reply' => SupportBotService::policyAnswer((string)$case['question'],(array)$case['policies']) === $case['expected'],
             'collection' => self::fixtureCollection($case),
             'permission' => AgentCapabilityPolicy::allows(
                 (string)($case['agent']??''),(string)($case['tool']??''),$case['actor']??null)
@@ -78,6 +94,12 @@ final class AgentEvaluationService {
                 === (bool)($case['expected_pass']??false),
             default => false,
         };
+    }
+
+    private static function fixtureCatalogueDecision(array $case): bool {
+        $result=AgentContextService::catalogueSelection((array)$case['products'],(string)$case['question'],(array)($case['collections']??[]));
+        return $result['intent']===$case['expected_intent'] && $result['status']===$case['expected_status']
+            && array_column($result['products'],'slug')===$case['expected_slugs'];
     }
 
     private static function fixtureCollection(array $case): bool {

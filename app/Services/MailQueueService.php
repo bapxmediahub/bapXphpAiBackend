@@ -139,6 +139,62 @@ final class MailQueueService {
             . e($label) . '</a></td></tr></table>';
     }
 
+    /** Stable per business event and recipient; no email or event text is stored in the ID. */
+    public static function deliveryIdentity(string $type,string $recipient,string $event): string {
+        return substr(hash('sha256',$type."\0".strtolower(trim($recipient))."\0".$event),0,16);
+    }
+
+    /** Pure state machine applied while the database host holds this row's lock. */
+    public static function transitionDelivery(array $row,string $action,string $attempt,array $fields,\DateTimeImmutable $now): ?array {
+        if (!preg_match('/^[a-f0-9]{32}$/D',$attempt)) throw new \InvalidArgumentException('Invalid mail attempt identity.');
+        if ($action==='claim') {
+            $available=strtotime((string)($row['available_at']??''));
+            if (($row['status']??'')!=='pending'||$available===false||$available>$now->getTimestamp())return null;
+            $row['status']='sending';$row['delivery_state']='in_progress';$row['attempt_id']=$attempt;
+            $row['attempts']=(int)($row['attempts']??0)+1;$row['attempted_at']=$now->format('c');
+        } else {
+            if(!in_array($action,['accepted','failed','uncertain'],true))throw new \InvalidArgumentException('Unsupported mail transition.');
+            if(($row['status']??'')!=='sending'||!hash_equals((string)($row['attempt_id']??''),$attempt))return null;
+            $row['status']=match($action){'accepted'=>'sent','failed'=>'failed',default=>'needs_review'};
+            $row['delivery_state']=match($action){'accepted'=>'accepted_by_smtp','failed'=>'not_accepted',default=>'unknown'};
+            $row['inbox_receipt']='unverified';
+            if($action==='accepted') {
+                $id=(string)($fields['message_id']??'');
+                if(!preg_match('/^<[A-Za-z0-9._-]{1,100}@[A-Za-z0-9.-]{1,253}>$/D',$id))throw new \InvalidArgumentException('Invalid SMTP receipt identity.');
+                $row['message_id']=$id;$row['sent_at']=$now->format('c');$row['smtp_accepted_at']=$now->format('c');
+                $row['last_error']='';$row['error_code']='';
+            } else {
+                $code=(string)($fields['error_code']??'smtp_error');
+                $allowed=['smtp_error','smtp_authentication','smtp_temporary','smtp_rejected','smtp_connection','smtp_outcome_unknown','not_configured'];
+                $row['error_code']=in_array($code,$allowed,true)?$code:'smtp_error';
+                $row['last_error']=str_replace('_',' ',$row['error_code']);$row['failed_at']=$now->format('c');
+            }
+        }
+        $row['updated_at']=$now->format('c');return $row;
+    }
+
+    public static function errorCategory(\Throwable $error): string {
+        if($error instanceof SmtpDeliveryUncertainException)return 'smtp_outcome_unknown';
+        if(in_array($error->getCode(),[534,535],true))return 'smtp_authentication';
+        if(in_array($error->getCode(),[421,450,451,452],true))return 'smtp_temporary';
+        if($error->getCode()>=500&&$error->getCode()<=599)return 'smtp_rejected';
+        if(str_contains(strtolower($error->getMessage()),'connect'))return 'smtp_connection';
+        return 'smtp_error';
+    }
+
+    /** Canonical queue snapshot, not a receipt from a recipient mailbox. */
+    public static function health(array $rows,?int $now=null): array {
+        $now??=time();$states=array_fill_keys(['pending','sending','sent','failed','needs_review','unknown'],0);
+        $due=0;$oldest=null;
+        foreach($rows as $row){$status=(string)($row['status']??'unknown');
+            if(!isset($states[$status]))$status='unknown';$states[$status]++;
+            if($status==='pending'){$at=strtotime((string)($row['available_at']??''));
+                if($at!==false&&$at<=$now){$due++;$oldest=$oldest===null?$at:min($oldest,$at);}}
+        }
+        return ['total'=>count($rows),'states'=>$states,'due_pending'=>$due,
+            'oldest_due_age_seconds'=>$oldest===null?null:max(0,$now-$oldest),'inbox_delivery'=>'unverified'];
+    }
+
     public function all(): array {
         return $this->store->read('mail_queue');
     }
@@ -148,10 +204,10 @@ final class MailQueueService {
      * mailbox (support@); only the layout and footer differ, so the owner can tell a
      * store notification from something a customer received.
      */
-    public function enqueue(string $type, string $to, string $subject, string $html, ?\DateTimeImmutable $availableAt = null, array $meta = [], string $audience = 'customer'): array {
+    public function enqueue(string $type, string $to, string $subject, string $html, ?\DateTimeImmutable $availableAt = null, array $meta = [], string $audience = 'customer', ?string $eventKey = null): array {
         $html = $this->wrapHtml($html, $audience);
         $record = [
-            'id' => bin2hex(random_bytes(8)),
+            'id' => $eventKey === null ? bin2hex(random_bytes(8)) : self::deliveryIdentity($type,$to,$eventKey),
             'type' => $type,
             'to' => $to,
             'subject' => $subject,
@@ -161,8 +217,12 @@ final class MailQueueService {
             'meta' => $meta,
             'created_at' => date('c'),
         ];
-        $saved = $this->store->upsert('mail_queue', $record);
-        (new MailStorageService($this->store))->recordQueuedOutbox($saved);
+        if($eventKey!==null){
+            $insert=$this->store->insertIfAbsent('mail_queue',$record);$saved=$insert['record'];
+            if(!$insert['inserted'])return $saved;
+        }else{$saved=$this->store->upsert('mail_queue',$record);}
+        try{(new MailStorageService($this->store))->recordQueuedOutbox($saved);}
+        catch(\Throwable){error_log('Mail outbox projection unavailable; canonical queue entry preserved.');}
         // Deliver in this request. There is no cron on the host, so anything that is
         // only queued is never sent. The row is still written first, so a failed send
         // leaves an auditable record with the error rather than vanishing.
@@ -174,37 +234,40 @@ final class MailQueueService {
      * Best-effort immediate delivery. Never throws: a mail failure must not break the
      * checkout, signup or password reset that triggered it.
      */
-    public function deliverNow(array $record): bool {
+    public function deliverNow(array $record, ?SmtpMailer $mailer = null): bool {
+        $attempt=bin2hex(random_bytes(16));$id=(string)($record['id']??'');
+        try{$claimed=$this->store->transitionMailDelivery($id,'claim',$attempt,[]);}
+        catch(\Throwable){error_log('Mail delivery claim unavailable; no SMTP attempt was made.');return false;}
+        if($claimed===null)return false;
+        $receipt=null;
         try {
-            $mailer = new SmtpMailer((new SecretService())->all());
-            if (!$mailer->configured()) {
-                $this->markFailed((string)$record['id'], 'Email delivery is not configured.');
-                return false;
-            }
-            $mailer->send((string)$record['to'], (string)$record['subject'], (string)$record['html']);
-            $this->markSent((string)$record['id']);
-            (new MailStorageService($this->store))->updateOutboxForQueue((string)$record['id'], 'sent', [
-                'from_email' => $mailer->fromEmail(),
-                'transport' => $mailer->transport(),
-                'sent_at' => date('c'),
-            ]);
-            return true;
-        } catch (\Throwable $error) {
-            try {
-                $this->markFailed((string)$record['id'], $error->getMessage());
-                (new MailStorageService($this->store))->updateOutboxForQueue((string)$record['id'], 'failed', [
-                    'last_error' => $error->getMessage(),
-                    'failed_at' => date('c'),
-                ]);
-            } catch (\Throwable) {}
-            error_log('Mail delivery failed: ' . $error->getMessage());
-            return false;
+            $mailer??=new SmtpMailer((new SecretService())->all());
+            if(!$mailer->configured())throw new \RuntimeException('not_configured');
+            $messageId='<sps-'.$id.'@'.substr(strrchr($mailer->fromEmail(),'@'),1).'>';
+            $receipt=$mailer->send((string)$claimed['to'],(string)$claimed['subject'],(string)$claimed['html'],$messageId);
+        }catch(\Throwable $error){
+            $action=$error instanceof SmtpDeliveryUncertainException?'uncertain':'failed';
+            $code=$error->getMessage()==='not_configured'?'not_configured':self::errorCategory($error);
+            try{$saved=$this->store->transitionMailDelivery($id,$action,$attempt,['error_code'=>$code]);
+                if($saved!==null)(new MailStorageService($this->store))->updateOutboxForQueue($id,$saved['status'],[
+                    'delivery_state'=>$saved['delivery_state'],'last_error'=>$saved['last_error'],'inbox_receipt'=>'unverified']);
+            }catch(\Throwable){error_log('Mail outcome persistence incomplete; claimed entry requires review.');}
+            error_log('Mail attempt outcome: '.$code);return false;
         }
+        // SMTP already accepted. A database/projection error is NOT permission to resend.
+        try{
+            $saved=$this->store->transitionMailDelivery($id,'accepted',$attempt,['message_id'=>$receipt['message_id']]);
+            if($saved===null)throw new \RuntimeException('Mail attempt receipt no longer matches');
+            (new MailStorageService($this->store))->updateOutboxForQueue($id,'sent',[
+                'from_email'=>$mailer->fromEmail(),'transport'=>'smtp','sent_at'=>$saved['sent_at'],
+                'message_id'=>$receipt['message_id'],'delivery_state'=>'accepted_by_smtp','inbox_receipt'=>'unverified','last_error'=>'']);
+        }catch(\Throwable){error_log('SMTP accepted mail; status projection incomplete. Do not automatically resend.');}
+        return true;
     }
 
     public function enqueuePaymentConfirmation(array $order): ?array {
         $to = trim((string)($order['customer_email'] ?? ''));
-        if ($to === '') return null;
+        if ($to === '' || trim((string)($order['id'] ?? '')) === '') return null;
         $invoiceHtml = '';
         if (!empty($order['invoice_number'])) {
             $invoiceHtml = '<p>Invoice: <strong>' . e((string)($order['invoice_number'] ?? '')) . '</strong> — '
@@ -222,7 +285,7 @@ final class MailQueueService {
             . self::orderItemsHtml($order['items'] ?? [])
             . self::button('View your order', $this->siteUrl('/account/orders/' . rawurlencode((string)($order['id'] ?? ''))))
             . $invoiceHtml;
-        $sent = $this->enqueue('payment_confirmation', $to, $subject, $html, null, ['order_id' => $order['id'] ?? '']);
+        $sent = $this->enqueue('payment_confirmation', $to, $subject, $html, null, ['order_id' => $order['id'] ?? ''], 'customer', 'paid-order:'.(string)($order['id']??''));
         $this->notifyAdmin(
             'New order ' . (string)($order['id'] ?? ''),
             '<p>A new paid order has come in.</p>'
@@ -230,7 +293,8 @@ final class MailQueueService {
             . '<p>Order: <strong>' . e((string)($order['id'] ?? '')) . '</strong><br>'
             . 'Customer: ' . e((string)($order['customer_name'] ?? '')) . ' &lt;' . e($to) . '&gt;<br>'
             . 'Total: ₹' . e((string)($order['total'] ?? 0)) . '</p>',
-            ['order_id' => $order['id'] ?? '']
+            ['order_id' => $order['id'] ?? ''],
+            'paid-order:'.(string)($order['id']??'')
         );
         return $sent;
     }
@@ -294,11 +358,11 @@ final class MailQueueService {
      * deliberately separate from the sending mailbox: customers are written to from
      * support@, while the owner is notified at their own inbox.
      */
-    public function notifyAdmin(string $subject, string $html, array $meta = []): ?array {
+    public function notifyAdmin(string $subject, string $html, array $meta = [], ?string $eventKey = null): ?array {
         $admin = trim((string)((new SecretService())->all()['admin_notification_email'] ?? ''));
         if ($admin === '' || !filter_var($admin, FILTER_VALIDATE_EMAIL)) return null;
         try {
-            return $this->enqueue('admin_notification', $admin, $subject, $html, null, $meta, 'admin');
+            return $this->enqueue('admin_notification', $admin, $subject, $html, null, $meta, 'admin', $eventKey);
         } catch (\Throwable $e) {
             error_log('Admin notification failed: ' . $e->getMessage());
             return null;
@@ -433,38 +497,16 @@ final class MailQueueService {
     }
 
     public function processDue(SmtpMailer $mailer, ?\DateTimeImmutable $now = null, int $limit = 25): int {
-        $sent = 0;
-        foreach (array_slice($this->due($now), 0, $limit) as $record) {
-            try {
-                $mailer->send((string)$record['to'], (string)$record['subject'], (string)$record['html']);
-                $this->markSent((string)$record['id']);
-                (new MailStorageService($this->store))->updateOutboxForQueue((string)$record['id'], 'sent', [
-                    'from_email' => $mailer->fromEmail(),
-                    'transport' => $mailer->transport(),
-                    'sent_at' => date('c'),
-                ]);
-                $sent++;
-            } catch (\Throwable $error) {
-                $this->markFailed((string)$record['id'], $error->getMessage());
-                (new MailStorageService($this->store))->updateOutboxForQueue((string)$record['id'], 'failed', [
-                    'from_email' => $mailer->fromEmail(),
-                    'transport' => $mailer->transport(),
-                    'last_error' => $error->getMessage(),
-                    'failed_at' => date('c'),
-                ]);
-            }
+        $sent=0;
+        foreach(array_slice($this->due($now),0,max(0,min(25,$limit))) as $record){
+            if($this->deliverNow($record,$mailer))$sent++;
         }
         return $sent;
     }
 
     private function updateStatus(string $id, string $status, array $extra): void {
-        $records = $this->all();
-        foreach ($records as &$record) {
-            if (($record['id'] ?? '') !== $id) continue;
-            $record = array_merge($record, $extra, ['status' => $status]);
-            break;
-        }
-        unset($record);
-        $this->store->write('mail_queue', $records);
+        $record=$this->store->find('mail_queue',$id);
+        if($record===null)throw new \InvalidArgumentException('Mail record not found.');
+        $this->store->upsert('mail_queue',array_merge($record,$extra,['status'=>$status]));
     }
 }

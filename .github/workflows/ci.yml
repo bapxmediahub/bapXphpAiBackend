@@ -59,3 +59,7 @@ jobs:
         run: php tests/agent-interruption.php
       - name: Test duplicate support actions and competing staff against isolated MySQL
         run: php tests/support-ticket-concurrency.php
+      - name: Verify SMTP acceptance and uncertain-delivery classification on loopback
+        run: php tests/smtp-protocol.php
+      - name: Verify concurrent mail claims against isolated MySQL
+        run: php tests/mail-delivery-concurrency.php

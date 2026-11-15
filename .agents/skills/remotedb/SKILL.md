@@ -158,3 +158,12 @@ customer feedback and trace spans are one JSON file per conversation in
 data-free files. The server's `requirePassword()` code must be
 the authority for authentication behavior; verify it before updating
 security claims.
+
+## Named mail-delivery mutation
+
+`transition_mail_delivery` applies only to `mail_queue` and requires its
+record ID, an allowlisted transition, a random attempt ID and bounded receipt
+fields. The database host locks the row and checks the attempt identity.
+General AI tools never receive this mutation. It preserves single-worker
+claims without a local database or whole-collection overwrite. Tests use the
+isolated CI database; reading production queue health does not authorize replay.
