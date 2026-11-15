@@ -282,6 +282,25 @@ $tests['Tamil named festive retrieval matches English collection without guessin
     assertSame(null,\App\Services\AgentContextService::requestedCollection('பண்டிகை பொருட்கள்',$collections),'Generic Tamil festival query requires clarification');
 };
 
+$tests['admin dashboard resolves all services and renders its actual zero-data page'] = static function (): void {
+    $oldMode=getenv('BAPX_TEST_MODE');$oldServer=$_SERVER;$oldSession=$_SESSION??[];
+    putenv('BAPX_TEST_MODE=1');$_SERVER['REQUEST_METHOD']='GET';$_SERVER['REQUEST_URI']='/admin';
+    $_SESSION['user']=['role'=>'admin','id'=>'dashboard-fixture'];
+    $level=ob_get_level();
+    try {
+        // Constructor authentication is separately covered by browser checks; render
+        // with the existing isolated DB fixture to catch unresolved service names.
+        $controller=(new ReflectionClass(\App\Controllers\AdminController::class))->newInstanceWithoutConstructor();
+        ob_start();$controller->dashboard();$html=(string)ob_get_clean();
+        assertTrue(str_contains($html,'revenue-chart-title'),'Real dashboard controller reaches its chart template');
+        assertTrue(str_contains($html,'No paid orders in this period.'),'Zero-data rendering remains safe through the full controller');
+        assertTrue(!str_contains($html,'Fatal error'),'Controller page does not emit a runtime error');
+    } finally {
+        while(ob_get_level()>$level)ob_end_clean();
+        $_SERVER=$oldServer;$_SESSION=$oldSession;putenv($oldMode===false?'BAPX_TEST_MODE':'BAPX_TEST_MODE='.$oldMode);
+    }
+};
+
 $tests['each agent session creates one private JSON file and no MySQL table'] = static function (): void {
     $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
     assertTrue(mkdir($root, 0700), 'Private test directory exists');
