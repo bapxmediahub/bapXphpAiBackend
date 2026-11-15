@@ -97,3 +97,11 @@ reuse/customization boundaries. `.bapX/` isolation is implemented; automatic
 multi-client provisioning is not. PHP policy constants, model-prompt branding,
 mail templates and per-client data/secrets need explicit review as well as
 Markdown changes. Never copy live customer records or credentials into a fork.
+
+## Offline developer contract generation
+
+`cli/agent-contracts.php` runs only in CLI and selects an explicit synthetic
+admin role to enumerate the protected Enterprise manifest. It emits paths and
+content hashes, never runtime prompt bodies. This does not grant production
+browser access. Uncaught CLI exceptions fail with a nonzero exit code and a
+bounded class/file diagnostic; they cannot masquerade as successful HTML output.

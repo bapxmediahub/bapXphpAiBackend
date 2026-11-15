@@ -194,7 +194,10 @@ try {
     echo "Concurrent remote bridge payment and fulfillment update passed.\n";
     $refund = $store->recordOrderRefund('tax-review', 'pay_review', 'rfnd_fixture', 2500);
     $retry = $store->recordOrderRefund('tax-review', 'pay_review', 'rfnd_fixture', 2500);
-    if ($refund !== $retry || $retry['invoice_number'] !== $recovered['invoice_number']
+    require_once __DIR__.'/json-snapshot.php';
+    // MySQL normalizes JSON object key order on the read-back; compare strict
+    // canonical values, keeping array sequence, amount types and all fields.
+    if (canonicalJsonSnapshot($refund) !== canonicalJsonSnapshot($retry) || $retry['invoice_number'] !== $recovered['invoice_number']
         || $retry['status'] !== 'processing' || \App\Services\OrderService::refundedPaise($retry) !== 2500) {
         throw new RuntimeException('Replaying a refund must preserve its amount, invoice, and fulfillment status.');
     }
@@ -202,6 +205,7 @@ try {
         $store->recordOrderRefund('tax-review', 'pay_review', 'rfnd_excess', 9000);
         throw new RuntimeException('An excessive refund should be rejected.');
     } catch (InvalidArgumentException) {}
+    echo "Refund replay amount, invoice and fulfillment invariants passed.\n";
 } finally {
     proc_terminate($bridge);
     proc_close($bridge);

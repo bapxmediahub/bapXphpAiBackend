@@ -69,6 +69,12 @@ function img_tag(string $src, string $alt = '', array $attrs = []): string {
 \App\Services\EnvService::load();
 
 set_exception_handler(static function (\Throwable $error): void {
+    if (PHP_SAPI === 'cli') {
+        // Do not emit a web page or a success exit code for a failed validation.
+        // Exception messages can contain credentials or customer/provider data.
+        fwrite(STDERR, '[cli failure] ' . $error::class . ' at ' . basename($error->getFile()) . ':' . $error->getLine() . "\n");
+        exit(1);
+    }
     error_log('[unhandled] ' . $error::class . ': ' . $error->getMessage()
         . ' @ ' . $error->getFile() . ':' . $error->getLine());
     http_response_code(503);

@@ -485,6 +485,38 @@ $tests['public retrieval preserves existing spaced and Unicode slugs as encoded 
     assertTrue(!\App\Services\AgentEvaluationService::publicProductLinksSupported('See /product/Ayyappan%20Pendant-Fake.',[$safe]),'A prefixed invented link does not pass');
 };
 
+$tests['JSON snapshot comparison ignores object key order but preserves values and array order'] = static function (): void {
+    require_once app_path('tests/json-snapshot.php');
+    $a=['status'=>'processing','refunds'=>[['id'=>'fixture','amount'=>2500]]];
+    $b=['refunds'=>[['amount'=>2500,'id'=>'fixture']],'status'=>'processing'];
+    assertTrue($a!==$b,'Original strict PHP comparison rejects reordered JSON objects');
+    assertSame(canonicalJsonSnapshot($a),canonicalJsonSnapshot($b),'Canonical object keys compare equal');
+    $b['refunds'][0]['amount']='2500';assertTrue(canonicalJsonSnapshot($a)!==canonicalJsonSnapshot($b),'Scalar types remain strict');
+    assertTrue(canonicalJsonSnapshot([1,2])!==canonicalJsonSnapshot([2,1]),'JSON array sequence remains significant');
+    $b['refunds'][0]['amount']=2501;assertTrue(canonicalJsonSnapshot($a)!==canonicalJsonSnapshot($b),'Changed refund amount still fails');
+};
+
+$tests['uncaught CLI errors exit nonzero without HTML or sensitive exception bodies'] = static function (): void {
+    $fixture=tempnam(sys_get_temp_dir(),'sps-cli-throw-');
+    try{
+        file_put_contents($fixture,"<?php require ".var_export(app_path('app/bootstrap.php'),true)."; throw new RuntimeException('secret-fixture-never-print');");
+        $out=[];$status=0;exec('BAPX_TEST_MODE=1 '.escapeshellarg(PHP_BINARY).' '.escapeshellarg($fixture).' 2>&1',$out,$status);$text=implode("\n",$out);
+        assertTrue($status!==0,'An uncaught validation exception must fail the shell/CI');
+        assertTrue(!str_contains($text,'<!doctype'),'CLI errors are not successful HTML pages');
+        assertTrue(!str_contains($text,'secret-fixture-never-print'),'Unexpected exception message may contain secrets');
+        assertTrue(str_contains($text,'RuntimeException'),'Safe class is available for diagnosis');
+    }finally{@unlink($fixture);}
+};
+
+$tests['real agent contract checker validates private manifests instead of duplicating prompts'] = static function (): void {
+    $out=[];$status=1;exec('cd '.escapeshellarg(app_path()).' && BAPX_TEST_MODE=1 '.escapeshellarg(PHP_BINARY).' cli/agent-contracts.php --check 2>&1',$out,$status);
+    assertSame(0,$status,'Offline generator must explicitly authorize its fixture role');
+    assertTrue(str_contains(implode("\n",$out),'Agent tool and instruction documentation matches PHP source.'),'Command must reach the actual validation success, not an HTML exception handler');
+    $doc=fileRead('docs/agent-tool-contracts.md');
+    assertTrue(str_contains($doc,'.bapX/supportagent.md')&&str_contains($doc,'.bapX/enterpriseagent.md'),'Developer contract lists required private source paths');
+    assertTrue(!str_contains($doc,'You are Sri Panchami'),'Developer doc does not duplicate runtime constitution text');
+};
+
 $tests['each agent session creates one private JSON file and no MySQL table'] = static function (): void {
     $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
     assertTrue(mkdir($root, 0700), 'Private test directory exists');
