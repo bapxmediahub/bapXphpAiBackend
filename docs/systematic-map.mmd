@@ -7,8 +7,8 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 125 routes, 12 controllers, 51 services, 51 views, 0 data files, 20 tools"]
-    arch_routes["> Routes: 125 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 126 routes, 12 controllers, 51 services, 51 views, 0 data files, 20 tools"]
+    arch_routes["> Routes: 126 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
     arch_svc["> Services: 51"]:::arch
     arch_views["> Views: 51"]:::arch
@@ -136,6 +136,7 @@ flowchart LR
     route_post_admin_appearance_save["POST /admin/appearance/save — Admin — save logo/favicon"]:::route
     route_get_admin_media["GET /admin/media — Admin — media library"]:::route
     route_post_admin_media_upload["POST /admin/media/upload — Admin — upload media"]:::route
+    route_post_admin_media_delete["POST /admin/media/delete"]:::route
     route_post_admin_products_save["POST /admin/products/save — Admin — create/update product"]:::route
     route_post_admin_products_delete["POST /admin/products/delete — Admin — delete product"]:::route
     route_post_admin_categories_save["POST /admin/categories/save — Admin — create/update category"]:::route
@@ -707,6 +708,11 @@ flowchart LR
   controller_admincontroller --> service_auditlogservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_media
+  route_post_admin_media_delete --> controller_admincontroller
+  controller_admincontroller --> service_mediaservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_media
   route_post_admin_products_save --> controller_admincontroller
   controller_admincontroller --> service_resourceservice
   controller_admincontroller --> service_auditlogservice
@@ -932,6 +938,10 @@ flowchart LR
   service_mailstorageservice --> collection_mail_inbox
   service_mailstorageservice --> collection_mail_outbox
   service_mediaservice --> collection_media_files
+  service_mediaservice --> collection_products
+  service_mediaservice --> collection_temples
+  service_mediaservice --> collection_categories
+  service_mediaservice --> collection_settings
   service_orderservice --> collection_orders
   service_passwordresetservice --> collection_users
   service_productservice --> collection_products

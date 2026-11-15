@@ -37,14 +37,14 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 358
-  relationships: 256
+  concepts: 359
+  relationships: 261
   by_type:
     blog: 14
     controller: 12
     doc: 35
     image: 89
-    route: 125
+    route: 126
     schema: 22
     service: 51
     skill: 10
@@ -3183,6 +3183,22 @@ concepts:
       - "AuditLogService"
       - "AuthService"
     view: "admin/integrations"
+  - id: "route:post__admin_media_delete"
+    type: "route"
+    title: "POST /admin/media/delete"
+    description: "admin.media.delete"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/admin/media/delete"
+    controller: "AdminController@deleteMedia"
+    services:
+      - "MediaService"
+      - "AuditLogService"
+      - "AuthService"
+    view: "admin/media"
   - id: "route:post__admin_media_upload"
     type: "route"
     title: "POST /admin/media/upload"
@@ -4862,6 +4878,9 @@ relationships:
   - from: "route:post__admin_integrations_test_email"
     to: "controller:AdminController"
     relation: "handled_by"
+  - from: "route:post__admin_media_delete"
+    to: "controller:AdminController"
+    relation: "handled_by"
   - from: "route:post__admin_media_upload"
     to: "controller:AdminController"
     relation: "handled_by"
@@ -5040,7 +5059,19 @@ relationships:
     to: "schema:mail_outbox"
     relation: "stores"
   - from: "service:MediaService"
+    to: "schema:categories"
+    relation: "stores"
+  - from: "service:MediaService"
     to: "schema:media_files"
+    relation: "stores"
+  - from: "service:MediaService"
+    to: "schema:products"
+    relation: "stores"
+  - from: "service:MediaService"
+    to: "schema:settings"
+    relation: "stores"
+  - from: "service:MediaService"
+    to: "schema:temples"
     relation: "stores"
   - from: "service:OrderService"
     to: "schema:orders"

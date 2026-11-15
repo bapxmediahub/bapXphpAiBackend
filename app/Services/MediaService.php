@@ -229,21 +229,124 @@ final class MediaService {
         return $uploaded;
     }
 
-    public function delete(string $id, ?string $context = null): void {
-        $contexts = $context ? [$context] : self::CONTEXTS;
-        foreach ($contexts as $ctx) {
-            $filePath = '';
-            $records = array_values(array_filter($this->readCatalogue($ctx), function($r) use ($id, &$filePath) {
-                if (($r['id'] ?? '') === $id) { $filePath = $r['url'] ?? ''; return false; }
-                return true;
-            }));
-            if ($filePath !== '') {
-                $fullPath = self::storedPathForUrl($filePath) ?? app_path(ltrim($filePath, '/'));
-                if (is_file($fullPath)) @unlink($fullPath);
-                $this->store->delete('media_files', $id);
-                return;
+    /** Only records uploaded through the media library may be removed. */
+    public static function canDeleteRecord(array $record): bool {
+        $id = (string)($record['id'] ?? '');
+        $url = (string)($record['url'] ?? '');
+        return !in_array(($record['source'] ?? ''), ['file', 'legacy'], true)
+            && (bool)preg_match('/^[a-f0-9]{16}$/D', $id)
+            && (bool)preg_match(
+                '#^/assets/images/media/\d{4}/\d{2}/[a-z0-9][a-z0-9._-]*\.(?:png|jpe?g|webp|gif)$#i',
+                (string)(parse_url($url, PHP_URL_PATH) ?? '')
+            );
+    }
+
+    /** Identify links before a destructive operation; stale used_in is insufficient. */
+    public static function referencesToUrl(string $url, array $recordsByType): array {
+        $references = [];
+        foreach ($recordsByType as $type => $records) {
+            foreach ($records as $record) {
+                if (!is_array($record)) continue;
+                $json = json_encode($record, JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
+                if ($json === false || !str_contains($json, $url)) continue;
+                $label = trim((string)($record['name'] ?? $record['title'] ?? $record['slug'] ?? $record['id'] ?? 'Record'));
+                $references[] = (string)$type . ': ' . mb_substr($label, 0, 90);
             }
         }
+        return array_values(array_unique($references));
+    }
+
+    /** Return true only after metadata was removed and the file safely isolated. */
+    public function delete(string $id, ?string $context = null): bool {
+        if (!preg_match('/^[a-f0-9]{16}$/D', $id)) {
+            throw new \InvalidArgumentException('Only uploaded library images can be deleted.');
+        }
+        $records = $this->store->read('media_files');
+        $matches = array_values(array_filter($records, static fn(array $r): bool => ($r['id'] ?? '') === $id));
+        $record = $matches[0] ?? null;
+        if ($record === null) throw new \InvalidArgumentException('Uploaded media record not found.');
+        if (!self::canDeleteRecord($record)) {
+            throw new \InvalidArgumentException('Bundled site images cannot be deleted from Media Library.');
+        }
+        if ($context !== null && ($record['context'] ?? '') !== $context) {
+            throw new \InvalidArgumentException('Media context does not match.');
+        }
+        // An old YAML record would reappear after deleting the MySQL row.
+        foreach (self::CONTEXTS as $section) {
+            foreach ($this->readYaml($section) as $old) {
+                if (($old['id'] ?? '') === $id) {
+                    throw new \InvalidArgumentException('Legacy media requires migration before deletion.');
+                }
+            }
+        }
+        if (!empty($record['used_in'])) {
+            throw new \InvalidArgumentException('This image is still linked to existing content. Unlink it first.');
+        }
+
+        $urls = array_values(array_unique(array_filter([
+            (string)($record['url'] ?? ''), (string)($record['original_url'] ?? '')
+        ])));
+        $content = [
+            'products' => $this->store->read('products'),
+            'temples' => $this->store->read('temples'),
+            'categories' => $this->store->read('categories'),
+            'settings' => $this->store->read('settings'),
+            'articles' => (new BlogService())->all(true),
+        ];
+        foreach ($urls as $url) {
+            $uses = self::referencesToUrl($url, $content);
+            if ($uses !== []) {
+                throw new \InvalidArgumentException('This image is still referenced by: ' . implode(', ', array_slice($uses, 0, 3)) . '.');
+            }
+            foreach ($records as $other) {
+                if (($other['id'] ?? '') === $id) continue;
+                if (($other['url'] ?? '') === $url || ($other['original_url'] ?? '') === $url) {
+                    throw new \InvalidArgumentException('Another media record uses this image.');
+                }
+            }
+        }
+
+        // Quarantine all owned binaries before deleting the MySQL metadata. Restore
+        // the files if the database mutation fails. Never remove bundled assets.
+        $moved = [];
+        try {
+            foreach ($urls as $url) {
+                if (!preg_match(
+                    '#^/assets/images/media/\d{4}/\d{2}/[a-z0-9][a-z0-9._-]*\.(?:png|jpe?g|webp|gif)$#i',
+                    (string)(parse_url($url, PHP_URL_PATH) ?? '')
+                )) continue;
+                $path = self::storedPathForUrl($url);
+                if ($path === null) continue; // Remove stale DB metadata safely.
+                if (is_link($path)) throw new \RuntimeException('Linked media files cannot be deleted.');
+                $real = realpath($path);
+                $persistent = realpath(self::persistentDirectory());
+                $legacy = realpath(app_path('assets/images/media'));
+                $allowed = false;
+                foreach ([$persistent, $legacy] as $base) {
+                    if ($base !== false && $real !== false && str_starts_with($real, $base . '/')) $allowed = true;
+                }
+                if (!$allowed) throw new \RuntimeException('Media file is outside allowed upload storage.');
+                $trashDir = dirname($real) . '/.trash';
+                if (!is_dir($trashDir) && !@mkdir($trashDir, 0700, true) && !is_dir($trashDir)) {
+                    throw new \RuntimeException('Media quarantine is not writable.');
+                }
+                $trash = $trashDir . '/' . $id . '-' . basename($real);
+                if (!@rename($real, $trash)) throw new \RuntimeException('Could not isolate media before deletion.');
+                $moved[$real] = $trash;
+            }
+            $this->store->delete('media_files', $id);
+        } catch (\Throwable $error) {
+            foreach ($moved as $original => $trash) {
+                if (is_file($trash)) @rename($trash, $original);
+            }
+            throw $error;
+        }
+        foreach ($moved as $trash) {
+            if (is_file($trash) && !@unlink($trash)) {
+                error_log('Media cleanup pending for deleted record ' . $id);
+            }
+        }
+        return true;
     }
 
     public function recordUsage(array $mediaRecords, string $entityType, string $entityId, string $entityName): void {
@@ -306,7 +409,10 @@ final class MediaService {
         $records = [];
         // Read legacy YAML only for compatibility; new and edited metadata live
         // solely in hosted MySQL, with existing database records taking priority.
-        foreach (array_merge($this->readYaml($context), $this->store->read('media_files')) as $record) {
+        $legacy = array_map(static function(array $record): array {
+            return ['source'=>'legacy'] + $record;
+        }, $this->readYaml($context));
+        foreach (array_merge($legacy, $this->store->read('media_files')) as $record) {
             if (($record['context'] ?? 'shared') !== $context) continue;
             $key = (string)($record['id'] ?? $record['url'] ?? '');
             if ($key !== '') $records[$key] = array_merge($records[$key] ?? [], $record);

@@ -55,3 +55,7 @@
 .dashboard-status-legend li { display: grid; grid-template-columns: .65rem minmax(0, 1fr) auto; align-items: center; gap: .45rem; }
 .dashboard-status-legend i { width: .65rem; aspect-ratio: 1; border-radius: 50%; background: var(--swatch); }
 #web-analytics, #dashboard-commerce-title { scroll-margin-top: 5rem; }
+
+/* Uploaded media deletion is deliberately distinct from ordinary upload actions. */
+.admin-media-delete { background:var(--color-maroon, #6f1026); color:#fff; border:1px solid transparent; margin-top:8px; }
+.admin-media-delete:hover, .admin-media-delete:focus-visible { background:#8b2438; color:#fff; }
