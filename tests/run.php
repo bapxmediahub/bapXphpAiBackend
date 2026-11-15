@@ -68,6 +68,35 @@ $tests['development fixture remote mutations include authentication without comm
     assertTrue(str_contains($cli, '--data-binary @-'), 'Remote mutation should stream the authenticated JSON body');
 };
 
+$tests['support named festive collection listing uses only collection members'] = static function (): void {
+    $collections = [
+        ['name'=>'Ayyappa Swamy Festive Sale', 'slug'=>'collection-ayyappa', 'product_ids'=>['a','b']],
+        ['name'=>'Sassthi Festival Sale', 'slug'=>'collection-sassthi', 'product_ids'=>['c']],
+    ];
+    $match = \App\Services\AgentContextService::requestedCollection(
+        'ayyappan swamy festive products list please', $collections);
+    assertSame('collection-ayyappa', $match['slug'], 'Ayyappan phrasing matches the real Ayyappa sale');
+    assertSame(null, \App\Services\AgentContextService::requestedCollection(
+        'festival products list please', $collections), 'Generic festive terms cannot guess a collection');
+    assertSame('collection-sassthi', \App\Services\AgentContextService::requestedCollection(
+        'sasthi festival items please', $collections)['slug'], 'Other named festivals also resolve');
+    $visible = [
+        ['id'=>'ring', 'name'=>'Unrelated gemstone ring', 'slug'=>'unrelated-ring'],
+        ['id'=>'a', 'name'=>'Golden Panchaloga Ayyappan Swamy Dollar Pendant', 'slug'=>'Ayyappan Pendant'],
+        ['id'=>'b', 'name'=>'Ayyappa Dollar with Impon Malai', 'slug'=>'ayyappa-dollar-with-impon-malai'],
+        ['id'=>'c', 'name'=>'Sri Vel Mayil Pendant', 'slug'=>'vel'],
+    ];
+    $selected = (new \App\Services\CategoryService())->collectionProducts($match, $visible);
+    $answer = \App\Services\SupportBotService::collectionListingReply($match, $selected);
+    assertSame(2, count($selected), 'Only the selected festival products are retrieved');
+    assertTrue(str_contains($answer, 'Golden Panchaloga') && str_contains($answer, 'Impon Malai'),
+        'Answer names the two actual collection members');
+    assertTrue(!str_contains($answer, 'Unrelated gemstone ring'), 'Never list a random product from the default catalogue');
+    assertTrue(str_contains($answer, '/shop?category=collection-ayyappa'), 'Collection-specific shop link is included');
+    $empty = \App\Services\SupportBotService::collectionListingReply($match, []);
+    assertTrue(str_contains($empty, 'no visible products'), 'Empty collections do not fabricate results');
+};
+
 $tests['database service can connect to MySQL'] = function (): void {
     try {
         // Quick pre-check: verify the host is reachable before attempting PDO
