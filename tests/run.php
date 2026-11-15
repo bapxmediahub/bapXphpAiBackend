@@ -485,6 +485,14 @@ $tests['public retrieval preserves existing spaced and Unicode slugs as encoded 
     assertTrue(!\App\Services\AgentEvaluationService::publicProductLinksSupported('See /product/Ayyappan%20Pendant-Fake.',[$safe]),'A prefixed invented link does not pass');
 };
 
+$tests['docs map records real local blog and chat sources rather than unused GitHub fetcher'] = static function (): void {
+    $map=(new \App\Services\DocsMapService())->generate();
+    assertTrue(str_contains($map,'content/blog/posts/*.md'),'Published articles come from local BlogService files');
+    assertTrue(str_contains($map,'content/blog/categories.yaml'),'Categories source is local YAML');
+    assertTrue(!str_contains($map,'GitHub raw → blog index'),'Generated map cannot repeat the unused fetcher architecture');
+    assertTrue(str_contains($map,'one private file per chat'),'Private chat exception is visible in source map');
+};
+
 $tests['JSON snapshot comparison ignores object key order but preserves values and array order'] = static function (): void {
     require_once app_path('tests/json-snapshot.php');
     $a=['status'=>'processing','refunds'=>[['id'=>'fixture','amount'=>2500]]];
@@ -2972,20 +2980,14 @@ $tests['repository operations use git and GitHub Actions without duplicate agent
     assertTrue(is_file(app_path('.github/workflows/branch-pr.yml')), 'Branch pushes should have an Actions-owned PR workflow');
     assertTrue(!is_file(app_path('.github/workflows/sync-upstream.yml')), 'Unforked repository should not contain sync-upstream workflow');
 
-    $activeFiles = [
-        app_path('AGENTS.md'),
-        app_path('README.md'),
-        app_path('cli/bapXphp'),
-        app_path('.agents/skills/git/SKILL.md'),
-        app_path('.agents/skills/deployment/SKILL.md'),
-    ];
-    foreach ($activeFiles as $path) {
+    // Hosting/runtime still has no gh dependency; the owner explicitly requires
+    // the authorized developer machine to use gh for issue/PR evidence.
+    foreach ([app_path('cli/bapXphp'), app_path('.agents/skills/deployment/SKILL.md')] as $path) {
         $source = file_get_contents($path);
-        assertTrue(!preg_match('/\bgh\s+(issue|pr|api|workflow|repo)\b/', $source), basename($path) . ' should not require GitHub CLI');
+        assertTrue(!preg_match('/\bgh\s+(issue|pr|api|workflow|repo)\b/', $source), basename($path) . ' must not require gh on hosting');
     }
-
-
-
+    assertTrue(str_contains(fileRead('AGENTS.md'),'with `gh` on the development machine'), 'Local GitHub issue workflow is explicitly authorized');
+    assertTrue(str_contains(fileRead('.agents/skills/git/SKILL.md'),'never require it on Hostinger'), 'Developer CLI does not become a hosting dependency');
 
     $branchPr = file_get_contents(app_path('.github/workflows/branch-pr.yml'));
     assertTrue(str_contains($branchPr, "github.repository == 'bapxmediahub/bapXphpAiBackend'"), 'Automatic PR creation should run only in the deployment working repository');

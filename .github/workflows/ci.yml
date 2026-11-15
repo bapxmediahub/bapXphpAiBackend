@@ -47,6 +47,8 @@ jobs:
         run: node --test tests/review-automation.test.cjs
       - name: Validate progressive motion policy and native-scroll bounds
         run: node --test tests/site-motion.test.cjs
+      - name: Test documentation drift and issue-tracker boundaries
+        run: php tests/documentation-review.php
       - name: Validate code, tests, maps, and routes
         run: ./bapXphp ci
       - name: Gate deterministic agent fixture regressions without model APIs

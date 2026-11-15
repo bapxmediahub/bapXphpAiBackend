@@ -67,14 +67,19 @@ target is absent, and state that absence as a finding.
 2. Read this file.
 3. **Check `docs/project-index.json` before claiming any feature exists.** It is the
    generated, committed inventory of every route, controller, service, view and
-   collection. If something is not in it, it does not exist — add it rather than
-   assuming it is there. Read `docs/systematic-map.mmd` for the wiring diagram.
+   collection. An index entry proves a resource was inventoried, not that the feature is
+   working. If absent, inspect narrowly and verify index freshness before adding anything. Read `docs/systematic-map.mmd` for the wiring diagram.
    Use root `index.yaml` to query original project concepts and relationships,
    including blogs, images and hosted `/remotedb` collections. Read its `discovery`
    section first and query narrowly; never load the entire generated file into context.
-4. Search existing GitHub issues, then open an evidence-backed one (reproduction,
-   affected paths, pinpointed cause, acceptance checks). Skip this for read-only
-   diagnosis or when the user declines tracking.
+4. Search existing GitHub issues with `gh` on the development machine, then create
+   or comment on the correctly scoped evidence-backed issue before implementation.
+   Record source SHA, reproduction, expected/actual result, affected paths and
+   acceptance checks. An unrelated bug found while testing gets a separate issue;
+   a related finding belongs in the existing issue comments. **No issue ledgers,
+   acceptance-status pages or execution plans in `docs/`.** Store plans/status
+   in GitHub; durable docs explain implemented behavior and repeatable procedures.
+   Read-only diagnosis need not create a tracker unless a new actionable bug is found.
 5. Read the matching `.agents/skills/<name>/SKILL.md`.
 6. Read `storage/schema/collections.php` for schema and `Design.md` for UI.
 7. Inspect existing implementations before creating any file, route, service, view,
@@ -160,6 +165,10 @@ and public logs; assert counts/booleans rather than dumping private page bodies.
 After route, schema, controller, view or workflow changes, run `./bapXphp update`
 to regenerate `map.mmd`, `docs/systematic-map.mmd`, and the indexes. Fix stale
 expectations to match the agreed behavior; never weaken validation to hide a defect.
+Cross-review source and durable docs/skills before the PR. Run `php cli/docs-check.php --list`,
+inspect affected originals, correct prose and explicitly record each affected area's
+review rationale; `--check` rejects stale source/reference hashes. Regenerating
+maps does not approve documentation truth. See `docs/development-workflow.md`.
 Run `./bapXphp ci` before the PR, plus `php cli/agent-eval.php` after
 agent/tool/prompt changes and `php tests/agent-concurrency.php` for chat
 storage changes. The offline golden suite is deterministic and has an explicit
@@ -207,3 +216,11 @@ Check computed styles rather than trusting a screenshot: an author rule like
 - CI success, a bot mention and a completed exact-head review are different
   evidence. Never approve from a quota error, stale receipt or privileged
   workflow executing PR code. See `docs/engineering/ai-review-workflow.md`.
+
+## Issue closure and release order
+
+Work one independently testable issue per Ready-for-Review PR. Use `Refs #N` while
+live acceptance is pending; do not auto-close an issue at merge if its production
+checks remain unverified. After exact-head CI, merge, verify actual live behavior,
+attach evidence with `gh issue comment`, then close only fulfilled scope. Never
+mark provider quota, a sent review command or SMTP acceptance as verified success.

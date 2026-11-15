@@ -25,5 +25,4 @@ or customer satisfaction from raw request volume alone.
 
 Regression checks: an unauthenticated viewer redirects to login; no paid
 orders produces a safe zero-valued empty state; nonempty figures reconcile with
-`StoreStatsService`; mobile 375px tables stay usable. The empty-series chart
-fix is independently reviewed in PR #245 until merged.
+`StoreStatsService`; mobile 375px tables stay usable. Empty-series chart behavior is covered by a template and full-controller regression; zero data must render safely.

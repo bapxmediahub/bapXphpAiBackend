@@ -108,13 +108,11 @@ final class DocsMapService
     private function blogSection(): array
     {
         return [
-            "    ### Blog & Content (GitHub-sourced)",
-            '    BLOG_INDEX["GitHub raw → blog index JSON"]',
-            '    BLOG_POSTS["GitHub raw → .md posts"]',
-            '    BLOG_CATEGORIES["GitHub raw → categories JSON"]',
-            '    RELEASE_NOTES["GitHub raw → release .md"]',
-            '    FEATURE_UPDATES["GitHub raw → features .md"]',
-            '    CACHE["storage/cache/*.md"]',
+            "    ### Blog & Content (local Markdown and YAML; includes customer help)",
+            '    BLOG_SERVICE["BlogService → local Markdown + YAML frontmatter"]',
+            '    BLOG_POSTS["content/blog/posts/*.md"]',
+            '    BLOG_CATEGORIES["content/blog/categories.yaml"]',
+            '    PUBLIC_HELP["GET /docs → /blog/category/help"]',
             '',
         ];
     }
@@ -138,9 +136,10 @@ final class DocsMapService
     {
         return [
             "    ### Data Layer",
-            '    MYSQL_TABLES["MySQL Database — primary runtime store"]',
+            '    MYSQL_TABLES["MySQL — business records, not conversation transcripts"]',
             '    SCHEMA_DEF["storage/schema/collections.php"]',
-            '    MEDIA_FILES["assets/images/media/"]',
+            '    MEDIA_FILES["Bundled assets/images; persistent uploaded .sps-media beside checkout"]',
+            '    PRIVATE_CHATS["storage/agent-conversations/*.json — one private file per chat"]',
             '    MEDIA_INDEX["MySQL media_files table"]',
             '    BACKUPS["storage/backups/"]',
             '',

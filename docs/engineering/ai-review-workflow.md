@@ -10,7 +10,7 @@ category: docs
 The existing `Validate application` workflow validates code and generated maps.
 It does not itself run Codex, Sourcery or CodeRabbit. Review requests, provider
 acknowledgements, completed reviews, approval and deployment are separate events.
-This patch is staged for review; it is not active until merged to the default branch.
+The coordinator runs trusted default-branch code. Feature-branch changes do not activate until merged; inspect the actual run rather than inferring vendor review success.
 
 ## Source-verified causes on 15 November 2026
 

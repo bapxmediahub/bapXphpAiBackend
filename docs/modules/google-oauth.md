@@ -28,6 +28,6 @@ Main files: `GoogleOAuthClient.php`, `AuthController.php`, `views/admin/integrat
 - After authentication, users are redirected based on their role:
   - **admin** → `/admin`
   - Historical service records are owner-only; public consultation booking is retired.
-  - **customer** → `/` (home)
-- New Google-authenticated users are upserted into `users.json` with role `customer`.
+  - **customer** → `/account/dashboard`
+- New Google-authenticated users are upserted into the MySQL `users` collection via `DatabaseService` with role `customer`.
 - Existing users (matched by email) retain their previously assigned role.

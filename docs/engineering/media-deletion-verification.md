@@ -31,22 +31,13 @@ an authenticated fixture-only remotedb process. It checks:
 The fixture server is loopback only, does not connect to production, and is
 terminated by the test. No customer file is used as a fixture.
 
-## Browser/remotedb evidence, 15 November 2026
+## Repeatable browser/remotedb acceptance
 
-The candidate PR was tested through real authenticated Playwright UI:
+Use only a newly created, uniquely named disposable upload. Verify its exact ID
+and binary, confirm a no-CSRF request is rejected, then remove it through the
+real admin UI at desktop and 375px. Confirm the same row no longer exists and
+its image URL is no longer served. Never delete an existing customer image.
 
-- Upload one uniquely named 32px PNG via Media Library at 1280px.
-- Read only that new ID through remotedb: exactly one row, expected fixture
-  description, and the candidate's stored binary exists.
-- Attempt deletion without CSRF: rejected, row remains.
-- Switch to 375px, confirm Delete upload in the UI.
-- Re-read the same ID: zero rows. Its image URL returns 404.
-
-The candidate runs locally against hosted business metadata; it is not a
-claim that the new route was deployed at test time. Repeat the same disposable
-workflow after release to validate Hostinger permissions and persistent media
-storage. Never delete an existing customer image for release verification.
-
-Credentials, full media catalogues, cookies and fixture binary files are not
-committed. The result is supported by private local Playwright test logs and
-the unchanged production/customer assets, not by a screenshot alone.
+Record execution results, candidate SHA and deployed verification on the
+relevant GitHub issue/PR. Private credentials, cookies and uploaded test binaries
+remain outside Git; this guide describes procedure rather than release status.

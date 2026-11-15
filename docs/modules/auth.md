@@ -15,8 +15,8 @@ Main files: `AuthController.php`, `AuthService.php`, `EnvService.php`, `PublicCo
 - Single unified login page (`/login`) serving admin and customer roles.
 - Role-based redirect after authentication:
   - **admin** → `/admin`
-  - **customer** → `/` (home)
-- Admin credentials managed via `EnvService` through the MySQL `settings` collection (editable via Admin → Settings).
+  - **customer password sign-in** → `/account/dashboard`
+- The configured admin identity is verified by `EnvService` against the canonical MySQL `app_settings` password hash; plain text is not accepted. Changes require the authorized settings workflow, not a model instruction.
 
 ## Google OAuth
 
@@ -33,5 +33,6 @@ Main files: `AuthController.php`, `AuthService.php`, `EnvService.php`, `PublicCo
 
 ## Data Storage
 
+- Registration signs the new customer in and returns to `/`; password sign-in has the separate dashboard redirect above.
 - Users and addresses stored in MySQL via `DatabaseService` (not JSON files).
 - Schema defined in `storage/schema/collections.php`.

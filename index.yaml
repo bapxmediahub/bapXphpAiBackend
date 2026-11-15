@@ -41,12 +41,12 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 398
+  concepts: 394
   relationships: 284
   by_type:
     blog: 14
     controller: 12
-    doc: 50
+    doc: 46
     image: 89
     route: 131
     runtime_instruction: 6
@@ -276,23 +276,6 @@ concepts:
     tags:
       - "code"
       - "controller"
-  - id: "doc:2026-11-15-agent-evidence-followthrough"
-    type: "doc"
-    title: "Agent Evidence Implementation Follow-through"
-    description: "Scoped implementation from the REA findings, with observable execution timing and pre-execution private JSON checkpoints."
-    resource: "docs/engineering/2026-11-15-agent-evidence-followthrough.md"
-    tags:
-      - "docs"
-    filename: "2026-11-15-agent-evidence-followthrough.md"
-    header_image: ""
-  - id: "doc:2026-11-15-operations-agent-closure"
-    type: "doc"
-    title: "2026-11-15-operations-agent-closure"
-    description: ""
-    resource: "docs/superpowers/plans/2026-11-15-operations-agent-closure.md"
-    tags: []
-    filename: "2026-11-15-operations-agent-closure.md"
-    header_image: ""
   - id: "doc:2026-11-15-rea-agent-commerce-gaps"
     type: "doc"
     title: "REA-backed Agent and Commerce Gap Analysis"
@@ -301,22 +284,6 @@ concepts:
     tags:
       - "docs"
     filename: "2026-11-15-rea-agent-commerce-gaps.md"
-    header_image: ""
-  - id: "doc:2026-11-15-rea-review-audit"
-    type: "doc"
-    title: "2026-11-15-rea-review-audit"
-    description: ""
-    resource: "docs/superpowers/plans/2026-11-15-rea-review-audit.md"
-    tags: []
-    filename: "2026-11-15-rea-review-audit.md"
-    header_image: ""
-  - id: "doc:2026-11-15-runtime-boundaries-motion"
-    type: "doc"
-    title: "2026-11-15-runtime-boundaries-motion"
-    description: ""
-    resource: "docs/superpowers/plans/2026-11-15-runtime-boundaries-motion.md"
-    tags: []
-    filename: "2026-11-15-runtime-boundaries-motion.md"
     header_image: ""
   - id: "doc:README"
     type: "doc"
@@ -498,6 +465,15 @@ concepts:
       - "module"
     filename: "consultations.md"
     header_image: ""
+  - id: "doc:content-and-seo"
+    type: "doc"
+    title: "Blog Authoring, Markdown and SEO Services"
+    description: "Source-backed developer responsibilities for blog drafts, explicit publishing, metadata and rendered content."
+    resource: "docs/modules/content-and-seo.md"
+    tags:
+      - "module"
+    filename: "content-and-seo.md"
+    header_image: ""
   - id: "doc:customer"
     type: "doc"
     title: "Customer Guide"
@@ -515,6 +491,15 @@ concepts:
     tags:
       - "docs"
     filename: "deployment-hostinger.md"
+    header_image: ""
+  - id: "doc:development-workflow"
+    type: "doc"
+    title: "Evidence-led Development and Documentation Review"
+    description: "GitHub-only issue tracking, bounded source discovery, independent fixes, explicit documentation review and post-merge live acceptance."
+    resource: "docs/development-workflow.md"
+    tags:
+      - "docs"
+    filename: "development-workflow.md"
     header_image: ""
   - id: "doc:email-setup"
     type: "doc"
@@ -568,15 +553,6 @@ concepts:
     tags:
       - "page"
     filename: "integrations.md"
-    header_image: ""
-  - id: "doc:issue-251-acceptance"
-    type: "doc"
-    title: "Native Agent Quality Acceptance Evidence"
-    description: "Source-specific implementation progress and remaining closure gates for issue 251, without confusing passing guardrails with live accuracy."
-    resource: "docs/engineering/issue-251-acceptance.md"
-    tags:
-      - "docs"
-    filename: "issue-251-acceptance.md"
     header_image: ""
   - id: "doc:json-storage"
     type: "doc"
@@ -649,15 +625,6 @@ concepts:
     tags:
       - "docs"
     filename: "rea-agent-commerce-gap-audit.md"
-    header_image: ""
-  - id: "doc:rea-gap-status"
-    type: "doc"
-    title: "REA Gap Implementation Status"
-    description: "Distinguishes implemented follow-up contracts, partially complete acceptance and remaining scope."
-    resource: "docs/engineering/rea-gap-status.md"
-    tags:
-      - "docs"
-    filename: "rea-gap-status.md"
     header_image: ""
   - id: "doc:remote-db"
     type: "doc"

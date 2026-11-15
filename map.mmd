@@ -7,13 +7,13 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 131 routes, 12 controllers, 62 services, 51 views, 0 data files, 22 tools"]
+  subgraph ARCH["Architecture Overview — 131 routes, 12 controllers, 62 services, 51 views, 0 data files, 24 tools"]
     arch_routes["> Routes: 131 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
     arch_svc["> Services: 62"]:::arch
     arch_views["> Views: 51"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
-    arch_tools["> Tools: 22"]:::arch
+    arch_tools["> Tools: 24"]:::arch
     arch_gaps["> Gaps: 7"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
@@ -341,6 +341,7 @@ flowchart LR
   end
 
   subgraph TOOLS["Tools"]
+    tool_documentationreview["DocumentationReview"]:::tool
     tool_agent_contracts["agent-contracts"]:::tool
     tool_agent_eval["agent-eval"]:::tool
     tool_blog_image["blog-image"]:::tool
@@ -348,6 +349,7 @@ flowchart LR
     tool_blog_write["blog-write"]:::tool
     tool_doc_read["doc-read"]:::tool
     tool_doc_write["doc-write"]:::tool
+    tool_docs_check["docs-check"]:::tool
     tool_generate_code_map["generate-code-map"]:::tool
     tool_generate_docs_map["generate-docs-map"]:::tool
     tool_generate_okf_bundle["generate-okf-bundle"]:::tool

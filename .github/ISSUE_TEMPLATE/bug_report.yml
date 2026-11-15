@@ -1,0 +1,31 @@
+name: Evidence-backed defect
+description: Record a reproduced failure before implementing an independently testable fix.
+title: "[Bug] "
+body:
+  - type: textarea
+    id: source
+    attributes:
+      label: Source and environment
+      description: Commit/PR, route, environment, and related existing issue. No credentials or customer records.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction and expected versus actual result
+    validations:
+      required: true
+  - type: textarea
+    id: cause
+    attributes:
+      label: Affected source paths and evidence
+      description: Separate observed root cause from a hypothesis. Use redacted assertions or test results.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance and release checks
+      description: Regression, permissions, desktop/mobile and live verification. Keep unrelated work in separate issues.
+    validations:
+      required: true
