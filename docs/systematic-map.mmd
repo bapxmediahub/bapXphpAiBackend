@@ -7,8 +7,8 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 129 routes, 12 controllers, 61 services, 51 views, 0 data files, 22 tools"]
-    arch_routes["> Routes: 129 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 130 routes, 12 controllers, 61 services, 51 views, 0 data files, 22 tools"]
+    arch_routes["> Routes: 130 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
     arch_svc["> Services: 61"]:::arch
     arch_views["> Views: 51"]:::arch
@@ -126,6 +126,7 @@ flowchart LR
     route_get_admin_agent["GET /admin/agent"]:::route
     route_get_admin_agent_history["GET /admin/agent/history"]:::route
     route_get_admin_agent_history_id["GET /admin/agent/history/{id}"]:::route
+    route_post_admin_agent_history_id_delete["POST /admin/agent/history/{id}/delete"]:::route
     route_get_admin_agent_conversation_id["GET /admin/agent/conversation/{id}"]:::route
     route_get_admin_agent_monitoring["GET /admin/agent/monitoring"]:::route
     route_post_admin_agent_ask["POST /admin/agent/ask"]:::route
@@ -665,6 +666,11 @@ flowchart LR
   controller_admincontroller --> service_agentconversationservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_agent
+  route_post_admin_agent_history_id_delete --> controller_admincontroller
+  controller_admincontroller --> service_agentconversationservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_agent
   route_get_admin_agent_conversation_id --> controller_admincontroller
   controller_admincontroller --> service_agentconversationservice
   controller_admincontroller --> service_authservice
@@ -724,7 +730,8 @@ flowchart LR
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_list
   route_post_admin_support_tickets_save --> controller_admincontroller
-  controller_admincontroller --> service_resourceservice
+  controller_admincontroller --> service_supportticketservice
+  controller_admincontroller --> service_databaseservice
   controller_admincontroller --> service_auditlogservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_list

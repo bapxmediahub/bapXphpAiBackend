@@ -44,3 +44,12 @@ delivered. Use effective result scope instead of requested filter arguments.
 Unfinished requests are visible in Agent Monitoring and must not be blindly
 replayed. Keep provider tokens/usage unavailable when absent, and distinguish
 14-case offline regression scores from real customer satisfaction/accuracy.
+
+## Support write consistency
+
+Agent ticket creation is a controller business action, never a model-supplied
+SQL/file tool. Preserve deterministic action identities and insert-if-absent
+receipts. Staff transitions run through `updateSupportTicket` on the database
+host with a row lock and expected version; do not restore read-all/upsert reply
+or close logic. Test against the disposable CI database and do not infer email
+delivery from a saved reply. Conversation history remains one private JSON file.

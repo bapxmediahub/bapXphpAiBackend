@@ -63,3 +63,7 @@ controller, service, and view listed in `project-index.json` before updating it.
 ./bapXphp update
 ./bapXphp ci
 ```
+
+## Implementation acceptance
+
+- [REA gap status](engineering/rea-gap-status.md) — code-backed completion, limitations and remaining scope for the 28-item register.

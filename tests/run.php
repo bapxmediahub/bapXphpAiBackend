@@ -143,6 +143,125 @@ $tests['provider usage normalization preserves unavailable fields without privat
     assertTrue(!str_contains(json_encode($google),'do-not-record'),'Provider body content is excluded');
 };
 
+$tests['trace enforces provider budget without inventing missing usage'] = static function (): void {
+    $trace=\App\Services\AgentTraceService::class;
+    $trace::begin(bin2hex(random_bytes(8)),null,['max_model_calls'=>1,'max_observed_tokens'=>25,'max_duration_ms'=>10000]);
+    $span=$trace::startSpan('model_attempt','fixture-model');
+    $trace::endSpan($span,'complete',['usage'=>['input_tokens'=>10,'output_tokens'=>5,'total_tokens'=>15,'cached_input_tokens'=>null]]);
+    $trace::endSpan($span,'complete',['usage'=>['input_tokens'=>10,'output_tokens'=>5,'total_tokens'=>15]]);
+    assertSame(15,$trace::snapshot()['budget']['observed_total_tokens'],'Duplicate span completion never doubles usage');
+    $blocked=false;try{$trace::startSpan('model_attempt','fixture-model');}catch(\RuntimeException){$blocked=true;}
+    assertTrue($blocked,'Call budget enforced before executing second request');
+    assertSame(1,$trace::snapshot()['budget']['model_calls'],'A rejected request is not counted as sent');
+    $trace::begin(bin2hex(random_bytes(8)),null,['max_model_calls'=>2]);
+    $span=$trace::startSpan('model_attempt','fixture-model');$trace::endSpan($span,'complete',['usage'=>$trace::usageFromResponse('{}')]);
+    assertSame(false,$trace::snapshot()['budget']['usage_complete'],'Absent provider usage remains explicitly incomplete');
+    $trace::reset();
+};
+
+$tests['tool provenance preserves only approved aggregate facts and code versions'] = static function (): void {
+    $e=\App\Services\AgentTraceService::toolEvidence('sales_summary',['from'=>'wrong'],
+        ['from'=>'2026-11-01','to'=>'2026-11-15','orders'=>2,'revenue'=>150.25,'customer_email'=>'never@log.invalid']);
+    assertSame(150.25,$e['facts']['revenue'],'Actual approved financial aggregate retained for comparison');
+    assertTrue(strlen($e['facts_sha256'])===64 && strlen($e['tool_version_sha256'])===64,'Versioned evidence fingerprint present');
+    assertTrue(!str_contains(json_encode($e),'never@log.invalid'),'Private fields are excluded before hashing or persistence');
+    $e2=\App\Services\AgentTraceService::toolEvidence('sales_summary',[],['from'=>'2026-11-01','to'=>'2026-11-15','orders'=>2,'revenue'=>151.25]);
+    assertTrue($e['facts_sha256']!==$e2['facts_sha256'],'Changed data creates a different retained evidence digest');
+};
+
+$tests['audit outcome distinguishes unavailable store from recorded metadata'] = static function (): void {
+    $success=\App\Services\AuditLogService::deliveryResult(['status'=>'recorded'],true);
+    $failure=\App\Services\AuditLogService::deliveryResult(['status'=>'recorded'],false);
+    assertSame('recorded',$success['status'],'Successful write remains recorded');
+    assertSame('not_persisted',$failure['status'],'Failure never falsely claims durable audit record');
+};
+
+$tests['private JSON history pages and deletion are bounded and actor owned'] = static function (): void {
+    $root=sys_get_temp_dir().'/sps-history-page-'.bin2hex(random_bytes(6));mkdir($root,0700);
+    $svc=new \App\Services\AgentConversationService($root);$owner=['type'=>'admin','id'=>'owner'];$other=['type'=>'admin','id'=>'other'];
+    try {
+        $ids=[];for($i=0;$i<5;$i++){$r=$svc->record('admin',$owner,null,'Question '.$i,'Answer',bin2hex(random_bytes(8)),'local');$ids[]=$r['conversation_id'];}
+        $foreign=$svc->record('admin',$other,null,'Private question','Answer',bin2hex(random_bytes(8)),'local');
+        $page=$svc->historyPage('admin',$owner,2,null);assertSame(2,count($page['conversations']),'Page has requested bound');
+        assertTrue(is_string($page['next_cursor']),'Paging cursor returned');
+        $page2=$svc->historyPage('admin',$owner,2,$page['next_cursor']);
+        assertSame([],array_intersect(array_column($page['conversations'],'id'),array_column($page2['conversations'],'id')),'Pages have no duplicate chats');
+        $denied=false;try{$svc->deleteForActor($foreign['conversation_id'],'admin',$owner);}catch(\RuntimeException){$denied=true;}
+        assertTrue($denied,'Foreign chat deletion rejected');
+        $before=$svc->getForActor($ids[0],'admin',$owner);$backup=json_encode($before,JSON_THROW_ON_ERROR);
+        assertTrue($svc->deleteForActor($ids[0],'admin',$owner),'Owned completed chat deleted');
+        assertSame(null,$svc->getForAdmin($ids[0]),'Deleted transcript no longer accessible');
+        file_put_contents($root.'/'.$ids[0].'.json',$backup);chmod($root.'/'.$ids[0].'.json',0600);
+        $restored=$svc->record('admin',$owner,$ids[0],'Continued','Restored answer',bin2hex(random_bytes(8)),'local');
+        assertSame(2,$restored['turns'],'Restored backup preserves identity and prior turns');
+        $pending=$svc->prepareTurn('admin',$owner,null,'In progress',bin2hex(random_bytes(8)));
+        $denied=false;try{$svc->deleteForActor($pending['conversation_id'],'admin',$owner);}catch(\RuntimeException){$denied=true;}
+        assertTrue($denied,'Uncertain/running action cannot be deleted as ordinary history');
+    } finally {
+        foreach(array_merge(glob($root.'/*')?:[],glob($root.'/.conversation*')?:[]) as $f)if(is_file($f))@unlink($f);
+        @rmdir($root);
+    }
+};
+
+$tests['per-chat locks coordinate with a previous deployment global writer'] = static function (): void {
+    $root=sys_get_temp_dir().'/sps-lock-compat-'.bin2hex(random_bytes(6));mkdir($root,0700);
+    $legacy=fopen($root.'/.conversation.lock','c');flock($legacy,LOCK_EX);
+    $svc=new \App\Services\AgentConversationService($root);$actor=['type'=>'guest','id'=>'fixture'];$blocked=false;
+    try {
+        try{$svc->prepareTurn('support',$actor,null,'test',bin2hex(random_bytes(8)));}
+        catch(\RuntimeException){$blocked=true;}
+        assertTrue($blocked,'A new writer must not race a still-running old deployment writer');
+        assertSame(0,count(glob($root.'/*.json')?:[]),'No checkpoint bypasses the old writer lock');
+    } finally {
+        flock($legacy,LOCK_UN);fclose($legacy);
+        foreach(array_merge(glob($root.'/*')?:[],glob($root.'/.conversation*')?:[]) as $f)if(is_file($f))@unlink($f);@rmdir($root);
+    }
+};
+
+$tests['support action identity and human lifecycle are deterministic and versioned'] = static function (): void {
+    $service=\App\Services\SupportTicketService::class;
+    $handoff=['conversation_id'=>str_repeat('a',32),'trace_id'=>str_repeat('b',16),'turn_id'=>str_repeat('c',32)];
+    $id=$service::actionIdentity('user@example.invalid',$handoff);
+    assertSame($id,$service::actionIdentity('USER@example.invalid',$handoff),'Same actor/request yields same ticket key');
+    assertTrue($id!==$service::actionIdentity('other@example.invalid',$handoff),'Ticket action is actor scoped');
+    $ticket=['id'=>$id,'status'=>'open','version'=>0,'created_at'=>'2026-11-15T10:00:00+00:00'];
+    $assigned=$service::transition($ticket,'assign',['assigned_admin_id'=>'admin-a','priority'=>'high'],['role'=>'admin','sub'=>'admin-a'],new \DateTimeImmutable('2026-11-15T10:02:00+00:00'));
+    assertSame(1,$assigned['version'],'Mutation increments optimistic version');
+    assertSame('admin-a',$assigned['assigned_admin_id'],'Ownership is explicit');
+    $answered=$service::transition($assigned,'reply',['reply'=>'Verified reply'],['role'=>'admin','sub'=>'admin-a'],new \DateTimeImmutable('2026-11-15T10:05:00+00:00'));
+    assertSame('2026-11-15T10:05:00+00:00',$answered['first_human_response_at'],'First human reply is distinct from bot response');
+    $closed=$service::transition($answered,'close',[],['role'=>'admin','sub'=>'admin-a'],new \DateTimeImmutable('2026-11-15T10:06:00+00:00'));
+    $reopened=$service::transition($closed,'reopen',[],['role'=>'admin','sub'=>'admin-b'],new \DateTimeImmutable('2026-11-15T10:10:00+00:00'));
+    assertSame(1,$reopened['reopen_count'],'Reopen episode tracked');
+    assertSame($answered['first_human_response_at'],$reopened['first_human_response_at'],'Reopen does not rewrite first response');
+    assertSame('open',$reopened['status'],'Reopened ticket becomes actionable');
+    assertSame(4,count($reopened['lifecycle']),'All transitions remain inspectable');
+    $denied=false;try{$service::transition($ticket,'close',[],['role'=>'customer'],new \DateTimeImmutable());}catch(\InvalidArgumentException){$denied=true;}
+    assertTrue($denied,'Customers cannot use staff transitions');
+};
+
+$tests['support context keeps bounded own turns and revalidates ordinal product references'] = static function (): void {
+    $root=sys_get_temp_dir().'/sps-context-'.bin2hex(random_bytes(6));mkdir($root,0700);
+    $svc=new \App\Services\AgentConversationService($root);$actor=['type'=>'guest','id'=>'own'];
+    try {
+        $r=$svc->record('support',$actor,null,'Ayyappa products','Here are two items',bin2hex(random_bytes(8)),'local',[],null,null,[],[],['public_product_slugs'=>['one','two']]);
+        $context=$svc->contextForActor($r['conversation_id'],'support',$actor,2,4000);
+        assertSame(['one','two'],$context['public_product_slugs'],'Ordered verified identities carried forward');
+        $product=\App\Services\SupportBotService::followupProduct('what is the second one made of?', $context['public_product_slugs'],[
+            ['slug'=>'one','name'=>'First'],['slug'=>'two','name'=>'Second','specifications'=>['Material'=>'Brass']]
+        ]);
+        assertSame('two',$product['slug'],'Ordinal resolves to previously listed item');
+        assertSame(null,\App\Services\SupportBotService::followupProduct('what is the second one made of?', $context['public_product_slugs'],[['slug'=>'one','name'=>'First']]),'Missing current product is not fabricated from stale history');
+        assertSame([], $svc->contextForActor(null,'support',$actor)['messages'],'Fresh chat has no inherited context');
+    }finally{foreach(array_merge(glob($root.'/*')?:[],glob($root.'/.conversation*')?:[]) as $f)if(is_file($f))@unlink($f);@rmdir($root);}
+};
+
+$tests['Tamil named festive retrieval matches English collection without guessing generic requests'] = static function (): void {
+    $collections=[['name'=>'Ayyappa Swamy Festive Sale','slug'=>'ayyappa','product_ids'=>['a']],['name'=>'Sassthi Festival Sale','slug'=>'sassthi','product_ids'=>['b']]];
+    assertSame('ayyappa',\App\Services\AgentContextService::requestedCollection('அய்யப்பன் சுவாமி பண்டிகை பொருட்கள்',$collections)['slug'],'Tamil alias maps to real collection');
+    assertSame(null,\App\Services\AgentContextService::requestedCollection('பண்டிகை பொருட்கள்',$collections),'Generic Tamil festival query requires clarification');
+};
+
 $tests['each agent session creates one private JSON file and no MySQL table'] = static function (): void {
     $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
     assertTrue(mkdir($root, 0700), 'Private test directory exists');

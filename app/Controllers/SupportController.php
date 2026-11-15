@@ -44,16 +44,25 @@ final class SupportController extends BaseController {
             }
             \App\Services\AgentTraceService::begin($traceId,
                 static fn(array $trace)=>$conversations->checkpoint('support',$actor,$conversationId,$traceId,$trace));
-            $answer = (new SupportBotService(traceId: $traceId))->answer($message, $user);
+            $history=$conversations->contextForActor($conversationId,'support',$actor);
+            $handoff=['conversation_id'=>$conversationId,'trace_id'=>$traceId,'turn_id'=>$prepared['turn_id']??''];
+            $answer = (new SupportBotService(traceId: $traceId))->answer($message, $user,$history,$handoff);
             $record = $conversations->record(
                 'support', $actor, $conversationId, $message,
                 (string)($answer['reply'] ?? ''), $traceId,
                 !empty($answer['ticket_id']) ? 'escalated' : (string)($answer['run']['outcome'] ?? 'answered'),
                 (array)($answer['run']['tools'] ?? []), isset($answer['ticket_id']) ? (string)$answer['ticket_id'] : null,
-                null, (array)($answer['run']['attempts'] ?? []), (array)($answer['run']['retrieval'] ?? [])
+                null, (array)($answer['run']['attempts'] ?? []), (array)($answer['run']['retrieval'] ?? []), (array)($answer['knowledge']??[])
             );
             $this->jsonResponse($answer + $record);
         } catch (\LogicException $e) {
+            if(!empty($user['email']) && is_string($conversationId) && preg_match('/^[a-f0-9]{32}$/D',$conversationId)) {
+                try {
+                    $receipt=(new \App\Services\SupportTicketService())->receipt($user['email'],['conversation_id'=>$conversationId,'trace_id'=>$traceId]);
+                    if($receipt!==null)$this->jsonResponse(['reply'=>'Your earlier request created support ticket #'.$receipt['id'].'. Our team can review it; do not submit a duplicate.',
+                        'ticket_id'=>$receipt['id'],'conversation_id'=>$conversationId,'replayed'=>true,'request_status'=>'action_recorded_conversation_incomplete'],202);
+                } catch(\Throwable) { /* Keep uncertain actions blocked instead of guessing success. */ }
+            }
             $this->jsonResponse(['error'=>'This request was already started. Its saved outcome needs checking before another action.',
                 'conversation_id'=>$conversationId,'request_status'=>'pending_or_interrupted'],409);
         } catch (\Throwable $e) {

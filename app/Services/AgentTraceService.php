@@ -12,6 +12,7 @@ final class AgentTraceService
     private static ?array $active = null;
     private static array $clocks = [];
     private static ?\Closure $checkpoint = null;
+    private static int $beganNs = 0;
 
     private const SOURCES = [
         'find_order' => 'orders', 'sales_summary' => 'orders',
@@ -46,7 +47,12 @@ final class AgentTraceService
                 break;
             }
         }
+        $facts=self::aggregateFacts($name,$result);
         return [
+            'observed_at'=>self::now(),
+            'facts'=>$facts,
+            'facts_sha256'=>hash('sha256',json_encode(['filters'=>$filters,'facts'=>$facts],JSON_THROW_ON_ERROR)),
+            'tool_version_sha256'=>hash_file('sha256',app_path('app/Services/AgentToolRegistry.php')),
             'source' => self::SOURCES[$name] ?? 'unknown',
             'filters' => $filters,
             'result_count' => $count,
@@ -69,12 +75,35 @@ final class AgentTraceService
             'evidence' => [
                 'source' => in_array(($evidence['source'] ?? ''), array_values(self::SOURCES), true) ? $evidence['source'] : 'unknown',
                 'filters' => self::safeFilters((array)($evidence['filters'] ?? [])),
+                'observed_at'=>is_string($evidence['observed_at']??null)&&preg_match('/^\d{4}-\d{2}-\d{2}T[0-9:.]+Z$/D',$evidence['observed_at'])?$evidence['observed_at']:null,
+                'facts'=>self::aggregateFacts($name,(array)($evidence['facts']??[])),
+                'facts_sha256'=>self::validDigest($evidence['facts_sha256']??null),
+                'tool_version_sha256'=>self::validDigest($evidence['tool_version_sha256']??null),
                 'result_count' => is_int($evidence['result_count'] ?? null) ? max(0, $evidence['result_count']) : null,
                 'source_path' => (is_string($evidence['source_path'] ?? null)
                     && preg_match('#^/admin/[a-z0-9/?=&_%-]+$#i',$evidence['source_path']))
                     ? mb_substr($evidence['source_path'],0,250) : null,
             ],
         ];
+    }
+
+    private static function validDigest(mixed $value): ?string {
+        return is_string($value)&&preg_match('/^[a-f0-9]{64}$/D',$value)?$value:null;
+    }
+    private static function aggregateFacts(string $name,array $result): array {
+        if(isset($result['error']))return [];
+        $keys=match($name){
+            'sales_summary'=>['orders','revenue','units','gross','refunded'],
+            'gst_register_summary'=>['issued_invoices','review_invoices','taxable','tax','cgst','sgst','igst'],
+            'support_enquiries'=>['total'],
+            'store_count','customer_ticket_lookup','own_ticket_status'=>['count'],
+            'product_status'=>['price','offer_price'],
+            default=>[],
+        };
+        $facts=[];
+        foreach($keys as $key){$value=$result[$key]??($result['totals'][$key]??null);
+            if((is_int($value)||is_float($value))&&is_finite((float)$value))$facts[$key]=$value;}
+        return $facts;
     }
 
     private static function safeFilters(array $filters): array
@@ -92,16 +121,26 @@ final class AgentTraceService
     }
 
     /** Request-scoped state: reset at each classic PHP HTTP request, never shared across actors. */
-    public static function begin(string $traceId, ?callable $checkpoint = null): void
+    public static function begin(string $traceId, ?callable $checkpoint = null, array $limits = []): void
     {
         if (!preg_match('/^[a-f0-9]{16}$/D', $traceId)) throw new \InvalidArgumentException('Invalid trace ID');
         self::reset();
+        self::$beganNs=hrtime(true);
         self::$active = ['version'=>self::VERSION, 'trace_id'=>$traceId,
-            'ordering'=>'observed_execution', 'started_at'=>self::now(), 'spans'=>[]];
+            'ordering'=>'observed_execution', 'started_at'=>self::now(), 'spans'=>[],
+            'instruction_sha256'=>hash_file('sha256',app_path('app/Services/AgentInstructionService.php')),
+            'budget'=>[
+                'max_model_calls'=>min(12,max(1,(int)($limits['max_model_calls']??6))),
+                'max_duration_ms'=>min(120000,max(100,(int)($limits['max_duration_ms']??30000))),
+                'max_observed_tokens'=>min(128000,max(1,(int)($limits['max_observed_tokens']??16000))),
+                'model_calls'=>0,'observed_total_tokens'=>0,'usage_complete'=>true,
+            ],
+            'operational_audit'=>['recorded'=>0,'not_persisted'=>0],
+        ];
         self::$checkpoint = $checkpoint === null ? null : \Closure::fromCallable($checkpoint);
     }
 
-    public static function reset(): void { self::$active=null; self::$clocks=[]; self::$checkpoint=null; }
+    public static function reset(): void { self::$active=null; self::$clocks=[]; self::$checkpoint=null; self::$beganNs=0; }
     public static function activeTraceId(): ?string { return self::$active['trace_id'] ?? null; }
     public static function snapshot(): array { return self::$active ?? ['version'=>self::VERSION,'spans'=>[]]; }
     private static function now(): string {
@@ -119,6 +158,16 @@ final class AgentTraceService
             throw new \InvalidArgumentException('Unsupported trace span');
         }
         if (count(self::$active['spans'])>=128) throw new \RuntimeException('Agent trace step budget exceeded');
+        if (!in_array($type,['evaluation','response'],true) && self::remainingMs()<=0) {
+            self::$active['budget']['exhausted']='deadline';throw new \RuntimeException('Agent execution deadline reached');
+        }
+        if ($type==='model_attempt') {
+            $budget=&self::$active['budget'];
+            if($budget['model_calls']>=$budget['max_model_calls'] || $budget['observed_total_tokens']>=$budget['max_observed_tokens']) {
+                $budget['exhausted']='provider_budget';throw new \RuntimeException('Agent provider budget exhausted');
+            }
+            $budget['model_calls']++;unset($budget);
+        }
         $id=bin2hex(random_bytes(8));
         if ($type==='tool' && !array_key_exists($name,self::SOURCES)) $name='unknown_tool';
         if ($type==='model_attempt' && !SecretService::validModelId($name)) $name='configured_provider';
@@ -160,6 +209,13 @@ final class AgentTraceService
                     $span['usage'][$key]=is_int($v)&&$v>=0&&$v<=1000000000?$v:null;
                 }
             }
+            if($span['type']==='model_attempt') {
+                $u=$span['usage']??[];
+                $total=$u['total_tokens']??(isset($u['input_tokens'],$u['output_tokens'])?$u['input_tokens']+$u['output_tokens']:null);
+                if($total===null)self::$active['budget']['usage_complete']=false;
+                else self::$active['budget']['observed_total_tokens']+=(int)$total;
+                if(($digest=self::validDigest($attributes['request_sha256']??null))!==null)$span['request_sha256']=$digest;
+            }
             if(isset($attributes['first_byte_ms']) && is_numeric($attributes['first_byte_ms'])) {
                 $span['first_byte_ms']=max(0,round((float)$attributes['first_byte_ms'],3));
             }
@@ -168,6 +224,15 @@ final class AgentTraceService
         }
         unset($span);
         self::persist();
+    }
+
+    public static function remainingMs(): int {
+        if(self::$active===null)return 120000;
+        return max(0,self::$active['budget']['max_duration_ms']-(int)((hrtime(true)-self::$beganNs)/1_000_000));
+    }
+    /** Optional logging never invokes mandatory checkpoints or retries business actions. */
+    public static function noteAuditDelivery(bool $persisted): void {
+        if(self::$active!==null)self::$active['operational_audit'][$persisted?'recorded':'not_persisted']++;
     }
 
     /** Counts only: never retains provider message bodies or invents a missing cost/token value. */

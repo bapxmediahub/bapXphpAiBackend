@@ -37,14 +37,14 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 375
-  relationships: 276
+  concepts: 377
+  relationships: 277
   by_type:
     blog: 14
     controller: 12
-    doc: 38
+    doc: 39
     image: 89
-    route: 129
+    route: 130
     schema: 22
     service: 61
     skill: 10
@@ -566,6 +566,15 @@ concepts:
     tags:
       - "module"
     filename: "razorpay.md"
+    header_image: ""
+  - id: "doc:rea-gap-status"
+    type: "doc"
+    title: "REA Gap Implementation Status"
+    description: "Distinguishes implemented follow-up contracts, partially complete acceptance and remaining scope."
+    resource: "docs/engineering/rea-gap-status.md"
+    tags:
+      - "docs"
+    filename: "rea-gap-status.md"
     header_image: ""
   - id: "doc:remote-db"
     type: "doc"
@@ -2959,6 +2968,22 @@ concepts:
       - "AiClient"
       - "AuthService"
     view: "admin/agent"
+  - id: "route:post__admin_agent_history__id__delete"
+    type: "route"
+    title: "POST /admin/agent/history/{id}/delete"
+    description: "admin.agent.history.delete"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/admin/agent/history/{id}/delete"
+    controller: "AdminController@agentHistoryDelete"
+    services:
+      - "AgentConversationService"
+      - "AuditLogService"
+      - "AuthService"
+    view: "admin/agent"
   - id: "route:post__admin_appearance_save"
     type: "route"
     title: "POST /admin/appearance/save"
@@ -3410,7 +3435,8 @@ concepts:
     path: "/admin/support-tickets/save"
     controller: "AdminController@saveSupportTicket"
     services:
-      - "ResourceService"
+      - "SupportTicketService"
+      - "DatabaseService"
       - "AuditLogService"
       - "AuthService"
     view: "admin/list"
@@ -5043,6 +5069,9 @@ relationships:
     to: "controller:AccountController"
     relation: "handled_by"
   - from: "route:post__admin_agent_ask"
+    to: "controller:AdminController"
+    relation: "handled_by"
+  - from: "route:post__admin_agent_history__id__delete"
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:post__admin_appearance_save"

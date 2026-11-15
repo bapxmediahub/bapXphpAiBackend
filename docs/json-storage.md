@@ -17,7 +17,8 @@ Agent chat is stored as one private file in
 `storage/agent-conversations/<conversation-id>.json`. The source of truth for
 these conversations is the file itself. There is **no** `agent_conversations`
 MySQL table, no conversation mutation through `/remotedb`, and no optional
-SQL snapshot required. A separate `.conversation.lock` file serializes writes;
+SQL snapshot required. Per-chat `.conversation-<id>.lock` files serialize same-chat writes; a shared
+`.conversation.lock` compatibility barrier coordinates older deployment writers;
 atomic file replacement ensures concurrent turns do not get lost.
 
 Every chat document contains an actor type + authenticated ID or anonymous

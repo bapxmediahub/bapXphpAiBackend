@@ -3,7 +3,7 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 129,
+        "routes": 130,
         "controllers": 12,
         "services": 61,
         "views": 51,
@@ -268,6 +268,18 @@
             "view": "admin/agent",
             "services": [
                 "AgentConversationService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/agent/history/{id}/delete",
+            "name": "admin.agent.history.delete",
+            "controller": "AdminController@agentHistoryDelete",
+            "view": "admin/agent",
+            "services": [
+                "AgentConversationService",
+                "AuditLogService",
                 "AuthService"
             ]
         },
@@ -850,7 +862,8 @@
             "controller": "AdminController@saveSupportTicket",
             "view": "admin/list",
             "services": [
-                "ResourceService",
+                "SupportTicketService",
+                "DatabaseService",
                 "AuditLogService",
                 "AuthService"
             ]

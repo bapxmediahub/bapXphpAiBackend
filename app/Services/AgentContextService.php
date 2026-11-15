@@ -151,6 +151,7 @@ final class AgentContextService {
     public static function requestedCollection(string $message, array $collections): ?array {
         $tokens = static function (string $text): array {
             $text = mb_strtolower($text);
+            $text=str_replace(['அய்யப்பன்','ஐயப்பன்','அய்யப்பா','சுவாமி','சாமி','பண்டிகை','திருவிழா','பொருட்கள்','சஷ்டி'],['ayyappa','ayyappa','ayyappa','swamy','swamy','festive','festive','products','sassthi'],$text);
             $text = str_replace(['ayyappan', 'swami', 'festival', 'sashti', 'sasthi'],
                 ['ayyappa', 'swamy', 'festive', 'sassthi', 'sassthi'], $text);
             $words = preg_split('/[^a-z0-9]+/', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [];
@@ -159,7 +160,7 @@ final class AgentContextService {
         $query = $tokens($message);
         $generic = ['sale', 'festive', 'collection', 'special', 'offers'];
         $best = null;
-        $score = 0;
+        $score = 0;$tied=false;
         foreach ($collections as $collection) {
             if (!is_array($collection)) continue;
             $name = (string)($collection['name'] ?? '');
@@ -171,10 +172,10 @@ final class AgentContextService {
             $count = count($overlap);
             if ($count > $score) {
                 $best = $collection;
-                $score = $count;
-            }
+                $score = $count;$tied=false;
+            } elseif ($count === $score) {$tied=true;}
         }
-        return $best;
+        return $tied ? null : $best;
     }
 
     /** Prefer exact matches across the visible catalogue before applying the prompt cap. */
@@ -199,12 +200,12 @@ final class AgentContextService {
     private function siteContext(string $message): array {
         $visibleProducts = (new ProductService($this->store))->visible();
         $collection = null;
-        if (preg_match('/\b(?:sale|festival|festive|collection|products?|items?|offers?)\b/i', $message)) {
-            $collection = self::requestedCollection($message, (new CategoryService($this->store))->collections());
-        }
+        $collectionQuery=(bool)preg_match('/\b(?:festival|festive|collection|sale)\b|பண்டிகை|திருவிழா|அய்யப்ப|ஐயப்ப|சஷ்டி/iu',$message);
+        $collections=$collectionQuery?(new CategoryService($this->store))->collections():[];
+        if ($collectionQuery) $collection=self::requestedCollection($message,$collections);
         $selected = $collection !== null
             ? (new CategoryService($this->store))->collectionProducts($collection, $visibleProducts)
-            : self::supportProducts($visibleProducts, $message);
+            : ($collectionQuery ? [] : self::supportProducts($visibleProducts, $message));
         $products = array_map(fn($item) => [
             'name' => $item['name'] ?? '',
             'slug' => $item['slug'] ?? '',
@@ -227,6 +228,8 @@ final class AgentContextService {
                 'orders' => '/account/dashboard/orders',
             ],
             'products' => $products,
+            'collection_query'=>$collectionQuery,
+            'available_collections'=>array_slice(array_values(array_filter(array_column($collections,'name'),'is_string')),0,12),
             'matched_collection' => $collection !== null
                 ? ['name'=>(string)$collection['name'], 'slug'=>(string)$collection['slug']]
                 : null,

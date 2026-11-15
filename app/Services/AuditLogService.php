@@ -142,9 +142,16 @@ final class AuditLogService {
         // Audit logging must never break the operation it is recording.
         try {
             $this->store->upsert('audit_events', $event);
+            AgentTraceService::noteAuditDelivery(true);
         } catch (\Throwable $e) {
-            error_log('Audit log write failed: ' . $e->getMessage());
+            $event=self::deliveryResult($event,false);
+            AgentTraceService::noteAuditDelivery(false);
+            error_log('Audit log write failed (' . $e::class . ')');
         }
+        return $event;
+    }
+    public static function deliveryResult(array $event,bool $persisted): array {
+        $event['status']=$persisted?'recorded':'not_persisted';
         return $event;
     }
 }

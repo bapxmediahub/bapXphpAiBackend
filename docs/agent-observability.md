@@ -7,8 +7,9 @@ category: docs
 
 # Two agents: capability, evidence, evaluation, outcome
 
-These capabilities are implemented on **draft PR #241**, not yet certified on
-production. They run in native PHP: no hosted evaluation service, agent
+This guide describes the code in this revision, including the follow-up to
+merged PR #241. Release state and live acceptance are separate from this
+implementation contract. It runs in native PHP: no hosted evaluation service, agent
 framework, extra model subscription or conversation SQL table.
 
 ## Entrypoints and source of truth
@@ -39,8 +40,8 @@ grant. Business mutations remain explicit admin forms/drafts with CSRF and audit
 **Support:** server-identify guest/customer → rate limit → recognize ticket,
 public policy, named product/collection, or other request → retrieve only
 public visible records or the authenticated customer's own tickets → optionally
-use bounded model synthesis → return answer with trace ID → save one redacted
-turn → wait for explicit customer feedback. A named Ayyappa festive collection
+use bounded model synthesis → save one redacted turn and its trace → return
+the produced answer → wait for explicit customer feedback. A named Ayyappa festive collection
 uses verified collection membership, not the first 20 random product listings.
 
 **Enterprise:** verify admin/CSRF → load a previous report only from that
@@ -59,8 +60,9 @@ There is no `agent_conversations` MySQL collection or
 `/remotedb` chat mutation. The JSON stores actor type/ID or
 anonymous guest token, message turns, timestamps, sanitized questions/answers,
 trace spans, model/tool attempts, deterministic checks, and optional support
-feedback. A `.conversation.lock` bookkeeping file protects
-atomic updates; it is **not another chat**. PHP must preserve this ignored
+feedback. Per-chat `.conversation-<id>.lock` files protect atomic updates.
+New writers also take a shared `.conversation.lock` compatibility barrier so
+a previous deployment using the old exclusive global lock cannot race them; it is **not another chat**. PHP must preserve this ignored
 directory across every Hostinger deployment. Files use restricted permissions;
 the site's `/storage/` routes are inaccessible directly over HTTP.
 Back up the directory separately, with retention, deletion and access controls.
@@ -189,3 +191,49 @@ References (patterns researched, not required installations):
 - [Open-source Arize Phoenix](https://github.com/Arize-ai/phoenix).
 - [Intercom resolution state definitions](https://www.intercom.com/help/en/articles/7022438-reporting-metrics-attributes).
 - [OWASP AI Agent Security](https://cheatsheetseries.owasp.org/cheatsheets/AI_Agent_Security_Cheat_Sheet.html).
+
+## Follow-up contracts: context, action receipts, lifecycle and history
+
+- `contextForActor` authorizes the session first and supplies at most four prior
+  completed turns and an 8,000-byte JSON dialogue budget by default. Dialogue is
+  untrusted reference, not an instruction layer. Both agent prompts use it.
+  Ordered public product slugs are saved with a turn; ordinal follow-ups fetch
+  the current visible catalogue again instead of trusting historical prose.
+- `requestedCollection` recognizes explicit Tamil Ayyappa/festival aliases.
+  Generic or tied festival matches ask the customer to choose a real published
+  collection, rather than substituting unrelated products. This is tested alias
+  support, not a claim of complete multilingual semantic retrieval.
+- Agent-created tickets use a deterministic action ID scoped to normalized
+  account, conversation and trace. `insertIfAbsent` returns the original ticket
+  on retry. The business ticket contains authorized conversation/turn references
+  and a request digest. Legacy non-agent requests still receive unique IDs.
+- Existing support-ticket JSON business rows now retain versioned staff actions:
+  claim/release, priority, waiting/snooze, reply, close and reopen. The DB host
+  performs a row lock and expected-version check in one transaction. Original
+  `open`/`answered`/`closed` values remain compatible; `work_state` carries waiting
+  or snooze. First human response, resolution episodes and actor transitions are
+  distinct from bot latency. A saved reply is not proof of email delivery.
+- History parsing is bounded to 200 candidate documents per page, with opaque
+  continuation cursors and a Load more control. Directory metadata enumeration
+  remains linear; this is not a claim of an indexed million-session database.
+  Explicit owner deletion refuses unfinished actions. Export and deletion routes
+  require a successfully persisted audit event before releasing/removing content.
+- Every trace records the instruction-source hash, named tool-code hash, approved
+  aggregate facts, result digest and observed timestamp. It does not archive
+  private raw result rows or claim a source revision was supplied when it was not.
+- Default per-turn budgets are six provider calls, 30 seconds of execution and
+  16,000 observed total tokens, with bounded configurable values. Missing usage
+  is marked incomplete, not zero. Budget checks happen before further work and
+  transport timeout is clamped to remaining time. No cost is invented.
+- `AuditLogService` returns `not_persisted` on a failed write and exposes that
+  operational loss to the trace without retrying business actions.
+
+Run `php tests/agent-interruption.php` to terminate a disposable worker after a
+real saved checkpoint; the unfinished operation survives without false completion.
+`tests/support-ticket-concurrency.php` is restricted to the disposable MySQL CI
+service, not production: repeated requests create one ticket and competing staff
+updates reject stale versions. Its results must be observed in CI before release.
+
+A separate numerical CSAT survey, all-traffic outcome reporting, a mature
+feedback-to-content review workflow and the nine commerce expansion gaps are
+**not** implemented by these changes. See `docs/engineering/rea-gap-status.md`.

@@ -81,3 +81,11 @@ delivered. Use effective result scope instead of requested filter arguments.
 Unfinished requests are visible in Agent Monitoring and must not be blindly
 replayed. Keep provider tokens/usage unavailable when absent, and distinguish
 14-case offline regression scores from real customer satisfaction/accuracy.
+
+## History and support queue controls
+
+History supports bounded Load more and explicit owner deletion; pending actions
+cannot be deleted. Keep export/deletion auditing enforced server-side. Ticket
+forms must submit the observed version, allowlisted action and CSRF; display
+priority/work state and preserve keyboard-accessible Manage controls. Do not call
+a saved reply sent/delivered unless mail transport evidence exists.

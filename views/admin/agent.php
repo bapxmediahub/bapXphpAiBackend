@@ -159,13 +159,14 @@
         historyToggle.setAttribute('aria-expanded', 'false');
     };
 
-    async function loadHistory() {
-        const response = await fetch('/admin/agent/history', {credentials:'same-origin',cache:'no-store'});
+    async function loadHistory(cursor = null) {
+        const response = await fetch('/admin/agent/history' + (cursor ? '?cursor='+encodeURIComponent(cursor) : ''), {credentials:'same-origin',cache:'no-store'});
         if (!response.ok) throw new Error('Cannot load chat history');
         const data = await response.json();
-        historyList.replaceChildren();
+        if (!cursor) historyList.replaceChildren();
+        historyList.querySelectorAll('[data-load-more-history]').forEach(el=>el.remove());
         const chats = Array.isArray(data.conversations) ? data.conversations : [];
-        if (!chats.length) {
+        if (!chats.length && !cursor && !data.next_cursor) {
             historyList.textContent = 'No previous chats yet.';
             return;
         }
@@ -183,6 +184,24 @@
             button.append(title, meta);
             button.addEventListener('click', () => restoreConversation(chat.id));
             historyList.appendChild(button);
+            if (!Number(chat.pending_turn_count || 0)) {
+                const remove=document.createElement('button');remove.type='button';remove.className='agent-suggestion';remove.textContent='Delete this chat';
+                remove.addEventListener('click',async()=>{
+                    if(submit.disabled||!confirm('Permanently delete this saved chat? Export it first if needed.'))return;
+                    remove.disabled=true;
+                    const csrf=document.querySelector('#agent-form input[name="_csrf"]')?.value||'';
+                    try {const response=await fetch('/admin/agent/history/'+chat.id+'/delete',{method:'POST',credentials:'same-origin',body:new URLSearchParams({_csrf:csrf})});
+                        const result=await response.json();if(!response.ok||!result.deleted)throw Error('Delete unavailable');
+                        button.remove();remove.remove();if(conversationId===chat.id)clear.click();
+                    } catch(error){remove.disabled=false;remove.textContent='Deletion failed — retry';}
+                });
+                historyList.appendChild(remove);
+            }
+        }
+        if (typeof data.next_cursor === 'string') {
+            const more=document.createElement('button');more.type='button';more.dataset.loadMoreHistory='true';more.className='agent-suggestion';more.textContent='Load older chats';
+            more.addEventListener('click',async()=>{more.disabled=true;try{await loadHistory(data.next_cursor);}catch(e){more.disabled=false;more.textContent='Retry older chats';}});
+            historyList.appendChild(more);
         }
     }
 

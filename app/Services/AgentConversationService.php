@@ -9,6 +9,7 @@ final class AgentConversationService
 {
     private const ID_PATTERN = '/^[a-f0-9]{32}$/D';
     private const MAX_TURNS = 200;
+    private static array $compatibilityLocks = [];
 
     public function __construct(private ?string $directory = null) {}
 
@@ -52,7 +53,7 @@ final class AgentConversationService
                 'trace_id'=>$traceId,'started_at'=>gmdate('c'),'status'=>'running',
                 'request_hash'=>$hash,'question'=>AgentTranscriptSanitizer::scrub(mb_substr($question,0,2000))];
             $document['updated_at']=gmdate('c');
-            return ['conversation_id'=>$id,'replay'=>null];
+            return ['conversation_id'=>$id,'turn_id'=>$document['pending_turns'][$traceId]['turn_id'],'replay'=>null];
         });
     }
 
@@ -75,11 +76,11 @@ final class AgentConversationService
             ||!in_array($actor['type']??'',['admin','customer','guest'],true)||trim((string)($actor['id']??''))==='') {
             throw new \InvalidArgumentException('Invalid conversation identity');
         }
-        $root=$this->root();$lock=@fopen($root.'/.conversation.lock','c');
+        $root=$this->root();$lock=@fopen($root.'/.conversation-'.$id.'.lock','c');
         if($lock===false)throw new \RuntimeException('Conversation checkpoint lock unavailable');
         try {
-            @chmod($root.'/.conversation.lock',0600);
-            if(!flock($lock,LOCK_EX))throw new \RuntimeException('Conversation checkpoint lock unavailable');
+            @chmod($root.'/.conversation-'.$id.'.lock',0600);
+            if(!self::acquireLock($lock))throw new \RuntimeException('Conversation checkpoint lock unavailable');
             $file=$root.'/'.$id.'.json';$document=self::readFile($file);
             if($document===null) {
                 if(!$create)throw new \RuntimeException('Conversation not found');
@@ -87,14 +88,14 @@ final class AgentConversationService
                     'started_at'=>gmdate('c'),'turns'=>[],'passed_turns'=>0,'pending_turns'=>[]];
             }elseif(!self::ownedBy($document,$surface,$actor))throw new \RuntimeException('Conversation not accessible to this actor');
             $result=$mutate($document);self::writeAtomic($root,$file,$document);return $result;
-        }finally{flock($lock,LOCK_UN);fclose($lock);}
+        }finally{self::releaseLock($lock);}
     }
 
     public function record(
         string $surface, array $actor, ?string $conversationId,
         string $question, string $answer, string $traceId,
         string $outcome, array $tools = [], ?string $ticketId = null,
-        ?array $reportContext = null, array $attempts = [], array $retrieval = []
+        ?array $reportContext = null, array $attempts = [], array $retrieval = [], array $knowledge = []
     ): array {
         if (!in_array($surface, ['admin', 'support'], true)) {
             throw new \InvalidArgumentException('Invalid agent surface');
@@ -125,6 +126,7 @@ final class AgentConversationService
         $turn['trace'] = AgentTraceService::build($traceId,$outcome,$tools,$attempts,$evaluation,$answer,$retrieval);
         if ($ticketId !== null) $turn['ticket_id'] = $ticketId;
         if ($reportContext !== null) $turn['report_context'] = $reportContext;
+        $turn['knowledge']=['public_product_slugs'=>self::safeSlugs($knowledge['public_product_slugs']??[])];
 
         $document = $this->append($id, $surface, $actor, $turn);
         return [
@@ -133,6 +135,81 @@ final class AgentConversationService
             'evaluation' => $evaluation,
             'turns' => count($document['turns']),
         ];
+    }
+
+    /** Bounded waiting prevents a stalled writer from blocking every request indefinitely. */
+    private static function acquireLock($lock): bool {
+        $root=dirname((string)(stream_get_meta_data($lock)['uri']??''));
+        $path=$root.'/.conversation.lock';
+        if(is_link($path))return false;
+        $legacy=@fopen($path,'c');if($legacy===false)return false;@chmod($path,0600);
+        $deadline=hrtime(true)+2_000_000_000;
+        do {
+            // Shared compatibility barrier permits concurrent new chats but excludes
+            // an old deployment still holding the former global exclusive lock.
+            if(flock($legacy,LOCK_SH|LOCK_NB)) {
+                if(flock($lock,LOCK_EX|LOCK_NB)){self::$compatibilityLocks[(int)$lock]=$legacy;return true;}
+                flock($legacy,LOCK_UN);
+            }
+            usleep(10000);
+        }while(hrtime(true)<$deadline);
+        fclose($legacy);return false;
+    }
+    private static function releaseLock($lock): void {
+        $key=(int)$lock;flock($lock,LOCK_UN);fclose($lock);
+        if(isset(self::$compatibilityLocks[$key])){
+            $legacy=self::$compatibilityLocks[$key];flock($legacy,LOCK_UN);fclose($legacy);unset(self::$compatibilityLocks[$key]);
+        }
+    }
+
+    /** Explicit owner deletion only; unfinished side effects require recovery, not erasure. */
+    public function deleteForActor(string $id,string $surface,array $actor): bool {
+        if(!preg_match(self::ID_PATTERN,$id))throw new \InvalidArgumentException('Invalid conversation ID');
+        $root=$this->root();$lock=@fopen($root.'/.conversation-'.$id.'.lock','c');
+        if($lock===false)throw new \RuntimeException('Conversation lock unavailable');
+        try {
+            chmod($root.'/.conversation-'.$id.'.lock',0600);
+            if(!self::acquireLock($lock))throw new \RuntimeException('Conversation is busy');
+            $file=$root.'/'.$id.'.json';$doc=self::readFile($file);
+            if($doc===null)return false;
+            if(!self::ownedBy($doc,$surface,$actor))throw new \RuntimeException('Conversation not accessible to this actor');
+            if(!empty($doc['pending_turns']))throw new \RuntimeException('Resolve unfinished requests before deleting this conversation.');
+            if(!@unlink($file))throw new \RuntimeException('Conversation could not be deleted');
+            return true;
+        }finally{self::releaseLock($lock);}
+    }
+
+    /** Cursor over filesystem metadata; at most 200 JSON documents parsed per page. */
+    public function historyPage(string $surface,array $actor,int $limit=40,?string $cursor=null): array {
+        $limit=min(100,max(1,$limit));$root=$this->root();$boundary=null;
+        if($cursor!==null&&$cursor!=='') {
+            $decoded=base64_decode(strtr($cursor,'-_','+/'),true);
+            $boundary=is_string($decoded)?json_decode($decoded,true):null;
+            if(!is_array($boundary)||count($boundary)!==2||!is_int($boundary[0])
+                ||!is_string($boundary[1])||!preg_match(self::ID_PATTERN,$boundary[1]))throw new \InvalidArgumentException('Invalid history cursor');
+        }
+        $heap=new \SplMinHeap();
+        foreach(new \DirectoryIterator($root) as $file){
+            if(!$file->isFile()||$file->isLink()||$file->getExtension()!=='json')continue;
+            $id=$file->getBasename('.json');if(!preg_match(self::ID_PATTERN,$id))continue;
+            $key=[$file->getMTime(),$id];if($boundary!==null&&$key>=$boundary)continue;
+            $heap->insert([$key[0],$id,$file->getPathname()]);
+            if($heap->count()>201)$heap->extract();
+        }
+        $candidates=[];while(!$heap->isEmpty())$candidates[]=$heap->extract();$candidates=array_reverse($candidates);
+        $hasMore=count($candidates)>200;$candidates=array_slice($candidates,0,200);
+        $out=[];$last=null;$scanned=0;$skipped=0;
+        foreach($candidates as $index=>$entry){
+            $last=[$entry[0],$entry[1]];$scanned++;
+            try{$doc=self::readFile($entry[2]);}catch(\Throwable){$skipped++;continue;}
+            if($doc===null||!self::ownedBy($doc,$surface,$actor)||($doc['id']??'')!==$entry[1])continue;
+            $out[]=['id'=>$doc['id'],'updated_at'=>$doc['updated_at']??$doc['started_at']??'',
+                'turn_count'=>count($doc['turns']??[]),'pending_turn_count'=>count($doc['pending_turns']??[]),
+                'preview'=>mb_substr(trim((string)($doc['turns'][0]['question']??'Conversation')),0,100)];
+            if(count($out)>=$limit){$hasMore=$hasMore||$index<count($candidates)-1;break;}
+        }
+        return ['conversations'=>$out,'next_cursor'=>$hasMore&&$last!==null?rtrim(strtr(base64_encode(json_encode($last,JSON_THROW_ON_ERROR)),'+/','-_'),'='):null,
+            'scanned_documents'=>$scanned,'skipped_unreadable'=>$skipped,'partial'=>$hasMore||$skipped>0];
     }
 
     private function root(): string
@@ -177,12 +254,12 @@ final class AgentConversationService
         }
         $root = $this->root();
         // One lock shared across appends. All chat data stays in one JSON file per session.
-        $lock = @fopen($root . '/.conversation.lock', 'c');
+        $lock = @fopen($root . '/.conversation-' . $id . '.lock', 'c');
         if ($lock === false) throw new \RuntimeException('Conversation lock could not be opened.');
         $tmp = false;
         try {
-            @chmod($root . '/.conversation.lock', 0600);
-            if (!flock($lock, LOCK_EX)) throw new \RuntimeException('Conversation lock unavailable.');
+            @chmod($root . '/.conversation-' . $id . '.lock', 0600);
+            if (!self::acquireLock($lock)) throw new \RuntimeException('Conversation lock unavailable.');
             $filename = $root . '/' . $id . '.json';
             $document = self::readFile($filename);
             if ($document === null) {
@@ -219,8 +296,7 @@ final class AgentConversationService
             return $document;
         } finally {
             if ($tmp !== false && is_file($tmp)) @unlink($tmp);
-            flock($lock, LOCK_UN);
-            fclose($lock);
+            self::releaseLock($lock);
         }
     }
 
@@ -248,11 +324,11 @@ final class AgentConversationService
             throw new \InvalidArgumentException('Invalid support feedback');
         }
         $root = $this->root();
-        $lock = @fopen($root . '/.conversation.lock', 'c');
+        $lock = @fopen($root . '/.conversation-' . $id . '.lock', 'c');
         if ($lock === false) throw new \RuntimeException('Support feedback unavailable.');
         try {
-            @chmod($root . '/.conversation.lock', 0600);
-            if (!flock($lock, LOCK_EX)) throw new \RuntimeException('Support feedback lock unavailable.');
+            @chmod($root . '/.conversation-' . $id . '.lock', 0600);
+            if (!self::acquireLock($lock)) throw new \RuntimeException('Support feedback lock unavailable.');
             $filename = $root . '/' . $id . '.json';
             $document = self::readFile($filename);
             if ($document === null || !self::ownedBy($document, 'support', $actor)) {
@@ -280,9 +356,27 @@ final class AgentConversationService
             self::writeAtomic($root,$filename,$document);
             return ['resolution_status'=>$document['resolution_status'],'recorded'=>true];
         } finally {
-            flock($lock,LOCK_UN);
-            fclose($lock);
+            self::releaseLock($lock);
         }
+    }
+
+    private static function safeSlugs(mixed $slugs): array {
+        if(!is_array($slugs))return [];
+        return array_slice(array_values(array_unique(array_filter($slugs,static fn($s):bool=>is_string($s)
+            &&preg_match('/^[\p{L}\p{N} _.-]{1,160}$/uD',$s)===1))),0,20);
+    }
+    public function contextForActor(?string $id,string $surface,array $actor,int $maxTurns=4,int $maxBytes=8000): array {
+        $empty=['messages'=>[],'public_product_slugs'=>[]];if($id===null)return $empty;
+        $doc=$this->getForActor($id,$surface,$actor);if($doc===null)return $empty;
+        $maxTurns=max(1,min(8,$maxTurns));$maxBytes=max(512,min(16000,$maxBytes));$messages=[];$slugs=[];
+        foreach(array_reverse($doc['turns']??[]) as $turn){
+            if($slugs===[])$slugs=self::safeSlugs($turn['knowledge']['public_product_slugs']??[]);
+            $pair=['question'=>mb_strcut((string)($turn['question']??''),0,800,'UTF-8'),
+                'answer'=>mb_strcut((string)($turn['answer']??''),0,2000,'UTF-8')];
+            if(strlen(json_encode([$pair,...$messages],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR))>$maxBytes)break;
+            array_unshift($messages,$pair);if(count($messages)>=$maxTurns)break;
+        }
+        return ['messages'=>$messages,'public_product_slugs'=>$slugs];
     }
 
     public function previousReportForActor(?string $id, array $actor): ?array
@@ -324,31 +418,7 @@ final class AgentConversationService
 
     /** Admin chat history, not the global monitoring list. No SQL index/table. */
     public function recentForActor(string $surface, array $actor, int $limit = 40): array {
-        $root = $this->root();
-        $files = array_values(array_filter(glob($root . '/*.json') ?: [], static fn(string $filename): bool =>
-            preg_match(self::ID_PATTERN, basename($filename, '.json')) === 1));
-        usort($files, static fn(string $a, string $b): int =>
-            ((int)@filemtime($b) <=> (int)@filemtime($a)) ?: strcmp($b, $a));
-        $out = [];
-        $limit = min(100, max(1, $limit));
-        foreach ($files as $filename) {
-            try {
-                $document = self::readFile($filename);
-            } catch (\Throwable $e) {
-                error_log('Agent history skipped unreadable conversation file');
-                continue;
-            }
-            if ($document === null || !self::ownedBy($document, $surface, $actor)) continue;
-            $out[] = [
-                'id' => (string)($document['id'] ?? ''),
-                'updated_at' => (string)($document['updated_at'] ?? $document['started_at'] ?? ''),
-                'turn_count' => count($document['turns'] ?? []),
-                'pending_turn_count' => count($document['pending_turns'] ?? []),
-                'preview' => mb_substr(trim((string)($document['turns'][0]['question'] ?? 'Conversation')), 0, 100),
-            ];
-            if (count($out) >= $limit) break;
-        }
-        return $out;
+        return $this->historyPage($surface,$actor,$limit)['conversations'];
     }
 
     /** Load at most 100 recent chat documents, not every full transcript. */
@@ -362,7 +432,8 @@ final class AgentConversationService
             ((int)@filemtime($b) <=> (int)@filemtime($a)) ?: strcmp($b, $a));
         $recent = [];
         foreach (array_slice($files, 0, min(100, max(1, $limit))) as $filename) {
-            $document = self::readFile($filename);
+            try { $document = self::readFile($filename); }
+            catch (\Throwable $e) { error_log('Agent monitor skipped unreadable session'); continue; }
             if ($document === null) continue;
             $lastTurn = ($document['turns'] ?? []) === [] ? [] : $document['turns'][array_key_last($document['turns'])];
             $pending = ($document['pending_turns'] ?? []) === [] ? null : $document['pending_turns'][array_key_last($document['pending_turns'])];

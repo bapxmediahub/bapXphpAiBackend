@@ -141,6 +141,11 @@ final class RemoteDbController {
                 echo json_encode(['success' => true, 'result' => $result]);
                 return;
             }
+            if ($collection === 'support_tickets' && $action === 'transition_support_ticket') {
+                $result=$store->updateSupportTicket((string)($input['id']??''),(string)($input['transition']??''),
+                    (array)($input['fields']??[]),(array)($input['actor']??[]),(int)($input['expected_version']??-1));
+                echo json_encode(['success'=>true,'result'=>$result]);return;
+            }
             if ($action === 'upsert') {
                 $record = $input['record'] ?? null;
                 if (!is_array($record) || empty($record['id'])) throw new \InvalidArgumentException('Record id is required.');

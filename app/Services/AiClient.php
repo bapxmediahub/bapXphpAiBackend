@@ -576,6 +576,7 @@ final class AiClient
         // lookup or audit write should open a fresh MySQL connection.
         DatabaseService::releaseIdleConnection();
         $span = AgentTraceService::startSpan('model_attempt',$model ?? 'configured_provider');
+        if ($span!==null) curl_setopt($ch,CURLOPT_TIMEOUT_MS,max(1,min($timeoutMs,AgentTraceService::remainingMs())));
         $body = curl_exec($ch);
         $this->transportError = curl_errno($ch);
         $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -593,6 +594,7 @@ final class AiClient
         ];
         AgentTraceService::endSpan($span,($body===false||$status<200||$status>=300)?'error':'complete',[
             'http_status'=>$status, 'first_byte_ms'=>1000*curl_getinfo($ch,CURLINFO_STARTTRANSFER_TIME),
+            'request_sha256'=>hash('sha256',$payload),
             'usage'=>AgentTraceService::usageFromResponse($body),
         ]);
         unset($ch);
