@@ -32,6 +32,12 @@ Generated files point to original sources. Do not hand-edit them.
 - [`admin-guide.md`](admin-guide.md)
 - [`email-setup.md`](email-setup.md)
 
+## Source-based engineering research
+
+- [`research/rea-agent-commerce-gap-audit.md`](research/rea-agent-commerce-gap-audit.md): 28 missing/partial capabilities with pinned source evidence and state boundaries.
+- [`research/rea-evidence-manifest.json`](research/rea-evidence-manifest.json): REA hashes, authorities, selected scope and incomplete evidence limits.
+- [`engineering/ai-review-workflow.md`](engineering/ai-review-workflow.md): safe post-CI reviewer coordination, native app prerequisites and quota diagnosis.
+
 ## Modules
 
 - [`modules/admin.md`](modules/admin.md)

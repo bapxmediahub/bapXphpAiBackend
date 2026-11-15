@@ -6,6 +6,7 @@ on:
       - 'codex/**'
       - 'fix/**'
       - 'feat/**'
+      - 'bapX/**'
 
 permissions:
   contents: read

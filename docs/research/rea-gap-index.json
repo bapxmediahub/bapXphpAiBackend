@@ -1,0 +1,176 @@
+{
+  "schema_version": 1,
+  "audit_date": "2026-11-15",
+  "source_report": "docs/research/rea-agent-commerce-gap-audit.md",
+  "count": 28,
+  "gaps": [
+    {
+      "id": "A01",
+      "priority": "P0",
+      "gap": "Actual timing and causal parent-child spans",
+      "evidence_and_acceptance": "Local `AgentTraceService::build` explicitly groups stages after the answer. DSH/LF: record start/end/duration and actual parent at execution; prove interleaved tool/model ordering without invented timestamps."
+    },
+    {
+      "id": "A02",
+      "priority": "P0",
+      "gap": "Durable in-flight execution sequence and recovery",
+      "evidence_and_acceptance": "`AgentConversationService::record` saves final turns, not checkpoints before actions. DSH: keep sequenced started/completed/failed steps in the same chat JSON; interruption test must retain last committed state."
+    },
+    {
+      "id": "A03",
+      "priority": "P0",
+      "gap": "Retry-safe support side effects",
+      "evidence_and_acceptance": "`SupportTicketService::create` creates random IDs, then `SupportController::ask` persists chat. DSH/BG: request-key/action dedupe so retry after persistence failure cannot create a second ticket."
+    },
+    {
+      "id": "A04",
+      "priority": "P0",
+      "gap": "Ownership validation before tools/side effects",
+      "evidence_and_acceptance": "Existing append checks ownership, but Support runs first. Validate supplied chat ID/actor before retrieval, model calls or escalation; cross-actor test must execute zero tools."
+    },
+    {
+      "id": "A05",
+      "priority": "P1",
+      "gap": "Real multi-turn model context",
+      "evidence_and_acceptance": "Support model prompt uses current context/question; Enterprise restores report dates but not general transcript. DSH: bounded, owner-scoped turn selection with fresh source revalidation. History UI alone is not memory."
+    },
+    {
+      "id": "A06",
+      "priority": "P1",
+      "gap": "Replayable source/prompt/tool provenance",
+      "evidence_and_acceptance": "Trace stores source labels/counts, not complete version-bound evidence. LF: add sanitized source IDs/version hashes, prompt/tool contract version and evaluated response linkage; replay an exact synthetic fixture."
+    },
+    {
+      "id": "A07",
+      "priority": "P1",
+      "gap": "Provider usage and execution budgets",
+      "evidence_and_acceptance": "`AiClient` sets max output tokens but does not normalize returned usage. LF: optional input/output/cache usage, monotonic time/tool budgets; unknown usage remains null, never fabricated cost."
+    },
+    {
+      "id": "A08",
+      "priority": "P1",
+      "gap": "Ground-truth evaluation experiments",
+      "evidence_and_acceptance": "Ten local helper fixtures are useful but not end-to-end factual accuracy. LF: compare expected tool IDs/scopes/results plus model/seed/prompt version and sample cases; meaningful regressions must block, not only empty-response checks."
+    },
+    {
+      "id": "A09",
+      "priority": "P1",
+      "gap": "Audit delivery vs business-operation result",
+      "evidence_and_acceptance": "Audit failures are already contained; chat save failure can return retry after a successful ticket action. DSH/CW: preserve authoritative action outcome and report audit failure separately; a retry cannot repeat the action."
+    },
+    {
+      "id": "A10",
+      "priority": "P1",
+      "gap": "JSON lifecycle and bounded historical queries",
+      "evidence_and_acceptance": "One global lock, full JSON rewrite and file scans have no measured retention/backup lifecycle. Preserve one JSON per chat while testing pagination, bounded memory, retention, export audit and deployment restore."
+    },
+    {
+      "id": "S01",
+      "priority": "P1",
+      "gap": "Bidirectional conversation/ticket handoff",
+      "evidence_and_acceptance": "Chat may store ticket ID; ticket has no normalized conversation/turn linkage. CW: link both sides, include safe handoff context and dedupe human escalation."
+    },
+    {
+      "id": "S02",
+      "priority": "P1",
+      "gap": "Ownership of human work",
+      "evidence_and_acceptance": "Ticket schema only open/answered/closed. CW: scoped assignee/team, priority, pending/snooze and queue filters; reject unauthorized assignment changes."
+    },
+    {
+      "id": "S03",
+      "priority": "P1",
+      "gap": "Human-response and reopen lifecycle",
+      "evidence_and_acceptance": "`created_at`/`updated_at` cannot reconstruct first human reply, handoff, resolution or reopen. CW: explicit events/timestamps; bot latency must not be sold as human response time."
+    },
+    {
+      "id": "S04",
+      "priority": "P1",
+      "gap": "Satisfaction separated from resolution",
+      "evidence_and_acceptance": "Local feedback is binary and sampled, not production CSAT. CW: preserve explicit resolution, separate satisfaction and sample denominators; no silence-as-success, stale votes or another actor's ratings."
+    },
+    {
+      "id": "S05",
+      "priority": "P1",
+      "gap": "Retrieval quality feedback loop",
+      "evidence_and_acceptance": "#249 fixes the named Ayyappa case, not general multilingual retrieval. DSH/LF/CW: normalized intent/entities, real no-match, source citations, negative-feedback-to-fixture workflow and human-approved knowledge correction."
+    },
+    {
+      "id": "C01",
+      "priority": "P1",
+      "gap": "Persistent and mergeable customer carts",
+      "evidence_and_acceptance": "`CartService` reads the PHP session; no business cart identity/state. BG: persistent cart with guest-to-account merge and price/stock revalidation; never merge another user's basket."
+    },
+    {
+      "id": "C02",
+      "priority": "P0",
+      "gap": "Complete, deduplicated checkout funnel",
+      "evidence_and_acceptance": "Local telemetry counts cart add/checkout start only. BG/DSH: allowlisted cart/checkout/payment/verified-order events with safe correlation and idempotency; client claims cannot certify payment."
+    },
+    {
+      "id": "C03",
+      "priority": "P1",
+      "gap": "Defensible abandonment cohorts",
+      "evidence_and_acceptance": "No persistent cart denominator/window. BG: derive age and conversion from cart state, disclose cohort and exclude retries; do not divide uncorrelated event counts. Recovery messaging needs consent."
+    },
+    {
+      "id": "C04",
+      "priority": "P2",
+      "gap": "Variant-level SKU, price and availability",
+      "evidence_and_acceptance": "Product schema has one price/stock status, not configurable SKUs. BG: add only for a real size/material requirement; selection must survive cart/order/GST line validation."
+    },
+    {
+      "id": "C05",
+      "priority": "P1",
+      "gap": "Numeric inventory and reservations",
+      "evidence_and_acceptance": "Current availability/on-hold safeguard does not track quantities or allocations. BG: atomic reserved/available quantity, oversell tests and explicit release rules; retain paid-order safeguards."
+    },
+    {
+      "id": "C06",
+      "priority": "P1",
+      "gap": "Line-level partial shipments",
+      "evidence_and_acceptance": "Order-level shipped status cannot express multiple dispatches. BG: line ordered/shipped/cancelled/refunded bounds; concurrent shipments cannot exceed remaining quantity."
+    },
+    {
+      "id": "C07",
+      "priority": "P1",
+      "gap": "Structured returns and refund allocation",
+      "evidence_and_acceptance": "Verified monetary refunds already exist. BG: request/decision/line quantities, allocation and tax/invoice linkage without pretending a gateway refund happened. Test partial/multiple refund reconciliation."
+    },
+    {
+      "id": "C08",
+      "priority": "P2",
+      "gap": "Additional promotion eligibility rules",
+      "evidence_and_acceptance": "Existing coupon dates, spend, caps, usage and free shipping are present. BG: optional product/category/customer eligibility and explicit stacking/rounding; do not replace working coupons."
+    },
+    {
+      "id": "C09",
+      "priority": "P2",
+      "gap": "Wishlist/save-for-later",
+      "evidence_and_acceptance": "No scoped repository/routes in inspected schema/code. BG: optional owner-bound saved items with move-to-cart revalidation; never build without customer demand."
+    },
+    {
+      "id": "R01",
+      "priority": "P0",
+      "gap": "Trusted exact-head review request after CI",
+      "evidence_and_acceptance": "Add current-head/same-repo post-CI coordinator; no PR code execution with secrets, no fake review completion."
+    },
+    {
+      "id": "R02",
+      "priority": "P0",
+      "gap": "Reviewer draft and actor compatibility",
+      "evidence_and_acceptance": "Explicit CodeRabbit draft config; Sourcery human-author requirement, native app setup documented. Add missing `bapX/**` branch trigger."
+    },
+    {
+      "id": "R03",
+      "priority": "P0",
+      "gap": "Distinguish quota, pending and actual review receipt",
+      "evidence_and_acceptance": "Current #240 receipt is valid; #245 quota failure is not a pass. Tests prevent repeated quota spam and stale/forged approvals."
+    },
+    {
+      "id": "R04",
+      "priority": "P1",
+      "gap": "External activation prerequisites visible",
+      "evidence_and_acceptance": "Default-branch workflow, native app access and dedicated real-user token are distinct gates; no secret reuse, paid purchase or silent bot fallback."
+    }
+  ]
+}
