@@ -69,9 +69,16 @@ In every turn, `trace_id` is the common root linking observed
 retrieval, named tool calls, sanitized filters/source/result counts, bounded
 provider attempts, deterministic evaluation and final answer metadata.
 `AgentTraceService` gives each span a distinct ID and parent
-trace. **The stages are grouped, not asserted to be chronological**:
-`ordering: grouped_by_stage_not_wall_clock`. Provider SDKs do
-not yet expose every real start/end time; the trace does not fabricate them.
+trace. New controller requests use `ordering: observed_execution`: span IDs,
+opening sequence, UTC start/end times and monotonic elapsed durations are captured
+at the actual retrieval, tool, provider, evaluation and response boundaries.
+Function calls link to the preceding provider attempt where applicable. Older
+or standalone fixture summaries remain explicitly marked
+`grouped_by_stage_not_wall_clock`; they are never relabeled as runtime evidence.
+The response status is **produced**, not delivered: PHP cannot prove the browser
+received it. Provider `first_byte_ms` is transport first-byte latency, not a
+fabricated time-to-first-token. Input/output/cache token counts are normalized
+when supplied by the provider; missing counts and unconfigured costs remain unknown.
 
 Only allowlisted fields can enter tool evidence: e.g. report `from`
 and `to`, topic/status, source category, result count and an
@@ -79,6 +86,30 @@ approved admin report URL. Email addresses, private order identifiers, raw SQL,
 coupon codes, provider bodies, credentials and hidden reasoning are excluded.
 The conversation text itself remains sensitive business/customer content;
 admin JSON export is protected and must never be linked as a static asset.
+
+## Pre-execution checkpoints and interrupted requests
+
+Before attachments, retrieval, model calls or ticket creation, both controllers
+call `AgentConversationService::prepareTurn`. It verifies actor ownership,
+capacity and writable private storage, and writes a `pending_turns` intent into
+the **same conversation JSON**. Span opening and closing checkpoints persist
+through `AgentTraceService`; a failed mandatory checkpoint blocks further work.
+Final atomic persistence replaces that pending entry with the completed turn.
+The monitor exposes unfinished-request counts and a collapsible execution trace.
+
+Support's UI supplies a cryptographically random request ID. An exact completed
+request can return the already stored answer; an in-flight/uncertain duplicate
+returns 409 instead of executing the action again. The UI keeps that request ID
+for same-page retries. Legacy clients without request IDs and a fresh browser
+request after reload are not covered by an exactly-once guarantee. Do not
+blindly replay a ticket action whose outcome is uncertain. No SQL chat table,
+background replay worker or model-based action permission is introduced.
+
+Signed-in Support calls require CSRF before they could create a ticket. When a
+ticket is known to exist but final transcript saving fails, the response reports
+that ticket plus a storage warning; it does not claim the ticket failed and
+invite a duplicate. Operational `audit_events` logging remains non-blocking,
+whereas required conversation checkpoints intentionally fail closed.
 
 ## Resolution vs answer
 
@@ -111,12 +142,13 @@ Do not present a nonempty answer or no-secret result as factual correctness.
 The offline golden corpus and approved baseline live in:
 `tests/fixtures/agent-golden.json` and
 `tests/fixtures/agent-golden-baseline.json`.
-They include collection selection, generic ambiguity, role denial, empty
-sales, ticket lookup-vs-creation, follow-up periods and secret-leak rejection.
+The 14 cases include collection selection, generic ambiguity, role denial, empty
+sales, ticket lookup-vs-creation, follow-up periods, secret-leak rejection,
+executed-scope precedence and provider usage normalization.
 
 `php cli/agent-eval.php` compares per-case results against the
 baseline, emits fixture and baseline SHA-256 hashes plus PHP/instruction
-versions, and exits nonzero for changed, added, removed or failing cases.
+versions plus an implementation fingerprint and per-source SHA-256 values, and exits nonzero for changed, added, removed or failing cases.
 `php cli/agent-eval.php --json` shows machine-readable output;
 `--write` optionally writes a **data-free** experiment snapshot
 under ignored `storage/agent-evals/`. No paid judge/model call

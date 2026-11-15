@@ -575,6 +575,7 @@ final class AiClient
         // A provider wait can exceed the database idle timeout. The next tool
         // lookup or audit write should open a fresh MySQL connection.
         DatabaseService::releaseIdleConnection();
+        $span = AgentTraceService::startSpan('model_attempt',$model ?? 'configured_provider');
         $body = curl_exec($ch);
         $this->transportError = curl_errno($ch);
         $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -590,6 +591,10 @@ final class AiClient
             'first_byte_ms' => 1000 * curl_getinfo($ch, CURLINFO_STARTTRANSFER_TIME),
             'total_ms' => 1000 * curl_getinfo($ch, CURLINFO_TOTAL_TIME),
         ];
+        AgentTraceService::endSpan($span,($body===false||$status<200||$status>=300)?'error':'complete',[
+            'http_status'=>$status, 'first_byte_ms'=>1000*curl_getinfo($ch,CURLINFO_STARTTRANSFER_TIME),
+            'usage'=>AgentTraceService::usageFromResponse($body),
+        ]);
         unset($ch);
         $this->failureCategory = ($body === false || $status !== 200) ? self::classifyFailure($status, $this->transportError) : null;
         return $body;

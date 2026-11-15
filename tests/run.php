@@ -60,6 +60,89 @@ function assertMinCount(int $min, array $items, string $msg): void {
 $failures = [];
 $tests = [];
 
+$tests['support exposed tool contracts match executable capabilities and reject invalid periods'] = static function (): void {
+    $tools=new \App\Services\SupportToolRegistry(null);
+    assertSame(array_column($tools->declarations(),'name'),\App\Services\AgentCapabilityPolicy::tools('support'),
+        'Activity labels must not appear as invocable support capabilities');
+    assertTrue(!\App\Services\AgentCapabilityPolicy::allows('support','customer_ticket_lookup',null),
+        'Legacy trace label is not an exposed guest tool');
+    $schemas=array_column($tools->declarations(),'parameters','name');
+    assertTrue(isset($schemas['own_ticket_status']['properties']['period']),'Actual supported period is documented in the schema');
+    assertTrue(isset($tools->run('public_catalog',['question'=>''])['error']),'Empty retrieval input does not return arbitrary catalogue entries');
+    $customer=new \App\Services\SupportToolRegistry(['email'=>'fixture@example.invalid']);
+    assertTrue(isset($customer->run('own_ticket_status',['period'=>['2026-99-32','2026-11-01']])['error']), 'Impossible dates fail before any data lookup');
+    assertTrue(isset($customer->run('own_ticket_status',['period'=>['2026-11-15','2026-11-01']])['error']), 'Reversed dates fail before any data lookup');
+};
+
+$tests['trace evidence uses executed scope rather than contradictory requested dates'] = static function (): void {
+    $e = \App\Services\AgentTraceService::toolEvidence('sales_summary',
+        ['from'=>'2026-01-01','to'=>'2026-01-31'],
+        ['from'=>'2026-11-01','to'=>'2026-11-15','orders'=>2]);
+    assertSame('2026-11-01',$e['filters']['from'],'Trace must retain the scope actually queried');
+    assertSame('2026-11-15',$e['filters']['to'],'Final dates override untrusted request dates');
+    $bad = \App\Services\AgentTraceService::toolEvidence('sales_summary',
+        ['from'=>'2026-01-01'],['error'=>'Invalid lookup parameters.']);
+    assertTrue(!isset($bad['filters']['from']),'Rejected arguments are not certified as an executed scope');
+};
+
+$tests['runtime trace records real span boundaries and resets per request'] = static function (): void {
+    $trace=bin2hex(random_bytes(8));
+    \App\Services\AgentTraceService::begin($trace);
+    $retrieval=\App\Services\AgentTraceService::startSpan('retrieval','public_policy');
+    \App\Services\AgentTraceService::endSpan($retrieval,'complete',['result_count'=>1]);
+    $tool=\App\Services\AgentTraceService::startSpan('tool','sales_summary');
+    \App\Services\AgentTraceService::endSpan($tool,'complete',['evidence'=>[
+        'source'=>'orders','filters'=>['from'=>'2026-11-01'],'result_count'=>0]]);
+    $result=\App\Services\AgentTraceService::build($trace,'local',[],[],['version'=>2,'passed'=>true],'No orders.');
+    assertSame('observed_execution',$result['ordering'],'Runtime trace is measured rather than reconstructed stage groups');
+    assertSame($retrieval,$result['spans'][0]['span_id'],'Persist actual span identities, not new post-hoc ones');
+    assertTrue(isset($result['spans'][0]['started_at'],$result['spans'][0]['ended_at']), 'Measured boundaries are present');
+    assertTrue($result['spans'][0]['duration_ms']>=0,'Measured duration is non-negative');
+    assertSame('produced',end($result['spans'])['status'],'Server cannot claim client delivery');
+    \App\Services\AgentTraceService::begin(bin2hex(random_bytes(8)));
+    assertSame([],\App\Services\AgentTraceService::snapshot()['spans'],'Next request has no prior spans');
+    \App\Services\AgentTraceService::reset();
+};
+
+$tests['conversation checkpoint rejects foreign actors before work and completes same file'] = static function (): void {
+    $dir=sys_get_temp_dir().'/sps-checkpoint-'.bin2hex(random_bytes(6));mkdir($dir,0700);
+    $svc=new \App\Services\AgentConversationService($dir);$actor=['type'=>'guest','id'=>'fixture-owner'];
+    $trace=bin2hex(random_bytes(8));
+    try {
+        $prepared=$svc->prepareTurn('support',$actor,null,'Where is my order?',$trace);
+        $id=$prepared['conversation_id'];$doc=$svc->getForAdmin($id);
+        assertSame('running',$doc['pending_turns'][$trace]['status'],'Intent is durable before execution');
+        assertSame(0,count($doc['turns']),'No answer is invented at checkpoint');
+        $rejected=false;
+        try{$svc->prepareTurn('support',['type'=>'guest','id'=>'intruder'],$id,'private',bin2hex(random_bytes(8)));}
+        catch(\RuntimeException){$rejected=true;}
+        assertTrue($rejected,'Foreign actor rejected before any tool/model work');
+        $duplicate=false;
+        try{$svc->prepareTurn('support',$actor,$id,'Where is my order?',$trace);}
+        catch(\LogicException){$duplicate=true;}
+        assertTrue($duplicate,'Uncertain/in-flight request is not automatically replayed');
+        $svc->checkpoint('support',$actor,$id,$trace,['version'=>2,'trace_id'=>$trace,'spans'=>[]]);
+        $done=$svc->record('support',$actor,$id,'Where is my order?','Check My Orders.',$trace,'local');
+        $doc=$svc->getForAdmin($id);
+        assertSame(1,count($doc['turns']),'Prepared request completes one real turn');
+        assertTrue(!isset($doc['pending_turns'][$trace]),'Only final persistence clears the pending marker');
+        assertSame(1,count(glob($dir.'/*.json')?:[]),'No extra conversation or SQL table');
+        $again=$svc->prepareTurn('support',$actor,$id,'Where is my order?',$trace);
+        assertSame($done['turn_id'],$again['replay']['turn_id'],'Same completed request can be replayed without another action');
+    }finally{foreach(glob($dir.'/*')?:[] as $f)@unlink($f);@unlink($dir.'/.conversation.lock');@rmdir($dir);}
+};
+
+$tests['provider usage normalization preserves unavailable fields without private data'] = static function (): void {
+    $empty=\App\Services\AgentTraceService::usageFromResponse('{}');
+    assertSame(null,$empty['input_tokens'],'Missing usage is unavailable, not zero');
+    $google=\App\Services\AgentTraceService::usageFromResponse('{"usageMetadata":{"promptTokenCount":10,"candidatesTokenCount":3,"totalTokenCount":13},"secret":"do-not-record"}');
+    assertSame(10,$google['input_tokens'],'Google prompt usage normalized');
+    assertSame(3,$google['output_tokens'],'Google output usage normalized');
+    $openai=\App\Services\AgentTraceService::usageFromResponse('{"usage":{"prompt_tokens":12,"completion_tokens":4,"prompt_tokens_details":{"cached_tokens":2}}}');
+    assertSame(2,$openai['cached_input_tokens'],'Compatible cached usage retained');
+    assertTrue(!str_contains(json_encode($google),'do-not-record'),'Provider body content is excluded');
+};
+
 $tests['each agent session creates one private JSON file and no MySQL table'] = static function (): void {
     $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
     assertTrue(mkdir($root, 0700), 'Private test directory exists');

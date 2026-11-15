@@ -416,10 +416,17 @@ final class AdminController extends BaseController {
         header('X-Agent-Trace: ' . $traceId);
         $startedAt = microtime(true);
         try {
+            $conversations = new \App\Services\AgentConversationService();
+            $prepared = $conversations->prepareTurn('admin',$actor,$conversationId,$message,$traceId);
+            $conversationId = $prepared['conversation_id'];
+            \App\Services\AgentTraceService::begin($traceId,
+                static fn(array $trace)=>$conversations->checkpoint('admin',$actor,$conversationId,$traceId,$trace));
             // @terms, @privacy, @some-article and @filename.jpg pull that document into
             // the prompt. Resolved here so both a draft command and an ordinary question
             // can refer to one.
+            $attachmentSpan = \App\Services\AgentTraceService::startSpan('retrieval','owner_attachments');
             $attachments = (new \App\Services\AgentAttachmentService())->resolve($message);
+            \App\Services\AgentTraceService::endSpan($attachmentSpan,'complete');
 
             // /create-blog and /add-product draft content and hand back a filled-in form.
             // The agent never writes to the site: the owner reads the draft and saves it

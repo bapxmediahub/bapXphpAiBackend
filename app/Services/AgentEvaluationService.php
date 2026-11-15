@@ -60,6 +60,8 @@ final class AgentEvaluationService {
 
     private static function goldenCase(array $case): bool {
         return match ($case['type'] ?? null) {
+            'trace_scope' => AgentTraceService::toolEvidence((string)$case['tool'],(array)$case['args'],(array)$case['result'])['filters'] === (array)$case['expected_filters'],
+            'usage' => AgentTraceService::usageFromResponse(json_encode($case['response'],JSON_THROW_ON_ERROR)) === $case['expected'],
             'collection' => self::fixtureCollection($case),
             'permission' => AgentCapabilityPolicy::allows(
                 (string)($case['agent']??''),(string)($case['tool']??''),$case['actor']??null)

@@ -490,6 +490,8 @@ document.addEventListener('error',function(event){
     image.src=image.dataset.productImageFallback;
 },true);
 var supportFab=document.querySelector('.support-fab'),supportPanel=document.getElementById('support-panel'),supportClose=document.querySelector('.support-panel__close'),supportForm=document.getElementById('support-form'),supportLog=document.getElementById('support-log'),supportConversationId=null;
+var supportPendingRequest=null;
+function supportRandomId(){var bytes=new Uint8Array(16);crypto.getRandomValues(bytes);return Array.from(bytes,function(x){return x.toString(16).padStart(2,'0');}).join('');}
 function supportEscape(value){return String(value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c];});}
 function supportReplyHtml(value){var safe=supportEscape(value);var allowed=/\/(?:shop|cart|checkout|temples|contact|blog(?:\/[a-z0-9-]+|\/category\/[a-z0-9-]+)?|product\/(?:[a-z0-9-]|%20)+|account\/dashboard(?:\/orders|\/install)?)(?=$|[\s.,)])/gi;return safe.replace(allowed,function(path){return '<a class="support-action" href="'+path+'">Open '+supportEscape(path.replace(/^\//,'').replace(/%20|[-/]/g,' '))+'</a>';});}
 function supportActionsHtml(actions){if(!actions||!actions.length)return'';var h='<div class="support-actions">';for(var i=0;i<actions.length;i++){var a=actions[i];if(a.type==='navigate'&&a.path){h+='<a class="btn btn-sm btn-outline support-action-btn" href="'+supportEscape(a.path)+'">'+supportEscape(a.label)+'</a>';}}return h+'</div>';}
@@ -503,8 +505,11 @@ if(supportForm){supportForm.addEventListener('submit',async function(e){
     e.preventDefault();
     if(supportForm.dataset.busy==='true')return;
     var data=new FormData(supportForm),msg=String(data.get('message')||'').trim();
-    if(supportConversationId)data.set('conversation_id',supportConversationId);
     if(!msg||!supportLog)return;
+    if(!supportConversationId)supportConversationId=supportRandomId();
+    if(!supportPendingRequest||supportPendingRequest.message!==msg){supportPendingRequest={message:msg,id:supportRandomId()};}
+    data.set('conversation_id',supportConversationId);
+    data.set('request_id',supportPendingRequest.id);
     supportForm.dataset.busy='true';
     var controls=Array.from(supportForm.querySelectorAll('textarea,button'));
     controls.forEach(function(control){control.disabled=true;});
@@ -517,6 +522,7 @@ if(supportForm){supportForm.addEventListener('submit',async function(e){
     try{
         var r=await fetch('/support/ask',{method:'POST',body:data,signal:abort.signal});
         var j=await r.json();failed=!r.ok||!!j.error;
+        if(!failed)supportPendingRequest=null;
         if(typeof j.conversation_id==='string')supportConversationId=j.conversation_id;
         supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> '+supportReplyHtml(j.reply||j.error||'Unable to answer right now.')+'</p>'+(j.actions?supportActionsHtml(j.actions):''));
         if(!failed&&!j.ticket_id&&typeof j.turn_id==='string'&&/^[a-f0-9]{32}$/.test(j.turn_id)){

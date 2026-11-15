@@ -37,12 +37,12 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 373
+  concepts: 375
   relationships: 276
   by_type:
     blog: 14
     controller: 12
-    doc: 36
+    doc: 38
     image: 89
     route: 129
     schema: 22
@@ -271,6 +271,15 @@ concepts:
     tags:
       - "code"
       - "controller"
+  - id: "doc:2026-11-15-agent-evidence-followthrough"
+    type: "doc"
+    title: "Agent Evidence Implementation Follow-through"
+    description: "Scoped implementation from the REA findings, with observable execution timing and pre-execution private JSON checkpoints."
+    resource: "docs/engineering/2026-11-15-agent-evidence-followthrough.md"
+    tags:
+      - "docs"
+    filename: "2026-11-15-agent-evidence-followthrough.md"
+    header_image: ""
   - id: "doc:README"
     type: "doc"
     title: "Documentation Index"
@@ -324,6 +333,15 @@ concepts:
     tags:
       - "docs"
     filename: "agent-observability.md"
+    header_image: ""
+  - id: "doc:agent-tool-contracts"
+    type: "doc"
+    title: "Generated Agent Tool and Instruction Contracts"
+    description: "Source-derived PHP capability schemas and instruction versions; CI rejects drift."
+    resource: "docs/agent-tool-contracts.md"
+    tags:
+      - "docs"
+    filename: "agent-tool-contracts.md"
     header_image: ""
   - id: "doc:agentic-monorepo"
     type: "doc"

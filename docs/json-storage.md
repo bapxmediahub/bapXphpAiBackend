@@ -55,3 +55,13 @@ php tests/agent-concurrency.php # Verify one JSON file per concurrent chat
 `/remotedb` exists only for approved remote MySQL business operations. Chat
 history and offline eval artifacts are filesystem responsibilities and do
 not require separate paid services or new SQL collections.
+
+## Runtime checkpoint schema (v2)
+
+A request is first written as an actor-owned `pending_turns` entry in the same
+conversation JSON. Its bounded execution trace is updated before and after
+important operations. Only final atomic persistence removes the pending marker
+and appends the completed turn. Unfinished entries remain inspectable after an
+interruption; they are not automatic retry instructions. Metadata-only monitoring
+shows pending counts and sanitized step summaries; authorized JSON export retains
+the evidence without exposing storage files directly over HTTP.

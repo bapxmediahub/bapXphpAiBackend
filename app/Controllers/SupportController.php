@@ -10,35 +10,63 @@ final class SupportController extends BaseController {
     }
 
     public function ask(): void {
+        $this->isApiRequest = true;
+        $message = is_string($_POST['message'] ?? null) ? trim($_POST['message']) : '';
+        $requestId = is_string($_POST['request_id'] ?? null) ? $_POST['request_id'] : '';
+        if ($message === '' || mb_strlen($message)>2000 || ($requestId!=='' && !preg_match('/^[a-f0-9]{32}$/D',$requestId))) {
+            $this->jsonResponse(['error'=>'Enter a question of up to 2,000 characters with a valid request ID.'],400);
+        }
         $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
         $limiter = new \App\Services\RateLimiter();
         if (!$limiter->check('support:' . $ip, 10, 60)) {
             $this->jsonResponse(['error' => 'Too many requests. Please try again later.'], 429);
-            return;
         }
         $limiter->hit('support:' . $ip);
         $startedAt = microtime(true);
         $user = (new AuthService())->user();
+        // Signed-in support can create a ticket: enforce CSRF before that possible action.
+        if ($user !== null) $this->validateCsrf();
         $actor = \App\Services\AgentConversationService::actor('support', $user);
-        $conversationId = is_string($_POST['conversation_id'] ?? null) ? $_POST['conversation_id'] : null;
-        // The agent reads the in-memory cart snapshot and does not change the session.
+        $conversationId = is_string($_POST['conversation_id'] ?? null) && $_POST['conversation_id']!=='' ? $_POST['conversation_id'] : null;
         session_write_close();
-        $traceId = bin2hex(random_bytes(8));
+        $traceId = $requestId === '' ? bin2hex(random_bytes(8))
+            : substr(hash('sha256','support:'.$actor['type'].':'.$actor['id'].':'.$requestId),0,16);
         header('X-Agent-Trace: ' . $traceId);
         try {
-            $answer = (new SupportBotService(traceId: $traceId))->answer($_POST['message'] ?? '', $user);
-            $record = (new \App\Services\AgentConversationService())->record(
-                'support', $actor, $conversationId, (string)($_POST['message'] ?? ''),
+            $conversations = new \App\Services\AgentConversationService();
+            $prepared = $conversations->prepareTurn('support',$actor,$conversationId,$message,$traceId);
+            $conversationId = $prepared['conversation_id'];
+            if (is_array($prepared['replay'])) {
+                $turn=$prepared['replay'];
+                $this->jsonResponse(['reply'=>$turn['answer'],'ticket_id'=>$turn['ticket_id']??null,
+                    'conversation_id'=>$conversationId,'turn_id'=>$turn['turn_id'],
+                    'evaluation'=>$turn['evaluation'],'replayed'=>true,'run'=>['trace_id'=>$traceId]]);
+            }
+            \App\Services\AgentTraceService::begin($traceId,
+                static fn(array $trace)=>$conversations->checkpoint('support',$actor,$conversationId,$traceId,$trace));
+            $answer = (new SupportBotService(traceId: $traceId))->answer($message, $user);
+            $record = $conversations->record(
+                'support', $actor, $conversationId, $message,
                 (string)($answer['reply'] ?? ''), $traceId,
                 !empty($answer['ticket_id']) ? 'escalated' : (string)($answer['run']['outcome'] ?? 'answered'),
                 (array)($answer['run']['tools'] ?? []), isset($answer['ticket_id']) ? (string)$answer['ticket_id'] : null,
                 null, (array)($answer['run']['attempts'] ?? []), (array)($answer['run']['retrieval'] ?? [])
             );
             $this->jsonResponse($answer + $record);
+        } catch (\LogicException $e) {
+            $this->jsonResponse(['error'=>'This request was already started. Its saved outcome needs checking before another action.',
+                'conversation_id'=>$conversationId,'request_status'=>'pending_or_interrupted'],409);
         } catch (\Throwable $e) {
             (new \App\Services\AuditLogService())->agentRun('support', 'error', $startedAt, 'internal_error', traceId: $traceId);
-            error_log('Support request or audit persistence failed (' . get_class($e) . ')');
-            $this->jsonResponse(['error' => 'Unable to complete or save the support request. Please retry.'], 503);
+            error_log('Support request or checkpoint failed (' . get_class($e) . ')');
+            if (!empty($answer['ticket_id'])) {
+                // Do not report a known-created ticket as failed and invite a duplicate.
+                $this->jsonResponse(['reply'=>(string)$answer['reply'], 'ticket_id'=>$answer['ticket_id'],
+                    'conversation_id'=>$conversationId,'request_status'=>'conversation_save_incomplete',
+                    'warning'=>'The ticket exists, but conversation storage needs attention. Do not resubmit it.'],202);
+            }
+            $this->jsonResponse(['error'=>'The request could not be completed safely. Any saved unfinished action must be checked before retrying.',
+                'conversation_id'=>$conversationId,'request_status'=>'incomplete'],503);
         }
     }
 

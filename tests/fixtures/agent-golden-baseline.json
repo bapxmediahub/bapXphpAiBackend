@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "label": "initial-php-agent-deterministic-suite",
+  "label": "php-agent-executed-evidence-and-support-scope-v2",
   "expected": {
     "support_ayyappa_collection": true,
     "support_generic_festival_ambiguous": true,
@@ -11,6 +11,10 @@
     "support_ticket_lookup_read": true,
     "support_ticket_creation_not_lookup": true,
     "enterprise_same_period_followup": true,
-    "response_with_secret_fails": true
+    "response_with_secret_fails": true,
+    "trace_effective_scope_overrides_requested": true,
+    "trace_rejected_parameters_not_certified": true,
+    "google_usage_normalization": true,
+    "missing_provider_usage_is_unknown": true
   }
 }

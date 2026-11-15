@@ -71,3 +71,13 @@ A customer must explicitly vote positive before a chat is recorded as
 Admin session exports require authenticated access. Always test New Chat,
 History, feedback and evaluation cards at 1280px and exactly 375px; inspect
 JavaScript page errors and hidden-state computed styles.
+
+## Execution evidence contract
+
+For both agent surfaces, prepare the actor-owned private JSON request before
+executing tools/providers. Persist actual span boundaries through
+`AgentTraceService`; never backfill timestamps or call a produced response
+delivered. Use effective result scope instead of requested filter arguments.
+Unfinished requests are visible in Agent Monitoring and must not be blindly
+replayed. Keep provider tokens/usage unavailable when absent, and distinguish
+14-case offline regression scores from real customer satisfaction/accuracy.

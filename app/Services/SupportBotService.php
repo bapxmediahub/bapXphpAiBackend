@@ -23,7 +23,9 @@ final class SupportBotService {
         // Exact general tracking questions use the store policy without loading account data.
         if (preg_match('/^(?:how (?:can|do) i|where can i) track (?:an order|orders)[?!.]*$/i', $message)
             && module_on('shop')) {
+            $policySpan = AgentTraceService::startSpan('retrieval','public_policy');
             $reply = $this->policies()['tracking'];
+            AgentTraceService::endSpan($policySpan,'complete',['result_count'=>1]);
             (new AuditLogService($this->store))->agentRun('support', 'local', $startedAt, traceId: $this->traceId);
             return [
                 'reply' => $reply,
@@ -34,7 +36,9 @@ final class SupportBotService {
                     'retrieval'=>[['source'=>'public_policy','result_count'=>1,'status'=>'complete']]],
             ];
         }
+        $retrievalSpan = AgentTraceService::startSpan('retrieval','support_context');
         $context = $this->customerContext($user, $message);
+        AgentTraceService::endSpan($retrievalSpan,'complete',['result_count'=>count($context['site']['products']??[])]);
         $retrieval = [['source'=>'visible_products',
             'result_count'=>count($context['site']['products'] ?? []),'status'=>'complete']];
         $reply = (!$context['signed_in'] && $this->isPrivateAccountQuestion($message))
@@ -69,11 +73,15 @@ final class SupportBotService {
         $email = !empty($user['email']) ? (string)$user['email'] : '';
         $escalated = $this->shouldEscalate($message, $reply, $user);
         if ($escalated && $email !== '') {
+            $actionSpan = AgentTraceService::startSpan('action','create_support_ticket');
             try {
                 $ticket = (new SupportTicketService($this->store))->create($email, $message, 'escalated from support bot');
                 $result['ticket_id'] = $ticket['id'];
                 $result['reply'] .= ' I created support ticket #' . $ticket['id'] . ' for our team to review.';
-            } catch (\Throwable) {}
+                AgentTraceService::endSpan($actionSpan,'complete',['result_count'=>1]);
+            } catch (\Throwable) {
+                AgentTraceService::endSpan($actionSpan,'error');
+            }
         }
         $actions = $this->extractActions($reply);
         if ($actions !== []) $result['actions'] = $actions;
@@ -146,6 +154,7 @@ final class SupportBotService {
             $reply = 'I can filter by when tickets were opened. Try today, last week, last month, this year or the past 30 days.';
         } else {
             $lookupStartedAt = microtime(true);
+            $lookupSpan = AgentTraceService::startSpan('tool','customer_ticket_lookup');
             try {
                 $facts = (new SupportToolRegistry(['email'=>$email], $this->agentContext))
                     ->run('own_ticket_status', [
@@ -167,6 +176,9 @@ final class SupportBotService {
                     'reference'=>$lookup['reference'], 'status'=>$lookup['status']
                 ], isset($facts) ? ['count'=>(int)($facts['count']??0)] : ['error'=>'unavailable']),
             ];
+            AgentTraceService::endSpan($lookupSpan,$toolStatus,[
+                'evidence'=>AgentTraceService::toolEvidence('customer_ticket_lookup',[],
+                    isset($facts)?['count'=>(int)($facts['count']??0)]:['error'=>'lookup_unavailable'])]);
             $reply ??= self::ticketStatusReply($message, $facts, $lookup);
             if ($reply === null && isset($facts)) {
                 $answer = $this->modelReply($message, [

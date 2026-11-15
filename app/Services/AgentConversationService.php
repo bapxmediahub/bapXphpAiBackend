@@ -31,6 +31,65 @@ final class AgentConversationService
         return ['type' => 'guest', 'id' => $_SESSION['support_guest_id']];
     }
 
+    /** Fail closed on ownership/storage before provider work or a possible support-ticket side effect. */
+    public function prepareTurn(string $surface, array $actor, ?string $conversationId,
+        string $question, string $traceId): array
+    {
+        if(!preg_match('/^[a-f0-9]{16}$/D',$traceId))throw new \InvalidArgumentException('Invalid trace ID');
+        if($conversationId!==null && !preg_match(self::ID_PATTERN,$conversationId))throw new \InvalidArgumentException('Invalid conversation ID');
+        $id=$conversationId??bin2hex(random_bytes(16));
+        return $this->mutateCheckpoint($id,$surface,$actor,true,function(array &$document) use($question,$traceId,$id):array {
+            $hash=hash('sha256',$question);
+            foreach($document['turns']??[] as $turn) {
+                if(($turn['trace_id']??'')!==$traceId)continue;
+                if(isset($turn['request_hash'])&&!hash_equals($turn['request_hash'],$hash))throw new \InvalidArgumentException('Request identity reused for another question');
+                return ['conversation_id'=>$id,'replay'=>$turn];
+            }
+            if(isset($document['pending_turns'][$traceId]))throw new \LogicException('Request is running or its outcome is uncertain; do not replay its actions.');
+            if(count($document['turns']??[])+count($document['pending_turns']??[])>=self::MAX_TURNS)throw new \RuntimeException('Start a new conversation');
+            if(count($document['pending_turns']??[])>=4)throw new \LogicException('Review unfinished requests before continuing this conversation.');
+            $document['pending_turns'][$traceId]=['turn_id'=>bin2hex(random_bytes(16)),
+                'trace_id'=>$traceId,'started_at'=>gmdate('c'),'status'=>'running',
+                'request_hash'=>$hash,'question'=>AgentTranscriptSanitizer::scrub(mb_substr($question,0,2000))];
+            $document['updated_at']=gmdate('c');
+            return ['conversation_id'=>$id,'replay'=>null];
+        });
+    }
+
+    /** Persist bounded observed evidence inside the SAME conversation before advancing execution. */
+    public function checkpoint(string $surface,array $actor,string $id,string $traceId,array $trace): void
+    {
+        if(($trace['trace_id']??'')!==$traceId || count($trace['spans']??[])>128)throw new \InvalidArgumentException('Invalid execution checkpoint');
+        $this->mutateCheckpoint($id,$surface,$actor,false,function(array &$document) use($traceId,$trace):array {
+            if(!isset($document['pending_turns'][$traceId]))throw new \RuntimeException('Request checkpoint not found');
+            $document['pending_turns'][$traceId]['trace']=$trace;
+            $document['pending_turns'][$traceId]['updated_at']=gmdate('c');
+            $document['updated_at']=gmdate('c');
+            return [];
+        });
+    }
+
+    private function mutateCheckpoint(string $id,string $surface,array $actor,bool $create,callable $mutate): array
+    {
+        if(!preg_match(self::ID_PATTERN,$id)||!in_array($surface,['admin','support'],true)
+            ||!in_array($actor['type']??'',['admin','customer','guest'],true)||trim((string)($actor['id']??''))==='') {
+            throw new \InvalidArgumentException('Invalid conversation identity');
+        }
+        $root=$this->root();$lock=@fopen($root.'/.conversation.lock','c');
+        if($lock===false)throw new \RuntimeException('Conversation checkpoint lock unavailable');
+        try {
+            @chmod($root.'/.conversation.lock',0600);
+            if(!flock($lock,LOCK_EX))throw new \RuntimeException('Conversation checkpoint lock unavailable');
+            $file=$root.'/'.$id.'.json';$document=self::readFile($file);
+            if($document===null) {
+                if(!$create)throw new \RuntimeException('Conversation not found');
+                $document=['schema_version'=>2,'id'=>$id,'surface'=>$surface,'actor'=>$actor,
+                    'started_at'=>gmdate('c'),'turns'=>[],'passed_turns'=>0,'pending_turns'=>[]];
+            }elseif(!self::ownedBy($document,$surface,$actor))throw new \RuntimeException('Conversation not accessible to this actor');
+            $result=$mutate($document);self::writeAtomic($root,$file,$document);return $result;
+        }finally{flock($lock,LOCK_UN);fclose($lock);}
+    }
+
     public function record(
         string $surface, array $actor, ?string $conversationId,
         string $question, string $answer, string $traceId,
@@ -42,7 +101,9 @@ final class AgentConversationService
         }
         $id = is_string($conversationId) && preg_match(self::ID_PATTERN, $conversationId)
             ? $conversationId : bin2hex(random_bytes(16));
+        $evaluationSpan = AgentTraceService::activeTraceId() === $traceId ? AgentTraceService::startSpan('evaluation','deterministic_guardrails') : null;
         $evaluation = AgentEvaluationService::evaluate($surface, $question, $answer, $tools, $outcome);
+        AgentTraceService::endSpan($evaluationSpan,!empty($evaluation['passed'])?'pass':'needs_review',['version'=>(int)$evaluation['version']]);
         $turn = [
             'turn_id' => bin2hex(random_bytes(16)),
             'trace_id' => $traceId,
@@ -68,7 +129,7 @@ final class AgentConversationService
         $document = $this->append($id, $surface, $actor, $turn);
         return [
             'conversation_id' => $id,
-            'turn_id' => $turn['turn_id'],
+            'turn_id' => $document['turns'][array_key_last($document['turns'])]['turn_id'],
             'evaluation' => $evaluation,
             'turns' => count($document['turns']),
         ];
@@ -141,6 +202,13 @@ final class AgentConversationService
             if (count($document['turns'] ?? []) >= self::MAX_TURNS) {
                 throw new \RuntimeException('Start a new conversation');
             }
+            if (isset($document['pending_turns'][$turn['trace_id']])) {
+                $pending=$document['pending_turns'][$turn['trace_id']];
+                $turn['turn_id']=$pending['turn_id'];
+                $turn['request_hash']=$pending['request_hash'];
+                $turn['started_at']=$pending['started_at'];
+                unset($document['pending_turns'][$turn['trace_id']]);
+            }
             $document['turns'][] = $turn;
             // A later customer question invalidates any previous resolution state.
             $document['resolution_status'] = isset($turn['ticket_id']) ? 'escalated' : 'awaiting_feedback';
@@ -189,6 +257,9 @@ final class AgentConversationService
             $document = self::readFile($filename);
             if ($document === null || !self::ownedBy($document, 'support', $actor)) {
                 throw new \RuntimeException('Conversation not accessible to this actor');
+            }
+            if (!empty($document['pending_turns'])) {
+                throw new \InvalidArgumentException('Wait for the current reply before rating this conversation.');
             }
             $last = count($document['turns'] ?? []) - 1;
             if ($last < 0 || ($document['turns'][$last]['turn_id'] ?? '') !== $turnId) {
@@ -272,6 +343,7 @@ final class AgentConversationService
                 'id' => (string)($document['id'] ?? ''),
                 'updated_at' => (string)($document['updated_at'] ?? $document['started_at'] ?? ''),
                 'turn_count' => count($document['turns'] ?? []),
+                'pending_turn_count' => count($document['pending_turns'] ?? []),
                 'preview' => mb_substr(trim((string)($document['turns'][0]['question'] ?? 'Conversation')), 0, 100),
             ];
             if (count($out) >= $limit) break;
@@ -292,13 +364,27 @@ final class AgentConversationService
         foreach (array_slice($files, 0, min(100, max(1, $limit))) as $filename) {
             $document = self::readFile($filename);
             if ($document === null) continue;
+            $lastTurn = ($document['turns'] ?? []) === [] ? [] : $document['turns'][array_key_last($document['turns'])];
+            $pending = ($document['pending_turns'] ?? []) === [] ? null : $document['pending_turns'][array_key_last($document['pending_turns'])];
+            $trace = is_array($pending) ? ($pending['trace'] ?? []) : ($lastTurn['trace'] ?? []);
+            $traceSteps = [];
+            foreach (array_slice((array)($trace['spans'] ?? []), 0, 128) as $span) {
+                if (!is_array($span)) continue;
+                $traceSteps[] = array_intersect_key($span, array_flip([
+                    'sequence','type','name','status','duration_ms','started_at','ended_at','http_status','result_count'
+                ]));
+            }
             $recent[] = [
                 'id' => $document['id'] ?? '',
                 'surface' => $document['surface'] ?? '',
                 'actor' => $document['actor'] ?? [],
                 'updated_at' => $document['updated_at'] ?? $document['started_at'] ?? '',
                 'turn_count' => count($document['turns'] ?? []),
+                'pending_turn_count' => count($document['pending_turns'] ?? []),
                 'passed_turns' => (int)($document['passed_turns'] ?? 0),
+                'trace_state' => is_array($pending) ? 'unfinished' : 'completed',
+                'trace_ordering' => (string)($trace['ordering'] ?? 'unavailable'),
+                'trace_steps' => $traceSteps,
                 'resolution_status' => in_array($document['resolution_status'] ?? '', [
                     'awaiting_feedback','confirmed_resolved','needs_followup','escalated'
                 ], true) ? $document['resolution_status'] : 'unknown',

@@ -3,12 +3,15 @@ namespace App\Services;
 
 /**
  * Redacted, provider-neutral execution evidence; stored in each conversation JSON.
- * Spans describe observed stages and their parent trace, NOT a wall-clock replay.
+ * Observed spans are recorded at execution boundaries; legacy summaries remain explicitly stage-grouped.
  * No prompts, raw SQL, PII, credentials, or hidden model reasoning.
  */
 final class AgentTraceService
 {
-    public const VERSION = 1;
+    public const VERSION = 2;
+    private static ?array $active = null;
+    private static array $clocks = [];
+    private static ?\Closure $checkpoint = null;
 
     private const SOURCES = [
         'find_order' => 'orders', 'sales_summary' => 'orders',
@@ -24,11 +27,11 @@ final class AgentTraceService
     {
         $filters = [];
         foreach (['from', 'to', 'period', 'topic', 'status', 'entity'] as $key) {
-            $value = $args[$key] ?? $result[$key] ?? null;
+            $value = isset($result['error']) ? null : ($result[$key] ?? null);
             if (!is_string($value) || !preg_match('/^[a-z0-9_-]{1,40}$/i', $value)) continue;
             $filters[$key] = $value;
         }
-        if (isset($args['days']) && is_int($args['days'])) $filters['days'] = max(0, min(36500, $args['days']));
+        if (!isset($result['error']) && isset($result['days']) && is_int($result['days'])) $filters['days'] = max(0, min(36500, $result['days']));
         if (isset($args['order_id'])) $filters['order_id_provided'] = true;
         if (isset($args['customer_email'])) $filters['customer_email_provided'] = true;
         if (isset($args['slug'])) $filters['product_selector_provided'] = true;
@@ -88,11 +91,112 @@ final class AgentTraceService
         return $out;
     }
 
+    /** Request-scoped state: reset at each classic PHP HTTP request, never shared across actors. */
+    public static function begin(string $traceId, ?callable $checkpoint = null): void
+    {
+        if (!preg_match('/^[a-f0-9]{16}$/D', $traceId)) throw new \InvalidArgumentException('Invalid trace ID');
+        self::reset();
+        self::$active = ['version'=>self::VERSION, 'trace_id'=>$traceId,
+            'ordering'=>'observed_execution', 'started_at'=>self::now(), 'spans'=>[]];
+        self::$checkpoint = $checkpoint === null ? null : \Closure::fromCallable($checkpoint);
+    }
+
+    public static function reset(): void { self::$active=null; self::$clocks=[]; self::$checkpoint=null; }
+    public static function activeTraceId(): ?string { return self::$active['trace_id'] ?? null; }
+    public static function snapshot(): array { return self::$active ?? ['version'=>self::VERSION,'spans'=>[]]; }
+    private static function now(): string {
+        return (new \DateTimeImmutable('now',new \DateTimeZone('UTC')))->format('Y-m-d\TH:i:s.u\Z');
+    }
+    private static function persist(): void {
+        if (self::$checkpoint !== null) (self::$checkpoint)(self::snapshot());
+    }
+
+    /** Begin is checkpointed before the caller runs its provider/tool/action body. */
+    public static function startSpan(string $type, string $name): ?string
+    {
+        if (self::$active === null) return null;
+        if (!in_array($type,['retrieval','tool','model_attempt','action','evaluation','response'],true)) {
+            throw new \InvalidArgumentException('Unsupported trace span');
+        }
+        if (count(self::$active['spans'])>=128) throw new \RuntimeException('Agent trace step budget exceeded');
+        $id=bin2hex(random_bytes(8));
+        if ($type==='tool' && !array_key_exists($name,self::SOURCES)) $name='unknown_tool';
+        if ($type==='model_attempt' && !SecretService::validModelId($name)) $name='configured_provider';
+        $name=preg_match('/^[a-zA-Z0-9_.:\/-]{1,100}$/D',$name)?$name:'observed_stage';
+        $span=['span_id'=>$id,'parent_span_id'=>self::$active['trace_id'],
+            'sequence'=>count(self::$active['spans'])+1,'type'=>$type,'name'=>$name,
+            'started_at'=>self::now(),'ended_at'=>null,'duration_ms'=>null,'status'=>'running'];
+        if ($type==='tool') {
+            foreach(array_reverse(self::$active['spans']) as $prior) {
+                if($prior['type']==='model_attempt'){$span['caused_by_span_id']=$prior['span_id'];break;}
+            }
+        }
+        self::$clocks[$id]=hrtime(true);
+        self::$active['spans'][]=$span;
+        self::persist();
+        return $id;
+    }
+
+    public static function endSpan(?string $id, string $status, array $attributes = []): void
+    {
+        if ($id===null || self::$active===null) return;
+        if (!in_array($status,['complete','error','pass','needs_review','produced','empty'],true)) $status='error';
+        foreach(self::$active['spans'] as &$span) {
+            if($span['span_id']!==$id)continue;
+            if($span['ended_at']!==null) return;
+            $span['ended_at']=self::now();
+            $span['duration_ms']=max(0,round((hrtime(true)-(self::$clocks[$id]??hrtime(true)))/1_000_000,3));
+            $span['status']=$status;
+            foreach(['http_status','result_count','characters','version'] as $key) {
+                if(isset($attributes[$key]) && is_int($attributes[$key]))$span[$key]=max(0,$attributes[$key]);
+            }
+            if(is_array($attributes['evidence']??null)) {
+                $span['evidence']=self::safeTool(['name'=>$span['name'],'status'=>'complete','evidence'=>$attributes['evidence']])['evidence'];
+            }
+            if(is_array($attributes['usage']??null)) {
+                $span['usage']=[];
+                foreach(['input_tokens','output_tokens','total_tokens','cached_input_tokens'] as $key) {
+                    $v=$attributes['usage'][$key]??null;
+                    $span['usage'][$key]=is_int($v)&&$v>=0&&$v<=1000000000?$v:null;
+                }
+            }
+            if(isset($attributes['first_byte_ms']) && is_numeric($attributes['first_byte_ms'])) {
+                $span['first_byte_ms']=max(0,round((float)$attributes['first_byte_ms'],3));
+            }
+            if(isset($attributes['route']) && in_array($attributes['route'],['local','model','fallback','private_account','draft','error','answered','escalated'],true))$span['route']=$attributes['route'];
+            break;
+        }
+        unset($span);
+        self::persist();
+    }
+
+    /** Counts only: never retains provider message bodies or invents a missing cost/token value. */
+    public static function usageFromResponse(string|false $body): array
+    {
+        $decoded=is_string($body)?json_decode($body,true):null;
+        $u=is_array($decoded)?($decoded['usage']??[]):[];
+        $g=is_array($decoded)?($decoded['usageMetadata']??[]):[];
+        if(!is_array($u))$u=[];if(!is_array($g))$g=[];
+        $details=is_array($u['prompt_tokens_details']??null)?$u['prompt_tokens_details']:[];
+        $values=['input_tokens'=>$u['prompt_tokens']??$u['input_tokens']??$g['promptTokenCount']??null,
+            'output_tokens'=>$u['completion_tokens']??$u['output_tokens']??$g['candidatesTokenCount']??null,
+            'total_tokens'=>$u['total_tokens']??$g['totalTokenCount']??null,
+            'cached_input_tokens'=>$details['cached_tokens']??$g['cachedContentTokenCount']??null];
+        foreach($values as &$v)if(!is_int($v)||$v<0||$v>1000000000)$v=null;
+        unset($v);return $values;
+    }
+
     /** A structured linked span list, not invented timing or model-based correctness. */
     public static function build(
         string $traceId, string $outcome, array $tools, array $attempts,
         array $evaluation, string $answer, array $retrieval = []
     ): array {
+        if (self::activeTraceId() === $traceId) {
+            $response=self::startSpan('response','response');
+            self::endSpan($response,trim($answer)===''?'empty':'produced',[
+                'route'=>$outcome,'characters'=>mb_strlen($answer)]);
+            return self::snapshot();
+        }
         $spans = [];
         foreach (array_slice($retrieval, 0, 8) as $r) {
             if (!is_array($r)) continue;
@@ -140,7 +244,7 @@ final class AgentTraceService
         $spans[]=[
             'span_id'=>bin2hex(random_bytes(8)), 'parent_span_id'=>$traceId,
             'type'=>'response', 'route'=>in_array($outcome,['local','model','fallback','private_account','draft','error','answered'],true)?$outcome:'other',
-            'characters'=>mb_strlen($answer), 'status'=>trim($answer)===''?'empty':'delivered',
+            'characters'=>mb_strlen($answer), 'status'=>trim($answer)===''?'empty':'produced',
         ];
         return ['version'=>self::VERSION,'trace_id'=>$traceId,'ordering'=>'grouped_by_stage_not_wall_clock',
             'spans'=>$spans];

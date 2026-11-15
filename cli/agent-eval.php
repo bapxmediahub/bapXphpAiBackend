@@ -34,8 +34,20 @@ foreach ($actual as $caseId => $passed) {
         $changes[] = ['id'=>$caseId, 'expected'=>null, 'observed'=>(bool)$passed];
     }
 }
+$implementationFiles = [
+    'app/Services/AgentInstructionService.php','app/Services/AgentCapabilityPolicy.php',
+    'app/Services/AgentToolRegistry.php','app/Services/AgentContextService.php',
+    'app/Services/SupportBotService.php','app/Services/AgentConversationService.php',
+    'app/Services/AgentEvaluationService.php','app/Services/AgentTraceService.php',
+    'app/Services/AiClient.php',
+];
+$implementation = [];
+foreach ($implementationFiles as $source) $implementation[$source] = hash_file('sha256',app_path($source));
 $result = [
-    'schema_version'=>1,
+    'schema_version'=>2,
+    'implementation_sha256'=>hash('sha256',json_encode($implementation,JSON_THROW_ON_ERROR)),
+    'source_sha256'=>$implementation,
+    'instructions_sha256'=>$implementation['app/Services/AgentInstructionService.php'],
     'created_at'=>gmdate('c'),
     'metric'=>'offline_deterministic_fixtures_only',
     'php_version'=>PHP_VERSION,

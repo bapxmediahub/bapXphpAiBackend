@@ -34,3 +34,13 @@ regressions. For chat filesystem changes also run
 chat and verify owner/guest isolation and CSRF-protected support feedback.
 Keep metadata-only `audit_events` separate from sensitive chat
 history. Before release verify Hostinger preserves the ignored JSON files.
+
+## Execution evidence contract
+
+For both agent surfaces, prepare the actor-owned private JSON request before
+executing tools/providers. Persist actual span boundaries through
+`AgentTraceService`; never backfill timestamps or call a produced response
+delivered. Use effective result scope instead of requested filter arguments.
+Unfinished requests are visible in Agent Monitoring and must not be blindly
+replayed. Keep provider tokens/usage unavailable when absent, and distinguish
+14-case offline regression scores from real customer satisfaction/accuracy.

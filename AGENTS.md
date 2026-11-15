@@ -2,7 +2,7 @@
 
 The binding contract follows this orientation.
 
-Codex and ChatGPT Work: follow its **Testing** section; use the built-in Browser, not an external Playwright runner.
+Codex and ChatGPT Work: follow **Testing**. The owner explicitly authorized Playwright CLI on the connected Mac and remotedb verification for this release workflow.
 
 
 Quick orientation:
@@ -144,10 +144,13 @@ it against that service's own documentation and record the URL beside the code.
 This is a web app and a PWA. **Verify in a browser, not the terminal** — desktop and
 375px mobile. Terminal checks cover generators, schema and tests only.
 
-When working from Codex or ChatGPT Work, use the built-in **Browser** through its
-computer-use controls for local and live UI verification. Do not use an external
-Playwright CLI, standalone browser driver, or substitute terminal HTTP checks for
-the browser workflow. Keep UI actions grounded in the current browser state.
+Use an actual browser for UI verification. For the connected-Mac workflow the
+owner explicitly selected the installed **Playwright CLI**, with real admin and
+dedicated development-customer logins, desktop and 375px tests. A built-in Browser
+is also suitable where available. Do not substitute terminal HTTP requests for UI
+flows. Use authenticated **remotedb** reads to verify business records. Keep test
+credentials, browser storage state, customer page text and screenshots out of Git
+and public logs; assert counts/booleans rather than dumping private page bodies.
 
 After route, schema, controller, view or workflow changes, run `./bapXphp update`
 to regenerate `map.mmd`, `docs/systematic-map.mmd`, and the indexes. Fix stale
