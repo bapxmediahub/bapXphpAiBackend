@@ -33,7 +33,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
 .admin-nav-top svg, .admin-nav-toggle svg { flex-shrink: 0; opacity: 0.7; }
 .admin-nav-top.active svg { opacity: 1; }
 .admin-nav-chevron { margin-left: auto; transition: transform var(--transition-base); }
-.admin-nav-toggle[aria-expanded="false"] .admin-nav-chevron { transform: rotate(-90deg); }
+.admin-nav-toggle[aria-expanded="false"] .admin-nav-chevron, .admin-agent-nav:not([open]) .admin-nav-chevron { transform: rotate(-90deg); }
 .admin-submenu { display: flex; flex-direction: column; }
 .admin-submenu a { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-xs) var(--space-lg) var(--space-xs) calc(var(--space-lg) + 24px); color: rgba(255,255,255,0.4); font-size: 0.82rem; transition: all var(--transition-base); border-left: 3px solid transparent; }
 .admin-submenu a:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.75); }
@@ -72,7 +72,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
             </a>
             <?php $agentNavPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH); ?>
             <details class="admin-agent-nav" <?= in_array($agentNavPath, ['/admin/agent', '/admin/agent/monitoring', '/admin/support-tickets'], true) ? 'open' : '' ?>>
-                <summary class="admin-nav-top admin-nav-agent">Enterprise Agent</summary>
+                <summary class="admin-nav-top admin-nav-agent"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 11.5a8 8 0 0 1-8 8H6l-3 2V11.5a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8Z"/><path d="M8 10h8M8 14h5"/></svg>Enterprise Agent<svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg></summary>
                 <div class="admin-nav-group">
                     <a href="/admin/agent" <?= $agentNavPath === '/admin/agent' ? 'class="active" aria-current="page"' : '' ?>>Chat</a>
                     <a href="/admin/agent/monitoring" <?= $agentNavPath === '/admin/agent/monitoring' ? 'class="active" aria-current="page"' : '' ?>>Agent Monitoring</a>
@@ -114,14 +114,14 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="7" r="4"/><path d="M2 21v-3a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v3m1-18a4 4 0 0 1 0 8m5 10v-3a4 4 0 0 0-3-4"/></svg>
                 Users
             </a>
-            <button type="button" class="admin-nav-toggle" data-target="menu-analytics" aria-controls="menu-analytics" aria-expanded="true">Analytics</button>
+            <button type="button" class="admin-nav-toggle" data-target="menu-analytics" aria-controls="menu-analytics" aria-expanded="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 3v18h18M8 16v-3m5 3V9m5 7V5"/></svg>Analytics<svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg></button>
             <div class="admin-submenu" id="menu-analytics">
                 <a href="/admin#dashboard-commerce-title">Commerce overview</a>
                 <a href="/admin/tax-report" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/tax-report') === 0 ? 'active' : '') ?>">Commerce Reports</a>
                 <a href="/admin/consultation-analytics" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/consultation-analytics') === 0 ? 'active' : '') ?>">Session analytics</a>
                 <a href="/admin#web-analytics">Web analytics</a>
             </div>
-            <button type="button" class="admin-nav-toggle" data-target="menu-email" aria-controls="menu-email" aria-expanded="true">Email</button>
+            <button type="button" class="admin-nav-toggle" data-target="menu-email" aria-controls="menu-email" aria-expanded="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>Email<svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg></button>
             <div class="admin-submenu" id="menu-email">
                 <a href="/admin/email-inbox" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/email-inbox') === 0 ? 'active' : '') ?>">Inbox</a>
                 <a href="/admin/email-outbox" class="<?= ($agentNavPath === '/admin/email-outbox' && ($_GET['type'] ?? '') !== 'newsletter' ? 'active' : '') ?>">Outbox</a>
@@ -237,7 +237,7 @@ if (toggle) {
     });
 }
 document.querySelectorAll('.admin-nav-toggle').forEach(function(btn){var target=document.getElementById(btn.dataset.target);if(!target)return;var active=!!target.querySelector('a.active');btn.setAttribute('aria-expanded',String(active));target.style.display=active?'':'none';btn.addEventListener('click',function(){var expanded=btn.getAttribute('aria-expanded')==='true';btn.setAttribute('aria-expanded',String(!expanded));target.style.display=expanded?'none':'';});});
-document.querySelectorAll('.table-wrap').forEach(function(wrap){var table=wrap.querySelector('table');if(!table||table.querySelector('.admin-search-added'))return;var search=document.createElement('input');search.type='text';search.placeholder='Search\u2026';search.style.cssText='width:100%;max-width:320px;margin-bottom:var(--space-sm);padding:0.5rem 0.75rem;font-size:0.85rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-white);';wrap.parentNode.insertBefore(search,wrap);search.addEventListener('input',function(){var q=this.value.toLowerCase().trim();table.querySelectorAll('tbody tr').forEach(function(row){if(!q||row.textContent.toLowerCase().includes(q)){row.style.display=''}else{row.style.display='none'}});});table.classList.add('admin-search-added');});
+document.querySelectorAll('.table-wrap').forEach(function(wrap){var table=wrap.querySelector('table');if(!table||wrap.hasAttribute('data-no-table-search')||table.querySelector('.admin-search-added'))return;var search=document.createElement('input');search.type='text';search.placeholder='Search\u2026';search.style.cssText='width:100%;max-width:320px;margin-bottom:var(--space-sm);padding:0.5rem 0.75rem;font-size:0.85rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-white);';wrap.parentNode.insertBefore(search,wrap);search.addEventListener('input',function(){var q=this.value.toLowerCase().trim();table.querySelectorAll('tbody tr').forEach(function(row){if(!q||row.textContent.toLowerCase().includes(q)){row.style.display=''}else{row.style.display='none'}});});table.classList.add('admin-search-added');});
 </script>
 <div id="toast-container"></div>
 <button id="pwa-install-btn" class="pwa-install-btn">

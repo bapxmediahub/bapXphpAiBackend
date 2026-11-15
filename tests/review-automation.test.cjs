@@ -137,3 +137,9 @@ test('branch and CI configuration have one canonical reviewer-test invocation',(
  assert.equal((ci.match(/node --test tests\/review-automation\.test\.cjs/g)||[]).length,1);
  assert.ok(ci.indexOf('actions/setup-node@v4')<ci.indexOf('node --test tests/review-automation.test.cjs'));
 });
+test('new pull requests are explicitly ready for review rather than drafts',()=>{
+ const workflow=fs.readFileSync(path.join(__dirname,'../.github/workflows/branch-pr.yml'),'utf8');
+ const create=workflow.slice(workflow.indexOf('github.rest.pulls.create('));
+ assert.match(create,/draft:\s*false/);
+ assert.ok(!/draft:\s*true/.test(create));
+});

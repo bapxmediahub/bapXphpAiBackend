@@ -112,3 +112,11 @@ mandatory.
 - [Sourcery draft and repository settings](https://docs.sourcery.ai/reviews/configure/)
 - [CodeRabbit configuration](https://docs.coderabbit.ai/reference/configuration)
 - [CodeRabbit machine-readable schema](https://coderabbit.ai/integrations/schema.v2.json)
+
+## Ready-for-review default
+
+The branch-PR workflow now explicitly uses `draft: false`, including `bapX/**`
+and `feature/**` implementation branches. This enables review without pretending
+that incomplete work passed validation. Current-head CI, source review and
+affected browser/database tests still gate merge. Existing drafts are marked
+ready only when the owner asks; no code silently bypasses failed checks.

@@ -60,12 +60,288 @@ function assertMinCount(int $min, array $items, string $msg): void {
 $failures = [];
 $tests = [];
 
+$tests['each agent session creates one private JSON file and no MySQL table'] = static function (): void {
+    $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
+    assertTrue(mkdir($root, 0700), 'Private test directory exists');
+    try {
+        $service = new \App\Services\AgentConversationService($root);
+        $record = $service->record('support', ['type'=>'guest','id'=>str_repeat('a',32)],
+            null, 'What is the policy?', 'You can check our public policy.',
+            bin2hex(random_bytes(8)), 'local');
+        $path = $root . '/' . $record['conversation_id'] . '.json';
+        assertTrue(is_file($path), 'A conversation JSON file exists');
+        $document = json_decode((string)file_get_contents($path), true, flags: JSON_THROW_ON_ERROR);
+        assertSame($record['conversation_id'], $document['id'], 'JSON file matches session ID');
+        assertSame('What is the policy?', $document['turns'][0]['question'], 'Transcript retains question');
+        assertTrue((fileperms($path) & 077) === 0, 'Transcript has private file permissions');
+        assertSame(1, count(glob($root.'/*.json') ?: []), 'Exactly one JSON file per chat');
+        $summaries = $service->recent(10);
+        assertSame(1, count($summaries), 'Monitoring lists the session');
+        assertSame(1, $summaries[0]['turn_count'], 'Monitoring includes the turn count');
+        assertTrue(!isset($summaries[0]['turns']), 'Monitoring does not include raw transcript text');
+        $db = file_get_contents(app_path('app/Services/DatabaseService.php'));
+        assertTrue(!str_contains($db, 'agent_conversations'), 'Conversation storage must not create a SQL table');
+    } finally {
+        foreach (glob($root.'/*') ?: [] as $file) @unlink($file);
+        @unlink($root.'/.conversation.lock');
+        @rmdir($root);
+    }
+};
+
+$tests['private storage routes cannot serve conversation transcripts'] = static function (): void {
+    $router = file_get_contents(app_path('index.php'));
+    $apache = file_get_contents(app_path('.htaccess'));
+    $directory = file_get_contents(app_path('storage/agent-conversations/.htaccess'));
+    assertTrue(str_contains($router, "str_starts_with((string)\$uri, '/storage/')"), 'Built-in PHP server denies direct storage requests');
+    assertTrue(str_contains($apache, 'storage|tools|tests|docs'), 'Production Apache rules forbid storage URLs');
+    assertTrue(str_contains($directory, 'Require all denied'), 'Conversation directory denies direct HTTP access');
+};
+
+$tests['agent transcripts redact obvious secrets'] = static function (): void {
+    $scrub = \App\Services\AgentTranscriptSanitizer::class;
+    $source = 'password=exampleSECRET123 api_key:mykey123 Bearer token1234567890 sk-proj-ABCDEF123456789012';
+    $result = $scrub::scrub($source);
+    assertTrue(!str_contains($result,'exampleSECRET123'), 'Password not persisted in plaintext');
+    assertTrue(!str_contains($result,'mykey123'), 'API key not persisted in plaintext');
+    assertTrue(!str_contains($result,'token1234567890'), 'Bearer secret not persisted in plaintext');
+    assertTrue(!str_contains($result,'ABCDEF123456789012'), 'OpenAI-style key not persisted');
+};
+
+$tests['Enterprise Agent new chat and history are scoped to each admin JSON identity'] = static function (): void {
+    $dir = sys_get_temp_dir() . '/sps-agent-history-' . bin2hex(random_bytes(6));
+    assertTrue(mkdir($dir, 0700), 'Can create isolated JSON history test directory');
+    try {
+        $service = new \App\Services\AgentConversationService($dir);
+        $alice = ['type'=>'admin', 'id'=>'admin-a'];
+        $bob = ['type'=>'admin', 'id'=>'admin-b'];
+        $aliceChat = $service->record('admin', $alice, null, 'Sales this week?', 'Three paid orders.',
+            bin2hex(random_bytes(8)), 'local');
+        $service->record('admin', $alice, $aliceChat['conversation_id'], 'And refunds?', 'None.',
+            bin2hex(random_bytes(8)), 'local');
+        $bobChat = $service->record('admin', $bob, null, 'Support tickets?', 'Two tickets.',
+            bin2hex(random_bytes(8)), 'local');
+        $listed = $service->recentForActor('admin', $alice);
+        assertSame(1, count($listed), 'Admin history must list only its own conversation');
+        assertSame($aliceChat['conversation_id'], $listed[0]['id'], 'History includes the previous chat');
+        assertSame(2, $listed[0]['turn_count'], 'Continuation is recorded in the same JSON file');
+        $restored = $service->getForActor($aliceChat['conversation_id'], 'admin', $alice);
+        assertSame(2, count($restored['turns']), 'Owned conversations are reopenable');
+        try {
+            $service->getForActor($bobChat['conversation_id'], 'admin', $alice);
+            throw new \RuntimeException('Expected cross-admin conversation rejection');
+        } catch (\RuntimeException $error) {
+            assertSame('Conversation not accessible to this actor', $error->getMessage(), 'Other admin history is private');
+        }
+        assertSame(2, count(glob($dir . '/*.json') ?: []), 'Each separate chat uses one JSON file');
+        $routes = \App\Services\ProjectMapService::registry()['routes'];
+        foreach (['/admin/agent/history', '/admin/agent/history/{id}'] as $path) {
+            assertTrue(count(array_filter($routes, static fn($r):bool => ($r['path']??'') === $path)) === 1,
+                'An authenticated history route exists for ' . $path);
+        }
+        $ui = file_get_contents(app_path('views/admin/agent.php'));
+        assertTrue(str_contains($ui, 'agent-history-toggle') && str_contains($ui, 'restoreConversation')
+            && str_contains($ui, 'agent-history-panel[hidden]'), 'Agent UI provides accessible history and new-chat controls');
+    } finally {
+        foreach (glob($dir.'/*') ?: [] as $file) @unlink($file);
+        @unlink($dir.'/.conversation.lock');
+        @rmdir($dir);
+    }
+};
+
+$tests['agent instruction contracts are separate and versioned'] = static function (): void {
+    $service = \App\Services\AgentInstructionService::class;
+    assertTrue(str_contains($service::forSurface('support'), 'authenticated customer'), 'Support instructions enforce customer scope');
+    assertTrue(str_contains($service::forSurface('admin'), 'read-only'), 'Admin instructions enforce tool evidence');
+    assertTrue($service::forSurface('support') !== $service::forSurface('admin'), 'Agents use distinct instructions');
+};
+
+$tests['agent capability policies forbid support from enterprise data tools'] = static function (): void {
+    $policy = \App\Services\AgentCapabilityPolicy::class;
+    assertTrue(!$policy::allows('support','find_order', ['role'=>'admin','email'=>'admin@example.invalid']), 'Support cannot inherit enterprise order tools');
+    assertTrue(!$policy::allows('enterprise','sales_summary', ['role'=>'customer','email'=>'customer@example.invalid']), 'Customer cannot access enterprise analytics');
+    assertTrue($policy::allows('enterprise','sales_summary', ['role'=>'admin','email'=>'admin@example.invalid']), 'Admin can access scoped aggregate tool');
+    assertTrue(!$policy::allows('support','own_ticket_status', null), 'Guest cannot read private support tickets');
+    assertTrue($policy::allows('support','public_catalog', null), 'Guests can read public catalogue');
+    assertTrue(!$policy::allows('support','write_file', ['role'=>'admin']), 'Support has no write filesystem capability');
+    $tools = new \App\Services\SupportToolRegistry(null);
+    assertSame(['error'=>'Not permitted'], $tools->run('own_ticket_status', []), 'Missing actor must be rejected before query');
+    assertSame(['error'=>'Invalid policy'], $tools->run('public_policy',['key'=>'internal-secret']), 'Unknown policy rejected');
+};
+
+$tests['agent conversations validate identity and deterministic evaluations'] = static function (): void {
+    $root = sys_get_temp_dir() . '/sps-agent-identity-' . bin2hex(random_bytes(6));
+    assertTrue(mkdir($root, 0700), 'Private actor fixture directory exists');
+    try {
+        $service = new \App\Services\AgentConversationService($root);
+        $guest = $service::actor('support', null);
+        assertSame('guest', $guest['type'], 'Guest identity is anonymous');
+        assertTrue(strlen($guest['id']) === 32, 'Guest ID is securely generated');
+        $record = $service->record('support', $guest, null, 'Where is my order?',
+            'Please sign in for your order.', bin2hex(random_bytes(8)), 'private_account');
+        assertSame(1, $record['turns'], 'Conversation receives a turn');
+        assertTrue($record['evaluation']['passed'], 'Non-sensitive support reply passes');
+        assertTrue(!\App\Services\AgentEvaluationService::evaluate('support','help','sk-proj-EXAMPLESECRET123456789',[])['passed'], 'Secret-like key fails evaluation');
+        assertTrue(!\App\Services\AgentEvaluationService::evaluate('support','help','<analysis>hidden',[])['passed'], 'Exposed scaffolding fails evaluation');
+        try {
+            $service::actor('admin', ['role'=>'customer','email'=>'u@example.invalid']);
+            throw new \RuntimeException('Expected admin authorization rejection');
+        } catch (\RuntimeException $error) {
+            assertSame('Admin access required.', $error->getMessage(), 'Admin role is enforced server-side');
+        }
+    } finally {
+        foreach (glob($root.'/*') ?: [] as $file) @unlink($file);
+        @unlink($root.'/.conversation.lock');
+        @rmdir($root);
+    }
+};
+
+$tests['enterprise follow-up retrieves only actor-owned persisted history'] = static function (): void {
+    $doc = ['surface'=>'admin','actor'=>['type'=>'admin','id'=>'u1'],'turns'=>[
+        ['report_context'=>['tool'=>'sales_summary','from'=>'2026-11-01','to'=>'2026-11-07']]
+    ]];
+    $service = new \App\Services\AgentConversationService();
+    $report = $service::previousReportFromDocument($doc,['type'=>'admin','id'=>'u1']);
+    assertSame('2026-11-01',$report['from'],'Server report history is available for same actor');
+    try {
+        $service::previousReportFromDocument($doc,['type'=>'admin','id'=>'u2']);
+        throw new \RuntimeException('Expected actor rejection');
+    } catch (\RuntimeException $e) {
+        assertSame('Conversation not accessible to this actor',$e->getMessage(),'Other admins cannot replay another actor report scope');
+    }
+    assertSame(null,$service->previousReportForActor('bad-id',['type'=>'admin','id'=>'u1']),'Invalid conversation IDs rejected');
+};
+
+$tests['site operations counts are deterministic and date scoped'] = static function (): void {
+    $ops = \App\Services\SiteInsightsService::operations([
+        ['created_at'=>'2026-11-03T10:00:00Z'],['created_at'=>'2026-10-10T10:00:00Z']
+    ],[
+        ['status'=>'open','created_at'=>'2026-11-02T12:00:00Z'],
+        ['status'=>'answered','created_at'=>'2026-10-21T12:00:00Z'],
+    ],'2026-11-01','2026-11-07');
+    assertSame(2,$ops['total_users'],'Total registered users');
+    assertSame(1,$ops['new_users'],'Only new users in exact window');
+    assertSame(1,$ops['opened_tickets'],'Only opened cases within window');
+    assertSame(1,$ops['open_tickets'],'Unresolved cases are counted regardless of creation date');
+};
+
+$tests['first party telemetry only records allowlisted events and SEO checks are deterministic'] = static function (): void {
+    $events = [
+        ['event'=>'commerce.event','created_at'=>date('c'),'meta'=>['event'=>'cart_add']],
+        ['event'=>'commerce.event','created_at'=>date('c'),'meta'=>['event'=>'checkout_initiated']],
+        ['event'=>'commerce.event','created_at'=>date('c'),'meta'=>['event'=>'private_unknown']],
+    ];
+    $counts = \App\Services\SiteTelemetryService::counts($events);
+    assertSame(1,$counts['cart_add'],'Cart events counted');
+    assertSame(1,$counts['checkout_initiated'],'Checkout events counted');
+    assertSame(2,array_sum($counts),'Unknown events excluded');
+    $seo = \App\Services\SiteInsightsService::catalogSeo([
+        ['name'=>'Lamp','slug'=>'lamp','description'=>'Short','image_url'=>'']
+    ],[
+        ['title'=>'Example article','slug'=>'example','excerpt'=>'']
+    ]);
+    assertSame(3,$seo['total_issues'],'Local SEO checks reveal short descriptions, missing images and missing excerpt');
+};
+
 $tests['development fixture remote mutations include authentication without command line secrets'] = static function (): void {
     $cli = file_get_contents(app_path('cli/bapXphp'));
     assertTrue(str_contains($cli, '"password"=>getenv("BAPX_MYSQL_PASS")'), 'Remote mutation payloads must authenticate against the existing database bridge');
     assertTrue(substr_count($cli, '"password"=>getenv("BAPX_MYSQL_PASS")') >= 2, 'Both upsert and delete authenticate');
     assertTrue(str_contains($cli, 'printf \'%s\' "$payload" | curl'), 'Post body must be sent over stdin, not placed in curl command arguments');
     assertTrue(str_contains($cli, '--data-binary @-'), 'Remote mutation should stream the authenticated JSON body');
+};
+
+$tests['missing hosted blog photos show bundled image instead of broken thumbnail'] = static function (): void {
+    $post = ['og_image'=>'https://sripanchamispiritual.com/assets/images/blog/tulsi-significance.jpg'];
+    assertSame('/assets/images/hero-temple-bg.webp', \App\Services\BlogService::resolvedImageUrl($post),
+        'Missing local blog art must use an existing local fallback');
+    assertSame('/assets/images/blog/order-products.webp',
+        \App\Services\BlogService::resolvedImageUrl(['og_image'=>'/assets/images/blog/order-products.webp']),
+        'A real authored blog image must be preserved');
+    assertSame('/assets/images/hero-temple-bg.webp',
+        \App\Services\BlogService::resolvedImageUrl(['og_image'=>'/assets/images/blog/missing.webp']),
+        'Missing relative blog images also use the fallback');
+    assertSame('/assets/images/hero-temple-bg.webp',
+        \App\Services\BlogService::resolvedImageUrl(['og_image'=>'/assets/images/../../.env']),
+        'Unsafe image paths must not be resolved');
+    assertTrue(str_contains(fileRead('app/Controllers/BlogController.php'), '$this->siteUrl($image)'),
+        'Blog OpenGraph images use a canonical absolute URL');
+    assertTrue(str_contains(fileRead('views/public/blog-post.php'), '$schemaBase . $schemaImage'),
+        'Article structured data uses an absolute image URL');
+    foreach (['tulsi-significance-hinduism','navagraha-remedies','pooja-items-for-home','benefits-of-rudraksha'] as $slug) {
+        $post = (new \App\Services\BlogService())->find($slug);
+        assertTrue($post !== null, 'Legacy article exists');
+        $url = \App\Services\BlogService::resolvedImageUrl($post);
+        assertTrue(is_file(app_path(ltrim($url,'/'))), 'Blog card has a real image for '.$slug);
+    }
+};
+
+$tests['blog structured data uses configured canonical origin instead of request host'] = static function (): void {
+    $view=fileRead('views/public/blog-post.php');
+    assertTrue(!str_contains($view, "\$_SERVER['HTTP_HOST']"), 'Article schema must not trust request-host metadata');
+    assertTrue(str_contains(fileRead('app/Controllers/BlogController.php'), "'schemaBase' => rtrim(\$this->siteUrl('/'), '/')"), 'Controller supplies the canonical configured origin');
+    assertTrue(str_contains($view,'$schemaBase . $schemaImage'), 'Image schema remains absolute under that origin');
+};
+
+$tests['admin commerce overview renders empty and populated periods without PHP errors'] = static function (): void {
+    $render = static function(array $reports, array $products, array $statuses): string {
+        $reportRows = $reports;
+        $productRows = $products;
+        $orderStatusCounts = $statuses;
+        $from = '2026-11-01';
+        $to = '2026-11-15';
+        $money = static fn(float $value): string => 'INR ' . number_format($value, 2);
+        ob_start();
+        try {
+            require app_path('views/admin/_commerce-overview.php');
+            return (string) ob_get_clean();
+        } catch (\Throwable $e) {
+            ob_end_clean();
+            throw $e;
+        }
+    };
+    $empty = $render([], [], []);
+    assertTrue(str_contains($empty, 'No paid orders in this period.'), 'An empty period should show the empty-state label');
+    assertTrue(str_contains($empty, 'No purchased products in this period.'), 'An empty product series should render safely');
+    assertTrue(str_contains($empty, 'INR 0.00'), 'An empty period should show zero rather than an exception');
+    $populated = $render(
+        [['period'=>'2026-11-14','orders'=>1,'units'=>2,'gross'=>540.0,'refunded'=>40.0,'net'=>500.0]],
+        [['product'=>'Test item','units'=>2,'net'=>500.0]],
+        ['confirmed'=>1]
+    );
+    assertTrue(str_contains($populated, 'Test item'), 'Populated top-products chart must remain visible');
+    assertTrue(str_contains($populated, 'INR 500.00'), 'Populated totals must remain accurate');
+    assertTrue(str_contains($populated, 'paid orders'), 'Status ring remains visible for positive counts');
+    $zeroStatuses = $render([], [], ['confirmed'=>0]);
+    assertTrue(str_contains($zeroStatuses, 'No paid orders in this period.'), 'Zero-count status buckets must not divide by zero');
+};
+
+$tests['support named festive collection listing uses only collection members'] = static function (): void {
+    $collections = [
+        ['name'=>'Ayyappa Swamy Festive Sale', 'slug'=>'collection-ayyappa', 'product_ids'=>['a','b']],
+        ['name'=>'Sassthi Festival Sale', 'slug'=>'collection-sassthi', 'product_ids'=>['c']],
+    ];
+    $match = \App\Services\AgentContextService::requestedCollection(
+        'ayyappan swamy festive products list please', $collections);
+    assertSame('collection-ayyappa', $match['slug'], 'Ayyappan phrasing matches the real Ayyappa sale');
+    assertSame(null, \App\Services\AgentContextService::requestedCollection(
+        'festival products list please', $collections), 'Generic festive terms cannot guess a collection');
+    assertSame('collection-sassthi', \App\Services\AgentContextService::requestedCollection(
+        'sasthi festival items please', $collections)['slug'], 'Other named festivals also resolve');
+    $visible = [
+        ['id'=>'ring', 'name'=>'Unrelated gemstone ring', 'slug'=>'unrelated-ring'],
+        ['id'=>'a', 'name'=>'Golden Panchaloga Ayyappan Swamy Dollar Pendant', 'slug'=>'Ayyappan Pendant'],
+        ['id'=>'b', 'name'=>'Ayyappa Dollar with Impon Malai', 'slug'=>'ayyappa-dollar-with-impon-malai'],
+        ['id'=>'c', 'name'=>'Sri Vel Mayil Pendant', 'slug'=>'vel'],
+    ];
+    $selected = (new \App\Services\CategoryService())->collectionProducts($match, $visible);
+    $answer = \App\Services\SupportBotService::collectionListingReply($match, $selected);
+    assertSame(2, count($selected), 'Only the selected festival products are retrieved');
+    assertTrue(str_contains($answer, 'Golden Panchaloga') && str_contains($answer, 'Impon Malai'),
+        'Answer names the two actual collection members');
+    assertTrue(!str_contains($answer, 'Unrelated gemstone ring'), 'Never list a random product from the default catalogue');
+    assertTrue(str_contains($answer, '/shop?category=collection-ayyappa'), 'Collection-specific shop link is included');
+    $empty = \App\Services\SupportBotService::collectionListingReply($match, []);
+    assertTrue(str_contains($empty, 'no visible products'), 'Empty collections do not fabricate results');
 };
 
 $tests['database service can connect to MySQL'] = function (): void {
@@ -1720,7 +1996,7 @@ $tests['both chat surfaces share accessible bounded request status'] = function 
         str_contains($controller, "'error'=>\$answer")
         && str_contains($controller, "'missing'=>\$attachments['missing']")
         && str_contains($controller, "'run'=>\$this->agentRunMeta(\$traceId, 'error'")
-        && str_contains($controller, '],502'),
+        && str_contains($controller, '] + $record,502'),
         'Provider failures must remain non-2xx while returning a secret-safe operator trace'
     );
     $admin = file_get_contents(app_path('views/layouts/admin.php'));
@@ -2216,7 +2492,7 @@ $tests['blog media uses one screenshot crop for cards and article pages'] = func
         assertTrue(str_contains($service, "'{$field}'"), "Blog service should persist {$field}");
         assertTrue(str_contains($admin, 'name="' . $field . '"'), "Admin blog editor should expose {$field}");
     }
-    assertTrue(str_contains($index, "\$post['og_image']") && str_contains($article, "\$meta['og_image']"), 'Card and article should share og_image');
+    assertTrue(str_contains($index, "BlogService::resolvedImageUrl(\$post)") && str_contains($article, "BlogService::resolvedImageUrl(\$meta)"), 'Card and article should resolve the same image with a missing-file fallback');
     assertTrue(str_contains($article, "\$schemaImage ?: 'undefined'") && str_contains($article, 'e($sourceUrl)'), 'Article metadata should tolerate missing images and render the validated source URL');
     foreach (['create-account', 'order-products', 'payments-and-orders'] as $slug) {
         $post = file_get_contents(app_path("content/blog/posts/{$slug}.md"));
