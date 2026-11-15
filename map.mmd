@@ -7,8 +7,8 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 126 routes, 12 controllers, 60 services, 51 views, 0 data files, 20 tools"]
-    arch_routes["> Routes: 126 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 128 routes, 12 controllers, 60 services, 51 views, 0 data files, 20 tools"]
+    arch_routes["> Routes: 128 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
     arch_svc["> Services: 60"]:::arch
     arch_views["> Views: 51"]:::arch
@@ -123,6 +123,8 @@ flowchart LR
     route_post_admin_settings_admin_credentials["POST /admin/settings/admin-credentials — Admin — save admin login"]:::route
     route_get_admin_integrations["GET /admin/integrations — Admin — API keys, integrations"]:::route
     route_get_admin_agent["GET /admin/agent"]:::route
+    route_get_admin_agent_history["GET /admin/agent/history"]:::route
+    route_get_admin_agent_history_id["GET /admin/agent/history/{id}"]:::route
     route_get_admin_agent_conversation_id["GET /admin/agent/conversation/{id}"]:::route
     route_get_admin_agent_monitoring["GET /admin/agent/monitoring"]:::route
     route_post_admin_agent_ask["POST /admin/agent/ask"]:::route
@@ -649,6 +651,14 @@ flowchart LR
   route_get_admin_agent --> controller_admincontroller
   controller_admincontroller --> service_secretservice
   controller_admincontroller --> service_databaseservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_agent
+  route_get_admin_agent_history --> controller_admincontroller
+  controller_admincontroller --> service_agentconversationservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_agent
+  route_get_admin_agent_history_id --> controller_admincontroller
+  controller_admincontroller --> service_agentconversationservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_agent
   route_get_admin_agent_conversation_id --> controller_admincontroller

@@ -7,7 +7,15 @@
         <?php endif; ?>
     </header>
     <div class="enterprise-chat__thread">
-        <button type="button" class="agent-suggestion enterprise-chat__clear" id="agent-clear" hidden>New chat</button>
+        <div class="agent-history-actions">
+            <button type="button" class="agent-suggestion" id="agent-history-toggle"
+                aria-controls="agent-history-panel" aria-expanded="false">History</button>
+            <button type="button" class="agent-suggestion enterprise-chat__clear" id="agent-clear">New chat</button>
+        </div>
+        <section id="agent-history-panel" class="agent-history-panel" aria-label="Your previous chats" hidden>
+            <h2>Previous chats</h2>
+            <div id="agent-history-list" class="agent-history-list">Open History to load your chats.</div>
+        </section>
     <div id="agent-messages" class="agent-messages" role="log" aria-live="polite" aria-label="Conversation"></div>
 
     <div class="agent-suggestions" id="agent-suggestions">
@@ -77,6 +85,16 @@
 .agent-bubble table { border-collapse:collapse; margin:var(--space-2xs) 0; font-size:0.82rem; }
 .agent-bubble th, .agent-bubble td { border:1px solid var(--color-border); padding:4px 8px; text-align:left; }
 
+/* User-specific conversation history. [hidden] must defeat any flex author rule. */
+.agent-history-actions { display:flex; gap:var(--space-xs); justify-content:flex-end; flex-wrap:wrap; margin:0 0 var(--space-sm); }
+.agent-history-panel { border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-md); margin-bottom:var(--space-md); background:var(--color-bg-alt); max-height:260px; overflow-y:auto; }
+.agent-history-panel[hidden] { display:none !important; }
+.agent-history-panel h2 { font-size:0.94rem; margin:0 0 var(--space-xs); }
+.agent-history-list { display:flex; flex-direction:column; gap:var(--space-2xs); }
+.agent-history-entry { text-align:left; background:var(--color-white); border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:8px 10px; cursor:pointer; overflow-wrap:anywhere; }
+.agent-history-entry:hover, .agent-history-entry:focus-visible { border-color:var(--color-gold); }
+.agent-history-entry small { color:var(--color-text-muted); display:block; margin-top:3px; }
+
 /* The composer sits inside a wrapper so the @ list can float above it. */
 .agent-composer-wrap { position:relative; }
 .agent-attach { flex:0 0 auto; background:none; border:1px solid var(--color-border); border-radius:8px; width:44px; height:44px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--color-text-muted); }
@@ -131,13 +149,81 @@
     const submit = document.getElementById('agent-submit');
     const suggestions = document.getElementById('agent-suggestions');
     const clear = document.getElementById('agent-clear');
+    const historyToggle = document.getElementById('agent-history-toggle');
+    const historyPanel = document.getElementById('agent-history-panel');
+    const historyList = document.getElementById('agent-history-list');
     let conversationId = null;
+
+    const hideHistory = () => {
+        historyPanel.hidden = true;
+        historyToggle.setAttribute('aria-expanded', 'false');
+    };
+
+    async function loadHistory() {
+        const response = await fetch('/admin/agent/history', {credentials:'same-origin',cache:'no-store'});
+        if (!response.ok) throw new Error('Cannot load chat history');
+        const data = await response.json();
+        historyList.replaceChildren();
+        const chats = Array.isArray(data.conversations) ? data.conversations : [];
+        if (!chats.length) {
+            historyList.textContent = 'No previous chats yet.';
+            return;
+        }
+        for (const chat of chats) {
+            if (!/^[a-f0-9]{32}$/.test(String(chat.id || ''))) continue;
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'agent-history-entry';
+            const title = document.createElement('span');
+            title.textContent = String(chat.preview || 'Conversation').slice(0, 100);
+            const meta = document.createElement('small');
+            const date = Date.parse(chat.updated_at || '');
+            meta.textContent = (Number.isFinite(date) ? new Date(date).toLocaleString() : 'Previous chat')
+                + ' · ' + Number(chat.turn_count || 0) + ' message(s)';
+            button.append(title, meta);
+            button.addEventListener('click', () => restoreConversation(chat.id));
+            historyList.appendChild(button);
+        }
+    }
+
+    async function restoreConversation(id) {
+        if (submit.disabled || !/^[a-f0-9]{32}$/.test(String(id))) return;
+        try {
+            const response = await fetch('/admin/agent/history/' + id, {credentials:'same-origin',cache:'no-store'});
+            if (!response.ok) throw new Error('Conversation is unavailable');
+            const data = await response.json();
+            if (data.conversation_id !== id || !Array.isArray(data.turns)) throw new Error('Invalid chat history');
+            messages.replaceChildren();
+            conversationId = id;
+            for (const turn of data.turns) {
+                addRow('user', escapeHtml(String(turn.question || '')).replace(/\n/g,'<br>'));
+                addRow('bot', renderMarkdown(String(turn.answer || '')));
+            }
+            clear.hidden = false;
+            suggestions.style.display = 'none';
+            hideHistory();
+            messages.scrollTop = messages.scrollHeight;
+            input.focus();
+        } catch (error) {
+            historyList.textContent = 'Could not reopen that chat. Please try again.';
+        }
+    }
+
+    historyToggle.addEventListener('click', async () => {
+        if (submit.disabled) return;
+        if (!historyPanel.hidden) { hideHistory(); return; }
+        historyPanel.hidden = false;
+        historyToggle.setAttribute('aria-expanded', 'true');
+        historyList.textContent = 'Loading your chats…';
+        try { await loadHistory(); }
+        catch (error) { historyList.textContent = 'Chat history is unavailable right now.'; }
+    });
     clear.addEventListener('click', function () {
         if (submit.disabled) return;
         messages.replaceChildren();
         conversationId = null;
+        hideHistory();
         suggestions.style.display = '';
-        clear.hidden = true;
         input.value = '';
         autoGrow();
         input.focus();

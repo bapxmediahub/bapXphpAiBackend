@@ -37,14 +37,14 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 369
-  relationships: 270
+  concepts: 371
+  relationships: 272
   by_type:
     blog: 14
     controller: 12
     doc: 36
     image: 89
-    route: 126
+    route: 128
     schema: 22
     service: 60
     skill: 10
@@ -1945,6 +1945,36 @@ concepts:
       - "AgentConversationService"
       - "AuthService"
     view: "admin/agent-monitoring"
+  - id: "route:get__admin_agent_history"
+    type: "route"
+    title: "GET /admin/agent/history"
+    description: "admin.agent.history"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/admin/agent/history"
+    controller: "AdminController@agentHistory"
+    services:
+      - "AgentConversationService"
+      - "AuthService"
+    view: "admin/agent"
+  - id: "route:get__admin_agent_history__id"
+    type: "route"
+    title: "GET /admin/agent/history/{id}"
+    description: "admin.agent.history.show"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/admin/agent/history/{id}"
+    controller: "AdminController@agentHistoryShow"
+    services:
+      - "AgentConversationService"
+      - "AuthService"
+    view: "admin/agent"
   - id: "route:get__admin_agent_monitoring"
     type: "route"
     title: "GET /admin/agent/monitoring"
@@ -4762,6 +4792,12 @@ relationships:
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:get__admin_agent_conversation__id"
+    to: "controller:AdminController"
+    relation: "handled_by"
+  - from: "route:get__admin_agent_history"
+    to: "controller:AdminController"
+    relation: "handled_by"
+  - from: "route:get__admin_agent_history__id"
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:get__admin_agent_monitoring"

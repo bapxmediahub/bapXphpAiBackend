@@ -3,7 +3,7 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 126,
+        "routes": 128,
         "controllers": 12,
         "services": 60,
         "views": 51,
@@ -243,6 +243,28 @@
             "name": "admin.agent.conversation",
             "controller": "AdminController@agentConversation",
             "view": "admin/agent-monitoring",
+            "services": [
+                "AgentConversationService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/agent/history",
+            "name": "admin.agent.history",
+            "controller": "AdminController@agentHistory",
+            "view": "admin/agent",
+            "services": [
+                "AgentConversationService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/agent/history/{id}",
+            "name": "admin.agent.history.show",
+            "controller": "AdminController@agentHistoryShow",
+            "view": "admin/agent",
             "services": [
                 "AgentConversationService",
                 "AuthService"

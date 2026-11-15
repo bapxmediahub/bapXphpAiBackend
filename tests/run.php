@@ -107,6 +107,47 @@ $tests['agent transcripts redact obvious secrets'] = static function (): void {
     assertTrue(!str_contains($result,'ABCDEF123456789012'), 'OpenAI-style key not persisted');
 };
 
+$tests['Enterprise Agent new chat and history are scoped to each admin JSON identity'] = static function (): void {
+    $dir = sys_get_temp_dir() . '/sps-agent-history-' . bin2hex(random_bytes(6));
+    assertTrue(mkdir($dir, 0700), 'Can create isolated JSON history test directory');
+    try {
+        $service = new \App\Services\AgentConversationService($dir);
+        $alice = ['type'=>'admin', 'id'=>'admin-a'];
+        $bob = ['type'=>'admin', 'id'=>'admin-b'];
+        $aliceChat = $service->record('admin', $alice, null, 'Sales this week?', 'Three paid orders.',
+            bin2hex(random_bytes(8)), 'local');
+        $service->record('admin', $alice, $aliceChat['conversation_id'], 'And refunds?', 'None.',
+            bin2hex(random_bytes(8)), 'local');
+        $bobChat = $service->record('admin', $bob, null, 'Support tickets?', 'Two tickets.',
+            bin2hex(random_bytes(8)), 'local');
+        $listed = $service->recentForActor('admin', $alice);
+        assertSame(1, count($listed), 'Admin history must list only its own conversation');
+        assertSame($aliceChat['conversation_id'], $listed[0]['id'], 'History includes the previous chat');
+        assertSame(2, $listed[0]['turn_count'], 'Continuation is recorded in the same JSON file');
+        $restored = $service->getForActor($aliceChat['conversation_id'], 'admin', $alice);
+        assertSame(2, count($restored['turns']), 'Owned conversations are reopenable');
+        try {
+            $service->getForActor($bobChat['conversation_id'], 'admin', $alice);
+            throw new \RuntimeException('Expected cross-admin conversation rejection');
+        } catch (\RuntimeException $error) {
+            assertSame('Conversation not accessible to this actor', $error->getMessage(), 'Other admin history is private');
+        }
+        assertSame(2, count(glob($dir . '/*.json') ?: []), 'Each separate chat uses one JSON file');
+        $routes = \App\Services\ProjectMapService::registry()['routes'];
+        foreach (['/admin/agent/history', '/admin/agent/history/{id}'] as $path) {
+            assertTrue(count(array_filter($routes, static fn($r):bool => ($r['path']??'') === $path)) === 1,
+                'An authenticated history route exists for ' . $path);
+        }
+        $ui = file_get_contents(app_path('views/admin/agent.php'));
+        assertTrue(str_contains($ui, 'agent-history-toggle') && str_contains($ui, 'restoreConversation')
+            && str_contains($ui, 'agent-history-panel[hidden]'), 'Agent UI provides accessible history and new-chat controls');
+    } finally {
+        foreach (glob($dir.'/*') ?: [] as $file) @unlink($file);
+        @unlink($dir.'/.conversation.lock');
+        @rmdir($dir);
+    }
+};
+
 $tests['agent instruction contracts are separate and versioned'] = static function (): void {
     $service = \App\Services\AgentInstructionService::class;
     assertTrue(str_contains($service::forSurface('support'), 'authenticated customer'), 'Support instructions enforce customer scope');

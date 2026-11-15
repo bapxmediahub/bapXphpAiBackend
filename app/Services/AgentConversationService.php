@@ -189,6 +189,44 @@ final class AgentConversationService
         return $document !== null && ($document['id'] ?? null) === $id ? $document : null;
     }
 
+    /** Restore a conversation only for the authenticated actor who owns it. */
+    public function getForActor(string $id, string $surface, array $actor): ?array {
+        $document = $this->getForAdmin($id);
+        if ($document === null) return null;
+        if (!self::ownedBy($document, $surface, $actor)) {
+            throw new \RuntimeException('Conversation not accessible to this actor');
+        }
+        return $document;
+    }
+
+    /** Admin chat history, not the global monitoring list. No SQL index/table. */
+    public function recentForActor(string $surface, array $actor, int $limit = 40): array {
+        $root = $this->root();
+        $files = array_values(array_filter(glob($root . '/*.json') ?: [], static fn(string $filename): bool =>
+            preg_match(self::ID_PATTERN, basename($filename, '.json')) === 1));
+        usort($files, static fn(string $a, string $b): int =>
+            ((int)@filemtime($b) <=> (int)@filemtime($a)) ?: strcmp($b, $a));
+        $out = [];
+        $limit = min(100, max(1, $limit));
+        foreach ($files as $filename) {
+            try {
+                $document = self::readFile($filename);
+            } catch (\Throwable $e) {
+                error_log('Agent history skipped unreadable conversation file');
+                continue;
+            }
+            if ($document === null || !self::ownedBy($document, $surface, $actor)) continue;
+            $out[] = [
+                'id' => (string)($document['id'] ?? ''),
+                'updated_at' => (string)($document['updated_at'] ?? $document['started_at'] ?? ''),
+                'turn_count' => count($document['turns'] ?? []),
+                'preview' => mb_substr(trim((string)($document['turns'][0]['question'] ?? 'Conversation')), 0, 100),
+            ];
+            if (count($out) >= $limit) break;
+        }
+        return $out;
+    }
+
     /** Load at most 100 recent chat documents, not every full transcript. */
     public function recent(int $limit = 40): array
     {

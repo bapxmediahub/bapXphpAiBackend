@@ -344,6 +344,33 @@ final class AdminController extends BaseController {
         $this->render('admin/agent-monitoring', compact('agentMonitoring','agentConversations','commerceTelemetry') + ['pageTitle' => 'Agent Monitoring']);
     }
 
+    public function agentHistory(): void {
+        header('Cache-Control: private, no-store');
+        $actor = \App\Services\AgentConversationService::actor('admin', $_SESSION['user'] ?? null);
+        $conversations = (new \App\Services\AgentConversationService())->recentForActor('admin', $actor, 40);
+        $this->jsonResponse(['conversations' => $conversations]);
+    }
+
+    public function agentHistoryShow(string $id): void {
+        header('Cache-Control: private, no-store');
+        $actor = \App\Services\AgentConversationService::actor('admin', $_SESSION['user'] ?? null);
+        try {
+            $document = (new \App\Services\AgentConversationService())->getForActor($id, 'admin', $actor);
+        } catch (\RuntimeException) {
+            $document = null; // Do not reveal whether another actor owns this ID.
+        }
+        if ($document === null) {
+            $this->jsonResponse(['error'=>'Conversation not found'], 404);
+            return;
+        }
+        $turns = array_map(static fn(array $t): array => [
+            'question'=>(string)($t['question'] ?? ''),
+            'answer'=>(string)($t['answer'] ?? ''),
+            'at'=>(string)($t['at'] ?? ''),
+        ], $document['turns'] ?? []);
+        $this->jsonResponse(['conversation_id'=>$document['id'], 'turns'=>$turns]);
+    }
+
     public function agentConversation(string $id): void {
         $conversation = (new \App\Services\AgentConversationService())->getForAdmin($id);
         if ($conversation === null) {
