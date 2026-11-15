@@ -778,6 +778,19 @@ final class AdminController extends BaseController {
         $redirect = (string)($_POST['redirect'] ?? '');
         $this->redirect(preg_match('#^/admin/[a-z0-9/-]*$#i', $redirect) ? $redirect : '/admin/media');
     }
+    public function deleteMedia(): void {
+        $this->validateCsrf();
+        $id = trim((string)($_POST['id'] ?? ''));
+        try {
+            (new MediaService())->delete($id);
+            (new AuditLogService())->record('delete', 'media', $id, ['source'=>'media_library']);
+            $this->flash('Uploaded media deleted.', 'success');
+        } catch (\InvalidArgumentException | \RuntimeException $error) {
+            $this->flash($error->getMessage(), 'error');
+        }
+        $this->redirect('/admin/media');
+    }
+
     public function fixPermissions(): void{(new StoragePermissionService())->fix(); (new AuditLogService())->record('fix','permissions','storage'); $this->flash('Storage permissions checked and updated where PHP is allowed.','success'); $this->redirect('/admin/settings');}
     /**
      * Ask the configured model one real question and report exactly what came back.

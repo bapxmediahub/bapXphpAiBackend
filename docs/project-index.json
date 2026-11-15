@@ -3,7 +3,7 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 128,
+        "routes": 129,
         "controllers": 12,
         "services": 60,
         "views": 51,
@@ -657,6 +657,18 @@
             "view": "admin/media",
             "services": [
                 "MediaService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/media/delete",
+            "name": "admin.media.delete",
+            "controller": "AdminController@deleteMedia",
+            "view": "admin/media",
+            "services": [
+                "MediaService",
+                "AuditLogService",
                 "AuthService"
             ]
         },

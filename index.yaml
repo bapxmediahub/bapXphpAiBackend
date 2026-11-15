@@ -44,7 +44,7 @@ summary:
     controller: 12
     doc: 39
     image: 89
-    route: 128
+    route: 129
     schema: 22
     service: 60
     skill: 10
@@ -528,6 +528,15 @@ concepts:
     tags:
       - "docs"
     filename: "json-storage.md"
+    header_image: ""
+  - id: "doc:media-deletion-verification"
+    type: "doc"
+    title: "Media Deletion Verification"
+    description: "Disposable-upload and rollback checks for the guarded Media Library delete action."
+    resource: "docs/engineering/media-deletion-verification.md"
+    tags:
+      - "docs"
+    filename: "media-deletion-verification.md"
     header_image: ""
   - id: "doc:orders"
     type: "doc"
@@ -3271,6 +3280,22 @@ concepts:
       - "AuditLogService"
       - "AuthService"
     view: "admin/integrations"
+  - id: "route:post__admin_media_delete"
+    type: "route"
+    title: "POST /admin/media/delete"
+    description: "admin.media.delete"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/admin/media/delete"
+    controller: "AdminController@deleteMedia"
+    services:
+      - "MediaService"
+      - "AuditLogService"
+      - "AuthService"
+    view: "admin/media"
   - id: "route:post__admin_media_upload"
     type: "route"
     title: "POST /admin/media/upload"
@@ -5074,6 +5099,9 @@ relationships:
   - from: "route:post__admin_integrations_test_email"
     to: "controller:AdminController"
     relation: "handled_by"
+  - from: "route:post__admin_media_delete"
+    to: "controller:AdminController"
+    relation: "handled_by"
   - from: "route:post__admin_media_upload"
     to: "controller:AdminController"
     relation: "handled_by"
@@ -5252,7 +5280,19 @@ relationships:
     to: "schema:mail_outbox"
     relation: "stores"
   - from: "service:MediaService"
+    to: "schema:categories"
+    relation: "stores"
+  - from: "service:MediaService"
     to: "schema:media_files"
+    relation: "stores"
+  - from: "service:MediaService"
+    to: "schema:products"
+    relation: "stores"
+  - from: "service:MediaService"
+    to: "schema:settings"
+    relation: "stores"
+  - from: "service:MediaService"
+    to: "schema:temples"
     relation: "stores"
   - from: "service:OrderService"
     to: "schema:orders"
