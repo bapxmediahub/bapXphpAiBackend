@@ -100,6 +100,39 @@ $tests['blog structured data uses configured canonical origin instead of request
     assertTrue(str_contains($view,'$schemaBase . $schemaImage'), 'Image schema remains absolute under that origin');
 };
 
+$tests['admin commerce overview renders empty and populated periods without PHP errors'] = static function (): void {
+    $render = static function(array $reports, array $products, array $statuses): string {
+        $reportRows = $reports;
+        $productRows = $products;
+        $orderStatusCounts = $statuses;
+        $from = '2026-11-01';
+        $to = '2026-11-15';
+        $money = static fn(float $value): string => 'INR ' . number_format($value, 2);
+        ob_start();
+        try {
+            require app_path('views/admin/_commerce-overview.php');
+            return (string) ob_get_clean();
+        } catch (\Throwable $e) {
+            ob_end_clean();
+            throw $e;
+        }
+    };
+    $empty = $render([], [], []);
+    assertTrue(str_contains($empty, 'No paid orders in this period.'), 'An empty period should show the empty-state label');
+    assertTrue(str_contains($empty, 'No purchased products in this period.'), 'An empty product series should render safely');
+    assertTrue(str_contains($empty, 'INR 0.00'), 'An empty period should show zero rather than an exception');
+    $populated = $render(
+        [['period'=>'2026-11-14','orders'=>1,'units'=>2,'gross'=>540.0,'refunded'=>40.0,'net'=>500.0]],
+        [['product'=>'Test item','units'=>2,'net'=>500.0]],
+        ['confirmed'=>1]
+    );
+    assertTrue(str_contains($populated, 'Test item'), 'Populated top-products chart must remain visible');
+    assertTrue(str_contains($populated, 'INR 500.00'), 'Populated totals must remain accurate');
+    assertTrue(str_contains($populated, 'paid orders'), 'Status ring remains visible for positive counts');
+    $zeroStatuses = $render([], [], ['confirmed'=>0]);
+    assertTrue(str_contains($zeroStatuses, 'No paid orders in this period.'), 'Zero-count status buckets must not divide by zero');
+};
+
 $tests['database service can connect to MySQL'] = function (): void {
     try {
         // Quick pre-check: verify the host is reachable before attempting PDO

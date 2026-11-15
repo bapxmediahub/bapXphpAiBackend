@@ -9,7 +9,9 @@ $salesTotals = [
 $averageOrder = $salesTotals['orders'] > 0 ? $salesTotals['net'] / $salesTotals['orders'] : 0;
 $chartValues = array_map(static fn(array $row): float => (float)$row['net'], $reportRows);
 $chartRefunds = array_map(static fn(array $row): float => (float)$row['refunded'], $reportRows);
-$chartMax = max(1, ...$chartValues, ...$chartRefunds);
+// A report period with no paid orders has no chart series. PHP max(1) throws
+// TypeError; passing one non-empty array keeps the empty state renderable.
+$chartMax = max([1.0, ...$chartValues, ...$chartRefunds]);
 $chartCount = max(1, count($reportRows) - 1);
 $netPoints = [];
 $refundPoints = [];
@@ -47,13 +49,14 @@ foreach ($reportRows as $index => $row) {
     </div>
 </section>
 <?php
-$productPeak = max(1, ...array_map(static fn(array $row): float => (float)$row['net'], $productRows));
+$productPeak = max([1.0, ...array_map(static fn(array $row): float => (float)$row['net'], $productRows)]);
 $statusColors = ['#71313b', '#166a62', '#9b5428', '#62488e', '#40627e', '#675647', '#8a4664', '#476a3f'];
 $statusTotal = array_sum($orderStatusCounts);
 $statusSegments = [];
 $statusLegend = [];
 $offset = 0;
 foreach ($orderStatusCounts as $label => $count) {
+    if ($count <= 0 || $statusTotal <= 0) continue; // no ring segment for empty buckets
     $color = $statusColors[count($statusLegend) % count($statusColors)];
     $end = $offset + $count / $statusTotal * 100;
     $statusSegments[] = sprintf('%s %.4F%% %.4F%%', $color, $offset, $end);
