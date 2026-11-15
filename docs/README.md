@@ -32,6 +32,12 @@ Generated files point to original sources. Do not hand-edit them.
 - [`admin-guide.md`](admin-guide.md)
 - [`email-setup.md`](email-setup.md)
 
+## REA research and review operations
+
+- [REA agent and commerce gap analysis](research/2026-11-15-rea-agent-commerce-gaps.md) — source-pinned findings, not implementation claims
+- [REA evidence manifest](research/2026-11-15-rea-evidence.json) — selected source commits, hashes and coverage limitations
+- [AI review workflow](engineering/ai-review-workflow.md) — current-head receipts, draft settings and quota/credential prerequisites
+
 ## Modules
 
 - [`modules/admin.md`](modules/admin.md)
@@ -57,3 +63,13 @@ controller, service, and view listed in `project-index.json` before updating it.
 ./bapXphp update
 ./bapXphp ci
 ```
+
+## Supplemental four-source REA audit
+
+- [`research/rea-agent-commerce-gap-audit.md`](research/rea-agent-commerce-gap-audit.md): independent 28-entry matrix scoped to DeepSeek, Langfuse core, Chatwoot core and Bagisto.
+- [`research/rea-evidence-manifest.json`](research/rea-evidence-manifest.json): nine source inventories and bounded source/runtime provenance.
+- [`research/rea-gap-index.json`](research/rea-gap-index.json): machine-readable IDs, priorities and acceptance targets.
+
+These supplement the independently prepared 27-entry #253 register; counts describe
+different scopes/grouping, not 55 unique gaps. Deduplicate by acceptance behavior
+before opening implementation issues.

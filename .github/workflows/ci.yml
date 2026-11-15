@@ -40,6 +40,11 @@ jobs:
         with:
           php-version: '8.2'
           extensions: curl, json, mbstring, pdo_mysql
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate reviewer metadata safety and deduplication
+        run: node --test tests/review-automation.test.cjs
       - name: Validate code, tests, maps, and routes
         run: ./bapXphp ci
       - name: Test concurrent verified payments against isolated MySQL

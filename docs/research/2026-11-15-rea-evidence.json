@@ -1,0 +1,975 @@
+{
+  "date": "2026-11-15",
+  "rea_version": "6.8.0",
+  "node_version": "22.19.0",
+  "node_engine_warning": "Installed Node is below declared REA supported engine; imports/static and public capture succeeded; not a fully supported environment.",
+  "source_import_coverage": "All source imports are partial/historical-reference; unsupported or unselected code is not proven absent.",
+  "sources": [
+    {
+      "name": "deepseek-harness",
+      "url": "https://github.com/deepseek-ai/deepseek-harness.git",
+      "sha": "39163dd30f703a79079e2d2446545cff3c453738",
+      "branch": "master",
+      "commit_date": "2026-11-13T15:37:50+08:00"
+    },
+    {
+      "name": "langfuse",
+      "url": "https://github.com/langfuse/langfuse.git",
+      "sha": "168ededf52afd3642d3594cd0c27c7d394ae77dd",
+      "branch": "main",
+      "commit_date": "2026-11-15T10:06:35Z"
+    },
+    {
+      "name": "chatwoot",
+      "url": "https://github.com/chatwoot/chatwoot.git",
+      "sha": "1ef1d2b45ae0a17a35c5f1bd055e4ddf04dadabf",
+      "branch": "develop",
+      "commit_date": "2026-11-13T17:18:13+05:30"
+    },
+    {
+      "name": "bagisto",
+      "url": "https://github.com/bagisto/bagisto.git",
+      "sha": "c9209260c0f078e1b358c98050fe2e35a0ad75a4",
+      "branch": "2.5",
+      "commit_date": "2026-11-12T17:47:22+05:30"
+    },
+    {
+      "name": "openhands",
+      "url": "https://github.com/OpenHands/OpenHands.git",
+      "sha": "02c438a78ec8b205cfdf9e9822330018241b0510",
+      "branch": "main",
+      "commit_date": "2026-11-15T04:07:18Z"
+    },
+    {
+      "name": "db-gpt",
+      "url": "https://github.com/eosphoros-ai/DB-GPT.git",
+      "sha": "83e7ff9a50c6e1f87aa878f21d2d1355a1d79dbc",
+      "branch": "main",
+      "rea_scope": "selected observability and database-agent files",
+      "selected_file_count": 15
+    }
+  ],
+  "app_snapshots": [
+    {
+      "label": "sps-main",
+      "commit": "08a988729c90c63d2bc9676829a82baf1850fbc4",
+      "uncommitted_included": false
+    },
+    {
+      "label": "sps-draft",
+      "commit": "a5c3418072ad3ab8b01f643b866c4132e51c43cd",
+      "uncommitted_included": true
+    }
+  ],
+  "evidence": [
+    {
+      "file": "bagisto-source.json",
+      "bytes": 188806,
+      "sha256": "ccf464aed484bb17ed23ed3f2256934153cc71bc17517403dca33879e02eb5cd",
+      "root_sha256": "78516cfdc167df7b10afcb174e02e8a3d026a50fbcdc3313ab178b39cbf2b31d",
+      "evidence_id": null,
+      "operation": "import_reference_source",
+      "authority": "historical-reference",
+      "inventory_state": "partial",
+      "confidence": null,
+      "limitations": [
+        "Path identity is revalidated around operations; Node lacks portable descriptor-relative openat traversal, so a syscall-boundary pathname race remains."
+      ],
+      "parse_failures": 0
+    },
+    {
+      "file": "chatwoot-source.json",
+      "bytes": 247412,
+      "sha256": "dcf2ece4b7e0dad63f54d16ba814ae6725b5ee6ba523ba732696a1ebfeaa916e",
+      "root_sha256": "aa495cc6892f1a534257d1c7f9f53e6e4d14ec6e79b817bc3b37ea534fbc579d",
+      "evidence_id": null,
+      "operation": "import_reference_source",
+      "authority": "historical-reference",
+      "inventory_state": "partial",
+      "confidence": null,
+      "limitations": [
+        "Path identity is revalidated around operations; Node lacks portable descriptor-relative openat traversal, so a syscall-boundary pathname race remains."
+      ],
+      "parse_failures": 0
+    },
+    {
+      "file": "db-gpt-selected-source.json",
+      "bytes": 5932,
+      "sha256": "90cff45e056f01d8ccb290f066be540affe8f66f125fc07ea596a4bc4be0928d",
+      "root_sha256": "4f124d05e3d85ed5a572cf5548ff7f94298f6d267746fc29471df2f0f16fdbd2",
+      "evidence_id": null,
+      "operation": "import_reference_source",
+      "authority": "historical-reference",
+      "inventory_state": "partial",
+      "confidence": null,
+      "limitations": [
+        "Path identity is revalidated around operations; Node lacks portable descriptor-relative openat traversal, so a syscall-boundary pathname race remains."
+      ],
+      "parse_failures": 0
+    },
+    {
+      "file": "deepseek-selected-runtime-source.json",
+      "bytes": 2817613,
+      "sha256": "f35648284d0a2178a324fc6df555b4ad1c1dc2e47d9bd5878f44027651d72723",
+      "root_sha256": null,
+      "evidence_id": "ev_c6cadcd8e28c1331e978efa7f11209a7687db99125813985e2c30ffc1f48f85f",
+      "operation": "analyze_javascript_application",
+      "authority": "shipped-artifact",
+      "inventory_state": null,
+      "confidence": "derived",
+      "limitations": [
+        "Caller-selected source analysis leaves 57 inventoried files outside analysis scope. Inventory identity covers the complete artifact; relationships through unselected sources remain unknown.",
+        "CommonJS and ESM binding relationships were recovered from inert syntax and resolved only within the inventoried artifact container.",
+        "Graph coverage is incomplete; unavailable facts remain explicit and must not be read as absence.",
+        "JavaScript and HTML were parsed as inert text; bundle bootstrap code was never executed.",
+        "Static imports, entrypoints, workers, endpoints, and storage relationships do not prove runtime execution.",
+        "Static paths and relationships may remain unresolved when expressions are dynamic or obfuscated.",
+        "Webpack/Rspack factories were recovered from AST literals; REA did not invoke push handlers or bundle bootstrap code."
+      ],
+      "parse_failures": 0
+    },
+    {
+      "file": "deepseek-source.json",
+      "bytes": 121241,
+      "sha256": "09cbe4e6d18e91c622eafcdd12532f99011efc24b5048b91319473b5d69017da",
+      "root_sha256": "b2d01bb4ec907c44e9a6686a4fb7d543deee5ba2f0326da708f909da423a5a13",
+      "evidence_id": null,
+      "operation": "import_reference_source",
+      "authority": "historical-reference",
+      "inventory_state": "partial",
+      "confidence": null,
+      "limitations": [
+        "Path identity is revalidated around operations; Node lacks portable descriptor-relative openat traversal, so a syscall-boundary pathname race remains."
+      ],
+      "parse_failures": 0
+    },
+    {
+      "file": "langfuse-source.json",
+      "bytes": 854325,
+      "sha256": "475a52018a49530778af8a1c0f0e4a07219e3948443cf6b494b07bf9e0eb54c0",
+      "root_sha256": "c5bb35b129dda69f6363d04e2c540809f571cb0e1107c9bb25af735956565e41",
+      "evidence_id": null,
+      "operation": "import_reference_source",
+      "authority": "historical-reference",
+      "inventory_state": "partial",
+      "confidence": null,
+      "limitations": [
+        "Path identity is revalidated around operations; Node lacks portable descriptor-relative openat traversal, so a syscall-boundary pathname race remains."
+      ],
+      "parse_failures": 0
+    },
+    {
+      "file": "openhands-source.json",
+      "bytes": 3372743,
+      "sha256": "f7137c50ef1daf6c57b207cb6848ed89922d9b0ddce4ee9a3051d8402e383b1c",
+      "root_sha256": "e051bac8384afc6e22abdf96ccd5e1ecff2a42dea0b6fadcd53efe4579095a02",
+      "evidence_id": null,
+      "operation": "import_reference_source",
+      "authority": "historical-reference",
+      "inventory_state": "partial",
+      "confidence": null,
+      "limitations": [
+        "Path identity is revalidated around operations; Node lacks portable descriptor-relative openat traversal, so a syscall-boundary pathname race remains."
+      ],
+      "parse_failures": 0
+    },
+    {
+      "file": "sps-draft-source.json",
+      "bytes": 53609,
+      "sha256": "f7b57c1e74d7ce8c56f8331048786960b975fce993e8287338e3189670abe822",
+      "root_sha256": "19ff0b56446575c9cb57deecedf6530c1c1cfadef112640ab9ca371de8ddfd18",
+      "evidence_id": null,
+      "operation": "import_reference_source",
+      "authority": "historical-reference",
+      "inventory_state": "partial",
+      "confidence": null,
+      "limitations": [
+        "Path identity is revalidated around operations; Node lacks portable descriptor-relative openat traversal, so a syscall-boundary pathname race remains."
+      ],
+      "parse_failures": 0
+    },
+    {
+      "file": "sps-live-public-browser.json",
+      "bytes": 117436,
+      "sha256": "54b7b978430dd640c7ecd5e1f10fa8e2f9eedfed9e6f3c68086ba46688eccb30",
+      "root_sha256": null,
+      "evidence_id": "ev_acdb9f6d758103a152cfcc9f199684ec945a7ce9cd88d946abbf4a5c4d35aa87",
+      "operation": "capture_browser_scenario",
+      "authority": "controlled-replay",
+      "inventory_state": null,
+      "confidence": "observed",
+      "limitations": [
+        "Artifact identity is unavailable for this observation.",
+        "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+        "Network content is retained only when selected; Playwright response-body bytes are API results and are not guaranteed to match wire bytes.",
+        "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+        "Network content reads settle within 5 seconds each and the observer does not request bodies from unfinished responses.",
+        "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+        "Storage values are hashed only after declared-secret redaction.",
+        "Browser host platform and architecture were not observed."
+      ],
+      "parse_failures": 0
+    },
+    {
+      "file": "sps-main-source.json",
+      "bytes": 49872,
+      "sha256": "8d0dc330279c0a693a0a7ba813da9cbc1121a573d7cf1c72a1dff11f3640d7d7",
+      "root_sha256": "f9d39ba33bba2b40658ebb3d3a6c921a19980ec0f27d1675324f4230befb628b",
+      "evidence_id": null,
+      "operation": "import_reference_source",
+      "authority": "historical-reference",
+      "inventory_state": "partial",
+      "confidence": null,
+      "limitations": [
+        "Path identity is revalidated around operations; Node lacks portable descriptor-relative openat traversal, so a syscall-boundary pathname race remains."
+      ],
+      "parse_failures": 0
+    }
+  ],
+  "references": {
+    "ds_sessions": {
+      "project": "deepseek-harness",
+      "commit": "39163dd30f703a79079e2d2446545cff3c453738",
+      "path": "docs/subsystems/session-telemetry.md",
+      "lines": [
+        1,
+        144
+      ],
+      "url": "https://github.com/deepseek-ai/deepseek-harness/blob/39163dd30f703a79079e2d2446545cff3c453738/docs/subsystems/session-telemetry.md#L1-L144",
+      "file_sha256": "455dc79903517067ee2bc0a8cf5689fa8fa400fb7bd8cbd204224ff539ac5a16"
+    },
+    "ds_checkpoints": {
+      "project": "deepseek-harness",
+      "commit": "39163dd30f703a79079e2d2446545cff3c453738",
+      "path": "packages/session/session-checkpoint-policy/README.md",
+      "lines": [
+        1,
+        110
+      ],
+      "url": "https://github.com/deepseek-ai/deepseek-harness/blob/39163dd30f703a79079e2d2446545cff3c453738/packages/session/session-checkpoint-policy/README.md#L1-L110",
+      "file_sha256": "2945553f5ae8486bb077781eb1162efb3dc29f481bfc48cee7fd17b3845e1cf2"
+    },
+    "ds_queue": {
+      "project": "deepseek-harness",
+      "commit": "39163dd30f703a79079e2d2446545cff3c453738",
+      "path": "packages/telemetry/otel/README.md",
+      "lines": [
+        1,
+        72
+      ],
+      "url": "https://github.com/deepseek-ai/deepseek-harness/blob/39163dd30f703a79079e2d2446545cff3c453738/packages/telemetry/otel/README.md#L1-L72",
+      "file_sha256": "1e37ecdbc2e9b2ed43e0265853dc0fc15306d2924e128700b89054757eddf99e"
+    },
+    "lf_spans": {
+      "project": "langfuse",
+      "commit": "168ededf52afd3642d3594cd0c27c7d394ae77dd",
+      "path": "packages/shared/src/observationsTable.ts",
+      "lines": [
+        1,
+        145
+      ],
+      "url": "https://github.com/langfuse/langfuse/blob/168ededf52afd3642d3594cd0c27c7d394ae77dd/packages/shared/src/observationsTable.ts#L1-L145",
+      "file_sha256": "dae4a5f67bd417e6f42877d39d58121c992af9455a9e2007095f4e20d494ba89"
+    },
+    "lf_experiments": {
+      "project": "langfuse",
+      "commit": "168ededf52afd3642d3594cd0c27c7d394ae77dd",
+      "path": "web/src/features/datasets/README.md",
+      "lines": [
+        1,
+        54
+      ],
+      "url": "https://github.com/langfuse/langfuse/blob/168ededf52afd3642d3594cd0c27c7d394ae77dd/web/src/features/datasets/README.md#L1-L54",
+      "file_sha256": "6a12b70659807044763de2ace29f224ba16ee9f2045011cbad1e95225438e81b"
+    },
+    "lf_sampling": {
+      "project": "langfuse",
+      "commit": "168ededf52afd3642d3594cd0c27c7d394ae77dd",
+      "path": "packages/shared/src/server/ingestion/sampling.ts",
+      "lines": [
+        1,
+        59
+      ],
+      "url": "https://github.com/langfuse/langfuse/blob/168ededf52afd3642d3594cd0c27c7d394ae77dd/packages/shared/src/server/ingestion/sampling.ts#L1-L59",
+      "file_sha256": "2c6fa25b384ed98ac5d6f1d5ab1dfe5ce4f7423fd80d5e13944f6af6ee67d35e"
+    },
+    "cw_csat": {
+      "project": "chatwoot",
+      "commit": "1ef1d2b45ae0a17a35c5f1bd055e4ddf04dadabf",
+      "path": "app/models/csat_survey_response.rb",
+      "lines": [
+        1,
+        47
+      ],
+      "url": "https://github.com/chatwoot/chatwoot/blob/1ef1d2b45ae0a17a35c5f1bd055e4ddf04dadabf/app/models/csat_survey_response.rb#L1-L47",
+      "file_sha256": "4f8e27b8269b84aeb7689b193fdfc4737abc1cb6389ba28bed2185ad2c10330c"
+    },
+    "cw_survey": {
+      "project": "chatwoot",
+      "commit": "1ef1d2b45ae0a17a35c5f1bd055e4ddf04dadabf",
+      "path": "app/services/csat_survey_service.rb",
+      "lines": [
+        1,
+        145
+      ],
+      "url": "https://github.com/chatwoot/chatwoot/blob/1ef1d2b45ae0a17a35c5f1bd055e4ddf04dadabf/app/services/csat_survey_service.rb#L1-L145",
+      "file_sha256": "dbc9d759f893971a43f998d84c3ebcce24d74f85386cf3cda27b89cb91886086"
+    },
+    "cw_assignment": {
+      "project": "chatwoot",
+      "commit": "1ef1d2b45ae0a17a35c5f1bd055e4ddf04dadabf",
+      "path": "app/services/conversations/assignment_service.rb",
+      "lines": [
+        1,
+        62
+      ],
+      "url": "https://github.com/chatwoot/chatwoot/blob/1ef1d2b45ae0a17a35c5f1bd055e4ddf04dadabf/app/services/conversations/assignment_service.rb#L1-L62",
+      "file_sha256": "589ec776f26297022a9a0023f2f0bbdd0a7c1fdcf85ec8743a888f34989175ac"
+    },
+    "cw_lifecycle": {
+      "project": "chatwoot",
+      "commit": "1ef1d2b45ae0a17a35c5f1bd055e4ddf04dadabf",
+      "path": "app/models/conversation.rb",
+      "lines": [
+        1,
+        220
+      ],
+      "url": "https://github.com/chatwoot/chatwoot/blob/1ef1d2b45ae0a17a35c5f1bd055e4ddf04dadabf/app/models/conversation.rb#L1-L220",
+      "file_sha256": "f35e0e2df087a0656621d93062bffd0ea3218d85d99879495a3c98492ed08cda"
+    },
+    "bg_inventory": {
+      "project": "bagisto",
+      "commit": "c9209260c0f078e1b358c98050fe2e35a0ad75a4",
+      "path": "packages/Webkul/Product/src/Models/ProductInventory.php",
+      "lines": [
+        1,
+        49
+      ],
+      "url": "https://github.com/bagisto/bagisto/blob/c9209260c0f078e1b358c98050fe2e35a0ad75a4/packages/Webkul/Product/src/Models/ProductInventory.php#L1-L49",
+      "file_sha256": "f8fb650d571fc8a11060f2979fbfff3fe2d58917bfcaee3f3ec142d66da79814"
+    },
+    "bg_cart": {
+      "project": "bagisto",
+      "commit": "c9209260c0f078e1b358c98050fe2e35a0ad75a4",
+      "path": "packages/Webkul/Checkout/src/Models/Cart.php",
+      "lines": [
+        1,
+        120
+      ],
+      "url": "https://github.com/bagisto/bagisto/blob/c9209260c0f078e1b358c98050fe2e35a0ad75a4/packages/Webkul/Checkout/src/Models/Cart.php#L1-L120",
+      "file_sha256": "fe8d0a127601c712f61b5bef5d0299a441ac0244176030179b91de4aa472d9b3"
+    },
+    "bg_coupon": {
+      "project": "bagisto",
+      "commit": "c9209260c0f078e1b358c98050fe2e35a0ad75a4",
+      "path": "packages/Webkul/CartRule/src/Listeners/Order.php",
+      "lines": [
+        25,
+        145
+      ],
+      "url": "https://github.com/bagisto/bagisto/blob/c9209260c0f078e1b358c98050fe2e35a0ad75a4/packages/Webkul/CartRule/src/Listeners/Order.php#L25-L145",
+      "file_sha256": "834af2c997f37286d431b191ff41d6c28825d8afde879033e0d330a04b08b7e8"
+    },
+    "bg_refund": {
+      "project": "bagisto",
+      "commit": "c9209260c0f078e1b358c98050fe2e35a0ad75a4",
+      "path": "packages/Webkul/Sales/src/Repositories/RefundRepository.php",
+      "lines": [
+        1,
+        210
+      ],
+      "url": "https://github.com/bagisto/bagisto/blob/c9209260c0f078e1b358c98050fe2e35a0ad75a4/packages/Webkul/Sales/src/Repositories/RefundRepository.php#L1-L210",
+      "file_sha256": "a991912365457cc6ad2115cd720a5294f3aa908ab1a28ed1085903fcf749a160"
+    },
+    "bg_ship": {
+      "project": "bagisto",
+      "commit": "c9209260c0f078e1b358c98050fe2e35a0ad75a4",
+      "path": "packages/Webkul/Sales/src/Repositories/ShipmentRepository.php",
+      "lines": [
+        1,
+        150
+      ],
+      "url": "https://github.com/bagisto/bagisto/blob/c9209260c0f078e1b358c98050fe2e35a0ad75a4/packages/Webkul/Sales/src/Repositories/ShipmentRepository.php#L1-L150",
+      "file_sha256": "1623862dc7791ea95585e7aeb97581222378118cc4431b4392cc184281b44fd1"
+    },
+    "bg_events": {
+      "project": "bagisto",
+      "commit": "c9209260c0f078e1b358c98050fe2e35a0ad75a4",
+      "path": "packages/Webkul/Checkout/src/Listeners/OrderEventsHandler.php",
+      "lines": [
+        1,
+        29
+      ],
+      "url": "https://github.com/bagisto/bagisto/blob/c9209260c0f078e1b358c98050fe2e35a0ad75a4/packages/Webkul/Checkout/src/Listeners/OrderEventsHandler.php#L1-L29",
+      "file_sha256": "1a0ecb51cbc985f5f060bf93472f777a901ab5f7ab82cb6fd3e2ca8006dbb724"
+    },
+    "bg_reports": {
+      "project": "bagisto",
+      "commit": "c9209260c0f078e1b358c98050fe2e35a0ad75a4",
+      "path": "packages/Webkul/Admin/src/Routes/web/reporting-routes.php",
+      "lines": [
+        1,
+        56
+      ],
+      "url": "https://github.com/bagisto/bagisto/blob/c9209260c0f078e1b358c98050fe2e35a0ad75a4/packages/Webkul/Admin/src/Routes/web/reporting-routes.php#L1-L56",
+      "file_sha256": "beee50e2653aec6e5df38ec92734df3414376f15e2d4e79e1d3f4273b1968d9f"
+    },
+    "bg_wishlist": {
+      "project": "bagisto",
+      "commit": "c9209260c0f078e1b358c98050fe2e35a0ad75a4",
+      "path": "packages/Webkul/Customer/src/Repositories/WishlistRepository.php",
+      "lines": [
+        1,
+        17
+      ],
+      "url": "https://github.com/bagisto/bagisto/blob/c9209260c0f078e1b358c98050fe2e35a0ad75a4/packages/Webkul/Customer/src/Repositories/WishlistRepository.php#L1-L17",
+      "file_sha256": "1e2bb524f2a140642a3aa157899eaa8359404c3852857fb18f67d96102fcf33a"
+    },
+    "bg_marketing": {
+      "project": "bagisto",
+      "commit": "c9209260c0f078e1b358c98050fe2e35a0ad75a4",
+      "path": "packages/Webkul/Marketing/src/Helpers/Campaign.php",
+      "lines": [
+        1,
+        87
+      ],
+      "url": "https://github.com/bagisto/bagisto/blob/c9209260c0f078e1b358c98050fe2e35a0ad75a4/packages/Webkul/Marketing/src/Helpers/Campaign.php#L1-L87",
+      "file_sha256": "b6ab4c255b6964a6ddee897d370851d127da02d02382faa816e4e11dcc012325"
+    },
+    "oh_metrics": {
+      "project": "openhands",
+      "commit": "02c438a78ec8b205cfdf9e9822330018241b0510",
+      "path": "src/utils/conversation-metrics.ts",
+      "lines": [
+        1,
+        79
+      ],
+      "url": "https://github.com/OpenHands/OpenHands/blob/02c438a78ec8b205cfdf9e9822330018241b0510/src/utils/conversation-metrics.ts#L1-L79",
+      "file_sha256": "40f526c2774bebf2e7232bec198e4e1bf9eeb3ef116c74e1125ed5cebc04128f"
+    },
+    "oh_privacy": {
+      "project": "openhands",
+      "commit": "02c438a78ec8b205cfdf9e9822330018241b0510",
+      "path": "src/services/telemetry.ts",
+      "lines": [
+        1,
+        175
+      ],
+      "url": "https://github.com/OpenHands/OpenHands/blob/02c438a78ec8b205cfdf9e9822330018241b0510/src/services/telemetry.ts#L1-L175",
+      "file_sha256": "8b268c7da81535aaa97d1122777899bff4cc0c392650d827579c7d523b7e5bd1"
+    },
+    "db_spans": {
+      "project": "db-gpt",
+      "commit": "83e7ff9a50c6e1f87aa878f21d2d1355a1d79dbc",
+      "path": "packages/dbgpt-core/src/dbgpt/util/tracer/base.py",
+      "lines": [
+        41,
+        158
+      ],
+      "url": "https://github.com/eosphoros-ai/DB-GPT/blob/83e7ff9a50c6e1f87aa878f21d2d1355a1d79dbc/packages/dbgpt-core/src/dbgpt/util/tracer/base.py#L41-L158",
+      "file_sha256": "3565dbc931d6f477f2fd8fc896e7d0854a9600ebae5bb9da68da4bc360eb11b3"
+    },
+    "db_queries": {
+      "project": "db-gpt",
+      "commit": "83e7ff9a50c6e1f87aa878f21d2d1355a1d79dbc",
+      "path": "packages/dbgpt-core/src/dbgpt/agent/expand/data_scientist_agent.py",
+      "lines": [
+        72,
+        156
+      ],
+      "url": "https://github.com/eosphoros-ai/DB-GPT/blob/83e7ff9a50c6e1f87aa878f21d2d1355a1d79dbc/packages/dbgpt-core/src/dbgpt/agent/expand/data_scientist_agent.py#L72-L156",
+      "file_sha256": "cb02ee095711eea8d6e66d3b37bc40509a5dc099ad1b8f2e70e57e2560bbd9d3"
+    }
+  },
+  "gaps": [
+    {
+      "id": "A01",
+      "priority": "P0",
+      "area": "Agents",
+      "title": "Real execution span boundaries",
+      "current": "Main has request trace IDs and run/tool timings. The unfinished draft creates stage-grouped spans after the answer, explicitly not a wall-clock timeline.",
+      "missing": "Capture started/ended/failed spans at actual retrieval, tool and provider boundaries with sequence, parent/span ID, request ID and terminal response evidence.",
+      "acceptance": "An injected provider error leaves ordered, timed evidence up to failure; every executed tool and retry links to the same turn.",
+      "reference_ids": [
+        "ds_sessions",
+        "db_spans",
+        "lf_spans"
+      ],
+      "own_sources": [
+        "app/Services/AgentTraceService.php",
+        "app/Services/AiClient.php",
+        "app/Services/AgentToolRegistry.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "A02",
+      "priority": "P0",
+      "area": "Agents",
+      "title": "Durable checkpoints and idempotent support actions",
+      "current": "The answer/ticket can be produced before AgentConversationService saves its JSON turn.",
+      "missing": "Persist request intent before side effects, stable tool invocation/idempotency key, and explicit unknown-outcome recovery. Keep it inside the same conversation JSON, not a new chat table.",
+      "acceptance": "Kill execution before/after ticket creation and retry: never create duplicate cases, lose evidence or blindly replay an uncertain action.",
+      "reference_ids": [
+        "ds_checkpoints"
+      ],
+      "own_sources": [
+        "app/Controllers/SupportController.php",
+        "app/Services/SupportBotService.php",
+        "app/Services/AgentConversationService.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "A03",
+      "priority": "P0",
+      "area": "Agents",
+      "title": "Separate business durability from telemetry failure",
+      "current": "Operational audit writes and transcript persistence are on the response path; some errors lead to a generic retry response after useful work.",
+      "missing": "Different failure policy for mandatory state checkpoints and noncritical telemetry; report actual business outcome, telemetry loss counter and bounded backpressure.",
+      "acceptance": "Unavailable logging cannot imply a completed ticket/payment failed; mandatory checkpoint failure blocks a new side effect before dispatch.",
+      "reference_ids": [
+        "ds_sessions",
+        "ds_queue"
+      ],
+      "own_sources": [
+        "app/Services/AuditLogService.php",
+        "app/Controllers/SupportController.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "A04",
+      "priority": "P1",
+      "area": "Agents",
+      "title": "Token/cost/latency budgets",
+      "current": "Provider attempt status/duration exist; input/output/cache tokens, TTFT and budget consumption are not consistently captured.",
+      "missing": "Provider-specific usage normalization with missing values marked unavailable, per-turn timeout/token/call budget, and cancellation propagation.",
+      "acceptance": "Fixture providers with and without usage produce truthful metrics; budget exhaustion ends once with an inspectable reason.",
+      "reference_ids": [
+        "lf_spans",
+        "oh_metrics"
+      ],
+      "own_sources": [
+        "app/Services/AiClient.php",
+        "app/Services/AgentTraceService.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "A05",
+      "priority": "P1",
+      "area": "Agents",
+      "title": "Evidence provenance for every factual answer",
+      "current": "Named tools expose source links; unfinished traces retain some safe filters/counts but not complete query/result provenance.",
+      "missing": "Record scope, canonical dates/timezone, source revision/freshness, approved operation/version and redacted result digest. Compare claims to exact scoped results.",
+      "acceptance": "Two different scopes cannot share evidence; zero rows remain valid and distinct from query failure; private identifiers are not logged.",
+      "reference_ids": [
+        "db_queries",
+        "lf_spans"
+      ],
+      "own_sources": [
+        "app/Services/AgentToolRegistry.php",
+        "app/Services/AgentTraceService.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "A06",
+      "priority": "P1",
+      "area": "Agents",
+      "title": "Reproducible experiments beyond ten guardrail fixtures",
+      "current": "The local unfinished draft has ten deterministic fixtures, hashes and a baseline; live accuracy/groundedness correctly remain not_evaluated.",
+      "missing": "Broader versioned datasets, actual output/evidence assertions, prompt/tool/model/config and code version fingerprint, per-case regression diff and reviewer labels.",
+      "acceptance": "Run the same grounded cases before/after a change; reveal factual regressions rather than equating response_present with accuracy.",
+      "reference_ids": [
+        "lf_experiments",
+        "db_queries"
+      ],
+      "own_sources": [
+        "app/Services/AgentEvaluationService.php",
+        "cli/agent-eval.php",
+        "tests/fixtures/agent-golden.json"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "A07",
+      "priority": "P1",
+      "area": "Agents",
+      "title": "Saved conversation is not full conversational context",
+      "current": "JSON history and admin report-date carry-over exist in draft. Support synthesis is largely per-message; reopening UI text alone does not ground general follow-ups.",
+      "missing": "Bounded actor-owned turn/context selection, entity carry-over and explicit reset, with tool freshness revalidation.",
+      "acceptance": "\u201cThat item\u201d and Tamil follow-ups resolve only within the right chat; New Chat and account switching cannot leak prior context.",
+      "reference_ids": [
+        "ds_sessions",
+        "db_queries"
+      ],
+      "own_sources": [
+        "app/Controllers/AdminController.php",
+        "app/Services/SupportBotService.php",
+        "app/Services/AgentConversationService.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "A08",
+      "priority": "P1",
+      "area": "Agents",
+      "title": "Retrieval precision, ambiguity and local languages",
+      "current": "#249 fixes exact named-collection retrieval; the selector uses limited English tokens/aliases and basic catalogue matching.",
+      "missing": "Typed intent routing, Tamil/alternate spelling fixtures, positive/no-match/ambiguous outcomes and match-reason evidence; never default to unrelated items.",
+      "acceptance": "Customer Ayyappa examples, Tamil queries, empty collections and injection-bearing content all return correct scoped results or clarification.",
+      "reference_ids": [
+        "db_queries",
+        "lf_experiments"
+      ],
+      "own_sources": [
+        "app/Services/AgentContextService.php",
+        "app/Services/SupportBotService.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "A09",
+      "priority": "P1",
+      "area": "Agents",
+      "title": "Governed JSON retention and scalable listing",
+      "current": "Private file permissions, atomic rename and actor checks exist; global lock and filesystem scanning remain.",
+      "missing": "Per-chat contention control, bounded pagination/index projection, retention/export/deletion policy and deployment backup/restore checks without another transcript source of truth.",
+      "acceptance": "Restore a backup and continue the same chat ID; large session counts do not require parsing every transcript on each history request.",
+      "reference_ids": [
+        "ds_sessions",
+        "lf_spans"
+      ],
+      "own_sources": [
+        "app/Services/AgentConversationService.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "S01",
+      "priority": "P1",
+      "area": "Support",
+      "title": "Assigned human handoff with context",
+      "current": "Support creates a ticket and has open/answered/closed states; there is no comparable ownership/assignment transition model.",
+      "missing": "Team/admin assignment, handoff reason, ticket-to-conversation/turn link and a minimal authorized context packet.",
+      "acceptance": "Human owner can see why the agent escalated and reply from verified context; bot/human ownership never conflicts.",
+      "reference_ids": [
+        "cw_assignment",
+        "cw_lifecycle"
+      ],
+      "own_sources": [
+        "app/Services/SupportTicketService.php",
+        "app/Services/SupportBotService.php",
+        "storage/schema/collections.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "S02",
+      "priority": "P1",
+      "area": "Support",
+      "title": "Reopen and response-time lifecycle",
+      "current": "Current ticket state is stored; historical state transitions and response/resolution clocks are not a complete timeline.",
+      "missing": "Opened/first-response/resolved/reopened/snoozed timestamps, event history, waiting owner and overdue queue. Do not assume commercial SLA modules are MIT core.",
+      "acceptance": "Reopened cases restart the correct clock; reports distinguish created-in-period from resolved-in-period.",
+      "reference_ids": [
+        "cw_lifecycle"
+      ],
+      "own_sources": [
+        "app/Services/SupportTicketService.php",
+        "app/Services/AgentToolRegistry.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "S03",
+      "priority": "P1",
+      "area": "Support",
+      "title": "CSAT and outcome denominators",
+      "current": "The unfinished local code adds latest-answer yes/no feedback and a bounded recent sample; it is not full CSAT or verified ticket closure.",
+      "missing": "Separate answer helpfulness, customer-confirmed resolution, ticket state and survey response rate; avoid silent-success or survey duplication.",
+      "acceptance": "Negative feedback remains unresolved; a new question reopens state; response-rate and resolution-rate denominators are visible and distinct.",
+      "reference_ids": [
+        "cw_csat",
+        "cw_survey"
+      ],
+      "own_sources": [
+        "app/Services/AgentEvaluationService.php",
+        "app/Services/AgentConversationService.php",
+        "views/admin/agent-monitoring.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "S04",
+      "priority": "P1",
+      "area": "Support",
+      "title": "Negative-feedback remediation queue",
+      "current": "Not-helpful feedback is saved but does not create an assigned remediation/knowledge-gap workflow.",
+      "missing": "Group unresolved issues by intent/source gap, attach affected evidence and publish policy/content changes through human review.",
+      "acceptance": "A repeated bad recommendation creates a reproducible fixture and reviewable source correction, not automatic unsupervised training.",
+      "reference_ids": [
+        "cw_assignment",
+        "lf_experiments"
+      ],
+      "own_sources": [
+        "app/Services/AgentEvaluationService.php",
+        "app/Controllers/SupportController.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "E01",
+      "priority": "P1",
+      "area": "Enterprise",
+      "title": "Scoped, bounded business-query execution",
+      "current": "Named PHP tools are safer than arbitrary model SQL, but several operations read full collections then filter in PHP.",
+      "missing": "Indexed named query/aggregate contracts, maximum row/response limits, query timing and explicit access scope. Do not copy DB-GPT arbitrary generated SQL.",
+      "acceptance": "Large-order fixtures return accurate scoped totals without unbounded scans; empty data and DB failure stay distinct.",
+      "reference_ids": [
+        "db_queries",
+        "bg_reports"
+      ],
+      "own_sources": [
+        "app/Services/AgentToolRegistry.php",
+        "app/Services/DatabaseService.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "E02",
+      "priority": "P1",
+      "area": "Enterprise",
+      "title": "Evidence-backed permission and instruction regression coverage",
+      "current": "Support/Enterprise permissions and human-reviewed drafts exist; broad prompt-injection, export-role and refusal tests are still thin.",
+      "missing": "Test untrusted retrieved instructions, tool argument tampering, export capabilities and source-poisoning; enforce all critical boundaries in PHP.",
+      "acceptance": "A model or page instruction cannot expand customer/admin scope, run a write tool, expose a foreign session or certify its own correctness.",
+      "reference_ids": [
+        "ds_checkpoints",
+        "lf_experiments"
+      ],
+      "own_sources": [
+        "app/Services/AgentCapabilityPolicy.php",
+        "app/Services/EnterpriseToolRegistry.php",
+        "app/Services/AgentEvaluationService.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "T01",
+      "priority": "P0",
+      "area": "Telemetry",
+      "title": "End-to-end commerce event identity",
+      "current": "Draft SiteTelemetryService counts only cart_add and checkout_initiated; paid orders are reported separately.",
+      "missing": "Correlate product/search/cart/checkout/payment/order/shipment/refund events with event ID, schema version, consent-safe session and server-authoritative paid outcome.",
+      "acceptance": "A retry emits no duplicate purchase; payment success counts only a verified durable order; raw click totals are never sold as conversion rate.",
+      "reference_ids": [
+        "bg_events",
+        "bg_reports"
+      ],
+      "own_sources": [
+        "app/Services/SiteTelemetryService.php",
+        "app/Controllers/CommerceController.php",
+        "app/Services/OrderService.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "T02",
+      "priority": "P1",
+      "area": "Telemetry",
+      "title": "Privacy, sampling and test-traffic separation",
+      "current": "Counters omit PII, but consent-aware measurement and explicit bot/test sample segmentation are incomplete.",
+      "missing": "Keep analytics local-first, honor applicable consent/DNT controls, separate synthetic QA from customer metrics and sample entire traces consistently.",
+      "acceptance": "Disabled analytics sends nothing optional; QA runs cannot inflate customer conversion or support-resolution reports.",
+      "reference_ids": [
+        "oh_privacy",
+        "lf_sampling"
+      ],
+      "own_sources": [
+        "app/Services/SiteTelemetryService.php",
+        "views/layouts/app.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "T03",
+      "priority": "P1",
+      "area": "Telemetry",
+      "title": "Service-level health instead of only chat counters",
+      "current": "There are mail queue, provider, DB and payment services, but no common cross-service evidence and alert view.",
+      "missing": "Correlate remote DB failures/latency, mail enqueue/send/known delivery status, payment callback/reconciliation, media errors and background job retries.",
+      "acceptance": "SMTP accepted is labeled accepted, not inbox delivered; a service failure links to its affected order/request without credentials.",
+      "reference_ids": [
+        "ds_sessions",
+        "db_spans"
+      ],
+      "own_sources": [
+        "app/Services/MailQueueService.php",
+        "app/Services/DatabaseService.php",
+        "app/Services/OrderService.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "C01",
+      "priority": "P0",
+      "area": "Commerce",
+      "title": "Quantity inventory and reservations",
+      "current": "Product stock status and paid-order on-hold handling exist; not an inventory ledger with salable/reserved quantities.",
+      "missing": "Quantity per SKU, atomic reservation/release, movement history, optional source/location and variant inventory.",
+      "acceptance": "Two concurrent attempts for the last item cannot both promise fulfillment; cancellation/refund stock movement happens once.",
+      "reference_ids": [
+        "bg_inventory",
+        "bg_ship"
+      ],
+      "own_sources": [
+        "storage/schema/collections.php",
+        "app/Services/ProductService.php",
+        "app/Services/OrderService.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "C02",
+      "priority": "P0",
+      "area": "Commerce",
+      "title": "Atomic coupon redemption limits",
+      "current": "Coupons already support validity dates, spend and global/per-customer limits; usage is counted from orders rather than atomically reserved.",
+      "missing": "Recheck/reserve usage with concurrency protection inside the correct order/payment workflow; never discard a successfully paid order just because a coupon race is found.",
+      "acceptance": "Concurrent last-redemption tests never exceed the approved limit or create an unrecorded successful payment.",
+      "reference_ids": [
+        "bg_coupon"
+      ],
+      "own_sources": [
+        "app/Services/CouponService.php",
+        "app/Services/OrderService.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "C03",
+      "priority": "P1",
+      "area": "Commerce",
+      "title": "Persistent carts and consented recovery",
+      "current": "CartService holds a PHP session cart, with no durable cart lifecycle/recovery data.",
+      "missing": "Persistent cart IDs/updated timestamp/active-converted-expired state, authenticated merge and opt-in recovery messaging.",
+      "acceptance": "Returning customers recover the correct cart; logged-out and other-customer carts remain private; no unsolicited recovery email is sent.",
+      "reference_ids": [
+        "bg_cart",
+        "bg_marketing"
+      ],
+      "own_sources": [
+        "app/Services/CartService.php",
+        "app/Controllers/CommerceController.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "C04",
+      "priority": "P1",
+      "area": "Commerce",
+      "title": "Per-item partial fulfillment",
+      "current": "Order-level status/courier/tracking exists, not a complete per-item shipped/outstanding ledger.",
+      "missing": "Shipment records with item quantity, source and tracking; partial shipment progress and fulfillment audit.",
+      "acceptance": "An order split into shipments retains accurate remaining quantities and cannot over-ship.",
+      "reference_ids": [
+        "bg_ship",
+        "bg_inventory"
+      ],
+      "own_sources": [
+        "app/Services/OrderService.php",
+        "storage/schema/collections.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "C05",
+      "priority": "P1",
+      "area": "Commerce",
+      "title": "Item-level returns and restocking",
+      "current": "Verified partial/full monetary refund import and GST/order reports already exist. This is NOT a missing-refunds claim.",
+      "missing": "Return authorization/reason, per-item refundable quantity, shipping/tax allocation, restock decision and notification lifecycle.",
+      "acceptance": "A partial returned line changes exact refundable quantity/tax/stock once while retaining gateway evidence and issued-invoice integrity.",
+      "reference_ids": [
+        "bg_refund"
+      ],
+      "own_sources": [
+        "app/Services/OrderService.php",
+        "app/Services/GstRegisterService.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "C06",
+      "priority": "P2",
+      "area": "Commerce",
+      "title": "Rule-based promotions",
+      "current": "Flat/percentage coupons, dates and limits exist; no full catalog/cart-rule condition engine.",
+      "missing": "Prioritized product/category/customer-group conditions and safe stacking rules with deterministic preview.",
+      "acceptance": "Fixture promotion combinations have stable, auditable totals; existing coupons retain behavior.",
+      "reference_ids": [
+        "bg_coupon",
+        "bg_marketing"
+      ],
+      "own_sources": [
+        "app/Services/CouponService.php",
+        "storage/schema/collections.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "C07",
+      "priority": "P2",
+      "area": "Commerce",
+      "title": "Saved shopping preferences",
+      "current": "No wishlist capability was found in the inspected schema/routes.",
+      "missing": "Wishlist/save-for-later and optional variant selection backed by actual demand, with actor ownership.",
+      "acceptance": "A customer cannot view another customer's wishlist; removed products do not break saved lists.",
+      "reference_ids": [
+        "bg_wishlist",
+        "bg_cart"
+      ],
+      "own_sources": [
+        "app/Services/ProjectMapService.php",
+        "storage/schema/collections.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "C08",
+      "priority": "P1",
+      "area": "Commerce",
+      "title": "Customer and product analytics beyond summary counts",
+      "current": "Basic paid sales, refunds, top products, new-user and content-health cards exist or are drafted.",
+      "missing": "Windowed cohort/repeat purchase, AOV, refund/fulfillment trends, search/no-results metrics, exportable drill-downs and source/denominator labels.",
+      "acceptance": "Every card reconciles to orders/events for the same time window; empty data is not an error; no search-ranking claims without a source.",
+      "reference_ids": [
+        "bg_reports",
+        "lf_spans"
+      ],
+      "own_sources": [
+        "app/Services/StoreStatsService.php",
+        "app/Services/SiteInsightsService.php"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    },
+    {
+      "id": "R01",
+      "priority": "P0",
+      "area": "Reviews",
+      "title": "Review delivery and current-head evidence",
+      "current": "CI passes on six PRs; five are drafts. #240 has a real Codex receipt. #243/#245 show explicit Codex code-review quota exhaustion. Sourcery/CodeRabbit completion is not observed.",
+      "missing": "One trusted post-CI dispatcher, draft-capable native settings, actual current-SHA receipts, quota/configuration blocks and idempotent separate command comments.",
+      "acceptance": "Stale CI/forks/bot identity/forged receipts cannot trigger privileged work; a request never becomes a false approval. No token/credits are silently provisioned.",
+      "reference_ids": [],
+      "own_sources": [
+        ".github/workflows/ci.yml",
+        ".github/workflows/branch-pr.yml"
+      ],
+      "classification": "source-derived comparison; absence limited to inspected source"
+    }
+  ]
+}
