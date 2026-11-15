@@ -160,3 +160,23 @@ test('new pull requests are explicitly ready for review rather than drafts',()=>
  assert.match(create,/draft:\s*false/);
  assert.ok(!/draft:\s*true/.test(create));
 });
+test('PR status publication permissions are explicit',()=>{
+ const w=fs.readFileSync(path.join(__dirname,'../.github/workflows/ai-review-evidence.yml'),'utf8');
+ assert.match(w,/pull-requests:\s*write/);
+});
+test('closed PR can be audited but cannot dispatch reviewer commands',()=>{
+ const i=input({auditOnly:true});i.pr.state='closed';const p=load().planReviews(i);
+ assert.equal(p.eligible,true);assert.equal(p.requests.length,0);
+});
+test('status-note permission denial preserves audit evidence and does not claim publication',async()=>{
+ const denied=Object.assign(new Error('Do not echo upstream bodies'),{status:403});
+ const result=await load().publishEvidence(async()=>{throw denied;},245,null,'safe status');
+ assert.deepEqual(result,{status:'not_published',reason:'github_permission',http_status:403});
+});
+test('nonpermission status-note failures are not silently swallowed',async()=>{
+ await assert.rejects(load().publishEvidence(async()=>{throw Object.assign(new Error('unavailable'),{status:500});},245,null,'safe'),/unavailable/);
+});
+test('GitHub API errors carry a safe numeric status without body or token',async()=>{
+ const api=load().createApi('TEST_TOKEN',async()=>({ok:false,status:403,text:async()=>'secret-body'}));
+ await assert.rejects(api('/user'),e=>e.status===403&&!JSON.stringify(e).includes('TEST_TOKEN')&&!e.message.includes('secret-body'));
+});

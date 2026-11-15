@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       pull_request:
-        description: Open same-repository PR number
+        description: Same-repository PR number (closed PRs are audit-only)
         required: true
         type: string
       mode:
@@ -23,7 +23,7 @@ permissions:
   issues: write
   contents: read
   actions: read
-  pull-requests: read
+  pull-requests: write
 
 concurrency:
   # Manual audit and workflow_run must not race a request for the same PR/SHA.

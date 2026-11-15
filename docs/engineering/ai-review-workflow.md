@@ -122,3 +122,14 @@ and `feature/**` implementation branches. This enables review without pretending
 that incomplete work passed validation. Current-head CI, source review and
 affected browser/database tests still gate merge. Existing drafts are marked
 ready only when the owner asks; no code silently bypasses failed checks.
+
+## Status-note publication failures
+
+The first activated workflow correctly classified quota and missing-token blocks,
+but failed while posting its evidence note. The coordinator now explicitly has
+PR-comment write scope, preserves a permission-denied audit in the workflow
+summary, and reports `not_published` with the HTTP status instead of implying a
+comment exists. It still does not suppress server/transport failures or disclose
+upstream response bodies/tokens. A manual read-only audit can inspect a merged
+PR's exact head, but can never request a reviewer on a closed PR. This permits
+post-release verification without manufacturing another PR or approval.
