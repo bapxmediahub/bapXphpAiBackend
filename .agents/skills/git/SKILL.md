@@ -64,6 +64,10 @@ with review credentials. Preserve draft state and human release gates.
 Respect usage limits and missing-app/user-token prerequisites; do not
 reuse unrelated secrets or falsely report a blocked review as passed.
 
+For new source-based comparisons, use `.agents/skills/rea-source-audit/SKILL.md`.
+A review dispatch claim with unknown delivery must not be described as a completed
+request. Inspect it before manual retry; preserve other agents' dirty worktrees.
+
 ## Pull-request readiness
 
 Create new implementation PRs **ready for review**, not as drafts, as directed

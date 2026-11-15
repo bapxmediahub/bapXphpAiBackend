@@ -137,6 +137,23 @@ test('branch and CI configuration have one canonical reviewer-test invocation',(
  assert.equal((ci.match(/node --test tests\/review-automation\.test\.cjs/g)||[]).length,1);
  assert.ok(ci.indexOf('actions/setup-node@v4')<ci.indexOf('node --test tests/review-automation.test.cjs'));
 });
+test('tokenless audit recognizes an authorized human request, not an unrelated forged marker',()=>{
+ const c={user:{id:55,login:'maintainer',type:'User'},author_association:'COLLABORATOR',body:load().marker(245,sha,'sourcery')};
+ let p=load().planReviews(input({actor:null,hasRequestToken:false,comments:[c]}));
+ assert.equal(p.requested.find(r=>r.name==='sourcery').state,'requested_no_current_head_receipt');
+ c.author_association='NONE';p=load().planReviews(input({actor:null,hasRequestToken:false,comments:[c]}));
+ assert.equal(p.requested.length,0);
+});
+test('an interrupted dispatch claim is not presented as confirmed request delivery',()=>{
+ const i=input();i.comments=[{user:i.actor,body:load().marker(245,sha,'sourcery')+'\nPreparing sourcery review request. Delivery is not yet confirmed; this is not approval.'}];
+ const p=load().planReviews(i);assert.equal(p.requested[0].state,'request_claimed_delivery_unknown');
+ assert.ok(load().markdown(245,sha,p).includes('delivery unknown'));
+});
+test('manual and CI audit use one shared coordination lock with metadata permissions',()=>{
+ const w=fs.readFileSync(path.join(__dirname,'../.github/workflows/ai-review-evidence.yml'),'utf8');
+ assert.ok(w.includes('checks: read'));assert.ok(w.includes('issues: write'));
+ assert.ok(w.includes('group: ai-review-coordination'));assert.ok(w.includes('cancel-in-progress: false'));
+});
 test('new pull requests are explicitly ready for review rather than drafts',()=>{
  const workflow=fs.readFileSync(path.join(__dirname,'../.github/workflows/branch-pr.yml'),'utf8');
  const create=workflow.slice(workflow.indexOf('github.rest.pulls.create('));

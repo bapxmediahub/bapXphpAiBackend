@@ -37,17 +37,17 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 374
-  relationships: 272
+  concepts: 376
+  relationships: 273
   by_type:
     blog: 14
     controller: 12
-    doc: 39
+    doc: 40
     image: 89
     route: 129
     schema: 22
     service: 60
-    skill: 10
+    skill: 11
 concepts:
   - id: "blog:benefits-of-rudraksha"
     type: "blog"
@@ -352,8 +352,8 @@ concepts:
     header_image: ""
   - id: "doc:ai-review-workflow"
     type: "doc"
-    title: "AI Review Evidence and Post-CI Coordination"
-    description: "Safe current-commit reviewer coordination with explicit quota, installation and user-token prerequisites."
+    title: "AI Review Evidence Workflow"
+    description: "Trusted post-CI review requests with current-head receipts, explicit quota blocks and no unsafe token fallback."
     resource: "docs/engineering/ai-review-workflow.md"
     tags:
       - "docs"
@@ -582,6 +582,15 @@ concepts:
     tags:
       - "module"
     filename: "razorpay.md"
+    header_image: ""
+  - id: "doc:rea-agent-commerce-gap-audit"
+    type: "doc"
+    title: "REA Agent and Commerce Gap Audit"
+    description: "Source-pinned REA findings across DeepSeek Harness, Langfuse core, Chatwoot core and Bagisto, with native PHP adoption targets."
+    resource: "docs/research/rea-agent-commerce-gap-audit.md"
+    tags:
+      - "docs"
+    filename: "rea-agent-commerce-gap-audit.md"
     header_image: ""
   - id: "doc:remote-db"
     type: "doc"
@@ -4486,6 +4495,13 @@ concepts:
     resource: ".agents/skills/git/SKILL.md"
     tags:
       - "skill"
+  - id: "skill:rea-source-audit"
+    type: "skill"
+    title: "rea-source-audit"
+    description: "Use for evidence-based REA comparisons of open-source agent, support, telemetry or commerce code with this PHP repository."
+    resource: ".agents/skills/rea-source-audit/SKILL.md"
+    tags:
+      - "skill"
   - id: "skill:remotedb"
     type: "skill"
     title: "remotedb"
@@ -4799,6 +4815,9 @@ relationships:
   - from: "controller:SupportController"
     to: "service:SupportToolRegistry"
     relation: "uses"
+  - from: "doc:rea-agent-commerce-gap-audit"
+    to: "doc:ai-review-workflow"
+    relation: "references"
   - from: "route:get"
     to: "controller:PublicController"
     relation: "handled_by"

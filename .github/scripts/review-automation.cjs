@@ -80,7 +80,10 @@ function planReviews(input) {
   if (!SHA.test(pr.head.sha||'') || !Number.isSafeInteger(pr.number)) return {...empty,reason:'invalid_pr_identity'};
   if (run.head_sha!==pr.head.sha) return {...empty,reason:'stale_ci'};
   const plan={...empty,eligible:true,reason:'ready'};
-  const ownMarker = m=>comments.some(c=>c.user?.id===actor?.id && actor?.id!=null && String(c.body||'').includes(m));
+  const ownMarker = m=>comments.find(c=>
+    ((c.user?.id===actor?.id && actor?.id!=null) ||
+     (c.user?.type==='User' && ['OWNER','MEMBER','COLLABORATOR'].includes(c.author_association)))
+    && String(c.body||'').includes(m));
   const batchSent=ownMarker(marker(pr.number,pr.head.sha));
   for (const provider of PROVIDERS) {
     const reviewed=receipt(provider,pr.head.sha,comments,reviews);
@@ -91,8 +94,10 @@ function planReviews(input) {
     if (quotaWarning(provider,[...comments,...quotaComments],now)) {
       plan.blocked.push({name:provider.name,reason:'quota_or_entitlement'});continue;
     }
-    if (batchSent || ownMarker(marker(pr.number,pr.head.sha,provider.name))) {
-      plan.requested.push({name:provider.name,state:'requested_no_current_head_receipt'});continue;
+    const priorRequest=batchSent || ownMarker(marker(pr.number,pr.head.sha,provider.name));
+    if (priorRequest) {
+      const uncertain=/Preparing .* review request|Delivery is not yet confirmed/i.test(String(priorRequest.body||''));
+      plan.requested.push({name:provider.name,state:uncertain?'request_claimed_delivery_unknown':'requested_no_current_head_receipt'});continue;
     }
     if (!hasRequestToken) {
       plan.blocked.push({name:provider.name,reason:'missing_review_request_token'});continue;
@@ -162,7 +167,7 @@ function markdown(number,sha,plan,sent=[]) {
     const r=plan.reviewed.find(r=>r.name===p.name);
     const b=plan.blocked.find(r=>r.name===p.name);
     const q=sent.find(r=>r.name===p.name)||plan.requested.find(r=>r.name===p.name);
-    const state=r ? `Current-head receipt: ${r.state}` : b ? `Blocked: ${b.reason}` : q ? (q.state==='provider_review_in_progress'?'Provider review in progress':'Requested; completion not verified') : plan.reason;
+    const state=r ? `Current-head receipt: ${r.state}` : b ? `Blocked: ${b.reason}` : q ? (q.state==='provider_review_in_progress'?'Provider review in progress':q.state==='request_claimed_delivery_unknown'?'Claim recorded; delivery unknown—inspect before retry':'Requested; completion not verified') : plan.reason;
     return `| ${p.name} | ${state} |`;
   });
   return ['<!-- sps-ai-review-evidence:v1 -->','## AI reviewer evidence (not merge approval)',
@@ -216,6 +221,7 @@ async function run(environment=process.env) {
     const plan=planReviews({repo:REPOSITORY,pr,run,actor,
       hasRequestToken:mode==='request'&&Boolean(environment.REVIEW_REQUEST_TOKEN),comments,reviews,checks,quotaComments});
     if(credentialError) {plan.requests=[];plan.reason=credentialError;}
+    if(!plan.eligible) {console.log(JSON.stringify({pr:number,reason:plan.reason,action:'no_status_change'}));continue;}
     const result=plan.requests.length ? await dispatch(plan,{api,requestApi,repo:REPOSITORY,number,sha:pr.head.sha}) : {sent:[],stopped:null};
     const body=markdown(number,pr.head.sha,plan,result.sent)+(result.stopped?'\n\nStopped: '+result.stopped:'');
     if(environment.GITHUB_STEP_SUMMARY)fs.appendFileSync(environment.GITHUB_STEP_SUMMARY,body+'\n\n');

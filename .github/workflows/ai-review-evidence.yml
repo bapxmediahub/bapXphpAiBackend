@@ -26,7 +26,8 @@ permissions:
   pull-requests: read
 
 concurrency:
-  group: ai-review-${{ github.event.workflow_run.head_branch || inputs.pull_request }}
+  # Manual audit and workflow_run must not race a request for the same PR/SHA.
+  group: ai-review-coordination
   cancel-in-progress: false
 
 jobs:
