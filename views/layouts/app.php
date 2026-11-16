@@ -281,25 +281,12 @@ src="https://www.facebook.com/tr?id=<?= e($__metaPixelId) ?>&ev=PageView&noscrip
 /></noscript>
 <!-- End Meta Pixel Code -->
 <?php endif;
-// Google Site Kit
-$__gaId = $__secrets['google_analytics_id'] ?? '';
-$__adsId = $__secrets['google_ads_id'] ?? '';
-$__gsv = $__secrets['google_site_verification'] ?? '';
-$__gtagSrc = $__gaId ?: $__adsId;
-if ($__gsv !== ''): ?>
-<meta name="google-site-verification" content="<?= e($__gsv) ?>" />
-<?php endif;
-if ($__gtagSrc !== ''): ?>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=<?= e($__gtagSrc) ?>"></script>
-<script>
-window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-<?php if ($__gaId !== ''): ?>gtag('config', '<?= e($__gaId) ?>');<?php endif; ?>
-<?php if ($__adsId !== ''): ?>gtag('config', '<?= e($__adsId) ?>');<?php endif; ?>
-</script>
-<?php endif; ?>
+// The public head and owner status share one validating implementation.
+$__googleTags=new \App\Integrations\GoogleSiteKit\GoogleSiteKitClient(
+    (string)($__secrets['google_analytics_id']??''),(string)($__secrets['google_ads_id']??''),(string)($__secrets['google_site_verification']??''));
+echo $__googleTags->siteVerificationTag();
+echo $__googleTags->gtagCode();
+?>
 <link rel="stylesheet" href="/assets/css/site-motion.css?v=<?= filemtime(__DIR__ . '/../../assets/css/site-motion.css') ?>">
 <script src="/assets/site-motion.js?v=<?= filemtime(__DIR__ . '/../../assets/site-motion.js') ?>" defer></script>
 </head>

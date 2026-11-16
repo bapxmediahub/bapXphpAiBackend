@@ -492,7 +492,6 @@ final class ProjectMapService {
                 $lines[] = '  ' . self::serviceId('PaymentService') . ' --> ' . self::integrationId('StripeClient');
             }
         }
-        $lines[] = '  ' . self::serviceId('SupportBotService') . ' --> ' . self::integrationId('GoogleSiteKitClient');
         if (in_array('generate-project-map', $scan['tools'], true)) {
             $lines[] = '  ' . self::toolId('generate-project-map') . ' --> systematic_map["docs/systematic-map.mmd"]:::data';
         }

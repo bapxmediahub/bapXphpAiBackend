@@ -109,20 +109,25 @@
         </div>
         <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">The pixel base code and PageView event will be injected into the site head automatically.</p>
 
-        <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">Google Site Kit (Analytics, Ads & Search Console)</h2>
-        <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">
-            Enable Google Analytics 4 for SEO insights, Google Ads for conversion tracking, and Search Console verification. Uses a single gtag.js snippet.
-            <a href="https://analytics.google.com/" target="_blank" rel="noopener">Google Analytics</a> &middot;
-            <a href="https://search.google.com/search-console" target="_blank" rel="noopener">Google Search Console</a>
-        </p>
+        <?php $googleTagStatus=(new \App\Integrations\GoogleSiteKit\GoogleSiteKitClient(
+            (string)($secrets['google_analytics_id']??''),(string)($secrets['google_ads_id']??''),(string)($secrets['google_site_verification']??'')))->status(); ?>
+        <section id="google-tags" aria-labelledby="google-tags-title">
+        <h2 id="google-tags-title" style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">Google tags — configuration only</h2>
+        <p>These fields place supported Google tags on public pages. They do not connect reporting OAuth, verify Search Console ownership or enable Merchant Center/YouTube Shopping.</p>
         <div class="admin-form__row">
-            <label>GA4 Measurement ID<input name="google_analytics_id" value="<?= e($secrets['google_analytics_id']??'') ?>" placeholder="G-XXXXXXXXXX"></label>
-            <label>Google Ads ID<input name="google_ads_id" value="<?= e($secrets['google_ads_id']??'') ?>" placeholder="AW-XXXXXXXXX"></label>
+            <label>GA4 Measurement ID / Google tag ID<input name="google_analytics_id" value="<?= e($secrets['google_analytics_id']??'') ?>" placeholder="G-XXXXXXXXXX" maxlength="67" spellcheck="false"><small>Use G- or an existing GT- ID, not a script or GTM container.</small></label>
+            <label>Google Ads conversion ID<input name="google_ads_id" value="<?= e($secrets['google_ads_id']??'') ?>" placeholder="AW-123456789" maxlength="23" spellcheck="false"><small>AW- followed by digits; an event conversion label is not a tag ID.</small></label>
         </div>
         <div class="admin-form__row">
-            <label>Search Console Verification<input name="google_site_verification" value="<?= e($secrets['google_site_verification']??'') ?>" placeholder="google-site-verification=xxxxxxxxxx"></label>
+            <label>Verification token<input name="google_site_verification" value="<?= e($secrets['google_site_verification']??'') ?>" placeholder="Content value from the verification meta tag" maxlength="512" spellcheck="false"><small>Paste only the content token, not the complete meta tag or google-site-verification= DNS assignment.</small></label>
         </div>
-        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Google Analytics, Ads conversion, and Search Console meta tags are injected into the site head only when configured.</p>
+        <ul aria-label="Google configuration status" style="padding-left:1.25rem;line-height:1.7">
+        <?php foreach(['analytics'=>'Analytics tag','ads'=>'Ads tag','search_console'=>'Verification token'] as $key=>$label): $state=$googleTagStatus[$key]['configuration']; ?>
+            <li data-google-setting="<?= e($key) ?>" data-google-configuration="<?= e($state) ?>"><?= e($label) ?>: <?= e(['missing'=>'not configured','invalid'=>'invalid saved value; it is not rendered','configured'=>'valid format; external verification still required'][$state]) ?></li>
+        <?php endforeach; ?>
+        </ul>
+        <p><strong>Reporting is not connected.</strong> Verify actual data in <a href="https://analytics.google.com/" target="_blank" rel="noopener noreferrer">Analytics</a>, <a href="https://ads.google.com/" target="_blank" rel="noopener noreferrer">Ads</a> or <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer">Search Console</a>; use <a href="https://tagassistant.google.com/" target="_blank" rel="noopener noreferrer">Tag Assistant</a> to inspect tag collection. A saved value is not a successful connection.</p>
+        </section>
 
         <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">SEO Defaults</h2>
         <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">

@@ -1,6 +1,10 @@
 <?php
 // First matching group owns the source path. No live records, credentials or issue states.
 $rules = [
+ 'google-tags'=>['sources'=>['integrations/google-site-kit/*'],
+  'dependencies'=>['views/layouts/app.php','views/admin/dashboard.php','views/admin/integrations.php'],
+  'references'=>['docs/pages/integrations.md','content/help/admin/settings.md','.agents/skills/frontend-php/SKILL.md']],
+
  'sales-channels'=>['sources'=>['app/Services/MerchantFeedService.php','cli/merchant.php','views/admin/google-merchant.php','views/public/merchant-feed.php'],
   'dependencies'=>['app/Services/ProductService.php','app/Services/SettingsService.php','app/Services/MediaService.php'],
   'references'=>['docs/google-sales-channels.md','content/help/admin/catalogue.md','.agents/skills/bapxphp-cli/SKILL.md']],
