@@ -84,3 +84,18 @@ data. `--json` prints a machine-readable comparison;
 `--write` creates an optional ignored experiment JSON in
 `storage/agent-evals/`. GitHub CI runs the same deterministic gate.
 Fixture changes and baseline changes must be reviewed together with evidence.
+
+## Read-only Google product channel
+
+`merchant:check [--json|--schema]` and `merchant:feed` delegate to
+MerchantFeedService, the same projection used by the owner channel page and
+public XML. Check uses the operation/schema/read-only JSON envelope; feed emits
+only allowlisted public product XML. Do not interpret success as Google
+approval or YouTube eligibility. There is no Google upload, DB migration,
+credential mutation or MCP transport implied by these commands.
+
+Follow the shared-domain pattern reviewed in WordPress's Abilities skill and
+Shopify Shop CLI: business rules live once in a PHP service, interfaces expose
+that same operation. A new CLI/tool output needs a schema, truthful errors and
+source-doc tests. Generic developer shell/SQL/file commands are never eligible
+for automatic exposure to runtime agents or MCP clients.

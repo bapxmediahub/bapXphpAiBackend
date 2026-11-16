@@ -44,18 +44,18 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 415
-  relationships: 328
+  concepts: 419
+  relationships: 333
   by_type:
     blog: 16
     controller: 12
-    doc: 48
+    doc: 49
     image: 89
     operator_guide: 12
-    route: 134
+    route: 136
     runtime_instruction: 6
     schema: 22
-    service: 64
+    service: 65
     skill: 12
 concepts:
   - id: "blog:benefits-of-rudraksha"
@@ -557,6 +557,15 @@ concepts:
     tags:
       - "module"
     filename: "google-oauth.md"
+    header_image: ""
+  - id: "doc:google-sales-channels"
+    type: "doc"
+    title: "Google Product Feed and Channel Readiness"
+    description: "Native product export, owner preflight and the separate Merchant Center and YouTube setup boundaries."
+    resource: "docs/google-sales-channels.md"
+    tags:
+      - "docs"
+    filename: "google-sales-channels.md"
     header_image: ""
   - id: "doc:gst-commerce"
     type: "doc"
@@ -2436,6 +2445,23 @@ concepts:
       - "MailQueueService"
       - "AuthService"
     view: "admin/mailbox"
+  - id: "route:get__admin_google_merchant"
+    type: "route"
+    title: "GET /admin/google-merchant"
+    description: "admin.merchant"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/admin/google-merchant"
+    controller: "AdminController@googleMerchant"
+    services:
+      - "MerchantFeedService"
+      - "ProductService"
+      - "SettingsService"
+      - "AuthService"
+    view: "admin/google-merchant"
   - id: "route:get__admin_integrations"
     type: "route"
     title: "GET /admin/integrations"
@@ -2890,6 +2916,22 @@ concepts:
     controller: "PublicController@docs"
     services: []
     view: "public/blog"
+  - id: "route:get__feeds_google_products_xml"
+    type: "route"
+    title: "GET /feeds/google-products.xml"
+    description: "merchant.feed"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/feeds/google-products.xml"
+    controller: "PublicController@merchantFeed"
+    services:
+      - "MerchantFeedService"
+      - "ProductService"
+      - "SettingsService"
+    view: "public/merchant-feed"
   - id: "route:get__forgot_password"
     type: "route"
     title: "GET /forgot-password"
@@ -4609,6 +4651,14 @@ concepts:
     tags:
       - "code"
       - "service"
+  - id: "service:MerchantFeedService"
+    type: "service"
+    title: "MerchantFeedService"
+    description: "Service: MerchantFeedService"
+    resource: "app/Services/MerchantFeedService.php"
+    tags:
+      - "code"
+      - "service"
   - id: "service:OrderService"
     type: "service"
     title: "OrderService"
@@ -5017,6 +5067,9 @@ relationships:
     to: "service:MediaService"
     relation: "uses"
   - from: "controller:AdminController"
+    to: "service:MerchantFeedService"
+    relation: "uses"
+  - from: "controller:AdminController"
     to: "service:OrderService"
     relation: "uses"
   - from: "controller:AdminController"
@@ -5146,6 +5199,9 @@ relationships:
     to: "service:ContactService"
     relation: "uses"
   - from: "controller:PublicController"
+    to: "service:MerchantFeedService"
+    relation: "uses"
+  - from: "controller:PublicController"
     to: "service:ProductService"
     relation: "uses"
   - from: "controller:PublicController"
@@ -5243,6 +5299,9 @@ relationships:
     relation: "explains"
   - from: "operator_guide:catalogue"
     to: "service:CouponService"
+    relation: "explains"
+  - from: "operator_guide:catalogue"
+    to: "service:MerchantFeedService"
     relation: "explains"
   - from: "operator_guide:catalogue"
     to: "service:ProductService"
@@ -5427,6 +5486,9 @@ relationships:
   - from: "route:get__admin_email_outbox"
     to: "controller:AdminController"
     relation: "handled_by"
+  - from: "route:get__admin_google_merchant"
+    to: "controller:AdminController"
+    relation: "handled_by"
   - from: "route:get__admin_integrations"
     to: "controller:AdminController"
     relation: "handled_by"
@@ -5515,6 +5577,9 @@ relationships:
     to: "controller:PublicController"
     relation: "handled_by"
   - from: "route:get__docs"
+    to: "controller:PublicController"
+    relation: "handled_by"
+  - from: "route:get__feeds_google_products_xml"
     to: "controller:PublicController"
     relation: "handled_by"
   - from: "route:get__forgot_password"

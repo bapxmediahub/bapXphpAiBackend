@@ -63,3 +63,13 @@ Settings → System Health is a read-only authenticated view of the serving PHP
 process, required extensions and configured database engine/version. It does
 not show a public phpinfo dump or mutate hosting settings. See
 `runtime-requirements.md` and the Settings operator guide before any change.
+
+## Google catalogue readiness
+
+Commerce → Google & YouTube reads the existing catalogue, shows basic feed
+inclusions/exclusions and gives the XML URL for Merchant Center scheduled fetch.
+Use its correction link to select the existing product in the normal editor;
+opening the link does not save or duplicate a product. The readiness page is
+read-only and works without JavaScript, while the existing product editor uses
+JavaScript to prefill its form. Google account approval and YouTube eligibility
+remain separate, unverified external steps. See `google-sales-channels.md`.

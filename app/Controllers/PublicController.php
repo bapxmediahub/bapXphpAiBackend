@@ -216,6 +216,20 @@ final class PublicController extends BaseController {
         $this->render('public/checkout', ['items' => $items, 'total' => $this->cartTotal($items), 'secrets' => $secrets, 'addresses' => $addresses, 'razorpayReady' => $razorpayReady, 'settings' => $settings]);
     }
     
+    /** Public export contains only product listing fields, never admin diagnostics or credentials. */
+    public function merchantFeed(): void {
+        $this->requireModule('shop');
+        try {
+            $service=new \App\Services\MerchantFeedService();$merchantXml=$service->xml($service->inspect());
+            header('Content-Type: application/rss+xml; charset=UTF-8');
+            header('Cache-Control: no-cache');header('X-Content-Type-Options: nosniff');
+            require app_path('views/public/merchant-feed.php');
+        }catch(\Throwable){
+            http_response_code(503);header('Content-Type: application/json; charset=UTF-8');header('Cache-Control: no-store');
+            echo json_encode(['error'=>'Catalogue feed temporarily unavailable']);
+        }
+    }
+
     public function sitemap(): void {
         header('Content-Type: application/xml; charset=utf-8');
         $base = rtrim($this->siteUrl('/'), '/');

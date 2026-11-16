@@ -105,3 +105,5 @@ before opening implementation issues.
 - Operator guide metadata is indexed as `operator_guide`; source content remains in `content/help/admin/` behind authenticated application rendering.
 
 - [Native runtime requirements](runtime-requirements.md): private System Health, CLI/CI version evidence and migration boundaries.
+
+- [Google sales channels](google-sales-channels.md): current native product-feed/preflight commands and separate Merchant/YouTube onboarding requirements.

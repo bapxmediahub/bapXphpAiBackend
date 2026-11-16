@@ -14,8 +14,8 @@
         },
         "commerce": {
             "source_sha256": "ddb6bf29a16d2fae56cbc2ccb48bf85e376dcc42ca2e3794ab1891f05fc6be65",
-            "references_sha256": "046862c4149a0e42f6b018755411726301a6c36bbe5f0d1fb1d59b07ee3b427f",
-            "review_note": "Order/product/GST/payment sources are unchanged. Shared backend skill runtime minimum and DB-vendor distinction add deployment diagnostics only, not financial or inventory behavior. Existing order/GST/catalog references still describe the original business source."
+            "references_sha256": "6c90f2f43e296665cf8c5127013b494ae635da34ad6aa198e02447cfe3b88533",
+            "review_note": "ProductService and checkout business logic are unchanged. Catalogue module docs now describe the read-only projection that shares current pricing/visibility. Admin products accepts a selected existing ID without saving; exact browser checks retain original field content rather than rewriting its whitespace."
         },
         "content": {
             "source_sha256": "df9530c1fd85ed913b132aa51d3b04ad465cf1c09dc7fdfb0ae68d8b52edf489",
@@ -23,14 +23,14 @@
             "review_note": "Reviewed original SeoService and BlogController override paths plus resolved local/persistent image contracts. Canonical/OG/organization defaults now use configured APP_URL, valid explicit overrides remain, bad URL schemes/local missing images fall back safely, and product schema follows in_stock/active and resolved price. Six regressions cover host/request forms, overrides/noindex, real image paths, stock/slug encoding and inline JSON-LD safety."
         },
         "foundation": {
-            "source_sha256": "84107385012616437298affc2636688e23ede6c9c0667d9dae5424708ae9893a",
+            "source_sha256": "61af01c9befd7da78cd49f75ad850fac8408f7505a85c90dfa307bacbb02b46d",
             "references_sha256": "d76e858956e104ebfb1ee9e2db961be92fbf21cd8e7e3e21240f75e39560e358",
-            "review_note": "Reconciled verified deployment guide correction from #275 with native runtime requirements. Preserved immediate SMTP, bounded due-pending CLI and actual Playwright release instructions; added stable PHP8.3/MySQL8.4 diagnostics without DB migration. Reviewed original controller/service/CLI and both source changes; refreshed only the affected source/reference fingerprint."
+            "review_note": "Inspected existing AdminController auth, PublicController shop gate, front-controller allowlist and configured origin. New GET routes extend the current PHP architecture; operational failures are 503 not a fabricated empty feed. DatabaseService, connection configuration and schema remain unchanged. No claim of Google authorization or MCP transport completion."
         },
         "interface": {
-            "source_sha256": "0339b4650b657aa43c6f79035ae2288d1f5fc1f8901a702de302c3559011b441",
-            "references_sha256": "336720c84c39287c17a1c79a46a785b477f376deeeca312ae9f6ca21e2faa056",
-            "review_note": "Reviewed System Health template and actual admin layout/nav. Uses bounded sanitized facts, native refresh/help links, responsive two-to-one column layout and read-only status; no script/provider install or fake green score. UI doc/skill explains CLI-versus-web and unknown states."
+            "source_sha256": "3274f600036770fe571fdcb61c2f6481b7ad40c377f088611f1eec5e7d4f8e02",
+            "references_sha256": "105b5c2d3b288763e6bf21768ffa12df8fb278bc77deba805b2a18b8f3838a0b",
+            "review_note": "Compared the new native owner menu/table/stages and existing product-edit selection with durable admin guidance. Four owner/guest desktop/mobile/no-JS browser cases and two public feed parity cases passed. Screenshots show reachable controls and no horizontal overflow; approval/connection states stay explicitly unverified and no account/checkout writes occur."
         },
         "mail": {
             "source_sha256": "caed5f4ccf26b2e3315bc122e0568f79a4a25a451cf1bfda017c53c5ac3866d4",
@@ -43,14 +43,19 @@
             "review_note": "Media storage/delete sources are unchanged. Shared architecture and admin skill now describe private System Health without exposing paths or modifying files; existing media verification/permissions contracts remain unchanged."
         },
         "operator-help": {
-            "source_sha256": "b856dc95fb73b6ff856659a865a0d970f9c69b1e8e6d7f7b370a263fd111e295",
-            "references_sha256": "9b5bf6e8e1b6c39ff248367dc5753f659766ce0ce7b7cc3b491b6b1ecfbfac0d",
-            "review_note": "Compared actual RuntimeHealthService collect/assess, GET-only AdminController route and server-rendered System Health controls with Settings guide and fixed manifest. Explicit PHP/vendor/version/unknown boundaries, CLI-versus-web distinction, no migration and no outage certification are documented; guide links/dependencies reference actual files."
+            "source_sha256": "1beafd00e9409686a2c4be8055852634539c9fb8c738238f807503df76e973f7",
+            "references_sha256": "a44929d8b1c9c2e147cbdaa991afa40c7212f0ff65996ff554ec20f3e8827cc7",
+            "review_note": "Compared catalogue operator guidance with the fixed MerchantFeedService, actual public/admin route wiring and selected-record editor path. The guide distinguishes feed output, Google processing and YouTube eligibility, and adds only real correction/navigation links. Shared ProductService remains authoritative and no private agent prompt or database mutation is introduced."
+        },
+        "sales-channels": {
+            "source_sha256": "1f2cd451f764c9d2b1a0b90b1454ac54fbf9a1130973f86749df0510b8eef244",
+            "references_sha256": "a2da8b1b3eeede81b07a08d009d7fcc3a261d6979b0508353c47ee87a1b2345e",
+            "review_note": "Reviewed service/XML/CLI/UI against ProductService offer and visibility behavior plus current primary Google product-source and invited-creator docs. Verified explicit identifiers only, valid URL/image checks, safe XML, unknown external approval and no credential/account actions. Public browser samples match real prices/images; local missing media is not labelled a production defect."
         },
         "workflow": {
-            "source_sha256": "cbb72aa11e810e1a3dcca0fea0a8edf03d1419bdecedee5b2d4e8c15fb2186d4",
-            "references_sha256": "732e81f2fecefea889a77307e78bcc7c2c2ddc48929c26fba6c4e07e2e38de01",
-            "review_note": "Reviewed CLI dispatch/options and CI source. Primary PHP8.3 + isolated MySQL8.4 strict runtime check, plus PHP8.4/8.5 compatibility jobs, match declared target. Test mode leaves DB unknown; no production secrets or destructive command. CLI help and durable runtime guide match exact behavior."
+            "source_sha256": "4c57abd5180e20b25d15fc66e664083f9501d719c6305020a94072a6f6e0ca86",
+            "references_sha256": "ca5db389c8bcb08c14953a650a4ce35c256bdbde01f97b79d741c65f64e9610f",
+            "review_note": "Reviewed native CLI dispatch and structured contract against the pinned WordPress shared-core skill and Shopify CLI reference. Check/schema/feed reuse one PHP service; no shell/SQL tool is exposed to runtime agents. Added explicit sales-channel source dependencies and current README discovery; issue/status stays in GitHub."
         }
     }
 }

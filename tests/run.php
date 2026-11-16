@@ -782,6 +782,81 @@ $tests['deployment guide uses current bounded mail CLI and real audit surfaces']
     assertTrue(str_contains($doc,'SMTP acceptance is not inbox receipt'),'Transport result is not recipient verification');
 };
 
+$tests['merchant feed uses public product facts and exact shared offer pricing without private fields'] = static function (): void {
+    $row=['id'=>'fixture-merchant-a','slug'=>'தமிழ் Pendant','name'=>'Copper & Gold <Pendant>','description'=>'<p>Real item &amp; description.</p>',
+        'price'=>1000,'offer_price'=>850,'stock_status'=>'in_stock','image_url'=>'/assets/images/blog/order-products.webp',
+        'supplier_cost'=>21,'customer_email'=>'private@example.invalid','secret'=>'never-export'];
+    $service=new \App\Services\MerchantFeedService(new \App\Services\ProductService(),'https://configured.example');
+    $r=$service->inspect([$row]);
+    assertSame(1,$r['exported_count'],'Valid existing public record can enter feed');
+    assertSame('fixture-merchant-a',$r['items'][0]['id'],'Existing stable ID is preserved');
+    assertSame('850.00 INR',$r['items'][0]['price'],'Feed matches ProductService current payable price');
+    assertSame('https://configured.example/product/'.rawurlencode($row['slug']),$r['items'][0]['link'],'Configured origin and encoded existing slug');
+    assertSame('in_stock',$r['items'][0]['availability'],'Google stock vocabulary from real record');
+    assertSame('unverified',$r['merchant_approval'],'Local correctness is not Merchant account approval');
+    assertSame('eligibility_and_linking_required',$r['youtube_status'],'Feed alone is not YouTube shopping');
+    assertTrue(!isset($r['items'][0]['identifier_exists']),'Unknown identifiers never turn into an invented no-identifier assertion');
+    $xml=$service->xml($r);$document=new DOMDocument();assertTrue($document->loadXML($xml),'RSS is well-formed');
+    assertSame('http://base.google.com/ns/1.0',$document->getElementsByTagNameNS('http://base.google.com/ns/1.0','id')->item(0)->namespaceURI,'Google feed namespace');
+    assertTrue(!str_contains($xml,'private@example.invalid')&&!str_contains($xml,'supplier_cost')&&!str_contains($xml,'never-export'),'Only approved public catalogue fields are exported');
+};
+
+$tests['merchant feed excludes hidden draft invalid and duplicate records without overwriting source'] = static function (): void {
+    $base=['id'=>'merchant-fixture','slug'=>'product','name'=>'Product','description'=>'Description','price'=>100,'stock_status'=>'in_stock','image_url'=>'/assets/images/blog/order-products.webp'];
+    $rows=[$base,$base+['irrelevant'=>'duplicate'],array_replace($base,['id'=>'hidden','status'=>'hidden']),
+        array_replace($base,['id'=>'draft','stock_status'=>'draft']),array_replace($base,['id'=>'bad-price','price'=>0]),
+        array_replace($base,['id'=>'bad-image','image_url'=>'javascript:alert(1)']),array_replace($base,['id'=>'missing-image','image_url'=>'/assets/images/not-present-fixture.png']),
+        array_replace($base,['id'=>'placeholder','image_url'=>'data:image/svg+xml,fake']),array_replace($base,['id'=>'out','stock_status'=>'out_of_stock'])];
+    $before=$rows;$r=(new \App\Services\MerchantFeedService(new \App\Services\ProductService(),'https://configured.example'))->inspect($rows);
+    assertSame($before,$rows,'Inspection never changes catalogue rows');
+    assertSame(['merchant-fixture','out'],array_column($r['items'],'id'),'Only unambiguous valid public records exported');
+    assertSame(7,$r['excluded_count'],'Every skipped record accounted for');
+    assertSame('out_of_stock',$r['items'][1]['availability'],'Unavailable stock remains accurately represented');
+};
+
+$tests['merchant feed refuses untrusted origin and never applies expired offer or fabricates GTIN'] = static function (): void {
+    $denied=false;try{new \App\Services\MerchantFeedService(new \App\Services\ProductService(),'https://user:pass@example.invalid');}catch(InvalidArgumentException){$denied=true;}
+    assertTrue($denied,'Credential-bearing origin rejected');
+    $products=new \App\Services\ProductService(now:new DateTimeImmutable('2026-11-16T10:00:00+05:30'));
+    $row=['id'=>'expired','slug'=>'expired','name'=>'Expired offer','description'=>'Actual item','price'=>100,'offer_price'=>80,'offer_ends_at'=>'2026-11-15','stock_status'=>'active','image_url'=>'/assets/images/blog/order-products.webp'];
+    $r=(new \App\Services\MerchantFeedService($products,'https://configured.example'))->inspect([$row]);
+    assertSame('100.00 INR',$r['items'][0]['price'],'Expired offers use the same shared price implementation');
+    assertTrue(!isset($r['items'][0]['gtin'])&&!isset($r['items'][0]['brand']),'Identity metadata is not guessed');
+    assertTrue(in_array('identifiers_need_review',$r['rows'][0]['warnings'],true),'Identifier gap is visible');
+};
+
+$tests['merchant routes CLI and guidance are real and do not require database migration'] = static function (): void {
+    $routes=\App\Services\ProjectMapService::registry()['routes'];
+    foreach(['/feeds/google-products.xml'=>'PublicController@merchantFeed','/admin/google-merchant'=>'AdminController@googleMerchant'] as $path=>$action){
+        $found=array_values(array_filter($routes,static fn($r)=>$r['path']===$path));assertSame(1,count($found),'Exactly one read-only route '.$path);
+        assertSame('GET',$found[0]['method'],'No mutation route for readiness/feed');assertSame($action,$found[0]['controller'],'Extends existing controllers');
+    }
+    assertTrue(is_file(app_path('views/admin/google-merchant.php')),'Real channel screen exists');
+    assertTrue(str_contains(fileRead('index.php'),"'/feeds/google-products.xml'"),'Front controller dispatches the real XML route');
+    assertTrue(str_contains(fileRead('views/layouts/admin.php'),'Google &amp; YouTube'),'Reachable menu');
+    $lines=[];$code=1;exec('cd '.escapeshellarg(app_path()).' && BAPX_TEST_MODE=1 ./bapXphp merchant:check --json 2>&1',$lines,$code);
+    assertSame(0,$code,'Read-only CLI works without network in fixture mode');
+    $j=json_decode(implode("\n",$lines),true);assertSame('merchant.catalogue.readiness',$j['operation']??null,'Machine readable operation contract');assertSame(true,$j['read_only']??null,'No writes implied');
+};
+
+$tests['merchant metadata keeps explicit identifiers and serializes hostile Unicode as well formed XML'] = static function (): void {
+    $s=new \App\Services\MerchantFeedService(new \App\Services\ProductService(),'https://configured.example');
+    $base=['id'=>'identifiers','slug'=>'item','name'=>'Real item','description'=>"Actual \u{FFFF} item\0 text",'price'=>100,'stock_status'=>'in_stock','image_url'=>'/assets/images/blog/order-products.webp'];
+    $r=$s->inspect([$base+['gtin'=>'4006381333931','brand'=>'Actual Brand','mpn'=>'ABC-10','condition'=>'new']]);
+    assertSame('4006381333931',$r['items'][0]['gtin'],'Real valid supplied GTIN retained');
+    assertSame('Actual Brand',$r['items'][0]['brand'],'Recorded brand not store-name substitution');
+    $xml=$s->xml($r);$old=libxml_use_internal_errors(true);$doc=new DOMDocument();$ok=$doc->loadXML($xml);libxml_clear_errors();libxml_use_internal_errors($old);
+    assertTrue($ok,'Invalid XML scalar characters do not break all products');
+    $explicit=$s->inspect([$base+['identifier_exists'=>false]]);assertSame('no',$explicit['items'][0]['identifier_exists'],'Only explicit no-identifiers emits no');
+    $bad=$s->inspect([$base+['gtin'=>'4006381333932']]);assertTrue(!isset($bad['items'][0]['gtin']),'Bad checksum never exported');
+    $private=$s->inspect([array_replace($base,['image_url'=>'https://name:secret@images.example/picture.jpg'])]);assertSame(0,$private['exported_count'],'Credential-bearing image is not public output');
+};
+
+$tests['merchant product correction link selects actual record rather than an empty new-product form'] = static function (): void {
+    $source=fileRead('app/Controllers/AdminController.php');$start=strpos($source,'public function products()');$end=strpos($source,'public function saveProduct',$start);$method=substr($source,$start,$end-$start);
+    assertTrue(str_contains($method,"\$_GET['edit']")&&str_contains($method,'$draft = $item'),'Existing editor accepts the explicit record selected from preflight');
+};
+
 $tests['each agent session creates one private JSON file and no MySQL table'] = static function (): void {
     $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
     assertTrue(mkdir($root, 0700), 'Private test directory exists');
