@@ -11,7 +11,8 @@ $rules = [
 
  'agents'=>['sources'=>['app/Services/Agent*.php','app/Services/*ToolRegistry.php','app/Services/Support*.php','app/Services/Ai*.php','app/Controllers/SupportController.php','.bapX/*','cli/agent-*.php','views/admin/agent*.php'],
   'references'=>['docs/agent-observability.md','docs/runtime-agents.md','docs/agent-tool-contracts.md','.agents/skills/backend-php-mysql/SKILL.md']],
- 'mail'=>['sources'=>['app/Services/*Mail*.php','app/Services/Smtp*.php','views/admin/mailbox.php'],
+ 'mail'=>['sources'=>['app/Services/*Mail*.php','app/Services/Smtp*.php','views/admin/mailbox.php','views/admin/email-templates.php'],
+  'dependencies'=>['app/Controllers/AuthController.php','app/Controllers/AccountController.php','app/Controllers/AdminController.php'],
   'references'=>['docs/email-setup.md','.agents/skills/backend-php-mysql/SKILL.md']],
  'content'=>['sources'=>['app/Services/Blog*.php','app/Services/SeoService.php','app/Services/MarkdownRenderer.php','app/Controllers/BlogController.php','views/public/blog*.php','views/admin/blog*.php','content/blog/*'],
   'references'=>['docs/pages/blog.md','docs/modules/content-and-seo.md','.agents/skills/docs/SKILL.md']],

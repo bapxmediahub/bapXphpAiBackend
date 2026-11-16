@@ -36,3 +36,19 @@ Main files: `AuthController.php`, `AuthService.php`, `EnvService.php`, `PublicCo
 - Registration signs the new customer in and returns to `/`; password sign-in has the separate dashboard redirect above.
 - Users and addresses stored in MySQL via `DatabaseService` (not JSON files).
 - Schema defined in `storage/schema/collections.php`.
+
+## Customer mail events
+
+Successful manual registration and first-time persisted Google customer creation
+share `MailQueueService::enqueueWelcome` with a stable per-account signup identity.
+Google welcome additionally requires the provider's verified-email flag. Existing
+customer sign-ins do not resend a welcome or produce a routine login email.
+The configured owner mailbox is not the customer recipient. No welcome backfill
+is run when this code is deployed.
+
+Password recovery emails its one-time link; successful recovery completion and
+successful My Profile password changes use the shared security template. Profile
+changes notify only after the existing expected-hash compare-and-swap succeeds,
+to the verified account record. A mail error does not undo the completed password
+change. Rejected/stale attempts do not send. Never expose a reset token in preview
+or alter a test customer's password to verify an email layout.

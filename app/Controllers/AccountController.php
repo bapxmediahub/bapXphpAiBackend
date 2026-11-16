@@ -61,6 +61,13 @@ final class AccountController extends BaseController {
         } elseif ($store->patchUser((string)$record['id'], PasswordResetService::passwordFields($new, new \DateTimeImmutable()), 'password_hash', $hash)) {
             session_regenerate_id(true);
             $_SESSION['user']['must_change_password'] = false;
+            // Notify the verified account only after the password CAS succeeds.
+            // Email failure must not undo or misrepresent a completed security change.
+            $recipient = (string)($record['email'] ?? '');
+            if (filter_var($recipient, FILTER_VALIDATE_EMAIL)) {
+                try { (new \App\Services\MailQueueService())->enqueueTemplate('password_changed', [], $recipient); }
+                catch (\Throwable) { error_log('Password change security notice could not be queued.'); }
+            }
             $this->flash('Password changed.', 'success');
         } else {
             $this->flash('The password changed in another request. Please try again.', 'error');

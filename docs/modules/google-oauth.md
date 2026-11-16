@@ -31,3 +31,14 @@ Main files: `GoogleOAuthClient.php`, `AuthController.php`, `views/admin/integrat
   - **customer** → `/account/dashboard`
 - New Google-authenticated users are upserted into the MySQL `users` collection via `DatabaseService` with role `customer`.
 - Existing users (matched by email) retain their previously assigned role.
+
+## New-account welcome versus returning sign-in
+
+After a new customer is successfully persisted, a provider-verified email may
+receive the same deduplicated welcome used by manual registration. Matching an
+existing account or signing in as admin does not send a customer welcome. Delivery
+uses the verified customer's own email, not the configured owner notification
+address. The signup identity prevents repeated event calls producing duplicate
+welcomes; SMTP acceptance still needs separate receiving-mailbox confirmation.
+No login scopes, database connection or stored recipient configuration changes
+are required for this event parity.

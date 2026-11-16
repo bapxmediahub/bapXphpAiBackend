@@ -130,6 +130,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
             </div>
             <button type="button" class="admin-nav-toggle" data-target="menu-email" aria-controls="menu-email" aria-expanded="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>Email<svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg></button>
             <div class="admin-submenu" id="menu-email">
+                <a data-mail-templates-nav href="/admin/email-templates" class="<?= $agentNavPath==='/admin/email-templates'?'active':'' ?>">Templates &amp; triggers</a>
                 <a href="/admin/email-inbox" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/email-inbox') === 0 ? 'active' : '') ?>">Inbox</a>
                 <a href="/admin/email-outbox" class="<?= ($agentNavPath === '/admin/email-outbox' && ($_GET['type'] ?? '') !== 'newsletter' ? 'active' : '') ?>">Outbox</a>
                 <a href="/admin/email-outbox?type=newsletter" class="<?= $agentNavPath === '/admin/email-outbox' && ($_GET['type'] ?? '') === 'newsletter' ? 'active' : '' ?>">Newsletters</a>
@@ -203,7 +204,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
                 'settings'=>'Site Settings','integrations'=>'Integrations','agent'=>'Enterprise Agent','monitoring'=>'Agent Monitoring',
                 'backups'=>'Backups','audit-log'=>'Audit Log',
                 'contact-submissions'=>'Contacts','support-tickets'=>'AI Support Tickets',
-                'email-inbox'=>'Email Inbox','email-outbox'=>'Email Outbox',
+                'email-templates'=>'Email Templates','email-inbox'=>'Email Inbox','email-outbox'=>'Email Outbox',
                 'appearance'=>'Logo & Favicon','media'=>'Media Library',
                 'environment'=>'Environment','developer'=>'Developer',
                 'project-map'=>'Project Map','contact_submissions'=>'Contacts',

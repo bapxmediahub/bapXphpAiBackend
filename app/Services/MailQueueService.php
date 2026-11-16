@@ -10,8 +10,8 @@ final class MailQueueService {
      * 44px tall — most transactional mail is read on a phone, and anything under 14px
      * is unreadable there.
      *
-     * Structure is nested presentation tables with inline styles. Email clients strip
-     * <style> blocks, ignore flexbox and grid, and Outlook drops margins on <div>, so
+     * Structure is nested presentation tables with inline styles. Email-client support varies; inline/table fallbacks are retained instead of
+     * depending on layout-heavy CSS, so
      * the site's stylesheet cannot be reused directly. The brand tokens below are
      * copied from assets/css/band.css so the mail matches the site.
      */
@@ -24,12 +24,12 @@ final class MailQueueService {
         'bg_alt'      => '#f7f0e4',
         'border'      => '#d8ccb7',
         'ink'         => '#222222',
-        'muted'       => '#91877c',
+        'muted'       => '#6c615a',
         'serif'       => "Georgia,'Times New Roman',serif",
         'sans'        => "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif",
     ];
 
-    private function wrapHtml(string $inner, string $audience = 'customer'): string {
+    private function wrapHtml(string $inner, string $audience = 'customer', string $preheader = ''): string {
         $b = self::BRAND;
         $isAdmin = $audience === 'admin';
         $settings = (new SettingsService())->public();
@@ -50,15 +50,16 @@ final class MailQueueService {
             . '<meta name="viewport" content="width=device-width,initial-scale=1">'
             . '<meta name="x-apple-disable-message-reformatting">'
             . '<meta name="color-scheme" content="light dark"><meta name="supported-color-schemes" content="light dark">'
+            . '<style>@media(max-width:480px){.mail-content{padding:22px 18px!important}.mail-outer{padding:14px 8px!important}}</style>'
             . '<title>' . e($siteName) . '</title></head>'
             . '<body style="margin:0;padding:0;width:100%;background:' . $b['bg'] . ';-webkit-text-size-adjust:100%;">'
 
             // Preheader: the grey text a client shows next to the subject. Hidden in the
             // body so it never appears twice.
-            . '<div style="display:none;max-height:0;overflow:hidden;opacity:0;">' . e($siteName) . '</div>'
+            . '<div style="display:none;max-height:0;overflow:hidden;opacity:0;">' . e($preheader !== '' ? mb_substr($preheader,0,180) : $siteName) . '</div>'
 
             . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:' . $b['bg'] . ';">'
-            . '<tr><td align="center" style="padding:28px 12px;">'
+            . '<tr><td align="center" class="mail-outer" style="padding:28px 12px;">'
 
             . '<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:#ffffff;border:1px solid ' . $b['border'] . ';border-radius:14px;overflow:hidden;">'
 
@@ -74,7 +75,7 @@ final class MailQueueService {
             . '</td></tr>'
 
             // Body — 16px, the floor for comfortable reading on a phone
-            . '<tr><td style="padding:30px 28px 10px;font-family:' . $b['sans'] . ';font-size:16px;line-height:1.65;color:' . $b['ink'] . ';">'
+            . '<tr><td class="mail-content" style="padding:30px 28px 10px;font-family:' . $b['sans'] . ';font-size:16px;line-height:1.65;color:' . $b['ink'] . ';">'
             . $inner . '</td></tr>'
 
             // Footer
@@ -109,12 +110,12 @@ final class MailQueueService {
     /** Key/value panel for order and appointment details. */
     public static function details(array $rows): string {
         $html = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" '
-            . 'style="margin:18px 0;background:' . self::BRAND['bg_alt'] . ';border:1px solid ' . self::BRAND['border'] . ';border-radius:10px;">';
+            . 'style="table-layout:fixed;width:100%;margin:18px 0;background:' . self::BRAND['bg_alt'] . ';border:1px solid ' . self::BRAND['border'] . ';border-radius:10px;">';
         foreach ($rows as $label => $value) {
             if (trim((string)$value) === '') continue;
             $html .= '<tr>'
-                . '<td style="padding:9px 16px;font-family:' . self::BRAND['sans'] . ';font-size:13px;color:' . self::BRAND['muted'] . ';white-space:nowrap;">' . e((string)$label) . '</td>'
-                . '<td align="right" style="padding:9px 16px;font-family:' . self::BRAND['sans'] . ';font-size:14px;font-weight:600;color:' . self::BRAND['ink'] . ';">' . $value . '</td>'
+                . '<td style="padding:9px 16px;font-family:' . self::BRAND['sans'] . ';font-size:13px;color:' . self::BRAND['muted'] . ';white-space:normal;overflow-wrap:anywhere;word-wrap:break-word;">' . e((string)$label) . '</td>'
+                . '<td align="right" style="padding:9px 16px;font-family:' . self::BRAND['sans'] . ';font-size:14px;font-weight:600;color:' . self::BRAND['ink'] . ';overflow-wrap:anywhere;word-wrap:break-word;">' . $value . '</td>'
                 . '</tr>';
         }
         return $html . '</table>';
@@ -204,8 +205,8 @@ final class MailQueueService {
      * mailbox (support@); only the layout and footer differ, so the owner can tell a
      * store notification from something a customer received.
      */
-    public function enqueue(string $type, string $to, string $subject, string $html, ?\DateTimeImmutable $availableAt = null, array $meta = [], string $audience = 'customer', ?string $eventKey = null): array {
-        $html = $this->wrapHtml($html, $audience);
+    public function enqueue(string $type, string $to, string $subject, string $html, ?\DateTimeImmutable $availableAt = null, array $meta = [], string $audience = 'customer', ?string $eventKey = null, string $preheader = ''): array {
+        $html = $this->wrapHtml($html, $audience, $preheader);
         $record = [
             'id' => $eventKey === null ? bin2hex(random_bytes(8)) : self::deliveryIdentity($type,$to,$eventKey),
             'type' => $type,
@@ -265,37 +266,32 @@ final class MailQueueService {
         return true;
     }
 
+    public function templatePreview(string $key): array {
+        $message=(new MailTemplateService())->sample($key);
+        $message['html']=$this->wrapHtml($message['html'],$message['audience'],$message['preheader']);return $message;
+    }
+    public function enqueueTemplate(string $key,array $data,string $to,?string $eventKey=null,array $meta=[]): array {
+        $message=(new MailTemplateService())->render($key,$data);
+        return $this->enqueue($key,$to,$message['subject'],$message['html'],null,$meta,$message['audience'],$eventKey,$message['preheader']);
+    }
+    public function enqueueTemplateSample(string $key,string $to,string $eventKey): array {
+        $message=(new MailTemplateService())->sample($key);
+        $record=$this->enqueue('template_test',$to,$message['subject'],$message['html'],null,
+            ['template'=>$key,'synthetic_sample'=>true],$message['audience'],$eventKey,$message['preheader']);
+        return $this->store->find('mail_queue',(string)$record['id'])??$record;
+    }
+    public function enqueueWelcome(array $user): ?array {
+        if(($user['role']??'customer')!=='customer'||!filter_var($user['email']??'',FILTER_VALIDATE_EMAIL)||empty($user['id']))return null;
+        return $this->enqueueTemplate('welcome',$user,(string)$user['email'],'signup:'.(string)$user['id']);
+    }
     public function enqueuePaymentConfirmation(array $order): ?array {
-        $to = trim((string)($order['customer_email'] ?? ''));
-        if ($to === '' || trim((string)($order['id'] ?? '')) === '') return null;
-        $invoiceHtml = '';
-        if (!empty($order['invoice_number'])) {
-            $invoiceHtml = '<p>Invoice: <strong>' . e((string)($order['invoice_number'] ?? '')) . '</strong> — '
-                . '<a href="' . e($this->siteUrl('/account/orders/' . rawurlencode((string)($order['id'] ?? '')) . '/invoice')) . '">View invoice</a></p>';
-        }
-        $held = !empty($order['fulfillment_review_required']);
-        $subject = $held ? 'Payment received — order under review' : 'Order confirmed — Sri Panchami Spiritual';
-        $html = self::heading($held ? 'Payment received — order under review' : 'Thank you, your order is confirmed')
-            . '<p>Vanakkam ' . e((string)($order['customer_name'] ?? '')) . ($held ? ', we have received your payment. We are checking product availability and will contact you about your order.' : ', we have received your payment and are preparing your order.') . '</p>'
-            . self::details([
-                'Order'   => e((string)($order['id'] ?? '')),
-                'Invoice' => e((string)($order['invoice_number'] ?? '')),
-                'Total'   => '₹' . e((string)($order['total'] ?? 0)),
-            ])
-            . self::orderItemsHtml($order['items'] ?? [])
-            . self::button('View your order', $this->siteUrl('/account/orders/' . rawurlencode((string)($order['id'] ?? ''))))
-            . $invoiceHtml;
-        $sent = $this->enqueue('payment_confirmation', $to, $subject, $html, null, ['order_id' => $order['id'] ?? ''], 'customer', 'paid-order:'.(string)($order['id']??''));
-        $this->notifyAdmin(
-            'New order ' . (string)($order['id'] ?? ''),
-            '<p>A new paid order has come in.</p>'
-            . ($held ? '<p><strong>On hold: product availability requires review before fulfillment.</strong></p>' : '')
-            . '<p>Order: <strong>' . e((string)($order['id'] ?? '')) . '</strong><br>'
-            . 'Customer: ' . e((string)($order['customer_name'] ?? '')) . ' &lt;' . e($to) . '&gt;<br>'
-            . 'Total: ₹' . e((string)($order['total'] ?? 0)) . '</p>',
-            ['order_id' => $order['id'] ?? ''],
-            'paid-order:'.(string)($order['id']??'')
-        );
+        $to=trim((string)($order['customer_email']??''));$id=trim((string)($order['id']??''));
+        if(!filter_var($to,FILTER_VALIDATE_EMAIL)||$id==='')return null;
+        $customer=(new MailTemplateService())->render('order_confirmation',$order);
+        $sent=$this->enqueue('payment_confirmation',$to,$customer['subject'],$customer['html'],null,
+            ['order_id'=>$id],'customer','paid-order:'.$id,$customer['preheader']);
+        $owner=(new MailTemplateService())->render('owner_order',$order);
+        $this->notifyAdmin($owner['subject'],$owner['html'],['order_id'=>$id],'paid-order:'.$id,$owner['preheader']);
         return $sent;
     }
 
@@ -358,11 +354,11 @@ final class MailQueueService {
      * deliberately separate from the sending mailbox: customers are written to from
      * support@, while the owner is notified at their own inbox.
      */
-    public function notifyAdmin(string $subject, string $html, array $meta = [], ?string $eventKey = null): ?array {
+    public function notifyAdmin(string $subject, string $html, array $meta = [], ?string $eventKey = null, string $preheader = ''): ?array {
         $admin = trim((string)((new SecretService())->all()['admin_notification_email'] ?? ''));
         if ($admin === '' || !filter_var($admin, FILTER_VALIDATE_EMAIL)) return null;
         try {
-            return $this->enqueue('admin_notification', $admin, $subject, $html, null, $meta, 'admin', $eventKey);
+            return $this->enqueue('admin_notification', $admin, $subject, $html, null, $meta, 'admin', $eventKey, $preheader);
         } catch (\Throwable $e) {
             error_log('Admin notification failed: ' . $e->getMessage());
             return null;
@@ -370,9 +366,8 @@ final class MailQueueService {
     }
 
     /**
-     * A failed payment left the customer with nothing — no screen, no email — while the
-     * owner never learned an attempt had failed. Both are told, and the customer is
-     * pointed back at their cart, which is deliberately preserved.
+     * Report an unconfirmed checkout without asserting a bank debit/reversal outcome.
+     * Owner and customer notifications remain separate; no automatic payment retry.
      */
     public function enqueuePaymentFailure(array $order, string $reason = ''): ?array {
         $to = trim((string)($order['customer_email'] ?? ''));
@@ -386,14 +381,9 @@ final class MailQueueService {
             ['order_id' => $order['id'] ?? '']
         );
         if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) return null;
-        return $this->enqueue('payment_failed', $to, 'Your payment could not be completed',
-            self::heading('Your payment did not go through')
-            . '<p>Vanakkam ' . e((string)($order['customer_name'] ?? '')) . ', your payment could not be completed, '
-            . 'so the order was not placed and <strong>you have not been charged</strong>.</p>'
-            . '<p>Your cart has been kept, so nothing needs rebuilding.</p>'
-            . self::button('Complete your order', $this->siteUrl('/checkout'))
-            . '<p style="color:#7b6b63;font-size:13px;">Reply to this email if you would like help.</p>' . $detail,
-            null, ['order_id' => $order['id'] ?? '']);
+        $message=(new MailTemplateService())->render('payment_attention',$order);
+        return $this->enqueue('payment_failed',$to,$message['subject'],$message['html'],null,
+            ['order_id'=>$order['id']??''],'customer',null,$message['preheader']);
     }
 
     /** Security notice so an account holder learns about a sign-in they did not make. */
@@ -438,32 +428,11 @@ final class MailQueueService {
     }
 
     public function enqueueShipmentNotification(array $order): ?array {
-        $to = trim((string)($order['customer_email'] ?? ''));
-        if ($to === '') return null;
-        $subject = 'Sri Panchami Spiritual order shipped';
-        $trackingId = trim((string)($order['tracking_id'] ?? ''));
-        $trackingUrl = trim((string)($order['tracking_url'] ?? ''));
-        $courier = trim((string)($order['courier_name'] ?? ''));
-        // Domestic versus international changes what we can honestly promise.
-        $country = strtolower(trim((string)($order['shipping_country'] ?? $order['country'] ?? 'india')));
-        $isDomestic = $country === '' || str_contains($country, 'india');
-        $window = $isDomestic
-            ? \App\Services\OrderService::DELIVERY_DAYS_DOMESTIC
-            : \App\Services\OrderService::DELIVERY_DAYS_INTERNATIONAL;
-
-        $html = self::heading('Your order is on its way')
-            . '<p>We have dispatched your order. Delivery usually takes <strong>' . e($window) . '</strong> from today.</p>'
-            . self::details(array_filter([
-                'Order'       => e((string)($order['id'] ?? '')),
-                'Courier'     => $courier !== '' ? e($courier) : '',
-                'Tracking ID' => $trackingId !== '' ? e($trackingId) : '',
-            ]))
-            . ($trackingUrl !== ''
-                ? self::button('Track your parcel', $trackingUrl)
-                  . '<p style="font-size:13px;color:#91877c;">Tracking can take a few hours to show its first update.</p>'
-                : self::button('View your order', $this->siteUrl('/account/dashboard/orders')))
-            . '<p style="color:#91877c;font-size:13px;">We will ask for a review once you have had time to use it.</p>';
-        return $this->enqueue('shipment_notification', $to, $subject, $html, null, ['order_id' => $order['id'] ?? '']);
+        $to=trim((string)($order['customer_email']??''));if(!filter_var($to,FILTER_VALIDATE_EMAIL)||empty($order['id']))return null;
+        $message=(new MailTemplateService())->render('shipment',$order);
+        $event='fulfillment:'.(string)$order['id'].':'.(string)($order['status']??'shipped').':'.(string)($order['tracking_id']??'');
+        return $this->enqueue('shipment_notification',$to,$message['subject'],$message['html'],null,
+            ['order_id'=>$order['id']],'customer',$event,$message['preheader']);
     }
 
     public function enqueueProductReviewRequest(array $order, int $waitDays = 10): ?array {
@@ -474,7 +443,7 @@ final class MailQueueService {
         $subject = 'How was your Sri Panchami Spiritual product?';
         $html = '<p>We hope your order ' . e((string)($order['id'] ?? '')) . ' reached you well.</p>'
             . '<p>Please share your product rating from your account orders page.</p>';
-        return $this->enqueue('product_review_request', $to, $subject, $html, $availableAt, ['order_id' => $order['id'] ?? '']);
+        return $this->enqueue('product_review_request', $to, $subject, $html, $availableAt, ['order_id' => $order['id'] ?? ''], 'customer', 'review-request:'.(string)($order['id']??''));
     }
 
     public function due(?\DateTimeImmutable $now = null): array {

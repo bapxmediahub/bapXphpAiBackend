@@ -44,18 +44,18 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 420
-  relationships: 333
+  concepts: 423
+  relationships: 338
   by_type:
     blog: 16
     controller: 12
     doc: 49
     image: 89
     operator_guide: 12
-    route: 136
+    route: 138
     runtime_instruction: 6
     schema: 22
-    service: 66
+    service: 67
     skill: 12
 concepts:
   - id: "blog:benefits-of-rudraksha"
@@ -2445,6 +2445,23 @@ concepts:
       - "MailQueueService"
       - "AuthService"
     view: "admin/mailbox"
+  - id: "route:get__admin_email_templates"
+    type: "route"
+    title: "GET /admin/email-templates"
+    description: "admin.email-templates"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/admin/email-templates"
+    controller: "AdminController@emailTemplates"
+    services:
+      - "MailTemplateService"
+      - "MailQueueService"
+      - "SecretService"
+      - "AuthService"
+    view: "admin/email-templates"
   - id: "route:get__admin_google_merchant"
     type: "route"
     title: "GET /admin/google-merchant"
@@ -3549,6 +3566,23 @@ concepts:
       - "AuditLogService"
       - "AuthService"
     view: "admin/resource"
+  - id: "route:post__admin_email_templates_test"
+    type: "route"
+    title: "POST /admin/email-templates/test"
+    description: "admin.email-templates.test"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/admin/email-templates/test"
+    controller: "AdminController@testEmailTemplate"
+    services:
+      - "MailTemplateService"
+      - "MailQueueService"
+      - "SecretService"
+      - "AuthService"
+    view: "admin/email-templates"
   - id: "route:post__admin_integrations_save"
     type: "route"
     title: "POST /admin/integrations/save"
@@ -4643,6 +4677,14 @@ concepts:
     tags:
       - "code"
       - "service"
+  - id: "service:MailTemplateService"
+    type: "service"
+    title: "MailTemplateService"
+    description: "Service: MailTemplateService"
+    resource: "app/Services/MailTemplateService.php"
+    tags:
+      - "code"
+      - "service"
   - id: "service:MarkdownRenderer"
     type: "service"
     title: "MarkdownRenderer"
@@ -5069,6 +5111,9 @@ relationships:
     to: "service:MailStorageService"
     relation: "uses"
   - from: "controller:AdminController"
+    to: "service:MailTemplateService"
+    relation: "uses"
+  - from: "controller:AdminController"
     to: "service:MarkdownRenderer"
     relation: "uses"
   - from: "controller:AdminController"
@@ -5330,7 +5375,13 @@ relationships:
     to: "service:AdminHelpService"
     relation: "rendered_by"
   - from: "operator_guide:email"
+    to: "controller:AuthController"
+    relation: "explains"
+  - from: "operator_guide:email"
     to: "service:MailQueueService"
+    relation: "explains"
+  - from: "operator_guide:email"
+    to: "service:MailTemplateService"
     relation: "explains"
   - from: "operator_guide:email"
     to: "service:SmtpMailer"
@@ -5492,6 +5543,9 @@ relationships:
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:get__admin_email_outbox"
+    to: "controller:AdminController"
+    relation: "handled_by"
+  - from: "route:get__admin_email_templates"
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:get__admin_google_merchant"
@@ -5708,6 +5762,9 @@ relationships:
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:post__admin_coupons_save"
+    to: "controller:AdminController"
+    relation: "handled_by"
+  - from: "route:post__admin_email_templates_test"
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:post__admin_integrations_save"

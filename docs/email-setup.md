@@ -60,7 +60,7 @@ table. **Never put SMTP settings in `.env`** — `.env` holds only `APP_NAME`,
 | SMTP Password | the mailbox password | Set in hPanel → Emails |
 | From Email | `support@sripanchamispiritual.com` | **Must match the authenticated mailbox** or the provider rejects the message |
 | From Name | `Sri Panchami Spiritual` | |
-| Admin Notification Email | `sripanchamispiritual@gmail.com` | Where the **owner** is notified |
+| Admin Notification Email | The configured owner notification address | Separate from the customer/test mailbox; never replace it during customer QA |
 
 ### From Email vs Admin Notification Email
 
@@ -71,14 +71,60 @@ These are deliberately different and are a common source of confusion:
 - **Admin Notification Email** is where *the owner* is told about new orders and
   bookings. It can be any inbox, including a personal Gmail address.
 
-## Who gets what
+## Which event sends which message
 
-| Event | Customer | Owner |
-|---|---|---|
-| Signup | Welcome email | — |
-| Forgot password | Reset link (**emailed, never shown on screen**) | — |
-| Paid order | Payment confirmation | New-order notification |
-| Contact enquiry | Enquiry received confirmation | New-contact notification |
+The authenticated SMTP sender, customer recipient and configured owner recipient
+are separate identities. A connected customer Gmail proves only that mailbox's
+receipts, never receipt in the owner's different inbox.
+
+| Event | Customer | Owner | Trigger/limitations |
+|---|---|---|---|
+| New manual registration | Welcome/account access | None | One stable `signup:<account-id>` event after successful creation |
+| Newly created Google customer | Same welcome | None | Only a new persisted customer with provider-verified email; existing sign-ins do not resend |
+| Ordinary customer login | No routine login email | None | Absence of a login email is not a transport failure |
+| Configured admin login | Existing security notice to that admin | Existing security behavior | Not a customer welcome |
+| Password recovery requested | Private one-time reset link | None | Existing account only; link is never a public response or a preview credential |
+| Successful password change/reset | Security notice | None | Sent to verified account email only after the change succeeds; failure/stale changes do not notify |
+| Newly gateway-verified order | Payment/order confirmation, saved item quantities/line totals and secure invoice link when issued | Distinct new-paid-order message with owner order link | Existing deterministic customer/owner event identities prevent repeated calls from duplicating messages |
+| Checkout completion not confirmed | Payment-attention guidance | Existing owner failure notice | Never claim the bank made no charge; avoid a second payment while uncertain |
+| Shipped / delivered update | Status-specific courier/delivery message | No additional owner confirmation | The saved state determines wording; delivered is not described as newly shipped |
+| Product review request | Delayed message | None | Queued for ten days after the existing shipped/delivered update; due-pending processing is still required |
+| Contact enquiry | Acknowledgement | Distinct contact notification | Current contact workflow, not an order receipt |
+| Newsletter | Explicitly selected recipients | Existing workflow | Not an automatic broadcast merely because an article has a date or a preview is opened |
+
+Refund/cancellation changes do not imply an automatic email or PDF attachment
+unless an implemented, verified trigger supplies one. Existing invoice links
+require the customer to sign in to the matching order. The notification uses
+saved order totals and the already-issued invoice number; it never issues an
+invoice or reconstructs tax from a synthetic example.
+
+## Templates and controlled sample delivery
+
+**Email → Templates** (`/admin/email-templates`) previews seven allowlisted
+customer/owner variants from the same `MailTemplateService` used by delivery.
+The shared native HTML shell has event-specific preheaders, table/inline-style
+fallbacks, readable item totals and bounded mobile detail cells. Client CSS
+support varies; website preview does not certify every email client.
+
+Preview uses synthetic data in a script-disabled sandbox. It sends nothing,
+changes no account/order, and does not create an invoice. A separate admin-only,
+CSRF-protected form can send one explicitly confirmed sample. The subject AND
+body say **TEST SAMPLE / NO ORDER**. Sample order/reset targets are disabled;
+a usable password link or private invoice is never invented.
+
+Customer samples go to the explicitly entered customer test address. Owner
+samples go ONLY to the stored owner-notification address, ignoring the customer
+field; templates cannot be sent under the wrong audience. The owner value is
+masked in the UI and is not changed. A short-lived token is consumed before
+transport, the queue uses a stable event identity, and requests are bounded by
+rate limits. An expired/repeated/uncertain request must not be blindly resent.
+The result reports SMTP acceptance and a queue reference, not inbox delivery.
+
+To prove receiving behavior, inspect the intended recipient mailbox and correlate
+the sample Message-ID with the queue. A received synthetic sample establishes
+that template/transport path only, NOT a real signup, payment or fulfillment
+trigger. Never label a sample as an actual order or change production payment
+mode to manufacture successful evidence.
 
 ## Testing
 
@@ -137,11 +183,15 @@ acknowledgement. No real mailbox or SMTP credential is used. The CI-only
 one sender among six workers, no replay of unknown outcomes, and preservation
 of unrelated records. It must never point at production MySQL.
 
-Current issue #25 retains an external acceptance gate: a verified order's
-customer and owner recipients must receive their actual confirmations.
-Previous contact, password-reset and admin-test receipts do not prove that
-specific order flow. No test payment or artificial paid-order mutation is
-permitted simply to obtain a passing test.
+For end-to-end paid-order acceptance, verify an authorized gateway-confirmed
+order and actual receipt separately in the customer and owner mailboxes.
+Contact, password-reset, generic SMTP and synthetic-template receipts do not
+prove that specific order event. Never forge a production paid record or invoice.
+Keep concrete issue state and release evidence in GitHub, not this runbook.
 
 References: SMTP responsibility after DATA acceptance is defined in RFC 5321
 section 6.1; MIME Base64 line encoding is defined in RFC 2045 section 6.8.
+
+Primary email rendering reference: https://developers.google.com/workspace/gmail/design/css .
+Gmail supports style blocks/media queries within its documented subset; do not
+claim that all clients universally remove them. Inline/table fallbacks remain.

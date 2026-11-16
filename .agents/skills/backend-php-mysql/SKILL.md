@@ -88,3 +88,16 @@ lock/replace contract. Do not bypass it with direct file writes or reload a
 newer revision to force a stale form through. Public consumers use isPublic/all
 with the configured timezone and category rules. Preserve conflict recovery,
 path guards and raw-source denial. Scheduled visibility is not scheduled email.
+
+## Transactional email event and recipient contracts
+
+MailTemplateService renders pure event content; it does not choose a recipient,
+issue an invoice, create an order or send. MailQueueService owns audience/event
+identity and SMTP acceptance. Preserve configured owner versus customer routing.
+Google welcome is only for a new persisted verified customer; normal login is
+not signup. Password-change mail follows successful account mutation only.
+Synthetic admin previews/samples must remain conspicuously labelled and cannot
+contain usable reset/order/invoice targets. Do not equate sample receipt or
+legacy sent status with real order/customer/owner acceptance. No live charge,
+password change or backlog replay merely for QA. Keep the separate late-view
+error-handling concern out of template patches.

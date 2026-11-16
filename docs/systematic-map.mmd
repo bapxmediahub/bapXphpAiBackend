@@ -7,14 +7,14 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 136 routes, 12 controllers, 66 services, 55 views, 0 data files, 26 tools"]
-    arch_routes["> Routes: 136 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 138 routes, 12 controllers, 67 services, 56 views, 0 data files, 26 tools"]
+    arch_routes["> Routes: 138 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
-    arch_svc["> Services: 66"]:::arch
-    arch_views["> Views: 55"]:::arch
+    arch_svc["> Services: 67"]:::arch
+    arch_views["> Views: 56"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 26"]:::arch
-    arch_gaps["> Gaps: 8"]:::arch
+    arch_gaps["> Gaps: 9"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -138,6 +138,8 @@ flowchart LR
     route_get_admin_contact_submissions["GET /admin/contact-submissions — Admin — contact form entries"]:::route
     route_post_admin_contact_submissions_save["POST /admin/contact_submissions/save — Admin — save contact submission"]:::route
     route_post_admin_contact_submissions_delete["POST /admin/contact_submissions/delete — Admin — delete contact submission"]:::route
+    route_get_admin_email_templates["GET /admin/email-templates"]:::route
+    route_post_admin_email_templates_test["POST /admin/email-templates/test"]:::route
     route_get_admin_email_inbox["GET /admin/email-inbox"]:::route
     route_get_admin_email_outbox["GET /admin/email-outbox"]:::route
     route_get_admin_support_tickets["GET /admin/support-tickets — Admin — support tickets"]:::route
@@ -231,6 +233,7 @@ flowchart LR
     service_knowledgegraphservice["KnowledgeGraphService"]:::code
     service_mailqueueservice["MailQueueService"]:::code
     service_mailstorageservice["MailStorageService"]:::code
+    service_mailtemplateservice["MailTemplateService"]:::code
     service_markdownrenderer["MarkdownRenderer"]:::code
     service_mediaservice["MediaService"]:::code
     service_merchantfeedservice["MerchantFeedService"]:::code
@@ -279,6 +282,7 @@ flowchart LR
     view_admin_consultation_analytics["admin/consultation-analytics"]:::code
     view_admin_dashboard["admin/dashboard"]:::code
     view_admin_detail["admin/detail"]:::code
+    view_admin_email_templates["admin/email-templates"]:::code
     view_admin_google_merchant["admin/google-merchant"]:::code
     view_admin_help["admin/help"]:::code
     view_admin_integrations["admin/integrations"]:::code
@@ -389,8 +393,9 @@ flowchart LR
     gap_b09974925e["unwired_services: ProjectMapService"]:::gap
     gap_622e98a07f["unwired_services: SmtpDeliveryUncertainException"]:::gap
     gap_bc97ac563c["unwired_services: StoragePermissionService"]:::gap
-    gap_6b9c2b4b5a["POST /admin/blog/enhance-title — missing AuditLogService"]:::gap
-    gap_b4217badec["POST /admin/blog/enhance-content — missing AuditLogService"]:::gap
+    gap_02fdee86e5["POST /admin/email-templates/test — missing AuditLogService"]:::gap
+    gap_63c4de0521["POST /admin/blog/enhance-title — missing AuditLogService"]:::gap
+    gap_90db15aec7["POST /admin/blog/enhance-content — missing AuditLogService"]:::gap
   end
 
   route_get --> controller_publiccontroller
@@ -763,6 +768,18 @@ flowchart LR
   controller_admincontroller --> service_auditlogservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_resource
+  route_get_admin_email_templates --> controller_admincontroller
+  controller_admincontroller --> service_mailtemplateservice
+  controller_admincontroller --> service_mailqueueservice
+  controller_admincontroller --> service_secretservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_email_templates
+  route_post_admin_email_templates_test --> controller_admincontroller
+  controller_admincontroller --> service_mailtemplateservice
+  controller_admincontroller --> service_mailqueueservice
+  controller_admincontroller --> service_secretservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_email_templates
   route_get_admin_email_inbox --> controller_admincontroller
   controller_admincontroller --> service_mailstorageservice
   controller_admincontroller --> service_authservice
@@ -1091,5 +1108,6 @@ flowchart LR
   gap_b09974925e -. missing .-> service_projectmapservice
   gap_622e98a07f -. missing .-> service_smtpdeliveryuncertainexception
   gap_bc97ac563c -. missing .-> service_storagepermissionservice
-  gap_6b9c2b4b5a -. missing .-> controller_admincontroller
-  gap_b4217badec -. missing .-> controller_admincontroller
+  gap_02fdee86e5 -. missing .-> controller_admincontroller
+  gap_63c4de0521 -. missing .-> controller_admincontroller
+  gap_90db15aec7 -. missing .-> controller_admincontroller

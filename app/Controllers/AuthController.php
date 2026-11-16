@@ -15,13 +15,18 @@ final class AuthController extends BaseController {
    if(!empty($token['error'])||empty($token['access_token'])){$this->flash('Google login failed. Please try again.','error');$this->redirect('/login');}
    $user=$this->get('https://openidconnect.googleapis.com/v1/userinfo',$token['access_token']);
    if(empty($user)){$this->flash('Failed to fetch your profile from Google. Please try again.','error');$this->redirect('/login');}
-    $store=new DatabaseService(); $users=$store->read('users'); $role = 'customer'; $astrologerSlug = ''; $mustChange = false; $existingId = ''; $profileName = $user['name'] ?? ''; $profilePhone = '';
-    foreach ($users as $u) { if (($u['id'] ?? '') === ($user['sub'] ?? '') || (($u['email'] ?? '') !== '' && ($u['email'] ?? '') === ($user['email'] ?? ''))) { $role=$u['role'] ?? (!empty($u['is_admin']) ? 'admin' : 'customer'); $astrologerSlug=$u['astrologer_slug'] ?? ''; $mustChange=(bool)($u['must_change_password'] ?? false); $profileName=$u['name'] ?? $profileName; $profilePhone=$u['phone'] ?? ''; if (($u['email'] ?? '') === ($user['email'] ?? '')) $existingId=$u['id']??''; break; } }
+    $store=new DatabaseService(); $users=$store->read('users'); $role = 'customer'; $astrologerSlug = ''; $mustChange = false; $existingId = ''; $profileName = $user['name'] ?? ''; $profilePhone = ''; $matchedExisting = false;
+    foreach ($users as $u) { if (($u['id'] ?? '') === ($user['sub'] ?? '') || (($u['email'] ?? '') !== '' && ($u['email'] ?? '') === ($user['email'] ?? ''))) { $matchedExisting=true; $role=$u['role'] ?? (!empty($u['is_admin']) ? 'admin' : 'customer'); $astrologerSlug=$u['astrologer_slug'] ?? ''; $mustChange=(bool)($u['must_change_password'] ?? false); $profileName=$u['name'] ?? $profileName; $profilePhone=$u['phone'] ?? ''; if (($u['email'] ?? '') === ($user['email'] ?? '')) $existingId=$u['id']??''; break; } }
     $userId = $existingId ?: ($user['sub'] ?? bin2hex(random_bytes(8)));
     unset($_SESSION['oauth_state']);
     session_regenerate_id(true);
     $_SESSION['user']=['sub'=>$userId,'email'=>$user['email'],'name'=>$profileName,'phone'=>$profilePhone,'username'=>explode('@',$user['email'])[0],'picture'=>$user['picture']??'','role'=>$role,'astrologer_slug'=>$astrologerSlug];
-    try { $store->upsert('users',['id'=>$userId,'email'=>$user['email'],'name'=>$profileName,'picture'=>$user['picture']??'','role'=>$role]); } catch (\Throwable) {}
+    try {
+        $savedUser=$store->upsert('users',['id'=>$userId,'email'=>$user['email'],'name'=>$profileName,'picture'=>$user['picture']??'','role'=>$role]);
+        if (!$matchedExisting && $role === 'customer' && ($user['email_verified']??false) === true) {
+            try{(new MailQueueService())->enqueueWelcome($savedUser);}catch(\Throwable){error_log('New customer welcome could not be queued.');}
+        }
+    } catch (\Throwable) {error_log('Google account persistence could not be confirmed.');}
     $this->flash('Signed in.','success');
     session_write_close();
    if ($role === 'admin') { $this->redirect('/admin'); return; }
@@ -82,9 +87,7 @@ final class AuthController extends BaseController {
     session_regenerate_id(true);
     $_SESSION['user'] = ['sub'=>$id,'email'=>$email,'name'=>$name,'role'=>$role];
     try {
-        (new MailQueueService())->enqueue('welcome', $email, 'Welcome to Sri Panchami Spiritual',
-            '<p>Hello ' . e($name) . ',</p><p>Your account is ready. You can view orders and saved addresses in your dashboard.</p>'
-            . \App\Services\MailQueueService::button('Open your dashboard', $this->siteUrl('/account/dashboard')));
+        (new MailQueueService())->enqueueWelcome($record);
     } catch (\Throwable) {}
     $this->flash('Registered and signed in.','success');
     $this->redirect('/');
@@ -138,10 +141,7 @@ final class AuthController extends BaseController {
             // working reset for an address they do not control.
             $link = $this->siteUrl('/reset-password?token=' . urlencode($token));
             try {
-                (new MailQueueService())->enqueue('password_reset', $email, 'Reset your Sri Panchami Spiritual password',
-                    '<p>We received a request to reset your password.</p>'
-                    . \App\Services\MailQueueService::button('Reset your password', $link)
-                    . '<p>If you did not request this, you can ignore this email.</p>');
+                (new MailQueueService())->enqueueTemplate('password_reset',['reset_url'=>$link],$email);
             } catch (\Throwable) {}
         }
     }
@@ -170,11 +170,7 @@ final class AuthController extends BaseController {
         // is the only signal they get that someone else changed their password.
         if ($resetEmail !== '' && filter_var($resetEmail, FILTER_VALIDATE_EMAIL)) {
             try {
-                (new MailQueueService())->enqueue('password_changed', $resetEmail,
-                    'Your Sri Panchami Spiritual password was changed',
-                    '<p>Your account password was just changed.</p>'
-                    . '<p>If this was not you, contact us immediately at '
-                    . '<a href="mailto:support@sripanchamispiritual.com">support@sripanchamispiritual.com</a>.</p>');
+                (new MailQueueService())->enqueueTemplate('password_changed',[],$resetEmail);
             } catch (\Throwable $e) { error_log('Password change mail failed: ' . $e->getMessage()); }
         }
         $this->flash('Password updated. Please sign in.','success');
