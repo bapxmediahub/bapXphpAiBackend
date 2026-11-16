@@ -23,6 +23,10 @@
 <div class="admin-card mail-template-preview">
     <h3>Inbox preview</h3><p style="overflow-wrap:anywhere"><strong>Subject:</strong> <?= e($preview['subject']) ?><br><strong>Preview text:</strong> <?= e($preview['preheader']) ?></p>
     <iframe title="Synthetic email preview" sandbox="" referrerpolicy="no-referrer" srcdoc="<?= e($preview['html']) ?>" style="width:100%;min-height:920px;border:1px solid var(--color-border);background:#faf7f0"></iframe>
+    <details style="margin-top:16px"><summary>Plain-text alternative</summary>
+        <p>The same visible sample content, without CSS or hidden preview text. No message is sent by opening this section.</p>
+        <pre data-mail-plain-preview style="white-space:pre-wrap;overflow-wrap:anywhere;max-width:100%;font-size:.85rem;line-height:1.6"><?= e(\App\Services\SmtpMailer::plainText($preview['html'])) ?></pre>
+    </details>
 </div>
 </div>
 <section class="admin-card" aria-labelledby="mail-test-title" style="margin-top:24px">

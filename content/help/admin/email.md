@@ -35,3 +35,10 @@ sample's arrival, not that a real payment, signup or invoice was created. A norm
 customer login does not send a new welcome; a first-time customer account does.
 Do not resend an uncertain request, replay the old queue or place a live charge
 solely to obtain a passing diagnostic.
+
+## Check the text version too
+
+In the Inbox preview, open **Plain-text alternative** to inspect what a text-only
+reader receives. The same sample warning and message content should be readable,
+without CSS or hidden preview text. Real safe action URLs appear with their
+labels; sample-only links remain inactive. Opening the disclosure sends nothing.

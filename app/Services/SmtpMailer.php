@@ -49,7 +49,7 @@ final class SmtpMailer {
         $messageId ??= '<'.bin2hex(random_bytes(16)).'@'.substr(strrchr($fromEmail,'@'),1).'>';
         if (!preg_match('/^<[A-Za-z0-9._-]{1,100}@[A-Za-z0-9.-]{1,253}>$/D',$messageId)) throw new \InvalidArgumentException('Invalid mail message identity.');
         $boundary = 'sps_' . bin2hex(random_bytes(12));
-        $plain = trim(strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", $html)));
+        $plain = self::plainText($html);
         $headers = [
             'Date: ' . date(DATE_RFC2822),
             'Message-ID: ' . $messageId,
@@ -66,6 +66,45 @@ final class SmtpMailer {
             . "\r\n\r\n--{$boundary}\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n"
             . self::encodeBody($html)
             . "\r\n\r\n--{$boundary}--\r\n";
+    }
+
+    /** Text-only alternative of authored email. This is NOT an HTML sanitizer. */
+    public static function plainText(string $html): string {
+        if(trim($html)==='')return '';
+        $previous=libxml_use_internal_errors(true);
+        try{
+            $document=new \DOMDocument('1.0','UTF-8');
+            // PHP8.3-compatible HTML4 reader; no external fetch or entity expansion.
+            $loaded=$document->loadHTML('<?xml encoding="UTF-8">'.$html,LIBXML_NONET|LIBXML_NOERROR|LIBXML_NOWARNING);
+            if(!$loaded)throw new \RuntimeException('Could not derive email text.');
+            $walk=static function(\DOMNode $node)use(&$walk):string {
+                if($node instanceof \DOMText)return preg_replace('/\s+/u',' ',str_replace("\u{00A0}",' ',$node->nodeValue))??'';
+                if(!($node instanceof \DOMElement)&&!($node instanceof \DOMDocument))return '';
+                $tag=strtolower($node->nodeName);
+                if(in_array($tag,['head','style','script','template','noscript','iframe','object','svg'],true))return '';
+                if($node instanceof \DOMElement){
+                    $style=$node->getAttribute('style');
+                    if($node->hasAttribute('hidden')||$node->getAttribute('aria-hidden')==='true'
+                        ||preg_match('/(?:^|;)\s*(?:display\s*:\s*none|visibility\s*:\s*hidden)\s*(?:!important)?\s*(?:;|$)/i',$style))return '';
+                }
+                if($tag==='br')return "\n";
+                $text='';foreach($node->childNodes as $child)$text.=$walk($child);
+                if($tag==='a'&&$node instanceof \DOMElement){
+                    $href=trim($node->getAttribute('href'));$scheme=strtolower((string)parse_url($href,PHP_URL_SCHEME));
+                    $valid=in_array($scheme,['http','https'],true)&&filter_var($href,FILTER_VALIDATE_URL)!==false;
+                    if($scheme==='mailto')$valid=filter_var(substr($href,7),FILTER_VALIDATE_EMAIL)!==false;
+                    if($valid&&!preg_match('/[\x00-\x20\x7f]/',$href)&&trim($text)!==$href)$text.=' <'.$href.'>';
+                }
+                if(in_array($tag,['td','th'],true))return trim($text)."\t";
+                if($tag==='li')return "\n- ".trim($text)."\n";
+                if(in_array($tag,['p','div','section','article','header','footer','h1','h2','h3','h4','table','tr','ul','ol','blockquote','pre'],true))return "\n".trim($text)."\n";
+                return $text;
+            };
+            $text=$walk($document->getElementsByTagName('body')->item(0)??$document);
+            $text=preg_replace('/[ \t]+\n/',"\n",$text)??$text;
+            $text=preg_replace('/\n[ \t]+/',"\n",$text)??$text;
+            return trim(preg_replace('/\n{3,}/',"\n\n",$text)??$text);
+        }finally{libxml_clear_errors();libxml_use_internal_errors($previous);}
     }
 
     private static function encodeBody(string $body): string {
