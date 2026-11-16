@@ -3,10 +3,10 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 136,
+        "routes": 138,
         "controllers": 12,
-        "services": 66,
-        "views": 55,
+        "services": 67,
+        "views": 56,
         "collections": 22
     },
     "routes": [
@@ -633,6 +633,32 @@
             "services": [
                 "MailStorageService",
                 "MailQueueService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/email-templates",
+            "name": "admin.email-templates",
+            "controller": "AdminController@emailTemplates",
+            "view": "admin/email-templates",
+            "services": [
+                "MailTemplateService",
+                "MailQueueService",
+                "SecretService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/email-templates/test",
+            "name": "admin.email-templates.test",
+            "controller": "AdminController@testEmailTemplate",
+            "view": "admin/email-templates",
+            "services": [
+                "MailTemplateService",
+                "MailQueueService",
+                "SecretService",
                 "AuthService"
             ]
         },
@@ -1609,6 +1635,7 @@
         "KnowledgeGraphService",
         "MailQueueService",
         "MailStorageService",
+        "MailTemplateService",
         "MarkdownRenderer",
         "MediaService",
         "MerchantFeedService",
@@ -1656,6 +1683,7 @@
         "admin/consultation-analytics",
         "admin/dashboard",
         "admin/detail",
+        "admin/email-templates",
         "admin/google-merchant",
         "admin/help",
         "admin/integrations",
@@ -1744,6 +1772,19 @@
         ],
         "unwired_views": [],
         "admin_mutations_without_audit": [
+            {
+                "method": "POST",
+                "path": "/admin/email-templates/test",
+                "name": "admin.email-templates.test",
+                "page": "admin/email-templates",
+                "controller": "AdminController@testEmailTemplate",
+                "services": [
+                    "MailTemplateService",
+                    "MailQueueService",
+                    "SecretService",
+                    "AuthService"
+                ]
+            },
             {
                 "method": "POST",
                 "path": "/admin/blog/enhance-title",

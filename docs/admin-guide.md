@@ -81,3 +81,12 @@ unverified collection, conversion tracking and Search Console ownership. Follow
 **Configure Google tags** to the actual Integrations section; use the external
 Google validation links for evidence. Reporting OAuth/property data is not yet
 connected, so no metrics are shown as zero or fabricated from tag IDs.
+
+## Email templates and distinct recipient roles
+
+Email → Templates exposes seven controlled previews and one-shot, explicitly
+confirmed diagnostic sends. Customer and owner audiences cannot substitute for
+one another; only the owner template reads the configured owner recipient.
+Preview is read-only and synthetic, while test sending is a separate protected
+POST that records a normal queue entry. Inbox confirmation is external evidence,
+not a green transport label. See `email-setup.md` and the Email operator guide.

@@ -113,3 +113,12 @@ System Health is a native read-only Settings surface, protected by the same
 admin gate and no-store policy. Unknown/mismatched states must remain visible;
 no fake all-green score, migration button or public phpinfo endpoint. Verify
 real web PHP separately from developer CLI and test the 375px/no-JS guidance.
+
+## Email preview checks
+
+Use the actual Email → Templates view at desktop/375px and no-JS. The srcdoc
+iframe stays sandboxed without scripts; do not relax it to silence a test harness
+probe. Check long references, recipient-role controls, exact input CSRF, invalid
+keys and rejected sends. No click on the diagnostic send button is part of
+ordinary preview QA. An authorized sample uses one consumed request token and
+must be correlated with the intended inbox; owner and customer are distinct.

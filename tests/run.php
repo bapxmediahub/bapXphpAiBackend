@@ -996,6 +996,102 @@ $tests['blog explicit draft status is preserved and scheduling controls no immed
     assertSame('hidden',$service->publicationState(['published'=>'false','published_at'=>'2020-01-01']),'String false is not treated as truthy');
 };
 
+$tests['transactional templates separate customer and owner destinations with authentic order evidence'] = static function (): void {
+    $t=new \App\Services\MailTemplateService('https://configured.example');
+    $order=['id'=>'order-fixture','customer_name'=>'<script>unsafe()</script>','customer_email'=>'buyer@example.invalid','total'=>1250,
+        'subtotal'=>1200,'shipping_cost'=>50,'invoice_number'=>'INV-FIXTURE',
+        'items'=>[['name'=>'Lamp & Oil','qty'=>2,'unit_price'=>600,'line_total'=>1200]],'payment_id'=>'pay_fixture'];
+    $customer=$t->render('order_confirmation',$order);$owner=$t->render('owner_order',$order);
+    assertSame('customer',$customer['audience'],'Customer envelope uses customer audience');assertSame('admin',$owner['audience'],'Owner envelope uses admin audience');
+    assertTrue(str_contains($customer['html'],'1,250.00')&&str_contains($customer['html'],'Lamp &amp; Oil'),'Saved order facts are readable');
+    assertTrue(str_contains($customer['html'],'/account/orders/order-fixture/invoice'),'Actual issued invoice has customer-authenticated link');
+    assertTrue(!str_contains($customer['html'],'/admin/'),'Customer body cannot contain owner actions');
+    assertTrue(str_contains($owner['html'],'/admin/orders/order-fixture'),'Owner uses owner order route');
+    assertTrue(!str_contains($customer['html'],'<script>'),'Untrusted name is text, not markup');
+    unset($order['invoice_number']);assertTrue(!str_contains($t->render('order_confirmation',$order)['html'],'/invoice'),'No invented invoice URL when absent');
+    $order['fulfillment_review_required']=true;assertTrue(str_contains($t->render('order_confirmation',$order)['html'],'availability review'),'Held paid order is not promised fulfillment');
+};
+
+$tests['payment uncertainty and actual delivered state are not misleading emails'] = static function (): void {
+    $t=new \App\Services\MailTemplateService('https://configured.example');
+    $failure=$t->render('payment_attention',['id'=>'fixture','total'=>100]);
+    assertTrue(!str_contains($failure['html'],'you have not been charged'),'Bank charge is not inferred from failure');
+    assertTrue(str_contains(strtolower($failure['html']),'do not pay again'),'Customer warned against duplicate payment while uncertain');
+    $delivered=$t->render('shipment',['id'=>'fixture','status'=>'delivered','tracking_url'=>'javascript:bad()']);
+    assertTrue(str_contains(strtolower($delivered['subject']),'delivered'),'Delivered update is not a fresh dispatch');
+    assertTrue(!str_contains($delivered['html'],'javascript:'),'Tracking link cannot execute arbitrary scheme');
+};
+
+$tests['sample messages are obvious synthetic previews never a real invoice or payment receipt'] = static function (): void {
+    $t=new \App\Services\MailTemplateService('https://configured.example');
+    foreach(array_keys($t::catalog()) as $key){$sample=$t->sample($key);assertTrue(str_starts_with($sample['subject'],'[TEST SAMPLE - NO ORDER]'),'Sample subject is unambiguous');
+        assertTrue(str_contains($sample['html'],'No order was placed, no payment was taken'),'Sample body is unambiguous');
+        assertTrue(!str_contains($sample['html'],'/invoice'),'Preview never issues invoice link for nonexistent order');}
+    $denied=false;try{$t->sample('../private');}catch(InvalidArgumentException){$denied=true;}assertTrue($denied,'Preview keys are fixed enums');
+};
+
+$tests['welcome notification is a new customer event not every OAuth sign in'] = static function (): void {
+    assertTrue(method_exists(\App\Services\MailQueueService::class,'enqueueWelcome'),'Manual and Google use one deduped event');
+    $auth=fileRead('app/Controllers/AuthController.php');
+    assertTrue(substr_count($auth,'->enqueueWelcome(')===2,'Both successful new-account creation paths trigger welcome');
+    assertTrue(str_contains($auth,'!$matchedExisting')&&str_contains($auth,"$"."role === 'customer'"),'Google path distinguishes existing and privileged accounts');
+    $source=fileRead('app/Services/MailQueueService.php');assertTrue(str_contains($source,"'signup:'"),'Stable per-account event identity prevents duplicate greeting');
+    assertTrue(str_contains($source,'MailTemplateService'),'Preview and delivery use the real render contract');
+};
+
+$tests['mail template preview and sending are admin scoped and clearly separated'] = static function (): void {
+    $routes=\App\Services\ProjectMapService::registry()['routes'];
+    foreach(['GET /admin/email-templates','POST /admin/email-templates/test'] as $path){[$method,$url]=explode(' ',$path,2);assertSame(1,count(array_filter($routes,fn($r)=>$r['path']===$url&&$r['method']===$method)),'Actual endpoint exists: '.$path);}
+    $source=fileRead('app/Controllers/AdminController.php');assertTrue(str_contains($source,"'template_test_sent'"),'Idempotency claim retained before diagnostic send');
+    assertTrue(is_file(app_path('views/admin/email-templates.php')),'Curated preview exists');
+};
+
+$tests['sample recipient roles cannot replace the configured owner with customer input'] = static function (): void {
+    $service=\App\Services\MailTemplateService::class;
+    assertSame('owner@example.invalid',$service::sampleRecipient('owner','buyer@example.invalid','owner@example.invalid'),'Owner recipient is canonical setting, not test-input override');
+    assertSame('buyer@example.invalid',$service::sampleRecipient('customer','buyer@example.invalid','owner@example.invalid'),'Customer recipient remains independent');
+    $bad=false;try{$service::sampleRecipient('owner','buyer@example.invalid','');}catch(InvalidArgumentException){$bad=true;}assertTrue($bad,'Missing owner setting never falls back to customer');
+    $bad=false;try{$service::sampleRecipient('customer',"buyer@example.invalid\r\nBcc:x",'owner@example.invalid');}catch(InvalidArgumentException){$bad=true;}assertTrue($bad,'Address injection rejected');
+    $source=fileRead('app/Controllers/AdminController.php');assertTrue(str_contains($source,'$target!==$expectedTarget'),'Sample destination role must match template role');
+};
+
+$tests['real mail shell carries contextual preheader and signup events are stable'] = static function (): void {
+    $q=new \App\Services\MailQueueService();$message=$q->templatePreview('order_confirmation');
+    assertTrue(str_contains($message['html'],'Synthetic template test only.'),'Inbox preheader is event-specific, not only brand');
+    assertTrue(str_contains($message['html'],'role="presentation"'),'Table fallback preserves mail-client layout');
+    assertTrue(str_contains($message['html'],'max-width:600px'),'Mail remains single-column bounded');
+    $first=$q->enqueueWelcome(['id'=>'fixture-customer','role'=>'customer','name'=>'Fixture','email'=>'fixture@example.invalid']);
+    $again=$q->enqueueWelcome(['id'=>'fixture-customer','role'=>'customer','name'=>'Fixture','email'=>'fixture@example.invalid']);
+    assertSame($first['id'],$again['id'],'Duplicate signup event converges on same queue identity');
+    assertSame(null,$q->enqueueWelcome(['id'=>'owner','role'=>'admin','email'=>'owner@example.invalid']),'Customer welcome is not sent to privileged account');
+    assertTrue(str_contains(fileRead('app/Controllers/AuthController.php'),"['email_verified']"),'New Google welcome requires provider-verified email');
+};
+
+$tests['full mail preview view renders the real CSRF helper and destination controls'] = static function (): void {
+    $templates=\App\Services\MailTemplateService::catalog();$template='welcome';
+    $preview=(new \App\Services\MailQueueService())->templatePreview($template);
+    $testToken=str_repeat('a',32);$ownerLabel='o***@example.invalid';$ownerConfigured=true;$testResult=null;$csrf=str_repeat('b',64);
+    $level=ob_get_level();
+    try{ob_start();require app_path('views/admin/email-templates.php');$html=(string)ob_get_clean();
+        assertTrue(str_contains($html,'name="_csrf"'),'Real helper renders security input');
+        assertTrue(str_contains($html,'name="target" value="customer" checked'),'Customer role is selected only for customer template');
+        assertTrue(str_contains($html,'name="target" value="owner" disabled'),'Owner cannot receive a customer template accidentally');
+        assertTrue(str_contains($html,'sandbox=""'),'Preview remains script-disabled');
+    }finally{while(ob_get_level()>$level)ob_end_clean();}
+};
+
+$tests['profile password change sends a customer security notice only after successful CAS'] = static function (): void {
+    $source=fileRead('app/Controllers/AccountController.php');
+    $start=strpos($source,'public function changePassword()');$end=strpos($source,'private function profileRecord',$start);
+    $method=substr($source,$start,$end-$start);
+    $notice=strpos($method,"->enqueueTemplate('password_changed'");
+    assertTrue($notice!==false,'Profile change uses the same security template as recovery');
+    assertTrue($notice>strpos($method,'$store->patchUser('),'Notice cannot precede the verified password mutation');
+    assertTrue($notice<strrpos($method,'} else {'),'Rejected or stale password path cannot notify');
+    assertTrue(str_contains($method,"(string)(\$record['email']"), 'Notice recipient is the verified account record');
+    assertTrue(!str_contains($method,'admin_notification_email'),'Customer security notice cannot select the owner mailbox');
+};
+
 $tests['each agent session creates one private JSON file and no MySQL table'] = static function (): void {
     $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
     assertTrue(mkdir($root, 0700), 'Private test directory exists');

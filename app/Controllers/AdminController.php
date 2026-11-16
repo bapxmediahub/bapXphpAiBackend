@@ -814,6 +814,51 @@ final class AdminController extends BaseController {
         catch(\Throwable){$this->flash('Ticket could not be updated. No successful change is claimed.','error');}
         $this->redirect('/admin/support-tickets');
     }
+    public function emailTemplates(): void {
+        $templates=\App\Services\MailTemplateService::catalog();
+        $template=is_string($_GET['template']??null)?$_GET['template']:'order_confirmation';
+        if(!isset($templates[$template])){$this->renderNotFound();return;}
+        $preview=(new MailQueueService())->templatePreview($template);
+        $testToken=bin2hex(random_bytes(16));
+        $_SESSION['template_test_tokens']=array_slice((array)($_SESSION['template_test_tokens']??[]),-7,null,true);
+        $_SESSION['template_test_tokens'][$testToken]=['template'=>$template,'created_at'=>time()];
+        $owner=trim((string)((new SecretService())->all()['admin_notification_email']??''));
+        $ownerConfigured=(bool)filter_var($owner,FILTER_VALIDATE_EMAIL);
+        $ownerLabel=$ownerConfigured?mb_substr($owner,0,1).'***'.substr($owner,strpos($owner,'@')):'Not configured';
+        $testResult=is_array($_SESSION['template_test_result']??null)?$_SESSION['template_test_result']:null;
+        unset($_SESSION['template_test_result']);
+        $this->render('admin/email-templates',compact('templates','template','preview','testToken','ownerLabel','ownerConfigured','testResult')+['pageTitle'=>'Email Templates']);
+    }
+    public function testEmailTemplate(): void {
+        $this->validateCsrf();$this->checkRateLimit('mail-template-test',3,3600);
+        $key=is_string($_POST['template']??null)?$_POST['template']:'';
+        $token=is_string($_POST['test_token']??null)?$_POST['test_token']:'';
+        $claim=$_SESSION['template_test_tokens'][$token]??null;
+        if(!preg_match('/^[a-f0-9]{32}$/D',$token)||!is_array($claim)||($claim['template']??'')!==$key
+            ||($claim['created_at']??0)<time()-1800||!empty($_SESSION['template_test_sent'][$token])
+            ||!isset(\App\Services\MailTemplateService::catalog()[$key])||($_POST['confirm_sample']??'')!=='1'){
+            $this->flash('This sample request is expired, incomplete or already submitted. Review the outbox before retrying.','error');
+            $this->redirect('/admin/email-templates');
+        }
+        $target=is_string($_POST['target']??null)?$_POST['target']:'';
+        $expectedTarget=\App\Services\MailTemplateService::catalog()[$key]['audience']==='admin'?'owner':'customer';
+        if($target!==$expectedTarget){$this->flash('The sample recipient role must match the selected template.','error');$this->redirect('/admin/email-templates?template='.rawurlencode($key));}
+        try{
+            $owner=trim((string)((new SecretService())->all()['admin_notification_email']??''));
+            $to=\App\Services\MailTemplateService::sampleRecipient($target,is_string($_POST['recipient']??null)?$_POST['recipient']:'',$owner);
+        }catch(\InvalidArgumentException){$this->flash('Choose a valid test recipient or configure the owner address.','error');$this->redirect('/admin/email-templates?template='.rawurlencode($key));}
+        // Consume before any transport. A lost response is not permission to replay.
+        $_SESSION['template_test_sent']=array_slice((array)($_SESSION['template_test_sent']??[]),-15,null,true);
+        $_SESSION['template_test_sent'][$token]=time();unset($_SESSION['template_test_tokens'][$token]);
+        session_write_close();$result=['template'=>$key,'target'=>$target,'status'=>'unknown','queue_id'=>null];
+        try{
+            $record=(new MailQueueService())->enqueueTemplateSample($key,$to,'template-test:'.$token);
+            $result['queue_id']=$record['id'];$result['status']=$record['status']??'unknown';
+        }catch(\Throwable $error){error_log('Template sample outcome could not be confirmed ('.get_class($error).')');}
+        session_start();$_SESSION['template_test_result']=$result;
+        $this->redirect('/admin/email-templates?template='.rawurlencode($key));
+    }
+
     public function emailInbox(): void{$this->render('admin/mailbox',['pageTitle'=>'Email Inbox','title'=>'Email Inbox','box'=>'inbox','items'=>(new MailStorageService())->inbox()]);}
     public function emailOutbox(): void {
         $newsletter = ($_GET['type'] ?? '') === 'newsletter';
