@@ -4,8 +4,8 @@
     "reviews": {
         "agents": {
             "source_sha256": "4c37d9ff708a4469082951fdf03d1b9822d6252e536b80c5f9e16b992ae19f9c",
-            "references_sha256": "8df486c85a90d5a58ff8218ad0a2b72bbcf054d6da380f854652c4716f82492e",
-            "review_note": "Agent code and runtime prompts are unchanged; shared backend skill now declares the owner-required PHP8.3/MySQL8.4 target and read-only diagnostic boundary. Rechecked one-JSON-per-chat, actor scopes and no fabricated evidence contract; health does not add an agent tool or migrate data."
+            "references_sha256": "562b447490767980704c6088c9188dd5a0ef32e31f6c6e22527fd21f7eaaaaac",
+            "review_note": "Reproduced all three declared Support events being dropped, then derived operational names from AgentCapabilityPolicy. Regression proves all declared names/counts, private argument/result exclusion, unknown-name/incomplete rejection and no permission expansion. Added accurate limitations to observability docs."
         },
         "auth": {
             "source_sha256": "fb54a6f0d4394ea91c7544998f57773f0019cc7710093becee637e0d7d059440",
@@ -23,9 +23,9 @@
             "review_note": "Reproduced intrinsic-width table overflow and reviewed original blog view/source. Added a named keyboard scroll container around the same table and updated durable blog page guidance. Publication, content and newsletter behavior are unchanged."
         },
         "foundation": {
-            "source_sha256": "61af01c9befd7da78cd49f75ad850fac8408f7505a85c90dfa307bacbb02b46d",
+            "source_sha256": "5560e7607ad9bcd405925d731992e6fdca8ade54f1171f76836143d7ef1ff1e3",
             "references_sha256": "d76e858956e104ebfb1ee9e2db961be92fbf21cd8e7e3e21240f75e39560e358",
-            "review_note": "Inspected existing AdminController auth, PublicController shop gate, front-controller allowlist and configured origin. New GET routes extend the current PHP architecture; operational failures are 503 not a fabricated empty feed. DatabaseService, connection configuration and schema remain unchanged. No claim of Google authorization or MCP transport completion."
+            "review_note": "Reviewed AuditLogService against unchanged authentication/business-service contracts. Only the safe operational name allowlist changes; raw values remain omitted, write behavior is unchanged, and missing historical events are not fabricated."
         },
         "google-tags": {
             "source_sha256": "cd31738328223ec1b16970780fdacdc4bc95027ce0a1142934b38949a16a454d",
@@ -48,9 +48,9 @@
             "review_note": "Media storage/delete sources are unchanged. Shared architecture and admin skill now describe private System Health without exposing paths or modifying files; existing media verification/permissions contracts remain unchanged."
         },
         "operator-help": {
-            "source_sha256": "88c9c4d0c3693c0cd36bfa35f76d1cb52f40968ccb8c8e8c5fd6c5b654194871",
+            "source_sha256": "d263f39d6f06675e5b1b9d430b7b48229402893f96cff4ed70eb3d28773a65f1",
             "references_sha256": "df9db0b654aec9f05b39eadce8e547c22383faa07ba96fee9bff21464cb2e06c",
-            "review_note": "Compared the operator publishing guide with unchanged Edit/Hide/Delete behavior and the corrected actual list wrapper. Actions remain reachable by horizontal list scrolling; no publication permissions, data or save paths changed."
+            "review_note": "Compared monitoring guidance and exact tool-name projection. Declared Support and Enterprise calls now retain the same names used by execution; legacy customer_ticket_lookup is observability-only. Existing counts still require actual events and never imply accuracy or grant permissions."
         },
         "sales-channels": {
             "source_sha256": "1f2cd451f764c9d2b1a0b90b1454ac54fbf9a1130973f86749df0510b8eef244",
