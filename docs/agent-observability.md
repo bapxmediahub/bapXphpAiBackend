@@ -276,3 +276,13 @@ Existing public slugs containing spaces or Unicode are retained and URL-encoded
 in source IDs and links. Retrieval guards must not silently drop valid client
 records because an assumed lowercase ASCII slug format is narrower than the
 actual ProductService contract.
+
+## Capability names and operational counts
+
+Operational tool activity derives allowed names from AgentCapabilityPolicy's
+Support and Enterprise lists. The historical `customer_ticket_lookup` observed
+label remains readable without becoming an executable model capability. Only
+completed/error events contribute to these counts; incomplete states and
+unknown tools are excluded. The projection still discards raw arguments and
+results. A registry declaration is not an execution event, so local retrieval
+must not be invented as a tool call merely to populate a chart.

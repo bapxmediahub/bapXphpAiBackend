@@ -912,6 +912,19 @@ $tests['blog table has a bounded keyboard scroll region rather than a table-wrap
     assertTrue(!str_contains($view,'<table class="table-wrap"'),'Overflow is not applied to an intrinsic-width table');
 };
 
+$tests['operational telemetry retains every declared capability without raw arguments or new permissions'] = static function (): void {
+    $names=array_merge(\App\Services\AgentCapabilityPolicy::tools('support'),\App\Services\AgentCapabilityPolicy::tools('enterprise'));
+    $events=array_map(static fn($n)=>['name'=>$n,'status'=>'complete','duration_ms'=>4,'args'=>['private'=>'SENTINEL'],'output'=>'SENTINEL'],$names);
+    $m=new ReflectionMethod(\App\Services\AuditLogService::class,'toolActivity');$safe=$m->invoke(null,$events);
+    assertSame($names,array_column($safe,'name'),'All declared operations survive operational projection');
+    assertTrue(!str_contains(json_encode($safe),'SENTINEL'),'Arguments/results remain private');
+    assertSame('customer_ticket_lookup',$m->invoke(null,[['name'=>'customer_ticket_lookup','status'=>'complete']])[0]['name'],'Historical internal activity preserved');
+    assertTrue(!\App\Services\AgentCapabilityPolicy::allows('support','customer_ticket_lookup',['email'=>'fixture@example.invalid']),'Internal alias grants no execution');
+    assertSame([],$m->invoke(null,[['name'=>'arbitrary_sql','status'=>'complete'],['name'=>'public_catalog','status'=>'running']]),'Unknown or incomplete activity excluded');
+    $now=time();$r=\App\Services\AuditLogService::agentSummary([['event'=>'agent.run','created_at'=>gmdate('c',$now),'meta'=>['surface'=>'support','outcome'=>'local','tool_activity'=>array_slice($events,0,3)]]],$now);
+    assertSame(3,$r['support']['tool_call_count'],'Support summary denominator matches observed events');
+};
+
 $tests['each agent session creates one private JSON file and no MySQL table'] = static function (): void {
     $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
     assertTrue(mkdir($root, 0700), 'Private test directory exists');

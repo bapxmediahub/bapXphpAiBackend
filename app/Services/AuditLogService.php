@@ -46,9 +46,13 @@ final class AuditLogService {
 
     private static function toolActivity(array $tools): array {
         $safe = [];
+        // Discovery/execution owns capability names. This alias is historical
+        // observed activity only; it grants no model capability or authorization.
+        $names=array_merge(AgentCapabilityPolicy::tools(AgentCapabilityPolicy::SUPPORT),
+            AgentCapabilityPolicy::tools(AgentCapabilityPolicy::ENTERPRISE),['customer_ticket_lookup']);
         foreach (array_slice($tools, 0, 32) as $tool) {
             if (!is_array($tool)
-                || !in_array($tool['name'] ?? null, ['find_order', 'product_status', 'sales_summary', 'support_enquiries', 'search_articles', 'coupon_status', 'gst_register_summary', 'store_count', 'customer_ticket_lookup'], true)
+                || !in_array($tool['name'] ?? null, $names, true)
                 || !in_array($tool['status'] ?? null, ['complete', 'error'], true)) continue;
             $entry = [
                 'name' => $tool['name'],
