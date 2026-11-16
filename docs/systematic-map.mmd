@@ -7,14 +7,14 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 140 routes, 12 controllers, 67 services, 57 views, 0 data files, 26 tools"]
+  subgraph ARCH["Architecture Overview — 140 routes, 12 controllers, 68 services, 57 views, 0 data files, 26 tools"]
     arch_routes["> Routes: 140 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
-    arch_svc["> Services: 67"]:::arch
+    arch_svc["> Services: 68"]:::arch
     arch_views["> Views: 57"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 26"]:::arch
-    arch_gaps["> Gaps: 9"]:::arch
+    arch_gaps["> Gaps: 10"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -245,6 +245,7 @@ flowchart LR
     service_productservice["ProductService"]:::code
     service_projectmapservice["ProjectMapService"]:::code
     service_ratelimiter["RateLimiter"]:::code
+    service_requestfailureservice["RequestFailureService"]:::code
     service_resourceservice["ResourceService"]:::code
     service_reviewservice["ReviewService"]:::code
     service_runtimehealthservice["RuntimeHealthService"]:::code
@@ -394,8 +395,9 @@ flowchart LR
     gap_c69fc5d630["unwired_services: BlogConflictException"]:::gap
     gap_848defe3e1["unwired_services: CourierService"]:::gap
     gap_b09974925e["unwired_services: ProjectMapService"]:::gap
-    gap_622e98a07f["unwired_services: SmtpDeliveryUncertainException"]:::gap
-    gap_bc97ac563c["unwired_services: StoragePermissionService"]:::gap
+    gap_2c04cce0d7["unwired_services: RequestFailureService"]:::gap
+    gap_c3ef791483["unwired_services: SmtpDeliveryUncertainException"]:::gap
+    gap_858139bc3d["unwired_services: StoragePermissionService"]:::gap
     gap_02fdee86e5["POST /admin/email-templates/test — missing AuditLogService"]:::gap
     gap_63c4de0521["POST /admin/blog/enhance-title — missing AuditLogService"]:::gap
     gap_90db15aec7["POST /admin/blog/enhance-content — missing AuditLogService"]:::gap
@@ -1120,8 +1122,9 @@ flowchart LR
   gap_c69fc5d630 -. missing .-> service_blogconflictexception
   gap_848defe3e1 -. missing .-> service_courierservice
   gap_b09974925e -. missing .-> service_projectmapservice
-  gap_622e98a07f -. missing .-> service_smtpdeliveryuncertainexception
-  gap_bc97ac563c -. missing .-> service_storagepermissionservice
+  gap_2c04cce0d7 -. missing .-> service_requestfailureservice
+  gap_c3ef791483 -. missing .-> service_smtpdeliveryuncertainexception
+  gap_858139bc3d -. missing .-> service_storagepermissionservice
   gap_02fdee86e5 -. missing .-> controller_admincontroller
   gap_63c4de0521 -. missing .-> controller_admincontroller
   gap_90db15aec7 -. missing .-> controller_admincontroller

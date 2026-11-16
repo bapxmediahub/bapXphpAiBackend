@@ -44,18 +44,18 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 425
+  concepts: 427
   relationships: 340
   by_type:
     blog: 16
     controller: 12
-    doc: 49
+    doc: 50
     image: 89
     operator_guide: 12
     route: 140
     runtime_instruction: 6
     schema: 22
-    service: 67
+    service: 68
     skill: 12
 concepts:
   - id: "blog:benefits-of-rudraksha"
@@ -674,6 +674,15 @@ concepts:
     tags:
       - "module"
     filename: "remote-db.md"
+    header_image: ""
+  - id: "doc:request-failures"
+    type: "doc"
+    title: "Correlated Request Failures and Response Integrity"
+    description: "Native PHP error responses discard partial output, preserve honest operation uncertainty and provide a safe request reference."
+    resource: "docs/request-failures.md"
+    tags:
+      - "docs"
+    filename: "request-failures.md"
     header_image: ""
   - id: "doc:roles/admin"
     type: "doc"
@@ -4787,6 +4796,14 @@ concepts:
     title: "RateLimiter"
     description: "Service: RateLimiter"
     resource: "app/Services/RateLimiter.php"
+    tags:
+      - "code"
+      - "service"
+  - id: "service:RequestFailureService"
+    type: "service"
+    title: "RequestFailureService"
+    description: "Service: RequestFailureService"
+    resource: "app/Services/RequestFailureService.php"
     tags:
       - "code"
       - "service"

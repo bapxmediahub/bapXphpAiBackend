@@ -4,18 +4,18 @@
     "reviews": {
         "agents": {
             "source_sha256": "f376e0fa2e3b1d03bc36dacbc79b2218afda18c5cf930c8402cebf8b370eeec0",
-            "references_sha256": "516eed0ba499dbc3a23709461e1518323db52ef6b7ea169a74ad0c7b4aa4b696",
-            "review_note": "Reconciled preserved 78346fd into latest source after #282/#284/#286/#289/#291. ReviewDetail/ReviewTurn enforce server-admin identity, expected evidence hash/revision and per-chat atomic lock; original answer/trace/customer feedback untouched. 270 combined regressions, 31 exact fixtures and six-worker review conflict test pass. Recent-sample reviewed labels are not model-wide accuracy or confirmed customer resolution."
+            "references_sha256": "6b6afef3c7ea5ddbe234d1de910f5cc454293a1d55b34f2678eb39513de90d5a",
+            "review_note": "Agent source and JSON persistence are unchanged; reviewed their existing scoped catches and X-Agent-Trace against the shared backend skill addition. Generic uncaught failures can correlate a valid existing agent trace but cannot alter completed turns, reviews, customer outcomes or authorize replay. Existing 31-case and concurrency acceptance remain distinct from semantic accuracy."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
-            "references_sha256": "b375a6d794d4ff1a4375801fcb5ddf1f9c58c09786728acc4d8b51c2f2379d54",
-            "review_note": "Authentication and account/password lifecycle unchanged; new review paths reuse AdminController authorization/CSRF and independently validate reviewer identity. Role-shaped model/client data cannot grant review access. Customer-login approval blocker is not bypassed by this feature or QA."
+            "references_sha256": "1392bfc7339cef7a96b9746334e61ddd0ef41792f5e157162b904b8667c98e75",
+            "review_note": "AuthService/AdminController role checks and CSRF/redirect implementations are unchanged; reviewed session startup ordering and existing cookies under the response boundary. It neither authorizes users nor clears auth cookies; guest denial and normal signed-in admin paths pass. CLI auth fixtures remain isolated, and no user password or login identity is changed."
         },
         "commerce": {
             "source_sha256": "ddb6bf29a16d2fae56cbc2ccb48bf85e376dcc42ca2e3794ab1891f05fc6be65",
-            "references_sha256": "e13d977969ab7c583dcaa7f8637e2fb3faeb5aea2f0984b2e4bbee2d78d38394",
-            "review_note": "Business order/catalogue/GST sources unchanged. Added synthetic known-answer sales/refund/GST evidence fixtures inspect existing scoped tools; they do not mutate real financial data or certify tax filing. Shared backend guide only adds JSON answer-review isolation."
+            "references_sha256": "c728a72c194a8740f26ef6da1ab0db634f80ad5ff4c74389ed8e17563ea55dd4",
+            "review_note": "No order/payment/catalogue source changed. Reviewed existing verified-order/idempotency contracts and shared backend guidance; the generic handler explicitly cannot infer rollback or advise repeating a charge. Normal product/feed/API reads and intentional service failures remain covered; no production purchase or business-data write used as a test."
         },
         "content": {
             "source_sha256": "98a00d036ec51487e08eb8368c166b7b6782d74c666bbb6fdffd6c6a633df94f",
@@ -23,14 +23,19 @@
             "review_note": "Four reproduced defects and timezone/CAS fixtures now pass. BlogService compares expected SHA under a lock and atomic rename; direct/public list/agent/sitemap visibility is unified; six-worker test permits one writer only. Two isolated browser editor workflows prove stale save/delete rejection, preserved rejected text and reload/current revision at 1280px/375px without live content mutation."
         },
         "foundation": {
-            "source_sha256": "1597d90eb79dafb44a2f0f8774e505bac3e482952d9f3dc176e5a93936cfdd34",
-            "references_sha256": "088039b2399a97f5423f88eeeb747c50e16c6e778146fc5640f13cc0148b6402",
-            "review_note": "Existing JSON transcript remains one file per chat; review appends bounded entries under its same locking/atomic-write contract. Current database schema/connection, publishing CAS, mail and gateway sources retained. Controller returns conflict on stale evidence and view accesses are audited; broader late-view response issue is separately tracked."
+            "source_sha256": "50f02281e93c4f7edf407459850e3c1008b026527045bfe6c9ed9b5ab67cc7d3",
+            "references_sha256": "dcb72645f61ada7931d4463a01be6b01cdcfbe3070627e9aadc7850bdeaf9188",
+            "review_note": "Replaced only the global bootstrap web handler with a registered dependency-free response boundary while retaining CLI nonzero behavior. Source-string DB503 assumption now points to tested generic500 and preserves separate explicit API503/remote-not-empty checks. Original config/database.php, DatabaseService, schema and business services are unchanged; browser normal/error contracts and documented limitations agree."
         },
         "google-tags": {
             "source_sha256": "cd31738328223ec1b16970780fdacdc4bc95027ce0a1142934b38949a16a454d",
             "references_sha256": "25c4f978b851c1aabb723f71747fc5112f6726f108b0d0da6afd208d7742abfa",
             "review_note": "Read the original unused client and duplicate inline public rendering plus official current Google ID/config/verification docs. One validating HTML/JSON-encoding client now drives actual public rendering and independent owner statuses. Four fail-first regressions and an isolated browser fixture prove hostile values are omitted while valid existing G/GT/AW outputs remain. No external collection/ownership claim."
+        },
+        "http-errors": {
+            "source_sha256": "399b84f63ec0f03947d9338711f3a8c60008750c96d96936b1e9c7c57b6c5792",
+            "references_sha256": "454aa849ae8e0ac81730e5422366fb74bc3b774e4864776a0d842bfa4e32125d",
+            "review_note": "Compared bootstrap/session initialization, old global handler, BaseController redirects/JSON/view output and actual API catches with RequestFailureService. Native response buffer and safe500 replace only unhandled failures; 88 loopback HTTP assertions preserve normal HTML/JSON/XML/binary/204/redirect/explicit503. Docs state pre-bootstrap/OOM/streaming limits and uncertainty of earlier side effects; no raw message/admin stack or database accusation."
         },
         "interface": {
             "source_sha256": "b2b6522d3bbc9227431293988268c55bc257f0e6d98d6d4b16251362778cabae",
@@ -39,13 +44,13 @@
         },
         "mail": {
             "source_sha256": "0eedafd9591fc8bda358d311186ae95f75cc7c21eefde01c5dec2e925deb1dd5",
-            "references_sha256": "7447c5575bd42631af44f14aa589f102166f5ae0cabe9ce1d4f4bf69577745ed",
-            "review_note": "Mail service/templates/recipient/SMTP sources unchanged from verified #289/#291. Shared AdminController and backend reference gained only independent answer-review functionality; no mail trigger/permission/queue state was altered. Rechecked mail-event source docs so dependency review does not imply actual owner/order receipt."
+            "references_sha256": "515420eef38483828a9530a376237e47022755dd0964bdb0828c89acff12a11b",
+            "review_note": "MailQueueService and SmtpMailer are unchanged; inspected accepted-DATA and unknown-attempt handling while adding shared failure guidance. A page failure cannot retract SMTP acceptance or invite resending; normal preview/sandbox and sample routing are preserved. Existing customer Gmail samples are not real order or owner receipts, as the mail runbook already states."
         },
         "media": {
             "source_sha256": "cd8a64c85c1eecc6c51d01262423e248f88fd14e896b1e3e74c359f937531962",
-            "references_sha256": "01373b62d83632c357490b82278ff19f30d50168f40441fdd1c94c1fe38fa0f5",
-            "review_note": "Media service/storage/deletion behavior unchanged; shared admin guide now documents independent review screens. No file upload/delete or public-media route changes. Verified unchanged guard contract against existing media docs."
+            "references_sha256": "7dede622a6945d9d59cf1a3d668869784dbfe63519edba5992c212217dec8341",
+            "review_note": "Media source and static/persistent-file delivery paths are unchanged. Architecture now names the dynamic response boundary accurately; it starts only when bootstrap is loaded and does not intercept root static/image dispatch. Generic failure privacy does not change delete guards, metadata storage or media retention."
         },
         "operator-help": {
             "source_sha256": "100bb4f452613932a8d06de17455791e7871087e1a8cff852cab78e5ae4dd7a4",
@@ -58,9 +63,9 @@
             "review_note": "Reviewed service/XML/CLI/UI against ProductService offer and visibility behavior plus current primary Google product-source and invited-creator docs. Verified explicit identifiers only, valid URL/image checks, safe XML, unknown external approval and no credential/account actions. Public browser samples match real prices/images; local missing media is not labelled a production defect."
         },
         "workflow": {
-            "source_sha256": "399683250692446e3fb717309af5bcb2b1c11e642146ef5771ac354676a450dd",
-            "references_sha256": "ca5db389c8bcb08c14953a650a4ce35c256bdbde01f97b79d741c65f64e9610f",
-            "review_note": "Preserved current GitHub-only tracking and documentation dependency policy while integrating the old feature. Added exact filesystem concurrency CI step and actual route references. Old generated indexes/receipts were discarded and regenerated from current integrated source rather than resolving conflicts by overwriting current work."
+            "source_sha256": "7cc9e23200553dd269bc6019356f6923dc85aedff6adc43bf13890df3c02e8ef",
+            "references_sha256": "94dd586c81b1d91a0332e86219ac2b55c416d5ebc37115c9a2008697d68236d0",
+            "review_note": "Added the explicit http-errors source/dependency review area and README link to durable behavior docs. The full localhost HTTP fixture is invoked by standard PHP regressions across existing CI versions, with no production crash route. Evidence/plans remain in issue288; generated maps are updated after semantic review, not accepted as runtime proof."
         }
     }
 }
