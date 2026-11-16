@@ -42,3 +42,29 @@ The owner post list sits in a named, keyboard-focusable horizontal scroll
 region on narrow screens. All edit/publish/delete actions remain in the table;
 only the list scrolls horizontally, not the entire admin page. Do not hide body
 overflow to mask intrinsic table-width defects. Verify at 375px with long titles.
+
+## Scheduling and compare-and-swap saves
+
+BlogService owns public visibility: published flag, valid due publication date
+and allowed category/module must all pass. Calendar dates start at midnight
+Asia/Kolkata; explicit timezone timestamps compare actual instants. Missing
+legacy dates retain their historical visibility, invalid dates fail closed.
+The direct article route calls the same predicate as all public listings,
+sitemap and agent retrieval. Raw `content/blog/posts` URLs are denied, so
+private/scheduled Markdown cannot bypass the route.
+
+Editor saves return the SHA-256 of the actual persisted file. Existing updates,
+toggles and deletes require the expected hash under an interprocess lock;
+atomic same-directory replacement preserves complete files. Missing/stale
+revisions and create collisions fail, with submitted text retained in the owner
+session for download and explicit reload. Existing slugs stay stable on title
+edit. CLI image updates use the revision returned by find(). No arbitrary file
+paths, symlinks, metadata-newline injection or oversized content are accepted.
+
+New owner drafts are explicit. A new due/public post may send the separately
+selected newsletter; a scheduled/hidden save sends none and no delayed newsletter
+job is installed. Old UI forms lacking a revision must be reloaded before save.
+This is concurrency/scheduling protection, not full autosave/revision history.
+Run `BAPX_TEST_MODE=1 php tests/blog-concurrency.php`; six synthetic writers must
+produce one save and five conflicts. Do not create live scheduled articles as
+QA fixtures or send newsletters during acceptance.

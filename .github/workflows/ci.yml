@@ -99,3 +99,5 @@ jobs:
         run: ./bapXphp ci
       - name: Verify deterministic agent fixtures
         run: php cli/agent-eval.php
+      - name: Verify isolated Markdown compare-and-swap concurrency
+        run: BAPX_TEST_MODE=1 php tests/blog-concurrency.php

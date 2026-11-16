@@ -925,6 +925,77 @@ $tests['operational telemetry retains every declared capability without raw argu
     assertSame(3,$r['support']['tool_call_count'],'Support summary denominator matches observed events');
 };
 
+$tests['blog dates control public visibility at the site timezone boundary'] = static function (): void {
+    $dir=sys_get_temp_dir().'/sps-blog-date-'.bin2hex(random_bytes(6));mkdir($dir,0700);
+    try {
+        $before=new \App\Services\BlogService($dir,new DateTimeImmutable('2026-11-15T18:29:59Z'));
+        (new ReflectionProperty(\App\Services\BlogService::class,'postsDir'))->setValue($before,$dir);
+        $future=$before->save(['slug'=>'future','title'=>'Future','content'=>'Private until due','category'=>'help','published'=>true,'published_at'=>'2026-11-16']);
+        assertSame([], $before->all(),'Before midnight IST it is withheld from all public consumers');
+        assertTrue(!$before->isPublic($future),'Direct-route predicate agrees');
+        assertSame('scheduled',$before->publicationState($future),'Admin can distinguish scheduled from public');
+        $due=new \App\Services\BlogService($dir,new DateTimeImmutable('2026-11-15T18:30:00Z'));
+        assertSame(1,count($due->all()),'Exactly midnight IST makes a calendar-date post public');
+        assertTrue($due->isPublic($due->find('future')),'Direct and listed visibility agree');
+        $invalid=false;try{$due->save(['slug'=>'invalid','title'=>'Invalid','content'=>'x','published_at'=>'2026-02-30']);}catch(InvalidArgumentException){$invalid=true;}
+        assertTrue($invalid,'Invalid calendar date is rejected rather than normalized silently');
+        assertTrue(!$due->isPublic(['published'=>true,'category'=>'help','published_at'=>'nonsense']),'Invalid stored legacy schedule fails closed');
+        assertTrue(!$due->isPublic(['published'=>true,'category'=>'astrology','published_at'=>'2020-01-01']),'Retired content remains withheld');
+    }finally{foreach(glob($dir.'/*')?:[] as $file)unlink($file);@unlink($dir.'/.blog-write.lock');rmdir($dir);}
+};
+
+$tests['blog writes compare exact content revision before update delete or create collision'] = static function (): void {
+    $dir=sys_get_temp_dir().'/sps-blog-cas-'.bin2hex(random_bytes(6));mkdir($dir,0700);
+    try {
+        $blog=new \App\Services\BlogService($dir);
+        (new ReflectionProperty(\App\Services\BlogService::class,'postsDir'))->setValue($blog,$dir);
+        $first=$blog->save(['slug'=>'article','title'=>'Original','content'=>'Original body','published'=>false]);
+        assertSame(64,strlen($first['_revision']),'Returned revision is actual persisted content digest');
+        $a=$blog->find('article');$b=$blog->find('article');$a['content']='First editor';$next=$blog->save($a);
+        $conflict=false;try{$b['content']='Stale editor';$blog->save($b);}catch(\App\Services\BlogConflictException){$conflict=true;}
+        assertTrue($conflict,'Stale revision cannot overwrite');assertSame('First editor',$blog->find('article')['content'],'Current body survives');
+        $conflict=false;try{$blog->save(['slug'=>'article','title'=>'Collision','content'=>'new']);}catch(\App\Services\BlogConflictException){$conflict=true;}
+        assertTrue($conflict,'Missing revision cannot overwrite an existing file');
+        $conflict=false;try{$blog->delete('article',$first['_revision']);}catch(\App\Services\BlogConflictException){$conflict=true;}
+        assertTrue($conflict,'Stale delete also rejected');
+        $blog->delete('article',$next['_revision']);assertSame(null,$blog->find('article'),'Exact reviewed revision can be deleted');
+    }finally{foreach(glob($dir.'/*')?:[] as $file)unlink($file);@unlink($dir.'/.blog-write.lock');rmdir($dir);}
+};
+
+$tests['blog storage rejects path hops linked files and preserves frontmatter values safely'] = static function (): void {
+    $dir=sys_get_temp_dir().'/sps-blog-path-'.bin2hex(random_bytes(6));mkdir($dir,0700);$outside=$dir.'-private.md';file_put_contents($outside,'DO_NOT_READ');
+    try {
+        $blog=new \App\Services\BlogService($dir);
+        (new ReflectionProperty(\App\Services\BlogService::class,'postsDir'))->setValue($blog,$dir);
+        foreach(['../escape','a/b','a\\b','.',''] as $slug){assertSame(null,$blog->find($slug),'Invalid lookup is not a file read');}
+        symlink($outside,$dir.'/linked.md');assertSame(null,$blog->find('linked'),'Linked source excluded');
+        $denied=false;try{$blog->save(['slug'=>'linked','title'=>'x','content'=>'x']);}catch(RuntimeException){$denied=true;}assertTrue($denied,'No symlink overwrite');
+        $post=$blog->save(['slug'=>'safe','title'=>"Title\npublished: true",'content'=>"# Body\n\nKeep --- separators",'published'=>false]);
+        assertSame(false,$post['published'],'Metadata text cannot inject publication fields');
+        assertSame("Title\npublished: true",$post['title'],'Escaped metadata round-trips');
+        assertSame("# Body\n\nKeep --- separators",$post['content'],'Body separators preserved');
+        assertSame('DO_NOT_READ',file_get_contents($outside),'External file unchanged');
+    }finally{foreach(glob($dir.'/*')?:[] as $file)unlink($file);@unlink($dir.'/.blog-write.lock');unlink($outside);rmdir($dir);}
+};
+
+$tests['blog editor carries revision guards and public route denies raw unpublished files'] = static function (): void {
+    $view=fileRead('views/admin/blog.php');
+    assertTrue(str_contains($view,'name="expected_revision"'),'Save/delete/toggle carry revision evidence');
+    assertTrue(str_contains($view,'edit-original-slug'),'Existing URL does not silently follow title edits');
+    assertTrue(str_contains($view,'Download unsaved Markdown'),'Conflicted text has a recovery path');
+    assertTrue(str_contains(fileRead('app/Controllers/BlogController.php'),'->isPublic($post)'),'Direct URL uses the same visibility contract');
+    assertTrue(str_contains(fileRead('index.php'),'content/blog/posts')&&str_contains(fileRead('.htaccess'),'content/blog/posts'),'Static source cannot bypass draft/schedule gating');
+};
+
+$tests['blog explicit draft status is preserved and scheduling controls no immediate newsletter'] = static function (): void {
+    $view=fileRead('views/admin/blog.php');$controller=fileRead('app/Controllers/AdminController.php');
+    assertTrue(str_contains($view,'name="published" id="edit-published"'),'Editor submits current draft/public state explicitly');
+    assertTrue(str_contains($controller,'$blog->isPublic($saved)'),'No immediate newsletter for scheduled or hidden content');
+    $service=new \App\Services\BlogService(now:new DateTimeImmutable('2026-11-15T18:30:00Z'));
+    assertSame('published',$service->publicationState(['published'=>true,'published_at'=>'2026-11-16T00:00:00+05:30','category'=>'help']),'Equivalent explicit instant becomes visible');
+    assertSame('hidden',$service->publicationState(['published'=>'false','published_at'=>'2020-01-01']),'String false is not treated as truthy');
+};
+
 $tests['each agent session creates one private JSON file and no MySQL table'] = static function (): void {
     $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
     assertTrue(mkdir($root, 0700), 'Private test directory exists');

@@ -946,13 +946,17 @@ final class AdminController extends BaseController {
     public function blog(): void{
         $this->requireModule('blog');
         $blog = new \App\Services\BlogService();
+        $recoveredDraft=is_array($_SESSION['blog_form_draft']??null)?$_SESSION['blog_form_draft']:null;
+        unset($_SESSION['blog_form_draft']);
+        $reload=is_string($_GET['reload']??null)?$_GET['reload']:'';
+        if($reload!=='')$recoveredDraft=$blog->find($reload);
         // The editor's "Choose from uploads" picker needs the library, otherwise it
         // renders empty and the only way to set an image is to type a path.
         $this->render('admin/blog',[
             'pageTitle'=>'Blog','title'=>'Blog Posts',
             'posts'=>$blog->all(true),'categories'=>$blog->categories(),
             'mediaFiles'=>(new MediaService())->all('blog'),
-            'currentAuthor'=>$this->currentAuthorName(),
+            'currentAuthor'=>$this->currentAuthorName(),'recoveredDraft'=>$recoveredDraft,
         ]);
     }
     /** The signed-in admin's own name, falling back to a generic byline. */
@@ -987,14 +991,36 @@ final class AdminController extends BaseController {
             $post['author'] = $this->currentAuthorName();
         }
         $post['updated_at'] = date('Y-m-d');
-        $blog->save($post);
-        (new AuditLogService())->record('save','blog',$_POST['slug'] ?? '');
-        $sent = 0;
-        if ($isNew && ($_POST['notify_subscribers'] ?? '') === '1') {
-            $sent = $this->sendBlogNewsletter($_POST);
+        try {
+            $saved=$blog->save($post);
+        } catch (\App\Services\BlogConflictException|\InvalidArgumentException $error) {
+            $this->preserveBlogDraft($post);
+            $this->flash($error->getMessage().' Your text is retained below; download it before reloading the current article.','error');
+            $this->redirect('/admin/blog');
+        } catch (\Throwable $error) {
+            $this->preserveBlogDraft($post);
+            error_log('Blog save failed ('.get_class($error).')');
+            $this->flash('Article save could not be confirmed. Your text is retained; download it before reloading.','error');
+            $this->redirect('/admin/blog');
         }
-        $this->flash($sent > 0 ? "Blog post saved. Newsletter sent to {$sent} subscriber(s)." : 'Blog post saved.','success');
+        (new AuditLogService())->record('save','blog',$saved['slug'],['revision'=>$saved['_revision']]);
+        $sent = 0;
+        if ($isNew && $blog->isPublic($saved) && ($_POST['notify_subscribers'] ?? '') === '1') {
+            $sent = $this->sendBlogNewsletter($saved);
+        }
+        $state=$blog->publicationState($saved);
+        $message=$state==='scheduled'?'Post saved as scheduled. It becomes public on its date (Asia/Kolkata); no newsletter was sent or scheduled.':
+            ($state==='published'?'Blog post saved and public.':'Blog post saved; it is not public.');
+        if($sent>0)$message.=' Newsletter accepted for '.$sent.' recipient(s); inbox receipt is not verified.';
+        $this->flash($message,'success');
         $this->redirect('/admin/blog');
+    }
+    private function preserveBlogDraft(array $post): void {
+        $draft=[];
+        foreach(['slug','original_slug','expected_revision','type','title','category','published','published_at','updated_at','author','content','summary','excerpt','order','keywords','og_image','image_alt','source_url','template'] as $key){
+            if(isset($post[$key])&&is_scalar($post[$key]))$draft[$key]=is_string($post[$key])?mb_substr($post[$key],0,$key==='content'?500000:16000):$post[$key];
+        }
+        $draft['_save_failed']=true;$_SESSION['blog_form_draft']=$draft;
     }
     /** Registered customers only — the owner and consultants are not subscribers. */
     private function sendBlogNewsletter(array $post): int {
@@ -1019,15 +1045,20 @@ final class AdminController extends BaseController {
         $post = $slug !== '' ? $blog->find($slug) : null;
         if (!$post) { $this->flash('Post not found.','error'); $this->redirect('/admin/blog'); }
         $post['published'] = empty($post['published']);
-        $blog->save($post);
-        (new AuditLogService())->record('save','blog.published',$slug,['published'=>$post['published']]);
-        $this->flash($post['published'] ? 'Post is now visible on the site.' : 'Post is now hidden from the site.','success');
+        $post['expected_revision']=is_string($_POST['expected_revision']??null)?$_POST['expected_revision']:'';
+        try{$post=$blog->save($post);}catch(\App\Services\BlogConflictException|\InvalidArgumentException $error){
+            $this->flash($error->getMessage().' Reload the list before changing visibility.','error');$this->redirect('/admin/blog');
+        }
+        (new AuditLogService())->record('save','blog.published',$slug,['published'=>$post['published'],'revision'=>$post['_revision']]);
+        $state=$blog->publicationState($post);
+        $this->flash($state==='published'?'Post is now visible on the site.':($state==='scheduled'?'Post is scheduled, not yet public.':'Post is hidden or withheld from the site.'),'success');
         $this->redirect('/admin/blog');
     }
     public function deleteBlog(): void{
         $slug = (string)($_POST['slug'] ?? '');
         if ($slug !== '') {
-            (new \App\Services\BlogService())->delete($slug);
+            try{(new \App\Services\BlogService())->delete($slug,is_string($_POST['expected_revision']??null)?$_POST['expected_revision']:null);}
+            catch(\App\Services\BlogConflictException|\InvalidArgumentException $error){$this->flash($error->getMessage().' Reload before deleting.','error');$this->redirect('/admin/blog');}
             (new AuditLogService())->record('delete','blog',$slug);
         }
         $this->flash('Blog post deleted.','info');

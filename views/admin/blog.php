@@ -3,10 +3,22 @@
     <button class="btn btn-primary" type="button" onclick="toggleForm()">+ New Post</button>
 </div>
 
+<?php if(!empty($recoveredDraft['_save_failed'])): ?>
+<section class="admin-card" role="alert" data-blog-save-conflict>
+    <h3>Your edit was not saved</h3><p>Your submitted text is still in the editor below. Download it before reloading; there is no automatic overwrite of a newer article.</p>
+    <button type="button" class="btn btn-outline" onclick="downloadBlogDraft()">Download unsaved Markdown</button>
+    <?php $reloadSlug=(string)($recoveredDraft['original_slug']??$recoveredDraft['slug']??''); if($reloadSlug!==''): ?><a class="btn btn-ghost" href="/admin/blog?reload=<?= e(rawurlencode($reloadSlug)) ?>">Reload current article</a><?php endif; ?>
+</section>
+<?php endif; ?>
 <form method="post" action="/admin/blog/save" id="blog-form" class="admin-blog-editor" hidden>
     <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
     <input type="hidden" name="slug" id="edit-slug" value="">
+    <input type="hidden" name="expected_revision" id="edit-revision" value="new">
+    <input type="hidden" name="original_slug" id="edit-original-slug" value="">
     <input type="hidden" name="type" id="edit-type" value="blog">
+    <label>Publication
+        <select name="published" id="edit-published"><option value="0">Draft — not public</option><option value="1">Publish when the date is due</option></select>
+    </label>
     <div class="admin-blog-editor__grid">
         <label>Title <button type="button" class="btn btn-sm btn-outline be-enhance-inline" id="enhance-title">Enhance</button> <input type="text" name="title" id="edit-title" required style="width:100%"></label>
         <label>Category
@@ -20,9 +32,9 @@
     </div>
 
     <details class="be-settings">
-        <summary>Post settings <span>slug, image, excerpt, SEO — date and author are automatic</span></summary>
+        <summary>Post settings <span>slug, image, excerpt, SEO — date controls scheduling in Asia/Kolkata</span></summary>
         <div class="admin-blog-editor__grid">
-        <label>Slug <input type="text" name="slug" id="edit-slug-display" placeholder="auto-from-title" style="width:100%"></label>
+        <label>Slug <input type="text" id="edit-slug-display" placeholder="auto-from-title" style="width:100%"></label>
         <label>Article template
             <select name="template" id="edit-template" style="width:100%">
                 <option value="editorial">Editorial story</option>
@@ -40,7 +52,7 @@
         <label class="admin-blog-editor__wide">SEO Keywords <input type="text" name="keywords" id="edit-keywords" placeholder="rudraksha, pooja items, temple guidance" style="width:100%"><small>Comma-separated keywords for search engine indexing.</small></label>
         <?php // Both are filled in on save from today's date and the signed-in admin.
               // They stay here for backdating a post or crediting someone else. ?>
-        <label>Published At <input type="date" name="published_at" id="edit-date" style="width:100%"><small>Leave blank for today.</small></label>
+        <label>Published At <input type="date" name="published_at" id="edit-date" style="width:100%"><small>Leave blank for today. Future dates become public at midnight Asia/Kolkata; no automatic newsletter is scheduled.</small></label>
         <label>Author <input type="text" name="author" id="edit-author" placeholder="<?= e($currentAuthor ?? 'Admin') ?>" style="width:100%"><small>Leave blank to credit <?= e($currentAuthor ?? 'Admin') ?>.</small></label>
         </div>
     </details>
@@ -109,7 +121,8 @@
         </label>
         <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap">
             <button class="btn btn-primary" type="submit">Save</button>
-            <button class="btn btn-outline" type="button" onclick="toggleForm()">Cancel</button>
+            <button class="btn btn-outline" type="button" onclick="downloadBlogDraft()">Download unsaved Markdown</button>
+            <button class="btn btn-outline" type="button" onclick="closeBlogForm()">Cancel</button>
         </div>
     </div>
 </form>
@@ -122,7 +135,7 @@
     <tr>
         <td><a href="/blog/<?= e($post['slug'] ?? '') ?>" target="_blank"><?= e($post['title'] ?? 'Untitled') ?></a></td>
         <td><?= e($post['category'] ?? '') ?></td>
-        <td><?= !empty($post['published']) ? '✅' : '❌' ?></td>
+        <td><?= e(ucfirst(str_replace('_',' ',(string)($post['_publication_state']??'hidden')))) ?></td>
         <td><?= e($post['published_at'] ?? '') ?></td>
         <td>
             <button class="btn btn-sm btn-ghost" onclick="editPost(<?= e(json_encode($post)) ?>)">Edit</button>
@@ -130,6 +143,7 @@
             <form method="post" action="/admin/blog/toggle" style="display:inline">
                 <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
                 <input type="hidden" name="slug" value="<?= e($post['slug'] ?? '') ?>">
+                <input type="hidden" name="expected_revision" value="<?= e($post['_revision'] ?? '') ?>">
                 <button class="btn btn-sm btn-ghost" title="<?= $__live ? 'Hide from the site' : 'Publish to the site' ?>"
                         aria-label="<?= $__live ? 'Hide post' : 'Publish post' ?>">
                     <?php if ($__live): ?>
@@ -142,6 +156,7 @@
             <form method="post" action="/admin/blog/delete" style="display:inline" onsubmit="return confirm('Delete this post?')">
                 <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
                 <input type="hidden" name="slug" value="<?= e($post['slug'] ?? '') ?>">
+                <input type="hidden" name="expected_revision" value="<?= e($post['_revision'] ?? '') ?>">
                 <button class="btn btn-sm btn-ghost" style="color:var(--color-error)">Delete</button>
             </form>
         </td>
@@ -152,9 +167,9 @@
 </div>
 
 <script>
-function toggleForm(){var f=document.getElementById('blog-form');f.hidden=!f.hidden;if(f.hidden)f.reset();}
-function editPost(post){document.getElementById('edit-slug').value=post.slug||'';document.getElementById('edit-slug-display').value=post.slug||'';document.getElementById('edit-type').value=post.type||'blog';document.getElementById('edit-title').value=post.title||'';document.getElementById('edit-category').value=post.category||'';document.getElementById('edit-template').value=post.template||'editorial';document.getElementById('edit-image').value=post.og_image||post.image||'';document.getElementById('edit-image-alt').value=post.image_alt||'';document.getElementById('edit-source-url').value=post.source_url||'';document.getElementById('edit-summary').value=post.summary||post.excerpt||'';document.getElementById('edit-order').value=post.order||'';document.getElementById('edit-excerpt').value=post.excerpt||'';document.getElementById('edit-date').value=post.published_at||'';document.getElementById('edit-author').value=post.author||'Admin';document.getElementById('edit-content').value=post.content||'';if(window.beLoadMarkdown)window.beLoadMarkdown(post.content||'');document.getElementById('blog-form').hidden=false;document.getElementById('blog-form').scrollIntoView({behavior:'smooth',block:'start'});document.getElementById('edit-title').focus();}
-document.getElementById('edit-title').addEventListener('input',function(){var slug=this.value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');document.getElementById('edit-slug').value=slug;document.getElementById('edit-slug-display').value=slug;});
+function toggleForm(){var f=document.getElementById('blog-form');f.reset();if(window.beLoadMarkdown)window.beLoadMarkdown('');document.getElementById('edit-slug-display').readOnly=false;document.getElementById('edit-revision').value='new';document.getElementById('edit-original-slug').value='';f.hidden=false;document.getElementById('edit-title').focus();}
+function editPost(post){document.getElementById('edit-published').value=(post.published===true||post.published===1||post.published==='1'||post.published==='true')?'1':'0';document.getElementById('edit-revision').value=post.expected_revision||post._revision||'new';document.getElementById('edit-original-slug').value=post.original_slug||(post._revision?post.slug:'')||'';document.getElementById('edit-slug-display').readOnly=!!document.getElementById('edit-original-slug').value;document.getElementById('edit-slug').value=post.slug||'';document.getElementById('edit-slug-display').value=post.slug||'';document.getElementById('edit-type').value=post.type||'blog';document.getElementById('edit-title').value=post.title||'';document.getElementById('edit-category').value=post.category||'';document.getElementById('edit-template').value=post.template||'editorial';document.getElementById('edit-image').value=post.og_image||post.image||'';document.getElementById('edit-image-alt').value=post.image_alt||'';document.getElementById('edit-source-url').value=post.source_url||'';document.getElementById('edit-summary').value=post.summary||post.excerpt||'';document.getElementById('edit-order').value=post.order||'';document.getElementById('edit-excerpt').value=post.excerpt||'';document.getElementById('edit-keywords').value=post.keywords||'';document.getElementById('edit-date').value=post.published_at||'';document.getElementById('edit-author').value=post.author||'Admin';document.getElementById('edit-content').value=post.content||'';if(window.beLoadMarkdown)window.beLoadMarkdown(post.content||'');document.getElementById('blog-form').hidden=false;document.getElementById('blog-form').scrollIntoView({behavior:'smooth',block:'start'});document.getElementById('edit-title').focus();}
+document.getElementById('edit-title').addEventListener('input',function(){if(document.getElementById('edit-original-slug').value)return;var slug=this.value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');document.getElementById('edit-slug').value=slug;document.getElementById('edit-slug-display').value=slug;});
 function previewArticle(){var f=document.getElementById('blog-form');var fd=new FormData(f);fetch('/admin/blog/preview',{method:'POST',body:fd}).then(function(r){return r.text();}).then(function(html){var w=window.open('','_blank');w.document.write(html);w.document.close();});}
 function generateDraft(){var f=document.getElementById('blog-form');var fd=new FormData(f);fd.set('content','');fetch('/admin/blog/ai-draft',{method:'POST',body:fd}).then(function(r){return r.json();}).then(function(d){if(d.content)document.getElementById('edit-content').value=d.content;});}
 </script>
@@ -419,4 +434,13 @@ function generateDraft(){var f=document.getElementById('blog-form');var fd=new F
     };
     doc.innerHTML = mdToHtml(md.value);
 })();
+</script>
+
+<script>
+document.getElementById('edit-slug-display').addEventListener('input',function(){if(!document.getElementById('edit-original-slug').value)document.getElementById('edit-slug').value=this.value;});
+function closeBlogForm(){if(confirm('Close the editor? Download any unsaved Markdown first.'))document.getElementById('blog-form').hidden=true;}
+function downloadBlogDraft(){var content=document.getElementById('edit-content').value;var a=document.createElement('a'),url=URL.createObjectURL(new Blob([content],{type:'text/markdown;charset=utf-8'}));a.href=url;a.download='unsaved-article.md';a.click();setTimeout(function(){URL.revokeObjectURL(url)},1000);}
+<?php if(is_array($recoveredDraft??null)): ?>
+editPost(<?= json_encode($recoveredDraft,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_INVALID_UTF8_SUBSTITUTE) ?>);
+<?php endif; ?>
 </script>
