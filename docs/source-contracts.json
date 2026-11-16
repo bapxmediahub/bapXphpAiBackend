@@ -24,8 +24,8 @@
         },
         "foundation": {
             "source_sha256": "caeeafcdf3893796349062a7bd1d6f8d40867f0b74363724ebf2211a153085af",
-            "references_sha256": "799153a6a616826d7b98803c9e568e6d4d9360142844b4d0c010541081b9295f",
-            "review_note": "Reviewed PublicController product/sitemap and BaseController canonical configuration. Sitemap now uses the same configured origin and safely encoded public slugs; actual product/payment/stock data and controllers are otherwise unchanged. Architecture docs name the canonical authority and avoid search ranking guarantees."
+            "references_sha256": "e46a53d41b339d93c2745573c6db28745b8359758a1cedccf32e6f46e57883f1",
+            "review_note": "Compared deployment instructions with actual MailQueueService enqueue/deliverNow, bounded cli/bapXphp mail:process and route registry. Removed deleted worker cron and nonexistent generic Audit Log menu; documented pending-only processing and SMTP-vs-inbox evidence. No runtime code/data change. Release verification now matches owner-authorized Playwright and Ready PR workflow."
         },
         "interface": {
             "source_sha256": "9264fff8a2f4a3692cde1c9cd571aab13be065a0df4348e40e3a23d6608ef421",
