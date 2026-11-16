@@ -5,7 +5,7 @@
     "summary": {
         "routes": 136,
         "controllers": 12,
-        "services": 65,
+        "services": 66,
         "views": 55,
         "collections": 22
     },
@@ -1590,6 +1590,7 @@
         "AstrologerService",
         "AuditLogService",
         "AuthService",
+        "BlogConflictException",
         "BlogDraftService",
         "BlogService",
         "CartService",
@@ -1735,6 +1736,7 @@
         "unwired_controllers": [],
         "unwired_services": [
             "AstrologerService",
+            "BlogConflictException",
             "CourierService",
             "ProjectMapService",
             "SmtpDeliveryUncertainException",

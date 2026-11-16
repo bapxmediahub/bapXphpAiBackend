@@ -6,6 +6,7 @@ RewriteRule (^|/)(\.agents|\.bapX)(/|$) - [F,L,NC]
 RewriteRule ^AGENTS\.md$ - [F,L,NC]
 # Curated operator guides are rendered only after admin authentication.
 RewriteRule ^content/help/admin(?:/|$) - [F,L,NC]
+RewriteRule ^content/blog/posts(?:/|$) - [F,L,NC]
 
 # Retired portraits must remain unavailable even if a deployment retains old files.
 RewriteRule ^assets/images/astrologers/ - [G,L]

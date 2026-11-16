@@ -30,3 +30,6 @@ storage/.bin/kitten-tts/
 # Local, data-free offline agent evaluation experiment snapshots
 /storage/agent-evals/*.json
 /storage/agent-evals/.eval-*
+
+/content/blog/posts/.blog-write.lock
+/content/blog/posts/.post-*.tmp

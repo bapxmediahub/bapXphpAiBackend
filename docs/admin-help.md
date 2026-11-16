@@ -55,7 +55,7 @@ Operator guidance is not a runtime-agent prompt and grants no tool permissions.
 
 Guides explain actual controls and limitations. They do not claim that SMTP
 acceptance is inbox delivery, a chat answer is customer resolution, a draft is
-an applied edit, or a metadata date is an active publishing scheduler. Missing
+an applied edit, or a scheduled publication also schedules an email. Missing
 or conflicting behavior is recorded in GitHub issues/comments with evidence,
 not as a backlog or incident narrative in the how-to articles.
 

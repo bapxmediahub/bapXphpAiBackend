@@ -110,3 +110,8 @@ Primary references: Google Search Central canonical URL documentation
 and product snippet guidance
 (https://developers.google.com/search/docs/appearance/structured-data/product-snippet),
 plus Schema.org ItemAvailability (https://schema.org/ItemAvailability).
+
+Blog publication dates now gate visibility through the shared BlogService
+predicate, not just sorting. Draft/scheduled/raw-file routes cannot bypass it.
+See `docs/pages/blog.md` for timezone, revision-match and no-delayed-newsletter
+contracts. Public article metadata cannot make a withheld article public.

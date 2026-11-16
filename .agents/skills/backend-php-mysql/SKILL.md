@@ -80,3 +80,11 @@ runtime:check and actual web System Health, and keep raw exception/DSN/secret
 content out of output. A compatibility report is not authority to migrate a
 production database or fabricate query/backup parity. Preserve older running
 sites until a separate approved cutover is verified.
+
+## Authored article integrity
+
+All article writes must use BlogService's expected-content revision and atomic
+lock/replace contract. Do not bypass it with direct file writes or reload a
+newer revision to force a stale form through. Public consumers use isPublic/all
+with the configured timezone and category rules. Preserve conflict recovery,
+path guards and raw-source denial. Scheduled visibility is not scheduled email.
