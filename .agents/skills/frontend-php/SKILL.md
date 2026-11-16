@@ -54,3 +54,12 @@ respect the Blog module switch and remain a normal link without JavaScript.
 Operator Help is authenticated and lives in the admin shell. Keep the Support
 guide link outside its replaceable conversation log, and do not insert private
 operator instructions into public layouts or business-agent prompts.
+
+## Google tag rendering boundary
+
+Use the existing GoogleSiteKitClient for the public head and owner configuration
+states; do not reintroduce inline IDs in JavaScript or a second renderer.
+HTML-escape attributes, JSON-encode script strings, validate intended ID/token
+formats and never label a nonempty field collected/verified/connected. Test
+hostile values in isolated fixtures only. Google reporting requires its own
+admin OAuth/API flow, not extra login scopes or fabricated dashboard figures.

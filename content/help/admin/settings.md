@@ -19,3 +19,19 @@ Open **System Health** in Settings to see the actual web PHP version, identified
 Use **Refresh checks** to read the latest observation. The screen does not install anything or change your data. An unknown/unavailable result is not a pass, and an unmet target does not mean the store is necessarily offline. Ask the hosting/development team to verify the finding before changing a live connection.
 
 Database changes require an approved destination, backup, restore and compatibility tests plus a rollback plan. Do not replace a working database or replay transactions simply to make a health label green. Command-line PHP can differ from the PHP serving the website; check this page after deployment.
+
+## Read Google configuration accurately
+
+The dashboard's **Google tags & reporting** section and Integrations' **Google
+tags — configuration only** section show each field separately. **Valid format —
+configured** does not mean Google received data or verified ownership.
+**Reporting is not connected** means this product is not yet fetching Analytics
+or Search Console reports; no traffic or conversion numbers are inferred.
+
+Use a real G- measurement ID (or an existing GT- tag ID), an AW- numeric Ads ID,
+and only the content token from Search Console's verification meta tag. Do not
+paste scripts, a GTM container or the full DNS assignment into these fields.
+Invalid saved values are reported and not rendered; the developer does not
+silently replace them. Check actual collection with Tag Assistant and confirm
+ownership in Search Console. Use **Google & YouTube** for the separate catalogue
+feed and channel-readiness steps.

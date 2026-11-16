@@ -857,6 +857,54 @@ $tests['merchant product correction link selects actual record rather than an em
     assertTrue(str_contains($method,"\$_GET['edit']")&&str_contains($method,'$draft = $item'),'Existing editor accepts the explicit record selected from preflight');
 };
 
+$tests['Google tag renderer treats IDs as data and never injects markup or executable input'] = static function (): void {
+    $bad=new \App\Integrations\GoogleSiteKit\GoogleSiteKitClient("G-X');window.fixtureAttack=1;//",'AW-1" onload="bad()', '\"><script>fixtureAttack()</script>');
+    assertSame('',$bad->gtagCode(),'Invalid IDs cannot produce a loader or an executable config');
+    assertSame('',$bad->siteVerificationTag(),'Invalid token cannot produce a meta element');
+    assertSame(false,$bad->enabled(),'Invalid values are not enabled integrations');
+    $statuses=$bad->status();assertSame('invalid',$statuses['analytics']['configuration'],'Invalid Analytics ID visible');
+    assertSame('invalid',$statuses['ads']['configuration'],'Invalid Ads ID visible');
+    assertTrue(!str_contains(json_encode($statuses),'fixtureAttack'),'Status omits unsafe raw values');
+};
+
+$tests['Google tag valid legacy destinations keep one safe loader and independent truthful states'] = static function (): void {
+    $client=new \App\Integrations\GoogleSiteKit\GoogleSiteKitClient(' G-ABCD123456 ','AW-123456789','Token_ABC-123');
+    $html=$client->gtagCode();$d=new DOMDocument();@$d->loadHTML($html);$x=new DOMXPath($d);
+    assertSame(1,$x->query('//script[@src]')->length,'One shared Google loader');
+    assertSame('https://www.googletagmanager.com/gtag/js?id=G-ABCD123456',$x->query('//script[@src]')->item(0)->getAttribute('src'),'Valid configured destination retained');
+    assertTrue(str_contains($html,'"G-ABCD123456"')&&str_contains($html,'"AW-123456789"'),'Inline IDs are JSON string data');
+    assertTrue(str_contains($client->siteVerificationTag(),'content="Token_ABC-123"'),'Valid exact token retained');
+    $status=$client->status();assertSame('configured',$status['analytics']['configuration'],'Syntax is configured only');
+    assertSame('unverified',$status['analytics']['collection'],'No Google receipt is invented');
+    assertSame('not_connected',$status['reporting'],'Tag injection is not reporting OAuth');
+    assertSame('unverified',$status['search_console']['ownership'],'Token presence is not Google ownership verification');
+    $one=(new \App\Integrations\GoogleSiteKit\GoogleSiteKitClient('G-ABCD123456','',''))->status();
+    assertSame('missing',$one['ads']['configuration'],'Analytics alone does not enable Ads');
+    assertSame('missing',$one['search_console']['configuration'],'Analytics alone does not prove Search Console');
+};
+
+$tests['Google tag schema rejects incompatible prefixes labels and oversized values without changing settings'] = static function (): void {
+    foreach(['UA-123-1','GTM-ABCD','G-','G-A?anything','G-'.str_repeat('A',65)] as $value){
+        $c=new \App\Integrations\GoogleSiteKit\GoogleSiteKitClient($value,'','');assertSame('',$c->gtagCode(),'GA4 input is not a generic code/container editor');
+    }
+    $c=new \App\Integrations\GoogleSiteKit\GoogleSiteKitClient('GT-ABC123','AW-123/ConversionLabel','google-site-verification=not-the-meta-content');
+    assertSame('configured',$c->status()['analytics']['configuration'],'Existing Google-tag GT destination supported');
+    assertSame('invalid',$c->status()['ads']['configuration'],'Conversion send_to label is not a loader ID');
+    assertSame('invalid',$c->status()['search_console']['configuration'],'DNS assignment/full tag is not content token');
+    $source=fileRead('integrations/google-site-kit/GoogleSiteKitClient.php');
+    assertTrue(!str_contains($source,'curl_exec')&&!str_contains($source,'saveSecret'),'Rendering does not mutate or validate externally');
+};
+
+$tests['public head and owner Google status use the same actual renderer without false connection claims'] = static function (): void {
+    $layout=fileRead('views/layouts/app.php');$dashboard=fileRead('views/admin/dashboard.php');$settings=fileRead('views/admin/integrations.php');
+    assertTrue(str_contains($layout,'GoogleSiteKitClient')&&str_contains($layout,'gtagCode()'),'Existing public layout calls the safe implementation');
+    assertTrue(!str_contains($layout,"gtag('config', '<?= e("),'No duplicate HTML-escaped JS-string interpolation');
+    assertTrue(!str_contains($dashboard,'Search Console verification are active'),'No blanket active statement');
+    assertTrue(str_contains($dashboard,'google-tag-status')&&str_contains($dashboard,'Reporting is not connected'),'Dashboard reports actual capability boundary');
+    assertTrue(str_contains($settings,'Verification token')&&!str_contains($settings,'placeholder="google-site-verification='),'Operator instruction matches meta content');
+    assertTrue(!str_contains(fileRead('app/Services/ProjectMapService.php'),"self::serviceId('SupportBotService') . ' --> ' . self::integrationId('GoogleSiteKitClient')"),'Generated map never invents a SupportBot tag-client call');
+};
+
 $tests['each agent session creates one private JSON file and no MySQL table'] = static function (): void {
     $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
     assertTrue(mkdir($root, 0700), 'Private test directory exists');

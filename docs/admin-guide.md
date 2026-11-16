@@ -73,3 +73,11 @@ opening the link does not save or duplicate a product. The readiness page is
 read-only and works without JavaScript, while the existing product editor uses
 JavaScript to prefill its form. Google account approval and YouTube eligibility
 remain separate, unverified external steps. See `google-sales-channels.md`.
+
+## Google status is not a reporting connection
+
+The Web analytics dashboard section now separates local tag configuration from
+unverified collection, conversion tracking and Search Console ownership. Follow
+**Configure Google tags** to the actual Integrations section; use the external
+Google validation links for evidence. Reporting OAuth/property data is not yet
+connected, so no metrics are shown as zero or fabricated from tag IDs.

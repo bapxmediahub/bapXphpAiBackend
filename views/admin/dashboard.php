@@ -66,57 +66,29 @@
 </div>
 
 <?php
-$__secretsGa = (new \App\Services\SecretService())->all();
-$__gaConfigured = !empty($__secretsGa['google_analytics_id']);
-$__adsConfigured = !empty($__secretsGa['google_ads_id']);
-$__gsvConfigured = !empty($__secretsGa['google_site_verification']);
-$__googleSiteKitEnabled = $__gaConfigured || $__adsConfigured || $__gsvConfigured;
+$__secretsGa=(new \App\Services\SecretService())->all();
+$__googleStatus=(new \App\Integrations\GoogleSiteKit\GoogleSiteKitClient(
+    (string)($__secretsGa['google_analytics_id']??''),(string)($__secretsGa['google_ads_id']??''),(string)($__secretsGa['google_site_verification']??'')))->status();
 ?>
-
 <div id="web-analytics">
-<?php if ($__googleSiteKitEnabled): ?>
-<div class="admin-card" style="margin-bottom:var(--space-lg); border-left:3px solid var(--color-gold);">
-    <h2 style="display:flex; align-items:center; gap:var(--space-sm); font-size:1rem;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20"/><path d="M2 12h20"/></svg>
-        Google Site Kit
-    </h2>
-    <div style="display:flex; flex-wrap:wrap; gap:var(--space-md); font-size:0.85rem;">
-        <?php if ($__gaConfigured): ?>
-        <span style="display:flex; align-items:center; gap:var(--space-xs);">
-            <span style="color:var(--color-success);">●</span> Analytics
-            <a href="https://analytics.google.com/analytics/web/" target="_blank" rel="noopener" style="font-size:0.75rem;">Open GA4 →</a>
-        </span>
-        <?php endif; ?>
-        <?php if ($__adsConfigured): ?>
-        <span style="display:flex; align-items:center; gap:var(--space-xs);">
-            <span style="color:var(--color-success);">●</span> Ads
-            <a href="https://ads.google.com/" target="_blank" rel="noopener" style="font-size:0.75rem;">Open Ads →</a>
-        </span>
-        <?php endif; ?>
-        <?php if ($__gsvConfigured): ?>
-        <span style="display:flex; align-items:center; gap:var(--space-xs);">
-            <span style="color:var(--color-success);">●</span> Search Console
-            <a href="https://search.google.com/search-console" target="_blank" rel="noopener" style="font-size:0.75rem;">Open Console →</a>
-        </span>
-        <?php endif; ?>
-    </div>
-    <p style="margin:var(--space-sm) 0 0; font-size:0.78rem; color:var(--color-text-muted);">
-        Google Analytics, Ads conversion tracking, and Search Console verification are active.
-        <a href="/admin/integrations" style="font-weight:500;">Configure in Integrations</a>
-    </p>
-</div>
-<?php else: ?>
-<div class="admin-card" style="margin-bottom:var(--space-lg); border-left:3px solid var(--color-border);">
-    <h2 style="display:flex; align-items:center; gap:var(--space-sm); font-size:1rem;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20"/><path d="M2 12h20"/></svg>
-        Google Analytics
-    </h2>
-    <p style="margin:0; font-size:0.85rem; color:var(--color-text-muted);">
-        Google Analytics is not configured. 
-        <a href="/admin/integrations">Set up GA4, Ads, and Search Console in Integrations →</a>
-    </p>
-</div>
-<?php endif; ?>
+<section class="admin-card" id="google-tag-status" aria-labelledby="google-tag-status-title" style="margin-bottom:var(--space-lg)">
+    <h2 id="google-tag-status-title">Google tags &amp; reporting</h2>
+    <p>Saved configuration is not evidence of data collection or account ownership. Each service is shown independently.</p>
+    <div class="table-wrap"><table><thead><tr><th>Service</th><th>Local configuration</th><th>External verification</th><th>Check in Google</th></tr></thead><tbody>
+    <?php foreach([
+        'analytics'=>['Google Analytics','Data collection unverified','https://analytics.google.com/analytics/web/','Open GA4'],
+        'ads'=>['Google Ads','Conversion tracking unverified','https://ads.google.com/','Open Ads'],
+        'search_console'=>['Search Console','Ownership unverified','https://search.google.com/search-console','Open Search Console']
+    ] as $key=>$item): $state=$__googleStatus[$key]['configuration']; ?>
+        <tr data-google-service="<?= e($key) ?>" data-google-configuration="<?= e($state) ?>">
+            <th><?= e($item[0]) ?></th><td><?= e(['missing'=>'Not configured','invalid'=>'Invalid value — not rendered','configured'=>'Valid format — configured'][$state]) ?></td>
+            <td><?= e($item[1]) ?></td><td><a href="<?= e($item[2]) ?>" target="_blank" rel="noopener noreferrer"><?= e($item[3]) ?> ↗</a></td>
+        </tr>
+    <?php endforeach; ?>
+    </tbody></table></div>
+    <p><strong>Reporting is not connected.</strong> The native integration currently renders configured tags; it does not have reporting OAuth, a selected GA4 property or Search Console API data. No visits, conversions or rankings are inferred from saved IDs.</p>
+    <p><a href="/admin/integrations#google-tags">Configure Google tags</a> · <a href="https://tagassistant.google.com/" target="_blank" rel="noopener noreferrer">Validate with Tag Assistant ↗</a> · <a href="/admin/google-merchant">Product feed &amp; shopping channels</a></p>
+</section>
 </div>
 
 <div class="admin-quick-grid">
