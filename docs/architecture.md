@@ -109,3 +109,13 @@ The native target is stable PHP>=8.3 and actual MySQL>=8.4.
 System Health screen and CLI. Database vendor identity is separate from version;
 MariaDB cannot pass the MySQL target by its numeric version. Existing deployment
 noncompliance is reported, not silently migrated or used to disable checkout.
+
+## Dynamic response integrity
+
+The PHP bootstrap installs a dependency-free RequestFailureService before
+session/environment work. Its owned output boundary prevents a late exception
+from publishing a partial successful page; uncaught failures return safe,
+correlated HTML/JSON500 without raw admin exception messages. Existing explicit
+service503 responses and CLI nonzero failures remain distinct. The response
+cannot prove whether a prior business action completed, so recovery guidance
+requires checking state before repeating it. See `request-failures.md`.

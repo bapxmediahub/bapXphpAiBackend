@@ -158,3 +158,14 @@ private **System Health** page for the actual web process. No secrets, raw
 connection errors or private paths are printed. A mismatched legacy server is
 reported without disabling existing checkout. Read `runtime-requirements.md`
 before planning hosting changes; the command is not a migration or backup test.
+
+## Correlated application failures
+
+Dynamic PHP requests expose an `X-Request-Id`; an unhandled failure returns the
+same reference in a safe no-store500 response. Search server diagnostics by that
+reference, class and source location rather than displaying raw exceptions to
+owners or customers. Do not assume a generic error is a DB outage or proof that
+an order/mail/action was rolled back. Inspect known operation evidence before
+retrying. Static-server/startup failures and previously flushed headers remain
+outside this application boundary. See `request-failures.md` and retain normal
+read-only live acceptance after releases; never deploy an intentional crash probe.

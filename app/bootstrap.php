@@ -1,6 +1,12 @@
 <?php
 declare(strict_types=1);
 
+// Guard dynamic responses before session/environment output; CLI retains its own failure contract.
+if (PHP_SAPI !== 'cli') {
+    require_once __DIR__.'/Services/RequestFailureService.php';
+    \App\Services\RequestFailureService::register(dirname(__DIR__));
+}
+
 date_default_timezone_set('Asia/Kolkata');
 ini_set('session.gc_maxlifetime', (string)(60 * 60 * 24 * 30));
 session_set_cookie_params([
@@ -68,37 +74,10 @@ function img_tag(string $src, string $alt = '', array $attrs = []): string {
 
 \App\Services\EnvService::load();
 
-set_exception_handler(static function (\Throwable $error): void {
-    if (PHP_SAPI === 'cli') {
-        // Do not emit a web page or a success exit code for a failed validation.
-        // Exception messages can contain credentials or customer/provider data.
+if (PHP_SAPI === 'cli') {
+    set_exception_handler(static function (\Throwable $error): never {
+        // Keep CLI failures nonzero and suppress potentially sensitive message content.
         fwrite(STDERR, '[cli failure] ' . $error::class . ' at ' . basename($error->getFile()) . ':' . $error->getLine() . "\n");
         exit(1);
-    }
-    error_log('[unhandled] ' . $error::class . ': ' . $error->getMessage()
-        . ' @ ' . $error->getFile() . ':' . $error->getLine());
-    http_response_code(503);
-    // Every Throwable lands here, not only database failures, so a signed-in admin is
-    // shown what actually broke. Without this a TypeError in a view reports itself as
-    // "we could not reach our secure database", which is untrue and undebuggable.
-    $isAdmin = ($_SESSION['user']['role'] ?? '') === 'admin';
-    $detail = $isAdmin
-        ? $error::class . ': ' . $error->getMessage()
-            . ' @ ' . str_replace(dirname(__DIR__) . '/', '', $error->getFile()) . ':' . $error->getLine()
-        : '';
-    header('Cache-Control: no-store');
-    $uri = (string)($_SERVER['REQUEST_URI'] ?? '/');
-    $acceptsJson = str_starts_with($uri, '/api/')
-        || str_contains(strtolower((string)($_SERVER['HTTP_ACCEPT'] ?? '')), 'application/json')
-        || str_contains(strtolower((string)($_SERVER['CONTENT_TYPE'] ?? '')), 'application/json');
-    if ($acceptsJson) {
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode(array_filter([
-            'error' => 'The database is temporarily unavailable. Please retry.',
-            'detail' => $detail !== '' ? $detail : null,
-        ]));
-        return;
-    }
-    header('Content-Type: text/html; charset=utf-8');
-    echo '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Service temporarily unavailable</title><style>body{margin:0;background:#fdfbf7;color:#2b1712;font:16px/1.6 system-ui,sans-serif;display:grid;min-height:100vh;place-items:center}.panel{width:min(560px,calc(100% - 40px));padding:40px;border:1px solid #d7bd72;border-radius:24px;background:#fff;box-shadow:0 18px 50px #3a00031a;text-align:center}h1{font-family:Georgia,serif;color:#3a0003}a{display:inline-block;margin-top:12px;padding:12px 20px;border-radius:999px;background:#3a0003;color:#fff;text-decoration:none}</style></head><body><main class="panel"><p>Temporary service interruption</p><h1>We could not reach our secure database.</h1><p>Your request was not recorded. Please wait a moment and try again. If you were completing a payment, contact support before retrying.</p><a href="javascript:location.reload()">Try again</a>' . ($detail !== '' ? '<pre style="margin-top:24px;padding:14px;background:#fdf2f2;border:1px solid #dc3545;border-radius:10px;text-align:left;white-space:pre-wrap;font-size:12px;color:#7f1d1d;">' . htmlspecialchars($detail, ENT_QUOTES, 'UTF-8') . '</pre>' : '') . '</main></body></html>';
-});
+    });
+}

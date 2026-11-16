@@ -1,6 +1,10 @@
 <?php
 // First matching group owns the source path. No live records, credentials or issue states.
 $rules = [
+ 'http-errors'=>['sources'=>['app/bootstrap.php','app/Services/RequestFailureService.php','tests/http-response-boundary.php'],
+  'dependencies'=>['index.php','api/index.php','app/Controllers/BaseController.php'],
+  'references'=>['docs/request-failures.md','docs/architecture.md','docs/deployment-hostinger.md','.agents/skills/backend-php-mysql/SKILL.md']],
+
  'google-tags'=>['sources'=>['integrations/google-site-kit/*'],
   'dependencies'=>['views/layouts/app.php','views/admin/dashboard.php','views/admin/integrations.php'],
   'references'=>['docs/pages/integrations.md','content/help/admin/settings.md','.agents/skills/frontend-php/SKILL.md']],

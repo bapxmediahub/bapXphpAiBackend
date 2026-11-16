@@ -111,3 +111,14 @@ per-chat lock. No SQL/JSON mirror. Staff-declared human review requires explicit
 attestation; automated tests must declare verification_test and must not inflate
 human counts. Run tests/agent-review-concurrency.php along with chat concurrency
 and interruption tests. Stale revisions/evidence are conflicts, not auto-retries.
+
+## Dynamic request failure boundary
+
+RequestFailureService replaces partial dynamic output with a safe correlated
+500, not a generic database accusation or a promise that nothing was recorded.
+Do not print raw exception/session/provider details even to an admin. Preserve
+explicit controller503/CSRF/redirect semantics and CLI nonzero failures; never
+retry a business mutation from the generic handler. Run the loopback-only
+`tests/http-response-boundary.php` through normal CI and verify browser bodies,
+not status alone. Do not introduce a production crash route or streaming flush
+without an explicit compatible response design. See `docs/request-failures.md`.

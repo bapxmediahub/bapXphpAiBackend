@@ -5,7 +5,7 @@
     "summary": {
         "routes": 140,
         "controllers": 12,
-        "services": 67,
+        "services": 68,
         "views": 57,
         "collections": 22
     },
@@ -1670,6 +1670,7 @@
         "ProductService",
         "ProjectMapService",
         "RateLimiter",
+        "RequestFailureService",
         "ResourceService",
         "ReviewService",
         "RuntimeHealthService",
@@ -1793,6 +1794,7 @@
             "BlogConflictException",
             "CourierService",
             "ProjectMapService",
+            "RequestFailureService",
             "SmtpDeliveryUncertainException",
             "StoragePermissionService"
         ],

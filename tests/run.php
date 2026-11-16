@@ -1215,6 +1215,14 @@ $tests['synthetic review revisions cannot replace a staff assessment and require
     }finally{foreach(glob($dir.'/*')?:[] as $f)@unlink($f);foreach(glob($dir.'/.conversation*')?:[] as $f)@unlink($f);@rmdir($dir);}
 };
 
+$tests['dynamic HTTP failures replace partial bodies and keep safe correlated outcomes'] = static function (): void {
+    $lines=[];$status=1;
+    exec(escapeshellarg(PHP_BINARY).' '.escapeshellarg(app_path('tests/http-response-boundary.php')).' 2>&1',$lines,$status);
+    assertSame(0,$status,'Actual isolated HTTP response-boundary cases pass: '.implode(' | ',array_slice($lines,-5)));
+    assertTrue(str_contains(fileRead('app/bootstrap.php'),'RequestFailureService::register'),'The real bootstrap installs the boundary, not just a test router');
+    assertTrue(!str_contains(fileRead('app/bootstrap.php'),'$error->getMessage()'),'Global exception output does not disclose raw diagnostic/credential text');
+};
+
 $tests['each agent session creates one private JSON file and no MySQL table'] = static function (): void {
     $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
     assertTrue(mkdir($root, 0700), 'Private test directory exists');
@@ -1674,7 +1682,8 @@ $tests['remote database failures are loud cached and never use implicit localhos
     $public = file_get_contents(app_path('app/Controllers/PublicController.php'));
     assertTrue(!str_contains($public, 'catch (\\Throwable $e) { $products = []; }'), 'Catalog transport failures must not be rendered as a valid empty shop');
     $bootstrap = file_get_contents(app_path('app/bootstrap.php'));
-    assertTrue(str_contains($bootstrap, 'set_exception_handler') && str_contains($bootstrap, 'http_response_code(503)'), 'Unhandled database failures should render a controlled 503 response');
+    $failure=fileRead('app/Services/RequestFailureService.php');
+    assertTrue(str_contains($bootstrap,'RequestFailureService::register')&&str_contains($failure,'http_response_code(500)'), 'Unclassified request failures use the controlled response boundary rather than a guessed database503');
     $api = file_get_contents(app_path('api/index.php'));
     assertTrue(!str_contains($api, "'detail' => \$e->getMessage()"), 'API failures must be logged without exposing internal transport details');
     assertTrue(str_contains($api, "['error' => 'Service temporarily unavailable']"), 'API database failures should return a stable 503 response');

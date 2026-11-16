@@ -107,3 +107,5 @@ before opening implementation issues.
 - [Native runtime requirements](runtime-requirements.md): private System Health, CLI/CI version evidence and migration boundaries.
 
 - [Google sales channels](google-sales-channels.md): current native product-feed/preflight commands and separate Merchant/YouTube onboarding requirements.
+
+- [Request failure handling](request-failures.md): partial-output isolation, safe request references and honest recovery boundaries.
