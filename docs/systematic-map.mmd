@@ -7,13 +7,13 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 134 routes, 12 controllers, 64 services, 53 views, 0 data files, 25 tools"]
-    arch_routes["> Routes: 134 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 136 routes, 12 controllers, 65 services, 55 views, 0 data files, 26 tools"]
+    arch_routes["> Routes: 136 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
-    arch_svc["> Services: 64"]:::arch
-    arch_views["> Views: 53"]:::arch
+    arch_svc["> Services: 65"]:::arch
+    arch_views["> Views: 55"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
-    arch_tools["> Tools: 25"]:::arch
+    arch_tools["> Tools: 26"]:::arch
     arch_gaps["> Gaps: 7"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
@@ -38,6 +38,7 @@ flowchart LR
     route_get_api_categories["GET /api/categories"]:::route
     route_get_api_product_slug["GET /api/product/{slug}"]:::route
     route_get_api_temples["GET /api/temples"]:::route
+    route_get_feeds_google_products_xml["GET /feeds/google-products.xml"]:::route
     route_get_sitemap_xml["GET /sitemap.xml"]:::route
     route_get_contact["GET /contact — Contact form GET"]:::route
     route_post_contact["POST /contact — Contact form POST submission"]:::route
@@ -105,6 +106,7 @@ flowchart LR
     route_get_admin_system_health["GET /admin/system-health"]:::route
     route_get_admin_docs["GET /admin/docs"]:::route
     route_get_admin_docs_slug["GET /admin/docs/{slug}"]:::route
+    route_get_admin_google_merchant["GET /admin/google-merchant"]:::route
     route_get_admin_products["GET /admin/products — Admin — manage products"]:::route
     route_get_admin_categories["GET /admin/categories — Admin — manage categories"]:::route
     route_get_admin_collections["GET /admin/collections"]:::route
@@ -230,6 +232,7 @@ flowchart LR
     service_mailstorageservice["MailStorageService"]:::code
     service_markdownrenderer["MarkdownRenderer"]:::code
     service_mediaservice["MediaService"]:::code
+    service_merchantfeedservice["MerchantFeedService"]:::code
     service_orderservice["OrderService"]:::code
     service_passwordresetservice["PasswordResetService"]:::code
     service_paymentservice["PaymentService"]:::code
@@ -275,6 +278,7 @@ flowchart LR
     view_admin_consultation_analytics["admin/consultation-analytics"]:::code
     view_admin_dashboard["admin/dashboard"]:::code
     view_admin_detail["admin/detail"]:::code
+    view_admin_google_merchant["admin/google-merchant"]:::code
     view_admin_help["admin/help"]:::code
     view_admin_integrations["admin/integrations"]:::code
     view_admin_list["admin/list"]:::code
@@ -301,6 +305,7 @@ flowchart LR
     view_public_home["public/home"]:::code
     view_public_home_collections["public/home-collections"]:::code
     view_public_login["public/login"]:::code
+    view_public_merchant_feed["public/merchant-feed"]:::code
     view_public_privacy["public/privacy"]:::code
     view_public_product["public/product"]:::code
     view_public_register["public/register"]:::code
@@ -363,6 +368,7 @@ flowchart LR
     tool_generate_project_index["generate-project-index"]:::tool
     tool_generate_project_map["generate-project-map"]:::tool
     tool_import_product_images["import-product-images"]:::tool
+    tool_merchant["merchant"]:::tool
     tool_optimize_images["optimize-images"]:::tool
     tool_product_read["product-read"]:::tool
     tool_product_write["product-write"]:::tool
@@ -447,6 +453,11 @@ flowchart LR
   controller_publiccontroller --> service_addressservice
   controller_publiccontroller --> service_settingsservice
   controller_publiccontroller -. renders .-> view_public_checkout
+  route_get_feeds_google_products_xml --> controller_publiccontroller
+  controller_publiccontroller --> service_merchantfeedservice
+  controller_publiccontroller --> service_productservice
+  controller_publiccontroller --> service_settingsservice
+  controller_publiccontroller -. renders .-> view_public_merchant_feed
   route_get_sitemap_xml --> controller_publiccontroller
   controller_publiccontroller --> service_blogservice
   controller_publiccontroller --> service_productservice
@@ -574,6 +585,12 @@ flowchart LR
   controller_admincontroller --> service_markdownrenderer
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_help
+  route_get_admin_google_merchant --> controller_admincontroller
+  controller_admincontroller --> service_merchantfeedservice
+  controller_admincontroller --> service_productservice
+  controller_admincontroller --> service_settingsservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_google_merchant
   route_get_admin_products --> controller_admincontroller
   controller_admincontroller --> service_productservice
   controller_admincontroller --> service_schemaservice

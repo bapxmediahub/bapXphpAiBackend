@@ -105,6 +105,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
                 <svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
             <div class="admin-submenu" id="menu-commerce">
+                <a data-google-channel-nav href="/admin/google-merchant" class="<?= $agentNavPath==='/admin/google-merchant'?'active':'' ?>">Google &amp; YouTube</a>
                 <a href="/admin/orders" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/orders') === 0 ? 'active' : '') ?>">Orders</a>
                 <a href="/admin/shipping" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/shipping') === 0 ? 'active' : '') ?>">Shipping</a>
                 <a href="/admin/contact-submissions" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/contact-submissions') === 0 ? 'active' : '') ?>">Contacts</a>
@@ -195,7 +196,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
             $__segments = array_values(array_filter(explode('/', $__path)));
             $__crumb = '/admin';
             $__labelMap = [
-                'system-health'=>'System Health','docs'=>'Help & Docs','products'=>'Products','categories'=>'Categories','coupons'=>'Coupons',
+                'system-health'=>'System Health','docs'=>'Help & Docs','google-merchant'=>'Google & YouTube','products'=>'Products','categories'=>'Categories','coupons'=>'Coupons',
                 'orders'=>'Orders','shipping'=>'Shipping','tax-report'=>'Reports','astrologers'=>'Astrologers',
                 'appointments'=>'Sessions',
                 'consultation-analytics'=>'Analytics','temples'=>'Temples',

@@ -3,10 +3,10 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 134,
+        "routes": 136,
         "controllers": 12,
-        "services": 64,
-        "views": 53,
+        "services": 65,
+        "views": 55,
         "collections": 22
     },
     "routes": [
@@ -638,6 +638,19 @@
         },
         {
             "method": "GET",
+            "path": "/admin/google-merchant",
+            "name": "admin.merchant",
+            "controller": "AdminController@googleMerchant",
+            "view": "admin/google-merchant",
+            "services": [
+                "MerchantFeedService",
+                "ProductService",
+                "SettingsService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
             "path": "/admin/integrations",
             "name": "admin.integrations",
             "controller": "AdminController@integrations",
@@ -1239,6 +1252,18 @@
         },
         {
             "method": "GET",
+            "path": "/feeds/google-products.xml",
+            "name": "merchant.feed",
+            "controller": "PublicController@merchantFeed",
+            "view": "public/merchant-feed",
+            "services": [
+                "MerchantFeedService",
+                "ProductService",
+                "SettingsService"
+            ]
+        },
+        {
+            "method": "GET",
             "path": "/forgot-password",
             "name": "forgot-password",
             "controller": "AuthController@forgotPassword",
@@ -1585,6 +1610,7 @@
         "MailStorageService",
         "MarkdownRenderer",
         "MediaService",
+        "MerchantFeedService",
         "OrderService",
         "PasswordResetService",
         "PaymentService",
@@ -1629,6 +1655,7 @@
         "admin/consultation-analytics",
         "admin/dashboard",
         "admin/detail",
+        "admin/google-merchant",
         "admin/help",
         "admin/integrations",
         "admin/list",
@@ -1655,6 +1682,7 @@
         "public/home",
         "public/home-collections",
         "public/login",
+        "public/merchant-feed",
         "public/privacy",
         "public/product",
         "public/register",

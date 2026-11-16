@@ -67,6 +67,8 @@ set -euo pipefail
 #   bapXphp hooks status            — show configured Git hooks path
 #
 # ── Mail & Images ───────────────────────────────────────────────
+#   bapXphp merchant:check [--json|--schema] — inspect current Google product data without publishing
+#   bapXphp merchant:feed           — write the public Google RSS feed to stdout
 #   bapXphp mail:process            — process pending mail queue
 #   bapXphp images:optimize         — convert/resize images to WebP
 #   bapXphp product:images <source> [--dry-run|--assets-only|--database-only]
@@ -2175,6 +2177,9 @@ main() {
       cmd_ai_probe ;;
     runtime:check|runtime-check)
       shift; cmd_runtime_check "$@" ;;
+    merchant:check|merchant:feed)
+      local merchant_action="${1#merchant:}"; shift
+      require_php; php "$ROOT/cli/merchant.php" "$merchant_action" "$@" ;;
     mail:process|mail-process)
       cmd_mail_process ;;
     images:optimize|images-optimize|imgopt)

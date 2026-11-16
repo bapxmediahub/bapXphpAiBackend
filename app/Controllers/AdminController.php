@@ -36,6 +36,13 @@ final class AdminController extends BaseController {
         $this->render('admin/system-health',compact('runtimeHealth'));
     }
 
+    public function googleMerchant(): void {
+        $channelReport=null;$shopEnabled=(new SettingsService())->moduleEnabled('shop');
+        if($shopEnabled){try{$channelReport=(new \App\Services\MerchantFeedService())->inspect();}
+            catch(\Throwable){error_log('Merchant catalogue preflight unavailable');}}
+        $this->render('admin/google-merchant',compact('channelReport','shopEnabled')+['pageTitle'=>'Google & YouTube']);
+    }
+
     public function dashboard(): void{
         $catalogProducts = (new ResourceService('products'))->all();
         $productCount = count($catalogProducts);
@@ -71,7 +78,13 @@ final class AdminController extends BaseController {
     public function products(): void{
         $draft = $_SESSION['product_form_draft'] ?? null;
         unset($_SESSION['product_form_draft']);
-        $this->render('admin/product-form',['pageTitle'=>'Products','title'=>'Products','collection'=>'products','items'=>(new ResourceService('products'))->all(),'categories'=>(new ResourceService('categories'))->all(),'mediaFiles'=>$this->mediaFor('products'),'draft'=>$draft]);
+        $items=(new ResourceService('products'))->all();
+        $edit=is_string($_GET['edit']??null)?trim($_GET['edit']):'';
+        if($draft===null&&$edit!==''){
+            foreach($items as $item)if((string)($item['id']??'')===$edit){$draft = $item;break;}
+            if($draft===null){$this->renderNotFound();return;}
+        }
+        $this->render('admin/product-form',['pageTitle'=>'Products','title'=>'Products','collection'=>'products','items'=>$items,'categories'=>(new ResourceService('categories'))->all(),'mediaFiles'=>$this->mediaFor('products'),'draft'=>$draft]);
     }
     public function saveProduct(): void{$this->saveProductRecord();}
     public function deleteProduct(): void{$this->delete('products');}

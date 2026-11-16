@@ -1,6 +1,10 @@
 <?php
 // First matching group owns the source path. No live records, credentials or issue states.
 $rules = [
+ 'sales-channels'=>['sources'=>['app/Services/MerchantFeedService.php','cli/merchant.php','views/admin/google-merchant.php','views/public/merchant-feed.php'],
+  'dependencies'=>['app/Services/ProductService.php','app/Services/SettingsService.php','app/Services/MediaService.php'],
+  'references'=>['docs/google-sales-channels.md','content/help/admin/catalogue.md','.agents/skills/bapxphp-cli/SKILL.md']],
+
  'agents'=>['sources'=>['app/Services/Agent*.php','app/Services/*ToolRegistry.php','app/Services/Support*.php','app/Services/Ai*.php','app/Controllers/SupportController.php','.bapX/*','cli/agent-*.php','views/admin/agent*.php'],
   'references'=>['docs/agent-observability.md','docs/runtime-agents.md','docs/agent-tool-contracts.md','.agents/skills/backend-php-mysql/SKILL.md']],
  'mail'=>['sources'=>['app/Services/*Mail*.php','app/Services/Smtp*.php','views/admin/mailbox.php'],
