@@ -252,3 +252,9 @@
 .merchant-workspace table td { max-width:280px; overflow-wrap:anywhere; }
 .merchant-setup li { line-height:1.7; margin-bottom:10px; }
 @media(max-width:743px){ .merchant-steps { grid-template-columns:minmax(0,1fr); } .merchant-actions .btn { width:100%; } .merchant-counts { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+
+/* A real scroll container, not the table's intrinsic width, owns blog overflow. */
+.admin-blog-list { width:100%; max-width:100%; min-width:0; overflow-x:auto; overscroll-behavior-x:contain; overscroll-behavior-y:auto; }
+.admin-blog-list > table { min-width:560px; }
+.admin-blog-list:focus-visible { outline:3px solid var(--color-gold); outline-offset:3px; }
+.admin-blog-list td:first-child { overflow-wrap:anywhere; }

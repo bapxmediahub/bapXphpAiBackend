@@ -18,9 +18,9 @@
             "review_note": "ProductService and checkout business logic are unchanged. Catalogue module docs now describe the read-only projection that shares current pricing/visibility. Admin products accepts a selected existing ID without saving; exact browser checks retain original field content rather than rewriting its whitespace."
         },
         "content": {
-            "source_sha256": "df9530c1fd85ed913b132aa51d3b04ad465cf1c09dc7fdfb0ae68d8b52edf489",
-            "references_sha256": "2da04627305a37990d89081ca5295dc492be9773fb5bff3f4842dc940e4b94a7",
-            "review_note": "Reviewed original SeoService and BlogController override paths plus resolved local/persistent image contracts. Canonical/OG/organization defaults now use configured APP_URL, valid explicit overrides remain, bad URL schemes/local missing images fall back safely, and product schema follows in_stock/active and resolved price. Six regressions cover host/request forms, overrides/noindex, real image paths, stock/slug encoding and inline JSON-LD safety."
+            "source_sha256": "3130b05d50c91b80d064b12338f1b6b752e4f4718df67ef374c17e1cd124f452",
+            "references_sha256": "3825728233fa97fe51bb3c6090be4e9af82c1bc4a9525407e2be8c81830a391e",
+            "review_note": "Reproduced intrinsic-width table overflow and reviewed original blog view/source. Added a named keyboard scroll container around the same table and updated durable blog page guidance. Publication, content and newsletter behavior are unchanged."
         },
         "foundation": {
             "source_sha256": "61af01c9befd7da78cd49f75ad850fac8408f7505a85c90dfa307bacbb02b46d",
@@ -33,9 +33,9 @@
             "review_note": "Read the original unused client and duplicate inline public rendering plus official current Google ID/config/verification docs. One validating HTML/JSON-encoding client now drives actual public rendering and independent owner statuses. Four fail-first regressions and an isolated browser fixture prove hostile values are omitted while valid existing G/GT/AW outputs remain. No external collection/ownership claim."
         },
         "interface": {
-            "source_sha256": "b76795f02e61edcf7fa06f6ab9f3f7b1fde38b37c1e78ce4d93463764157c4b8",
+            "source_sha256": "5cfc93a9f249001f5324980f107a7ec7860de1a07cc9af105694dbbcb2f127db",
             "references_sha256": "d5694043a695d77158ae5b3c09a11c8daae44c7a90c79454b32572e9e5eddc50",
-            "review_note": "Compared dashboard and Integrations wording/links with native tag-only capabilities. Browser navigation and computed overflow checks pass at 1280px/375px/no-JS; status is independent per field and actual current empty values show missing. Screenshots inspected, no saved IDs changed, no tracking destination/OAuth action or business-data mutation."
+            "review_note": "Verified 375/390/768/1280px actual owner Blog page with a long-title DOM fixture. The document stays viewport width; keyboard ArrowRight scrolls the named list and all existing actions remain present. No body overflow hiding or business writes."
         },
         "mail": {
             "source_sha256": "caed5f4ccf26b2e3315bc122e0568f79a4a25a451cf1bfda017c53c5ac3866d4",
@@ -48,9 +48,9 @@
             "review_note": "Media storage/delete sources are unchanged. Shared architecture and admin skill now describe private System Health without exposing paths or modifying files; existing media verification/permissions contracts remain unchanged."
         },
         "operator-help": {
-            "source_sha256": "abac72afcc951814ab76c15e8af82c6f3ba54cb614eebec7f5d10f4e75d78b5d",
+            "source_sha256": "88c9c4d0c3693c0cd36bfa35f76d1cb52f40968ccb8c8e8c5fd6c5b654194871",
             "references_sha256": "df9db0b654aec9f05b39eadce8e547c22383faa07ba96fee9bff21464cb2e06c",
-            "review_note": "Compared Google settings operator guidance with the actual public head, per-service status method, dashboard and Integrations inputs. Clarified missing/invalid/configured versus unverified external ownership/data and unconnected reports; token instructions now match the real content-value contract. No database, Google account action or login-scope change."
+            "review_note": "Compared the operator publishing guide with unchanged Edit/Hide/Delete behavior and the corrected actual list wrapper. Actions remain reachable by horizontal list scrolling; no publication permissions, data or save paths changed."
         },
         "sales-channels": {
             "source_sha256": "1f2cd451f764c9d2b1a0b90b1454ac54fbf9a1130973f86749df0510b8eef244",

@@ -114,7 +114,8 @@
     </div>
 </form>
 
-<table class="table-wrap" style="width:100%;background:var(--color-white);border-radius:var(--radius-md);border:1px solid var(--color-border)">
+<div class="table-wrap admin-blog-list" role="region" aria-label="Blog posts" tabindex="0">
+<table style="width:100%;background:var(--color-white);border-radius:var(--radius-md);border:1px solid var(--color-border)">
     <thead><tr><th>Title</th><th>Category</th><th>Published</th><th>Date</th><th></th></tr></thead>
     <tbody>
     <?php foreach ($posts as $post): ?>
@@ -148,6 +149,7 @@
     <?php endforeach; ?>
     </tbody>
 </table>
+</div>
 
 <script>
 function toggleForm(){var f=document.getElementById('blog-form');f.hidden=!f.hidden;if(f.hidden)f.reset();}
