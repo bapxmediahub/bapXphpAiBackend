@@ -37,3 +37,8 @@ use only these published customer-facing articles, not operator guides or
 repository documentation. They are suppressed when the Blog module is disabled.
 The operator Help & Docs hub is a separate authenticated route and content
 allowlist; it does not depend on a live model or customer database mutation.
+
+The owner post list sits in a named, keyboard-focusable horizontal scroll
+region on narrow screens. All edit/publish/delete actions remain in the table;
+only the list scrolls horizontally, not the entire admin page. Do not hide body
+overflow to mask intrinsic table-width defects. Verify at 375px with long titles.

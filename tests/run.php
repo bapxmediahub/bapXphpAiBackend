@@ -905,6 +905,13 @@ $tests['public head and owner Google status use the same actual renderer without
     assertTrue(!str_contains(fileRead('app/Services/ProjectMapService.php'),"self::serviceId('SupportBotService') . ' --> ' . self::integrationId('GoogleSiteKitClient')"),'Generated map never invents a SupportBot tag-client call');
 };
 
+$tests['blog table has a bounded keyboard scroll region rather than a table-wrap table'] = static function (): void {
+    $view=fileRead('views/admin/blog.php');
+    assertTrue(str_contains($view,'class="table-wrap admin-blog-list"'),'Actual table belongs to a scroll wrapper');
+    assertTrue(str_contains($view,'aria-label="Blog posts" tabindex="0"'),'Overflow region is named and keyboard reachable');
+    assertTrue(!str_contains($view,'<table class="table-wrap"'),'Overflow is not applied to an intrinsic-width table');
+};
+
 $tests['each agent session creates one private JSON file and no MySQL table'] = static function (): void {
     $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
     assertTrue(mkdir($root, 0700), 'Private test directory exists');
