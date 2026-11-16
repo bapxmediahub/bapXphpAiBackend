@@ -142,3 +142,12 @@ and `docs/systematic-map.mmd` for the verified navigation and operating contract
 Use plain Git locally. Pushing `codex/**`, `fix/**`, or `feat/**` can create a PR via
 `.github/workflows/branch-pr.yml`; `.github/workflows/ci.yml` validates PRs and pushes
 to `main`.
+
+## Native runtime baseline
+
+Target stable PHP **8.3+** and MySQL **8.4+** with cURL, JSON, mbstring,
+PDO MySQL and OpenSSL. `./bapXphp runtime:check --json --strict` checks the
+current CLI environment; the authenticated **System Health** page checks web
+PHP. MariaDB is a different engine, not a passing MySQL8.4 version. The checker
+is read-only and does not migrate existing customer deployments. See
+`docs/runtime-requirements.md`.

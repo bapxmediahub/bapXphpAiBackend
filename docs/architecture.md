@@ -101,3 +101,11 @@ Public canonical, organization, social-image and sitemap URLs use the configured
 `APP_URL`, not request Host/HTTPS headers. The public layout consumes the resolved
 SeoService metadata instead of reconstructing its own origin. This is metadata
 correctness, not a new business-data or search-performance service.
+
+## Runtime diagnostics
+
+The native target is stable PHP>=8.3 and actual MySQL>=8.4.
+`RuntimeHealthService` provides bounded read-only facts to the authenticated
+System Health screen and CLI. Database vendor identity is separate from version;
+MariaDB cannot pass the MySQL target by its numeric version. Existing deployment
+noncompliance is reported, not silently migrated or used to disable checkout.

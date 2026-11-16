@@ -108,7 +108,10 @@ This application is built for normal PHP hosting, not Vercel. Vercel's official 
 
 ## Hostinger Requirements
 
-- PHP 8.0 or newer.
+- Stable PHP 8.3 or newer and MySQL 8.4 or newer for the native platform target.
+- cURL, JSON, mbstring, PDO MySQL and OpenSSL extensions.
+- Verify actual web PHP and configured database in Admin → System Health; CLI PHP can differ.
+- A MariaDB-backed legacy deployment is not MySQL8.4-compliant and needs an independently approved migration, not an automatic code-release cutover.
 - `mod_rewrite` enabled.
 - Writable `storage/` directory.
 - OpenSSL and cURL PHP extensions for encrypted settings and payment/OAuth calls.
@@ -146,3 +149,12 @@ This application is built for normal PHP hosting, not Vercel. Vercel's official 
 - Razorpay disabled: add live key ID and secret in admin integrations.
 - Google login not working: verify the Google Cloud Console has the correct callback URL (`https://sripanchamispiritual.com/auth/google/callback`).
 - Emails not sending: check Admin → Integrations → Send a Test Email. It reports the exact SMTP error. For Hostinger use `smtp.hostinger.com`, port 465 (SSL) or 587 (TLS), the full email address as username, and a From Email matching that mailbox.
+
+## Runtime readiness
+
+Run `./bapXphp runtime:check --json --strict` in the intended deployment
+environment for a nonzero result on any unmet or unknown requirement. Use the
+private **System Health** page for the actual web process. No secrets, raw
+connection errors or private paths are printed. A mismatched legacy server is
+reported without disabling existing checkout. Read `runtime-requirements.md`
+before planning hosting changes; the command is not a migration or backup test.

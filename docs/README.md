@@ -103,3 +103,5 @@ before opening implementation issues.
 
 - [Operator Help and customer navigation](admin-help.md): private task guides, public how-to links and cross-source review dependencies.
 - Operator guide metadata is indexed as `operator_guide`; source content remains in `content/help/admin/` behind authenticated application rendering.
+
+- [Native runtime requirements](runtime-requirements.md): private System Health, CLI/CI version evidence and migration boundaries.

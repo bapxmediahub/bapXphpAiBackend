@@ -28,6 +28,14 @@ final class AdminController extends BaseController {
         $this->render('admin/help',['guide'=>$guide,'guides'=>[],'helpCategories'=>$help::CATEGORIES,'query'=>'','category'=>$guide['category']]);
     }
 
+    public function systemHealth(): void {
+        // Existing constructor enforces admin authentication; this route has no mutation.
+        header('Cache-Control: private, no-store');
+        $this->seoOverrides=['title'=>'System Health','robots'=>'noindex, nofollow'];
+        $runtimeHealth=(new \App\Services\RuntimeHealthService())->collect();
+        $this->render('admin/system-health',compact('runtimeHealth'));
+    }
+
     public function dashboard(): void{
         $catalogProducts = (new ResourceService('products'))->all();
         $productCount = count($catalogProducts);

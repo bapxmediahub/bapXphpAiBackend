@@ -64,6 +64,7 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/account/bookings','name'=>'account.bookings.legacy','page'=>'account/orders','controller'=>'AccountController@legacyBookings','services'=>['AuthService']],
             ['method'=>'POST','path'=>'/api/consultations/{id}/status','name'=>'api.consultation.status','page'=>'admin/list','controller'=>'ConsultationController@status','services'=>['AuthService','ConsultationService']],
             ['method'=>'GET','path'=>'/admin','name'=>'admin.dashboard','page'=>'admin/dashboard','controller'=>'AdminController@dashboard','services'=>['ResourceService','OrderService','StoreStatsService','SiteInsightsService']],
+            ['method'=>'GET','path'=>'/admin/system-health','name'=>'admin.system_health','page'=>'admin/system-health','controller'=>'AdminController@systemHealth','services'=>['AuthService','RuntimeHealthService','DatabaseService']],
             ['method'=>'GET','path'=>'/admin/docs','name'=>'admin.docs','page'=>'admin/help','controller'=>'AdminController@helpIndex','services'=>['AdminHelpService','AuthService']],
             ['method'=>'GET','path'=>'/admin/docs/{slug}','name'=>'admin.docs.guide','page'=>'admin/help','controller'=>'AdminController@helpGuide','services'=>['AdminHelpService','MarkdownRenderer','AuthService']],
             ['method'=>'GET','path'=>'/admin/products','name'=>'admin.products','page'=>'admin/product-form','controller'=>'AdminController@products','services'=>['ProductService','SchemaService']],

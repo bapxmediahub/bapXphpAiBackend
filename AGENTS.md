@@ -114,6 +114,14 @@ target is absent, and state that absence as a finding.
 
 ## Environment
 
+- Native platform target: stable **PHP >=8.3** and **MySQL >=8.4** with cURL,
+  JSON, mbstring, PDO MySQL and OpenSSL. CI validates PHP8.3/MySQL8.4 plus
+  PHP8.4/8.5 regression compatibility. Use `./bapXphp runtime:check --json`
+  and the private System Health screen to inspect actual environments.
+- A MariaDB version is not MySQL compatibility proof. Report a mismatch;
+  never silently migrate a customer database or break the running site merely
+  to enforce a new baseline. See `docs/runtime-requirements.md`.
+
 - The remote endpoint is `/remotedb`, all lowercase. `DatabaseService::remoteCall()`
   must throw on transport, non-2xx and invalid-response failures; never convert a DB
   outage into an empty catalogue.

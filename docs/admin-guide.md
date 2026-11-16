@@ -56,3 +56,10 @@ for developer files or private runtime-agent prompts. Customers instead use
 published Help blog articles linked from shop, cart, checkout, account and
 Support. See `admin-help.md` for content ownership, privacy and source-review
 checks. A guide describes a control; it never performs a business action.
+
+## Native system diagnostics
+
+Settings → System Health is a read-only authenticated view of the serving PHP
+process, required extensions and configured database engine/version. It does
+not show a public phpinfo dump or mutate hosting settings. See
+`runtime-requirements.md` and the Settings operator guide before any change.
