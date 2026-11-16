@@ -772,6 +772,16 @@ $tests['runtime policy does not certify prerelease engines or malformed requirem
     assertSame('unsupported_prerelease',$r['php']['status'],'PHP prerelease is explicitly classified');
 };
 
+$tests['deployment guide uses current bounded mail CLI and real audit surfaces'] = static function (): void {
+    $doc=fileRead('docs/deployment-hostinger.md');
+    assertTrue(!str_contains($doc,'/cli/process-mail-queue.php'),'Do not deploy a cron targeting a deleted script');
+    assertTrue(str_contains($doc,'./bapXphp mail:process'),'Optional due-pending processing uses the supported CLI');
+    assertTrue(str_contains($doc,'25 due pending'),'Operator knows the queue processing bound');
+    assertTrue(!str_contains($doc,'Admin -> Audit Log'),'Do not invent a generic audit-log menu');
+    assertTrue(str_contains($doc,'Playwright CLI'),'Release instructions match authorized browser verification');
+    assertTrue(str_contains($doc,'SMTP acceptance is not inbox receipt'),'Transport result is not recipient verification');
+};
+
 $tests['each agent session creates one private JSON file and no MySQL table'] = static function (): void {
     $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
     assertTrue(mkdir($root, 0700), 'Private test directory exists');

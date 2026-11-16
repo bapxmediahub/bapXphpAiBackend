@@ -24,8 +24,8 @@
         },
         "foundation": {
             "source_sha256": "84107385012616437298affc2636688e23ede6c9c0667d9dae5424708ae9893a",
-            "references_sha256": "bd21b0deb4f4e4c00de94bf33f5fd9c49fd0d2b28835e4f05addfaa2af9a7a20",
-            "review_note": "Compared RuntimeHealthService version/vendor rules, CLI strict exit, AdminController auth and target deployment requirements. MariaDB/forks/unknown/prereleases cannot pass MySQL target; no bootstrap kill switch or migration. README/AGENTS/architecture/deployment describe declared compatibility versus legacy operational reality."
+            "references_sha256": "d76e858956e104ebfb1ee9e2db961be92fbf21cd8e7e3e21240f75e39560e358",
+            "review_note": "Reconciled verified deployment guide correction from #275 with native runtime requirements. Preserved immediate SMTP, bounded due-pending CLI and actual Playwright release instructions; added stable PHP8.3/MySQL8.4 diagnostics without DB migration. Reviewed original controller/service/CLI and both source changes; refreshed only the affected source/reference fingerprint."
         },
         "interface": {
             "source_sha256": "0339b4650b657aa43c6f79035ae2288d1f5fc1f8901a702de302c3559011b441",

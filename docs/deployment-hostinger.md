@@ -14,13 +14,16 @@ category: docs
 4. Keep `.env`, `index.php`, `.htaccess`, `api/`, `app/`, `assets/`, `integrations/`, `storage/`, `cli/`, and `views/` together.
 5. Configure `BAPX_MYSQL_HOST`, `BAPX_MYSQL_PORT`, `BAPX_MYSQL_DB`, `BAPX_MYSQL_USER`, and `BAPX_MYSQL_PASS` in `.env` for direct hosted MySQL access.
 6. Configure application secrets from Admin -> Integrations; they are stored in remote MySQL, not `.env`.
-7. Set a Hostinger cron job for queued mail after SMTP is configured:
-
-```bash
-*/5 * * * * /usr/bin/php /home/<account>/domains/<domain>/public_html/cli/process-mail-queue.php
-```
-
-8. Smoke test public pages, account redirects, admin login, API endpoints, checkout configuration, and the mail queue.
+7. Verify SMTP and the owner notification address in Admin → Integrations. Transactional
+   mail is attempted in the request that creates it; no legacy mail-worker script is
+   required. SMTP acceptance is not inbox receipt.
+8. Inspect Admin → Email Outbox before processing delayed mail. An approved operator
+   can run `./bapXphp mail:process` from the checkout to process at most **25 due pending**
+   records. It does not retry failed, accepted, interrupted or uncertain attempts.
+   Do not schedule bulk processing or replay historical mail without reviewing the
+   recipients, event identities, provider limits and acceptance evidence first.
+9. Smoke test public pages, account redirects, admin login, API endpoints, checkout
+   configuration and the mail queue. See `docs/email-setup.md` for the transport contract.
 
 ### Preserve uploaded media
 
@@ -70,14 +73,16 @@ actor isolation, trace exports, admin dashboards, and 375px views.
 
 1. Work from the linked issue on a branch. Run `./bapXphp update` for generated
    inventory changes and `./bapXphp ci` before opening the PR.
-2. For a UI change, use the built-in Browser to exercise the affected route and
-   interactions on desktop and at 375 px. Record the routes, actions, and results
+2. For a UI change, use the owner-authorized installed Playwright CLI on the
+   connected development machine to exercise the actual browser at desktop and
+   375 px. A built-in Browser is also suitable where available. Record the routes, actions, and results
    in the PR. Use local fixture data for submissions that would change live data.
 3. Review the PR diff and resolve review findings. Check that GitHub validation
-   passed for the commit under review. Rerun affected checks after fixes or conflicts.
+   passed for the commit under review. Open the PR Ready for Review, not draft.
+   Rerun affected checks after fixes or conflicts.
 4. Merge into `main` and check the main-branch validation run. Hostinger pulls
-   `main` automatically. For UI releases, revisit the affected flows in the built-in
-   Browser and verify a change specific to the release on the live site.
+   `main` automatically. For UI releases, revisit the affected flows using the
+   same real-browser workflow and verify a change specific to the release on the live site.
 5. Record the merge commit, tested live URLs, observed results, and any steps
    that still need verification in the linked issue. Close it after its
    acceptance checks are verified.
@@ -95,7 +100,7 @@ to `getwinharris/bapXphpAiBackend`.
 
 ## Production Logs
 
-Production operational history belongs in remote MySQL `audit_events`, visible in Admin -> Audit Log and through `bapXphp logs`. Local `server.log` and `storage/logs/` are ignored runtime artifacts and must never be committed. Use `bapXphp logs --local` only when diagnosing the local PHP server. Do not auto-commit hosted request or error logs: they may contain customer data and each log commit would retrigger deployment.
+Production operational history belongs in remote MySQL `audit_events`. Use the existing dedicated admin monitoring/outbox views and `bapXphp logs`; there is no generic Audit Log menu. Local `server.log` and `storage/logs/` are ignored runtime artifacts and must never be committed. Use `bapXphp logs --local` only when diagnosing the local PHP server. Do not auto-commit hosted request or error logs: they may contain customer data and each log commit would retrigger deployment.
 
 ## Vercel
 
@@ -117,7 +122,7 @@ This application is built for normal PHP hosting, not Vercel. Vercel's official 
 - Backend: PHP controllers, services, and JSON API endpoints.
 - Database: direct hosted MySQL via `.env`, with `APP_URL/remotedb` as the developer/agent fallback.
 - Build step: none.
-- Email: queued in hosted MySQL and delivered by the configured Hostinger cron after SMTP is set in Admin → Integrations.
+- Email: canonical hosted queue rows are atomically claimed for in-request SMTP attempts. Optional bounded due-pending CLI processing is separate; uncertain/accepted sends are never blindly replayed.
 
 ## Directory Structure on Hostinger
 
