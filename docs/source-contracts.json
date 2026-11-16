@@ -3,19 +3,19 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "4c37d9ff708a4469082951fdf03d1b9822d6252e536b80c5f9e16b992ae19f9c",
-            "references_sha256": "42867b238900fdf4b848c36abbcb2653bdd309cf791336159f00d004ffc61e08",
-            "review_note": "Agent sources and chat JSON behavior are unchanged. Shared backend developer reference now explains mail events and recipient boundaries without granting an agent send/payment/password capability; rechecked existing role-tool and transcript requirements remain intact."
+            "source_sha256": "f376e0fa2e3b1d03bc36dacbc79b2218afda18c5cf930c8402cebf8b370eeec0",
+            "references_sha256": "516eed0ba499dbc3a23709461e1518323db52ef6b7ea169a74ad0c7b4aa4b696",
+            "review_note": "Reconciled preserved 78346fd into latest source after #282/#284/#286/#289/#291. ReviewDetail/ReviewTurn enforce server-admin identity, expected evidence hash/revision and per-chat atomic lock; original answer/trace/customer feedback untouched. 270 combined regressions, 31 exact fixtures and six-worker review conflict test pass. Recent-sample reviewed labels are not model-wide accuracy or confirmed customer resolution."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
-            "references_sha256": "9f991ae0bdcd10f740e6c59f3f86f2af87506efc3940679354e8047748a11072",
-            "review_note": "Cross-checked manual registration, new Google callback identity match and password-reset/profile CAS success paths. New verified Google customers get stable signup welcome, not returning accounts/admins; successful profile password change uses customer security template after CAS. Denied/stale paths do not notify, no credentials/scopes/roles or database configuration changed."
+            "references_sha256": "b375a6d794d4ff1a4375801fcb5ddf1f9c58c09786728acc4d8b51c2f2379d54",
+            "review_note": "Authentication and account/password lifecycle unchanged; new review paths reuse AdminController authorization/CSRF and independently validate reviewer identity. Role-shaped model/client data cannot grant review access. Customer-login approval blocker is not bypassed by this feature or QA."
         },
         "commerce": {
             "source_sha256": "ddb6bf29a16d2fae56cbc2ccb48bf85e376dcc42ca2e3794ab1891f05fc6be65",
-            "references_sha256": "d50275970bc769ac7e3524b837de8a67fe4d7d4c5720edd2390b3534b4da5a7e",
-            "review_note": "Commerce order creation, gateway verification, tax/invoice issuance and OrderService are unchanged. Rechecked finalizeOrder calls confirmation only on newly persisted verified order; templates read saved amounts and issued invoice number without mutation. Shared backend docs now explicitly distinguish synthetic email tests from live financial acceptance."
+            "references_sha256": "e13d977969ab7c583dcaa7f8637e2fb3faeb5aea2f0984b2e4bbee2d78d38394",
+            "review_note": "Business order/catalogue/GST sources unchanged. Added synthetic known-answer sales/refund/GST evidence fixtures inspect existing scoped tools; they do not mutate real financial data or certify tax filing. Shared backend guide only adds JSON answer-review isolation."
         },
         "content": {
             "source_sha256": "98a00d036ec51487e08eb8368c166b7b6782d74c666bbb6fdffd6c6a633df94f",
@@ -23,9 +23,9 @@
             "review_note": "Four reproduced defects and timezone/CAS fixtures now pass. BlogService compares expected SHA under a lock and atomic rename; direct/public list/agent/sitemap visibility is unified; six-worker test permits one writer only. Two isolated browser editor workflows prove stale save/delete rejection, preserved rejected text and reload/current revision at 1280px/375px without live content mutation."
         },
         "foundation": {
-            "source_sha256": "d76540b8120725886e5dad7abe7e0af4a1735140abe5308b72cb4c85e65e11fd",
-            "references_sha256": "4e9c0c8db1e765c4ef1ff988630110fd567a9571dbd8a5678c6632c1a75fe2ba",
-            "review_note": "Existing admin authentication and controller routing are reused; new POST cannot bypass CSRF, audience/key/token checks or queue claim semantics. Account mutation/send separation and private preview boundaries checked against existing architecture. No DB schema/connection/SecretService change and unrelated late-view HTTP error issue remains separately tracked."
+            "source_sha256": "1597d90eb79dafb44a2f0f8774e505bac3e482952d9f3dc176e5a93936cfdd34",
+            "references_sha256": "088039b2399a97f5423f88eeeb747c50e16c6e778146fc5640f13cc0148b6402",
+            "review_note": "Existing JSON transcript remains one file per chat; review appends bounded entries under its same locking/atomic-write contract. Current database schema/connection, publishing CAS, mail and gateway sources retained. Controller returns conflict on stale evidence and view accesses are audited; broader late-view response issue is separately tracked."
         },
         "google-tags": {
             "source_sha256": "cd31738328223ec1b16970780fdacdc4bc95027ce0a1142934b38949a16a454d",
@@ -33,24 +33,24 @@
             "review_note": "Read the original unused client and duplicate inline public rendering plus official current Google ID/config/verification docs. One validating HTML/JSON-encoding client now drives actual public rendering and independent owner statuses. Four fail-first regressions and an isolated browser fixture prove hostile values are omitted while valid existing G/GT/AW outputs remain. No external collection/ownership claim."
         },
         "interface": {
-            "source_sha256": "2a985bc8024081f48f70a44dc82a0888878a9797f8d8e8b67df199094d83f272",
-            "references_sha256": "f9ce060b9807be8ca1e12aac0d9d686c8a30a955ce0fc79b3b3ce087911df782",
-            "review_note": "Reviewed actual Templates selector/trigger/audience views, scripts-disabled srcdoc preview, real CSRF field, disabled wrong-role input and one-shot confirmation flow. Three Playwright suites pass at desktop/375px/no-JS with no send; actual logo decodes and no horizontal overflow. Preview uses real renderer but synthetic evidence, not fake customer results."
+            "source_sha256": "b2b6522d3bbc9227431293988268c55bc257f0e6d98d6d4b16251362778cabae",
+            "references_sha256": "bcce592e4a79691c835ca3093097343eda260aedd65966ca607227eac2c460a7",
+            "review_note": "Inspected actual owner review view and screenshots at 1280px/375px/no-JS. Four local browser suites pass saving explicitly synthetic annotations, preserving evidence/customer feedback and rejecting stale/CSRF/private-path attempts. No hidden model judgment, business mutation or human-review claim is made."
         },
         "mail": {
-            "source_sha256": "5b70e754d06500fd1b128e917887fd11d7f1ce09af2e43c9bdec0e03138d91d8",
-            "references_sha256": "ffcd519282fbd5bf3c6f0c6c51e115a09b4dcd1c9b86c69d84af427fb6c6bc70",
-            "review_note": "Actual Gmail MIME exposed style text and lost link targets in strip_tags fallback. Replaced only text extraction with PHP8.3 DOM traversal excluding style/script/head/hidden content, preserving UTF8, block/table separation and safe URLs. Exact MIME regression preserves unchanged HTML and headers; loopback transport semantics unchanged. This is text extraction, not HTML sanitation or delivery approval."
+            "source_sha256": "0eedafd9591fc8bda358d311186ae95f75cc7c21eefde01c5dec2e925deb1dd5",
+            "references_sha256": "7447c5575bd42631af44f14aa589f102166f5ae0cabe9ce1d4f4bf69577745ed",
+            "review_note": "Mail service/templates/recipient/SMTP sources unchanged from verified #289/#291. Shared AdminController and backend reference gained only independent answer-review functionality; no mail trigger/permission/queue state was altered. Rechecked mail-event source docs so dependency review does not imply actual owner/order receipt."
         },
         "media": {
             "source_sha256": "cd8a64c85c1eecc6c51d01262423e248f88fd14e896b1e3e74c359f937531962",
-            "references_sha256": "ce34af114d2beca6805a8cdf5d1190517d34564b0e50633bb93e5586847ee301",
-            "review_note": "Media sources and storage/delete behavior are unchanged. Shared admin-UI skill gained only sandboxed email preview acceptance guidance; inspected the existing media guard contract to ensure no delete/asset permission changed. Mail logo decode is checked without changing media."
+            "references_sha256": "01373b62d83632c357490b82278ff19f30d50168f40441fdd1c94c1fe38fa0f5",
+            "review_note": "Media service/storage/deletion behavior unchanged; shared admin guide now documents independent review screens. No file upload/delete or public-media route changes. Verified unchanged guard contract against existing media docs."
         },
         "operator-help": {
-            "source_sha256": "f129fdf6e06a0b8b30c89b4acbdc5fd2a36505cc2d6331a6002a00d157d64050",
-            "references_sha256": "67726d39d83748a484fe3d4efd5d0fc6954e712f10bb7b6b68aff64046331e1e",
-            "review_note": "Compared the new native plain-text disclosure with the same SmtpMailer projection used for MIME. Guide explains CSS removal, preserved visible warnings and safe links without claiming a new send or arbitrary CSS rendering; existing admin authorization and recipient split are unchanged."
+            "source_sha256": "100bb4f452613932a8d06de17455791e7871087e1a8cff852cab78e5ae4dd7a4",
+            "references_sha256": "4e0473df1ea5afba586a481dba83f16d5e1af9143f1658f50413edab52171e6b",
+            "review_note": "Compared the existing monitoring guide with the actual selected-turn review route, form, evidence selectors, provenance labels and immutable JSON history. Staff human attestation is not inferred; AI-assisted and verification-only decisions stay separate. Current operator Help routing, mail guide and module conditions are retained."
         },
         "sales-channels": {
             "source_sha256": "1f2cd451f764c9d2b1a0b90b1454ac54fbf9a1130973f86749df0510b8eef244",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed service/XML/CLI/UI against ProductService offer and visibility behavior plus current primary Google product-source and invited-creator docs. Verified explicit identifiers only, valid URL/image checks, safe XML, unknown external approval and no credential/account actions. Public browser samples match real prices/images; local missing media is not labelled a production defect."
         },
         "workflow": {
-            "source_sha256": "ebd8dc625a688a1e02ac0e633ee8531683bb71cdfdc5fedb77a7c960bd2081da",
+            "source_sha256": "399683250692446e3fb717309af5bcb2b1c11e642146ef5771ac354676a450dd",
             "references_sha256": "ca5db389c8bcb08c14953a650a4ce35c256bdbde01f97b79d741c65f64e9610f",
-            "review_note": "Added actual template/auth source dependencies and route/service references; concrete work status stays in GitHub #287/#25, not issue-ledger docs. Developer references describe event/recipient/evidence boundaries. Generated indexes will be regenerated and source-doc hashes are explicit review receipts, not auto-certification."
+            "review_note": "Preserved current GitHub-only tracking and documentation dependency policy while integrating the old feature. Added exact filesystem concurrency CI step and actual route references. Old generated indexes/receipts were discarded and regenerated from current integrated source rather than resolving conflicts by overwriting current work."
         }
     }
 }

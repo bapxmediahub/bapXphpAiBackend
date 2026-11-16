@@ -1122,6 +1122,99 @@ $tests['all actual mail template alternatives keep visible sample warnings witho
     }
 };
 
+$tests['per-answer review preserves original evidence and customer feedback in one JSON file'] = static function (): void {
+    $dir=sys_get_temp_dir().'/sps-review-'.bin2hex(random_bytes(6));mkdir($dir,0700);
+    $svc=new \App\Services\AgentConversationService($dir);
+    $owner=['type'=>'guest','id'=>'review-fixture'];$reviewer=['role'=>'admin','sub'=>'reviewer-fixture'];
+    try{
+        $created=$svc->record('support',$owner,null,'Show fixture item.','See /product/fixture-item.',bin2hex(random_bytes(8)),'local',[],null,null,[],[
+            ['intent'=>'catalogue_search','status'=>'matched','reason'=>'exact_public_alias','result_count'=>1,'sources'=>[['id'=>'product:fixture-item','last_updated'=>null]]]]);
+        $svc->rateSupportTurn($created['conversation_id'],$owner,$created['turn_id'],'not_helpful');
+        $before=$svc->getForAdmin($created['conversation_id']);
+        $detail=$svc->reviewDetail($created['conversation_id'],$created['turn_id'],$reviewer);
+        $review=$svc->reviewTurn($created['conversation_id'],$created['turn_id'],$reviewer,0,$detail['evidence_sha256'],[
+            'rubric'=>['accuracy'=>'pass','source_support'=>'pass','task_completion'=>'fail','policy_compliance'=>'pass'],
+            'reasons'=>['missing_information'],'evidence_refs'=>['retrieval:0'],
+            'note'=>'The linked product is real but the requested details are missing.', 'authoring_mode'=>'verification_test']);
+        assertSame('needs_correction',$review['verdict'],'Verdict is derived from structured rubric');
+        $after=$svc->getForAdmin($created['conversation_id']);
+        assertSame($before['turns'][0]['answer'],$after['turns'][0]['answer'],'Review never edits the model response');
+        assertSame($before['turns'][0]['evaluation'],$after['turns'][0]['evaluation'],'Automated evaluation is not overwritten by reviewer label');
+        assertSame($before['turns'][0]['feedback'],$after['turns'][0]['feedback'],'Customer feedback is separate');
+        assertSame('needs_followup',$after['resolution_status'],'Reviewer pass/fail cannot claim customer resolution');
+        assertSame(1,count($after['turns'][0]['reviews']),'Decision is saved on the reviewed turn');
+        assertSame(1,count(glob($dir.'/*.json')?:[]),'No transcript/review mirror or SQL table');
+        $summary=$svc->recent();assertSame(0,$summary[0]['quality_review']['human_reviewed'],'Synthetic QA is excluded from human-review counts');
+        assertSame(1,$summary[0]['quality_review']['verification_tests'],'Test provenance remains visible');
+    }finally{foreach(glob($dir.'/*')?:[] as $f)@unlink($f);foreach(glob($dir.'/.conversation*')?:[] as $f)@unlink($f);@rmdir($dir);}
+};
+
+$tests['answer review rejects stale snapshots revisions foreign roles and unsupported evidence'] = static function (): void {
+    $dir=sys_get_temp_dir().'/sps-review-guard-'.bin2hex(random_bytes(6));mkdir($dir,0700);$s=new \App\Services\AgentConversationService($dir);
+    $admin=['role'=>'admin','sub'=>'reviewer'];$payload=['rubric'=>['accuracy'=>'not_assessed','source_support'=>'not_assessed','task_completion'=>'pass','policy_compliance'=>'pass'],'reasons'=>['missing_information'],'evidence_refs'=>['response'],'note'=>'No tool evidence is available for factual verification.','authoring_mode'=>'agent_assisted'];
+    try{$c=$s->record('support',['type'=>'guest','id'=>'fixture'],null,'Fixture','Fixture answer',bin2hex(random_bytes(8)),'local');
+        $d=$s->reviewDetail($c['conversation_id'],$c['turn_id'],$admin);
+        foreach([['role'=>'customer','sub'=>'x'],['type'=>'admin','id'=>'x'],['role'=>'customer','is_admin'=>'true','sub'=>'x']] as $actor){
+            $denied=false;try{$s->reviewDetail($c['conversation_id'],$c['turn_id'],$actor);}catch(RuntimeException){$denied=true;}
+            assertTrue($denied,'Stored/browser-shaped actor objects cannot grant reviewer access');}
+        $bad=$payload;$bad['evidence_refs']=['tool:999'];$denied=false;
+        try{$s->reviewTurn($c['conversation_id'],$c['turn_id'],$admin,0,$d['evidence_sha256'],$bad);}catch(InvalidArgumentException){$denied=true;}
+        assertTrue($denied,'Only evidence actually recorded on the turn can be cited');
+        $denied=false;try{$s->reviewTurn($c['conversation_id'],$c['turn_id'],$admin,0,str_repeat('0',64),$payload);}catch(LogicException){$denied=true;}
+        assertTrue($denied,'Changed evidence cannot receive a stale approval');
+        $first=$s->reviewTurn($c['conversation_id'],$c['turn_id'],$admin,0,$d['evidence_sha256'],$payload);
+        assertSame('insufficient_evidence',$first['verdict'],'Missing assessment is not pass');
+        $denied=false;try{$s->reviewTurn($c['conversation_id'],$c['turn_id'],$admin,0,$d['evidence_sha256'],$payload);}catch(LogicException){$denied=true;}
+        assertTrue($denied,'Concurrent stale reviewer cannot overwrite a decision');
+        assertSame(1,count($s->getForAdmin($c['conversation_id'])['turns'][0]['reviews']),'History remains intact after rejects');
+        $payload['note']='Follow-up review: still no additional evidence.';
+        $s->reviewTurn($c['conversation_id'],$c['turn_id'],$admin,1,$d['evidence_sha256'],$payload);
+        assertSame(2,count($s->getForAdmin($c['conversation_id'])['turns'][0]['reviews']),'Revisions append instead of rewriting history');
+    }finally{foreach(glob($dir.'/*')?:[] as $f)@unlink($f);foreach(glob($dir.'/.conversation*')?:[] as $f)@unlink($f);@rmdir($dir);}
+};
+
+$tests['review summary separates provenance, abstentions and unresolved source gaps'] = static function (): void {
+    $sample=[['id'=>'a','surface'=>'support','intent'=>'collection','turn_count'=>2,'quality_review'=>[
+        'human_reviewed'=>1,'supported'=>0,'needs_correction'=>1,'insufficient_evidence'=>0,'agent_assisted'=>0,'verification_tests'=>1,'unreviewed'=>0,'reasons'=>['wrong_scope'=>1]]],
+        ['id'=>'b','surface'=>'admin','intent'=>'unknown','turn_count'=>1,'quality_review'=>[
+        'human_reviewed'=>0,'supported'=>0,'needs_correction'=>0,'insufficient_evidence'=>0,'agent_assisted'=>1,'verification_tests'=>0,'unreviewed'=>0,'reasons'=>[]]]];
+    $metrics=\App\Services\AgentEvaluationService::reviewSummary($sample);
+    assertSame(2,$metrics['conversations'],'Sample denominator is explicit');assertSame(3,$metrics['turns'],'Turns are distinct from chats');
+    assertSame(1,$metrics['human_reviewed'],'Only staff-declared human reviews enter human counts');
+    assertSame(1,$metrics['verification_tests'],'Verification attempts are never genuine feedback or approvals');
+    assertSame(0.0,$metrics['supported_percent'],'Percent uses reviewed human turns only');
+    assertSame(1,$metrics['topics']['collection']['needs_correction'],'Topic breakdown links quality to the task');
+};
+
+$tests['authenticated answer-review routes have a real existing-admin view'] = static function (): void {
+    $routes=\App\Services\ProjectMapService::registry()['routes'];
+    foreach(['GET'=>'AdminController@agentReview','POST'=>'AdminController@agentReviewSave'] as $verb=>$handler){
+        $r=array_values(array_filter($routes,static fn($r):bool=>($r['path']??'')==='/admin/agent/review/{id}'&&($r['method']??'')===$verb));
+        assertSame(1,count($r),'One scoped review route per HTTP method');assertSame($handler,$r[0]['controller'],'Existing authenticated controller enforces role/CSRF');
+    }
+    assertTrue(is_file(app_path('views/admin/agent-review.php')),'Real review form exists, not just JSON download');
+};
+
+$tests['synthetic review revisions cannot replace a staff assessment and require explicit provenance'] = static function (): void {
+    $dir=sys_get_temp_dir().'/sps-review-provenance-'.bin2hex(random_bytes(6));mkdir($dir,0700);$s=new \App\Services\AgentConversationService($dir);$admin=['role'=>'admin','id'=>'staff-fixture'];
+    try{
+        $c=$s->record('support',['type'=>'guest','id'=>'fixture'],null,'Fixture shipping question','Read the published policy.',bin2hex(random_bytes(8)),'local');
+        $detail=$s->reviewDetail($c['conversation_id'],$c['turn_id'],$admin);
+        $input=['rubric'=>['accuracy'=>'not_assessed','source_support'=>'not_assessed','task_completion'=>'fail','policy_compliance'=>'pass'],
+            'reasons'=>['missing_information'],'evidence_refs'=>['response'],'note'=>'Missing policy evidence. password=fixture-secret-must-not-survive','authoring_mode'=>'human'];
+        $denied=false;try{$s->reviewTurn($c['conversation_id'],$c['turn_id'],$admin,0,$detail['evidence_sha256'],$input);}catch(InvalidArgumentException){$denied=true;}
+        assertTrue($denied,'Human provenance requires explicit staff attestation');
+        $input['human_attestation']='yes';$human=$s->reviewTurn($c['conversation_id'],$c['turn_id'],$admin,0,$detail['evidence_sha256'],$input);
+        assertTrue(!str_contains($human['note'],'fixture-secret-must-not-survive'),'Obvious credential values are scrubbed before persistence');
+        $input['authoring_mode']='verification_test';unset($input['human_attestation']);
+        $s->reviewTurn($c['conversation_id'],$c['turn_id'],$admin,1,$detail['evidence_sha256'],$input);
+        $summary=$s->recent()[0]['quality_review'];
+        assertSame(1,$summary['human_reviewed'],'A later synthetic test never masks the latest human judgment');
+        assertSame(1,$summary['needs_correction'],'Original human correction remains visible');
+        assertSame(1,$summary['verification_tests'],'Test provenance is counted separately, not as another human');
+    }finally{foreach(glob($dir.'/*')?:[] as $f)@unlink($f);foreach(glob($dir.'/.conversation*')?:[] as $f)@unlink($f);@rmdir($dir);}
+};
+
 $tests['each agent session creates one private JSON file and no MySQL table'] = static function (): void {
     $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
     assertTrue(mkdir($root, 0700), 'Private test directory exists');

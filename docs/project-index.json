@@ -3,10 +3,10 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 138,
+        "routes": 140,
         "controllers": 12,
         "services": 67,
-        "views": 56,
+        "views": 57,
         "collections": 22
     },
     "routes": [
@@ -296,6 +296,31 @@
                 "AgentEvaluationService",
                 "SiteTelemetryService",
                 "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/agent/review/{id}",
+            "name": "admin.agent.review",
+            "controller": "AdminController@agentReview",
+            "view": "admin/agent-review",
+            "services": [
+                "AuthService",
+                "AgentConversationService",
+                "AgentEvaluationService",
+                "AuditLogService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/agent/review/{id}",
+            "name": "admin.agent.review.save",
+            "controller": "AdminController@agentReviewSave",
+            "view": "admin/agent-review",
+            "services": [
+                "AuthService",
+                "AgentConversationService",
+                "AuditLogService"
             ]
         },
         {
@@ -1677,6 +1702,7 @@
         "admin/_commerce-overview",
         "admin/agent",
         "admin/agent-monitoring",
+        "admin/agent-review",
         "admin/appearance",
         "admin/blog",
         "admin/collections",
