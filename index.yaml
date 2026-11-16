@@ -44,15 +44,15 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 412
-  relationships: 325
+  concepts: 414
+  relationships: 327
   by_type:
     blog: 16
     controller: 12
     doc: 47
     image: 89
     operator_guide: 12
-    route: 133
+    route: 135
     runtime_instruction: 6
     schema: 22
     service: 63
@@ -2230,6 +2230,23 @@ concepts:
       - "SiteTelemetryService"
       - "AuthService"
     view: "admin/agent-monitoring"
+  - id: "route:get__admin_agent_review__id"
+    type: "route"
+    title: "GET /admin/agent/review/{id}"
+    description: "admin.agent.review"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/admin/agent/review/{id}"
+    controller: "AdminController@agentReview"
+    services:
+      - "AuthService"
+      - "AgentConversationService"
+      - "AgentEvaluationService"
+      - "AuditLogService"
+    view: "admin/agent-review"
   - id: "route:get__admin_appearance"
     type: "route"
     title: "GET /admin/appearance"
@@ -3225,6 +3242,22 @@ concepts:
       - "AuditLogService"
       - "AuthService"
     view: "admin/agent"
+  - id: "route:post__admin_agent_review__id"
+    type: "route"
+    title: "POST /admin/agent/review/{id}"
+    description: "admin.agent.review.save"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/admin/agent/review/{id}"
+    controller: "AdminController@agentReviewSave"
+    services:
+      - "AuthService"
+      - "AgentConversationService"
+      - "AuditLogService"
+    view: "admin/agent-review"
   - id: "route:post__admin_appearance_save"
     type: "route"
     title: "POST /admin/appearance/save"
@@ -5349,6 +5382,9 @@ relationships:
   - from: "route:get__admin_agent_monitoring"
     to: "controller:AdminController"
     relation: "handled_by"
+  - from: "route:get__admin_agent_review__id"
+    to: "controller:AdminController"
+    relation: "handled_by"
   - from: "route:get__admin_appearance"
     to: "controller:AdminController"
     relation: "handled_by"
@@ -5545,6 +5581,9 @@ relationships:
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:post__admin_agent_history__id__delete"
+    to: "controller:AdminController"
+    relation: "handled_by"
+  - from: "route:post__admin_agent_review__id"
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:post__admin_appearance_save"

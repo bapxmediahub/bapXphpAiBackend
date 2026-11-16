@@ -108,3 +108,9 @@ both its source metadata and `operator-help` documentation-review dependencies.
 Public help belongs in the existing published Help blog category, not private
 operator text. Test search/categories/anchors/task links with no JavaScript,
 1280px and 375px, plus guest/customer denial and raw/encoded file-path denial.
+
+The answer-review screen is an authenticated native form with evidence selectors,
+pass/fail/not-assessed rubric and explicit human/assisted/test provenance. Never
+render private text as HTML, assume a missing source is a pass, or present a
+staff label as customer satisfaction. Verify no-JS, mobile, CSRF, role denial,
+stale revision and unchanged original JSON evidence after a synthetic QA save.

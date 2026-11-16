@@ -395,6 +395,7 @@ final class AdminController extends BaseController {
             error_log('Agent session insights unavailable: '.$e::class);
         }
         $supportFeedbackSummary = \App\Services\AgentEvaluationService::supportOutcomeSummary($agentConversations);
+        $answerReviewSummary = \App\Services\AgentEvaluationService::reviewSummary($agentConversations);
         try {
             $agentGoldenSuite = \App\Services\AgentEvaluationService::goldenSuite();
         } catch (\Throwable $e) {
@@ -402,7 +403,7 @@ final class AdminController extends BaseController {
             $agentGoldenSuite = null;
         }
         $this->render('admin/agent-monitoring',
-            compact('agentMonitoring','agentConversations','commerceTelemetry','supportFeedbackSummary','agentGoldenSuite')
+            compact('agentMonitoring','agentConversations','commerceTelemetry','supportFeedbackSummary','agentGoldenSuite','answerReviewSummary')
             + ['pageTitle' => 'Agent Monitoring']);
     }
 
@@ -447,6 +448,40 @@ final class AdminController extends BaseController {
             'at'=>(string)($t['at'] ?? ''),
         ], $document['turns'] ?? []);
         $this->jsonResponse(['conversation_id'=>$document['id'], 'turns'=>$turns]);
+    }
+
+    public function agentReview(string $id): void {
+        $user=(new AuthService())->user()??[];
+        $turnId=is_string($_GET['turn']??null)&&$_GET['turn']!==''?$_GET['turn']:null;
+        try{$detail=(new \App\Services\AgentConversationService())->reviewDetail($id,$turnId,$user);}
+        catch(\InvalidArgumentException){$detail=null;}
+        if($detail===null){$this->renderNotFound();return;}
+        $audit=(new AuditLogService())->record('review_open','agent_conversation',$id,['turn_id'=>$detail['turn']['turn_id']]);
+        if(($audit['status']??'')!=='recorded'){$this->jsonResponse(['error'=>'Cannot audit access to this conversation.'],503);}
+        header('Cache-Control: private, no-store');
+        $this->seoOverrides=['title'=>'Review agent answer','robots'=>'noindex, nofollow'];
+        $this->render('admin/agent-review',['detail'=>$detail]);
+    }
+
+    public function agentReviewSave(string $id): void {
+        // Existing AdminController constructor enforces authentication and CSRF first.
+        $turn=is_string($_POST['turn_id']??null)?$_POST['turn_id']:'';
+        $version=$_POST['review_revision']??null;$digest=$_POST['evidence_sha256']??null;
+        if(!is_string($version)||!preg_match('/^(?:0|[1-9][0-9]?)$/D',$version)||!is_string($digest)){
+            $this->jsonResponse(['error'=>'Invalid review revision.'],400);
+        }
+        try{
+            $review=(new \App\Services\AgentConversationService())->reviewTurn($id,$turn,(new AuthService())->user()??[],(int)$version,$digest,[
+                'rubric'=>$_POST['rubric']??null,'reasons'=>$_POST['reasons']??[],
+                'evidence_refs'=>$_POST['evidence_refs']??[],'note'=>$_POST['note']??null,
+                'authoring_mode'=>$_POST['authoring_mode']??null,'human_attestation'=>$_POST['human_attestation']??null]);
+            (new AuditLogService())->record('answer_review','agent_conversation',$id,[
+                'turn_id'=>$turn,'review_id'=>$review['id'],'revision'=>$review['revision'],'verdict'=>$review['verdict'],'authoring_mode'=>$review['authoring_mode']]);
+            $this->flash('Answer review recorded. Original response and customer feedback are unchanged.','success');
+            $this->redirect('/admin/agent/review/'.$id.'?turn='.$turn);
+        }catch(\InvalidArgumentException $error){$this->jsonResponse(['error'=>$error->getMessage()],400);}
+        catch(\LogicException $error){$this->jsonResponse(['error'=>$error->getMessage()],409);}
+        catch(\Throwable $error){error_log('Answer review persistence failed: '.$error::class);$this->jsonResponse(['error'=>'The review could not be saved. Reload its history before retrying.'],503);}
     }
 
     public function agentConversation(string $id): void {

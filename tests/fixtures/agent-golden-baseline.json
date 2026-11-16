@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "label": "native-php-exact-retrieval-policy-and-evidence-v3",
+  "label": "native-php-source-scoped-financial-answer-evidence-v4",
   "expected": {
     "support_ayyappa_collection": true,
     "support_generic_festival_ambiguous": true,
@@ -28,6 +28,10 @@
     "invented_public_product_link_rejected": true,
     "shipping_charge_uses_policy_not_guessed_price": true,
     "missing_policy_is_not_invented": true,
-    "existing_spaced_public_slug_preserved": true
+    "existing_spaced_public_slug_preserved": true,
+    "exact_financial_zero_answer": true,
+    "exact_financial_verified_refund_answer": true,
+    "exact_gst_evidence_issued_period": true,
+    "exact_gst_empty_window_evidence": true
   }
 }

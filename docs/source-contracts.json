@@ -3,19 +3,19 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "4c37d9ff708a4469082951fdf03d1b9822d6252e536b80c5f9e16b992ae19f9c",
-            "references_sha256": "1a2e7d0ca274be7abba1748f770bd1f1e1f3232a759ba76968efd4005c9e7e58",
-            "review_note": "Rechecked role-scoped manifest generator after #265: contract docs list actual private Markdown paths/content hashes without copying prompt bodies; guardrail and JSON session semantics remain unchanged. Current acceptance belongs in GitHub #251."
+            "source_sha256": "f376e0fa2e3b1d03bc36dacbc79b2218afda18c5cf930c8402cebf8b370eeec0",
+            "references_sha256": "5f8be69029765441ae908587ea9884c8548504e83aa9ad0e905ff80344c9c89e",
+            "review_note": "Reviewed AgentConversationService review lock/hash/revision/history and AgentEvaluationService provenance denominators against original JSON/observability docs. Five red-green regressions plus six-worker conflict fixture prove exact boundaries; 31 deterministic cases add exact sales/refund/GST answer evidence, not a human-quality benchmark. Tests remain explicitly excluded from human metrics."
         },
         "auth": {
             "source_sha256": "fb54a6f0d4394ea91c7544998f57773f0019cc7710093becee637e0d7d059440",
-            "references_sha256": "adab571fbd0bd6bef31020a3fa27c972c68006fe9650292f1773116e19d2c73d",
-            "review_note": "Compared actual AuthController password, registration and OAuth redirects and MySQL writes against auth/OAuth guides; corrected users.json and customer dashboard wording without changing credentials or behavior."
+            "references_sha256": "0427218d79e279c767132d1e427fdbd462e811281326c44532106f02d2efee91",
+            "review_note": "Existing AuthService and credential source remain unchanged; review GET/POST stay in authenticated AdminController with existing CSRF plus strict service-level reviewer identity. Shared backend skill documents no model/browser privilege selection; customer/guest denial exercised."
         },
         "commerce": {
             "source_sha256": "ddb6bf29a16d2fae56cbc2ccb48bf85e376dcc42ca2e3794ab1891f05fc6be65",
-            "references_sha256": "cb032f0342d1119ca7036018a342ee0953525490461328d486bc74ebf7546e2f",
-            "review_note": "Baseline mapped existing catalogue/order/tax sources to their durable module contracts. No commerce implementation or live transaction is changed; the review does not certify tax filing or untested payment receipt."
+            "references_sha256": "65ff4c2ac0052755bde5aa54b6e30121cfb63c615ce411418d5d5d45812f7236",
+            "review_note": "Business order/catalog/GST sources unchanged. New evaluation cases call existing deterministic report methods with synthetic fixtures; no payment/refund/stock mutations or filing certification. Shared skill review note preserves original commerce boundaries."
         },
         "content": {
             "source_sha256": "df9530c1fd85ed913b132aa51d3b04ad465cf1c09dc7fdfb0ae68d8b52edf489",
@@ -23,34 +23,34 @@
             "review_note": "Reviewed original SeoService and BlogController override paths plus resolved local/persistent image contracts. Canonical/OG/organization defaults now use configured APP_URL, valid explicit overrides remain, bad URL schemes/local missing images fall back safely, and product schema follows in_stock/active and resolved price. Six regressions cover host/request forms, overrides/noindex, real image paths, stock/slug encoding and inline JSON-LD safety."
         },
         "foundation": {
-            "source_sha256": "caeeafcdf3893796349062a7bd1d6f8d40867f0b74363724ebf2211a153085af",
-            "references_sha256": "799153a6a616826d7b98803c9e568e6d4d9360142844b4d0c010541081b9295f",
-            "review_note": "Reviewed PublicController product/sitemap and BaseController canonical configuration. Sitemap now uses the same configured origin and safely encoded public slugs; actual product/payment/stock data and controllers are otherwise unchanged. Architecture docs name the canonical authority and avoid search ranking guarantees."
+            "source_sha256": "80bfef3aace6c75dd34544918a0e4a867352cef8945961877331dac443fae51e",
+            "references_sha256": "200ab65eebe3e8004e390e1177de155fd93b1c0e74767f711e84f9877dd7fd3d",
+            "review_note": "Reviewed existing admin authentication/CSRF controller and new bounded review endpoints with JSON-storage contract. Append-only selected-turn review uses same file/lock, expected revision and original evidence hash, no SQL mirror; metadata audit stores IDs/categories only. No customer-confirmed outcome is fabricated."
         },
         "interface": {
-            "source_sha256": "9264fff8a2f4a3692cde1c9cd571aab13be065a0df4348e40e3a23d6608ef421",
-            "references_sha256": "e4522b62244f342cdf59574b492d50284f8e5876b850d48f09f5e47a7499ed5e",
-            "review_note": "Compared rendered public head with SeoService output and verified desktop/mobile browser metadata. Removed the layout Host-header bypass and manual organization JSON interpolation, preserving page bodies, forms, customer Help links and private noindex. Five browser cases verify actual public metadata, product prices/current stock and image responses without business mutations."
+            "source_sha256": "f6b1786fbb73c341c882035a1889cb8d19a3d163d6b3d44980386b62a4eb4d5c",
+            "references_sha256": "8db47de59fa4d0ff4713aadd1e2922dfb87d30a15c22cf8d837db30d6a2185f4",
+            "review_note": "Compared evidence-first review template/CSS and monitoring links/denominators with admin guide and skill. All private text is escaped; form works without JS at 375px, visible evidence and authorship labels remain explicit. Screenshots inspected and actual saves preserve original JSON evidence."
         },
         "mail": {
             "source_sha256": "caed5f4ccf26b2e3315bc122e0568f79a4a25a451cf1bfda017c53c5ac3866d4",
-            "references_sha256": "5c5c639b513586622afd09848e3eeacbd00a2041e9439af9940f4a5b8c9395bf",
-            "review_note": "Baseline checked against native SMTP claim/acceptance boundaries and current mail guide; SMTP acceptance is explicitly not inbox receipt. No mail implementation changed in this issue."
+            "references_sha256": "3c0144f7d634eec121e3207626baa95896212f682e9ab49b8e4fb79bed25b5ef",
+            "review_note": "SMTP/queue sources unchanged. Shared backend skill adds private agent-review persistence and explicitly excludes customer receipt claims; inspected mail references and confirmed no retry/recipient side effects or new mail permissions."
         },
         "media": {
             "source_sha256": "cd8a64c85c1eecc6c51d01262423e248f88fd14e896b1e3e74c359f937531962",
-            "references_sha256": "29f3076cf02c8366be47904a0292e3d262b5813f98e371f93deadcf635b10780",
-            "review_note": "Media deletion and storage behavior are unchanged. Shared architecture text now accurately states configured-origin metadata; SeoService only checks approved local/persistent image paths and does not fetch external URLs or mutate media. Rechecked the existing media verification reference against unchanged media services."
+            "references_sha256": "5a29965a788649e2deca3cfda38b2934bdaad12e046935bf0be654eed891b9cb",
+            "review_note": "Media services and deletion behavior unchanged. Shared admin skill explains private answer-review workflow, not a media mutation. Existing architecture/media reference semantics remain accurate."
         },
         "operator-help": {
-            "source_sha256": "c44d44c5606edb87bf3ba179eea5c55e911f53ad9a82e930898f669dfc5980e0",
-            "references_sha256": "657ea10a8f14b4546e3dfab3207203c801844c3892ff7bab6a8f6581c11be26f",
-            "review_note": "Compared catalogue guide stock/visibility and metadata wording with ProductService, checkout eligibility and updated SeoService. Added SeoService as an explicit catalogue source dependency; guides explain configured domain and cache/ranking limits without promising inventory quantity or search performance. Help routes/auth/text rendering remain unchanged."
+            "source_sha256": "f62c468c2eef8cdcde97ff0384454daabc8478cbea0a33cfb8bb5d01c8d96e39",
+            "references_sha256": "41d8c00b1a546e58a57af1ab3df32e02c7f6389a838e72b4dae1ee04d938e9f0",
+            "review_note": "Compared per-turn review routes, evidence selectors, staff rubric/provenance, stale-version handling and actual native form with the monitoring operator guide. Added the review view/source dependency and route context; original answers, customer feedback, ticket state and private source boundaries remain unchanged. Local desktop/mobile/no-JS browser save verified as synthetic test only."
         },
         "workflow": {
-            "source_sha256": "aaf227d12b79b0b6b454bf2c3c1e2a80d28a6ec7e110ab3bdcbbb6c2c1a85755",
+            "source_sha256": "46e05e5875f947694d2108db3c91fbb428452360095d36ccebcb379b3ae9f02e",
             "references_sha256": "cee956118faf1ab10d71e949d648ed075135c57f1f024bde7f45dc3bfd39bdf7",
-            "review_note": "Reviewed DocumentationReview snapshots/digest safety, exact source ownership rules and fixed Help metadata. Added explicit dependency union with deduplication and a failing-then-passing cross-area source-change regression; source hashes require human rationale, while issues/plans/release evidence stay in GitHub and generated indexes remain discovery only."
+            "review_note": "Reviewed added filesystem-only six-worker review test in CI; it requires no MySQL or provider and verifies one winner/five stale writers. Generated route/index changes follow actual registered handlers; no issues/plans added under docs."
         }
     }
 }

@@ -57,6 +57,8 @@ jobs:
         run: php tests/order-concurrency.php
       - name: Test concurrent private JSON conversation appends
         run: php tests/agent-concurrency.php
+      - name: Test concurrent structured answer review in private JSON
+        run: php tests/agent-review-concurrency.php
       - name: Test interrupted agent checkpoint recovery
         run: php tests/agent-interruption.php
       - name: Test duplicate support actions and competing staff against isolated MySQL

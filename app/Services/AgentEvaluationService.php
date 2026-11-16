@@ -85,6 +85,8 @@ final class AgentEvaluationService {
             'permission' => AgentCapabilityPolicy::allows(
                 (string)($case['agent']??''),(string)($case['tool']??''),$case['actor']??null)
                 === (bool)($case['expected_allowed']??false),
+            'financial_answer' => self::fixtureFinancialAnswer($case),
+            'gst_evidence' => self::fixtureGstEvidence($case),
             'sales' => self::fixtureSales($case),
             'ticket_intent' => (SupportBotService::ticketLookupRequest((string)($case['question']??''))!==null)
                 === (bool)($case['expected_lookup']??false),
@@ -118,12 +120,49 @@ final class AgentEvaluationService {
             && (float)($result['revenue']??-1)===(float)($case['expected_revenue']??-2);
     }
 
+    private static function fixtureFinancialAnswer(array $case): bool {
+        $facts=AgentToolRegistry::salesFacts((array)$case['orders'],(array)$case['range']);
+        $answer=AgentToolRegistry::aggregateAnswerFromSummary((string)$case['question'],$facts,(int)$case['days']);
+        $evidence=AgentTraceService::toolEvidence('sales_summary',(array)$case['range'],$facts);
+        return $answer===$case['expected_answer']&&(int)$facts['orders']===(int)$case['expected_orders']
+            &&(float)$facts['revenue']===(float)$case['expected_revenue']
+            &&$evidence['filters']===$case['range']&&$evidence['facts']['revenue']===(float)$case['expected_revenue'];
+    }
+
+    private static function fixtureGstEvidence(array $case): bool {
+        $range=(array)$case['range'];$orders=GstRegisterService::ordersForPeriod((array)$case['orders'],$range['from'],$range['to']);
+        $totals=GstRegisterService::totals($orders);$expected=array_map('floatval',(array)$case['expected_totals']);
+        $e=AgentTraceService::toolEvidence('gst_register_summary',$range,$range+['issued_invoices'=>count($orders),'totals'=>$totals]);
+        return count($orders)===(int)$case['expected_count']&&$totals===$expected&&$e['result_count']===(int)$case['expected_count']
+            &&$e['filters']===$range&&$e['facts']['tax']===$expected['tax'];
+    }
+
     private static function fixtureReportContext(array $case): bool {
         $tool = new AgentToolRegistry(ownerQuestion:(string)($case['question']??''),
             previousReport:(array)($case['previous_report']??[]));
         $scope = $tool->followUpContext();
         return is_array($scope) && ($scope['from']??null) === ($case['expected_from']??null)
             && ($scope['to']??null) === ($case['expected_to']??null);
+    }
+
+    /** Staff-declared review labels, not model-generated accuracy or customer satisfaction. */
+    public static function reviewSummary(array $recent): array {
+        $totals=['conversations'=>count($recent),'turns'=>0,'human_reviewed'=>0,'supported'=>0,'needs_correction'=>0,
+            'insufficient_evidence'=>0,'agent_assisted'=>0,'verification_tests'=>0,'unreviewed'=>0,'topics'=>[],'reasons'=>[]];
+        foreach($recent as $row){
+            $totals['turns']+=(int)($row['turn_count']??0);$metrics=$row['quality_review']??[];
+            $topic=AgentTraceService::safeRetrieval(['intent'=>$row['intent']??'unknown'])['intent'];
+            $totals['topics'][$topic]??=['conversations'=>0,'human_reviewed'=>0,'supported'=>0,'needs_correction'=>0,'insufficient_evidence'=>0];
+            $totals['topics'][$topic]['conversations']++;
+            foreach(['human_reviewed','supported','needs_correction','insufficient_evidence','agent_assisted','verification_tests','unreviewed'] as $key){
+                $count=max(0,(int)($metrics[$key]??0));$totals[$key]+=$count;
+                if(array_key_exists($key,$totals['topics'][$topic]))$totals['topics'][$topic][$key]+=$count;
+            }
+            foreach($metrics['reasons']??[] as $reason=>$count)if(isset(AgentConversationService::REVIEW_REASONS[$reason]))$totals['reasons'][$reason]=($totals['reasons'][$reason]??0)+max(0,(int)$count);
+        }
+        $totals['supported_percent']=$totals['human_reviewed']>0?round(100*$totals['supported']/$totals['human_reviewed'],1):null;
+        $totals['denominator']='staff_declared_human_reviewed_turns_in_recent_conversations';
+        return $totals;
     }
 
     /** Operates on the dashboard's explicitly bounded recent conversation sample. */

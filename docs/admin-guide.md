@@ -56,3 +56,9 @@ for developer files or private runtime-agent prompts. Customers instead use
 published Help blog articles linked from shop, cart, checkout, account and
 Support. See `admin-help.md` for content ownership, privacy and source-review
 checks. A guide describes a control; it never performs a business action.
+
+Agent Monitoring's **Review answers** links open a selected-turn assessment form.
+Use recorded evidence, choose not-assessed for unavailable facts, declare
+human/assisted/test authorship truthfully and keep rationale free of secrets.
+The appended review is not a customer satisfaction vote or a ticket transition.
+The linked operator monitoring guide explains conflicts and review history.

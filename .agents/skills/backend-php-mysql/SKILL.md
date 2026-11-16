@@ -71,3 +71,13 @@ reply or logging failure. Update individual queue/outbox rows, never replace
 those collections. The recorded `sent` state means SMTP acceptance (or legacy
 sent), not inbox confirmation. Use loopback SMTP and disposable MySQL tests;
 do not replay the customer's backlog or create fake paid orders for QA.
+
+## Structured answer review
+
+Use AgentConversationService reviewDetail/reviewTurn for owner-only per-answer
+assessment. Preserve original evidence and customer feedback, compare the
+server evidence hash plus expected revision, and append under the existing
+per-chat lock. No SQL/JSON mirror. Staff-declared human review requires explicit
+attestation; automated tests must declare verification_test and must not inflate
+human counts. Run tests/agent-review-concurrency.php along with chat concurrency
+and interruption tests. Stale revisions/evidence are conflicts, not auto-retries.

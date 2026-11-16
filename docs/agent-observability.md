@@ -144,7 +144,7 @@ Do not present a nonempty answer or no-secret result as factual correctness.
 The offline golden corpus and approved baseline live in:
 `tests/fixtures/agent-golden.json` and
 `tests/fixtures/agent-golden-baseline.json`.
-The 27 cases include collection selection, generic ambiguity, role denial, empty
+The 31 cases include collection selection, generic ambiguity, role denial, empty
 sales, ticket lookup-vs-creation, follow-up periods, secret-leak rejection,
 executed-scope precedence and provider usage normalization.
 
@@ -276,3 +276,44 @@ Existing public slugs containing spaces or Unicode are retained and URL-encoded
 in source IDs and links. Retrieval guards must not silently drop valid client
 records because an assumed lowercase ASCII slug format is narrower than the
 actual ProductService contract.
+
+## Evidence-bound staff answer review
+
+Agent Monitoring links each completed chat to `/admin/agent/review/{id}`.
+The authenticated operator selects a turn, inspects its recorded question,
+answer, safe tool/retrieval evidence and instruction manifest, and submits an
+explicit four-part rubric: factual accuracy, source support, task completion
+and policy/privacy compliance. Each criterion is pass/fail/not-assessed; a
+failed item derives `needs_correction`, and missing assessments derive
+`insufficient_evidence`. A factual/source pass requires selection of recorded
+tool/retrieval evidence. This is a review contract, not automatic semantic proof.
+
+POST uses existing admin authentication and CSRF. The service independently
+requires a real authenticated admin identity. A server-computed hash binds the
+review to the original answer/evidence; the form also carries the current review
+revision. A stale evidence hash or concurrent revision returns 409. Six-worker
+filesystem tests prove one matching-version save wins while stale writers do
+not overwrite history. Up to 20 bounded reviews append to the same turn in the
+same private chat JSON; no separate review/transcript database or JSON mirror is
+created. A review preserves the original answer, trace, automated evaluation,
+customer feedback, ticket state and customer-activity ordering.
+
+Operators declare `human`, `agent_assisted` or `verification_test` authorship.
+The human option requires explicit personal attestation. The system records
+**staff-declared** provenance; it cannot independently prove a physical human
+performed the review. Automated QA must select verification_test, never claim
+human authority. Latest human, assisted and test assessments for the same turn
+are separate; a later test cannot mask an earlier human correction. Provenance
+counts can overlap and must not be summed as unique reviewed turns.
+
+Monitoring shows the recent-40-chat denominator, completed turns, latest human
+verdicts, nonhuman/test annotations, unreviewed turns and review reasons.
+Topic grouping uses the latest conversation intent, explicitly labeled, not
+claim-level all-traffic clustering. These are selected review labels, not a
+statistically representative production accuracy score. A human pass never
+marks customer-confirmed resolution; only the existing customer action does.
+
+The 31-case deterministic corpus includes exact net-sales answers with verified
+refund/unpaid/cancelled/out-of-period fixtures and exact GST snapshot/count/scope
+evidence. These synthetic known-answer tests are reproducible regression
+coverage, not human-reviewed real-world labels or tax-filing certification.

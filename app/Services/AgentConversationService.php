@@ -423,6 +423,135 @@ final class AgentConversationService
         return $this->historyPage($surface,$actor,$limit)['conversations'];
     }
 
+    public const REVIEW_CRITERIA = [
+        'accuracy'=>'Factual accuracy', 'source_support'=>'Support from recorded sources',
+        'task_completion'=>'Answers the actual request', 'policy_compliance'=>'Policy and privacy boundaries',
+    ];
+    public const REVIEW_REASONS = [
+        'incorrect_fact'=>'Incorrect fact or total', 'wrong_scope'=>'Wrong person, product or date scope',
+        'unsupported_claim'=>'Claim not supported by evidence', 'wrong_tool'=>'Wrong or missing tool',
+        'policy_or_privacy'=>'Policy or privacy problem', 'missing_information'=>'Missing information',
+        'poor_clarity'=>'Unclear or unhelpful response', 'other'=>'Other recorded reason',
+    ];
+
+    private static function requireReviewer(array $user): array {
+        if(($user['role']??null)!=='admin'&&($user['is_admin']??null)!==true)throw new \RuntimeException('Admin review access required.');
+        $identity=(string)($user['sub']??$user['id']??$user['email']??'');
+        if($identity===''||strlen($identity)>200||str_contains($identity,"\0"))throw new \RuntimeException('Authenticated reviewer identity is missing.');
+        return ['type'=>'admin','id'=>$identity];
+    }
+
+    /** Reviews/feedback never change the answer/evidence fingerprint they evaluate. */
+    public static function evidenceFingerprint(array $turn): string {
+        $evidence=array_intersect_key($turn,array_flip(['turn_id','trace_id','at','question','answer','outcome','tools','retrieval','evaluation','trace']));
+        return hash('sha256',json_encode($evidence,JSON_THROW_ON_ERROR|JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE));
+    }
+
+    private static function evidenceOptions(array $turn): array {
+        $options=['question'=>'Recorded request','response'=>'Recorded response'];
+        foreach(array_slice((array)($turn['retrieval']??[]),0,8) as $i=>$r)$options['retrieval:'.$i]='Retrieval '.($i+1).' · '.(string)($r['intent']??'unclassified');
+        foreach(array_slice((array)($turn['tools']??[]),0,32) as $i=>$tool)$options['tool:'.$i]='Tool '.($i+1).' · '.(string)($tool['name']??'unknown');
+        if(!empty($turn['trace']['instruction_manifest']))$options['instructions']='Recorded runtime instruction manifest';
+        return $options;
+    }
+
+    /** Permission-checked selected-turn view; not a model tool or unauthenticated file endpoint. */
+    public function reviewDetail(string $id,?string $turnId,array $reviewer): ?array {
+        self::requireReviewer($reviewer);
+        if(!preg_match(self::ID_PATTERN,$id)||($turnId!==null&&!preg_match(self::ID_PATTERN,$turnId)))throw new \InvalidArgumentException('Invalid conversation or turn identity.');
+        $document=$this->getForAdmin($id);if($document===null||empty($document['turns']))return null;
+        $turnId??=(string)$document['turns'][array_key_last($document['turns'])]['turn_id'];
+        foreach($document['turns'] as $turn){
+            if(($turn['turn_id']??'')!==$turnId)continue;
+            $choices=array_map(static fn(array $t):array=>['turn_id'=>(string)$t['turn_id'],'at'=>(string)($t['at']??''),'preview'=>mb_substr((string)($t['question']??''),0,90)],$document['turns']);
+            return ['conversation_id'=>$id,'surface'=>(string)$document['surface'],'actor_type'=>(string)($document['actor']['type']??''),
+                'resolution_status'=>(string)($document['resolution_status']??'unknown'),'pending_turns'=>count($document['pending_turns']??[]),
+                'turn'=>$turn,'turn_choices'=>$choices,'evidence_sha256'=>self::evidenceFingerprint($turn),
+                'review_revision'=>count($turn['reviews']??[]),'evidence_options'=>self::evidenceOptions($turn)];
+        }
+        return null;
+    }
+
+    /** Append a structured staff decision while preserving response, customer feedback and original evaluation. */
+    public function reviewTurn(string $id,string $turnId,array $reviewer,int $expectedRevision,string $expectedEvidence,array $input): array {
+        $actor=self::requireReviewer($reviewer);
+        if(!preg_match(self::ID_PATTERN,$id)||!preg_match(self::ID_PATTERN,$turnId)||$expectedRevision<0
+            ||!preg_match('/^[a-f0-9]{64}$/D',$expectedEvidence))throw new \InvalidArgumentException('Invalid answer-review identity.');
+        $root=$this->root();$path=$root.'/.conversation-'.$id.'.lock';
+        if(is_link($path))throw new \RuntimeException('Review lock cannot be a symlink.');
+        $lock=@fopen($path,'c');if($lock===false)throw new \RuntimeException('Review storage is unavailable.');
+        try {
+            @chmod($path,0600);if(!self::acquireLock($lock))throw new \RuntimeException('Review lock is unavailable.');
+            $file=$root.'/'.$id.'.json';$document=self::readFile($file);
+            if($document===null||($document['id']??'')!==$id)throw new \InvalidArgumentException('Conversation not found.');
+            foreach($document['turns']??[] as $i=>$turn){
+                if(($turn['turn_id']??'')!==$turnId)continue;
+                $reviews=$turn['reviews']??[];
+                if(!is_array($reviews)||count($reviews)!==$expectedRevision||!hash_equals(self::evidenceFingerprint($turn),$expectedEvidence)) {
+                    throw new \LogicException('The answer or review changed. Reload before saving.');
+                }
+                if(count($reviews)>=20)throw new \LogicException('This turn has reached its review-history limit.');
+                $decision=self::normalizeReview($input,self::evidenceOptions($turn));
+                $review=['schema_version'=>1,'id'=>bin2hex(random_bytes(16)),'revision'=>$expectedRevision+1,'at'=>gmdate('c'),
+                    'reviewer'=>$actor,'evidence_sha256'=>$expectedEvidence]+$decision;
+                $document['turns'][$i]['reviews'][]=$review;
+                $document['reviewed_at']=$review['at'];
+                // Reviewing an old answer is not new customer traffic. Preserve list ordering.
+                $activityMtime=@filemtime($file);self::writeAtomic($root,$file,$document);
+                if($activityMtime!==false)@touch($file,$activityMtime);
+                return $review;
+            }
+            throw new \InvalidArgumentException('Completed answer not found.');
+        }finally{self::releaseLock($lock);}
+    }
+
+    private static function normalizeReview(array $input,array $options): array {
+        $rubric=$input['rubric']??null;
+        if(!is_array($rubric)||array_diff(array_keys($rubric),array_keys(self::REVIEW_CRITERIA))!==[]||count($rubric)!==count(self::REVIEW_CRITERIA))throw new \InvalidArgumentException('Assess each review criterion explicitly.');
+        $ordered=[];foreach(self::REVIEW_CRITERIA as $key=>$label){
+            $value=$rubric[$key]??null;if(!in_array($value,['pass','fail','not_assessed'],true))throw new \InvalidArgumentException('Invalid review assessment.');$ordered[$key]=$value;
+        }
+        $reasons=$input['reasons']??[];$refs=$input['evidence_refs']??[];
+        foreach([$reasons,$refs] as $values)if(!is_array($values)||count($values)>40||array_filter($values,static fn($v):bool=>!is_string($v))!==[])throw new \InvalidArgumentException('Invalid review evidence selection.');
+        $reasons=array_values(array_unique($reasons));$refs=array_values(array_unique($refs));
+        if(count($reasons)>8||array_diff($reasons,array_keys(self::REVIEW_REASONS))!==[]||$refs===[]||array_diff($refs,array_keys($options))!==[])throw new \InvalidArgumentException('Select only recorded evidence and supported reason codes.');
+        $hasSource=count(array_filter($refs,static fn(string $r):bool=>str_starts_with($r,'tool:')||str_starts_with($r,'retrieval:')))>0;
+        if(($ordered['accuracy']==='pass'||$ordered['source_support']==='pass')&&!$hasSource)throw new \InvalidArgumentException('A factual/source pass needs recorded tool or retrieval evidence.');
+        $mode=$input['authoring_mode']??null;
+        if(!in_array($mode,['human','agent_assisted','verification_test'],true))throw new \InvalidArgumentException('Declare how this review was authored.');
+        if($mode==='human'&&($input['human_attestation']??null)!=='yes')throw new \InvalidArgumentException('Confirm that you personally checked this answer against its sources.');
+        $note=$input['note']??null;
+        if(!is_string($note)||mb_strlen(trim($note))<15||mb_strlen($note)>1500)throw new \InvalidArgumentException('Explain the decision in 15–1,500 characters without secrets.');
+        $verdict=in_array('fail',$ordered,true)?'needs_correction':(in_array('not_assessed',$ordered,true)?'insufficient_evidence':'supported');
+        if($verdict!=='supported'&&$reasons===[])throw new \InvalidArgumentException('A failed or incomplete review needs a reason.');
+        return ['verdict'=>$verdict,'rubric'=>$ordered,'reasons'=>$reasons,'evidence_refs'=>$refs,
+            'note'=>AgentTranscriptSanitizer::scrub(trim(strip_tags($note))),'authoring_mode'=>$mode,
+            'provenance'=>$mode==='human'?'staff_declared_human':'explicit_nonhuman_or_test'];
+    }
+
+    public static function qualityReviewSummary(array $document): array {
+        $result=['human_reviewed'=>0,'supported'=>0,'needs_correction'=>0,'insufficient_evidence'=>0,
+            'agent_assisted'=>0,'verification_tests'=>0,'unreviewed'=>0,'reasons'=>[]];
+        foreach($document['turns']??[] as $turn){
+            $digest=self::evidenceFingerprint($turn);$latest=[];
+            foreach(array_slice((array)($turn['reviews']??[]),0,20) as $review){
+                if(!is_array($review)||!hash_equals($digest,(string)($review['evidence_sha256']??'')))continue;
+                $mode=$review['authoring_mode']??'';
+                if(in_array($mode,['human','agent_assisted','verification_test'],true))$latest[$mode]=$review;
+            }
+            if(isset($latest['verification_test']))$result['verification_tests']++;
+            if(isset($latest['agent_assisted']))$result['agent_assisted']++;
+            $human=$latest['human']??null;
+            if(!is_array($human)||!in_array($human['verdict']??'',['supported','needs_correction','insufficient_evidence'],true)){
+                if($latest===[])$result['unreviewed']++;
+                continue;
+            }
+            $result['human_reviewed']++;$result[$human['verdict']]++;
+            foreach($human['reasons']??[] as $reason)if(isset(self::REVIEW_REASONS[$reason]))$result['reasons'][$reason]=($result['reasons'][$reason]??0)+1;
+        }
+        return $result;
+    }
+
     /** Load at most 100 recent chat documents, not every full transcript. */
     public function recent(int $limit = 40): array
     {
@@ -455,6 +584,7 @@ final class AgentConversationService
                 'turn_count' => count($document['turns'] ?? []),
                 'pending_turn_count' => count($document['pending_turns'] ?? []),
                 'passed_turns' => (int)($document['passed_turns'] ?? 0),
+                'quality_review' => self::qualityReviewSummary($document),
                 'intent' => AgentTraceService::safeRetrieval((array)($lastTurn['retrieval'][0]??[]))['intent'],
                 'needs_review' => is_array($pending) || ($document['resolution_status']??'')==='needs_followup' || (isset($lastTurn['evaluation']['passed'])&&!$lastTurn['evaluation']['passed']),
                 'review_reason' => is_array($pending)?'unfinished_request':(($document['resolution_status']??'')==='needs_followup'?'negative_feedback':((isset($lastTurn['evaluation']['passed'])&&!$lastTurn['evaluation']['passed'])?'guardrail_failure':null)),
