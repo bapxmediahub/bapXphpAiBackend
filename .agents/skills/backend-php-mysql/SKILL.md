@@ -101,3 +101,13 @@ contain usable reset/order/invoice targets. Do not equate sample receipt or
 legacy sent status with real order/customer/owner acceptance. No live charge,
 password change or backlog replay merely for QA. Keep the separate late-view
 error-handling concern out of template patches.
+
+## Structured answer review
+
+Use AgentConversationService reviewDetail/reviewTurn for owner-only per-answer
+assessment. Preserve original evidence and customer feedback, compare the
+server evidence hash plus expected revision, and append under the existing
+per-chat lock. No SQL/JSON mirror. Staff-declared human review requires explicit
+attestation; automated tests must declare verification_test and must not inflate
+human counts. Run tests/agent-review-concurrency.php along with chat concurrency
+and interruption tests. Stale revisions/evidence are conflicts, not auto-retries.

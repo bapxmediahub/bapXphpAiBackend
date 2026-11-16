@@ -530,6 +530,125 @@
       "expected_slugs": [
         "Ayyappan Pendant"
       ]
+    },
+    {
+      "id": "exact_financial_zero_answer",
+      "type": "financial_answer",
+      "question": "revenue in the last 7 days",
+      "days": 7,
+      "range": {
+        "from": "2026-11-01",
+        "to": "2026-11-07"
+      },
+      "orders": [],
+      "expected_orders": 0,
+      "expected_revenue": 0.0,
+      "expected_answer": "Recorded sales revenue in the last 7 days is ₹0.00 across 0 paid orders after verified refunds."
+    },
+    {
+      "id": "exact_financial_verified_refund_answer",
+      "type": "financial_answer",
+      "question": "revenue in the last 7 days",
+      "days": 7,
+      "range": {
+        "from": "2026-11-01",
+        "to": "2026-11-07"
+      },
+      "orders": [
+        {
+          "id": "fixture-paid",
+          "created_at": "2026-11-02T12:00:00+05:30",
+          "payment_id": "pay_fixture",
+          "status": "delivered",
+          "total": 1000,
+          "verified_refunds": [
+            {
+              "id": "refund_fixture",
+              "amount_paise": 25000
+            }
+          ],
+          "items": []
+        },
+        {
+          "id": "fixture-unpaid",
+          "created_at": "2026-11-02T12:00:00+05:30",
+          "payment_id": "",
+          "status": "pending",
+          "total": 99999
+        },
+        {
+          "id": "fixture-cancelled",
+          "created_at": "2026-11-03T12:00:00+05:30",
+          "payment_id": "pay_cancelled",
+          "status": "cancelled",
+          "total": 600
+        },
+        {
+          "id": "fixture-other-period",
+          "created_at": "2026-10-03T12:00:00+05:30",
+          "payment_id": "pay_old",
+          "status": "delivered",
+          "total": 500
+        }
+      ],
+      "expected_orders": 1,
+      "expected_revenue": 750.0,
+      "expected_answer": "Recorded sales revenue in the last 7 days is ₹750.00 across 1 paid orders after verified refunds."
+    },
+    {
+      "id": "exact_gst_evidence_issued_period",
+      "type": "gst_evidence",
+      "range": {
+        "from": "2026-11-01",
+        "to": "2026-11-30"
+      },
+      "orders": [
+        {
+          "id": "fixture-invoice",
+          "invoice_number": "FIX-1",
+          "invoice_date": "2026-11-02",
+          "taxable_value": 100,
+          "cgst_total": 9,
+          "sgst_total": 9,
+          "igst_total": 0,
+          "total": 118
+        },
+        {
+          "id": "fixture-old-invoice",
+          "invoice_number": "FIX-2",
+          "invoice_date": "2026-10-31",
+          "taxable_value": 500,
+          "igst_total": 90,
+          "total": 590
+        }
+      ],
+      "expected_count": 1,
+      "expected_totals": {
+        "taxable": 100.0,
+        "cgst": 9.0,
+        "sgst": 9.0,
+        "igst": 0.0,
+        "tax": 18.0,
+        "gross": 118.0
+      }
+    },
+    {
+      "id": "exact_gst_empty_window_evidence",
+      "type": "gst_evidence",
+      "range": {
+        "from": "2026-11-01",
+        "to": "2026-11-30"
+      },
+      "orders": [],
+      "expected_count": 0,
+      "expected_totals": {
+        "taxable": 0.0,
+        "cgst": 0.0,
+        "sgst": 0.0,
+        "igst": 0.0,
+        "tax": 0.0,
+        "gross": 0.0
+      }
     }
   ]
 }

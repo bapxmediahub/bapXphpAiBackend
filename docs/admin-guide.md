@@ -90,3 +90,9 @@ one another; only the owner template reads the configured owner recipient.
 Preview is read-only and synthetic, while test sending is a separate protected
 POST that records a normal queue entry. Inbox confirmation is external evidence,
 not a green transport label. See `email-setup.md` and the Email operator guide.
+
+Agent Monitoring's **Review answers** links open a selected-turn assessment form.
+Use recorded evidence, choose not-assessed for unavailable facts, declare
+human/assisted/test authorship truthfully and keep rationale free of secrets.
+The appended review is not a customer satisfaction vote or a ticket transition.
+The linked operator monitoring guide explains conflicts and review history.

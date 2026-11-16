@@ -116,6 +116,23 @@
     <?php endif; ?>
 </section>
 
+<section class="admin-card" aria-labelledby="answer-review-summary-title" style="margin-top:var(--space-lg)">
+    <h2 id="answer-review-summary-title">Answer review outcomes</h2>
+    <p>Latest <?= (int)($answerReviewSummary['conversations']??0) ?> conversations, <?= (int)($answerReviewSummary['turns']??0) ?> completed turns. Staff-declared human decisions are separate from customer satisfaction, AI-assisted labels and synthetic tests. No label means unreviewed, not correct. A turn may have separate human, AI-assisted and test assessments; those provenance counts can overlap.</p>
+    <div class="admin-stats">
+        <?php foreach(['human_reviewed'=>'Staff-declared human reviewed','supported'=>'Evidence supports answer','needs_correction'=>'Correction needed','insufficient_evidence'=>'Insufficient evidence','agent_assisted'=>'AI-assisted assessments','verification_tests'=>'Synthetic verification tests','unreviewed'=>'Unreviewed turns'] as $key=>$label): ?>
+            <div class="admin-stat"><div class="admin-stat__value" data-review-metric="<?= e($key) ?>"><?= (int)($answerReviewSummary[$key]??0) ?></div><div class="admin-stat__label"><?= e($label) ?></div></div>
+        <?php endforeach; ?>
+    </div>
+    <p>Supported among staff-declared reviewed turns: <?= ($answerReviewSummary['supported_percent']??null)===null?'Not measured':e(number_format((float)$answerReviewSummary['supported_percent'],1)).'%' ?>. This is a selected review sample, not a production accuracy estimate.</p>
+    <?php if(!empty($answerReviewSummary['topics'])): ?>
+    <div class="table-wrap"><table><thead><tr><th>Latest conversation topic</th><th>Chats</th><th>Human-reviewed turns</th><th>Supported</th><th>Correction needed</th><th>Insufficient evidence</th></tr></thead><tbody>
+        <?php foreach($answerReviewSummary['topics'] as $topic=>$metrics): ?><tr><th><?= e(str_replace('_',' ',$topic)) ?></th><?php foreach(['conversations','human_reviewed','supported','needs_correction','insufficient_evidence'] as $field): ?><td><?= (int)$metrics[$field] ?></td><?php endforeach; ?></tr><?php endforeach; ?>
+    </tbody></table></div>
+    <?php endif; ?>
+    <?php if(!empty($answerReviewSummary['reasons'])): ?><p><strong>Recorded human review reasons:</strong> <?php foreach($answerReviewSummary['reasons'] as $reason=>$count): ?><?= e(\App\Services\AgentConversationService::REVIEW_REASONS[$reason]??$reason) ?>: <?= (int)$count ?>; <?php endforeach; ?></p><?php endif; ?>
+</section>
+
 <section class="admin-card" aria-labelledby="agent-review-queue-title" style="margin-top:var(--space-lg)">
     <h2 id="agent-review-queue-title">Recent conversations needing human review</h2>
     <p>Sampled from the latest 40 chats, not an all-time backlog. A guardrail failure, negative customer feedback or unfinished action requires investigation; no case is automatically declared resolved.</p>
@@ -126,7 +143,7 @@
         <tr><td><?= e(str_replace('_',' ',(string)($row['intent']??'unknown'))) ?></td>
             <td><?= e(str_replace('_',' ',(string)($row['review_reason']??'unknown'))) ?></td>
             <td><?= e(str_replace('_',' ',(string)($row['resolution_status']??'unknown'))) ?></td>
-            <td><a href="/admin/agent/conversation/<?= e((string)$row['id']) ?>">Inspect authorized JSON</a></td></tr>
+            <td><a href="/admin/agent/review/<?= e((string)$row['id']) ?>">Review recorded answer</a> · <a href="/admin/agent/conversation/<?= e((string)$row['id']) ?>">Export authorized JSON</a></td></tr>
     <?php endforeach; ?></tbody></table></div>
     <?php endif; ?>
     <p><a href="/admin/support-tickets">Open the human support queue</a>. Chat feedback and ticket closure are separate records.</p>
@@ -151,7 +168,7 @@
             <td><?= $passed ?>/<?= $turnCount ?></td>
             <td><?= e(str_replace('_',' ',(string)($conversation['resolution_status']??'unknown'))) ?></td>
             <td>
-                <a href="/admin/agent/conversation/<?= e($cid) ?>">Export JSON</a>
+                <a href="/admin/agent/review/<?= e($cid) ?>">Review answers</a> · <a href="/admin/agent/conversation/<?= e($cid) ?>">Export JSON</a>
                 <?php if(!empty($conversation['trace_steps'])): ?>
                 <details class="agent-trace-inspector" style="max-width:36rem;overflow-wrap:anywhere;margin-top:.5rem">
                     <summary>Execution evidence · <?= count($conversation['trace_steps']) ?> steps</summary>

@@ -66,3 +66,14 @@ and appends the completed turn. Unfinished entries remain inspectable after an
 interruption; they are not automatic retry instructions. Metadata-only monitoring
 shows pending counts and sanitized step summaries; authorized JSON export retains
 the evidence without exposing storage files directly over HTTP.
+
+## Staff review history in the same file
+
+An authenticated, CSRF-protected answer review appends a bounded `reviews[]`
+entry to the selected completed turn. It includes a random review ID, revision,
+reviewer identity/time, original evidence hash, structured rubric/verdict/reasons,
+selected evidence references, scrubbed note and declared authorship. Writes use
+the same per-chat lock and atomic replacement as turns/feedback; stale revision
+or changed evidence is rejected. No SQL table or second transcript JSON is used.
+A maximum of 20 decisions per turn bounds growth. Original content/customer
+feedback is never overwritten, and review time is separate from customer activity.

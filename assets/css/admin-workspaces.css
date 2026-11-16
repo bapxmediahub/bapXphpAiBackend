@@ -268,3 +268,33 @@
 .mail-template-workspace select { max-width:100%;font:inherit; }
 .mail-template-workspace iframe { display:block;max-width:100%; }
 @media(max-width:850px){.mail-template-layout { grid-template-columns:minmax(0,1fr); }.mail-template-preview { padding:12px; }}
+
+/* Human answer review is separate from client feedback and automated guardrail scores. */
+.agent-review { max-width:1240px; margin:0 auto; }
+.agent-review__intro { max-width:820px; margin:12px 0 24px; }
+.agent-review__intro h2 { font-size:clamp(1.5rem,2.5vw,2rem); margin:10px 0; }
+.agent-review__back { display:inline-flex; align-items:center; min-height:44px; color:var(--color-maroon); }
+.agent-review__layout { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:20px; align-items:start; }
+.agent-review__layout > * { min-width:0; }
+.agent-review__text { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.7; }
+.agent-review__caption { font-size:.82rem; color:var(--color-text-muted); line-height:1.6; overflow-wrap:anywhere; }
+.agent-review__metadata { display:grid; gap:8px; font-size:.85rem; margin:20px 0; }
+.agent-review__metadata div { display:flex; gap:14px; justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:8px; }
+.agent-review__metadata dd { margin:0; overflow-wrap:anywhere; }
+.agent-review__turn-picker { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-bottom:20px; }
+.agent-review__turn-picker select { flex:1; min-width:0; }
+.agent-review :where(select,textarea) { width:100%; max-width:100%; min-height:44px; border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:10px; background:var(--color-white); font:inherit; }
+.agent-review__field { display:grid; gap:8px; margin:18px 0; font-size:.9rem; font-weight:600; }
+.agent-review__field .agent-review__caption { font-weight:400; }
+.agent-review fieldset { border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:12px; margin:20px 0; min-width:0; }
+.agent-review legend { font-size:.87rem; font-weight:600; padding:0 5px; }
+.agent-review__check { display:flex; align-items:flex-start; gap:10px; padding:10px 0; font-size:.85rem; line-height:1.5; }
+.agent-review__check input { width:18px; height:18px; flex:none; margin-top:2px; accent-color:var(--color-maroon); }
+.agent-review pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:.78rem; max-width:100%; padding:12px; background:var(--color-bg-alt); }
+.agent-review details { border-top:1px solid var(--color-border); padding:12px 0; }
+.agent-review summary { cursor:pointer; font-size:.88rem; min-height:28px; }
+.agent-review__history { padding-left:22px; }
+.agent-review__history li { border-bottom:1px solid var(--color-border); padding:14px 0; overflow-wrap:anywhere; }
+.agent-review__warning { padding:16px; border-inline-start:4px solid var(--color-gold); background:var(--color-bg-alt); }
+@media(max-width:900px){.agent-review__layout{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:743px){.agent-review__turn-picker>*{flex-basis:100%}.agent-review__metadata div{flex-direction:column;gap:4px}.agent-review__form .btn{width:100%}}

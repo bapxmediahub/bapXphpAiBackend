@@ -122,3 +122,9 @@ probe. Check long references, recipient-role controls, exact input CSRF, invalid
 keys and rejected sends. No click on the diagnostic send button is part of
 ordinary preview QA. An authorized sample uses one consumed request token and
 must be correlated with the intended inbox; owner and customer are distinct.
+
+The answer-review screen is an authenticated native form with evidence selectors,
+pass/fail/not-assessed rubric and explicit human/assisted/test provenance. Never
+render private text as HTML, assume a missing source is a pass, or present a
+staff label as customer satisfaction. Verify no-JS, mobile, CSRF, role denial,
+stale revision and unchanged original JSON evidence after a synthetic QA save.
