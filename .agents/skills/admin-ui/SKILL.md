@@ -108,3 +108,8 @@ both its source metadata and `operator-help` documentation-review dependencies.
 Public help belongs in the existing published Help blog category, not private
 operator text. Test search/categories/anchors/task links with no JavaScript,
 1280px and 375px, plus guest/customer denial and raw/encoded file-path denial.
+
+System Health is a native read-only Settings surface, protected by the same
+admin gate and no-store policy. Unknown/mismatched states must remain visible;
+no fake all-green score, migration button or public phpinfo endpoint. Verify
+real web PHP separately from developer CLI and test the 375px/no-JS guidance.

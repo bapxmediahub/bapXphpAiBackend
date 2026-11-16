@@ -71,3 +71,12 @@ reply or logging failure. Update individual queue/outbox rows, never replace
 those collections. The recorded `sent` state means SMTP acceptance (or legacy
 sent), not inbox confirmation. Use loopback SMTP and disposable MySQL tests;
 do not replay the customer's backlog or create fake paid orders for QA.
+
+## Runtime identity and deployment target
+
+Target stable PHP>=8.3 and MySQL>=8.4. `RuntimeHealthService` reads bounded
+version/vendor facts; a MariaDB or unknown result is not a MySQL pass. Use
+runtime:check and actual web System Health, and keep raw exception/DSN/secret
+content out of output. A compatibility report is not authority to migrate a
+production database or fabricate query/backup parity. Preserve older running
+sites until a separate approved cutover is verified.

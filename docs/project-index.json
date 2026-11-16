@@ -3,10 +3,10 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 133,
+        "routes": 134,
         "controllers": 12,
-        "services": 63,
-        "views": 52,
+        "services": 64,
+        "views": 53,
         "collections": 22
     },
     "routes": [
@@ -907,6 +907,18 @@
         },
         {
             "method": "GET",
+            "path": "/admin/system-health",
+            "name": "admin.system_health",
+            "controller": "AdminController@systemHealth",
+            "view": "admin/system-health",
+            "services": [
+                "AuthService",
+                "RuntimeHealthService",
+                "DatabaseService"
+            ]
+        },
+        {
+            "method": "GET",
             "path": "/admin/tax-report",
             "name": "admin.tax-report",
             "controller": "AdminController@taxReport",
@@ -1581,6 +1593,7 @@
         "RateLimiter",
         "ResourceService",
         "ReviewService",
+        "RuntimeHealthService",
         "SchemaService",
         "SecretService",
         "SeoService",
@@ -1624,6 +1637,7 @@
         "admin/product-form",
         "admin/resource",
         "admin/settings",
+        "admin/system-health",
         "admin/tax-report",
         "admin/temples",
         "admin/users",
