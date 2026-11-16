@@ -149,6 +149,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
                 <svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
             <div class="admin-submenu" id="menu-settings">
+                <a data-system-health-nav href="/admin/system-health" class="<?= $agentNavPath==='/admin/system-health'?'active':'' ?>">System Health</a>
                 <a href="/admin/integrations" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/integrations') === 0 ? 'active' : '') ?>">Integrations</a>
                 <a href="/admin/settings" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/settings') === 0 ? 'active' : '') ?>">Site Settings</a>
             </div>
@@ -194,7 +195,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
             $__segments = array_values(array_filter(explode('/', $__path)));
             $__crumb = '/admin';
             $__labelMap = [
-                'docs'=>'Help & Docs','products'=>'Products','categories'=>'Categories','coupons'=>'Coupons',
+                'system-health'=>'System Health','docs'=>'Help & Docs','products'=>'Products','categories'=>'Categories','coupons'=>'Coupons',
                 'orders'=>'Orders','shipping'=>'Shipping','tax-report'=>'Reports','astrologers'=>'Astrologers',
                 'appointments'=>'Sessions',
                 'consultation-analytics'=>'Analytics','temples'=>'Temples',

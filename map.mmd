@@ -7,13 +7,13 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 135 routes, 12 controllers, 63 services, 53 views, 0 data files, 24 tools"]
-    arch_routes["> Routes: 135 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 136 routes, 12 controllers, 64 services, 54 views, 0 data files, 25 tools"]
+    arch_routes["> Routes: 136 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 12"]:::arch
-    arch_svc["> Services: 63"]:::arch
-    arch_views["> Views: 53"]:::arch
+    arch_svc["> Services: 64"]:::arch
+    arch_views["> Views: 54"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
-    arch_tools["> Tools: 24"]:::arch
+    arch_tools["> Tools: 25"]:::arch
     arch_gaps["> Gaps: 7"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
@@ -102,6 +102,7 @@ flowchart LR
 
   subgraph ROUTES_ADMIN["ADMIN Routes"]
     route_get_admin["GET /admin — Admin dashboard — commerce analytics and operations"]:::route
+    route_get_admin_system_health["GET /admin/system-health"]:::route
     route_get_admin_docs["GET /admin/docs"]:::route
     route_get_admin_docs_slug["GET /admin/docs/{slug}"]:::route
     route_get_admin_products["GET /admin/products — Admin — manage products"]:::route
@@ -239,6 +240,7 @@ flowchart LR
     service_ratelimiter["RateLimiter"]:::code
     service_resourceservice["ResourceService"]:::code
     service_reviewservice["ReviewService"]:::code
+    service_runtimehealthservice["RuntimeHealthService"]:::code
     service_schemaservice["SchemaService"]:::code
     service_secretservice["SecretService"]:::code
     service_seoservice["SeoService"]:::code
@@ -284,6 +286,7 @@ flowchart LR
     view_admin_product_form["admin/product-form"]:::code
     view_admin_resource["admin/resource"]:::code
     view_admin_settings["admin/settings"]:::code
+    view_admin_system_health["admin/system-health"]:::code
     view_admin_tax_report["admin/tax-report"]:::code
     view_admin_temples["admin/temples"]:::code
     view_admin_users["admin/users"]:::code
@@ -367,6 +370,7 @@ flowchart LR
     tool_product_read["product-read"]:::tool
     tool_product_write["product-write"]:::tool
     tool_refresh_blog_cache["refresh-blog-cache"]:::tool
+    tool_runtime_check["runtime-check"]:::tool
     tool_smoke_local["smoke-local"]:::tool
     tool_test_race["test_race"]:::tool
     tool_validate_docs_map["validate-docs-map"]:::tool
@@ -559,6 +563,11 @@ flowchart LR
   controller_admincontroller --> service_siteinsightsservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_dashboard
+  route_get_admin_system_health --> controller_admincontroller
+  controller_admincontroller --> service_authservice
+  controller_admincontroller --> service_runtimehealthservice
+  controller_admincontroller --> service_databaseservice
+  controller_admincontroller -. renders .-> view_admin_system_health
   route_get_admin_docs --> controller_admincontroller
   controller_admincontroller --> service_adminhelpservice
   controller_admincontroller --> service_authservice

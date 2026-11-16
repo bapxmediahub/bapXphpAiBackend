@@ -804,6 +804,77 @@ $tests['synthetic review revisions cannot replace a staff assessment and require
     }finally{foreach(glob($dir.'/*')?:[] as $f)@unlink($f);foreach(glob($dir.'/.conversation*')?:[] as $f)@unlink($f);@rmdir($dir);}
 };
 
+$tests['runtime policy requires PHP 8.3 and actual MySQL 8.4 without accepting MariaDB numerically'] = static function (): void {
+    $evaluate=\App\Services\RuntimeHealthService::class;
+    $extensions=['curl','json','mbstring','pdo_mysql','openssl'];
+    $ok=$evaluate::assess('8.3.0',['version'=>'8.4.0','version_comment'=>'MySQL Community Server - GPL'],$extensions,'cli');
+    assertSame(true,$ok['requirements_met'],'Minimum supported PHP/MySQL meets declared target');
+    assertSame('mysql',$ok['database']['engine'],'Database vendor is separately identified');
+    assertSame(false,$evaluate::assess('8.2.30',['version'=>'8.4.2','version_comment'=>'MySQL Community Server - GPL'],$extensions,'cli')['requirements_met'],'PHP 8.2 must not pass');
+    assertSame(false,$evaluate::assess('8.5.7',['version'=>'8.0.44','version_comment'=>'MySQL Community Server - GPL'],$extensions,'cli')['requirements_met'],'MySQL 8.0 must not pass');
+    $maria=$evaluate::assess('8.5.7',['version'=>'11.8.9-MariaDB-log','version_comment'=>'MariaDB Server'],$extensions,'cli');
+    assertSame('mariadb',$maria['database']['engine'],'MariaDB is not relabeled MySQL');
+    assertSame('engine_mismatch',$maria['database']['status'],'Higher MariaDB number cannot satisfy MySQL8.4');
+    assertSame(false,$maria['requirements_met'],'Engine mismatch is blocking for the declared target');
+};
+
+$tests['runtime report leaves unknown evidence unknown and strips private server details'] = static function (): void {
+    $s=\App\Services\RuntimeHealthService::class;
+    $result=$s::assess('8.4.9',null,['json','mbstring'],'cli');
+    assertSame('unavailable',$result['database']['status'],'Absent DB cannot become a pass');
+    assertTrue(in_array('pdo_mysql',$result['extensions']['missing'],true),'Missing required extensions are explicit');
+    assertSame(false,$result['requirements_met'],'Unknown DB and missing extensions fail readiness');
+    $poison='unknown user=private@example.invalid password=not-for-output host=secret.internal /private/config';
+    $safe=$s::assess($poison,['version'=>$poison,'version_comment'=>$poison],['json'],'invented-sapi');
+    $json=json_encode($safe,JSON_THROW_ON_ERROR);
+    foreach(['private@example.invalid','not-for-output','secret.internal','/private/config'] as $value)assertTrue(!str_contains($json,$value),'Do not echo arbitrary source/errors/credentials');
+    assertSame('unknown',$safe['php']['version'],'Invalid version remains unknown');
+    assertSame('unknown',$safe['database']['engine'],'Unidentified engine remains unknown');
+    assertSame('other',$safe['php']['sapi'],'SAPI is bounded');
+    $numeric=$s::assess('8.3.1',['version'=>'9.0.0','version_comment'=>'unidentified fork'],['curl','json','mbstring','pdo_mysql','openssl'],'cli');
+    assertSame(false,$numeric['requirements_met'],'Number without identified MySQL vendor is not enough');
+};
+
+$tests['native system health is a read-only authenticated route and contextual admin guide'] = static function (): void {
+    $routes=\App\Services\ProjectMapService::registry()['routes'];
+    $health=array_values(array_filter($routes,static fn(array $r):bool=>($r['path']??'')==='/admin/system-health'));
+    assertSame(1,count($health),'One native health route, no mutation duplicate');
+    assertSame('GET',$health[0]['method'],'Health view does not migrate or write');
+    assertSame('AdminController@systemHealth',$health[0]['controller'],'Existing admin gate protects diagnostics');
+    assertTrue(is_file(app_path('views/admin/system-health.php')),'Actual health UI exists');
+    assertTrue(str_contains(fileRead('views/layouts/admin.php'),'href="/admin/system-health"'),'Admin navigation reaches the native feature');
+    assertSame('settings',\App\Services\AdminHelpService::adminContext('/admin/system-health')['slug'],'Health view has actual operator instructions');
+};
+
+$tests['runtime CLI emits structured unknown state in test mode and strict status is nonzero'] = static function (): void {
+    $path=app_path('cli/runtime-check.php');assertTrue(is_file($path),'Native runtime command exists');
+    $out=[];$status=0;exec('BAPX_TEST_MODE=1 '.escapeshellarg(PHP_BINARY).' '.escapeshellarg($path).' --json --strict 2>&1',$out,$status);
+    assertSame(1,$status,'Strict runtime policy rejects unavailable test-mode DB');
+    $r=json_decode(implode("\n",$out),true,512,JSON_THROW_ON_ERROR);
+    assertSame(false,$r['requirements_met'],'Structured failure is explicit');
+    assertSame('unavailable',$r['database']['status'],'No live DB or fabricated fixture is consulted in test mode');
+};
+
+$tests['runtime policy does not certify prerelease engines or malformed requirement arguments'] = static function (): void {
+    $extensions=['curl','json','mbstring','pdo_mysql','openssl'];
+    $db=['version'=>'8.4.0-rc1','version_comment'=>'MySQL Community Server - GPL'];
+    $r=\App\Services\RuntimeHealthService::assess('8.4.1',$db,$extensions,'cli');
+    assertSame(false,$r['requirements_met'],'A release candidate is not the stable production baseline');
+    assertSame('unsupported_prerelease',$r['database']['status'],'Failure reason describes prerelease, not a lower version');
+    $r=\App\Services\RuntimeHealthService::assess('8.4.0RC1',['version'=>'8.4.2','version_comment'=>'MySQL Community Server - GPL'],$extensions,'cli');
+    assertSame('unsupported_prerelease',$r['php']['status'],'PHP prerelease is explicitly classified');
+};
+
+$tests['deployment guide uses current bounded mail CLI and real audit surfaces'] = static function (): void {
+    $doc=fileRead('docs/deployment-hostinger.md');
+    assertTrue(!str_contains($doc,'/cli/process-mail-queue.php'),'Do not deploy a cron targeting a deleted script');
+    assertTrue(str_contains($doc,'./bapXphp mail:process'),'Optional due-pending processing uses the supported CLI');
+    assertTrue(str_contains($doc,'25 due pending'),'Operator knows the queue processing bound');
+    assertTrue(!str_contains($doc,'Admin -> Audit Log'),'Do not invent a generic audit-log menu');
+    assertTrue(str_contains($doc,'Playwright CLI'),'Release instructions match authorized browser verification');
+    assertTrue(str_contains($doc,'SMTP acceptance is not inbox receipt'),'Transport result is not recipient verification');
+};
+
 $tests['each agent session creates one private JSON file and no MySQL table'] = static function (): void {
     $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
     assertTrue(mkdir($root, 0700), 'Private test directory exists');

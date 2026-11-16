@@ -242,3 +242,25 @@
 .agent-review__warning { padding:16px; border-inline-start:4px solid var(--color-gold); background:var(--color-bg-alt); }
 @media(max-width:900px){.agent-review__layout{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:743px){.agent-review__turn-picker>*{flex-basis:100%}.agent-review__metadata div{flex-direction:column;gap:4px}.agent-review__form .btn{width:100%}}
+
+/* Native runtime diagnostics: factual status rather than simulated green health scores. */
+.runtime-health { max-width:1120px; margin:0 auto; }
+.runtime-health__intro { max-width:780px; margin-bottom:24px; }
+.runtime-health__intro h2 { margin:8px 0 12px; font-size:clamp(1.5rem,2.6vw,2.15rem); }
+.runtime-health__intro p,.runtime-health__summary p { line-height:1.65; }
+.runtime-health__summary { padding:20px 24px; border:1px solid var(--color-border); border-inline-start:4px solid var(--color-gold); border-radius:var(--radius-md); background:var(--color-bg-alt); margin-bottom:22px; }
+.runtime-health__summary strong { color:var(--color-maroon); }
+.runtime-health__summary p { margin:9px 0 0; }
+.runtime-health__grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+.runtime-health__grid .admin-card { margin:0 0 20px; min-width:0; }
+.runtime-health__version { font-size:clamp(1.4rem,2.5vw,2rem); font-weight:600; overflow-wrap:anywhere; }
+.runtime-health dl { display:grid; gap:8px; margin:18px 0; }
+.runtime-health dl div { display:flex; justify-content:space-between; gap:16px; padding:8px 0; border-bottom:1px solid var(--color-border); }
+.runtime-health dd { margin:0; font-weight:600; overflow-wrap:anywhere; }
+.runtime-health dt,.runtime-health__caption { color:var(--color-text-muted); }
+.runtime-health__caption { font-size:.85rem; line-height:1.65; }
+.runtime-health__extensions { grid-column:1/-1; }
+.runtime-health__extensions ul { list-style:none; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; padding:0; }
+.runtime-health__extensions li { display:flex; justify-content:space-between; gap:14px; padding:12px; border:1px solid var(--color-border); border-radius:var(--radius-sm); }
+.runtime-health__actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:18px; }
+@media(max-width:743px){.runtime-health__grid,.runtime-health__extensions ul {grid-template-columns:minmax(0,1fr)}.runtime-health__summary {padding:18px}.runtime-health dl div {flex-wrap:wrap}}

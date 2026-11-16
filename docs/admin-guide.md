@@ -62,3 +62,10 @@ Use recorded evidence, choose not-assessed for unavailable facts, declare
 human/assisted/test authorship truthfully and keep rationale free of secrets.
 The appended review is not a customer satisfaction vote or a ticket transition.
 The linked operator monitoring guide explains conflicts and review history.
+
+## Native system diagnostics
+
+Settings → System Health is a read-only authenticated view of the serving PHP
+process, required extensions and configured database engine/version. It does
+not show a public phpinfo dump or mutate hosting settings. See
+`runtime-requirements.md` and the Settings operator guide before any change.

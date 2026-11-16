@@ -81,3 +81,12 @@ per-chat lock. No SQL/JSON mirror. Staff-declared human review requires explicit
 attestation; automated tests must declare verification_test and must not inflate
 human counts. Run tests/agent-review-concurrency.php along with chat concurrency
 and interruption tests. Stale revisions/evidence are conflicts, not auto-retries.
+
+## Runtime identity and deployment target
+
+Target stable PHP>=8.3 and MySQL>=8.4. `RuntimeHealthService` reads bounded
+version/vendor facts; a MariaDB or unknown result is not a MySQL pass. Use
+runtime:check and actual web System Health, and keep raw exception/DSN/secret
+content out of output. A compatibility report is not authority to migrate a
+production database or fabricate query/backup parity. Preserve older running
+sites until a separate approved cutover is verified.

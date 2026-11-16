@@ -4,18 +4,18 @@
     "reviews": {
         "agents": {
             "source_sha256": "f376e0fa2e3b1d03bc36dacbc79b2218afda18c5cf930c8402cebf8b370eeec0",
-            "references_sha256": "5f8be69029765441ae908587ea9884c8548504e83aa9ad0e905ff80344c9c89e",
-            "review_note": "Reviewed AgentConversationService review lock/hash/revision/history and AgentEvaluationService provenance denominators against original JSON/observability docs. Five red-green regressions plus six-worker conflict fixture prove exact boundaries; 31 deterministic cases add exact sales/refund/GST answer evidence, not a human-quality benchmark. Tests remain explicitly excluded from human metrics."
+            "references_sha256": "2928f1a29171832250b9c4773f064c469ab487ccfce8d52008bfe486e27f7436",
+            "review_note": "Merged runtime baseline documentation from #276 without changing runtime agent prompts. Preserved answer review hash/version/lock/provenance contracts and both operator references. Original JSON storage, customer feedback and 31 exact fixtures remain the evaluated behavior."
         },
         "auth": {
             "source_sha256": "fb54a6f0d4394ea91c7544998f57773f0019cc7710093becee637e0d7d059440",
-            "references_sha256": "0427218d79e279c767132d1e427fdbd462e811281326c44532106f02d2efee91",
-            "review_note": "Existing AuthService and credential source remain unchanged; review GET/POST stay in authenticated AdminController with existing CSRF plus strict service-level reviewer identity. Shared backend skill documents no model/browser privilege selection; customer/guest denial exercised."
+            "references_sha256": "bcb6aeda41862de57659911df9bfe171fa172cf4a15a8c5c30362e7a76ee77d8",
+            "review_note": "Reconciled shared backend guidance without changing credentials or requireAdmin. Health stays GET-only; answer-review POST remains CSRF protected and strictly admin-scoped with explicit human/test provenance."
         },
         "commerce": {
             "source_sha256": "ddb6bf29a16d2fae56cbc2ccb48bf85e376dcc42ca2e3794ab1891f05fc6be65",
-            "references_sha256": "65ff4c2ac0052755bde5aa54b6e30121cfb63c615ce411418d5d5d45812f7236",
-            "review_note": "Business order/catalog/GST sources unchanged. New evaluation cases call existing deterministic report methods with synthetic fixtures; no payment/refund/stock mutations or filing certification. Shared skill review note preserves original commerce boundaries."
+            "references_sha256": "ebd8b1df82d350d7715798604180d9991f76af21a98d83de40f2fd4dbef122e2",
+            "review_note": "No commerce source mutation. Retained shared runtime skill requirement and answer-review contract, while exact sales/GST fixture calls keep original financial semantics and no live business writes."
         },
         "content": {
             "source_sha256": "df9530c1fd85ed913b132aa51d3b04ad465cf1c09dc7fdfb0ae68d8b52edf489",
@@ -23,34 +23,34 @@
             "review_note": "Reviewed original SeoService and BlogController override paths plus resolved local/persistent image contracts. Canonical/OG/organization defaults now use configured APP_URL, valid explicit overrides remain, bad URL schemes/local missing images fall back safely, and product schema follows in_stock/active and resolved price. Six regressions cover host/request forms, overrides/noindex, real image paths, stock/slug encoding and inline JSON-LD safety."
         },
         "foundation": {
-            "source_sha256": "80bfef3aace6c75dd34544918a0e4a867352cef8945961877331dac443fae51e",
-            "references_sha256": "200ab65eebe3e8004e390e1177de155fd93b1c0e74767f711e84f9877dd7fd3d",
-            "review_note": "Reviewed existing admin authentication/CSRF controller and new bounded review endpoints with JSON-storage contract. Append-only selected-turn review uses same file/lock, expected revision and original evidence hash, no SQL mirror; metadata audit stores IDs/categories only. No customer-confirmed outcome is fabricated."
+            "source_sha256": "dfa75bb2ddc21f6d3c5781597a6404e83ac350a3eff9739f4500cb7aa7a12c61",
+            "references_sha256": "922a0a41512ca91e453692dde2dca8abad48b5400717e2a120616db9618ff27a",
+            "review_note": "Original Auth/Admin controller merges preserve native health plus selected-turn review methods. One JSON per chat with atomic append and evidence conflicts; deployment guide retains correct mail/Playwright and runtime minima. No migration or changed checkout/auth behavior."
         },
         "interface": {
-            "source_sha256": "f6b1786fbb73c341c882035a1889cb8d19a3d163d6b3d44980386b62a4eb4d5c",
-            "references_sha256": "8db47de59fa4d0ff4713aadd1e2922dfb87d30a15c22cf8d837db30d6a2185f4",
-            "review_note": "Compared evidence-first review template/CSS and monitoring links/denominators with admin guide and skill. All private text is escaped; form works without JS at 375px, visible evidence and authorship labels remain explicit. Screenshots inspected and actual saves preserve original JSON evidence."
+            "source_sha256": "39a979163ddd934b5b40d86e7b7328b83c6a9fb54c1beb85ede20de2e81caae2",
+            "references_sha256": "016463058b4e8aa1215c4a766b2cc478739663dfc6bdca5f0def621e5dd17478",
+            "review_note": "Combined independently scoped System Health and answer-review CSS and operator navigation. Both real routes/templates remain, no placeholder menus; private sources and test-provenance labels are explicit. Browser review will repeat after this integration."
         },
         "mail": {
             "source_sha256": "caed5f4ccf26b2e3315bc122e0568f79a4a25a451cf1bfda017c53c5ac3866d4",
-            "references_sha256": "3c0144f7d634eec121e3207626baa95896212f682e9ab49b8e4fb79bed25b5ef",
-            "review_note": "SMTP/queue sources unchanged. Shared backend skill adds private agent-review persistence and explicitly excludes customer receipt claims; inspected mail references and confirmed no retry/recipient side effects or new mail permissions."
+            "references_sha256": "9259e1ab1e640796877e4430ded3652edfdcc8173dd5ca3ec262b6614ce80996",
+            "review_note": "Both shared backend skill additions retained: runtime target diagnostic boundary and same-file answer-review behavior. Native SMTP/queue implementation and recipient acceptance evidence are unchanged and remain separately documented."
         },
         "media": {
             "source_sha256": "cd8a64c85c1eecc6c51d01262423e248f88fd14e896b1e3e74c359f937531962",
-            "references_sha256": "5a29965a788649e2deca3cfda38b2934bdaad12e046935bf0be654eed891b9cb",
-            "review_note": "Media services and deletion behavior unchanged. Shared admin skill explains private answer-review workflow, not a media mutation. Existing architecture/media reference semantics remain accurate."
+            "references_sha256": "e67d4e0311802efd3c36ff0165b178ad410a792fafedacea8599208bd0d11a4a",
+            "review_note": "Preserved System Health and answer-review native admin guidance together. Media storage/deletion sources remain unchanged; no new destructive operation or private-path disclosure."
         },
         "operator-help": {
-            "source_sha256": "f62c468c2eef8cdcde97ff0384454daabc8478cbea0a33cfb8bb5d01c8d96e39",
-            "references_sha256": "41d8c00b1a546e58a57af1ab3df32e02c7f6389a838e72b4dae1ee04d938e9f0",
-            "review_note": "Compared per-turn review routes, evidence selectors, staff rubric/provenance, stale-version handling and actual native form with the monitoring operator guide. Added the review view/source dependency and route context; original answers, customer feedback, ticket state and private source boundaries remain unchanged. Local desktop/mobile/no-JS browser save verified as synthetic test only."
+            "source_sha256": "779e030c84c54df31796c9c91a521b25471d350d240eb9423dcd27dc361f1c51",
+            "references_sha256": "bc6146b6b057a40f77680cd40f49fca104a20326f69a7cf4bda912dd2ccd1f84",
+            "review_note": "Reconciled the already-live System Health Settings guide/metadata with the new answer-review monitoring guide and source dependencies. Both original controller/view workflows remain present; no guide or private role boundary was dropped. Actual Settings health and review inputs remain separately explained."
         },
         "workflow": {
-            "source_sha256": "46e05e5875f947694d2108db3c91fbb428452360095d36ccebcb379b3ae9f02e",
-            "references_sha256": "cee956118faf1ab10d71e949d648ed075135c57f1f024bde7f45dc3bfd39bdf7",
-            "review_note": "Reviewed added filesystem-only six-worker review test in CI; it requires no MySQL or provider and verifies one winner/five stale writers. Generated route/index changes follow actual registered handlers; no issues/plans added under docs."
+            "source_sha256": "0902d70566f8278761d27e16da28a017435b90e0ab94c3f8a1ab54abb1eb2e03",
+            "references_sha256": "732e81f2fecefea889a77307e78bcc7c2c2ddc48929c26fba6c4e07e2e38de01",
+            "review_note": "Preserved all PHP8.3/MySQL8.4 and PHP8.4/8.5 gates from #276 while adding filesystem-only answer-review concurrency test. Six new main regressions retained alongside review regressions. Generated maps rebuilt from reconciled source, not conflict-marker edits."
         }
     }
 }

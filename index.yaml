@@ -44,18 +44,18 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 414
-  relationships: 327
+  concepts: 417
+  relationships: 330
   by_type:
     blog: 16
     controller: 12
-    doc: 47
+    doc: 48
     image: 89
     operator_guide: 12
-    route: 135
+    route: 136
     runtime_instruction: 6
     schema: 22
-    service: 63
+    service: 64
     skill: 12
 concepts:
   - id: "blog:benefits-of-rudraksha"
@@ -683,6 +683,15 @@ concepts:
     tags:
       - "docs"
     filename: "runtime-agents.md"
+    header_image: ""
+  - id: "doc:runtime-requirements"
+    type: "doc"
+    title: "Native Runtime Requirements and System Health"
+    description: "Read-only PHP and database compatibility diagnostics, private operator guidance, strict CI checking and safe migration boundaries."
+    resource: "docs/runtime-requirements.md"
+    tags:
+      - "docs"
+    filename: "runtime-requirements.md"
     header_image: ""
   - id: "doc:schema"
     type: "doc"
@@ -2586,6 +2595,22 @@ concepts:
       - "SupportTicketService"
       - "AuthService"
     view: "admin/list"
+  - id: "route:get__admin_system_health"
+    type: "route"
+    title: "GET /admin/system-health"
+    description: "admin.system_health"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/admin/system-health"
+    controller: "AdminController@systemHealth"
+    services:
+      - "AuthService"
+      - "RuntimeHealthService"
+      - "DatabaseService"
+    view: "admin/system-health"
   - id: "route:get__admin_tax_report"
     type: "route"
     title: "GET /admin/tax-report"
@@ -4681,6 +4706,14 @@ concepts:
     tags:
       - "code"
       - "service"
+  - id: "service:RuntimeHealthService"
+    type: "service"
+    title: "RuntimeHealthService"
+    description: "Service: RuntimeHealthService"
+    resource: "app/Services/RuntimeHealthService.php"
+    tags:
+      - "code"
+      - "service"
   - id: "service:SchemaService"
     type: "service"
     title: "SchemaService"
@@ -5029,6 +5062,9 @@ relationships:
     to: "service:ResourceService"
     relation: "uses"
   - from: "controller:AdminController"
+    to: "service:RuntimeHealthService"
+    relation: "uses"
+  - from: "controller:AdminController"
     to: "service:SchemaService"
     relation: "uses"
   - from: "controller:AdminController"
@@ -5311,6 +5347,9 @@ relationships:
     to: "service:AdminHelpService"
     relation: "rendered_by"
   - from: "operator_guide:settings"
+    to: "service:RuntimeHealthService"
+    relation: "explains"
+  - from: "operator_guide:settings"
     to: "service:SecretService"
     relation: "explains"
   - from: "operator_guide:settings"
@@ -5449,6 +5488,9 @@ relationships:
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:get__admin_support_tickets"
+    to: "controller:AdminController"
+    relation: "handled_by"
+  - from: "route:get__admin_system_health"
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:get__admin_tax_report"

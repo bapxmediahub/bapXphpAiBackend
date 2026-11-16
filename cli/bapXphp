@@ -32,6 +32,7 @@ set -euo pipefail
 #   bapXphp update                  — regenerate and validate both project maps
 #   bapXphp serve                   — start dev server on 127.0.0.1:6020
 #   bapXphp smoke                   — run local smoke tests
+#   bapXphp runtime:check [--json] [--strict] — read-only PHP 8.3+/MySQL 8.4+ requirements
 #   bapXphp dev:user [--dry-run]   — create/update the fixed remote-DB customer used for browser testing
 #
 # ── Project Map ─────────────────────────────────────────────────
@@ -851,6 +852,11 @@ cmd_hooks() {
 
 
 # ── Mail & Images ──────────────────────────────────────────────
+cmd_runtime_check() {
+  require_php
+  php "$ROOT/cli/runtime-check.php" "$@"
+}
+
 cmd_mail_process() {
   require_php
   php -r 'require "app/bootstrap.php"; $m=new App\Services\MailQueueService(); $n=0; foreach(array_slice($m->due(),0,25) as $r){ if($m->deliverNow($r)) $n++; } echo "SMTP accepted $n queued emails. Inbox receipt is unverified.\n";' 2>&1
@@ -2167,6 +2173,8 @@ main() {
       cmd_ai_config ;;
     ai:probe|ai-probe)
       cmd_ai_probe ;;
+    runtime:check|runtime-check)
+      shift; cmd_runtime_check "$@" ;;
     mail:process|mail-process)
       cmd_mail_process ;;
     images:optimize|images-optimize|imgopt)

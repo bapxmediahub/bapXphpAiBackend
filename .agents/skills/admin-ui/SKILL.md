@@ -114,3 +114,8 @@ pass/fail/not-assessed rubric and explicit human/assisted/test provenance. Never
 render private text as HTML, assume a missing source is a pass, or present a
 staff label as customer satisfaction. Verify no-JS, mobile, CSRF, role denial,
 stale revision and unchanged original JSON evidence after a synthetic QA save.
+
+System Health is a native read-only Settings surface, protected by the same
+admin gate and no-store policy. Unknown/mismatched states must remain visible;
+no fake all-green score, migration button or public phpinfo endpoint. Verify
+real web PHP separately from developer CLI and test the 375px/no-JS guidance.
