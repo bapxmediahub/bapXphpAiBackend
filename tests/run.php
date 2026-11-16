@@ -1092,6 +1092,36 @@ $tests['profile password change sends a customer security notice only after succ
     assertTrue(!str_contains($method,'admin_notification_email'),'Customer security notice cannot select the owner mailbox');
 };
 
+$tests['SMTP plain alternative preserves readable visible content and safe action links'] = static function (): void {
+    $html='<html><head><style>@media(max-width:480px){.sample{display:block}}</style></head><body>'
+        .'<div style="display:none">HIDDEN_PREHEADER</div><p>வணக்கம் &amp; welcome</p>'
+        .'<p>Second paragraph</p><table><tr><td>Order total</td><td>₹1,250.00</td></tr></table>'
+        .'<a href="https://example.invalid/account?x=1&amp;y=2">Open account</a>'
+        .'<a href="javascript:alert(1)">Unsafe URL</a><a href="#sample-only">Sample action</a>'
+        .'<script>BAD_SCRIPT_BODY</script><div hidden>HIDDEN_ATTRIBUTE</div></body></html>';
+    $s=new \App\Services\SmtpMailer(['mail_from_email'=>'sender@example.invalid']);
+    $mime=$s->buildMessage('receiver@example.invalid','Fixture',$html,'<plain-fixture@example.invalid>');
+    preg_match('/Content-Type: text\/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n(.*?)\r\n--/s',$mime,$matches);
+    $text=base64_decode(preg_replace('/\s+/','',$matches[1]??''),true);
+    assertTrue(is_string($text)&&str_contains($text,'வணக்கம் & welcome'),'Visible Unicode and entities retained');
+    foreach(['@media','BAD_SCRIPT_BODY','HIDDEN_PREHEADER','HIDDEN_ATTRIBUTE','javascript:'] as $bad)assertTrue(!str_contains($text,$bad),'Non-content or unsafe link target omitted: '.$bad);
+    assertTrue(str_contains($text,'https://example.invalid/account?x=1&y=2'),'Usable safe destination retained');
+    assertTrue(str_contains($text,"welcome\r\n")&&str_contains($text,"Order total\t₹1,250.00"),'Paragraph/table boundaries survive MIME encoding');
+    preg_match('/Content-Type: text\/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n(.*?)\r\n--/s',$mime,$matches);
+    assertSame($html,base64_decode(preg_replace('/\s+/','',$matches[1]??''),true),'HTML body remains unchanged by text extraction');
+};
+
+$tests['all actual mail template alternatives keep visible sample warnings without CSS'] = static function (): void {
+    foreach(array_keys(\App\Services\MailTemplateService::catalog()) as $key){
+        $preview=(new \App\Services\MailQueueService())->templatePreview($key);
+        $text=\App\Services\SmtpMailer::plainText($preview['html']);
+        assertTrue(str_contains($text,'TEST SAMPLE ONLY'),'Synthetic warning remains in text: '.$key);
+        assertTrue(!str_contains($text,'@media')&&!str_contains($text,'padding:'),'Presentation code excluded: '.$key);
+        assertTrue(mb_check_encoding($text,'UTF-8'),'Text remains UTF-8: '.$key);
+        assertTrue(str_contains(fileRead('views/admin/email-templates.php'),'mail-plain-preview'),'Owner can inspect exact text without sending');
+    }
+};
+
 $tests['each agent session creates one private JSON file and no MySQL table'] = static function (): void {
     $root = sys_get_temp_dir() . '/sps-agent-test-' . bin2hex(random_bytes(6));
     assertTrue(mkdir($root, 0700), 'Private test directory exists');

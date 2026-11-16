@@ -195,3 +195,19 @@ section 6.1; MIME Base64 line encoding is defined in RFC 2045 section 6.8.
 Primary email rendering reference: https://developers.google.com/workspace/gmail/design/css .
 Gmail supports style blocks/media queries within its documented subset; do not
 claim that all clients universally remove them. Inline/table fallbacks remain.
+
+## Plain-text alternative
+
+Every message remains multipart/alternative. SmtpMailer derives its text part
+from authored visible HTML: style/script/head blocks and inline/attribute-hidden
+preheaders are excluded, Unicode/entities and block/table separation retained,
+and safe absolute HTTP(S)/mailto targets shown beside their action label.
+This does not sanitize or change the HTML alternative and never fetches linked
+resources. DOMDocument is used for PHP8.3-compatible text extraction, not as an
+HTML security sanitizer; arbitrary CSS visibility is not evaluated.
+
+Email → Templates exposes the exact plain-text projection as a native disclosure
+without sending. Sample warnings remain visible; inactive sample fragment links
+are not turned into real order/invoice/reset URLs. Test actual decoded MIME as
+well as browser HTML preview. A renderer repair does not resend historical mail.
+Reference: RFC2046 section 5.1.4 and PHP DOMDocument::loadHTML's parser limitations.

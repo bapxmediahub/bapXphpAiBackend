@@ -38,9 +38,9 @@
             "review_note": "Reviewed actual Templates selector/trigger/audience views, scripts-disabled srcdoc preview, real CSRF field, disabled wrong-role input and one-shot confirmation flow. Three Playwright suites pass at desktop/375px/no-JS with no send; actual logo decodes and no horizontal overflow. Preview uses real renderer but synthetic evidence, not fake customer results."
         },
         "mail": {
-            "source_sha256": "ad43d2d74f33337f572e3ff848d8a089a75ac61f771c4a2d2ae6596e814bc892",
-            "references_sha256": "fc69b8364008202a9ce23d7625800b176314e119ae4a21fc88e1f98d5d9e30e1",
-            "review_note": "Reviewed renderer, shared shell, queue event IDs and actual auth/order/shipping callers. Customer signup, verified order and security messages use explicit recipient records; owner routing stays canonical. Delivered/payment uncertainty and actual invoice presence are represented honestly. Seven synthetic previews and long detail layouts pass desktop/mobile/no-JS QA; SMTP claims are unchanged and tests do not certify real-order receipt."
+            "source_sha256": "5b70e754d06500fd1b128e917887fd11d7f1ce09af2e43c9bdec0e03138d91d8",
+            "references_sha256": "ffcd519282fbd5bf3c6f0c6c51e115a09b4dcd1c9b86c69d84af427fb6c6bc70",
+            "review_note": "Actual Gmail MIME exposed style text and lost link targets in strip_tags fallback. Replaced only text extraction with PHP8.3 DOM traversal excluding style/script/head/hidden content, preserving UTF8, block/table separation and safe URLs. Exact MIME regression preserves unchanged HTML and headers; loopback transport semantics unchanged. This is text extraction, not HTML sanitation or delivery approval."
         },
         "media": {
             "source_sha256": "cd8a64c85c1eecc6c51d01262423e248f88fd14e896b1e3e74c359f937531962",
@@ -48,9 +48,9 @@
             "review_note": "Media sources and storage/delete behavior are unchanged. Shared admin-UI skill gained only sandboxed email preview acceptance guidance; inspected the existing media guard contract to ensure no delete/asset permission changed. Mail logo decode is checked without changing media."
         },
         "operator-help": {
-            "source_sha256": "dafc140d2c30f8b54cc99b59a6a58560ac241903651756e6afa4837009c6d7fd",
-            "references_sha256": "cbf2c49249bdf8c91171eea3e3643aacf2ce89b53244348836fc9d07dc8aecb5",
-            "review_note": "Compared actual seven-template catalogue, owner/customer role gating and authenticated Templates GET/POST with Email operator guidance. Preview uses synthetic data and disabled real-order/reset targets; send uses explicit confirmation, CSRF and consumed request token. Invoice wording matches the existing authenticated issued-invoice route and does not promise attachments."
+            "source_sha256": "f129fdf6e06a0b8b30c89b4acbdc5fd2a36505cc2d6331a6002a00d157d64050",
+            "references_sha256": "67726d39d83748a484fe3d4efd5d0fc6954e712f10bb7b6b68aff64046331e1e",
+            "review_note": "Compared the new native plain-text disclosure with the same SmtpMailer projection used for MIME. Guide explains CSS removal, preserved visible warnings and safe links without claiming a new send or arbitrary CSS rendering; existing admin authorization and recipient split are unchanged."
         },
         "sales-channels": {
             "source_sha256": "1f2cd451f764c9d2b1a0b90b1454ac54fbf9a1130973f86749df0510b8eef244",
