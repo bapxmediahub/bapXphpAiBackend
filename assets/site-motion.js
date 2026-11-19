@@ -14,10 +14,12 @@
         return state.supported === true && !state.reducedMotion && !state.saveData && !state.hidden;
     }
     function entrance(index, surface) {
-        if (surface === 'section-heading') {
+        if (surface === 'section-heading' || surface === 'section-panel') {
+            var panel = surface === 'section-panel';
             return {
-                keyframes: [{ opacity: .92, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }],
-                options: { duration: 340, delay: 0, easing: 'cubic-bezier(.22,.75,.25,1)', fill: 'none' }
+                keyframes: [{ opacity: panel ? .72 : .77, transform: 'translateY(' + (panel ? 28 : 20) + 'px)' },
+                    { opacity: 1, transform: 'none' }],
+                options: { duration: panel ? 520 : 460, delay: 0, easing: 'cubic-bezier(.2,.65,.3,1)', fill: 'none' }
             };
         }
         if (surface === 'product-photo') {
@@ -55,7 +57,7 @@
             active.clear();
         }
         function play(el, index, kind) {
-            if (!canMove() || !el || el.hidden || !el.getClientRects().length || el.closest('[hidden]')) return;
+            if (!canMove() || !el || el.hidden || !el.getClientRects().length || el.closest('[hidden]') || el.contains(doc.activeElement)) return;
             var recipe = entrance(index, kind || surface);
             try {
                 var animation = el.animate(recipe.keyframes, recipe.options);
@@ -73,6 +75,11 @@
         if (typeof media.addEventListener === 'function') media.addEventListener('change', preferenceChanged);
         else if (typeof media.addListener === 'function') media.addListener(preferenceChanged);
         doc.addEventListener('visibilitychange', preferenceChanged);
+        doc.addEventListener('focusin', function (event) {
+            active.forEach(function (animation) {
+                if (animation.effect?.target?.contains(event.target)) animation.cancel();
+            });
+        });
         win.addEventListener('pagehide', cancelMotion);
         win.addEventListener('pageshow', preferenceChanged);
         // Remove legacy visibility gating even when a cached old class is restored.
@@ -81,19 +88,24 @@
 
         var productPhotoSelector = '.home-product-card .product-card__image img';
         var sectionHeadingSelector = 'main h1,main section > h2,main .section-header > :is(h1,h2),main [data-page-section]:is(h1,h2,h3)';
-        var candidates = doc.querySelectorAll(sectionHeadingSelector + ',' + productPhotoSelector + ',main h1,.product-card:not(.home-product-card),.blog-card,.temple-card,.auth-card,.section-title,.page-title,.admin-stat,.report-kpi,.admin-card > h2,.enterprise-chat__intro');
+        var panelSelector = 'main [data-section-motion]';
+        var candidates = doc.querySelectorAll(panelSelector + ',' + sectionHeadingSelector + ',' + productPhotoSelector + ',.product-card:not(.home-product-card),.blog-card,.temple-card,.auth-card,.section-title,.page-title,.admin-stat,.report-kpi,.admin-card > h2,.enterprise-chat__intro');
         if (typeof win.IntersectionObserver === 'function') {
+            var threshold = 0.12;
             var observer = new win.IntersectionObserver(function (entries) {
                 var stagger = 0;
                 entries.forEach(function (entry) {
-                    if (!entry.isIntersecting) return;
-                    observer.unobserve(entry.target);
-                    if (entry.target.matches(productPhotoSelector)) play(entry.target, 0, 'product-photo');
-                    else if (surface === 'public' && entry.target.matches(sectionHeadingSelector) && !entry.target.closest('a'))
-                        play(entry.target, 0, 'section-heading');
-                    else if (!entry.target.closest('a')) play(entry.target, stagger++);
+                    if (!entry.isIntersecting || entry.intersectionRatio < threshold) return;
+                    var target = entry.target;
+                    observer.unobserve(target);
+                    if (target.matches(panelSelector)) play(target, 0, 'section-panel');
+                    else if (target.closest(panelSelector)) return;
+                    else if (target.matches(productPhotoSelector)) play(target, 0, 'product-photo');
+                    else if (surface === 'public' && target.matches(sectionHeadingSelector) && !target.closest('a'))
+                        play(target, 0, 'section-heading');
+                    else if (!target.closest('a')) play(target, stagger++);
                 });
-            }, { threshold: 0.12, rootMargin: '0px 0px -24px 0px' });
+            }, { threshold: threshold, rootMargin: '0px 0px -24px 0px' });
             candidates.forEach(function (el) { observer.observe(el); });
         }
 

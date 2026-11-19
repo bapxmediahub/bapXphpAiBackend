@@ -38,9 +38,9 @@
             "review_note": "Compared bootstrap/session initialization, old global handler, BaseController redirects/JSON/view output and actual API catches with RequestFailureService. Native response buffer and safe500 replace only unhandled failures; 88 loopback HTTP assertions preserve normal HTML/JSON/XML/binary/204/redirect/explicit503. Docs state pre-bootstrap/OOM/streaming limits and uncertainty of earlier side effects; no raw message/admin stack or database accusation."
         },
         "interface": {
-            "source_sha256": "f52d5a394590e9bf92263d4ba74521aa98124429855bbab349c1747002038631",
-            "references_sha256": "2f250c6ad86d65ba2972a7d32cb8f0f2e9207b1dfc1e86259321da1d3e1d43a6",
-            "review_note": "Verified the common heading entrance, square temple photo layout, native rail and deferred map across mobile and desktop."
+            "source_sha256": "0da976fe242c2f468eab18e9b4e50cfd26743af1b48e4dcede0751c0a8ee71ef",
+            "references_sha256": "ee8b343bdf8f4d0384ff1519868193e4b9084fb674fc34f3c45fd736d9a621e4",
+            "review_note": "Verified the full-width cart layout, visible section entrance, steady checkout controls and reduced-motion fallback."
         },
         "mail": {
             "source_sha256": "7694291a27699ebb722b0ff98b9ae74972c92a20b0b057726677e0a733ffd792",
@@ -53,9 +53,9 @@
             "review_note": "Verified the Media Library jump links and product gallery navigation keep existing upload and media routes."
         },
         "operator-help": {
-            "source_sha256": "8da35b22e6808df204220025667cdfbee144ca8e3fcfa406a973116f9b457185",
+            "source_sha256": "361cfc6749a5d98243c75ff680535ff2d1baed1d8a75e2f80d62aa97fbb272c1",
             "references_sha256": "f216687035d70f6fac2aaf3f34ced055c11904e647e6aff80269acbb33835a00",
-            "review_note": "Verified public and admin section links land on the same existing customer and operator tasks, and native forms preserve their authored action and submitter."
+            "review_note": "Verified cart quantity controls, checkout links, price totals and the existing customer guide preserve the same server actions."
         },
         "sales-channels": {
             "source_sha256": "1f2cd451f764c9d2b1a0b90b1454ac54fbf9a1130973f86749df0510b8eef244",
