@@ -20,7 +20,10 @@ change data, fake a chart value or script a purchase.
   at zero and no final style is retained by the animation. On the homepage,
   only the product photo settles into place as it enters the viewport. The
   card, price, purchase controls and collection link stay still. Public section
-  headings settle once when they enter view. The homepage temple rail uses
+  headings settle once when at least 12% of the target enters view. Headings
+  move 20px over 460ms. Cart item details and the order breakdown use a 28px,
+  520ms entrance. Quantity and checkout controls stay in place. An active
+  entrance cancels when keyboard focus reaches its content. The homepage temple rail uses
   native snap and visitor-operated arrows without automatic rotation.
 - Existing Support/History/navigation controls own their state. A panel or
   new chat message can receive a short entry transition after that real state

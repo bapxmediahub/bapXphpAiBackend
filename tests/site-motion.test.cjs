@@ -39,10 +39,15 @@ test('homepage product photos move within the image frame without stagger or fad
  assert.deepEqual(recipe.keyframes,[{transform:'scale(1.025)'},{transform:'none'}]);
 });
 
-test('public section headings enter once with bounded movement and no delay',()=>{
- const {entrance}=load();const recipe=entrance(99,'section-heading');
- assert.equal(recipe.options.delay,0);
- assert.equal(recipe.options.fill,'none');
- assert.ok(recipe.options.duration<=360);
- assert.deepEqual(recipe.keyframes,[{opacity:.92,transform:'translateY(8px)'},{opacity:1,transform:'none'}]);
+test('section headings and panels enter visibly without hiding content or staggering controls',()=>{
+ const {entrance}=load();
+ for(const [kind,offset] of [['section-heading',20],['section-panel',28]]){
+  const recipe=entrance(99,kind);
+  assert.equal(recipe.options.delay,0);
+  assert.equal(recipe.options.fill,'none');
+  assert.ok(recipe.options.duration>=450 && recipe.options.duration<=550);
+  assert.ok(recipe.keyframes[0].opacity>=.7);
+  assert.equal(recipe.keyframes[0].transform,'translateY('+offset+'px)');
+  assert.deepEqual(recipe.keyframes.at(-1),{opacity:1,transform:'none'});
+ }
 });

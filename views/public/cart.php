@@ -1,128 +1,167 @@
-<style>
-    .cart-item__qty { display:flex; align-items:center; gap:var(--space-xs); }
-    .cart-item__qty .btn { min-width:44px; min-height:44px; }
-</style>
- <section class="section" style="padding-top:var(--space-xl);">
-     <div class="container container--narrow" style="margin-bottom:var(--space-xl);">
-         <nav class="breadcrumb breadcrumb--page" aria-label="Breadcrumb">
-             <a href="/shop">Shop</a><span aria-hidden="true">/</span><span>Cart</span>
-         </nav>
-    </div>
-
-    <?php if(empty($items)): ?>
-        <div class="container container--narrow" style="text-align:center; padding:var(--space-4xl) 0;">
-            <span style="display:block; margin-bottom:var(--space-md);"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></span>
-            <h1 style="font-family:var(--font-serif); margin:0 0 var(--space-sm);">Your Cart is Empty</h1>
-            <p style="color:var(--color-text-muted); margin-bottom:var(--space-lg);">Discover our spiritual products and add items to your cart.</p>
-            <a href="/shop" class="btn btn-primary">Browse Shop</a>
-        </div>
-    <?php else: ?>
-         <div class="container">
-             <div class="cart-layout">
-                 <div class="cart-items">
-                     <?php foreach($items as $i => $item): $lineTotal = ($item['offer_price'] ?: $item['price'] ?: 0) * $item['qty']; ?>
-                         <div class="cart-item reveal" data-cart-item data-slug="<?= e($item['slug']) ?>" data-unit-price="<?= e((string)($item['offer_price'] ?: $item['price'] ?: 0)) ?>" style="animation-delay:<?= $i * 0.05 ?>s">
-                             <a href="/product/<?= e($item['slug']) ?>"><img class="cart-item__img" src="<?= e(webp_src($item['image_url'] ?? placeholder_img($item['name']))) ?>" alt="<?= e($item['name']) ?>"></a>
-                             <div>
-                                 <h3 class="cart-item__name"><a href="/product/<?= e($item['slug']) ?>"><?= e($item['name']) ?></a></h3>
-                                 <p class="cart-item__meta"><?= e($item['category'] ?? 'Spiritual Product') ?></p>
-                                 <div class="cart-item__price--mobile">₹<?= e((string)$lineTotal) ?></div>
-                             </div>
-                             <div class="cart-item__qty">
-                                     <form method="post" action="/cart/update">
-                                         <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
-                                         <input type="hidden" name="action" value="dec">
-                                         <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
-                                         <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                                         <button type="submit" class="btn btn-sm btn-outline" aria-label="Decrease quantity for <?= e($item['name']) ?>">−</button>
-                                     </form>
-                                     <output class="cart-item__qty-val" aria-label="Quantity for <?= e($item['name']) ?>"><?= e((string)$item['qty']) ?></output>
-                                     <form method="post" action="/cart/update">
-                                         <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
-                                         <input type="hidden" name="action" value="inc">
-                                         <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                                         <button type="submit" class="btn btn-sm btn-outline" aria-label="Increase quantity for <?= e($item['name']) ?>">+</button>
-                                     </form>
-                             </div>
-                             <div class="cart-item__price" data-line-total>₹<?= e((string)$lineTotal) ?></div>
-                         </div>
-                     <?php endforeach; ?>
-                 </div>
-                <div class="cart-summary">
-                    <h2>Order Summary</h2>
-                    <div class="cart-summary__row">
-                        <span data-cart-summary-label>Subtotal (<?= $itemCount ?> item<?= $itemCount !== 1 ? 's' : '' ?>)</span>
-                        <span data-cart-subtotal>₹<?= e((string)($total ?? 0)) ?></span>
-                    </div>
-                    <div class="cart-summary__row">
-                        <span>Shipping</span>
-                        <span style="color:var(--color-success);">Free</span>
-                    </div>
-                    <?php if (!empty($gstAmount)): ?>
-                    <div class="cart-summary__row">
-                        <span>GST (included)</span>
-                        <span data-cart-gst>₹<?= e(number_format((float)$gstAmount, 2)) ?></span>
-                    </div>
-                    <?php endif; ?>
-                    <div class="cart-summary__row cart-summary__row--total">
-                        <span>Total</span>
-                        <span data-cart-total>₹<?= e((string)($total ?? 0)) ?></span>
-                    </div>
-                    <?php if (!empty($gstAmount)): ?>
-                    <p style="margin:var(--space-xs) 0 0; font-size:0.75rem; color:var(--color-text-muted);">
-                        Prices include GST. Final CGST/SGST or IGST split is set by your delivery state at checkout.
-                    </p>
-                    <?php endif; ?>
-                    <a href="/checkout" class="btn btn-primary btn-block btn-lg">Proceed to Checkout</a>
-                    <div style="text-align:center; margin-top:var(--space-sm);">
-                        <a href="/shop" style="font-size:0.85rem; color:var(--color-text-muted);">← Continue Shopping</a>
-                    </div>
-                </div>
+<?php
+$emptyCart = <<<'HTML'
+<div class="cart-empty-state">
+    <h2>Your Cart is Empty</h2>
+    <p>Browse the shop to find devotional products.</p>
+    <a href="/shop" class="btn btn-primary">Browse Shop</a>
+</div>
+HTML;
+?>
+<section class="section cart-page" aria-labelledby="cart-title">
+    <div class="container cart-page__container">
+        <nav class="breadcrumb breadcrumb--page" aria-label="Breadcrumb">
+            <a href="/shop">Shop</a><span aria-hidden="true">/</span><span>Cart</span>
+        </nav>
+        <header class="cart-page__header">
+            <div>
+                <h1 id="cart-title">Your cart</h1>
+                <?php if ($items): ?>
+                    <a class="cart-page__jump" href="#cart-summary-title" data-cart-top-actions>
+                        <span data-cart-item-count><?= (int)$itemCount ?> item<?= $itemCount === 1 ? '' : 's' ?></span>
+                        <span>· Order summary <span aria-hidden="true">↓</span></span>
+                    </a>
+                <?php endif; ?>
             </div>
-        </div>
-    <?php endif; ?>
+            <?php if ($items): ?>
+                <a href="/checkout" class="btn btn-primary" data-cart-top-actions>Checkout <span aria-hidden="true">→</span></a>
+            <?php endif; ?>
+        </header>
+        <?php if (!$items): ?>
+            <?= $emptyCart ?>
+        <?php else: ?>
+            <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
+            <div class="cart-layout">
+                <section aria-labelledby="cart-items-title">
+                    <h2 id="cart-items-title" class="cart-page__section-title">Items in your cart</h2>
+                    <div class="cart-items">
+                        <?php foreach ($items as $item): ?>
+                            <?php
+                            $unitPrice = ($item['offer_price'] ?? 0) ?: ($item['price'] ?? 0);
+                            $lineTotal = round($unitPrice * $item['qty'], 2);
+                            $productUrl = '/product/' . rawurlencode(trim((string)$item['slug']));
+                            $placeholder = placeholder_img($item['name']);
+                            ?>
+                            <article class="cart-item" data-cart-item data-unit-price="<?= e((string)$unitPrice) ?>">
+                                <div class="cart-item__body" data-section-motion>
+                                    <a class="cart-item__media" href="<?= e($productUrl) ?>" aria-label="View <?= e($item['name']) ?>">
+                                        <img class="cart-item__img" src="<?= e(webp_src(($item['image_url'] ?? '') ?: $placeholder)) ?>" data-product-image-fallback="<?= e($placeholder) ?>" alt="" width="76" height="76">
+                                    </a>
+                                    <h3 class="cart-item__name"><a href="<?= e($productUrl) ?>"><?= e($item['name']) ?></a></h3>
+                                </div>
+                                <div class="cart-item__actions">
+                                    <div class="cart-item__qty">
+                                        <?php foreach (['dec' => ['−', 'Decrease'], 'inc' => ['+', 'Increase']] as $action => [$symbol, $label]): ?>
+                                            <?php if ($action === 'inc'): ?>
+                                                <output class="cart-item__qty-val" aria-label="Quantity for <?= e($item['name']) ?>"><?= e((string)$item['qty']) ?></output>
+                                            <?php endif; ?>
+                                            <form method="post" action="/cart/update">
+                                                <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
+                                                <input type="hidden" name="action" value="<?= e($action) ?>">
+                                                <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+                                                <button type="submit" class="btn btn-sm btn-outline" aria-label="<?= e($label) ?> quantity for <?= e($item['name']) ?>"><?= e($symbol) ?></button>
+                                            </form>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <div class="cart-item__price" data-line-total>₹<?= e((string)$lineTotal) ?></div>
+                                </div>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
+                </section>
+                <section class="cart-summary" aria-labelledby="cart-summary-title">
+                    <div data-section-motion>
+                        <h2 id="cart-summary-title" tabindex="-1">Order summary</h2>
+                        <div class="cart-summary__row">
+                            <span data-cart-summary-label>Subtotal (<?= (int)$itemCount ?> item<?= $itemCount === 1 ? '' : 's' ?>)</span>
+                            <span data-cart-subtotal>₹<?= e((string)($total ?? 0)) ?></span>
+                        </div>
+                        <div class="cart-summary__row" data-cart-gst-row <?= empty($gstAmount) ? 'hidden' : '' ?>>
+                            <span>GST (included)</span>
+                            <span data-cart-gst>₹<?= e(number_format((float)($gstAmount ?? 0), 2)) ?></span>
+                        </div>
+                        <div class="cart-summary__row cart-summary__row--total">
+                            <span>Cart total</span>
+                            <span data-cart-total>₹<?= e((string)($total ?? 0)) ?></span>
+                        </div>
+                        <p class="cart-summary__delivery">Any delivery charges are shown at checkout.</p>
+                    </div>
+                    <a href="/checkout" class="btn btn-primary btn-block">Proceed to checkout</a>
+                    <a href="/shop" class="cart-summary__continue">Continue shopping</a>
+                </section>
+            </div>
+            <template id="cart-empty-template"><?= $emptyCart ?></template>
+            <p class="cart-update-status" role="status" data-cart-status></p>
+        <?php endif; ?>
+    </div>
 </section>
 <script>
-(function(){
-    var forms=document.querySelectorAll('[data-cart-item] .cart-item__qty form');
-    if(!window.fetch||!forms.length)return;
-    forms.forEach(function(form){form.addEventListener('submit',async function(event){
+(() => {
+    const layout = document.querySelector('.cart-layout');
+    if (!window.fetch || !layout) return;
+
+    const status = document.querySelector('[data-cart-status]');
+    const buttons = Array.from(layout.querySelectorAll('.cart-item__qty button'));
+    let pending = false;
+
+    layout.addEventListener('submit', async event => {
+        const form = event.target.closest('.cart-item__qty form');
+        if (!form) return;
         event.preventDefault();
-        var button=form.querySelector('button');
-        var restoreFocus=document.activeElement===button, focusTarget=button;
-        button.disabled=true;
-        try{
-            var response=await fetch(form.getAttribute('action'),{method:'POST',body:new FormData(form),headers:{Accept:'application/json'}});
-            var data=await response.json();if(!response.ok)throw new Error(data.error||'Unable to update cart.');
-            var row=form.closest('[data-cart-item]');
-            if(data.quantity<=0){
-                var neighbor=row.nextElementSibling||row.previousElementSibling;
-                focusTarget=neighbor?.querySelector('.cart-item__qty button');
+        if (pending) return;
+
+        const button = event.submitter ?? form.querySelector('button');
+        const restoreFocus = document.activeElement === button;
+        let focusTarget = button;
+        pending = true;
+        buttons.forEach(control => { control.disabled = true; });
+        status.textContent = '';
+
+        try {
+            const response = await fetch(form.getAttribute('action'), {
+                method: 'POST', body: new FormData(form), headers:{Accept:'application/json'}
+            });
+            if (!response.ok) throw new Error('Cart update failed');
+            const data = await response.json();
+            const row = form.closest('[data-cart-item]');
+            if (data.quantity === 0) {
+                const neighbor = row.nextElementSibling ?? row.previousElementSibling;
+                focusTarget = neighbor?.querySelector('.cart-item__qty button');
                 row.remove();
-            }else{
-                row.querySelector('.cart-item__qty-val').textContent=data.quantity;
-                var line=data.quantity*Number(row.dataset.unitPrice||0);
-                row.querySelectorAll('[data-line-total],.cart-item__price--mobile').forEach(function(el){el.textContent='₹'+line;});
+            } else {
+                row.querySelector('.cart-item__qty-val').textContent = data.quantity;
+                row.querySelector('[data-line-total]').textContent = '₹' + Number((data.quantity * Number(row.dataset.unitPrice)).toFixed(2));
             }
-            var rows=document.querySelectorAll('[data-cart-item]'),total=0;
-            rows.forEach(function(item){total+=Number(item.dataset.unitPrice||0)*Number(item.querySelector('.cart-item__qty-val').textContent||0);});
-            var subtotal=document.querySelector('[data-cart-subtotal]'),grand=document.querySelector('[data-cart-total]'),label=document.querySelector('[data-cart-summary-label]'),badge=document.querySelector('.cart-count');
-            var summary=data.summary, gst=document.querySelector('[data-cart-gst]');
-            if(subtotal)subtotal.textContent='₹'+summary.total;if(grand)grand.textContent='₹'+summary.total;if(label)label.textContent='Subtotal ('+summary.item_count+' item'+(summary.item_count===1?'':'s')+')';if(badge)badge.textContent=data.cart_count;
-            if(gst)gst.textContent='₹'+Number(summary.gst_amount).toFixed(2);
-            if(!rows.length){
-                var layout=document.querySelector('.cart-layout');
-                if(layout){
-                    var container=layout.parentElement;
-                    container.innerHTML='<div class="cart-empty-state"><h1>Your Cart is Empty</h1><p>Discover our spiritual products and add items to your cart.</p><a href="/shop" class="btn btn-primary">Browse Shop</a></div>';
-                    focusTarget=container.querySelector('.cart-empty-state a');
-                }
+
+            const badge = document.querySelector('.cart-count');
+            if (badge) badge.textContent = data.cart_count;
+            const label = `${data.summary.item_count} item${data.summary.item_count === 1 ? '' : 's'}`;
+            document.querySelector('[data-cart-item-count]').textContent = label;
+            status.textContent = data.quantity === 0 ? `Item removed. ${label} in your cart.` : `Quantity updated. ${label} in your cart.`;
+
+            if (!layout.querySelector('[data-cart-item]')) {
+                const empty = document.getElementById('cart-empty-template').content.cloneNode(true);
+                focusTarget = empty.querySelector('a');
+                layout.replaceWith(empty);
+                document.querySelectorAll('[data-cart-top-actions]').forEach(action => { action.hidden = true; });
+                return;
             }
-        }catch(error){if(window.showToast)showToast(error.message,'error');else form.submit();}
-        finally{
-            button.disabled=false;
-            if(restoreFocus&&(document.activeElement===document.body||document.activeElement===button))focusTarget?.focus();
+
+            layout.querySelector('[data-cart-summary-label]').textContent = `Subtotal (${label})`;
+            layout.querySelector('[data-cart-subtotal]').textContent = '₹' + data.summary.total;
+            layout.querySelector('[data-cart-total]').textContent = '₹' + data.summary.total;
+            layout.querySelector('[data-cart-gst]').textContent = '₹' + Number(data.summary.gst_amount).toFixed(2);
+            layout.querySelector('[data-cart-gst-row]').hidden = !data.summary.gst_amount;
+        } catch {
+            const message = 'Could not update the cart. Try again.';
+            status.textContent = message;
+            if (window.showToast) showToast(message, 'error');
+        } finally {
+            pending = false;
+            buttons.forEach(control => { control.disabled = false; });
+            if (restoreFocus && (document.activeElement === document.body || document.activeElement === button)) {
+                focusTarget?.focus();
+            }
         }
-    });});
+    });
 })();
 </script>
