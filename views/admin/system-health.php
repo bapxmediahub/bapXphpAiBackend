@@ -12,6 +12,8 @@ $statusLabel=static fn(string $value):string=>$labels[$value]??'Not verified';
     <div class="runtime-health__summary" data-requirements-met="<?= $health['requirements_met']?'true':'false' ?>">
         <strong><?= $health['requirements_met']?'Declared runtime requirements are met':'Runtime requirements need attention' ?></strong>
         <p>Target: <strong>PHP 8.3 or newer</strong>, <strong>MySQL 8.4 or newer</strong>, and the listed required extensions.</p>
+        <p class="runtime-health__caption">Observed at <time datetime="<?= e($health['observed_at']) ?>"><?= e($health['observed_at']) ?></time>.</p>
+        <div class="runtime-health__actions"><a class="btn btn-outline" href="/admin/system-health">Refresh checks</a></div>
         <?php if(!$health['requirements_met']): ?><p>An unmet target is not a claim that the website is offline. Preserve the running site and investigate the specific finding before changing hosting or database settings.</p><?php endif; ?>
     </div>
     <div class="runtime-health__grid">
@@ -39,7 +41,7 @@ $statusLabel=static fn(string $value):string=>$labels[$value]??'Not verified';
         <h3 id="runtime-next-title">What to do with a finding</h3>
         <p>For an older PHP version or a missing extension, ask the hosting operator to test the change before deployment. For a different database engine, prepare an approved destination, backup, restore test, data/query checks and rollback plan before any cutover. This screen performs none of those actions.</p>
         <p>Version checks do not prove backup recoverability, payment correctness, email inbox delivery, security against every attack or overall feature completeness.</p>
-        <div class="runtime-health__actions"><a class="btn btn-outline" href="/admin/system-health">Refresh checks</a><a class="btn btn-ghost" href="/admin/docs/settings">Read the settings guide</a></div>
-        <p class="runtime-health__caption">Observed at <time datetime="<?= e($health['observed_at']) ?>"><?= e($health['observed_at']) ?></time>. No database host, username, password, private filesystem path or raw provider exception is displayed.</p>
+        <div class="runtime-health__actions"><a class="btn btn-ghost" href="/admin/docs/settings">Read the settings guide</a></div>
+        <p class="runtime-health__caption">No database host, username, password, private filesystem path or raw provider exception is displayed.</p>
     </section>
 </section>

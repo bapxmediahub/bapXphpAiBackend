@@ -30,12 +30,12 @@
                         <h3 class="checkout-form__section-title">Shipping Details</h3>
                         <div class="checkout-form__row">
                             <div class="form-group">
-                                <label>Full Name</label>
-                                <input type="text" id="checkout-name" name="name" value="<?= e($_SESSION['user']['name'] ?? '') ?>" placeholder="Your full name" required>
+                                <label for="checkout-name">Full Name</label>
+                                <input type="text" id="checkout-name" name="name" autocomplete="section-delivery shipping name" value="<?= e($_SESSION['user']['name'] ?? '') ?>" placeholder="Your full name" required>
                             </div>
                             <div class="form-group">
-                                <label>Email</label>
-                                <input type="email" id="checkout-email" name="email" value="<?= e($_SESSION['user']['email'] ?? '') ?>" placeholder="your@email.com" required>
+                                <label for="checkout-email">Email</label>
+                                <input type="email" id="checkout-email" name="email" autocomplete="section-delivery shipping email" value="<?= e($_SESSION['user']['email'] ?? '') ?>" placeholder="your@email.com" required>
                             </div>
                         </div>
                         <?php if (!empty($addresses)): ?>
@@ -50,26 +50,26 @@
                         </div>
                         <?php endif; ?>
                         <div class="form-group" style="margin-top:var(--space-md);">
-                            <label>Phone</label>
-                            <input type="tel" id="checkout-phone" name="phone" autocomplete="tel" value="<?= e($_SESSION['user']['phone'] ?? '') ?>" placeholder="+91 XXXXX XXXXX" required>
+                            <label for="checkout-phone">Phone</label>
+                            <input type="tel" id="checkout-phone" name="phone" autocomplete="section-delivery shipping tel" value="<?= e($_SESSION['user']['phone'] ?? '') ?>" placeholder="+91 XXXXX XXXXX" required>
                         </div>
                         <div class="form-group" style="margin-top:var(--space-md);">
-                            <label>Address</label>
-                            <textarea id="checkout-address" name="address" placeholder="Door no, Street, Area" required rows="2"></textarea>
+                            <label for="checkout-address">Address</label>
+                            <textarea id="checkout-address" name="address" autocomplete="section-delivery shipping street-address" placeholder="Door no, Street, Area" required rows="2"></textarea>
                         </div>
                         <div class="checkout-form__row" style="margin-top:var(--space-md);">
                             <div class="form-group">
-                                <label>City</label>
-                                <input type="text" id="checkout-city" name="city" placeholder="City" required>
+                                <label for="checkout-city">City</label>
+                                <input type="text" id="checkout-city" name="city" autocomplete="section-delivery shipping address-level2" placeholder="City" required>
                             </div>
                             <div class="form-group">
-                                <label>PIN Code</label>
-                                <input type="text" id="checkout-pincode" name="pincode" placeholder="600001" required>
+                                <label for="checkout-pincode">PIN Code</label>
+                                <input type="text" id="checkout-pincode" name="pincode" autocomplete="section-delivery shipping postal-code" inputmode="numeric" placeholder="600001" required>
                             </div>
                         </div>
                         <div class="form-group" style="margin-top:var(--space-md);">
                             <label for="checkout-state">State / Union Territory</label>
-                            <select id="checkout-state" name="state" required>
+                            <select id="checkout-state" name="state" required autocomplete="section-delivery shipping address-level1">
                                 <option value="">Select delivery state</option>
                                 <?php foreach (\App\Services\TaxService::states() as $state): ?>
                                     <option value="<?= e($state) ?>"><?= e($state) ?></option>
@@ -87,7 +87,7 @@
                         <?php endif; ?>
                     </div>
                     <div class="form-group" style="margin-top:var(--space-md);">
-                        <label>Coupon Code</label>
+                        <label for="coupon-code">Coupon Code</label>
                         <div style="display:flex; gap:var(--space-sm);">
                             <input type="text" id="coupon-code" name="coupon_code" placeholder="Enter coupon code" style="flex:1;">
                         </div>

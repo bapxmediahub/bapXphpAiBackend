@@ -11,12 +11,12 @@
                 <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
                 <input type="hidden" name="_csrf" value="<?= $csrf ?>">
                 <div class="form-group">
-                    <label>Username or Email</label>
-                    <input type="text" name="identifier" required autocomplete="username" placeholder="Username or email">
+                    <label for="login-identifier">Username or Email</label>
+                    <input id="login-identifier" type="text" name="identifier" required autocomplete="username" placeholder="Username or email">
                 </div>
                 <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" name="password" required autocomplete="current-password" placeholder="Password">
+                    <label for="login-password">Password</label>
+                    <input id="login-password" type="password" name="password" required autocomplete="current-password" placeholder="Password">
                 </div>
                 <button class="btn btn-primary btn-block">Sign In</button>
             </form>

@@ -83,7 +83,11 @@
                 <div class="shop-empty panel">
                     <h2><?= $hasFilters ? 'No matching products' : 'No products available' ?></h2>
                     <p><?= $hasFilters ? 'Try another search or choose a different category.' : 'Check back soon for new products.' ?></p>
-                    <?php if ($hasFilters): ?><a href="/shop" class="btn btn-primary">Browse all products</a><?php endif; ?>
+                    <?php if ($search !== '' && ($category !== '' || $sort !== '')): ?>
+                        <a href="<?= e($shopUrl($category, '', $sort)) ?>" class="btn btn-primary">Clear search</a>
+                    <?php elseif ($hasFilters): ?>
+                        <a href="/shop" class="btn btn-primary">Browse all products</a>
+                    <?php endif; ?>
                 </div>
             <?php else: ?>
                 <div class="product-grid">

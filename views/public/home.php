@@ -83,6 +83,7 @@
 })();
 </script>
 
+<?php if (module_on('shop')): ?>
 <section class="section home-bestsellers">
     <div class="container">
         <?php
@@ -102,76 +103,15 @@
         </div>
         <div class="product-grid">
         <?php foreach(($bestSellers ?? []) as $item): ?>
-            <?php $hasOffer = !empty($item['offer_price']) && $item['offer_price'] < $item['price']; ?>
-            <?php
-                $itemSlug = trim((string)($item['slug'] ?? ''));
-                $productUrl = '/product/' . rawurlencode($itemSlug);
-                $isPurchasable = in_array((string)($item['stock_status'] ?? 'in_stock'), ['in_stock', 'active'], true);
-            ?>
-            <article class="product-card reveal">
-                <a class="product-card__image" href="<?= e($productUrl) ?>" aria-label="View <?= e($item['name']) ?>">
-                    <img src="<?= e(webp_src($item['image_url'] ?? placeholder_img($item['name']))) ?>" data-product-image-fallback="<?= e(placeholder_img($item['name'])) ?>" alt="<?= e($item['name']) ?> — Buy online at Sri Panchami Spiritual, Chennai" decoding="async">
-                    <?php if($hasOffer): ?>
-                        <span class="product-card__badge product-card__badge--sale">Sale</span>
-                    <?php endif; ?>
-                </a>
-                <div class="product-card__body">
-                    <h3><a class="product-card__title" href="<?= e($productUrl) ?>"><?= e($item['name']) ?></a></h3>
-                    <p class="product-card__desc"><?= e($item['description']) ?></p>
-                    <div class="product-card__price-row">
-                        <span class="price">₹<?= e((string)(($item['offer_price'] ?? 0) ?: ($item['price'] ?? 0))) ?></span>
-                        <?php if($hasOffer): ?>
-                            <span class="old-price">₹<?= e($item['price']) ?></span>
-                            <?php $pct = round((1 - $item['offer_price'] / ($item['price'] ?: 1)) * 100); ?>
-                            <span class="discount-pct">-<?= $pct ?>%</span>
-                        <?php endif; ?>
-                    </div>
-                    <div class="product-card__actions">
-                        <?php if($isPurchasable): ?>
-                        <?php $inCart = (int)($cartQuantities[$itemSlug] ?? 0); ?>
-                        <div class="product-purchase" data-cart-control data-slug="<?= e($itemSlug) ?>">
-                            <form method="post" action="/cart/add">
-                                <input type="hidden" name="slug" value="<?= e($itemSlug) ?>">
-                                <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                                <input type="hidden" name="redirect" value="/checkout">
-                                <button class="btn btn-sm btn-primary" type="submit">Buy Now</button>
-                            </form>
-                            <div class="product-cart-control">
-                                <form method="post" action="/cart/add" data-cart-add <?= $inCart > 0 ? 'hidden' : '' ?>>
-                                    <input type="hidden" name="slug" value="<?= e($itemSlug) ?>">
-                                    <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                                    <input type="hidden" name="redirect" value="/">
-                                    <button class="btn btn-sm btn-outline" type="submit">Add to Cart</button>
-                                </form>
-                                <div class="product-cart-control__stepper" data-cart-stepper <?= $inCart > 0 ? '' : 'hidden' ?>>
-                                    <?php foreach (['dec' => '−', 'inc' => '+'] as $cartAction => $symbol): ?>
-                                    <?php if ($cartAction === 'inc'): ?><output data-cart-quantity aria-live="polite" aria-label="Quantity in cart for <?= e($item['name']) ?>"><?= $inCart ?></output><?php endif; ?>
-                                    <form method="post" action="/cart/update" data-cart-change>
-                                        <input type="hidden" name="slug" value="<?= e($itemSlug) ?>">
-                                        <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                                        <input type="hidden" name="action" value="<?= $cartAction ?>">
-                                        <input type="hidden" name="redirect" value="/">
-                                        <button type="submit" aria-label="<?= $cartAction === 'dec' ? 'Decrease' : 'Increase' ?> cart quantity for <?= e($item['name']) ?>"><?= $symbol ?></button>
-                                    </form>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                        </div>
-                        <?php else: ?>
-                        <span class="product-card__unavailable">Out of stock</span>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </article>
+            <?php require __DIR__ . '/home-product-card.php'; ?>
         <?php endforeach; ?>
         <?php if (empty($bestSellers)): ?><p>Our top sellers will appear here as orders are completed. <a href="/shop">Browse all products</a>.</p><?php endif; ?>
     </div>
     </div>
 </section>
 
-<?php require app_path('views/public/home-collections.php'); ?>
+<?php require __DIR__ . '/home-collections.php'; ?>
 
-<?php if (module_on('shop')): ?>
 <section class="section home-order-guide" aria-labelledby="home-order-guide-title">
     <div class="container">
         <div class="home-order-guide__panel">
@@ -221,7 +161,9 @@
                 </div>
                 <div class="temple-feature-card__body">
                     <h2><?= e($temple['name']) ?></h2>
-                    <p><?= e($temple['description']) ?></p>
+                    <?php if (!empty($temple['description'])): ?>
+                        <p><?= e($temple['description']) ?></p>
+                    <?php endif; ?>
                     <?php if(!empty($temple['address'])): ?>
                         <p class="temple-feature-card__meta">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>

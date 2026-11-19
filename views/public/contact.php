@@ -1,7 +1,7 @@
 <section class="section contact-page">
     <div class="container">
         <header class="contact-page__header">
-            <h1 class="section-title">Contact Sri Panchami Spiritual</h1>
+            <h1 class="section-title">Contact us</h1>
             <p>Get help with an order, ask about a product, or plan a temple visit.</p>
         </header>
 

@@ -22,6 +22,9 @@
                             <?php if (!empty($item['address'])): ?>
                                 <p><?= e($item['address']) ?></p>
                             <?php endif; ?>
+                            <?php if (!empty($item['timings'])): ?>
+                                <p><strong>Opening hours</strong><br><?= e($item['timings']) ?></p>
+                            <?php endif; ?>
                             <div class="temple-directory-card__actions">
                                 <a href="<?= e($detailUrl) ?>" class="btn btn-primary" aria-label="View details for <?= e($item['name']) ?>">View details</a>
                                 <?php if ($directions !== null): ?>

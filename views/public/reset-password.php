@@ -6,18 +6,18 @@
     <div class="auth-form-container">
         <div class="auth-card">
             <h1>Reset Password</h1>
-            <p>Create a new secure password</p>
+            <p id="reset-password-requirements">Use at least 6 characters.</p>
             <form method="post" action="/reset-password" class="auth-form">
                 <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
                 <input type="hidden" name="_csrf" value="<?= $csrf ?>">
                 <input type="hidden" name="token" value="<?= e($token ?? '') ?>">
                 <div class="form-group">
-                    <label>New Password</label>
-                    <input type="password" name="password" required placeholder="••••••••" minlength="6">
+                    <label for="reset-password">New Password</label>
+                    <input id="reset-password" type="password" name="password" required autocomplete="new-password" aria-describedby="reset-password-requirements" placeholder="••••••••" minlength="6">
                 </div>
                 <div class="form-group">
-                    <label>Confirm Password</label>
-                    <input type="password" name="password_confirm" required placeholder="••••••••" minlength="6">
+                    <label for="reset-password-confirm">Confirm Password</label>
+                    <input id="reset-password-confirm" type="password" name="password_confirm" required autocomplete="new-password" placeholder="••••••••" minlength="6">
                 </div>
                 <button class="btn btn-primary btn-block">Update Password</button>
             </form>

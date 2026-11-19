@@ -11,38 +11,44 @@
                 <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
                 <input type="hidden" name="_csrf" value="<?= $csrf ?>">
                 <div class="form-group">
-                    <label>Full Name</label>
-                    <input type="text" name="name" required placeholder="Your full name">
+                    <label for="register-name">Full Name</label>
+                    <input id="register-name" type="text" name="name" required autocomplete="name" placeholder="Your full name">
                 </div>
                 <div class="form-group">
-                    <label>Email Address</label>
-                    <input type="email" name="email" required placeholder="your@email.com">
+                    <label for="register-email">Email Address</label>
+                    <input id="register-email" type="email" name="email" required autocomplete="email" placeholder="your@email.com">
                 </div>
                 <div class="form-group">
-                    <label>Phone</label>
-                    <input type="tel" name="phone" required placeholder="+91 XXXXX XXXXX">
+                    <label for="register-phone">Phone</label>
+                    <input id="register-phone" type="tel" name="phone" required autocomplete="tel" placeholder="+91 XXXXX XXXXX">
                 </div>
                 <div class="form-group">
-                    <label>Default delivery address</label>
-                    <textarea name="address" required rows="2" placeholder="Door no, street, area"></textarea>
+                    <label for="register-address">Default delivery address</label>
+                    <textarea id="register-address" name="address" required autocomplete="shipping street-address" rows="2" placeholder="Door no, street, area"></textarea>
                 </div>
                 <div class="auth-form__row">
-                    <div class="form-group"><label>City</label><input type="text" name="city" required placeholder="City"></div>
-                    <div class="form-group"><label>PIN code</label><input type="text" name="pincode" required inputmode="numeric" placeholder="600001"></div>
+                    <div class="form-group">
+                        <label for="register-city">City</label>
+                        <input id="register-city" type="text" name="city" required autocomplete="shipping address-level2" placeholder="City">
+                    </div>
+                    <div class="form-group">
+                        <label for="register-pincode">PIN code</label>
+                        <input id="register-pincode" type="text" name="pincode" required autocomplete="shipping postal-code" inputmode="numeric" placeholder="600001">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="register-state">State / Union Territory</label>
-                    <select id="register-state" name="state" required><option value="">Select delivery state</option>
+                    <select id="register-state" name="state" required autocomplete="shipping address-level1"><option value="">Select delivery state</option>
                         <?php foreach (\App\Services\TaxService::states() as $state): ?><option value="<?= e($state) ?>"><?= e($state) ?></option><?php endforeach; ?>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" name="password" required placeholder="••••••••" minlength="6">
+                    <label for="register-password">Password</label>
+                    <input id="register-password" type="password" name="password" required autocomplete="new-password" placeholder="••••••••" minlength="6">
                 </div>
                 <div class="form-group">
-                    <label>Confirm Password</label>
-                    <input type="password" name="password_confirm" required placeholder="••••••••" minlength="6">
+                    <label for="register-password-confirm">Confirm Password</label>
+                    <input id="register-password-confirm" type="password" name="password_confirm" required autocomplete="new-password" placeholder="••••••••" minlength="6">
                 </div>
                 <div class="form-group form-check">
                     <label class="checkbox-label">

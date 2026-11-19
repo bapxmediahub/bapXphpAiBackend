@@ -1,3 +1,33 @@
+<style>
+.account-orders__label { display: none; }
+@media (max-width: 743px) {
+    .account-orders { display: block; }
+    .account-orders thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+    }
+    .account-orders tbody, .account-orders tr, .account-orders td { display: block; }
+    .account-orders tbody tr + tr {
+        border-top: 1px solid var(--color-border);
+        margin-top: var(--space-sm);
+        padding-top: var(--space-sm);
+    }
+    .account-orders td {
+        border: 0;
+        padding: var(--space-xs) 0;
+        overflow-wrap: anywhere;
+    }
+    .account-orders__label {
+        display: block;
+        color: var(--color-ink);
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+}
+</style>
 <div class="section" style="padding-top:var(--space-xl);">
     <div class="account-layout">
         <?php require __DIR__ . '/_nav.php'; ?>
@@ -12,18 +42,30 @@
                 </div>
             <?php else: ?>
                 <div class="table-wrap">
-                    <table>
-                        <thead><tr><th>Order ID</th><th>Status</th><th>Total</th><th>Delivery Address</th><th>Shipped At</th><th>Invoice</th><th>Product Review</th></tr></thead>
-                        <tbody>
+                    <table class="account-orders" role="table" aria-label="Your orders">
+                        <thead role="rowgroup">
+                            <tr role="row">
+                                <th scope="col" role="columnheader">Order ID</th>
+                                <th scope="col" role="columnheader">Status</th>
+                                <th scope="col" role="columnheader">Total</th>
+                                <th scope="col" role="columnheader">Delivery Address</th>
+                                <th scope="col" role="columnheader">Shipped At</th>
+                                <th scope="col" role="columnheader">Invoice</th>
+                                <th scope="col" role="columnheader">Product Review</th>
+                            </tr>
+                        </thead>
+                        <tbody role="rowgroup">
                         <?php foreach($orders as $order): ?>
-                            <tr>
-                                <td>
+                            <tr role="row">
+                                <td role="cell">
+                                    <span class="account-orders__label" aria-hidden="true">Order ID</span>
                                     <code style="font-size:0.8rem; background:var(--color-bg-alt); padding:0.2rem 0.5rem; border-radius:var(--radius-sm);"><?= e(substr($order['id'] ?? '', 0, 12)) ?></code>
                                     <?php // The table shows a status but never the order itself. ?>
                                     <a href="/account/orders/<?= e((string)($order['id'] ?? '')) ?>" class="btn btn-sm"
                                        style="display:block; margin-top:0.4rem; padding:0.3rem 0.6rem; font-size:0.75rem; text-align:center;">View order</a>
                                 </td>
-                                <td>
+                                <td role="cell">
+                                    <span class="account-orders__label" aria-hidden="true">Status</span>
                                     <?php
                                     // Customer-facing wording. "confirmed" means paid and queued, which
                                     // reads as "Order placed" to a shopper.
@@ -47,12 +89,14 @@
                                         </span>
                                     <?php endif; ?>
                                 </td>
-                                <td style="font-weight:600; color:var(--color-maroon);">₹<?= e((string)($order['total'] ?? 0)) ?></td>
-                                <td style="font-size:0.85rem; color:var(--color-text-muted);">
+                                <td role="cell" style="font-weight:600; color:var(--color-maroon);"><span class="account-orders__label" aria-hidden="true">Total</span>₹<?= e((string)($order['total'] ?? 0)) ?></td>
+                                <td role="cell" style="font-size:0.85rem; color:var(--color-text-muted);">
+                                    <span class="account-orders__label" aria-hidden="true">Delivery address</span>
                                     <?= e($order['shipping_address'] ?? 'Not recorded') ?><br>
                                     <?= e($order['shipping_city'] ?? '') ?> <?= e($order['shipping_pincode'] ?? '') ?>
                                 </td>
-                                <td style="font-size:0.85rem; color:var(--color-text-muted);">
+                                <td role="cell" style="font-size:0.85rem; color:var(--color-text-muted);">
+                                    <span class="account-orders__label" aria-hidden="true">Shipping</span>
                                     <?php if (!empty($order['shipped_at'])): ?>
                                         <?= e(date('d M Y', strtotime((string)$order['shipped_at']))) ?>
                                         <?php
@@ -73,14 +117,16 @@
                                         <span>Not shipped yet</span>
                                     <?php endif; ?>
                                 </td>
-                                <td>
+                                <td role="cell">
+                                    <span class="account-orders__label" aria-hidden="true">Invoice</span>
                                     <?php if (!empty($order['invoice_number'])): ?>
                                         <a href="/account/orders/<?= e($order['id']) ?>/invoice" class="btn btn-sm" style="padding:0.3rem 0.6rem; font-size:0.75rem;">View Invoice</a>
                                     <?php else: ?>
                                         <span style="color:var(--color-text-muted); font-size:0.8rem;">Pending</span>
                                     <?php endif; ?>
                                 </td>
-                                <td data-review_request_after_at="<?= e((string)($order['review_request_after_at'] ?? '')) ?>">
+                                <td role="cell" data-review_request_after_at="<?= e((string)($order['review_request_after_at'] ?? '')) ?>">
+                                    <span class="account-orders__label" aria-hidden="true">Product review</span>
                                     <?php if(isset($reviewService) && $reviewService->productReviewIsDue($order)): ?>
                                         <?php foreach(($order['items'] ?? []) as $item): ?>
                                             <?php if(empty($item['slug'])) continue; ?>
