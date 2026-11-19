@@ -30,3 +30,11 @@ test('scroll-to-top visibility is based on real viewport progress',()=>{
  assert.equal(showReturnControl(100,812),false);assert.equal(showReturnControl(1000,812),true);
  assert.equal(showReturnControl(Number.NaN,812),false);
 });
+
+test('homepage product photos move within the image frame without stagger or fading',()=>{
+ const {entrance}=load();const recipe=entrance(10,'product-photo');
+ assert.equal(recipe.options.delay,0);
+ assert.equal(recipe.options.fill,'none');
+ assert.ok(recipe.options.duration<=360);
+ assert.deepEqual(recipe.keyframes,[{transform:'scale(1.025)'},{transform:'none'}]);
+});

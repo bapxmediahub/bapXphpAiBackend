@@ -1904,6 +1904,8 @@ $tests['homepage collection leads with its linked card and renders real purchase
     $grid = '//div[contains(@class,"home-collection__grid")]';
     assertSame('/shop?category=festive-sale', $xpath->evaluate('string(' . $grid . '/*[1][self::a]/@href)'), 'The first tile should link to the curated collection');
     assertSame('Festive sale', $xpath->evaluate('string(' . $grid . '/*[1]//h2)'), 'The collection heading belongs inside the lead tile');
+    assertSame(0, (int)$xpath->evaluate('count(' . $grid . '/*[1]//img)'), 'The collection tile should be text-only');
+    assertSame('View collection', $xpath->evaluate('normalize-space(' . $grid . '/*[1]//span[@id="home-collection-0-action"])'), 'The lead tile should name the collection action');
     assertSame('/product/ring', $xpath->evaluate('string(' . $grid . '/article[1]//h3/a/@href)'), 'Product names should still open the detail page');
     assertSame(1, (int)$xpath->evaluate('count(' . $grid . '/article[1]//form[@action="/cart/add"][input[@name="redirect"][@value="/checkout"]])'), 'Buy Now should use the normal checkout form');
     assertSame('2', $xpath->evaluate('string(' . $grid . '/article[1]//output[@data-cart-quantity])'), 'The collection stepper should start with the actual cart quantity');

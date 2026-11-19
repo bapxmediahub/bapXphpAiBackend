@@ -94,12 +94,10 @@
             $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16));
         ?>
         <div class="home-bestsellers__heading">
-            <div>
-            <span class="home-bestsellers__eyebrow">Discover our collection</span>
-            <h2 class="section-title" style="margin:0;">Top Selling Products</h2>
-            <p>Explore our most purchased devotional pieces.</p>
-            </div>
-            <a href="/shop" class="btn btn-sm btn-ghost">View Shop</a>
+            <h2 class="section-title">Top Selling Products</h2>
+            <a href="/shop" class="btn btn-primary home-bestsellers__shop">
+                Shop all products <span aria-hidden="true">→</span>
+            </a>
         </div>
         <div class="product-grid">
         <?php foreach(($bestSellers ?? []) as $item): ?>

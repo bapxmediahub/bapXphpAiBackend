@@ -6,7 +6,7 @@
     $image = trim((string)($item['image_url'] ?? '')) ?: $placeholder;
     $isPurchasable = in_array((string)($item['stock_status'] ?? ''), ['in_stock', 'active'], true);
 ?>
-<article class="product-card reveal">
+<article class="product-card home-product-card">
     <a class="product-card__image" href="<?= e($productUrl) ?>" aria-label="View <?= e($item['name']) ?>">
         <img src="<?= e(webp_src($image)) ?>" data-product-image-fallback="<?= e($placeholder) ?>" alt="<?= e($item['name']) ?>" decoding="async">
         <?php if($hasOffer): ?>

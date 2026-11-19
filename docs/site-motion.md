@@ -17,7 +17,9 @@ change data, fake a chart value or script a purchase.
 - Real product/blog cards, selected headings, auth cards and operational KPI
   surfaces enter once when visible. Public motion is 300 ms / 10 px; admin
   motion is 180 ms / 4 px. Stagger is bounded at 120 ms. Opacity never starts
-  at zero and no final style is retained by the animation.
+  at zero and no final style is retained by the animation. On the homepage,
+  only the product photo settles into place as it enters the viewport. The
+  card, price, purchase controls and collection link stay still.
 - Existing Support/History/navigation controls own their state. A panel or
   new chat message can receive a short entry transition after that real state
   changes. The module does not submit forms or fabricate completion feedback.
@@ -25,7 +27,9 @@ change data, fake a chart value or script a purchase.
   scroll listener schedules one rendering update, not a permanent animation
   loop. Header height supplies anchor offsets; nested chat/table/sidebars retain
   their own scrolling. A labeled return-to-top button appears only after real
-  page progress and returns focus to the main document.
+  page progress and returns focus to the main document. On mobile, it sits
+  above bottom navigation and the cart tray. Native scroll targets leave room
+  for those floating controls.
 - The existing homepage slide selector remains operable. An explicit pause/play
   control is added. Automatic changes pause when offscreen, hidden, hovered,
   focused, user-paused, data-saving or reduced-motion. Arrow/Home/End keys select

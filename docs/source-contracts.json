@@ -38,9 +38,9 @@
             "review_note": "Compared bootstrap/session initialization, old global handler, BaseController redirects/JSON/view output and actual API catches with RequestFailureService. Native response buffer and safe500 replace only unhandled failures; 88 loopback HTTP assertions preserve normal HTML/JSON/XML/binary/204/redirect/explicit503. Docs state pre-bootstrap/OOM/streaming limits and uncertainty of earlier side effects; no raw message/admin stack or database accusation."
         },
         "interface": {
-            "source_sha256": "229a1bebfed8c64a135eec3a0c64879d26f9a7b0418d65af669ecb1239fbd9f3",
-            "references_sha256": "15bd6e398c719386678b569c77576eff24f6b9a4353054d9dd277fa410719b78",
-            "review_note": "Verified that collection filters preserve validation and reveal the exact hidden position field when the form needs correction."
+            "source_sha256": "dc25aa703d6a25a06f6fb3905f038c8cceea0d218e9279a268beaad7721dabda",
+            "references_sha256": "e76234bacc04bac8b516457450a4e0a0e445404dba83bb460429f276e09ff4f4",
+            "review_note": "Checked the flat collection link and product-photo entrance. Scroll clearance follows the mobile bottom-navigation breakpoint through 767px."
         },
         "mail": {
             "source_sha256": "7694291a27699ebb722b0ff98b9ae74972c92a20b0b057726677e0a733ffd792",
