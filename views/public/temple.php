@@ -8,15 +8,21 @@
 <?php else: ?>
     <?php
     $directions = \App\Services\TempleService::directionsUrl($temple);
+    $mapUrl = trim((string)($temple['map_embed_url'] ?? ''));
+    $canEmbedMap = filter_var($mapUrl, FILTER_VALIDATE_URL) && parse_url($mapUrl, PHP_URL_SCHEME) === 'https';
     $hasVisitDetails = !empty($temple['address']) || !empty($temple['timings']) || !empty($temple['phone']);
     ?>
     <section class="section temple-visit">
         <div class="container">
             <a class="temple-visit__back" href="/temples">← All temples</a>
             <div class="temple-visit__overview">
+                <?php if (!empty($temple['image_url'])): ?>
+                    <div class="temple-photo temple-visit__media">
+                        <img src="<?= e(webp_src($temple['image_url'])) ?>" alt="<?= e($temple['name']) ?>" decoding="async">
+                    </div>
+                <?php endif; ?>
                 <div class="temple-visit__info">
                     <h1 class="section-title" id="temple-visit-details" data-page-section="Visit details" tabindex="-1"><?= e($temple['name']) ?></h1>
-                    <div data-section-index hidden></div>
                     <?php if ($hasVisitDetails): ?>
                         <dl class="temple-visit__facts">
                             <?php if (!empty($temple['address'])): ?>
@@ -31,16 +37,11 @@
                         </dl>
                     <?php endif; ?>
                     <div class="temple-directory-card__actions">
-                        <?php if ($directions !== null): ?>
-                            <a href="<?= e($directions) ?>" class="btn btn-primary" target="_blank" rel="noopener" aria-label="Get directions to <?= e($temple['name']) ?> (opens in a new tab)">Directions</a>
-                        <?php endif; ?>
-                        <a href="/contact#contact-form" class="btn <?= $directions === null ? 'btn-primary' : 'btn-outline' ?>">Ask about pooja</a>
+                        <a href="/contact#contact-form" class="btn btn-outline">Ask about pooja</a>
                     </div>
                 </div>
-                <?php if (!empty($temple['image_url'])): ?>
-                    <img class="temple-visit__image" src="<?= e(webp_src($temple['image_url'])) ?>" alt="<?= e($temple['name']) ?>" decoding="async">
-                <?php endif; ?>
             </div>
+            <div data-section-index hidden></div>
             <div class="temple-visit__content">
                 <?php if (!empty($temple['description'])): ?>
                     <h2 id="temple-about" data-page-section="About" tabindex="-1">About the temple</h2>
@@ -54,8 +55,19 @@
                         <?php endforeach; ?>
                     </ul>
                 <?php endif; ?>
-                <?php if (!empty($temple['map_embed_url'])): ?>
-                    <iframe class="temple-visit__map" src="<?= e($temple['map_embed_url']) ?>" title="Map for <?= e($temple['name']) ?>" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+                <?php if ($canEmbedMap || $directions !== null): ?>
+                    <h2 id="temple-location" data-page-section="Location" tabindex="-1">Location</h2>
+                    <details class="temple-map" data-temple-map>
+                        <summary><span class="temple-map__show">Show map</span><span class="temple-map__hide">Hide map</span></summary>
+                        <div class="temple-map__content">
+                            <?php if ($canEmbedMap): ?>
+                                <template>
+                                    <iframe class="temple-visit__map" src="<?= e($mapUrl) ?>" title="Map for <?= e($temple['name']) ?>" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                                </template>
+                            <?php endif; ?>
+                            <a href="<?= e($directions ?? $mapUrl) ?>" target="_blank" rel="noopener noreferrer">Open map in a new tab <span aria-hidden="true">↗</span></a>
+                        </div>
+                    </details>
                 <?php endif; ?>
             </div>
         </div>

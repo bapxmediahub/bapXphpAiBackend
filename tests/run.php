@@ -2395,25 +2395,17 @@ $tests['home hero leads with spiritual products and a working shop cta'] = funct
     assertTrue(!str_contains($view, '<div class="hero-stat-value">3</div>'), 'Home hero stat value should not be stale');
 };
 
-$tests['home temple guide uses admin driven dissolve carousel'] = function (): void {
-    $view = file_get_contents(app_path('views/public/home.php'));
+$tests['temple previews use a native rail and keep maps behind the detail page disclosure'] = function (): void {
+    $home = file_get_contents(app_path('views/public/home.php'));
+    $directory = file_get_contents(app_path('views/public/temples.php'));
+    $detail = file_get_contents(app_path('views/public/temple.php'));
     $css = file_get_contents(app_path('assets/css/band.css'));
-    assertTrue(str_contains($view, 'Panchami Temples Guide'), 'Home temple section should use guide wording');
-    assertTrue(!str_contains($view, 'Our Temples in Chennai'), 'Home temple section should not use the old heading');
-    assertTrue(str_contains($view, 'foreach(array_values($temples)'), 'Home temple carousel should use the admin-published temple list directly');
-    assertTrue(!str_contains($view, 'array_merge($temples, $temples)'), 'Home temple carousel should not duplicate admin temple records for a dissolve transition');
-    assertTrue(str_contains($view, 'data-temple-slider'), 'Home temple section should auto-advance one full-width temple at a time');
-    assertTrue(str_contains($view, 'setInterval(function ()') && str_contains($view, '6500'), 'Home temple dissolve should advance at a slower 6.5 second pace');
-    assertTrue(str_contains($view, '<a href="/temples">Browse the temple directory</a>'), 'Home temple section should link to all temples inline from the lede sentence');
-    assertTrue(!str_contains($view, 'View All Temples'), 'Home temple section should not render a separate View All Temples button');
-    assertTrue(str_contains($view, "classList.remove('is-active')") && str_contains($view, "classList.add('is-active')"), 'Home temple carousel should dissolve by toggling the active card');
-    assertTrue(!str_contains($view, 'translateX'), 'Home temple carousel should not slide or animate backward');
-    assertTrue(str_contains($view, 'class="showcase-card temple-feature-card'), 'Home temple cards should use the improved temple feature card style');
-    assertTrue(str_contains($view, 'href="/temples/'), 'Home temple cards should link to temple detail pages');
-    assertTrue(str_contains($css, 'grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.1fr)'), 'Temple feature cards should place image left and content right on desktop');
-    assertTrue(str_contains($css, '.temple-carousel--single .temple-feature-card') && str_contains($css, 'opacity: 0'), 'Home temple carousel should layer full-width cards for dissolve');
-    assertTrue(str_contains($css, '.temple-carousel--single .temple-feature-card.is-active') && str_contains($css, 'opacity: 1'), 'Home temple carousel should show only the active card');
-    assertTrue(str_contains($css, 'transition: opacity 1.6s ease-in-out'), 'Home temple carousel should use a slow smooth dissolve transition');
+    assertTrue(str_contains($home, 'Panchami Temples Guide') && str_contains($home, 'foreach ($temples as $temple)'), 'Use the published temple records directly');
+    assertTrue(str_contains($home, 'data-temple-rail') && str_contains($home, 'href="/temples/'), 'Keep each preview in a native rail with a detail link');
+    assertTrue(!str_contains($home, '6500'), 'Temple previews should never rotate automatically');
+    assertTrue(str_contains($css, 'scroll-snap-type: x mandatory') && str_contains($css, '.temple-photo img'), 'Use native snap and square image frames');
+    assertTrue(!str_contains($home . $directory, 'map_embed_url') && !str_contains($home . $directory, 'directionsUrl'), 'Map destinations belong on the dedicated temple page');
+    assertTrue(str_contains($detail, '<details class="temple-map" data-temple-map>') && preg_match('#<template>\s*<iframe#', $detail) === 1, 'Keep the map iframe inert until the visitor opens the disclosure');
 };
 
 $tests['temple directions use editor and legacy map fields'] = function (): void {

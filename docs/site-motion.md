@@ -19,7 +19,9 @@ change data, fake a chart value or script a purchase.
   motion is 180 ms / 4 px. Stagger is bounded at 120 ms. Opacity never starts
   at zero and no final style is retained by the animation. On the homepage,
   only the product photo settles into place as it enters the viewport. The
-  card, price, purchase controls and collection link stay still.
+  card, price, purchase controls and collection link stay still. Public section
+  headings settle once when they enter view. The homepage temple rail uses
+  native snap and visitor-operated arrows without automatic rotation.
 - Existing Support/History/navigation controls own their state. A panel or
   new chat message can receive a short entry transition after that real state
   changes. The module does not submit forms or fabricate completion feedback.
@@ -45,6 +47,8 @@ width/height changes. Existing brand tokens and real route/form behavior stay
 canonical in `Design.md`.
 
 ## Source-derived decisions and scope
+
+The [Nebo editorial stack](https://github.com/getwinharris/nebowellness_php_cms/blob/f5fb5f177c412b161566d02383e26a172b2d964b/assets/editorial-stack.js) and [design guidance](https://github.com/getwinharris/nebowellness_php_cms/blob/f5fb5f177c412b161566d02383e26a172b2d964b/Design.md) informed the once-only section entrance and single-step rail. The public layouts use the existing native document flow so reading, purchase controls and keyboard focus remain reachable.
 
 The requested sources were inspected, not blindly installed:
 

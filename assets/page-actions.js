@@ -60,6 +60,50 @@
         }
     }
 
+    main.querySelectorAll('[data-temple-map]').forEach(details => {
+        const template = details.querySelector('template');
+        if (!template) return;
+        details.addEventListener('toggle', function loadMap() {
+            if (!details.open) return;
+            template.replaceWith(template.content);
+            details.removeEventListener('toggle', loadMap);
+        });
+    });
+
+    main.querySelectorAll('[data-temple-rail]').forEach(rail => {
+        const controls = rail.querySelector('[data-temple-controls]');
+        if (!controls) return;
+        const track = rail.querySelector('.temple-carousel-track');
+        const cards = Array.from(track.children);
+        const previous = controls.querySelector('[data-temple-step="-1"]');
+        const next = controls.querySelector('[data-temple-step="1"]');
+        const position = controls.querySelector('[data-temple-position]');
+        let current = -1;
+
+        function updatePosition() {
+            const index = cards.reduce((nearest, card, i) =>
+                Math.abs(card.offsetLeft - track.scrollLeft) < Math.abs(cards[nearest].offsetLeft - track.scrollLeft) ? i : nearest, 0);
+            if (index === current) return;
+            current = index;
+            previous.setAttribute('aria-disabled', String(current === 0));
+            next.setAttribute('aria-disabled', String(current === cards.length - 1));
+            position.textContent = `${current + 1} of ${cards.length}`;
+        }
+        function step(direction) {
+            const target = cards[current + direction];
+            if (!target) return;
+            const behavior = document.documentElement.dataset.spsMotion === 'enabled' ? 'smooth' : 'instant';
+            track.scrollTo({left: target.offsetLeft, behavior});
+        }
+
+        track.addEventListener('scroll', updatePosition, {passive: true});
+        window.addEventListener('resize', updatePosition);
+        previous.addEventListener('click', () => step(-1));
+        next.addEventListener('click', () => step(1));
+        updatePosition();
+        controls.hidden = false;
+    });
+
     const status = document.createElement('div');
     status.className = 'page-action-status';
     status.setAttribute('role', 'status');

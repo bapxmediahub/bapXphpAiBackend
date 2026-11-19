@@ -14,6 +14,12 @@
         return state.supported === true && !state.reducedMotion && !state.saveData && !state.hidden;
     }
     function entrance(index, surface) {
+        if (surface === 'section-heading') {
+            return {
+                keyframes: [{ opacity: .92, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }],
+                options: { duration: 340, delay: 0, easing: 'cubic-bezier(.22,.75,.25,1)', fill: 'none' }
+            };
+        }
         if (surface === 'product-photo') {
             return {
                 keyframes: [{ transform: 'scale(1.025)' }, { transform: 'none' }],
@@ -74,7 +80,8 @@
         preferenceChanged();
 
         var productPhotoSelector = '.home-product-card .product-card__image img';
-        var candidates = doc.querySelectorAll(productPhotoSelector + ',main h1,.product-card:not(.home-product-card),.blog-card,.temple-card,.auth-card,.section-title,.page-title,.admin-stat,.report-kpi,.admin-card > h2,.enterprise-chat__intro');
+        var sectionHeadingSelector = 'main h1,main section > h2,main .section-header > :is(h1,h2),main [data-page-section]:is(h1,h2,h3)';
+        var candidates = doc.querySelectorAll(sectionHeadingSelector + ',' + productPhotoSelector + ',main h1,.product-card:not(.home-product-card),.blog-card,.temple-card,.auth-card,.section-title,.page-title,.admin-stat,.report-kpi,.admin-card > h2,.enterprise-chat__intro');
         if (typeof win.IntersectionObserver === 'function') {
             var observer = new win.IntersectionObserver(function (entries) {
                 var stagger = 0;
@@ -82,7 +89,9 @@
                     if (!entry.isIntersecting) return;
                     observer.unobserve(entry.target);
                     if (entry.target.matches(productPhotoSelector)) play(entry.target, 0, 'product-photo');
-                    else play(entry.target, stagger++);
+                    else if (surface === 'public' && entry.target.matches(sectionHeadingSelector) && !entry.target.closest('a'))
+                        play(entry.target, 0, 'section-heading');
+                    else if (!entry.target.closest('a')) play(entry.target, stagger++);
                 });
             }, { threshold: 0.12, rootMargin: '0px 0px -24px 0px' });
             candidates.forEach(function (el) { observer.observe(el); });

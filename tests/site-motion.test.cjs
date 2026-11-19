@@ -38,3 +38,11 @@ test('homepage product photos move within the image frame without stagger or fad
  assert.ok(recipe.options.duration<=360);
  assert.deepEqual(recipe.keyframes,[{transform:'scale(1.025)'},{transform:'none'}]);
 });
+
+test('public section headings enter once with bounded movement and no delay',()=>{
+ const {entrance}=load();const recipe=entrance(99,'section-heading');
+ assert.equal(recipe.options.delay,0);
+ assert.equal(recipe.options.fill,'none');
+ assert.ok(recipe.options.duration<=360);
+ assert.deepEqual(recipe.keyframes,[{opacity:.92,transform:'translateY(8px)'},{opacity:1,transform:'none'}]);
+});

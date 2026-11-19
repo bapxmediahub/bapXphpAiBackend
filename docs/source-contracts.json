@@ -38,9 +38,9 @@
             "review_note": "Compared bootstrap/session initialization, old global handler, BaseController redirects/JSON/view output and actual API catches with RequestFailureService. Native response buffer and safe500 replace only unhandled failures; 88 loopback HTTP assertions preserve normal HTML/JSON/XML/binary/204/redirect/explicit503. Docs state pre-bootstrap/OOM/streaming limits and uncertainty of earlier side effects; no raw message/admin stack or database accusation."
         },
         "interface": {
-            "source_sha256": "07c51ccf826f51beacded63ede5a68428f65bb04c7a1f81b720cdde7c036f09b",
-            "references_sha256": "7c7414856f79bf55d9a62849791382dab07e56e609e9c756e54511b9fd1133a8",
-            "review_note": "Verified section focus and active state, product gallery keyboard boundaries and pending status on public, account and admin layouts."
+            "source_sha256": "f52d5a394590e9bf92263d4ba74521aa98124429855bbab349c1747002038631",
+            "references_sha256": "2f250c6ad86d65ba2972a7d32cb8f0f2e9207b1dfc1e86259321da1d3e1d43a6",
+            "review_note": "Verified the common heading entrance, square temple photo layout, native rail and deferred map across mobile and desktop."
         },
         "mail": {
             "source_sha256": "7694291a27699ebb722b0ff98b9ae74972c92a20b0b057726677e0a733ffd792",
