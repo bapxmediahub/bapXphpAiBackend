@@ -25,8 +25,13 @@ Database changes require an approved destination, backup, restore and compatibil
 The dashboard's **Google tags & reporting** section and Integrations' **Google
 tags — configuration only** section show each field separately. **Valid format —
 configured** does not mean Google received data or verified ownership.
-**Reporting is not connected** means this product is not yet fetching Analytics
-or Search Console reports; no traffic or conversion numbers are inferred.
+Choose **Set up Google reporting** on the dashboard. Save the web OAuth client
+under Integrations and register the callback shown on the reporting page.
+Enable the Analytics Admin, Analytics Data and Search Console APIs in Google
+Cloud. Connect an account with property access and select your GA4 property
+and Search Console site. The dashboard shows sessions, top pages, sources,
+clicks, impressions and top queries for the last 28 days through yesterday.
+Use **Manage Google reporting** to change properties or disconnect.
 
 Use a real G- measurement ID (or an existing GT- tag ID), an AW- numeric Ads ID,
 and only the content token from Search Console's verification meta tag. Do not

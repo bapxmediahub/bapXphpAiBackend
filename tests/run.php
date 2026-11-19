@@ -59,6 +59,7 @@ function assertMinCount(int $min, array $items, string $msg): void {
 
 $failures = [];
 $tests = [];
+require __DIR__ . '/google-reporting.php';
 
 $tests['legitimate internal ticket activity is evaluated without exposing it as a model capability'] = static function (): void {
     $result=\App\Services\AgentEvaluationService::evaluate('support','show my tickets','You have no matching tickets.',[
@@ -488,7 +489,7 @@ $tests['public retrieval preserves existing spaced and Unicode slugs as encoded 
 $tests['docs map records real local blog and chat sources rather than unused GitHub fetcher'] = static function (): void {
     $map=(new \App\Services\DocsMapService())->generate();
     assertTrue(str_contains($map,'content/blog/posts/*.md'),'Published articles come from local BlogService files');
-    assertTrue(str_contains($map,'content/blog/categories.yaml'),'Categories source is local YAML');
+    assertTrue(str_contains($map,'BlogService category vocabulary + article frontmatter'),'Categories come from the standard vocabulary and article metadata');
     assertTrue(!str_contains($map,'GitHub raw → blog index'),'Generated map cannot repeat the unused fetcher architecture');
     assertTrue(str_contains($map,'one private file per chat'),'Private chat exception is visible in source map');
 };
@@ -853,8 +854,26 @@ $tests['merchant metadata keeps explicit identifiers and serializes hostile Unic
 };
 
 $tests['merchant product correction link selects actual record rather than an empty new-product form'] = static function (): void {
-    $source=fileRead('app/Controllers/AdminController.php');$start=strpos($source,'public function products()');$end=strpos($source,'public function saveProduct',$start);$method=substr($source,$start,$end-$start);
-    assertTrue(str_contains($method,"\$_GET['edit']")&&str_contains($method,'$draft = $item'),'Existing editor accepts the explicit record selected from preflight');
+    $source=fileRead('app/Controllers/AdminController.php');$start=strpos($source,'public function products()');$end=strpos($source,'public function importProducts',$start);$method=substr($source,$start,$end-$start);
+    assertTrue(str_contains($method,"\$_GET['edit']") && str_contains($method,"->find('products', \$edit)") && str_contains($method,'$this->renderNotFound()'),
+        'Merchant editor loads the original product by ID even when it is outside the current page and rejects a missing ID');
+
+};
+
+$tests['product CSV accepts reviewed native columns and rejects malformed or unsafe batches'] = static function (): void {
+    $parse = \App\Services\ProductImportService::parse(...);
+    $sample = $parse(fileRead('assets/product-import-sample.csv'))[0];
+    assertSame('hidden', $sample['status'], 'Imported stock is reviewed before publishing');
+    assertSame('out_of_stock', $sample['stock_status'], 'Import makes no inventory promise');
+    $rows = $parse("\xEF\xBB\xBFname,price,slug,description\r\nLamp,25.55,lamp,\"Quoted,\"\"word\"\"\nnext line\"\r\n");
+    assertSame("Quoted,\"word\"\nnext line", $rows[0]['description'], 'Quoted cells preserve embedded commas, quotes and newlines');
+    foreach (["slug,name,price\na,Lamp,2\na,Lamp,3", "slug,name,price\na,=Formula,2", "slug,name,price\na,\"Bad quote,2",
+        "slug,name,price,price\na,Lamp,2,3", "slug,name,price\na,Lamp,-1", "name,slug\nLamp,a",
+        "slug,name,price\na,Lamp,20,unexpected", "slug,name,price\n" . implode("\n", array_map(fn($n) => "p-$n,Lamp,1", range(1,101))),
+        str_repeat('x', 65537)] as $bad) {
+        try { $parse($bad); } catch (\InvalidArgumentException) { continue; }
+        throw new RuntimeException('Invalid CSV was accepted');
+    }
 };
 
 $tests['Google tag renderer treats IDs as data and never injects markup or executable input'] = static function (): void {
@@ -876,7 +895,7 @@ $tests['Google tag valid legacy destinations keep one safe loader and independen
     assertTrue(str_contains($client->siteVerificationTag(),'content="Token_ABC-123"'),'Valid exact token retained');
     $status=$client->status();assertSame('configured',$status['analytics']['configuration'],'Syntax is configured only');
     assertSame('unverified',$status['analytics']['collection'],'No Google receipt is invented');
-    assertSame('not_connected',$status['reporting'],'Tag injection is not reporting OAuth');
+    assertSame('not_checked',$status['reporting'],'Tag configuration cannot establish the separate reporting grant state');
     assertSame('unverified',$status['search_console']['ownership'],'Token presence is not Google ownership verification');
     $one=(new \App\Integrations\GoogleSiteKit\GoogleSiteKitClient('G-ABCD123456','',''))->status();
     assertSame('missing',$one['ads']['configuration'],'Analytics alone does not enable Ads');
@@ -960,6 +979,72 @@ $tests['blog writes compare exact content revision before update delete or creat
         assertTrue($conflict,'Stale delete also rejected');
         $blog->delete('article',$next['_revision']);assertSame(null,$blog->find('article'),'Exact reviewed revision can be deleted');
     }finally{foreach(glob($dir.'/*')?:[] as $file)unlink($file);@unlink($dir.'/.blog-write.lock');rmdir($dir);}
+};
+
+$tests['article history restores exact Markdown on the reviewed base and stays bounded'] = static function (): void {
+    $dir = sys_get_temp_dir().'/sps-blog-history-'.bin2hex(random_bytes(6));
+    mkdir($dir, 0700);
+    try {
+        $blog = new \App\Services\BlogService($dir);
+        $original = "---\ntitle: Legacy\npublished: false\ncustom: preserved\n---\n\nOriginal\n";
+        file_put_contents($dir.'/article.md', $original);
+        $post = $blog->find('article');
+        $post['content'] = 'Updated';
+        $post['published'] = true;
+        $updated = $blog->save($post);
+        $history = $blog->revisionHistory('article');
+        assertSame(1, count($history['versions']), 'Editing a legacy article archives its exact previous bytes');
+        $id = $history['versions'][0]['id'];
+        $preview = $blog->revisionHistory('article', $id)['preview'];
+        assertSame($original, $preview['_markdown'], 'Owner preview includes original frontmatter');
+        assertSame('hidden', $preview['_publication_state'], 'Preview reports the resulting publication state');
+        assertSame(1, count($blog->all(true)), 'Archived versions never appear as articles');
+        assertSame(null, $blog->revisionHistory('article', '../outside'), 'Only server-generated revision identifiers resolve');
+        $blog->save($updated);
+        assertSame(1, count($blog->revisionHistory('article')['versions']), 'A no-op save consumes no history slot');
+
+        $later = $updated;
+        $later['content'] = 'Second editor';
+        $later = $blog->save($later);
+        $stale = false;
+        try { $blog->restoreRevision('article', $id, $updated['_revision']); }
+        catch (\App\Services\BlogConflictException) { $stale = true; }
+        assertTrue($stale, 'Stale preview cannot overwrite a more recent save');
+        assertSame('Second editor', $blog->find('article')['content'], 'Rejected restore preserves the current article');
+        $other = $blog->save(['slug'=>'other','title'=>'Other','content'=>'Private']);
+        $denied = false;
+        try { $blog->restoreRevision('other', $id, $other['_revision']); }
+        catch (\App\Services\BlogConflictException) { $denied = true; }
+        assertTrue($denied, 'Revision identifiers are scoped to one article');
+        $restored = $blog->restoreRevision('article', $id, $later['_revision']);
+        assertSame($original, file_get_contents($dir.'/article.md'), 'Restore retains byte-for-byte original Markdown');
+        assertSame(hash('sha256', $original), $restored['_revision'], 'Restored CAS token matches persisted data');
+        $rollback = $blog->revisionHistory('article')['versions'][0]['id'];
+        $post = $blog->restoreRevision('article', $rollback, $restored['_revision']);
+        assertSame($later['_revision'], $post['_revision'], 'The replacement can be rolled back to the exact pre-restore version');
+        for ($i = 0; $i < 12; $i++) {
+            $post['content'] = 'Edit '.$i;
+            $post = $blog->save($post);
+        }
+        assertSame(10, count($blog->revisionHistory('article')['versions']), 'Only ten previous versions retained');
+        assertSame(null, $blog->revisionHistory('article', $id), 'Pruned snapshots cannot be selected');
+        $archive = $blog->revisionHistory('article')['versions'][0]['id'];
+        $file = $dir.'/.article.'.$archive.'.rev';
+        assertSame(0600, fileperms($file) & 0777, 'Private archive permissions');
+        file_put_contents($file, 'Bad snapshot');
+        $denied = false;
+        try { $blog->restoreRevision('article', $archive, $post['_revision']); }
+        catch (RuntimeException) { $denied = true; }
+        assertTrue($denied, 'Corrupt archive cannot replace current article');
+        assertSame($post['_revision'], $blog->find('article')['_revision'], 'Failed restore leaves current file intact');
+        $blog->delete('article', $post['_revision']);
+        $blog->save(['slug'=>'article','title'=>'Replacement','content'=>'New']);
+        assertSame([], $blog->revisionHistory('article')['versions'], 'Reusing a deleted slug starts with no prior history');
+    } finally {
+        foreach (array_merge(glob($dir.'/*.md') ?: [], glob($dir.'/.*.rev') ?: []) as $file) unlink($file);
+        @unlink($dir.'/.blog-write.lock');
+        rmdir($dir);
+    }
 };
 
 $tests['blog storage rejects path hops linked files and preserves frontmatter values safely'] = static function (): void {
@@ -1311,6 +1396,36 @@ $tests['Enterprise Agent new chat and history are scoped to each admin JSON iden
     }
 };
 
+$tests['monitoring links failed tool runs from chat when the operational audit is absent'] = static function (): void {
+    $dir = sys_get_temp_dir() . '/sps-failed-tool-monitor-' . bin2hex(random_bytes(6));
+    $chats = new \App\Services\AgentConversationService($dir);
+    $actor = ['type' => 'admin', 'id' => 'fixture-owner'];
+    $trace = '0123456789abcdef';
+    $failures = array_fill(0, 3, ['name' => 'support_enquiries', 'status' => 'error', 'reason' => 'lookup_unavailable']);
+    try {
+        $saved = $chats->record('admin', $actor, null, 'Private fixture question', 'Lookup unavailable',
+            $trace, 'model', $failures);
+        $id = $saved['conversation_id'];
+        $chats->record('admin', $actor, $id, 'Later fixture question', 'Lookup completed',
+            'fedcba9876543210', 'local', [['name' => 'support_enquiries', 'status' => 'complete']]);
+        $agentMonitoring = null;
+        $agentConversations = $chats->recent(40);
+        assertSame([['trace_id' => $trace, 'turn_id' => $saved['turn_id'], 'errors' => 3]],
+            $agentConversations[0]['failed_tool_runs'], 'Failed lookup reference survives a later successful turn');
+        ob_start();
+        require app_path('views/admin/agent-monitoring.php');
+        $html = (string)ob_get_clean();
+        assertTrue(str_contains($html, '/admin/agent/review/'.$id.'?turn='.$saved['turn_id'])
+            && str_contains($html, $trace) && !str_contains($html, 'Private fixture question'),
+            'The monitoring link is available without a MySQL audit event and omits private chat text');
+        $detail = $chats->reviewDetail($id, $saved['turn_id'], ['role' => 'admin', 'id' => 'fixture-owner']);
+        assertSame($trace, $detail['turn']['trace_id'], 'Review opens the specific failed run');
+    } finally {
+        foreach (array_merge(glob($dir.'/*') ?: [], glob($dir.'/.conversation*') ?: []) as $path) @unlink($path);
+        @rmdir($dir);
+    }
+};
+
 $tests['agent runbook skills and storage docs are aligned with PHP code'] = static function (): void {
     $documents = [
         'AGENTS.md'=>'storage/agent-conversations',
@@ -1385,7 +1500,7 @@ $tests['support feedback is explicit and resets on next user question'] = static
     $actor=['type'=>'guest','id'=>'fixture-guest'];
     try {
         $first=$service->record('support',$actor,null,'Where do I track my order?','Go to My Orders.',
-            bin2hex(random_bytes(8)),'local');
+            bin2hex(random_bytes(8)),'local', retrieval: [['intent'=>'own_order']]);
         $id=$first['conversation_id'];
         $status=$service->rateSupportTurn($id,$actor,$first['turn_id'],'helpful');
         assertSame('confirmed_resolved',$status['resolution_status'],'Only customer confirmation marks resolved');
@@ -1393,7 +1508,7 @@ $tests['support feedback is explicit and resets on next user question'] = static
         assertSame('confirmed_resolved',$doc['resolution_status'],'Resolution is persisted in same chat JSON');
         assertSame(1,count(glob($root.'/*.json')?:[]),'Feedback does not create a second chat file');
         $second=$service->record('support',$actor,$id,'And refunds?','Please contact support.',
-            bin2hex(random_bytes(8)),'fallback');
+            bin2hex(random_bytes(8)),'fallback', retrieval: [['intent'=>'public_policy']]);
         assertSame('awaiting_feedback',$service->getForAdmin($id)['resolution_status'],
             'New question invalidates previous confirmation');
         try {
@@ -1412,10 +1527,33 @@ $tests['support feedback is explicit and resets on next user question'] = static
         $summary=\App\Services\AgentEvaluationService::supportOutcomeSummary($recent);
         assertSame(1,$summary['counts']['needs_followup'],'Dashboard counts explicitly negative feedback');
         assertSame(0,$summary['counts']['confirmed_resolved'],'Confirmed rate resets for current turn');
+        assertSame(['public_policy'],array_keys($summary['topics']),'A returning chat counts once under its latest completed topic');
+        assertSame(1,$summary['topics']['public_policy']['needs_followup'],'The last completed topic carries the current feedback state');
     } finally {
         foreach(glob($root.'/*')?:[] as $f)@unlink($f);
         @unlink($root.'/.conversation.lock');@rmdir($root);
     }
+};
+
+$tests['support topic summaries count each current outcome within the support sample'] = static function (): void {
+    $rows = [
+        ['surface'=>'support','intent'=>'collection','resolution_status'=>'confirmed_resolved'],
+        ['surface'=>'support','intent'=>'collection','resolution_status'=>'escalated'],
+        ['surface'=>'support','intent'=>'own_order','resolution_status'=>'awaiting_feedback'],
+        ['surface'=>'support','intent'=>'unrecognized private text'],
+        ['surface'=>'admin','intent'=>'collection','resolution_status'=>'needs_followup'],
+    ];
+    $summary = \App\Services\AgentEvaluationService::supportOutcomeSummary($rows);
+    $topics = $summary['topics'];
+    assertSame(['collection','own_order','unknown'],array_keys($topics),'Only canonical support topics reach the monitor');
+    assertSame(2,array_sum($topics['collection']),'Every sampled chat contributes one outcome');
+    assertSame(1,$topics['collection']['confirmed_resolved'],'Only customer confirmation counts as resolved');
+    assertSame(1,$topics['collection']['escalated'],'Escalation is its own outcome');
+    assertSame(1,$topics['unknown']['unknown'],'Legacy rows stay visible as unclassified');
+    foreach ($summary['counts'] as $state=>$count) {
+        assertSame($count,array_sum(array_column($topics,$state)),'Topic counts reconcile to each outcome total');
+    }
+    assertSame([],\App\Services\AgentEvaluationService::supportOutcomeSummary([])['topics'],'Empty samples have no topic groups');
 };
 
 $tests['agent instruction contracts are separate and versioned'] = static function (): void {
@@ -1518,6 +1656,67 @@ $tests['development fixture remote mutations include authentication without comm
     assertTrue(substr_count($cli, '"password"=>getenv("BAPX_MYSQL_PASS")') >= 2, 'Both upsert and delete authenticate');
     assertTrue(str_contains($cli, 'printf \'%s\' "$payload" | curl'), 'Post body must be sent over stdin, not placed in curl command arguments');
     assertTrue(str_contains($cli, '--data-binary @-'), 'Remote mutation should stream the authenticated JSON body');
+};
+
+$tests['CLI article editing preserves metadata and refuses concurrent overwrites'] = static function (): void {
+    $root = sys_get_temp_dir() . '/sps-blog-cli-' . bin2hex(random_bytes(6));
+    $dir = $root . '/content/blog/posts';
+    $blog = new \App\Services\BlogService($dir);
+    $openWriter = static function () use ($root): array {
+        $process = proc_open([PHP_BINARY, app_path('cli/blog-write.php'), $root, 'edit', 'fixture'], [
+            ['pipe', 'r'], ['pipe', 'w'], ['pipe', 'w'],
+        ], $pipes);
+        if (!is_resource($process)) throw new RuntimeException('Could not open the CLI fixture');
+        // This line is printed only after the writer captures its base revision.
+        assertSame("Editing fixture\n", fgets($pipes[1]), 'CLI must open the intended article');
+        return [$process, $pipes];
+    };
+    $finish = static function (array $writer): int {
+        [$process, $pipes] = $writer;
+        fwrite($pipes[0], "Edited title\n\n\n\n\n\n\n.\n");
+        fclose($pipes[0]);
+        stream_get_contents($pipes[1]); fclose($pipes[1]);
+        stream_get_contents($pipes[2]); fclose($pipes[2]);
+        return proc_close($process);
+    };
+    try {
+        $post = $blog->save(['slug'=>'fixture', 'title'=>'Original title', 'content'=>'Original body',
+            'published'=>false, 'category'=>'custom-guides', 'seo_title'=>'Preserved SEO']);
+        $adminCategories = array_column($blog->categories(), 'name', 'slug');
+        assertSame('Custom Guides', $adminCategories['custom-guides'], 'Existing category survives in the editor');
+        assertTrue(!in_array('custom-guides', array_column($blog->categories(false), 'slug'), true), 'Draft-only categories stay private');
+        assertSame(0, $finish($openWriter()), 'CLI submission should succeed with its original revision');
+        $current = $blog->find('fixture');
+        assertSame('Edited title', $current['title'], 'CLI explicit title persists');
+        assertSame('Preserved SEO', $current['seo_title'], 'Existing editor metadata survives a CLI edit');
+        assertSame(false, $current['published'], 'Saving through the CLI preserves a draft');
+        assertSame('Original body', trim($current['content']), 'Unchanged body survives a CLI edit');
+        $stale = $openWriter();
+        $newer = $blog->save(array_replace($current, ['content'=>'Newer article']));
+        assertTrue($finish($stale) !== 0, 'A CLI edit must reject an intervening browser save');
+        assertSame($newer['_revision'], $blog->find('fixture')['_revision'], 'CLI conflict must leave the current article intact');
+    } finally {
+        $current = $blog->find('fixture');
+        if ($current) $blog->delete('fixture', $current['_revision']);
+        @unlink($dir . '/.blog-write.lock');
+        rmdir($dir); rmdir(dirname($dir)); rmdir(dirname($dir, 2)); rmdir($root);
+    }
+};
+
+$tests['blog draft templates render usable internal links and require explicit save'] = static function (): void {
+    $templates = new \App\Services\BlogDraftService();
+    $renderer = new \App\Services\MarkdownRenderer();
+    foreach (['editorial' => '/shop', 'product' => '/checkout', 'tool' => '/login', 'help' => '/account'] as $template => $href) {
+        $draft = $templates->draft($template, 'Fixture title', '/help');
+        $document = new DOMDocument();
+        $document->loadHTML($renderer->render($draft), LIBXML_NOERROR | LIBXML_NOWARNING);
+        $links = (new DOMXPath($document))->query('//a[@href="' . $href . '"]');
+        assertTrue($links->length > 0, "Template {$template} must link to {$href}");
+        assertTrue(!str_contains($links->item(0)->textContent, '['), "Template {$template} must render a clean link label");
+        assertTrue(!str_contains($document->textContent, ']'), "Template {$template} must not leave Markdown brackets in the article");
+    }
+    $guide = $templates->draft('tool', 'Fixture feature', '/help');
+    assertTrue(!str_contains($guide, 'saved automatically') && str_contains($guide, 'Save'), 'Tool guides should describe explicit saving');
 };
 
 $tests['missing hosted blog photos show bundled image instead of broken thumbnail'] = static function (): void {
@@ -3326,11 +3525,11 @@ $tests['public blog retires astrology category and default SEO without deleting 
     $controller = file_get_contents(app_path('app/Controllers/BlogController.php'));
     $seo = file_get_contents(app_path('app/Services/SeoService.php'));
     $blog = file_get_contents(app_path('views/public/blog.php'));
-    $categories = file_get_contents(app_path('content/blog/categories.yaml'));
+    $categories = array_column((new \App\Services\BlogService())->categories(false), 'slug');
     assertTrue(str_contains($service, "RETIRED_PUBLIC_CATEGORIES = ['astrology']"), 'Blog service must retire astrology from public output without deleting post records');
     assertTrue(str_contains($controller, 'categoryIsRetiredPublic') && str_contains($controller, 'renderNotFound'), 'Retired direct post and category URLs must return 404');
     assertTrue(!str_contains($seo, 'astrology articles') && !str_contains($seo, 'vedic astrology blog'), 'Blog defaults must not lead with retired astrology terms');
-    assertTrue(!str_contains($blog, 'astrology explainers') && !str_contains($categories, 'slug: astrology'), 'Public blog copy and category list must not advertise astrology');
+    assertTrue(!str_contains($blog, 'astrology explainers') && !in_array('astrology', $categories, true), 'Public blog copy and category list must not advertise astrology');
 };
 
 $tests['homepage FAQ is visible and matches its structured data'] = function (): void {
@@ -3772,7 +3971,7 @@ $tests['customer help is a blog category with compatibility redirects'] = functi
     routeExists('/help/{slug}', 'Help center should expose a hosting-safe guide detail route');
     assertTrue(str_contains(file_get_contents(app_path('index.php')), "'/help'"), 'Front controller should dispatch hosting-safe help routes into PHP');
     assertTrue(str_contains($controller, "'/blog/category/help'") && str_contains($controller, "'/blog/' . \$slug"), 'Legacy docs routes should redirect to canonical blog help content');
-    assertTrue(str_contains(file_get_contents(app_path('content/blog/categories.yaml')), 'slug: help'), 'Blog categories should include Help');
+    assertTrue(in_array('help', array_column((new \App\Services\BlogService())->categories(false), 'slug'), true), 'Blog categories should include Help');
     assertTrue(!is_dir(app_path('content/docs')) || !(glob(app_path('content/docs/*.md')) ?: []), 'Separate customer docs Markdown files should be removed');
     foreach (['create-account', 'order-products', 'payments-and-orders'] as $slug) {
         $post = file_get_contents(app_path("content/blog/posts/{$slug}.md"));
@@ -3829,6 +4028,21 @@ $tests['public navigation uses brand home link and mobile cart tray'] = function
     assertTrue(str_contains($css, '.mobile-cart-tray') && str_contains($css, 'bottom:78px'), 'Mobile cart tray should sit above bottom navigation');
     assertTrue(str_contains($css, '.support-fab{right:24px;bottom:24px}') && str_contains($css, '.mobile-cart-tray{position:fixed;right:24px;bottom:88px'), 'Desktop support should align directly below the cart tray');
     assertSame(substr_count($css, '{'), substr_count($css, '}'), 'Stylesheet should have balanced rule braces');
+};
+
+$tests['dashboard and agent distinguish unpaid pending value from recorded sales'] = function (): void {
+    $orders = [
+        ['id'=>'paid', 'payment_id'=>'fixture', 'status'=>'pending', 'created_at'=>'2026-11-03', 'total'=>99],
+        ['id'=>'unpaid', 'status'=>'pending_payment', 'created_at'=>'2026-11-04', 'total'=>42],
+        ['id'=>'failed', 'status'=>'failed', 'created_at'=>'2026-11-02', 'total'=>30],
+        ['id'=>'past', 'status'=>'pending', 'created_at'=>'2025-01-01', 'total'=>80],
+    ];
+    $range = ['from'=>'2026-11-01', 'to'=>'2026-11-30'];
+    $facts = \App\Services\AgentToolRegistry::salesFacts($orders, $range);
+    assertSame(99.0, $facts['gross_paid'], 'Verified sales require a recorded payment');
+    assertSame(42.0, $facts['pending_order_value'], 'Pending value excludes paid, failed and out-of-period orders');
+    $latest = \App\Services\StoreStatsService::recentOrders($orders, $range['from'], $range['to']);
+    assertSame(['unpaid', 'paid', 'failed'], array_column($latest, 'id'), 'Latest orders link to dated records in this period');
 };
 
 $tests['homepage trust bar renders its mobile labels as static list content'] = function (): void {
@@ -4469,6 +4683,22 @@ $tests['GST register preserves review rows and makes spreadsheet cells safe'] = 
         && str_contains($rows[1][18], 'State conflict'), 'Refunds and missing/conflicting snapshots are surfaced');
 };
 
+$tests['HSN reconciliation splits recipient classes and preserves excluded lines'] = static function (): void {
+    $line = ['hsn_code'=>'7117','qty'=>1,'gst_rate'=>3,'taxable_value'=>10.01,'cgst'=>0.15,'sgst'=>0.15,'igst'=>0,'gross_value'=>10.31];
+    $supplier = ['gstin'=>'33ABCDE1234F1Z5'];
+    $summary = \App\Services\GstRegisterService::hsnSummary([
+        ['invoice_number'=>'A','supplier'=>$supplier,'tax_lines'=>[$line, $line, array_replace($line, ['hsn_code'=>''])]],
+        ['invoice_number'=>'B','supplier'=>$supplier,'customer_gstin'=>'33ABCDE1234F1Z5','tax_lines'=>[$line]],
+        ['invoice_number'=>'C','supplier'=>$supplier,'customer_gstin'=>'invalid','tax_lines'=>[$line]],
+        ['invoice_number'=>'D'],
+    ], ['B'=>'Credit note review']);
+    assertSame(2, $summary['excluded'], 'Missing HSN and missing snapshot are counted for review');
+    assertSame(['B2B','B2C','Review'], array_column($summary['groups'], 'recipient'), 'Each recorded recipient class has its own group');
+    assertSame([1,0,1], array_column($summary['groups'], 'review'), 'Review notes survive aggregation');
+    assertSame([1001,2002,1001], array_column($summary['groups'], 'taxablePaise'), 'Reconcile taxable amounts in paise');
+    assertSame([30,60,30], array_column($summary['groups'], 'taxPaise'), 'Sum recorded component tax in paise');
+};
+
 $tests['Enterprise can recover verified ticket counts after model synthesis fails'] = static function (): void {
     $previousMode = getenv('BAPX_TEST_MODE');
     putenv('BAPX_TEST_MODE=1');
@@ -4573,11 +4803,30 @@ $tests['support ticket data is scoped and does not expose conversation bodies'] 
         ['id'=>'bbbbbbbbbbbbbbbb', 'status'=>'open', 'created_at'=>'2026-10-12T10:00:00+05:30'],
         ['id'=>'cccccccccccccccc', 'status'=>'closed', 'created_at'=>'2026-09-01T10:00:00+05:30'],
     ], null, $query['status'], ['2026-10-01', '2026-10-31']);
+    assertSame(3, $facts['candidate_count'], 'The candidate count reflects the supplied customer-scoped tickets before filtering');
     assertSame(1, $facts['count'], 'The results respect status and creation dates');
     assertSame(['reference', 'status', 'created_date', 'updated_date'], array_keys($facts['recent'][0]), 'Only allowlisted ticket metadata reaches the model');
     $guest = (new \App\Services\SupportBotService())->answer('Show my support tickets', null);
     assertSame(null, $guest['ticket_id'], 'Guest ticket lookup must not create a record');
     assertTrue(str_contains($guest['reply'], '/login'), 'Guest receives sign-in guidance');
+    assertSame('own_ticket', $guest['run']['retrieval'][0]['intent'], 'Sign-in guidance keeps the observed ticket topic');
+    assertSame('not_applicable', $guest['run']['retrieval'][0]['status'], 'Guest sign-in guidance never claims a lookup');
+    $guestEvidence = \App\Services\AgentTraceService::safeRetrieval($guest['run']['retrieval'][0]);
+    assertSame([null,null], [$guestEvidence['candidate_count'],$guestEvidence['result_count']], 'A lookup that never ran has no measured counts');
+    $oldMode = getenv('BAPX_TEST_MODE');
+    putenv('BAPX_TEST_MODE=1');
+    try {
+        $bot = new \App\Services\SupportBotService();
+        $actor = ['email'=>'scope@example.invalid'];
+        $clarification = $bot->answer('How many of my tickets were opened this quarter?', $actor);
+        assertSame('clarification', $clarification['run']['retrieval'][0]['status'], 'Unsupported date range requests clarification');
+        $empty = $bot->answer('How many of my tickets are closed?', $actor);
+        $retrieval = $empty['run']['retrieval'][0];
+        assertSame(['own_ticket','no_match',0,0], [$retrieval['intent'],$retrieval['status'],$retrieval['candidate_count'],$retrieval['result_count']],
+            'An executed lookup with zero results stays distinct from sign-in and clarification');
+    } finally {
+        putenv($oldMode === false ? 'BAPX_TEST_MODE' : 'BAPX_TEST_MODE='.$oldMode);
+    }
 };
 
 foreach ($tests as $name => $test) {

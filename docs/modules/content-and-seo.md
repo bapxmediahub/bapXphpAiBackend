@@ -9,7 +9,7 @@ category: module
 
 `AdminController::blog/saveBlog` and `views/admin/blog.php` implement the owner
 editor. `BlogService` reads/writes local Markdown with YAML frontmatter in
-`content/blog/posts/`; categories are `content/blog/categories.yaml`. Public
+`content/blog/posts/`; categories use article frontmatter and the standard labels in `BlogService::categories()`. Public
 `BlogController` filters unpublished/retired/module-disabled content and renders
 through the shared public templates. There is no runtime `users.json`, remote
 GitHub article index or database-backed blog body.
@@ -22,11 +22,13 @@ that scaffold for review. `enhanceBlogTitle` and `enhanceBlogContent` separately
 call the configured model and return only their own field. Neither endpoint
 proves the content was saved or published. The owner must review, explicitly
 Save, and select the publication state. Images remain manually uploaded or
-selected from existing media. The editor keeps an unsaved browser copy of
+selected from existing media. The article image picker sets the cover and inserts the chosen image into the body. The editor requests a JSON receipt from the shared Media Library upload route and uses its returned URL. The Media Library form redirects after an upload. The editor keeps an unsaved browser copy of
 editorial fields for the same owner and article. Reopen the editor and choose
 Restore draft to recover it. When the saved revision has changed, download the
 browser copy for comparison. Save confirms persistence in the app. Browser
 recovery never selects publication or subscriber email on the owner's behalf.
+
+The interactive `./bapXphp write blog [slug]` command uses the same article revision check as the editor. New articles start as drafts. Existing slugs, publication state and unedited metadata survive an edit. The command exits when another author has saved a newer version.
 
 `BlogService::resolvedImageUrl` verifies same-site image files/persistent media
 before selecting the existing fallback. `BlogController` supplies an absolute
@@ -90,7 +92,7 @@ A default local social image must exist and be a readable image: the bundled
 fall back; actual local/persistent images are resolved to absolute URLs. Valid
 external HTTP(S) image overrides remain supported without server-side fetching,
 so the service does **not** certify external image reachability or ownership.
-The same resolved image feeds default OpenGraph and Twitter metadata.
+The same resolved image feeds default OpenGraph and Twitter metadata. A saved site name supplies the default title brand, organization name and OpenGraph site name. A blank setting uses the application name. The optional Twitter handle is normalized to an @username for the twitter:site card tag.
 
 Product JSON-LD reflects the same purchasable stock states as checkout:
 `in_stock` and legacy `active` produce Schema.org `InStock`; other/missing

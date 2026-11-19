@@ -33,7 +33,7 @@ directory.
 ## Non-business files
 
 - Blog articles: `content/blog/posts/*.md` with YAML frontmatter.
-- Blog categories: `content/blog/categories.yaml`.
+- Blog categories use article frontmatter and the standard labels in `BlogService::categories()`.
 - Product/media binaries: bundled `assets/images/` or persistent uploaded
   `.sps-media` next to the deployed checkout. Upload metadata remains MySQL
   `media_files`.

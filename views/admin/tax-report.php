@@ -80,6 +80,21 @@ $query = http_build_query(['report'=>$reportType, 'from'=>$from, 'to'=>$to, 'gro
         <div class="admin-detail-grid">
             <div><strong>Taxable sales</strong><p><?= e($money($totals['taxable'])) ?></p></div><div><strong>CGST</strong><p><?= e($money($totals['cgst'])) ?></p></div><div><strong>SGST</strong><p><?= e($money($totals['sgst'])) ?></p></div><div><strong>IGST</strong><p><?= e($money($totals['igst'])) ?></p></div><div><strong>Total GST</strong><p><?= e($money($totals['tax'])) ?></p></div><div><strong>Gross product sales</strong><p><?= e($money($totals['gross'])) ?></p></div>
         </div>
+        <?php $hsnSummary = \App\Services\GstRegisterService::hsnSummary($orders, $invoiceReviewReasons); ?>
+        <details class="admin-card">
+            <summary>HSN reconciliation by recipient and tax rate</summary>
+            <p>Amounts come from issued invoice lines. <?= (int)$hsnSummary['excluded'] ?> incomplete register rows are excluded. Review them in the invoice lines CSV.</p>
+            <?php if ($hsnSummary['groups']): ?>
+            <div class="table-wrap"><table>
+                <thead><tr><th>HSN</th><th>Recipient</th><th>Rate</th><th>Lines</th><th>Taxable</th><th>GST</th><th>Lines flagged for review</th></tr></thead>
+                <tbody><?php foreach ($hsnSummary['groups'] as $group): ?><tr>
+                    <td><?= e($group['hsn']) ?></td><td><?= e($group['recipient']) ?></td><td><?= e($group['rate']) ?>%</td>
+                    <td><?= $group['lines'] ?></td><td><?= e($money($group['taxablePaise'] / 100)) ?></td>
+                    <td><?= e($money($group['taxPaise'] / 100)) ?></td><td><?= $group['review'] ?></td>
+                </tr><?php endforeach; ?></tbody>
+            </table></div>
+            <?php else: ?><p>No complete HSN amounts in this period.</p><?php endif; ?>
+        </details>
         <div class="table-wrap" tabindex="0" role="region" aria-labelledby="report-invoice-register"><table><thead><tr><th>Invoice</th><th>Date</th><th>Customer</th><th>Place of supply</th><th>Taxable</th><th>CGST</th><th>SGST</th><th>IGST</th><th>Total</th><th>Review</th></tr></thead><tbody><?php foreach($orders as $order): ?><?php $reviewKey=(string)($order['id']??$order['invoice_number']??''); ?><tr><td><a href="/admin/orders/<?= e(rawurlencode((string)$order['id'])) ?>/invoice"><?= e($order['invoice_number']??'') ?></a> <a download href="/admin/orders/<?= e(rawurlencode((string)$order['id'])) ?>/invoice?download=1">Download</a></td><td><?= e(substr((string)($order['invoice_date']??''),0,10)) ?></td><td><?= e($order['customer_email']??'') ?></td><td><?= e($order['place_of_supply']??'') ?></td><td><?= e($money($order['taxable_value']??0)) ?></td><td><?= e($money($order['cgst_total']??0)) ?></td><td><?= e($money($order['sgst_total']??0)) ?></td><td><?= e($money($order['igst_total']??0)) ?></td><td><?= e($money($order['total']??0)) ?></td><td><?= e($invoiceReviewReasons[$reviewKey]??'—') ?></td></tr><?php endforeach; ?><?php if(!$orders): ?><tr><td colspan="10">No paid product invoices in this period.</td></tr><?php endif; ?></tbody></table></div>
     <?php endif; ?>
 </div>

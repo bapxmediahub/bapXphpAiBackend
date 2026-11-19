@@ -12,11 +12,28 @@
     <div data-section-index hidden></div>
     <nav class="dashboard-commerce__periods" aria-label="Analytics period">
         <?php foreach ([7, 30, 90] as $days): ?>
-            <a href="/admin?period=<?= $days ?>" class="btn btn-sm <?= $period === $days ? 'btn-primary' : 'btn-outline' ?>" <?= $period === $days ? 'aria-current="page"' : '' ?>>Last <?= $days ?> days</a>
+            <a href="/admin/?period=<?= $days ?>" class="btn btn-sm <?= $period === $days ? 'btn-primary' : 'btn-outline' ?>" <?= $period === $days ? 'aria-current="page"' : '' ?>>Last <?= $days ?> days</a>
         <?php endforeach; ?>
     </nav>
     <?php $money = static fn($amount): string => '₹' . number_format((float)$amount, 2); ?>
     <?php require __DIR__ . '/_commerce-overview.php'; ?>
+    <dl class="report-kpis">
+        <div class="report-kpi"><dt>Gross paid sales</dt><dd><?= e($money($salesTotals['gross'])) ?></dd></div>
+        <div class="report-kpi"><dt>Pending payment value</dt><dd><?= e($money($pendingOrderValue ?? 0)) ?></dd></div>
+    </dl>
+    <h3>Latest orders in this period</h3>
+    <?php if (empty($latestOrders)): ?><p>No orders in this period.</p><?php else: ?>
+        <ul class="dashboard-order-list">
+            <?php foreach ($latestOrders as $order): ?>
+                <li><a href="/admin/orders/<?= e(rawurlencode((string)$order['id'])) ?>">
+                    <strong><?= e($order['id']) ?></strong>
+                    <span><?= e($order['customer_email'] ?? 'Guest') ?></span>
+                    <span><?= e(str_replace('_', ' ', (string)($order['status'] ?? 'Unknown'))) ?></span>
+                    <strong><?= e($money((float)($order['total'] ?? 0))) ?></strong>
+                </a></li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
     <nav class="dashboard-commerce__periods" aria-label="Detailed reports">
         <?php foreach (\App\Services\StoreStatsService::REPORT_TYPES as $type => $label): ?>
             <?php if ($type === 'sales') continue; ?>
@@ -69,11 +86,6 @@
     </div>
 </div>
 
-<?php
-$__secretsGa=(new \App\Services\SecretService())->all();
-$__googleStatus=(new \App\Integrations\GoogleSiteKit\GoogleSiteKitClient(
-    (string)($__secretsGa['google_analytics_id']??''),(string)($__secretsGa['google_ads_id']??''),(string)($__secretsGa['google_site_verification']??'')))->status();
-?>
 <div id="web-analytics">
 <section class="admin-card" id="google-tag-status" aria-labelledby="google-tag-status-title" style="margin-bottom:var(--space-lg)">
     <h2 id="google-tag-status-title">Google tags &amp; reporting</h2>
@@ -83,14 +95,42 @@ $__googleStatus=(new \App\Integrations\GoogleSiteKit\GoogleSiteKitClient(
         'analytics'=>['Google Analytics','Data collection unverified','https://analytics.google.com/analytics/web/','Open GA4'],
         'ads'=>['Google Ads','Conversion tracking unverified','https://ads.google.com/','Open Ads'],
         'search_console'=>['Search Console','Ownership unverified','https://search.google.com/search-console','Open Search Console']
-    ] as $key=>$item): $state=$__googleStatus[$key]['configuration']; ?>
+    ] as $key=>$item): $state=$googleStatus[$key]['configuration']; ?>
         <tr data-google-service="<?= e($key) ?>" data-google-configuration="<?= e($state) ?>">
             <th><?= e($item[0]) ?></th><td><?= e(['missing'=>'Not configured','invalid'=>'Invalid value — not rendered','configured'=>'Valid format — configured'][$state]) ?></td>
             <td><?= e($item[1]) ?></td><td><a href="<?= e($item[2]) ?>" target="_blank" rel="noopener noreferrer"><?= e($item[3]) ?> ↗</a></td>
         </tr>
     <?php endforeach; ?>
     </tbody></table></div>
-    <p><strong>Reporting is not connected.</strong> The native integration currently renders configured tags; it does not have reporting OAuth, a selected GA4 property or Search Console API data. No visits, conversions or rankings are inferred from saved IDs.</p>
+    <?php if ($googleError !== ''): ?>
+        <p role="status"><?= e($googleError) ?></p>
+    <?php elseif (!$googleConnected): ?>
+        <p><strong>Reporting is not connected.</strong> Connect Google to view Analytics and Search Console here.</p>
+    <?php else: ?>
+        <h3>Last 28 days through yesterday</h3>
+        <?php foreach (['analytics'=>'Google Analytics','search'=>'Search Console'] as $key=>$label): ?>
+            <h4><?= e($label) ?></h4>
+            <?php $report = $googleReports[$key] ?? null; ?>
+            <?php if ($report === null): ?><p>Choose a reporting property to see these metrics.</p>
+            <?php elseif (isset($report['error'])): ?><p role="status"><?= e($report['error']) ?></p>
+            <?php else: ?>
+                <?php $data = $report['data']; ?>
+                <?php if ($key === 'analytics'): ?>
+                    <p><?= isset($data['sessions'][0]) ? 'Sessions · ' . number_format($data['sessions'][0]['value']) : 'Google returned no session data for this period.' ?></p>
+                <?php elseif ($data['summary'] !== null): ?>
+                    <p>Clicks · <?= number_format((int)$data['summary']['clicks']) ?> · Impressions · <?= number_format((int)$data['summary']['impressions']) ?></p>
+                <?php else: ?><p>Google returned no Search Console totals for this period.</p><?php endif; ?>
+                <?php foreach (($key === 'analytics' ? ['pages'=>['Top pages','Views'],'sources'=>['Traffic sources','Sessions']] : ['queries'=>['Top queries','Clicks']]) as $table=>$columns): ?>
+                    <?php if ($data[$table]): ?>
+                        <div class="table-wrap"><table><thead><tr><th scope="col"><?= e($columns[0]) ?></th><th scope="col"><?= e($columns[1]) ?></th></tr></thead><tbody>
+                        <?php foreach ($data[$table] as $row): ?><tr><th scope="row"><?= e($row['label']) ?></th><td><?= number_format($row['value']) ?></td></tr><?php endforeach; ?>
+                        </tbody></table></div>
+                    <?php else: ?><p><?= e($columns[0]) ?> · Google returned no rows.</p><?php endif; ?>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        <?php endforeach; ?>
+    <?php endif; ?>
+    <p><a href="/admin/google-reporting"><?= $googleConnected ? 'Manage Google reporting' : 'Set up Google reporting' ?></a></p>
     <p><a href="/admin/integrations#google-tags">Configure Google tags</a> · <a href="https://tagassistant.google.com/" target="_blank" rel="noopener noreferrer">Validate with Tag Assistant ↗</a> · <a href="/admin/google-merchant">Product feed &amp; shopping channels</a></p>
 </section>
 </div>

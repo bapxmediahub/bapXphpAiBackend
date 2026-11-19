@@ -3,13 +3,12 @@ namespace App\Services;
 use App\Services\MarkdownRenderer;
 final class BlogService {
     private string $postsDir;
-    private string $categoriesFile;
     private ?\DateTimeImmutable $now;
     private const MAX_POST_BYTES=1048576;
+    public const HISTORY_LIMIT = 10;
     public function __construct(?string $postsDir=null, ?\DateTimeImmutable $now=null) {
         $this->postsDir = $postsDir ?? app_path('content/blog/posts');
         $this->now=$now;
-        $this->categoriesFile = app_path('content/blog/categories.yaml');
         if (!is_dir($this->postsDir)) mkdir($this->postsDir, 0775, true);
     }
     /** Categories that disappear with their module, so their posts disappear too. */
@@ -124,13 +123,20 @@ final class BlogService {
         return (bool)preg_match('/^[A-Za-z0-9][A-Za-z0-9_-]{0,159}$/D',$slug);
     }
 
-    public function categories(bool $includeRetired = true): array {
-        if (!is_file($this->categoriesFile)) return [];
-        $yaml = @file_get_contents($this->categoriesFile);
-        if ($yaml === false || $yaml === '') return [];
-        $categories = $this->parseYamlList($yaml);
-        if ($includeRetired) return $categories;
-        return array_values(array_filter($categories, fn(array $category): bool => !$this->categoryIsRetiredPublic((string)($category['slug'] ?? ''))));
+    /** Keep the standard labels even when a category has no articles yet. */
+    public function categories(bool $includeRetired = true, ?array $posts = null): array {
+        $categories = [
+            'news' => ['slug'=>'news', 'name'=>'News & Updates', 'description'=>'Platform news, feature releases, and announcements'],
+            'spirituality' => ['slug'=>'spirituality', 'name'=>'Spirituality', 'description'=>'Spiritual guidance, practices, and wisdom'],
+            'help' => ['slug'=>'help', 'name'=>'Help', 'description'=>'Customer guides for accounts, orders, delivery, and payments'],
+        ];
+        foreach ($posts ?? $this->all($includeRetired) as $post) {
+            $slug = (string)($post['category'] ?? '');
+            if ($slug === '' || isset($categories[$slug])) continue;
+            if (!$includeRetired && $this->categoryIsRetiredPublic($slug)) continue;
+            $categories[$slug] = ['slug'=>$slug, 'name'=>ucwords(str_replace(['-', '_'], ' ', $slug)), 'description'=>''];
+        }
+        return array_values($categories);
     }
     /** Compare-and-swap is shared by editor, CLI and future adapters; LOCK_EX alone is not stale-write protection. */
     public function save(array $data): array {
@@ -154,24 +160,119 @@ final class BlogService {
         $md="---\n".$frontmatter."---\n\n".$content;
         if(strlen($md)>self::MAX_POST_BYTES)throw new \InvalidArgumentException('Article exceeds the storage limit.');
         return $this->withWriteLock(function()use($slug,$expected,$md):array{
-            $file=$this->postsDir.'/'.$slug.'.md';$this->assertRevision($file,$expected);
-            $temporary=$this->postsDir.'/.post-'.bin2hex(random_bytes(12)).'.tmp';
-            try{
-                $handle=@fopen($temporary,'x');if(!$handle)throw new \RuntimeException('Unable to prepare article save.');
-                try{if(fwrite($handle,$md)!==strlen($md)||!fflush($handle))throw new \RuntimeException('Article write incomplete.');}
-                finally{fclose($handle);}
-                @chmod($temporary,0644);
-                if(!rename($temporary,$file))throw new \RuntimeException('Unable to publish the saved article file.');
-                clearstatcache(true,$file);
-                return $this->parseFile($file)??throw new \RuntimeException('Saved article could not be read back.');
-            }finally{if(is_file($temporary))unlink($temporary);}
+            return $this->replaceArticle($slug, $expected, $md);
         });
+    }
+
+    /** Read current and archived versions together so the restore form carries the reviewed base. */
+    public function revisionHistory(string $slug, ?string $selected = null): ?array {
+        if (!self::validSlug($slug) || ($selected !== null && !self::validHistoryId($selected))) return null;
+        $history = $this->withWriteLock(function () use ($slug, $selected): array {
+            $current = $this->find($slug);
+            if ($current === null) return [];
+            $versions = [];
+            $preview = null;
+            foreach ($this->historyFiles($slug) as $file) {
+                $id = substr(basename($file), strlen($slug) + 2, -strlen('.rev'));
+                if (!self::validHistoryId($id) || is_link($file)) continue;
+                $date = \DateTimeImmutable::createFromFormat('!YmdHisu', substr($id, 0, 20), new \DateTimeZone('UTC'));
+                if (!$date) continue;
+                $versions[] = ['id'=>$id, 'archived_at'=>$date->format('Y-m-d H:i:s.u')];
+                if ($id === $selected) {
+                    $preview = $this->parseFile($file, true);
+                    if (!$preview || !hash_equals(substr($id, 21), $preview['_revision'])) return [];
+                    $preview['slug'] = $slug;
+                }
+            }
+            if ($selected !== null && $preview === null) return [];
+            return ['current'=>$current, 'versions'=>$versions, 'selected'=>$selected, 'preview'=>$preview];
+        });
+        return $history === [] ? null : $history;
+    }
+
+    public function restoreRevision(string $slug, string $id, string $expected): array {
+        if (!self::validSlug($slug) || !self::validHistoryId($id) || !preg_match('/^[a-f0-9]{64}$/D', $expected)) {
+            throw new \InvalidArgumentException('Select a saved version of an existing article.');
+        }
+        return $this->withWriteLock(function () use ($slug, $id, $expected): array {
+            $file = $this->postsDir.'/.'.$slug.'.'.$id.'.rev';
+            if (!is_file($file) || is_link($file) || filesize($file) > self::MAX_POST_BYTES) {
+                throw new BlogConflictException('This article version is unavailable. Reload the revision history.');
+            }
+            $raw = file_get_contents($file);
+            if (!is_string($raw) || !hash_equals(substr($id, 21), hash('sha256', $raw))) {
+                throw new \RuntimeException('The archived article could not be verified.');
+            }
+            return $this->replaceArticle($slug, $expected, $raw);
+        });
+    }
+
+    private static function validHistoryId(string $id): bool {
+        return (bool)preg_match('/^[0-9]{20}-[a-f0-9]{64}$/D', $id);
+    }
+
+    private function historyFiles(string $slug): array {
+        $files = glob($this->postsDir.'/.'.$slug.'.*.rev', GLOB_NOSORT);
+        if ($files === false) throw new \RuntimeException('Article revision storage is unavailable.');
+        rsort($files, SORT_STRING);
+        return $files;
+    }
+
+    /** Called only while holding the same lock used by editor saves, toggles, restores and deletes. */
+    private function replaceArticle(string $slug, string $expected, string $raw): array {
+        $file = $this->postsDir.'/'.$slug.'.md';
+        $this->assertRevision($file, $expected);
+        if ($expected === 'new') {
+            // A deleted slug can be reused for a different article.
+            $this->pruneHistory($slug, 0);
+        } elseif (!hash_equals($expected, hash('sha256', $raw))) {
+            if (filesize($file) > self::MAX_POST_BYTES) throw new \RuntimeException('Prior article exceeds the revision limit.');
+            $previous = file_get_contents($file);
+            if (!is_string($previous) || !hash_equals($expected, hash('sha256', $previous))) {
+                throw new BlogConflictException('The article changed while preparing its revision.');
+            }
+            $stamp = (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('YmdHisu');
+            $archive = $this->postsDir.'/.'.$slug.'.'.$stamp.'-'.$expected.'.rev';
+            $this->writeAtomic($archive, $previous, 0600);
+            try {
+                $this->writeAtomic($file, $raw, 0644);
+            } catch (\Throwable $error) {
+                unlink($archive);
+                throw $error;
+            }
+            $this->pruneHistory($slug, self::HISTORY_LIMIT);
+        }
+        if ($expected === 'new') $this->writeAtomic($file, $raw, 0644);
+        return $this->parseFile($file) ?? throw new \RuntimeException('Saved article could not be read back.');
+    }
+
+    private function pruneHistory(string $slug, int $keep): void {
+        foreach (array_slice($this->historyFiles($slug), $keep) as $file) {
+            if (!unlink($file)) throw new \RuntimeException('Article revision cleanup failed.');
+        }
+    }
+
+    private function writeAtomic(string $file, string $raw, int $permissions): void {
+        $temp = $this->postsDir.'/.post-'.bin2hex(random_bytes(12)).'.tmp';
+        try {
+            $handle = fopen($temp, 'x');
+            if (!$handle) throw new \RuntimeException('Unable to prepare article save.');
+            try {
+                if (!chmod($temp, $permissions) || fwrite($handle, $raw) !== strlen($raw) || !fflush($handle)) {
+                    throw new \RuntimeException('Article write incomplete.');
+                }
+            } finally { fclose($handle); }
+            if (!rename($temp, $file)) throw new \RuntimeException('Unable to replace the article file.');
+            clearstatcache(true, $file);
+        } finally { if (is_file($temp)) unlink($temp); }
     }
     public function delete(string $slug,?string $expectedRevision=null): void {
         if(!self::validSlug($slug))throw new \InvalidArgumentException('Invalid article slug.');
         $this->withWriteLock(function()use($slug,$expectedRevision):array{
             $file=$this->postsDir.'/'.$slug.'.md';$this->assertRevision($file,$expectedRevision??'');
-            if(!is_file($file)||!unlink($file))throw new \RuntimeException('Article could not be deleted.');return [];
+            if(!is_file($file)||!unlink($file))throw new \RuntimeException('Article could not be deleted.');
+            $this->pruneHistory($slug, 0);
+            return [];
         });
     }
     private function assertRevision(string $file,string $expected): void {
@@ -189,32 +290,7 @@ final class BlogService {
         try{@chmod($path,0600);if(!flock($lock,LOCK_EX))throw new \RuntimeException('Article write lock unavailable.');return $operation();}
         finally{flock($lock,LOCK_UN);fclose($lock);}
     }
-    public function saveCategory(array $data): void {
-        $cats = $this->categories();
-        $found = false;
-        foreach ($cats as &$c) {
-            if (($c['slug'] ?? '') === ($data['slug'] ?? '')) { $c = $data; $found = true; break; }
-        }
-        if (!$found) $cats[] = $data;
-        $yaml = "categories:\n";
-        foreach ($cats as $c) {
-            $yaml .= "  - slug: " . ($c['slug'] ?? '') . "\n";
-            $yaml .= "    name: " . ($c['name'] ?? '') . "\n";
-            $yaml .= "    description: " . ($c['description'] ?? '') . "\n";
-        }
-        file_put_contents($this->categoriesFile, $yaml, LOCK_EX);
-    }
-    public function deleteCategory(string $slug): void {
-        $cats = array_values(array_filter($this->categories(), fn($c) => ($c['slug'] ?? '') !== $slug));
-        $yaml = "categories:\n";
-        foreach ($cats as $c) {
-            $yaml .= "  - slug: " . ($c['slug'] ?? '') . "\n";
-            $yaml .= "    name: " . ($c['name'] ?? '') . "\n";
-            $yaml .= "    description: " . ($c['description'] ?? '') . "\n";
-        }
-        file_put_contents($this->categoriesFile, $yaml, LOCK_EX);
-    }
-    private function parseFile(string $file): ?array {
+    private function parseFile(string $file, bool $includeMarkdown = false): ?array {
         if(is_link($file)||!is_file($file)||filesize($file)>self::MAX_POST_BYTES)return null;
         $raw=@file_get_contents($file);if(!is_string($raw)||$raw===''||!mb_check_encoding($raw,'UTF-8')||str_contains($raw,"\0"))return null;
         $meta=[];$content=$raw;
@@ -234,22 +310,9 @@ final class BlogService {
         $meta['slug']=pathinfo($file,PATHINFO_FILENAME);$meta['content']=$content;
         $meta['published']=filter_var($meta['published']??true,FILTER_VALIDATE_BOOLEAN);
         $meta['_revision']=hash('sha256',$raw);
+        if ($includeMarkdown) $meta['_markdown'] = $raw;
         $meta['_publication_state']=$this->publicationState($meta);
         $meta['html']=(new MarkdownRenderer())->render($content);return $meta;
-    }
-    private function parseYamlList(string $yaml): array {
-        $items = [];
-        $current = null;
-        foreach (explode("\n", $yaml) as $line) {
-            if (preg_match('/^\s*-\s*slug:\s*(.+)$/', $line, $m)) {
-                if ($current) $items[] = $current;
-                $current = ['slug' => trim($m[1])];
-            } elseif ($current && preg_match('/^\s+(name|description):\s*(.+)$/', $line, $m)) {
-                $current[$m[1]] = trim($m[2]);
-            }
-        }
-        if ($current) $items[] = $current;
-        return $items;
     }
     private function slugify(string $text): string {
         return strtolower(trim(preg_replace('/[^a-z0-9-]+/', '-', preg_replace('/[^\w\s-]/u', '', $text)), '-'));

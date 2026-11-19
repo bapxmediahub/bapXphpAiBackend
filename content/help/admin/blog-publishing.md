@@ -30,3 +30,10 @@ title keeps its original URL; URL renaming is not part of this operation.
 This protects conflicting saves but does not yet provide a complete autosave or
 revision-history browser. Back up authored content through the normal site
 process. Do not mistake previewing an article for publishing it.
+
+
+## Restore an earlier server save
+
+Choose **History** beside the article, then select a UTC timestamp to inspect its saved Markdown and publication settings. **Restore this version** replaces the current article with the selected version. Check the resulting publication state before restoring. A restore can make an article public immediately.
+
+The editor keeps the ten most recent changes. Restoring also saves the version you replaced. If another editor saves after you open the preview, reopen the desired version and review it again. Deleting the article also deletes its revision history.

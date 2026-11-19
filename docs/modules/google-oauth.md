@@ -42,3 +42,9 @@ address. The signup identity prevents repeated event calls producing duplicate
 welcomes; SMTP acceptance still needs separate receiving-mailbox confirmation.
 No login scopes, database connection or stored recipient configuration changes
 are required for this event parity.
+
+
+The owner can use the same web OAuth client for a separately initiated
+read-only reporting grant at `/admin/google-reporting`. Register its distinct
+callback in addition to the customer login callback. Reporting never expands
+the permissions requested by the customer sign-in flow.

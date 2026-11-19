@@ -14,6 +14,8 @@ The offline golden fixture score checks specific known decisions. A passing scor
 
 Only explicit positive customer confirmation marks an AI answer resolved. Unrated, negative and escalated cases stay distinct. Follow the human support queue for case ownership and response work; the sample is not an all-time backlog.
 
+Open a row under **Support outcomes by topic** to see how many chats requested more help, escalated, received confirmation, or await feedback. Each Support chat in the latest 40 conversations contributes one current state under its latest completed answer’s topic. Unclassified includes chats with no recorded topic.
+
 ## Record an answer-quality review
 
 Select **Review answers** beside a conversation, or **Review recorded answer** in the flagged queue. Choose the completed turn, then compare the request and answer against the expandable recorded sources. Unknown freshness or missing tool data is not proof of correctness.
@@ -23,3 +25,5 @@ Assess **Factual accuracy**, **Support from recorded sources**, **Answers the ac
 Declare how the review was authored. Use **Personally checked by a staff member** only when you actually compared the response and evidence and can attest to that. AI-assisted assessments and synthetic tests must use their own options; they are not independent human-quality labels. Select **Save answer review** to append the decision. If the page reports that another review or evidence changed, reload and inspect the latest history before saving again.
 
 The decision history preserves earlier reviews, and your label does not rewrite the response, customer feedback or ticket status. Human, AI-assisted and test counts can overlap for a turn. The recent review sample is not a production accuracy score, and a staff pass cannot turn an unrated customer conversation into confirmed resolution. Corrections to content or business rules still use the normal authorized workspace and testing workflow; this form does not retrain or publish anything.
+
+In **Conversation audit & evaluations**, expand **Failed tool calls** to find a run reference from chat and open its exact turn. This list uses the private chat record and remains available if the operational audit write failed. It shows up to five completed turns with tool errors in each of the latest 40 conversations.

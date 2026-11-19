@@ -7,13 +7,13 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 140 routes, 12 controllers, 68 services, 58 views, 0 data files, 26 tools"]
-    arch_routes["> Routes: 140 (Public + Auth + Payment + Admin + Support)"]:::arch
-    arch_ctrl["> Controllers: 12"]:::arch
-    arch_svc["> Services: 68"]:::arch
-    arch_views["> Views: 58"]:::arch
+  subgraph ARCH["Architecture Overview — 151 routes, 13 controllers, 69 services, 63 views, 0 data files, 27 tools"]
+    arch_routes["> Routes: 151 (Public + Auth + Payment + Admin + Support)"]:::arch
+    arch_ctrl["> Controllers: 13"]:::arch
+    arch_svc["> Services: 69"]:::arch
+    arch_views["> Views: 63"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
-    arch_tools["> Tools: 26"]:::arch
+    arch_tools["> Tools: 27"]:::arch
     arch_gaps["> Gaps: 10"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
@@ -21,6 +21,7 @@ flowchart LR
 
   subgraph ROUTES_PUBLIC["PUBLIC Routes"]
     route_get["GET / — Home page — hero, categories, featured products, temple guide"]:::route
+    route_get_search["GET /search — Search published storefront content"]:::route
     route_get_about["GET /about — About SPS — story, values, CTA"]:::route
     route_get_sri_panchami_spiritual["GET /sri-panchami-spiritual — Sri Panchami Spiritual landing page"]:::route
     route_get_spiritual["GET /spiritual — Short spiritual landing redirect-equivalent page"]:::route
@@ -103,9 +104,15 @@ flowchart LR
 
   subgraph ROUTES_ADMIN["ADMIN Routes"]
     route_get_admin["GET /admin — Admin dashboard — commerce analytics and operations"]:::route
+    route_get_admin_slash["GET /admin/"]:::route
     route_get_admin_system_health["GET /admin/system-health"]:::route
     route_get_admin_docs["GET /admin/docs"]:::route
     route_get_admin_docs_slug["GET /admin/docs/{slug}"]:::route
+    route_get_admin_google_reporting["GET /admin/google-reporting"]:::route
+    route_post_admin_google_reporting_connect["POST /admin/google-reporting/connect"]:::route
+    route_get_admin_google_reporting_callback["GET /admin/google-reporting/callback"]:::route
+    route_post_admin_google_reporting_select["POST /admin/google-reporting/select"]:::route
+    route_post_admin_google_reporting_disconnect["POST /admin/google-reporting/disconnect"]:::route
     route_get_admin_google_merchant["GET /admin/google-merchant"]:::route
     route_get_admin_products["GET /admin/products — Admin — manage products"]:::route
     route_get_admin_categories["GET /admin/categories — Admin — manage categories"]:::route
@@ -151,6 +158,8 @@ flowchart LR
     route_get_admin_media["GET /admin/media — Admin — media library"]:::route
     route_post_admin_media_upload["POST /admin/media/upload — Admin — upload media"]:::route
     route_post_admin_media_delete["POST /admin/media/delete"]:::route
+    route_get_admin_products_import["GET /admin/products/import — Admin — import product CSV"]:::route
+    route_post_admin_products_import["POST /admin/products/import — Admin — review or confirm product CSV"]:::route
     route_post_admin_products_save["POST /admin/products/save — Admin — create/update product"]:::route
     route_post_admin_products_delete["POST /admin/products/delete — Admin — delete product"]:::route
     route_post_admin_categories_save["POST /admin/categories/save — Admin — create/update category"]:::route
@@ -166,6 +175,8 @@ flowchart LR
     route_post_admin_integrations_save["POST /admin/integrations/save — Admin — save integration secrets"]:::route
     route_get_admin_blog["GET /admin/blog"]:::route
     route_post_admin_blog_save["POST /admin/blog/save"]:::route
+    route_get_admin_blog_history_slug["GET /admin/blog/history/{slug}"]:::route
+    route_post_admin_blog_history_slug_restore["POST /admin/blog/history/{slug}/restore"]:::route
     route_post_admin_blog_toggle["POST /admin/blog/toggle"]:::route
     route_post_admin_blog_delete["POST /admin/blog/delete"]:::route
     route_post_admin_blog_preview["POST /admin/blog/preview"]:::route
@@ -185,6 +196,7 @@ flowchart LR
   subgraph CONTROLLERS["Controllers"]
     controller_accountcontroller["AccountController"]:::code
     controller_admincontroller["AdminController"]:::code
+    controller_admingooglereportingcontroller["AdminGoogleReportingController"]:::code
     controller_apicontroller["ApiController"]:::code
     controller_authcontroller["AuthController"]:::code
     controller_basecontroller["BaseController"]:::code
@@ -242,6 +254,7 @@ flowchart LR
     service_orderservice["OrderService"]:::code
     service_passwordresetservice["PasswordResetService"]:::code
     service_paymentservice["PaymentService"]:::code
+    service_productimportservice["ProductImportService"]:::code
     service_productservice["ProductService"]:::code
     service_projectmapservice["ProjectMapService"]:::code
     service_ratelimiter["RateLimiter"]:::code
@@ -282,18 +295,22 @@ flowchart LR
     view_admin_agent_review["admin/agent-review"]:::code
     view_admin_appearance["admin/appearance"]:::code
     view_admin_blog["admin/blog"]:::code
+    view_admin_blog_history["admin/blog-history"]:::code
     view_admin_collections["admin/collections"]:::code
     view_admin_consultation_analytics["admin/consultation-analytics"]:::code
     view_admin_dashboard["admin/dashboard"]:::code
     view_admin_detail["admin/detail"]:::code
     view_admin_email_templates["admin/email-templates"]:::code
     view_admin_google_merchant["admin/google-merchant"]:::code
+    view_admin_google_reporting["admin/google-reporting"]:::code
     view_admin_help["admin/help"]:::code
     view_admin_integrations["admin/integrations"]:::code
     view_admin_list["admin/list"]:::code
+    view_admin_list_controls["admin/list-controls"]:::code
     view_admin_mailbox["admin/mailbox"]:::code
     view_admin_media["admin/media"]:::code
     view_admin_product_form["admin/product-form"]:::code
+    view_admin_product_import["admin/product-import"]:::code
     view_admin_resource["admin/resource"]:::code
     view_admin_settings["admin/settings"]:::code
     view_admin_system_health["admin/system-health"]:::code
@@ -320,6 +337,7 @@ flowchart LR
     view_public_product["public/product"]:::code
     view_public_register["public/register"]:::code
     view_public_reset_password["public/reset-password"]:::code
+    view_public_search["public/search"]:::code
     view_public_shop["public/shop"]:::code
     view_public_sitemap["public/sitemap"]:::code
     view_public_spiritual["public/spiritual"]:::code
@@ -331,6 +349,7 @@ flowchart LR
 
   subgraph INTEGRATIONS["Integrations"]
     integration_googleoauthclient["GoogleOAuthClient"]:::code
+    integration_googlereportingclient["GoogleReportingClient"]:::code
     integration_googlesitekitclient["GoogleSiteKitClient"]:::code
     integration_metapixelclient["MetaPixelClient"]:::code
     integration_razorpayclient["RazorpayClient"]:::code
@@ -378,6 +397,7 @@ flowchart LR
     tool_generate_project_index["generate-project-index"]:::tool
     tool_generate_project_map["generate-project-map"]:::tool
     tool_import_product_images["import-product-images"]:::tool
+    tool_mcp_stdio["mcp-stdio"]:::tool
     tool_merchant["merchant"]:::tool
     tool_optimize_images["optimize-images"]:::tool
     tool_product_read["product-read"]:::tool
@@ -409,6 +429,11 @@ flowchart LR
   controller_publiccontroller --> service_templeservice
   controller_publiccontroller --> service_categoryservice
   controller_publiccontroller -. renders .-> view_public_home
+  route_get_search --> controller_publiccontroller
+  controller_publiccontroller --> service_productservice
+  controller_publiccontroller --> service_blogservice
+  controller_publiccontroller --> service_templeservice
+  controller_publiccontroller -. renders .-> view_public_search
   route_get_about --> controller_publiccontroller
   controller_publiccontroller -. renders .-> view_public_about
   route_get_sri_panchami_spiritual --> controller_publiccontroller
@@ -578,6 +603,9 @@ flowchart LR
   controller_consultationcontroller --> service_consultationservice
   controller_consultationcontroller -. renders .-> view_admin_list
   route_get_admin --> controller_admincontroller
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_dashboard
+  route_get_admin_slash --> controller_admincontroller
   controller_admincontroller --> service_resourceservice
   controller_admincontroller --> service_orderservice
   controller_admincontroller --> service_storestatsservice
@@ -598,6 +626,31 @@ flowchart LR
   controller_admincontroller --> service_markdownrenderer
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_help
+  route_get_admin_google_reporting --> controller_admingooglereportingcontroller
+  controller_admingooglereportingcontroller --> service_secretservice
+  controller_admingooglereportingcontroller --> service_authservice
+  controller_admingooglereportingcontroller --> service_auditlogservice
+  controller_admingooglereportingcontroller -. renders .-> view_admin_google_reporting
+  route_post_admin_google_reporting_connect --> controller_admingooglereportingcontroller
+  controller_admingooglereportingcontroller --> service_secretservice
+  controller_admingooglereportingcontroller --> service_authservice
+  controller_admingooglereportingcontroller --> service_auditlogservice
+  controller_admingooglereportingcontroller -. renders .-> view_admin_google_reporting
+  route_get_admin_google_reporting_callback --> controller_admingooglereportingcontroller
+  controller_admingooglereportingcontroller --> service_secretservice
+  controller_admingooglereportingcontroller --> service_authservice
+  controller_admingooglereportingcontroller --> service_auditlogservice
+  controller_admingooglereportingcontroller -. renders .-> view_admin_google_reporting
+  route_post_admin_google_reporting_select --> controller_admingooglereportingcontroller
+  controller_admingooglereportingcontroller --> service_secretservice
+  controller_admingooglereportingcontroller --> service_authservice
+  controller_admingooglereportingcontroller --> service_auditlogservice
+  controller_admingooglereportingcontroller -. renders .-> view_admin_google_reporting
+  route_post_admin_google_reporting_disconnect --> controller_admingooglereportingcontroller
+  controller_admingooglereportingcontroller --> service_secretservice
+  controller_admingooglereportingcontroller --> service_authservice
+  controller_admingooglereportingcontroller --> service_auditlogservice
+  controller_admingooglereportingcontroller -. renders .-> view_admin_google_reporting
   route_get_admin_google_merchant --> controller_admincontroller
   controller_admincontroller --> service_merchantfeedservice
   controller_admincontroller --> service_productservice
@@ -840,6 +893,17 @@ flowchart LR
   controller_admincontroller --> service_auditlogservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_media
+  route_get_admin_products_import --> controller_admincontroller
+  controller_admincontroller --> service_productimportservice
+  controller_admincontroller --> service_databaseservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_product_import
+  route_post_admin_products_import --> controller_admincontroller
+  controller_admincontroller --> service_productimportservice
+  controller_admincontroller --> service_databaseservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_product_import
   route_post_admin_products_save --> controller_admincontroller
   controller_admincontroller --> service_resourceservice
   controller_admincontroller --> service_auditlogservice
@@ -1005,6 +1069,15 @@ flowchart LR
   controller_admincontroller --> service_auditlogservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_blog
+  route_get_admin_blog_history_slug --> controller_admincontroller
+  controller_admincontroller --> service_blogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_blog_history
+  route_post_admin_blog_history_slug_restore --> controller_admincontroller
+  controller_admincontroller --> service_blogservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_blog_history
   route_post_admin_blog_toggle --> controller_admincontroller
   controller_admincontroller --> service_blogservice
   controller_admincontroller --> service_auditlogservice
@@ -1033,6 +1106,8 @@ flowchart LR
   controller_admincontroller --> service_blogdraftservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_blog
+  view_admin_list -. includes .-> view_admin_list_controls
+  view_admin_media -. includes .-> view_admin_list_controls
   nav_contact --> route_get_contact
   nav_account_dashboard --> route_get_account_dashboard
   nav_account_dashboard_orders --> route_get_account_dashboard_orders
@@ -1040,6 +1115,7 @@ flowchart LR
   nav_account_dashboard_install --> route_get_account_dashboard_install
   controller_accountcontroller --> controller_basecontroller
   controller_admincontroller --> controller_basecontroller
+  controller_admingooglereportingcontroller --> controller_basecontroller
   controller_apicontroller --> controller_basecontroller
   controller_authcontroller --> controller_basecontroller
   controller_blogcontroller --> controller_basecontroller
@@ -1107,6 +1183,12 @@ flowchart LR
   service_paymentservice --> integration_stripeclient
   controller_authcontroller --> integration_googleoauthclient
   controller_authcontroller --> integration_googleoauthclient
+  controller_admincontroller --> integration_googlereportingclient
+  controller_admingooglereportingcontroller --> integration_googlereportingclient
+  controller_admingooglereportingcontroller --> integration_googlereportingclient
+  controller_admingooglereportingcontroller --> integration_googlereportingclient
+  controller_admingooglereportingcontroller --> integration_googlereportingclient
+  controller_admingooglereportingcontroller --> integration_googlereportingclient
   service_paymentservice --> integration_razorpayclient
   service_paymentservice --> integration_stripeclient
   service_paymentservice --> integration_razorpayclient

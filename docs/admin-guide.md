@@ -12,6 +12,8 @@ products, categories, collections, coupons, orders, shipping, retained
 consultation records, support tickets, templates, media, blog posts,
 integrations and audit activity.
 
+The dashboard shows the five latest orders in the selected period. Gross paid sales use recorded payments. Pending payment value counts outstanding pending orders separately. Each recent order opens its owner detail page.
+
 ## Two AI agent surfaces
 
 - `/admin/agent`: read-only Enterprise Agent chat with human-approved edit
@@ -30,6 +32,8 @@ integrations and audit activity.
 Quality metrics distinguish offline deterministic regression fixtures from
 live customer outcomes. An agent HTTP 200 or a nonempty answer does not prove
 factual accuracy. See [agent observability](agent-observability.md).
+
+In Enterprise Agent, use the paperclip to upload and attach an image while composing a message. To attach an existing page, article or image, type `@`, use the arrow keys to select a suggestion, and press Enter. Escape closes the suggestions.
 
 ## Other workflows
 
@@ -74,13 +78,16 @@ read-only and works without JavaScript, while the existing product editor uses
 JavaScript to prefill its form. Google account approval and YouTube eligibility
 remain separate, unverified external steps. See `google-sales-channels.md`.
 
-## Google status is not a reporting connection
+## Google reporting
 
-The Web analytics dashboard section now separates local tag configuration from
-unverified collection, conversion tracking and Search Console ownership. Follow
-**Configure Google tags** to the actual Integrations section; use the external
-Google validation links for evidence. Reporting OAuth/property data is not yet
-connected, so no metrics are shown as zero or fabricated from tag IDs.
+On the dashboard, open **Set up Google reporting**. Register the displayed callback
+on the Google web OAuth client, enable the Analytics Admin, Analytics Data and
+Search Console APIs, and consent with an account that can read the desired
+properties. Select the GA4 property and Search Console site from Google's lists.
+The dashboard shows the previous 28 complete calendar days. Empty results,
+quota limits and access problems appear beside the affected service. Manage
+the connection or revoke its grant from **Manage Google reporting**. Public tag
+installation and verification are separate settings under Integrations.
 
 ## Email templates and distinct recipient roles
 

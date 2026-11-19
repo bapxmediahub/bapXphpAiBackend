@@ -5,8 +5,8 @@ $rules = [
   'dependencies'=>['index.php','api/index.php','app/Controllers/BaseController.php'],
   'references'=>['docs/request-failures.md','docs/architecture.md','docs/deployment-hostinger.md','.agents/skills/backend-php-mysql/SKILL.md']],
 
- 'google-tags'=>['sources'=>['integrations/google-site-kit/*'],
-  'dependencies'=>['views/layouts/app.php','views/admin/dashboard.php','views/admin/integrations.php'],
+ 'google-tags'=>['sources'=>['integrations/google-site-kit/*','app/Controllers/AdminGoogleReportingController.php','views/admin/google-reporting.php','tests/google-reporting.php'],
+  'dependencies'=>['views/layouts/app.php','views/admin/dashboard.php','views/admin/integrations.php','app/Services/SecretService.php'],
   'references'=>['docs/pages/integrations.md','content/help/admin/settings.md','.agents/skills/frontend-php/SKILL.md']],
 
  'sales-channels'=>['sources'=>['app/Services/MerchantFeedService.php','cli/merchant.php','views/admin/google-merchant.php','views/public/merchant-feed.php'],

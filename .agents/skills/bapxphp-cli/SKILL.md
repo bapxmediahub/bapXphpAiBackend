@@ -99,3 +99,5 @@ Shopify Shop CLI: business rules live once in a PHP service, interfaces expose
 that same operation. A new CLI/tool output needs a schema, truthful errors and
 source-doc tests. Generic developer shell/SQL/file commands are never eligible
 for automatic exposure to runtime agents or MCP clients.
+
+`./bapXphp write product [slug]` uses the shared catalogue save on direct MySQL. Omit the slug for a create and supply the current slug for an edit. Blank edit prompts preserve existing fields. A duplicate create or conflicting rename exits with an error. EOF before completing the prompts cancels the write.

@@ -87,6 +87,25 @@ final class RemoteDbController {
         }
         try {
             $store = $this->store;
+            if ($collection === 'secrets' && $action === 'change_google_reporting') {
+                if (!array_key_exists('record', $input) || ($input['record'] !== null && !is_array($input['record']))) {
+                    throw new \InvalidArgumentException('An encrypted reporting record or explicit removal is required.');
+                }
+                $changed = $store->changeGoogleReportingRecord((string)($input['revision'] ?? ''), $input['record']);
+                echo json_encode(['success'=>true, 'changed'=>$changed]);
+                return;
+            }
+            if ($collection === 'products' && $action === 'save_catalog_product') {
+                $record = $store->saveCatalogProduct((array)($input['record'] ?? []), ($input['match_slug'] ?? false) === true,
+                    ($input['require_exact_target'] ?? false) === true);
+                echo json_encode(['success'=>true, 'record'=>$record]);
+                return;
+            }
+            if ($collection === 'products' && $action === 'import_products') {
+                $result = $store->importProducts(is_string($input['csv'] ?? null) ? $input['csv'] : '', (array)($input['skip'] ?? []));
+                echo json_encode(['success'=>true, 'result'=>$result]);
+                return;
+            }
             if ($collection === 'users' && $action === 'patch_user') {
                 $updated = $store->patchUser((string)($input['id'] ?? ''), $input['fields'] ?? [],
                     $input['credential'] ?? null, $input['expected'] ?? null);

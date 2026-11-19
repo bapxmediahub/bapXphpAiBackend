@@ -20,7 +20,7 @@ The public customer app and admin dashboard expose PWA metadata. Customer instal
 | Scope | URL | Precaches |
 |---|---|---|
 | Public (`/`) | `/sw.js` | `assets/pwa/sw-user.js` — precaches static app metadata only; PHP-rendered pages such as `/shop`, `/cart`, and `/checkout` are network-first so product, cart, and payment UI does not go stale |
-| Admin (`/admin/`) | `/admin/sw.js` | Generated — precaches `/admin`, `/login` |
+| Admin (`/admin/`) | `/admin/sw.js` | `assets/pwa/sw-admin.js` fetches each navigation with a live session, removes the legacy admin cache, and displays an offline response without private page content |
 
 ## Customer Installation
 
@@ -33,4 +33,8 @@ Signed-in customers open **Dashboard → Install App**, routed to `/account/dash
 - Other unsupported/ineligible browsers receive browser-menu and update guidance instead of a missing button.
 - `views/layouts/app.php` registers the customer service worker but renders no floating installation control.
 
-The admin layout retains its separate admin installation control and manifest scope.
+The admin manifest launches `/admin/` within the `/admin/` worker scope. Its
+explicit app ID retains the previous `/admin` identity. Existing online links
+to `/admin` redirect to the dashboard with their query parameters. The public
+worker also serves the private offline message for older launch URLs under
+its root scope. Neither worker stores an authenticated dashboard response.

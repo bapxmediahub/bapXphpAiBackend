@@ -1,7 +1,8 @@
 <div class="admin-card">
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:var(--space-sm); margin-bottom:var(--space-lg);">
         <h2 style="margin:0; font-size:1.1rem;"><?= e($title) ?></h2>
-        <span class="badge badge--default"><?= count($items) ?> record<?= count($items) !== 1 ? 's' : '' ?></span>
+        <div><a href="#product-list" class="btn btn-outline">Browse products</a>
+        <a href="/admin/products/import" class="btn btn-outline">Import CSV</a></div>
     </div>
     <style>
     .pf-section{margin:var(--space-md) 0 0;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--color-text-muted);border-bottom:1px solid var(--color-border);padding-bottom:0.3rem}
@@ -9,6 +10,9 @@
     .pf-hint{margin:0;font-size:0.75rem;color:var(--color-text-muted)}
     .pf-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,340px);gap:var(--space-xl);align-items:start}
     .pf-grid>div{min-width:0;grid-template-columns:minmax(0,1fr)}
+    .pf-search.admin-form,.pf-pages{display:flex;align-items:end;gap:var(--space-sm);flex-wrap:wrap}
+    .pf-pages{align-items:center;margin-top:var(--space-md)}
+    .pf-search label{min-width:0}
     .pf-grid label{min-width:0}
     .pf-grid input,.pf-grid select,.pf-grid textarea{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
     @media(max-width:900px){.pf-grid{grid-template-columns:minmax(0,1fr)}}
@@ -157,13 +161,27 @@
     </form>
 </div>
 
-<div class="admin-card">
-    <div class="table-wrap">
+<?php $pageUrl = static fn(int $number): string => '/admin/products?' . http_build_query(['q'=>$search, 'sort'=>$sort, 'per_page'=>$pageSize, 'page'=>$number]) . '#product-list'; ?>
+<section class="admin-card" id="product-list" aria-labelledby="product-list-title">
+    <h2 id="product-list-title">Product list</h2>
+    <form method="get" action="/admin/products#product-list" class="admin-form pf-search">
+        <label>Search products<input type="search" name="q" maxlength="150" value="<?= e($search) ?>" placeholder="Name, slug or category"></label>
+        <label>Sort by<select name="sort">
+            <option value="name">Name A–Z</option><option value="name-desc" <?= $sort === 'name-desc' ? 'selected' : '' ?>>Name Z–A</option>
+        </select></label>
+        <label>Per page<select name="per_page">
+            <?php foreach ([10, 25, 50] as $size): ?><option value="<?= $size ?>" <?= $pageSize === $size ? 'selected' : '' ?>><?= $size ?></option><?php endforeach; ?>
+        </select></label>
+        <button class="btn btn-primary">Apply</button>
+        <?php if ($search !== '' || $sort !== 'name' || $pageSize !== 25): ?><a class="btn btn-outline" href="/admin/products#product-list">Reset</a><?php endif; ?>
+    </form>
+    <?php if ($items): ?><p>Showing <?= number_format($offset + 1) ?>–<?= number_format($offset + count($items)) ?> of <?= number_format($count) ?> products</p><?php endif; ?>
+    <div class="table-wrap" data-no-table-search role="region" aria-label="Product results" tabindex="0">
         <table>
             <thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead>
             <tbody>
             <?php if(empty($items)): ?>
-                <tr><td colspan="6" style="text-align:center; color:var(--color-text-muted); padding:var(--space-2xl);">No products yet. Add one using the form above.</td></tr>
+                <tr><td colspan="6" style="text-align:center; color:var(--color-text-muted); padding:var(--space-2xl);"><?= $search !== '' ? 'No products match this search.' : 'No products yet. Add one using the form above.' ?></td></tr>
             <?php else: ?>
                 <?php foreach($items as $item): ?>
                     <tr>
@@ -212,7 +230,12 @@
             </tbody>
         </table>
     </div>
-</div>
+    <?php if ($pages > 1): ?><nav class="pf-pages" aria-label="Product pages">
+        <?php if ($page > 1): ?><a class="btn btn-outline" href="<?= e($pageUrl($page - 1)) ?>">Previous</a><?php endif; ?>
+        <span>Page <?= $page ?> of <?= $pages ?></span>
+        <?php if ($page < $pages): ?><a class="btn btn-outline" href="<?= e($pageUrl($page + 1)) ?>">Next</a><?php endif; ?>
+    </nav><?php endif; ?>
+</section>
 
 <script>
 let galleryImages = [];

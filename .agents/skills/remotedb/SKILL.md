@@ -167,3 +167,7 @@ fields. The database host locks the row and checks the attempt identity.
 General AI tools never receive this mutation. It preserves single-worker
 claims without a local database or whole-collection overwrite. Tests use the
 isolated CI database; reading production queue health does not authorize replay.
+
+### Catalogue mutation protocol
+
+The products collection accepts `save_catalog_product` for owner-form writes and `import_products` for a bounded UTF-8 product CSV plus the preview's excluded slugs. Both operations take the catalogue lock on the database host. The import responds with added/skipped counts after a transaction commits. The owner route handles CSRF, preview and the review digest before calling this privileged bridge.

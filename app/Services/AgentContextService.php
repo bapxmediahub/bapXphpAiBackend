@@ -41,7 +41,7 @@ final class AgentContextService {
                 'updated_date' => self::recordDate($ticket['updated_at'] ?? null),
             ];
         }
-        return ['count' => count($matches), 'counts_by_status' => $counts, 'recent' => array_slice($matches, 0, 5)];
+        return ['count' => count($matches), 'candidate_count' => count($tickets), 'counts_by_status' => $counts, 'recent' => array_slice($matches, 0, 5)];
     }
 
     private static function recordDate(mixed $value): ?string {

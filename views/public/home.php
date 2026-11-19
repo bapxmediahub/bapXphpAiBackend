@@ -4,7 +4,7 @@
     <div class="container home-hero-inner">
         <div class="hero-copy">
             <h1>Authentic Spiritual Products</h1>
-            <p class="lede">Sacred jewellery, rudraksha and pooja essentials, delivered across India. Find visit details in the Panchami temple guide.</p>
+            <p class="lede">Sacred jewellery, rudraksha and pooja essentials, delivered across India.</p>
             <div class="hero-actions">
                 <?php if (module_on('shop')): ?>
                 <a href="/shop" class="btn btn-primary">Shop Products</a>
@@ -33,12 +33,11 @@
                     <img class="varahi-slide <?= e($slide['class']) ?> <?= $index === 0 ? 'is-active' : '' ?>" src="<?= e($slide['src']) ?>" alt="<?= e($slide['alt']) ?>" width="480" height="640" <?= $index === 0 ? 'fetchpriority="high"' : 'loading="lazy"' ?>>
                 <?php endforeach; ?>
             </div>
-            <div class="varahi-dots" role="tablist" aria-label="Homepage devotional slides">
-                <?php foreach ($heroSlides as $index => $slide): ?>
-                    <button class="varahi-dot <?= $index === 0 ? 'is-active' : '' ?>" type="button" role="tab" aria-label="Slide <?= $index + 1 ?>: <?= e($slide['alt']) ?>" <?= $index === 0 ? 'aria-current="true"' : 'aria-current="false"' ?> data-slide="<?= $index ?>"></button>
-                <?php endforeach; ?>
+            <div class="portrait-controls" data-portrait-controls hidden>
+                <button type="button" aria-label="Previous portrait" data-portrait-step="-1">‹</button>
+                <span role="status" aria-label="Portrait position">1 / <?= count($heroSlides) ?></span>
+                <button type="button" aria-label="Next portrait" data-portrait-step="1">›</button>
             </div>
-            <button type="button" class="hero-motion-toggle" data-slideshow-pause aria-pressed="false" hidden>Pause slides</button>
         </div>
     </div>
 </section>
@@ -92,6 +91,7 @@
 <?php if (module_on('shop')): ?>
 <?php require __DIR__ . '/home-collections.php'; ?>
 
+<div class="home-chapter">
 <section class="section home-order-guide" aria-labelledby="home-order-guide-title">
     <div class="container">
         <div class="home-order-guide__panel">
@@ -119,23 +119,27 @@
         </div>
     </div>
 </section>
+</div>
 <?php endif; ?>
 
 <?php if (!empty($temples)): ?>
+<div class="home-chapter">
 <section class="section section--alt home-temples" aria-labelledby="home-temple-guide">
     <div class="container">
         <div class="home-temples__header">
             <h2 class="section-title" id="home-temple-guide" data-page-section="Temples" tabindex="-1">Panchami Temples Guide</h2>
-            <a href="/temples" class="btn btn-outline">Explore all temples <span aria-hidden="true">→</span></a>
         </div>
         <div class="temple-carousel" data-temple-rail>
-            <?php if (count($temples) > 1): ?>
-                <div class="temple-carousel__controls" data-temple-controls hidden>
-                    <button type="button" class="btn btn-outline" aria-label="Previous temple" aria-controls="home-temple-track" data-temple-step="-1">←</button>
-                    <span data-temple-position role="status"></span>
-                    <button type="button" class="btn btn-outline" aria-label="Next temple" aria-controls="home-temple-track" data-temple-step="1">→</button>
-                </div>
-            <?php endif; ?>
+            <div class="home-temples__navigation">
+                <a href="/temples" class="home-temples__all">Explore all temples <span aria-hidden="true">→</span></a>
+                <?php if (count($temples) > 1): ?>
+                    <div class="temple-carousel__controls" data-temple-controls hidden>
+                        <button type="button" class="btn btn-outline" aria-label="Previous temple" aria-controls="home-temple-track" data-temple-step="-1">←</button>
+                        <span data-temple-position role="status"></span>
+                        <button type="button" class="btn btn-outline" aria-label="Next temple" aria-controls="home-temple-track" data-temple-step="1">→</button>
+                    </div>
+                <?php endif; ?>
+            </div>
             <div class="temple-carousel-track" id="home-temple-track"<?= count($temples) > 1 ? ' tabindex="0" role="region" aria-label="Temple previews"' : '' ?>>
                 <?php foreach ($temples as $temple): ?>
                     <article class="temple-feature-card">
@@ -151,22 +155,27 @@
                             <?php if (!empty($temple['address'])): ?>
                                 <p class="temple-feature-card__address"><?= e($temple['address']) ?></p>
                             <?php endif; ?>
-                            <?php if (!empty($temple['timings'])): ?>
-                                <p class="temple-feature-card__hours"><?= e($temple['timings']) ?></p>
-                            <?php endif; ?>
-                            <?php if (!empty($temple['description'])): ?>
+                            <?php if (empty($temple['address']) && !empty($temple['description'])): ?>
                                 <p class="temple-feature-card__summary"><?= e($temple['description']) ?></p>
+                            <?php endif; ?>
+                        </div>
+                        <div class="temple-feature-card__visit">
+                            <?php if (!empty($temple['timings'])): ?>
+                                <span><?= e($temple['timings']) ?></span>
                             <?php endif; ?>
                             <a class="btn btn-primary" href="/temples/<?= e(rawurlencode((string)$temple['slug'])) ?>" aria-label="View details for <?= e($temple['name']) ?>">View details</a>
                         </div>
                     </article>
                 <?php endforeach; ?>
             </div>
+
         </div>
     </div>
 </section>
+</div>
 <?php endif; ?>
 
+<div class="home-chapter">
 <section class="section section--warm" aria-labelledby="home-values">
     <div class="container">
         <div class="section-header">
@@ -214,6 +223,7 @@
     </div>
     </div>
 </section>
+</div>
 
 <?php $homeFaq = [
     [

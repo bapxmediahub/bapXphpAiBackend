@@ -2,6 +2,10 @@
 
 Open Enterprise Agent → Chat. Name the business fact and time period you need, such as paid sales for a specific date range or support-ticket counts. The agent uses named read-only tools and current permitted records. An unavailable query is different from a valid zero result.
 
+## Attach a reference
+
+Use the paperclip to upload an image to Media and attach it to the message you are writing. For an existing image, page or article, type `@` and part of its name. Choose a suggestion with the arrow keys and Enter. Escape dismisses the list. Review the attachment names before sending.
+
 ## Continue or start fresh
 
 Use **History** to reopen your own earlier conversations and **New chat** to reset the active context. Report follow-ups can reuse a verified previous period; explicit new dates should replace it. Do not assume reopening visible text gives every answer complete or fresh context—check the stated sources and dates.

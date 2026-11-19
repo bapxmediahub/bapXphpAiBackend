@@ -119,9 +119,10 @@
         <div class="admin-blog-editor__wide be-media">
             <strong>Article image</strong>
             <div class="be-media__row">
-                <input type="file" id="be-upload" accept="image/png,image/jpeg,image/webp,image/gif">
+                <input type="file" id="be-upload" aria-label="Upload article image" accept="image/png,image/jpeg,image/webp,image/gif">
                 <button type="button" class="btn btn-sm btn-outline" id="be-pick">Choose from uploads</button>
             </div>
+            <p id="be-upload-status" class="be-hint" role="status"></p>
             <div class="be-media__grid" id="be-library" hidden>
                 <?php foreach (($mediaFiles ?? []) as $__m): $__p = $__m['url'] ?? $__m['path'] ?? ''; if (!$__p) continue; ?>
                     <button type="button" class="be-media__item" data-path="<?= e($__p) ?>" title="<?= e(basename($__p)) ?>">
@@ -158,6 +159,7 @@
         <td><?= e($post['published_at'] ?? '') ?></td>
         <td>
             <button class="btn btn-sm btn-ghost" onclick="editPost(<?= e(json_encode($post)) ?>)">Edit</button>
+            <a class="btn btn-sm btn-ghost" href="/admin/blog/history/<?= e(rawurlencode($post['slug'])) ?>">History</a>
             <?php $__live = !empty($post['published']); ?>
             <form method="post" action="/admin/blog/toggle" style="display:inline">
                 <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
@@ -252,7 +254,12 @@ function generateDraft(){var f=document.getElementById('blog-form');var fd=new F
     if (!doc || !md) return;
     var form = document.getElementById('blog-form');
     var editorGeneration = 0;
-    form.addEventListener('blog:open', function(){ editorGeneration++; });
+    var uploadStatus = document.getElementById('be-upload-status');
+    form.addEventListener('blog:open', function(){
+        editorGeneration++;
+        uploadStatus.textContent = '';
+        document.getElementById('be-library').hidden = true;
+    });
     function editorIsCurrent(generation) { return generation === editorGeneration && !form.hidden; }
     var mode = 'document';
     var documentDirty = false;
@@ -416,40 +423,58 @@ function generateDraft(){var f=document.getElementById('blog-form');var fd=new F
         document.execCommand('insertHTML', false,
           '<table><thead><tr><th>Heading</th><th>Heading</th></tr></thead><tbody><tr><td>Cell</td><td>Cell</td></tr></tbody></table><p><br></p>');
     });
-    function insertImage(path) {
+    function insertImage(path, replaceCover) {
         if (!safeEditorUrl(path)) return;
         if (mode === 'markdown') { md.value += '\n\n![](' + path + ')\n'; }
         else { setMode('document'); doc.focus(); document.execCommand('insertHTML', false, '<img src="'+escAttr(path)+'" alt="">'); }
         var f = document.getElementById('edit-image');
-        if (f && !f.value) f.value = path;
+        if (f && (replaceCover || !f.value)) f.value = path;
         md.dispatchEvent(new Event('input', {bubbles: true}));
     }
+    var pickingCover = true;
     document.getElementById('be-image').addEventListener('click', function(){
+        pickingCover = false;
         var lib = document.getElementById('be-library'); if (lib) lib.hidden = false;
         var u = prompt('Image path or URL (or pick one from the library below)');
         if (u) insertImage(u);
     });
     document.getElementById('be-pick').addEventListener('click', function(){
+        pickingCover = true;
         var lib = document.getElementById('be-library'); lib.hidden = !lib.hidden;
     });
     document.querySelectorAll('.be-media__item').forEach(function(b){
-        b.addEventListener('click', function(){ insertImage(b.dataset.path); });
+        b.addEventListener('click', function(){ insertImage(b.dataset.path, pickingCover); });
     });
     document.getElementById('be-upload').addEventListener('change', async function(){
         var generation = editorGeneration;
         var file = this.files && this.files[0]; if (!file) return;
+        var initialCover = document.getElementById('edit-image').value;
+        var picker = this;
+        picker.disabled = true;
+        uploadStatus.textContent = 'Uploading image…';
         var fd = new FormData();
         fd.append('media_files[]', file);
         fd.append('context', 'blog');
         fd.append('_csrf', document.querySelector('input[name="_csrf"]').value);
         try {
-            var r = await fetch('/admin/media/upload', {method:'POST', body:fd, credentials:'same-origin'});
+            var r = await fetch('/admin/media/upload', {method:'POST', body:fd, credentials:'same-origin', headers:{Accept:'application/json'}});
             var d = await r.json().catch(function(){return {};});
             if (!editorIsCurrent(generation)) return;
-            var path = (d.files && d.files[0] && (d.files[0].url || d.files[0].path)) || d.url || '';
-            if (path) { insertImage(path); showToast && showToast('Image uploaded.','success'); }
-            else showToast && showToast('Upload finished but no path was returned.','error');
-        } catch (err) { showToast && showToast('Upload failed.','error'); }
+            var path = d.files && d.files[0] && d.files[0].url;
+            if (r.ok && path && document.getElementById('edit-image').value !== initialCover) {
+                uploadStatus.textContent = 'Image uploaded to the Media Library. Your more recent article image selection was kept.';
+            } else if (r.ok && path) {
+                insertImage(path, true);
+                uploadStatus.textContent = 'Image uploaded. Save to apply it to this article.';
+            } else {
+                uploadStatus.textContent = d.error || 'Upload could not be confirmed. Check the Media Library.';
+            }
+        } catch {
+            if (editorIsCurrent(generation)) uploadStatus.textContent = 'Upload could not be confirmed. Check the Media Library.';
+        } finally {
+            picker.value = '';
+            picker.disabled = false;
+        }
     });
 
     // ---- enhance (separate per field) --------------------------------------

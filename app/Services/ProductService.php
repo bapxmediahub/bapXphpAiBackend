@@ -47,6 +47,30 @@ final class ProductService
         return array_map(fn(array $p): array => $this->normalise($p), $this->store->read('products'));
     }
 
+    /** Return raw owner-editable records, including hidden items and scheduled offers. */
+    public function adminPage(string $search, string $sort, int $pageSize, int $page): array
+    {
+        $search = mb_substr(trim($search), 0, 150);
+        $sort = $sort === 'name-desc' ? 'name-desc' : 'name';
+        $pageSize = in_array($pageSize, [10, 25, 50], true) ? $pageSize : 25;
+        $name = "JSON_UNQUOTE(JSON_EXTRACT(_data, '$.name'))";
+        $where = '';
+        $params = [];
+        if ($search !== '') {
+            $fields = "CONCAT_WS(' ', $name, JSON_UNQUOTE(JSON_EXTRACT(_data, '$.slug')), JSON_UNQUOTE(JSON_EXTRACT(_data, '$.category')))";
+            $where = " WHERE LOCATE(LOWER(?), LOWER($fields)) > 0";
+            $params[] = $search;
+        }
+        $count = (int)($this->store->query('SELECT COUNT(*) AS total FROM products' . $where, $params)[0]['total'] ?? 0);
+        $pages = max(1, (int)ceil($count / $pageSize));
+        $page = max(1, min($page, $pages));
+        $offset = ($page - 1) * $pageSize;
+        $direction = $sort === 'name-desc' ? 'DESC' : 'ASC';
+        $rows = $this->store->query("SELECT id, _data FROM products$where ORDER BY LOWER($name) $direction, id ASC LIMIT $pageSize OFFSET $offset", $params);
+        $items = array_map(static fn(array $row): array => ['id' => $row['id']] + json_decode($row['_data'], true, 512, JSON_THROW_ON_ERROR), $rows);
+        return compact('items', 'search', 'sort', 'pageSize', 'page', 'pages', 'offset', 'count');
+    }
+
     /** Only what a shopper may see. Hidden products stay out of listings and search. */
     public function visible(): array
     {

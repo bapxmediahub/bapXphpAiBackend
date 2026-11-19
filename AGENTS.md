@@ -214,7 +214,8 @@ Exercise the changed JavaScript controls with keyboard and pointer input, and co
   and Stageshow stay outside runtime business-agent prompt selection.
 - Keep any layered homepage handoff bounded. Include short mobile viewports,
   keyboard return to the outgoing section and fragment navigation in browser
-  checks whenever the handoff changes.
+  checks whenever the handoff changes. For consecutive sections, verify each
+  transition in both scroll directions with measured section positions.
 - Admin mutations are auditable via `AuditLogService`, which must never break the
   operation it records.
 - Secrets are never committed and never placed in `.env`.

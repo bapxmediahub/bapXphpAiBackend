@@ -168,11 +168,15 @@ final class SupportBotService {
         $reason = null;
         $attempts = [];
         $tools = [];
+        $retrieval = ['intent'=>'own_ticket', 'status'=>'not_applicable'];
         if (trim($email) === '') {
             $reply = 'Sign in to check the status of your support tickets at /login.';
             $outcome = 'private_account';
+            $retrieval['reason'] = 'sign_in_required';
         } elseif ($lookup['period'] === []) {
             $reply = 'I can filter by when tickets were opened. Try today, last week, last month, this year or the past 30 days.';
+            $retrieval['status'] = 'clarification';
+            $retrieval['reason'] = 'unsupported_ticket_period';
         } else {
             $lookupStartedAt = microtime(true);
             $lookupSpan = AgentTraceService::startSpan('tool','customer_ticket_lookup');
@@ -183,23 +187,27 @@ final class SupportBotService {
                     ]);
                 if (isset($facts['error'])) throw new \RuntimeException('Scoped lookup failed');
                 $toolStatus = 'complete';
+                $retrieval['source'] = 'support_tickets';
+                $retrieval['status'] = $facts['count'] > 0 ? 'matched' : 'no_match';
+                $retrieval['reason'] = 'scoped_ticket_lookup';
+                $retrieval['candidate_count'] = $facts['candidate_count'];
+                $retrieval['result_count'] = $facts['count'];
             } catch (\Throwable) {
                 $toolStatus = 'error';
+                $retrieval['reason'] = 'lookup_unavailable';
                 $outcome = 'fallback';
                 $reason = 'internal_error';
                 $reply = 'I couldn’t load your support tickets right now. Try again shortly or contact us at /contact.';
             }
+            $evidence = AgentTraceService::toolEvidence('customer_ticket_lookup', $lookup,
+                $toolStatus === 'complete' ? ['count'=>$facts['count']] : ['error'=>'lookup_unavailable']);
             $tools[] = [
                 'name' => 'customer_ticket_lookup',
                 'status' => $toolStatus,
                 'duration_ms' => (int)round((microtime(true) - $lookupStartedAt) * 1000),
-                'evidence' => AgentTraceService::toolEvidence('customer_ticket_lookup', [
-                    'reference'=>$lookup['reference'], 'status'=>$lookup['status']
-                ], isset($facts) ? ['count'=>(int)($facts['count']??0)] : ['error'=>'unavailable']),
+                'evidence' => $evidence,
             ];
-            AgentTraceService::endSpan($lookupSpan,$toolStatus,[
-                'evidence'=>AgentTraceService::toolEvidence('customer_ticket_lookup',[],
-                    isset($facts)?['count'=>(int)($facts['count']??0)]:['error'=>'lookup_unavailable'])]);
+            AgentTraceService::endSpan($lookupSpan, $toolStatus, ['evidence'=>$evidence]);
             $reply ??= self::ticketStatusReply($message, $facts, $lookup);
             if ($reply === null && isset($facts)) {
                 $answer = $this->modelReply($message, [
@@ -224,9 +232,7 @@ final class SupportBotService {
         return [
             'reply' => $reply, 'ticket_id' => null, 'memory' => 'browser_session', 'actions' => $this->extractActions($reply),
             'run' => ['outcome'=>$outcome,'trace_id'=>$this->traceId,'tools'=>$tools,
-                'attempts'=>$attempts,'retrieval'=>isset($facts)
-                    ? [['source'=>'support_tickets','result_count'=>(int)($facts['count']??0),'status'=>'complete']]
-                    : []],
+                'attempts'=>$attempts,'retrieval'=>[$retrieval]],
         ];
     }
 

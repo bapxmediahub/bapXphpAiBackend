@@ -1,135 +1,64 @@
 #!/usr/bin/env php
 <?php
+declare(strict_types=1);
 
-$root = $argv[1] ?? __DIR__ . '/..';
-$mode = $argv[2] ?? 'new';
+use App\Services\BlogService;
+
+if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
+require __DIR__ . '/../app/bootstrap.php';
+
+$root = $argv[1] ?? dirname(__DIR__);
 $editSlug = $argv[3] ?? '';
+$blog = new BlogService($root . '/content/blog/posts');
 
-$postsDir = $root . '/content/blog/posts';
-$catsFile = $root . '/content/blog/categories.yaml';
-if (!is_dir($postsDir)) mkdir($postsDir, 0775, true);
+function prompt(string $label, string $default = ''): string {
+    echo $label, ' [', $default, ']: ';
+    $line = fgets(STDIN);
+    if ($line === false) throw new RuntimeException('Input ended before the article was saved.');
+    $value = trim($line);
+    return $value === '' ? $default : $value;
+}
 
-// ── Load categories ──
-$categories = [];
-if (is_file($catsFile)) {
-    $yaml = file_get_contents($catsFile);
-    foreach (explode("\n", $yaml) as $line) {
-        if (preg_match('/^\s*-\s*slug:\s*(.+)$/', $line, $m)) {
-            $categories[] = trim($m[1]);
-        }
+try {
+    $existing = $editSlug !== '' ? $blog->find($editSlug) : [];
+    if ($existing === null) throw new InvalidArgumentException('Article not found.');
+    echo $editSlug === '' ? "New blog article\n" : "Editing {$editSlug}\n";
+    $title = prompt('Title', (string)($existing['title'] ?? ''));
+    if ($title === '') throw new InvalidArgumentException('Enter an article title.');
+    $defaultSlug = trim(preg_replace('/[^a-z0-9-]+/', '-', strtolower($title)), '-');
+    $slug = prompt('Slug', $editSlug !== '' ? $editSlug : $defaultSlug);
+    if ($editSlug !== '' && $slug !== $editSlug) throw new InvalidArgumentException('An existing article keeps its original slug.');
+    if ($slug === '') throw new InvalidArgumentException('Enter an article slug.');
+    $categories = array_column($blog->categories(), 'slug');
+    echo 'Categories: ', implode(', ', $categories), "\n";
+    $category = prompt('Category', (string)($existing['category'] ?? $categories[0] ?? ''));
+    $author = prompt('Author', (string)($existing['author'] ?? ''));
+    $date = prompt('Publication date (YYYY-MM-DD)', (string)($existing['published_at'] ?? date('Y-m-d')));
+    $excerpt = prompt('Excerpt', (string)($existing['excerpt'] ?? ''));
+    $publication = strtolower(prompt('Publish when due? (y/n)', !empty($existing['published']) ? 'y' : 'n'));
+    if (!in_array($publication, ['y', 'yes', '1', 'true', 'n', 'no', '0', 'false'], true)) {
+        throw new InvalidArgumentException('Enter y or n for publication.');
     }
-}
 
-// ── Load existing post if editing ──
-$existing = [];
-if ($editSlug !== '') {
-    $f = "{$postsDir}/{$editSlug}.md";
-    if (!is_file($f)) { echo "Post not found: {$editSlug}.md\n"; exit(1); }
-    $raw = file_get_contents($f);
-    if (str_starts_with($raw, '---')) {
-        $parts = explode('---', $raw, 3);
-        if (count($parts) >= 3) {
-            foreach (explode("\n", trim($parts[1])) as $line) {
-                $line = trim($line);
-                if ($line === '' || !str_contains($line, ':')) continue;
-                [$k, $v] = explode(':', $line, 2);
-                $existing[trim($k)] = trim($v);
-            }
-            $existing['content'] = trim($parts[2]);
-        }
+    echo "Article Markdown. Enter . on its own line to finish or keep the existing body.\n";
+    $lines = [];
+    while (($line = fgets(STDIN)) !== false) {
+        $line = rtrim($line, "\r\n");
+        if ($line === '.') break;
+        $lines[] = $line;
     }
-}
+    if ($line === false) throw new RuntimeException('Input ended before the article was saved.');
+    $content = $lines ? implode("\n", $lines) : (string)($existing['content'] ?? '');
+    if (trim($content) === '') throw new InvalidArgumentException('Enter article content.');
 
-// ── Interactive form ──
-echo "━━━ Blog Post Writer ━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-if ($editSlug) echo "  Editing: {$editSlug}\n";
-echo "\n";
-
-$title = readline("  Title [" . ($existing['title'] ?? '') . "]: ");
-$title = $title !== '' ? $title : ($existing['title'] ?? '');
-if ($title === '') { echo "  Title is required.\n"; exit(1); }
-
-$autoSlug = strtolower(trim(preg_replace('/[^a-z0-9-]+/', '-', preg_replace('/[^\w\s-]/u', '', $title)), '-'));
-$slugDefault = $editSlug ?: $autoSlug;
-$slug = readline("  Slug [{$slugDefault}]: ");
-$slug = $slug !== '' ? strtolower(trim(preg_replace('/[^a-z0-9-]+/', '-', $slug))) : $slugDefault;
-
-if ($editSlug !== '' && $editSlug !== $slug) {
-    // Rename file
-    $oldFile = "{$postsDir}/{$editSlug}.md";
-    $newFile = "{$postsDir}/{$slug}.md";
-    if (is_file($newFile) && $editSlug !== $slug) {
-        echo "  File {$slug}.md already exists. Aborting.\n";
-        exit(1);
-    }
-    rename($oldFile, $newFile);
-}
-
-echo "\n  Categories: " . ($categories ? implode(', ', $categories) : '(none)') . "\n";
-$catDefault = $existing['category'] ?? ($categories[0] ?? '');
-$category = readline("  Category [{$catDefault}]: ");
-$category = $category !== '' ? $category : $catDefault;
-
-$authorDefault = $existing['author'] ?? '';
-$author = readline("  Author [{$authorDefault}]: ");
-$author = $author !== '' ? $author : $authorDefault;
-
-$dateDefault = $existing['published_at'] ?? date('Y-m-d');
-$date = readline("  Date (YYYY-MM-DD) [{$dateDefault}]: ");
-$date = $date !== '' ? $date : $dateDefault;
-
-echo "\n  Excerpt (1-2 sentence summary):\n";
-$excerptDefault = $existing['excerpt'] ?? '';
-$excerpt = readline("  [{$excerptDefault}]: ");
-$excerpt = $excerpt !== '' ? $excerpt : $excerptDefault;
-
-$publishedDefault = isset($existing['published']) ? ($existing['published'] === 'true' ? 'y' : 'n') : 'y';
-$publishedRaw = readline("  Published? (y/n) [{$publishedDefault}]: ");
-$publishedRaw = $publishedRaw !== '' ? $publishedRaw : $publishedDefault;
-$published = $publishedRaw === 'y' || $publishedRaw === 'true' || $publishedRaw === '1';
-
-echo "\n  Content (Markdown body). Enter '.' on its own line to finish:\n";
-echo "  ────────────────────────────────────────────\n";
-$contentDefault = $existing['content'] ?? '';
-if ($contentDefault) {
-    echo "  (Existing content loaded — type '.' to keep it as-is)\n";
-}
-$contentLines = [];
-while (true) {
-    $line = readline('');
-    if ($line === '.') break;
-    $contentLines[] = $line;
-}
-$content = implode("\n", $contentLines);
-if (!$content && $contentDefault) {
-    $content = $contentDefault;
-}
-if (!$content) {
-    echo "  Content is required.\n";
+    $blog->save(array_replace($existing, [
+        'title' => $title, 'slug' => $slug, 'original_slug' => $editSlug,
+        'category' => $category, 'author' => $author, 'published_at' => $date,
+        'excerpt' => $excerpt, 'published' => in_array($publication, ['y', 'yes', '1', 'true'], true),
+        'content' => $content, 'expected_revision' => $existing['_revision'] ?? 'new',
+    ]));
+    echo "Saved {$slug}. Open /admin/blog?reload={$slug} to review.\n";
+} catch (Throwable $error) {
+    fwrite(STDERR, $error->getMessage() . "\n");
     exit(1);
 }
-
-// ── Build frontmatter ──
-$frontmatter = "---\n";
-$frontmatter .= "title: {$title}\n";
-$frontmatter .= "slug: {$slug}\n";
-if ($category) $frontmatter .= "category: {$category}\n";
-if ($author) $frontmatter .= "author: {$author}\n";
-$frontmatter .= "published: " . ($published ? 'true' : 'false') . "\n";
-$frontmatter .= "published_at: {$date}\n";
-if ($excerpt) $frontmatter .= "excerpt: {$excerpt}\n";
-$frontmatter .= "---\n\n";
-
-// ── Generate URL ──
-$url = "/blog/{$slug}";
-$adminUrl = "/admin/blog?edit={$slug}";
-
-$md = $frontmatter . $content;
-$file = "{$postsDir}/{$slug}.md";
-file_put_contents($file, $md, LOCK_EX);
-
-echo "\n  ────────────────────────────────────────────\n";
-echo "  ✅ Written: {$file}\n";
-echo "  URL:       {$url}\n";
-echo "  Admin:     {$adminUrl}\n";
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";

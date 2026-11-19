@@ -86,28 +86,137 @@ final class MediaService {
     }
 
     public function all(?string $context = null): array {
+        return $this->catalogue($context);
+    }
+
+    private function catalogue(?string $context, bool $filterGlobal = false): array {
         if ($context !== null && !in_array($context, self::CONTEXTS, true)) return [];
         $contexts = $context ? [$context] : self::CONTEXTS;
-        $all = [];
+        // Merge in the same context order as legacy catalogues. Read database
+        // records once, in bounded batches, including on the remote DB bridge.
+        $catalogues = [];
         foreach ($contexts as $ctx) {
-            $all = array_merge($all, $this->readWithAliases($ctx));
+            $catalogues[$ctx] = [];
+            foreach ($this->readYaml($ctx) as $record) {
+                if (($record['context'] ?? 'shared') !== $ctx) continue;
+                $key = (string)($record['id'] ?? $record['url'] ?? '');
+                if ($key !== '') $catalogues[$ctx][$key] = ['source' => 'legacy'] + $record;
+            }
         }
+        $afterId = null;
+        do {
+            $filters = [];
+            $params = [];
+            if ($context !== null) {
+                $filters[] = "COALESCE(NULLIF(JSON_UNQUOTE(JSON_EXTRACT(_data, '$.context')), 'null'), 'shared') = ?";
+                $params[] = $context;
+            }
+            if ($afterId !== null) { $filters[] = 'id > ?'; $params[] = $afterId; }
+            $where = $filters ? ' WHERE '.implode(' AND ', $filters) : '';
+            $rows = $this->store->query("SELECT id, _data FROM media_files$where ORDER BY id LIMIT 250", $params);
+            foreach ($rows as $row) {
+                $id = (string)$row['id'];
+                $record = ['id' => $id] + json_decode($row['_data'], true, flags: JSON_THROW_ON_ERROR);
+                $ctx = $record['context'] ?? 'shared';
+                if (isset($catalogues[$ctx])) $catalogues[$ctx][$id] = array_merge($catalogues[$ctx][$id] ?? [], $record);
+                $afterId = $id;
+            }
+        } while (count($rows) === 250);
+        $all = array_merge(...array_map('array_values', array_values($catalogues)));
         // The catalogue only records files uploaded through the admin, so product and
         // temple artwork that ships with the site never appeared in the library and
         // could not be picked when editing a post. Scan the folders too and merge on
         // path, with catalogue entries winning so descriptions and usage survive.
         $byPath = [];
         foreach ($all as $item) {
-            $key = (string)($item['url'] ?? $item['path'] ?? '');
+            $item['path'] ??= $item['url'] ?? '';
+            $key = (string)($item['url'] ?? $item['path']);
             // Old metadata may use a shared context for retired profile portraits.
             if ($key !== '' && !str_starts_with((string)parse_url($key, PHP_URL_PATH), '/assets/images/astrologers/')) $byPath[$key] = $item;
         }
+        $cataloguedPaths = $filterGlobal && $context !== null ? array_fill_keys(array_keys($byPath), true) : [];
         foreach ($this->scanAssetFiles($context) as $file) {
             if (!isset($byPath[$file['url']])) $byPath[$file['url']] = $file;
+        }
+        if ($filterGlobal && $context !== null && $byPath !== []) {
+            $this->excludeForeignOwners($byPath, $cataloguedPaths, $context);
         }
         $merged = array_values($byPath);
         usort($merged, fn($a, $b) => strcmp((string)($b['created_at'] ?? ''), (string)($a['created_at'] ?? '')));
         return $merged;
+    }
+
+    /** A bundled image can be owned by an upload in another context. Only fetch
+     * competing paths and database overrides for legacy rows claiming those paths. */
+    private function excludeForeignOwners(array &$items, array $cataloguedPaths, string $context): void {
+        $priority = array_flip(self::CONTEXTS);
+        $legacy = [];
+        $legacyAtPath = [];
+        foreach (self::CONTEXTS as $other) {
+            if ($other === $context) continue;
+            foreach ($this->readYaml($other) as $row) {
+                if (($row['context'] ?? 'shared') !== $other) continue;
+                $path = $row['url'] ?? $row['path'] ?? '';
+                $id = $row['id'] ?? $row['url'] ?? '';
+                if ($id === '') continue;
+                $legacy[$other][$id] = $row;
+                if (isset($items[$path])) $legacyAtPath[$path][$other][] = $id;
+            }
+        }
+
+        foreach (array_chunk(array_keys($items), 200) as $paths) {
+            $competitors = [];
+            $legacyIds = [];
+            foreach ($paths as $path) {
+                foreach ($legacyAtPath[$path] ?? [] as $other => $ids) {
+                    foreach ($ids as $id) {
+                        $competitors[$other][$id] = $legacy[$other][$id];
+                        $legacyIds[] = $id;
+                    }
+                }
+            }
+            $placeholders = implode(',', array_fill(0, count($paths), '?'));
+            $overlap = "COALESCE(NULLIF(JSON_UNQUOTE(JSON_EXTRACT(_data, '$.url')), 'null'), JSON_UNQUOTE(JSON_EXTRACT(_data, '$.path'))) IN ($placeholders)";
+            if ($legacyIds !== []) $overlap .= ' OR id IN ('.implode(',', array_fill(0, count($legacyIds), '?')).')';
+            $where = " WHERE COALESCE(NULLIF(JSON_UNQUOTE(JSON_EXTRACT(_data, '$.context')), 'null'), 'shared') <> ? AND ($overlap)";
+            $params = [$context, ...$paths, ...$legacyIds];
+            $after = null;
+            do {
+                $cursor = $after === null ? '' : ' AND id > ?';
+                $rows = $this->store->query("SELECT id, _data FROM media_files$where$cursor ORDER BY id LIMIT 250",
+                    $after === null ? $params : [...$params, $after]);
+                foreach ($rows as $record) {
+                    $after = (string)$record['id'];
+                    $row = json_decode($record['_data'], true, flags: JSON_THROW_ON_ERROR);
+                    $other = $row['context'] ?? 'shared';
+                    if (isset($priority[$other])) $competitors[$other][$after] = $row + ($legacy[$other][$after] ?? []);
+                }
+            } while (count($rows) === 250);
+            foreach ($competitors as $other => $rows) {
+                foreach ($rows as $row) {
+                    $path = $row['url'] ?? $row['path'] ?? '';
+                    if (!isset($cataloguedPaths[$path]) || $priority[$other] > $priority[$context]) unset($items[$path]);
+                }
+            }
+        }
+    }
+
+    public function adminPage(array $query): array {
+        $options = ResourceService::listOptions($query);
+        $context = in_array($query['context'] ?? null, self::CONTEXTS, true) ? $query['context'] : '';
+        $matches = $this->catalogue($context === '' ? null : $context, true);
+        if ($options['search'] !== '') {
+            $matches = array_values(array_filter($matches, static function (array $item) use ($options): bool {
+                foreach (['original_name','filename','description','url','path'] as $key) {
+                    if (mb_stripos((string)($item[$key] ?? ''), $options['search']) !== false) return true;
+                }
+                return false;
+            }));
+        }
+        if ($options['sort'] === 'oldest') $matches = array_reverse($matches);
+        $paging = ResourceService::pageBounds($options, count($matches)) + ['context' => $context];
+        $items = array_slice($matches, $paging['offset'], $paging['pageSize']);
+        return compact('paging', 'items');
     }
 
     /** Image files present on disk, as library entries. */
@@ -173,7 +282,6 @@ final class MediaService {
             throw new \InvalidArgumentException('Image storage is not writable. Ask hosting support to restore upload-folder permissions, then retry.');
         }
         $uploaded = [];
-        $records = $this->readCatalogue($context);
         foreach ($files['name'] as $i => $original) {
             if (($files['error'][$i] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) continue;
             $ext = strtolower(pathinfo((string)$original, PATHINFO_EXTENSION));
@@ -222,10 +330,9 @@ final class MediaService {
                     'created_at' => date('c'),
                 ];
             }
-            $records[] = $record;
             $uploaded[] = $record;
         }
-        if ($uploaded) $this->writeCatalogue($context, $records);
+        if ($uploaded) $this->writeCatalogue($context, $uploaded);
         return $uploaded;
     }
 
@@ -393,16 +500,6 @@ final class MediaService {
             return $items;
         }
         return [];
-    }
-
-    private function readWithAliases(string $context): array {
-        $records = $this->readCatalogue($context);
-        foreach ($records as &$r) {
-            if (!isset($r['path']) && isset($r['url'])) {
-                $r['path'] = $r['url'];
-            }
-        }
-        return $records;
     }
 
     private function readCatalogue(string $context): array {

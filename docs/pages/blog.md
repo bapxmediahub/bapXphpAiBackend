@@ -64,7 +64,16 @@ paths, symlinks, metadata-newline injection or oversized content are accepted.
 New owner drafts are explicit. A new due/public post may send the separately
 selected newsletter; a scheduled/hidden save sends none and no delayed newsletter
 job is installed. Old UI forms lacking a revision must be reloaded before save.
-This is concurrency/scheduling protection, not full autosave/revision history.
+Open **History** beside an article to inspect and restore an earlier server save.
+Changed saves through BlogService, including visibility changes and restores, keep the
+previous Markdown and frontmatter in up to 10 private `.rev` files beside that
+article. Their extension excludes them from generated Markdown indexes. Preserve
+these ignored files with the posts when backing up or deploying. Deleting an article
+clears its history. New articles start with an empty history. File edits made outside
+BlogService, including interactive CLI blog/doc writes, bypass this history.
+Restoring requires the current article revision shown at preview time and checks
+the archived content hash. It restores the saved publication settings and never
+enqueues a newsletter.
 Run `BAPX_TEST_MODE=1 php tests/blog-concurrency.php`; six synthetic writers must
 produce one save and five conflicts. Do not create live scheduled articles as
 QA fixtures or send newsletters during acceptance.
@@ -79,3 +88,5 @@ for comparison, then select **Discard browser copy** to continue. Recovery
 depends on storage in this browser profile. On a shared computer, discard the
 copy when you finish. Review publication and subscriber email settings before
 selecting **Save**.
+
+Public site search at `/search` includes visible shop products, published articles and temples. The menu opens the same GET form on mobile and desktop. Hidden and scheduled articles follow the blog publication gate.

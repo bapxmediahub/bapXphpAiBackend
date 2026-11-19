@@ -32,6 +32,7 @@ $__faviconMime = str_contains($__favicon,'.svg') ? 'image/svg+xml' : 'image/png'
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="en_IN">
+<?php if (!empty($seo['twitter_site'])): ?><meta name="twitter:site" content="<?= e($seo['twitter_site']) ?>"><?php endif; ?>
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="<?= e($seo['twitter_title'] ?? $seo['og_title'] ?? $pageTitle) ?>">
 <meta name="twitter:description" content="<?= e($seo['twitter_description'] ?? $seo['og_description'] ?? $metaDescription) ?>">
@@ -317,6 +318,7 @@ echo $__googleTags->gtagCode();
             </div>
         </div>
         <?php endif; ?>
+        <a href="/search"<?= $currentPath === '/search' ? ' aria-current="page"' : '' ?>>Search</a>
         <a href="/about"<?= str_starts_with($currentPath, '/about') ? ' aria-current="page"' : '' ?>>About SPS</a>
         <a href="/contact"<?= str_starts_with($currentPath, '/contact') ? ' aria-current="page"' : '' ?>>Contact</a>
         <?php if(!empty($_SESSION['user'])): ?>

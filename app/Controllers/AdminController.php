@@ -43,6 +43,11 @@ final class AdminController extends BaseController {
         $this->render('admin/google-merchant',compact('channelReport','shopEnabled')+['pageTitle'=>'Google & YouTube']);
     }
 
+    public function legacyDashboard(): void {
+        $query = parse_url((string)($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_QUERY);
+        $this->redirect('/admin/' . ($query !== null && $query !== false ? '?' . $query : ''));
+    }
+
     public function dashboard(): void{
         $catalogProducts = (new ResourceService('products'))->all();
         $productCount = count($catalogProducts);
@@ -67,24 +72,95 @@ final class AdminController extends BaseController {
             (string)($b['created_at'] ?? $b['preferred_date'] ?? ''),
             (string)($a['created_at'] ?? $a['preferred_date'] ?? '')
         ));
+        $secrets = new SecretService();
+        $tagSettings = $secrets->all();
+        $googleStatus = (new \App\Integrations\GoogleSiteKit\GoogleSiteKitClient(
+            (string)($tagSettings['google_analytics_id'] ?? ''), (string)($tagSettings['google_ads_id'] ?? ''),
+            (string)($tagSettings['google_site_verification'] ?? '')
+        ))->status();
+        $googleConnected = false;
+        $googleReports = [];
+        $googleError = '';
+        try {
+            $grant = $secrets->googleReporting();
+            $googleConnected = !empty($grant['refresh_token']);
+            if ($googleConnected && (!empty($grant['property']) || !empty($grant['site']))) {
+                $client = new \App\Integrations\GoogleSiteKit\GoogleReportingClient($tagSettings);
+                $googleReports = $client->reports($client->refresh($grant['refresh_token']), $grant['property'], $grant['site']);
+            }
+        } catch (\DomainException $error) { $googleError = $error->getMessage(); }
+        catch (\Throwable) { $googleError = 'Reporting settings are temporarily unavailable.'; }
         $this->render('admin/dashboard', [
             'pageTitle' => 'Dashboard',
             'productCount' => $productCount,
             'orderCount' => count($allOrders),
+            'latestOrders' => StoreStatsService::recentOrders($allOrders, $from, $to),
+            'pendingOrderValue' => StoreStatsService::pendingOrderValue($allOrders, $from, $to),
             'bookingCount' => count($appointments),
             'appointments' => array_slice($appointments, 0, 5),
-        ] + compact('period', 'from', 'to', 'reportRows', 'productRows', 'orderStatusCounts', 'seoInsights', 'commerceInsights', 'userSupportInsights'));
+        ] + compact('period', 'from', 'to', 'reportRows', 'productRows', 'orderStatusCounts', 'seoInsights', 'commerceInsights', 'userSupportInsights', 'googleConnected', 'googleReports', 'googleStatus', 'googleError'));
     }
     public function products(): void{
         $draft = $_SESSION['product_form_draft'] ?? null;
         unset($_SESSION['product_form_draft']);
-        $items=(new ResourceService('products'))->all();
         $edit=is_string($_GET['edit']??null)?trim($_GET['edit']):'';
         if($draft===null&&$edit!==''){
-            foreach($items as $item)if((string)($item['id']??'')===$edit){$draft = $item;break;}
+            $draft=(new \App\Services\DatabaseService())->find('products', $edit);
             if($draft===null){$this->renderNotFound();return;}
         }
-        $this->render('admin/product-form',['pageTitle'=>'Products','title'=>'Products','collection'=>'products','items'=>$items,'categories'=>(new ResourceService('categories'))->all(),'mediaFiles'=>$this->mediaFor('products'),'draft'=>$draft]);
+        $directory = (new \App\Services\ProductService())->adminPage(
+            is_string($_GET['q'] ?? null) ? $_GET['q'] : '',
+            is_string($_GET['sort'] ?? null) ? $_GET['sort'] : '',
+            is_string($_GET['per_page'] ?? null) ? (int)$_GET['per_page'] : 25,
+            is_string($_GET['page'] ?? null) ? (int)$_GET['page'] : 1
+        );
+        $this->render('admin/product-form', $directory + ['pageTitle'=>'Products','title'=>'Products','collection'=>'products','categories'=>(new ResourceService('categories'))->all(),'mediaFiles'=>$this->mediaFor('products'),'draft'=>$draft]);
+    }
+    public function importProducts(): void {
+        header('Cache-Control: private, no-store');
+        $records = $existing = [];
+        $csv = $error = '';
+        $store = new \App\Services\DatabaseService();
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            try {
+                if (($_POST['step'] ?? '') === 'confirm') {
+                    $encoded = $_POST['reviewed_csv'] ?? '';
+                    $csv = is_string($encoded) && strlen($encoded) <= 90000 ? base64_decode($encoded, true) : false;
+                    $review = $_SESSION['product_import_review'] ?? [];
+                    if ($csv === false || !hash_equals($review['hash'] ?? '', hash('sha256', $csv))) {
+                        throw new \InvalidArgumentException('Upload the file again to review the current import.');
+                    }
+                    $result = $store->importProducts($csv, $review['skip']);
+                    unset($_SESSION['product_import_review']);
+                    (new AuditLogService())->record('import', 'products', '', $result);
+                    $added = $result['added'];
+                    $skipped = $result['skipped'];
+                    $this->flash(sprintf('Added %d hidden %s. Skipped %d existing %s.', $added, $added === 1 ? 'product' : 'products',
+                        $skipped, $skipped === 1 ? 'product' : 'products'), 'success');
+                    $this->redirect('/admin/products#product-list');
+                }
+                unset($_SESSION['product_import_review']);
+                $upload = $_FILES['catalogue'] ?? [];
+                $path = $upload['tmp_name'] ?? null;
+                if (($_POST['step'] ?? '') !== 'preview' || ($upload['error'] ?? null) !== UPLOAD_ERR_OK
+                    || !is_string($path) || !is_uploaded_file($path) || filesize($path) > \App\Services\ProductImportService::MAX_BYTES) {
+                    throw new \InvalidArgumentException('Choose a CSV file up to 64 KiB.');
+                }
+                $csv = (string)file_get_contents($path);
+                $records = \App\Services\ProductImportService::parse($csv);
+                $existing = $store->existingProductSlugs(array_column($records, 'slug'));
+                $_SESSION['product_import_review'] = ['hash'=>hash('sha256', $csv), 'skip'=>$existing];
+            } catch (\InvalidArgumentException $exception) {
+                $error = $exception->getMessage();
+                http_response_code(422);
+            } catch (\RuntimeException $exception) {
+                error_log('Catalogue import unavailable (' . $exception::class . ')');
+                $records = [];
+                $error = 'The database could not confirm the request. Upload the same CSV again to review which products already exist.';
+                http_response_code(503);
+            }
+        }
+        $this->render('admin/product-import', compact('records', 'existing', 'csv', 'error'));
     }
     public function saveProduct(): void{$this->saveProductRecord();}
     public function deleteProduct(): void{$this->delete('products');}
@@ -914,8 +990,8 @@ final class AdminController extends BaseController {
     }
     public function media(): void{
         $media = new MediaService();
-        $this->render('admin/media',['pageTitle'=>'Media Library','items'=>$media->all(),
-            'imageHealth'=>$media->productImageHealth((new ResourceService('products'))->all()),
+        $this->render('admin/media',$media->adminPage($_GET) + ['pageTitle'=>'Media Library',
+            'imageHealth'=>($_GET['check_images'] ?? '') === '1' ? $media->productImageHealth((new ResourceService('products'))->all()) : null,
             'uploadStorageReady'=>is_dir(MediaService::persistentDirectory())
                 ? is_writable(MediaService::persistentDirectory())
                 : is_writable(dirname(MediaService::persistentDirectory()))]);
@@ -928,13 +1004,20 @@ final class AdminController extends BaseController {
      * this admin so a crafted form cannot bounce anyone off-site.
      */
     public function uploadMedia(): void{
+        $wantsJson = str_contains(strtolower($_SERVER['HTTP_ACCEPT'] ?? ''), 'application/json');
         try {
             $uploaded=(new MediaService())->upload($_FILES['media_files'] ?? [], $_POST['context'] ?? 'shared', $_POST['description'] ?? null);
+            if (!$uploaded) throw new \InvalidArgumentException('Choose an image to upload.');
         } catch (\InvalidArgumentException $error) {
+            if ($wantsJson) $this->jsonResponse(['error' => $error->getMessage()], 422);
             $this->flash($error->getMessage(), 'error');
             $this->redirect('/admin/media');
         }
         (new AuditLogService())->record('upload','media','',['count'=>count($uploaded),'context'=>$_POST['context'] ?? 'shared']);
+        if ($wantsJson) {
+            $files = array_map(static fn(array $file): array => ['url' => $file['url']], $uploaded);
+            $this->jsonResponse(['files' => $files], 201);
+        }
         $names = array_filter(array_map(fn($f) => basename((string)($f['url'] ?? $f['path'] ?? '')), $uploaded));
         $this->flash(
             count($uploaded).' media file'.(count($uploaded) === 1 ? '' : 's').' uploaded.'
@@ -1035,10 +1118,11 @@ final class AdminController extends BaseController {
         if($reload!=='')$recoveredDraft=$blog->find($reload);
         // The editor's "Choose from uploads" picker needs the library, otherwise it
         // renders empty and the only way to set an image is to type a path.
+        $posts = $blog->all(true);
         $this->render('admin/blog',[
             'pageTitle'=>'Blog','title'=>'Blog Posts',
-            'posts'=>$blog->all(true),'categories'=>$blog->categories(),
-            'mediaFiles'=>(new MediaService())->all('blog'),
+            'posts'=>$posts,'categories'=>$blog->categories(true, $posts),
+            'mediaFiles'=>(new MediaService())->all(),
             'currentAuthor'=>$this->currentAuthorName(),'recoveredDraft'=>$recoveredDraft,
             'blogDraftOwner'=>$ownerId !== '' ? hash('sha256', $ownerId) : '',
             'savedDraftToken'=>$savedDraftToken,
@@ -1128,6 +1212,30 @@ final class AdminController extends BaseController {
         }
     }
     /** Flip a post between published and hidden without opening the editor. */
+    public function blogHistory(string $slug): void {
+        $this->requireModule('blog');
+        $selected = $_GET['revision'] ?? null;
+        $history = $selected === null || is_string($selected) ? (new BlogService())->revisionHistory($slug, $selected) : null;
+        if ($history === null) { $this->renderNotFound(); return; }
+        $this->seoOverrides = ['title'=>'Article revision history', 'robots'=>'noindex, nofollow'];
+        $this->render('admin/blog-history', $history);
+    }
+
+    public function restoreBlogRevision(string $slug): void {
+        $this->requireModule('blog');
+        try {
+            $selected = is_string($_POST['revision'] ?? null) ? $_POST['revision'] : '';
+            $expected = is_string($_POST['expected_revision'] ?? null) ? $_POST['expected_revision'] : '';
+            $saved = (new BlogService())->restoreRevision($slug, $selected, $expected);
+        } catch (\App\Services\BlogConflictException|\InvalidArgumentException $error) {
+            $this->flash($error->getMessage(), 'error');
+            $this->redirect('/admin/blog/history/'.rawurlencode($slug));
+        }
+        (new AuditLogService())->record('restore', 'blog', $slug, ['previous_revision'=>$expected, 'revision'=>$saved['_revision']]);
+        $this->flash('Article version restored. Publication state: '.$saved['_publication_state'].'.', 'success');
+        $this->redirect('/admin/blog/history/'.rawurlencode($slug));
+    }
+
     public function toggleBlog(): void{
         $slug = trim((string)($_POST['slug'] ?? ''));
         $blog = new \App\Services\BlogService();
@@ -1196,7 +1304,7 @@ final class AdminController extends BaseController {
             "Rewrite this blog headline for a Tamil spiritual products and astrology site. "
             . "Return ONE headline only, plain text, no quotes, no markdown, under 70 characters.\n\nHeadline: " . $title
         );
-        if ($result === null) { $this->jsonResponse(['error' => 'No AI API key is configured. Set ai_api_key in Admin → Integrations.'], 400); return; }
+        if ($result === null) { $this->jsonResponse(['error' => 'Enhancement is unavailable. Check the AI connection in Admin → Integrations.'], 503); return; }
         $clean = trim(preg_replace('/\s+/', ' ', strip_tags($result)) ?? $result, " \t\n\r\0\x0B\"'");
         $this->jsonResponse(['title' => mb_substr($clean, 0, 120)]);
     }
@@ -1205,10 +1313,10 @@ final class AdminController extends BaseController {
         if ($content === '') { $this->jsonResponse(['error' => 'Write some content first.'], 400); return; }
         $result = $this->askModel(
             "Improve the clarity and flow of this blog article. Keep the author's meaning, language and "
-            . "any Tamil text. Return Markdown only — no HTML, no code fences around the whole answer, "
+            . "any Tamil text. Preserve existing image links and do not add images. Return Markdown only — no HTML, no code fences around the whole answer, "
             . "no commentary.\n\nArticle:\n" . $content
         );
-        if ($result === null) { $this->jsonResponse(['error' => 'No AI API key is configured. Set ai_api_key in Admin → Integrations.'], 400); return; }
+        if ($result === null) { $this->jsonResponse(['error' => 'Enhancement is unavailable. Check the AI connection in Admin → Integrations.'], 503); return; }
         $this->jsonResponse(['content' => trim($result)]);
     }
     public function taxReport(): void{
@@ -1274,7 +1382,10 @@ final class AdminController extends BaseController {
             'productRows'=>$productRows, 'orderStatusCounts'=>$orderStatusCounts,
         ]);
     }
-    private function list(string $title, ?string $collection = null): void{$this->render('admin/list',['pageTitle' => $title, 'title' => $title, 'collection' => $collection, 'items'=>$collection ? (new ResourceService($collection))->all() : []]);}
+    private function list(string $title, string $collection): void {
+        $this->render('admin/list', (new ResourceService($collection))->adminPage($_GET)
+            + ['pageTitle' => $title, 'title' => $title, 'collection' => $collection]);
+    }
     private function resource(string $title,string $collection,array $fields): void{$this->render('admin/resource',['pageTitle' => $title, 'title' => $title, 'collection' => $collection, 'fields' => $fields, 'items'=>(new ResourceService($collection))->all(), 'mediaFiles'=>$this->mediaFor($collection)]);}
     private function save(string $collection): void{
         $data=$this->cleanPost();

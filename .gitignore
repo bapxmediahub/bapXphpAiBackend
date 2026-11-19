@@ -33,3 +33,4 @@ storage/.bin/kitten-tts/
 
 /content/blog/posts/.blog-write.lock
 /content/blog/posts/.post-*.tmp
+/content/blog/posts/.*.rev

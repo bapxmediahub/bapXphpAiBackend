@@ -16,7 +16,7 @@ final class GoogleSiteKitClient
             'analytics'=>['configuration'=>self::state($this->analyticsId,$this->analytics()),'collection'=>'unverified'],
             'ads'=>['configuration'=>self::state($this->adsId,$this->ads()),'conversion_tracking'=>'unverified'],
             'search_console'=>['configuration'=>self::state($this->siteVerification,$this->verification()),'ownership'=>'unverified'],
-            'reporting'=>'not_connected',
+            'reporting'=>'not_checked',
         ];
     }
     public function siteVerificationTag(): string {

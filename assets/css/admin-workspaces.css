@@ -298,3 +298,17 @@
 .agent-review__warning { padding:16px; border-inline-start:4px solid var(--color-gold); background:var(--color-bg-alt); }
 @media(max-width:900px){.agent-review__layout{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:743px){.agent-review__turn-picker>*{flex-basis:100%}.agent-review__metadata div{flex-direction:column;gap:4px}.agent-review__form .btn{width:100%}}
+
+.enterprise-chat .enterprise-chat__intro { text-align: start; margin: 0 0 1.25rem; }
+.enterprise-chat__thread { background: var(--color-white); padding: clamp(.85rem, 2.5vw, 1.6rem); border: 1px solid var(--color-border); border-radius: 1rem; box-shadow: 0 .4rem 1.8rem rgba(58, 27, 21, .08); }
+.enterprise-chat .agent-suggestions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; padding: 0; }
+.enterprise-chat [data-q] { display: flex; align-items: center; justify-content: space-between; gap: .5rem; min-height: 44px; text-align: start; border-radius: .65rem; color: var(--color-maroon); background: var(--color-bg-alt); }
+.enterprise-chat [data-q]::after {
+    content: ''; flex: 0 0 .43rem; height: .43rem;
+    border-top: 1.5px solid currentColor; border-right: 1.5px solid currentColor;
+    transform: rotate(45deg); margin-inline-end: .2rem;
+}
+.enterprise-chat .agent-history-actions button { min-height: 44px; margin: 0; }
+#agent-attachment-status { margin: .5rem 0; font-size: .85rem; }
+#agent-attachment-status:empty { display: none; }
+@media (max-width: 420px) { .enterprise-chat .agent-suggestions { grid-template-columns: 1fr; } }

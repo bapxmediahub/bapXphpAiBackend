@@ -4,6 +4,33 @@ namespace App\Services;
 /** Deterministic commerce reporting shared by admin screens and future dashboard cards. */
 final class StoreStatsService
 {
+    /** Outstanding order value is separate from sales backed by a recorded payment. */
+    public static function pendingOrderValue(array $orders, string $from, string $to): float
+    {
+        $value = 0.0;
+        foreach ($orders as $order) {
+            $date = substr(self::orderDate($order), 0, 10);
+            $status = strtolower(trim((string)($order['status'] ?? '')));
+            if ($date < $from || $date > $to || !self::validDate($date)) continue;
+            if (trim((string)($order['payment_id'] ?? '')) !== '') continue;
+            if (in_array($status, ['pending', 'pending_payment', 'payment_pending'], true)) {
+                $value += max(0.0, (float)($order['total'] ?? 0));
+            }
+        }
+        return round($value, 2);
+    }
+
+    public static function recentOrders(array $orders, string $from, string $to): array
+    {
+        $items = array_filter($orders, static function (array $order) use ($from, $to): bool {
+            $date = substr(self::orderDate($order), 0, 10);
+            return !empty($order['id']) && self::validDate($date) && $date >= $from && $date <= $to;
+        });
+        usort($items, static fn(array $a, array $b): int =>
+            strcmp(self::orderDate($b), self::orderDate($a)) ?: strcmp((string)$b['id'], (string)$a['id']));
+        return array_slice($items, 0, 5);
+    }
+
     public static function topProducts(array $orders, string $from, string $to, string $status = ''): array
     {
         $rows = self::productsPurchased($orders, $from, $to, $status);
