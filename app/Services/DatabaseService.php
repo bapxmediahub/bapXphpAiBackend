@@ -482,6 +482,48 @@ final class DatabaseService {
         });
     }
 
+    public function deleteAuthoredPage(string $slug, string $expected): bool {
+        if (!AuthoredPageService::validSlug($slug) || !AuthoredPageService::validRevision($expected)) {
+            throw new \InvalidArgumentException('Invalid page or revision.');
+        }
+        if ($this->isTestMode()) throw new \LogicException('Page writes require a database.');
+        if ($this->isRemote()) return $this->remoteMutation('delete_authored_page', 'settings', compact('slug','expected'))['deleted'] === true;
+        $query = $this->db()->prepare("DELETE FROM settings WHERE id = ? AND JSON_UNQUOTE(JSON_EXTRACT(_data, '$.revision')) = ?");
+        $query->execute(['pg:'.$slug, $expected]);
+        return $query->rowCount() === 1;
+    }
+
+    public function saveAuthoredPage(array $input, string $expected): bool {
+        if ($expected !== '0' && !AuthoredPageService::validRevision($expected)) throw new \InvalidArgumentException('Invalid page revision.');
+        $record = AuthoredPageService::record($input);
+        if ($this->isTestMode()) throw new \LogicException('Page writes require a database.');
+        if ($this->isRemote()) {
+            return $this->remoteMutation('save_authored_page', 'settings', ['record'=>$record, 'expected'=>$expected])['saved'] === true;
+        }
+        if ($expected === '0') return $this->insertIfAbsent('settings', $record)['inserted'];
+        $query = $this->db()->prepare("UPDATE settings SET _data = ?, _status = ?, _updated_at = ?
+            WHERE id = ? AND JSON_UNQUOTE(JSON_EXTRACT(_data, '$.revision')) = ?");
+        $query->execute([json_encode($record, JSON_THROW_ON_ERROR), $record['status'], date('c'), $record['id'], (string)$expected]);
+        return $query->rowCount() === 1;
+    }
+
+    /** A single settings record owns public header order, independently of the general settings forms. */
+    public function saveHeaderMenu(array $items, int $revision): bool {
+        SettingsService::validateMenuItems($items);
+        if ($revision < 0 || $revision > 999999999) throw new \InvalidArgumentException('Invalid menu revision.');
+        if ($this->isTestMode()) throw new \LogicException('Menu writes require a database.');
+        if ($this->isRemote()) {
+            return $this->remoteMutation('save_header_menu', 'settings', compact('items','revision'))['saved'] === true;
+        }
+        $id = SettingsService::HEADER_MENU_ID;
+        $record = ['id'=>$id, 'menu_revision'=>$revision+1, 'header_menu'=>$items];
+        if ($revision === 0) return $this->insertIfAbsent('settings', $record)['inserted'];
+        $query = $this->db()->prepare("UPDATE settings SET _data = ?, _updated_at = ?
+            WHERE id = ? AND JSON_UNQUOTE(JSON_EXTRACT(_data, '$.menu_revision')) = ?");
+        $query->execute([json_encode($record, JSON_THROW_ON_ERROR), date('c'), $id, (string)$revision]);
+        return $query->rowCount() === 1;
+    }
+
     /** Compare the encrypted row revision so a stale selection/disconnect cannot overwrite a new grant. */
     public function changeGoogleReportingRecord(string $revision, ?array $record): bool {
         if (strlen((string)base64_decode($revision, true)) !== 16) throw new \InvalidArgumentException('Invalid reporting revision.');

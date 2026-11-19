@@ -6,6 +6,17 @@ namespace App\Services;
  * The caller provides the authenticated actor; model-supplied identities are ignored.
  */
 final class SupportToolRegistry {
+    private const PUBLIC_POLICIES = [
+        'tracking'=>'A tracking link is supplied when the order ships.',
+        'returns_or_problems'=>'Use the contact form for return or product problems.',
+        'shipping_cost'=>'Shipping is calculated at checkout.',
+        'payment_methods'=>'Card and UPI.',
+    ];
+
+    public static function policyInputSchema(): array {
+        return ['type'=>'object', 'properties'=>['key'=>['type'=>'string', 'enum'=>array_keys(self::PUBLIC_POLICIES)]], 'required'=>['key']];
+    }
+
     public function __construct(private ?array $actor, private ?AgentContextService $context = null) {
         $this->context ??= new AgentContextService();
     }
@@ -14,7 +25,7 @@ final class SupportToolRegistry {
             ['name'=>'public_catalog', 'description'=>'Read published products using a customer question.',
              'parameters'=>['type'=>'object','properties'=>['question'=>['type'=>'string','minLength'=>1,'maxLength'=>256]],'required'=>['question']]],
             ['name'=>'public_policy', 'description'=>'Read the public shipping, returns, or payment policy.',
-             'parameters'=>['type'=>'object','properties'=>['key'=>['type'=>'string','enum'=>['tracking','returns_or_problems','shipping_cost','payment_methods']]],'required'=>['key']]],
+             'parameters'=>self::policyInputSchema()],
             ['name'=>'own_ticket_status', 'description'=>'Read only the authenticated customer support-ticket metadata.',
              'parameters'=>['type'=>'object','properties'=>[
                 'reference'=>['type'=>['string','null'],'pattern'=>'^[a-f0-9]{16}$'],
@@ -34,13 +45,7 @@ final class SupportToolRegistry {
         }
         if ($tool === 'public_policy') {
             if (array_keys($args) !== ['key'] || !is_string($args['key'])) return ['error'=>'Invalid arguments'];
-            $policies = [
-                'tracking'=>'A tracking link is supplied when the order ships.',
-                'returns_or_problems'=>'Use the contact form for return or product problems.',
-                'shipping_cost'=>'Shipping is calculated at checkout.',
-                'payment_methods'=>'Card and UPI.',
-            ];
-            return isset($policies[$args['key']]) ? ['value'=>$policies[$args['key']]] : ['error'=>'Invalid policy'];
+            return isset(self::PUBLIC_POLICIES[$args['key']]) ? ['value'=>self::PUBLIC_POLICIES[$args['key']]] : ['error'=>'Invalid policy'];
         }
         if ($tool === 'own_ticket_status') {
             if (array_diff(array_keys($args), ['reference','status','period'])) return ['error'=>'Invalid arguments'];

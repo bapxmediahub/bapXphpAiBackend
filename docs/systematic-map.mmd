@@ -7,14 +7,14 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 151 routes, 13 controllers, 69 services, 63 views, 0 data files, 27 tools"]
-    arch_routes["> Routes: 151 (Public + Auth + Payment + Admin + Support)"]:::arch
-    arch_ctrl["> Controllers: 13"]:::arch
-    arch_svc["> Services: 69"]:::arch
-    arch_views["> Views: 63"]:::arch
+  subgraph ARCH["Architecture Overview — 160 routes, 14 controllers, 72 services, 67 views, 0 data files, 29 tools"]
+    arch_routes["> Routes: 160 (Public + Auth + Payment + Admin + Support)"]:::arch
+    arch_ctrl["> Controllers: 14"]:::arch
+    arch_svc["> Services: 72"]:::arch
+    arch_views["> Views: 67"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
-    arch_tools["> Tools: 27"]:::arch
-    arch_gaps["> Gaps: 10"]:::arch
+    arch_tools["> Tools: 29"]:::arch
+    arch_gaps["> Gaps: 11"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -22,6 +22,7 @@ flowchart LR
   subgraph ROUTES_PUBLIC["PUBLIC Routes"]
     route_get["GET / — Home page — hero, categories, featured products, temple guide"]:::route
     route_get_search["GET /search — Search published storefront content"]:::route
+    route_get_pages_slug["GET /pages/{slug}"]:::route
     route_get_about["GET /about — About SPS — story, values, CTA"]:::route
     route_get_sri_panchami_spiritual["GET /sri-panchami-spiritual — Sri Panchami Spiritual landing page"]:::route
     route_get_spiritual["GET /spiritual — Short spiritual landing redirect-equivalent page"]:::route
@@ -108,6 +109,9 @@ flowchart LR
     route_get_admin_system_health["GET /admin/system-health"]:::route
     route_get_admin_docs["GET /admin/docs"]:::route
     route_get_admin_docs_slug["GET /admin/docs/{slug}"]:::route
+    route_get_admin_mcp_clients["GET /admin/mcp-clients"]:::route
+    route_post_admin_mcp_clients_issue["POST /admin/mcp-clients/issue"]:::route
+    route_post_admin_mcp_clients_revoke["POST /admin/mcp-clients/revoke"]:::route
     route_get_admin_google_reporting["GET /admin/google-reporting"]:::route
     route_post_admin_google_reporting_connect["POST /admin/google-reporting/connect"]:::route
     route_get_admin_google_reporting_callback["GET /admin/google-reporting/callback"]:::route
@@ -154,6 +158,8 @@ flowchart LR
     route_get_admin_support_tickets["GET /admin/support-tickets — Admin — support tickets"]:::route
     route_post_admin_support_tickets_save["POST /admin/support-tickets/save"]:::route
     route_get_admin_appearance["GET /admin/appearance — Admin — logo & favicon"]:::route
+    route_get_admin_appearance_menu["GET /admin/appearance/menu"]:::route
+    route_post_admin_appearance_menu["POST /admin/appearance/menu"]:::route
     route_post_admin_appearance_save["POST /admin/appearance/save — Admin — save logo/favicon"]:::route
     route_get_admin_media["GET /admin/media — Admin — media library"]:::route
     route_post_admin_media_upload["POST /admin/media/upload — Admin — upload media"]:::route
@@ -173,6 +179,9 @@ flowchart LR
     route_post_admin_integrations_test_email["POST /admin/integrations/test-email"]:::route
     route_post_admin_integrations_test_ai["POST /admin/integrations/test-ai"]:::route
     route_post_admin_integrations_save["POST /admin/integrations/save — Admin — save integration secrets"]:::route
+    route_get_admin_pages["GET /admin/pages"]:::route
+    route_post_admin_pages_delete["POST /admin/pages/delete"]:::route
+    route_post_admin_pages_save["POST /admin/pages/save"]:::route
     route_get_admin_blog["GET /admin/blog"]:::route
     route_post_admin_blog_save["POST /admin/blog/save"]:::route
     route_get_admin_blog_history_slug["GET /admin/blog/history/{slug}"]:::route
@@ -197,6 +206,7 @@ flowchart LR
     controller_accountcontroller["AccountController"]:::code
     controller_admincontroller["AdminController"]:::code
     controller_admingooglereportingcontroller["AdminGoogleReportingController"]:::code
+    controller_adminmcpclientcontroller["AdminMcpClientController"]:::code
     controller_apicontroller["ApiController"]:::code
     controller_authcontroller["AuthController"]:::code
     controller_basecontroller["BaseController"]:::code
@@ -213,6 +223,7 @@ flowchart LR
     service_addressservice["AddressService"]:::code
     service_adminhelpservice["AdminHelpService"]:::code
     service_agentattachmentservice["AgentAttachmentService"]:::code
+    service_agentbudgetexception["AgentBudgetException"]:::code
     service_agentcapabilitypolicy["AgentCapabilityPolicy"]:::code
     service_agentcontextservice["AgentContextService"]:::code
     service_agentconversationservice["AgentConversationService"]:::code
@@ -228,6 +239,7 @@ flowchart LR
     service_astrologerservice["AstrologerService"]:::code
     service_auditlogservice["AuditLogService"]:::code
     service_authservice["AuthService"]:::code
+    service_authoredpageservice["AuthoredPageService"]:::code
     service_blogconflictexception["BlogConflictException"]:::code
     service_blogdraftservice["BlogDraftService"]:::code
     service_blogservice["BlogService"]:::code
@@ -249,6 +261,7 @@ flowchart LR
     service_mailstorageservice["MailStorageService"]:::code
     service_mailtemplateservice["MailTemplateService"]:::code
     service_markdownrenderer["MarkdownRenderer"]:::code
+    service_mcpclientservice["McpClientService"]:::code
     service_mediaservice["MediaService"]:::code
     service_merchantfeedservice["MerchantFeedService"]:::code
     service_orderservice["OrderService"]:::code
@@ -303,12 +316,15 @@ flowchart LR
     view_admin_email_templates["admin/email-templates"]:::code
     view_admin_google_merchant["admin/google-merchant"]:::code
     view_admin_google_reporting["admin/google-reporting"]:::code
+    view_admin_header_menu["admin/header-menu"]:::code
     view_admin_help["admin/help"]:::code
     view_admin_integrations["admin/integrations"]:::code
     view_admin_list["admin/list"]:::code
     view_admin_list_controls["admin/list-controls"]:::code
     view_admin_mailbox["admin/mailbox"]:::code
+    view_admin_mcp_clients["admin/mcp-clients"]:::code
     view_admin_media["admin/media"]:::code
+    view_admin_pages["admin/pages"]:::code
     view_admin_product_form["admin/product-form"]:::code
     view_admin_product_import["admin/product-import"]:::code
     view_admin_resource["admin/resource"]:::code
@@ -321,6 +337,7 @@ flowchart LR
     view_layouts_app["layouts/app"]:::code
     view_public_404["public/404"]:::code
     view_public_about["public/about"]:::code
+    view_public_authored_page["public/authored-page"]:::code
     view_public_blog["public/blog"]:::code
     view_public_blog_post["public/blog-post"]:::code
     view_public_cart["public/cart"]:::code
@@ -383,6 +400,7 @@ flowchart LR
 
   subgraph TOOLS["Tools"]
     tool_documentationreview["DocumentationReview"]:::tool
+    tool_legacymediamigration["LegacyMediaMigration"]:::tool
     tool_agent_contracts["agent-contracts"]:::tool
     tool_agent_eval["agent-eval"]:::tool
     tool_blog_image["blog-image"]:::tool
@@ -402,6 +420,7 @@ flowchart LR
     tool_optimize_images["optimize-images"]:::tool
     tool_product_read["product-read"]:::tool
     tool_product_write["product-write"]:::tool
+    tool_reconcile_media["reconcile-media"]:::tool
     tool_refresh_blog_cache["refresh-blog-cache"]:::tool
     tool_runtime_check["runtime-check"]:::tool
     tool_smoke_local["smoke-local"]:::tool
@@ -412,13 +431,14 @@ flowchart LR
   end
 
   subgraph GAPS["Gaps & Missing Links"]
-    gap_4321d51b65["unwired_services: AstrologerService"]:::gap
-    gap_c69fc5d630["unwired_services: BlogConflictException"]:::gap
-    gap_848defe3e1["unwired_services: CourierService"]:::gap
-    gap_b09974925e["unwired_services: ProjectMapService"]:::gap
-    gap_2c04cce0d7["unwired_services: RequestFailureService"]:::gap
-    gap_c3ef791483["unwired_services: SmtpDeliveryUncertainException"]:::gap
-    gap_858139bc3d["unwired_services: StoragePermissionService"]:::gap
+    gap_77a61cfde1["unwired_services: AgentBudgetException"]:::gap
+    gap_0e0fa6b7b8["unwired_services: AstrologerService"]:::gap
+    gap_fda71b28ab["unwired_services: BlogConflictException"]:::gap
+    gap_7893297d25["unwired_services: CourierService"]:::gap
+    gap_d1a24f9ede["unwired_services: ProjectMapService"]:::gap
+    gap_15afa0e45d["unwired_services: RequestFailureService"]:::gap
+    gap_ef0e670931["unwired_services: SmtpDeliveryUncertainException"]:::gap
+    gap_0e57a81a9b["unwired_services: StoragePermissionService"]:::gap
     gap_02fdee86e5["POST /admin/email-templates/test — missing AuditLogService"]:::gap
     gap_63c4de0521["POST /admin/blog/enhance-title — missing AuditLogService"]:::gap
     gap_90db15aec7["POST /admin/blog/enhance-content — missing AuditLogService"]:::gap
@@ -430,10 +450,15 @@ flowchart LR
   controller_publiccontroller --> service_categoryservice
   controller_publiccontroller -. renders .-> view_public_home
   route_get_search --> controller_publiccontroller
+  controller_publiccontroller --> service_authoredpageservice
   controller_publiccontroller --> service_productservice
   controller_publiccontroller --> service_blogservice
   controller_publiccontroller --> service_templeservice
   controller_publiccontroller -. renders .-> view_public_search
+  route_get_pages_slug --> controller_publiccontroller
+  controller_publiccontroller --> service_authoredpageservice
+  controller_publiccontroller --> service_markdownrenderer
+  controller_publiccontroller -. renders .-> view_public_authored_page
   route_get_about --> controller_publiccontroller
   controller_publiccontroller -. renders .-> view_public_about
   route_get_sri_panchami_spiritual --> controller_publiccontroller
@@ -499,6 +524,7 @@ flowchart LR
   route_get_sitemap_xml --> controller_publiccontroller
   controller_publiccontroller --> service_blogservice
   controller_publiccontroller --> service_productservice
+  controller_publiccontroller --> service_authoredpageservice
   controller_publiccontroller -. renders .-> view_public_sitemap
   route_get_contact --> controller_publiccontroller
   controller_publiccontroller -. renders .-> view_public_contact
@@ -626,6 +652,21 @@ flowchart LR
   controller_admincontroller --> service_markdownrenderer
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_help
+  route_get_admin_mcp_clients --> controller_adminmcpclientcontroller
+  controller_adminmcpclientcontroller --> service_mcpclientservice
+  controller_adminmcpclientcontroller --> service_authservice
+  controller_adminmcpclientcontroller --> service_auditlogservice
+  controller_adminmcpclientcontroller -. renders .-> view_admin_mcp_clients
+  route_post_admin_mcp_clients_issue --> controller_adminmcpclientcontroller
+  controller_adminmcpclientcontroller --> service_mcpclientservice
+  controller_adminmcpclientcontroller --> service_authservice
+  controller_adminmcpclientcontroller --> service_auditlogservice
+  controller_adminmcpclientcontroller -. renders .-> view_admin_mcp_clients
+  route_post_admin_mcp_clients_revoke --> controller_adminmcpclientcontroller
+  controller_adminmcpclientcontroller --> service_mcpclientservice
+  controller_adminmcpclientcontroller --> service_authservice
+  controller_adminmcpclientcontroller --> service_auditlogservice
+  controller_adminmcpclientcontroller -. renders .-> view_admin_mcp_clients
   route_get_admin_google_reporting --> controller_admingooglereportingcontroller
   controller_admingooglereportingcontroller --> service_secretservice
   controller_admingooglereportingcontroller --> service_authservice
@@ -874,6 +915,17 @@ flowchart LR
   controller_admincontroller --> service_settingsservice
   controller_admincontroller --> service_authservice
   controller_admincontroller -. renders .-> view_admin_appearance
+  route_get_admin_appearance_menu --> controller_admincontroller
+  controller_admincontroller --> service_settingsservice
+  controller_admincontroller --> service_authoredpageservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_header_menu
+  route_post_admin_appearance_menu --> controller_admincontroller
+  controller_admincontroller --> service_settingsservice
+  controller_admincontroller --> service_authoredpageservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_header_menu
   route_post_admin_appearance_save --> controller_admincontroller
   controller_admincontroller --> service_settingsservice
   controller_admincontroller --> service_auditlogservice
@@ -1060,6 +1112,20 @@ flowchart LR
   controller_blogcontroller --> service_blogservice
   controller_blogcontroller --> service_markdownrenderer
   controller_blogcontroller -. renders .-> view_public_blog
+  route_get_admin_pages --> controller_admincontroller
+  controller_admincontroller --> service_authoredpageservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_pages
+  route_post_admin_pages_delete --> controller_admincontroller
+  controller_admincontroller --> service_authoredpageservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_pages
+  route_post_admin_pages_save --> controller_admincontroller
+  controller_admincontroller --> service_authoredpageservice
+  controller_admincontroller --> service_auditlogservice
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_pages
   route_get_admin_blog --> controller_admincontroller
   controller_admincontroller --> service_blogservice
   controller_admincontroller --> service_authservice
@@ -1116,6 +1182,7 @@ flowchart LR
   controller_accountcontroller --> controller_basecontroller
   controller_admincontroller --> controller_basecontroller
   controller_admingooglereportingcontroller --> controller_basecontroller
+  controller_adminmcpclientcontroller --> controller_basecontroller
   controller_apicontroller --> controller_basecontroller
   controller_authcontroller --> controller_basecontroller
   controller_blogcontroller --> controller_basecontroller
@@ -1138,6 +1205,7 @@ flowchart LR
   service_appointmentservice --> collection_appointments
   service_astrologerservice --> collection_astrologers
   service_auditlogservice --> collection_audit_events
+  service_authoredpageservice --> collection_settings
   service_categoryservice --> collection_categories
   service_consultationservice --> collection_appointments
   service_consultationservice --> collection_consultation_messages
@@ -1148,11 +1216,9 @@ flowchart LR
   service_mailqueueservice --> collection_mail_queue
   service_mailstorageservice --> collection_mail_inbox
   service_mailstorageservice --> collection_mail_outbox
+  service_mcpclientservice --> collection_secrets
+  service_mcpclientservice --> collection_audit_events
   service_mediaservice --> collection_media_files
-  service_mediaservice --> collection_products
-  service_mediaservice --> collection_temples
-  service_mediaservice --> collection_categories
-  service_mediaservice --> collection_settings
   service_orderservice --> collection_orders
   service_passwordresetservice --> collection_users
   service_productservice --> collection_products
@@ -1201,13 +1267,14 @@ flowchart LR
   tool_validate_project_map --> systematic_map
   tool_smoke_local --> ROUTES_PUBLIC
   tool_smoke_local --> ROUTES_ADMIN
-  gap_4321d51b65 -. missing .-> service_astrologerservice
-  gap_c69fc5d630 -. missing .-> service_blogconflictexception
-  gap_848defe3e1 -. missing .-> service_courierservice
-  gap_b09974925e -. missing .-> service_projectmapservice
-  gap_2c04cce0d7 -. missing .-> service_requestfailureservice
-  gap_c3ef791483 -. missing .-> service_smtpdeliveryuncertainexception
-  gap_858139bc3d -. missing .-> service_storagepermissionservice
+  gap_77a61cfde1 -. missing .-> service_agentbudgetexception
+  gap_0e0fa6b7b8 -. missing .-> service_astrologerservice
+  gap_fda71b28ab -. missing .-> service_blogconflictexception
+  gap_7893297d25 -. missing .-> service_courierservice
+  gap_d1a24f9ede -. missing .-> service_projectmapservice
+  gap_15afa0e45d -. missing .-> service_requestfailureservice
+  gap_ef0e670931 -. missing .-> service_smtpdeliveryuncertainexception
+  gap_0e57a81a9b -. missing .-> service_storagepermissionservice
   gap_02fdee86e5 -. missing .-> controller_admincontroller
   gap_63c4de0521 -. missing .-> controller_admincontroller
   gap_90db15aec7 -. missing .-> controller_admincontroller

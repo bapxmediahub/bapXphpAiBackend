@@ -40,3 +40,16 @@ Invalid saved values are reported and not rendered; the developer does not
 silently replace them. Check actual collection with Tag Assistant and confirm
 ownership in Search Console. Use **Google & YouTube** for the separate catalogue
 feed and channel-readiness steps.
+
+
+## Change the public header links
+
+Open **Header menu** in the owner sidebar. Choose the pages in the order you
+want them to appear and leave unused positions empty. Select **Save header
+menu** and follow **View the public header** to check it. Published pages from the Pages editor are available by title. Withheld or missing pages disappear from the public menu. The Blog link keeps
+its category dropdown. Shop and Blog become visible only when their modules
+are enabled. The mobile shortcut bar and account links have separate roles.
+
+## Authorize a local reporting client
+
+Open **Integrations → Manage local MCP clients**. Authorize a named client to read paid-sales totals for 7, 30 or 90 days. Copy the credential from its single display into the trusted client’s secret manager as `BAPX_MCP_CLIENT_TOKEN` for `bapXphp mcp:stdio`. Grants expire after 30 days. Return to this page to check the last successful read or revoke access.

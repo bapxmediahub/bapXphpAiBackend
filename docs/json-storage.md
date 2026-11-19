@@ -77,3 +77,11 @@ the same per-chat lock and atomic replacement as turns/feedback; stale revision
 or changed evidence is rejected. No SQL table or second transcript JSON is used.
 A maximum of 20 decisions per turn bounds growth. Original content/customer
 feedback is never overwritten, and review time is separate from customer activity.
+
+## Reconcile historical Media Library metadata
+
+The shipped catalogue is archived in `storage/migrations/legacy-media/products.yaml` for migration. Runtime uploads and usage edits write to MySQL `media_files`. Installations with additional historical `storage/media.yaml` or `storage/media/*.yaml` files should check them from their own deployment checkout.
+
+Run `./bapXphp media:reconcile` for a read-only comparison of source rows, unique IDs, missing rows, missing fields, conflicting ID/URL ownership and covered rows. Existing MySQL fields win, including empty descriptions or usage arrays. The tool accepts up to 250 historical rows and 1 MiB of source data, rejects unsupported YAML, and reports counts without item contents.
+
+If rows need migration, run `./bapXphp media:reconcile --apply` from a checkout with direct access to the target MySQL. A serializable transaction adds missing rows, fills only absent fields, and verifies coverage before committing. A conflicting URL, ID or context blocks the whole batch. Run the read-only command again and compare `verified` with `unique_ids`. Repeat applies preserve the existing records. Neither mode changes binaries or removes source files. Keep installation-specific compatibility files until the owner has verified their own migration.

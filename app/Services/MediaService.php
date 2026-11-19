@@ -386,20 +386,29 @@ final class MediaService {
                 }
             }
         }
-        if (!empty($record['used_in'])) {
-            throw new \InvalidArgumentException('This image is still linked to existing content. Unlink it first.');
+        // recordUsage records the owner at upload time. Editors can replace the image or delete that owner.
+        $collections = ['products', 'temples', 'categories', 'settings'];
+        $history = $record['used_in'] ?? [];
+        if (!is_array($history) || !array_is_list($history)) {
+            throw new \InvalidArgumentException('Recorded image usage cannot be verified.');
+        }
+        foreach ($history as $use) {
+            if (!is_array($use) || !is_string($use['id'] ?? null) || trim($use['id']) === '') {
+                throw new \InvalidArgumentException('Recorded image usage cannot be verified.');
+            }
+            $type = $use['type'] ?? null;
+            if ($type === 'astrologers' && !in_array($type, $collections, true)) $collections[] = $type;
+            if (!in_array($type, $collections, true)) {
+                throw new \InvalidArgumentException('Recorded image usage cannot be verified.');
+            }
         }
 
         $urls = array_values(array_unique(array_filter([
             (string)($record['url'] ?? ''), (string)($record['original_url'] ?? '')
         ])));
-        $content = [
-            'products' => $this->store->read('products'),
-            'temples' => $this->store->read('temples'),
-            'categories' => $this->store->read('categories'),
-            'settings' => $this->store->read('settings'),
-            'articles' => (new BlogService())->all(true),
-        ];
+        $content = [];
+        foreach ($collections as $collection) $content[$collection] = $this->store->read($collection);
+        $content['articles'] = (new BlogService())->all(true);
         foreach ($urls as $url) {
             $uses = self::referencesToUrl($url, $content);
             if ($uses !== []) {
@@ -465,8 +474,8 @@ final class MediaService {
         }
         foreach ($grouped as $ctx => $ids) {
             $records = $this->readCatalogue($ctx);
-            $changed = false;
-            foreach ($records as &$r) {
+            $changed = [];
+            foreach ($records as $r) {
                 if (in_array($r['id'] ?? '', $ids, true)) {
                     $used = $r['used_in'] ?? [];
                     $exists = false;
@@ -479,11 +488,11 @@ final class MediaService {
                     if (!$exists) {
                         $used[] = $entry;
                         $r['used_in'] = $used;
-                        $changed = true;
+                        $changed[] = $r;
                     }
                 }
             }
-            if ($changed) $this->writeCatalogue($ctx, $records);
+            if ($changed) $this->writeCatalogue($ctx, $changed);
         }
     }
 
@@ -616,27 +625,4 @@ final class MediaService {
         return $items;
     }
 
-    public static function migrateFromLegacy(): int {
-        $oldFile = storage_path('media.yaml');
-        if (!is_file($oldFile)) return 0;
-        $yaml = @file_get_contents($oldFile);
-        if ($yaml === false || $yaml === '') return 0;
-        $service = new self();
-        $items = $service->parseLegacyYaml($yaml);
-        $grouped = [];
-        foreach ($items as $item) {
-            $ctx = $item['context'] ?? 'shared';
-            if (!isset($item['url']) && isset($item['path'])) {
-                $item['url'] = $item['path'];
-            }
-            $item['description'] = $item['description'] ?? '';
-            $item['used_in'] = $item['used_in'] ?? [];
-            $grouped[$ctx][] = $item;
-        }
-        foreach ($grouped as $ctx => $records) {
-            $service->writeYaml($ctx, $records);
-        }
-        @rename($oldFile, $oldFile . '.bak');
-        return count($items);
-    }
 }

@@ -543,7 +543,7 @@ final class AdminController extends BaseController {
             'question'=>(string)($t['question'] ?? ''),
             'answer'=>(string)($t['answer'] ?? ''),
             'at'=>(string)($t['at'] ?? ''),
-        ], $document['turns'] ?? []);
+        ] + (($t['outcome'] ?? '') === 'error' ? ['outcome'=>'error', 'turn_id'=>(string)($t['turn_id'] ?? '')] : []), $document['turns'] ?? []);
         $this->jsonResponse(['conversation_id'=>$document['id'], 'turns'=>$turns]);
     }
 
@@ -648,8 +648,6 @@ final class AdminController extends BaseController {
                 $this->jsonResponse(['draft' => $draft, 'run' => $this->agentRunMeta($traceId, 'draft', $startedAt)] + $record);
                 return;
             }
-            $secrets = new SecretService();
-            $modelConfig = $secrets->getModelConfig();
             // Previous report scope comes from this actor's persisted chat, never browser input.
             $previousReport = (new \App\Services\AgentConversationService())
                 ->previousReportForActor($conversationId, $actor);
@@ -659,7 +657,7 @@ final class AdminController extends BaseController {
             );
             // Straight aggregate questions do not need a model round trip. The same
             // allowlisted sales tool supplies a deterministic, privacy-safe answer.
-            $localAnswer = $attachments['context'] === '' ? $tools->aggregateAnswer($message) : null;
+            $localAnswer = $attachments['context'] === '' ? ($tools->guideAnswer($message) ?? $tools->aggregateAnswer($message)) : null;
             if ($localAnswer !== null) {
                 (new AuditLogService())->agentRun('admin', 'local', $startedAt, tools: $tools->activity(), traceId: $traceId);
                 $record = $this->agentConversationRecord($actor, $conversationId, $message,
@@ -671,6 +669,8 @@ final class AdminController extends BaseController {
                 ] + $record);
                 return;
             }
+            $secrets = new SecretService();
+            $modelConfig = $secrets->getModelConfig();
             $context = $attachments['context'] !== ''
                 ? "Documents the owner attached with @ (reference material):\n" . $attachments['context']
                 : '';
@@ -690,37 +690,21 @@ final class AdminController extends BaseController {
                 $reason = 'not_configured';
                 $answer = "AI model not configured. Go to Admin → Integrations and set api_endpoint, ai_api_key, and agent_model.";
             }
-            $failed = empty($modelConfig['apiKey']) || \App\Services\AiClient::isError($answer);
-            $fallback = $failed || $reason === 'rejected_response' ? $tools->ticketLookupFallback() : null;
+            $failed = empty($modelConfig['apiKey']) || \App\Services\AiClient::isError($answer) || $reason === 'rejected_response';
+            $fallback = $failed ? $tools->ticketLookupFallback() : null;
+            $outcome = $failed ? 'error' : 'model';
             if ($fallback !== null) {
-                (new AuditLogService())->agentRun('admin', 'fallback', $startedAt, $reason, $attempts, $tools->activity(), $traceId);
-                $record = $this->agentConversationRecord($actor, $conversationId, $message,
-                    $fallback, $traceId, 'fallback', $tools->activity(), $tools->reportContext(), $attempts);
-                $this->jsonResponse([
-                    'answer' => $fallback,
-                    'missing' => $attachments['missing'],
-                    'run' => $this->agentRunMeta($traceId, 'fallback', $startedAt, $tools, $attempts),
-                ] + $record);
-                return;
+                $answer = $fallback;
+                $outcome = 'fallback';
             }
-            (new AuditLogService())->agentRun('admin', $failed ? 'error' : ($reason === 'rejected_response' ? 'fallback' : 'model'), $startedAt, $reason, $attempts, $tools->activity(), $traceId);
-            if ($failed) {
-                $record = $this->agentConversationRecord($actor, $conversationId, $message,
-                    $answer, $traceId, 'error', $tools->activity(), $tools->reportContext(), $attempts);
-                $this->jsonResponse([
-                    'error'=>$answer,
-                    'missing'=>$attachments['missing'],
-                    'run'=>$this->agentRunMeta($traceId, 'error', $startedAt, $tools, $attempts),
-                ] + $record,502);
-                return;
-            }
+            (new AuditLogService())->agentRun('admin', $outcome, $startedAt, $reason, $attempts, $tools->activity(), $traceId);
             $record = $this->agentConversationRecord($actor, $conversationId, $message,
-                $answer, $traceId, 'model', $tools->activity(), $tools->reportContext(), $attempts);
+                $answer, $traceId, $outcome, $tools->activity(), $tools->reportContext(), $attempts);
             $this->jsonResponse([
-                'answer'=>$answer,
-                'missing'=>$attachments['missing'],
-                'run'=>$this->agentRunMeta($traceId, 'model', $startedAt, $tools, $attempts),
-            ] + $record);
+                ($outcome === 'error' ? 'error' : 'answer') => $answer,
+                'missing' => $attachments['missing'],
+                'run' => $this->agentRunMeta($traceId, $outcome, $startedAt, $tools, $attempts),
+            ] + $record, $outcome === 'error' ? 502 : 200);
         } catch (\Throwable $e) {
             (new AuditLogService())->agentRun('admin', 'error', $startedAt, 'internal_error', traceId: $traceId);
             error_log('Owner agent request failed (' . get_class($e) . ')');
@@ -780,10 +764,6 @@ final class AdminController extends BaseController {
             return 'I could not produce a clear answer to that. Try asking it a different way.';
         }
         return $clean;
-    }
-
-    private function askModel(string $prompt): ?string {
-        return (new \App\Services\AiClient())->completeOrNull($prompt);
     }
 
     /**
@@ -851,6 +831,25 @@ final class AdminController extends BaseController {
             $question
         );
     }
+    public function headerMenu(): void {
+        $settings = new SettingsService();
+        $menu = $settings->headerMenu(true);
+        $this->seoOverrides = ['title'=>'Header menu'];
+        $this->render('admin/header-menu', ['menu'=>$menu, 'targets'=>$settings->headerMenuTargets(), 'modules'=>$settings->modules()]);
+    }
+
+    public function saveHeaderMenu(): void {
+        try {
+            (new SettingsService())->saveHeaderMenu($_POST['positions'] ?? null, $_POST['revision'] ?? null);
+            (new AuditLogService())->record('save', 'settings', SettingsService::HEADER_MENU_ID);
+            $message = 'Header menu saved.';
+        } catch (\InvalidArgumentException|\DomainException $error) {
+            $message = $error->getMessage();
+        }
+        $_SESSION['header_menu_message'] = $message;
+        $this->redirect('/admin/appearance/menu');
+    }
+
     public function appearance(): void{
         $s=(new SettingsService())->public();
         $d = ['#3A0003','#D1B368','#FAF7F0','#222222','#3A0003'];
@@ -1106,6 +1105,58 @@ final class AdminController extends BaseController {
         }
         $this->redirect('/admin/integrations');
     }
+    public function pages(): void {
+        $service = new \App\Services\AuthoredPageService();
+        $edit = $_GET['edit'] ?? '';
+        $page = $edit === '' ? null : (is_string($edit) ? $service->find($edit) : null);
+        if ($edit !== '' && $page === null) { $this->renderNotFound(); return; }
+        $form = $page ? $page + ['original_slug'=>$page['slug'], 'expected_revision'=>(string)$page['revision']] : [];
+        $this->render('admin/pages', ['pages'=>$service->all(), 'form'=>$form]);
+    }
+
+    public function deleteAuthoredPage(): void {
+        $service = new \App\Services\AuthoredPageService();
+        $slug = is_string($_POST['slug'] ?? null) ? $_POST['slug'] : '';
+        try {
+            if (($_POST['confirm_delete'] ?? '') !== 'yes') throw new \InvalidArgumentException('Confirm permanent deletion first.');
+            $service->delete($slug, $_POST['expected_revision'] ?? null);
+            (new AuditLogService())->record('delete', 'authored_page', $slug, []);
+            $this->flash('Page deleted.', 'success');
+            $this->redirect('/admin/pages');
+        } catch (\InvalidArgumentException|\DomainException $exception) {
+            http_response_code($exception instanceof \DomainException ? 409 : 422);
+            $this->render('admin/pages', ['pages'=>$service->all(), 'form'=>[], 'error'=>$exception->getMessage()]);
+        }
+    }
+
+    public function saveAuthoredPage(): void {
+        $service = new \App\Services\AuthoredPageService();
+        $form = [];
+        foreach (['title','slug','status','content','original_slug','expected_revision'] as $name) {
+            $form[$name] = is_string($_POST[$name] ?? null) ? $_POST[$name] : '';
+        }
+        $preview = $error = null;
+        try {
+            if (($form['expected_revision'] === '0' && $form['original_slug'] !== '')
+                || ($form['expected_revision'] !== '0' && $form['original_slug'] !== $form['slug'])) {
+                throw new \InvalidArgumentException('An existing page keeps its original address.');
+            }
+            if (($_POST['action'] ?? '') === 'preview') {
+                $valid = $service::record($form);
+                $preview = $service::renderContent($valid['content']);
+            } elseif (($_POST['action'] ?? '') === 'save') {
+                $service->save($form);
+                (new AuditLogService())->record('save', 'authored_page', $form['slug'], ['status'=>$form['status']]);
+                $this->flash($form['status'] === 'published' ? 'Page published.' : 'Draft saved.', 'success');
+                $this->redirect('/admin/pages?edit='.rawurlencode($form['slug']));
+            } else { throw new \InvalidArgumentException('Choose Preview or Save page.'); }
+        } catch (\InvalidArgumentException|\DomainException $exception) {
+            http_response_code($exception instanceof \DomainException ? 409 : 422);
+            $error = $exception->getMessage();
+        }
+        $this->render('admin/pages', ['pages'=>$service->all(), 'form'=>$form, 'preview'=>$preview, 'error'=>$error]);
+    }
+
     public function blog(): void{
         $this->requireModule('blog');
         $blog = new \App\Services\BlogService();
@@ -1297,27 +1348,32 @@ final class AdminController extends BaseController {
      * from a title, so improving a headline meant losing the article. Title and content
      * are now separate and each returns only its own field.
      */
-    public function enhanceBlogTitle(): void{
-        $title = trim((string)($_POST['title'] ?? ''));
-        if ($title === '') { $this->jsonResponse(['error' => 'Enter a title first.'], 400); return; }
-        $result = $this->askModel(
-            "Rewrite this blog headline for a Tamil spiritual products and astrology site. "
-            . "Return ONE headline only, plain text, no quotes, no markdown, under 70 characters.\n\nHeadline: " . $title
-        );
-        if ($result === null) { $this->jsonResponse(['error' => 'Enhancement is unavailable. Check the AI connection in Admin → Integrations.'], 503); return; }
-        $clean = trim(preg_replace('/\s+/', ' ', strip_tags($result)) ?? $result, " \t\n\r\0\x0B\"'");
-        $this->jsonResponse(['title' => mb_substr($clean, 0, 120)]);
-    }
-    public function enhanceBlogContent(): void{
-        $content = trim((string)($_POST['content'] ?? ''));
-        if ($content === '') { $this->jsonResponse(['error' => 'Write some content first.'], 400); return; }
-        $result = $this->askModel(
-            "Improve the clarity and flow of this blog article. Keep the author's meaning, language and "
-            . "any Tamil text. Preserve existing image links and do not add images. Return Markdown only — no HTML, no code fences around the whole answer, "
-            . "no commentary.\n\nArticle:\n" . $content
-        );
-        if ($result === null) { $this->jsonResponse(['error' => 'Enhancement is unavailable. Check the AI connection in Admin → Integrations.'], 503); return; }
-        $this->jsonResponse(['content' => trim($result)]);
+    public function enhanceBlogTitle(): void { $this->enhanceBlogField('title'); }
+    public function enhanceBlogContent(): void { $this->enhanceBlogField('content'); }
+
+    private function enhanceBlogField(string $field): void {
+        $value = $_POST[$field] ?? '';
+        if (!is_string($value) || trim($value) === '') {
+            $this->jsonResponse(['error' => $field === 'title' ? 'Enter a title first.' : 'Write some content first.'], 400);
+        }
+        if (strlen($value) > 1048576) {
+            $this->jsonResponse(['error' => 'This text exceeds the article size limit.'], 413);
+        }
+        $prompt = $field === 'title'
+            ? "Rewrite this blog headline for a Tamil spiritual products site. Preserve its language and meaning. Return one plain-text headline of at most 70 characters.\n\nHeadline: "
+            : "Improve the clarity and flow of this article. Preserve its meaning, language, Tamil text, links and each existing image. Return the revised Markdown only. Do not introduce images, HTML, commentary or a code fence around the article.\n\nArticle:\n";
+        $client = new \App\Services\AiClient();
+        $budget = $field === 'title' ? 1024 : min(4096, max(1024, mb_strlen($value) + 512));
+        $answer = $client->completeOrNull($prompt . $value, $budget);
+        if ($answer === null) {
+            $this->jsonResponse(['error' => BlogDraftService::enhancementError($client->failureCategory())], 503);
+        }
+        try {
+            $candidate = BlogDraftService::reviewableEnhancement($field, $value, $answer);
+        } catch (\InvalidArgumentException $error) {
+            $this->jsonResponse(['error' => $error->getMessage()], 502);
+        }
+        $this->jsonResponse([$field => $candidate, 'source' => 'provider']);
     }
     public function taxReport(): void{
         $filter = static fn(string $key): string => is_string($_GET[$key] ?? null) ? $_GET[$key] : '';
@@ -1327,7 +1383,7 @@ final class AdminController extends BaseController {
         $report = $filter('report');
         $requestedGroup = $filter('group');
         $format = $filter('format');
-        $reportType = isset(StoreStatsService::REPORT_TYPES[$report]) ? $report : (in_array($format, ['csv', 'lines'], true) ? 'tax' : 'sales');
+        $reportType = isset(StoreStatsService::REPORT_TYPES[$report]) ? $report : (in_array($format, ['csv', 'lines', 'sequences'], true) ? 'tax' : 'sales');
         $group = isset(StoreStatsService::GROUPS[$requestedGroup]) ? $requestedGroup : 'day';
         $allowedStatuses = ['pending','on_hold','confirmed','processing','packed','shipped','delivered'];
         $status = in_array($filter('status'), $allowedStatuses, true) ? $filter('status') : '';
@@ -1338,15 +1394,21 @@ final class AdminController extends BaseController {
             ? \App\Services\GstRegisterService::ordersForPeriod($allOrders, $from, $to)
             : [];
         $invoiceReviewReasons = \App\Services\GstRegisterService::reviewReasons($taxOrders, $settings);
-        if ($reportType === 'tax' && in_array($format, ['csv', 'lines'], true)) {
-            $lineExport = $format === 'lines';
-            $filename = $lineExport ? "gst-invoice-lines-$from-to-$to.csv" : 'gst-tax-report.csv';
+        if ($reportType === 'tax' && in_array($format, ['csv', 'lines', 'sequences'], true)) {
+            $filename = match ($format) {
+                'lines' => "gst-invoice-lines-$from-to-$to.csv",
+                'sequences' => "gst-invoice-sequences-$from-to-$to.csv",
+                default => 'gst-tax-report.csv',
+            };
             header('Cache-Control: private, no-store');
             header('Content-Type: text/csv; charset=utf-8');
             header('Content-Disposition: attachment; filename="' . $filename . '"');
             $handle = fopen('php://output', 'w');
             $write = static fn(array $row) => fputcsv($handle, $row, ',', '"', '');
-            if ($lineExport) {
+            if ($format === 'sequences') {
+                $write(\App\Services\GstRegisterService::SEQUENCE_HEADERS);
+                foreach (\App\Services\GstRegisterService::sequenceWorksheet($taxOrders) as $row) $write($row);
+            } elseif ($format === 'lines') {
                 $write(\App\Services\GstRegisterService::HEADERS);
                 foreach (\App\Services\GstRegisterService::lines($taxOrders, $invoiceReviewReasons) as $row) $write($row);
             } else {

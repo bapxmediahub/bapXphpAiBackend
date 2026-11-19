@@ -169,6 +169,62 @@ $tests['trace enforces provider budget without inventing missing usage'] = stati
     $trace::reset();
 };
 
+$tests['monitoring separates transfers, answer checks and local stops without adding attempts'] = static function (): void {
+    $now = time();
+    $events = [
+        ['event'=>'agent.run','created_at'=>gmdate('c', $now),'meta'=>[
+            'surface'=>'admin','outcome'=>'error','reason'=>'empty_response','provider_attempts'=>[
+                ['model'=>'fixture','status'=>200,'curl_error'=>0,'total_ms'=>600,'timeout_ms'=>7000,
+                    'first_byte_ms'=>520.7,'response_body'=>'private-body'],
+            ],
+        ]],
+        ['event'=>'agent.run','created_at'=>gmdate('c', $now - 1),'meta'=>[
+            'surface'=>'admin','outcome'=>'error','reason'=>'request_deadline',
+        ]],
+    ];
+    $metrics = \App\Services\AuditLogService::agentSummary($events, $now)['admin'];
+    assertSame(2, $metrics['error'], 'Both requests ended in errors');
+    assertSame(1, $metrics['provider_attempt_count'], 'The local stop created no transfer');
+    assertSame(0, $metrics['provider_error_count'], 'A successful HTTP transfer can return an empty answer');
+    assertSame(['empty_response'=>1,'request_deadline'=>1], $metrics['reasons'], 'Local and content failures remain distinct');
+    $attempt = $metrics['recent_runs'][0]['attempts'][0];
+    assertSame([7000,520.7], [$attempt['timeout_ms'],$attempt['first_byte_ms']], 'Observed timing and timeout cap survive sanitizing and aggregation');
+    assertTrue(!str_contains(json_encode($metrics),'private-body'), 'Provider body excluded');
+    foreach ([[200,28,'transfer_timeout'],[0,6,'transport_error'],[0,0,'no_http'],[403,0,'access_denied'],[400,0,'request_error']] as [$status,$curl,$expected]) {
+        assertSame($expected, \App\Services\AuditLogService::attemptDiagnosis(['status'=>$status,'curl_error'=>$curl]), 'Transfer diagnosis uses the observed HTTP and cURL evidence');
+    }
+
+    $trace = \App\Services\AgentTraceService::class;
+    foreach (['model_calls','observed_tokens','deadline','trace_steps'] as $limit) {
+        $saved = [];
+        $trace::begin(bin2hex(random_bytes(8)), static function(array $snapshot) use (&$saved) { $saved=$snapshot; },
+            ['max_model_calls'=>$limit === 'model_calls' ? 1 : 3, 'max_observed_tokens'=>2, 'max_duration_ms'=>120000]);
+        try {
+            if ($limit === 'deadline') {
+                (new ReflectionProperty($trace,'beganNs'))->setValue(null,hrtime(true)-121000000000);
+            } elseif ($limit === 'trace_steps') {
+                for ($n=0; $n<128; $n++) $trace::startSpan('retrieval','test_step');
+            } else {
+                $span=$trace::startSpan('model_attempt','fixture');
+                $trace::endSpan($span,'complete',['usage'=>['total_tokens'=>$limit === 'observed_tokens' ? 2 : 1],
+                    'http_status'=>200,'curl_error'=>0,'timeout_ms'=>5000,'first_byte_ms'=>0]);
+                assertTrue(!isset($saved['spans'][0]['first_byte_ms']), 'Unobserved first byte is not a zero-latency sample');
+            }
+            $before = count($saved['spans'] ?? []);
+            try {
+                $trace::startSpan('model_attempt','fixture');
+                throw new RuntimeException('Expected a bounded pre-transfer stop');
+            } catch (\App\Services\AgentBudgetException $error) {
+                $reason = match($limit) { 'deadline'=>'request_deadline', 'trace_steps'=>'trace_step_budget', default=>'provider_budget' };
+                assertSame($reason, $error->reason, 'Callers can distinguish a pre-transfer stop');
+                assertSame($limit, $saved['budget']['exhausted'], 'The exact local limit is checkpointed before returning control');
+                assertSame($reason, $trace::budgetReason($saved), 'The saved trace yields a safe monitor reason');
+                assertSame($before, count($saved['spans']), 'A denied attempt never appears as a sent request');
+            }
+        } finally { $trace::reset(); }
+    }
+};
+
 $tests['tool provenance preserves only approved aggregate facts and code versions'] = static function (): void {
     $e=\App\Services\AgentTraceService::toolEvidence('sales_summary',['from'=>'wrong'],
         ['from'=>'2026-11-01','to'=>'2026-11-15','orders'=>2,'revenue'=>150.25,'customer_email'=>'never@log.invalid']);
@@ -517,6 +573,31 @@ $tests['uncaught CLI errors exit nonzero without HTML or sensitive exception bod
     }finally{@unlink($fixture);}
 };
 
+$tests['operator help reads the canonical owner guide without calling a model'] = static function (): void {
+    $prior = $_SESSION['user'] ?? null;
+    try {
+        $tools = new \App\Services\EnterpriseToolRegistry();
+        $_SESSION['user'] = ['role'=>'customer'];
+        assertSame(null, $tools->guideAnswer('/help catalogue'), 'Private operator guides require an owner');
+        assertTrue(isset($tools->run('operator_guide', ['topic'=>'orders-shipping'])['error']), 'Model invocation enforces the same permission');
+        $_SESSION['user'] = ['role'=>'admin'];
+        $answer = $tools->guideAnswer('How do I prepare an unpublished article?');
+        assertTrue(str_contains($answer, 'Draft — not public') && !str_contains($answer, 'Restore an earlier'), 'Only the relevant instructions appear');
+        assertSame([['label'=>'Write and publish a guide','path'=>'/admin/docs/blog-publishing']], $tools->sourceLinks(), 'Owner can open the actual instructions');
+        assertSame('operator_help', $tools->activity()[0]['evidence']['source'], 'Report the retrieved source');
+        $history = $tools->run('operator_guide', ['topic'=>'blog-publishing','section'=>'Restore an earlier server save']);
+        assertTrue(str_contains($history['instructions'], 'History') && !str_contains($history['instructions'], 'New Post'), 'Late sections can be retrieved without losing them to a prefix limit');
+        assertTrue(isset($tools->run('operator_guide', ['topic'=>'blog-publishing','section'=>'Unlisted command'])['error']), 'Do not invent an unavailable section');
+        assertSame(null, $tools->guideAnswer('How many unpublished articles are there?'), 'Counts require live data');
+        assertSame(null, $tools->guideAnswer('How do I write a post about my latest sales?'), 'Mixed questions need interpretation');
+        assertTrue(str_contains($tools->guideAnswer('/help'), 'blog-publishing'), 'Available topics are discoverable without a provider');
+        assertTrue(str_contains($tools->guideAnswer('/help catalogue'), 'product'), 'Explicit guide topic returns canonical text');
+        assertTrue(isset($tools->run('operator_guide', ['topic'=>'../settings'])['error']), 'Only allowlisted topics are readable');
+    } finally {
+        if ($prior === null) unset($_SESSION['user']); else $_SESSION['user'] = $prior;
+    }
+};
+
 $tests['real agent contract checker validates private manifests instead of duplicating prompts'] = static function (): void {
     $out=[];$status=1;exec('cd '.escapeshellarg(app_path()).' && BAPX_TEST_MODE=1 '.escapeshellarg(PHP_BINARY).' cli/agent-contracts.php --check 2>&1',$out,$status);
     assertSame(0,$status,'Offline generator must explicitly authorize its fixture role');
@@ -586,6 +667,11 @@ $tests['context help is role appropriate and bounded to matching route segments'
     $service=\App\Services\AdminHelpService::class;
     assertSame('orders-shipping',$service::adminContext('/admin/orders/fixture')['slug'],'Order detail links to order workflow');
     assertSame('agent-monitoring',$service::adminContext('/admin/agent/monitoring')['slug'],'Specific monitor route wins over chat prefix');
+    assertSame('settings',$service::adminContext('/admin/appearance/menu')['slug'],'Header menu opens its settings guide before the appearance prefix');
+    assertSame('media',$service::adminContext('/admin/appearance')['slug'],'Brand appearance retains the media guide');
+    $pagesHelp=$service::adminContext('/admin/pages?edit=festival');
+    assertSame('blog-publishing',$pagesHelp['slug'],'Authored pages open the publishing guide');
+    assertTrue(in_array('/admin/pages',array_column($pagesHelp['links'],'url'),true),'Publishing guide links back to the pages editor');
     assertSame('getting-started',$service::adminContext('/admin/orders-other')['slug'],'Prefix lookalike cannot hijack context');
     assertSame('/blog/payments-and-orders',$service::publicContext('/checkout')['url'],'Customer help never points to private admin guide');
     assertSame(null,$service::publicContext('/admin/settings'),'No public context for private routes');
@@ -1703,6 +1789,53 @@ $tests['CLI article editing preserves metadata and refuses concurrent overwrites
     }
 };
 
+$tests['authored pages validate immutable addresses and render Markdown with literal raw HTML'] = static function (): void {
+    $service = \App\Services\AuthoredPageService::class;
+    $input = ['slug'=>'visiting-guide', 'title'=>' Visiting guide ', 'content'=>'## Opening hours', 'status'=>'draft'];
+    $record = $service::record($input);
+    assertSame('pg:visiting-guide', $record['id'], 'Authored page key occupies its own settings namespace');
+    assertTrue($service::validRevision($record['revision']), 'Only the server establishes an opaque page revision');
+    assertSame('Visiting guide', $record['title'], 'Title whitespace is normalized');
+    foreach ([['slug'=>'../terms'], ['slug'=>str_repeat('a', 33)], ['status'=>'visible'], ['content'=>''], ['content'=>str_repeat('x', 65537)]] as $change) {
+        $blocked = false;
+        try { $service::record(array_replace($input, $change)); }
+        catch (InvalidArgumentException) { $blocked = true; }
+        assertTrue($blocked, 'Malformed pages cannot be saved');
+    }
+    $html = $service::renderContent("## Opening hours\n\n<span>Literal</span> and **bold**");
+    assertTrue(str_contains($html, '<h2') && str_contains($html, '<strong>bold</strong>'), 'Markdown provides semantic page formatting');
+    assertTrue(!str_contains($html, '<span>') && str_contains($html, '&lt;span'), 'Raw HTML appears as text');
+    $examples = "## Values < 3\n\nInline `x < 3`\n\n```txt\n<x> &lt;\n```\n\n<span>Text</span>";
+    $dom = new DOMDocument();
+    $dom->loadHTML($service::renderContent($examples), LIBXML_NOERROR | LIBXML_NOWARNING);
+    assertSame('Values < 3', $dom->getElementsByTagName('h2')->item(0)->textContent, 'Headings display the authored angle bracket once');
+    assertSame('x < 3', $dom->getElementsByTagName('code')->item(0)->textContent, 'Inline code preserves a literal comparison');
+    assertSame("<x> &lt;\n", $dom->getElementsByTagName('pre')->item(0)->textContent, 'Fenced code preserves both tags and literal entities');
+    assertSame(0, $dom->getElementsByTagName('span')->length, 'Literal raw markup cannot produce a span element');
+};
+
+$tests['blog enhancement candidates preserve manual images and distinguish provider failures'] = static function (): void {
+    $service = \App\Services\BlogDraftService::class;
+    assertSame('A revised title', $service::reviewableEnhancement('title', 'Original', ' "A revised title" '), 'Clean provider headline');
+    $original = "First paragraph.\n\n![A mala](/assets/images/mala.webp)";
+    $revised = "Revised paragraph.\n\n![The same mala](/assets/images/mala.webp)";
+    assertSame($revised, $service::reviewableEnhancement('content', $original, $revised), 'Reviewed text can retain the chosen image and update its alt text');
+    foreach ([
+        ['content', $original, 'Removed the image'],
+        ['content', 'No illustration', '![Added](/assets/images/mala.webp)'],
+        ['content', $original, '<img src="/assets/images/different.webp">'],
+        ['title', 'Original', "Two\nHeadlines"],
+        ['title', 'Original', '<b></b>'],
+    ] as [$field, $before, $response]) {
+        $refused = false;
+        try { $service::reviewableEnhancement($field, $before, $response); }
+        catch (InvalidArgumentException) { $refused = true; }
+        assertTrue($refused, 'Invalid text or image changes cannot replace the draft');
+    }
+    assertTrue(str_contains($service::enhancementError('rate_limit'), 'limit'), 'Show an actionable provider category');
+    assertTrue(!str_contains($service::enhancementError('upstream-private-details'), 'private-details'), 'Unknown provider failures use a public message');
+};
+
 $tests['blog draft templates render usable internal links and require explicit save'] = static function (): void {
     $templates = new \App\Services\BlogDraftService();
     $renderer = new \App\Services\MarkdownRenderer();
@@ -2515,11 +2648,10 @@ $tests['support assistant widget uses browser session memory and google model se
     $client = file_get_contents(app_path('app/Services/AiClient.php'));
     assertTrue(str_contains($client, 'getModelConfig'), 'AiClient should resolve endpoint and model from Admin → Integrations');
     assertTrue(!str_contains($client, 'curl_close($ch)'), 'PHP 8.5 transport must not emit obsolete curl_close warnings into JSON');
-    assertTrue(str_contains($client, 'PRIMARY_FAILURES_BEFORE_FAILOVER = 3')
-        && str_contains($client, 'PRIMARY_ATTEMPT_TIMEOUT_MS = 6000')
-        && str_contains($client, 'FALLBACK_ATTEMPT_TIMEOUT_MS = 12000')
+    assertTrue(str_contains($client, 'MODEL_ATTEMPT_TIMEOUT_MS = 12000')
+        && str_contains($client, 'GENERATION_TIMEOUT_NS = 26_000_000_000')
         && str_contains($client, 'CURLOPT_TIMEOUT_MS => $timeoutMs'),
-        'Three bounded primary attempts and one fallback must fit the 35-second browser deadline');
+        'Model attempts and backoff must fit the shared generation deadline');
     $admin = file_get_contents(app_path('app/Controllers/AdminController.php'));
     assertTrue(str_contains($admin, 'AiClient') && !str_contains($admin, 'x-goog-api-key'),
         'Admin agent should share the same client rather than keep a second provider call');
@@ -3221,7 +3353,7 @@ $tests['the admin agent can look things up instead of guessing'] = function (): 
     assertTrue(str_contains($client, 'functionResponse'), 'Tool results should be returned to the model');
     assertTrue(str_contains($client, "\$round <= \$maxRounds")
         && str_contains($client, "'mode' => 'NONE'")
-        && str_contains($client, 'TOOL_CONVERSATION_TIMEOUT_NS'),
+        && str_contains($client, 'GENERATION_TIMEOUT_NS'),
         'The tool loop must have a shared deadline and end with a text-only round');
     assertTrue(str_contains($client, "'role' => 'model', 'parts' => self::googleToolHistoryParts(\$parts)"),
         'The model turn must stay in the history, or the function response answers a call the conversation no longer has');
@@ -3262,8 +3394,8 @@ $tests['the model answer is separated from the model thinking out loud'] = funct
     assertSame('Hello world', \App\Services\AiClient::answerFromParts([
         ['text' => 'planning', 'thought' => true], ['text' => 'Hello '], ['text' => 'world'],
     ]), 'A multi-part answer is joined');
-    assertSame('only thinking', \App\Services\AiClient::answerFromParts([['text' => 'only thinking', 'thought' => true]]),
-        'A response that is nothing but thought is still shown, since an empty string explains nothing');
+    assertSame('', \App\Services\AiClient::answerFromParts([['text' => 'only thinking', 'thought' => true]]),
+        'Thought-only content must never become a public answer or transcript');
     assertSame('', \App\Services\AiClient::answerFromParts([]), 'No parts means no answer');
 
     // The thought flag is not always set — sometimes the reasoning arrives as prose —
@@ -3382,7 +3514,7 @@ $tests['AI transport diagnostics distinguish causes without assuming the provide
     assertSame(
         ['gemma-4-31b-it', 'gemma-4-26b-a4b-it'],
         $client::googleModelPair('gemma-4-31b-it'),
-        '31B routes to 26B A4B after the failure threshold'
+        '31B uses 26B A4B for an eligible fallback'
     );
     assertSame(
         ['gemma-4-26b-a4b-it', 'gemma-4-31b-it'],
@@ -3396,13 +3528,11 @@ $tests['AI transport diagnostics distinguish causes without assuming the provide
     );
     assertSame(
         [
-            ['model' => 'gemma-4-31b-it', 'timeout_ms' => 6000],
-            ['model' => 'gemma-4-31b-it', 'timeout_ms' => 6000],
-            ['model' => 'gemma-4-31b-it', 'timeout_ms' => 6000],
+            ['model' => 'gemma-4-31b-it', 'timeout_ms' => 12000],
             ['model' => 'gemma-4-26b-a4b-it', 'timeout_ms' => 12000],
         ],
         $client::googleAttemptPlan('gemma-4-31b-it'),
-        'The standard retry plan allows up to three primary attempts before fallback'
+        'Each eligible model gets a single bounded attempt'
     );
     assertSame(
         [['model' => 'gemma-4-26b-a4b-it', 'timeout_ms' => 12000]],
@@ -3508,14 +3638,17 @@ $tests['both chat surfaces share accessible bounded request status'] = function 
     }
     $css = file_get_contents(app_path('assets/css/band.css'));
     assertTrue(str_contains($css, '.ai-request-status summary:focus-visible') && str_contains($css, 'prefers-reduced-motion'), 'Status needs focus and reduced-motion behavior');
-    $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
-    assertTrue(
-        str_contains($controller, "'error'=>\$answer")
-        && str_contains($controller, "'missing'=>\$attachments['missing']")
-        && str_contains($controller, "'run'=>\$this->agentRunMeta(\$traceId, 'error'")
-        && str_contains($controller, '] + $record,502'),
-        'Provider failures must remain non-2xx while returning a secret-safe operator trace'
-    );
+    foreach (['accepted'=>'model', 'rejected'=>'error'] as $providerReply=>$outcome) {
+        $lines = [];
+        exec(escapeshellarg(PHP_BINARY).' '.escapeshellarg(app_path('tests/fixtures/admin-agent-outcome.php')).' '.$providerReply, $lines, $status);
+        assertSame(0, $status, 'Synthetic Enterprise Agent request completed');
+        $failed = $outcome === 'error';
+        assertSame([
+            'status'=>$failed ? 502 : 200, 'route'=>$outcome, 'error'=>$failed, 'answer'=>!$failed,
+            'private_scaffold_exposed'=>false, 'audit'=>[$outcome, $failed ? 'rejected_response' : null],
+            'saved_outcome'=>$outcome, 'same_turn'=>true,
+        ], json_decode(implode("\n", $lines), true), 'Response, Monitoring and the saved turn report one outcome');
+    }
     $admin = file_get_contents(app_path('views/layouts/admin.php'));
     assertTrue(str_contains($admin, 'min-width: 0;') && str_contains($admin, 'flex-wrap: wrap; gap: var(--space-sm)'), 'Admin grid and mobile header must shrink without horizontal overflow');
 };
@@ -4681,6 +4814,40 @@ $tests['GST register preserves review rows and makes spreadsheet cells safe'] = 
     assertSame('100.00', $rows[0][13], 'Taxable amount comes from the issued line');
     assertTrue(str_contains($rows[0][18], 'credit note') && str_contains($rows[1][18], 'No issued tax lines')
         && str_contains($rows[1][18], 'State conflict'), 'Refunds and missing/conflicting snapshots are surfaced');
+};
+
+$tests['invoice sequence worksheet reconciles native issued documents within the selected scope'] = static function (): void {
+    $make = static fn(string $id, int $seq, string $year='2627'): array => [
+        'id'=>$id, 'invoice_number'=>sprintf('SPS/%s/%05d', $year, $seq), 'invoice_date'=>'2026-11-12',
+        'invoice_financial_year'=>$year, 'invoice_sequence'=>$seq, 'supplier'=>['gstin'=>'33ABCDE1234F1Z5'],
+    ];
+    $orders = [$make('first', 4), $make('duplicate', 4), $make('later', 8) + ['verified_refunds'=>[['amount'=>1200]], 'status'=>'cancelled'],
+        $make('other-year', 21, '2526'), array_replace($make('other-registration', 55), ['supplier'=>['gstin'=>'29ABCDE1234F1Z5']]),
+        array_replace($make('legacy', 7), ['invoice_number'=>'EXT/007']), array_replace($make('unsequenced', 9), ['invoice_sequence'=>'']),
+        array_replace($make('unknown-issuer', 19), ['supplier'=>[]]), array_replace($make('=unsafe-order', 10), ['invoice_number'=>'=unsafe']),
+        array_replace($make('bad-year', 900), ['invoice_financial_year'=>'2628']),
+        ['id'=>'refund-only', 'verified_refunds'=>[['amount'=>100]], 'invoice_date'=>'2026-11-12'],
+        array_replace($make('outside-period', 6), ['invoice_date'=>'2026-10-01'])];
+    $period = \App\Services\GstRegisterService::ordersForPeriod($orders, '2026-11-01','2026-11-30');
+    $worksheet = static fn(array $input): array => iterator_to_array(\App\Services\GstRegisterService::sequenceWorksheet($input));
+    assertSame([], $worksheet([]), 'An empty selection yields only the CSV header');
+    $csv = $worksheet($period);
+    assertSame($csv, $worksheet(array_reverse($period)), 'The worksheet has deterministic order independent of input order');
+    $rows = array_column(array_map(static fn(array $row): array => array_combine(\App\Services\GstRegisterService::SEQUENCE_HEADERS, $row), $csv), null, 'Order');
+    assertSame(10, count($rows), 'Only issued invoices in the inclusive period appear');
+    assertSame('5 to 7', $rows['later']['Unobserved native SPS numbers in selection'], 'Flag only interior gaps between matching printed and stored sequences');
+    foreach (['first','duplicate'] as $id) {
+        assertTrue(str_contains($rows[$id]['Review'], 'Duplicate invoice number') && str_contains($rows[$id]['Review'], 'Duplicate stored sequence'), 'Flag each duplicate');
+    }
+    foreach (['other-year','other-registration','legacy','unsequenced','unknown-issuer','bad-year'] as $id) {
+        assertSame('', $rows[$id]['Unobserved native SPS numbers in selection'], 'Distinct registrations/years and invalid snapshots never supply a range');
+    }
+    assertTrue(str_contains($rows['legacy']['Review'], 'differs') && str_contains($rows['unsequenced']['Review'], 'sequence')
+        && str_contains($rows['unknown-issuer']['Review'], 'supplier GSTIN') && str_contains($rows['bad-year']['Review'], 'financial year')
+        && str_contains($rows['other-year']['Review'], 'differs from issue date'), 'Keep the cause of excluded comparisons');
+    assertSame("'=unsafe", $rows["'=unsafe-order"]['Invoice'], 'Protect spreadsheet text without exposing executable cells');
+    assertTrue($rows['later']['Gateway refund recorded'] === 'Yes' && str_contains($rows['later']['Review'], 'cancellation records')
+        && str_contains($rows['later']['Review'], 'separately issued tax documents'), 'Operational cancellation and cash movement prompt review only');
 };
 
 $tests['HSN reconciliation splits recipient classes and preserves excluded lines'] = static function (): void {

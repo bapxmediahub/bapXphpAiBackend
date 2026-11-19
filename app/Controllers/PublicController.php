@@ -23,6 +23,16 @@ final class PublicController extends BaseController {
         ]);
     }
     
+    public function authoredPage(string $slug): void {
+        header('Cache-Control: no-store');
+        $page = (new \App\Services\AuthoredPageService())->findPublic($slug);
+        if ($page === null) { $this->renderNotFound(); return; }
+        $html = \App\Services\AuthoredPageService::renderContent($page['content']);
+        $this->seoOverrides = ['title'=>$page['title'], 'canonical'=>$this->siteUrl('/pages/'.$slug),
+            'description'=>mb_substr(trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($html))) ?? ''), 0, 160)];
+        $this->render('public/authored-page', ['page'=>$page, 'html'=>$html]);
+    }
+
     public function search(): void {
         $input = is_string($_GET['q'] ?? null) ? $_GET['q'] : '';
         $query = mb_substr(trim(preg_replace('/\s+/u', ' ', $input) ?? ''), 0, 120);
@@ -37,6 +47,7 @@ final class PublicController extends BaseController {
                 $blog = new BlogService();
                 $groups['Articles'] = $blog->search($blog->all(), $query);
             }
+            $groups['Pages'] = (new \App\Services\AuthoredPageService())->published($query);
             $words = preg_split('/\s+/u', $query, -1, PREG_SPLIT_NO_EMPTY);
             $groups['Temples'] = array_filter((new TempleService())->all(), static function (array $temple) use ($words): bool {
                 $text = implode(' ', [$temple['name'] ?? '', $temple['address'] ?? '', $temple['description'] ?? '']);
@@ -48,7 +59,7 @@ final class PublicController extends BaseController {
         }
         $this->seoOverrides = [
             'title' => 'Search the site',
-            'description' => 'Search for products, articles and temples.',
+            'description' => 'Search for products, articles, pages and temples.',
             'robots' => 'noindex, follow',
         ];
         $total = array_sum(array_map('count', $groups));
@@ -284,6 +295,10 @@ final class PublicController extends BaseController {
         try { $products = (new ProductService())->visible(); } catch (\Throwable) {}
         $blogPosts = [];
         try { $blogPosts = (new BlogService())->all(); } catch (\Throwable) {}
+
+        foreach ((new \App\Services\AuthoredPageService())->published() as $page) {
+            $pages[] = '/pages/'.rawurlencode($page['slug']);
+        }
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";

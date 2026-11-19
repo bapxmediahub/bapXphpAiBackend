@@ -2,11 +2,81 @@
 namespace App\Services;
 
 final class GstRegisterService {
+    private const GSTIN_PATTERN = '/^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/D';
     public const HEADERS = [
         'Invoice', 'Invoice date', 'Order', 'Supplier GSTIN', 'Recipient GSTIN', 'Recipient classification',
         'Place of supply', 'Supply type', 'Line', 'Item', 'HSN', 'Quantity', 'GST rate (%)',
         'Taxable (INR)', 'CGST (INR)', 'SGST (INR)', 'IGST (INR)', 'Line total (INR)', 'Review',
     ];
+
+    public const SEQUENCE_HEADERS = [
+        'Supplier GSTIN', 'Stored financial year', 'Stored sequence', 'Invoice', 'Issued date', 'Order',
+        'Order status', 'Gateway refund recorded', 'Unobserved native SPS numbers in selection', 'Review',
+    ];
+
+    /** Compare the store's issued SPS invoice series within the already-selected invoice dates. */
+    public static function sequenceWorksheet(array $orders): \Generator {
+        $rows = $numberCounts = $sequenceCounts = [];
+        foreach ($orders as $order) {
+            $number = (string)($order['invoice_number'] ?? '');
+            if (trim($number) === '') continue;
+            $supplier = strtoupper(trim((string)($order['supplier']['gstin'] ?? '')));
+            $year = (string)($order['invoice_financial_year'] ?? '');
+            $rawSequence = (string)($order['invoice_sequence'] ?? '');
+            $sequence = ctype_digit($rawSequence) ? filter_var(ltrim($rawSequence, '0'), FILTER_VALIDATE_INT) : false;
+            $issues = [];
+            $knownSupplier = preg_match(self::GSTIN_PATTERN, $supplier) === 1;
+            if (!$knownSupplier) $issues[] = 'Missing or invalid supplier GSTIN';
+            $validYear = preg_match('/^\d{4}$/D', $year) && (int)substr($year, 2) === ((int)substr($year, 0, 2) + 1) % 100;
+            if (!$validYear) $issues[] = 'Missing or invalid stored financial year';
+            if (!$sequence) $issues[] = 'Missing or invalid stored sequence';
+            $native = $validYear && $sequence && $number === sprintf('SPS/%s/%05d', $year, $sequence);
+            if ($sequence && $validYear && !$native) $issues[] = 'Invoice number differs from native SPS series';
+            $date = substr((string)($order['invoice_date'] ?? ''), 0, 10);
+            $issued = \DateTimeImmutable::createFromFormat('!Y-m-d', $date);
+            if (!$issued || $issued->format('Y-m-d') !== $date) {
+                $issues[] = 'Invalid issue date';
+                $native = false;
+            } elseif ($validYear && TaxService::invoiceFinancialYear($issued) !== $year) {
+                $issues[] = 'Stored financial year differs from issue date';
+                $native = false;
+            }
+            $series = $supplier . '|' . $year;
+            if ($knownSupplier) {
+                $numberCounts[$supplier][$number] = ($numberCounts[$supplier][$number] ?? 0) + 1;
+                if ($validYear && $sequence) $sequenceCounts[$series][$sequence] = ($sequenceCounts[$series][$sequence] ?? 0) + 1;
+            }
+            $id = (string)($order['id'] ?? '');
+            $status = (string)($order['status'] ?? '');
+            $refund = !empty($order['verified_refunds']);
+            $rows[] = compact('supplier','year','rawSequence','sequence','series','number','id','date','status','refund','issues','native','knownSupplier');
+        }
+        usort($rows, static fn(array $a, array $b): int => strcmp($a['series'], $b['series'])
+            ?: ($a['sequence'] <=> $b['sequence']) ?: strcmp($a['number'], $b['number'])
+            ?: strcmp($a['date'], $b['date']) ?: strcmp($a['id'], $b['id']));
+        $previous = [];
+        foreach ($rows as $row) {
+            $issues = $row['issues'];
+            $series = $row['series'];
+            $sequence = $row['sequence'];
+            if (($numberCounts[$row['supplier']][$row['number']] ?? 0) > 1) $issues[] = 'Duplicate invoice number';
+            if (($sequenceCounts[$series][$sequence] ?? 0) > 1) $issues[] = 'Duplicate stored sequence';
+            $gap = '';
+            if ($row['knownSupplier'] && $row['native']) {
+                if (isset($previous[$series]) && $sequence - $previous[$series] > 1) {
+                    $first = $previous[$series] + 1;
+                    $last = $sequence - 1;
+                    $gap = $first === $last ? (string)$first : "$first to $last";
+                    $issues[] = 'Check intervening numbers against the document register';
+                }
+                $previous[$series] = $sequence;
+            }
+            if (strtolower($row['status']) === 'cancelled') $issues[] = 'Check invoice disposition against cancellation records';
+            if ($row['refund']) $issues[] = 'Check refund against separately issued tax documents';
+            yield array_map(self::text(...), [$row['supplier'], $row['year'], $row['rawSequence'], $row['number'],
+                $row['date'], $row['id'], $row['status'], $row['refund'] ? 'Yes' : 'No', $gap, implode('; ', $issues)]);
+        }
+    }
 
     /** Select the same issued invoices for the report, exports and Enterprise tool. */
     public static function ordersForPeriod(array $orders, string $from, string $to): array {
@@ -87,11 +157,10 @@ final class GstRegisterService {
             $id = (string)($order['id'] ?? $invoice);
             $supplier = strtoupper(trim((string)($order['supplier']['gstin'] ?? '')));
             $recipient = strtoupper(trim((string)($order['customer_gstin'] ?? '')));
-            $gstinPattern = '/^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/D';
-            $classification = $recipient === '' ? 'B2C' : (preg_match($gstinPattern, $recipient) ? 'B2B' : 'Review');
+            $classification = $recipient === '' ? 'B2C' : (preg_match(self::GSTIN_PATTERN, $recipient) ? 'B2B' : 'Review');
             $issues = array_filter([
                 $reviewReasons[$id] ?? '',
-                preg_match($gstinPattern, $supplier) ? '' : 'Missing or invalid supplier GSTIN',
+                preg_match(self::GSTIN_PATTERN, $supplier) ? '' : 'Missing or invalid supplier GSTIN',
                 $classification === 'Review' ? 'Invalid recipient GSTIN' : '',
                 empty($order['verified_refunds']) ? '' : 'Verified refund recorded; review credit note separately',
             ]);

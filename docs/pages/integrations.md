@@ -88,3 +88,7 @@ References:
 - https://developers.google.com/webmaster-tools/v1/how-tos/all-your-data
 - https://developers.google.com/tag-platform/gtagjs/configure
 - https://support.google.com/webmasters/answer/9008080
+
+## Local MCP reporting clients
+
+Open **Manage local MCP clients** from Integrations to issue or revoke a 30-day credential for paid-sales totals. The local client receives the credential through its process environment. The client access list shows expiry, revocation and last successful read. See the [local MCP client guide](shop.md#local-mcp-client).

@@ -2,6 +2,45 @@
 namespace App\Services;
 
 final class AuditLogService {
+    private const RUN_REASONS = ['not_configured', 'timeout', 'transport', 'authentication', 'rate_limit',
+        'provider_server', 'provider_request', 'provider_response', 'empty_response', 'rejected_response',
+        'internal_error', 'request_deadline', 'provider_budget', 'trace_step_budget'];
+
+    public const DIAGNOSTICS = [
+        'transfer_timeout' => ['Transfer timed out', 'Check the recorded HTTP status and first-byte timing. A timeout alone cannot identify where the delay occurred.'],
+        'transport_error' => ['Transport error', 'Use the cURL error number to check DNS, connectivity or TLS on the application host.'],
+        'upstream_http' => ['Upstream service error', 'Check the provider status page and the attempt time before making another request.'],
+        'rate_limit' => ['Provider rate or quota limit', 'Check provider quota and rate limits before retrying.'],
+        'access_denied' => ['Provider denied access', 'Check the configured credentials and the account permissions for this model.'],
+        'request_error' => ['Provider rejected the request', 'Check the endpoint, model and supported request fields.'],
+        'other_http' => ['Unexpected HTTP status', 'Check the configured endpoint and the recorded status.'],
+        'no_http' => ['No HTTP status recorded', 'Check the host connection and the trace for a transport error.'],
+        'http_success' => ['HTTP success', ''],
+        'request_deadline' => ['Local request deadline reached', 'Inspect elapsed time across earlier steps before retrying.'],
+        'provider_budget' => ['Local provider budget reached', 'Inspect model-call and observed token totals in the conversation trace.'],
+        'trace_step_budget' => ['Local trace step limit reached', 'Inspect the last recorded step before retrying any action.'],
+        'empty_response' => ['No usable answer text', 'Inspect the final HTTP attempt and check the model response format.'],
+        'provider_response' => ['Unusable provider response', 'Check the configured model’s response and tool-call format.'],
+        'rejected_response' => ['Answer rejected by application checks', 'Inspect the recorded checks and source evidence for this turn.'],
+    ];
+
+    /** Classify the observed transfer, independently of whether the answer was accepted. */
+    public static function attemptDiagnosis(array $attempt): string {
+        $status = (int)($attempt['status'] ?? 0);
+        $error = (int)($attempt['curl_error'] ?? 0);
+        return match (true) {
+            $error === 28 => 'transfer_timeout',
+            $error !== 0 => 'transport_error',
+            $status === 0 => 'no_http',
+            $status >= 500 && $status < 600 => 'upstream_http',
+            $status === 429 => 'rate_limit',
+            $status === 401 || $status === 403 => 'access_denied',
+            $status >= 400 && $status < 500 => 'request_error',
+            $status >= 200 && $status < 300 => 'http_success',
+            default => 'other_http',
+        };
+    }
+
     public function __construct(private DatabaseService $store = new DatabaseService()) {}
 
     public function all(): array {
@@ -12,11 +51,14 @@ final class AuditLogService {
     public function agentRun(string $surface, string $outcome, float $startedAt, ?string $reason = null, array $attempts = [], array $tools = [], ?string $traceId = null): void {
         if (!in_array($surface, ['support', 'admin'], true)) return;
         if (!in_array($outcome, ['model', 'local', 'fallback', 'private_account', 'draft', 'error'], true)) return;
-        $allowedReasons = ['not_configured', 'timeout', 'transport', 'authentication', 'rate_limit', 'provider_server', 'provider_request', 'provider_response', 'empty_response', 'rejected_response', 'internal_error'];
+        $trace = AgentTraceService::snapshot();
+        if ($traceId !== null && ($trace['trace_id'] ?? null) === $traceId) {
+            $reason = AgentTraceService::budgetReason($trace) ?? $reason;
+        }
         $meta = [
             'surface' => $surface,
             'outcome' => $outcome,
-            'reason' => in_array($reason, $allowedReasons, true) ? $reason : null,
+            'reason' => in_array($reason, self::RUN_REASONS, true) ? $reason : null,
             'duration_ms' => max(0, (int)round((microtime(true) - $startedAt) * 1000)),
         ];
         if (($trace = self::validTraceId($traceId)) !== null) $meta['trace_id'] = $trace;
@@ -34,12 +76,13 @@ final class AuditLogService {
         foreach (array_slice($attempts, 0, 9) as $attempt) {
             if (!is_array($attempt)) continue;
             $model = $attempt['model'] ?? null;
-            $safe[] = [
+            $entry = [
                 'model' => is_string($model) && SecretService::validModelId($model) ? $model : null,
                 'status' => (int)($attempt['status'] ?? 0),
                 'curl_error' => (int)($attempt['curl_error'] ?? 0),
                 'total_ms' => max(0, (int)round((float)($attempt['total_ms'] ?? 0))),
             ];
+            $safe[] = $entry + AgentTraceService::attemptTimings($attempt);
         }
         return $safe;
     }
@@ -104,7 +147,7 @@ final class AuditLogService {
             }
             $summary[$surface][$outcome]++;
             $reason = $meta['reason'] ?? null;
-            if (is_string($reason) && in_array($reason, ['not_configured', 'timeout', 'transport', 'authentication', 'rate_limit', 'provider_server', 'provider_request', 'provider_response', 'empty_response', 'rejected_response', 'internal_error'], true)) {
+            if (is_string($reason) && in_array($reason, self::RUN_REASONS, true)) {
                 $summary[$surface]['reasons'][$reason] = ($summary[$surface]['reasons'][$reason] ?? 0) + 1;
             }
             $duration = max(0, (int)($meta['duration_ms'] ?? 0));

@@ -39,6 +39,12 @@ credit/debit notes and amendments separately. GSTN's [Table 12 and 13 advisory](
 describes separate B2B/B2C HSN summaries and documents-issued reporting. Validate the resulting files with the
 current GST utility and the accountant before filing. The CSVs in this screen do not do that validation.
 
+### Invoice sequence worksheet
+
+Download **Invoice sequences CSV** for the selected invoice dates. Each row preserves an issued invoice’s printed number, supplier GSTIN, stored financial year and sequence, issue date and source order. The worksheet flags repeated numbers under the same supplier GSTIN and repeated numeric sequences within the same supplier and financial year. It compares adjacent matching native `SPS/FY/NNNNN` numbers, reports interior gaps as ranges, and keeps inconsistent or unclassified rows for manual review. It does not infer missing numbers before or after the selected range.
+
+Compare exceptions with the accountant’s document-series register, including documents recorded elsewhere. An order cancellation or gateway refund prompts a check for the separate tax document. Counts of legally cancelled documents, net documents issued and credit or debit notes require supporting records. The worksheet does not populate these from order status. GSTN describes separate document totals, cancellations and net documents issued for Table 13. [GSTN GSTR-1 user guide](https://tutorial.gst.gov.in/userguide/returns/Creation_of_Outward_Supplies_Return_in_GSTR-1.htm) · [GSTN Table 12 and 13 advisory](https://tutorial.gst.gov.in/downloads/news/updated_advisory_hsn_table12_25042025.pdf)
+
 ## Admin order lookup
 
 **Admin → Users** lists registered accounts, with expandable orders placed under the same checkout email.

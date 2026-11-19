@@ -77,3 +77,9 @@ controls with descriptive accessible names and expose selected or expanded
 state on the control. Keep server-owned validation and native form or link
 paths where the task supports them. Check real pointer and keyboard actions,
 failure feedback, and mobile computed visibility in the browser.
+
+
+Render the public header from SettingsService's approved menu selection.
+Keep Shop/Blog module gating and the Blog dropdown consistent with the editor.
+Verify the 375px Menu and Close menu links with JavaScript disabled, including
+keyboard operation and the independent mobile shortcut bar.

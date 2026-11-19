@@ -189,6 +189,7 @@ try {
     if ($store->existingProductSlugs(['rollback-fixture', 'reject-fixture'])) throw new RuntimeException('A failed batch left an earlier row behind.');
     echo "Concurrent remote product import, edit preservation, filtered paging and full rollback passed.\n";
     require __DIR__ . '/product-writer-mysql.php';
+    require __DIR__ . '/legacy-media-mysql.php';
 
     [$first, $second] = $race('pay_remote', 'pay_remote', 'remote', 'remote');
     if ($first['record']['id'] !== $second['record']['id'] || $first['created'] === $second['created'] || count($store->read('orders')) !== 4) {

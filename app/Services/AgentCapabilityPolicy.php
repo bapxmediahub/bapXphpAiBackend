@@ -14,7 +14,7 @@ final class AgentCapabilityPolicy {
     ];
     private const ENTERPRISE_TOOLS = [
         'find_order', 'product_status', 'sales_summary', 'gst_register_summary',
-        'support_enquiries', 'store_count', 'search_articles', 'coupon_status',
+        'support_enquiries', 'store_count', 'search_articles', 'operator_guide', 'coupon_status',
     ];
 
     public static function tools(string $agent): array {

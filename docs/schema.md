@@ -30,3 +30,11 @@ Use it before changing:
 ## Agent Rule
 
 When a data shape changes, update schema first, then code, then docs/tests. Do not infer new fields only from templates or PHP arrays.
+
+
+The `settings` table stores the public header selection in its own
+`header_menu` row. Its ordered `header_menu` list contains approved page
+IDs. Authored targets use `pg:<slug>` and rendering checks their current
+publication before showing a link. `menu_revision` guards concurrent menu
+updates on the database host. Ordinary settings use `app_settings` and legacy
+fallback selection excludes menu and page records. The existing JSON-backed table needs no migration.

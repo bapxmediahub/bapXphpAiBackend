@@ -13,6 +13,28 @@ final class OrderService {
         return $this->store->read('orders');
     }
 
+    /** Numeric sales inputs for a dated report. Keep customer, item and payment identities inside the store. */
+    public function salesInRange(string $from, string $to): array {
+        $date = "LEFT(TRIM(COALESCE(NULLIF(JSON_UNQUOTE(JSON_EXTRACT(_data, '$.created_at')), 'null'),
+            NULLIF(JSON_UNQUOTE(JSON_EXTRACT(_data, '$.invoice_date')), 'null'))), 10)";
+        $rows = $this->store->query("SELECT {$date} AS order_date,
+            JSON_UNQUOTE(JSON_EXTRACT(_data, '$.status')) AS order_status,
+            CASE WHEN LENGTH(TRIM(NULLIF(JSON_UNQUOTE(JSON_EXTRACT(_data, '$.payment_id')), 'null'))) > 0 THEN 1 ELSE 0 END AS has_payment,
+            JSON_UNQUOTE(JSON_EXTRACT(_data, '$.total')) AS order_total,
+            JSON_EXTRACT(_data, '$.verified_refunds[*].amount_paise') AS refund_amounts
+            FROM orders WHERE {$date} BETWEEN ? AND ?", [$from, $to]);
+        $orders = [];
+        foreach ($rows as $row) {
+            $amounts = json_decode((string)($row['refund_amounts'] ?? '[]'), true, flags: JSON_THROW_ON_ERROR);
+            $orders[] = [
+                'created_at'=>$row['order_date'], 'status'=>$row['order_status'], 'total'=>$row['order_total'],
+                'payment_id'=>$row['has_payment'] ? 'recorded' : '',
+                'verified_refunds'=>array_map(static fn($amount) => ['amount_paise'=>$amount], $amounts),
+            ];
+        }
+        return StoreStatsService::sales($orders, $from, $to);
+    }
+
     public function importRefund(string $id, string $refundId): array {
         $order = $this->store->find('orders', $id);
         if ($order === null) throw new \InvalidArgumentException('Order not found.');

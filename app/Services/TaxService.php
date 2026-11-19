@@ -118,12 +118,15 @@ final class TaxService {
         ];
     }
 
+    public static function invoiceFinancialYear(\DateTimeImmutable $at): string {
+        $year = (int)$at->format('Y');
+        $start = (int)$at->format('n') >= 4 ? $year : $year - 1;
+        return substr((string)$start, -2) . substr((string)($start + 1), -2);
+    }
+
     public function nextInvoice(array $orders, ?\DateTimeImmutable $at = null): array {
         $at ??= new \DateTimeImmutable('now', new \DateTimeZone('Asia/Kolkata'));
-        $year = (int)$at->format('Y');
-        $month = (int)$at->format('n');
-        $start = $month >= 4 ? $year : $year - 1;
-        $financialYear = substr((string)$start, -2) . substr((string)($start + 1), -2);
+        $financialYear = self::invoiceFinancialYear($at);
         $max = 0;
         foreach ($orders as $order) {
             if (($order['invoice_financial_year'] ?? '') === $financialYear) {

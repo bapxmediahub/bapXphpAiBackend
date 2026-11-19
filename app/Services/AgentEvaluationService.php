@@ -77,6 +77,7 @@ final class AgentEvaluationService {
     private static function goldenCase(array $case): bool {
         return match ($case['type'] ?? null) {
             'trace_scope' => AgentTraceService::toolEvidence((string)$case['tool'],(array)$case['args'],(array)$case['result'])['filters'] === (array)$case['expected_filters'],
+            'provider_diagnosis' => array_map([AuditLogService::class, 'attemptDiagnosis'], $case['attempts']) === $case['expected'],
             'usage' => AgentTraceService::usageFromResponse(json_encode($case['response'],JSON_THROW_ON_ERROR)) === $case['expected'],
             'catalogue_decision' => self::fixtureCatalogueDecision($case),
             'public_links' => self::publicProductLinksSupported((string)$case['answer'],[['sources'=>$case['sources']]]) === (bool)$case['expected_pass'],

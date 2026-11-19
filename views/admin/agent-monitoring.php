@@ -1,3 +1,4 @@
+<?php use App\Services\AuditLogService; ?>
 <div class="admin-card" style="margin-bottom:var(--space-lg);">
     <h1>Agent Monitoring</h1>
     <h2>Last 24 hours</h2>
@@ -29,13 +30,14 @@
                     <summary><?= $surface === 'support' ? 'Customer support' : 'Enterprise Agent' ?> latest provider run · <?= e($run['outcome']) ?></summary>
                     <p><time datetime="<?= e($run['at']) ?>"><?= e($run['at']) ?></time></p>
                     <div class="table-wrap"><table>
-                        <thead><tr><th>Attempt</th><th>Model</th><th>HTTP status</th><th>Transport error</th><th>Elapsed</th></tr></thead>
+                        <thead><tr><th>Attempt</th><th>Model</th><th>HTTP status</th><th>Transport error</th><th>Elapsed</th><th>Transfer result</th></tr></thead>
                         <tbody><?php foreach ($run['attempts'] as $index => $attempt): ?>
                             <tr><th><?= $index + 1 ?></th>
                                 <td><?= e($attempt['model'] ?? 'Unavailable') ?></td>
                                 <td><?= $attempt['status'] ?: 'No response' ?></td>
                                 <td><?= $attempt['curl_error'] ?: 'None' ?></td>
                                 <td><?= e(number_format($attempt['total_ms'] / 1000, 2)) ?> s</td>
+                                <td><?= e(AuditLogService::DIAGNOSTICS[AuditLogService::attemptDiagnosis($attempt)][0]) ?></td>
                             </tr>
                         <?php endforeach; ?></tbody>
                     </table></div>
@@ -55,13 +57,27 @@
             <details class="agent-monitor-run">
                 <summary><time datetime="<?= e($run['at']) ?>"><?= e($run['at']) ?></time> · <?= e(str_replace('_', ' ', $run['outcome'])) ?> · <?= e(number_format($run['duration_ms'] / 1000, 2)) ?> s</summary>
                 <?php if ($run['trace_id']): ?><p>Run reference <code><?= e($run['trace_id']) ?></code></p><?php endif; ?>
-                <?php if ($run['reason']): ?><p>Outcome detail: <?= e(str_replace('_', ' ', $run['reason'])) ?></p><?php endif; ?>
-                <?php if ($run['attempts']): ?>
+                <?php if ($run['reason']):
+                    $reason = AuditLogService::DIAGNOSTICS[$run['reason']] ?? [ucfirst(str_replace('_', ' ', $run['reason'])), ''];
+                ?>
+                    <p><strong><?= e($reason[0]) ?></strong> <?= e($reason[1]) ?></p>
+                <?php endif; ?>
+                <?php if ($run['attempts']): $guidance = []; ?>
                     <ol aria-label="Provider attempts">
-                        <?php foreach ($run['attempts'] as $attempt): ?>
-                            <li><?= e($attempt['model'] ?? 'Model unavailable') ?> · <?= $attempt['status'] ? 'HTTP ' . $attempt['status'] : 'No HTTP response' ?><?= $attempt['curl_error'] ? ' · transport ' . $attempt['curl_error'] : '' ?> · <?= (int)$attempt['total_ms'] ?> ms</li>
+                        <?php foreach ($run['attempts'] as $attempt):
+                            [$label, $action] = AuditLogService::DIAGNOSTICS[AuditLogService::attemptDiagnosis($attempt)];
+                            if ($action !== '') $guidance[$label] = $action;
+                        ?>
+                            <li><strong><?= e($label) ?></strong> · <?= e($attempt['model'] ?? 'Model unavailable') ?>
+                                · <?= $attempt['status'] ? 'HTTP ' . (int)$attempt['status'] : 'No HTTP status' ?>
+                                <?= $attempt['curl_error'] ? ' · cURL ' . (int)$attempt['curl_error'] : '' ?>
+                                · <?= (int)$attempt['total_ms'] ?> ms elapsed
+                                <?php if (isset($attempt['timeout_ms'])): ?> · <?= (int)$attempt['timeout_ms'] ?> ms timeout<?php endif; ?>
+                                <?php if (isset($attempt['first_byte_ms'])): ?> · first byte at <?= e(number_format($attempt['first_byte_ms'], 1)) ?> ms<?php endif; ?>
+                            </li>
                         <?php endforeach; ?>
                     </ol>
+                    <?php foreach ($guidance as $note): ?><p><?= e($note) ?></p><?php endforeach; ?>
                 <?php endif; ?>
                 <?php if ($run['tools']): ?>
                     <ul aria-label="Tool outcomes">
@@ -200,6 +216,10 @@
                         </ul>
                     </details>
                 <?php endif; ?>
+                <?php if (!empty($conversation['budget_stop'])): ?>
+                    <?php [$label, $action] = AuditLogService::DIAGNOSTICS[$conversation['budget_stop']]; ?>
+                    <p><strong><?= e($label) ?></strong> <?= e($action) ?></p>
+                <?php endif; ?>
                 <?php if(!empty($conversation['trace_steps'])): ?>
                 <details class="agent-trace-inspector" style="max-width:36rem;overflow-wrap:anywhere;margin-top:.5rem">
                     <summary>Execution evidence · <?= count($conversation['trace_steps']) ?> steps</summary>
@@ -210,7 +230,8 @@
                         <li><strong><?= e((string)($step['type']??'stage')) ?></strong>
                             <?= e((string)($step['name']??'')) ?> — <?= e((string)($step['status']??'unknown')) ?>
                             <?php if(isset($step['duration_ms'])): ?> · <?= e(number_format((float)$step['duration_ms'],2)) ?> ms<?php endif; ?>
-                            <?php if(isset($step['http_status'])): ?> · HTTP <?= (int)$step['http_status'] ?><?php endif; ?>
+                            <?php if(isset($step['http_status'])): ?> · <?= $step['http_status'] ? 'HTTP '.(int)$step['http_status'] : 'No HTTP status' ?><?php endif; ?>
+                            <?php if(!empty($step['curl_error'])): ?> · cURL <?= (int)$step['curl_error'] ?><?php endif; ?>
                             <?php if(isset($step['result_count'])): ?> · <?= (int)$step['result_count'] ?> results<?php endif; ?>
                         </li>
                     <?php endforeach; ?>

@@ -32,6 +32,8 @@
     "exact_financial_zero_answer": true,
     "exact_financial_verified_refund_answer": true,
     "exact_gst_evidence_issued_period": true,
-    "exact_gst_empty_window_evidence": true
+    "exact_gst_empty_window_evidence": true,
+    "provider_timeout_then_upstream_503": true,
+    "provider_rate_limit_then_http_success": true
   }
 }

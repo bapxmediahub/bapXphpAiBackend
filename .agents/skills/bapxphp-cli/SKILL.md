@@ -101,3 +101,10 @@ source-doc tests. Generic developer shell/SQL/file commands are never eligible
 for automatic exposure to runtime agents or MCP clients.
 
 `./bapXphp write product [slug]` uses the shared catalogue save on direct MySQL. Omit the slug for a create and supply the current slug for an edit. Blank edit prompts preserve existing fields. A duplicate create or conflicting rename exits with an error. EOF before completing the prompts cancels the write.
+
+
+## Public MCP capabilities
+
+Inspect the active public tool schemas with `./bapXphp mcp:tools`. Use `./bapXphp mcp:policy tracking` for published tracking guidance. Both commands use the same guest capabilities as `mcp:stdio`. See `docs/pages/shop.md` for supported inputs, results and the local client trust boundary.
+
+A grant issued under Admin → Integrations → Manage local MCP clients adds only `paid_sales_summary` to trusted STDIO discovery. Inject `BAPX_MCP_CLIENT_TOKEN` through the launcher’s secret manager. The public convenience commands stay guest-scoped. The owner grant, bounds and per-request authorization checks are exercised against disposable MySQL by `node --test tests/mcp-client-access.test.cjs`.

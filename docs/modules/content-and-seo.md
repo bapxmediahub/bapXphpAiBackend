@@ -19,7 +19,18 @@ GitHub article index or database-backed blog body.
 `BlogDraftService` builds a deterministic scaffold from template/title/source
 URL. It is not itself a model client. `AdminController::aiDraftBlog` returns
 that scaffold for review. `enhanceBlogTitle` and `enhanceBlogContent` separately
-call the configured model and return only their own field. Neither endpoint
+call the configured model and return a suggestion for only the requested field.
+The owner reviews and applies it before saving. The model supplies plain text
+or Markdown. PHP validates the returned field, compares article image URLs
+against the original and builds the JSON response. Schema-constrained output
+depends on provider/model support. This editing flow uses the site's configured
+text interface across both providers. [Google structured outputs](https://ai.google.dev/gemini-api/docs/structured-output)
+and [OpenAI structured outputs](https://developers.openai.com/api/docs/guides/structured-outputs).
+
+A provider failure leaves the original text available for editing. If the
+browser can simplify headline spacing/capitalization or separate the sentences
+of a plain paragraph, it shows a separately labelled local formatting preview.
+Applying a suggestion checks the original field and open article again. Neither endpoint
 proves the content was saved or published. The owner must review, explicitly
 Save, and select the publication state. Images remain manually uploaded or
 selected from existing media. The article image picker sets the cover and inserts the chosen image into the body. The editor requests a JSON receipt from the shared Media Library upload route and uses its returned URL. The Media Library form redirects after an upload. The editor keeps an unsaved browser copy of
@@ -120,3 +131,27 @@ Blog publication dates now gate visibility through the shared BlogService
 predicate, not just sorting. Draft/scheduled/raw-file routes cannot bypass it.
 See `docs/pages/blog.md` for timezone, revision-match and no-delayed-newsletter
 contracts. Public article metadata cannot make a withheld article public.
+
+
+## Authored pages
+
+Owners use **Pages** in the admin sidebar to write Markdown, preview current
+edits, and save a draft or publish. Publishing makes the page available at its
+fixed `/pages/{slug}` address and lists it in site search and the sitemap.
+Returning a page to Draft withdraws it from all three. The public renderer
+treats HTML tags as literal text. Existing About, Terms and Privacy routes
+keep their existing templates and URLs.
+
+Each page occupies a dedicated `pg:<slug>` row in the hosted MySQL `settings`
+table. Slugs are fixed after creation. Creation requires a free slug, and
+updates compare the revision opened by the editor on the database host using
+the same contract for direct MySQL and `/remotedb`. A conflict returns HTTP
+409 and keeps the submitted text for comparison. Owners can permanently delete a page after confirming the operation. Deletion
+compares the current revision and removes only the corresponding page row.
+Recreating the same address generates a new revision so a stale form cannot
+edit or delete the replacement.
+
+Editing and publishing stay with the existing owner role. The workflows do
+not delegate drafts to a separate editor or require a second publisher. Add
+granular editorial permissions when a delegated editing or approval workflow
+is needed. Customer accounts have no editorial controls.
