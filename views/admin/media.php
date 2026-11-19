@@ -1,6 +1,7 @@
+<div data-section-index hidden></div>
 <?php if (isset($imageHealth)): ?>
 <div class="admin-card">
-    <h2>Product image checks</h2>
+    <h2 id="media-checks" data-page-section="Image checks" tabindex="-1">Product image checks</h2>
     <p><?= !empty($uploadStorageReady) ? 'Upload storage is ready outside the deployment folder.' : 'Upload storage needs attention: the persistent upload folder is not writable.' ?></p>
     <?php if (!$imageHealth): ?>
         <p>All local product image files are present and readable.</p>
@@ -19,7 +20,7 @@
 </div>
 <?php endif; ?>
 <div class="admin-card">
-    <h2>Upload Media</h2>
+    <h2 id="media-upload" data-page-section="Upload" tabindex="-1">Upload Media</h2>
     <form method="post" action="/admin/media/upload" enctype="multipart/form-data" class="admin-form">
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
         <div class="admin-form__row">
@@ -43,7 +44,7 @@
 
 <div class="admin-card">
     <div class="admin-media-picker__head">
-        <h2 style="margin:0;">Media Library</h2>
+        <h2 id="media-library" data-page-section="Media library" tabindex="-1" style="margin:0;">Media Library</h2>
         <span><span id="media-result-count" role="status"><?= count($items) ?> file<?= count($items) === 1 ? '' : 's' ?></span> · newest first</span>
     </div>
     <?php if(empty($items)): ?>

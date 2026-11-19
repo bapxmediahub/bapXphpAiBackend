@@ -28,9 +28,9 @@
             "review_note": "Verified the canonical owner subject, scoped acknowledgement and PHP persistence boundary."
         },
         "google-tags": {
-            "source_sha256": "5e5ff560b3d2376baff96615e937f314ba2ba9aa6b42cb6e8d5a94291f92d742",
+            "source_sha256": "4a34454631f8bf81228e297f8ff57a517568ac0e83ec23072cb6dbebf36be032",
             "references_sha256": "f55e8470bb5cb011ccffec0eaf2dc9e48e9db2def9700fab41fdf51c969b1d8a",
-            "review_note": "Reviewed shared navigation scoping and Dashboard shortcuts. Tag rendering and reporting connection status remain accurate."
+            "review_note": "Verified the shared public layout loads section actions independently of Google tag settings and rendering."
         },
         "http-errors": {
             "source_sha256": "399b84f63ec0f03947d9338711f3a8c60008750c96d96936b1e9c7c57b6c5792",
@@ -38,9 +38,9 @@
             "review_note": "Compared bootstrap/session initialization, old global handler, BaseController redirects/JSON/view output and actual API catches with RequestFailureService. Native response buffer and safe500 replace only unhandled failures; 88 loopback HTTP assertions preserve normal HTML/JSON/XML/binary/204/redirect/explicit503. Docs state pre-bootstrap/OOM/streaming limits and uncertainty of earlier side effects; no raw message/admin stack or database accusation."
         },
         "interface": {
-            "source_sha256": "dc25aa703d6a25a06f6fb3905f038c8cceea0d218e9279a268beaad7721dabda",
-            "references_sha256": "e76234bacc04bac8b516457450a4e0a0e445404dba83bb460429f276e09ff4f4",
-            "review_note": "Checked the flat collection link and product-photo entrance. Scroll clearance follows the mobile bottom-navigation breakpoint through 767px."
+            "source_sha256": "07c51ccf826f51beacded63ede5a68428f65bb04c7a1f81b720cdde7c036f09b",
+            "references_sha256": "7c7414856f79bf55d9a62849791382dab07e56e609e9c756e54511b9fd1133a8",
+            "review_note": "Verified section focus and active state, product gallery keyboard boundaries and pending status on public, account and admin layouts."
         },
         "mail": {
             "source_sha256": "7694291a27699ebb722b0ff98b9ae74972c92a20b0b057726677e0a733ffd792",
@@ -48,14 +48,14 @@
             "review_note": "Verified draft restoration omits mail preferences and save acknowledgement follows the existing newsletter decision."
         },
         "media": {
-            "source_sha256": "07f3ab3d215803c647b82dd32834348a37a718bbfc4be878ed62af07f15c00f8",
+            "source_sha256": "b5d97e1c122d64c466e4591c2ffd6bae561e2c7d5c105ed777217062d7e2e587",
             "references_sha256": "e04eab9afe918c16611de238bfb95cc6f88254ae21e0ed14da6f9e86ba2ed835",
-            "review_note": "Verified client-side media search and context filters preserve the library source data and existing deletion eligibility rules."
+            "review_note": "Verified the Media Library jump links and product gallery navigation keep existing upload and media routes."
         },
         "operator-help": {
-            "source_sha256": "73d100e1bea3a0d36e00097d4881923f773cb3bc36535b411da02ab79f0f4898",
+            "source_sha256": "8da35b22e6808df204220025667cdfbee144ca8e3fcfa406a973116f9b457185",
             "references_sha256": "f216687035d70f6fac2aaf3f34ced055c11904e647e6aff80269acbb33835a00",
-            "review_note": "Verified checkout guidance still matches the required state selector and application-owned delivery validation."
+            "review_note": "Verified public and admin section links land on the same existing customer and operator tasks, and native forms preserve their authored action and submitter."
         },
         "sales-channels": {
             "source_sha256": "1f2cd451f764c9d2b1a0b90b1454ac54fbf9a1130973f86749df0510b8eef244",

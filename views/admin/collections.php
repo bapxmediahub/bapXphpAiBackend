@@ -1,5 +1,6 @@
+<div data-section-index hidden></div>
 <div class="admin-card collection-editor">
-    <div class="collection-editor__heading"><div><span class="collection-eyebrow">Catalog / merchandising</span><h2>Special Collections</h2>
+    <div class="collection-editor__heading"><div><span class="collection-eyebrow">Catalog / merchandising</span><h2 id="edit-collections" data-page-section="Edit collection" tabindex="-1">Special Collections</h2>
     <p>Bring existing products together for a seasonal sale or promotion. Choose where shoppers can find each collection.</p></div><span class="collection-count"><?= count($collections) ?> saved</span></div>
     <form method="post" action="/admin/collections/save" class="admin-form" id="collection-form">
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
@@ -31,7 +32,7 @@
         <div><button class="btn btn-primary">Save collection</button> <button type="reset" class="btn btn-ghost" id="collection-clear">Clear</button></div>
     </form>
 </div>
-<div class="admin-card collection-saved"><h2>Saved collections</h2>
+<div class="admin-card collection-saved"><h2 id="saved-collections" data-page-section="Saved collections" tabindex="-1">Saved collections</h2>
     <?php if (!$collections): ?><p>No collections yet.</p><?php endif; ?>
     <?php foreach ($collections as $collection): ?>
         <div class="collection-saved__row">

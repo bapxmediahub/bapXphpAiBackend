@@ -1,14 +1,15 @@
 <section class="report-workspace dashboard-commerce" aria-labelledby="dashboard-commerce-title">
     <div class="report-head">
         <div>
-            <h1 id="dashboard-commerce-title">Commerce overview</h1>
+            <h1 id="dashboard-commerce-title" data-page-section="Commerce" tabindex="-1">Commerce overview</h1>
             <p><time datetime="<?= e($from) ?>"><?= e($from) ?></time> to <time datetime="<?= e($to) ?>"><?= e($to) ?></time></p>
         </div>
         <div class="admin-card__actions">
             <a class="btn btn-outline" href="/admin/tax-report?<?= e(http_build_query(['report' => 'sales', 'from' => $from, 'to' => $to, 'group' => $period === 90 ? 'week' : 'day'])) ?>">Open Commerce Reports</a>
-            <a class="btn btn-ghost" href="#dashboard-admin-shortcuts">Admin shortcuts</a>
+            <a class="btn btn-ghost" href="#dashboard-admin-shortcuts" data-section-fallback>Admin shortcuts</a>
         </div>
     </div>
+    <div data-section-index hidden></div>
     <nav class="dashboard-commerce__periods" aria-label="Analytics period">
         <?php foreach ([7, 30, 90] as $days): ?>
             <a href="/admin?period=<?= $days ?>" class="btn btn-sm <?= $period === $days ? 'btn-primary' : 'btn-outline' ?>" <?= $period === $days ? 'aria-current="page"' : '' ?>>Last <?= $days ?> days</a>
@@ -24,7 +25,7 @@
     </nav>
 </section>
 <section class="admin-card" aria-labelledby="insights-title" style="margin:var(--space-lg) 0;">
-    <h2 id="insights-title">Commerce &amp; SEO insights</h2>
+    <h2 id="insights-title" data-page-section="Insights" tabindex="-1">Commerce &amp; SEO insights</h2>
     <p>Measured from saved paid orders and current published content. These are first-party checks, not Search Console impressions or traffic estimates.</p>
     <div class="admin-stats" style="margin:var(--space-md) 0;">
         <div class="admin-stat"><div class="admin-stat__value"><?= (int)($commerceInsights['orders'] ?? 0) ?></div><div class="admin-stat__label">Paid orders this period</div></div>
@@ -94,7 +95,7 @@ $__googleStatus=(new \App\Integrations\GoogleSiteKit\GoogleSiteKitClient(
 </section>
 </div>
 
-<div class="admin-quick-grid" id="dashboard-admin-shortcuts" role="navigation" aria-label="Admin shortcuts" tabindex="-1" style="scroll-margin-block-start:6rem;">
+<div class="admin-quick-grid" id="dashboard-admin-shortcuts" data-page-section="Admin shortcuts" role="navigation" aria-label="Admin shortcuts" tabindex="-1" style="scroll-margin-block-start:6rem;">
     <div class="admin-card">
         <h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Catalog</h2>
         <p>Manage products, categories, collections, and discount coupons.</p>

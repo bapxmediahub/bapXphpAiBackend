@@ -27,16 +27,17 @@
             </div>
         <?php endif; ?>
         <div class="product-detail">
-            <div class="product-gallery reveal">
+            <div class="product-gallery reveal" data-product-gallery>
                 <div class="product-gallery__main" id="gallery-main" style="position:relative;">
-                    <img id="product-main-image" src="<?= e($gallery[0]) ?>" data-product-image-fallback="<?= e(placeholder_img($product['name'])) ?>" alt="<?= e($product['name']) ?>" style="transition:opacity 0.2s ease;">
+                    <img id="product-main-image" src="<?= e($gallery[0]) ?>" data-product-image-fallback="<?= e(placeholder_img($product['name'])) ?>" alt="<?= e($product['name']) ?>">
                     <?php if(count($gallery) > 1): ?>
-                        <button type="button" id="gallery-prev" aria-label="Previous image" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);width:40px;height:40px;border:0;border-radius:50%;background:rgba(255,255,255,0.85);color:var(--color-ink);cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-md);opacity:0;transition:opacity 0.2s ease;z-index:2;">‹</button>
-                        <button type="button" id="gallery-next" aria-label="Next image" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);width:40px;height:40px;border:0;border-radius:50%;background:rgba(255,255,255,0.85);color:var(--color-ink);cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-md);opacity:0;transition:opacity 0.2s ease;z-index:2;">›</button>
+                        <button type="button" id="gallery-prev" class="product-gallery-arrow" aria-label="Previous image" hidden>‹</button>
+                        <button type="button" id="gallery-next" class="product-gallery-arrow" aria-label="Next image" hidden>›</button>
+                        <span id="gallery-position" class="product-gallery-position" role="status" hidden></span>
                     <?php endif; ?>
                 </div>
                 <?php if(count($gallery) > 1): ?>
-                    <div class="product-gallery__thumbs" aria-label="Product images">
+                    <div class="product-gallery__thumbs" role="group" aria-label="Product images" hidden>
                         <?php foreach($gallery as $index => $image): ?>
                             <button type="button" class="product-gallery__thumb <?= $index === 0 ? 'active' : '' ?>" data-index="<?= e((string)$index) ?>" data-image="<?= e($image) ?>" aria-label="View product image <?= e((string)($index + 1)) ?>">
                                 <img src="<?= e($image) ?>" alt="">
@@ -72,10 +73,11 @@
                         <span class="badge badge--success">Save <?= $pct ?>%</span>
                     <?php endif; ?>
                 </div>
+                <div data-section-index hidden></div>
                 <p class="product-info__desc"><?= e($product['description'] ?? 'A sacred spiritual product crafted with devotion and care.') ?></p>
                 <?php if(!empty($product['highlights']) && is_array($product['highlights'])): ?>
                     <div class="product-copy-block">
-                        <h2>Key Features</h2>
+                        <h2 id="product-features" data-page-section="Features" tabindex="-1">Key Features</h2>
                         <ul>
                             <?php foreach($product['highlights'] as $point): ?>
                                 <li><?= e($point) ?></li>
@@ -85,7 +87,7 @@
                 <?php endif; ?>
                 <?php if(!empty($product['description_points']) && is_array($product['description_points'])): ?>
                     <div class="product-copy-block">
-                        <h2>Product Description</h2>
+                        <h2 id="product-description" data-page-section="Description" tabindex="-1">Product Description</h2>
                         <ul>
                             <?php foreach($product['description_points'] as $point): ?>
                                 <li><?= e($point) ?></li>
@@ -95,7 +97,7 @@
                 <?php endif; ?>
                 <?php if(!empty($product['specifications']) && is_array($product['specifications'])): ?>
                     <div class="product-copy-block product-copy-block--specs">
-                        <h2>Specifications</h2>
+                        <h2 id="product-specifications" data-page-section="Specifications" tabindex="-1">Specifications</h2>
                         <dl>
                             <?php foreach($product['specifications'] as $label => $value): ?>
                                 <div>
@@ -107,7 +109,7 @@
                     </div>
                 <?php endif; ?>
                 <?php if (empty($adminPreview)): ?>
-                 <div class="product-info__form">
+                 <div class="product-info__form" id="product-purchase" data-page-section="Purchase" tabindex="-1">
                      <form id="product-cart-form" method="post" action="/cart/add" style="display:flex; gap:var(--space-md); align-items:center; width:100%;">
                          <input type="hidden" name="slug" value="<?= e($product['slug']) ?>">
                          <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
@@ -142,7 +144,7 @@
             $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16));
         ?>
         <div class="container" style="margin-top:var(--space-4xl);">
-            <h2 class="section-title" style="font-size:1.5rem; margin-bottom:var(--space-xl);">Related Products</h2>
+            <h2 class="section-title" style="font-size:1.5rem; margin-bottom:var(--space-xl);" id="product-related" data-page-section="Related products" tabindex="-1">Related Products</h2>
             <div class="product-grid">
                 <?php foreach(array_slice($related, 0, 4) as $item): ?>
                     <?php
@@ -206,45 +208,39 @@
     <?php endif; ?>
 </section>
 <script>
-(function(){
-    const thumbs = document.querySelectorAll('.product-gallery__thumb');
-    const main = document.getElementById('product-main-image');
-    const prev = document.getElementById('gallery-prev');
-    const next = document.getElementById('gallery-next');
-    const mainWrap = document.getElementById('gallery-main');
-    const images = [];
+(() => {
+    const gallery = document.querySelector('[data-product-gallery]');
+    const group = gallery?.querySelector('.product-gallery__thumbs');
+    if (!group) return;
+    const thumbs = Array.from(group.querySelectorAll('.product-gallery__thumb'));
+    const image = gallery.querySelector('#product-main-image');
+    const previous = gallery.querySelector('#gallery-prev');
+    const next = gallery.querySelector('#gallery-next');
+    const position = gallery.querySelector('#gallery-position');
     let current = 0;
 
-    thumbs.forEach(t => {
-        images.push(t.dataset.image);
-        t.addEventListener('click', () => show(parseInt(t.dataset.index, 10)));
-    });
-
     function show(index) {
-        if (index < 0 || index >= images.length || index === current) return;
-        current = index;
-        main.style.opacity = '0.4';
-        setTimeout(() => {
-            main.src = images[current];
-            main.style.opacity = '1';
-        }, 120);
-        thumbs.forEach(t => t.classList.toggle('active', parseInt(t.dataset.index, 10) === current));
+        current = (index + thumbs.length) % thumbs.length;
+        image.src = thumbs[current].dataset.image;
+        position.textContent = `Image ${current + 1} of ${thumbs.length}`;
+        thumbs.forEach((thumb, i) => {
+            thumb.classList.toggle('active', i === current);
+            if (i === current) thumb.setAttribute('aria-current', 'true');
+            else thumb.removeAttribute('aria-current');
+        });
     }
 
-    function nextImage() { show((current + 1) % images.length); }
-    function prevImage() { show((current - 1 + images.length) % images.length); }
-
-    if (prev) prev.addEventListener('click', e => { e.stopPropagation(); prevImage(); });
-    if (next) next.addEventListener('click', e => { e.stopPropagation(); nextImage(); });
-    if (mainWrap && images.length > 1) {
-        mainWrap.addEventListener('click', nextImage);
-        mainWrap.addEventListener('mouseenter', () => { if (prev) prev.style.opacity = '1'; if (next) next.style.opacity = '1'; });
-        mainWrap.addEventListener('mouseleave', () => { if (prev) prev.style.opacity = '0'; if (next) next.style.opacity = '0'; });
-    }
-    document.addEventListener('keydown', e => {
-        if (images.length <= 1) return;
-        if (e.key === 'ArrowLeft') { e.preventDefault(); prevImage(); }
-        if (e.key === 'ArrowRight') { e.preventDefault(); nextImage(); }
+    thumbs.forEach((thumb, index) => thumb.addEventListener('click', () => show(index)));
+    previous.addEventListener('click', () => show(current - 1));
+    next.addEventListener('click', () => show(current + 1));
+    image.addEventListener('click', () => show(current + 1));
+    gallery.addEventListener('keydown', event => {
+        if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+        event.preventDefault();
+        show(current + (event.key === 'ArrowLeft' ? -1 : 1));
     });
+    group.hidden = previous.hidden = next.hidden = position.hidden = false;
+    show(0);
 })();
 </script>
