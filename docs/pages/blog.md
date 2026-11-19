@@ -68,3 +68,14 @@ This is concurrency/scheduling protection, not full autosave/revision history.
 Run `BAPX_TEST_MODE=1 php tests/blog-concurrency.php`; six synthetic writers must
 produce one save and five conflicts. Do not create live scheduled articles as
 QA fixtures or send newsletters during acceptance.
+
+
+### Recover a browser draft
+
+After reopening New Post or the same article, choose **Restore draft** if a
+browser copy is available. Resolve the offer before editing. If the saved
+revision is newer, select **Download browser draft** to keep the Markdown body
+for comparison, then select **Discard browser copy** to continue. Recovery
+depends on storage in this browser profile. On a shared computer, discard the
+copy when you finish. Review publication and subscriber email settings before
+selecting **Save**.

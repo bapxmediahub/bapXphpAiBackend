@@ -22,8 +22,11 @@ that scaffold for review. `enhanceBlogTitle` and `enhanceBlogContent` separately
 call the configured model and return only their own field. Neither endpoint
 proves the content was saved or published. The owner must review, explicitly
 Save, and select the publication state. Images remain manually uploaded or
-selected from existing media. Revisions, automatic save and scheduled
-publication must not be claimed without their own implementation and tests.
+selected from existing media. The editor keeps an unsaved browser copy of
+editorial fields for the same owner and article. Reopen the editor and choose
+Restore draft to recover it. When the saved revision has changed, download the
+browser copy for comparison. Save confirms persistence in the app. Browser
+recovery never selects publication or subscriber email on the owner's behalf.
 
 `BlogService::resolvedImageUrl` verifies same-site image files/persistent media
 before selecting the existing fallback. `BlogController` supplies an absolute

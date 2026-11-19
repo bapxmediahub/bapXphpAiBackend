@@ -128,3 +128,13 @@ pass/fail/not-assessed rubric and explicit human/assisted/test provenance. Never
 render private text as HTML, assume a missing source is a pass, or present a
 staff label as customer satisfaction. Verify no-JS, mobile, CSRF, role denial,
 stale revision and unchanged original JSON evidence after a synthetic QA save.
+
+## JavaScript editor interactions
+
+Use native controls and keep server validation, CSRF and revision checks in
+PHP. Store only the editable fields needed for recovery, scoped to the signed-in
+owner and article. Use text for status messages and escape any preview content
+inserted into HTML. Keep restored browser drafts distinct from server saves.
+After changing the editor, verify mode selection, keyboard focus, reload and
+restore, a conflicting revision, and save acknowledgement in a local fixture
+at desktop and 375px. Keep private drafts and screenshots out of Git.

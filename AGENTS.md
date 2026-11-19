@@ -87,7 +87,7 @@ target is absent, and state that absence as a finding.
 
 ## Architecture
 
-- **Frontend:** PHP templates in `views/`, following `Design.md`. No SPA, no build step.
+- **Frontend:** PHP templates in `views/`, following `Design.md`, with native JavaScript for editing, feedback and recovery. PHP owns validation, permissions and persistence. The frontend runs without a build step.
 - **Backend:** controllers and services in `app/`. Route → controller → service →
   MySQL via `DatabaseService`.
 - **Schema:** `storage/schema/collections.php` is canonical. Update it before changing
@@ -196,7 +196,7 @@ php -S 127.0.0.1:8811 index.php    # local server
 ./bapXphp ci                        # lint, tests, maps, smoke
 ```
 
-Check computed styles rather than trusting a screenshot: an author rule like
+Exercise the changed JavaScript controls with keyboard and pointer input, and confirm visible state after the action. Check computed styles as well as screenshots: an author rule like
 `display:flex` silently overrides `[hidden]` and breaks JS filters with no error.
 
 ## Rules

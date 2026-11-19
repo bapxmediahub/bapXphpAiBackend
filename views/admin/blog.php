@@ -10,7 +10,18 @@
     <?php $reloadSlug=(string)($recoveredDraft['original_slug']??$recoveredDraft['slug']??''); if($reloadSlug!==''): ?><a class="btn btn-ghost" href="/admin/blog?reload=<?= e(rawurlencode($reloadSlug)) ?>">Reload current article</a><?php endif; ?>
 </section>
 <?php endif; ?>
-<form method="post" action="/admin/blog/save" id="blog-form" class="admin-blog-editor" hidden>
+<form method="post" action="/admin/blog/save" id="blog-form" class="admin-blog-editor"
+      data-draft-owner="<?= e($blogDraftOwner ?? '') ?>" data-saved-draft="<?= e($savedDraftToken ?? '') ?>" hidden>
+    <section id="be-recovery" class="be-recovery" aria-label="Browser draft recovery" hidden>
+        <p id="be-recovery-message"></p>
+        <div class="be-recovery__actions">
+        <button class="btn btn-outline" type="button" id="be-restore">Restore draft</button>
+        <button class="btn btn-ghost" type="button" id="be-discard">Discard browser copy</button>
+        </div>
+    </section>
+    <p id="be-draft-status" class="be-hint" role="status"></p>
+    <input type="hidden" name="browser_draft_token" id="be-draft-token">
+    <div id="be-edit-fields">
     <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
     <input type="hidden" name="slug" id="edit-slug" value="">
     <input type="hidden" name="expected_revision" id="edit-revision" value="new">
@@ -20,7 +31,13 @@
         <select name="published" id="edit-published"><option value="0">Draft — not public</option><option value="1">Publish when the date is due</option></select>
     </label>
     <div class="admin-blog-editor__grid">
-        <label>Title <button type="button" class="btn btn-sm btn-outline be-enhance-inline" id="enhance-title">Enhance</button> <input type="text" name="title" id="edit-title" required style="width:100%"></label>
+        <div class="be-title-field">
+            <div class="be-title-field__label">
+                <label for="edit-title">Title</label>
+                <button type="button" class="btn btn-sm btn-outline" id="enhance-title">Enhance title</button>
+            </div>
+            <input type="text" name="title" id="edit-title" required>
+        </div>
         <label>Category
             <select name="category" id="edit-category" style="width:100%">
                 <option value="">Uncategorized</option>
@@ -59,10 +76,10 @@
 
     <div class="admin-blog-editor__grid">
         <div class="admin-blog-editor__wide">
-            <div class="be-tabs" role="tablist">
-                <button type="button" class="be-tab is-active" data-mode="document" role="tab">Edit as document</button>
-                <button type="button" class="be-tab" data-mode="markdown" role="tab">Edit Markdown</button>
-                <button type="button" class="be-tab" data-mode="preview" role="tab">Preview</button>
+            <div class="be-tabs" role="group" aria-label="Article editing mode">
+                <button type="button" class="be-tab is-active" data-mode="document" aria-pressed="true">Edit as document</button>
+                <button type="button" class="be-tab" data-mode="markdown" aria-pressed="false">Edit Markdown</button>
+                <button type="button" class="be-tab" data-mode="preview" aria-pressed="false">Preview</button>
                 <button type="button" class="btn btn-sm btn-outline be-enhance" id="enhance-content">Enhance content</button>
             </div>
 
@@ -87,10 +104,10 @@
             </div>
 
             <!-- Document mode. Edits HTML for familiarity, but only Markdown is ever saved. -->
-            <div id="be-document" class="be-surface" contenteditable="true" role="textbox" aria-multiline="true"></div>
+            <div id="be-document" class="be-surface" contenteditable="true" role="textbox" aria-label="Article content" aria-multiline="true"></div>
 
             <!-- Markdown mode. This is the exact text written to content/blog/posts/{slug}.md -->
-            <textarea name="content" id="edit-content" class="be-surface be-code" rows="18" hidden></textarea>
+            <textarea name="content" id="edit-content" aria-label="Article Markdown" class="be-surface be-code" rows="18" hidden></textarea>
 
             <!-- Preview mode. Same renderer and article styles as the public page. -->
             <div id="be-preview" class="be-surface be-preview blog-post__body" hidden></div>
@@ -122,8 +139,9 @@
         <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap">
             <button class="btn btn-primary" type="submit">Save</button>
             <button class="btn btn-outline" type="button" onclick="downloadBlogDraft()">Download unsaved Markdown</button>
-            <button class="btn btn-outline" type="button" onclick="closeBlogForm()">Cancel</button>
+            <button class="btn btn-outline" type="button" onclick="closeBlogForm()">Close editor</button>
         </div>
+    </div>
     </div>
 </form>
 
@@ -167,8 +185,8 @@
 </div>
 
 <script>
-function toggleForm(){var f=document.getElementById('blog-form');f.reset();if(window.beLoadMarkdown)window.beLoadMarkdown('');document.getElementById('edit-slug-display').readOnly=false;document.getElementById('edit-revision').value='new';document.getElementById('edit-original-slug').value='';f.hidden=false;document.getElementById('edit-title').focus();}
-function editPost(post){document.getElementById('edit-published').value=(post.published===true||post.published===1||post.published==='1'||post.published==='true')?'1':'0';document.getElementById('edit-revision').value=post.expected_revision||post._revision||'new';document.getElementById('edit-original-slug').value=post.original_slug||(post._revision?post.slug:'')||'';document.getElementById('edit-slug-display').readOnly=!!document.getElementById('edit-original-slug').value;document.getElementById('edit-slug').value=post.slug||'';document.getElementById('edit-slug-display').value=post.slug||'';document.getElementById('edit-type').value=post.type||'blog';document.getElementById('edit-title').value=post.title||'';document.getElementById('edit-category').value=post.category||'';document.getElementById('edit-template').value=post.template||'editorial';document.getElementById('edit-image').value=post.og_image||post.image||'';document.getElementById('edit-image-alt').value=post.image_alt||'';document.getElementById('edit-source-url').value=post.source_url||'';document.getElementById('edit-summary').value=post.summary||post.excerpt||'';document.getElementById('edit-order').value=post.order||'';document.getElementById('edit-excerpt').value=post.excerpt||'';document.getElementById('edit-keywords').value=post.keywords||'';document.getElementById('edit-date').value=post.published_at||'';document.getElementById('edit-author').value=post.author||'Admin';document.getElementById('edit-content').value=post.content||'';if(window.beLoadMarkdown)window.beLoadMarkdown(post.content||'');document.getElementById('blog-form').hidden=false;document.getElementById('blog-form').scrollIntoView({behavior:'smooth',block:'start'});document.getElementById('edit-title').focus();}
+function toggleForm(){var f=document.getElementById('blog-form');if(!canLeaveBlogForm())return;f.reset();if(window.beLoadMarkdown)window.beLoadMarkdown('');document.getElementById('edit-slug-display').readOnly=false;document.getElementById('edit-revision').value='new';document.getElementById('edit-original-slug').value='';f.hidden=false;document.getElementById('edit-title').focus();f.dispatchEvent(new Event('blog:open'));}
+function editPost(post){if(!canLeaveBlogForm())return;document.getElementById('edit-published').value=(post.published===true||post.published===1||post.published==='1'||post.published==='true')?'1':'0';document.getElementById('edit-revision').value=post.expected_revision||post._revision||'new';document.getElementById('edit-original-slug').value=post.original_slug||(post._revision?post.slug:'')||'';document.getElementById('edit-slug-display').readOnly=!!document.getElementById('edit-original-slug').value;document.getElementById('edit-slug').value=post.slug||'';document.getElementById('edit-slug-display').value=post.slug||'';document.getElementById('edit-type').value=post.type||'blog';document.getElementById('edit-title').value=post.title||'';document.getElementById('edit-category').value=post.category||'';document.getElementById('edit-template').value=post.template||'editorial';document.getElementById('edit-image').value=post.og_image||post.image||'';document.getElementById('edit-image-alt').value=post.image_alt||'';document.getElementById('edit-source-url').value=post.source_url||'';document.getElementById('edit-summary').value=post.summary||post.excerpt||'';document.getElementById('edit-order').value=post.order||'';document.getElementById('edit-excerpt').value=post.excerpt||'';document.getElementById('edit-keywords').value=post.keywords||'';document.getElementById('edit-date').value=post.published_at||'';document.getElementById('edit-author').value=post.author||'Admin';document.getElementById('edit-content').value=post.content||'';if(window.beLoadMarkdown)window.beLoadMarkdown(post.content||'');document.getElementById('blog-form').hidden=false;document.getElementById('blog-form').scrollIntoView({behavior:'smooth',block:'start'});document.getElementById('edit-title').focus();document.getElementById('blog-form').dispatchEvent(new Event('blog:open'));}
 document.getElementById('edit-title').addEventListener('input',function(){if(document.getElementById('edit-original-slug').value)return;var slug=this.value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');document.getElementById('edit-slug').value=slug;document.getElementById('edit-slug-display').value=slug;});
 function previewArticle(){var f=document.getElementById('blog-form');var fd=new FormData(f);fetch('/admin/blog/preview',{method:'POST',body:fd}).then(function(r){return r.text();}).then(function(html){var w=window.open('','_blank');w.document.write(html);w.document.close();});}
 function generateDraft(){var f=document.getElementById('blog-form');var fd=new FormData(f);fd.set('content','');fetch('/admin/blog/ai-draft',{method:'POST',body:fd}).then(function(r){return r.json();}).then(function(d){if(d.content)document.getElementById('edit-content').value=d.content;});}
@@ -182,11 +200,20 @@ function generateDraft(){var f=document.getElementById('blog-form');var fd=new F
 .be-settings[open]>summary::before{transform:rotate(90deg)}
 .be-settings>summary span{font-weight:400;font-size:.78rem;color:var(--color-text-muted)}
 .be-settings .admin-blog-editor__grid{padding:0 14px 14px}
+.be-recovery{padding:12px 16px;margin-bottom:12px;border:1px solid var(--color-border);border-inline-start:4px solid var(--color-gold);border-radius:8px;background:var(--color-white)}
+.be-recovery p{margin:0 0 8px}
+.be-recovery__actions,.be-title-field__label{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.be-title-field__label{justify-content:space-between;margin-bottom:4px}
+#blog-form{scroll-margin-block-start:150px}
+#blog-form input:not([type=hidden],[type=checkbox],[type=file]),#blog-form select:not(#be-block){display:block;box-sizing:border-box;width:100%;min-height:44px;margin-top:4px;padding:8px 10px;border:1px solid var(--color-border);border-radius:8px;background:var(--color-white);font:inherit}
+#blog-form :focus-visible{outline:2px solid var(--color-maroon);outline-offset:2px}
+@media(max-width:600px){.be-settings>summary{align-items:baseline;flex-wrap:wrap}.be-settings>summary span{flex-basis:100%;padding-inline-start:14px}}
+#blog-form [hidden]{display:none!important}
+.be-tabs button,.be-toolbar button,.be-toolbar select,.be-recovery button,#blog-form #enhance-title{min-height:44px}
 .be-tabs{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
 .be-tab{padding:7px 14px;border:1px solid var(--color-border);background:var(--color-white);border-radius:999px;font-size:.82rem;cursor:pointer;font-family:inherit;color:var(--color-text-muted)}
 .be-tab.is-active{background:var(--color-maroon);color:var(--color-gold);border-color:var(--color-gold)}
 .be-enhance{margin-left:auto}
-.be-enhance-inline{float:right;margin-bottom:4px}
 .be-toolbar{display:flex;gap:4px;align-items:center;flex-wrap:wrap;padding:6px;border:1px solid var(--color-border);border-bottom:0;border-radius:8px 8px 0 0;background:var(--color-bg-alt)}
 .be-toolbar button{padding:5px 9px;border:1px solid transparent;background:transparent;border-radius:6px;cursor:pointer;font-size:.8rem;font-family:inherit;color:var(--color-ink)}
 .be-toolbar button:hover{background:var(--color-white);border-color:var(--color-border)}
@@ -219,23 +246,44 @@ function generateDraft(){var f=document.getElementById('blog-form');var fd=new F
     var pv = document.getElementById('be-preview');
     var toolbar = document.getElementById('be-toolbar');
     if (!doc || !md) return;
+    var form = document.getElementById('blog-form');
+    var editorGeneration = 0;
+    form.addEventListener('blog:open', function(){ editorGeneration++; });
+    function editorIsCurrent(generation) { return generation === editorGeneration && !form.hidden; }
     var mode = 'document';
+    var documentDirty = false;
+    doc.addEventListener('input', function(){ documentDirty = true; });
 
     // ---- Markdown <-> HTML -------------------------------------------------
     // Markdown is the source of truth: it is what gets saved. Document mode is a
     // view over it, so every switch converts rather than keeping a second copy.
     function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
+    function escAttr(text) { return esc(text).replace(/"/g, '&quot;'); }
+    function safeEditorUrl(value) {
+        try { return ['http:', 'https:'].includes(new URL(value, location.href).protocol); }
+        catch { return false; }
+    }
+
     function mdToHtml(src) {
         var lines = String(src).replace(/\r\n/g,'\n').split('\n');
         var out = [], i = 0;
-        function inline(t){
-            return esc(t)
-                .replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g,'<img src="$2" alt="$1">')
-                .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,'<a href="$2">$1</a>')
-                .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
-                .replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>')
-                .replace(/`([^`]+)`/g,'<code>$1</code>');
+        function inline(text) {
+            var tokens = /(!?)\[([^\]]*)\]\(([^)\s]+)\)|\*\*([^*]+)\*\*|\*([^*\n]+)\*|`([^`]+)`/g;
+            var output = '', offset = 0;
+            for (var match of text.matchAll(tokens)) {
+                output += esc(text.slice(offset, match.index));
+                if (match[3] !== undefined && safeEditorUrl(match[3])) {
+                    var url = escAttr(match[3]);
+                    output += match[1] ? '<img src="' + url + '" alt="' + escAttr(match[2]) + '">'
+                        : '<a href="' + url + '">' + esc(match[2]) + '</a>';
+                } else if (match[4] !== undefined) { output += '<strong>' + esc(match[4]) + '</strong>'; }
+                else if (match[5] !== undefined) { output += '<em>' + esc(match[5]) + '</em>'; }
+                else if (match[6] !== undefined) { output += '<code>' + esc(match[6]) + '</code>'; }
+                else { output += esc(match[0]); }
+                offset = match.index + match[0].length;
+            }
+            return output + esc(text.slice(offset));
         }
         while (i < lines.length) {
             var l = lines[i];
@@ -322,13 +370,9 @@ function generateDraft(){var f=document.getElementById('blog-form');var fd=new F
 
     // ---- mode switching ----------------------------------------------------
     function sync(from) {
-        if (from === 'document') {
-            var converted = htmlToMd(doc);
-            // Never let an empty document surface blank out Markdown that already has
-            // content. If the two disagree this way it means the document view was not
-            // seeded, and Markdown is the source of truth.
-            if (converted.trim() === '' && md.value.trim() !== '') { doc.innerHTML = mdToHtml(md.value); return; }
-            md.value = converted;
+        if (from === 'document' && documentDirty) {
+            md.value = htmlToMd(doc);
+            documentDirty = false;
         } else if (from === 'markdown') {
             doc.innerHTML = mdToHtml(md.value);
         }
@@ -343,7 +387,7 @@ function generateDraft(){var f=document.getElementById('blog-form');var fd=new F
         toolbar.style.display = next === 'document' ? '' : 'none';
         if (next === 'document') doc.innerHTML = mdToHtml(md.value);
         if (next === 'preview') pv.innerHTML = mdToHtml(md.value);
-        document.querySelectorAll('.be-tab').forEach(function(t){ t.classList.toggle('is-active', t.dataset.mode===next); });
+        document.querySelectorAll('.be-tab').forEach(function(t){ var active = t.dataset.mode === next; t.classList.toggle('is-active', active); t.setAttribute('aria-pressed', String(active)); });
     }
     document.querySelectorAll('.be-tab').forEach(function(t){ t.addEventListener('click', function(){ setMode(t.dataset.mode); }); });
 
@@ -361,7 +405,7 @@ function generateDraft(){var f=document.getElementById('blog-form');var fd=new F
         doc.focus(); document.execCommand('formatBlock', false, this.value);
     });
     document.getElementById('be-link').addEventListener('click', function(){
-        var u = prompt('Link URL'); if (u) { doc.focus(); document.execCommand('createLink', false, u); }
+        var u = prompt('Link URL'); if (u && safeEditorUrl(u)) { doc.focus(); document.execCommand('createLink', false, u); }
     });
     document.getElementById('be-table').addEventListener('click', function(){
         doc.focus();
@@ -369,10 +413,12 @@ function generateDraft(){var f=document.getElementById('blog-form');var fd=new F
           '<table><thead><tr><th>Heading</th><th>Heading</th></tr></thead><tbody><tr><td>Cell</td><td>Cell</td></tr></tbody></table><p><br></p>');
     });
     function insertImage(path) {
+        if (!safeEditorUrl(path)) return;
         if (mode === 'markdown') { md.value += '\n\n![](' + path + ')\n'; }
-        else { setMode('document'); doc.focus(); document.execCommand('insertHTML', false, '<img src="'+path+'" alt="">'); }
+        else { setMode('document'); doc.focus(); document.execCommand('insertHTML', false, '<img src="'+escAttr(path)+'" alt="">'); }
         var f = document.getElementById('edit-image');
         if (f && !f.value) f.value = path;
+        md.dispatchEvent(new Event('input', {bubbles: true}));
     }
     document.getElementById('be-image').addEventListener('click', function(){
         var lib = document.getElementById('be-library'); if (lib) lib.hidden = false;
@@ -386,6 +432,7 @@ function generateDraft(){var f=document.getElementById('blog-form');var fd=new F
         b.addEventListener('click', function(){ insertImage(b.dataset.path); });
     });
     document.getElementById('be-upload').addEventListener('change', async function(){
+        var generation = editorGeneration;
         var file = this.files && this.files[0]; if (!file) return;
         var fd = new FormData();
         fd.append('media_files[]', file);
@@ -394,6 +441,7 @@ function generateDraft(){var f=document.getElementById('blog-form');var fd=new F
         try {
             var r = await fetch('/admin/media/upload', {method:'POST', body:fd, credentials:'same-origin'});
             var d = await r.json().catch(function(){return {};});
+            if (!editorIsCurrent(generation)) return;
             var path = (d.files && d.files[0] && (d.files[0].url || d.files[0].path)) || d.url || '';
             if (path) { insertImage(path); showToast && showToast('Image uploaded.','success'); }
             else showToast && showToast('Upload finished but no path was returned.','error');
@@ -409,18 +457,27 @@ function generateDraft(){var f=document.getElementById('blog-form');var fd=new F
             var d = await r.json().catch(function(){return {error:'Unreadable response.'};});
             if (d.error) { showToast && showToast(d.error,'error'); return null; }
             return d;
+        } catch {
+            showToast('Could not reach the enhancement service. Your draft is still in the editor.', 'error');
+            return null;
         } finally { btn.disabled = false; btn.textContent = label; }
     }
     document.getElementById('enhance-title').addEventListener('click', async function(){
         var t = document.getElementById('edit-title');
-        var d = await enhance('/admin/blog/enhance-title', {title: t.value}, this);
-        if (d && d.title) t.value = d.title;
+        var generation = editorGeneration, title = t.value;
+        var d = await enhance('/admin/blog/enhance-title', {title: title}, this);
+        if (editorIsCurrent(generation) && t.value === title && d && d.title) { t.value = d.title; t.dispatchEvent(new Event('input', {bubbles: true})); }
     });
     document.getElementById('enhance-content').addEventListener('click', async function(){
         sync(mode);
-        var d = await enhance('/admin/blog/enhance-content', {content: md.value}, this);
-        if (d && d.content) {
+        var generation = editorGeneration, content = md.value;
+        var d = await enhance('/admin/blog/enhance-content', {content: content}, this);
+        if (!editorIsCurrent(generation)) return;
+        sync(mode);
+        if (md.value === content && d && d.content) {
             md.value = d.content;
+            documentDirty = false;
+            md.dispatchEvent(new Event('input', {bubbles: true}));
             if (mode === 'document') doc.innerHTML = mdToHtml(md.value);
             if (mode === 'preview') pv.innerHTML = mdToHtml(md.value);
         }
@@ -428,18 +485,31 @@ function generateDraft(){var f=document.getElementById('blog-form');var fd=new F
 
     // Seed document mode when an existing post is loaded into the form.
     window.beLoadMarkdown = function (markdown) {
+        documentDirty = false;
         md.value = markdown || '';
         doc.innerHTML = mdToHtml(md.value);
         if (mode === 'preview') pv.innerHTML = doc.innerHTML;
     };
+    window.beSyncMarkdown = function () { if (mode === 'document') sync(mode); };
     doc.innerHTML = mdToHtml(md.value);
 })();
 </script>
 
+<script src="/assets/blog-draft.js?v=<?= filemtime(app_path('assets/blog-draft.js')) ?>"></script>
 <script>
 document.getElementById('edit-slug-display').addEventListener('input',function(){if(!document.getElementById('edit-original-slug').value)document.getElementById('edit-slug').value=this.value;});
-function closeBlogForm(){if(confirm('Close the editor? Download any unsaved Markdown first.'))document.getElementById('blog-form').hidden=true;}
-function downloadBlogDraft(){var content=document.getElementById('edit-content').value;var a=document.createElement('a'),url=URL.createObjectURL(new Blob([content],{type:'text/markdown;charset=utf-8'}));a.href=url;a.download='unsaved-article.md';a.click();setTimeout(function(){URL.revokeObjectURL(url)},1000);}
+function canLeaveBlogForm() {
+    var form = document.getElementById('blog-form');
+    return form.dispatchEvent(new Event('blog:close', {cancelable:true}))
+        || confirm('The latest edits could not be stored in this browser. Leave the editor and discard them?');
+}
+function closeBlogForm() {
+    if (!canLeaveBlogForm()) return;
+    document.getElementById('blog-form').hidden = true;
+    document.querySelector('.admin-bar button').focus();
+}
+function downloadBlogDraft(){window.beSyncMarkdown();window.beDownloadMarkdown(document.getElementById('edit-content').value);}
+window.beDownloadMarkdown=function(content){var a=document.createElement('a'),url=URL.createObjectURL(new Blob([content],{type:'text/markdown;charset=utf-8'}));a.href=url;a.download='unsaved-article.md';a.click();setTimeout(function(){URL.revokeObjectURL(url)},1000);};
 <?php if(is_array($recoveredDraft??null)): ?>
 editPost(<?= json_encode($recoveredDraft,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_INVALID_UTF8_SUBSTITUTE) ?>);
 <?php endif; ?>

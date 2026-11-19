@@ -63,3 +63,11 @@ HTML-escape attributes, JSON-encode script strings, validate intended ID/token
 formats and never label a nonempty field collected/verified/connected. Test
 hostile values in isolated fixtures only. Google reporting requires its own
 admin OAuth/API flow, not extra login scopes or fabricated dashboard figures.
+
+## JavaScript interactions
+
+Use small native JavaScript enhancements for task state and feedback. Bind
+controls with descriptive accessible names and expose selected or expanded
+state on the control. Keep server-owned validation and native form or link
+paths where the task supports them. Check real pointer and keyboard actions,
+failure feedback, and mobile computed visibility in the browser.

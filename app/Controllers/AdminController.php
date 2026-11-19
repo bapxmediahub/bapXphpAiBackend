@@ -1028,6 +1028,9 @@ final class AdminController extends BaseController {
         $blog = new \App\Services\BlogService();
         $recoveredDraft=is_array($_SESSION['blog_form_draft']??null)?$_SESSION['blog_form_draft']:null;
         unset($_SESSION['blog_form_draft']);
+        $ownerId = (string)($_SESSION['user']['sub'] ?? '');
+        $savedDraftToken = $_SESSION['blog_saved_draft_token'] ?? '';
+        unset($_SESSION['blog_saved_draft_token']);
         $reload=is_string($_GET['reload']??null)?$_GET['reload']:'';
         if($reload!=='')$recoveredDraft=$blog->find($reload);
         // The editor's "Choose from uploads" picker needs the library, otherwise it
@@ -1037,6 +1040,8 @@ final class AdminController extends BaseController {
             'posts'=>$blog->all(true),'categories'=>$blog->categories(),
             'mediaFiles'=>(new MediaService())->all('blog'),
             'currentAuthor'=>$this->currentAuthorName(),'recoveredDraft'=>$recoveredDraft,
+            'blogDraftOwner'=>$ownerId !== '' ? hash('sha256', $ownerId) : '',
+            'savedDraftToken'=>$savedDraftToken,
         ]);
     }
     /** The signed-in admin's own name, falling back to a generic byline. */
@@ -1092,6 +1097,10 @@ final class AdminController extends BaseController {
         $message=$state==='scheduled'?'Post saved as scheduled. It becomes public on its date (Asia/Kolkata); no newsletter was sent or scheduled.':
             ($state==='published'?'Blog post saved and public.':'Blog post saved; it is not public.');
         if($sent>0)$message.=' Newsletter accepted for '.$sent.' recipient(s); inbox receipt is not verified.';
+        $draftToken = $_POST['browser_draft_token'] ?? '';
+        if (is_string($draftToken) && preg_match('/^[a-f0-9]{32}$/D', $draftToken)) {
+            $_SESSION['blog_saved_draft_token'] = $draftToken;
+        }
         $this->flash($message,'success');
         $this->redirect('/admin/blog');
     }
