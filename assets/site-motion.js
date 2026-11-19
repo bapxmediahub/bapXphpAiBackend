@@ -52,7 +52,7 @@
         doc.documentElement.dataset.spsMotionInitialized = 'true';
         var surface = doc.querySelector('.admin-shell') ? 'admin' : 'public';
         var media = typeof win.matchMedia === 'function' ? win.matchMedia('(prefers-reduced-motion: reduce)') : { matches: true };
-        var active = new Set(), lifecycle = [];
+        var active = new Set();
         var supported = !!(win.Element && typeof win.Element.prototype.animate === 'function');
         var canMove = function () {
             return motionAllowed({ supported: supported, reducedMotion: media.matches,
@@ -76,7 +76,6 @@
         function preferenceChanged() {
             if (!canMove()) cancelMotion();
             doc.documentElement.dataset.spsMotion = canMove() ? 'enabled' : 'reduced';
-            lifecycle.forEach(function (update) { update(); });
         }
         if (typeof media.addEventListener === 'function') media.addEventListener('change', preferenceChanged);
         else if (typeof media.addListener === 'function') media.addListener(preferenceChanged);
@@ -182,6 +181,17 @@
                 });
             });
         }
+        var chapters = doc.querySelectorAll('.home-chapter > section');
+        if (chapters.length && typeof win.ResizeObserver === 'function') {
+            var sizes = new win.ResizeObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    var section = entry.target;
+                    section.parentElement.style.setProperty('--chapter-height', section.offsetHeight + 'px');
+                    section.parentElement.classList.add('is-measured');
+                });
+            });
+            chapters.forEach(function (section) { sizes.observe(section, { box: 'border-box' }); });
+        }
         function updateHeaderOffset() {
             var height = header ? Math.ceil(header.getBoundingClientRect().height) : 0;
             doc.documentElement.style.setProperty('--sps-scroll-offset', (height + 16) + 'px');
@@ -220,49 +230,23 @@
 
         doc.querySelectorAll('[data-varahi-slider]').forEach(function (root) {
             var slides = Array.from(root.querySelectorAll('.varahi-slide'));
-            var dots = Array.from(root.querySelectorAll('.varahi-dot'));
-            var pause = root.querySelector('[data-slideshow-pause]');
-            if (!slides.length || slides.length !== dots.length) return;
-            var current = Math.max(0, slides.findIndex(function (el) { return el.classList.contains('is-active'); }));
-            var timer = null, visible = false, hovered = false, focused = false, userPaused = false;
-            function stop() { if (timer !== null) win.clearInterval(timer); timer = null; }
-            function show(next) {
-                current = (next + slides.length) % slides.length;
-                slides.forEach(function (el, i) { el.classList.toggle('is-active', i === current); });
-                dots.forEach(function (el, i) {
-                    el.classList.toggle('is-active', i === current);
-                    el.setAttribute('aria-current', String(i === current));
-                    el.setAttribute('aria-selected', String(i === current));
-                    el.tabIndex = i === current ? 0 : -1;
-                });
+            var controls = root.querySelector('[data-portrait-controls]');
+            if (!controls || slides.length < 2) return;
+            var current = 0;
+            var position = controls.querySelector('[role="status"]');
+            function selectPortrait(index) {
+                slides[current].classList.remove('is-active');
+                current = (index + slides.length) % slides.length;
+                slides[current].classList.add('is-active');
                 root.dataset.currentSlide = slides[current].classList.contains('hero-guruji') ? 'guruji' : 'deity';
+                position.textContent = (current + 1) + ' / ' + slides.length;
             }
-            function update() {
-                stop();
-                if (pause) {
-                    pause.hidden = media.matches || !!(win.navigator.connection && win.navigator.connection.saveData);
-                    pause.textContent = userPaused ? 'Play slides' : 'Pause slides';
-                    pause.setAttribute('aria-pressed', String(userPaused));
-                }
-                if (!userPaused && !hovered && !focused && visible && canMove()) timer = win.setInterval(function () { show(current + 1); }, 5000);
-            }
-            dots.forEach(function (dot, i) {
-                dot.addEventListener('click', function () { show(i); update(); });
-                dot.addEventListener('keydown', function (event) {
-                    var target = event.key === 'ArrowRight' ? current + 1 : event.key === 'ArrowLeft' ? current - 1 : event.key === 'Home' ? 0 : event.key === 'End' ? dots.length - 1 : null;
-                    if (target === null) return;
-                    event.preventDefault(); show(target); dots[current].focus(); update();
+            controls.querySelectorAll('[data-portrait-step]').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    selectPortrait(current + Number(button.dataset.portraitStep));
                 });
             });
-            if (pause) pause.addEventListener('click', function () { userPaused = !userPaused; update(); });
-            root.addEventListener('mouseenter', function () { hovered = true; update(); });
-            root.addEventListener('mouseleave', function () { hovered = false; update(); });
-            root.addEventListener('focusin', function () { focused = true; update(); });
-            root.addEventListener('focusout', function (event) { if (!root.contains(event.relatedTarget)) { focused = false; update(); } });
-            if (typeof win.IntersectionObserver === 'function') {
-                new win.IntersectionObserver(function (entries) { visible = entries[0].isIntersecting; update(); }, { threshold: 0.05 }).observe(root);
-            }
-            lifecycle.push(update); win.addEventListener('pagehide', stop); show(current); update();
+            controls.hidden = false;
         });
     }
     return { motionAllowed: motionAllowed, entrance: entrance, showReturnControl: showReturnControl, init: init };

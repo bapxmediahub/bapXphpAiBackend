@@ -552,6 +552,26 @@ final class AgentConversationService
         return $result;
     }
 
+    /** Link the five latest failed tool runs in this chat to their recorded turns. */
+    private static function failedToolRuns(array $turns): array
+    {
+        $runs = [];
+        foreach (array_reverse($turns) as $turn) {
+            $traceId = $turn['trace_id'] ?? '';
+            $turnId = $turn['turn_id'] ?? '';
+            if (!is_string($traceId) || !preg_match('/^[a-f0-9]{16}$/D', $traceId)
+                || !is_string($turnId) || !preg_match(self::ID_PATTERN, $turnId)) continue;
+            $errors = 0;
+            foreach ($turn['tools'] ?? [] as $tool) {
+                if (($tool['status'] ?? null) === 'error') $errors++;
+            }
+            if ($errors === 0) continue;
+            $runs[] = ['trace_id' => $traceId, 'turn_id' => $turnId, 'errors' => $errors];
+            if (count($runs) === 5) break;
+        }
+        return $runs;
+    }
+
     /** Load at most 100 recent chat documents, not every full transcript. */
     public function recent(int $limit = 40): array
     {
@@ -591,6 +611,7 @@ final class AgentConversationService
                 'trace_state' => is_array($pending) ? 'unfinished' : 'completed',
                 'trace_ordering' => (string)($trace['ordering'] ?? 'unavailable'),
                 'trace_steps' => $traceSteps,
+                'failed_tool_runs' => self::failedToolRuns($document['turns'] ?? []),
                 'resolution_status' => in_array($document['resolution_status'] ?? '', [
                     'awaiting_feedback','confirmed_resolved','needs_followup','escalated'
                 ], true) ? $document['resolution_status'] : 'unknown',

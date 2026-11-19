@@ -2,6 +2,14 @@
 
 Open Products and choose the record you need to edit. Review its name, public description, price/offer fields, stock state and image before saving. Preview the public product page afterwards. A saved image URL alone does not prove an image loads; use Media Library to inspect the actual asset.
 
+Use **Browse products** to search the whole catalogue by name, slug or category. Set the page size or sort by name. **Edit** opens the original record, including a scheduled offer or hidden item.
+
+## Import new products
+
+In **Products → Import CSV**, download the sample and replace its example row. Include `slug`, `name` and `price`. The optional columns are `category` and `description`. Save a UTF-8 CSV of up to 100 products and 64 KiB. Use each lowercase, hyphenated slug once and enter the INR price as a positive decimal without a currency symbol.
+
+Choose **Preview import**. Correct any reported row in the original file and upload it again. Review the proposed products, then choose **Confirm import**. The store rechecks existing slugs and skips matches. It saves new rows together, hidden and out of stock. Open each product to add images, verify its tax and stock settings, and publish it when ready. After an interrupted confirmation, preview the same file again to see which slugs already exist.
+
 ## Organise the shop
 
 Categories group products. Special Collections have their own selected product membership; a festive collection should contain only the intended items. Check the public category or collection after saving. Product visibility and stock state are separate decisions: hidden items should not be advertised by the Support Agent.

@@ -15,14 +15,15 @@ final class SeoService {
         }
         $this->baseUrl=rtrim($configuredUrl,'/');
         $envName = getenv('APP_NAME') ?: 'Sri Panchami Spiritual';
-        $this->siteName = $secrets['seo_site_name'] ?? $envName;
+        $this->siteName = trim((string)($secrets['seo_site_name'] ?? '')) ?: $envName;
         $this->defaultOgImage='';
         foreach(['/assets/images/og-image.jpg','/assets/images/hero-temple-bg.webp'] as $fallback){
             if($this->localImageExists($fallback)){$this->defaultOgImage=$this->pageUrl($fallback);break;}
         }
         if($this->defaultOgImage==='')throw new \RuntimeException('A shipped social-preview fallback image is required.');
         $this->defaultOgImage=$this->imageUrl((string)($secrets['seo_default_og_image']??''));
-        $this->twitterHandle = $secrets['seo_twitter_handle'] ?? '';
+        $handle = trim((string)($secrets['seo_twitter_handle'] ?? ''));
+        $this->twitterHandle = preg_match('/^@?[A-Za-z0-9_]{1,15}$/D', $handle) ? '@' . ltrim($handle, '@') : '';
         $phone = $secrets['phone'] ?? getenv('CONTACT_PHONE') ?: '';
         $this->telephone = $phone !== '' ? [$phone] : ['+919789444037', '+919789444038'];
     }
@@ -42,6 +43,7 @@ final class SeoService {
         $meta['canonical'] = $this->overrideUrl($meta['canonical'] ?? null) ?? $url;
         $meta['og_url'] = $this->overrideUrl($meta['og_url'] ?? null) ?? $meta['canonical'];
         $meta['og_site_name'] = $this->siteName;
+        $meta['twitter_site'] = $this->twitterHandle;
         $meta['og_image'] = $this->imageUrl((string)($meta['og_image'] ?? ''));
         $meta['twitter_image'] = empty($meta['twitter_image']) ? $meta['og_image'] : $this->imageUrl((string)$meta['twitter_image']);
         $meta['organization_json_ld'] = $this->jsonLdScript($this->organizationSchema());
@@ -54,7 +56,7 @@ final class SeoService {
     }
 
     private function defaults(string $key): array {
-        $brand = 'Sri Panchami Spiritual';
+        $brand = $this->siteName;
         $desc = 'Shop authentic spiritual products, sacred jewellery, pooja items, and devotional essentials.';
         $maps = [
             'home' => [

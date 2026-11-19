@@ -3,10 +3,10 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 140,
-        "controllers": 12,
-        "services": 68,
-        "views": 58,
+        "routes": 150,
+        "controllers": 13,
+        "services": 69,
+        "views": 63,
         "collections": 22
     },
     "routes": [
@@ -425,6 +425,29 @@
             ]
         },
         {
+            "method": "GET",
+            "path": "/admin/blog/history/{slug}",
+            "name": "admin.blog.history",
+            "controller": "AdminController@blogHistory",
+            "view": "admin/blog-history",
+            "services": [
+                "BlogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/blog/history/{slug}/restore",
+            "name": "admin.blog.restore",
+            "controller": "AdminController@restoreBlogRevision",
+            "view": "admin/blog-history",
+            "services": [
+                "BlogService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
             "method": "POST",
             "path": "/admin/blog/preview",
             "name": "admin.blog.preview",
@@ -702,6 +725,66 @@
         },
         {
             "method": "GET",
+            "path": "/admin/google-reporting",
+            "name": "admin.google.reporting.settings",
+            "controller": "AdminGoogleReportingController@settings",
+            "view": "admin/google-reporting",
+            "services": [
+                "SecretService",
+                "AuthService",
+                "AuditLogService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/google-reporting/callback",
+            "name": "admin.google.reporting.callback",
+            "controller": "AdminGoogleReportingController@callback",
+            "view": "admin/google-reporting",
+            "services": [
+                "SecretService",
+                "AuthService",
+                "AuditLogService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/google-reporting/connect",
+            "name": "admin.google.reporting.connect",
+            "controller": "AdminGoogleReportingController@connect",
+            "view": "admin/google-reporting",
+            "services": [
+                "SecretService",
+                "AuthService",
+                "AuditLogService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/google-reporting/disconnect",
+            "name": "admin.google.reporting.disconnect",
+            "controller": "AdminGoogleReportingController@disconnect",
+            "view": "admin/google-reporting",
+            "services": [
+                "SecretService",
+                "AuthService",
+                "AuditLogService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/google-reporting/select",
+            "name": "admin.google.reporting.select",
+            "controller": "AdminGoogleReportingController@select",
+            "view": "admin/google-reporting",
+            "services": [
+                "SecretService",
+                "AuthService",
+                "AuditLogService"
+            ]
+        },
+        {
+            "method": "GET",
             "path": "/admin/integrations",
             "name": "admin.integrations",
             "controller": "AdminController@integrations",
@@ -881,6 +964,31 @@
             "view": "admin/product-form",
             "services": [
                 "ResourceService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/products/import",
+            "name": "admin.products.import",
+            "controller": "AdminController@importProducts",
+            "view": "admin/product-import",
+            "services": [
+                "ProductImportService",
+                "DatabaseService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/products/import",
+            "name": "admin.products.import.submit",
+            "controller": "AdminController@importProducts",
+            "view": "admin/product-import",
+            "services": [
+                "ProductImportService",
+                "DatabaseService",
                 "AuditLogService",
                 "AuthService"
             ]
@@ -1489,6 +1597,18 @@
         },
         {
             "method": "GET",
+            "path": "/search",
+            "name": "search",
+            "controller": "PublicController@search",
+            "view": "public/search",
+            "services": [
+                "ProductService",
+                "BlogService",
+                "TempleService"
+            ]
+        },
+        {
+            "method": "GET",
             "path": "/shop",
             "name": "shop",
             "controller": "PublicController@shop",
@@ -1611,6 +1731,7 @@
     "controllers": [
         "AccountController",
         "AdminController",
+        "AdminGoogleReportingController",
         "ApiController",
         "AuthController",
         "BaseController",
@@ -1667,6 +1788,7 @@
         "OrderService",
         "PasswordResetService",
         "PaymentService",
+        "ProductImportService",
         "ProductService",
         "ProjectMapService",
         "RateLimiter",
@@ -1706,18 +1828,22 @@
         "admin/agent-review",
         "admin/appearance",
         "admin/blog",
+        "admin/blog-history",
         "admin/collections",
         "admin/consultation-analytics",
         "admin/dashboard",
         "admin/detail",
         "admin/email-templates",
         "admin/google-merchant",
+        "admin/google-reporting",
         "admin/help",
         "admin/integrations",
         "admin/list",
+        "admin/list-controls",
         "admin/mailbox",
         "admin/media",
         "admin/product-form",
+        "admin/product-import",
         "admin/resource",
         "admin/settings",
         "admin/system-health",
@@ -1744,6 +1870,7 @@
         "public/product",
         "public/register",
         "public/reset-password",
+        "public/search",
         "public/shop",
         "public/sitemap",
         "public/spiritual",
@@ -1778,6 +1905,7 @@
     ],
     "integrations": [
         "GoogleOAuthClient",
+        "GoogleReportingClient",
         "GoogleSiteKitClient",
         "MetaPixelClient",
         "RazorpayClient",

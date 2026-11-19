@@ -36,12 +36,10 @@ Key checks: API setup links are visible, secrets are stored outside normal catal
 
 ## Google tags versus connected reporting
 
-The native Google section places validated configured tags; it is not the
-WordPress Site Kit plugin or an authorized reporting client. The dashboard
-and Integrations use `GoogleSiteKitClient::status()` for independent Analytics,
-Ads and Search Console configuration states: missing, invalid or configured.
-None of these states is a receipt from Google. Collection, conversions and
-ownership stay unverified, and reporting stays not connected.
+The public tag renderer and reporting client serve independent purposes.
+`GoogleSiteKitClient::status()` classifies saved Analytics, Ads and Search
+Console tag values as missing, invalid or configured. The dashboard obtains
+reporting authorization and metrics from `GoogleReportingClient`.
 
 Supported input contracts are a G- measurement ID or an existing GT- tag ID,
 an AW- numeric conversion ID, and the URL-safe content token from Search
@@ -59,13 +57,34 @@ configuration behavior. Google documents that existing config-based snippets
 continue to work; this fix does not automatically install Tag Manager, add
 tracking destinations or alter consent policy.
 
-Use Tag Assistant and each actual Google product to verify collection or
-ownership. Real GA4/Search Console reports still require a separate admin-only
-OAuth consent/refresh/revocation flow, property/site selection and reporting API
-calls. Customer Google sign-in remains limited to its own login purpose.
-Merchant product feeds and YouTube eligibility/linking are separate controls.
+Use Tag Assistant to verify collection and Search Console to verify site ownership.
 
-References checked 16 November 2026:
-https://developers.google.com/tag-platform/gtagjs/configure
-https://developers.google.com/tag-platform/gtagjs/reference
-https://support.google.com/webmasters/answer/9008080
+## Owner reporting
+
+Open **Google reporting** from the dashboard or Integrations. In the Cloud
+project that owns the configured web OAuth client, enable Analytics Admin API,
+Analytics Data API and Search Console API. Add the displayed configured-origin
+`/admin/google-reporting/callback` URI to the client. Configure the consent
+screen and eligible users for the two read-only permissions. The owner signs
+in to Google, grants offline access and selects a GA4 property and/or verified
+Search Console site from Google's lists. Customer login uses its existing
+callback and sign-in scopes. Merchant and YouTube account linking are separate.
+
+The grant is encrypted in its own hosted MySQL secrets record. Reporting
+refreshes access server-side. The dashboard requests 28 days through yesterday:
+GA4 uses the property timezone, Search Console uses Pacific time and can lag
+behind the current day. Search totals come from a dimensionless query, because
+query-level rows omit some traffic. Disconnect revokes the grant before
+clearing the local token. If Google is unavailable the owner can retry. Google
+can revoke other grants for the same user and Cloud project when an
+authorization is revoked. Use a separate project for unrelated applications.
+
+References:
+
+- https://developers.google.com/identity/protocols/oauth2/web-server
+- https://developers.google.com/analytics/devguides/config/admin/v1/rest/v1beta/accountSummaries/list
+- https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/batchRunReports
+- https://developers.google.com/webmaster-tools/v1/api_reference_index
+- https://developers.google.com/webmaster-tools/v1/how-tos/all-your-data
+- https://developers.google.com/tag-platform/gtagjs/configure
+- https://support.google.com/webmasters/answer/9008080

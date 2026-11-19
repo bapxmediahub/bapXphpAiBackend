@@ -562,6 +562,8 @@ class AgentToolRegistry
             'orders' => array_sum(array_column($sales, 'orders')),
             'orders_by_status' => StoreStatsService::orderStatusCounts($orders, $from, $to),
             'revenue' => round(array_sum(array_column($sales, 'net')), 2),
+            'gross_paid' => round(array_sum(array_column($sales, 'gross')), 2),
+            'pending_order_value' => StoreStatsService::pendingOrderValue($orders, $from, $to),
             'currency' => 'INR',
             'best_sellers' => array_column($products, 'units', 'product'),
             'report_url' => '/admin/tax-report?' . http_build_query(['report' => 'sales'] + $range),

@@ -59,6 +59,8 @@ arbitrary SQL or file a return. See [OpenAI function calling](https://developers
 
 When IDs are configured, the storefront sends `view_item`, `add_to_cart`, `begin_checkout`, and `purchase` events to GA4 and maps them to Meta ecommerce events. No tracking library is loaded when its identifier is absent.
 
+The owner tax report groups issued lines by HSN, recipient classification and recorded tax rate. Taxable value and component taxes sum in paise. Each group shows how many included lines carry review notes. A separate count identifies incomplete snapshots or lines without enough data to group. Review the line register and credit notes with the accountant before filing.
+
 ## Remaining Operations
 
 - Record returns/refunds as credit notes before using the report for final filing.

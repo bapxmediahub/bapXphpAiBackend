@@ -68,8 +68,7 @@ Use the existing GoogleSiteKitClient for the public head and owner configuration
 states; do not reintroduce inline IDs in JavaScript or a second renderer.
 HTML-escape attributes, JSON-encode script strings, validate intended ID/token
 formats and never label a nonempty field collected/verified/connected. Test
-hostile values in isolated fixtures only. Google reporting requires its own
-admin OAuth/API flow, not extra login scopes or fabricated dashboard figures.
+hostile values in isolated fixtures only. GoogleReportingClient uses separate admin consent, property discovery and server-side reports. Preserve customer login scopes and distinguish missing rows from quota, authorization and provider errors.
 
 ## JavaScript interactions
 

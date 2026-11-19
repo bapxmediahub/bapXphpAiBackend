@@ -45,6 +45,14 @@ jobs:
           node-version: '22'
       - name: Validate reviewer metadata safety and deduplication
         run: node --test tests/review-automation.test.cjs
+      - name: Validate mixed storefront search results and module visibility
+        run: php tests/storefront-search.php
+      - name: Exercise the agent composer and saved chat history in Chrome
+        run: |
+          npm install --prefix "$RUNNER_TEMP/agent-browser" --no-audit --no-fund --ignore-scripts playwright@1.62.1
+          NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/agent-history-browser.cjs
+      - name: Validate public catalogue MCP scope and framing
+        run: node --test tests/catalogue-mcp.test.cjs
       - name: Validate progressive motion policy and native-scroll bounds
         run: node --test tests/site-motion.test.cjs
       - name: Test documentation drift and issue-tracker boundaries
@@ -53,7 +61,7 @@ jobs:
         run: ./bapXphp ci
       - name: Gate deterministic agent fixture regressions without model APIs
         run: php cli/agent-eval.php
-      - name: Verify declared PHP and MySQL runtime against isolated CI database
+      - name: Verify PHP, MySQL and paged admin records against the isolated CI database
         env:
           BAPX_TEST_MODE: '0'
           BAPX_MYSQL_HOST: '127.0.0.1'
@@ -62,7 +70,11 @@ jobs:
           BAPX_MYSQL_USER: 'sps_test'
           BAPX_MYSQL_PASS: 'sps_ci_fixture'
           BAPX_REMOTE_DB_URL: 'http://127.0.0.1:1/remotedb'
-        run: php cli/runtime-check.php --json --strict
+        run: |
+          php cli/runtime-check.php --json --strict
+          php tests/admin-list-pagination.php
+      - name: Test reporting grant storage and disconnect against isolated MySQL
+        run: php tests/google-reporting-storage.php
       - name: Test concurrent verified payments against isolated MySQL
         run: php tests/order-concurrency.php
       - name: Test concurrent private JSON conversation appends

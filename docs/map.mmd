@@ -22,6 +22,7 @@ mindmap
     CLI_generate_project_index["generate-project-index"]
     CLI_generate_project_map["generate-project-map"]
     CLI_import_product_images["import-product-images"]
+    CLI_mcp_stdio["mcp-stdio"]
     CLI_merchant["merchant"]
     CLI_optimize_images["optimize-images"]
     CLI_product_read["product-read"]
@@ -72,7 +73,7 @@ mindmap
     ### Blog & Content (local Markdown and YAML; includes customer help)
     BLOG_SERVICE["BlogService → local Markdown + YAML frontmatter"]
     BLOG_POSTS["content/blog/posts/*.md"]
-    BLOG_CATEGORIES["content/blog/categories.yaml"]
+    BLOG_CATEGORIES["BlogService category vocabulary + article frontmatter"]
     PUBLIC_HELP["GET /docs → /blog/category/help"]
 
     ### Application Architecture
@@ -97,6 +98,8 @@ mindmap
     ADMIN_admin_system_health["GET /admin/system-health"]
     ADMIN_admin_docs["GET /admin/docs"]
     ADMIN_admin_docs_slug["GET /admin/docs/{slug}"]
+    ADMIN_admin_google_reporting["GET /admin/google-reporting"]
+    ADMIN_admin_google_reporting_callback["GET /admin/google-reporting/callback"]
     ADMIN_admin_google_merchant["GET /admin/google-merchant"]
     ADMIN_admin_products["GET /admin/products"]
     ADMIN_admin_categories["GET /admin/categories"]
@@ -127,10 +130,13 @@ mindmap
     ADMIN_admin_support_tickets["GET /admin/support-tickets"]
     ADMIN_admin_appearance["GET /admin/appearance"]
     ADMIN_admin_media["GET /admin/media"]
+    ADMIN_admin_products_import["GET /admin/products/import"]
     ADMIN_admin_blog["GET /admin/blog"]
+    ADMIN_admin_blog_history_slug["GET /admin/blog/history/{slug}"]
 
     ### External Integrations
     INTEG_googleoauthclient["GoogleOAuthClient"]
+    INTEG_googlereportingclient["GoogleReportingClient"]
     INTEG_googlesitekitclient["GoogleSiteKitClient"]
     INTEG_metapixelclient["MetaPixelClient"]
     INTEG_razorpayclient["RazorpayClient"]
@@ -139,6 +145,7 @@ mindmap
     ### Controllers
     CTRL_accountcontroller["AccountController"]
     CTRL_admincontroller["AdminController"]
+    CTRL_admingooglereportingcontroller["AdminGoogleReportingController"]
     CTRL_apicontroller["ApiController"]
     CTRL_authcontroller["AuthController"]
     CTRL_basecontroller["BaseController"]
@@ -195,6 +202,7 @@ mindmap
     SVC_orderservice["OrderService"]
     SVC_passwordresetservice["PasswordResetService"]
     SVC_paymentservice["PaymentService"]
+    SVC_productimportservice["ProductImportService"]
     SVC_productservice["ProductService"]
     SVC_projectmapservice["ProjectMapService"]
     SVC_ratelimiter["RateLimiter"]
@@ -271,4 +279,4 @@ mindmap
     AGENTFILE_agents_md["AGENTS.md"]
 
     ### Coverage Gaps
-    GAP_services_without_schema_collection_mapping_carts["Services without schema collection mapping: CartService, SiteTelemetryService, SecretService, MerchantFeedService, BlogService, AuthService, TaxService, StoreStatsService, SiteInsightsService, RuntimeHealthService, AdminHelpService, MarkdownRenderer, SchemaService, UserOrderHistoryService, ShippingService, GstRegisterService, EnvService, PaymentService, AgentConversationService, AgentEvaluationService, AgentAttachmentService, AgentDraftService, AgentInstructionService, AgentToolRegistry, EnterpriseToolRegistry, AgentTraceService, AgentTranscriptSanitizer, AgentCapabilityPolicy, AiReplyCleaner, AiClient, MailTemplateService, SupportBotService, SupportToolRegistry, BlogDraftService"]
+    GAP_services_without_schema_collection_mapping_blogs["Services without schema collection mapping: BlogService, CartService, SiteTelemetryService, SecretService, MerchantFeedService, AuthService, TaxService, StoreStatsService, SiteInsightsService, RuntimeHealthService, AdminHelpService, MarkdownRenderer, SchemaService, UserOrderHistoryService, ShippingService, GstRegisterService, EnvService, PaymentService, AgentConversationService, AgentEvaluationService, AgentAttachmentService, AgentDraftService, AgentInstructionService, AgentToolRegistry, EnterpriseToolRegistry, AgentTraceService, AgentTranscriptSanitizer, AgentCapabilityPolicy, AiReplyCleaner, AiClient, MailTemplateService, ProductImportService, SupportBotService, SupportToolRegistry, BlogDraftService"]

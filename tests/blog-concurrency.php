@@ -23,5 +23,8 @@ try{
     foreach($jobs as [$process,$pipes]){$result=trim(stream_get_contents($pipes[1]));$error=stream_get_contents($pipes[2]);fclose($pipes[1]);fclose($pipes[2]);if(proc_close($process)!==0||!isset($counts[$result]))throw new RuntimeException('Fixture worker failed');$counts[$result]++;}
     if($counts!==['saved'=>1,'conflict'=>5])throw new RuntimeException('Expected exactly one accepted editor');
     $final=$service->find('fixture');if(!$final||!str_starts_with($final['content'],'worker-')||$final['_revision']===$post['_revision'])throw new RuntimeException('Saved result missing');
+    $history=$service->revisionHistory('fixture');
+    if(count($history['versions'])!==1 || !str_ends_with($history['versions'][0]['id'],$post['_revision'])) throw new RuntimeException('Stale writers polluted revision history');
+    $service->delete('fixture',$final['_revision']);
     echo "Blog concurrency passed: one accepted writer, five stale conflicts, complete Markdown read-back.\n";
 }finally{foreach(glob($dir.'/*')?:[] as $file)unlink($file);@unlink($dir.'/.blog-write.lock');rmdir($dir);}

@@ -82,15 +82,18 @@
     <p>Customer confirmation is distinct from merely answering a question. These support figures cover the most recent
         <?= (int)($supportFeedbackSummary['sample_size'] ?? 0) ?> sampled support conversations (up to 40 total chats), not all-time traffic.
         Unrated conversations are not counted as resolved.</p>
-    <?php $states = ($supportFeedbackSummary['counts'] ?? []); ?>
-    <div class="admin-stats" style="margin:var(--space-md) 0;">
-        <?php foreach ([
+    <?php
+        $states = $supportFeedbackSummary['counts'] ?? [];
+        $stateLabels = [
             'confirmed_resolved'=>'Customer confirmed resolved',
             'needs_followup'=>'Customer requested more help',
             'escalated'=>'Escalated to support team',
             'awaiting_feedback'=>'Awaiting feedback',
             'unknown'=>'Legacy/unclassified'
-        ] as $key=>$label): ?>
+        ];
+    ?>
+    <div class="admin-stats" style="margin:var(--space-md) 0;">
+        <?php foreach ($stateLabels as $key=>$label): ?>
             <div class="admin-stat"><div class="admin-stat__value"><?= (int)($states[$key] ?? 0) ?></div>
                 <div class="admin-stat__label"><?= e($label) ?></div></div>
         <?php endforeach; ?>
@@ -98,6 +101,22 @@
     <p>Confirmed resolution rate (sample): <?= ($supportFeedbackSummary['confirmed_percent'] ?? null) === null
         ? 'No support conversations yet' : e(number_format((float)$supportFeedbackSummary['confirmed_percent'],1)).'%' ?>.
         Negative feedback remains unresolved until the customer confirms an answer; silence is not assumed success.</p>
+    <?php if (!empty($supportFeedbackSummary['topics'])): ?>
+        <h3>Support outcomes by topic</h3>
+        <p>Each chat appears once under the topic recorded for its latest completed answer. Chats without a recorded topic appear under Unclassified.</p>
+        <?php foreach ($supportFeedbackSummary['topics'] as $topic => $counts):
+            $chatCount = array_sum($counts);
+        ?>
+            <details class="agent-monitor-run">
+                <summary><?= $topic === 'unknown' ? 'Unclassified' : e(ucfirst(str_replace('_', ' ', $topic))) ?> · <?= $chatCount ?> <?= $chatCount === 1 ? 'chat' : 'chats' ?></summary>
+                <ul>
+                    <?php foreach ($stateLabels as $key => $label): if ($counts[$key] === 0) continue; ?>
+                        <li><?= e($label) ?> (<?= (int)$counts[$key] ?>)</li>
+                    <?php endforeach; ?>
+                </ul>
+            </details>
+        <?php endforeach; ?>
+    <?php endif; ?>
     <h3>Offline PHP golden evaluation set</h3>
     <?php if ($agentGoldenSuite === null): ?>
         <p role="status">Golden regression fixtures unavailable.</p>
@@ -169,6 +188,18 @@
             <td><?= e(str_replace('_',' ',(string)($conversation['resolution_status']??'unknown'))) ?></td>
             <td>
                 <a href="/admin/agent/review/<?= e($cid) ?>">Review answers</a> · <a href="/admin/agent/conversation/<?= e($cid) ?>">Export JSON</a>
+                <?php if (!empty($conversation['failed_tool_runs'])): ?>
+                    <details class="agent-monitor-run">
+                        <summary>Failed tool calls</summary>
+                        <p>Up to five recent runs from this chat had a tool error. Open a run to review its recorded evidence.</p>
+                        <ul>
+                            <?php foreach ($conversation['failed_tool_runs'] as $failedRun): ?>
+                                <li><a href="/admin/agent/review/<?= e($cid) ?>?turn=<?= e($failedRun['turn_id']) ?>">Run <?= e($failedRun['trace_id']) ?></a>
+                                    · <?= (int)$failedRun['errors'] ?> failed <?= $failedRun['errors'] === 1 ? 'call' : 'calls' ?></li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </details>
+                <?php endif; ?>
                 <?php if(!empty($conversation['trace_steps'])): ?>
                 <details class="agent-trace-inspector" style="max-width:36rem;overflow-wrap:anywhere;margin-top:.5rem">
                     <summary>Execution evidence · <?= count($conversation['trace_steps']) ?> steps</summary>

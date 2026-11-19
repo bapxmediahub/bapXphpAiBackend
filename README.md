@@ -43,8 +43,7 @@ rg -n -B4 -A12 'filename: "<image-name>"' index.yaml
 - Blog bodies live in `content/blog/posts/*.md` with YAML frontmatter.
 - Image binaries live under `assets/images/` or the writable upload location.
 - `storage/schema/collections.php` is the canonical database schema.
-- `MediaService` still stores its media catalogue in `storage/media/*.yaml`. This is
-  a known migration gap: `media_files` is declared in MySQL but not yet wired.
+- `MediaService` stores uploaded image metadata in MySQL `media_files` and reads legacy metadata in `storage/media/*.yaml` for compatibility.
 - Generated maps and indexes point to originals; they are navigation artifacts, not
   alternate sources of truth.
 

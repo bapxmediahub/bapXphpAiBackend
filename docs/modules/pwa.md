@@ -20,7 +20,7 @@ The public customer app and admin dashboard expose PWA metadata. Customer instal
 | Scope | URL | Precaches |
 |---|---|---|
 | Public (`/`) | `/sw.js` | `assets/pwa/sw-user.js` — precaches static app metadata only; PHP-rendered pages such as `/shop`, `/cart`, and `/checkout` are network-first so product, cart, and payment UI does not go stale |
-| Admin (`/admin/`) | `/admin/sw.js` | Generated — precaches `/admin`, `/login` |
+| Admin (`/admin/`) | `/admin/sw.js` | `assets/pwa/sw-admin.js` fetches each navigation with a live session, removes the legacy admin cache, and displays an offline response without private page content |
 
 ## Customer Installation
 

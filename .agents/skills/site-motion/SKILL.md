@@ -32,3 +32,5 @@ Run `node --test tests/site-motion.test.cjs`, PHP/repository CI, then real
 Playwright desktop/375px and reduced/no-JS checks. Inspect intermediate frames at distinct scroll positions and after scrolling back,
 computed visibility, overflow, actual controls, private-directory HTTP denial
 and console errors. Do not publish credentials or real customer screenshots.
+
+For a sequence of sticky sections, measure each outgoing section and verify its top stays stationary while the next surface advances. Repeat in reverse and with a section taller than a short phone viewport.

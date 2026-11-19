@@ -167,15 +167,21 @@ final class AgentEvaluationService {
 
     /** Operates on the dashboard's explicitly bounded recent conversation sample. */
     public static function supportOutcomeSummary(array $recent): array {
-        $counts = ['confirmed_resolved'=>0,'needs_followup'=>0,'escalated'=>0,'awaiting_feedback'=>0,'unknown'=>0];
+        $emptyCounts = ['confirmed_resolved'=>0,'needs_followup'=>0,'escalated'=>0,'awaiting_feedback'=>0,'unknown'=>0];
+        $counts = $emptyCounts;
+        $topics = [];
         foreach ($recent as $row) {
             if (($row['surface']??'')!=='support') continue;
             $status = (string)($row['resolution_status']??'unknown');
             if (!array_key_exists($status,$counts)) $status='unknown';
             $counts[$status]++;
+            $topic = AgentTraceService::safeRetrieval(['intent'=>$row['intent'] ?? null])['intent'];
+            $topics[$topic] ??= $emptyCounts;
+            $topics[$topic][$status]++;
         }
+        ksort($topics);
         $total=array_sum($counts);
-        return ['sample_size'=>$total,'counts'=>$counts,
+        return ['sample_size'=>$total,'counts'=>$counts,'topics'=>$topics,
             'confirmed_percent'=>$total > 0 ? round(100*$counts['confirmed_resolved']/$total,1) : null,
             'denominator'=>'recent_40_conversations'];
     }

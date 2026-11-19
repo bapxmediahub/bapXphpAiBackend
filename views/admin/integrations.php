@@ -48,16 +48,16 @@
         </div>
         <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Stripe is available as an alternative to Razorpay. The secret key is stored encrypted and never kept in <code>.env</code>.</p>
 
-        <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">Google Login</h2>
+        <h2 id="google-oauth" style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">Google OAuth</h2>
         <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">
-            Optional customer login. Create an OAuth client in Google Cloud and add this callback URL: <code><?= e(((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'your-domain.com') . '/auth/google/callback') ?></code>.
+            Optional customer login. Create an OAuth client in Google Cloud and add this callback URL: <code><?= e($this->siteUrl('/auth/google/callback')) ?></code>.
             <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Google Credentials</a>
         </p>
         <div class="admin-form__row">
             <label>Google Client ID<input name="google_client_id" value="<?= e($secrets['google_client_id']??'') ?>" placeholder="xxxx.apps.googleusercontent.com"></label>
-            <label>Google Client Secret<input name="google_client_secret" value="<?= e($secrets['google_client_secret']??'') ?>" placeholder="GOCSPX-xxxx"></label>
+            <label>Google Client Secret<input type="password" autocomplete="new-password" name="google_client_secret" value="<?= e($secrets['google_client_secret']??'') ?>" placeholder="GOCSPX-xxxx"></label>
         </div>
-        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Only sign-in permissions are used. Calendar and Google Meet are not used for this platform.</p>
+        <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Customer login requests sign-in permissions. The owner authorizes reporting separately. Calendar and Google Meet are not used for this platform.</p>
 
         <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">AI Provider</h2>
         <p>Customer support and owner chat share this provider. The compatible endpoint must support Chat Completions. Owner chat also uses function calling.</p>
@@ -126,7 +126,7 @@
             <li data-google-setting="<?= e($key) ?>" data-google-configuration="<?= e($state) ?>"><?= e($label) ?>: <?= e(['missing'=>'not configured','invalid'=>'invalid saved value; it is not rendered','configured'=>'valid format; external verification still required'][$state]) ?></li>
         <?php endforeach; ?>
         </ul>
-        <p><strong>Reporting is not connected.</strong> Verify actual data in <a href="https://analytics.google.com/" target="_blank" rel="noopener noreferrer">Analytics</a>, <a href="https://ads.google.com/" target="_blank" rel="noopener noreferrer">Ads</a> or <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer">Search Console</a>; use <a href="https://tagassistant.google.com/" target="_blank" rel="noopener noreferrer">Tag Assistant</a> to inspect tag collection. A saved value is not a successful connection.</p>
+        <p><a href="/admin/google-reporting">Connect or manage Google reporting</a> to select a GA4 property and Search Console site. Use <a href="https://tagassistant.google.com/" target="_blank" rel="noopener noreferrer">Tag Assistant</a> to inspect tag collection.</p>
         </section>
 
         <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">SEO Defaults</h2>

@@ -111,7 +111,7 @@ final class DocsMapService
             "    ### Blog & Content (local Markdown and YAML; includes customer help)",
             '    BLOG_SERVICE["BlogService → local Markdown + YAML frontmatter"]',
             '    BLOG_POSTS["content/blog/posts/*.md"]',
-            '    BLOG_CATEGORIES["content/blog/categories.yaml"]',
+            '    BLOG_CATEGORIES["BlogService category vocabulary + article frontmatter"]',
             '    PUBLIC_HELP["GET /docs → /blog/category/help"]',
             '',
         ];

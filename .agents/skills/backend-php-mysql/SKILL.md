@@ -122,3 +122,7 @@ retry a business mutation from the generic handler. Run the loopback-only
 `tests/http-response-boundary.php` through normal CI and verify browser bodies,
 not status alone. Do not introduce a production crash route or streaming flush
 without an explicit compatible response design. See `docs/request-failures.md`.
+
+### Product catalogue imports
+
+Product creation from the owner form and CSV confirmation share a database-host lock. The import revalidates the entire bounded CSV, preserves slugs excluded at preview, rechecks current slugs and commits new hidden products in one transaction. Remote clients use the authenticated products actions `save_catalog_product` and `import_products` so these checks run on one MySQL connection. Verify replay, rollback and legacy IDs on an isolated fixture database.

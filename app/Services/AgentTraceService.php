@@ -210,8 +210,8 @@ final class AgentTraceService
         return ['version'=>1,'intent'=>$intent,
             'status'=>in_array($entry['status']??'',['matched','no_match','clarification','not_applicable'],true)?$entry['status']:'not_applicable',
             'reason'=>preg_match('/^[a-z_]{1,64}$/D',(string)($entry['reason']??''))?$entry['reason']:'unclassified',
-            'candidate_count'=>max(0,(int)($entry['candidate_count']??0)),
-            'result_count'=>max(0,(int)($entry['result_count']??0)),
+            'candidate_count'=>is_numeric($entry['candidate_count'] ?? null) ? max(0, (int)$entry['candidate_count']) : null,
+            'result_count'=>is_numeric($entry['result_count'] ?? null) ? max(0, (int)$entry['result_count']) : null,
             'sources'=>$sources,'result_sha256'=>self::validDigest($entry['result_sha256']??null)];
     }
 

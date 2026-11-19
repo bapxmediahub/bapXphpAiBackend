@@ -2,6 +2,8 @@
 
 Open Media Library. Choose the appropriate context, add a useful description, select the file and choose **Upload**. Check the preview and actual URL. Use the recorded image in a product, temple or article, and verify it loads where the customer will see it.
 
+Use **Search** and **Context** to find images across the full library, including bundled and older files. Apply the filters, then use **Next** or **Previous** to browse the thumbnails. Select **Check product images** to inspect product references and missing binaries.
+
 ## Inspect before deleting
 
 Review the image's **Used in** details and the content that refers to it. Only eligible uploaded media shows **Delete upload**. Bundled site images and legacy records are not all deletable through this interface. A used image must be unlinked from its real content before removal.

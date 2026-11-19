@@ -44,7 +44,7 @@ final class BlogController extends BaseController
             'meta' => $post,
             'slug' => $slug,
             'schemaBase' => rtrim($this->siteUrl('/'), '/'),
-            'categoryNames' => array_column($blogService->categories(false), 'name', 'slug'),
+            'categoryNames' => array_column($blogService->categories(false, [$post]), 'name', 'slug'),
         ]);
     }
 
@@ -71,7 +71,7 @@ final class BlogController extends BaseController
     private function renderIndex(BlogService $blogService, ?string $activeCategory = null): void
     {
         $posts = $blogService->all();
-        $categories = $blogService->categories(false);
+        $categories = $blogService->categories(false, $posts);
         $search = is_string($_GET['q'] ?? null) ? mb_substr(trim($_GET['q']), 0, 120) : '';
         $categoryNames = array_column($categories, 'name', 'slug');
         $categoryName = $categoryNames[$activeCategory] ?? $activeCategory;

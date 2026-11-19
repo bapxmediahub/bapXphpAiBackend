@@ -1,17 +1,17 @@
 <div class="admin-card">
     <h2 style="font-size:1.1rem; margin:0 0 var(--space-md);"><?= e($title) ?></h2>
-    <p style="color:var(--color-text-muted); margin:0 0 var(--space-lg);">View <?= e(strtolower($title)) ?> records.</p>
+    <?php if (isset($paging)) require __DIR__.'/list-controls.php'; ?>
     <?php if(($collection ?? '') === 'support_tickets'): ?>
     <style>
     .ticket-row{cursor:default}.ticket-row:hover{background:var(--color-bg-alt)}.ticket-reply-form{display:none;background:var(--color-bg-alt);padding:var(--space-md);border-radius:var(--radius-md);margin-top:var(--space-xs)}.ticket-reply-form.open{display:block}.ticket-reply-form textarea{width:100%;min-height:80px;padding:var(--space-sm);border:1px solid var(--color-border);border-radius:var(--radius-sm);font-family:inherit;font-size:0.85rem;resize:vertical}.ticket-context{font-size:0.75rem;color:var(--color-text-muted);margin-top:var(--space-xs);padding:var(--space-xs);background:var(--color-bg);border-radius:var(--radius-sm)}.ticket-reply{background:var(--color-bg);padding:var(--space-sm);border-radius:var(--radius-sm);margin-top:var(--space-xs);border-left:3px solid var(--color-gold)}
     </style>
     <?php endif; ?>
-    <div class="table-wrap">
+    <div class="table-wrap"<?= isset($paging) ? ' data-no-table-search' : '' ?>>
         <table>
             <thead><tr><th>ID</th><th>Status</th><th>Details</th><th>Created</th></tr></thead>
             <tbody>
             <?php if(empty($items)): ?>
-                <tr><td colspan="4" style="text-align:center; color:var(--color-text-muted); padding:var(--space-2xl);">No <?= e(strtolower($title)) ?> records yet.</td></tr>
+                <tr><td colspan="4" style="text-align:center; color:var(--color-text-muted); padding:var(--space-2xl);"><?= !empty($paging['search']) ? 'No matching records.' : 'No '.e(strtolower($title)).' records yet.' ?></td></tr>
             <?php else: ?>
                 <?php foreach($items as $item): ?>
                     <?php
@@ -20,7 +20,7 @@
                     // Orders, above real orders, with no date and no customer.
                     if (count(array_filter($item, fn($v, $k) => $k !== 'id' && $v !== '' && $v !== null, ARRAY_FILTER_USE_BOTH)) === 0) continue;
                     ?>
-                    <tr class="<?= (($collection ?? '') === 'support_tickets') ? 'ticket-row' : '' ?>">
+                    <tr class="<?= (($collection ?? '') === 'support_tickets') ? 'ticket-row' : (($collection ?? '') === 'orders' ? 'admin-order-row' : '') ?>">
                         <td><code style="font-size:0.8rem; background:var(--color-bg-alt); padding:0.2rem 0.5rem; border-radius:var(--radius-sm);"><?= e(substr((string)($item['id'] ?? $item['slug'] ?? $item['code'] ?? 'record'), 0, 16)) ?></code></td>
                         <td>
                             <?php if(($collection ?? '') === 'support_tickets'): ?>
@@ -65,10 +65,13 @@
                                 <span style="display:block;color:var(--color-text-muted);"><?= e(trim(($item['preferred_date'] ?? '') . ' ' . ($item['preferred_time'] ?? ''))) ?></span>
                                 <span style="display:block;"><?= e($item['astrologer_slug'] ?? '') ?> · <?= e(str_replace('_', ' ', $item['mode'] ?? 'booking')) ?></span>
                             <?php elseif(($collection ?? '') === 'orders' && !empty($item['id'])): ?>
-                                <a href="/admin/orders/<?= e($item['id']) ?>"><?= e($item['customer_email'] ?? 'Order') ?></a>
+                                <a aria-label="Open order <?= e($item['id']) ?>" href="/admin/orders/<?= e(rawurlencode((string)$item['id'])) ?>"><?= e($item['customer_email'] ?? 'Order') ?></a>
                                 <span style="color:var(--color-text-muted);"> · ₹<?= e((string)($item['total'] ?? 0)) ?></span>
                                 <?php if (!empty($item['tax_review_required'])): ?><strong> · Tax review required</strong><?php endif; ?>
                                 <?php if (!empty($item['fulfillment_review_required'])): ?><strong> · Fulfillment review required</strong><?php endif; ?>
+                            <?php elseif (($collection ?? '') === 'appointments'): ?>
+                                <?= e($item['customer_email'] ?? $item['email'] ?? $item['name'] ?? 'Session') ?>
+                                <small><?= e(str_replace('_', ' ', (string)($item['mode'] ?? ''))) ?></small>
                             <?php else: ?>
                                 <?= e($item['name'] ?? $item['email'] ?? $item['message'] ?? $item['event'] ?? 'Record') ?>
                             <?php endif; ?>

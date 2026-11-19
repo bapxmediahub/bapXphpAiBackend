@@ -67,6 +67,9 @@ final class DatabaseService {
         return $result;
     }
 
+    /** Begin an independent request in a long-lived CLI transport. */
+    public static function clearReadCache(): void { self::$remoteQueryCache = []; }
+
     /** Close the request's idle connection before a long external call. */
     public static function releaseIdleConnection(): void {
         if (self::$sharedPdo !== null && !self::$sharedPdo->inTransaction()) {
@@ -407,6 +410,92 @@ final class DatabaseService {
         }
         return $record;
     }
+    /** Coordinate owner edits and create-only imports without a change to the hosted schema. */
+    private function withProductLock(callable $operation): array {
+        $pdo = $this->db();
+        $key = "CONCAT('sps:products:', SHA1(DATABASE()))";
+        if ((int)$pdo->query("SELECT GET_LOCK($key, 5)")->fetchColumn() !== 1) {
+            throw new \RuntimeException('Another product change is in progress.');
+        }
+        try { return $operation(); }
+        finally { $pdo->query("SELECT RELEASE_LOCK($key)"); }
+    }
+
+    public function saveCatalogProduct(array $record, bool $matchSlug): array {
+        if ($this->isTestMode()) return $this->upsert('products', $record);
+        if ($this->isRemote()) return $this->remoteMutation('save_catalog_product', 'products',
+            ['record'=>$record, 'match_slug'=>$matchSlug])['record'];
+        return $this->withProductLock(function () use ($record, $matchSlug): array {
+            $slug = (string)($record['slug'] ?? '');
+            if ($matchSlug && $slug !== '') {
+                $existing = $this->query("SELECT id FROM products WHERE JSON_UNQUOTE(JSON_EXTRACT(_data, '$.slug')) = ? ORDER BY id LIMIT 1", [$slug]);
+                if ($existing) $record['id'] = $existing[0]['id'];
+            }
+            return $this->upsert('products', $record);
+        });
+    }
+
+    /** Return existing identifiers for a bounded import preview or its final locked recheck. */
+    public function existingProductSlugs(array $slugs, bool $forUpdate = false): array {
+        if (!$slugs) return [];
+        $placeholders = implode(',', array_fill(0, count($slugs), '?'));
+        $slug = "LOWER(TRIM(JSON_UNQUOTE(JSON_EXTRACT(_data, '$.slug'))))";
+        $sql = "SELECT $slug AS slug FROM products WHERE $slug IN ($placeholders)";
+        return array_column($this->query($sql . ($forUpdate ? ' FOR UPDATE' : ''), $slugs), 'slug');
+    }
+
+    /** Run the complete create-only batch on the MySQL host, including remote clients. */
+    public function importProducts(string $csv, array $skip = []): array {
+        $records = ProductImportService::parse($csv);
+        if ($this->isTestMode()) throw new \LogicException('Product import requires a database.');
+        if ($this->isRemote()) return $this->remoteMutation('import_products', 'products', ['csv'=>$csv, 'skip'=>$skip])['result'];
+        return $this->withProductLock(function () use ($records, $skip): array {
+            $pdo = $this->db();
+            $pdo->beginTransaction();
+            try {
+                $existing = array_flip(array_merge($skip, $this->existingProductSlugs(array_column($records, 'slug'), true)));
+                $insert = $pdo->prepare('INSERT INTO products (id, _data, _status, _created_at, _updated_at) VALUES (?, ?, ?, NOW(), NOW())');
+                $added = 0;
+                foreach ($records as $record) {
+                    if (isset($existing[$record['slug']])) continue;
+                    $record['id'] = bin2hex(random_bytes(8));
+                    $insert->execute([$record['id'], json_encode($record, JSON_THROW_ON_ERROR), $record['status']]);
+                    $added++;
+                }
+                $pdo->commit();
+                self::$remoteQueryCache = [];
+                return ['added'=>$added, 'skipped'=>count($records) - $added];
+            } catch (\Throwable $error) {
+                if ($pdo->inTransaction()) $pdo->rollBack();
+                throw $error;
+            }
+        });
+    }
+
+    /** Compare the encrypted row revision so a stale selection/disconnect cannot overwrite a new grant. */
+    public function changeGoogleReportingRecord(string $revision, ?array $record): bool {
+        if (strlen((string)base64_decode($revision, true)) !== 16) throw new \InvalidArgumentException('Invalid reporting revision.');
+        if ($record !== null && (
+            ($record['id'] ?? '') !== 'google_reporting_grant' || !isset($record['iv'], $record['ciphertext'])
+            || strlen((string)base64_decode((string)$record['iv'], true)) !== 16
+            || empty($record['ciphertext'])
+        )) throw new \InvalidArgumentException('Invalid encrypted reporting record.');
+        if ($this->isTestMode()) return false;
+        if ($this->isRemote()) {
+            return $this->remoteMutation('change_google_reporting', 'secrets', compact('revision','record'))['changed'] === true;
+        }
+        $where = " WHERE id = ? AND BINARY JSON_UNQUOTE(JSON_EXTRACT(_data, '$.iv')) = ?";
+        $values = ['google_reporting_grant', $revision];
+        $sql = 'DELETE FROM secrets';
+        if ($record !== null) {
+            $sql = 'UPDATE secrets SET _data = ?, _updated_at = ?';
+            array_unshift($values, json_encode($record, JSON_THROW_ON_ERROR), date('c'));
+        }
+        $query = $this->db()->prepare($sql . $where);
+        $query->execute($values);
+        return $query->rowCount() === 1;
+    }
+
     /** Atomically keep the first record for an id and return the stored winner. */
     public function insertIfAbsent(string $table, array $record): array {
         $id = trim((string)($record['id'] ?? ''));

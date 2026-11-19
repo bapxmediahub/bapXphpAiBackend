@@ -38,10 +38,13 @@ change data, fake a chart value or script a purchase.
   page progress and returns focus to the main document. On mobile, it sits
   above bottom navigation and the cart tray. Native scroll targets leave room
   for those floating controls.
-- The existing homepage slide selector remains operable. An explicit pause/play
-  control is added. Automatic changes pause when offscreen, hidden, hovered,
-  focused, user-paused, data-saving or reduced-motion. Arrow/Home/End keys select
-  real slides; imagery and product copy remain unchanged.
+- The visitor selects a devotional portrait with previous and next buttons.
+  The position updates after each selection. The first portrait renders in PHP.
+- The order guide, temple rail and values sections each have a short native
+  sticky interval. The incoming section covers the outgoing one over 76–150px
+  of scrolling. The wrapper bounds that interval. Tall sections expose their
+  final row before holding. Reduced motion, keyboard focus and fragment
+  targets use ordinary flow for the affected section.
 - Reduced motion and data-saving skip presentation effects. A live preference
   change cancels active animations; no-JS and missing observer/animation APIs
   leave content visible. Print suppresses decorative controls.

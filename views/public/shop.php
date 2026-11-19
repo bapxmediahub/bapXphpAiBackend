@@ -172,3 +172,4 @@
         </div>
     </div>
 </section>
+<script defer src="/assets/shop-webmcp.js?v=<?= filemtime(__DIR__ . '/../../assets/shop-webmcp.js') ?>"></script>

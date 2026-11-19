@@ -56,6 +56,31 @@ final class GstRegisterService {
         return preg_match('/^[\x00-\x20]*[=+@-]|^[\t\r\n]/', $value) ? "'" . $value : $value;
     }
 
+    /** Reconcile monetary amounts by issued HSN, recipient class and recorded rate. */
+    public static function hsnSummary(array $orders, array $reviewReasons): array {
+        $groups = [];
+        $excluded = 0;
+        foreach (self::lines($orders, $reviewReasons) as $values) {
+            $line = array_combine(self::HEADERS, $values);
+            $amounts = [$line['Taxable (INR)'], $line['CGST (INR)'], $line['SGST (INR)'], $line['IGST (INR)']];
+            if (!preg_match('/^\d{4}(?:\d{2}(?:\d{2})?)?$/D', $line['HSN'])
+                || $line['GST rate (%)'] === '' || in_array('', $amounts, true)) {
+                $excluded++;
+                continue;
+            }
+            $key = implode('|', [$line['HSN'], $line['Recipient classification'], $line['GST rate (%)']]);
+            $groups[$key] ??= ['hsn'=>$line['HSN'], 'recipient'=>$line['Recipient classification'],
+                'rate'=>$line['GST rate (%)'], 'lines'=>0, 'review'=>0, 'taxablePaise'=>0, 'taxPaise'=>0];
+            $groups[$key]['lines']++;
+            $groups[$key]['review'] += (int)($line['Review'] !== '');
+            $paise = array_map(static fn($amount): int => (int)round((float)$amount * 100), $amounts);
+            $groups[$key]['taxablePaise'] += $paise[0];
+            $groups[$key]['taxPaise'] += $paise[1] + $paise[2] + $paise[3];
+        }
+        ksort($groups, SORT_STRING);
+        return ['groups'=>array_values($groups), 'excluded'=>$excluded];
+    }
+
     public static function lines(array $orders, array $reviewReasons): \Generator {
         foreach ($orders as $order) {
             $invoice = (string)$order['invoice_number'];

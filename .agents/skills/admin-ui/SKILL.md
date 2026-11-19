@@ -22,6 +22,8 @@ The same navigation group links to `/admin/agent/monitoring` and the AI Support 
 implements and authorizes a mutation. Draft cards are editable proposals and must say
 that nothing changes until the owner reviews and confirms.
 
+Test rapid history switching, New chat during a pending read, keyboard mention selection mid-sentence, and successful and rejected inline uploads. Verify the draft and active conversation after each action. Use isolated owner sessions and fixture media for these checks.
+
 ### Implementation Pattern
 
 The admin-agent flow:
@@ -142,3 +144,5 @@ inserted into HTML. Keep restored browser drafts distinct from server saves.
 After changing the editor, verify mode selection, keyboard focus, reload and
 restore, a conflicting revision, and save acknowledgement in a local fixture
 at desktop and 375px. Keep private drafts and screenshots out of Git.
+
+In Products, the catalogue query and pagination execute on MySQL. Keep the edit-by-ID and unsaved validation-draft paths independent of list filters. CSV confirmation uses the current session's reviewed file digest, CSRF and a create-only database operation. Test the editable and paged list alongside upload, preview, row errors and confirmation.

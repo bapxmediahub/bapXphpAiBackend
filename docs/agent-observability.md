@@ -129,10 +129,14 @@ customer vote **in that same JSON file**. A new question resets prior success.
 | `unknown` | Historical chat with no classified state |
 
 Silence or the customer closing the widget is **not** assumed resolution.
-The monitoring UI reports these counts on a clearly labeled **recent sample
-of up to 40 chats**, not all traffic. “Support answered” does not equal
-“customer satisfied” or “issue resolved.” Negative feedback remains unresolved
-and customers can continue chatting or contact support.
+Agent Monitoring samples the latest 40 chats across both agent surfaces.
+Each Support conversation contributes one current outcome to the totals and
+to the topic of its latest completed answer. Older chats and chats with no
+recorded intent appear under Unclassified. Expanding a topic shows how many
+of its chats are in each observed state. A new completed answer moves the chat
+to its current topic and feedback state. Ticket lookup evidence counts the
+actor-owned records examined before filtering and the matches returned. A
+missing measurement stays null, including when the customer needs to sign in.
 
 ## Evidence quality and reproducible offline evaluations
 
@@ -167,6 +171,12 @@ require separate grounded validation on real cases.
 in MySQL for the last-24-hour agent dashboard: request count, fallback/error
 status, provider attempts, allowed tool activity, mean, nearest-rank P50 and P95 duration.
 Full chat text is not duplicated in `audit_events`.
+
+The conversation audit table links the five most recent completed turns with
+tool errors per sampled chat to their exact review pages. Its run references
+come from private chat JSON, so staff can match failed lookups even when an
+operational audit write was unavailable. Only recorded MySQL events contribute
+to the 24-hour operational metrics.
 
 Admin Agent Monitoring additionally shows per-chat JSON summary counts,
 customer-confirmed vs unresolved support feedback, the offline fixture

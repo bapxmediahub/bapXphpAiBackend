@@ -1,6 +1,7 @@
 <?php
 namespace App\Services;
 final class SecretService {
+    private const REPORT_GRANT = 'google_reporting_grant';
     public const PRIMARY_MODEL = 'gemma-4-31b-it';
     public const FALLBACK_MODEL = 'gemma-4-26b-a4b-it';
     public const GOOGLE_MODELS = [self::PRIMARY_MODEL, self::FALLBACK_MODEL];
@@ -18,6 +19,7 @@ final class SecretService {
             usort($rows, fn(array $a, array $b): int => (($a['id'] ?? '') === 'app_secrets' ? 1 : 0) <=> (($b['id'] ?? '') === 'app_secrets' ? 1 : 0));
             $stored = [];
             foreach ($rows as $r) {
+                if (($r['id'] ?? null) === self::REPORT_GRANT) continue;
                 $stored = array_merge($stored, $this->decodeRecord($r));
             }
             return $this->normalize(array_replace(array_filter($env, fn($value) => $value !== ''), $stored));
@@ -45,6 +47,7 @@ final class SecretService {
             $rows = $db->read('secrets');
             usort($rows, fn(array $a, array $b): int => (($a['id'] ?? '') === 'app_secrets' ? 1 : 0) <=> (($b['id'] ?? '') === 'app_secrets' ? 1 : 0));
             foreach ($rows as $row) {
+                if (($row['id'] ?? null) === self::REPORT_GRANT) continue;
                 $existing = array_merge($existing, $this->decodeRecord($row));
             }
         } catch (\Throwable) {
@@ -69,16 +72,46 @@ final class SecretService {
             $merged['ai_compatible_url'] = $config['endpoint'];
             $merged['ai_compatible_models'] = implode("\n", $config['models']);
         }
+        $db->upsert('secrets', $this->encryptedRecord('app_secrets', $this->normalize($merged)));
+    }
+
+    /** Ordinary integration saves must never copy the OAuth grant into app_secrets. */
+    public function googleReporting(): array {
+        $record = ($this->store ?? new DatabaseService())->find('secrets', self::REPORT_GRANT);
+        return $record ? $this->decodeRecord($record) + ['revision'=>$record['iv']] : [];
+    }
+
+    public function saveGoogleGrant(string $token): void {
+        $record = $this->encryptedRecord(self::REPORT_GRANT, [
+            'refresh_token'=>$token, 'generation'=>bin2hex(random_bytes(16)), 'property'=>'', 'site'=>'',
+        ]);
+        $result = ($this->store ?? new DatabaseService())->insertIfAbsent('secrets', $record);
+        if (!$result['inserted']) throw new \DomainException('Reporting was connected in another session. Reload its settings.');
+    }
+
+    public function saveGoogleTargets(array $grant, string $property, string $site): void {
+        $revision = $grant['revision'];
+        unset($grant['revision']);
+        $grant['property'] = $property;
+        $grant['site'] = $site;
+        $this->changeGoogleGrant($revision, $this->encryptedRecord(self::REPORT_GRANT, $grant));
+    }
+
+    public function clearGoogleGrant(string $revision): void {
+        $this->changeGoogleGrant($revision, null);
+    }
+
+    private function changeGoogleGrant(string $revision, ?array $record): void {
+        $changed = ($this->store ?? new DatabaseService())->changeGoogleReportingRecord($revision, $record);
+        if (!$changed) throw new \DomainException('The reporting settings changed during this request. Reload and retry.');
+    }
+
+    private function encryptedRecord(string $id, array $values): array {
         $iv = random_bytes(16);
-        $plain = json_encode($this->normalize($merged), JSON_THROW_ON_ERROR);
+        $plain = json_encode($values, JSON_THROW_ON_ERROR);
         $cipher = openssl_encrypt($plain, 'aes-256-cbc', $this->key(), OPENSSL_RAW_DATA, $iv);
         if ($cipher === false) throw new \RuntimeException('Unable to encrypt integration settings.');
-        $record = [
-            'id' => 'app_secrets',
-            'iv' => base64_encode($iv),
-            'ciphertext' => base64_encode($cipher),
-        ];
-        $db->upsert('secrets', $record, 'id');
+        return ['id' => $id, 'iv' => base64_encode($iv), 'ciphertext' => base64_encode($cipher)];
     }
     public function saveSecret(string $key, string $value): void {
         $all = $this->all();

@@ -20,7 +20,7 @@ conversation SQL collection.
 
 Outside the MySQL business collections, maintained file resources include:
 - Blog posts: `content/blog/posts/*.md` with YAML frontmatter
-- Blog categories: `content/blog/categories.yaml`
+- Blog categories use article frontmatter and the standard labels in `BlogService::categories()`
 - Media binaries: bundled public assets and persistent uploaded files; uploaded media metadata is in MySQL `media_files`
 - Private Support and Enterprise chat sessions: one `storage/agent-conversations/<id>.json` per chat
 - Offline agent eval experiment summaries (explicit opt-in): `storage/agent-evals/`

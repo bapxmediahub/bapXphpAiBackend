@@ -15,11 +15,12 @@ final class SettingsService {
 
     public function __construct(private DatabaseService $store = new DatabaseService()) {}
 
-    private function load(): array {
+    private function load(bool $requireReadable = false): array {
         if (self::$cache !== null) return self::$cache;
         try {
             $rows = $this->store->read('settings');
-        } catch (\Throwable) {
+        } catch (\Throwable $error) {
+            if ($requireReadable) throw $error;
             return self::$cache = [];
         }
         // Always prefer the canonical record. `read()` returns an unordered SELECT *,
@@ -43,8 +44,8 @@ final class SettingsService {
      * Module on/off flags. Absent means enabled, so existing installs are unaffected.
      * @return array<string,bool>
      */
-    public function modules(): array {
-        $settings = $this->load();
+    public function modules(bool $requireReadable = false): array {
+        $settings = $this->load($requireReadable);
         $modules = [];
         foreach (array_keys(self::MODULES) as $key) {
             $modules[$key] = (string)($settings['module_' . $key] ?? '1') !== '0';

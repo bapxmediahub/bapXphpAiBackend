@@ -7,12 +7,13 @@ final class ProjectMapService {
 
     public const SHARED_CONTROLLERS = ['BaseController'];
     public const SHARED_SERVICES = ['SeoService', 'SmtpMailer', 'ImageOptimizerService', 'DocsMapService', 'GitHubDocService', 'RateLimiter', 'KnowledgeGraphService'];
-    public const SHARED_VIEWS = ['account/_nav', 'layouts/admin', 'layouts/app', 'public/404', 'admin/environment', 'public/home-collections', 'public/home-product-card', 'admin/_commerce-overview'];
+    public const SHARED_VIEWS = ['account/_nav', 'layouts/admin', 'layouts/app', 'public/404', 'admin/environment', 'public/home-collections', 'public/home-product-card', 'admin/_commerce-overview', 'admin/list-controls'];
     public const KNOWN_UNWIRED_COLLECTIONS = ['wallet_transactions'];
 
     public static function registry(): array {
         $routes = [
             ['method'=>'GET','path'=>'/','name'=>'home','page'=>'public/home','controller'=>'PublicController@home','services'=>['ProductService','TempleService','CategoryService']],
+            ['method'=>'GET','path'=>'/search','name'=>'search','page'=>'public/search','controller'=>'PublicController@search','services'=>['ProductService','BlogService','TempleService']],
             ['method'=>'GET','path'=>'/about','name'=>'about','page'=>'public/about','controller'=>'PublicController@about','services'=>[]],
             ['method'=>'GET','path'=>'/sri-panchami-spiritual','name'=>'spiritual','page'=>'public/spiritual','controller'=>'PublicController@spiritual','services'=>[]],
             ['method'=>'GET','path'=>'/spiritual','name'=>'spiritual.short','page'=>'public/spiritual','controller'=>'PublicController@spiritual','services'=>[]],
@@ -68,6 +69,11 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/admin/system-health','name'=>'admin.system_health','page'=>'admin/system-health','controller'=>'AdminController@systemHealth','services'=>['AuthService','RuntimeHealthService','DatabaseService']],
             ['method'=>'GET','path'=>'/admin/docs','name'=>'admin.docs','page'=>'admin/help','controller'=>'AdminController@helpIndex','services'=>['AdminHelpService','AuthService']],
             ['method'=>'GET','path'=>'/admin/docs/{slug}','name'=>'admin.docs.guide','page'=>'admin/help','controller'=>'AdminController@helpGuide','services'=>['AdminHelpService','MarkdownRenderer','AuthService']],
+            ['method'=>'GET','path'=>'/admin/google-reporting','name'=>'admin.google.reporting.settings','page'=>'admin/google-reporting','controller'=>'AdminGoogleReportingController@settings','services'=>['SecretService','AuthService','AuditLogService']],
+            ['method'=>'POST','path'=>'/admin/google-reporting/connect','name'=>'admin.google.reporting.connect','page'=>'admin/google-reporting','controller'=>'AdminGoogleReportingController@connect','services'=>['SecretService','AuthService','AuditLogService']],
+            ['method'=>'GET','path'=>'/admin/google-reporting/callback','name'=>'admin.google.reporting.callback','page'=>'admin/google-reporting','controller'=>'AdminGoogleReportingController@callback','services'=>['SecretService','AuthService','AuditLogService']],
+            ['method'=>'POST','path'=>'/admin/google-reporting/select','name'=>'admin.google.reporting.select','page'=>'admin/google-reporting','controller'=>'AdminGoogleReportingController@select','services'=>['SecretService','AuthService','AuditLogService']],
+            ['method'=>'POST','path'=>'/admin/google-reporting/disconnect','name'=>'admin.google.reporting.disconnect','page'=>'admin/google-reporting','controller'=>'AdminGoogleReportingController@disconnect','services'=>['SecretService','AuthService','AuditLogService']],
             ['method'=>'GET','path'=>'/admin/google-merchant','name'=>'admin.merchant','page'=>'admin/google-merchant','controller'=>'AdminController@googleMerchant','services'=>['MerchantFeedService','ProductService','SettingsService']],
             ['method'=>'GET','path'=>'/admin/products','name'=>'admin.products','page'=>'admin/product-form','controller'=>'AdminController@products','services'=>['ProductService','SchemaService']],
             ['method'=>'GET','path'=>'/admin/categories','name'=>'admin.categories','page'=>'admin/resource','controller'=>'AdminController@categories','services'=>['CategoryService']],
@@ -113,6 +119,8 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/admin/media','name'=>'admin.media','page'=>'admin/media','controller'=>'AdminController@media','services'=>['MediaService']],
             ['method'=>'POST','path'=>'/admin/media/upload','name'=>'admin.media.upload','page'=>'admin/media','controller'=>'AdminController@uploadMedia','services'=>['MediaService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/media/delete','name'=>'admin.media.delete','page'=>'admin/media','controller'=>'AdminController@deleteMedia','services'=>['MediaService','AuditLogService']],
+            ['method'=>'GET','path'=>'/admin/products/import','name'=>'admin.products.import','page'=>'admin/product-import','controller'=>'AdminController@importProducts','services'=>['ProductImportService','DatabaseService']],
+            ['method'=>'POST','path'=>'/admin/products/import','name'=>'admin.products.import.submit','page'=>'admin/product-import','controller'=>'AdminController@importProducts','services'=>['ProductImportService','DatabaseService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/products/save','name'=>'admin.products.save','page'=>'admin/product-form','controller'=>'AdminController@saveProduct','services'=>['ResourceService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/products/delete','name'=>'admin.products.delete','page'=>'admin/product-form','controller'=>'AdminController@deleteProduct','services'=>['ResourceService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/categories/save','name'=>'admin.categories.save','page'=>'admin/resource','controller'=>'AdminController@saveCategory','services'=>['ResourceService','AuditLogService']],
@@ -148,6 +156,8 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/blog/category/{slug}','name'=>'blog.category','page'=>'public/blog','controller'=>'BlogController@category','services'=>['BlogService','MarkdownRenderer']],
             ['method'=>'GET','path'=>'/admin/blog','name'=>'admin.blog','page'=>'admin/blog','controller'=>'AdminController@blog','services'=>['BlogService']],
             ['method'=>'POST','path'=>'/admin/blog/save','name'=>'admin.blog.save','page'=>'admin/blog','controller'=>'AdminController@saveBlog','services'=>['BlogService','AuditLogService']],
+            ['method'=>'GET','path'=>'/admin/blog/history/{slug}','name'=>'admin.blog.history','page'=>'admin/blog-history','controller'=>'AdminController@blogHistory','services'=>['BlogService']],
+            ['method'=>'POST','path'=>'/admin/blog/history/{slug}/restore','name'=>'admin.blog.restore','page'=>'admin/blog-history','controller'=>'AdminController@restoreBlogRevision','services'=>['BlogService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/blog/toggle','name'=>'admin.blog.toggle','page'=>'admin/blog','controller'=>'AdminController@toggleBlog','services'=>['BlogService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/blog/delete','name'=>'admin.blog.delete','page'=>'admin/blog','controller'=>'AdminController@deleteBlog','services'=>['BlogService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/blog/preview','name'=>'admin.blog.preview','page'=>'admin/blog','controller'=>'AdminController@previewBlog','services'=>['BlogService','MarkdownRenderer']],
@@ -262,6 +272,7 @@ final class ProjectMapService {
             '/privacy'         => 'Privacy Policy — 14 sections, data handling',
             '/consult'         => 'Retired consultation URL — redirects to product shop',
             '/consult/{slug}'  => 'Retired consultant URL — redirects to product shop',
+            '/search'          => 'Search published storefront content',
             '/temples'         => 'Temple listing page',
             '/temples/{slug}'  => 'Temple detail page',
             '/shop'            => 'Product shop — grid with pill actions',
@@ -331,6 +342,8 @@ final class ProjectMapService {
             '/admin/media'      => 'Admin — media library',
             '/admin/media/upload|POST' => 'Admin — upload media',
             '/admin/environment/fix-permissions|POST' => 'Admin — fix storage permissions',
+            '/admin/products/import' => 'Admin — import product CSV',
+            '/admin/products/import|POST' => 'Admin — review or confirm product CSV',
             '/admin/products/save|POST' => 'Admin — create/update product',
             '/admin/products/delete|POST' => 'Admin — delete product',
             '/admin/categories/save|POST' => 'Admin — create/update category',
@@ -454,6 +467,10 @@ final class ProjectMapService {
             }
         }
 
+        foreach (['admin/list','admin/media'] as $parentView) {
+            $lines[] = '  '.self::viewId($parentView).' -. includes .-> '.self::viewId('admin/list-controls');
+        }
+
         $routeByGetPath = [];
         foreach ($scan['routes'] as $route) {
             if (($route['method'] ?? 'GET') === 'GET') $routeByGetPath[(string)$route['path']] = $route;
@@ -488,6 +505,9 @@ final class ProjectMapService {
             $controller = (string)($route['controller'] ?? '');
             [$controllerClass] = array_pad(explode('@', $controller), 2, '');
             $path = (string)($route['path'] ?? '');
+            if ($path === '/admin' || str_starts_with($path, '/admin/google-reporting')) {
+                $lines[] = '  ' . self::controllerId($controllerClass) . ' --> ' . self::integrationId('GoogleReportingClient');
+            }
             if (str_contains($path, 'auth/google')) {
                 $lines[] = '  ' . self::controllerId($controllerClass) . ' --> ' . self::integrationId('GoogleOAuthClient');
             }

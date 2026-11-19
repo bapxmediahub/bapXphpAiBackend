@@ -23,7 +23,9 @@ $store = new DatabaseService(!$remoteWorker);
 if (($argv[1] ?? '') === 'worker') {
     echo "ready\n";
     fflush(STDOUT);
-    if ($argv[3] === 'recover') {
+    if ($argv[3] === 'catalog-import') {
+        $result = $store->importProducts("slug,name,price\nlegacy,Keep original,4\nnew-draft,New product,5\nexclude,Excluded at preview,6", ['exclude']);
+    } elseif ($argv[3] === 'recover') {
         $result = $store->resolveOrderTaxReview($argv[2], 'Tamil Nadu', ['gst_state' => 'Tamil Nadu']);
     } elseif ($argv[3] === 'status') {
         $result = $store->updateOrderStatus($argv[2], 'processing', new DateTimeImmutable(), []);
@@ -105,7 +107,8 @@ if ($updatedUser['name'] !== 'Updated name' || !password_verify('new-fixture-pas
 echo "Credential replacement and reset invalidation passed.\n";
 
 $race = static function (string $firstPayment, string $secondPayment, string $prefix, string $mode = 'direct', ?string $recoveryId = null) use ($pdo): array {
-    if ((int)$pdo->query("SELECT GET_LOCK(CONCAT('sps:orders:', SHA1(DATABASE())), 0)")->fetchColumn() !== 1) {
+    $lock = $firstPayment === 'catalog-import' ? 'sps:products:' : 'sps:orders:';
+    if ((int)$pdo->query("SELECT GET_LOCK(CONCAT('$lock', SHA1(DATABASE())), 0)")->fetchColumn() !== 1) {
         throw new RuntimeException('Could not acquire fixture barrier.');
     }
     $workers = [];
@@ -123,7 +126,7 @@ $race = static function (string $firstPayment, string $secondPayment, string $pr
             if (trim((string)fgets($pipes[1])) !== 'ready') throw new RuntimeException('Worker did not start.');
         }
     } finally {
-        $pdo->query("SELECT RELEASE_LOCK(CONCAT('sps:orders:', SHA1(DATABASE())))");
+        $pdo->query("SELECT RELEASE_LOCK(CONCAT('$lock', SHA1(DATABASE())))");
     }
     $results = [];
     foreach ($workers as [$process, $pipes]) {
@@ -166,6 +169,25 @@ try {
     }
     if (!$socket) throw new RuntimeException('Test bridge did not start.');
     fclose($socket);
+
+    $pdo->exec('CREATE TABLE products LIKE orders');
+    $store->upsert('products', ['id'=>'legacy-id', 'slug'=>' Legacy ', 'name'=>'Original', 'price'=>50]);
+    [$left, $right] = $race('catalog-import', 'catalog-import', 'products', 'remote');
+    if ($left['added'] + $right['added'] !== 1 || $left['skipped'] + $right['skipped'] !== 5
+        || count($store->read('products')) !== 2 || $store->find('products', 'legacy-id')['price'] !== 50) {
+        throw new RuntimeException('Concurrent remote imports must add one hidden draft and preserve old and excluded slugs.');
+    }
+    $page = (new \App\Services\ProductService($store))->adminPage('draft', 'name', 10, 999);
+    if ($page['count'] !== 1 || $page['page'] !== 1 || $page['items'][0]['status'] !== 'hidden') {
+        throw new RuntimeException('Search must include hidden drafts and clamp an out-of-range page.');
+    }
+    $pdo->exec("ALTER TABLE products ADD CONSTRAINT reject_fixture_row CHECK (JSON_UNQUOTE(JSON_EXTRACT(_data, '$.slug')) <> 'reject-fixture')");
+    try {
+        $store->importProducts("slug,name,price\nrollback-fixture,Valid row,3\nreject-fixture,Reject row,4");
+        throw new RuntimeException('Fixture database should reject the second row.');
+    } catch (PDOException) {}
+    if ($store->existingProductSlugs(['rollback-fixture', 'reject-fixture'])) throw new RuntimeException('A failed batch left an earlier row behind.');
+    echo "Concurrent remote product import, edit preservation, filtered paging and full rollback passed.\n";
 
     [$first, $second] = $race('pay_remote', 'pay_remote', 'remote', 'remote');
     if ($first['record']['id'] !== $second['record']['id'] || $first['created'] === $second['created'] || count($store->read('orders')) !== 4) {

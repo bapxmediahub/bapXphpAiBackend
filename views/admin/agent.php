@@ -14,7 +14,8 @@
         </div>
         <section id="agent-history-panel" class="agent-history-panel" aria-label="Your previous chats" hidden>
             <h2>Previous chats</h2>
-            <div id="agent-history-list" class="agent-history-list">Open History to load your chats.</div>
+            <p id="agent-history-status" role="status"></p>
+            <div id="agent-history-list" class="agent-history-list"></div>
         </section>
     <div id="agent-messages" class="agent-messages" role="log" aria-live="polite" aria-label="Conversation"></div>
 
@@ -35,12 +36,13 @@
             </button>
             <textarea id="agent-input" name="message" rows="1" maxlength="2000" required
                       placeholder="Ask about your store…"
-                      aria-label="Message"></textarea>
+                      aria-label="Message" aria-controls="agent-mentions" aria-autocomplete="list" aria-haspopup="listbox"></textarea>
             <button type="submit" class="agent-send" id="agent-submit" aria-label="Send">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
         </form>
     </div>
+    <p id="agent-attachment-status" role="status"></p>
     <p class="agent-hint">
         Enter to send · Shift+Enter for a new line · <code>@terms</code> or <code>@filename</code> to attach ·
         <code>/create-blog</code> and <code>/add-product</code> to draft
@@ -90,6 +92,8 @@
 .agent-history-panel { border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-md); margin-bottom:var(--space-md); background:var(--color-bg-alt); max-height:260px; overflow-y:auto; }
 .agent-history-panel[hidden] { display:none !important; }
 .agent-history-panel h2 { font-size:0.94rem; margin:0 0 var(--space-xs); }
+#agent-history-status { margin:0 0 var(--space-xs); }
+#agent-history-status:empty { margin:0; }
 .agent-history-list { display:flex; flex-direction:column; gap:var(--space-2xs); }
 .agent-history-entry { text-align:left; background:var(--color-white); border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:8px 10px; cursor:pointer; overflow-wrap:anywhere; }
 .agent-history-entry:hover, .agent-history-entry:focus-visible { border-color:var(--color-gold); }
@@ -102,7 +106,7 @@
 .agent-mentions { display:none; position:absolute; bottom:calc(100% + 6px); left:0; right:0; max-height:240px; overflow-y:auto; background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-md); box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:20; }
 .agent-mentions.is-open { display:block; }
 .agent-mention { display:flex; justify-content:space-between; gap:var(--space-sm); width:100%; padding:8px 12px; background:none; border:0; text-align:left; cursor:pointer; font-size:0.84rem; }
-.agent-mention:hover { background:var(--color-bg-alt); }
+.agent-mention:hover, .agent-mention[aria-selected="true"] { background:var(--color-bg-alt); }
 .agent-mention__name { font-weight:600; }
 .agent-mention__kind { color:var(--color-text-muted); font-size:0.75rem; }
 
@@ -152,22 +156,33 @@
     const historyToggle = document.getElementById('agent-history-toggle');
     const historyPanel = document.getElementById('agent-history-panel');
     const historyList = document.getElementById('agent-history-list');
+    const historyStatus = document.getElementById('agent-history-status');
     let conversationId = null;
+    let historyRequest = null;
+    let transcriptRequest = null;
 
     const hideHistory = () => {
+        historyRequest?.abort();
+        if (transcriptRequest) {
+            transcriptRequest.abort();
+            transcriptRequest = null;
+            submit.disabled = false;
+        }
+        historyStatus.textContent = '';
         historyPanel.hidden = true;
         historyToggle.setAttribute('aria-expanded', 'false');
     };
 
-    async function loadHistory(cursor = null) {
-        const response = await fetch('/admin/agent/history' + (cursor ? '?cursor='+encodeURIComponent(cursor) : ''), {credentials:'same-origin',cache:'no-store'});
+    async function loadHistory(signal, cursor = null) {
+        const response = await fetch('/admin/agent/history' + (cursor ? '?cursor='+encodeURIComponent(cursor) : ''), {credentials:'same-origin',cache:'no-store',signal});
         if (!response.ok) throw new Error('Cannot load chat history');
         const data = await response.json();
-        if (!cursor) historyList.replaceChildren();
+        if (signal.aborted) return;
+        if (!cursor) { historyStatus.textContent = ''; historyList.replaceChildren(); }
         historyList.querySelectorAll('[data-load-more-history]').forEach(el=>el.remove());
         const chats = Array.isArray(data.conversations) ? data.conversations : [];
         if (!chats.length && !cursor && !data.next_cursor) {
-            historyList.textContent = 'No previous chats yet.';
+            historyStatus.textContent = 'No previous chats yet.';
             return;
         }
         for (const chat of chats) {
@@ -200,17 +215,23 @@
         }
         if (typeof data.next_cursor === 'string') {
             const more=document.createElement('button');more.type='button';more.dataset.loadMoreHistory='true';more.className='agent-suggestion';more.textContent='Load older chats';
-            more.addEventListener('click',async()=>{more.disabled=true;try{await loadHistory(data.next_cursor);}catch(e){more.disabled=false;more.textContent='Retry older chats';}});
+            more.addEventListener('click',async()=>{more.disabled=true;try{await loadHistory(signal, data.next_cursor);}catch(e){more.disabled=false;more.textContent='Retry older chats';}});
             historyList.appendChild(more);
         }
     }
 
     async function restoreConversation(id) {
-        if (submit.disabled || !/^[a-f0-9]{32}$/.test(String(id))) return;
+        if (input.disabled || uploadBtn.disabled || !/^[a-f0-9]{32}$/.test(String(id))) return;
+        transcriptRequest?.abort();
+        transcriptRequest = new AbortController();
+        const {signal} = transcriptRequest;
+        submit.disabled = true;
+        historyStatus.textContent = 'Opening chat…';
         try {
-            const response = await fetch('/admin/agent/history/' + id, {credentials:'same-origin',cache:'no-store'});
+            const response = await fetch('/admin/agent/history/' + id, {credentials:'same-origin',cache:'no-store',signal});
             if (!response.ok) throw new Error('Conversation is unavailable');
             const data = await response.json();
+            if (signal.aborted) return;
             if (data.conversation_id !== id || !Array.isArray(data.turns)) throw new Error('Invalid chat history');
             messages.replaceChildren();
             conversationId = id;
@@ -224,21 +245,32 @@
             messages.scrollTop = messages.scrollHeight;
             input.focus();
         } catch (error) {
-            historyList.textContent = 'Could not reopen that chat. Please try again.';
+            if (!signal.aborted) {
+                transcriptRequest = null;
+                submit.disabled = false;
+                historyStatus.textContent = 'Could not reopen that chat. Select it again to retry.';
+            }
         }
     }
 
     historyToggle.addEventListener('click', async () => {
-        if (submit.disabled) return;
+        if (input.disabled) return;
         if (!historyPanel.hidden) { hideHistory(); return; }
         historyPanel.hidden = false;
         historyToggle.setAttribute('aria-expanded', 'true');
-        historyList.textContent = 'Loading your chats…';
-        try { await loadHistory(); }
-        catch (error) { historyList.textContent = 'Chat history is unavailable right now.'; }
+        historyList.replaceChildren();
+        historyStatus.textContent = 'Loading your chats…';
+        historyRequest = new AbortController();
+        const {signal} = historyRequest;
+        try { await loadHistory(signal); }
+        catch (error) {
+            if (!signal.aborted) historyStatus.textContent = 'Chat history is unavailable. Reopen History to retry.';
+        }
     });
     clear.addEventListener('click', function () {
-        if (submit.disabled) return;
+        if (input.disabled) return;
+        closeMentions();
+        document.getElementById('agent-attachment-status').textContent = '';
         messages.replaceChildren();
         conversationId = null;
         hideHistory();
@@ -326,6 +358,24 @@
 
     // Enter sends, Shift+Enter makes a new line — the convention users expect.
     input.addEventListener('keydown', function (e) {
+        if (e.isComposing) return;
+        if (mentionBox.classList.contains('is-open')) {
+            const options = Array.from(mentionBox.children);
+            const selected = options.findIndex(item => item.getAttribute('aria-selected') === 'true');
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                const next = e.key === 'ArrowDown' ? (selected + 1) % options.length
+                    : (selected <= 0 ? options.length - 1 : selected - 1);
+                options.forEach((item, i) => item.setAttribute('aria-selected', String(i === next)));
+                input.setAttribute('aria-activedescendant', options[next].id);
+                options[next].scrollIntoView({block:'nearest'});
+                return;
+            }
+            if (e.key === 'Escape') { e.preventDefault(); closeMentions(); return; }
+            if (e.key === 'Enter' && !e.shiftKey && selected >= 0) {
+                e.preventDefault(); options[selected].click(); return;
+            }
+        }
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); }
     });
 
@@ -403,22 +453,30 @@
     const attachables = JSON.parse(document.getElementById('agent-attachables')?.textContent || '[]');
     const mentionBox = document.getElementById('agent-mentions');
 
-    function closeMentions() { if (mentionBox) mentionBox.classList.remove('is-open'); }
+    function closeMentions() { mentionBox.classList.remove('is-open'); input.removeAttribute('aria-activedescendant'); }
 
     function openMentions(query) {
         if (!mentionBox) return;
         const q = query.toLowerCase();
         const hits = attachables.filter(a => a.name.toLowerCase().includes(q)).slice(0, 8);
         if (!hits.length) { closeMentions(); return; }
-        mentionBox.innerHTML = '';
-        hits.forEach(function (hit) {
+        input.removeAttribute('aria-activedescendant');
+        mentionBox.replaceChildren();
+        hits.forEach(function (hit, index) {
             const item = document.createElement('button');
             item.type = 'button';
             item.className = 'agent-mention';
+            item.id = 'agent-option-' + index;
+            item.tabIndex = -1;
+            item.setAttribute('role', 'option');
+            item.setAttribute('aria-selected', 'false');
+            item.addEventListener('mousedown', event => event.preventDefault());
             item.innerHTML = '<span class="agent-mention__name">@' + escapeHtml(hit.name) + '</span>'
                 + '<span class="agent-mention__kind">' + escapeHtml(hit.kind) + '</span>';
             item.addEventListener('click', function () {
-                input.value = input.value.replace(/@([A-Za-z0-9._-]*)$/, '@' + hit.name + ' ');
+                const end = input.selectionStart;
+                const token = input.value.slice(0, end).match(/@[A-Za-z0-9._-]*$/);
+                if (token) input.setRangeText('@' + hit.name + ' ', end - token[0].length, end, 'end');
                 closeMentions();
                 input.focus();
                 autoGrow();
@@ -439,9 +497,42 @@
     const uploadInput = document.getElementById('agent-upload-input');
     if (uploadBtn && uploadInput) {
         uploadBtn.addEventListener('click', function () { uploadInput.click(); });
-        uploadInput.addEventListener('change', function () {
-            if (uploadInput.files && uploadInput.files.length) {
-                document.getElementById('agent-upload-form').submit();
+        uploadInput.addEventListener('change', async function () {
+            if (!uploadInput.files.length || input.disabled || submit.disabled) return;
+            const status = document.getElementById('agent-attachment-status');
+            hideHistory();
+            closeMentions();
+            uploadBtn.disabled = submit.disabled = clear.disabled = historyToggle.disabled = true;
+            suggestions.inert = true;
+            status.textContent = 'Uploading to the media library…';
+            try {
+                const uploadForm = document.getElementById('agent-upload-form');
+                const response = await fetch(uploadForm.action, {method:'POST', body:new FormData(uploadForm),
+                    headers:{Accept:'application/json'}, credentials:'same-origin'});
+                const result = await response.json();
+                if (!response.ok || !Array.isArray(result.files)) throw new Error(result.error || 'Upload failed. Select the file again to retry.');
+                const names = result.files.map(file => String(file.url || '').split('/').pop());
+                const tokens = [];
+                for (const name of names) {
+                    if (!/^[A-Za-z0-9][A-Za-z0-9._-]{1,80}$/.test(name)) continue;
+                    if (!attachables.some(hit => hit.name === name)) attachables.push({name, kind:'image'});
+                    tokens.push('@' + name);
+                }
+                const text = [input.value.trimEnd(), ...tokens].filter(Boolean).join(' ');
+                if (text.length <= input.maxLength && tokens.length === names.length) {
+                    input.value = text + (text.length < input.maxLength ? ' ' : '');
+                    autoGrow();
+                    status.textContent = 'Images attached to this message.';
+                } else {
+                    status.textContent = 'Saved to Media. Shorten the message or choose an image with @.';
+                }
+            } catch (error) {
+                status.textContent = error instanceof SyntaxError ? 'Upload interrupted. Check Media before retrying.' : error.message;
+            } finally {
+                uploadInput.value = '';
+                suggestions.inert = false;
+                uploadBtn.disabled = submit.disabled = clear.disabled = historyToggle.disabled = false;
+                input.focus();
             }
         });
     }
@@ -450,13 +541,18 @@
         e.preventDefault();
         const msg = input.value.trim();
         if (!msg || submit.disabled) return false;
+        hideHistory();
 
         addRow('user', escapeHtml(msg).replace(/\n/g, '<br>'));
         input.value = ''; autoGrow();
+        closeMentions();
+        document.getElementById('agent-attachment-status').textContent = '';
+        uploadBtn.disabled = true;
         input.disabled = true; submit.disabled = true;
         suggestions.style.display = 'none';
         clear.hidden = false;
         clear.disabled = true;
+        historyToggle.disabled = true;
 
         const thinking = addRow('bot', '');
         const progress = window.AgentRequestStatus.start(thinking);
@@ -513,7 +609,8 @@
             progress.finish(failed);
         }
 
-        input.disabled = false; submit.disabled = false; clear.disabled = false;
+        uploadBtn.disabled = false;
+        input.disabled = false; submit.disabled = false; clear.disabled = false; historyToggle.disabled = false;
         input.focus();
         messages.scrollTop = messages.scrollHeight;
         return false;

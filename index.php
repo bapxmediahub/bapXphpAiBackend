@@ -107,14 +107,9 @@ if ($uri === '/admin/manifest.json') {
     exit;
 }
 if ($uri === '/admin/sw.js') {
-    $cacheName = 'sps-cache-admin-v1';
-    $precache = json_encode(['/admin', '/login']);
     header('Content-Type: application/javascript; charset=utf-8');
     header('Cache-Control: no-cache');
-    echo "const CACHE_NAME = {$cacheName}; const PRECACHE_URLS = {$precache};";
-    echo "self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(PRECACHE_URLS)).then(()=>self.skipWaiting()));});";
-    echo "self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.map(n=>n!==CACHE_NAME?caches.delete(n):null))).then(()=>self.clients.claim()));});";
-    echo "self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(caches.match(e.request).then(c=>c||fetch(e.request).then(r=>{if(!r||r.status!==200||r.type!=='basic')return r;const url=new URL(e.request.url);if(!url.pathname.startsWith('/api')){caches.open(CACHE_NAME).then(ca=>ca.put(e.request,r.clone()));}return r;}).catch(()=>e.request.mode==='navigate'?caches.match('/'):new Response('Offline',{status:503}))));});";
+    readfile(__DIR__ . '/assets/pwa/sw-admin.js');
     exit;
 }
 
@@ -140,7 +135,7 @@ if ($uri !== null && $uri !== '/' && str_ends_with($uri, '/')) {
 }
 
 // PHP routes (admin + public pages)
-$phpRoutes = ['/','/shop','/shop/','/product','/cart','/checkout','/payment','/support','/about','/contact','/temples','/consult','/consultation','/auth','/login','/logout','/register','/forgot-password','/reset-password','/account','/orders','/reviews','/sri-panchami-spiritual','/spiritual','/categories','/terms','/privacy','/blog','/docs','/help','/sitemap.xml','/feeds/google-products.xml'];
+$phpRoutes = ['/','/search','/shop','/shop/','/product','/cart','/checkout','/payment','/support','/about','/contact','/temples','/consult','/consultation','/auth','/login','/logout','/register','/forgot-password','/reset-password','/account','/orders','/reviews','/sri-panchami-spiritual','/spiritual','/categories','/terms','/privacy','/blog','/docs','/help','/sitemap.xml','/feeds/google-products.xml'];
 $isPhpRoute = false;
 foreach ($phpRoutes as $route) {
     if (strpos($uri, $route . '/') === 0 || $uri === $route) {

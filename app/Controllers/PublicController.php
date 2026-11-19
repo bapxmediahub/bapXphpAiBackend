@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AuthService,BlogService,ProductService,TempleService,CategoryService,SecretService,SeoService,ContactService,ReviewService,MarkdownRenderer};
+use App\Services\{SettingsService,AuthService,BlogService,ProductService,TempleService,CategoryService,SecretService,SeoService,ContactService,ReviewService,MarkdownRenderer};
 final class PublicController extends BaseController {
     
     public function home(): void {
@@ -23,6 +23,48 @@ final class PublicController extends BaseController {
         ]);
     }
     
+    public function search(): void {
+        $input = is_string($_GET['q'] ?? null) ? $_GET['q'] : '';
+        $query = mb_substr(trim(preg_replace('/\s+/u', ' ', $input) ?? ''), 0, 120);
+        $groups = [];
+        if ($query !== '') {
+            $modules = (new SettingsService())->modules(requireReadable: true);
+            if ($modules['shop']) {
+                $products = new ProductService();
+                $groups['Products'] = $products->discover($products->visible(), $query, 'name');
+            }
+            if ($modules['blog']) {
+                $blog = new BlogService();
+                $groups['Articles'] = $blog->search($blog->all(), $query);
+            }
+            $words = preg_split('/\s+/u', $query, -1, PREG_SPLIT_NO_EMPTY);
+            $groups['Temples'] = array_filter((new TempleService())->all(), static function (array $temple) use ($words): bool {
+                $text = implode(' ', [$temple['name'] ?? '', $temple['address'] ?? '', $temple['description'] ?? '']);
+                foreach ($words as $word) {
+                    if (mb_stripos($text, $word) === false) return false;
+                }
+                return true;
+            });
+        }
+        $this->seoOverrides = [
+            'title' => 'Search the site',
+            'description' => 'Search for products, articles and temples.',
+            'robots' => 'noindex, follow',
+        ];
+        $total = array_sum(array_map('count', $groups));
+        $pages = max(1, (int)ceil($total / 20));
+        $requestedPage = filter_var($_GET['page'] ?? 1, FILTER_VALIDATE_INT);
+        $page = max(1, min($pages, (int)$requestedPage));
+        $skip = ($page - 1) * 20;
+        $remaining = 20;
+        foreach ($groups as $key => $rows) {
+            $groups[$key] = array_slice($rows, $skip, $remaining);
+            $skip = max(0, $skip - count($rows));
+            $remaining -= count($groups[$key]);
+        }
+        $this->render('public/search', compact('query', 'groups', 'page', 'pages', 'total'));
+    }
+
     public function about(): void { 
         $this->detectApiRequest();
         $this->seoKey = 'about';
