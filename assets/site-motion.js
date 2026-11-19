@@ -28,6 +28,12 @@
                 options: { duration: 320, delay: 0, easing: 'cubic-bezier(.22,.75,.25,1)', fill: 'none' }
             };
         }
+        if (surface === 'home-panel') {
+            return {
+                keyframes: [{ opacity: .8, transform: 'translateY(24px)' }, { opacity: 1, transform: 'none' }],
+                options: { duration: 440, delay: 0, easing: 'cubic-bezier(.2,.65,.3,1)', fill: 'none' }
+            };
+        }
         var admin = surface === 'admin';
         var n = Number.isFinite(index) ? Math.max(0, index) : 0;
         return {
@@ -87,13 +93,20 @@
         preferenceChanged();
 
         var productPhotoSelector = '.home-product-card .product-card__image img';
+        var homePhotoSelector = productPhotoSelector + ',main [data-home-enter="photo"]';
+        var homePanelSelector = 'main [data-home-enter="panel"]';
         var sectionHeadingSelector = 'main h1,main section > h2,main .section-header > :is(h1,h2),main [data-page-section]:is(h1,h2,h3)';
         var panelSelector = 'main [data-section-motion]';
         var nativeSections = surface === 'public' && win.CSS?.supports('animation-timeline', 'view(block 0px)')
             && win.CSS.supports('animation-range', 'entry 0% cover 38%');
-        var candidates = doc.querySelectorAll(panelSelector + ',' + sectionHeadingSelector + ',' + productPhotoSelector + ',.product-card:not(.home-product-card),.blog-card,.temple-card,.auth-card,.section-title,.page-title,.admin-stat,.report-kpi,.admin-card > h2,.enterprise-chat__intro');
+        var candidates = doc.querySelectorAll(panelSelector + ',' + sectionHeadingSelector + ',' + homePhotoSelector + ',' + homePanelSelector + ',.product-card:not(.home-product-card),.blog-card,.temple-card,.auth-card,.section-title,.page-title,.admin-stat,.report-kpi,.admin-card > h2,.enterprise-chat__intro');
         var entranceTargets = Array.from(candidates).filter(function (target) {
-            if (!nativeSections || target.closest('a')) return true;
+            if (!nativeSections) return true;
+            if (target.matches(homePhotoSelector) || target.matches(homePanelSelector)) {
+                target.classList.add('sps-home-scroll');
+                return false;
+            }
+            if (target.closest('a')) return true;
             if (target.matches(panelSelector) || (target.matches(sectionHeadingSelector) && !target.closest(panelSelector))) {
                 target.classList.add('sps-section-scroll');
                 return false;
@@ -110,7 +123,8 @@
                     observer.unobserve(target);
                     if (target.matches(panelSelector)) play(target, 0, 'section-panel');
                     else if (target.closest(panelSelector)) return;
-                    else if (target.matches(productPhotoSelector)) play(target, 0, 'product-photo');
+                    else if (target.matches(homePhotoSelector)) play(target, 0, 'product-photo');
+                    else if (target.matches(homePanelSelector)) play(target, 0, 'home-panel');
                     else if (surface === 'public' && target.matches(sectionHeadingSelector) && !target.closest('a'))
                         play(target, 0, 'section-heading');
                     else if (!target.closest('a')) play(target, stagger++);
@@ -143,6 +157,31 @@
         }
 
         var header = doc.querySelector(surface === 'admin' ? '.admin-topbar' : '#site-header');
+        var opening = doc.querySelector('[data-home-opening]');
+        var hero = opening?.querySelector('.home-hero');
+        if (hero && typeof win.ResizeObserver === 'function' && win.CSS?.supports('overflow-x', 'clip')) {
+            function measureHero() {
+                opening.style.setProperty('--home-hero-height', hero.offsetHeight + 'px');
+            }
+            measureHero();
+            new win.ResizeObserver(measureHero).observe(hero, { box: 'border-box' });
+            opening.dataset.homeLayer = 'ready';
+            hero.addEventListener('focusin', function (event) {
+                if (!canMove() || !event.target.matches(':focus-visible')) return;
+                win.requestAnimationFrame(function () {
+                    if (doc.activeElement !== event.target) return;
+                    var bounds = event.target.getBoundingClientRect();
+                    var covered = Array.from(doc.querySelectorAll('#bottom-nav, #mobile-cart-tray:not([hidden]), .support-fab')).some(function (control) {
+                        var area = control.getBoundingClientRect();
+                        return area.width > 0 && bounds.left < area.right && bounds.right > area.left
+                            && bounds.top < area.bottom && bounds.bottom > area.top;
+                    });
+                    if (bounds.top < 0 || bounds.bottom > win.innerHeight || covered) {
+                        event.target.scrollIntoView({ block: 'center', behavior: 'instant' });
+                    }
+                });
+            });
+        }
         function updateHeaderOffset() {
             var height = header ? Math.ceil(header.getBoundingClientRect().height) : 0;
             doc.documentElement.style.setProperty('--sps-scroll-offset', (height + 16) + 'px');

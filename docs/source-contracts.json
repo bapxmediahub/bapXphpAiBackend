@@ -29,8 +29,8 @@
         },
         "google-tags": {
             "source_sha256": "a83f8447fa3c7e14df377ca26e8d645bb72aad689fde0d3e03fc1be155763903",
-            "references_sha256": "70ac55633247ec6cea04867dbd036b9d6fc7c16fec4155f7039fb9f01cca7d68",
-            "review_note": "Reviewed the shared public head token change and flexible UI skill guidance with existing Google tag behavior."
+            "references_sha256": "6b0f39e6e0899d1cab6e82f38241bffdf097e91702c096f4eebf34500dfb27d0",
+            "review_note": "Verified the frontend skill motion additions leave the public and owner tag rendering guidance intact."
         },
         "http-errors": {
             "source_sha256": "399b84f63ec0f03947d9338711f3a8c60008750c96d96936b1e9c7c57b6c5792",
@@ -38,9 +38,9 @@
             "review_note": "Compared bootstrap/session initialization, old global handler, BaseController redirects/JSON/view output and actual API catches with RequestFailureService. Native response buffer and safe500 replace only unhandled failures; 88 loopback HTTP assertions preserve normal HTML/JSON/XML/binary/204/redirect/explicit503. Docs state pre-bootstrap/OOM/streaming limits and uncertainty of earlier side effects; no raw message/admin stack or database accusation."
         },
         "interface": {
-            "source_sha256": "b9c2762913840220ef8cfc3a02cf1a6dcec7ec3a59fda3d4c9e4b1013d9d0df8",
-            "references_sha256": "be3693893758b18fd62bafaad98fe3b20adacc4cb241f5278cf8d80ed2a8ff22",
-            "review_note": "Verified cart elevation, mobile checkout clearance, native forward and reverse scroll progress, and reduced-motion fallback."
+            "source_sha256": "7fc4d617b4ab0505b2ef51d881bbfea26286f17094e4b075f6ddeb25e08a3098",
+            "references_sha256": "46a6284e47472b1db24b0a4de68e0b6671585ffaf914053cda625a9705631104",
+            "review_note": "Verified homepage layers, focus and pointer inputs, snapshot evidence and the current Nebo reference."
         },
         "mail": {
             "source_sha256": "7694291a27699ebb722b0ff98b9ae74972c92a20b0b057726677e0a733ffd792",
@@ -63,9 +63,9 @@
             "review_note": "Reviewed service/XML/CLI/UI against ProductService offer and visibility behavior plus current primary Google product-source and invited-creator docs. Verified explicit identifiers only, valid URL/image checks, safe XML, unknown external approval and no credential/account actions. Public browser samples match real prices/images; local missing media is not labelled a production defect."
         },
         "workflow": {
-            "source_sha256": "c2aedf10e9126b63fead97b3f5c4d4af26132de3c1ebceba49ee153c32c06899",
+            "source_sha256": "aeab94097eacc8c99becb4b12628541fb86da2378497615ffc316243a0138604",
             "references_sha256": "94dd586c81b1d91a0332e86219ac2b55c416d5ebc37115c9a2008697d68236d0",
-            "review_note": "Verified AGENTS and relevant UI skills document updating reusable design guidance alongside code."
+            "review_note": "Verified the editorial handoff keyboard-focus policy and documentation against the project review workflow."
         }
     }
 }

@@ -245,6 +245,12 @@ Shape should stay consistent within a component family -- don't mix `sm` and `lg
 
 Motion is progressive and causal. Public section entrances may follow native scroll position. Use a perceptible offset, readable content and clear still frames. Public and operational surfaces share
 `assets/site-motion.js` and `site-motion.css`, with shorter operational timing.
+The homepage opening uses a bounded handoff from the hero to the reassurance
+strip and top sellers. Tall heroes scroll to expose the primary action before
+holding. Read the reassurance labels directly at every width. Later sections
+derive their motion from their own content. Use photo motion within product and
+temple frames and a short lift for order steps and informational panels.
+Keep shopping controls, text-only collection links and FAQ disclosures steady.
 Never animate fabricated KPI values, hide text pending JavaScript, hijack native
 scrolling or move controls away from keyboard focus. Respect reduced motion
 and data-saving settings, stop hidden/offscreen slide rotation, and preserve

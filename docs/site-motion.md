@@ -18,8 +18,9 @@ change data, fake a chart value or script a purchase.
   surfaces enter once when visible. Public motion is 300 ms / 10 px; admin
   motion is 180 ms / 4 px. Stagger is bounded at 120 ms. Opacity never starts
   at zero and no final style is retained by the animation. On the homepage,
-  only the product photo settles into place as it enters the viewport. The
-  card, price, purchase controls and collection link stay still. Public section
+  product and temple photos settle inside their frames. Order steps and
+  informational cards enter as they reach the viewport. Product cards, prices,
+  purchase controls and collection links stay still. Public section
   headings and designated public panels follow native view timelines in
   browsers that support them. Their motion follows scroll position in both
   directions and settles within the viewport. Browsers with Web Animations
@@ -53,7 +54,14 @@ canonical in `Design.md`.
 
 ## Source-derived decisions and scope
 
-The [Nebo editorial stack](https://github.com/getwinharris/nebowellness_php_cms/blob/f5fb5f177c412b161566d02383e26a172b2d964b/assets/editorial-stack.js) and [design guidance](https://github.com/getwinharris/nebowellness_php_cms/blob/f5fb5f177c412b161566d02383e26a172b2d964b/Design.md) informed the once-only section entrance and single-step rail. The public layouts use the existing native document flow so reading, purchase controls and keyboard focus remain reachable.
+The homepage adapts Nebo's opaque, native sticky handoff to the opening.
+The reassurance strip and top sellers scroll over the hero, then the hero's
+sticky region ends with top sellers. The measured height lets tall heroes
+scroll far enough to expose their lower content before holding. Keyboard focus
+inside the hero, reduced motion and missing enhancement restore ordinary flow.
+The temple rail retains native horizontal scrolling. Its image motion follows
+the rail's page position independently of the horizontal scroll container.
+[Nebo editorial stack](https://github.com/getwinharris/nebowellness_php_cms/blob/69ff0a26c78908d21a2580a4509b56c11d6ec841/assets/editorial-stack.js) · [Nebo styles](https://github.com/getwinharris/nebowellness_php_cms/blob/69ff0a26c78908d21a2580a4509b56c11d6ec841/assets/css/band.css#L4324) · [Nebo design guidance](https://github.com/getwinharris/nebowellness_php_cms/blob/69ff0a26c78908d21a2580a4509b56c11d6ec841/Design.md)
 
 The requested sources were inspected, not blindly installed:
 
@@ -81,6 +89,9 @@ scroll positions, return-to-top, panel state, current cards/forms, admin
 sidebars, reduced-motion transitions, no-JS and absent observer/WAAPI cases.
 Check computed visibility, page errors and horizontal overflow. Capture actual
 screens, not only assertion logs; inspect beginning/middle/end frames.
+For the homepage handoff, also check a short viewport, scroll past the hero
+and return to it by keyboard. Verify that the first shop action stays reachable,
+fragment links land on their sections and the horizontal temple rail advances one card.
 
 Private admin browser state, customer-page text and screenshots stay outside
 Git. Browser emulation does not certify every physical phone's compositor or

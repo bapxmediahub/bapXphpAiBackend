@@ -212,6 +212,9 @@ Exercise the changed JavaScript controls with keyboard and pointer input, and co
 - Shared motion follows `docs/site-motion.md`: native scrolling, readable no-JS
   frames and dynamic reduced-motion support. Coding references such as Scrollcraft
   and Stageshow stay outside runtime business-agent prompt selection.
+- Keep any layered homepage handoff bounded. Include short mobile viewports,
+  keyboard return to the outgoing section and fragment navigation in browser
+  checks whenever the handoff changes.
 - Admin mutations are auditable via `AuditLogService`, which must never break the
   operation it records.
 - Secrets are never committed and never placed in `.env`.
