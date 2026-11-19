@@ -312,3 +312,7 @@
 #agent-attachment-status { margin: .5rem 0; font-size: .85rem; }
 #agent-attachment-status:empty { display: none; }
 @media (max-width: 420px) { .enterprise-chat .agent-suggestions { grid-template-columns: 1fr; } }
+
+.google-reporting__callback { overflow-wrap: anywhere; }
+
+.google-reporting .btn { max-inline-size: 100%; white-space: normal; text-align: center; }

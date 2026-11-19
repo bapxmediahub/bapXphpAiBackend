@@ -5,6 +5,10 @@ $rules = [
   'dependencies'=>['index.php','api/index.php','app/Controllers/BaseController.php'],
   'references'=>['docs/request-failures.md','docs/architecture.md','docs/deployment-hostinger.md','.agents/skills/backend-php-mysql/SKILL.md']],
 
+ 'mcp-clients'=>['sources'=>['app/Controllers/AdminMcpClientController.php','app/Services/McpClientService.php','views/admin/mcp-clients.php','cli/mcp-stdio.php','tests/mcp-client-access.test.cjs'],
+  'dependencies'=>['app/Services/SecretService.php','app/Services/OrderService.php','app/Services/StoreStatsService.php','app/Services/AuditLogService.php'],
+  'references'=>['docs/pages/shop.md','docs/pages/integrations.md','content/help/admin/settings.md','.agents/skills/bapxphp-cli/SKILL.md']],
+
  'google-tags'=>['sources'=>['integrations/google-site-kit/*','app/Controllers/AdminGoogleReportingController.php','views/admin/google-reporting.php','tests/google-reporting.php'],
   'dependencies'=>['views/layouts/app.php','views/admin/dashboard.php','views/admin/integrations.php','app/Services/SecretService.php'],
   'references'=>['docs/pages/integrations.md','content/help/admin/settings.md','.agents/skills/frontend-php/SKILL.md']],
@@ -18,7 +22,7 @@ $rules = [
  'mail'=>['sources'=>['app/Services/*Mail*.php','app/Services/Smtp*.php','views/admin/mailbox.php','views/admin/email-templates.php'],
   'dependencies'=>['app/Controllers/AuthController.php','app/Controllers/AccountController.php','app/Controllers/AdminController.php'],
   'references'=>['docs/email-setup.md','.agents/skills/backend-php-mysql/SKILL.md']],
- 'content'=>['sources'=>['app/Services/Blog*.php','app/Services/SeoService.php','app/Services/MarkdownRenderer.php','app/Controllers/BlogController.php','views/public/blog*.php','views/admin/blog*.php','content/blog/*'],
+ 'content'=>['sources'=>['app/Services/Blog*.php','app/Services/SeoService.php','app/Services/MarkdownRenderer.php','app/Controllers/BlogController.php','views/public/blog*.php','views/admin/blog*.php','app/Services/AuthoredPageService.php','views/public/authored-page.php','views/admin/pages.php','content/blog/*'],
   'references'=>['docs/pages/blog.md','docs/modules/content-and-seo.md','.agents/skills/docs/SKILL.md']],
  'commerce'=>['sources'=>['app/Services/Order*.php','app/Services/Product*.php','app/Services/Category*.php','app/Services/Cart*.php','app/Services/Coupon*.php','app/Services/StoreStats*.php','app/Services/Gst*.php','app/Services/Tax*.php','app/Services/Razorpay*.php','app/Controllers/CommerceController.php'],
   'references'=>['docs/modules/gst-commerce.md','docs/modules/orders.md','docs/modules/catalog.md','.agents/skills/backend-php-mysql/SKILL.md']],

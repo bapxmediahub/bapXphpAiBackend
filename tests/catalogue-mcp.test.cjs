@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
-const { spawn } = require('node:child_process');
+const { spawn, execFile } = require('node:child_process');
+const run = require('node:util').promisify(execFile);
 const { createServer } = require('node:http');
 const { createInterface } = require('node:readline');
 const { once } = require('node:events');
@@ -19,7 +20,7 @@ test('local catalogue MCP checks the current shop settings and publishes only vi
         for await (const chunk of request) body += chunk;
         const { query } = JSON.parse(body);
         reads.add(query);
-        const rows = query === 'SELECT * FROM settings'
+        const rows = query === "SELECT id, _data FROM settings WHERE id NOT LIKE 'pg:%'"
             ? [{ id: 'app_settings', module_shop: enabled ? '1' : '0' }]
             : records;
         response.writeHead(online ? 200 : 503, { 'Content-Type': 'application/json' });
@@ -27,12 +28,11 @@ test('local catalogue MCP checks the current shop settings and publishes only vi
     });
     bridge.listen(0, '127.0.0.1');
     await once(bridge, 'listening');
-    const child = spawn('./bapXphp', ['mcp:stdio'], {
-        env: { ...process.env, BAPX_TEST_MODE: '0', BAPX_MYSQL_HOST: '127.0.0.1', BAPX_MYSQL_PORT: '1',
-            BAPX_MYSQL_DB: 'fixture', BAPX_MYSQL_USER: 'fixture', BAPX_MYSQL_PASS: 'fixture',
-            BAPX_REMOTE_DB_URL: 'http://127.0.0.1:' + bridge.address().port + '/remotedb' },
-        stdio: ['pipe', 'pipe', 'inherit']
-    });
+    const env = { ...process.env, BAPX_TEST_MODE: '0', BAPX_MYSQL_HOST: '127.0.0.1', BAPX_MYSQL_PORT: '1',
+        BAPX_MYSQL_DB: 'fixture', BAPX_MYSQL_USER: 'fixture', BAPX_MYSQL_PASS: 'fixture',
+        BAPX_REMOTE_DB_URL: 'http://127.0.0.1:' + bridge.address().port + '/remotedb' };
+    const child = spawn('./bapXphp', ['mcp:stdio'], { env, stdio: ['pipe', 'pipe', 'inherit'] });
+    const cli = async args => JSON.parse((await run('./bapXphp', args, { env })).stdout);
     const lines = createInterface({ input: child.stdout })[Symbol.asyncIterator]();
     let id = 0;
     const meta = { 'io.modelcontextprotocol/protocolVersion': '2026-07-28', 'io.modelcontextprotocol/clientCapabilities': {} };
@@ -59,7 +59,25 @@ test('local catalogue MCP checks the current shop settings and publishes only vi
         child.stdin.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/cancelled' }) + '\n');
         assert.deepEqual((await request('server/discover')).result.supportedVersions, ['2026-07-28']);
         const list = (await request('tools/list')).result.tools;
-        assert.deepEqual(list.map(tool => tool.name), ['search_public_products']);
+        assert.deepEqual(list.map(tool => tool.name), ['search_public_products', 'public_policy']);
+        assert.deepEqual((await cli(['mcp:tools'])).tools, list);
+        const policy = args => request('tools/call', { name: 'public_policy', arguments: args });
+        const keys = list[1].inputSchema.properties.key.enum;
+        assert.deepEqual(keys, ['tracking', 'returns_or_problems', 'shipping_cost', 'payment_methods']);
+        for (const key of keys) {
+            const answer = (await policy({ key })).result;
+            assert.equal(typeof answer.structuredContent.value, 'string');
+            assert.ok(answer.structuredContent.value.length > 0);
+            assert.deepEqual(await cli(['mcp:policy', key]), answer.structuredContent);
+        }
+        for (const args of [{}, { key: 'orders' }, { key: ['tracking'] }, { key: 'tracking', role: 'admin' }]) {
+            assert.equal((await policy(args)).result.isError, true);
+        }
+        for (const name of ['own_ticket_status', 'find_order', 'public_catalog']) {
+            assert.equal((await request('tools/call', { name, arguments: { role: 'admin' } })).error.code, -32602);
+        }
+        await assert.rejects(cli(['mcp:policy', 'orders']), { code: 2 });
+        await assert.rejects(cli(['mcp:tools', 'admin']), { code: 2 });
         assert.equal(list[0].annotations.readOnlyHint, true);
         assert.equal((await request('tools/call', { name: 'admin_report' })).error.code, -32602);
         assert.equal((await call({ role: 'owner' })).result.isError, true);
@@ -74,14 +92,18 @@ test('local catalogue MCP checks the current shop settings and publishes only vi
         records[0].status = 'hidden';
         assert.equal((await call({ query: 'Pendant' })).result.structuredContent.total, 0);
         enabled = false;
-        assert.deepEqual((await request('tools/list')).result.tools, []);
+        assert.deepEqual((await request('tools/list')).result.tools, [list[1]]);
+        assert.deepEqual((await cli(['mcp:tools'])).tools, [list[1]]);
+        assert.equal((await policy({ key: 'tracking' })).result.isError, undefined);
         assert.equal((await call({})).error.code, -32602);
         enabled = true;
         assert.equal((await call({})).result.structuredContent.total, 1);
         online = false;
         assert.equal((await request('tools/list')).error.code, -32603);
+        await assert.rejects(cli(['mcp:tools']), { code: 1 });
+        assert.deepEqual((await policy({ key: 'tracking' })).result.structuredContent, await cli(['mcp:policy', 'tracking']));
         assert.equal((await call({})).error.code, -32603);
-        assert.deepEqual([...reads].sort(), ['SELECT * FROM products', 'SELECT * FROM settings']);
+        assert.deepEqual([...reads].sort(), ['SELECT * FROM products', "SELECT id, _data FROM settings WHERE id NOT LIKE 'pg:%'"]);
     } finally {
         child.stdin.end();
         const [code] = await once(child, 'exit');

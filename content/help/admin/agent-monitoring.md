@@ -2,6 +2,16 @@
 
 Agent Monitoring separates Support and Enterprise activity. Request errors, provider-attempt errors and tool-call errors have different denominators. A retry is a provider attempt, not another customer conversation. Timing includes mean, median and 95th percentile for the displayed operational window.
 
+## Diagnose a failed answer
+
+Expand **Recent runs** and read the provider attempts in order. **Transfer timed out** with cURL 28 means that the application reached its transfer timeout. **No HTTP status** means the application recorded no response status. A first-byte timing, when available, tells you when the first response data arrived. Check the host connection and elapsed time before deciding where the delay occurred.
+
+**Upstream service error** means an HTTP 5xx response arrived. Check the provider status page for that time. For HTTP 429, check rate limits and quota before retrying. **HTTP success** can still accompany an empty answer or a failed application check. Inspect the run outcome and tool results as well as the transfer result.
+
+**Local request deadline reached** and **Local provider budget reached** mean the application stopped additional work. The conversation trace records the limit where available. A denied attempt adds no provider error. Check unfinished ticket actions before retrying a conversation.
+
+For a provider support case, record the timestamp, model, HTTP status and observed timing. The displayed run reference belongs to this application. OpenAI uses its own response header, `x-request-id`, which this monitor does not collect. A timeout can occur before that header arrives. [OpenAI request debugging](https://developers.openai.com/api/reference/overview#debugging-requests) · [OpenAI error codes](https://developers.openai.com/api/docs/guides/error-codes) · [Google Gemini troubleshooting](https://ai.google.dev/gemini-api/docs/troubleshooting)
+
 ## Inspect a conversation
 
 Recent conversation rows show completed turns and unfinished requests. Expand execution evidence or use the authorized JSON export to inspect the trace. **Produced** means the server produced a response; it is not proof the browser received it. Unknown provider usage and source freshness are not zero.

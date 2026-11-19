@@ -96,3 +96,32 @@ foreach (['shared','products','temples','blog'] as $ctx) {
 $invalid = ResourceService::listOptions(['page' => [], 'q' => [], 'per_page' => '-1', 'sort' => []]);
 check($invalid === ['search' => '', 'pageSize' => 25, 'page' => 1, 'sort' => 'newest'], 'Invalid input falls back to defaults');
 echo "PASS 501-row order, appointment and media lists, search, sort and page bounds.\n";
+
+// A temporary settings table keeps publication and compare-and-swap fixtures
+// isolated from all site settings and from parallel test connections.
+$pdo->exec('CREATE TEMPORARY TABLE settings (id VARCHAR(36) PRIMARY KEY, _data JSON NOT NULL,
+    _owner VARCHAR(100), _status VARCHAR(40), _created_at VARCHAR(40), _updated_at VARCHAR(40))');
+$pages = new \App\Services\AuthoredPageService($store);
+$initial = ['slug'=>'guide', 'title'=>'A guide', 'content'=>'Private phrase', 'status'=>'draft', 'expected_revision'=>'0'];
+$pages->save($initial);
+$createdRevision = $pages->find('guide')['revision'];
+check($pages::validRevision($createdRevision), 'Creating the page initializes its revision');
+check($pages->findPublic('guide') === null && $pages->published('Private phrase') === [], 'Draft excluded from all public reads');
+try { $pages->save($initial); throw new RuntimeException('Duplicate create overwrote an existing page'); }
+catch (DomainException) {}
+$publication = array_replace($initial, ['content'=>'Published phrase', 'status'=>'published', 'expected_revision'=>$createdRevision]);
+$pages->save($publication);
+check($pages->findPublic('guide')['content'] === 'Published phrase', 'Publishing exposes current content');
+check(array_column($pages->published('a phrase'), 'slug') === ['guide'], 'Public full-content word search');
+try { $pages->save($publication); throw new RuntimeException('Stale editor overwrote the page'); }
+catch (DomainException) {}
+$pages->save(array_replace($initial, ['expected_revision'=>$pages->find('guide')['revision']]));
+check($pages->findPublic('guide') === null && $pages->published() === [], 'Withholding removes the public URL and index entry');
+$deletedRevision = $pages->find('guide')['revision'];
+$pages->delete('guide', $deletedRevision);
+check($pages->find('guide') === null, 'Delete removes the authored row');
+$pages->save($initial);
+try { $pages->delete('guide', $deletedRevision); throw new RuntimeException('Old deletion affected a recreated page'); }
+catch (DomainException) {}
+check($pages->find('guide') !== null, 'A new page at the same address has independent revision identity');
+echo "PASS authored page creation, collision, publication, public exclusions, and stale revisions.\n";

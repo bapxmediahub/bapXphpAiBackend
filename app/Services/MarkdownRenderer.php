@@ -5,11 +5,14 @@ final class MarkdownRenderer
 {
     private array $codeFragments = [];
     private string $fragmentPrefix = '';
-    public function render(string $markdown): string
+    private bool $allowHtml = true;
+
+    public function render(string $markdown, bool $allowHtml = true): string
     {
         if (strlen($markdown)>1048576) throw new \InvalidArgumentException('Markdown exceeds the supported size.');
         $this->codeFragments=[]; $this->fragmentPrefix='SPSCODE'.bin2hex(random_bytes(8)).'Z';
-        $html = $markdown;
+        $this->allowHtml = $allowHtml;
+        $html = $allowHtml ? $markdown : htmlspecialchars($markdown, ENT_NOQUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $html = $this->renderCodeBlocks($html);
         $html = $this->renderHeadings($html);
         $html = $this->renderHorizontalRules($html);
@@ -154,11 +157,16 @@ final class MarkdownRenderer
         $key=$this->fragmentPrefix.count($this->codeFragments).'Z';$this->codeFragments[$key]=$html;return $key;
     }
 
+    private function escapeText(string $text): string {
+        // Markdown-only input was escaped before the parser generated any tags.
+        return htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8', $this->allowHtml);
+    }
+
     private function renderCodeBlocks(string $html): string
     {
         return preg_replace_callback('/```(\w*)\n(.*?)```/s',function($m){
-            $lang=$m[1]?' class="language-'.e($m[1]).'"':'';
-            return "\n\n".$this->protectCode('<pre><code'.$lang.'>'.e($m[2]).'</code></pre>')."\n\n";
+            $lang=$m[1]?' class="language-'.$this->escapeText($m[1]).'"':'';
+            return "\n\n".$this->protectCode('<pre><code'.$lang.'>'.$this->escapeText($m[2]).'</code></pre>')."\n\n";
         },$html)??$html;
     }
 
@@ -167,9 +175,9 @@ final class MarkdownRenderer
         return preg_replace_callback('/^(#{1,6})\s+(.+)$/m', function ($m) {
             $level = strlen($m[1]);
             $text = trim($m[2]);
-            $id = 'heading-' . preg_replace('/[^a-z0-9]+/i', '-', strtolower($text));
+            $id = 'heading-' . preg_replace('/[^a-z0-9]+/i', '-', strtolower($this->allowHtml ? $text : htmlspecialchars_decode($text, ENT_NOQUOTES)));
             $id = trim($id, '-');
-            return '<h' . $level . ' id="' . $id . '">' . e($text) . '</h' . $level . '>';
+            return '<h' . $level . ' id="' . $id . '">' . $this->escapeText($text) . '</h' . $level . '>';
         }, $html);
     }
 
@@ -187,7 +195,7 @@ final class MarkdownRenderer
                 if ($i === 0) {
                     $item = preg_replace('/^[-*+]\s+/', '', $item);
                 }
-                $lis .= '<li>' . e(trim($item)) . '</li>';
+                $lis .= '<li>' . $this->escapeText(trim($item)) . '</li>';
             }
             return '<ul>' . $lis . '</ul>';
         }, $html);
@@ -203,7 +211,7 @@ final class MarkdownRenderer
                 if ($i === 0) {
                     $item = preg_replace('/^\d+\.\s+/', '', $item);
                 }
-                $lis .= '<li>' . e(trim($item)) . '</li>';
+                $lis .= '<li>' . $this->escapeText(trim($item)) . '</li>';
             }
             return '<ol>' . $lis . '</ol>';
         }, $html);
@@ -212,12 +220,12 @@ final class MarkdownRenderer
 
     private function renderInlineFormatting(string $html): string
     {
-        $html=preg_replace_callback('/`([^`]+)`/',fn($m)=>$this->protectCode('<code>'.e($m[1]).'</code>'),$html)??$html;
+        $html=preg_replace_callback('/`([^`]+)`/',fn($m)=>$this->protectCode('<code>'.$this->escapeText($m[1]).'</code>'),$html)??$html;
         $html=preg_replace_callback('/!\[([^\]]*)\]\(([^)]+)\)/',function($m){
-            return '<img src="'.e($m[2]).'" alt="'.e($m[1]).'" loading="lazy">';
+            return '<img src="'.$this->escapeText($m[2]).'" alt="'.$this->escapeText($m[1]).'" loading="lazy">';
         },$html)??$html;
         $html=preg_replace_callback('/(?<!!)\[([^\]]+)\]\(([^)]+)\)/',function($m){
-            return '<a href="'.e($m[2]).'">'.e($m[1]).'</a>';
+            return '<a href="'.$this->escapeText($m[2]).'">'.$this->escapeText($m[1]).'</a>';
         },$html)??$html;
         $html=preg_replace('/\*\*(.+?)\*\*/','<strong>$1</strong>',$html)??$html;
         return preg_replace('/\*(.+?)\*/','<em>$1</em>',$html)??$html;

@@ -1,14 +1,16 @@
 <?php
 declare(strict_types=1);
 
-use App\Services\{DatabaseService, ProductService, SettingsService};
+use App\Services\{DatabaseService, McpClientService, ProductService, SettingsService, SupportToolRegistry};
 
 if (PHP_SAPI !== 'cli') {
     http_response_code(404);
     exit;
 }
-if ($argc !== 1) {
-    fwrite(STDERR, "Usage: ./bapXphp mcp:stdio\n");
+$command = $argv[1] ?? 'mcp:stdio';
+if (!(($command === 'mcp:stdio' && $argc <= 2) || ($command === 'mcp:tools' && $argc === 2)
+    || ($command === 'mcp:policy' && $argc === 3))) {
+    fwrite(STDERR, "Usage: ./bapXphp mcp:stdio | mcp:tools | mcp:policy <key>\n");
     exit(2);
 }
 require dirname(__DIR__) . '/app/bootstrap.php';
@@ -19,8 +21,9 @@ const MCP_REVISION = '2026-07-28';
 const MCP_FRAME_LIMIT = 65536;
 const MCP_INFO = ['name' => 'bapx-public-shop', 'version' => '1.0.0'];
 const SHOP_TOOL = 'search_public_products';
+const POLICY_TOOL = 'public_policy';
 
-function toolDefinition(): array
+function shopToolDefinition(): array
 {
     $product = [
         'name' => ['type' => 'string'],
@@ -54,6 +57,38 @@ function toolDefinition(): array
         ],
         'annotations' => ['readOnlyHint' => true, 'destructiveHint' => false, 'idempotentHint' => true, 'openWorldHint' => false],
     ];
+}
+
+function policyToolDefinition(): array
+{
+    return [
+        'name' => POLICY_TOOL,
+        'title' => 'Read a store policy',
+        'description' => 'Read published guidance about tracking, returns, shipping cost or payment methods.',
+        'inputSchema' => SupportToolRegistry::policyInputSchema() + ['additionalProperties' => false],
+        'outputSchema' => [
+            'type' => 'object', 'additionalProperties' => false,
+            'properties' => ['value' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 2048]],
+            'required' => ['value'],
+        ],
+        'annotations' => ['readOnlyHint' => true, 'destructiveHint' => false, 'idempotentHint' => true, 'openWorldHint' => false],
+    ];
+}
+
+function availableTools(): array
+{
+    $shopEnabled = (new SettingsService())->modules(requireReadable: true)['shop'];
+    return $shopEnabled ? [shopToolDefinition(), policyToolDefinition()] : [policyToolDefinition()];
+}
+
+function publicPolicy(stdClass $arguments): array
+{
+    // A guest actor and a fixed operation keep customer and Enterprise capabilities out of this interface.
+    $answer = (new SupportToolRegistry(null))->run(POLICY_TOOL, get_object_vars($arguments));
+    if (isset($answer['error'])) return toolFailure('Choose one supported policy key from the input schema.');
+    $value = $answer['value'] ?? null;
+    if (!is_string($value) || $value === '' || mb_strlen($value) > 2048) return toolFailure('The policy is unavailable.');
+    return ['structuredContent' => ['value' => $value], 'content' => [['type' => 'text', 'text' => $value]]];
 }
 
 function toolFailure(string $message): array
@@ -116,7 +151,7 @@ function dispatchRequest(string $method, mixed $params): array
     }
     if ($method !== 'tools/list' && $method !== 'tools/call') return rpcError(-32601, 'Method not found');
     if ($method === 'tools/list' && property_exists($params, 'cursor')) return rpcError(-32602, 'Invalid cursor');
-    if ($method === 'tools/call' && (($params->name ?? null) !== SHOP_TOOL
+    if ($method === 'tools/call' && (!in_array($params->name ?? null, [SHOP_TOOL, POLICY_TOOL, McpClientService::TOOL], true)
         || (property_exists($params, 'arguments') && !($params->arguments instanceof stdClass)))) {
         return rpcError(-32602, 'Unknown tool or invalid tool parameters');
     }
@@ -124,12 +159,26 @@ function dispatchRequest(string $method, mixed $params): array
     // Web requests get fresh statics automatically. Stdio requests share one process.
     DatabaseService::clearReadCache();
     SettingsService::flushCache();
-    $shopEnabled = (new SettingsService())->modules(requireReadable: true)['shop'];
     if ($method === 'tools/list') {
-        return ['result' => $base + ['tools' => $shopEnabled ? [toolDefinition()] : [], 'ttlMs' => 0, 'cacheScope' => 'public']];
+        $tools = availableTools();
+        $private = (new McpClientService())->definition((string)getenv('BAPX_MCP_CLIENT_TOKEN'));
+        if ($private !== null) $tools[] = $private;
+        return ['result' => $base + ['tools' => $tools, 'ttlMs' => 0, 'cacheScope' => $private === null ? 'public' : 'private']];
     }
-    if (!$shopEnabled) return rpcError(-32602, 'Tool unavailable');
-    return ['result' => $base + searchProducts($params->arguments ?? (object)[])];
+    $arguments = $params->arguments ?? (object)[];
+    if ($params->name === McpClientService::TOOL) {
+        try {
+            $summary = (new McpClientService())->sales((string)getenv('BAPX_MCP_CLIENT_TOKEN'), get_object_vars($arguments));
+        } catch (DomainException $error) {
+            return ['result' => $base + toolFailure($error->getMessage())];
+        }
+        if ($summary === null) return rpcError(-32602, 'Unknown tool or invalid tool parameters');
+        return ['result' => $base + ['structuredContent'=>$summary,
+            'content'=>[['type'=>'text', 'text'=>json_encode($summary, JSON_THROW_ON_ERROR)]]]];
+    }
+    if ($params->name === POLICY_TOOL) return ['result' => $base + publicPolicy($arguments)];
+    if (!(new SettingsService())->modules(requireReadable: true)['shop']) return rpcError(-32602, 'Tool unavailable');
+    return ['result' => $base + searchProducts($arguments)];
 }
 
 function handleMessage(mixed $request): ?array
@@ -144,9 +193,29 @@ function handleMessage(mixed $request): ?array
     try {
         return $envelope + dispatchRequest($request->method, $request->params ?? null);
     } catch (Throwable) {
-        return $envelope + rpcError(-32603, 'Catalogue unavailable');
+        return $envelope + rpcError(-32603, 'Requested capability unavailable');
     } finally {
         DatabaseService::releaseIdleConnection();
+    }
+}
+
+if ($command !== 'mcp:stdio') {
+    try {
+        if ($command === 'mcp:tools') {
+            $output = ['tools' => availableTools()];
+        } else {
+            $answer = publicPolicy((object)['key' => $argv[2]]);
+            if (!empty($answer['isError'])) {
+                fwrite(STDERR, $answer['content'][0]['text'] . "\n");
+                exit(2);
+            }
+            $output = $answer['structuredContent'];
+        }
+        echo json_encode($output, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n";
+        exit(0);
+    } catch (Throwable) {
+        fwrite(STDERR, "Public capabilities are unavailable.\n");
+        exit(1);
     }
 }
 

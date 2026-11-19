@@ -405,6 +405,12 @@
             'primary_key' => null,
             'admin_managed' => true,
             'fields' => [
+                // Owner-authored pages occupy pg:<slug> rows in the existing JSON-backed table.
+                'slug' => ['type' => 'string'], 'title' => ['type' => 'string'], 'content' => ['type' => 'text'],
+                'status' => ['type' => 'enum', 'values' => ['draft', 'published']], 'revision' => ['type' => 'string'],
+                // The dedicated header_menu row uses the same JSON-backed settings table.
+                'header_menu' => ['type' => 'array', 'items' => 'string'],
+                'menu_revision' => ['type' => 'integer'],
                 'shipping_mode' => ['type' => 'enum', 'values' => ['free', 'flat']],
                 'flat_rate' => ['type' => 'number'],
                 'currency' => ['type' => 'string'],
@@ -459,6 +465,13 @@
             'admin_managed' => true,
             'fields' => [
                 'id' => ['type' => 'string'],
+                // Dedicated mcp-client-* records use fixed-scope digest grants in the existing JSON store.
+                'client_label' => ['type' => 'string'],
+                'scope' => ['type' => 'string'],
+                'digest' => ['type' => 'string'],
+                'issued_at' => ['type' => 'datetime'],
+                'expires_at' => ['type' => 'datetime'],
+                'revoked_at' => ['type' => 'datetime'],
                 'iv' => ['type' => 'string'],
                 'ciphertext' => ['type' => 'text'],
             ],

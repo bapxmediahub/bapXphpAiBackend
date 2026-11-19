@@ -21,7 +21,7 @@ final class AgentTraceService
         'customer_ticket_lookup' => 'support_tickets',
         'own_ticket_status' => 'support_tickets', 'search_articles' => 'published_blog',
         'coupon_status' => 'coupons', 'public_catalog' => 'visible_products',
-        'public_policy' => 'public_policy',
+        'public_policy' => 'public_policy', 'operator_guide' => 'operator_help',
     ];
 
     public static function toolEvidence(string $name, array $args, array $result): array
@@ -170,14 +170,15 @@ final class AgentTraceService
         if (!in_array($type,['retrieval','tool','model_attempt','action','evaluation','response'],true)) {
             throw new \InvalidArgumentException('Unsupported trace span');
         }
-        if (count(self::$active['spans'])>=128) throw new \RuntimeException('Agent trace step budget exceeded');
+        if (count(self::$active['spans'])>=128) self::stopForBudget('trace_steps', 'trace_step_budget', 'Agent trace step budget exceeded');
         if (!in_array($type,['evaluation','response'],true) && self::remainingMs()<=0) {
-            self::$active['budget']['exhausted']='deadline';throw new \RuntimeException('Agent execution deadline reached');
+            self::stopForBudget('deadline', 'request_deadline', 'Agent execution deadline reached');
         }
         if ($type==='model_attempt') {
             $budget=&self::$active['budget'];
             if($budget['model_calls']>=$budget['max_model_calls'] || $budget['observed_total_tokens']>=$budget['max_observed_tokens']) {
-                $budget['exhausted']='provider_budget';throw new \RuntimeException('Agent provider budget exhausted');
+                $limit = $budget['model_calls'] >= $budget['max_model_calls'] ? 'model_calls' : 'observed_tokens';
+                self::stopForBudget($limit, 'provider_budget', 'Agent provider budget exhausted');
             }
             $budget['model_calls']++;unset($budget);
         }
@@ -199,6 +200,36 @@ final class AgentTraceService
         return $id;
     }
 
+    private static function stopForBudget(string $limit, string $reason, string $message): never {
+        self::$active['budget']['exhausted'] = $limit;
+        self::persist();
+        throw new AgentBudgetException($reason, $message);
+    }
+
+    public static function budgetReason(array $trace): ?string {
+        return match ($trace['budget']['exhausted'] ?? null) {
+            'deadline' => 'request_deadline',
+            'model_calls', 'observed_tokens', 'provider_budget' => 'provider_budget',
+            'trace_steps' => 'trace_step_budget',
+            default => null,
+        };
+    }
+
+    /** Only measured numeric transport metadata can enter audit and conversation records. */
+    public static function attemptTimings(array $attempt): array {
+        $timings = [];
+        if (is_int($attempt['curl_error'] ?? null) && $attempt['curl_error'] >= 0) {
+            $timings['curl_error'] = $attempt['curl_error'];
+        }
+        if (is_int($attempt['timeout_ms'] ?? null) && $attempt['timeout_ms'] > 0) {
+            $timings['timeout_ms'] = $attempt['timeout_ms'];
+        }
+        if (is_numeric($attempt['first_byte_ms'] ?? null) && is_finite((float)$attempt['first_byte_ms']) && $attempt['first_byte_ms'] > 0) {
+            $timings['first_byte_ms'] = round((float)$attempt['first_byte_ms'], 3);
+        }
+        return $timings;
+    }
+
     public static function safeRetrieval(array $entry): array {
         $intent=in_array($entry['intent']??'',['catalogue_search','catalogue_browse','collection','comparison','public_policy','own_order','own_ticket','unknown'],true)?$entry['intent']:'unknown';
         $sources=[];
@@ -218,7 +249,7 @@ final class AgentTraceService
     public static function endSpan(?string $id, string $status, array $attributes = []): void
     {
         if ($id===null || self::$active===null) return;
-        if (!in_array($status,['complete','error','pass','needs_review','produced','empty'],true)) $status='error';
+        if (!in_array($status,['complete','error','pass','needs_review','produced','empty','skipped'],true)) $status='error';
         foreach(self::$active['spans'] as &$span) {
             if($span['span_id']!==$id)continue;
             if($span['ended_at']!==null) return;
@@ -240,14 +271,12 @@ final class AgentTraceService
                 }
             }
             if($span['type']==='model_attempt') {
+                $span += self::attemptTimings($attributes);
                 $u=$span['usage']??[];
                 $total=$u['total_tokens']??(isset($u['input_tokens'],$u['output_tokens'])?$u['input_tokens']+$u['output_tokens']:null);
                 if($total===null)self::$active['budget']['usage_complete']=false;
                 else self::$active['budget']['observed_total_tokens']+=(int)$total;
                 if(($digest=self::validDigest($attributes['request_sha256']??null))!==null)$span['request_sha256']=$digest;
-            }
-            if(isset($attributes['first_byte_ms']) && is_numeric($attributes['first_byte_ms'])) {
-                $span['first_byte_ms']=max(0,round((float)$attributes['first_byte_ms'],3));
             }
             if(isset($attributes['route']) && in_array($attributes['route'],['local','model','fallback','private_account','draft','error','answered','escalated'],true))$span['route']=$attributes['route'];
             break;
@@ -327,9 +356,9 @@ final class AgentTraceService
                 'type'=>'model_attempt',
                 'model'=>mb_substr((string)($attempt['model']??''),0,100),
                 'http_status'=>$status,
-                'status'=>$status>=200 && $status<300 ? 'complete' : 'error',
+                'status'=>$status>=200 && $status<300 && empty($attempt['curl_error']) ? 'complete' : 'error',
                 'duration_ms'=>max(0,(int)round((float)($attempt['total_ms']??0))),
-            ];
+            ] + self::attemptTimings($attempt);
         }
         $spans[]=[
             'span_id'=>bin2hex(random_bytes(8)), 'parent_span_id'=>$traceId,

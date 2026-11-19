@@ -175,6 +175,7 @@ Shape should stay consistent within a component family -- don't mix `sm` and `lg
 
 - **Header:** warm-neutral (`rgba(250,247,240,0.98)`), ~`80px` tall, non-sticky, hairline bottom border (`rgba(209,179,104,0.45)`), compact logo, centered primary nav with a gold active underline, right-aligned account/cart actions.
 - **Navigation:** the linked brand mark and name are the sole home control. Do not repeat a separate Home item in desktop or mobile navigation.
+- **Appearance → Header menu** controls the order and visibility of the six public page slots. The brand, account actions and cart retain their own positions. Without JavaScript the mobile Menu and Close menu links reveal and dismiss the same primary navigation.
 - **Mobile navigation:** scope the collapsible menu styles to the primary header. Account links, blog categories, report controls, and other in-page navigation remain visible and keyboard accessible.
 - **Mobile commerce tray:** On the home, shop, category and product pages, show a fixed maroon tray when the cart contains items. Include the item count and a direct View cart action. The header cart provides access on other pages. Use an 8px radius and stable 56px minimum height; update it without page reload.
 - **Floating support stack:** on desktop, align the support circle directly below the cart tray at the same right edge. On mobile, keep the cart tray above the bottom navigation and keep support clear of both controls.

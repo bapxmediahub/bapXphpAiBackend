@@ -19,7 +19,7 @@ final class SecretService {
             usort($rows, fn(array $a, array $b): int => (($a['id'] ?? '') === 'app_secrets' ? 1 : 0) <=> (($b['id'] ?? '') === 'app_secrets' ? 1 : 0));
             $stored = [];
             foreach ($rows as $r) {
-                if (($r['id'] ?? null) === self::REPORT_GRANT) continue;
+                if (($r['id'] ?? null) === self::REPORT_GRANT || str_starts_with((string)($r['id'] ?? ''), McpClientService::PREFIX)) continue;
                 $stored = array_merge($stored, $this->decodeRecord($r));
             }
             return $this->normalize(array_replace(array_filter($env, fn($value) => $value !== ''), $stored));
@@ -47,7 +47,7 @@ final class SecretService {
             $rows = $db->read('secrets');
             usort($rows, fn(array $a, array $b): int => (($a['id'] ?? '') === 'app_secrets' ? 1 : 0) <=> (($b['id'] ?? '') === 'app_secrets' ? 1 : 0));
             foreach ($rows as $row) {
-                if (($row['id'] ?? null) === self::REPORT_GRANT) continue;
+                if (($row['id'] ?? null) === self::REPORT_GRANT || str_starts_with((string)($row['id'] ?? ''), McpClientService::PREFIX)) continue;
                 $existing = array_merge($existing, $this->decodeRecord($row));
             }
         } catch (\Throwable) {

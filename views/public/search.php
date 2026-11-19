@@ -12,7 +12,7 @@
         <?php if ($total > 0): ?>
             <p class="site-search__count"><?= $total ?> <?= $total === 1 ? 'result' : 'results' ?> for “<?= e($query) ?>”</p>
         <?php endif; ?>
-        <?php $paths = ['Products' => '/product/', 'Articles' => '/blog/', 'Temples' => '/temples/']; ?>
+        <?php $paths = ['Products' => '/product/', 'Articles' => '/blog/', 'Pages' => '/pages/', 'Temples' => '/temples/']; ?>
         <?php foreach ($groups as $heading => $items): ?>
             <?php if (!$items) continue; ?>
             <h2><?= e($heading) ?></h2>

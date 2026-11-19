@@ -38,6 +38,7 @@
                 <button type="button" class="btn btn-sm btn-outline" id="enhance-title">Enhance title</button>
             </div>
             <input type="text" name="title" id="edit-title" required>
+            <div id="be-title-rewrite" class="be-rewrite"></div>
         </div>
         <label>Category
             <select name="category" id="edit-category" style="width:100%">
@@ -113,6 +114,7 @@
             <!-- Preview mode. Same renderer and article styles as the public page. -->
             <div id="be-preview" class="be-surface be-preview blog-post__body" hidden></div>
 
+            <div id="be-content-rewrite" class="be-rewrite"></div>
             <p class="be-hint">Saved as Markdown in <code>content/blog/posts/</code>. Switching modes keeps your content.</p>
         </div>
 
@@ -146,6 +148,18 @@
     </div>
     </div>
 </form>
+
+<template id="be-rewrite-review">
+    <p class="be-rewrite__status" role="status"></p>
+    <div class="be-rewrite__review" hidden>
+        <strong class="be-rewrite__source"></strong>
+        <pre class="be-rewrite__candidate" tabindex="0"></pre>
+        <div class="be-rewrite__actions">
+            <button type="button" class="btn btn-sm btn-outline be-rewrite__apply"></button>
+            <button type="button" class="btn btn-sm btn-ghost be-rewrite__dismiss">Dismiss</button>
+        </div>
+    </div>
+</template>
 
 <div class="table-wrap admin-blog-list" role="region" aria-label="Blog posts" tabindex="0">
 <table style="width:100%;background:var(--color-white);border-radius:var(--radius-md);border:1px solid var(--color-border)">
@@ -208,6 +222,12 @@ function generateDraft(){var f=document.getElementById('blog-form');var fd=new F
 .be-recovery p{margin:0 0 12px;color:var(--color-text-muted)}
 .be-draft-status{margin:0}
 .be-draft-status:not(:empty){margin-bottom:12px;padding:8px 12px;border-inline-start:3px solid var(--color-border);font-size:.875rem}
+.be-rewrite__status{margin:0;font-size:.875rem}
+.be-rewrite__status:not(:empty){margin:8px 0}
+.be-rewrite__review{min-width:0;padding:10px;border:1px solid var(--color-border);border-radius:8px}
+.be-rewrite__candidate{max-height:15rem;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;margin:.5rem 0;font:inherit}
+.be-rewrite__actions{display:flex;flex-wrap:wrap;gap:8px}
+.be-rewrite__actions button{min-height:44px}
 .be-recovery__actions,.be-title-field__label{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
 .be-title-field__label{justify-content:space-between;margin-bottom:4px}
 #blog-form{scroll-margin-block-start:150px}
@@ -245,6 +265,7 @@ function generateDraft(){var f=document.getElementById('blog-form');var fd=new F
 .be-media__item img{width:100%;height:78px;object-fit:cover;display:block}
 .be-media__item:hover{border-color:var(--color-gold)}
 </style>
+<script src="/assets/blog-enhancement.js?v=<?= filemtime(app_path('assets/blog-enhancement.js')) ?>"></script>
 <script>
 (function () {
     var doc = document.getElementById('be-document');
@@ -477,40 +498,20 @@ function generateDraft(){var f=document.getElementById('blog-form');var fd=new F
         }
     });
 
-    // ---- enhance (separate per field) --------------------------------------
-    async function enhance(url, payload, btn) {
-        var label = btn.textContent; btn.disabled = true; btn.textContent = 'Working…';
-        try {
-            payload._csrf = document.querySelector('input[name="_csrf"]').value;
-            var r = await fetch(url, {method:'POST', body:new URLSearchParams(payload), credentials:'same-origin'});
-            var d = await r.json().catch(function(){return {error:'Unreadable response.'};});
-            if (d.error) { showToast && showToast(d.error,'error'); return null; }
-            return d;
-        } catch {
-            showToast('Could not reach the enhancement service. Your draft is still in the editor.', 'error');
-            return null;
-        } finally { btn.disabled = false; btn.textContent = label; }
+    function articleText() {
+        sync(mode);
+        return md.value;
     }
-    document.getElementById('enhance-title').addEventListener('click', async function(){
-        var t = document.getElementById('edit-title');
-        var generation = editorGeneration, title = t.value;
-        var d = await enhance('/admin/blog/enhance-title', {title: title}, this);
-        if (editorIsCurrent(generation) && t.value === title && d && d.title) { t.value = d.title; t.dispatchEvent(new Event('input', {bubbles: true})); }
-    });
-    document.getElementById('enhance-content').addEventListener('click', async function(){
-        sync(mode);
-        var generation = editorGeneration, content = md.value;
-        var d = await enhance('/admin/blog/enhance-content', {content: content}, this);
-        if (!editorIsCurrent(generation)) return;
-        sync(mode);
-        if (md.value === content && d && d.content) {
-            md.value = d.content;
-            documentDirty = false;
-            md.dispatchEvent(new Event('input', {bubbles: true}));
-            if (mode === 'document') doc.innerHTML = mdToHtml(md.value);
-            if (mode === 'preview') pv.innerHTML = mdToHtml(md.value);
-        }
-    });
+    function applyArticle(text) {
+        window.beLoadMarkdown(text);
+        md.dispatchEvent(new Event('input', {bubbles: true}));
+    }
+    var titleInput = document.getElementById('edit-title');
+    window.bindBlogEnhancement(form, 'title', function(){ return titleInput.value; }, function(text){
+        titleInput.value = text;
+        titleInput.dispatchEvent(new Event('input', {bubbles:true}));
+    }, function(){ return editorGeneration; });
+    window.bindBlogEnhancement(form, 'content', articleText, applyArticle, function(){ return editorGeneration; });
 
     // Seed document mode when an existing post is loaded into the form.
     window.beLoadMarkdown = function (markdown) {

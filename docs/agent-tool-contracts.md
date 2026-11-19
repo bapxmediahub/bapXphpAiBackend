@@ -130,13 +130,13 @@ Source: `app/Services/EnterpriseToolRegistry.php`; instruction version 2.
 
 Private runtime Markdown is not duplicated into developer documentation.
 
-- `.bapX/enterpriseagent.md` — SHA-256 `dfaee581e15f2479fb9e746b8c3f1ff5c96b14a269fb8ec294454e19e75d9617`
+- `.bapX/enterpriseagent.md` — SHA-256 `ebfdc4bcf95f838da9b7b5a05ab49311c1b0b18cd4ebb4703413fe1918ba6298`
 - `.bapX/bapXcl/skill.md` — SHA-256 `4acade6d2f5dfd9ae0926807364315b9400efabcad5b55deabd33254f7f64f5d`
 - `.bapX/bapXcl/support/catalog.md` — SHA-256 `0b85f5605a1eee35dcb09a147d8905059508151be9d46465d226a9b0816cc9a6`
 - `.bapX/bapXcl/support/policy-and-tickets.md` — SHA-256 `4d7cefdc76d5f24b56be31848b568147bb2ce3af8bfcbd65081a93c5a9740892`
 - `.bapX/bapXcl/enterprise/reporting.md` — SHA-256 `b337d17b8810e0d76126ac0d5c74607dfe1a6099e22fb6fbf9bfae4cb33ed7fe`
 
-Bundle SHA-256: `91fe5340b08d1fac9f451fa3a10e5059a72e03d1d1b92526c99d2f3519895376`.
+Bundle SHA-256: `cc12f61810ac31f045a4e7f50738ef67fe4a1bf93ac87509399b19668c0d28fa`.
 
 ### `find_order`
 
@@ -316,6 +316,44 @@ Search published blog and help articles by keyword. Returns titles and their pat
     },
     "required": [
         "query"
+    ]
+}
+```
+
+### `operator_guide`
+
+Read the official owner instructions for a task in this store. Use this for how-to questions about the admin screens. For current business figures, use the appropriate business lookup.
+
+**Access:** Authenticated admin, enforced server-side.
+
+```json
+{
+    "type": "object",
+    "properties": {
+        "topic": {
+            "type": "string",
+            "enum": [
+                "getting-started",
+                "catalogue",
+                "orders-shipping",
+                "reports",
+                "support-tickets",
+                "enterprise-agent",
+                "agent-monitoring",
+                "blog-publishing",
+                "media",
+                "customers",
+                "email",
+                "settings"
+            ]
+        },
+        "section": {
+            "type": "string",
+            "description": "Optional exact heading returned in sections by a previous lookup of this guide."
+        }
+    },
+    "required": [
+        "topic"
     ]
 }
 ```

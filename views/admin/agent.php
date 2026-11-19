@@ -20,7 +20,7 @@
     <div id="agent-messages" class="agent-messages" role="log" aria-live="polite" aria-label="Conversation"></div>
 
     <div class="agent-suggestions" id="agent-suggestions">
-        <?php foreach (['Which products sell best?', 'What is the revenue this month?', 'How many open support tickets are there?', 'Summarize GST this month'] as $__s): ?>
+        <?php foreach (['Which products sell best?', 'What is the revenue this month?', 'How many open support tickets are there?', 'How do I draft a blog post?'] as $__s): ?>
             <button type="button" class="agent-suggestion" data-q="<?= e($__s) ?>"><?= e($__s) ?></button>
         <?php endforeach; ?>
     </div>
@@ -158,6 +158,11 @@
     const historyList = document.getElementById('agent-history-list');
     const historyStatus = document.getElementById('agent-history-status');
     let conversationId = null;
+    const drafts = new Map();
+    function rememberDraft() {
+        if (!conversationId) return;
+        if (input.value) drafts.set(conversationId, input.value); else drafts.delete(conversationId);
+    }
     let historyRequest = null;
     let transcriptRequest = null;
 
@@ -233,11 +238,24 @@
             const data = await response.json();
             if (signal.aborted) return;
             if (data.conversation_id !== id || !Array.isArray(data.turns)) throw new Error('Invalid chat history');
+            if (conversationId !== id) {
+                rememberDraft();
+                input.value = drafts.get(id) || '';
+                closeMentions();
+                document.getElementById('agent-attachment-status').textContent = '';
+                autoGrow();
+            }
             messages.replaceChildren();
             conversationId = id;
             for (const turn of data.turns) {
                 addRow('user', escapeHtml(String(turn.question || '')).replace(/\n/g,'<br>'));
-                addRow('bot', renderMarkdown(String(turn.answer || '')));
+                if (turn.outcome === 'error') {
+                    const bubble = addRow('bot', '');
+                    bubble.className = 'agent-bubble agent-bubble--error';
+                    showRequestError(bubble, turn.answer, id, turn.turn_id);
+                } else {
+                    addRow('bot', renderMarkdown(String(turn.answer || '')));
+                }
             }
             clear.hidden = false;
             suggestions.style.display = 'none';
@@ -271,6 +289,7 @@
         if (input.disabled) return;
         closeMentions();
         document.getElementById('agent-attachment-status').textContent = '';
+        rememberDraft();
         messages.replaceChildren();
         conversationId = null;
         hideHistory();
@@ -302,7 +321,9 @@
             if (ul) { if (list !== 'ul') { if (list) out += '</' + list + '>'; out += '<ul>'; list = 'ul'; } out += '<li>' + ul[1] + '</li>'; continue; }
             if (ol) { if (list !== 'ol') { if (list) out += '</' + list + '>'; out += '<ol>'; list = 'ol'; } out += '<li>' + ol[1] + '</li>'; continue; }
             if (list) { out += '</' + list + '>'; list = null; }
-            if (line.trim() === '') { out += ''; continue; }
+            if (line.trim() === '') continue;
+            const heading = line.match(/^#{1,3}\s+(.+)$/);
+            if (heading) { out += '<h3>' + heading[1] + '</h3>'; continue; }
             out += '<p>' + line + '</p>';
         }
         if (list) out += '</' + list + '>';
@@ -323,6 +344,17 @@
         messages.appendChild(row);
         messages.scrollTop = messages.scrollHeight;
         return bubble;
+    }
+
+    function showRequestError(container, error, chatId, turnId) {
+        container.textContent = error || 'The request failed.';
+        if (!/^[a-f0-9]{32}$/.test(chatId || '') || !/^[a-f0-9]{32}$/.test(turnId || '')) return;
+        const line = document.createElement('p');
+        const review = document.createElement('a');
+        review.href = '/admin/agent/review/' + chatId + '?turn=' + turnId;
+        review.textContent = 'Review this request';
+        line.appendChild(review);
+        container.appendChild(line);
     }
 
     function appendRunMeta(bubble, run) {
@@ -580,7 +612,7 @@
             if (!resp.ok || data.error) {
                 failed = true;
                 thinking.className = 'agent-bubble agent-bubble--error';
-                response.textContent = data.error || 'The request failed. Please try again.';
+                showRequestError(response, data.error, data.conversation_id, data.turn_id);
             } else if (data.draft) {
                 response.appendChild(buildDraftForm(data.draft));
             } else {
@@ -603,12 +635,13 @@
         } catch (err) {
             failed = true;
             thinking.className = 'agent-bubble agent-bubble--error';
-            response.textContent = 'Could not reach the server. Check your connection and try again.';
+            response.textContent = 'The response was interrupted. Check History before sending the question again.';
         } finally {
             clearTimeout(timeout);
             progress.finish(failed);
         }
 
+        if (failed && !input.value) { input.value = msg; autoGrow(); }
         uploadBtn.disabled = false;
         input.disabled = false; submit.disabled = false; clear.disabled = false; historyToggle.disabled = false;
         input.focus();

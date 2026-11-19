@@ -9,8 +9,9 @@
 <meta name="robots" content="<?= e($metaRobots ?? 'index, follow') ?>">
 <?php $__seoKeywords = $seo['keywords'] ?? ''; if ($__seoKeywords !== ''): ?><meta name="keywords" content="<?= e($__seoKeywords) ?>"><?php endif; ?>
 <?php
-$__settings = (new \App\Services\SettingsService())->public();
-$__modules = (new \App\Services\SettingsService())->modules();
+$__settingsService = new \App\Services\SettingsService();
+$__settings = $__settingsService->public();
+$__modules = $__settingsService->modules();
 $__logo = $__settings['logo_url'] ?? '/assets/images/logo-small.jpeg';
 $__favicon = $__settings['favicon_url'] ?? '/assets/images/sps-favicon.svg';
 $__faviconMime = str_contains($__favicon,'.svg') ? 'image/svg+xml' : 'image/png';
@@ -59,6 +60,9 @@ nav:where(#primary-nav){display:flex;gap:var(--space-lg);font-size:0;justify-con
 nav:where(#primary-nav) a{position:relative;font-weight:500;color:var(--color-ink);padding:var(--space-xs) 0;font-size:0.9rem;text-decoration:none}
 nav:where(#primary-nav) a:hover,nav:where(#primary-nav) a[aria-current="page"]{color:var(--color-ink)}
 nav:where(#primary-nav) a[aria-current="page"]::after{position:absolute;right:0;bottom:-7px;left:0;height:2px;border-radius:999px;background:var(--color-gold);content:""}
+@media(min-width:861px){.site-header{grid-template-columns:auto minmax(0,1fr) auto}.site-header #primary-nav{min-inline-size:0;flex-wrap:wrap;row-gap:var(--space-xs)}}
+.header-page-title{display:block;max-inline-size:14ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:860px){.header-page-title{max-inline-size:100%;white-space:normal;overflow-wrap:anywhere}}
 .nav-dropdown{position:relative;display:inline-flex}
 .nav-dropdown__trigger{padding-right:4px!important;cursor:default}
 .nav-dropdown__arrow{font-size:0.65rem;margin-left:2px;opacity:0.6}
@@ -292,35 +296,56 @@ echo $__googleTags->gtagCode();
 <script src="/assets/site-motion.js?v=<?= filemtime(__DIR__ . '/../../assets/site-motion.js') ?>" defer></script>
 <link rel="stylesheet" href="/assets/css/page-actions.css?v=<?= filemtime(app_path('assets/css/page-actions.css')) ?>">
 <script src="/assets/page-actions.js?v=<?= filemtime(app_path('assets/page-actions.js')) ?>" defer></script>
+<noscript><style>
+.site-header>noscript,#primary-nav>noscript,.nojs-menu-open,.nojs-menu-close{display:none}
+@media(max-width:860px){
+    .site-header button.menu-toggle{display:none}
+    .site-header>noscript{display:block;order:3}
+    #primary-nav>noscript{display:contents}
+    .site-header .nojs-menu-open,#primary-nav .nojs-menu-close{display:inline-flex;align-items:center;min-height:44px;padding-inline:12px}
+    .site-header #primary-nav:target{display:flex;max-height:75vh;overflow-y:auto}
+}
+</style></noscript>
 </head>
 <body>
 <?php $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/'; ?>
 <?php $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
-<header class="site-header" id="site-header">
+<header class="site-header" id="site-header" tabindex="-1">
     <a href="/" class="brand"><img src="<?= e($__logo) ?>" width="52" height="52" alt="Sri Panchami Spiritual logo"><span>Sri Panchami Spiritual</span></a>
-    <button class="menu-toggle" type="button" aria-expanded="false" aria-label="Menu">
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Menu">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
-<?php try { $__blogCats = (new \App\Services\BlogService())->categories(); } catch (\Throwable $e) { $__blogCats = []; } ?>
-    <nav id="primary-nav">
-        <?php if ($__modules['shop']): ?>
-        <a href="/shop"<?= str_starts_with($currentPath, '/shop') ? ' aria-current="page"' : '' ?>>Shop</a>
-        <?php endif; ?>
-        <a href="/temples"<?= str_starts_with($currentPath, '/temples') ? ' aria-current="page"' : '' ?>>Temples</a>
-        <?php if ($__modules['blog']): ?>
-        <div class="nav-dropdown">
-            <a href="/blog" class="nav-dropdown__trigger"<?= str_starts_with($currentPath, '/blog') ? ' aria-current="page"' : '' ?>>Blog <span class="nav-dropdown__arrow">▾</span></a>
-            <div class="nav-dropdown__menu">
-                <a href="/blog">All Posts</a>
-                <?php foreach ($__blogCats as $__cat): ?>
-                <a href="/blog/category/<?= e($__cat['slug'] ?? '') ?>"><?= e($__cat['name'] ?? '') ?></a>
-                <?php endforeach; ?>
-            </div>
-        </div>
-        <?php endif; ?>
-        <a href="/search"<?= $currentPath === '/search' ? ' aria-current="page"' : '' ?>>Search</a>
-        <a href="/about"<?= str_starts_with($currentPath, '/about') ? ' aria-current="page"' : '' ?>>About SPS</a>
-        <a href="/contact"<?= str_starts_with($currentPath, '/contact') ? ' aria-current="page"' : '' ?>>Contact</a>
+    <?php
+    $__blogCats = [];
+    if ($__modules['blog']) {
+        try { $__blogCats = (new \App\Services\BlogService())->categories(); } catch (\Throwable) {}
+    }
+    ?>
+    <noscript><a class="nojs-menu-open" href="#primary-nav">Menu</a></noscript>
+    <nav id="primary-nav" aria-label="Main navigation" tabindex="-1">
+        <noscript><a class="nojs-menu-close" href="#site-header">Close menu</a></noscript>
+        <?php foreach ($__settingsService->publicHeaderMenu() as $linkId=>$link): ?>
+            <?php $active = $currentPath === $link['path'] || str_starts_with($currentPath, $link['path'] . '/'); ?>
+            <?php if ($linkId === 'blog'): ?>
+                <div class="nav-dropdown">
+                    <a href="/blog" class="nav-dropdown__trigger"<?= $active ? ' aria-current="page"' : '' ?>><?= e($link['label']) ?> <span class="nav-dropdown__arrow">▾</span></a>
+                    <div class="nav-dropdown__menu">
+                        <a href="/blog">All Posts</a>
+                        <?php foreach ($__blogCats as $__cat): ?>
+                            <a href="/blog/category/<?= e($__cat['slug'] ?? '') ?>"><?= e($__cat['name'] ?? '') ?></a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php else: ?>
+                <a href="<?= e($link['path']) ?>"<?= $active ? ' aria-current="page"' : '' ?>>
+                    <?php if (str_starts_with($linkId, 'pg:')): ?>
+                        <span class="header-page-title" title="<?= e($link['label']) ?>"><?= e($link['label']) ?></span>
+                    <?php else: ?>
+                        <?= e($link['label']) ?>
+                    <?php endif; ?>
+                </a>
+            <?php endif; ?>
+        <?php endforeach; ?>
         <?php if(!empty($_SESSION['user'])): ?>
             <a href="/account/dashboard"<?= str_starts_with($currentPath, '/account/dashboard') ? ' aria-current="page"' : '' ?>>Dashboard</a>
             <a href="/logout">Logout</a>

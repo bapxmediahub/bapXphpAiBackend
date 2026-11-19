@@ -123,7 +123,7 @@ final class AgentConversationService
                 'model' => substr((string)($attempt['model'] ?? ''), 0, 100),
                 'http_status' => (int)($attempt['status'] ?? 0),
                 'duration_ms' => max(0, (int)round((float)($attempt['total_ms'] ?? 0))),
-            ], array_slice($attempts, 0, 9))),
+            ] + AgentTraceService::attemptTimings($attempt), array_slice($attempts, 0, 9))),
         ];
         $turn['trace'] = AgentTraceService::build($traceId,$outcome,$tools,$attempts,$evaluation,$answer,$retrieval);
         if ($ticketId !== null) $turn['ticket_id'] = $ticketId;
@@ -593,7 +593,7 @@ final class AgentConversationService
             foreach (array_slice((array)($trace['spans'] ?? []), 0, 128) as $span) {
                 if (!is_array($span)) continue;
                 $traceSteps[] = array_intersect_key($span, array_flip([
-                    'sequence','type','name','status','duration_ms','started_at','ended_at','http_status','result_count'
+                    'sequence','type','name','status','duration_ms','started_at','ended_at','http_status','result_count','curl_error','timeout_ms','first_byte_ms'
                 ]));
             }
             $recent[] = [
@@ -611,6 +611,7 @@ final class AgentConversationService
                 'trace_state' => is_array($pending) ? 'unfinished' : 'completed',
                 'trace_ordering' => (string)($trace['ordering'] ?? 'unavailable'),
                 'trace_steps' => $traceSteps,
+                'budget_stop' => AgentTraceService::budgetReason($trace),
                 'failed_tool_runs' => self::failedToolRuns($document['turns'] ?? []),
                 'resolution_status' => in_array($document['resolution_status'] ?? '', [
                     'awaiting_feedback','confirmed_resolved','needs_followup','escalated'

@@ -65,22 +65,18 @@
                     <span><?= e(substr((string)($media['created_at'] ?? ''), 0, 10)) ?></span>
                     <code><?= e($media['url'] ?? $media['path']) ?></code>
                     <?php if (\App\Services\MediaService::canDeleteRecord($media)): ?>
-                        <?php if (!empty($media['used_in'])): ?>
-                            <small>Remove existing content references before deleting this upload.</small>
-                        <?php else: ?>
-                            <form method="post" action="/admin/media/delete"
-                                  onsubmit="return confirm('Delete this uploaded image permanently? This cannot be undone.');">
-                                <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
-                                <input type="hidden" name="id" value="<?= e($media['id']) ?>">
-                                <button class="btn btn-sm admin-media-delete" type="submit">Delete upload</button>
-                            </form>
-                        <?php endif; ?>
+                        <form method="post" action="/admin/media/delete"
+                              onsubmit="return confirm('Delete this uploaded image permanently? This cannot be undone.');">
+                            <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+                            <input type="hidden" name="id" value="<?= e($media['id']) ?>">
+                            <button class="btn btn-sm admin-media-delete" type="submit">Delete upload</button>
+                        </form>
                     <?php endif; ?>
-                    <?php if(!empty($media['used_in'])): ?>
+                    <?php if(!empty($media['used_in']) && is_array($media['used_in'])): ?>
                         <details style="font-size:0.85rem;margin-top:4px;">
-                            <summary style="cursor:pointer;color:var(--c-accent);">Used in <?= count($media['used_in']) ?> place(s)</summary>
+                            <summary style="cursor:pointer;color:var(--c-accent);">Upload history (<?= count($media['used_in']) ?>)</summary>
                             <ul style="margin:4px 0 0 12px;padding:0;">
-                                <?php foreach($media['used_in'] as $u): ?>
+                                <?php foreach($media['used_in'] as $u): if (!is_array($u)) continue; ?>
                                     <li><a href="/admin/<?= e($u['type'] ?? '') ?>" style="text-decoration:none;"><?= e($u['name'] ?? $u['id'] ?? '') ?></a></li>
                                 <?php endforeach; ?>
                             </ul>

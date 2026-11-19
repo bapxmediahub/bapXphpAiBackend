@@ -69,8 +69,7 @@ Changed saves through BlogService, including visibility changes and restores, ke
 previous Markdown and frontmatter in up to 10 private `.rev` files beside that
 article. Their extension excludes them from generated Markdown indexes. Preserve
 these ignored files with the posts when backing up or deploying. Deleting an article
-clears its history. New articles start with an empty history. File edits made outside
-BlogService, including interactive CLI blog/doc writes, bypass this history.
+clears its history. New articles start with an empty history. The editor and interactive writing CLI use the same save service. Direct filesystem edits bypass this history.
 Restoring requires the current article revision shown at preview time and checks
 the archived content hash. It restores the saved publication settings and never
 enqueues a newsletter.

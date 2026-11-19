@@ -45,12 +45,16 @@ jobs:
           node-version: '22'
       - name: Validate reviewer metadata safety and deduplication
         run: node --test tests/review-automation.test.cjs
+      - name: Verify guarded deletion and stale upload history
+        run: php tests/media-delete-integration.php
       - name: Validate mixed storefront search results and module visibility
         run: php tests/storefront-search.php
-      - name: Exercise the agent composer and saved chat history in Chrome
+      - name: Exercise the owner composer, installed admin app and public header editing in Chrome
         run: |
-          npm install --prefix "$RUNNER_TEMP/agent-browser" --no-audit --no-fund --ignore-scripts playwright@1.62.1
-          NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/agent-history-browser.cjs tests/admin-pwa-browser.cjs
+          npm install --prefix "$RUNNER_TEMP/agent-browser" --no-audit --no-fund --ignore-scripts playwright@1.62.1 @modelcontextprotocol/client@2.4.0
+          NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/agent-history-browser.cjs tests/admin-pwa-browser.cjs tests/header-menu-browser.cjs
+      - name: Verify the public tools with the official MCP client
+        run: node tests/catalogue-mcp-interop.cjs "$RUNNER_TEMP/agent-browser"
       - name: Validate public catalogue MCP scope and framing
         run: node --test tests/catalogue-mcp.test.cjs
       - name: Validate progressive motion policy and native-scroll bounds
@@ -59,6 +63,8 @@ jobs:
         run: php tests/documentation-review.php
       - name: Validate code, tests, maps, and routes
         run: ./bapXphp ci
+      - name: Exercise provider transport, bounded failover and tool call continuation on loopback
+        run: php tests/ai-provider-transport.php
       - name: Gate deterministic agent fixture regressions without model APIs
         run: php cli/agent-eval.php
       - name: Verify PHP, MySQL and paged admin records against the isolated CI database
@@ -73,7 +79,7 @@ jobs:
         run: |
           php cli/runtime-check.php --json --strict
           php tests/admin-list-pagination.php
-          node --test tests/catalogue-mcp-mysql.test.cjs
+          node --test tests/catalogue-mcp-mysql.test.cjs tests/mcp-client-access.test.cjs
       - name: Test reporting grant storage and disconnect against isolated MySQL
         run: php tests/google-reporting-storage.php
       - name: Test concurrent verified payments against isolated MySQL

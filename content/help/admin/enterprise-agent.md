@@ -2,6 +2,8 @@
 
 Open Enterprise Agent → Chat. Name the business fact and time period you need, such as paid sales for a specific date range or support-ticket counts. The agent uses named read-only tools and current permitted records. An unavailable query is different from a valid zero result.
 
+For instructions, type **/help** to see available topics or **/help blog-publishing** to open the article workflow in chat. The answer links to the same owner guide you can read in Help.
+
 ## Attach a reference
 
 Use the paperclip to upload an image to Media and attach it to the message you are writing. For an existing image, page or article, type `@` and part of its name. Choose a suggestion with the arrow keys and Enter. Escape dismisses the list. Review the attachment names before sending.

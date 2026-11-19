@@ -8,11 +8,18 @@ if (($payload['password']??'')!=='sps_fixture_only_password') {
 $path=(string)getenv('BAPX_MEDIA_FIXTURE_STATE');
 $data=json_decode((string)file_get_contents($path),true)?:[];
 if (isset($payload['query'])) {
-    if (!preg_match('/^SELECT \* FROM (media_files|products|temples|categories|settings)$/D',(string)$payload['query'],$m)) {
+    $query=(string)$payload['query'];
+    if ($query === "SELECT id, _data FROM settings WHERE id NOT LIKE 'pg:%'") {
+        $records=array_filter($data['collections']['settings']??[], static fn($r)=>!str_starts_with($r['id'],'pg:'));
+    } elseif (preg_match('/^SELECT \* FROM (media_files|products|temples|categories|settings)$/D',$query,$m)) {
+        $records=$data['collections'][$m[1]]??[];
+    } else {
         http_response_code(400);echo json_encode(['success'=>false,'error'=>'fixture query not allowed']);exit;
     }
-    $rows=array_map(static fn(array $r):array=>['id'=>$r['id']??'', '_data'=>json_encode($r,JSON_THROW_ON_ERROR)],
-        $data['collections'][$m[1]]??[]);
+    if (isset($m[1]) && in_array($m[1], $data['reject_read_collections'] ?? [], true)) {
+        http_response_code(503); echo json_encode(['success'=>false, 'error'=>'fixture read unavailable']); exit;
+    }
+    $rows=array_values(array_map(static fn(array $r):array=>['id'=>$r['id']??'', '_data'=>json_encode($r,JSON_THROW_ON_ERROR)], $records));
     echo json_encode(['success'=>true,'data'=>$rows],JSON_THROW_ON_ERROR);exit;
 }
 if (($payload['action']??'')==='delete' && ($payload['collection']??'')==='media_files') {
