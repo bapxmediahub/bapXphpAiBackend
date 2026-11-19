@@ -60,9 +60,8 @@
     --gradient-gold: var(--color-maroon);
     --gradient-divine: var(--color-bg-alt);
 
-    /* Elevation scale -- tonal-first, shadow-second (Material 3 style):
-       each step is a deliberate, restrained jump used for exactly one
-       purpose. Never stack more than one step on the same element. */
+    /* Shared elevation defaults. Choose a shadow that makes the
+       component's position and controls easier to distinguish. */
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);      /* resting cards, inputs */
     --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.12);      /* raised buttons, hovered product cards */
     --shadow-lg: 0 6px 20px rgba(34, 12, 8, 0.14);   /* hovered astrologer / feature cards */
@@ -1050,8 +1049,11 @@ nav:where(#primary-nav) a:hover { color: var(--color-maroon); }
     justify-content: space-between;
     gap: 12px;
     margin-bottom: clamp(16px, 3vw, 32px);
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--color-border);
+    padding: 14px 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-white);
+    box-shadow: var(--shadow-sm);
 }
 .cart-page__header h1 {
     margin: 0;
@@ -1089,6 +1091,7 @@ nav:where(#primary-nav) a:hover { color: var(--color-maroon); }
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-white);
+    box-shadow: var(--shadow-md);
 }
 .cart-item__body {
     display: grid;
@@ -1129,6 +1132,7 @@ nav:where(#primary-nav) a:hover { color: var(--color-maroon); }
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-white);
+    box-shadow: var(--shadow-lg);
     position: sticky;
     top: 100px;
 }
@@ -1147,6 +1151,35 @@ nav:where(#primary-nav) a:hover { color: var(--color-maroon); }
     margin-top: 4px;
     color: var(--color-maroon);
     font-size: .88rem;
+}
+.cart-page .cart-summary__row--total {
+    padding: 12px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: var(--color-bg-alt);
+}
+.cart-checkout-dock { display: none; }
+@media (max-width: 767px) {
+    .cart-checkout-dock:not([hidden]) {
+        position: fixed;
+        z-index: 998;
+        inset-inline: 12px 72px;
+        bottom: calc(var(--cart-bottom-nav, 70px) + 8px);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 8px 10px 8px 14px;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        background: var(--color-white);
+        box-shadow: var(--shadow-lg);
+    }
+    .cart-checkout-dock span, .cart-checkout-dock strong { display: block; }
+    .cart-checkout-dock > div span { color: var(--color-text-muted); font-size: .72rem; }
+    .cart-checkout-dock strong { color: var(--color-maroon); font-size: 1.1rem; overflow-wrap: anywhere; }
+    .cart-checkout-dock .btn { min-height: 44px; gap: 6px; padding-inline: 10px; }
+    :root:has(#bottom-nav):has(.cart-checkout-dock:not([hidden])) { scroll-padding-bottom: calc(var(--cart-bottom-nav, 70px) + 94px); }
 }
 .cart-update-status {
     position: absolute;

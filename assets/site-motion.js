@@ -89,7 +89,17 @@
         var productPhotoSelector = '.home-product-card .product-card__image img';
         var sectionHeadingSelector = 'main h1,main section > h2,main .section-header > :is(h1,h2),main [data-page-section]:is(h1,h2,h3)';
         var panelSelector = 'main [data-section-motion]';
+        var nativeSections = surface === 'public' && win.CSS?.supports('animation-timeline', 'view(block 0px)')
+            && win.CSS.supports('animation-range', 'entry 0% cover 38%');
         var candidates = doc.querySelectorAll(panelSelector + ',' + sectionHeadingSelector + ',' + productPhotoSelector + ',.product-card:not(.home-product-card),.blog-card,.temple-card,.auth-card,.section-title,.page-title,.admin-stat,.report-kpi,.admin-card > h2,.enterprise-chat__intro');
+        var entranceTargets = Array.from(candidates).filter(function (target) {
+            if (!nativeSections || target.closest('a')) return true;
+            if (target.matches(panelSelector) || (target.matches(sectionHeadingSelector) && !target.closest(panelSelector))) {
+                target.classList.add('sps-section-scroll');
+                return false;
+            }
+            return !target.closest(panelSelector);
+        });
         if (typeof win.IntersectionObserver === 'function') {
             var threshold = 0.12;
             var observer = new win.IntersectionObserver(function (entries) {
@@ -106,7 +116,7 @@
                     else if (!target.closest('a')) play(target, stagger++);
                 });
             }, { threshold: threshold, rootMargin: '0px 0px -24px 0px' });
-            candidates.forEach(function (el) { observer.observe(el); });
+            entranceTargets.forEach(function (el) { observer.observe(el); });
         }
 
         // State changes are owned by existing controls, not scripted illustration clicks.

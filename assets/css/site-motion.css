@@ -66,8 +66,21 @@ html .reveal { opacity: 1; transform: none; }
         bottom: calc(82px + env(safe-area-inset-bottom));
     }
 }
+@supports (animation-timeline: view(block 0px)) and (animation-range: entry 0% cover 38%) {
+    @keyframes sps-section-entry {
+        from { opacity: .82; transform: translateY(var(--sps-section-offset, 20px)); }
+        to { opacity: 1; transform: none; }
+    }
+    .sps-section-scroll[data-section-motion] { --sps-section-offset: 28px; }
+    html[data-sps-motion="enabled"] .sps-section-scroll:not(:focus-within) {
+        animation: sps-section-entry linear both;
+        animation-timeline: view(block 0px);
+        animation-range: entry 0% cover 38%;
+    }
+}
 @media (prefers-reduced-motion:reduce) {
     html, .agent-messages { scroll-behavior: auto !important; }
+    html[data-sps-motion="enabled"] .sps-section-scroll { animation: none !important; }
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
     .product-card:hover, .product-card.revealed:hover, .product-card:hover .product-card__image img,
     .sps-return-top:hover, :where(.btn,.agent-suggestion):active:not(:disabled) { transform: none !important; }

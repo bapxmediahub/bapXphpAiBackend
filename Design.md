@@ -141,21 +141,20 @@ Keep the existing PHP templates, routes, forms, and hosted MySQL-backed behavior
 
 ## Elevation & Depth
 
-Depth is used sparingly and tonally-first, the way Material 3 treats elevation: a surface reads as "raised" primarily because it's a different, lighter tone than the canvas (white card on warm surface), with a soft shadow as the secondary cue -- not a spotlight effect.
+Use elevation to show which surfaces belong together and which actions deserve
+attention. Combine the existing warm canvas and borders with a visible, soft
+shadow when it helps readers distinguish foreground controls.
 
-Four shadow steps exist (`--shadow-sm/md/lg/xl` in `band.css`), each with exactly one job:
-
-| Step | Use |
+| Token | Typical use |
 |---|---|
-| `sm` | Resting state for cards and inputs |
-| `md` | Raised buttons; hovered product cards |
-| `lg` | Hovered feature/value cards |
-| `xl` | Modals, drawers, popovers only |
+| `--shadow-sm` | Quiet panels, toolbars, and resting controls |
+| `--shadow-md` | Cart items and other distinct working cards |
+| `--shadow-lg` | Order summaries and floating checkout actions |
+| `--shadow-xl` | Larger overlays such as drawers and dialogs |
 
-Rules:
-- Never stack two shadow steps on one element.
-- A hover state may move exactly one step up the scale (`sm` → `md`, or `sm` → `lg`), never two.
-- No glow, no colored shadows, no blur-heavy "spotlight" effects.
+Treat these as starting points. A component can use a stronger elevation or a
+tuned shadow if it clarifies hierarchy in the rendered page. Preserve readable
+contrast and focus rings, and check that the effect has room to render.
 
 ## Shapes
 
@@ -181,12 +180,12 @@ Shape should stay consistent within a component family -- don't mix `sm` and `lg
 - **Floating support stack:** on desktop, align the support circle directly below the cart tray at the same right edge. On mobile, keep the cart tray above the bottom navigation and keep support clear of both controls.
 - **Contact:** put direct support links and the message form in the first screen where space allows. Show required and optional fields, preserve entered values on validation errors, and move focus to inline feedback. The page provides support through its own controls.
 - **Editorial media:** every blog post uses one intentional 16:9 image for both its listing thumbnail and article hero. UI guides use a legible screenshot of the exact page, cropped around the relevant interface rather than a decorative stock image, and link the represented page below the article.
-- **Buttons (`button-primary` / `button-secondary`):** `48px` minimum height, `8px` radius, no uppercase, no letter-spacing. Primary is solid maroon with a gold hover overlay; hover moves from `shadow-md` to `shadow-lg` and lifts 2px, no more. Secondary is gold-on-maroon-text. Hover states never shift layout.
+- **Buttons (`button-primary` / `button-secondary`):** `48px` minimum height, `8px` radius, no uppercase, no letter-spacing. Primary is solid maroon with a gold hover overlay. A soft hover shadow or small lift can clarify the action. Secondary is gold-on-maroon-text. Hover states never shift layout.
 - **Forms:** white fields (`on-primary`), `8px` radius, `48px` height, clear labels, a single-value focus ring (`--shadow-focus`) -- no glow.
 - **Search/filter:** one rounded (`pill`) search control, or a quiet grouped filter row. No nested cards for filters.
 - **Product cards (`product-card`):** linked image/title, short description, price, Buy Now and one stateful cart control. Initially show Add to Cart; adding one unit replaces it in place with `− quantity +`. The number is the actual cart quantity. Each press updates the cart immediately; decrementing the final unit restores Add to Cart. Keep 44px targets, native form fallback, visible focus and disabled controls during requests. Do not show a separate Quantity row or redundant in-cart link.
 - **Homepage collections:** the first tile is a flat, text-only link occupying one product column. Show the collection name and View collection with an arrow. Member products use the same Buy Now and cart quantity controls as best sellers. Both cards update together when the same product appears twice. Keep Shop all products visible above the first product.
-- **Cart layout:** lead with the item count, a jump to the order summary, and a checkout link. Use the full mobile content rail. Give each item a square image, readable title, and one row for quantity and line total. Keep delivery estimates for checkout.
+- **Cart layout:** lead with the item count, a jump to the order summary, and a checkout link. Use the full mobile content rail. Give each item a square image, readable title, and one row for quantity and line total. Give the summary more elevation than its items. On mobile, keep a total and checkout shortcut within reach while both inline checkout links are outside the usable viewport.
 - **Cart quantity:** provide `−` and `+` controls beside every product, update line totals and the cart count, and remove the line when decreased to zero. Repeated additions of the same product merge into one line. Distinguish selecting a quantity to add from editing the quantity already in the cart.
 - **Commerce responsiveness:** use `minmax(0, 1fr)` for purchase-button columns, wrap quantity labels when space is tight, and keep keyboard focus visible. Verify home, shop, product and cart at 375px and desktop in the built-in Browser. Do not shrink purchase controls to 30px to force them onto one row.
 - **Product action alignment:** related-product prices and purchase controls sit at the bottom of equal-height cards. Long names remain readable without shifting buttons between columns.
@@ -216,11 +215,11 @@ Shape should stay consistent within a component family -- don't mix `sm` and `lg
 ## Do's and Don'ts
 
 - **Do** keep the canvas warm (`surface` / `surface-container`) and reserve pure white for cards, inputs, and modals so they read as raised.
-- **Do** let a hover state move exactly one elevation step and/or lift by a few pixels -- nothing more theatrical.
+- **Do** use elevation changes to show hover or selection. Keep the layout stable and check pointer and keyboard states.
 - **Do** use `accent-italic` (Playfair Display) sparingly, as a decorative highlight.
 - **Do** keep shape consistent per component family (see Shapes).
 - **Don't** use uppercase or letter-spacing on buttons or headings -- reserve it for short operational labels only.
-- **Don't** add glow, colored blur, gradients-as-decoration, or stacked shadow tiers.
+- **Do** reserve the strongest shadows for surfaces that genuinely sit above nearby content.
 - **Don't** introduce a second frontend, second routing scheme, or a component library that bypasses the existing PHP templates.
 - **Don't** copy reference-product navigation labels or routes that don't exist in this app -- keep the real routes.
 - **Don't** let hover/focus states shift layout or reflow siblings.
@@ -244,8 +243,7 @@ Shape should stay consistent within a component family -- don't mix `sm` and `lg
 
 ## Shared motion and scroll
 
-Motion is progressive and causal: brief card entrances, feedback from real
-controls and visible new messages. Public and operational surfaces share
+Motion is progressive and causal. Public section entrances may follow native scroll position. Use a perceptible offset, readable content and clear still frames. Public and operational surfaces share
 `assets/site-motion.js` and `site-motion.css`, with shorter operational timing.
 Never animate fabricated KPI values, hide text pending JavaScript, hijack native
 scrolling or move controls away from keyboard focus. Respect reduced motion

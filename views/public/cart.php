@@ -85,10 +85,17 @@ HTML;
                         </div>
                         <p class="cart-summary__delivery">Any delivery charges are shown at checkout.</p>
                     </div>
-                    <a href="/checkout" class="btn btn-primary btn-block">Proceed to checkout</a>
+                    <a href="/checkout" class="btn btn-primary btn-block" data-cart-inline-checkout>Proceed to checkout</a>
                     <a href="/shop" class="cart-summary__continue">Continue shopping</a>
                 </section>
             </div>
+            <aside class="cart-checkout-dock" aria-label="Checkout shortcut" data-cart-dock hidden>
+                <div>
+                    <span>Cart total</span>
+                    <strong data-cart-dock-total>₹<?= e((string)($total ?? 0)) ?></strong>
+                </div>
+                <a href="/checkout" class="btn btn-primary">Checkout <span aria-hidden="true">→</span></a>
+            </aside>
             <template id="cart-empty-template"><?= $emptyCart ?></template>
             <p class="cart-update-status" role="status" data-cart-status></p>
         <?php endif; ?>
@@ -102,6 +109,44 @@ HTML;
     const status = document.querySelector('[data-cart-status]');
     const buttons = Array.from(layout.querySelectorAll('.cart-item__qty button'));
     let pending = false;
+    const dock = document.querySelector('[data-cart-dock]');
+    const topCheckout = document.querySelector('a[data-cart-top-actions][href="/checkout"]');
+    const inlineCheckout = layout.querySelector('[data-cart-inline-checkout]');
+    const header = document.getElementById('site-header');
+    let measuredNavHeight = -1;
+    const mobile = window.matchMedia('(max-width: 767px)');
+    let dockFrame = 0;
+
+    function updateDock() {
+        dockFrame = 0;
+        if (!layout.isConnected || !mobile.matches) {
+            if (layout.isConnected && dock.contains(document.activeElement)) inlineCheckout.focus();
+            dock.hidden = true;
+            return;
+        }
+        const navHeight = document.getElementById('bottom-nav')?.offsetHeight ?? 70;
+        if (navHeight !== measuredNavHeight) {
+            measuredNavHeight = navHeight;
+            document.documentElement.style.setProperty('--cart-bottom-nav', navHeight + 'px');
+        }
+        const headerBottom = Math.max(0, header?.getBoundingClientRect().bottom ?? 0);
+        const actionVisible = [topCheckout, inlineCheckout].some(action => {
+            const bounds = action.getBoundingClientRect();
+            return bounds.top >= headerBottom && bounds.bottom <= window.innerHeight - navHeight - 8;
+        });
+        if (!dock.contains(document.activeElement)) dock.hidden = actionVisible;
+    }
+
+    function scheduleDock() {
+        if (!dockFrame) dockFrame = window.requestAnimationFrame(updateDock);
+    }
+
+    window.addEventListener('scroll', scheduleDock, {passive: true});
+    window.addEventListener('resize', scheduleDock);
+    window.addEventListener('pageshow', scheduleDock);
+    document.addEventListener('DOMContentLoaded', scheduleDock, {once: true});
+    dock.addEventListener('focusout', scheduleDock);
+    scheduleDock();
 
     layout.addEventListener('submit', async event => {
         const form = event.target.closest('.cart-item__qty form');
@@ -142,13 +187,17 @@ HTML;
                 const empty = document.getElementById('cart-empty-template').content.cloneNode(true);
                 focusTarget = empty.querySelector('a');
                 layout.replaceWith(empty);
+                dock.hidden = true;
                 document.querySelectorAll('[data-cart-top-actions]').forEach(action => { action.hidden = true; });
                 return;
             }
 
             layout.querySelector('[data-cart-summary-label]').textContent = `Subtotal (${label})`;
             layout.querySelector('[data-cart-subtotal]').textContent = '₹' + data.summary.total;
-            layout.querySelector('[data-cart-total]').textContent = '₹' + data.summary.total;
+            const total = '₹' + data.summary.total;
+            layout.querySelector('[data-cart-total]').textContent = total;
+            dock.querySelector('[data-cart-dock-total]').textContent = total;
+            scheduleDock();
             layout.querySelector('[data-cart-gst]').textContent = '₹' + Number(data.summary.gst_amount).toFixed(2);
             layout.querySelector('[data-cart-gst-row]').hidden = !data.summary.gst_amount;
         } catch {

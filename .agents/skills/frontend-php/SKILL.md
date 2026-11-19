@@ -5,7 +5,7 @@ description: Use when editing public, account, shop, consultant, temple, cart, c
 # PHP Frontend
 
 - Follow the root `AGENTS.md` repository contract and its view/asset area rules.
-- Read and follow root `Design.md` before changing any customer-facing UI. Treat it as the canonical token, typography, component, and responsive contract.
+- Start with root `Design.md` and its shared tokens. Adjust visual defaults when the browser shows clearer hierarchy or easier interaction. Soft shadows can distinguish items, summaries, and floating actions. Keep contrast and focus visible.
 - Capture the current desktop and mobile page before editing. Validate the complete customer path from first viewport through primary action and authenticated result, not only isolated markup.
 - Before using a browser capture as blog/help media, wait until every represented image reports `complete` with a non-zero `naturalWidth`, reveal content is visible, and no loading skeleton or empty data state remains. Inspect the saved bitmap before attaching it with `bapXphp blog:image`.
 - Use `bapXphp dev:user` for repeatable authenticated browser checks. Keep `BAPX_TEST_USER_PASSWORD` only in ignored operator configuration.
@@ -26,7 +26,11 @@ Verify in a browser at desktop **and** 375px mobile — `Design.md` is canonical
 
 ## Keeping this skill current
 
-Update when `Design.md` tokens, breakpoints, or shared component classes change. Public pages are gated by `module_on()`; re-check with each module both on and off.
+Update this skill and `Design.md` together when a reusable UI pattern changes.
+Update `AGENTS.md` when the working guidance changes. Capture the change on a
+representative page instead of relying on token values alone. For carts, verify
+the visible checkout action and current total through item changes, mobile
+navigation, scrolling, and the empty state. Public pages are gated by `module_on()`; re-check with each module both on and off.
 
 ## Support agent customer feedback
 
