@@ -245,3 +245,18 @@ scrolling or move controls away from keyboard focus. Respect reduced motion
 and data-saving settings, stop hidden/offscreen slide rotation, and preserve
 readable still frames. All primary controls remain functional at 375px.
 See `docs/site-motion.md` for source attribution and browser acceptance.
+
+## JavaScript interaction and recovery
+
+- Build on the existing PHP templates and form actions. Use small browser scripts
+  for responsive controls, local recovery, and feedback tied to actual state.
+- Keep editing modes visibly distinct and expose the selected mode through
+  `aria-pressed`. Give editors accessible names, keep keyboard focus visible,
+  and use 44px minimum targets for editor controls.
+- In the blog editor, report browser draft recovery beside the fields. Restoring
+  a draft requires an explicit action. A copy based on an older revision can
+  be downloaded for comparison. The Save button still submits to PHP, which
+  verifies the current revision and controls publication.
+- Announce storage and request failures near their controls. Preserve typed
+  content if a request fails. Verify keyboard focus, computed visibility,
+  recovery after reload, and absence of page overflow at 375px and desktop.
