@@ -12,4 +12,6 @@ Controller: `PublicController@temples`
 
 Purpose: show hosted MySQL-backed temple entries with image, address, pooja details, and detail links without limiting the listing to one city.
 
-Key checks: temple images exist locally when configured, detail links resolve, and map links open externally when present.
+Square frames show the full photo beside the visit details. Use **View details**
+to open the temple page. Under **Location**, choose **Show map** to load the
+configured embed. The direct map link is available inside the same disclosure.

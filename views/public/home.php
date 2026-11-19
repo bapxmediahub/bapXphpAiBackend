@@ -140,66 +140,51 @@
 </section>
 <?php endif; ?>
 
-<?php if(!empty($temples)): ?>
-<section class="section section--alt">
-    <div class="section-header">
-        <span class="eyebrow serif-accent">Sacred Spaces · Divine Energy</span>
-        <h2 class="section-title" id="home-temple-guide" data-page-section="Temples" tabindex="-1">Panchami Temples Guide</h2>
-        <p class="lede"><a href="/temples">Browse the temple directory</a> for locations and visit details.</p>
-    </div>
-    <div class="temple-carousel temple-carousel--single" data-temple-slider aria-label="Temple guide carousel">
-        <div class="temple-carousel-track">
-        <?php foreach(array_values($temples) as $index => $temple): ?>
-            <a class="showcase-card temple-feature-card <?= $index === 0 ? 'is-active' : '' ?>" href="/temples/<?= e(rawurlencode((string)($temple['slug'] ?? ''))) ?>" aria-label="View <?= e($temple['name'] ?? 'Temple') ?>">
-                <div class="temple-feature-card__media">
-                    <?php if(!empty($temple['image_url'])): ?>
-                        <img src="<?= e(webp_src($temple['image_url'])) ?>" alt="" decoding="async">
-                    <?php else: ?>
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
-                    <?php endif; ?>
+<?php if (!empty($temples)): ?>
+<section class="section section--alt home-temples" aria-labelledby="home-temple-guide">
+    <div class="container">
+        <div class="home-temples__header">
+            <h2 class="section-title" id="home-temple-guide" data-page-section="Temples" tabindex="-1">Panchami Temples Guide</h2>
+            <a href="/temples" class="btn btn-outline">Explore all temples <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="temple-carousel" data-temple-rail>
+            <?php if (count($temples) > 1): ?>
+                <div class="temple-carousel__controls" data-temple-controls hidden>
+                    <button type="button" class="btn btn-outline" aria-label="Previous temple" aria-controls="home-temple-track" data-temple-step="-1">←</button>
+                    <span data-temple-position role="status"></span>
+                    <button type="button" class="btn btn-outline" aria-label="Next temple" aria-controls="home-temple-track" data-temple-step="1">→</button>
                 </div>
-                <div class="temple-feature-card__body">
-                    <h2><?= e($temple['name']) ?></h2>
-                    <?php if (!empty($temple['description'])): ?>
-                        <p><?= e($temple['description']) ?></p>
-                    <?php endif; ?>
-                    <?php if(!empty($temple['address'])): ?>
-                        <p class="temple-feature-card__meta">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                            <?= e($temple['address']) ?>
-                        </p>
-                    <?php endif; ?>
-                    <?php if(!empty($temple['timings'])): ?>
-                        <p class="temple-feature-card__meta">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                            <?= e($temple['timings']) ?>
-                        </p>
-                    <?php endif; ?>
-                    <span class="btn btn-sm btn-primary temple-feature-card__cta">View Details</span>
-                </div>
-            </a>
-        <?php endforeach; ?>
+            <?php endif; ?>
+            <div class="temple-carousel-track" id="home-temple-track"<?= count($temples) > 1 ? ' tabindex="0" role="region" aria-label="Temple previews"' : '' ?>>
+                <?php foreach ($temples as $temple): ?>
+                    <article class="temple-feature-card">
+                        <div class="temple-photo">
+                            <?php if (!empty($temple['image_url'])): ?>
+                                <img src="<?= e(webp_src($temple['image_url'])) ?>" alt="" decoding="async">
+                            <?php else: ?>
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6a3 3 0 0 1 6 0v6"/></svg>
+                            <?php endif; ?>
+                        </div>
+                        <div class="temple-feature-card__body">
+                            <h3><?= e($temple['name']) ?></h3>
+                            <?php if (!empty($temple['address'])): ?>
+                                <p class="temple-feature-card__address"><?= e($temple['address']) ?></p>
+                            <?php endif; ?>
+                            <?php if (!empty($temple['timings'])): ?>
+                                <p class="temple-feature-card__hours"><?= e($temple['timings']) ?></p>
+                            <?php endif; ?>
+                            <?php if (!empty($temple['description'])): ?>
+                                <p class="temple-feature-card__summary"><?= e($temple['description']) ?></p>
+                            <?php endif; ?>
+                            <a class="btn btn-primary" href="/temples/<?= e(rawurlencode((string)$temple['slug'])) ?>" aria-label="View details for <?= e($temple['name']) ?>">View details</a>
+                        </div>
+                    </article>
+                <?php endforeach; ?>
+            </div>
         </div>
     </div>
 </section>
 <?php endif; ?>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    var slider = document.querySelector('[data-temple-slider]');
-    if (!slider) return;
-    var slides = Array.prototype.slice.call(slider.querySelectorAll('.temple-feature-card'));
-    if (slides.length < 2) return;
-    var index = 0;
-    var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setInterval(function () {
-        if (reducedMotion.matches || slider.matches(':hover, :focus-within') || document.hidden) return;
-        slides[index].classList.remove('is-active');
-        index = (index + 1) % slides.length;
-        slides[index].classList.add('is-active');
-    }, 6500);
-});
-</script>
 
 <section class="section section--warm">
     <div class="container">
