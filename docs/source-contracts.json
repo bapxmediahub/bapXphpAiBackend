@@ -18,9 +18,9 @@
             "review_note": "No order/payment/catalogue source changed. Reviewed existing verified-order/idempotency contracts and shared backend guidance; the generic handler explicitly cannot infer rollback or advise repeating a charge. Normal product/feed/API reads and intentional service failures remain covered; no production purchase or business-data write used as a test."
         },
         "content": {
-            "source_sha256": "83d2fa02fe0e3af04c4d58fa9977d2aea18824cc745e8e0a546d35131b402556",
+            "source_sha256": "8343b2350130be488f6f8e0425a465a810619bd341c3433484a1215a03fe0729",
             "references_sha256": "f86e5e56984ca2131c1de70aaa1fde3f0fa9ff9247dda8c9a422a7bdb90ecffe",
-            "review_note": "Verified nested links and emphasis in the editor and retained URL validation."
+            "review_note": "Verified current and stale draft recovery controls match the operator guide at desktop and mobile widths."
         },
         "foundation": {
             "source_sha256": "e60192b962830f88dcce9979e4345c9481eb5a22c8419f3befc8e04a402fd825",
@@ -53,9 +53,9 @@
             "review_note": "Checked the admin UI skill addition against the existing media upload and picker flow. Browser draft recovery stores the article image path."
         },
         "operator-help": {
-            "source_sha256": "de31dbe57ad0739ddf4c3dc6f83eb8e53e6695c02d67b4e7946ed62bff01b225",
+            "source_sha256": "cb390c88e7ed4cbc482724a9f326dc2357564ae80a8862ab70a48ad61c75ddd9",
             "references_sha256": "f216687035d70f6fac2aaf3f34ced055c11904e647e6aff80269acbb33835a00",
-            "review_note": "Confirmed Markdown formatting controls still work in document and preview modes and recovery instructions remain accurate after retrying a failed write."
+            "review_note": "Verified recovery action hierarchy, keyboard focus and unchanged article save behavior in Chromium."
         },
         "sales-channels": {
             "source_sha256": "1f2cd451f764c9d2b1a0b90b1454ac54fbf9a1130973f86749df0510b8eef244",

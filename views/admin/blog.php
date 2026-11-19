@@ -12,14 +12,15 @@
 <?php endif; ?>
 <form method="post" action="/admin/blog/save" id="blog-form" class="admin-blog-editor"
       data-draft-owner="<?= e($blogDraftOwner ?? '') ?>" data-saved-draft="<?= e($savedDraftToken ?? '') ?>" hidden>
-    <section id="be-recovery" class="be-recovery" aria-label="Browser draft recovery" hidden>
+    <section id="be-recovery" class="be-recovery" aria-labelledby="be-recovery-title" hidden>
+        <h3 id="be-recovery-title">Unsaved browser draft</h3>
         <p id="be-recovery-message"></p>
         <div class="be-recovery__actions">
-        <button class="btn btn-outline" type="button" id="be-restore">Restore draft</button>
-        <button class="btn btn-ghost" type="button" id="be-discard">Discard browser copy</button>
+            <button class="btn btn-primary" type="button" id="be-restore" aria-describedby="be-recovery-message">Restore draft</button>
+            <button class="btn btn-ghost" type="button" id="be-discard">Discard browser copy</button>
         </div>
     </section>
-    <p id="be-draft-status" class="be-hint" role="status"></p>
+    <p id="be-draft-status" class="be-draft-status" role="status"></p>
     <input type="hidden" name="browser_draft_token" id="be-draft-token">
     <div id="be-edit-fields">
     <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
@@ -201,13 +202,16 @@ function generateDraft(){var f=document.getElementById('blog-form');var fd=new F
 .be-settings>summary span{font-weight:400;font-size:.78rem;color:var(--color-text-muted)}
 .be-settings .admin-blog-editor__grid{padding:0 14px 14px}
 .be-recovery{padding:12px 16px;margin-bottom:12px;border:1px solid var(--color-border);border-inline-start:4px solid var(--color-gold);border-radius:8px;background:var(--color-white)}
-.be-recovery p{margin:0 0 8px}
+.be-recovery h3{margin:0 0 4px;font-size:1rem}
+.be-recovery p{margin:0 0 12px;color:var(--color-text-muted)}
+.be-draft-status{margin:0}
+.be-draft-status:not(:empty){margin-bottom:12px;padding:8px 12px;border-inline-start:3px solid var(--color-border);font-size:.875rem}
 .be-recovery__actions,.be-title-field__label{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
 .be-title-field__label{justify-content:space-between;margin-bottom:4px}
 #blog-form{scroll-margin-block-start:150px}
 #blog-form input:not([type=hidden],[type=checkbox],[type=file]),#blog-form select:not(#be-block){display:block;box-sizing:border-box;width:100%;min-height:44px;margin-top:4px;padding:8px 10px;border:1px solid var(--color-border);border-radius:8px;background:var(--color-white);font:inherit}
 #blog-form :focus-visible{outline:2px solid var(--color-maroon);outline-offset:2px}
-@media(max-width:600px){.be-settings>summary{align-items:baseline;flex-wrap:wrap}.be-settings>summary span{flex-basis:100%;padding-inline-start:14px}}
+@media(max-width:600px){.be-recovery__actions{display:grid;grid-template-columns:minmax(0,1fr)}.be-settings>summary{align-items:baseline;flex-wrap:wrap}.be-settings>summary span{flex-basis:100%;padding-inline-start:14px}}
 #blog-form [hidden]{display:none!important}
 .be-tabs button,.be-toolbar button,.be-toolbar select,.be-recovery button,#blog-form #enhance-title{min-height:44px}
 .be-tabs{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
