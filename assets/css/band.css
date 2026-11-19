@@ -270,9 +270,9 @@ label { cursor: pointer; }
  .brand img { width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--color-gold); object-fit: cover; }
 .brand:hover { color: var(--color-ink); }
 
-nav { display: flex; gap: var(--space-lg); }
-nav { justify-content: center; }
-nav a {
+nav:where(#primary-nav) { display: flex; gap: var(--space-lg); }
+nav:where(#primary-nav) { justify-content: center; }
+nav:where(#primary-nav) a {
     font-weight: 500;
     color: var(--color-ink);
     padding: var(--space-xs) 0;
@@ -280,7 +280,7 @@ nav a {
     transition: color var(--transition-base);
     font-size: 0.9rem;
 }
-nav a::after {
+nav:where(#primary-nav) a::after {
     content: '';
     position: absolute;
     bottom: -2px;
@@ -290,8 +290,8 @@ nav a::after {
     background: var(--color-gold);
     transition: width var(--transition-divine);
 }
-nav a:hover::after, nav a[aria-current="page"]::after { width: 100%; }
-nav a:hover { color: var(--color-maroon); }
+nav:where(#primary-nav) a:hover::after, nav:where(#primary-nav) a[aria-current="page"]::after { width: 100%; }
+nav:where(#primary-nav) a:hover { color: var(--color-maroon); }
 
 .header-actions { display: flex; align-items: center; gap: var(--space-md); }
 .search-btn, .cart-btn {
@@ -2813,7 +2813,7 @@ tr:hover td { background: var(--color-bg-alt); }
     .deity-frame { margin: 0 auto; }
     .eyebrow { padding-left: 0; }
     .eyebrow::before { display: none; }
-    nav {
+    nav:where(#primary-nav) {
         display: none;
         position: absolute;
         top: 100%;
@@ -2826,7 +2826,7 @@ tr:hover td { background: var(--color-bg-alt); }
         box-shadow: var(--shadow-lg);
         backdrop-filter: blur(10px);
     }
-    nav.open { display: flex; }
+    nav:where(#primary-nav).open { display: flex; }
     .menu-toggle { display: block; }
     .admin-form__row { grid-template-columns: minmax(0, 1fr); }
     .checkout-form__row { grid-template-columns: 1fr; }
@@ -2854,7 +2854,7 @@ tr:hover td { background: var(--color-bg-alt); }
 /* ── Mobile Meditation App Enhancements ── */
 @media (max-width: 767px) {
     .site-header .menu-toggle { display: block; }
-    nav:not(.open) { display: none; }
+    nav:where(#primary-nav):not(.open) { display: none; }
     
     .site-header {
         grid-template-columns: 48px 1fr 48px;

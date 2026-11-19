@@ -41,8 +41,25 @@ $showPicture = filter_var($picture, FILTER_VALIDATE_URL) && parse_url($picture, 
                     <input id="new-password" name="new_password" type="password" autocomplete="new-password" minlength="8" required>
                     <label for="confirm-password">Confirm new password</label>
                     <input id="confirm-password" name="confirm_password" type="password" autocomplete="new-password" minlength="8" required>
+                    <div id="profile-password-visibility" hidden>
+                        <div class="form-check">
+                            <label class="checkbox-label" style="min-height:44px"><input id="profile-show-passwords" type="checkbox"> Show new passwords</label>
+                        </div>
+                    </div>
                     <div><button class="btn btn-primary" type="submit">Change password</button></div>
                 </form>
+                <script>
+                (() => {
+                    const toggle = document.getElementById('profile-show-passwords');
+                    const newPasswords = toggle.form.querySelectorAll('[autocomplete="new-password"]');
+                    const updateVisibility = () => {
+                        for (const field of newPasswords) field.type = toggle.checked ? 'text' : 'password';
+                    };
+                    toggle.addEventListener('change', updateVisibility);
+                    updateVisibility();
+                    document.getElementById('profile-password-visibility').hidden = false;
+                })();
+                </script>
             <?php endif; ?>
             <p><a href="/forgot-password">Reset account password</a></p>
         </div>

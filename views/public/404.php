@@ -5,15 +5,14 @@
                 <span>404</span>
             </div>
             <div class="not-found-copy">
-                <span class="eyebrow serif-accent">Page not found</span>
-                <h1>The path you opened is not available.</h1>
-                <p class="lede">Return to the spiritual store, browse temples, or contact Sri Panchami Spiritual for help finding the right page.</p>
-                <div class="not-found-actions">
+                <h1>Page not found</h1>
+                <p class="lede">If you followed a link, it may be out of date. Choose a page below to keep browsing.</p>
+                <nav class="not-found-actions" aria-label="Find another page">
                     <a href="/" class="btn btn-primary">Home</a>
                     <a href="/shop" class="btn btn-outline">Shop</a>
                     <a href="/temples" class="btn btn-ghost">Temples</a>
                     <a href="/contact" class="btn btn-ghost">Contact</a>
-                </div>
+                </nav>
             </div>
         </div>
     </div>

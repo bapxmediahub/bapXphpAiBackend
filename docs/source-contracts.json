@@ -18,9 +18,9 @@
             "review_note": "No order/payment/catalogue source changed. Reviewed existing verified-order/idempotency contracts and shared backend guidance; the generic handler explicitly cannot infer rollback or advise repeating a charge. Normal product/feed/API reads and intentional service failures remain covered; no production purchase or business-data write used as a test."
         },
         "content": {
-            "source_sha256": "8343b2350130be488f6f8e0425a465a810619bd341c3433484a1215a03fe0729",
+            "source_sha256": "ef0dd1e4f20b489535b28b6b21e0a8844cc502573c3c0e70079dbc6054480f3f",
             "references_sha256": "f86e5e56984ca2131c1de70aaa1fde3f0fa9ff9247dda8c9a422a7bdb90ecffe",
-            "review_note": "Verified current and stale draft recovery controls match the operator guide at desktop and mobile widths."
+            "review_note": "Verified article cards keep a single accessible link to each post and category navigation remains present on mobile."
         },
         "foundation": {
             "source_sha256": "e60192b962830f88dcce9979e4345c9481eb5a22c8419f3befc8e04a402fd825",
@@ -28,9 +28,9 @@
             "review_note": "Verified the canonical owner subject, scoped acknowledgement and PHP persistence boundary."
         },
         "google-tags": {
-            "source_sha256": "d33e5b5741d8deda7ad0d2700a4513261c6890769951dbb57178c6d79da859d8",
+            "source_sha256": "5e5ff560b3d2376baff96615e937f314ba2ba9aa6b42cb6e8d5a94291f92d742",
             "references_sha256": "f55e8470bb5cb011ccffec0eaf2dc9e48e9db2def9700fab41fdf51c969b1d8a",
-            "review_note": "Reviewed the public layout diff. The cart submit handler changes do not alter tag configuration or rendering."
+            "review_note": "Reviewed shared navigation scoping and Dashboard shortcuts. Tag rendering and reporting connection status remain accurate."
         },
         "http-errors": {
             "source_sha256": "399b84f63ec0f03947d9338711f3a8c60008750c96d96936b1e9c7c57b6c5792",
@@ -38,9 +38,9 @@
             "review_note": "Compared bootstrap/session initialization, old global handler, BaseController redirects/JSON/view output and actual API catches with RequestFailureService. Native response buffer and safe500 replace only unhandled failures; 88 loopback HTTP assertions preserve normal HTML/JSON/XML/binary/204/redirect/explicit503. Docs state pre-bootstrap/OOM/streaming limits and uncertainty of earlier side effects; no raw message/admin stack or database accusation."
         },
         "interface": {
-            "source_sha256": "83b405424bd29cfd44d1daf839d5b1a40668d69d41dbfed7b629f5a9b64f6a4c",
-            "references_sha256": "978bcdbdcc979276a55bbe5b1b481a026dd61022844098ca0ae7d5242d403517",
-            "review_note": "Verified responsive collection sizes, focus after cart changes, duplicate product quantities and native form submission."
+            "source_sha256": "229a1bebfed8c64a135eec3a0c64879d26f9a7b0418d65af669ecb1239fbd9f3",
+            "references_sha256": "15bd6e398c719386678b569c77576eff24f6b9a4353054d9dd277fa410719b78",
+            "review_note": "Verified that collection filters preserve validation and reveal the exact hidden position field when the form needs correction."
         },
         "mail": {
             "source_sha256": "7694291a27699ebb722b0ff98b9ae74972c92a20b0b057726677e0a733ffd792",
@@ -48,14 +48,14 @@
             "review_note": "Verified draft restoration omits mail preferences and save acknowledgement follows the existing newsletter decision."
         },
         "media": {
-            "source_sha256": "cd8a64c85c1eecc6c51d01262423e248f88fd14e896b1e3e74c359f937531962",
+            "source_sha256": "07f3ab3d215803c647b82dd32834348a37a718bbfc4be878ed62af07f15c00f8",
             "references_sha256": "e04eab9afe918c16611de238bfb95cc6f88254ae21e0ed14da6f9e86ba2ed835",
-            "review_note": "Checked the admin UI skill addition against the existing media upload and picker flow. Browser draft recovery stores the article image path."
+            "review_note": "Verified client-side media search and context filters preserve the library source data and existing deletion eligibility rules."
         },
         "operator-help": {
-            "source_sha256": "5c570f34096a10a4ba7478182624a18c885c15749ac5bb0e6170a41b8d6d6bc7",
+            "source_sha256": "73d100e1bea3a0d36e00097d4881923f773cb3bc36535b411da02ab79f0f4898",
             "references_sha256": "f216687035d70f6fac2aaf3f34ced055c11904e647e6aff80269acbb33835a00",
-            "review_note": "Verified the new shared view is listed in the project map and existing ordering help still matches the collection flow."
+            "review_note": "Verified checkout guidance still matches the required state selector and application-owned delivery validation."
         },
         "sales-channels": {
             "source_sha256": "1f2cd451f764c9d2b1a0b90b1454ac54fbf9a1130973f86749df0510b8eef244",

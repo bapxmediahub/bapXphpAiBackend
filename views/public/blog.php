@@ -3,6 +3,11 @@
   $indexUrl = $activeCategory === null ? '/blog' : '/blog/category/' . rawurlencode($activeCategory);
   $query = $search === '' ? '' : '?' . http_build_query(['q' => $search]);
 ?>
+<style>
+  .blog-editorial .blog-card { position: relative; }
+  .blog-editorial .blog-card__read::after { content: ''; position: absolute; inset: 0; }
+  .blog-editorial .blog-card__read:focus-visible::after { outline: 2px solid var(--color-maroon); outline-offset: -3px; }
+</style>
 <section class="blog-page blog-editorial">
   <div class="container">
     <header class="blog-editorial__header">
@@ -48,15 +53,15 @@
             $postCategory = (string)($post['category'] ?? '');
           ?>
           <article class="blog-card<?= $featured ? ' blog-card--featured' : '' ?>">
-            <a class="blog-card__media" href="<?= e($postUrl) ?>" aria-label="Read <?= e($post['title'] ?? 'article') ?>">
+            <div class="blog-card__media">
               <img class="blog-card__image" src="<?= e($postImage) ?>" alt="<?= e($post['image_alt'] ?? '') ?>" loading="<?= $index === 0 ? 'eager' : 'lazy' ?>" decoding="async">
-            </a>
+            </div>
             <div class="blog-card__body">
               <div class="blog-card__kicker">
                 <?php if ($postCategory !== ''): ?><span><?= e($categoryNames[$postCategory] ?? $postCategory) ?></span><?php endif; ?>
                 <?php if (!empty($post['published_at'])): ?><time datetime="<?= e($post['published_at']) ?>"><?= e(date('M j, Y', strtotime($post['published_at']))) ?></time><?php endif; ?>
               </div>
-              <h2 class="blog-card__title"><a href="<?= e($postUrl) ?>"><?= e($post['title'] ?? '') ?></a></h2>
+              <h2 class="blog-card__title"><?= e($post['title'] ?? '') ?></h2>
               <?php if (!empty($post['excerpt'])): ?><p class="blog-card__excerpt"><?= e($post['excerpt']) ?></p><?php endif; ?>
               <a class="blog-card__read" href="<?= e($postUrl) ?>" aria-label="Read article: <?= e($post['title'] ?? '') ?>">Read article <span aria-hidden="true">→</span></a>
             </div>

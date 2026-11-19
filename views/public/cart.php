@@ -1,3 +1,7 @@
+<style>
+    .cart-item__qty { display:flex; align-items:center; gap:var(--space-xs); }
+    .cart-item__qty .btn { min-width:44px; min-height:44px; }
+</style>
  <section class="section" style="padding-top:var(--space-xl);">
      <div class="container container--narrow" style="margin-bottom:var(--space-xl);">
          <nav class="breadcrumb breadcrumb--page" aria-label="Breadcrumb">
@@ -25,19 +29,19 @@
                                  <div class="cart-item__price--mobile">₹<?= e((string)$lineTotal) ?></div>
                              </div>
                              <div class="cart-item__qty">
-<form method="post" action="/cart/update" style="display:flex; align-items:center; gap:4px;">
+                                     <form method="post" action="/cart/update">
                                          <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
                                          <input type="hidden" name="action" value="dec">
                                          <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
                                          <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                                         <button type="submit" class="btn btn-sm btn-outline">−</button>
+                                         <button type="submit" class="btn btn-sm btn-outline" aria-label="Decrease quantity for <?= e($item['name']) ?>">−</button>
                                      </form>
-                                     <span class="cart-item__qty-val"><?= e((string)$item['qty']) ?></span>
-                                     <form method="post" action="/cart/update" style="display:flex; align-items:center; gap:4px;">
+                                     <output class="cart-item__qty-val" aria-label="Quantity for <?= e($item['name']) ?>"><?= e((string)$item['qty']) ?></output>
+                                     <form method="post" action="/cart/update">
                                          <input type="hidden" name="slug" value="<?= e($item['slug']) ?>">
                                          <input type="hidden" name="action" value="inc">
                                          <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                                         <button type="submit" class="btn btn-sm btn-outline">+</button>
+                                         <button type="submit" class="btn btn-sm btn-outline" aria-label="Increase quantity for <?= e($item['name']) ?>">+</button>
                                      </form>
                              </div>
                              <div class="cart-item__price" data-line-total>₹<?= e((string)$lineTotal) ?></div>
@@ -84,12 +88,18 @@
     if(!window.fetch||!forms.length)return;
     forms.forEach(function(form){form.addEventListener('submit',async function(event){
         event.preventDefault();
-        var button=form.querySelector('button');button.disabled=true;
+        var button=form.querySelector('button');
+        var restoreFocus=document.activeElement===button, focusTarget=button;
+        button.disabled=true;
         try{
             var response=await fetch(form.getAttribute('action'),{method:'POST',body:new FormData(form),headers:{Accept:'application/json'}});
             var data=await response.json();if(!response.ok)throw new Error(data.error||'Unable to update cart.');
             var row=form.closest('[data-cart-item]');
-            if(data.quantity<=0){row.remove();}else{
+            if(data.quantity<=0){
+                var neighbor=row.nextElementSibling||row.previousElementSibling;
+                focusTarget=neighbor?.querySelector('.cart-item__qty button');
+                row.remove();
+            }else{
                 row.querySelector('.cart-item__qty-val').textContent=data.quantity;
                 var line=data.quantity*Number(row.dataset.unitPrice||0);
                 row.querySelectorAll('[data-line-total],.cart-item__price--mobile').forEach(function(el){el.textContent='₹'+line;});
@@ -100,9 +110,19 @@
             var summary=data.summary, gst=document.querySelector('[data-cart-gst]');
             if(subtotal)subtotal.textContent='₹'+summary.total;if(grand)grand.textContent='₹'+summary.total;if(label)label.textContent='Subtotal ('+summary.item_count+' item'+(summary.item_count===1?'':'s')+')';if(badge)badge.textContent=data.cart_count;
             if(gst)gst.textContent='₹'+Number(summary.gst_amount).toFixed(2);
-            if(!rows.length){var layout=document.querySelector('.cart-layout');if(layout)layout.parentElement.innerHTML='<div class="cart-empty-state"><h1>Your Cart is Empty</h1><p>Discover our spiritual products and add items to your cart.</p><a href="/shop" class="btn btn-primary">Browse Shop</a></div>';}
+            if(!rows.length){
+                var layout=document.querySelector('.cart-layout');
+                if(layout){
+                    var container=layout.parentElement;
+                    container.innerHTML='<div class="cart-empty-state"><h1>Your Cart is Empty</h1><p>Discover our spiritual products and add items to your cart.</p><a href="/shop" class="btn btn-primary">Browse Shop</a></div>';
+                    focusTarget=container.querySelector('.cart-empty-state a');
+                }
+            }
         }catch(error){if(window.showToast)showToast(error.message,'error');else form.submit();}
-        finally{button.disabled=false;}
+        finally{
+            button.disabled=false;
+            if(restoreFocus&&(document.activeElement===document.body||document.activeElement===button))focusTarget?.focus();
+        }
     });});
 })();
 </script>

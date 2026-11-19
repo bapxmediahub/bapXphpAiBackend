@@ -4,7 +4,10 @@
             <h1 id="dashboard-commerce-title">Commerce overview</h1>
             <p><time datetime="<?= e($from) ?>"><?= e($from) ?></time> to <time datetime="<?= e($to) ?>"><?= e($to) ?></time></p>
         </div>
-        <a class="btn btn-outline" href="/admin/tax-report?<?= e(http_build_query(['report' => 'sales', 'from' => $from, 'to' => $to, 'group' => $period === 90 ? 'week' : 'day'])) ?>">Open Commerce Reports</a>
+        <div class="admin-card__actions">
+            <a class="btn btn-outline" href="/admin/tax-report?<?= e(http_build_query(['report' => 'sales', 'from' => $from, 'to' => $to, 'group' => $period === 90 ? 'week' : 'day'])) ?>">Open Commerce Reports</a>
+            <a class="btn btn-ghost" href="#dashboard-admin-shortcuts">Admin shortcuts</a>
+        </div>
     </div>
     <nav class="dashboard-commerce__periods" aria-label="Analytics period">
         <?php foreach ([7, 30, 90] as $days): ?>
@@ -91,7 +94,7 @@ $__googleStatus=(new \App\Integrations\GoogleSiteKit\GoogleSiteKitClient(
 </section>
 </div>
 
-<div class="admin-quick-grid">
+<div class="admin-quick-grid" id="dashboard-admin-shortcuts" role="navigation" aria-label="Admin shortcuts" tabindex="-1" style="scroll-margin-block-start:6rem;">
     <div class="admin-card">
         <h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Catalog</h2>
         <p>Manage products, categories, collections, and discount coupons.</p>

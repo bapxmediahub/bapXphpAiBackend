@@ -6,6 +6,8 @@
             <h1>Saved Addresses</h1>
             <?php if ($addresses === []): ?>
                 <p>You have no saved addresses.</p>
+            <?php elseif (!$editing): ?>
+                <p><a class="btn btn-primary" href="#address-form">Add an address</a></p>
             <?php endif; ?>
             <?php foreach ($addresses as $address): ?>
                 <section>
@@ -22,8 +24,8 @@
                     </form>
                 </section>
             <?php endforeach; ?>
-            <form id="address-form" class="form-group" method="post" action="/account/dashboard/addresses/save">
-                <h2><?= $editing ? 'Edit address' : 'Add an address' ?></h2>
+            <form id="address-form" class="form-group" tabindex="-1" aria-labelledby="address-form-title" method="post" action="/account/dashboard/addresses/save">
+                <h2 id="address-form-title"><?= $editing ? 'Edit address' : 'Add an address' ?></h2>
                 <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
                 <input type="hidden" name="address_id" value="<?= e($editing['id'] ?? '') ?>">
                 <label for="address-name">Address label</label>
