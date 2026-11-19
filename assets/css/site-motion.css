@@ -57,6 +57,15 @@ html .reveal { opacity: 1; transform: none; }
     .hero-motion-toggle { margin-top: 6px; }
     .support-panel { max-height: calc(100dvh - 100px); }
 }
+@media (max-width:767px) {
+    :root:has(#bottom-nav) {
+        scroll-padding-bottom: calc(136px + env(safe-area-inset-bottom));
+    }
+    body:has(#bottom-nav) .sps-return-top {
+        inset-inline: auto 12px;
+        bottom: calc(82px + env(safe-area-inset-bottom));
+    }
+}
 @media (prefers-reduced-motion:reduce) {
     html, .agent-messages { scroll-behavior: auto !important; }
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }

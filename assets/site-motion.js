@@ -14,6 +14,12 @@
         return state.supported === true && !state.reducedMotion && !state.saveData && !state.hidden;
     }
     function entrance(index, surface) {
+        if (surface === 'product-photo') {
+            return {
+                keyframes: [{ transform: 'scale(1.025)' }, { transform: 'none' }],
+                options: { duration: 320, delay: 0, easing: 'cubic-bezier(.22,.75,.25,1)', fill: 'none' }
+            };
+        }
         var admin = surface === 'admin';
         var n = Number.isFinite(index) ? Math.max(0, index) : 0;
         return {
@@ -42,9 +48,9 @@
             active.forEach(function (animation) { try { animation.cancel(); } catch (e) {} });
             active.clear();
         }
-        function play(el, index) {
+        function play(el, index, kind) {
             if (!canMove() || !el || el.hidden || !el.getClientRects().length || el.closest('[hidden]')) return;
-            var recipe = entrance(index, surface);
+            var recipe = entrance(index, kind || surface);
             try {
                 var animation = el.animate(recipe.keyframes, recipe.options);
                 active.add(animation);
@@ -67,14 +73,16 @@
         doc.documentElement.classList.remove('motion-ready');
         preferenceChanged();
 
-        var candidates = doc.querySelectorAll('main h1,.product-card,.blog-card,.temple-card,.auth-card,.section-title,.page-title,.admin-stat,.report-kpi,.admin-card > h2,.enterprise-chat__intro');
+        var productPhotoSelector = '.home-product-card .product-card__image img';
+        var candidates = doc.querySelectorAll(productPhotoSelector + ',main h1,.product-card:not(.home-product-card),.blog-card,.temple-card,.auth-card,.section-title,.page-title,.admin-stat,.report-kpi,.admin-card > h2,.enterprise-chat__intro');
         if (typeof win.IntersectionObserver === 'function') {
             var observer = new win.IntersectionObserver(function (entries) {
                 var stagger = 0;
                 entries.forEach(function (entry) {
                     if (!entry.isIntersecting) return;
                     observer.unobserve(entry.target);
-                    play(entry.target, stagger++);
+                    if (entry.target.matches(productPhotoSelector)) play(entry.target, 0, 'product-photo');
+                    else play(entry.target, stagger++);
                 });
             }, { threshold: 0.12, rootMargin: '0px 0px -24px 0px' });
             candidates.forEach(function (el) { observer.observe(el); });
