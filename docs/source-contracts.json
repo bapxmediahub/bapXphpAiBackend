@@ -28,9 +28,9 @@
             "review_note": "Verified the canonical owner subject, scoped acknowledgement and PHP persistence boundary."
         },
         "google-tags": {
-            "source_sha256": "cd31738328223ec1b16970780fdacdc4bc95027ce0a1142934b38949a16a454d",
+            "source_sha256": "d33e5b5741d8deda7ad0d2700a4513261c6890769951dbb57178c6d79da859d8",
             "references_sha256": "f55e8470bb5cb011ccffec0eaf2dc9e48e9db2def9700fab41fdf51c969b1d8a",
-            "review_note": "Reviewed the frontend skill addition against its Google tag section. Tag rendering and consent guidance still describe the same paths."
+            "review_note": "Reviewed the public layout diff. The cart submit handler changes do not alter tag configuration or rendering."
         },
         "http-errors": {
             "source_sha256": "399b84f63ec0f03947d9338711f3a8c60008750c96d96936b1e9c7c57b6c5792",
@@ -38,9 +38,9 @@
             "review_note": "Compared bootstrap/session initialization, old global handler, BaseController redirects/JSON/view output and actual API catches with RequestFailureService. Native response buffer and safe500 replace only unhandled failures; 88 loopback HTTP assertions preserve normal HTML/JSON/XML/binary/204/redirect/explicit503. Docs state pre-bootstrap/OOM/streaming limits and uncertainty of earlier side effects; no raw message/admin stack or database accusation."
         },
         "interface": {
-            "source_sha256": "89375e275b0753053cff4fcfc2a42b3de7689c9c85ec8f4c15303398685b23a4",
-            "references_sha256": "6a197e850495b0fa5f514f22ac62ae50add6fceb5c5addd516d1e1fc117be995",
-            "review_note": "Verified nested preview formatting and draft autosave recovery after a temporarily failed browser write."
+            "source_sha256": "83b405424bd29cfd44d1daf839d5b1a40668d69d41dbfed7b629f5a9b64f6a4c",
+            "references_sha256": "978bcdbdcc979276a55bbe5b1b481a026dd61022844098ca0ae7d5242d403517",
+            "review_note": "Verified responsive collection sizes, focus after cart changes, duplicate product quantities and native form submission."
         },
         "mail": {
             "source_sha256": "7694291a27699ebb722b0ff98b9ae74972c92a20b0b057726677e0a733ffd792",
@@ -53,9 +53,9 @@
             "review_note": "Checked the admin UI skill addition against the existing media upload and picker flow. Browser draft recovery stores the article image path."
         },
         "operator-help": {
-            "source_sha256": "cb390c88e7ed4cbc482724a9f326dc2357564ae80a8862ab70a48ad61c75ddd9",
+            "source_sha256": "5c570f34096a10a4ba7478182624a18c885c15749ac5bb0e6170a41b8d6d6bc7",
             "references_sha256": "f216687035d70f6fac2aaf3f34ced055c11904e647e6aff80269acbb33835a00",
-            "review_note": "Verified recovery action hierarchy, keyboard focus and unchanged article save behavior in Chromium."
+            "review_note": "Verified the new shared view is listed in the project map and existing ordering help still matches the collection flow."
         },
         "sales-channels": {
             "source_sha256": "1f2cd451f764c9d2b1a0b90b1454ac54fbf9a1130973f86749df0510b8eef244",
@@ -63,9 +63,9 @@
             "review_note": "Reviewed service/XML/CLI/UI against ProductService offer and visibility behavior plus current primary Google product-source and invited-creator docs. Verified explicit identifiers only, valid URL/image checks, safe XML, unknown external approval and no credential/account actions. Public browser samples match real prices/images; local missing media is not labelled a production defect."
         },
         "workflow": {
-            "source_sha256": "66bbca94c0bf577275922a6caffbc95211e5651b5ae90e8230f9933c7de2879a",
+            "source_sha256": "5bceac16cbbedebbe4aef0416299c7f632c16d89bd72f74783ea004ae33b3d72",
             "references_sha256": "94dd586c81b1d91a0332e86219ac2b55c416d5ebc37115c9a2008697d68236d0",
-            "review_note": "Checked browser validation guidance in AGENTS and the UI skills against the existing development workflow and map validation commands."
+            "review_note": "Verified map registration marks the shared homepage product-card partial as an included view rather than an unwired page."
         }
     }
 }

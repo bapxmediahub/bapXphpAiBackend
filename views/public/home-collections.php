@@ -1,19 +1,33 @@
-<?php foreach (($homeCollections ?? []) as $collection): ?>
-<section class="section"><div class="container">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap">
-        <h2 class="section-title"><?= e($collection['name']) ?></h2>
-        <a class="btn btn-ghost" href="/shop?category=<?= e(rawurlencode($collection['slug'])) ?>">View collection</a>
-    </div>
-    <div class="product-grid">
-        <?php foreach (array_slice($collection['products'], 0, 4) as $item): ?>
-            <article class="product-card">
-                <a class="product-card__image" href="/product/<?= e(rawurlencode($item['slug'])) ?>"><img src="<?= e(webp_src($item['image_url'] ?? placeholder_img($item['name']))) ?>" data-product-image-fallback="<?= e(placeholder_img($item['name'])) ?>" alt="<?= e($item['name']) ?>" decoding="async"></a>
-                <div class="product-card__body"><h3><a class="product-card__title" href="/product/<?= e(rawurlencode($item['slug'])) ?>"><?= e($item['name']) ?></a></h3>
-                    <div class="product-card__price-row"><span class="price">₹<?= e((string)(($item['offer_price'] ?? 0) ?: ($item['price'] ?? 0))) ?></span></div>
-                    <a class="btn btn-outline" href="/product/<?= e(rawurlencode($item['slug'])) ?>">View product</a>
-                </div>
-            </article>
-        <?php endforeach; ?>
-    </div>
-</div></section>
+<?php foreach (array_values($homeCollections ?? []) as $collectionIndex => $collection): ?>
+    <?php
+        $titleId = 'home-collection-' . $collectionIndex;
+        $collectionUrl = '/shop?category=' . rawurlencode((string)$collection['slug']);
+        $collectionImage = trim((string)($collection['image_url'] ?? ''));
+        $memberImage = trim((string)($collection['products'][0]['image_url'] ?? ''));
+        $coverImage = $collectionImage ?: ($memberImage ?: placeholder_img($collection['name']));
+        $description = trim(strip_tags((string)($collection['description'] ?? '')));
+    ?>
+    <section class="section home-collection" aria-labelledby="<?= e($titleId) ?>">
+        <div class="container">
+            <div class="product-grid home-collection__grid">
+                <a class="product-card home-collection__lead" href="<?= e($collectionUrl) ?>"
+                   aria-labelledby="<?= e($titleId . '-action ' . $titleId) ?>">
+                    <div class="product-card__image">
+                        <img src="<?= e(webp_src($coverImage)) ?>" data-product-image-fallback="<?= e($memberImage ?: placeholder_img($collection['name'])) ?>"
+                             alt="" width="640" height="480" loading="lazy" decoding="async">
+                    </div>
+                    <div class="product-card__body">
+                        <h2 id="<?= e($titleId) ?>"><?= e($collection['name']) ?></h2>
+                        <?php if ($description !== ''): ?>
+                            <p class="product-card__desc"><?= e($description) ?></p>
+                        <?php endif; ?>
+                        <span class="btn btn-outline home-collection__action" id="<?= e($titleId . '-action') ?>">View collection <span aria-hidden="true">→</span></span>
+                    </div>
+                </a>
+                <?php foreach (array_slice($collection['products'], 0, 4) as $item): ?>
+                    <?php require __DIR__ . '/home-product-card.php'; ?>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
 <?php endforeach; ?>

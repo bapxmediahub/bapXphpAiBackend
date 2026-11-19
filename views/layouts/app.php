@@ -554,25 +554,54 @@ if(supportPanel){supportPanel.addEventListener('click',async function(event){
     }
 });}
 function showToast(msg,type){type=type||'info';var c=document.getElementById('toast-container');if(!c){c=document.createElement('div');c.id='toast-container';document.body.appendChild(c);}var t=document.createElement('div');t.className='toast toast--'+type;var icons={success:'✓',error:'✕',warning:'⚠',info:'ℹ'};t.innerHTML='<span class="toast__icon">'+(icons[type]||'ℹ')+'</span><span class="toast__text">'+msg+'</span><button class="toast__close" aria-label="Dismiss">&times;</button>';t.querySelector('.toast__close').addEventListener('click',function(e){e.stopPropagation();dismiss(t);});t.addEventListener('click',function(){dismiss(t);});c.appendChild(t);var timer=setTimeout(function(){dismiss(t);},4000);function dismiss(el){if(el.classList.contains('toast--out'))return;el.classList.add('toast--out');clearTimeout(timer);setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},250);}}
-document.addEventListener('submit',async function(event){
-    var form=event.target.closest('[data-cart-add],[data-cart-change]');if(!form||!window.fetch)return;
-    event.preventDefault();var control=form.closest('[data-cart-control]');
-    if(control.dataset.busy==='true')return;
-    control.dataset.busy='true';control.querySelectorAll('button').forEach(function(b){b.disabled=true;});
-    try{
-        var response=await fetch(form.getAttribute('action'),{method:'POST',body:new FormData(form),headers:{Accept:'application/json'}});
-        var data=await response.json();if(!response.ok)throw new Error(data.error||'Unable to update cart.');
-        document.querySelectorAll('[data-cart-control]').forEach(function(card){
-            if(card.dataset.slug!==data.slug)return;
-            card.querySelector('[data-cart-add]').hidden=data.quantity>0;
-            card.querySelector('[data-cart-stepper]').hidden=data.quantity<=0;
-            card.querySelector('[data-cart-quantity]').textContent=data.quantity;
+let cartUpdatePending = false;
+document.addEventListener('submit', async function (event) {
+    const form = event.target.closest('[data-cart-add],[data-cart-change]');
+    if (!form || !window.fetch) return;
+    event.preventDefault();
+    if (cartUpdatePending) return;
+
+    const control = form.closest('[data-cart-control]');
+    const focused = form.contains(document.activeElement) ? document.activeElement : null;
+    const buttons = document.querySelectorAll('[data-cart-control] button:not(:disabled)');
+    cartUpdatePending = true;
+    buttons.forEach(button => { button.disabled = true; });
+    try {
+        const response = await fetch(form.getAttribute('action'), {
+            method: 'POST',
+            body: new FormData(form),
+            headers: {Accept: 'application/json'}
         });
-        var badge=document.querySelector('.cart-count'),tray=document.getElementById('mobile-cart-tray'),count=document.getElementById('mobile-cart-count'),label=document.getElementById('mobile-cart-label');
-        if(badge)badge.textContent=data.cart_count;if(tray)tray.hidden=data.cart_count<=0;
-        if(count)count.textContent=data.cart_count;if(label)label.textContent=data.cart_count===1?'item':'items';
-    }catch(error){showToast(error.message||'Unable to update cart.','error');}
-    finally{delete control.dataset.busy;control.querySelectorAll('button').forEach(function(b){b.disabled=false;});}
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Unable to update cart.');
+
+        document.querySelectorAll('[data-cart-control]').forEach(card => {
+            if (card.dataset.slug !== data.slug) return;
+            card.querySelector('[data-cart-add]').hidden = data.quantity > 0;
+            card.querySelector('[data-cart-stepper]').hidden = data.quantity <= 0;
+            card.querySelector('[data-cart-quantity]').textContent = data.quantity;
+        });
+        const badge = document.querySelector('.cart-count');
+        const tray = document.getElementById('mobile-cart-tray');
+        const count = document.getElementById('mobile-cart-count');
+        const label = document.getElementById('mobile-cart-label');
+        if (badge) badge.textContent = data.cart_count;
+        if (tray) tray.hidden = data.cart_count <= 0;
+        if (count) count.textContent = data.cart_count;
+        if (label) label.textContent = data.cart_count === 1 ? 'item' : 'items';
+    } catch (error) {
+        showToast(error.message || 'Unable to update cart.', 'error');
+    } finally {
+        cartUpdatePending = false;
+        buttons.forEach(button => { button.disabled = false; });
+        // Keep focus in this card when the button changes or the request fails.
+        if (focused && (document.activeElement === document.body || document.activeElement === focused)) {
+            const button = focused.closest('[hidden]')
+                ? control.querySelector('[data-cart-add]:not([hidden]) button, [data-cart-stepper]:not([hidden]) button')
+                : focused;
+            button?.focus({preventScroll: true});
+        }
+    }
 });
 </script>
 <div id="toast-container" role="alert" aria-live="polite"></div>

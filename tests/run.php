@@ -1871,7 +1871,7 @@ $tests['cart does not expose unfinished coupon placeholder ui'] = function (): v
 };
 
 $tests['product cards link to details and expose buy-now plus add-to-cart actions'] = function (): void {
-    foreach (['views/public/shop.php', 'views/public/home.php', 'views/public/product.php'] as $path) {
+    foreach (['views/public/shop.php', 'views/public/home-product-card.php', 'views/public/product.php'] as $path) {
         $view = file_get_contents(app_path($path));
         foreach (['product-card__image', 'product-card__title', 'product-purchase', 'data-cart-add', 'data-cart-change', 'data-cart-quantity', 'Buy Now', 'Add to Cart'] as $needle) {
             assertTrue(str_contains($view, $needle), "{$path} should expose {$needle} on product cards");
@@ -1886,6 +1886,29 @@ $tests['product cards link to details and expose buy-now plus add-to-cart action
     assertTrue(str_contains($products, 'trim(rawurldecode($slug))'), 'Product lookup should decode and trim route slugs before comparison');
     $commerce = file_get_contents(app_path('app/Controllers/CommerceController.php'));
     assertTrue(str_contains($commerce, 'max(0') && str_contains($commerce, "fn(\$item) => (int)(\$item['qty'] ?? 0) > 0"), 'Cart decrement should remove an item at zero quantity');
+};
+
+$tests['homepage collection leads with its linked card and renders real purchase forms for available members'] = function (): void {
+    $available = ['name' => 'Devotional ring', 'slug' => 'ring', 'price' => 999, 'offer_price' => 899, 'stock_status' => 'in_stock'];
+    $unavailable = ['name' => 'Devotional pendant', 'slug' => 'pendant', 'price' => 700, 'stock_status' => 'out_of_stock'];
+    $homeCollections = [['name' => 'Festive sale', 'slug' => 'festive-sale', 'products' => [$available, $unavailable]]];
+    $cartQuantities = ['ring' => 2];
+    $csrf = 'collection-fixture';
+    ob_start();
+    require app_path('views/public/home-collections.php');
+    $html = ob_get_clean();
+
+    $doc = new DOMDocument();
+    $doc->loadHTML('<!doctype html><meta charset="utf-8">' . $html, LIBXML_NOERROR | LIBXML_NOWARNING | LIBXML_NONET);
+    $xpath = new DOMXPath($doc);
+    $grid = '//div[contains(@class,"home-collection__grid")]';
+    assertSame('/shop?category=festive-sale', $xpath->evaluate('string(' . $grid . '/*[1][self::a]/@href)'), 'The first tile should link to the curated collection');
+    assertSame('Festive sale', $xpath->evaluate('string(' . $grid . '/*[1]//h2)'), 'The collection heading belongs inside the lead tile');
+    assertSame('/product/ring', $xpath->evaluate('string(' . $grid . '/article[1]//h3/a/@href)'), 'Product names should still open the detail page');
+    assertSame(1, (int)$xpath->evaluate('count(' . $grid . '/article[1]//form[@action="/cart/add"][input[@name="redirect"][@value="/checkout"]])'), 'Buy Now should use the normal checkout form');
+    assertSame('2', $xpath->evaluate('string(' . $grid . '/article[1]//output[@data-cart-quantity])'), 'The collection stepper should start with the actual cart quantity');
+    assertSame(0, (int)$xpath->evaluate('count(' . $grid . '/article[2]//form)'), 'Out-of-stock products should not submit purchase requests');
+    assertTrue(str_contains($html, 'Out of stock'), 'Unavailable members should show their stock status');
 };
 
 $tests['shop supports plain vertical filters and multi category products'] = function (): void {
@@ -1913,7 +1936,7 @@ $tests['shop discovery combines keywords and orders by current purchase price'] 
 };
 
 $tests['public catalog card images are not lazy deferred'] = function (): void {
-    foreach (['views/public/home.php', 'views/public/shop.php', 'views/public/product.php', 'views/public/temples.php'] as $path) {
+    foreach (['views/public/home-product-card.php', 'views/public/shop.php', 'views/public/product.php', 'views/public/temples.php'] as $path) {
         $view = file_get_contents(app_path($path));
         assertTrue(!preg_match('/product-card__image[\\s\\S]{0,240}<img[^>]+loading="lazy"/', $view), "{$path} should not lazy defer visible product card images");
         assertTrue(!preg_match('/temple-feature-card__media[\\s\\S]{0,320}<img[^>]+loading="lazy"/', $view), "{$path} should not lazy defer temple feature images");
@@ -2350,7 +2373,7 @@ $tests['product cards retain responsive image presentation'] = function (): void
     foreach(['.product-card__image', 'display: block;', 'aspect-ratio: 1;', '.product-card__title'] as $needle) {
         assertTrue(str_contains($css, $needle), "Product card CSS should include {$needle}");
     }
-    foreach (['views/public/home.php', 'views/public/shop.php', 'views/public/product.php'] as $viewPath) {
+    foreach (['views/public/home-product-card.php', 'views/public/shop.php', 'views/public/product.php'] as $viewPath) {
         $view = file_get_contents(app_path($viewPath));
         assertTrue(str_contains($view, 'product-card__image') && str_contains($view, 'product-card__title') && str_contains($view, 'data-product-image-fallback'), "{$viewPath} should link product image, title, and fallback to the product page");
     }
