@@ -104,10 +104,11 @@ foreach ($grouped as $slug => $images) {
         if ($optimized !== $target && !rename($optimized, $target)) throw new RuntimeException('Unable to place ' . $target);
     }
     if (!$dryRun && !$assetsOnly) {
-        $product = $bySlug[$slug];
-        $product['image_url'] = $paths[0];
-        $product['image_urls'] = $paths;
-        $store->upsert('products', $product);
+        $store->saveCatalogProduct([
+            'id' => $bySlug[$slug]['id'],
+            'image_url' => $paths[0],
+            'image_urls' => $paths,
+        ], false, requireExactTarget: true);
     }
 }
 

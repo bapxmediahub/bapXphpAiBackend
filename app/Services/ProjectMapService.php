@@ -65,7 +65,8 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/account/orders/{orderId}','name'=>'account.order','page'=>'account/order','controller'=>'AccountController@order','services'=>['AuthService','OrderService','SettingsService']],
             ['method'=>'GET','path'=>'/account/bookings','name'=>'account.bookings.legacy','page'=>'account/orders','controller'=>'AccountController@legacyBookings','services'=>['AuthService']],
             ['method'=>'POST','path'=>'/api/consultations/{id}/status','name'=>'api.consultation.status','page'=>'admin/list','controller'=>'ConsultationController@status','services'=>['AuthService','ConsultationService']],
-            ['method'=>'GET','path'=>'/admin','name'=>'admin.dashboard','page'=>'admin/dashboard','controller'=>'AdminController@dashboard','services'=>['ResourceService','OrderService','StoreStatsService','SiteInsightsService']],
+            ['method'=>'GET','path'=>'/admin','name'=>'admin.dashboard.legacy','page'=>'admin/dashboard','controller'=>'AdminController@legacyDashboard','services'=>['AuthService']],
+            ['method'=>'GET','path'=>'/admin/','name'=>'admin.dashboard','page'=>'admin/dashboard','controller'=>'AdminController@dashboard','services'=>['ResourceService','OrderService','StoreStatsService','SiteInsightsService']],
             ['method'=>'GET','path'=>'/admin/system-health','name'=>'admin.system_health','page'=>'admin/system-health','controller'=>'AdminController@systemHealth','services'=>['AuthService','RuntimeHealthService','DatabaseService']],
             ['method'=>'GET','path'=>'/admin/docs','name'=>'admin.docs','page'=>'admin/help','controller'=>'AdminController@helpIndex','services'=>['AdminHelpService','AuthService']],
             ['method'=>'GET','path'=>'/admin/docs/{slug}','name'=>'admin.docs.guide','page'=>'admin/help','controller'=>'AdminController@helpGuide','services'=>['AdminHelpService','MarkdownRenderer','AuthService']],
@@ -505,7 +506,7 @@ final class ProjectMapService {
             $controller = (string)($route['controller'] ?? '');
             [$controllerClass] = array_pad(explode('@', $controller), 2, '');
             $path = (string)($route['path'] ?? '');
-            if ($path === '/admin' || str_starts_with($path, '/admin/google-reporting')) {
+            if ($path === '/admin/' || str_starts_with($path, '/admin/google-reporting')) {
                 $lines[] = '  ' . self::controllerId($controllerClass) . ' --> ' . self::integrationId('GoogleReportingClient');
             }
             if (str_contains($path, 'auth/google')) {
@@ -683,7 +684,11 @@ final class ProjectMapService {
         return $prefix . '_' . strtolower(substr($stable, 0, 48));
     }
 
-    private static function routeId(array $route): string { return self::nodeId('route', ($route['method'] ?? '') . ' ' . ($route['path'] ?? '')); }
+    private static function routeId(array $route): string {
+        $path = $route['path'] ?? '';
+        $id = self::nodeId('route', ($route['method'] ?? '') . ' ' . $path);
+        return $path !== '/' && str_ends_with($path, '/') ? $id . '_slash' : $id;
+    }
     private static function controllerId(string $name): string { return self::nodeId('controller', $name); }
     private static function serviceId(string $name): string { return self::nodeId('service', $name); }
     private static function viewId(string $name): string { return self::nodeId('view', $name); }

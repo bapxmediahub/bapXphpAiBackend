@@ -69,9 +69,6 @@
                                 <span style="color:var(--color-text-muted);"> · ₹<?= e((string)($item['total'] ?? 0)) ?></span>
                                 <?php if (!empty($item['tax_review_required'])): ?><strong> · Tax review required</strong><?php endif; ?>
                                 <?php if (!empty($item['fulfillment_review_required'])): ?><strong> · Fulfillment review required</strong><?php endif; ?>
-                            <?php elseif (($collection ?? '') === 'appointments'): ?>
-                                <?= e($item['customer_email'] ?? $item['email'] ?? $item['name'] ?? 'Session') ?>
-                                <small><?= e(str_replace('_', ' ', (string)($item['mode'] ?? ''))) ?></small>
                             <?php else: ?>
                                 <?= e($item['name'] ?? $item['email'] ?? $item['message'] ?? $item['event'] ?? 'Record') ?>
                             <?php endif; ?>

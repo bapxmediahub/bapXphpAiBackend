@@ -97,8 +97,17 @@ final class SecretService {
         $this->changeGoogleGrant($revision, $this->encryptedRecord(self::REPORT_GRANT, $grant));
     }
 
-    public function clearGoogleGrant(string $revision): void {
-        $this->changeGoogleGrant($revision, null);
+    /** Google has already revoked this grant. A concurrent property save changes its IV, not its identity. */
+    public function clearRevokedGoogleGrant(array $revoked): void {
+        $db = $this->store ?? new DatabaseService();
+        $revision = $revoked['revision'];
+        for ($attempt = 0; $attempt < 5; $attempt++) {
+            if ($db->changeGoogleReportingRecord($revision, null)) return;
+            $current = $this->googleReporting();
+            if (($current['generation'] ?? null) !== $revoked['generation']) return;
+            $revision = $current['revision'];
+        }
+        throw new \DomainException('Google revoked reporting, but settings kept changing. Reload and disconnect to finish clearing the local grant.');
     }
 
     private function changeGoogleGrant(string $revision, ?array $record): void {

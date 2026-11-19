@@ -7,8 +7,8 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 150 routes, 13 controllers, 69 services, 63 views, 0 data files, 27 tools"]
-    arch_routes["> Routes: 150 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 151 routes, 13 controllers, 69 services, 63 views, 0 data files, 27 tools"]
+    arch_routes["> Routes: 151 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 13"]:::arch
     arch_svc["> Services: 69"]:::arch
     arch_views["> Views: 63"]:::arch
@@ -104,6 +104,7 @@ flowchart LR
 
   subgraph ROUTES_ADMIN["ADMIN Routes"]
     route_get_admin["GET /admin — Admin dashboard — commerce analytics and operations"]:::route
+    route_get_admin_slash["GET /admin/"]:::route
     route_get_admin_system_health["GET /admin/system-health"]:::route
     route_get_admin_docs["GET /admin/docs"]:::route
     route_get_admin_docs_slug["GET /admin/docs/{slug}"]:::route
@@ -602,6 +603,9 @@ flowchart LR
   controller_consultationcontroller --> service_consultationservice
   controller_consultationcontroller -. renders .-> view_admin_list
   route_get_admin --> controller_admincontroller
+  controller_admincontroller --> service_authservice
+  controller_admincontroller -. renders .-> view_admin_dashboard
+  route_get_admin_slash --> controller_admincontroller
   controller_admincontroller --> service_resourceservice
   controller_admincontroller --> service_orderservice
   controller_admincontroller --> service_storestatsservice

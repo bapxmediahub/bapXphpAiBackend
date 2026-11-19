@@ -1,7 +1,7 @@
-<section class="section">
+<section class="section site-search">
     <div class="container document-page__content">
         <h1>Search the site</h1>
-        <form role="search" action="/search" method="get">
+        <form class="site-search__form" role="search" action="/search" method="get">
             <label for="site-search-query">Search by name or keyword</label>
             <input id="site-search-query" type="search" name="q" maxlength="120" value="<?= e($query) ?>" required>
             <button class="btn btn-primary" type="submit">Search</button>
@@ -9,11 +9,14 @@
         <?php if ($query !== '' && $total === 0): ?>
             <p>No results for “<?= e($query) ?>”. Try a shorter name or a different spelling.</p>
         <?php endif; ?>
+        <?php if ($total > 0): ?>
+            <p class="site-search__count"><?= $total ?> <?= $total === 1 ? 'result' : 'results' ?> for “<?= e($query) ?>”</p>
+        <?php endif; ?>
         <?php $paths = ['Products' => '/product/', 'Articles' => '/blog/', 'Temples' => '/temples/']; ?>
         <?php foreach ($groups as $heading => $items): ?>
             <?php if (!$items) continue; ?>
             <h2><?= e($heading) ?></h2>
-            <ul>
+            <ul class="site-search__results">
                 <?php foreach ($items as $item): ?>
                     <li><a href="<?= e($paths[$heading] . rawurlencode((string)$item['slug'])) ?>"><?= e($item['name'] ?? $item['title'] ?? $item['slug']) ?></a></li>
                 <?php endforeach; ?>

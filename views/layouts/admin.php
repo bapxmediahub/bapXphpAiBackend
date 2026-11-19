@@ -74,7 +74,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
             <div><span>Sri Panchami Spiritual</span><small>Owner workspace</small></div>
         </div>
         <nav class="admin-sidebar__nav" id="admin-nav">
-            <a href="/admin" class="admin-nav-top <?= ($_SERVER['REQUEST_URI'] === '/admin' ? 'active' : '') ?>">
+            <a href="/admin/" class="admin-nav-top <?= (parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) === '/admin/' ? 'active' : '') ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                 Dashboard
             </a>
@@ -125,10 +125,10 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
             </a>
             <button type="button" class="admin-nav-toggle" data-target="menu-analytics" aria-controls="menu-analytics" aria-expanded="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 3v18h18M8 16v-3m5 3V9m5 7V5"/></svg>Analytics<svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg></button>
             <div class="admin-submenu" id="menu-analytics">
-                <a href="/admin#dashboard-commerce-title">Commerce overview</a>
+                <a href="/admin/#dashboard-commerce-title">Commerce overview</a>
                 <a href="/admin/tax-report" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/tax-report') === 0 ? 'active' : '') ?>">Commerce Reports</a>
                 <a href="/admin/consultation-analytics" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/consultation-analytics') === 0 ? 'active' : '') ?>">Session analytics</a>
-                <a href="/admin#web-analytics">Web analytics</a>
+                <a href="/admin/#web-analytics">Web analytics</a>
             </div>
             <button type="button" class="admin-nav-toggle" data-target="menu-email" aria-controls="menu-email" aria-expanded="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>Email<svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg></button>
             <div class="admin-submenu" id="menu-email">

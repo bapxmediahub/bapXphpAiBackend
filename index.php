@@ -91,14 +91,16 @@ if ($uri === '/admin/manifest.json') {
         'name' => 'SPS Admin',
         'short_name' => 'SPS Admin',
         'description' => 'Admin panel for Sri Panchami Spiritual.',
-        'start_url' => '/admin',
+        // Existing installations used the original start URL as their implicit manifest ID.
+        'id' => '/admin',
+        'start_url' => '/admin/',
         'scope' => '/admin/',
         'display' => 'standalone',
         'background_color' => '#222222',
         'theme_color' => '#3a0003',
         'icons' => [
-            ['src' => '/assets/images/logo-square.jpeg', 'sizes' => '192x192', 'type' => 'image/jpeg'],
-            ['src' => '/assets/images/logo.jpeg', 'sizes' => '512x512', 'type' => 'image/jpeg'],
+            ['src' => '/assets/images/pwa/icon-192.png', 'sizes' => '192x192', 'type' => 'image/png'],
+            ['src' => '/assets/images/pwa/icon-512.png', 'sizes' => '512x512', 'type' => 'image/png'],
         ],
     ];
     header('Content-Type: application/json; charset=utf-8');
@@ -129,7 +131,7 @@ if (strpos($uri, '/api/') === 0) {
 }
 
 // Trailing slash redirect for web routes (prevents 404s on /docs/ etc.)
-if ($uri !== null && $uri !== '/' && str_ends_with($uri, '/')) {
+if ($uri !== null && $uri !== '/' && $uri !== '/admin/' && str_ends_with($uri, '/')) {
     header('Location: ' . rtrim($uri, '/') . (!empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : ''));
     exit;
 }

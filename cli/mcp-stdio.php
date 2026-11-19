@@ -145,6 +145,8 @@ function handleMessage(mixed $request): ?array
         return $envelope + dispatchRequest($request->method, $request->params ?? null);
     } catch (Throwable) {
         return $envelope + rpcError(-32603, 'Catalogue unavailable');
+    } finally {
+        DatabaseService::releaseIdleConnection();
     }
 }
 

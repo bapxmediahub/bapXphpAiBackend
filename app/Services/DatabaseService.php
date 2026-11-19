@@ -421,17 +421,27 @@ final class DatabaseService {
         finally { $pdo->query("SELECT RELEASE_LOCK($key)"); }
     }
 
-    public function saveCatalogProduct(array $record, bool $matchSlug): array {
+    public function saveCatalogProduct(array $record, bool $matchSlug, bool $requireExactTarget = false): array {
         if ($this->isTestMode()) return $this->upsert('products', $record);
         if ($this->isRemote()) return $this->remoteMutation('save_catalog_product', 'products',
-            ['record'=>$record, 'match_slug'=>$matchSlug])['record'];
-        return $this->withProductLock(function () use ($record, $matchSlug): array {
-            $slug = (string)($record['slug'] ?? '');
-            if ($matchSlug && $slug !== '') {
-                $existing = $this->query("SELECT id FROM products WHERE JSON_UNQUOTE(JSON_EXTRACT(_data, '$.slug')) = ? ORDER BY id LIMIT 1", [$slug]);
-                if ($existing) $record['id'] = $existing[0]['id'];
+            ['record'=>$record, 'match_slug'=>$matchSlug, 'require_exact_target'=>$requireExactTarget])['record'];
+        return $this->withProductLock(function () use ($record, $matchSlug, $requireExactTarget): array {
+            $slug = trim((string)($record['slug'] ?? ''));
+            $current = null;
+            if ($requireExactTarget && !$matchSlug) {
+                $current = $this->find('products', (string)$record['id']);
+                if ($current === null) throw new \InvalidArgumentException('The product was removed before this edit was saved.');
             }
-            return $this->upsert('products', $record);
+            if (($matchSlug || $requireExactTarget) && $slug !== '') {
+                $existing = $this->query("SELECT id FROM products WHERE LOWER(TRIM(JSON_UNQUOTE(JSON_EXTRACT(_data, '$.slug')))) = LOWER(?) ORDER BY id LIMIT 1", [$slug]);
+                if ($existing) {
+                    if ($requireExactTarget && ($matchSlug || $existing[0]['id'] !== $record['id'])) {
+                        throw new \InvalidArgumentException('That slug already belongs to a product. Use its edit command or choose a different slug.');
+                    }
+                    $record['id'] = $existing[0]['id'];
+                }
+            }
+            return $this->upsert('products', $record) + ($current ?? []);
         });
     }
 

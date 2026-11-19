@@ -113,7 +113,7 @@ final class AdminGoogleReportingController extends BaseController
         try {
             $grant = $this->currentGrant();
             $this->google->revoke($grant['refresh_token']);
-            $this->secrets->clearGoogleGrant($grant['revision']);
+            $this->secrets->clearRevokedGoogleGrant($grant);
             unset($_SESSION['google_reporting_consent']);
             (new AuditLogService())->record('disconnect', 'google-reporting', 'oauth');
             $this->flash('Google reporting disconnected.', 'success');

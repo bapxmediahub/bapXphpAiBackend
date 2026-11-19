@@ -1,5 +1,5 @@
 <section class="admin-card" aria-labelledby="google-reporting-title">
-    <h1 id="google-reporting-title">Google reporting</h1>
+    <h2 id="google-reporting-title"><?= $connected ? 'Reporting properties' : 'Connect a Google account' ?></h2>
     <p><a href="/admin#web-analytics">View dashboard reports</a></p>
     <?php if (!$connected): ?>
         <p>Connect the Google account that can read your GA4 property and Search Console site.</p>

@@ -45,7 +45,7 @@ query_examples:
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
   concepts: 439
-  relationships: 354
+  relationships: 355
   by_type:
     blog: 16
     controller: 13
@@ -2170,19 +2170,15 @@ concepts:
   - id: "route:get__admin"
     type: "route"
     title: "GET /admin"
-    description: "admin.dashboard"
+    description: "admin.dashboard.legacy"
     resource: "app/routes.php"
     tags:
       - "code"
       - "route"
     method: "GET"
     path: "/admin"
-    controller: "AdminController@dashboard"
+    controller: "AdminController@legacyDashboard"
     services:
-      - "ResourceService"
-      - "OrderService"
-      - "StoreStatsService"
-      - "SiteInsightsService"
       - "AuthService"
     view: "admin/dashboard"
   - id: "route:get__admin_agent"
@@ -5669,6 +5665,9 @@ relationships:
   - from: "operator_guide:reports"
     to: "service:AdminHelpService"
     relation: "rendered_by"
+  - from: "operator_guide:settings"
+    to: "controller:AdminGoogleReportingController"
+    relation: "explains"
   - from: "operator_guide:settings"
     to: "service:RuntimeHealthService"
     relation: "explains"

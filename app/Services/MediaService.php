@@ -86,6 +86,10 @@ final class MediaService {
     }
 
     public function all(?string $context = null): array {
+        return $this->catalogue($context);
+    }
+
+    private function catalogue(?string $context, bool $filterGlobal = false): array {
         if ($context !== null && !in_array($context, self::CONTEXTS, true)) return [];
         $contexts = $context ? [$context] : self::CONTEXTS;
         // Merge in the same context order as legacy catalogues. Read database
@@ -104,7 +108,7 @@ final class MediaService {
             $filters = [];
             $params = [];
             if ($context !== null) {
-                $filters[] = "COALESCE(JSON_UNQUOTE(JSON_EXTRACT(_data, '$.context')), 'shared') = ?";
+                $filters[] = "COALESCE(NULLIF(JSON_UNQUOTE(JSON_EXTRACT(_data, '$.context')), 'null'), 'shared') = ?";
                 $params[] = $context;
             }
             if ($afterId !== null) { $filters[] = 'id > ?'; $params[] = $afterId; }
@@ -130,21 +134,77 @@ final class MediaService {
             // Old metadata may use a shared context for retired profile portraits.
             if ($key !== '' && !str_starts_with((string)parse_url($key, PHP_URL_PATH), '/assets/images/astrologers/')) $byPath[$key] = $item;
         }
+        $cataloguedPaths = $filterGlobal && $context !== null ? array_fill_keys(array_keys($byPath), true) : [];
         foreach ($this->scanAssetFiles($context) as $file) {
             if (!isset($byPath[$file['url']])) $byPath[$file['url']] = $file;
+        }
+        if ($filterGlobal && $context !== null && $byPath !== []) {
+            $this->excludeForeignOwners($byPath, $cataloguedPaths, $context);
         }
         $merged = array_values($byPath);
         usort($merged, fn($a, $b) => strcmp((string)($b['created_at'] ?? ''), (string)($a['created_at'] ?? '')));
         return $merged;
     }
 
+    /** A bundled image can be owned by an upload in another context. Only fetch
+     * competing paths and database overrides for legacy rows claiming those paths. */
+    private function excludeForeignOwners(array &$items, array $cataloguedPaths, string $context): void {
+        $priority = array_flip(self::CONTEXTS);
+        $legacy = [];
+        $legacyAtPath = [];
+        foreach (self::CONTEXTS as $other) {
+            if ($other === $context) continue;
+            foreach ($this->readYaml($other) as $row) {
+                if (($row['context'] ?? 'shared') !== $other) continue;
+                $path = $row['url'] ?? $row['path'] ?? '';
+                $id = $row['id'] ?? $row['url'] ?? '';
+                if ($id === '') continue;
+                $legacy[$other][$id] = $row;
+                if (isset($items[$path])) $legacyAtPath[$path][$other][] = $id;
+            }
+        }
+
+        foreach (array_chunk(array_keys($items), 200) as $paths) {
+            $competitors = [];
+            $legacyIds = [];
+            foreach ($paths as $path) {
+                foreach ($legacyAtPath[$path] ?? [] as $other => $ids) {
+                    foreach ($ids as $id) {
+                        $competitors[$other][$id] = $legacy[$other][$id];
+                        $legacyIds[] = $id;
+                    }
+                }
+            }
+            $placeholders = implode(',', array_fill(0, count($paths), '?'));
+            $overlap = "COALESCE(NULLIF(JSON_UNQUOTE(JSON_EXTRACT(_data, '$.url')), 'null'), JSON_UNQUOTE(JSON_EXTRACT(_data, '$.path'))) IN ($placeholders)";
+            if ($legacyIds !== []) $overlap .= ' OR id IN ('.implode(',', array_fill(0, count($legacyIds), '?')).')';
+            $where = " WHERE COALESCE(NULLIF(JSON_UNQUOTE(JSON_EXTRACT(_data, '$.context')), 'null'), 'shared') <> ? AND ($overlap)";
+            $params = [$context, ...$paths, ...$legacyIds];
+            $after = null;
+            do {
+                $cursor = $after === null ? '' : ' AND id > ?';
+                $rows = $this->store->query("SELECT id, _data FROM media_files$where$cursor ORDER BY id LIMIT 250",
+                    $after === null ? $params : [...$params, $after]);
+                foreach ($rows as $record) {
+                    $after = (string)$record['id'];
+                    $row = json_decode($record['_data'], true, flags: JSON_THROW_ON_ERROR);
+                    $other = $row['context'] ?? 'shared';
+                    if (isset($priority[$other])) $competitors[$other][$after] = $row + ($legacy[$other][$after] ?? []);
+                }
+            } while (count($rows) === 250);
+            foreach ($competitors as $other => $rows) {
+                foreach ($rows as $row) {
+                    $path = $row['url'] ?? $row['path'] ?? '';
+                    if (!isset($cataloguedPaths[$path]) || $priority[$other] > $priority[$context]) unset($items[$path]);
+                }
+            }
+        }
+    }
+
     public function adminPage(array $query): array {
         $options = ResourceService::listOptions($query);
         $context = in_array($query['context'] ?? null, self::CONTEXTS, true) ? $query['context'] : '';
-        $matches = $this->all();
-        if ($context !== '') {
-            $matches = array_values(array_filter($matches, static fn(array $item): bool => ($item['context'] ?? 'shared') === $context));
-        }
+        $matches = $this->catalogue($context === '' ? null : $context, true);
         if ($options['search'] !== '') {
             $matches = array_values(array_filter($matches, static function (array $item) use ($options): bool {
                 foreach (['original_name','filename','description','url','path'] as $key) {

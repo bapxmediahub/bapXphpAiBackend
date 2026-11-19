@@ -3,7 +3,7 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 150,
+        "routes": 151,
         "controllers": 13,
         "services": 69,
         "views": 63,
@@ -188,6 +188,16 @@
         {
             "method": "GET",
             "path": "/admin",
+            "name": "admin.dashboard.legacy",
+            "controller": "AdminController@legacyDashboard",
+            "view": "admin/dashboard",
+            "services": [
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/",
             "name": "admin.dashboard",
             "controller": "AdminController@dashboard",
             "view": "admin/dashboard",

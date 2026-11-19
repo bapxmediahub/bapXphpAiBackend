@@ -12,7 +12,7 @@
     <div data-section-index hidden></div>
     <nav class="dashboard-commerce__periods" aria-label="Analytics period">
         <?php foreach ([7, 30, 90] as $days): ?>
-            <a href="/admin?period=<?= $days ?>" class="btn btn-sm <?= $period === $days ? 'btn-primary' : 'btn-outline' ?>" <?= $period === $days ? 'aria-current="page"' : '' ?>>Last <?= $days ?> days</a>
+            <a href="/admin/?period=<?= $days ?>" class="btn btn-sm <?= $period === $days ? 'btn-primary' : 'btn-outline' ?>" <?= $period === $days ? 'aria-current="page"' : '' ?>>Last <?= $days ?> days</a>
         <?php endforeach; ?>
     </nav>
     <?php $money = static fn($amount): string => '₹' . number_format((float)$amount, 2); ?>

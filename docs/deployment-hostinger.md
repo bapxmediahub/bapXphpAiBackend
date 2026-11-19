@@ -108,7 +108,7 @@ This application is built for normal PHP hosting, not Vercel. Vercel's official 
 
 ## Hostinger Requirements
 
-- Stable PHP 8.3 or newer and MySQL 8.4 or newer for the native platform target.
+- Stable PHP 8.3 or newer and MySQL 8.4 or newer for the native platform target. The hosted database reports MariaDB 11.8. CI also exercises admin list queries on MariaDB 11.8. Use portable JSON_EXTRACT and JSON_UNQUOTE expressions when querying both engines.
 - cURL, JSON, mbstring, PDO MySQL and OpenSSL extensions.
 - Verify actual web PHP and configured database in Admin → System Health; CLI PHP can differ.
 - A MariaDB-backed legacy deployment is not MySQL8.4-compliant and needs an independently approved migration, not an automatic code-release cutover.

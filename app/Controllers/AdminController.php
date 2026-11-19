@@ -43,6 +43,11 @@ final class AdminController extends BaseController {
         $this->render('admin/google-merchant',compact('channelReport','shopEnabled')+['pageTitle'=>'Google & YouTube']);
     }
 
+    public function legacyDashboard(): void {
+        $query = parse_url((string)($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_QUERY);
+        $this->redirect('/admin/' . ($query !== null && $query !== false ? '?' . $query : ''));
+    }
+
     public function dashboard(): void{
         $catalogProducts = (new ResourceService('products'))->all();
         $productCount = count($catalogProducts);

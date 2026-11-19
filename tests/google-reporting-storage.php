@@ -43,7 +43,7 @@ checkReporting(\App\Controllers\AdminGoogleReportingController::matchesForm($old
 $secrets->saveGoogleTargets($old, 'properties/1', 'sc-domain:example.test');
 checkReporting(!\App\Controllers\AdminGoogleReportingController::matchesForm($secrets->googleReporting(), $secondTab), 'Stale property form accepted after another tab saved.');
 
-rejectsStale(fn()=>$secrets->clearGoogleGrant($old['revision']));
+rejectsStale(fn()=>$secrets->saveGoogleTargets($old, 'properties/2', ''));
 
 $log = tmpfile();
 $bridge = proc_open([PHP_BINARY,'-S','127.0.0.1:18975','index.php'], [0=>['pipe','r'],1=>$log,2=>$log], $pipes, dirname(__DIR__));
@@ -61,12 +61,15 @@ try {
     checkReporting($grant['refresh_token'] === 'private-fixture-refresh' && $grant['property'] === 'properties/1', 'Remote decrypted grant/targets mismatch.');
     $remote->saveGoogleTargets($grant, '', 'https://example.test/');
     rejectsStale(fn()=>$remote->saveGoogleTargets($grant, 'properties/1', ''));
-    $remote->clearGoogleGrant($remote->googleReporting()['revision']);
+    // The provider confirmed revocation for $grant while the property save above changed its IV.
+    $remote->clearRevokedGoogleGrant($grant);
+    checkReporting($remote->googleReporting() === [], 'Revoked grant survived a concurrent selection.');
+    $remote->clearRevokedGoogleGrant($grant); // A second disconnect completed in the meantime.
     $remote->saveGoogleGrant('second-fixture');
-    rejectsStale(fn()=>$remote->clearGoogleGrant($grant['revision']));
+    $remote->clearRevokedGoogleGrant($grant); // Delayed cleanup for the previous consent.
     $new = $remote->googleReporting();
     checkReporting($new['refresh_token'] === 'second-fixture' && $new['site'] === '', 'Stale request affected the new authorization.');
-    $remote->clearGoogleGrant($new['revision']);
+    $remote->clearRevokedGoogleGrant($new);
     checkReporting($remote->googleReporting() === [] && ($remote->all()['reporting_fixture_setting'] ?? '') === 'ordinary', 'Disconnect must clear only the reporting grant.');
     echo "Google reporting encrypted storage, direct MySQL, authenticated bridge and stale operations passed.\n";
 } finally {

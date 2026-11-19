@@ -22,21 +22,34 @@ final class ResourceService {
     public function adminPage(array $query): array {
         $fields = match ($this->collection) {
             'orders' => ['customer_email','customer_name','status','created_at','invoice_number','total'],
-            'appointments' => ['customer_email','email','name','astrologer_slug','mode','status','created_at'],
+            'appointments' => ['customer_email','email','name','astrologer_slug','mode','status','created_at','preferred_date','preferred_time'],
             default => throw new \InvalidArgumentException('Unsupported record list'),
         };
         $options = self::listOptions($query);
         // Match the list's meaningful-record check before counting or paging.
         // A stored numeric zero, false, or array is a value; an empty string or null is not.
-        $value = "JSON_EXTRACT(_data, CONCAT('$.', JSON_QUOTE(fields.field_name)))";
-        $where = " WHERE EXISTS (SELECT 1 FROM JSON_TABLE(JSON_KEYS(_data), '$[*]'
-            COLUMNS(field_name VARCHAR(255) PATH '$')) AS fields
-            WHERE fields.field_name <> 'id' AND JSON_TYPE($value) <> 'NULL'
-                AND LENGTH(JSON_UNQUOTE($value)) > 0)";
-        $params = [];
+        $where = " WHERE COALESCE(JSON_EXTRACT(JSON_REMOVE(_data, '$.id'), '$.*'), '[]') NOT REGEXP ?";
+        // The wildcard returns the top-level values as an array on both database engines.
+        $params = ['^\[[[:space:]]*((null|"")[[:space:]]*(,[[:space:]]*(null|"")[[:space:]]*)*)?\]$'];
         if ($options['search'] !== '') {
             $columns = ['id'];
             foreach ($fields as $field) $columns[] = "JSON_UNQUOTE(JSON_EXTRACT(_data, '$.$field'))";
+            // Preserve the labels staff see in the list as well as the stored codes.
+            $columns[] = "REPLACE(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(_data, '$.status')), 'active'), '_', ' ')";
+            if ($this->collection === 'appointments') {
+                $columns[] = "REPLACE(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(_data, '$.mode')), 'booking'), '_', ' ')";
+            } else {
+                $columns[] = "CONCAT('₹', COALESCE(JSON_UNQUOTE(JSON_EXTRACT(_data, '$.total')), '0'))";
+                foreach (['tax_review_required' => 'Tax review required', 'fulfillment_review_required' => 'Fulfillment review required'] as $field => $label) {
+                    $flag = "JSON_EXTRACT(_data, '$.$field')";
+                    // Match !empty() for JSON booleans and older string or numeric flags.
+                    $columns[] = "CASE JSON_TYPE($flag)
+                        WHEN 'STRING' THEN IF(JSON_UNQUOTE($flag) NOT IN ('', '0'), '$label', NULL)
+                        WHEN 'BOOLEAN' THEN IF(JSON_UNQUOTE($flag) = 'true', '$label', NULL)
+                        WHEN 'NULL' THEN NULL
+                        ELSE IF(CAST($flag AS DECIMAL(65,20)) <> 0, '$label', NULL) END";
+                }
+            }
             $where .= " AND LOCATE(LOWER(?), LOWER(CONCAT_WS(' ', ".implode(', ', $columns)."))) > 0";
             $params[] = $options['search'];
         }

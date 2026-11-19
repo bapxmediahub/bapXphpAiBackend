@@ -96,7 +96,8 @@ final class RemoteDbController {
                 return;
             }
             if ($collection === 'products' && $action === 'save_catalog_product') {
-                $record = $store->saveCatalogProduct((array)($input['record'] ?? []), ($input['match_slug'] ?? false) === true);
+                $record = $store->saveCatalogProduct((array)($input['record'] ?? []), ($input['match_slug'] ?? false) === true,
+                    ($input['require_exact_target'] ?? false) === true);
                 echo json_encode(['success'=>true, 'record'=>$record]);
                 return;
             }

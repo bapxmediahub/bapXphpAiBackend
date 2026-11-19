@@ -14,7 +14,7 @@
         },
         "commerce": {
             "source_sha256": "a12b7e3c45e2fda641f712df362ff8a87a769eee83ec232c288eb8ad6c203fb9",
-            "references_sha256": "5dc9d6f7edd946513d4a9db37ee0a76c2f5ee4fd77c7eb853c7d9c21a3017a1c",
+            "references_sha256": "b76a6e8de439532c29facfc9cb429001795a2c891f0c5df5da0d65d41b3a7cdf",
             "review_note": "Reconciled paid and pending dashboard views, HSN review groups, sorted lists, previewed CSV imports and atomic retry behavior."
         },
         "content": {
@@ -23,47 +23,47 @@
             "review_note": "Checked public search, dated Markdown visibility, CLI compare-and-swap, exact article revision restore and manual editor media."
         },
         "foundation": {
-            "source_sha256": "f622cfd9a024aa26669ec49be23f3ab45ab4fd741b336953e4d9997ac8cbd974",
-            "references_sha256": "364aa78dd3c54f938c276c525ae9c0c162eab7a09c8f7e567dfc797fb8358dee",
+            "source_sha256": "7d71614f3bb5c356f9f561d752afd590ed6593c4d1987f41289e24f4edd9387b",
+            "references_sha256": "6bcbd65a4701e0f15c0c00f9528845bbfe27b5d06aa6e2b6cf6df5876c34c08a",
             "review_note": "Reviewed runtime integration and persistence boundaries for MySQL, private revisions, catalogue MCP, upload binaries and Google grants."
         },
         "google-tags": {
-            "source_sha256": "621566538dfe93ffca1d61758ccc7df4f450166117b10fa4599e70506e990d52",
+            "source_sha256": "603daf3f407fbf38c31a253bf7659ff22883984689dc5468de0421170b647dbd",
             "references_sha256": "08bc1757f4e3fef9bbef14339fc55696cb4d56f5cc2319e85ab7b5e88c7a4e2a",
             "review_note": "Verified saved social metadata, Google reporting consent, API result handling and separation from public tracking tags."
         },
         "http-errors": {
-            "source_sha256": "2896f2820105e0f890ada44bde5661430b416801b121d2914bdea17e0ffe2e9f",
-            "references_sha256": "3dc1fff0fa4d425c43b03934467648c2786b3e5ffc9ae47eac4c3e9246f10da8",
+            "source_sha256": "eb87ef2f3726d7012c6500ea586456cb66ad16f2ea6dcd241020edf996fbc768",
+            "references_sha256": "06ebc9553b5fce748d8450981a3c9d6c06bd5e172e3a46bfa1db9b80fe957669",
             "review_note": "Checked search and product visibility, invalid CSV, rejected uploads, callback errors and private route responses against HTTP error handling."
         },
         "interface": {
-            "source_sha256": "8e4c23be437e32a47d8091ba6ac587eca0b2103fc13e260d0372cd9723fabc23",
+            "source_sha256": "ecc127d71165025a558910b1140c8c63d56173c563f88225b64ef44c476c4ac0",
             "references_sha256": "a8e17788c14af2e7e64264f1032bb86915ba004eeee42aa34674b2a8eec7d84e",
             "review_note": "Checked phone and desktop shopping, scroll geometry, reused product actions and owner workspace interactions against design and skills."
         },
         "mail": {
-            "source_sha256": "b366d33da225e056f89dcc669779b08eaeb5de53f95989b9a5e82d76af977095",
+            "source_sha256": "e39363c7211d542a9a7bb724f7f584a2f0509e31d3643bf23115dd3330f7c56f",
             "references_sha256": "cc64bf77a2d6931f9907da7a790def73de24a51a020e04d65dab25ab7eb1fe2e",
             "review_note": "Checked Markdown publication and revision-restore paths for mail dispatch and retained the existing delivery and SMTP tests."
         },
         "media": {
-            "source_sha256": "12b44bf8336eacf067dd61151fed3eadef9cba88e56a8566a1c655ede1dc2468",
+            "source_sha256": "83c211a63f1930ddd496791aa4561dc4bf34388f3ca60975da0ef0b7aa28b84a",
             "references_sha256": "a6cb869a825622a426c58394cc5cd0941eb10970f85c5430ca665c7194ade212",
             "review_note": "Checked thumbnail paging, referenced media guards and success and failure responses for the editor and agent upload workflows."
         },
         "operator-help": {
-            "source_sha256": "afdce1be3797df9e1b14ea73b471cd48164559fb9419c43dffdc0c7b6e7a2247",
-            "references_sha256": "7d1b7cdff628157a20c1104e1972d3d26b86f56cdab3ce018fb2cfaffb5add35",
+            "source_sha256": "5154488bf1d719fa758ececae5a1ae06d18608a6ec1648e9554ddb2952d3d0dd",
+            "references_sha256": "c8697440fb70a0eb32adfa171e787011ec377270feb088cc071ccaf95d433c5b",
             "review_note": "Cross-checked the publishing, media, catalogue, Google reporting and monitoring help against their owner forms and tested routes."
         },
         "sales-channels": {
-            "source_sha256": "175b913be9ea4eebe72b3657a67fe560307232b22fff35aca1dec654ee51678b",
-            "references_sha256": "64a6a7164bb4f69d3d338b47a123739ea5a3eb196848df9e3ca42126cfe30288",
+            "source_sha256": "b7ea323c228c123e241f01fe0b0b15f2f761e57b0d3bed9cd0c8b3c2bdb03584",
+            "references_sha256": "066c7c71faebd1488e25643f018b242237fb5644d53ede65d3ddcb494be49776",
             "review_note": "Verified direct merchant correction links through pagination, retained feed visibility and read-only public catalogue outputs."
         },
         "workflow": {
-            "source_sha256": "fa9a7fefa3390021606ea3cd4a588e7191dec09ea2dbd8e8fae492c568ee510f",
+            "source_sha256": "0dd868cb76ae6d447990c28a349466bd0129663c05629368ba3e62d4cbdc1cf7",
             "references_sha256": "94dd586c81b1d91a0332e86219ac2b55c416d5ebc37115c9a2008697d68236d0",
             "review_note": "Reviewed CLI, test workflow, source indexes and documentation discovery for catalogue MCP, articles, imports and Chrome verification."
         }
