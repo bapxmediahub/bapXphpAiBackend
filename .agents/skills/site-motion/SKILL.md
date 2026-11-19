@@ -14,12 +14,14 @@ not a replacement for functional commerce UI. Do not add React, invented data,
 fake cursor actions, scrolljacking, long pinned checkout scenes or paid video.
 
 Keep content fully visible without JavaScript, observer APIs or animation
-support. Avoid opacity-zero loading gates. Animate bounded transform/opacity,
+support. Avoid opacity-zero loading gates. Prefer native view timelines for section
+entrances when supported. Keep the once-only entrance as a browser fallback
+and leave task controls steady. Animate bounded transform/opacity,
 stop offscreen/hidden activity, respect reduced motion dynamically, and keep
 keyboard/focus/anchor behavior native. Shared public/admin layouts own the
 assets; do not copy a different engine into every page.
 
 Run `node --test tests/site-motion.test.cjs`, PHP/repository CI, then real
-Playwright desktop/375px and reduced/no-JS checks. Inspect intermediate frames,
+Playwright desktop/375px and reduced/no-JS checks. Inspect intermediate frames at distinct scroll positions and after scrolling back,
 computed visibility, overflow, actual controls, private-directory HTTP denial
 and console errors. Do not publish credentials or real customer screenshots.

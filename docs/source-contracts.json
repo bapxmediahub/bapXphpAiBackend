@@ -28,9 +28,9 @@
             "review_note": "Verified the canonical owner subject, scoped acknowledgement and PHP persistence boundary."
         },
         "google-tags": {
-            "source_sha256": "4a34454631f8bf81228e297f8ff57a517568ac0e83ec23072cb6dbebf36be032",
-            "references_sha256": "f55e8470bb5cb011ccffec0eaf2dc9e48e9db2def9700fab41fdf51c969b1d8a",
-            "review_note": "Verified the shared public layout loads section actions independently of Google tag settings and rendering."
+            "source_sha256": "a83f8447fa3c7e14df377ca26e8d645bb72aad689fde0d3e03fc1be155763903",
+            "references_sha256": "70ac55633247ec6cea04867dbd036b9d6fc7c16fec4155f7039fb9f01cca7d68",
+            "review_note": "Reviewed the shared public head token change and flexible UI skill guidance with existing Google tag behavior."
         },
         "http-errors": {
             "source_sha256": "399b84f63ec0f03947d9338711f3a8c60008750c96d96936b1e9c7c57b6c5792",
@@ -38,9 +38,9 @@
             "review_note": "Compared bootstrap/session initialization, old global handler, BaseController redirects/JSON/view output and actual API catches with RequestFailureService. Native response buffer and safe500 replace only unhandled failures; 88 loopback HTTP assertions preserve normal HTML/JSON/XML/binary/204/redirect/explicit503. Docs state pre-bootstrap/OOM/streaming limits and uncertainty of earlier side effects; no raw message/admin stack or database accusation."
         },
         "interface": {
-            "source_sha256": "0da976fe242c2f468eab18e9b4e50cfd26743af1b48e4dcede0751c0a8ee71ef",
-            "references_sha256": "ee8b343bdf8f4d0384ff1519868193e4b9084fb674fc34f3c45fd736d9a621e4",
-            "review_note": "Verified the full-width cart layout, visible section entrance, steady checkout controls and reduced-motion fallback."
+            "source_sha256": "b9c2762913840220ef8cfc3a02cf1a6dcec7ec3a59fda3d4c9e4b1013d9d0df8",
+            "references_sha256": "be3693893758b18fd62bafaad98fe3b20adacc4cb241f5278cf8d80ed2a8ff22",
+            "review_note": "Verified cart elevation, mobile checkout clearance, native forward and reverse scroll progress, and reduced-motion fallback."
         },
         "mail": {
             "source_sha256": "7694291a27699ebb722b0ff98b9ae74972c92a20b0b057726677e0a733ffd792",
@@ -49,13 +49,13 @@
         },
         "media": {
             "source_sha256": "b5d97e1c122d64c466e4591c2ffd6bae561e2c7d5c105ed777217062d7e2e587",
-            "references_sha256": "e04eab9afe918c16611de238bfb95cc6f88254ae21e0ed14da6f9e86ba2ed835",
-            "review_note": "Verified the Media Library jump links and product gallery navigation keep existing upload and media routes."
+            "references_sha256": "7888a68b3773f3bdd7b37ebea7e3aa1d7f311f84fc656019bd665179ab29bb04",
+            "review_note": "Reviewed the revised admin guidance with the existing Media Library keyboard and focus requirements."
         },
         "operator-help": {
-            "source_sha256": "361cfc6749a5d98243c75ff680535ff2d1baed1d8a75e2f80d62aa97fbb272c1",
-            "references_sha256": "f216687035d70f6fac2aaf3f34ced055c11904e647e6aff80269acbb33835a00",
-            "review_note": "Verified cart quantity controls, checkout links, price totals and the existing customer guide preserve the same server actions."
+            "source_sha256": "fedec6ac096638de66feada2fe65fa7a34d92ac02d8d588828eabb818a93f237",
+            "references_sha256": "f94600af3c4ef6390a56a1aee0ba2a567e52b267a385f31a319b7e43003f4e01",
+            "review_note": "Verified the mobile checkout shortcut, route and total behavior against the existing customer and operator guidance."
         },
         "sales-channels": {
             "source_sha256": "1f2cd451f764c9d2b1a0b90b1454ac54fbf9a1130973f86749df0510b8eef244",
@@ -63,9 +63,9 @@
             "review_note": "Reviewed service/XML/CLI/UI against ProductService offer and visibility behavior plus current primary Google product-source and invited-creator docs. Verified explicit identifiers only, valid URL/image checks, safe XML, unknown external approval and no credential/account actions. Public browser samples match real prices/images; local missing media is not labelled a production defect."
         },
         "workflow": {
-            "source_sha256": "5bceac16cbbedebbe4aef0416299c7f632c16d89bd72f74783ea004ae33b3d72",
+            "source_sha256": "c2aedf10e9126b63fead97b3f5c4d4af26132de3c1ebceba49ee153c32c06899",
             "references_sha256": "94dd586c81b1d91a0332e86219ac2b55c416d5ebc37115c9a2008697d68236d0",
-            "review_note": "Verified map registration marks the shared homepage product-card partial as an included view rather than an unwired page."
+            "review_note": "Verified AGENTS and relevant UI skills document updating reusable design guidance alongside code."
         }
     }
 }

@@ -202,7 +202,13 @@ Exercise the changed JavaScript controls with keyboard and pointer input, and co
 ## Rules
 
 - Extend existing controllers, services and views. No parallel implementations.
-- Customer-facing UI follows `Design.md`.
+- Use `Design.md` and the relevant UI skills as defaults. Adapt spacing, shadows,
+  and motion when browser evidence shows a clearer result for the task. Verify
+  readability, keyboard focus, mobile reachability, and real actions.
+- When changing a reusable UI pattern, update `Design.md` and the affected UI
+  skills in the same PR. Update these agent instructions when the working
+  agreement changes. Capture before and after screens. For motion, also
+  inspect intermediate frames during real scrolling.
 - Shared motion follows `docs/site-motion.md`: native scrolling, readable no-JS
   frames and dynamic reduced-motion support. Coding references such as Scrollcraft
   and Stageshow stay outside runtime business-agent prompt selection.
