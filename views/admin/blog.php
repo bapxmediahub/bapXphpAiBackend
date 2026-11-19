@@ -268,17 +268,17 @@ function generateDraft(){var f=document.getElementById('blog-form');var fd=new F
     function mdToHtml(src) {
         var lines = String(src).replace(/\r\n/g,'\n').split('\n');
         var out = [], i = 0;
-        function inline(text) {
+        function inline(text, allowLinks = true) {
             var tokens = /(!?)\[([^\]]*)\]\(([^)\s]+)\)|\*\*([^*]+)\*\*|\*([^*\n]+)\*|`([^`]+)`/g;
             var output = '', offset = 0;
             for (var match of text.matchAll(tokens)) {
                 output += esc(text.slice(offset, match.index));
-                if (match[3] !== undefined && safeEditorUrl(match[3])) {
+                if (match[3] !== undefined && allowLinks && safeEditorUrl(match[3])) {
                     var url = escAttr(match[3]);
                     output += match[1] ? '<img src="' + url + '" alt="' + escAttr(match[2]) + '">'
-                        : '<a href="' + url + '">' + esc(match[2]) + '</a>';
-                } else if (match[4] !== undefined) { output += '<strong>' + esc(match[4]) + '</strong>'; }
-                else if (match[5] !== undefined) { output += '<em>' + esc(match[5]) + '</em>'; }
+                        : '<a href="' + url + '">' + inline(match[2], false) + '</a>';
+                } else if (match[4] !== undefined) { output += '<strong>' + inline(match[4], allowLinks) + '</strong>'; }
+                else if (match[5] !== undefined) { output += '<em>' + inline(match[5], allowLinks) + '</em>'; }
                 else if (match[6] !== undefined) { output += '<code>' + esc(match[6]) + '</code>'; }
                 else { output += esc(match[0]); }
                 offset = match.index + match[0].length;

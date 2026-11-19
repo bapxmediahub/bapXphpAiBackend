@@ -18,9 +18,9 @@
             "review_note": "No order/payment/catalogue source changed. Reviewed existing verified-order/idempotency contracts and shared backend guidance; the generic handler explicitly cannot infer rollback or advise repeating a charge. Normal product/feed/API reads and intentional service failures remain covered; no production purchase or business-data write used as a test."
         },
         "content": {
-            "source_sha256": "c0a5899828c11747189b4a7c510da4248846e5dc133021c582b8ab88d0e3cbcf",
+            "source_sha256": "83d2fa02fe0e3af04c4d58fa9977d2aea18824cc745e8e0a546d35131b402556",
             "references_sha256": "f86e5e56984ca2131c1de70aaa1fde3f0fa9ff9247dda8c9a422a7bdb90ecffe",
-            "review_note": "Verified owner subject scoping, stale-copy download, existing-article restore and confirmed save in Chromium."
+            "review_note": "Verified nested links and emphasis in the editor and retained URL validation."
         },
         "foundation": {
             "source_sha256": "e60192b962830f88dcce9979e4345c9481eb5a22c8419f3befc8e04a402fd825",
@@ -38,9 +38,9 @@
             "review_note": "Compared bootstrap/session initialization, old global handler, BaseController redirects/JSON/view output and actual API catches with RequestFailureService. Native response buffer and safe500 replace only unhandled failures; 88 loopback HTTP assertions preserve normal HTML/JSON/XML/binary/204/redirect/explicit503. Docs state pre-bootstrap/OOM/streaming limits and uncertainty of earlier side effects; no raw message/admin stack or database accusation."
         },
         "interface": {
-            "source_sha256": "35dac2d5b295fd6609bad413b9577a37521cb120e428609ac614dd059cc4cb1e",
+            "source_sha256": "89375e275b0753053cff4fcfc2a42b3de7689c9c85ec8f4c15303398685b23a4",
             "references_sha256": "6a197e850495b0fa5f514f22ac62ae50add6fceb5c5addd516d1e1fc117be995",
-            "review_note": "Verified recovery focus, edit lock, 44px targets and delayed request handling at desktop and 375px."
+            "review_note": "Verified nested preview formatting and draft autosave recovery after a temporarily failed browser write."
         },
         "mail": {
             "source_sha256": "7694291a27699ebb722b0ff98b9ae74972c92a20b0b057726677e0a733ffd792",
@@ -53,9 +53,9 @@
             "review_note": "Checked the admin UI skill addition against the existing media upload and picker flow. Browser draft recovery stores the article image path."
         },
         "operator-help": {
-            "source_sha256": "fd337683c300db32c2eeea4fe3d4b0ead038dd11730edc154640dc8384950b0d",
+            "source_sha256": "de31dbe57ad0739ddf4c3dc6f83eb8e53e6695c02d67b4e7946ed62bff01b225",
             "references_sha256": "f216687035d70f6fac2aaf3f34ced055c11904e647e6aff80269acbb33835a00",
-            "review_note": "Checked blog help against browser-profile recovery, explicit choices and server revision checks."
+            "review_note": "Confirmed Markdown formatting controls still work in document and preview modes and recovery instructions remain accurate after retrying a failed write."
         },
         "sales-channels": {
             "source_sha256": "1f2cd451f764c9d2b1a0b90b1454ac54fbf9a1130973f86749df0510b8eef244",

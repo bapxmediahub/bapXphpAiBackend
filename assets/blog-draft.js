@@ -47,14 +47,14 @@
                 status.textContent = 'Another tab saved a browser draft. Save or download this edit before reloading.';
                 return;
             }
-            token = Array.from(crypto.getRandomValues(new Uint8Array(16)), byte =>
+            const nextToken = Array.from(crypto.getRandomValues(new Uint8Array(16)), byte =>
                 byte.toString(16).padStart(2, '0')
             ).join('');
-            localStorage.setItem(key, JSON.stringify({revision, token, values}));
+            localStorage.setItem(key, JSON.stringify({revision, token: nextToken, values}));
+            token = nextToken;
             status.textContent = 'Draft saved in this browser. Use Save to update the article.';
             dirty = false;
         } catch {
-            token = '';
             status.textContent = 'Browser draft storage is unavailable. Save or download your work.';
         }
     }
