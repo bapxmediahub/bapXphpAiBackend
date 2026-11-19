@@ -3831,17 +3831,16 @@ $tests['public navigation uses brand home link and mobile cart tray'] = function
     assertSame(substr_count($css, '{'), substr_count($css, '}'), 'Stylesheet should have balanced rule braces');
 };
 
-$tests['homepage trust bar is centered and reveals mobile labels accessibly'] = function (): void {
+$tests['homepage trust bar renders its mobile labels as static list content'] = function (): void {
     $home = file_get_contents(app_path('views/public/home.php'));
     $css = file_get_contents(app_path('assets/css/band.css'));
-    assertTrue(str_contains($home, 'class="trust-bar__inner"'), 'Trust items should share one centered content rail');
-    assertSame(3, substr_count($home, ' data-trust-item>'), 'Trust bar should expose three interactive trust items');
-    foreach (['Secure Payments', 'Saved Addresses', 'Spiritual Products', 'aria-controls="trust-label-', "setAttribute('aria-expanded'", "addEventListener('click'"] as $needle) {
+    assertTrue(str_contains($home, '<ul class="trust-bar__inner"'), 'Trust items should share one centered list');
+    assertSame(3, substr_count($home, '<li class="trust-item">'), 'Trust bar should render all three items without interaction');
+    foreach (['Secure Payments', 'Saved Addresses', 'Spiritual Products'] as $needle) {
         assertTrue(str_contains($home, $needle), "Trust bar should include {$needle}");
     }
-    foreach (['.trust-bar__inner', 'width: min(100%, 900px)', 'grid-template-columns: repeat(3, 56px)', '.trust-item.is-label-visible .trust-item__label', '.trust-item:focus-visible .trust-item__label'] as $needle) {
-        assertTrue(str_contains($css, $needle), "Trust bar CSS should include {$needle}");
-    }
+    assertTrue(str_contains($css, 'width: min(100%, 900px)'), 'Trust items should stay centered at wide widths');
+    assertTrue(str_contains($css, '.trust-bar__inner { grid-template-columns: repeat(3, minmax(0, 1fr))'), 'Mobile columns should accommodate wrapping labels');
 };
 
 $tests['support assistant exposes only allowlisted internal navigation actions'] = function (): void {

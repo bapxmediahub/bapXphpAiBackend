@@ -50,6 +50,9 @@ For animations read `.agents/skills/site-motion/SKILL.md` and `docs/site-motion.
 Keep native scroll and actual commerce/form state; no zero-opacity dependency.
 Both layouts use the same progressive asset and respect reduced-motion/no-JS.
 Stageshow's authored illustration kit is not a runtime application framework.
+On the home opening, check that short viewports can reach Shop Products before
+the reassurance strip passes over the hero. Verify section links, both product
+purchase locations and the native FAQ disclosure with real input.
 
 ## Consistent task help
 
