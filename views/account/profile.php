@@ -14,6 +14,8 @@ $showPicture = filter_var($picture, FILTER_VALIDATE_URL) && parse_url($picture, 
                 <span aria-hidden="true"><?= e(mb_strtoupper(mb_substr($profile['name'] ?? '', 0, 1))) ?></span>
             <?php endif; ?>
             <p><?= e($profile['email'] ?? '') ?></p>
+            <div data-section-index hidden></div>
+            <h2 id="profile-details" data-page-section="Profile details" tabindex="-1">Profile details</h2>
             <form method="post" class="form-group" action="/account/dashboard/profile">
                 <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
                 <label for="profile-name">Name</label>
@@ -33,7 +35,7 @@ $showPicture = filter_var($picture, FILTER_VALIDATE_URL) && parse_url($picture, 
             </form>
             <?php if (!empty($hasPassword)): ?>
                 <form method="post" class="form-group" action="/account/dashboard/profile/password">
-                    <h2>Change password</h2>
+                    <h2 id="profile-credentials" data-page-section="Change password" tabindex="-1">Change password</h2>
                     <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
                     <label for="current-password">Current password</label>
                     <input id="current-password" name="current_password" type="password" autocomplete="current-password" required>

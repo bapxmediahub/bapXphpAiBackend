@@ -15,7 +15,8 @@
             <a class="temple-visit__back" href="/temples">← All temples</a>
             <div class="temple-visit__overview">
                 <div class="temple-visit__info">
-                    <h1 class="section-title"><?= e($temple['name']) ?></h1>
+                    <h1 class="section-title" id="temple-visit-details" data-page-section="Visit details" tabindex="-1"><?= e($temple['name']) ?></h1>
+                    <div data-section-index hidden></div>
                     <?php if ($hasVisitDetails): ?>
                         <dl class="temple-visit__facts">
                             <?php if (!empty($temple['address'])): ?>
@@ -42,11 +43,11 @@
             </div>
             <div class="temple-visit__content">
                 <?php if (!empty($temple['description'])): ?>
-                    <h2>About the temple</h2>
+                    <h2 id="temple-about" data-page-section="About" tabindex="-1">About the temple</h2>
                     <p><?= e($temple['description']) ?></p>
                 <?php endif; ?>
                 <?php if (!empty($temple['pooja_types']) && is_array($temple['pooja_types'])): ?>
-                    <h2>Available poojas</h2>
+                    <h2 id="temple-poojas" data-page-section="Poojas" tabindex="-1">Available poojas</h2>
                     <ul>
                         <?php foreach ($temple['pooja_types'] as $pooja): ?>
                             <li><?= e($pooja) ?></li>

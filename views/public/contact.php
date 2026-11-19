@@ -4,10 +4,11 @@
             <h1 class="section-title">Contact us</h1>
             <p>Get help with an order, ask about a product, or plan a temple visit.</p>
         </header>
+        <div data-section-index hidden></div>
 
         <div class="contact-page__grid">
             <aside class="contact-card" aria-label="Contact options">
-                <h2>Call or email us</h2>
+                <h2 id="contact-direct" data-page-section="Phone and email" tabindex="-1">Call or email us</h2>
                 <div class="contact-direct-list">
                     <a class="contact-direct-link" href="tel:+919789444037">+91 97894 44037</a>
                     <a class="contact-direct-link" href="tel:+919789444038">+91 97894 44038</a>
@@ -16,7 +17,7 @@
                 <p>Mon–Sat, 9 AM–7 PM · Sun, 10 AM–5 PM</p>
             </aside>
 
-            <div class="contact-form-card" id="contact-form">
+            <div class="contact-form-card" id="contact-form" data-page-section="Message" tabindex="-1">
                 <?php if ($success): ?>
                     <h2 tabindex="-1" data-contact-feedback>Message received</h2>
                     <p>Thank you for getting in touch. We’ll reply to the email address you provided.</p>

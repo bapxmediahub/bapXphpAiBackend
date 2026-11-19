@@ -86,6 +86,7 @@
 <?php if (module_on('shop')): ?>
 <section class="section home-bestsellers">
     <div class="container">
+        <div data-section-index hidden></div>
         <?php
             $cartQuantities = [];
             foreach ($_SESSION['cart'] ?? [] as $cartItem) {
@@ -94,7 +95,7 @@
             $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16));
         ?>
         <div class="home-bestsellers__heading">
-            <h2 class="section-title">Top Selling Products</h2>
+            <h2 class="section-title" id="home-top-sellers" data-page-section="Top sellers" tabindex="-1">Top Selling Products</h2>
             <a href="/shop" class="btn btn-primary home-bestsellers__shop">
                 Shop all products <span aria-hidden="true">→</span>
             </a>
@@ -113,7 +114,7 @@
 <section class="section home-order-guide" aria-labelledby="home-order-guide-title">
     <div class="container">
         <div class="home-order-guide__panel">
-            <h2 id="home-order-guide-title" class="section-title">How Your Order Works</h2>
+            <h2 id="home-order-guide-title" data-page-section="Ordering" tabindex="-1" class="section-title">How Your Order Works</h2>
             <ol class="home-order-guide__steps" role="list">
                 <li>
                     <h3>Choose your products</h3>
@@ -143,7 +144,7 @@
 <section class="section section--alt">
     <div class="section-header">
         <span class="eyebrow serif-accent">Sacred Spaces · Divine Energy</span>
-        <h2 class="section-title">Panchami Temples Guide</h2>
+        <h2 class="section-title" id="home-temple-guide" data-page-section="Temples" tabindex="-1">Panchami Temples Guide</h2>
         <p class="lede"><a href="/temples">Browse the temple directory</a> for locations and visit details.</p>
     </div>
     <div class="temple-carousel temple-carousel--single" data-temple-slider aria-label="Temple guide carousel">
@@ -269,7 +270,7 @@ document.addEventListener('DOMContentLoaded', function () {
 <section class="section section--alt home-faq" aria-labelledby="home-faq-title">
     <div class="container home-faq__inner">
         <div class="section-header">
-            <h2 class="section-title" id="home-faq-title">Frequently asked questions</h2>
+            <h2 class="section-title" id="home-faq-title" data-page-section="FAQs" tabindex="-1">Frequently asked questions</h2>
             <p class="lede">Helpful answers for shopping, orders, and temple guidance.</p>
         </div>
         <div class="home-faq__list">

@@ -8,7 +8,7 @@
             <div class="product-grid home-collection__grid">
                 <a class="home-collection__lead" href="<?= e($collectionUrl) ?>"
                    aria-labelledby="<?= e($titleId . '-action ' . $titleId) ?>">
-                    <h2 id="<?= e($titleId) ?>"><?= e($collection['name']) ?></h2>
+                    <h2 id="<?= e($titleId) ?>"<?= $collectionIndex === 0 ? ' data-page-section="Collections" tabindex="-1"' : '' ?>><?= e($collection['name']) ?></h2>
                     <span class="home-collection__action">
                         <span id="<?= e($titleId . '-action') ?>">View collection</span>
                         <span aria-hidden="true">→</span>
