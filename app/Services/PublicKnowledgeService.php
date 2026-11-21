@@ -73,8 +73,27 @@ final class PublicKnowledgeService
     public static function productOutputSchema(): array
     {
         $fields = [
-            'name'=>['type'=>'string','minLength'=>1],
-            'path'=>['type'=>'string','pattern'=>'^/product/[^/?#]+
+            'name' => ['type' => 'string', 'minLength' => 1],
+            'path' => ['type' => 'string', 'pattern' => '^/product/[A-Za-z0-9%_.-]+$'],
+            'priceInr' => ['type' => 'number', 'minimum' => 0],
+            'available' => ['type' => 'boolean'],
+        ];
+        return [
+            'type' => 'object', 'additionalProperties' => false,
+            'properties' => [
+                'products' => [
+                    'type' => 'array', 'maxItems' => 20,
+                    'items' => ['type' => 'object', 'additionalProperties' => false,
+                        'properties' => $fields, 'required' => array_keys($fields)]
+                ],
+                'total' => ['type' => 'integer', 'minimum' => 0],
+                'nextOffset' => ['type' => ['integer', 'null'], 'minimum' => 0],
+            ],
+            'required' => ['products', 'total', 'nextOffset'],
+        ];
+    }
+
+    /** Canonical catalogue projection: visibility and current offer price come from ProductService. */
     public function products(string $query='', int $offset=0, int $limit=20): array
     {
         self::checkPage($query,$offset,$limit);
