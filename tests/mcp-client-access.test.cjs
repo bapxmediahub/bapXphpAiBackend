@@ -138,6 +138,8 @@ test('owner issues, uses and revokes a scoped local MCP credential', {timeout:30
             $q->execute([getenv('MCP_LABEL')]); if(getenv('MCP_GRANT_ID')){
             $q=$db->connection()->prepare("DELETE FROM audit_events WHERE JSON_UNQUOTE(JSON_EXTRACT(_data, '$.resource_id')) = ?");
             $q->execute([getenv('MCP_GRANT_ID')]);}`, {MCP_GRANT_ID:grantId || ''});
+        // CI shares this disposable schema; later order tests must create their own table.
+        php('$db->connection()->exec("DROP TABLE IF EXISTS orders");');
         await rm(temp,{recursive:true,force:true});
     }
 });
