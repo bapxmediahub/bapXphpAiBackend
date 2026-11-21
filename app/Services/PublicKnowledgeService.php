@@ -97,6 +97,9 @@ final class PublicKnowledgeService
     public function articles(string $query='', int $offset=0, int $limit=5): array
     {
         self::checkPage($query,$offset,$limit);
+        if (!(new SettingsService())->modules(requireReadable:true)['blog']) {
+            return ['articles'=>[], 'total'=>0, 'nextOffset'=>null];
+        }
         $words=preg_split('/[^\p{L}\p{N}]+/u',mb_strtolower(trim($query)),-1,PREG_SPLIT_NO_EMPTY)?:[];
         $words=array_values(array_filter($words,static fn(string $w):bool=>mb_strlen($w)>=3));
         if(trim($query)!=='' && $words===[])return ['articles'=>[],'total'=>0,'nextOffset'=>null];
