@@ -3231,7 +3231,11 @@ $tests['the admin agent grounds a count instead of returning the nearest number'
     assertTrue(isset($registry->run('store_count', ['entity'=>'secrets'])['error']), 'Reject collections outside the fixed count allowlist');
     assertSame(null, $registry->aggregateAnswer('Compare revenue and GST last month'), 'Compound requests need model-selected data instead of one local summary');
     assertSame(null, $registry->aggregateAnswer('What was our revenue yesterday?'), 'Do not substitute a default period for an unsupported local filter');
-    assertTrue(str_contains($source, 'blog->all(false)') || str_contains($source, "BlogService())->all(false)"),
+    // Enterprise delegates to the same public source as Support and MCP.
+    // tests/public-knowledge.php independently checks hidden/future/retired fixtures.
+    $publishedSource = (string)file_get_contents(app_path('app/Services/PublicKnowledgeService.php'));
+    assertTrue(str_contains($source, 'PublicKnowledgeService')
+        && str_contains($publishedSource, '->all(false)'),
         'Article search must use the public filter so an unpublished post cannot be cited');
     // Still read-only, now that two more tools exist.
     foreach (['upsert(', '->write(', '->delete(', '->save('] as $mutation) {
