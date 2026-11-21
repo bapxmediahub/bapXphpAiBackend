@@ -146,6 +146,7 @@ async function main(){
       try{await ctx.executeTool(shop,{offset:-1})}catch(e){rejected=true;}
       const malformed=document.querySelectorAll('.product-card')[41];
       malformed.querySelector('.price').remove();
+      document.querySelectorAll('.product-card')[42].querySelector('a.product-card__title').href='https://untrusted.invalid/product/evil';
       const skip=await call(shop,{offset:40,limit:5});
       return {names:list.map(t=>t.name),schema:shop.outputSchema||null,
         backendSchema:product.outputSchema||null,backend,
@@ -161,7 +162,7 @@ async function main(){
     assert.equal(result.knowledge.total,2);
     assert.equal(result.knowledge.nextOffset,1);
     assert.equal(result.rejected,true,'Invalid offset must reject even under the real polyfill');
-    assert.equal(result.skip.products.length,4,'Malformed card must not abort execution');
+    assert.equal(result.skip.products.length,3,'Missing price and cross-origin links must be rejected');
     assert.equal(result.skip.nextOffset,null);
     assert.equal(result.skip.total,45);
     assert.ok(result.schema,'Discovered shop tool should include outputSchema');
