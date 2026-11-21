@@ -95,6 +95,7 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
             <div class="admin-submenu" id="menu-services">
                 <a href="/admin/appointments" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/appointments') === 0 ? 'active' : '') ?>">Sessions</a>
             </div>
+            <a href="/admin/pages" class="admin-nav-top <?= str_starts_with($_SERVER['REQUEST_URI'], '/admin/pages') ? 'active' : '' ?>">Pages</a>
             <?php if ($__modules['blog']): ?>
             <a href="/admin/blog" class="admin-nav-top <?= (strpos($_SERVER['REQUEST_URI'], '/admin/blog') === 0 ? 'active' : '') ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -145,7 +146,8 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
             <div class="admin-submenu" id="menu-appearance">
                 <a href="/admin/temples" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/temples') === 0 ? 'active' : '') ?>">Temples</a>
                 <a href="/admin/media" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/media') === 0 ? 'active' : '') ?>">Media Library</a>
-                <a href="/admin/appearance" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/appearance') === 0 ? 'active' : '') ?>">Logo & Favicon</a>
+                <a href="/admin/appearance" class="<?= ($agentNavPath === '/admin/appearance' ? 'active' : '') ?>">Logo & Favicon</a>
+                <a href="/admin/appearance/menu" <?= $agentNavPath === '/admin/appearance/menu' ? 'aria-current="page" class="active"' : '' ?>>Header menu</a>
             </div>
             <button type="button" class="admin-nav-toggle" data-target="menu-settings" aria-controls="menu-settings" aria-expanded="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
@@ -306,17 +308,19 @@ document.querySelectorAll('.table-wrap').forEach(function(wrap){var table=wrap.q
 // are created. Disable on first submit and say what is happening.
 (function () {
     document.querySelectorAll('form.admin-form[method="post"]').forEach(function (form) {
-        form.addEventListener('submit', function () {
-            var btn = form.querySelector('button[type="submit"], button:not([type])');
-            if (!btn || btn.dataset.saving === '1') return;
-            btn.dataset.saving = '1';
+        form.addEventListener('submit', function (event) {
+            if (form.dataset.saving === '1') { event.preventDefault(); return; }
+            var btn = event.submitter || form.querySelector('button[type="submit"], button:not([type])');
+            if (!btn) return;
+            form.dataset.saving = '1';
             btn.dataset.label = btn.textContent;
-            btn.disabled = true;
+            // Named submitters must remain successful controls in the native POST.
+            btn.setAttribute('aria-disabled', 'true');
             btn.textContent = 'Saving\u2026';
             // Re-enable if the browser restores the page from cache instead of navigating.
             setTimeout(function () {
-                btn.disabled = false;
-                btn.dataset.saving = '';
+                btn.removeAttribute('aria-disabled');
+                delete form.dataset.saving;
                 if (btn.dataset.label) btn.textContent = btn.dataset.label;
             }, 20000);
         });

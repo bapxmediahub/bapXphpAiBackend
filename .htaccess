@@ -17,7 +17,7 @@ RedirectMatch 403 \.git$
 
 # Block access to sensitive directories (allow /docs route through to index.php)
 RewriteRule ^docs/?$ index.php [QSA,L]
-RewriteRule ^(app|integrations|storage|tools|tests|docs)/ - [F,L]
+RewriteRule ^(app|cli|integrations|storage|tools|tests|docs)/ - [F,L,NC]
 
 # API routes
 RewriteRule ^api/(.*)$ api/index.php [QSA,L]

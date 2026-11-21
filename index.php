@@ -24,7 +24,7 @@ for ($decodePass=0; $decodePass<3; $decodePass++) {
     if ($decoded === $privatePath) break;
     $privatePath = $decoded;
 }
-if (preg_match('~(?:^|/)(?:\.agents|\.bapX)(?:/|$)|^/AGENTS\.md$|^/content/help/admin(?:/|$)|^/content/blog/posts(?:/|$)~i', $privatePath)) {
+if (preg_match('~(?:^|/)(?:\.agents|\.bapX)(?:/|$)|^/cli(?:/|$)|^/AGENTS\.md$|^/content/help/admin(?:/|$)|^/content/blog/posts(?:/|$)~i', $privatePath)) {
     http_response_code(404);
     header('Cache-Control: no-store');
     exit('Not found');
@@ -137,7 +137,7 @@ if ($uri !== null && $uri !== '/' && $uri !== '/admin/' && str_ends_with($uri, '
 }
 
 // PHP routes (admin + public pages)
-$phpRoutes = ['/','/search','/shop','/shop/','/product','/cart','/checkout','/payment','/support','/about','/contact','/temples','/consult','/consultation','/auth','/login','/logout','/register','/forgot-password','/reset-password','/account','/orders','/reviews','/sri-panchami-spiritual','/spiritual','/categories','/terms','/privacy','/blog','/docs','/help','/sitemap.xml','/feeds/google-products.xml'];
+$phpRoutes = ['/','/pages','/search','/shop','/shop/','/product','/cart','/checkout','/payment','/support','/about','/contact','/temples','/consult','/consultation','/auth','/login','/logout','/register','/forgot-password','/reset-password','/account','/orders','/reviews','/sri-panchami-spiritual','/spiritual','/categories','/terms','/privacy','/blog','/docs','/help','/sitemap.xml','/feeds/google-products.xml'];
 $isPhpRoute = false;
 foreach ($phpRoutes as $route) {
     if (strpos($uri, $route . '/') === 0 || $uri === $route) {

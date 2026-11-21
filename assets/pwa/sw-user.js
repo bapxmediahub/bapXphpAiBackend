@@ -5,6 +5,8 @@ self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(k => Pro
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
+  // Page visibility can change between visits. Read the current page and its public indexes.
+  if (url.pathname.startsWith('/pages/') || url.pathname === '/search' || url.pathname === '/sitemap.xml') return;
   // The previous admin manifest launched /admin, which falls under this root worker.
   if (url.pathname === '/admin' || url.pathname.startsWith('/admin/')) {
     if (e.request.mode === 'navigate') {

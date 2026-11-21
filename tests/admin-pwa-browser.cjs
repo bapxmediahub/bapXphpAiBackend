@@ -32,6 +32,16 @@ test('installed admin launches inside its own scope and remains private offline'
         await page.route('https://**/*', route => route.abort());
         await page.goto(origin+'/');
         await page.evaluate(() => navigator.serviceWorker.ready);
+        await page.goto(origin+'/admin/google-reporting');
+        const callback = page.locator('.google-reporting__callback');
+        const hostedCallback = 'https://sripanchamispiritual.com/admin/google-reporting/callback';
+        await callback.evaluate((el, value) => { el.textContent = value; }, hostedCallback);
+        for (const width of [320, 375]) {
+            await page.setViewportSize({width, height:800});
+            assert.equal(await callback.innerText(), hostedCallback);
+            assert.equal(await page.evaluate(() => document.documentElement.scrollWidth), width);
+        }
+        await page.setViewportSize({width:1280, height:800});
         await page.goto(origin+'/admin?period=7');
         assert.equal(page.url(), origin+'/admin/?period=7');
         await page.waitForFunction(() => navigator.serviceWorker.controller?.scriptURL.endsWith('/admin/sw.js'));

@@ -1,6 +1,7 @@
 <div class="admin-card">
     <h2 style="font-size:1.1rem; margin:0 0 var(--space-sm);">Logo & Favicon</h2>
     <p style="margin:0 0 var(--space-lg); color:var(--color-text-muted); font-size:0.9rem;">Upload your brand assets. Files are saved to <code>assets/images/brand/</code> and applied site-wide.</p>
+    <p><a href="/admin/appearance/menu">Edit public header menu</a></p>
 </div>
 
 <div class="admin-card">

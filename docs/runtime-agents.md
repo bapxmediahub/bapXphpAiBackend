@@ -105,3 +105,11 @@ admin role to enumerate the protected Enterprise manifest. It emits paths and
 content hashes, never runtime prompt bodies. This does not grant production
 browser access. Uncaught CLI exceptions fail with a nonzero exit code and a
 bounded class/file diagnostic; they cannot masquerade as successful HTML output.
+
+## Provider calls and owner how-to questions
+
+Enterprise Chat can read a fixed operator guide through `operator_guide`. The server validates the topic and owner session, reads the same Markdown as Admin Help, and records its source link. The explicit `/help` command and questions about drafting an article can take this path without a provider call. A question about the number of drafts still needs a business-data lookup.
+
+The application executes each allowed function and sends its result back using the originating provider's call format. Model text is never authority to grant a capability. Google documents the hosted Gemma identifiers and native function calling. OpenAI recommends clear tool schemas and doing known work in application code. Those contracts apply to their respective clients. [Google AI Studio function calling](https://aistudio.google.com/docs/function-calling) · [Hosted Gemma models](https://gemma.ai/deployment/gemini-api/) · [OpenAI function calling](https://developers.openai.com/api/docs/guides/function-calling)
+
+Time-limited retries are for transient transport or service failure. Authentication and invalid-request responses need configuration or request corrections. The owner can inspect per-attempt evidence in Monitoring to distinguish service responses from requests that reached the local timeout without an HTTP response. [Google API troubleshooting](https://aistudio.google.com/docs/troubleshooting) · [OpenAI error codes](https://developers.openai.com/api/docs/guides/error-codes)

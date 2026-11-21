@@ -75,7 +75,9 @@ $query = http_build_query(['report'=>$reportType, 'from'=>$from, 'to'=>$to, 'gro
         <div class="report-filters">
             <a class="btn btn-outline" href="?<?= e($query) ?>&amp;format=csv">Download invoice totals CSV</a>
             <a class="btn btn-primary" href="?<?= e($query) ?>&amp;format=lines">Download invoice lines CSV</a>
+            <a class="btn btn-outline" href="?<?= e($query) ?>&amp;format=sequences">Download invoice sequences CSV</a>
         </div>
+        <p>The sequence worksheet flags duplicate numbers and gaps between recorded SPS invoices in the selected period. Compare these with the accountant’s document register, cancellation records and credit or debit notes.</p>
         <?php if(!empty($invoiceReviewReasons)): ?><div class="flash flash--error" role="alert"><strong><?= e((string)count($invoiceReviewReasons)) ?> issued invoice(s) require accountant review.</strong> Their stored tax fields have not been rewritten. Review the delivery state and issue a compliant correction outside this screen if advised.</div><?php endif; ?>
         <div class="admin-detail-grid">
             <div><strong>Taxable sales</strong><p><?= e($money($totals['taxable'])) ?></p></div><div><strong>CGST</strong><p><?= e($money($totals['cgst'])) ?></p></div><div><strong>SGST</strong><p><?= e($money($totals['sgst'])) ?></p></div><div><strong>IGST</strong><p><?= e($money($totals['igst'])) ?></p></div><div><strong>Total GST</strong><p><?= e($money($totals['tax'])) ?></p></div><div><strong>Gross product sales</strong><p><?= e($money($totals['gross'])) ?></p></div>

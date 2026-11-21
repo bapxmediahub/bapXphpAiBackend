@@ -1,10 +1,14 @@
+## Prepare an unpublished article
+
+In **Blog**, choose **New Post**, enter a title and write the article. Under **Post settings**, leave the publication setting on **Draft — not public**. Check **Preview**, then choose **Save** to keep the draft in the editor. You can reopen it from the blog list.
+
 ## Create or edit the article
 
 Open Blog and choose **New Post** or an existing record. Set a clear title and suitable category. Expand **Post settings** for the slug, template, image, excerpt, summary and search metadata. For a customer guide, explain an actual task using the current interface rather than inventing functionality.
 
 ## Draft, enhance and preview
 
-Use the document/Markdown modes to edit and Preview to inspect the result. Template scaffolding and AI Enhance controls return content for review; they are not an automatic publication. Check names, links, instructions and policy claims yourself. Images must come from a valid uploaded or bundled asset with a useful description.
+Use the document/Markdown modes to edit and Preview to inspect the result. Template scaffolding and AI Enhance controls return content for review; they are not an automatic publication. Choose **Enhance title** or **Enhance content**, review the AI suggestion, then use **Apply to title** or **Apply to content**. Review names, links, instructions and policy claims. If the provider is unavailable, keep editing or review the separately labelled local formatting option when offered. You can dismiss either suggestion. Images must come from a valid uploaded or bundled asset with a useful description.
 
 ## Save deliberately
 
@@ -27,13 +31,20 @@ Markdown**, then **Reload current article**, compare the changes and save a
 reviewed version. There is no force-overwrite control. Changing an existing
 title keeps its original URL; URL renaming is not part of this operation.
 
-This protects conflicting saves but does not yet provide a complete autosave or
-revision-history browser. Back up authored content through the normal site
-process. Do not mistake previewing an article for publishing it.
-
-
 ## Restore an earlier server save
 
 Choose **History** beside the article, then select a UTC timestamp to inspect its saved Markdown and publication settings. **Restore this version** replaces the current article with the selected version. Check the resulting publication state before restoring. A restore can make an article public immediately.
 
 The editor keeps the ten most recent changes. Restoring also saves the version you replaced. If another editor saves after you open the preview, reopen the desired version and review it again. Deleting the article also deletes its revision history.
+
+
+## Publish a standalone page
+
+Open **Pages** in the sidebar. Give the page a title and a short address, write
+its Markdown, and use **Preview** to inspect the unsaved draft. Select
+**Published** and **Save page** when it is ready. Use **Open published page**
+to check it. Select **Draft** and save to withdraw the page from its address,
+search, and the sitemap. The address stays fixed across edits. If another
+editor saved first, copy your text before reopening the current version.
+To remove the page and its text permanently, open **Delete page**, tick the
+confirmation and choose **Delete this page**.

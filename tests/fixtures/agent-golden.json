@@ -649,6 +649,56 @@
         "tax": 0.0,
         "gross": 0.0
       }
+    },
+    {
+      "id": "provider_timeout_then_upstream_503",
+      "type": "provider_diagnosis",
+      "attempts": [
+        {
+          "status": 0,
+          "curl_error": 28,
+          "total_ms": 6002
+        },
+        {
+          "status": 0,
+          "curl_error": 28,
+          "total_ms": 6001
+        },
+        {
+          "status": 0,
+          "curl_error": 28,
+          "total_ms": 6002
+        },
+        {
+          "status": 503,
+          "curl_error": 0,
+          "total_ms": 704
+        }
+      ],
+      "expected": [
+        "transfer_timeout",
+        "transfer_timeout",
+        "transfer_timeout",
+        "upstream_http"
+      ]
+    },
+    {
+      "id": "provider_rate_limit_then_http_success",
+      "type": "provider_diagnosis",
+      "attempts": [
+        {
+          "status": 429,
+          "curl_error": 0
+        },
+        {
+          "status": 200,
+          "curl_error": 0
+        }
+      ],
+      "expected": [
+        "rate_limit",
+        "http_success"
+      ]
     }
   ]
 }

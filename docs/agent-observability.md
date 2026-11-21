@@ -148,7 +148,7 @@ Do not present a nonempty answer or no-secret result as factual correctness.
 The offline golden corpus and approved baseline live in:
 `tests/fixtures/agent-golden.json` and
 `tests/fixtures/agent-golden-baseline.json`.
-The 31 cases include collection selection, generic ambiguity, role denial, empty
+The cases include collection selection, generic ambiguity, role denial, empty
 sales, ticket lookup-vs-creation, follow-up periods, secret-leak rejection,
 executed-scope precedence and provider usage normalization.
 
@@ -177,6 +177,12 @@ tool errors per sampled chat to their exact review pages. Its run references
 come from private chat JSON, so staff can match failed lookups even when an
 operational audit write was unavailable. Only recorded MySQL events contribute
 to the 24-hour operational metrics.
+
+Each attempt in Recent runs displays the observed HTTP status, cURL error and elapsed duration. New attempts can also carry the effective transfer timeout and a positive measured first-byte time. cURL 28 identifies a client-side timeout and does not determine which network hop or upstream component delayed the request. HTTP 5xx establishes an upstream error response. HTTP 429 directs the operator to provider quota and rate limits. A successful transfer can still produce an unusable answer. Each run keeps its own outcome, independently of its attempt counts.
+
+Before an execution limit blocks a new step, the trace checkpoints the exhausted deadline, model-call, observed-token or span limit. New local stops appear separately from provider response errors. The blocked call adds no transfer. Historical `provider_budget` remains a combined call/token category. The private conversation export retains measured timing fields. Neither store records arbitrary provider headers, request payloads or response bodies. OpenAI's `x-request-id` is a provider-side identifier. The application's trace ID has a separate origin. [OpenAI debugging requests](https://developers.openai.com/api/reference/overview#debugging-requests) · [OpenAI error codes](https://developers.openai.com/api/docs/guides/error-codes) · [Google Gemini troubleshooting](https://ai.google.dev/gemini-api/docs/troubleshooting) · [cURL error 28](https://curl.se/libcurl/c/libcurl-errors.html)
+
+The offline diagnosis fixtures cover three timed-out transfers followed by HTTP 503, and an HTTP 429 followed by HTTP 200. These patterns test interpretation of recorded evidence without issuing a provider request.
 
 Admin Agent Monitoring additionally shows per-chat JSON summary counts,
 customer-confirmed vs unresolved support feedback, the offline fixture

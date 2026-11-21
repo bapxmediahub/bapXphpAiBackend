@@ -87,6 +87,26 @@ final class RemoteDbController {
         }
         try {
             $store = $this->store;
+            if ($collection === 'settings' && $action === 'delete_authored_page') {
+                if (!is_string($input['slug'] ?? null) || !is_string($input['expected'] ?? null)) throw new \InvalidArgumentException('Page and revision required.');
+                echo json_encode(['success'=>true, 'deleted'=>$store->deleteAuthoredPage($input['slug'], $input['expected'])]);
+                return;
+            }
+            if ($collection === 'settings' && $action === 'save_authored_page') {
+                if (!is_array($input['record'] ?? null) || !is_string($input['expected'] ?? null)) {
+                    throw new \InvalidArgumentException('A page record and revision are required.');
+                }
+                echo json_encode(['success'=>true, 'saved'=>$store->saveAuthoredPage($input['record'], $input['expected'])]);
+                return;
+            }
+            if ($collection === 'settings' && $action === 'save_header_menu') {
+                if (!is_array($input['items'] ?? null) || !is_int($input['revision'] ?? null)) {
+                    throw new \InvalidArgumentException('Menu items and revision are required.');
+                }
+                $saved = $store->saveHeaderMenu($input['items'], $input['revision']);
+                echo json_encode(['success'=>true, 'saved'=>$saved]);
+                return;
+            }
             if ($collection === 'secrets' && $action === 'change_google_reporting') {
                 if (!array_key_exists('record', $input) || ($input['record'] !== null && !is_array($input['record']))) {
                     throw new \InvalidArgumentException('An encrypted reporting record or explicit removal is required.');

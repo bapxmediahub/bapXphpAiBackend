@@ -35,6 +35,9 @@ foreach($ids as $i=>$id) {
 }
 $stateFile=tempnam(sys_get_temp_dir(),'sps-media-state-');
 $logFile=tempnam(sys_get_temp_dir(),'sps-media-bridge-');
+$recorded = ['type'=>'products','id'=>'product-fixture','name'=>'Fixture product'];
+$records[0]['used_in'] = [$recorded];
+$records[1]['used_in'] = [$recorded, ['type'=>'products','id'=>'deleted-fixture-product']];
 $state=['collections'=>[
     'media_files'=>$records,'products'=>[['id'=>'product-fixture','name'=>'Fixture product','image_url'=>$urls[0]]],
     'temples'=>[],'categories'=>[],'settings'=>[],
@@ -57,6 +60,18 @@ try {
     if(!$connected)throw new RuntimeException('Isolated bridge not listening');
     $media=new MediaService(store:new DatabaseService());
 
+    $html = (static function (array $items): string {
+        $csrf = 'fixture-csrf';
+        ob_start();
+        require dirname(__DIR__) . '/views/admin/media.php';
+        return ob_get_clean();
+    })([$records[1]]);
+    $doc = new DOMDocument();
+    $doc->loadHTML($html, LIBXML_NOERROR | LIBXML_NOWARNING);
+    $forms = new DOMXPath($doc);
+    $actionId = $forms->evaluate('string(//form[@action="/admin/media/delete"]/input[@name="id"]/@value)');
+    if ($actionId !== $ids[1]) throw new RuntimeException('Historical upload must retain its owner deletion form');
+
     try {
         $media->delete($ids[0]);
         throw new RuntimeException('Deletion must reject images currently used by products');
@@ -65,6 +80,21 @@ try {
     }
     if(!is_file($files[0]))throw new RuntimeException('Referenced image was removed');
 
+    $blocked = $state;
+    foreach ([['type'=>'unknown','id'=>'fixture'], ['type'=>'products'], 'legacy-label'] as $unresolved) {
+        $blocked['collections']['media_files'][1]['used_in'] = [$unresolved];
+        file_put_contents($stateFile,json_encode($blocked,JSON_THROW_ON_ERROR));
+        DatabaseService::clearReadCache();
+        try {
+            $media->delete($ids[1]);
+            throw new RuntimeException('Unverified recorded usage must prevent deletion');
+        } catch (InvalidArgumentException $error) {
+            if (!str_contains($error->getMessage(), 'verified')) throw $error;
+        }
+        if (!is_file($files[1])) throw new RuntimeException('Unverified reference lost its binary');
+    }
+    file_put_contents($stateFile,json_encode($state,JSON_THROW_ON_ERROR));
+    DatabaseService::clearReadCache();
     try {
         $media->delete($ids[2]);
         throw new RuntimeException('Expected simulated metadata failure');
@@ -82,7 +112,17 @@ try {
         || !in_array($ids[2],$remaining,true)) {
         throw new RuntimeException('Fixture metadata after guarded deletion is incorrect');
     }
-    echo "Isolated media deletion: referenced image blocked; failed DB mutation rolled back; disposable unused image removed.\n";
+    $after['reject_read_collections'] = ['products'];
+    file_put_contents($stateFile,json_encode($after,JSON_THROW_ON_ERROR));
+    DatabaseService::clearReadCache();
+    try {
+        $media->delete($ids[0]);
+        throw new LogicException('Unavailable canonical records must prevent deletion');
+    } catch (RuntimeException $error) {
+        if (!str_contains($error->getMessage(), 'fixture read unavailable')) throw $error;
+        if (!is_file($files[0])) throw new RuntimeException('Unavailable records lost their binary');
+    }
+    echo "Isolated media deletion: current or unverifiable usage blocked; stale usage reconciled; failed DB mutation rolled back.\n";
 } finally {
     if(is_resource($bridge)){proc_terminate($bridge);proc_close($bridge);}
     foreach($files as $file)if(is_file($file))unlink($file);

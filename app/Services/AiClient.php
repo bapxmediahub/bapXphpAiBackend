@@ -19,13 +19,14 @@ namespace App\Services;
  */
 final class AiClient
 {
-    private const PRIMARY_FAILURES_BEFORE_FAILOVER = 3;
-    private const PRIMARY_ATTEMPT_TIMEOUT_MS = 6000;
-    private const FALLBACK_ATTEMPT_TIMEOUT_MS = 12000;
-    private const TOOL_CONVERSATION_TIMEOUT_NS = 32_000_000_000;
+    private const MODEL_ATTEMPT_TIMEOUT_MS = 12000;
+    private const GENERATION_TIMEOUT_NS = 26_000_000_000;
+    private const FINALIZE_RESERVE_MS = 2000;
+    private const MIN_ATTEMPT_MS = 1000;
     private const MAX_TOOL_CALLS_PER_ROUND = 8;
     private const ERROR_PREFIXES = ['AI request failed', 'No AI API key'];
     private int $transportError = 0;
+    private ?int $retryAfterMs = null;
     private ?string $failureCategory = null;
     private array $transferTimings = [];
     private int $toolCalls = 0;
@@ -40,7 +41,7 @@ final class AiClient
     public static function classifyFailure(int $status, int $transportError): string {
         return match (true) {
             $transportError === 28 => 'timeout',
-            $status === 0 => 'transport',
+            $transportError !== 0 || $status === 0 => 'transport',
             $status === 401 || $status === 403 => 'authentication',
             $status === 429 => 'rate_limit',
             $status >= 500 => 'provider_server',
@@ -64,22 +65,17 @@ final class AiClient
     public static function googleAttemptPlan(string $preferred, bool $modelLocked = false): array
     {
         [$primary, $fallback] = self::googleModelPair($preferred);
-        if ($modelLocked) {
-            return [['model' => $primary, 'timeout_ms' => self::FALLBACK_ATTEMPT_TIMEOUT_MS]];
-        }
-        $plan = array_fill(0, self::PRIMARY_FAILURES_BEFORE_FAILOVER, [
-            'model' => $primary,
-            'timeout_ms' => self::PRIMARY_ATTEMPT_TIMEOUT_MS,
-        ]);
-        $plan[] = ['model' => $fallback, 'timeout_ms' => self::FALLBACK_ATTEMPT_TIMEOUT_MS];
-        return $plan;
+        $models = $modelLocked ? [$primary] : [$primary, $fallback];
+        return array_map(static fn(string $model): array => ['model' => $model, 'timeout_ms' => self::MODEL_ATTEMPT_TIMEOUT_MS], $models);
     }
 
-    /** Authentication and malformed requests cannot be repaired by changing models. */
+    /** DNS/connect, interrupted transfers, and transient HTTP failures can recover.
+     * An alternate model on the same endpoint cannot fix TLS verification or credentials. */
     public static function canFailOver(int $status, int $transportError): bool
     {
-        return $transportError !== 0 || $status === 0 || $status === 404 || $status === 408
-            || $status === 429 || $status >= 500;
+        if (in_array($status, [400,401,403,422], true)) return false;
+        if ($transportError !== 0) return in_array($transportError, [5,6,7,18,28,52,55,56,92], true);
+        return in_array($status, [0,404,408,429,500,502,503,504], true);
     }
 
     public function __construct(private SecretService $secrets = new SecretService()) {}
@@ -140,7 +136,7 @@ final class AiClient
 
         $contents = [['role' => 'user', 'parts' => [['text' => $this->withAnswerFence($prompt)]]]];
 
-        $deadline = hrtime(true) + self::TOOL_CONVERSATION_TIMEOUT_NS;
+        $deadline = hrtime(true) + self::GENERATION_TIMEOUT_NS;
         for ($round = 0; $round <= $maxRounds; $round++) {
             $finalRound = $round === $maxRounds;
             $request = [
@@ -160,7 +156,7 @@ final class AiClient
             $body = $this->postGoogleRouted(
                 $endpoint, $activeModel, $payload, $headers, $status, $modelLocked, $deadline
             );
-            if ($status !== 200 || $body === false) return self::describeFailure($status, $body, $this->transportError);
+            if ($status !== 200 || $body === false) return $this->failureMessage($status, $body);
 
             $result = json_decode((string)$body, true);
             $parts = $result['candidates'][0]['content']['parts'] ?? [];
@@ -295,7 +291,7 @@ final class AiClient
             $body = $this->postGoogleRouted(
                 $endpoint, $model, $payload, $headers, $status, $modelLocked
             );
-            if ($status !== 200 || $body === false) return self::describeFailure($status, $body, $this->transportError);
+            if ($status !== 200 || $body === false) return $this->failureMessage($status, $body);
             $result = json_decode((string)$body, true);
             $answer = self::answerFromParts($result['candidates'][0]['content']['parts'] ?? []);
             if (trim($answer) === '') $this->failureCategory = 'empty_response';
@@ -326,6 +322,7 @@ final class AiClient
             $this->failureCategory = 'transport';
             return 'AI request failed: cURL is not available on this server.';
         }
+        $deadline = hrtime(true) + self::GENERATION_TIMEOUT_NS;
         $host = parse_url($config['endpoint'], PHP_URL_HOST);
         $port = parse_url($config['endpoint'], PHP_URL_PORT) ?? 443;
         $addresses = dns_get_record($host, DNS_A | DNS_AAAA) ?: [];
@@ -354,27 +351,22 @@ final class AiClient
             static fn(array $declaration): array => ['type' => 'function', 'function' => $declaration],
             $tools->declarations()
         );
-        $deadline = hrtime(true) + self::TOOL_CONVERSATION_TIMEOUT_NS;
         $status = 0;
         $body = false;
-        foreach ($models as $model) {
+        foreach ($models as $index => $model) {
             for ($round = 0; $round <= $maxRounds; $round++) {
-                $remainingMs = (int)(($deadline - hrtime(true)) / 1_000_000);
-                if ($remainingMs <= 0) {
-                    $this->failureCategory = 'timeout';
-                    return self::describeFailure(0, false, 28);
-                }
                 $payload = ['model' => $model, 'messages' => $messages];
                 $payload[parse_url($url, PHP_URL_HOST) === 'api.openai.com' ? 'max_completion_tokens' : 'max_tokens'] = $maxTokens;
                 if ($declarations !== []) {
                     $payload['tools'] = $declarations;
                     $payload['tool_choice'] = $round < $maxRounds ? 'auto' : 'none';
                 }
+                $hasAlternate = $round === 0 && $index + 1 < count($models);
                 $body = $this->post($url, json_encode($payload, JSON_THROW_ON_ERROR), $headers, $status,
-                    min($remainingMs, 12000), true, $model, $options);
+                    $model, $deadline, $hasAlternate, $options);
                 if ($status !== 200 || $body === false) {
-                    if ($round === 0 && self::canFailOver($status, $this->transportError)) break;
-                    return self::describeFailure($status, $body, $this->transportError);
+                    if ($hasAlternate && $this->waitForFailover($status, $deadline, $index)) break;
+                    return $this->failureMessage($status, $body);
                 }
                 $message = json_decode($body, true)['choices'][0]['message'] ?? [];
                 $calls = $message['tool_calls'] ?? [];
@@ -416,7 +408,7 @@ final class AiClient
                 array_push($messages, ...$responses);
             }
         }
-        return $status === 200 ? '' : self::describeFailure($status, $body, $this->transportError);
+        return $status === 200 ? '' : $this->failureMessage($status, $body);
     }
 
     private const ANSWER_OPEN = '<final_answer>';
@@ -471,22 +463,20 @@ final class AiClient
      * stripped it, leaving nothing, so both agents fell back to a canned reply. One
      * array index.
      *
-     * A response that is nothing but thoughts still returns them rather than an empty
-     * string, because an empty answer tells a caller nothing about what went wrong.
+     * A thought-only response has no public answer. Callers use the existing
+     * empty-response outcome without displaying or persisting the private parts.
      *
      * @param array<int,array<string,mixed>> $parts
      */
     public static function answerFromParts(array $parts): string
     {
         $answer = '';
-        $thoughts = '';
         foreach ($parts as $part) {
             $text = (string)($part['text'] ?? '');
-            if ($text === '') continue;
-            if (!empty($part['thought'])) { $thoughts .= $text; continue; }
+            if ($text === '' || !empty($part['thought'])) continue;
             $answer .= $text;
         }
-        $answer = trim($answer) !== '' ? trim($answer) : trim($thoughts);
+        $answer = trim($answer);
         // The fence is the reliable signal; the thought flag is not always set.
         return self::fencedAnswer($answer) ?? $answer;
     }
@@ -500,16 +490,8 @@ final class AiClient
         return false;
     }
 
-    /**
-     * Try the preferred Gemma model up to three times before moving to the other one.
-     *
-     * Attempts are deliberately bounded to 30 seconds in total (3x6s + 12s), below
-     * the chat UI's 35-second deadline. After a tool call, subsequent rounds stay on
-     * the model that issued it, so model-specific history is never replayed elsewhere. Invalid credentials and malformed payloads fail immediately
-     * because switching models cannot repair them.
-     *
-     * @return string|false
-     */
+    /** Use each supported model once per generation. A tool exchange stays on
+     * its original model. Short repeated timeouts previously discarded slow replies. */
     private function postGoogleRouted(
         string $endpoint,
         string &$activeModel,
@@ -519,69 +501,109 @@ final class AiClient
         bool &$modelLocked,
         ?int $deadline = null
     ) {
-        $initialModel = $activeModel;
+        $deadline ??= hrtime(true) + self::GENERATION_TIMEOUT_NS;
+        $plan = self::googleAttemptPlan($activeModel, $modelLocked);
         $body = false;
-        $rateLimitedModel = null;
-        foreach (self::googleAttemptPlan($activeModel, $modelLocked) as $attempt) {
+        foreach ($plan as $index => $attempt) {
             $model = $attempt['model'];
-            if ($model === $rateLimitedModel) continue;
-            $timeoutMs = $attempt['timeout_ms'];
-            if ($deadline !== null) {
-                $timeoutMs = min($timeoutMs, (int)(($deadline - hrtime(true)) / 1_000_000));
-                if ($timeoutMs <= 0) {
-                    $status = 0;
-                    $this->transportError = 28;
-                    $this->failureCategory = 'timeout';
-                    return false;
-                }
-            }
+            $hasAlternate = $index + 1 < count($plan);
             $url = $endpoint . '/' . rawurlencode($model) . ':generateContent';
-            $body = $this->post($url, $payload, $headers, $status, $timeoutMs, true, $model);
+            $body = $this->post($url, $payload, $headers, $status, $model, $deadline, $hasAlternate);
             if ($status === 200 && $body !== false) {
+                if ($model !== $activeModel) $modelLocked = true;
                 $activeModel = $model;
-                if ($model !== $initialModel) $modelLocked = true;
                 return $body;
             }
-            if (!self::canFailOver($status, $this->transportError)) return $body;
-            // Limits can be model-specific and may last beyond this request's deadline.
-            // https://ai.google.dev/gemini-api/docs/rate-limits
-            if ($status === 429) $rateLimitedModel = $model;
+            if (!$hasAlternate || !$this->waitForFailover($status, $deadline, $index)) break;
         }
         return $body;
     }
 
-    /** @return string|false */
-    private function post(
-        string $url,
-        string $payload,
-        array $headers,
-        ?int &$status,
-        int $timeoutMs = 20000,
-        bool $appendTiming = false,
-        ?string $model = null,
-        array $options = []
-    )
+    private static function remainingProviderMs(int $deadline): int
     {
-        if (!$appendTiming) $this->transferTimings = [];
+        $local = (int)(($deadline - hrtime(true)) / 1_000_000);
+        return min($local, AgentTraceService::remainingMs() - self::FINALIZE_RESERVE_MS);
+    }
+
+    private function waitForFailover(int $status, int $deadline, int $index): bool
+    {
+        if (in_array($this->failureCategory, ['request_deadline','provider_budget'], true)
+            || !self::canFailOver($status, $this->transportError)) return false;
+        // Google recommends exponential backoff with jitter for transient failures.
+        // https://ai.google.dev/gemini-api/docs/troubleshooting
+        // OpenAI distinguishes transient server errors from malformed requests/authentication.
+        // https://developers.openai.com/api/docs/guides/error-codes/
+        $delay = $status === 404 ? 0 : random_int(500, 1000) * (2 ** min($index, 3));
+        $delay = max($delay, $this->retryAfterMs ?? 0);
+        if ($delay + self::MIN_ATTEMPT_MS > self::remainingProviderMs($deadline)) return false;
+        if ($delay > 0) usleep($delay * 1000);
+        return true;
+    }
+
+    private function failureMessage(int $status, string|false $body): string
+    {
+        return match ($this->failureCategory) {
+            'request_deadline' => 'AI request failed: the time available for this request was exhausted.',
+            'provider_budget' => 'AI request failed: the model call or token limit for this request was reached.',
+            default => self::describeFailure($status, $body, $this->transportError),
+        };
+    }
+
+    private function post(string $url, string $payload, array $headers, ?int &$status, string $model,
+        int $deadline, bool $hasAlternate, array $options = []): string|false
+    {
+        $this->retryAfterMs = null;
+        $this->transportError = 0;
+        $status = 0;
+        if (self::remainingProviderMs($deadline) < self::MIN_ATTEMPT_MS) {
+            $this->failureCategory = 'request_deadline';
+            return false;
+        }
+        DatabaseService::releaseIdleConnection();
+        try {
+            $span = AgentTraceService::startSpan('model_attempt', $model);
+        } catch (AgentBudgetException $error) {
+            if (!in_array($error->reason, ['request_deadline','provider_budget'], true)) throw $error;
+            $this->failureCategory = $error->reason;
+            return false;
+        }
+        $available = self::remainingProviderMs($deadline);
+        if ($available < self::MIN_ATTEMPT_MS) {
+            $this->failureCategory = 'request_deadline';
+            AgentTraceService::endSpan($span, 'skipped');
+            return false;
+        }
+        // Leave a second model time to answer if the preferred one stalls.
+        $timeoutMs = min(self::MODEL_ATTEMPT_TIMEOUT_MS, $hasAlternate ? max(self::MIN_ATTEMPT_MS, intdiv($available, 2)) : $available);
         $ch = curl_init($url);
         curl_setopt_array($ch, $options + [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST => true,
             CURLOPT_HTTPHEADER => $headers,
             CURLOPT_POSTFIELDS => $payload,
+            CURLOPT_HEADERFUNCTION => function ($handle, string $line): int {
+                if (str_starts_with($line, 'HTTP/')) $this->retryAfterMs = null;
+                if (stripos($line, 'Retry-After:') === 0) {
+                    $value = trim(substr($line, strlen('Retry-After:')));
+                    if (ctype_digit($value)) {
+                        $seconds = (int)$value;
+                    } else {
+                        $date = \DateTimeImmutable::createFromFormat(DATE_RFC7231, $value, new \DateTimeZone('GMT'));
+                        $seconds = $date === false ? 0 : $date->getTimestamp() - time();
+                    }
+                    $this->retryAfterMs = 1000 * max(0, min(86400, $seconds));
+                }
+                return strlen($line);
+            },
             CURLOPT_TIMEOUT_MS => $timeoutMs,
             CURLOPT_CONNECTTIMEOUT_MS => min(10000, $timeoutMs),
         ]);
-        // A provider wait can exceed the database idle timeout. The next tool
-        // lookup or audit write should open a fresh MySQL connection.
-        DatabaseService::releaseIdleConnection();
-        $span = AgentTraceService::startSpan('model_attempt',$model ?? 'configured_provider');
-        if ($span!==null) curl_setopt($ch,CURLOPT_TIMEOUT_MS,max(1,min($timeoutMs,AgentTraceService::remainingMs())));
         $body = curl_exec($ch);
         $this->transportError = curl_errno($ch);
         $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
         // PHP reports these milestones in seconds and uses zero for unreached stages.
         // https://www.php.net/manual/en/function.curl-getinfo.php
+        $firstByteMs = 1000 * curl_getinfo($ch, CURLINFO_STARTTRANSFER_TIME);
         $this->transferTimings[] = [
             'model' => $model,
             'status' => $status,
@@ -589,14 +611,14 @@ final class AiClient
             'dns_ms' => 1000 * curl_getinfo($ch, CURLINFO_NAMELOOKUP_TIME),
             'connect_ms' => 1000 * curl_getinfo($ch, CURLINFO_CONNECT_TIME),
             'ready_ms' => 1000 * curl_getinfo($ch, CURLINFO_PRETRANSFER_TIME),
-            'first_byte_ms' => 1000 * curl_getinfo($ch, CURLINFO_STARTTRANSFER_TIME),
+            'timeout_ms' => $timeoutMs,
             'total_ms' => 1000 * curl_getinfo($ch, CURLINFO_TOTAL_TIME),
-        ];
+        ] + ($firstByteMs > 0 ? ['first_byte_ms' => $firstByteMs] : []);
         AgentTraceService::endSpan($span,($body===false||$status<200||$status>=300)?'error':'complete',[
-            'http_status'=>$status, 'first_byte_ms'=>1000*curl_getinfo($ch,CURLINFO_STARTTRANSFER_TIME),
+            'http_status'=>$status, 'curl_error'=>$this->transportError, 'timeout_ms'=>$timeoutMs,
             'request_sha256'=>hash('sha256',$payload),
             'usage'=>AgentTraceService::usageFromResponse($body),
-        ]);
+        ] + ($firstByteMs > 0 ? ['first_byte_ms' => $firstByteMs] : []));
         unset($ch);
         $this->failureCategory = ($body === false || $status !== 200) ? self::classifyFailure($status, $this->transportError) : null;
         return $body;
@@ -612,7 +634,7 @@ final class AiClient
             $status === 400 => ' The provider rejected the request. Check the integration configuration.',
             in_array($status, [401, 403], true) => ' The API key was rejected. Set a valid ai_api_key in Admin → Integrations.',
             $status === 404 => ' The configured model or endpoint was not found. Check the integration configuration.',
-            $status === 429 => ' Rate limit or quota exceeded for this Google project or model.',
+            $status === 429 => ' The provider rate limit or quota was exceeded.',
             in_array($status, [500, 503], true) => ' The provider could not complete the request. Try again later.',
             // https://curl.se/libcurl/c/libcurl-errors.html
             // A timeout does not prove the provider never received the request.

@@ -182,6 +182,18 @@ class AgentToolRegistry
                 ],
             ],
             [
+                'name' => 'operator_guide',
+                'description' => 'Read the official owner instructions for a task in this store. Use this for how-to questions about the admin screens. For current business figures, use the appropriate business lookup.',
+                'parameters' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'topic' => ['type' => 'string', 'enum' => array_column(AdminHelpService::references(), 'slug')],
+                        'section' => ['type' => 'string', 'description' => 'Optional exact heading returned in sections by a previous lookup of this guide.'],
+                    ],
+                    'required' => ['topic'],
+                ],
+            ],
+            [
                 'name' => 'coupon_status',
                 'description' => 'Whether a coupon is currently usable, and why not if it is refused: '
                     . 'expired, not started, spend limits, usage limits.',
@@ -254,6 +266,7 @@ class AgentToolRegistry
                 'support_enquiries' => $this->supportEnquiries($args),
                 'search_articles' => $this->searchArticles($args),
                 'coupon_status' => $this->couponStatus($args),
+                'operator_guide' => (new AdminHelpService())->agentExcerpt($args['topic'], $_SESSION['user'] ?? null, $args['section'] ?? null),
                 default => ['error' => 'Lookup unavailable.'],
             } : ['error' => 'Invalid lookup parameters.'];
             $this->activity[] = [
@@ -278,6 +291,7 @@ class AgentToolRegistry
                     'gst_register_summary' => 'GST invoice register',
                     'support_enquiries' => 'AI Support Tickets',
                     'sales_summary' => 'Sales report',
+                    'operator_guide' => $result['title'],
                     default => null,
                 };
                 if ($label !== null) $this->sources[$result['report_url']] = ['label' => $label, 'path' => $result['report_url']];

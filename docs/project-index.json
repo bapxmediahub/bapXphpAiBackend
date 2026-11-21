@@ -3,10 +3,10 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 151,
-        "controllers": 13,
-        "services": 69,
-        "views": 63,
+        "routes": 160,
+        "controllers": 14,
+        "services": 72,
+        "views": 67,
         "collections": 22
     },
     "routes": [
@@ -341,6 +341,31 @@
             "view": "admin/appearance",
             "services": [
                 "SettingsService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/appearance/menu",
+            "name": "admin.appearance.menu",
+            "controller": "AdminController@headerMenu",
+            "view": "admin/header-menu",
+            "services": [
+                "SettingsService",
+                "AuthoredPageService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/appearance/menu",
+            "name": "admin.appearance.menu.save",
+            "controller": "AdminController@saveHeaderMenu",
+            "view": "admin/header-menu",
+            "services": [
+                "SettingsService",
+                "AuthoredPageService",
+                "AuditLogService",
                 "AuthService"
             ]
         },
@@ -846,6 +871,42 @@
         },
         {
             "method": "GET",
+            "path": "/admin/mcp-clients",
+            "name": "admin.mcp.clients.settings",
+            "controller": "AdminMcpClientController@settings",
+            "view": "admin/mcp-clients",
+            "services": [
+                "McpClientService",
+                "AuthService",
+                "AuditLogService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/mcp-clients/issue",
+            "name": "admin.mcp.clients.issue",
+            "controller": "AdminMcpClientController@issue",
+            "view": "admin/mcp-clients",
+            "services": [
+                "McpClientService",
+                "AuthService",
+                "AuditLogService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/mcp-clients/revoke",
+            "name": "admin.mcp.clients.revoke",
+            "controller": "AdminMcpClientController@revoke",
+            "view": "admin/mcp-clients",
+            "services": [
+                "McpClientService",
+                "AuthService",
+                "AuditLogService"
+            ]
+        },
+        {
+            "method": "GET",
             "path": "/admin/media",
             "name": "admin.media",
             "controller": "AdminController@media",
@@ -950,6 +1011,41 @@
                 "OrderService",
                 "TaxService",
                 "SettingsService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/pages",
+            "name": "admin.pages",
+            "controller": "AdminController@pages",
+            "view": "admin/pages",
+            "services": [
+                "AuthoredPageService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/pages/delete",
+            "name": "admin.pages.delete",
+            "controller": "AdminController@deleteAuthoredPage",
+            "view": "admin/pages",
+            "services": [
+                "AuthoredPageService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/pages/save",
+            "name": "admin.pages.save",
+            "controller": "AdminController@saveAuthoredPage",
+            "view": "admin/pages",
+            "services": [
+                "AuthoredPageService",
                 "AuditLogService",
                 "AuthService"
             ]
@@ -1501,6 +1597,17 @@
         },
         {
             "method": "GET",
+            "path": "/pages/{slug}",
+            "name": "pages.show",
+            "controller": "PublicController@authoredPage",
+            "view": "public/authored-page",
+            "services": [
+                "AuthoredPageService",
+                "MarkdownRenderer"
+            ]
+        },
+        {
+            "method": "GET",
             "path": "/payment/stripe/return",
             "name": "payment.stripe.return",
             "controller": "CommerceController@completeStripe",
@@ -1612,6 +1719,7 @@
             "controller": "PublicController@search",
             "view": "public/search",
             "services": [
+                "AuthoredPageService",
                 "ProductService",
                 "BlogService",
                 "TempleService"
@@ -1636,7 +1744,8 @@
             "view": "public/sitemap",
             "services": [
                 "BlogService",
-                "ProductService"
+                "ProductService",
+                "AuthoredPageService"
             ]
         },
         {
@@ -1742,6 +1851,7 @@
         "AccountController",
         "AdminController",
         "AdminGoogleReportingController",
+        "AdminMcpClientController",
         "ApiController",
         "AuthController",
         "BaseController",
@@ -1757,6 +1867,7 @@
         "AddressService",
         "AdminHelpService",
         "AgentAttachmentService",
+        "AgentBudgetException",
         "AgentCapabilityPolicy",
         "AgentContextService",
         "AgentConversationService",
@@ -1772,6 +1883,7 @@
         "AstrologerService",
         "AuditLogService",
         "AuthService",
+        "AuthoredPageService",
         "BlogConflictException",
         "BlogDraftService",
         "BlogService",
@@ -1793,6 +1905,7 @@
         "MailStorageService",
         "MailTemplateService",
         "MarkdownRenderer",
+        "McpClientService",
         "MediaService",
         "MerchantFeedService",
         "OrderService",
@@ -1846,12 +1959,15 @@
         "admin/email-templates",
         "admin/google-merchant",
         "admin/google-reporting",
+        "admin/header-menu",
         "admin/help",
         "admin/integrations",
         "admin/list",
         "admin/list-controls",
         "admin/mailbox",
+        "admin/mcp-clients",
         "admin/media",
+        "admin/pages",
         "admin/product-form",
         "admin/product-import",
         "admin/resource",
@@ -1864,6 +1980,7 @@
         "layouts/app",
         "public/404",
         "public/about",
+        "public/authored-page",
         "public/blog",
         "public/blog-post",
         "public/cart",
@@ -1929,6 +2046,7 @@
         "navigation_without_get_route": [],
         "unwired_controllers": [],
         "unwired_services": [
+            "AgentBudgetException",
             "AstrologerService",
             "BlogConflictException",
             "CourierService",

@@ -98,7 +98,7 @@ target is absent, and state that absence as a finding.
   binaries remain files. New uploaded binaries live in the domain-local
   `.sps-media` directory beside the code checkout and retain public
   `/assets/images/media/…` URLs. `MediaService` writes metadata to hosted MySQL
-  `media_files`; legacy YAML is read-only compatibility input.
+  `media_files`; the shipped legacy media catalogue is an offline migration input. Installation-specific YAML remains read-only until its owner verifies migration. See `./bapXphp media:reconcile` and `docs/json-storage.md`.
 - **Agents:** exactly two pure-PHP application surfaces — customer support and
   owner/admin chat. Support context uses `AgentContextService` and
   `SupportToolRegistry`; owner queries use `EnterpriseToolRegistry` with
@@ -137,8 +137,7 @@ model name looks wrong" without checking sends the owner chasing a configuration
 that is not there.
 
 - The default Google provider uses its two hosted Gemma 4 models:
-  `gemma-4-31b-it` is primary and `gemma-4-26b-a4b-it` is automatic fallback after
-  up to three retryable API failures, or immediately when the primary returns HTTP 429. Google does not publish a hosted Gemma 4 27B identifier.
+  `gemma-4-31b-it` is primary and `gemma-4-26b-a4b-it` is the automatic fallback for a transient failure. Each eligible model receives at most one attempt per generation within the shared request deadline. Google does not publish a hosted Gemma 4 27B identifier.
   Proof: <https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api#supported-models>.
 - It is a **reasoning model**. Its reply may contain the model thinking out loud, either
   as parts flagged `"thought": true` or as prose before the answer. Read the answer with

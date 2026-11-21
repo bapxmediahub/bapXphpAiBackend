@@ -10,9 +10,11 @@ category: docs
 `POST /admin/media/delete` is authenticated/admin-only and CSRF-protected.
 The owner confirms a visible Delete upload action. Only valid uploaded media
 records are eligible; bundled assets and legacy YAML-only records are not.
-The service checks recorded usage and current product, temple, category,
-settings and published/unpublished article references before quarantining
-owned image binaries. Metadata deletion failure restores quarantined files.
+Upload history identifies the owner at the time of upload. The service checks both
+image URLs against current products, temples, categories, settings and all articles
+before quarantining the binaries. Historical consultant references also require a
+successful consultant lookup. An owner can delete an image after replacing it or
+deleting its product. Unknown or malformed historical references prevent deletion. Metadata deletion failure restores quarantined files.
 A successful operation is recorded through the existing admin audit service.
 
 These guards are not an atomic cross-collection reference-lock protocol.
@@ -24,7 +26,7 @@ do not claim a no-race guarantee across arbitrary independently edited records.
 `php tests/media-delete-integration.php` creates unique disposable files and
 an authenticated fixture-only remotedb process. It checks:
 
-1. Referenced media cannot be deleted.
+1. Current references and unverifiable upload history block deletion. A product that has since replaced the image, or a deleted product, releases the historical reference.
 2. A simulated metadata-delete failure restores the original binary.
 3. An unused disposable upload loses both its metadata and binary.
 

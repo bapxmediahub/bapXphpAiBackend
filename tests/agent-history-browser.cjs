@@ -128,3 +128,49 @@ test('Composer keeps the draft and transcript while attaching at the cursor or u
         await page.close();
     }
 });
+
+test('Failed question returns to the composer with the recorded turn and no automatic resend', async () => {
+    const page = await browser.newPage();
+    let sends = 0;
+    try {
+        await page.route(origin + '/admin/agent', route => route.fulfill({contentType:'text/html', body:view}));
+        await page.route(origin + '/admin/agent/ask', route => {
+            sends++;
+            return route.fulfill({status:502, json:{conversation_id:first, turn_id:second, error:'Provider unavailable'}});
+        });
+        await page.goto(origin + '/admin/agent');
+        await page.addScriptTag({path:path.join(root, 'assets/agent-status.js')});
+        const input = page.getByRole('textbox', {name:'Message'});
+        await input.fill('Read an owner guide');
+        await input.press('Enter');
+        const review = page.getByRole('link', {name:'Review this request'});
+        await review.waitFor();
+        assert.equal(await review.getAttribute('href'), '/admin/agent/review/' + first + '?turn=' + second);
+        assert.equal(await input.inputValue(), 'Read an owner guide');
+        await page.route(origin + '/admin/agent/history', route => route.fulfill({json:{conversations:[
+            {id:second,preview:'Other chat',pending_turn_count:1}, {id:first,preview:'Original chat',pending_turn_count:1}
+        ]}}));
+        await page.route(origin + '/admin/agent/history/*', route => route.fulfill({json:{
+            conversation_id:route.request().url().split('/').pop(),
+            turns:route.request().url().endsWith(first) ? [
+                {question:'Read an owner guide',answer:'Provider unavailable',outcome:'error',turn_id:second},
+                {question:'Legacy question',answer:'Legacy saved answer'}
+            ] : []
+        }}));
+        const history = page.getByRole('button', {name:'History',exact:true});
+        await history.click();
+        await page.getByRole('button', {name:/Other chat/}).click();
+        await page.waitForFunction(() => document.querySelector('#agent-history-panel').hidden);
+        assert.equal(await input.inputValue(), '', 'A failed question cannot leak into another conversation');
+        await history.click();
+        await page.getByRole('button', {name:/Original chat/}).click();
+        await page.waitForFunction(() => document.querySelector('#agent-history-panel').hidden);
+        assert.equal(await input.inputValue(), 'Read an owner guide', 'Draft stays with its original chat');
+        assert.equal(await review.getAttribute('href'), '/admin/agent/review/' + first + '?turn=' + second);
+        assert.match(await page.locator('.agent-bubble--error').innerText(), /Provider unavailable/);
+        assert.match(await page.locator('.agent-bubble--bot').innerText(), /Legacy saved answer/);
+        assert.equal(sends, 1);
+    } finally {
+        await page.close();
+    }
+});

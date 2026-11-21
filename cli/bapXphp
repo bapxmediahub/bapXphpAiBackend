@@ -67,7 +67,10 @@ set -euo pipefail
 #   bapXphp hooks status            — show configured Git hooks path
 #
 # ── Mail & Images ───────────────────────────────────────────────
-#   bapXphp mcp:stdio               — serve the read-only public catalogue to a local MCP client
+#   bapXphp mcp:tools               — list available public MCP tools and their schemas as JSON
+#   bapXphp mcp:policy <key>        — read one published store policy as JSON
+#   bapXphp mcp:stdio               — serve public tools and owner-authorized sales totals to a local MCP client
+#   bapXphp media:reconcile [--apply] — check legacy media metadata against MySQL
 #   bapXphp merchant:check [--json|--schema] — inspect current Google product data without publishing
 #   bapXphp merchant:feed           — write the public Google RSS feed to stdout
 #   bapXphp mail:process            — process pending mail queue
@@ -165,11 +168,10 @@ if [ -L "$BAPX_SRC" ]; then
 fi
 ROOT="$(cd "$(dirname "$BAPX_SRC")/.." && pwd)"
 
-# Stdio uses the application's runtime configuration and skips developer-only CLI credentials.
-if [[ "${1:-}" == "mcp:stdio" ]]; then
-  shift
-  exec php "$ROOT/cli/mcp-stdio.php" "$@"
-fi
+# Public capability commands use the site's runtime configuration.
+case "${1:-}" in
+  mcp:stdio|mcp:tools|mcp:policy) exec php "$ROOT/cli/mcp-stdio.php" "$@" ;;
+esac
 
 # Load project and ignored operator connection settings for CLI subcommands.
 for env_file in "$ROOT/.env" "$ROOT/.env.mysql" "$ROOT/.env.test-user"; do
@@ -2184,6 +2186,8 @@ main() {
       cmd_ai_probe ;;
     runtime:check|runtime-check)
       shift; cmd_runtime_check "$@" ;;
+    media:reconcile)
+      shift; require_php; php "$ROOT/cli/reconcile-media.php" "$@" ;;
     merchant:check|merchant:feed)
       local merchant_action="${1#merchant:}"; shift
       require_php; php "$ROOT/cli/merchant.php" "$merchant_action" "$@" ;;

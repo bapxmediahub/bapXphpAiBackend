@@ -13,11 +13,11 @@ final class AdminHelpService
         'support-tickets'=>['title'=>'Handle customer support','category'=>'agents','summary'=>'Claim a case, save a reply, manage waiting states and reopen when help is still needed.','links'=>[['label'=>'AI Support Tickets','url'=>'/admin/support-tickets'],['label'=>'Contacts','url'=>'/admin/contact-submissions']], 'sources'=>['app/Services/SupportTicketService.php','app/Controllers/AdminController.php','views/admin/list.php']],
         'enterprise-agent'=>['title'=>'Ask the Enterprise Agent','category'=>'agents','summary'=>'Ask scoped business questions, reopen your chats and review drafts before making changes.','links'=>[['label'=>'Open Enterprise chat','url'=>'/admin/agent']], 'sources'=>['app/Controllers/AdminController.php','app/Services/AgentToolRegistry.php','views/admin/agent.php']],
         'agent-monitoring'=>['title'=>'Inspect agent quality & evidence','category'=>'agents','summary'=>'Separate response activity, customer confirmation and regression checks; inspect unfinished work safely.','links'=>[['label'=>'Agent Monitoring','url'=>'/admin/agent/monitoring'],['label'=>'Support queue','url'=>'/admin/support-tickets']], 'sources'=>['app/Services/AgentEvaluationService.php','app/Services/AgentConversationService.php','app/Services/AuditLogService.php','views/admin/agent-review.php','views/admin/agent-monitoring.php']],
-        'blog-publishing'=>['title'=>'Write and publish a guide','category'=>'content','summary'=>'Draft, preview and explicitly save useful articles with accurate images and publication settings.','links'=>[['label'=>'Blog editor','url'=>'/admin/blog'],['label'=>'Media Library','url'=>'/admin/media']], 'sources'=>['app/Services/BlogService.php','app/Services/BlogDraftService.php','views/admin/blog.php','views/admin/blog-history.php']],
+        'blog-publishing'=>['title'=>'Write and publish a guide','category'=>'content','summary'=>'Draft, preview and explicitly save useful articles with accurate images and publication settings.','links'=>[['label'=>'Blog editor','url'=>'/admin/blog'],['label'=>'Pages','url'=>'/admin/pages'],['label'=>'Media Library','url'=>'/admin/media']], 'sources'=>['app/Services/AuthoredPageService.php','views/admin/pages.php','app/Services/BlogService.php','app/Services/BlogDraftService.php','views/admin/blog.php','views/admin/blog-history.php']],
         'media'=>['title'=>'Manage images safely','category'=>'content','summary'=>'Upload reusable images, inspect usage and delete only unused uploads after confirmation.','links'=>[['label'=>'Media Library','url'=>'/admin/media'],['label'=>'Logo & Favicon','url'=>'/admin/appearance']], 'sources'=>['app/Services/MediaService.php','views/admin/media.php']],
         'customers'=>['title'=>'Find customer accounts','category'=>'operations','summary'=>'Filter registered accounts and interpret order matches without changing customer identities.','links'=>[['label'=>'Users directory','url'=>'/admin/users']], 'sources'=>['app/Controllers/AdminController.php','views/admin/users.php','app/Services/AuthService.php']],
         'email'=>['title'=>'Understand email delivery','category'=>'operations','summary'=>'Read queue health and distinguish SMTP acceptance, failed attempts and an actual inbox receipt.','links'=>[['label'=>'Email Outbox','url'=>'/admin/email-outbox'],['label'=>'Templates & triggers','url'=>'/admin/email-templates'],['label'=>'Email Inbox','url'=>'/admin/email-inbox']], 'sources'=>['app/Services/MailQueueService.php','app/Services/MailTemplateService.php','app/Services/SmtpMailer.php','app/Controllers/AuthController.php','views/admin/email-templates.php','views/admin/mailbox.php']],
-        'settings'=>['title'=>'Change site settings carefully','category'=>'operations','summary'=>'Know the difference between site content, provider credentials and changes that can affect checkout.','links'=>[['label'=>'System Health','url'=>'/admin/system-health'],['label'=>'Site Settings','url'=>'/admin/settings'],['label'=>'Integrations','url'=>'/admin/integrations'],['label'=>'Google reporting','url'=>'/admin/google-reporting'],['label'=>'Temples','url'=>'/admin/temples']], 'sources'=>['app/Services/RuntimeHealthService.php','cli/runtime-check.php','app/Services/SettingsService.php','app/Services/SecretService.php','integrations/google-site-kit/GoogleSiteKitClient.php','integrations/google-site-kit/GoogleReportingClient.php','app/Controllers/AdminGoogleReportingController.php','views/admin/google-reporting.php','views/admin/dashboard.php','views/admin/system-health.php','views/admin/settings.php','views/admin/integrations.php','views/admin/resource.php']],
+        'settings'=>['title'=>'Change site settings carefully','category'=>'operations','summary'=>'Know the difference between site content, provider credentials and changes that can affect checkout.','links'=>[['label'=>'System Health','url'=>'/admin/system-health'],['label'=>'Site Settings','url'=>'/admin/settings'],['label'=>'Header menu','url'=>'/admin/appearance/menu'],['label'=>'Integrations','url'=>'/admin/integrations'],['label'=>'Google reporting','url'=>'/admin/google-reporting'],['label'=>'Local MCP clients','url'=>'/admin/mcp-clients'],['label'=>'Temples','url'=>'/admin/temples']], 'sources'=>['app/Services/RuntimeHealthService.php','cli/runtime-check.php','app/Services/SettingsService.php','views/admin/header-menu.php','app/Services/SecretService.php','integrations/google-site-kit/GoogleSiteKitClient.php','integrations/google-site-kit/GoogleReportingClient.php','app/Controllers/AdminGoogleReportingController.php','views/admin/google-reporting.php','app/Controllers/AdminMcpClientController.php','app/Services/McpClientService.php','views/admin/mcp-clients.php','views/admin/dashboard.php','views/admin/system-health.php','views/admin/settings.php','views/admin/integrations.php','views/admin/resource.php']],
     ];
     public static function references(): array {
         $out=[];foreach(self::GUIDES as $slug=>$guide)$out[]=['slug'=>$slug,'file'=>'content/help/admin/'.$slug.'.md']+$guide;return $out;
@@ -58,6 +58,24 @@ final class AdminHelpService
         }
         return $out;
     }
+    /** Expose a bounded excerpt of the same owner-maintained guide rendered in Help. */
+    public function agentExcerpt(string $topic, ?array $actor, ?string $section = null): array {
+        self::requireAdmin($actor);
+        if (!isset(self::GUIDES[$topic])) return ['error'=>'Unknown operator guide.'];
+        $text = trim($this->read($topic));
+        $sections = [];
+        foreach (preg_split('/(?=^## )/m', $text, flags:PREG_SPLIT_NO_EMPTY) as $block) {
+            if (preg_match('/^## ([^\r\n]+)\R+(.*)$/s', trim($block), $parts)) $sections[trim($parts[1])] = trim($parts[2]);
+        }
+        if ($section !== null && !isset($sections[$section])) {
+            return ['error'=>'Choose an available heading in this guide.', 'sections'=>array_keys($sections)];
+        }
+        $heading = $section ?? array_key_first($sections);
+        $excerpt = $heading === null ? $text : $sections[$heading];
+        return ['title'=>self::GUIDES[$topic]['title'], 'section'=>$heading, 'sections'=>array_keys($sections),
+            'instructions'=>mb_substr($excerpt, 0, 3200), 'report_url'=>'/admin/docs/'.$topic, 'found'=>1];
+    }
+
     public function guide(string $slug,?array $actor): ?array {
         self::requireAdmin($actor);if(!isset(self::GUIDES[$slug]))return null;
         $text=$this->read($slug);$html=(new MarkdownRenderer())->render($text);$toc=[];
@@ -74,8 +92,8 @@ final class AdminHelpService
             '/admin/support-tickets'=>'support-tickets','/admin/contact-submissions'=>'support-tickets',
             '/admin/orders'=>'orders-shipping','/admin/shipping'=>'orders-shipping','/admin/tax-report'=>'reports',
             '/admin/google-merchant'=>'catalogue','/admin/products'=>'catalogue','/admin/categories'=>'catalogue','/admin/collections'=>'catalogue','/admin/coupons'=>'catalogue',
-            '/admin/blog'=>'blog-publishing','/admin/media'=>'media','/admin/appearance'=>'media','/admin/users'=>'customers',
-            '/admin/system-health'=>'settings','/admin/email-templates'=>'email','/admin/email-inbox'=>'email','/admin/email-outbox'=>'email','/admin/integrations'=>'settings','/admin/google-reporting'=>'settings','/admin/settings'=>'settings','/admin/temples'=>'settings'
+            '/admin/blog'=>'blog-publishing','/admin/pages'=>'blog-publishing','/admin/media'=>'media','/admin/appearance/menu'=>'settings','/admin/appearance'=>'media','/admin/users'=>'customers',
+            '/admin/system-health'=>'settings','/admin/email-templates'=>'email','/admin/email-inbox'=>'email','/admin/email-outbox'=>'email','/admin/integrations'=>'settings','/admin/google-reporting'=>'settings','/admin/mcp-clients'=>'settings','/admin/settings'=>'settings','/admin/temples'=>'settings'
         ] as $prefix=>$target)if(self::onPath($path,$prefix)){$slug=$target;break;}
         return ['slug'=>$slug,'url'=>'/admin/docs/'.$slug]+self::GUIDES[$slug];
     }
