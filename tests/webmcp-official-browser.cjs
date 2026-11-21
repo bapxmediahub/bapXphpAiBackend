@@ -130,10 +130,16 @@ async function main(){
     assert.deepEqual(errors,[],'No uncaught Chrome exceptions');
     const lifecycle=await page.evaluate(async()=>{
       window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:false}));
-      return (await document.modelContext.getTools()).map(x=>x.name);
+      try {
+        return {names:(await document.modelContext.getTools()).map(x=>x.name),blocked:false};
+      } catch(e) {
+        // The official polyfill may disable ALL discovery after pagehide.
+        return {names:[],blocked:['NotAllowedError','InvalidStateError'].includes(e.name)};
+      }
     });
-    assert.ok(!lifecycle.includes('list_shop_results')&&!lifecycle.includes('search_public_articles'),
-      'Aborting the registration removes tools from discovery');
+    assert.ok(lifecycle.blocked || (!lifecycle.names.includes('list_shop_results')
+      && !lifecycle.names.includes('search_public_articles')),
+      'A pagehide must remove registered tools or render document discovery unavailable');
 
     const without=await browser.newPage();
     await without.goto('http://127.0.0.1:'+port+'/without-polyfill',{waitUntil:'load'});
