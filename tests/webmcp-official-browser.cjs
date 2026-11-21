@@ -87,7 +87,9 @@ async function main(){
   const browser=await playwright.chromium.launch({
     headless:true,
     executablePath:process.env.CHROMIUM_PATH||undefined,
-    args:['--no-sandbox'],
+    // The official polyfill must own the context in this test, not Chrome's native
+    // Origin Trial implementation (which can reject calls under its permissions policy).
+    args:['--no-sandbox','--disable-features=WebMCP'],
   });
   try{
     const page=await browser.newPage();
