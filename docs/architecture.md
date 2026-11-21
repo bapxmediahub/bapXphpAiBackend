@@ -30,6 +30,7 @@ category: docs
   Their trace/feedback/evaluation records are stored in the same JSON file.
 - Business records are remote-only: `.env` supplies direct hosted MySQL credentials to `DatabaseService`; when direct access is unavailable, the CLI/application use `APP_URL/remotedb`. The local checkout is not a customer-data fallback.
 - Blog posts are file-based: `content/blog/posts/*.md` with YAML frontmatter.
+- `PublicKnowledgeService` is the shared read-only projection for visible products and published blog/customer-help metadata. Both PHP agent surfaces and local MCP reuse this service; browser WebMCP calls the bounded public article API. A public request cannot address private Markdown, owner Help or JSON conversation storage.
 - Media metadata lives in MySQL `media_files` collection.
 - New upload binaries live in the domain-local `.sps-media` directory beside the
   deployment checkout; `index.php` serves their existing public media URLs.

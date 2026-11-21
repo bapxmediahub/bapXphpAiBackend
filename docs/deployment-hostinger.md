@@ -69,6 +69,16 @@ the committed fixture baseline offline; no model API or paid service is needed.
 Live acceptance must still test authenticated chat feedback/history,
 actor isolation, trace exports, admin dashboards, and 375px views.
 
+## Release revision receipt and rollback gate
+
+A green PR check or successful merge is **not** evidence that Hostinger finished pulling the new code. Before a release, capture the expected `main` merge SHA and independently back up MySQL, the sibling `.sps-media` directory, and private `storage/agent-conversations/` JSON (including ownership/permissions). Keep `.env` outside change review. Record the existing Hostinger checkout SHA and previous known-working release before initiating deployment.
+
+After Hostinger Git auto-deploy or an approved manual `git pull --ff-only origin main`, verify `git rev-parse HEAD` on the actual deployed checkout equals the expected merge SHA. Do not run force reset, prune customer files, apply schema migration, or re-send stored payments/email to repair a failed deploy. Record live URL, verified SHA, local IST time, health result and the exact human operator. If Hostinger shell access is unavailable, **mark the deployed SHA unverified**, even if public content appears correct.
+
+For the shared knowledge release, check `/shop`, `/blog`, `/api/knowledge/articles?q=guide&limit=1`, `/api/knowledge/products?limit=1`, the served `/assets/shop-webmcp.js`, `/assets/public-products-webmcp.js`, `/assets/public-knowledge-webmcp.js` and `/assets/vendor/webmcp/polyfill-0.1.1.js`, PHP response correctness and private `/storage/agent-conversations/` URL denial. Validate a signed-in owner session, customer Support, chat history continuity and narrow phone layout without mutating live records. A browser without `document.modelContext` cannot prove native WebMCP invocation; record browser capability separately.
+
+If checks fail, stop promotion and compare the actual Hostinger checkout and server logs with the expected SHA. Roll back to the last known-working code revision **only after checking data compatibility**, preserving the media directory, database and private chats; recheck those paths after recovery. Record unresolved acceptance on the PR/issue rather than closing it because CI passed.
+
 ## Release workflow
 
 1. Work from the linked issue on a branch. Run `./bapXphp update` for generated

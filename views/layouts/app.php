@@ -306,6 +306,24 @@ echo $__googleTags->gtagCode();
     .site-header #primary-nav:target{display:flex;max-height:75vh;overflow-y:auto}
 }
 </style></noscript>
+<?php if ($__modules['shop'] || $__modules['blog']): ?>
+<!-- Pinned official W3C WebMCP polyfill. Does not replace a native modelContext. -->
+<script src="/assets/vendor/webmcp/polyfill-0.1.1.js?v=<?= filemtime(__DIR__ . '/../../assets/vendor/webmcp/polyfill-0.1.1.js') ?>"></script>
+<?php endif; ?>
+<?php if ($__modules['shop']): ?>
+<script type="application/json" id="bapx-public-products-schema"><?= json_encode([
+    'inputSchema'=>\App\Services\PublicKnowledgeService::productInputSchema(),
+    'outputSchema'=>\App\Services\PublicKnowledgeService::productOutputSchema()
+], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) ?></script>
+<script defer src="/assets/public-products-webmcp.js?v=<?= filemtime(__DIR__ . '/../../assets/public-products-webmcp.js') ?>"></script>
+<?php endif; ?>
+<?php if ($__modules['blog']): ?>
+<script type="application/json" id="bapx-public-knowledge-schema"><?= json_encode([
+    'inputSchema'=>\App\Services\PublicKnowledgeService::articleInputSchema(),
+    'outputSchema'=>\App\Services\PublicKnowledgeService::articleOutputSchema()
+], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) ?></script>
+<script defer src="/assets/public-knowledge-webmcp.js?v=<?= filemtime(__DIR__ . '/../../assets/public-knowledge-webmcp.js') ?>"></script>
+<?php endif; ?>
 </head>
 <body>
 <?php $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/'; ?>

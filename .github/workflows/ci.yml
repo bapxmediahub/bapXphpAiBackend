@@ -49,6 +49,14 @@ jobs:
         run: php tests/media-delete-integration.php
       - name: Validate mixed storefront search results and module visibility
         run: php tests/storefront-search.php
+      - name: Gate published public knowledge and hidden Markdown isolation
+        run: php tests/public-knowledge.php
+      - name: Verify browser knowledge tool registration, paging and private-path rejection
+        run: node --test tests/public-knowledge-webmcp.test.cjs tests/public-products-webmcp.test.cjs
+      - name: Test real W3C WebMCP 0.1.1 polyfill with Chromium
+        run: |
+          npm install --prefix "$RUNNER_TEMP/w3c-webmcp" --no-audit --no-fund --ignore-scripts @w3c/webmcp-polyfill@0.1.1 playwright@1.62.1
+          CHROMIUM_PATH="$(command -v google-chrome)" node tests/webmcp-official-browser.cjs "$RUNNER_TEMP/w3c-webmcp"
       - name: Exercise the owner composer, installed admin app and public header editing in Chrome
         run: |
           npm install --prefix "$RUNNER_TEMP/agent-browser" --no-audit --no-fund --ignore-scripts playwright@1.62.1 @modelcontextprotocol/client@2.4.0
@@ -63,6 +71,8 @@ jobs:
         run: php tests/documentation-review.php
       - name: Validate code, tests, maps, and routes
         run: ./bapXphp ci
+
+
       - name: Exercise provider transport, bounded failover and tool call continuation on loopback
         run: php tests/ai-provider-transport.php
       - name: Gate deterministic agent fixture regressions without model APIs

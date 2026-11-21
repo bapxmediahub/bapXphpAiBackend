@@ -1,7 +1,7 @@
 <?php
 namespace App\Controllers;
 
-use App\Services\{ProductService,CategoryService,TempleService};
+use App\Services\{ProductService,CategoryService,TempleService,PublicKnowledgeService};
 
 final class ApiController extends BaseController {
     public function index(): void {
@@ -10,6 +10,8 @@ final class ApiController extends BaseController {
             '/api/categories',
             '/api/product/{slug}',
             '/api/temples',
+            '/api/knowledge/articles',
+            '/api/knowledge/products',
         ]]);
     }
 
@@ -19,6 +21,52 @@ final class ApiController extends BaseController {
         $products = $service->visible();
         $categories = (new CategoryService())->all();
         $this->jsonResponse(['success' => true, 'products' => $products, 'categories' => $categories]);
+    }
+
+    /** Only published blog/help metadata, never private Markdown or JSON sessions. */
+    /** Bounded public catalogue projection used by WebMCP and native MCP. */
+    public function knowledgeProducts(): void {
+        header('Cache-Control: no-store');
+        $query=$_GET['q'] ?? '';
+        $offset=$_GET['offset'] ?? '0';
+        $limit=$_GET['limit'] ?? '20';
+        if (!is_string($query) || !is_scalar($offset) || !is_scalar($limit)
+            || !preg_match('/^(0|[1-9][0-9]*)$/D', (string)$offset)
+            || !preg_match('/^[1-9][0-9]*$/D', (string)$limit)) {
+            $this->jsonResponse(['error'=>'Invalid search arguments'],400);
+        }
+        try {
+            $answer=(new PublicKnowledgeService())->products(
+                $query,(int)$offset,(int)$limit
+            );
+        } catch (\InvalidArgumentException) {
+            $this->jsonResponse(['error'=>'Invalid search arguments'],400);
+        } catch (\Throwable) {
+            $this->jsonResponse(['error'=>'Public products unavailable'],503);
+        }
+        $this->jsonResponse($answer);
+    }
+
+    public function knowledgeArticles(): void {
+        header('Cache-Control: no-store');
+        $query=$_GET['q'] ?? '';
+        $offset=$_GET['offset'] ?? '0';
+        $limit=$_GET['limit'] ?? '5';
+        if (!is_string($query) || !is_scalar($offset) || !is_scalar($limit)
+            || !preg_match('/^(0|[1-9][0-9]*)$/D', (string)$offset)
+            || !preg_match('/^[1-9][0-9]*$/D', (string)$limit)) {
+            $this->jsonResponse(['error'=>'Invalid search arguments'],400);
+        }
+        try {
+            $answer=(new PublicKnowledgeService())->articles(
+                $query, (int)$offset, (int)$limit
+            );
+        } catch (\InvalidArgumentException) {
+            $this->jsonResponse(['error'=>'Invalid search arguments'],400);
+        } catch (\Throwable) {
+            $this->jsonResponse(['error'=>'Public articles unavailable'],503);
+        }
+        $this->jsonResponse($answer);
     }
 
     public function categories(): void {

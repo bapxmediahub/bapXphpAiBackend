@@ -27,6 +27,12 @@ Tests: verify image decode at desktop and 375px; category/keyword filtering,
 publication hiding and source/link handling; do not infer an image exists from
 a frontmatter URL without an actual file check.
 
+## Shared read-only article retrieval
+
+The canonical published article search lives in `PublicKnowledgeService`, backed by `BlogService::all(false)` over `content/blog/posts/*.md`. It returns bounded public titles, `/blog/{slug}` links, category, relevance, total and cursor; it never reads an arbitrary path or returns Markdown source to a public client. The Enterprise Agent's `search_articles`, Support's article hints, local MCP `search_public_articles`, and browser WebMCP's read-only `GET /api/knowledge/articles` adapter use this service. The ordinary public `/blog` HTML page remains independently filtered and is not changed to API pagination.
+
+Hidden, future-dated, retired-category, module-disabled or symlinked posts must not be returned. Disabling Blog removes the local article MCP tool and prevents public API results; operator Help and private JSON conversation records are not part of the public index. Tests use synthetic Markdown and check pagination/visibility without customer records.
+
 ## Customer help articles
 
 The Help category includes account creation/access, product ordering, payment

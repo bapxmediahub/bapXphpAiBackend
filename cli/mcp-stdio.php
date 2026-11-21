@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use App\Services\{DatabaseService, McpClientService, ProductService, SettingsService, SupportToolRegistry};
+use App\Services\{DatabaseService, McpClientService, ProductService, PublicKnowledgeService, SettingsService, SupportToolRegistry};
 
 if (PHP_SAPI !== 'cli') {
     http_response_code(404);
@@ -22,6 +22,7 @@ const MCP_FRAME_LIMIT = 65536;
 const MCP_INFO = ['name' => 'bapx-public-shop', 'version' => '1.0.0'];
 const SHOP_TOOL = 'search_public_products';
 const POLICY_TOOL = 'public_policy';
+const ARTICLE_TOOL = 'search_public_articles';
 
 function shopToolDefinition(): array
 {
@@ -75,10 +76,42 @@ function policyToolDefinition(): array
     ];
 }
 
+function articleToolDefinition(): array
+{
+    return [
+        'name'=>ARTICLE_TOOL,
+        'title'=>'Search published articles and customer guides',
+        'description'=>'Search public Markdown articles and customer help, excluding drafts, future or private help. Results are display-safe titles and links only.',
+        'inputSchema'=>PublicKnowledgeService::articleInputSchema(),
+        'outputSchema'=>PublicKnowledgeService::articleOutputSchema(),
+        'annotations'=>['readOnlyHint'=>true,'destructiveHint'=>false,'idempotentHint'=>true,'openWorldHint'=>false],
+    ];
+}
+
+function publicArticles(stdClass $arguments): array
+{
+    $data=get_object_vars($arguments);
+    if (array_diff(array_keys($data), ['query','offset','limit'])
+        || !is_string($data['query'] ?? '')
+        || !is_int($data['offset'] ?? 0) || !is_int($data['limit'] ?? 5)) {
+        return toolFailure('Invalid public article search arguments.');
+    }
+    try {
+        $result=(new PublicKnowledgeService())->articles($data['query'] ?? '', $data['offset'] ?? 0, $data['limit'] ?? 5);
+    } catch (\InvalidArgumentException) {
+        return toolFailure('Use a query up to 120 characters, offset 0..2147483647 and limit 1..20.');
+    }
+    $text=json_encode($result, JSON_THROW_ON_ERROR|JSON_UNESCAPED_UNICODE);
+    if(strlen($text)>24576)return toolFailure('Article results too large; reduce limit.');
+    return ['structuredContent'=>$result,'content'=>[['type'=>'text','text'=>$text]]];
+}
+
 function availableTools(): array
 {
-    $shopEnabled = (new SettingsService())->modules(requireReadable: true)['shop'];
-    return $shopEnabled ? [shopToolDefinition(), policyToolDefinition()] : [policyToolDefinition()];
+    $modules = (new SettingsService())->modules(requireReadable: true);
+    $tools = $modules['shop'] ? [shopToolDefinition(), policyToolDefinition()] : [policyToolDefinition()];
+    if ($modules['blog']) $tools[] = articleToolDefinition();
+    return $tools;
 }
 
 function publicPolicy(stdClass $arguments): array
@@ -107,19 +140,12 @@ function searchProducts(stdClass $arguments): array
         || !is_int($limit) || $limit < 1 || $limit > 20) {
         return toolFailure('Use a query of up to 120 characters, a nonnegative offset up to 2147483647 and a limit from 1 to 20.');
     }
-    $service = new ProductService();
-    $matches = $service->discover($service->visible(), $query, '');
-    $products = [];
-    foreach (array_slice($matches, $offset, $limit) as $item) {
-        $products[] = [
-            'name' => (string)($item['name'] ?? ''),
-            'path' => '/product/' . rawurlencode((string)($item['slug'] ?? '')),
-            'priceInr' => $service->priceOf($item),
-            'available' => in_array($item['stock_status'] ?? 'in_stock', ['in_stock', 'active'], true),
-        ];
+    // One published catalogue projection for native MCP and other PHP callers.
+    try {
+        $output=(new PublicKnowledgeService())->products($query,$offset,$limit);
+    } catch (\InvalidArgumentException) {
+        return toolFailure('Invalid public catalogue query.');
     }
-    $next = $offset + count($products);
-    $output = ['products' => $products, 'total' => count($matches), 'nextOffset' => $next < count($matches) ? $next : null];
     $text = json_encode($output, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
     if (strlen($text) > 24576) return toolFailure('This page exceeds the result size limit. Reduce the limit or advance the offset.');
     return ['structuredContent' => $output, 'content' => [['type' => 'text', 'text' => $text]]];
@@ -151,7 +177,7 @@ function dispatchRequest(string $method, mixed $params): array
     }
     if ($method !== 'tools/list' && $method !== 'tools/call') return rpcError(-32601, 'Method not found');
     if ($method === 'tools/list' && property_exists($params, 'cursor')) return rpcError(-32602, 'Invalid cursor');
-    if ($method === 'tools/call' && (!in_array($params->name ?? null, [SHOP_TOOL, POLICY_TOOL, McpClientService::TOOL], true)
+    if ($method === 'tools/call' && (!in_array($params->name ?? null, [SHOP_TOOL, POLICY_TOOL, ARTICLE_TOOL, McpClientService::TOOL], true)
         || (property_exists($params, 'arguments') && !($params->arguments instanceof stdClass)))) {
         return rpcError(-32602, 'Unknown tool or invalid tool parameters');
     }
@@ -177,6 +203,10 @@ function dispatchRequest(string $method, mixed $params): array
             'content'=>[['type'=>'text', 'text'=>json_encode($summary, JSON_THROW_ON_ERROR)]]]];
     }
     if ($params->name === POLICY_TOOL) return ['result' => $base + publicPolicy($arguments)];
+    if ($params->name === ARTICLE_TOOL) {
+        if (!(new SettingsService())->modules(requireReadable:true)['blog']) return rpcError(-32602, 'Tool unavailable');
+        return ['result'=>$base + publicArticles($arguments)];
+    }
     if (!(new SettingsService())->modules(requireReadable: true)['shop']) return rpcError(-32602, 'Tool unavailable');
     return ['result' => $base + searchProducts($arguments)];
 }

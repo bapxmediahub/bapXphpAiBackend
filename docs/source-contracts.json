@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "fd7e71013f44ca045c3a6477e9cae43f7d2eea0c5b73ffffbed733b190b4dcd5",
+            "source_sha256": "bb3b8044f0e084f8bdc11907214f532c8cf85f60d9b1cacd06a8840415d48679",
             "references_sha256": "726f7e2f318f4b6846956c8de0758ddc5a9a5d0da9df9831e5da2d513122a53d",
-            "review_note": "Reviewed current Google and OpenAI API docs against tool call IDs, role checks, bounded failover, thought-only responses, per-attempt evidence, and guide retrieval."
+            "review_note": "Cross-reviewed new shared article retrieval used by the Enterprise and Support context, with published-only filtering and no private chat tool access."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
@@ -19,28 +19,28 @@
         },
         "content": {
             "source_sha256": "12e40630e473f8d50774e654dc207c19fe3c8b5eb8158ea8da0e392330a3655d",
-            "references_sha256": "2d827e2583c0e974a821e9c9ea96792f91c831400cde47f4746c7abc1e0b385b",
-            "review_note": "Reviewed authored page revisions, draft visibility, public search and menu selection, independent blog enhancement previews and manual Apply."
+            "references_sha256": "2b30cdf4d2f3f64dfb7dbc6e5c447e846135157468646adf6f731b8d45c7cd95",
+            "review_note": "Reviewed published Markdown source, future/draft/symlink filtering and bounded article metadata against blog and customer help documentation."
         },
         "foundation": {
-            "source_sha256": "bfe6eda97fcf1a3e5b9415d23281c7d7e0782206a7239452084b46ce93c7c074",
-            "references_sha256": "7899d1f374ed9fbe7fed96e1d0e172bd1796d14fbae46544b9c310ac454f8cf3",
-            "review_note": "Checked existing MySQL storage boundaries for scoped grants and authored pages, CLI migrations, and public/owner data visibility."
+            "source_sha256": "a171f68180a83fb2cca834c66d74591295e92ae0aacb0f9947743d7f4b7e0dfd",
+            "references_sha256": "d48de2bc8ebfd2808fa05f0b3e054fdfb7abce87e30ae8adb33438c33b5a84fa",
+            "review_note": "Reviewed new public PHP service routes and boundary with MySQL business data and private JSON chat storage, plus Hostinger deployment notes."
         },
         "google-tags": {
-            "source_sha256": "a957495326943e1506ce3c11dd765efde0052d4e5fca4e461586a3fdd9ea1ab7",
+            "source_sha256": "306f8fab47f2471b50af3e160d59ca2691b11775464aed8c2d82e357de858e3d",
             "references_sha256": "d8f31449a4cced126e26b64b6a4b589227ad884aed63c48e9386ca9af3bd44a9",
-            "review_note": "Verified the reporting callback and action wrap at phone widths with the hosted URL in Chromium, preserving the URL text and consent path."
+            "review_note": "Reviewed public layout changes for pinned WebMCP script order without altering Google analytics consent, tokens, or tag configuration."
         },
         "http-errors": {
             "source_sha256": "7b79ca73e37f549f65a3b0f590f39b33cd86f7d395f9de2a5b3969cc9b57f994",
-            "references_sha256": "4f80770bd98ed07192dd7ffccae41c567a03ffdd50d120052e79d2e83f5d4f41",
-            "review_note": "Cross-checked provider error and local-budget classification and unavailable private lookups, withheld page responses and edit conflicts."
+            "references_sha256": "d712cfabaf786c35d77e8490010e98f898a5552985d4d46c5844a42b94c35343",
+            "review_note": "Reviewed public catalogue and article metadata API 400/503 safe error behavior, no private errors or exception bodies exposed."
         },
         "interface": {
-            "source_sha256": "a83dbbaa646a407bb97c10d15f48a5b7ad02d5dbcc801da3e4363130cb8a9909",
+            "source_sha256": "a27171f7dbedf566e4930d70c263f65fa95ddf1d20720272ed7e81baec994075",
             "references_sha256": "e8d00490b011acd6b130e6055a167108aa929104eddd7d84a52d79f109c0c3b4",
-            "review_note": "Checked owner chat recovery and source links, mobile reporting layout, keyboard menu editing, and separate blog suggestion review controls."
+            "review_note": "Reviewed browser registration, lifecycle, schemas, rendered card validation, full product paging, and 375-pixel-compatible non-mutating page behavior."
         },
         "mail": {
             "source_sha256": "1ee0a48b5b83b3507208c3040721aa82e196c991090075d05f6d63eaba88d135",
@@ -48,19 +48,19 @@
             "review_note": "Verified editorial page and article preview, scheduling and save paths maintain separation from newsletter and order email dispatch."
         },
         "mcp-clients": {
-            "source_sha256": "f198d2004e427378ce254551c248ff2201226583d150337e19aa77b0a74ea2cb",
-            "references_sha256": "7688ce35255ebe0d28f6cde7d02ad79cebd6622f9baa2295bd1908d45533a540",
-            "review_note": "Reviewed trusted local STDIO lifecycle and scope, one-time secret handling, 30-day validity, process-bound discovery and revocation against the pinned client tests."
+            "source_sha256": "406108b1ebf6f93e7e79e5fc88f20d5f316d46dd6431a5dd4751a31a69a9d32f",
+            "references_sha256": "f83adce43ebd1fbf9c13d9018fbf5bfbe0eb930868c7c8b7ddeb30554516c7d0",
+            "review_note": "Reviewed native STDIO tool discovery and call adapters against canonical PHP public product and article schemas with bounded results."
         },
         "media": {
             "source_sha256": "7b9d3d9aa746f16f1441148550d143e7094388b247c423b90c310ed5441db99d",
-            "references_sha256": "3863f8a66d6c3598b7952e7c02de6db565c3b75083f9712ff4260af76a4b7683",
-            "review_note": "Reviewed hosted media record ownership, idempotent legacy reconciliation, active content references and native-picker fixture evidence."
+            "references_sha256": "4f2e6ec23a9a2dc8558d3f5d669b3ad351d61c19528d0bc060b20635835e6a87",
+            "review_note": "Reviewed deployment documentation and confirmed media storage and protected file paths remain independent of public article metadata."
         },
         "operator-help": {
-            "source_sha256": "1e7ed8e512227e6b4b28e312d37f8dbd1b08d80dc0317009ea9636a98ce75109",
+            "source_sha256": "d1d58412f02426a927eb58277c0a1293629b7eef058fdf37740ed509e9dd2869",
             "references_sha256": "3ee8f0a2c48c0c98cb17b41df11b46dad137524c464a9e3ac0daabf7778a8187",
-            "review_note": "Compared owner guide lookup, editorial workflow and review-only enhancement labels with their actual pages, save behavior and source links."
+            "review_note": "Reviewed public customer help retrieval separately from restricted owner Markdown guides and existing authenticated Help UI."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
@@ -68,9 +68,9 @@
             "review_note": "Checked public product visibility, published navigation destinations and isolated first-party catalogue and policy discovery."
         },
         "workflow": {
-            "source_sha256": "cded26d9c2d870f8f13e643fe84f512164e749f76014a65c54210891d046d09c",
+            "source_sha256": "ac2e0909f40c11be7f00dcb4d7a32c4e589c06ed70ced8d91d643dcd43f538a8",
             "references_sha256": "94dd586c81b1d91a0332e86219ac2b55c416d5ebc37115c9a2008697d68236d0",
-            "review_note": "Reviewed workflow coverage for loopback provider failures, Chrome, native CLI/MCP tool schemas and server-side scoped credentials."
+            "review_note": "Reviewed actual pinned W3C polyfill 0.1.1 browser test, synthetic public knowledge checks, vendor license and PHP compatibility gates."
         }
     }
 }

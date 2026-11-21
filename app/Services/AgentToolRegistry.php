@@ -812,34 +812,8 @@ class AgentToolRegistry
      */
     private function searchArticles(array $args): array
     {
-        $query = strtolower(trim((string)($args['query'] ?? '')));
-        if ($query === '') return ['error' => 'Give something to search for.'];
-        $words = array_filter(
-            preg_split('/[^a-z0-9]+/', $query) ?: [],
-            fn(string $w): bool => mb_strlen($w) >= 3
-        );
-        if ($words === []) return ['found' => 0, 'message' => 'Nothing specific enough to search for.'];
-
-        $scored = [];
-        foreach ((new BlogService())->all(false) as $post) {
-            $title = strtolower((string)($post['title'] ?? ''));
-            $summary = strtolower((string)($post['excerpt'] ?? $post['summary'] ?? ''));
-            $score = 0;
-            foreach ($words as $word) {
-                if (str_contains($title, $word)) $score += 2;   // a title match is the stronger signal
-                if (str_contains($summary, $word)) $score += 1;
-            }
-            if ($score === 0) continue;
-            $scored[] = [
-                'title' => (string)($post['title'] ?? ''),
-                'path' => '/blog/' . (string)($post['slug'] ?? ''),
-                'category' => (string)($post['category'] ?? ''),
-                'score' => $score,
-            ];
-        }
-        usort($scored, fn(array $a, array $b): int => $b['score'] <=> $a['score']);
-        if ($scored === []) return ['found' => 0, 'message' => 'No published article matched.'];
-        return ['found' => count($scored), 'articles' => array_slice($scored, 0, 5)];
+        // Same published Markdown index used by Support and the public MCP adapters.
+        return (new PublicKnowledgeService())->articlesForAgent((string)($args['query'] ?? ''));
     }
 
     private function couponStatus(array $args): array

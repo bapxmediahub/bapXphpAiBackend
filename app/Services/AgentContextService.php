@@ -257,6 +257,16 @@ final class AgentContextService {
         // Visible only, and priced through the offer window: the support bot must never
         // recommend a product the shopper cannot buy, or quote an offer that has ended.
         ], array_slice($selected, 0, 20));
+        // Reuse the exact published Markdown index used by Enterprise/MCP.
+        // Never read admin help, private instruction files or JSON transcripts.
+        $publicArticles = [];
+        if (preg_match('/\b(?:articles?|blogs?|guides?|help|pooja|puja|rituals?|how to)\b|பூஜை|உதவி/iu', $message)) {
+            try {
+                $publicArticles = (new PublicKnowledgeService())->articlesForAgent($message)['articles'] ?? [];
+            } catch (\Throwable) {
+                $publicArticles = []; // Public articles are optional; never fabricate a source.
+            }
+        }
         return [
             'pages' => [
                 'shop' => '/shop',
@@ -265,6 +275,7 @@ final class AgentContextService {
                 'contact' => '/contact',
                 'orders' => '/account/dashboard/orders',
             ],
+            'articles' => $publicArticles,
             'products' => $products,
             'retrieval' => array_diff_key($selection,array_flip(['products','collection'])),
             'collection_query'=>$collectionQuery,
