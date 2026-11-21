@@ -140,19 +140,12 @@ function searchProducts(stdClass $arguments): array
         || !is_int($limit) || $limit < 1 || $limit > 20) {
         return toolFailure('Use a query of up to 120 characters, a nonnegative offset up to 2147483647 and a limit from 1 to 20.');
     }
-    $service = new ProductService();
-    $matches = $service->discover($service->visible(), $query, '');
-    $products = [];
-    foreach (array_slice($matches, $offset, $limit) as $item) {
-        $products[] = [
-            'name' => (string)($item['name'] ?? ''),
-            'path' => '/product/' . rawurlencode((string)($item['slug'] ?? '')),
-            'priceInr' => $service->priceOf($item),
-            'available' => in_array($item['stock_status'] ?? 'in_stock', ['in_stock', 'active'], true),
-        ];
+    // One published catalogue projection for native MCP and other PHP callers.
+    try {
+        $output=(new PublicKnowledgeService())->products($query,$offset,$limit);
+    } catch (\InvalidArgumentException) {
+        return toolFailure('Invalid public catalogue query.');
     }
-    $next = $offset + count($products);
-    $output = ['products' => $products, 'total' => count($matches), 'nextOffset' => $next < count($matches) ? $next : null];
     $text = json_encode($output, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
     if (strlen($text) > 24576) return toolFailure('This page exceeds the result size limit. Reduce the limit or advance the offset.');
     return ['structuredContent' => $output, 'content' => [['type' => 'text', 'text' => $text]]];
