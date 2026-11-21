@@ -33,6 +33,7 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/api/categories','name'=>'api.categories','page'=>'public/404','controller'=>'ApiController@categories','services'=>['CategoryService']],
             ['method'=>'GET','path'=>'/api/product/{slug}','name'=>'api.product','page'=>'public/404','controller'=>'ApiController@product','services'=>['ProductService']],
             ['method'=>'GET','path'=>'/api/temples','name'=>'api.temples','page'=>'public/404','controller'=>'ApiController@temples','services'=>['TempleService']],
+            ['method'=>'GET','path'=>'/api/knowledge/articles','name'=>'api.knowledge.articles','page'=>'public/404','controller'=>'ApiController@knowledgeArticles','services'=>['PublicKnowledgeService','BlogService']],
             ['method'=>'GET','path'=>'/cart','name'=>'cart','page'=>'public/cart','controller'=>'PublicController@cart','services'=>['CartService','ProductService','SiteTelemetryService']],
             ['method'=>'GET','path'=>'/checkout','name'=>'checkout','page'=>'public/checkout','controller'=>'PublicController@checkout','services'=>['CartService','ProductService','SecretService','AddressService','SettingsService']],
             ['method'=>'GET','path'=>'/feeds/google-products.xml','name'=>'merchant.feed','page'=>'public/merchant-feed','controller'=>'PublicController@merchantFeed','services'=>['MerchantFeedService','ProductService','SettingsService']],
