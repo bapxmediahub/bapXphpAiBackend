@@ -59,8 +59,14 @@ test('local catalogue MCP checks the current shop settings and publishes only vi
         child.stdin.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/cancelled' }) + '\n');
         assert.deepEqual((await request('server/discover')).result.supportedVersions, ['2026-07-28']);
         const list = (await request('tools/list')).result.tools;
-        assert.deepEqual(list.map(tool => tool.name), ['search_public_products', 'public_policy']);
+        assert.deepEqual(list.map(tool => tool.name), ['search_public_products', 'public_policy', 'search_public_articles']);
         assert.deepEqual((await cli(['mcp:tools'])).tools, list);
+        const articles = args => request('tools/call', { name: 'search_public_articles', arguments: args });
+        assert.equal(list[2].inputSchema.additionalProperties, false);
+        assert.deepEqual(list[2].outputSchema.required, ['articles','total','nextOffset']);
+        assert.equal((await articles({ query: 'nonexistent-public-article-fixture', limit: 1 })).result.structuredContent.total, 0);
+        assert.equal((await articles({ limit: 21 })).result.isError, true);
+        assert.equal((await articles({ query: '../.bapX/enterpriseagent.md' })).result.structuredContent.total, 0);
         const policy = args => request('tools/call', { name: 'public_policy', arguments: args });
         const keys = list[1].inputSchema.properties.key.enum;
         assert.deepEqual(keys, ['tracking', 'returns_or_problems', 'shipping_cost', 'payment_methods']);
@@ -92,8 +98,8 @@ test('local catalogue MCP checks the current shop settings and publishes only vi
         records[0].status = 'hidden';
         assert.equal((await call({ query: 'Pendant' })).result.structuredContent.total, 0);
         enabled = false;
-        assert.deepEqual((await request('tools/list')).result.tools, [list[1]]);
-        assert.deepEqual((await cli(['mcp:tools'])).tools, [list[1]]);
+        assert.deepEqual((await request('tools/list')).result.tools, [list[1], list[2]]);
+        assert.deepEqual((await cli(['mcp:tools'])).tools, [list[1], list[2]]);
         assert.equal((await policy({ key: 'tracking' })).result.isError, undefined);
         assert.equal((await call({})).error.code, -32602);
         enabled = true;
