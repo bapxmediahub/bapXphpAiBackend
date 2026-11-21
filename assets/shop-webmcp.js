@@ -26,6 +26,27 @@
                 },
                 additionalProperties: false
             },
+            outputSchema: {
+                type: 'object', additionalProperties: false,
+                required: ['products', 'total', 'nextOffset'],
+                properties: {
+                    products: {
+                        type: 'array', maxItems: limit,
+                        items: {
+                            type: 'object', additionalProperties: false,
+                            required: ['name', 'url', 'price', 'available'],
+                            properties: {
+                                name: { type: 'string', minLength: 1 },
+                                url: { type: 'string', format: 'uri' },
+                                price: { type: 'string', minLength: 1 },
+                                available: { type: 'boolean' }
+                            }
+                        }
+                    },
+                    total: { type: 'integer', minimum: 0 },
+                    nextOffset: { type: ['integer', 'null'], minimum: 0 }
+                }
+            },
             annotations: { readOnlyHint: true, untrustedContentHint: true },
             execute(input = {}) {
                 if (!input || typeof input !== 'object' || Array.isArray(input)
@@ -40,17 +61,21 @@
 
                 const cards = results.querySelectorAll('.product-card');
                 const products = [];
-                for (let i = offset; i < cards.length && products.length < size; i++) {
+                const end = Math.min(cards.length, offset + size);
+                for (let i = offset; i < end; i++) {
                     const card = cards[i];
-                    const title = card.querySelector('.product-card__title');
+                    const title = card.querySelector('a.product-card__title[href]');
+                    const name = title?.textContent.trim() || '';
+                    const price = card.querySelector('.price')?.textContent.trim() || '';
+                    // Skip malformed public cards but still advance the pagination cursor.
+                    if (!name || !title?.href || !price) continue;
                     products.push({
-                        name: title.textContent.trim(),
+                        name,
                         url: title.href,
-                        price: card.querySelector('.price').textContent.trim(),
+                        price,
                         available: Boolean(card.querySelector('[data-cart-control]'))
                     });
                 }
-                const end = offset + products.length;
                 return { products, total: cards.length, nextOffset: end < cards.length ? end : null };
             }
         }, { signal: lifecycle.signal });
