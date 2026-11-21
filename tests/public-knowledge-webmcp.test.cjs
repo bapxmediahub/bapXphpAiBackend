@@ -74,10 +74,10 @@ test('browser execution returns bounded public articles using unauthenticated GE
 
 test('browser refuses invalid input and a forged private or external article URL', async()=>{
     const x=fixture({articles:[{title:'Secret',path:'/admin/docs/settings',category:'private',score:1}],total:1,nextOffset:null});
-    await assert.rejects(x.registration.tool.execute({offset:-1}),TypeError);
-    await assert.rejects(x.registration.tool.execute({role:'admin'}),TypeError);
-    await assert.rejects(x.registration.tool.execute({limit:21}),TypeError);
-    await assert.rejects(x.registration.tool.execute({query:'secret'}),TypeError);
+    await assert.rejects(x.registration.tool.execute({offset:-1}),{name:'TypeError'});
+    await assert.rejects(x.registration.tool.execute({role:'admin'}),{name:'TypeError'});
+    await assert.rejects(x.registration.tool.execute({limit:21}),{name:'TypeError'});
+    await assert.rejects(x.registration.tool.execute({query:'secret'}),{name:'TypeError'});
     const external=fixture({articles:[{title:'Bad',path:'https://outside.test',category:'help',score:1}],total:1,nextOffset:null});
-    await assert.rejects(external.registration.tool.execute({query:'test'}),TypeError);
+    await assert.rejects(external.registration.tool.execute({query:'test'}),{name:'TypeError'});
 });
