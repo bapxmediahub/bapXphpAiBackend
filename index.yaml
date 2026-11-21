@@ -44,15 +44,15 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 454
-  relationships: 375
+  concepts: 455
+  relationships: 376
   by_type:
     blog: 16
     controller: 14
     doc: 50
     image: 89
     operator_guide: 12
-    route: 160
+    route: 161
     runtime_instruction: 6
     schema: 22
     service: 73
@@ -2878,6 +2878,21 @@ concepts:
     services:
       - "PublicKnowledgeService"
       - "BlogService"
+    view: "public/404"
+  - id: "route:get__api_knowledge_products"
+    type: "route"
+    title: "GET /api/knowledge/products"
+    description: "api.knowledge.products"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/api/knowledge/products"
+    controller: "ApiController@knowledgeProducts"
+    services:
+      - "PublicKnowledgeService"
+      - "ProductService"
     view: "public/404"
   - id: "route:get__api_product__slug"
     type: "route"
@@ -6091,6 +6106,9 @@ relationships:
     to: "controller:ApiController"
     relation: "handled_by"
   - from: "route:get__api_knowledge_articles"
+    to: "controller:ApiController"
+    relation: "handled_by"
+  - from: "route:get__api_knowledge_products"
     to: "controller:ApiController"
     relation: "handled_by"
   - from: "route:get__api_product__slug"
