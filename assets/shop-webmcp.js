@@ -36,9 +36,9 @@
                             type: 'object', additionalProperties: false,
                             required: ['name', 'url', 'price', 'available'],
                             properties: {
-                                name: { type: 'string', minLength: 1 },
+                                name: { type: 'string', minLength: 1, maxLength: 160 },
                                 url: { type: 'string', format: 'uri' },
-                                price: { type: 'string', minLength: 1 },
+                                price: { type: 'string', minLength: 1, maxLength: 64 },
                                 available: { type: 'boolean' }
                             }
                         }
@@ -64,14 +64,24 @@
                 const end = Math.min(cards.length, offset + size);
                 for (let i = offset; i < end; i++) {
                     const card = cards[i];
-                    const title = card.querySelector('a.product-card__title[href]');
-                    const name = title?.textContent.trim() || '';
-                    const price = card.querySelector('.price')?.textContent.trim() || '';
-                    // Skip malformed public cards but still advance the pagination cursor.
-                    if (!name || !title?.href || !price) continue;
+                    const title = card?.querySelector?.('a.product-card__title[href]');
+                    const name = title?.textContent?.trim() || '';
+                    const price = card?.querySelector?.('.price')?.textContent?.trim() || '';
+                    if (!name || name.length > 160 || !price || price.length > 64) continue;
+                    let url;
+                    try {
+                        url = new URL(title.href, window.location.href);
+                        if (url.origin !== window.location.origin
+                            || !/^\/product\/[^/?#]+$/.test(url.pathname)
+                            || url.search || url.hash) continue;
+                    } catch {
+                        continue;
+                    }
+                    // Reject bad DOM data, and advance the inspected-card cursor
+                    // even when this particular card cannot be returned.
                     products.push({
                         name,
-                        url: title.href,
+                        url: url.href,
                         price,
                         available: Boolean(card.querySelector('[data-cart-control]'))
                     });
