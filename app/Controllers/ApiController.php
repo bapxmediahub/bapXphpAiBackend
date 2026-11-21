@@ -11,6 +11,7 @@ final class ApiController extends BaseController {
             '/api/product/{slug}',
             '/api/temples',
             '/api/knowledge/articles',
+            '/api/knowledge/products',
         ]]);
     }
 
@@ -23,6 +24,29 @@ final class ApiController extends BaseController {
     }
 
     /** Only published blog/help metadata, never private Markdown or JSON sessions. */
+    /** Bounded public catalogue projection used by WebMCP and native MCP. */
+    public function knowledgeProducts(): void {
+        header('Cache-Control: no-store');
+        $query=$_GET['q'] ?? '';
+        $offset=$_GET['offset'] ?? '0';
+        $limit=$_GET['limit'] ?? '20';
+        if (!is_string($query) || !is_scalar($offset) || !is_scalar($limit)
+            || !preg_match('/^(0|[1-9][0-9]*)$/D', (string)$offset)
+            || !preg_match('/^[1-9][0-9]*$/D', (string)$limit)) {
+            $this->jsonResponse(['error'=>'Invalid search arguments'],400);
+        }
+        try {
+            $answer=(new PublicKnowledgeService())->products(
+                $query,(int)$offset,(int)$limit
+            );
+        } catch (\InvalidArgumentException) {
+            $this->jsonResponse(['error'=>'Invalid search arguments'],400);
+        } catch (\Throwable) {
+            $this->jsonResponse(['error'=>'Public products unavailable'],503);
+        }
+        $this->jsonResponse($answer);
+    }
+
     public function knowledgeArticles(): void {
         header('Cache-Control: no-store');
         $query=$_GET['q'] ?? '';
