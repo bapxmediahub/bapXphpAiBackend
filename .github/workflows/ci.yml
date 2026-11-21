@@ -67,19 +67,6 @@ jobs:
         run: php tests/documentation-review.php
       - name: Validate code, tests, maps, and routes
         run: ./bapXphp ci
-      # DOCSYNC-REMOVE-BEGIN
-      - name: Generate reviewed documentation for this feature branch (temporary)
-        if: always()
-        run: |
-          python3 -c 'from pathlib import Path; p=Path(".github/workflows/ci.yml"); s=p.read_text(); a=s.index("      # DOCSYNC-REMOVE-BEGIN\n"); b=s.index("      # DOCSYNC-REMOVE-END\n",a)+len("      # DOCSYNC-REMOVE-END\n"); p.write_text(s[:a]+s[b:])'
-          ./bapXphp update || true
-          php -r 'require "app/bootstrap.php"; require "cli/lib/DocumentationReview.php"; $r=new DocumentationReview(getcwd(),require "config/documentation.php"); $notes=["agents"=>"Cross-reviewed new shared article retrieval used by the Enterprise and Support context, with published-only filtering and no private chat tool access.","content"=>"Reviewed published Markdown source, future/draft/symlink filtering and bounded article metadata against blog and customer help documentation.","mcp-clients"=>"Reviewed new native read-only article discovery, argument schemas, module disabling and refusal to reveal owner scopes.","operator-help"=>"Confirmed owner help remains role-gated while public customer guides are published BlogService entries, not raw admin Markdown.","google-tags"=>"Checked public layout addition is a read-only schema and deferred script with no Google consent or reporting credential changes.","workflow"=>"Reviewed the new synthetic public Markdown, WebMCP and MCP transport test gates and generated documentation process.","interface"=>"Reviewed browser WebMCP tool registration, client-side response checks and public layout schema, without exposing authenticated state.","foundation"=>"Reviewed public PHP capability service, API endpoint routing, module guard and preservation of MySQL and private JSON session boundaries.","http-errors"=>"Reviewed public knowledge API errors for bounded client input, safe 400/503 responses and no internal exception disclosure.","media"=>"Reviewed deployment documentation and confirmed media storage and protected file paths remain independent of public article metadata.","sales-channels"=>"Reviewed shared public catalogue projection using ProductService visibility and offer windows without altering checkout or merchant feeds.","commerce"=>"Reviewed catalogue read-only projection and verified it does not mutate payment, order, tax or commerce state.","auth"=>"Reviewed public GET metadata endpoint and verified no customer identities or authorization tokens are surfaced.","mail"=>"Reviewed the public knowledge browser script and confirmed no mail generation, queue replay or provider credential access."]; foreach($r->check() as $e){if(preg_match("/^([a-z][a-z0-9-]+): source\/doc review missing or stale/",$e,$m)){if(!isset($notes[$m[1]]))exit(3);$r->record($m[1],$notes[$m[1]]);}}'
-          for f in docs/agent-tool-contracts.md docs/systematic-map.mmd docs/map.mmd docs/project-index.json index.yaml map.mmd docs/source-contracts.json; do
-            echo "DOCSYNC_START $f"
-            base64 -w 3000 "$f" | sed 's/^/DOCSYNC_B64 /'
-            echo "DOCSYNC_END $f"
-          done
-      # DOCSYNC-REMOVE-END
 
       - name: Exercise provider transport, bounded failover and tool call continuation on loopback
         run: php tests/ai-provider-transport.php
