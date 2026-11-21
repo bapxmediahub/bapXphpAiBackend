@@ -3,9 +3,9 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 160,
+        "routes": 161,
         "controllers": 14,
-        "services": 72,
+        "services": 73,
         "views": 67,
         "collections": 22
     },
@@ -1290,6 +1290,17 @@
         },
         {
             "method": "GET",
+            "path": "/api/knowledge/articles",
+            "name": "api.knowledge.articles",
+            "controller": "ApiController@knowledgeArticles",
+            "view": "public/404",
+            "services": [
+                "PublicKnowledgeService",
+                "BlogService"
+            ]
+        },
+        {
+            "method": "GET",
             "path": "/api/product/{slug}",
             "name": "api.product",
             "controller": "ApiController@product",
@@ -1914,6 +1925,7 @@
         "ProductImportService",
         "ProductService",
         "ProjectMapService",
+        "PublicKnowledgeService",
         "RateLimiter",
         "RequestFailureService",
         "ResourceService",
