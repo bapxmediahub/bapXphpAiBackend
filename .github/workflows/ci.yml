@@ -51,6 +51,8 @@ jobs:
         run: php tests/storefront-search.php
       - name: Gate published public knowledge and hidden Markdown isolation
         run: php tests/public-knowledge.php
+      - name: Verify browser knowledge tool registration, paging and private-path rejection
+        run: node --test tests/public-knowledge-webmcp.test.cjs
       - name: Exercise the owner composer, installed admin app and public header editing in Chrome
         run: |
           npm install --prefix "$RUNNER_TEMP/agent-browser" --no-audit --no-fund --ignore-scripts playwright@1.62.1 @modelcontextprotocol/client@2.4.0
