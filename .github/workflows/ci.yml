@@ -52,13 +52,10 @@ jobs:
       - name: Gate published public knowledge and hidden Markdown isolation
         run: php tests/public-knowledge.php
       - name: Verify browser knowledge tool registration, paging and private-path rejection
-        run: node --test tests/public-knowledge-webmcp.test.cjs
+        run: node --test tests/public-knowledge-webmcp.test.cjs tests/public-products-webmcp.test.cjs
       - name: Test real W3C WebMCP 0.1.1 polyfill with Chromium
         run: |
           npm install --prefix "$RUNNER_TEMP/w3c-webmcp" --no-audit --no-fund --ignore-scripts @w3c/webmcp-polyfill@0.1.1 playwright@1.62.1
-          echo "POLYFILL_011_START"
-          base64 -w 3000 "$RUNNER_TEMP/w3c-webmcp/node_modules/@w3c/webmcp-polyfill/dist/polyfill.js" | sed 's/^/POLYFILL_011_B64 /'
-          echo "POLYFILL_011_END"
           CHROMIUM_PATH="$(command -v google-chrome)" node tests/webmcp-official-browser.cjs "$RUNNER_TEMP/w3c-webmcp"
       - name: Exercise the owner composer, installed admin app and public header editing in Chrome
         run: |
