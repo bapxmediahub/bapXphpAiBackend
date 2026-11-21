@@ -44,18 +44,18 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 452
-  relationships: 372
+  concepts: 454
+  relationships: 375
   by_type:
     blog: 16
     controller: 14
     doc: 50
     image: 89
     operator_guide: 12
-    route: 159
+    route: 160
     runtime_instruction: 6
     schema: 22
-    service: 72
+    service: 73
     skill: 12
 concepts:
   - id: "blog:benefits-of-rudraksha"
@@ -2864,6 +2864,21 @@ concepts:
     services:
       - "CategoryService"
     view: "public/404"
+  - id: "route:get__api_knowledge_articles"
+    type: "route"
+    title: "GET /api/knowledge/articles"
+    description: "api.knowledge.articles"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/api/knowledge/articles"
+    controller: "ApiController@knowledgeArticles"
+    services:
+      - "PublicKnowledgeService"
+      - "BlogService"
+    view: "public/404"
   - id: "route:get__api_product__slug"
     type: "route"
     title: "GET /api/product/{slug}"
@@ -5140,6 +5155,14 @@ concepts:
     tags:
       - "code"
       - "service"
+  - id: "service:PublicKnowledgeService"
+    type: "service"
+    title: "PublicKnowledgeService"
+    description: "Service: PublicKnowledgeService"
+    resource: "app/Services/PublicKnowledgeService.php"
+    tags:
+      - "code"
+      - "service"
   - id: "service:RateLimiter"
     type: "service"
     title: "RateLimiter"
@@ -5597,10 +5620,16 @@ relationships:
     to: "service:McpClientService"
     relation: "uses"
   - from: "controller:ApiController"
+    to: "service:BlogService"
+    relation: "uses"
+  - from: "controller:ApiController"
     to: "service:CategoryService"
     relation: "uses"
   - from: "controller:ApiController"
     to: "service:ProductService"
+    relation: "uses"
+  - from: "controller:ApiController"
+    to: "service:PublicKnowledgeService"
     relation: "uses"
   - from: "controller:ApiController"
     to: "service:TempleService"
@@ -6059,6 +6088,9 @@ relationships:
     to: "controller:ApiController"
     relation: "handled_by"
   - from: "route:get__api_categories"
+    to: "controller:ApiController"
+    relation: "handled_by"
+  - from: "route:get__api_knowledge_articles"
     to: "controller:ApiController"
     relation: "handled_by"
   - from: "route:get__api_product__slug"
