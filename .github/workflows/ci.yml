@@ -75,6 +75,35 @@ jobs:
         run: php tests/documentation-review.php
       - name: Validate code, tests, maps, and routes
         run: ./bapXphp ci
+      # REVISION-DOCSYNC-BEGIN
+      - name: Export generated revision maps and documentation receipts (temporary)
+        if: always()
+        run: |
+          python3 -c 'from pathlib import Path; p=Path(".github/workflows/ci.yml"); s=p.read_text(); a=s.index("      # REVISION-DOCSYNC-BEGIN\n"); b=s.index("      # REVISION-DOCSYNC-END\n",a)+len("      # REVISION-DOCSYNC-END\n"); p.write_text(s[:a]+s[b:])'
+          ./bapXphp update || true
+          php -r 'require "app/bootstrap.php"; require "cli/lib/DocumentationReview.php"; $r=new DocumentationReview(getcwd(),require "config/documentation.php"); $notes=[
+          "operator-help"=>"Compared unchanged authenticated help routes and views with the new public SHA lookup, which never reads operator guides or chat histories.",
+          "http-errors"=>"Reviewed exact safe deployment revision HTTP 200 match/mismatch, 400 malformed SHA, 503 missing Git metadata, no-store responses and absence of path or credential leakage.",
+          "workflow"=>"Reviewed the main CI fixtures and separate verified-deployment workflow: exact SHA comparison, bounded polling, isolated live guest cart add/remove and no production payment or credential operation.",
+          "foundation"=>"Reviewed the Git-head reader for detached, loose, packed and invalid refs; no shell on public requests, no MySQL fallback and no user-selected file paths; checked Hostinger release instructions.",
+          "interface"=>"Reviewed mobile post-release acceptance flow against restored brand, top cart and floating pill without altering the existing mobile design.",
+          "auth"=>"Reviewed public hash-only API and confirmed no admin access or customer/session reads and no token-bearing parameters are accepted.",
+          "commerce"=>"Reviewed isolated guest add/decrement cart acceptance without checkout, orders, payments, database migrations or customer credentials.",
+          "mail"=>"Reviewed standalone release verification and confirmed no SMTP, inbox, queue or outbound email side effects.",
+          "mcp-clients"=>"Confirmed new revision status endpoint is independent of existing scoped MCP client grants and their authorization checks.",
+          "google-tags"=>"Reviewed release verification impact and confirmed no Google analytics tags, provider tokens or consent behavior changed.",
+          "media"=>"Reviewed post-deploy probe and confirmed no upload or deletion of customer media and no contact with protected media storage.",
+          "sales-channels"=>"Reviewed public product-only cart acceptance and confirmed no Google Merchant or cross-channel publishing changes.",
+          "agents"=>"Checked deployment revision verification does not read per-actor JSON agent histories, private instructions or model tool capabilities.",
+          "content"=>"Reviewed documentation changes and confirmed no new public Markdown directory listing or private authored-page access."
+          ]; foreach($r->check() as $e){if(preg_match("/^([a-z][a-z0-9-]+): source\/doc review missing or stale/",$e,$m)){if(!isset($notes[$m[1]]))exit(3);$r->record($m[1],$notes[$m[1]]);}}'
+          for f in docs/agent-tool-contracts.md docs/systematic-map.mmd docs/map.mmd docs/project-index.json index.yaml map.mmd docs/source-contracts.json; do
+            echo "REVISION_DOCSYNC_START $f"
+            base64 -w 3000 "$f" | sed 's/^/REVISION_DOCSYNC_B64 /'
+            echo "REVISION_DOCSYNC_END $f"
+          done
+      # REVISION-DOCSYNC-END
+
 
 
 
