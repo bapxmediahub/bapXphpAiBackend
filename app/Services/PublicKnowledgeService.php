@@ -89,7 +89,8 @@ final class PublicKnowledgeService
     {
         $fields = [
             'name' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 160],
-            'path' => ['type' => 'string', 'pattern' => '^/product/[A-Za-z0-9%_.-]+$'],
+            'path' => ['type' => 'string', 'maxLength' => 2048,
+                'pattern' => '^/product/[A-Za-z0-9%_.-]+$'],
             'priceInr' => ['type' => 'number', 'minimum' => 0],
             'available' => ['type' => 'boolean'],
             'description' => ['type' => 'string', 'maxLength' => 280],
@@ -225,9 +226,10 @@ final class PublicKnowledgeService
     /** Encode a single stored slug once; separators and encoded traversal are never routes. */
     private static function productPath(string $slug): ?string
     {
-        if (!mb_check_encoding($slug, 'UTF-8')
-            || !preg_match('/^[\\p{L}\\p{N}_][\\p{L}\\p{N}._ -]*$/uD', $slug)) return null;
-        return '/product/' . rawurlencode($slug);
+        if (strlen($slug) > 2039 || !mb_check_encoding($slug, 'UTF-8')
+            || !preg_match('/^[\\p{L}\\p{N}_][\\p{L}\\p{N}\\p{M}._ -]*$/uD', $slug)) return null;
+        $path = '/product/' . rawurlencode($slug);
+        return strlen($path) <= 2048 ? $path : null;
     }
 
     /** Only stored local raster media may cross into public presentation cards. */
@@ -254,7 +256,7 @@ final class PublicKnowledgeService
         foreach ($segments as &$segment) {
             $segment = rawurldecode($segment);
             if (!mb_check_encoding($segment, 'UTF-8')
-                || !preg_match('/^[\\p{L}\\p{N}_][\\p{L}\\p{N}._ -]*$/uD', $segment)) return null;
+                || !preg_match('/^[\\p{L}\\p{N}_][\\p{L}\\p{N}\\p{M}._ -]*$/uD', $segment)) return null;
             $segment = rawurlencode($segment);
         }
         unset($segment);

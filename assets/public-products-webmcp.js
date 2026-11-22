@@ -41,9 +41,9 @@
         return data;
     };
     const safeProductPath = path => {
-        if (typeof path !== 'string' || !/^\/product\/[A-Za-z0-9%_.-]+$/.test(path)) return false;
+        if (typeof path !== 'string' || path.length > 2048 || !/^\/product\/[A-Za-z0-9%_.-]+$/.test(path)) return false;
         try {
-            return /^[\p{L}\p{N}_][\p{L}\p{N}._ -]*$/u.test(decodeURIComponent(path.slice('/product/'.length)));
+            return /^[\p{L}\p{N}_][\p{L}\p{N}\p{M}._ -]*$/u.test(decodeURIComponent(path.slice('/product/'.length)));
         } catch { return false; }
     };
     const safeImage = path => {
@@ -51,7 +51,7 @@
             || !/^\/assets\/images\/[A-Za-z0-9%_./-]+\.(?:avif|gif|jpe?g|png|webp)$/i.test(path)) return false;
         try {
             return path.slice('/assets/images/'.length).split('/').every(segment =>
-                /^[\p{L}\p{N}_][\p{L}\p{N}._ -]*$/u.test(decodeURIComponent(segment)));
+                /^[\p{L}\p{N}_][\p{L}\p{N}\p{M}._ -]*$/u.test(decodeURIComponent(segment)));
         } catch { return false; }
     };
 

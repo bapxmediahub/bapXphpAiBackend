@@ -23,9 +23,9 @@
             "review_note": "Reviewed public ProductService and BlogService published selection and exclusion of future, draft, retired or private Markdown and paths."
         },
         "foundation": {
-            "source_sha256": "76eb79c892c00d6c4aae7f590b79958d75ea0e5d977b4387959b7e8d690b5ae7",
-            "references_sha256": "9f3064a3259f32eacc3a60a513c413c928a45c35fdc9a956619b311f9e36bfdf",
-            "review_note": "Reviewed canonical public projections, strict bounded HTTP inputs and product media normalization against architecture, deployment and new WebMCP guide. Documented public/private boundaries, real-demo comparisons and independent native/polyfill proof without claiming direct external chat installation."
+            "source_sha256": "5ae68689d180f458a002acb8f043c9e8528d0bdc9e99a1f975f6e5a5f7368db0",
+            "references_sha256": "8c6c8bf655acf10de3abd13ca17cf5a2b466505ca877e392456771c086376896",
+            "review_note": "Cross-reviewed final canonical product path and image validators against the public contract. Preserve valid Tamil combining marks, bound encoded product paths to2048 characters, reject unsafe rows before pagination, and document these limits without changing data authority."
         },
         "google-tags": {
             "source_sha256": "268175b9bec757e20d47ca0dcf625a3a909401b4fcdde953b3979c837881b94c",
@@ -38,9 +38,9 @@
             "review_note": "Reviewed public controller validation and deployment guide against RequestFailureService. Known bad parameters return400 through existing JSON response handling; ordinary failure containment remains unchanged. Corrected live SHA guidance to use the existing actual-checkout endpoint."
         },
         "interface": {
-            "source_sha256": "21c0487bbed2393de76eec5e6625d8abbb81e949f81bb828eef06b558ddf7fd2",
+            "source_sha256": "9cf89bbd9e1420615d33d8fa90756fabeffb656ab6ece82f1ea689c73a0ebbc0",
             "references_sha256": "8186aa110fee10b5c55e7e228f3ba8067243a19efd2cc8327ae36c31f4e03e04",
-            "review_note": "Reviewed shared layout and browser adapters, native/Promise registration handling, cleanup and contact template. Updated frontend skill and public tool guide. Published contact/services remain available without Shop/Blog; ordinary UI and form submissions keep existing behavior."
+            "review_note": "Cross-reviewed final browser product validator with canonical PHP projection and Unicode fixtures. Both accept safe Tamil and encoded-space segments, enforce2048-character product paths and512-character raster image paths, and reject traversal before presentation."
         },
         "mail": {
             "source_sha256": "5b84584d9d5965491c44ee7523062951ed5e68c76ffe39b64defa47067b4b635",

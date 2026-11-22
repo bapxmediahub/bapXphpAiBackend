@@ -139,18 +139,25 @@ try {
     }
     $productPath = new ReflectionMethod(PublicKnowledgeService::class, 'productPath');
     foreach (['legacy item.v2'=>'/product/legacy%20item.v2', '珊瑚 pendant'=>'/product/%E7%8F%8A%E7%91%9A%20pendant',
+        'தமிழ் pendant'=>'/product/%E0%AE%A4%E0%AE%AE%E0%AE%BF%E0%AE%B4%E0%AF%8D%20pendant',
+        str_repeat('x', 2039)=>'/product/' . str_repeat('x', 2039),
         '_legacy-2'=>'/product/_legacy-2'] as $input=>$expected) {
         if ($productPath->invoke(null, $input) !== $expected) throw new RuntimeException('Safe legacy product slug was lost or encoded twice.');
     }
     foreach (['', '.', '..', '../admin', 'item/private', 'item\\private', '%2e%2e', '%252e%252e',
-        'item%20name', "item\0name", "item\nname", "\xff"] as $unsafeSlug) {
+        'item%20name', "item\0name", "item\nname", "\xff", "\u{0BCD}item",
+        str_repeat('x', 2040), str_repeat('தமிழ்', 46)] as $unsafeSlug) {
         if ($productPath->invoke(null, $unsafeSlug) !== null) throw new RuntimeException('Unsafe product navigation slug was exposed.');
+    }
+    if (PublicKnowledgeService::productOutputSchema()['properties']['products']['items']['properties']['path']['maxLength'] !== 2048) {
+        throw new RuntimeException('Product path output bound is missing.');
     }
     $imagePath = new ReflectionMethod(PublicKnowledgeService::class, 'imagePath');
     $previousUrl = $_SERVER['APP_URL'] ?? null;
     $_SERVER['APP_URL'] = 'https://public.example';
     try {
         foreach (['https://public.example/assets/images/media/item.webp'=>'/assets/images/media/item.webp',
+            '/assets/images/media/தமிழ்.png'=>'/assets/images/media/%E0%AE%A4%E0%AE%AE%E0%AE%BF%E0%AE%B4%E0%AF%8D.png',
             '/assets/images/media/item%20photo.jpg'=>'/assets/images/media/item%20photo.jpg'] as $input=>$expected) {
             if ($imagePath->invoke(null, $input) !== $expected) throw new RuntimeException('Safe local product image was lost.');
         }
@@ -159,7 +166,8 @@ try {
             'https://public.example:444/assets/images/item.webp',
             'https://public.example@untrusted.invalid/assets/images/item.webp',
             '//public.example/assets/images/item.webp', '/assets/images/item.svg',
-            '/assets/images/item.webp?redirect=private', 'data:image/png;base64,AAAA'] as $unsafeImage) {
+            '/assets/images/item.webp?redirect=private', 'data:image/png;base64,AAAA',
+            '/assets/images/%E0%AF%8Ditem.png'] as $unsafeImage) {
             if ($imagePath->invoke(null, $unsafeImage) !== null) throw new RuntimeException('Unsafe product image was exposed.');
         }
     } finally {

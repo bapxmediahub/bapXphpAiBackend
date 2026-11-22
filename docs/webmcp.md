@@ -32,7 +32,10 @@ The JSON GET endpoints are `/api/knowledge/products`, `/articles`, `/contact`,
 `credentials: 'omit'`. Search queries are at most 120 characters and result
 pages at most 20 rows; A2UI cards are separately capped. Product descriptions
 are plain text capped at 280 characters. Optional images are normalized to
-same-origin raster paths below `/assets/images/`. Published article visibility,
+same-origin raster paths below `/assets/images/`.
+Product paths are capped at 2,048 encoded characters; Tamil and other Unicode
+slugs retain valid combining marks. Invalid destinations are removed before
+pagination. Published article visibility,
 future-date filtering and module switches remain enforced on the server.
 Unknown arguments, private fields and unapproved response paths are rejected.
 

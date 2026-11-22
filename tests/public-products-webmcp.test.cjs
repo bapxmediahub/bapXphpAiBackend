@@ -76,9 +76,11 @@ test('product projection rejects extra fields and unsafe image paths without los
     const product={name:'Item',path:'/product/item',priceInr:10,available:true,description:'A short description'};
     const payload=row=>({products:[row],total:1,nextOffset:null});
     assert.equal((await setup(payload(product)).tool.execute()).products[0].description,product.description);
+    const tamilImage='/assets/images/media/%E0%AE%A4%E0%AE%AE%E0%AE%BF%E0%AE%B4%E0%AF%8D.png';
+    assert.equal((await setup(payload({...product,imagePath:tamilImage})).tool.execute()).products[0].imagePath,tamilImage);
     for(const imagePath of ['https://outside.test/image.png','/assets/images/../private.png',
         '/assets/images/%2e%2e/private.png','/assets/images/%2Fprivate.png',
-        '/assets/images/image.svg','data:image/png;base64,xxx']) {
+        '/assets/images/image.svg','data:image/png;base64,xxx','/assets/images/%E0%AF%8Ditem.png']) {
         await assert.rejects(setup(payload({...product,imagePath})).tool.execute(),{name:'TypeError'});
     }
     await assert.rejects(setup(payload({...product,adminEmail:'private@example.test'})).tool.execute(),{name:'TypeError'});
@@ -89,12 +91,14 @@ test('product projection rejects extra fields and unsafe image paths without los
 test('product paths retain safe encoded legacy slugs and reject browser-normalized or encoded traversal',async()=>{
     const product={name:'𐐀'.repeat(160),path:'/product/item',priceInr:10,available:true,description:''};
     const payload=row=>({products:[row],total:1,nextOffset:null});
-    for(const path of ['/product/legacy%20item.v2','/product/%E7%8F%8A%E7%91%9A%20pendant','/product/_legacy-2']) {
+    for(const path of ['/product/legacy%20item.v2','/product/%E7%8F%8A%E7%91%9A%20pendant','/product/_legacy-2',
+        '/product/%E0%AE%A4%E0%AE%AE%E0%AE%BF%E0%AE%B4%E0%AF%8D%20pendant','/product/'+'x'.repeat(2039)]) {
         assert.equal((await setup(payload({...product,path})).tool.execute()).products[0].path,path);
     }
     for(const path of ['/product/.','/product/..','/product/%2e%2e','/product/..%2fadmin',
         '/product/item%2Fprivate','/product/item%5cprivate','/product/item%00name','/product/item%0Aname',
-        '/product/%252e%252e','/product/item%252Fprivate','/product/%FF','/product/']) {
+        '/product/%252e%252e','/product/item%252Fprivate','/product/%FF','/product/',
+        '/product/%E0%AF%8Ditem','/product/'+'x'.repeat(2040),'/product/'+encodeURIComponent('தமிழ்'.repeat(46))]) {
         await assert.rejects(setup(payload({...product,path})).tool.execute(),{name:'TypeError'});
     }
     await assert.rejects(setup(payload({...product,name:'𐐀'.repeat(161)})).tool.execute(),{name:'TypeError'});

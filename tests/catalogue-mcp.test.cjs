@@ -116,7 +116,7 @@ test('local catalogue MCP checks the current shop settings and publishes only vi
         records[0].name = '𐐀'.repeat(161);
         assert.equal((await call({ query: 'pendant' })).result.structuredContent.products[0].name, '𐐀'.repeat(160));
         records[0].name = 'Pendant';
-        for (const slug of ['..', '../admin', '%2e%2e', 'item%2Fprivate']) {
+        for (const slug of ['..', '../admin', '%2e%2e', 'item%2Fprivate', 'x'.repeat(2040), 'தமிழ்'.repeat(46)]) {
             records[0].slug = slug;
             const safePage = (await call({ limit: 1 })).result.structuredContent;
             assert.equal(safePage.total, 1);
@@ -125,6 +125,11 @@ test('local catalogue MCP checks the current shop settings and publishes only vi
         }
         records[0].slug = '珊瑚 pendant';
         assert.equal((await call({ query: 'pendant' })).result.structuredContent.products[0].path, '/product/%E7%8F%8A%E7%91%9A%20pendant');
+        records[0].slug = 'தமிழ் pendant';
+        records[0].image_url = '/assets/images/media/தமிழ்.png';
+        const tamil = (await call({ query: 'pendant' })).result.structuredContent.products[0];
+        assert.equal(tamil.path, '/product/%E0%AE%A4%E0%AE%AE%E0%AE%BF%E0%AE%B4%E0%AF%8D%20pendant');
+        assert.equal(tamil.imagePath, '/assets/images/media/%E0%AE%A4%E0%AE%AE%E0%AE%BF%E0%AE%B4%E0%AF%8D.png');
         records[0].slug = 'pendant';
         records[0].status = 'hidden';
         assert.equal((await call({ query: 'Pendant' })).result.structuredContent.total, 0);
