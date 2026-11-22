@@ -16,6 +16,8 @@ final class PublicA2uiService
     private const PRODUCT_WORDS = '/\b(products?|shop|catalog(?:ue)?|buy|price|rings?|rudraksha|pendant|gemstone|stock)\b/i';
     private const ARTICLE_WORDS = '/\b(blog|articles?|guides?|pooja|puja|ritual|worship)\b/i';
 
+    public function __construct(private ?PublicKnowledgeService $knowledge = null) {}
+
     public static function inputSchema(): array
     {
         return ['type'=>'object','additionalProperties'=>false,
@@ -53,7 +55,7 @@ final class PublicA2uiService
             || mb_strlen($query)>120 || $limit<1 || $limit>self::MAX_ITEMS) {
             throw new \InvalidArgumentException('Use products or articles, a short query and limit 1..4.');
         }
-        $source = new PublicKnowledgeService();
+        $source = $this->knowledge ?? new PublicKnowledgeService();
         $result = $view==='products' ? $source->products($query,0,$limit)
                                      : $source->articles($query,0,$limit);
         $items=[];
