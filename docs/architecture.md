@@ -120,3 +120,7 @@ correlated HTML/JSON500 without raw admin exception messages. Existing explicit
 service503 responses and CLI nonzero failures remain distinct. The response
 cannot prove whether a prior business action completed, so recovery guidance
 requires checking state before repeating it. See `request-failures.md`.
+
+### Declarative public agent UI (A2UI v1.0)
+
+Both Support and Enterprise can attach a bounded `a2ui` surface to successful chat answers, derived exclusively from `PublicKnowledgeService`. The same source is reachable as a read-only A2UI WebMCP tool and `GET /api/knowledge/a2ui`. A small allowlisted native renderer displays only Card/Column/Text/navigation elements; it rejects model HTML, scripts and untrusted actions. Private owner records and JSON conversations are never included. See [A2UI design and acceptance](a2ui.md).
