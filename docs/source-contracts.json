@@ -23,9 +23,9 @@
             "review_note": "Reviewed published Markdown source, future/draft/symlink filtering and bounded article metadata against blog and customer help documentation."
         },
         "foundation": {
-            "source_sha256": "a171f68180a83fb2cca834c66d74591295e92ae0aacb0f9947743d7f4b7e0dfd",
-            "references_sha256": "d48de2bc8ebfd2808fa05f0b3e054fdfb7abce87e30ae8adb33438c33b5a84fa",
-            "review_note": "Reviewed new public PHP service routes and boundary with MySQL business data and private JSON chat storage, plus Hostinger deployment notes."
+            "source_sha256": "4972aedf4321908241516fff11151e3f86eec72222a90b8267064756c13ee52c",
+            "references_sha256": "7d9e16a1b2c22fc8fc54532e1f96affa419d1acee897424186aad76ba59834cd",
+            "review_note": "Reviewed the Git-head reader for detached, loose, packed and invalid refs; no shell on public requests, no MySQL fallback and no user-selected file paths; checked Hostinger release instructions."
         },
         "google-tags": {
             "source_sha256": "e81b7922171832dae13b0acd612c04405d5ef5dfa0fe8983bd37b22c77363f8c",
@@ -33,9 +33,9 @@
             "review_note": "Reviewed public header layout changes alongside Google tag insertion: tag output, consent settings, and verification markup are untouched by mobile navigation restoration."
         },
         "http-errors": {
-            "source_sha256": "7b79ca73e37f549f65a3b0f590f39b33cd86f7d395f9de2a5b3969cc9b57f994",
-            "references_sha256": "d712cfabaf786c35d77e8490010e98f898a5552985d4d46c5844a42b94c35343",
-            "review_note": "Reviewed public catalogue and article metadata API 400/503 safe error behavior, no private errors or exception bodies exposed."
+            "source_sha256": "9f0f3883c318dbfe074d6297e66c3bd7c497975f27804b142af5154e01d9b665",
+            "references_sha256": "057f79768fbe9bf1ec0830176c7879d89c83089ddd2049e7b4f9213ab9dfeaf0",
+            "review_note": "Reviewed exact safe deployment revision HTTP 200 match/mismatch, 400 malformed SHA, 503 missing Git metadata, no-store responses and absence of path or credential leakage."
         },
         "interface": {
             "source_sha256": "6b4503e91566701ad2c16617d01d8bfead3c82bbef21ecf732881ec712c6c0cd",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed deployment documentation and confirmed media storage and protected file paths remain independent of public article metadata."
         },
         "operator-help": {
-            "source_sha256": "84bcdca9f03bcc3257e14da4441a56d8145babb77481447eae5b00932c903ea1",
+            "source_sha256": "21df7c4b6ac1b095183f9b6e825b11032cbeb7152156f99d16a5e1382709645f",
             "references_sha256": "3ee8f0a2c48c0c98cb17b41df11b46dad137524c464a9e3ac0daabf7778a8187",
-            "review_note": "Reviewed public header and help navigation markup: mobile brand and cart are now visible, redundant bottom nav removed; admin owner guides remain unchanged and authenticated."
+            "review_note": "Compared unchanged authenticated help routes and views with the new public SHA lookup, which never reads operator guides or chat histories."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
@@ -68,9 +68,9 @@
             "review_note": "Checked public product visibility, published navigation destinations and isolated first-party catalogue and policy discovery."
         },
         "workflow": {
-            "source_sha256": "48b848b77f5a405851131b11c2cd745e97b280bded33a9340d166a8ca1f94ce8",
+            "source_sha256": "9a22c0d22f92cf08de3a74cfea01cdc094ab156c9bc12f441b994f3de5baff3b",
             "references_sha256": "94dd586c81b1d91a0332e86219ac2b55c416d5ebc37115c9a2008697d68236d0",
-            "review_note": "Reviewed Chromium mobile browser regression in CI at six viewport widths and successful synthetic add-to-cart, alongside unchanged existing PHP and MCP validation gates."
+            "review_note": "Reviewed the main CI fixtures and separate verified-deployment workflow: exact SHA comparison, bounded polling, isolated live guest cart add/remove and no production payment or credential operation."
         }
     }
 }
