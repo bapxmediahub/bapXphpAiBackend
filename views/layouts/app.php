@@ -594,14 +594,30 @@ document.addEventListener('submit', async function (event) {
             body: new FormData(form),
             headers: {Accept: 'application/json'}
         });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Unable to update cart.');
+        // A hosting/WAF 429 can return an empty body without Content-Type.
+        // A failed POST is NOT evidence that an item was added; never invent a
+        // cart count, retry a non-idempotent add automatically, or open the tray.
+        const data = await response.json().catch(() => null);
+        if (!response.ok) {
+            const message = response.status === 429
+                ? 'Cart requests are temporarily limited. Please wait and try again.'
+                : (typeof data?.error === 'string' ? data.error : 'Unable to update cart. Please try again.');
+            throw new Error(message);
+        }
+        if (!data || typeof data.slug !== 'string'
+            || !Number.isInteger(data.quantity) || data.quantity < 0
+            || !Number.isInteger(data.cart_count) || data.cart_count < 0) {
+            throw new Error('Cart update was not confirmed. Please reload the page before trying again.');
+        }
 
         document.querySelectorAll('[data-cart-control]').forEach(card => {
             if (card.dataset.slug !== data.slug) return;
-            card.querySelector('[data-cart-add]').hidden = data.quantity > 0;
-            card.querySelector('[data-cart-stepper]').hidden = data.quantity <= 0;
-            card.querySelector('[data-cart-quantity]').textContent = data.quantity;
+            const add = card.querySelector('[data-cart-add]');
+            const stepper = card.querySelector('[data-cart-stepper]');
+            const quantity = card.querySelector('[data-cart-quantity]');
+            if (add) add.hidden = data.quantity > 0;
+            if (stepper) stepper.hidden = data.quantity <= 0;
+            if (quantity) quantity.textContent = data.quantity;
         });
         const badge = document.querySelector('.cart-count');
         const tray = document.getElementById('mobile-cart-tray');
