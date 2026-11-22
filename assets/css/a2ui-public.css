@@ -1,0 +1,51 @@
+/* A2UI Basic-catalog subset: native, theme-aware public reference cards. */
+.bapx-a2ui {
+    margin: .75rem 0;
+    color: var(--color-ink, #222);
+    font: inherit;
+    max-width: 100%;
+}
+.bapx-a2ui__column { display: grid; gap: .55rem; min-width: 0; }
+.bapx-a2ui__card {
+    background: var(--color-white, #fff);
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: var(--radius-md, 8px);
+    padding: .65rem .85rem;
+    min-width: 0;
+}
+.bapx-a2ui__text {
+    display: block;
+    margin: 0;
+    overflow-wrap: anywhere;
+    font-size: .9rem;
+    line-height: 1.4;
+}
+.bapx-a2ui__column > .bapx-a2ui__text:first-child {
+    font-weight: 700;
+    color: var(--color-maroon, #3a0003);
+}
+.bapx-a2ui__card .bapx-a2ui__column > .bapx-a2ui__text:first-child {
+    font-weight: 600;
+    color: var(--color-ink, #222);
+}
+small.bapx-a2ui__text { color: var(--color-text-muted, #665); font-size: .8rem; }
+.bapx-a2ui__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    width: fit-content;
+    max-width: 100%;
+    padding: .45rem .65rem;
+    border: 1px solid var(--color-gold, #d1b368);
+    border-radius: var(--radius-md, 8px);
+    color: var(--color-maroon, #3a0003);
+    background: var(--color-gold-light, #f3e8c9);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: .82rem;
+}
+.bapx-a2ui__link:is(:focus-visible,:hover) { outline: 2px solid var(--color-maroon, #3a0003); outline-offset: 2px; }
+@media(max-width: 375px) {
+    .bapx-a2ui__card { padding: .55rem; }
+    .bapx-a2ui__link { min-height: 44px; }
+}
