@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "d74d75c78da625a3139934b5b40e6e8b4f84a620f97c35850728f0506fd3fe84",
-            "references_sha256": "f14268376d2e27015e98540db4f303c8f81df456d82b18e3c61ec0516541e1e2",
-            "review_note": "Reviewed AgentAnswerPresentationService against runtime-agent, observability and generated tool contracts. Fixed report families consume AgentTraceService safeTool evidence.report, preserve original observed values/history without retrieval, bound rows and keep complete accepted-answer fallback; executable tools and permissions are unchanged."
+            "source_sha256": "1ee2f812f5e0e8a6a49560cf3d62a8517b1749bafe6d270150e2539fa51f928d",
+            "references_sha256": "d03bcc5d7841205128a6730e9d35ea4fc567136368168a1735baee3353106a3e",
+            "review_note": "Reviewed exact-name comparison selection and runtime guidance: optional show/show me presentation suffix preserves the same verified identities, while the anchored grammar still rejects an unresolved third product. Public scope, trace storage, schemas and golden expectations are unchanged."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",

@@ -45,6 +45,17 @@ $expect(AgentContextService::namedComparisonProducts([$ring, $hidden], $question
 $hiddenThird = $unrelated + ['is_hidden'=>true];
 $expect(AgentContextService::namedComparisonProducts([$ring, $pendant, $hiddenThird], 'Compare Sri Varahi Amman Ring, Varahi Amman Pendant and Other Sacred Ring.') === [], 'A hidden third product cannot silently shorten a comparison.');
 $expect(AgentContextService::namedComparisonProducts($products, 'Could you compare the Sri Varahi Amman Ring with Varahi Amman Pendant by price and material?') === [$ring, $pendant], 'A requested comparison criterion remains supported.');
+foreach ([
+    'Compare Sri Varahi Amman Ring and Varahi Amman Pendant. Show their real photos and current prices.',
+    'Compare Sri Varahi Amman Ring and Varahi Amman Pendant and show prices.',
+    'Compare Sri Varahi Amman Ring and Varahi Amman Pendant. Show me their photos.',
+] as $presentationRequest) {
+    $expect(AgentContextService::catalogueSelection($products, $presentationRequest)['products'] === [$ring, $pendant],
+        'A photo or price presentation request cannot erase verified comparison identities.');
+}
+$expect(AgentContextService::namedComparisonProducts($products,
+    'Compare Sri Varahi Amman Ring, Varahi Amman Pendant and Missing Moon Ring. Show their photos.') === [],
+    'A photo qualifier cannot hide an unresolved third comparison operand.');
 $invalidSlug = $pendant; $invalidSlug['slug'] = '.varahi-amman-pendant';
 $expect(AgentContextService::namedComparisonProducts([$ring, $invalidSlug], $question) === [], 'Native comparison shares the canonical public path grammar.');
 $duplicate = $pendant;
