@@ -1164,7 +1164,7 @@ nav:where(#primary-nav) a:hover { color: var(--color-maroon); }
         position: fixed;
         z-index: 998;
         inset-inline: 12px 72px;
-        bottom: calc(var(--cart-bottom-nav, 70px) + 8px);
+        bottom: calc(var(--cart-bottom-nav, 0px) + 8px);
         display: flex;
         align-items: center;
         justify-content: space-between;
