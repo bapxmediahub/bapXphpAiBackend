@@ -6,7 +6,7 @@ category: root
 
 # Sri Panchami Spiritual
 
-Native PHP application for small shared hosting with a `public_html` deployment; target PHP 8.3+ and MySQL 8.4+ (verify the deployed environment). It uses
+Native PHP application for small PHP hosting (including single-site shared hosting) with a `public_html` deployment; target PHP 8.3+ and MySQL 8.4+ (verify the deployed environment). It uses
 server-rendered PHP templates, hosted MySQL as the primary runtime store, Markdown
 blog posts, and file-based images. There is no SPA or frontend build step.
 
