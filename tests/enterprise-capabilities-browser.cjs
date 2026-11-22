@@ -119,13 +119,14 @@ for (const width of [1280,375]) {
             assert.equal(await input.inputValue(),'Show the product performance report for the last 30 days.');
             assert.equal(await input.evaluate(el=>el===document.activeElement),true);
             assert.equal(requests.length,0,'A keyboard-selected quick example must also wait for Send.');
-            assert.equal(await page.getByRole('log').innerText(),'','Quick examples cannot fabricate a conversation.');
+            // The empty transcript is intentionally hidden by the production CSS.
+            assert.equal(await page.locator('#agent-messages').textContent(),'','Quick examples cannot fabricate a conversation.');
             await page.locator('#agent-capabilities summary').press('Enter');
             await page.getByRole('button', {name:'Use Product performance question',exact:true}).press('Enter');
             assert.equal(await input.inputValue(), 'Show the product performance report for the last 30 days.');
             assert.equal(await input.evaluate(el=>el===document.activeElement), true);
             assert.equal(requests.length,0,'Selecting a capability cannot submit or mutate.');
-            assert.equal(await page.getByRole('log').innerText(),'','Selecting a capability cannot fabricate a conversation.');
+            assert.equal(await page.locator('#agent-messages').textContent(),'','Selecting a capability cannot fabricate a conversation.');
             await page.getByRole('button', {name:'Use Current stock status question',exact:true}).click();
             assert.equal(await input.inputValue(),'Show the current stock status report.');
             assert.equal(requests.length,0,'Pointer input also only fills the composer.');
