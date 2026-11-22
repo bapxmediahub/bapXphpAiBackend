@@ -6,7 +6,7 @@ category: root
 
 # Sri Panchami Spiritual
 
-PHP 8.2 web application for small PHP hosting with a `public_html` deployment. It uses
+Native PHP application for small PHP hosting (including single-site shared hosting) with a `public_html` deployment; target PHP 8.3+ and MySQL 8.4+ (verify the deployed environment). It uses
 server-rendered PHP templates, hosted MySQL as the primary runtime store, Markdown
 blog posts, and file-based images. There is no SPA or frontend build step.
 
@@ -101,20 +101,62 @@ the fixed customer test ID are in ignored `.env.test-user`; never print or commi
 There is no `bapXphp tui` or agent-orchestration CLI. Web QA uses the active coding
 client's browser capability and is not part of the application runtime.
 
-## Request architecture
+## Architecture: the application and its source-grounded development system
 
-```text
-app/routes.php
-  → app/Controllers/*Controller.php
-    → app/Services/*Service.php
-      → DatabaseService
-        → hosted MySQL directly
-        → <APP_URL>/remotedb fallback
-  → views/**/*.php
+This is a **working PHP customer application**, not a graph search service. The diagram below is a compact, source-reviewed view of the actual [route registry](app/routes.php), [controllers](app/Controllers), [services](app/Services), [storage schema](storage/schema/collections.php), and public/agent interfaces. It is deliberately compact so its labels remain readable on mobile; it is not a second route registry or a complete call graph. For **every registered route, service, view, schema collection, tool, and detected mapping gap**, use the committed, CI-checked [code dependency graph](map.mmd) and [systematic map](docs/systematic-map.mmd).
+
+```mermaid
+flowchart TB
+  CLIENTS["Public shop, blog, and customer account<br/>Owner admin and Support/Enterprise chat<br/>Browser WebMCP and public HTTP MCP"]
+  ROUTING["Native PHP routing<br/>index.php, api/index.php, app/routes.php<br/>Controllers and server-rendered views"]
+  SERVICES["Application services and access policies<br/>Commerce, CMS, PublicKnowledgeService<br/>Role-scoped agent tools and A2UI"]
+  DATA["Authoritative data and files<br/>Hosted MySQL, published Markdown, images<br/>Private JSON chat conversations and traces"]
+  CLIENTS --> ROUTING --> SERVICES --> DATA
 ```
 
-Database transport, HTTP, and invalid-response failures must surface as errors; an
-outage must never be rendered as a legitimate empty catalogue.
+**Authority and isolation:** Application code and [canonical schema](storage/schema/collections.php) define implementation behaviour; the actual hosted MySQL records define live business facts. The [published article source](content/blog/posts) and owned media files remain their own authoritative content. Support, Enterprise and public MCP capabilities do **not** share unrestricted permissions: [agent capability policy](app/Services/AgentCapabilityPolicy.php), [runtime instruction allowlists](app/Services/AgentInstructionService.php), and public-only [MCP](app/Services/PublicMcpService.php) enforce separate boundaries. Coding-agent [AGENTS.md](AGENTS.md) and [skills](.agents/skills) are developer instructions, **never** runtime customer-agent prompts.
+
+### How source-derived project knowledge constrains an agent change
+
+The project does not ask the model to reconstruct its architecture from chat history or approximate vector matches. Generated artifacts point to **original source** and are checked against it; a graph is useful here because it forms part of the acceptance contract, not merely because it makes search convenient.
+
+```mermaid
+flowchart TD
+  ISSUE["GitHub issue / requested change"] --> RULES["AGENTS.md + relevant .agents/skills"]
+  RULES --> LOOKUP["Narrow lookup: index.yaml / project-index.json"]
+  LOOKUP --> SOURCE["Open exact route, service, schema, document or test"]
+  SOURCE --> CHANGE["Scoped code change + regression test"]
+  CHANGE --> UPDATE["./bapXphp update"]
+  UPDATE --> GEN["ProjectMapService + KnowledgeGraphService + DocsMapService"]
+  GEN --> MAPS["map.mmd / systematic-map.mmd / docs/map.mmd"]
+  GEN --> INDEX["project-index.json / index.yaml"]
+  MAPS --> CI["./bapXphp ci"]
+  INDEX --> CI
+  CI --> PASS{"Lint, tests, contracts, maps, indexes, docs review and smoke pass?"}
+  PASS -->|"No"| FIX["Inspect real source and failure; fix implementation, generator or guides"]
+  FIX --> CHANGE
+  PASS -->|"Yes"| PR["PR review and exact-head GitHub checks"]
+  PR --> RELEASE["Merge, deployed-SHA verification, live browser acceptance"]
+```
+
+The specific enforced checks are in [cli/bapXphp](cli/bapXphp), [ProjectMapService](app/Services/ProjectMapService.php), [KnowledgeGraphService](app/Services/KnowledgeGraphService.php), and [the documentation-review gate](cli/docs-check.php). `./bapXphp update` **regenerates** machine-derived artifacts; `./bapXphp ci` detects stale generated outputs and failing tests. Documentation review requires an explicit source-versus-guide rationale; regenerating a map does not approve incorrect prose. Failed checks must be corrected and rerun **before claiming completion**. CI success still does not substitute for human review, authorization testing, real business-data verification or live browser acceptance.
+
+**Graph coverage is bounded.** The generator inventories registered routes, discovered code/schema resources, static service→collection references and declared relationships, and reports known gaps. That helps reveal missing wiring, drift, stale assumptions and affected code. It is **not** a proof that all security vulnerabilities, dynamic call paths, business-logic faults or runtime failures have been detected; those require dedicated tests and evidence. An index entry shows that a resource exists, not that its feature works.
+
+### Capability comparison — integrated application versus isolated tools
+
+This is a **scope comparison**, not a benchmark or claim of universal superiority. The same feature name in two products does not imply identical implementation, deployment cost or test coverage.
+
+| Capability | Code search / graph utilities (e.g. GitNexus, Aider, Serena) | Business suites (e.g. Odoo, ERPNext, Dolibarr) | This repository |
+|---|---|---|---|
+| Real public website, admin, commerce and customer workflows | Outside their core purpose | Commonly provided, depending on edition/modules | Existing PHP routes, controllers, services and views |
+| Answer from actual business database and published documents | Requires application-specific integration | Through each suite's own business modules | `DatabaseService`, `BlogService`, `PublicKnowledgeService`, scoped agent tools |
+| Exact source-linked architecture inventory | Code/symbol mapping is a principal capability | Depends on the suite and development tooling | `ProjectMapService`, generated `map.mmd` and `project-index.json` |
+| Agent development guidance with source-based verification | Tool-dependent | Tool-dependent | `AGENTS.md`, skills, `./bapXphp update`, `./bapXphp ci`, review receipts |
+| Detect and reject stale generated project knowledge | Tool-dependent | Tool-dependent | CI compares freshly generated maps and indexes; source/doc review requires an explicit rationale |
+| Production server requirements | These developer tools may need separate local/server runtimes | Each suite has its own requirements | Native PHP + supported hosted MySQL; no always-running Python/Node/embedding/graph service required on customer hosting |
+
+**The integration is the point:** a developer tool may help locate code and an ERP may provide business modules, but neither category alone establishes this project's specific **source → map/index → agent constraints → implementation → failing/passing CI → review → deployed-verification** contract. The published [development workflow](docs/development-workflow.md) defines the real handoff and release process. This table is not a substitute for benchmarked task outcomes or security acceptance.
 
 ## Validation
 
