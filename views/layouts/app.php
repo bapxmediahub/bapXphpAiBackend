@@ -203,7 +203,7 @@ nav:where(#primary-nav).open{display:flex}
 .site-header .header-actions{order:2}
 .site-header .menu-toggle{order:3;width:46px;height:46px;display:inline-flex;align-items:center;justify-content:center}
 .cart-btn{width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center}
-.brand span{display:none}
+.site-header .brand span{display:block}
 .astrologers-page{padding-top:var(--space-md)!important}
 .astrologers-hero{margin-bottom:var(--space-lg)}
 .astrologers-hero .lede{font-size:0.86rem;line-height:1.45;max-width:88%}
@@ -399,32 +399,7 @@ if ($__flash):
 
 </main>
 
-<?php if (!in_array($currentPath, ['/login', '/register'])): ?>
-<nav class="bottom-nav" id="bottom-nav">
-    <div class="nav-grid">
-        <?php if ($__modules['shop']): ?>
-        <a href="/shop" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/shop') === 0 ? 'active' : '') ?>">
-            <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-            <span>Shop</span>
-        </a>
-        <?php endif; ?>
-        <a href="/temples" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/temples') === 0 ? 'active' : '') ?>">
-            <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
-            <span>Temples</span>
-        </a>
-        <?php if ($__modules['blog']): ?>
-        <a href="/blog" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/blog') === 0 ? 'active' : '') ?>">
-            <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            <span>Blog</span>
-        </a>
-        <?php endif; ?>
-        <a href="/cart" class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], '/cart') === 0 ? 'active' : '') ?>">
-            <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
-            <span>Cart</span>
-        </a>
-    </div>
-</nav>
-<?php endif; ?>
+<?php /* The redundant mobile bottom navigation was removed; the header remains the primary site navigation. */ ?>
 
 <?php if ($__modules['shop'] && (in_array(rtrim($currentPath, '/'), ['', '/shop', '/categories'], true) || str_starts_with($currentPath, '/product/'))): ?>
 <a href="/cart" class="mobile-cart-tray" id="mobile-cart-tray" <?= $cartCount > 0 ? '' : 'hidden' ?>>
