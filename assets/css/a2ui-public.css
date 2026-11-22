@@ -1,4 +1,7 @@
 /* The same bounded surfaces run in a narrow Support drawer, admin chat and an MCP App. */
+/* A size-contained surface cannot size its shrink-wrapped native flex bubble.
+   Give the host available width, including on replay without request-status text. */
+.agent-bubble:has(.bapx-a2ui) { flex: 1 1 0%; min-width: 0; }
 .bapx-a2ui {
     container-type: inline-size;
     min-width: 0;

@@ -38,9 +38,9 @@
             "review_note": "Reviewed shared backend guidance changes and existing request-failure references. Commerce report additions do not alter bootstrap or HTTP error handling; the newly fixed public discovery entry routes remain preserved."
         },
         "interface": {
-            "source_sha256": "1dde35f843c56b8ad778ea324ea7b4687fb9630bbbaa183032d7a794227469d5",
+            "source_sha256": "915340ab5983c4f5febb9a8e595e530963e84524bb248af0855b0aa117c8a802",
             "references_sha256": "ed652c6d897a28231284520bbb430915af9a0f717a9b292e09cb75fb38e9abe3",
-            "review_note": "Cross-checked PHP presenters, renderer, native chat handlers and CSS against updated Design.md, frontend/admin UI skills and docs/a2ui.md. Product grid/list/detail/compare, grouped contacts, services and private report cards use container widths, 44px controls, native replay-safe photo disclosure and complete fallback. Public surfaces reject private report data/links."
+            "review_note": "Cross-reviewed the native agent row/bubble flex and maximum-width rules with inline-size card containment. The final scoped flex-basis/min-width fix gives live and restored surfaces available width without relying on a status label; docs/a2ui.md explains the host requirement. Original desktop/375px history, exact saved rows, fallback and no-resubmission checks remain, with new usable-width assertions."
         },
         "mail": {
             "source_sha256": "3b0589d28bd4923c657f85a867084b79ef9f22dd942ea529fd08af2f1332b249",
@@ -63,9 +63,9 @@
             "review_note": "Reviewed the native presenter and updated admin UI guidance against the existing Enterprise help: report cards use only completed sanitized evidence, retain source/date/basis and editable task prompts, and do not change owner permissions or help access."
         },
         "public-mcp": {
-            "source_sha256": "cbd053e0c9edd051fd48756a5f77b6a8137438483ae4460da2252b77dda08706",
-            "references_sha256": "fa0a08384a0aac3ec9c523e1ed2b8f10e60c57dc4f4680b4794565ed637e2013",
-            "review_note": "Cross-checked PublicMcpService exact-result presentation, PublicA2uiService layouts and public renderer with docs/public-mcp.md, docs/pages/shop.md and the updated docs/a2ui.md. Four read tools keep their transport/data scopes and safe links; selected products render real detail/comparison fields and the requested selection count."
+            "source_sha256": "72058f7b402167024bf15322dc92558866ab7a06984225a8846aed0284d09abe",
+            "references_sha256": "61d3de7356893e0c3646f217c3c8adfd845659d92cdf7c38654b0f766ae622c5",
+            "review_note": "Reviewed the final shared CSS change and docs/a2ui.md after native browser evidence exposed shrink-wrapped Enterprise replay bubbles. Scoped flex allocation applies only inside a native .agent-bubble containing a bounded surface; public iframe schemas, safe URLs, transport data and controls are unchanged. The original visible-history waits are preserved and explicit readable-width assertions were added."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",

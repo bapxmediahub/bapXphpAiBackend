@@ -176,6 +176,17 @@ test('Failed question returns to the composer with the recorded turn and no auto
 });
 
 const presentations=JSON.parse(execFileSync('php',['tests/fixtures/a2ui-responses.php'],{cwd:root,encoding:'utf8'}));
+async function assertStructuredWidth(page) {
+    const sizes=await page.locator('.bapx-a2ui--answer').evaluateAll(elements=>elements.map(element=>({
+        surface:element.getBoundingClientRect().width,
+        row:element.closest('.agent-row').getBoundingClientRect().width,
+    })));
+    assert.ok(sizes.length>0,'The structured answer must remain in the transcript');
+    for(const size of sizes) {
+        assert.ok(size.row>0&&size.surface>=Math.min(240,size.row*.6),
+            'A live or saved structured answer must receive readable chat width, not its status label\'s intrinsic width');
+    }
+}
 for(const width of [1280,375]) {
     test(`Enterprise recorded report rows survive history at ${width}px`,async()=>{
         const page=await browser.newPage({viewport:{width,height:800}});
@@ -197,6 +208,7 @@ for(const width of [1280,375]) {
             const input=page.getByRole('textbox',{name:'Message'});
             await input.fill('Show product performance');await input.press('Enter');
             await page.locator('.bapx-a2ui__report-item').first().waitFor();
+            await assertStructuredWidth(page);
             assert.equal(await page.locator('.bapx-a2ui__report-item').count(),2);
             assert.equal(await page.getByText('Published report rows are shown below.',{exact:true}).count(),1);
             const before=await page.locator('.bapx-a2ui__report-rows').innerText();
@@ -206,6 +218,7 @@ for(const width of [1280,375]) {
             await page.getByRole('button',{name:'History',exact:true}).click();
             await page.getByRole('button',{name:/Recorded product report/}).click();
             await page.getByText('Saved product report.',{exact:true}).waitFor();
+            await assertStructuredWidth(page);
             assert.equal(await page.locator('.bapx-a2ui__report-rows').innerText(),before,'History must keep exact recorded report rows');
             assert.match(await page.locator('.bapx-a2ui--answer').innerText(),/2026-11-22 10:00:00.000000 UTC/);
             assert.equal(sends,1,'History must not execute the report again');
@@ -245,6 +258,7 @@ for(const width of [1280,375]) {
             const input=page.getByRole('textbox',{name:'Message'});
             await input.fill('Sales for the selected period');await input.press('Enter');
             await page.locator('.bapx-a2ui--answer').waitFor();
+            await assertStructuredWidth(page);
             assert.equal(await page.getByText('Sales for the selected period.',{exact:true}).count(),1,'Full flat response is not duplicated');
             const source=page.getByRole('link',{name:'Sales report',exact:true});
             assert.equal(await source.count(),1,'Source action appears once');
@@ -256,6 +270,7 @@ for(const width of [1280,375]) {
             await page.getByRole('button',{name:'History',exact:true}).click();
             await page.getByRole('button',{name:/Structured saved chat/}).click();
             await page.getByText('Saved authorized answer.',{exact:true}).waitFor();
+            await assertStructuredWidth(page);
             assert.equal(await page.locator('.bapx-a2ui--answer').count(),1);
             assert.equal(await page.getByText('Legacy full fallback.',{exact:true}).count(),1);
             assert.equal(await page.locator('.bapx-a2ui__row').count(),2,'History retains recorded facts');
