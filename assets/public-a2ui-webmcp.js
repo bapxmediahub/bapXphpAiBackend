@@ -15,25 +15,33 @@
     const register = async () => { await registry.registerTool({
         name:'present_public_knowledge',
         title:'Present public business information as cards',
-        description:'Return up to four A2UI 1.0 cards for published products, articles, contact details or enquiry services. Include query for relevant named items. Uses public data, safe local images and website links. No checkout, owner records, private guides or conversation access.',
+        description:'Return bounded A2UI 1.0 product, article, contact or enquiry cards. Search with query, or select up to three exact raw product slugs for details. Use layout compare with two or three selected slugs; never combine a selection with query. Uses only published data and safe website links.',
         inputSchema:contract.inputSchema,
         outputSchema:contract.outputSchema,
         annotations:{readOnlyHint:true,untrustedContentHint:true},
         async execute(input={}) {
             if(!input || typeof input!=='object' || Array.isArray(input)
-                || Object.keys(input).some(k=>!['view','query','limit'].includes(k))) {
+                || Object.keys(input).some(k=>!['view','query','limit','layout','slugs'].includes(k))) {
                 throw new TypeError('Invalid A2UI input.');
             }
-            const {view,query='',limit=4}=input;
+            const {view,query='',limit=4,layout='auto',slugs=[]}=input;
             if(typeof view!=='string' || !views.includes(view)
-                || typeof query!=='string' || query.length>120
-                || !Number.isInteger(limit) || limit<1 || limit>4) {
+                || typeof query!=='string' || Array.from(query).length>120
+                || !Number.isInteger(limit) || limit<1 || limit>4
+                || !['auto','grid','list','detail','compare'].includes(layout)
+                || !Array.isArray(slugs) || slugs.length>3 || slugs.length>limit || new Set(slugs).size!==slugs.length
+                || Array.from(slugs).some(slug=>typeof slug!=='string'||!slug||!/^[\p{L}\p{N}_][\p{L}\p{N}\p{M}._ -]*$/u.test(slug)||encodeURIComponent(slug).length>2039)
+                || (view!=='products'&&(layout!=='auto'||slugs.length))
+                || (slugs.length&&query!=='') || (layout==='compare'&&slugs.length<2)
+                || (layout==='detail'&&slugs.length>1)) {
                 throw new TypeError('Choose a public view and limit 1..4.');
             }
             const url=new URL('/api/knowledge/a2ui',window.location.origin);
             url.searchParams.set('view',view);
             url.searchParams.set('query',query);
             url.searchParams.set('limit',String(limit));
+            url.searchParams.set('layout',layout);
+            if(slugs.length)url.searchParams.set('slugs',JSON.stringify(slugs));
             const response=await fetch(url,{
                 method:'GET',credentials:'omit',
                 headers:{Accept:'application/json'},signal:lifecycle.signal

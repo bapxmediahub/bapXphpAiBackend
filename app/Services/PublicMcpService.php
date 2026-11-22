@@ -283,7 +283,7 @@ final class PublicMcpService
         $result=['structuredContent'=>$data, 'content'=>[['type'=>'text','text'=>$this->textAnswer($view,$data)]]];
         try {
             $layout=$products&&count($slugs)>1?'compare':($products&&count($slugs)===1?'detail':'auto');
-            $surface=($this->presentation??=new PublicA2uiService($source))->fromResult($view,$data,4,$layout);
+            $surface=($this->presentation??=new PublicA2uiService($source))->fromResult($view,$data,4,$layout,count($slugs));
             $result['_meta']=[self::SURFACE_META=>$surface];
         } catch (\Throwable $error) {
             // Presentation is progressive enhancement; retain the verified public data and text.

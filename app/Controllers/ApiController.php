@@ -95,14 +95,24 @@ final class ApiController extends BaseController {
         $view=$_GET['view'] ?? null;
         $query=$_GET['query'] ?? '';
         $limit=$_GET['limit'] ?? '4';
+        $layout=$_GET['layout'] ?? 'auto';
+        $slugs=[];
+        if(isset($_GET['slugs'])) {
+            try {
+                if(!is_string($_GET['slugs'])||strlen($_GET['slugs'])>24576)throw new \InvalidArgumentException();
+                $slugs=json_decode($_GET['slugs'],false,8,JSON_THROW_ON_ERROR);
+                if(!is_array($slugs)||!array_is_list($slugs))throw new \InvalidArgumentException();
+            } catch (\Throwable) { $this->jsonResponse(['error'=>'Choose up to three exact public product slugs.'],400); }
+        }
         if (!is_string($view) || !in_array($view,PublicA2uiService::inputSchema()['properties']['view']['enum'],true)
             || !is_string($query) || !mb_check_encoding($query,'UTF-8') || mb_strlen($query)>120
             || !is_scalar($limit) || !preg_match('/^[1-4]$/D',(string)$limit)
-            || array_diff(array_keys($_GET),['view','query','limit'])) {
+            || !is_string($layout) || !in_array($layout,PublicA2uiService::inputSchema()['properties']['layout']['enum'],true)
+            || array_diff(array_keys($_GET),['view','query','limit','layout','slugs'])) {
             $this->jsonResponse(['error'=>'Choose a public view and optional bounded query.'],400);
         }
         try {
-            $surface=(new PublicA2uiService())->present($view,$query,(int)$limit);
+            $surface=(new PublicA2uiService())->present($view,$query,(int)$limit,$layout,$slugs);
         } catch (\InvalidArgumentException) {
             $this->jsonResponse(['error'=>'Invalid presentation request.'],400);
         } catch (\Throwable $error) {

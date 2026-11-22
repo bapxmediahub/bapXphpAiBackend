@@ -37,11 +37,14 @@ const a2ui=(label,pathValue)=>({messages:[{
 const schema={
     inputSchema:{type:'object',additionalProperties:false,required:['view'],
         properties:{view:{type:'string',enum:['products','articles','contact','services']},
-            query:{type:'string',maxLength:120},limit:{type:'integer',minimum:1,maximum:4}}},
+            query:{type:'string',maxLength:120},limit:{type:'integer',minimum:1,maximum:4},
+            layout:{type:'string',enum:['auto','grid','list','detail','compare']},
+            slugs:{type:'array',maxItems:3,uniqueItems:true,items:{type:'string'}}}},
     outputSchema:{type:'object',additionalProperties:false,required:['messages'],
         properties:{messages:{type:'array',minItems:1,maxItems:1,items:{type:'object',required:['version','createSurface']}}}}
 };
 test('official WebMCP polyfill executes a read-only A2UI v1.0 tool and renderer rejects untrusted code', {timeout:30000},async()=>{
+    const requests=[];
     const server=createServer((req,res)=>{
         const url=new URL(req.url,'http://localhost');
         if(url.pathname==='/style.css'){
@@ -51,9 +54,10 @@ test('official WebMCP polyfill executes a read-only A2UI v1.0 tool and renderer 
             res.writeHead(200,{'content-type':'application/javascript'});res.end(scripts[url.pathname]);return;
         }
         if(url.pathname==='/api/knowledge/a2ui'){
+            requests.push(Object.fromEntries(url.searchParams));
             res.writeHead(200,{'content-type':'application/json','cache-control':'no-store'});
             const view=url.searchParams.get('view');
-            res.end(JSON.stringify(view==='contact'?fixtures.contact:view==='services'?fixtures.services:a2ui('Public Gemstone Ring','/product/public-ring')));return;
+            res.end(JSON.stringify(view==='contact'?fixtures.contact:view==='services'?fixtures.services:url.searchParams.get('layout')==='compare'?fixtures.productCompare:a2ui('Public Gemstone Ring','/product/public-ring')));return;
         }
         if(url.pathname==='/'){
             const html='<!doctype html><html><head>'+
@@ -97,6 +101,23 @@ test('official WebMCP polyfill executes a read-only A2UI v1.0 tool and renderer 
         assert.equal(result.href,'/product/public-ring');
         assert.ok(result.text.includes('Public Gemstone Ring'));
         assert.ok(result.linkSize>=44);
+        const selected=await page.evaluate(async()=>{
+            const tool=(await document.modelContext.getTools()).find(x=>x.name==='present_public_knowledge');
+            const payload=JSON.parse(await document.modelContext.executeTool(tool,{view:'products',layout:'compare',slugs:['emerald-ring','ruby-pendant']}));
+            let invalid=0;
+            for(const input of [
+                {view:'products',layout:'compare',query:'ring',slugs:['emerald-ring','ruby-pendant']},
+                {view:'products',layout:'compare',slugs:['emerald-ring']},
+                {view:'products',layout:'detail',slugs:['emerald-ring','ruby-pendant']},
+                {view:'products',slugs:Array(1)},
+                {view:'products',slugs:['../private']},{view:'contact',layout:'grid'},
+            ]) {try{await document.modelContext.executeTool(tool,input)}catch{invalid++;}}
+            await document.modelContext.executeTool(tool,{view:'products',query:'𐐀'.repeat(120)});
+            return {presentation:payload.messages[0].createSurface.dataModel.presentation,invalid};
+        });
+        assert.deepEqual(selected,{presentation:'product_compare',invalid:6});
+        assert.ok(requests.some(request=>request.layout==='compare'&&JSON.parse(request.slugs).join(',')==='emerald-ring,ruby-pendant'));
+        assert.ok(requests.some(request=>[...request.query].length===120),'WebMCP uses Unicode code-point query limits');
         const business=await page.evaluate(async()=>{
             const tool=(await document.modelContext.getTools()).find(x=>x.name==='present_public_knowledge');
             const contact=JSON.parse(await document.modelContext.executeTool(tool,{view:'contact',limit:4}));
@@ -145,6 +166,58 @@ test('official WebMCP polyfill executes a read-only A2UI v1.0 tool and renderer 
         await new Promise(resolve=>server.close(resolve));
     }
 });
+
+for(const width of [1280,375]) {
+    test(`Purposeful public cards, native disclosure and private reports at ${width}px`,{timeout:30000},async()=>{
+        const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox']});
+        const page=await browser.newPage({viewport:{width,height:900}});
+        const errors=[];page.on('pageerror',error=>errors.push(error.message));
+        try {
+            await page.setContent('<style>body{margin:8px;font:16px sans-serif}#wide{max-width:900px}#narrow{width:320px;max-width:100%}</style><main id="wide"></main><aside id="narrow"></aside>');
+            await page.addStyleTag({path:path.join(root,'assets/css/a2ui-public.css')});
+            await page.addScriptTag({path:path.join(root,'assets/a2ui-public-renderer.js')});
+            const output=await page.evaluate(fixtures=>{
+                const wide=document.getElementById('wide'),narrow=document.getElementById('narrow');
+                const results={};
+                for(const key of ['productGrid','productList','productCompare','partialComparison','articles','contact','services','product']) {
+                    const host=document.createElement('div');host.dataset.fixture=key;wide.appendChild(host);
+                    results[key]=window.BapxA2ui.render(host,fixtures[key]);
+                }
+                results.narrow=window.BapxA2ui.render(narrow,fixtures.productGrid);
+                const report=document.createElement('div');report.dataset.fixture='commerce';wide.appendChild(report);
+                results.commerce=window.BapxA2ui.render(report,fixtures.commerce,{scope:'admin'});
+                const rejected=[];
+                const unknown=structuredClone(fixtures.product);unknown.messages[0].createSurface.dataModel.presentation='arbitrary_html';rejected.push(unknown);
+                const wrongFamily=structuredClone(fixtures.product);wrongFamily.messages[0].createSurface.dataModel.presentation='contact_panel';rejected.push(wrongFamily);
+                const partial=structuredClone(fixtures.product);partial.messages[0].createSurface.dataModel.presentation='product_compare';rejected.push(partial);
+                const privateData=structuredClone(fixtures.product);privateData.messages[0].createSurface.dataModel.reports=fixtures.commerce.messages[0].createSurface.dataModel.reports;rejected.push(privateData);
+                const extraSpecs=structuredClone(fixtures.product);extraSpecs.messages[0].createSurface.dataModel.items[0].specifications=Array(7).fill({label:'Field',value:'Value'});rejected.push(extraSpecs);
+                results.rejected=rejected.every(payload=>!window.BapxA2ui.render(document.createElement('div'),payload));
+                results.privateDenied=!window.BapxA2ui.render(document.createElement('div'),fixtures.commerce);
+                return results;
+            },fixtures);
+            for(const [key,ok] of Object.entries(output))assert.equal(ok,true,key);
+            const columns=await page.locator('[data-fixture="productGrid"] .bapx-a2ui__items').evaluate(element=>getComputedStyle(element).gridTemplateColumns.split(' ').length);
+            assert.equal(columns,width===1280?2:1,'Collection adapts to its actual available width');
+            assert.equal(await page.locator('#narrow .bapx-a2ui__items').evaluate(element=>getComputedStyle(element).gridTemplateColumns.split(' ').length),1,'Desktop narrow hosts must not get a desktop grid');
+            assert.equal(await page.locator('[data-fixture="productCompare"]').getByText('Not listed',{exact:true}).count(),1);
+            assert.match(await page.locator('[data-fixture="partialComparison"]').innerText(),/Showing 2 of 3 selected products/);
+            assert.equal(await page.locator('[data-fixture="contact"] a').count(),1,'Contact is one grouped panel');
+            assert.equal(await page.locator('[data-fixture="commerce"] .bapx-a2ui__report-item').count(),2);
+            assert.match(await page.locator('[data-fixture="commerce"]').innerText(),/Showing 2 of 2 rows/);
+            const summary=page.locator('[data-fixture="product"] summary');
+            assert.ok(await summary.evaluate(element=>element.getBoundingClientRect().height>=44));
+            assert.equal(await page.locator('[data-fixture="product"] details img').first().isVisible(),false);
+            await summary.press('Enter');
+            assert.equal(await page.locator('[data-fixture="product"] details img').first().isVisible(),true);
+            await page.locator('[data-fixture="product"]').evaluate(element=>{element.innerHTML=element.innerHTML;});
+            await summary.press('Space');
+            assert.equal(await page.locator('[data-fixture="product"] details img').first().isVisible(),false,'Disclosure remains native after saved HTML restoration');
+            assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+            assert.deepEqual(errors,[]);
+        } finally {await browser.close();}
+    });
+}
 
 // These are real server view models, not hand-authored copies of renderer schemas.
 test('Public and actor-scoped surfaces preserve content and fail closed', {timeout:30000},async()=>{
@@ -263,7 +336,7 @@ for (const width of [1280,375]) {
                     return route.fulfill({json:{reply:sends===1?'Here is the matching Emerald Ring.\n\nIts published price is ₹1,250.00.':sends===2?'Complete fallback after public-only presentation.':'Complete fallback after unsupported presentation.',
                         a2ui:surface,conversation_id:'a'.repeat(32),turn_id:'b'.repeat(32)}});
                 }
-                if(url.pathname==='/assets/images/fixture-ring.png')return route.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZlV0AAAAASUVORK5CYII=','base64')});
+                if(url.pathname.startsWith('/assets/images/'))return route.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZlV0AAAAASUVORK5CYII=','base64')});
                 return route.fulfill({contentType:'text/html',body:html});
             });
             await page.goto(origin+'/');
@@ -282,6 +355,9 @@ for (const width of [1280,375]) {
             await page.getByRole('button',{name:'Support',exact:true}).click();
             await page.locator('.bapx-a2ui--answer').waitFor();
             assert.equal(sends,1,'Reload must not execute a tool or resend the question');
+            const photos=page.locator('.support-answer summary');
+            await photos.press('Enter');
+            assert.equal(await page.locator('.support-answer details img').first().isVisible(),true,'Saved Support photo control still works');
             await page.getByRole('textbox',{name:'Support message'}).fill('Another question');
             await page.getByRole('button',{name:'Send',exact:true}).click();
             await page.getByText('Complete fallback after public-only presentation.',{exact:false}).waitFor();
