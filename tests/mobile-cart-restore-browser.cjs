@@ -91,7 +91,7 @@ test('restored mobile brand, header cart, no bottom nav, and post-add floating c
             ?.textContent.includes('temporarily limited'),null,{timeout:5000});
         assert.equal(await tray.isVisible(),false,'429 must not falsely open the cart');
         assert.equal(await page.locator('.cart-count').innerText(),'0');
-        assert.equal(await page.locator('#synthetic-cart-product button').isDisabled(),false,
+        assert.equal(await page.locator('#synthetic-cart-product form[data-cart-add] button').isDisabled(),false,
             'Rate-limited add must re-enable the cart button');
         await page.evaluate(()=>{
             window.fetch=async()=>({ok:false,status:422,json:async()=>({
