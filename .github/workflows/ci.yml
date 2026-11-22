@@ -79,34 +79,6 @@ jobs:
         run: php tests/documentation-review.php
       - name: Validate code, tests, maps, and routes
         run: ./bapXphp ci
-      # A2UI-LIVE-DOCSYNC-BEGIN
-      - name: Reexport generated maps for live A2UI acceptance (temporary)
-        if: always()
-        run: |
-          python3 -c 'from pathlib import Path; p=Path(".github/workflows/ci.yml"); s=p.read_text(); a=s.index("      # A2UI-LIVE-DOCSYNC-BEGIN\n"); b=s.index("      # A2UI-LIVE-DOCSYNC-END\n",a)+len("      # A2UI-LIVE-DOCSYNC-END\n"); p.write_text(s[:a]+s[b:])'
-          ./bapXphp update || true
-          php -r 'require "app/bootstrap.php"; require "cli/lib/DocumentationReview.php"; $r=new DocumentationReview(getcwd(),require "config/documentation.php"); $notes=[
-          "operator-help"=>"Validated owner guide and private Markdown stay outside read-only public A2UI and live WebMCP probes.",
-          "http-errors"=>"Validated bounded A2UI endpoint errors and fallbacks without leaking exceptions, session contents or untrusted HTML.",
-          "mcp-clients"=>"Reviewed browser-only WebMCP A2UI and separate native MCP grants, keeping consent and scoped owner access unchanged.",
-          "google-tags"=>"Reviewed public asset loading alongside Google tags without changing provider configuration or consent.",
-          "agents"=>"Reviewed both chat agents response adapters, actor isolation, trace preservation and read-only public cards without model-authored code.",
-          "mail"=>"No new SMTP, sent mail, webhook or customer notification side effect from A2UI browse and live acceptance.",
-          "content"=>"Published blog/product filters and safe same-site links are the sole A2UI data, no draft or private content.",
-          "media"=>"No media write, remote image fetch or cross-origin URL; client only renders text and local links.",
-          "workflow"=>"Reviewed post-main 60-second Hostinger wait, exact SHA confirmation, isolated cart acceptance and independent live WebMCP-A2UI tool invocation.",
-          "interface"=>"Reviewed v1 Basic catalog subset renderer and official polyfill browser tests, including XSS, unsafe URL and action rejection.",
-          "foundation"=>"Reviewed safe public REST A2UI route, generated maps, version 1.0 envelope, bounded components and unchanged database/chat schema.",
-          "auth"=>"Confirmed private Enterprise remains authenticated while guest WebMCP/Support only sees published knowledge; no admin tool exposure.",
-          "commerce"=>"Read-only products and cards; live WebMCP acceptance makes no cart, payment or order mutation.",
-          "sales-channels"=>"Read-only presentations do not alter product feeds, advertising systems or social publishing."
-          ]; foreach($r->check() as $e){if(preg_match("/^([a-z][a-z0-9-]+): source\/doc review missing or stale/",$e,$m)){if(!isset($notes[$m[1]]))exit(3);$r->record($m[1],$notes[$m[1]]);}}'
-          for f in docs/agent-tool-contracts.md docs/systematic-map.mmd docs/map.mmd docs/project-index.json index.yaml map.mmd docs/source-contracts.json; do
-            echo "A2UI_LIVE_START $f"
-            base64 -w 3000 "$f" | sed 's/^/A2UI_LIVE_B64 /'
-            echo "A2UI_LIVE_END $f"
-          done
-      # A2UI-LIVE-DOCSYNC-END
 
 
 
