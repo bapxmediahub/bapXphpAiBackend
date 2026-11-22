@@ -2986,11 +2986,11 @@ tr:hover td { background: var(--color-bg-alt); }
     .cart-btn { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; }
     .brand { font-size: 0.9rem; }
     .brand img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
-    .brand span { display: none; }
+    .brand span { display: block; }
     .header-actions { display: flex; }
     
-    main { padding: var(--space-md); padding-bottom: calc(64px + var(--space-md)); }
-    main.home-main { padding: 0 0 calc(64px + var(--space-md)); }
+    main { padding: var(--space-md); padding-bottom: var(--space-md); }
+    main.home-main { padding: 0 0 var(--space-md); }
     
     .section { padding: 48px 16px; }
     .section-header { margin-bottom: var(--space-xl); }
@@ -4242,3 +4242,58 @@ body { background: var(--color-bg); }
 .support-help-guide { display: block; padding: 10px 14px; min-height: 44px; color: var(--color-maroon); font-size: .82rem; border-top: 1px solid var(--color-border); }
 .public-help-hint a:focus-visible,.support-help-guide:focus-visible { outline: 3px solid var(--color-gold); outline-offset: 2px; }
 @media(max-width:743px){ .public-help-hint { align-items: flex-start; flex-direction: column; gap: 6px; max-width: calc(100% - 32px); } }
+
+/* Restore the original branded mobile header and top cart without the
+   redundant bottom navigation introduced in 58be472. Keep all controls
+   tappable while the brand wraps gracefully on narrow devices. */
+@media (max-width: 860px) {
+    .site-header {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 6px;
+        min-width: 0;
+    }
+    .site-header .brand {
+        order: 1;
+        flex: 1 1 auto;
+        min-width: 0;
+        margin-right: auto;
+        gap: 6px;
+    }
+    .site-header .brand img {
+        flex: 0 0 36px;
+        width: 36px;
+        height: 36px;
+    }
+    .site-header .brand span {
+        display: block;
+        min-width: 0;
+        font-size: clamp(.73rem, 2.8vw, .9rem);
+        line-height: 1.18;
+        overflow-wrap: normal;
+    }
+    .site-header .header-actions {
+        order: 2;
+        flex: 0 0 auto;
+    }
+    .site-header .cart-btn {
+        display: inline-flex;
+        width: 44px;
+        height: 44px;
+        align-items: center;
+        justify-content: center;
+    }
+    .site-header .menu-toggle {
+        order: 3;
+        flex: 0 0 46px;
+    }
+}
+/* The existing add-to-cart JS reveals this pill when cart_count > 0.
+   It must sit above document content and leave room for the support FAB. */
+@media (max-width: 700px) {
+    .mobile-cart-tray:not([hidden]) {
+        display: flex;
+        z-index: 1200;
+    }
+}
