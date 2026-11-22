@@ -33,6 +33,9 @@ jobs:
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && inputs.expected_sha || github.event.workflow_run.head_sha }}
           persist-credentials: false
+      - name: Allow Hostinger hPanel Git auto-deploy to propagate
+        if: github.event_name == 'workflow_run'
+        run: sleep 60
       - name: Cross-check the live checkout SHA after main validation
         env:
           EXPECTED: ${{ github.event_name == 'workflow_dispatch' && inputs.expected_sha || github.event.workflow_run.head_sha }}
