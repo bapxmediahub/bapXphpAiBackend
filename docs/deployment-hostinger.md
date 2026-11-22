@@ -118,8 +118,14 @@ should be checked across actual served instances as applicable.
 post-deployment evidence workflow** after a successful `Validate application`
 push to `main`. It retries this live endpoint with the exact merge SHA,
 reports a verified or failed/unknown result, and can also be rerun manually with
-`workflow_dispatch` and an explicit full SHA. This does **not** write or deploy
-production data and its success is intentionally distinct from code CI.
+`workflow_dispatch` and an explicit full SHA. After a successful SHA match it runs a
+fresh Chromium session at 320/375/390 pixels, checks the visible Sri Panchami Spiritual
+brand, top cart and absence of the unwanted bottom bar, then performs an isolated
+real add-to-cart / decrement test using only its disposable guest session. It never
+checks out or pays for an order, and it attempts to clear the cart even after a failed
+assertion. A failed cart acceptance marks the deployment workflow red without changing
+the result of the independent code CI. Never run this workflow against customer
+sessions or supply a production user credential.
 
 **Hostinger caveat:** hPanel may copy the release files without including a
 readable `.git` checkout, or PHP permissions may prevent reading `.git/HEAD`.
