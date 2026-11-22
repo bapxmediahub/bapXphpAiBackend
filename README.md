@@ -172,40 +172,42 @@ sequenceDiagram
   actor Buyer
   participant Web as CommerceController
   participant Gateway as Razorpay
-  participant Store as Domain services / DatabaseService
-  participant Mail as MailQueueService
+  participant Store as Data services
+  participant Mail as Mail queue
 
-  Buyer->>Web: POST /cart/add: CSRF, slug, quantity
-  Web->>Store: Read current product and stock
-  Store-->>Web: Current catalogue record
-  Note over Web: Cart slug/quantity live in PHP session
+  Buyer->>Web: POST /cart/add
+  Web->>Store: Read product + stock
+  Store-->>Web: Current product
+  Note over Web: Session: cart slug + quantity
   Web-->>Buyer: Cart JSON or redirect
 
   Buyer->>Web: POST /checkout/create-order
-  Web->>Store: Current prices, settings and gateway config
-  Store-->>Web: Server-side inputs for totals
-  Web->>Gateway: RazorpayClient creates provider order
-  Gateway-->>Web: Provider order ID and amount
-  Note over Web: Pending snapshot stays in PHP session
-  Web-->>Buyer: JSON to open provider checkout
-  Buyer->>Gateway: Complete provider checkout
-  Gateway-->>Buyer: Payment callback fields
+  Web->>Store: Prices + checkout config
+  Store-->>Web: Current server inputs
+  Web->>Gateway: Create provider order
+  Gateway-->>Web: Order ID + amount
+  Note over Web: Session: pending snapshot
+  Web-->>Buyer: Open provider checkout
+  Buyer->>Gateway: Complete payment
+  Gateway-->>Buyer: Payment callback
   Buyer->>Web: POST /payment/verify
-  Web->>Web: PaymentService verifies HMAC
-  Web->>Gateway: Fetch payment from provider
-  Gateway-->>Web: Payment amount and provider order ID
-  Web->>Web: Match against pending snapshot
-  Web->>Store: saveVerifiedOrder: locked, duplicate-aware insert
-  Store-->>Web: Saved order and inserted flag
+  Web->>Web: Verify HMAC
+  Web->>Gateway: Fetch payment
+  Gateway-->>Web: Amount + order ID
+  Web->>Web: Match pending snapshot
+  Web->>Store: Locked saveVerifiedOrder
+  Store-->>Web: Order + inserted flag
   opt Newly inserted order
-    Web->>Mail: Queue customer and owner confirmations
-    Mail->>Store: Persist mail_queue and outbox projection
-    Mail->>Mail: Claim row, SmtpMailer attempts delivery
-    Mail->>Store: Accepted, failed or uncertain receipt
+    Web->>Mail: Enqueue confirmations
+    Mail->>Store: Persist queue + outbox
+    Mail->>Mail: Claim, attempt SMTP
+    Mail->>Store: Store delivery receipt
   end
-  Note over Web: Clear cart and pending session
-  Web-->>Buyer: Order ID, navigate to owned order page
+  Note over Web: Clear cart + pending state
+  Web-->>Buyer: Return saved order ID
 ```
+
+The sequence groups `ProductService`, `SettingsService`, `SecretService` and `DatabaseService` as data services. `PaymentService` performs the HMAC check; `RazorpayClient` performs provider requests. The cart handler validates CSRF and requested slug/quantity; `saveVerifiedOrder()` is locked and duplicate-aware. The checkout UI uses the returned ID to open the customer-owned order page.
 
 `MailQueueService` persists the queue before an ordinary in-request SMTP attempt. Scheduled messages use later bounded processing. SMTP acceptance is recorded separately from recipient inbox receipt. Owner fulfillment changes go through `AdminController::saveOrderStatus()` and `OrderService::updateStatus()`; customers subsequently read their own saved order/tracking data through `AccountController`.
 
@@ -243,27 +245,27 @@ sequenceDiagram
   participant Admin as AdminController
   participant AI as AiClient
   participant Model as Model provider
-  participant Tools as Enterprise tool registry
+  participant Tools as Enterprise tools
 
-  Note over Admin: Admin + CSRF, owned history, pending turn saved
+  Note over Admin: Owner + CSRF, saved turn
   alt Local help or aggregate report
     Admin->>Tools: Recognized local query
     Tools-->>Admin: Scoped answer / report data
   else Model branch
-    Note over Admin: AgentInstructionService loads Enterprise role files
-    Admin->>AI: completeWithTools: prompt + declarations
-    AI->>Model: Messages and declared tools
+    Note over Admin: Load Enterprise role rules
+    Admin->>AI: completeWithTools
+    AI->>Model: Prompt + tool declarations
     loop Bounded tool rounds
       Model-->>AI: Function name + arguments
-      AI->>Tools: Validate call, execute with actor policy
-      Note over Tools: Bounded business-service / published-article reads
+      AI->>Tools: Validate + scope call
+      Note over Tools: Scoped service reads
       Tools-->>AI: Structured tool result
       AI->>Model: Paired function result
     end
     Model-->>AI: Final answer
-    AI-->>Admin: Answer + actual execution evidence
+    AI-->>Admin: Answer + execution evidence
   end
-  Note over Admin: Save final turn, format text + scoped A2UI for owner chat
+  Note over Admin: Save answer, render for owner
 ```
 
 Enterprise reads use `AgentToolRegistry` and `AgentCapabilityPolicy` before the relevant business service, `DatabaseService` or `BlogService`. Explicit `/create-blog` and `/add-product` commands take a separate `AgentDraftService` branch: generated fields fill the existing admin form, and **the owner must press Save** before the normal product/Markdown persistence path runs.
@@ -313,7 +315,7 @@ flowchart TB
   class API,MCP,Knowledge boundary
 ```
 
-**Optional presentation is a separate step.** Ordinary public JSON works without a card renderer. For browser `present_public_knowledge`, the A2UI endpoint calls `PublicA2uiService::present()`, which performs a bounded public lookup and returns validated surface data. HTTP MCP uses `fromResult()` so its cards reflect the exact tool result, including its requested page:
+**Optional presentation is a separate step.** Ordinary public JSON works without a card renderer. For browser `present_public_knowledge`, the A2UI endpoint calls `PublicA2uiService::present()`, which performs a bounded public lookup and returns validated surface data. HTTP MCP uses `fromResult()` so its cards reflect the exact tool result, including its requested page. `tools/call` returns text, `structuredContent` and optional surface metadata; the compatible host separately reads `ui://bapx/public-knowledge.html`:
 
 ```mermaid
 sequenceDiagram
@@ -322,18 +324,18 @@ sequenceDiagram
   participant Cards as PublicA2uiService
   participant App as Public App bridge
 
-  Host->>MCP: tools/call: public tool + arguments
-  MCP->>MCP: Validate, query PublicKnowledgeService
+  Host->>MCP: tools/call + arguments
+  MCP->>MCP: Validate, query public data
   opt Public surface available
-    MCP->>Cards: fromResult: exact public result
-    Cards-->>MCP: Validated public A2UI surface
+    MCP->>Cards: fromResult: exact records
+    Cards-->>MCP: Public A2UI surface
   end
-  MCP-->>Host: Text + structuredContent + optional surface metadata
-  opt Compatible host displays the public UI
-    Host->>MCP: resources/read: ui://bapx/public-knowledge.html
-    MCP-->>Host: HTML with renderer, styles and bridge
-    Host->>App: Load UI, deliver tool-result notification
-    App-->>Host: Public cards, same-origin link actions
+  MCP-->>Host: Public result + optional UI
+  opt Compatible UI host
+    Host->>MCP: resources/read: UI URI
+    MCP-->>Host: HTML + renderer + bridge
+    Host->>App: Load UI, deliver tool result
+    App-->>Host: Cards + safe link actions
   end
 ```
 
