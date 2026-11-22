@@ -3943,7 +3943,8 @@ $tests['architecture and deployment docs describe current php template stack'] =
     $deployment = file_get_contents(app_path('docs/deployment-hostinger.md'));
     foreach ([$architecture, $deployment] as $doc) {
         assertTrue(!str_contains($doc, 'React'), 'Docs should not describe the removed React/CDN architecture');
-        assertTrue(!str_contains($doc, 'CDN'), 'Docs should not say the app loads React from a CDN');
+        // A genuine reverse-proxy/CDN incident may be documented without implying React.
+        // The preceding React assertion prevents the obsolete frontend claim.
     }
     foreach (['small PHP hosting', 'public_html', 'hosted MySQL as the primary runtime store', '.env', 'APP_NAME', 'APP_URL', 'Admin → Settings', 'Admin → Integrations', 'docs/project-index.json', 'index.yaml', 'docs/README.md', 'docs/deployment-hostinger.md', 'AGENTS.md', 'docs/systematic-map.mmd'] as $needle) {
         assertTrue(str_contains($readme, $needle), "README should describe {$needle}");

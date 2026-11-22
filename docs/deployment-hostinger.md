@@ -118,14 +118,37 @@ should be checked across actual served instances as applicable.
 post-deployment evidence workflow** after a successful `Validate application`
 push to `main`. It retries this live endpoint with the exact merge SHA,
 reports a verified or failed/unknown result, and can also be rerun manually with
-`workflow_dispatch` and an explicit full SHA. After a successful SHA match it runs a
-fresh Chromium session at 320/375/390 pixels, checks the visible Sri Panchami Spiritual
-brand, top cart and absence of the unwanted bottom bar, then performs an isolated
-real add-to-cart / decrement test using only its disposable guest session. It never
-checks out or pays for an order, and it attempts to clear the cart even after a failed
-assertion. A failed cart acceptance marks the deployment workflow red without changing
-the result of the independent code CI. Never run this workflow against customer
-sessions or supply a production user credential.
+`workflow_dispatch` and an explicit full SHA. After a successful SHA match, a **separate dependent job** runs Chromium at
+320/375/390 pixels, checks the visible Sri Panchami Spiritual brand, top cart and
+absence of the unwanted bottom bar, then performs an isolated real add-to-cart /
+decrement test with a disposable guest session. The SHA verification job can be
+green independently of a blocked or failed cart acceptance job. No checkout, payment,
+customer login or mail is performed. The test attempts to undo the guest cart change
+even if an assertion fails. Neither job changes the independent code-CI result.
+
+### HTTP 429 on the guest cart acceptance
+
+The first real post-deploy mobile verification on 22 November 2026 confirmed the
+deployed SHA `07cdd3e67f3f7c0378350a8d4396014aedf25d3a`, but the GitHub-hosted
+guest Chromium request to **POST /cart/add** returned **HTTP 429** without a JSON
+content type. The storefront kept its count at zero and its floating cart hidden;
+the request was **not confirmed as a successful addition**. The PHP cart
+controller does not itself return HTTP 429, so check the hosting/CDN/WAF access
+and rate-limit logs before attributing the failure to cart state or front-end CSS.
+
+On Hostinger, inspect the access/security log for `POST /cart/add` around
+`2026-11-22 09:10:37 UTC`, identify which rule generated 429, and compare
+ordinary guest handset traffic against automated CI traffic. Do not disable
+site-wide request protection or whitelist all GitHub-runner IPs to make CI green.
+If protection is working as intended, report the automated guest-cart check as
+**blocked by rate limit**, while keeping the SHA job green; run the real cart
+acceptance from an authorized normal visitor session instead. If legitimate
+customers are blocked, correct only the affected hosting rule.
+
+The AJAX cart handler must accept a confirmed, validated JSON result before
+altering counts or showing the floating tray. For HTTP 429 or a non-JSON
+failure, it displays a clear retry message, leaves cart state unchanged and
+does **not** automatically retry a non-idempotent add request.
 
 **Hostinger caveat:** hPanel may copy the release files without including a
 readable `.git` checkout, or PHP permissions may prevent reading `.git/HEAD`.

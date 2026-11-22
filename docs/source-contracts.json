@@ -24,23 +24,23 @@
         },
         "foundation": {
             "source_sha256": "4972aedf4321908241516fff11151e3f86eec72222a90b8267064756c13ee52c",
-            "references_sha256": "7d9e16a1b2c22fc8fc54532e1f96affa419d1acee897424186aad76ba59834cd",
-            "review_note": "Reviewed the Git-head reader for detached, loose, packed and invalid refs; no shell on public requests, no MySQL fallback and no user-selected file paths; checked Hostinger release instructions."
+            "references_sha256": "e853c0aec00d6fe3b872fe97522ce2f1803b8621205c587a6a296e0b62b21233",
+            "review_note": "Reviewed unchanged private JSON storage and deployed Git revision service; the guest cart acceptance only touches an isolated session."
         },
         "google-tags": {
-            "source_sha256": "e81b7922171832dae13b0acd612c04405d5ef5dfa0fe8983bd37b22c77363f8c",
+            "source_sha256": "3a940415db34739137dcd29cdee980d9b6d6fed50277f5e8ee7fc563f4475b5c",
             "references_sha256": "d8f31449a4cced126e26b64b6a4b589227ad884aed63c48e9386ca9af3bd44a9",
-            "review_note": "Reviewed public header layout changes alongside Google tag insertion: tag output, consent settings, and verification markup are untouched by mobile navigation restoration."
+            "review_note": "Checked the public layout cart handler change does not modify analytics consent, tags or Google account integration."
         },
         "http-errors": {
             "source_sha256": "9f0f3883c318dbfe074d6297e66c3bd7c497975f27804b142af5154e01d9b665",
-            "references_sha256": "057f79768fbe9bf1ec0830176c7879d89c83089ddd2049e7b4f9213ab9dfeaf0",
-            "review_note": "Reviewed exact safe deployment revision HTTP 200 match/mismatch, 400 malformed SHA, 503 missing Git metadata, no-store responses and absence of path or credential leakage."
+            "references_sha256": "c241145d0b10d1efd3972ddfaefdb7acb25ac3f0244f1238b3413221c8902499",
+            "review_note": "Reviewed HTTP 429 empty-body handling for cart AJAX; no false success or automatic repeat POST; safe status/error classification preserved."
         },
         "interface": {
-            "source_sha256": "6b4503e91566701ad2c16617d01d8bfead3c82bbef21ecf732881ec712c6c0cd",
+            "source_sha256": "77a9a0e4dcdbb2c12e411fbb49eea666c23750208a72375848f7e59503053b67",
             "references_sha256": "e8d00490b011acd6b130e6055a167108aa929104eddd7d84a52d79f109c0c3b4",
-            "review_note": "Reviewed pre-bottom-nav mobile branding, current floating cart and support controls, header accessibility, compact screen spacing and cart checkout dock offset without payment mutation."
+            "review_note": "Reviewed visible top cart and floating cart logic, error toast on 429 and malformed JSON, null DOM guards and responsive mobile UI."
         },
         "mail": {
             "source_sha256": "1ee0a48b5b83b3507208c3040721aa82e196c991090075d05f6d63eaba88d135",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed deployment documentation and confirmed media storage and protected file paths remain independent of public article metadata."
         },
         "operator-help": {
-            "source_sha256": "21df7c4b6ac1b095183f9b6e825b11032cbeb7152156f99d16a5e1382709645f",
+            "source_sha256": "591a3e011e6b6e93ca67d8235974899bede2b2842183a2d52c4742953346a0e6",
             "references_sha256": "3ee8f0a2c48c0c98cb17b41df11b46dad137524c464a9e3ac0daabf7778a8187",
-            "review_note": "Compared unchanged authenticated help routes and views with the new public SHA lookup, which never reads operator guides or chat histories."
+            "review_note": "Reviewed public header and mobile cart retry feedback against customer help navigation; no operator-only content becomes public."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
@@ -68,9 +68,9 @@
             "review_note": "Checked public product visibility, published navigation destinations and isolated first-party catalogue and policy discovery."
         },
         "workflow": {
-            "source_sha256": "9a22c0d22f92cf08de3a74cfea01cdc094ab156c9bc12f441b994f3de5baff3b",
+            "source_sha256": "fce32aea79dc1aab48fcfc7e452b1ede6c7288d27f0300f68659989e999a96fe",
             "references_sha256": "94dd586c81b1d91a0332e86219ac2b55c416d5ebc37115c9a2008697d68236d0",
-            "review_note": "Reviewed the main CI fixtures and separate verified-deployment workflow: exact SHA comparison, bounded polling, isolated live guest cart add/remove and no production payment or credential operation."
+            "review_note": "Reviewed separate Git HEAD verification and guest mobile-cart acceptance jobs; code CI remains distinct from host-side 429 evidence."
         }
     }
 }
