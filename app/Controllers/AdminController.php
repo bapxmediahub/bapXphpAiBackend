@@ -704,7 +704,7 @@ final class AdminController extends BaseController {
                 ($outcome === 'error' ? 'error' : 'answer') => $answer,
                 'missing' => $attachments['missing'],
                 'run' => $this->agentRunMeta($traceId, $outcome, $startedAt, $tools, $attempts),
-            ] + $record, $outcome === 'error' ? 502 : 200);
+            ] + ($outcome === 'error' || ($ui=(new \App\Services\PublicA2uiService())->forQuestion($message)) === null ? [] : ['a2ui'=>$ui]) + $record, $outcome === 'error' ? 502 : 200);
         } catch (\Throwable $e) {
             (new AuditLogService())->agentRun('admin', 'error', $startedAt, 'internal_error', traceId: $traceId);
             error_log('Owner agent request failed (' . get_class($e) . ')');
