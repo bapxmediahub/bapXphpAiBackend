@@ -54,7 +54,8 @@ final class SupportController extends BaseController {
                 (array)($answer['run']['tools'] ?? []), isset($answer['ticket_id']) ? (string)$answer['ticket_id'] : null,
                 null, (array)($answer['run']['attempts'] ?? []), (array)($answer['run']['retrieval'] ?? []), (array)($answer['knowledge']??[])
             );
-            $this->jsonResponse($answer + $record);
+            $a2ui = (new \App\Services\PublicA2uiService())->forQuestion($message);
+            $this->jsonResponse($answer + ($a2ui === null ? [] : ['a2ui'=>$a2ui]) + $record);
         } catch (\LogicException $e) {
             if(!empty($user['email']) && is_string($conversationId) && preg_match('/^[a-f0-9]{32}$/D',$conversationId)) {
                 try {

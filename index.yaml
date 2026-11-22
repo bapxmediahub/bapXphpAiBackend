@@ -44,18 +44,18 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 458
-  relationships: 379
+  concepts: 461
+  relationships: 385
   by_type:
     blog: 16
     controller: 14
-    doc: 50
+    doc: 51
     image: 89
     operator_guide: 12
-    route: 163
+    route: 164
     runtime_instruction: 6
     schema: 22
-    service: 74
+    service: 75
     skill: 12
 concepts:
   - id: "blog:benefits-of-rudraksha"
@@ -331,6 +331,15 @@ concepts:
     tags:
       - "docs"
     filename: "README.md"
+    header_image: ""
+  - id: "doc:a2ui"
+    type: "doc"
+    title: "A2UI v1.0 public agent presentations"
+    description: "Trusted, published-data generative UI subset shared by both site chat agents and WebMCP."
+    resource: "docs/a2ui.md"
+    tags:
+      - "docs"
+    filename: "a2ui.md"
     header_image: ""
   - id: "doc:about"
     type: "doc"
@@ -2878,6 +2887,21 @@ concepts:
     services:
       - "DeploymentRevisionService"
     view: "public/404"
+  - id: "route:get__api_knowledge_a2ui"
+    type: "route"
+    title: "GET /api/knowledge/a2ui"
+    description: "api.knowledge.a2ui"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/api/knowledge/a2ui"
+    controller: "ApiController@knowledgeA2ui"
+    services:
+      - "PublicA2uiService"
+      - "PublicKnowledgeService"
+    view: "public/404"
   - id: "route:get__api_knowledge_articles"
     type: "route"
     title: "GET /api/knowledge/articles"
@@ -5206,6 +5230,14 @@ concepts:
     tags:
       - "code"
       - "service"
+  - id: "service:PublicA2uiService"
+    type: "service"
+    title: "PublicA2uiService"
+    description: "Service: PublicA2uiService"
+    resource: "app/Services/PublicA2uiService.php"
+    tags:
+      - "code"
+      - "service"
   - id: "service:PublicKnowledgeService"
     type: "service"
     title: "PublicKnowledgeService"
@@ -5683,6 +5715,9 @@ relationships:
     to: "service:ProductService"
     relation: "uses"
   - from: "controller:ApiController"
+    to: "service:PublicA2uiService"
+    relation: "uses"
+  - from: "controller:ApiController"
     to: "service:PublicKnowledgeService"
     relation: "uses"
   - from: "controller:ApiController"
@@ -5829,11 +5864,23 @@ relationships:
   - from: "controller:SupportController"
     to: "service:SupportToolRegistry"
     relation: "uses"
+  - from: "doc:architecture"
+    to: "doc:a2ui"
+    relation: "references"
+  - from: "doc:blog"
+    to: "doc:a2ui"
+    relation: "references"
+  - from: "doc:deployment-hostinger"
+    to: "doc:a2ui"
+    relation: "references"
   - from: "doc:rea-agent-commerce-gap-audit"
     to: "doc:ai-review-workflow"
     relation: "references"
   - from: "doc:runtime-agents"
     to: "doc:client-runtime-adaptation"
+    relation: "references"
+  - from: "doc:shop"
+    to: "doc:a2ui"
     relation: "references"
   - from: "doc:site-motion"
     to: "doc:README"
@@ -6145,6 +6192,9 @@ relationships:
     to: "controller:ApiController"
     relation: "handled_by"
   - from: "route:get__api_is_sha_valid"
+    to: "controller:ApiController"
+    relation: "handled_by"
+  - from: "route:get__api_knowledge_a2ui"
     to: "controller:ApiController"
     relation: "handled_by"
   - from: "route:get__api_knowledge_articles"

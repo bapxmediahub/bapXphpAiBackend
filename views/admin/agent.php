@@ -144,6 +144,8 @@
     .agent-hint { display:none; }
 }
 </style>
+<link rel="stylesheet" href="/assets/css/a2ui-public.css?v=<?= filemtime(__DIR__ . '/../../assets/css/a2ui-public.css') ?>">
+<script src="/assets/a2ui-public-renderer.js?v=<?= filemtime(__DIR__ . '/../../assets/a2ui-public-renderer.js') ?>"></script>
 
 <script>
 (function () {
@@ -617,6 +619,7 @@
                 response.appendChild(buildDraftForm(data.draft));
             } else {
                 response.innerHTML = renderMarkdown(data.answer || 'No response.');
+                if (data.a2ui && window.BapxA2ui) window.BapxA2ui.render(response,data.a2ui);
                 for (const source of data.run?.sources || []) {
                     if (typeof source.path !== 'string' || !source.path.startsWith('/admin/')) continue;
                     const line = document.createElement('p');

@@ -59,3 +59,6 @@ Historical source: the bottom navigation and mobile brand hiding were introduced
 
 Regression: `tests/mobile-cart-restore-browser.cjs` exercises actual PHP-rendered shop HTML and styles at 320, 375, 390, 744, 860 and 1280 pixels, with a synthetic AJAX add-to-cart response, a visible floating tray, count synchronization, no bottom nav, and unobstructed click target. No production order or payment is created.
 
+### A2UI v1.0 product presentation
+
+For agents that support A2UI, `present_public_knowledge` can return an explicit `createSurface` containing a bounded, read-only published product list and safe same-site product links. Support and Enterprise text answers may display the same cards natively. This does not add checkout commands, write access or direct ChatGPT connectivity. See [A2UI contract](../a2ui.md).

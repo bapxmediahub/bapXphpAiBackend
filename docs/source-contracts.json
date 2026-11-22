@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "bb3b8044f0e084f8bdc11907214f532c8cf85f60d9b1cacd06a8840415d48679",
+            "source_sha256": "56eb33bf2933d29b96c2d3884f85f64e2336fa2f4dc63baf36a127301eeb954b",
             "references_sha256": "726f7e2f318f4b6846956c8de0758ddc5a9a5d0da9df9831e5da2d513122a53d",
-            "review_note": "Cross-reviewed new shared article retrieval used by the Enterprise and Support context, with published-only filtering and no private chat tool access."
+            "review_note": "Reviewed both Support and Enterprise response adapters preserving current role policy, answers, trace/evals and actor-owned JSON history while using only published knowledge for UI."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
@@ -19,48 +19,48 @@
         },
         "content": {
             "source_sha256": "12e40630e473f8d50774e654dc207c19fe3c8b5eb8158ea8da0e392330a3655d",
-            "references_sha256": "2b30cdf4d2f3f64dfb7dbc6e5c447e846135157468646adf6f731b8d45c7cd95",
-            "review_note": "Reviewed published Markdown source, future/draft/symlink filtering and bounded article metadata against blog and customer help documentation."
+            "references_sha256": "193e5d29e6fe4e8180bb517c72bfd9f1465b1a87196bcb6e74a7f174dd8c0b06",
+            "review_note": "Reviewed public ProductService and BlogService published selection and exclusion of future, draft, retired or private Markdown and paths."
         },
         "foundation": {
-            "source_sha256": "4972aedf4321908241516fff11151e3f86eec72222a90b8267064756c13ee52c",
-            "references_sha256": "e853c0aec00d6fe3b872fe97522ce2f1803b8621205c587a6a296e0b62b21233",
-            "review_note": "Reviewed unchanged private JSON storage and deployed Git revision service; the guest cart acceptance only touches an isolated session."
+            "source_sha256": "6badcd417c927a874a5f55a8d6d4dc5fc48647dd44f795cf10bdee3035d5c102",
+            "references_sha256": "636d1f9ecd6fa5bcce851c684e909c0ba69fbc12b368f0249b03d5d2e75d21af",
+            "review_note": "Reviewed safe public REST A2UI route, generated maps, version 1.0 envelope, bounded components and unchanged database/chat schema."
         },
         "google-tags": {
-            "source_sha256": "3a940415db34739137dcd29cdee980d9b6d6fed50277f5e8ee7fc563f4475b5c",
+            "source_sha256": "a734ab9d4c7a5d1363dcfee40e62f33c337978d2c6dde180fe54a873e3ad0539",
             "references_sha256": "d8f31449a4cced126e26b64b6a4b589227ad884aed63c48e9386ca9af3bd44a9",
-            "review_note": "Checked the public layout cart handler change does not modify analytics consent, tags or Google account integration."
+            "review_note": "Reviewed layout script ordering for A2UI renderer and WebMCP alongside Google analytics integrations without changing consent or credential tags."
         },
         "http-errors": {
             "source_sha256": "9f0f3883c318dbfe074d6297e66c3bd7c497975f27804b142af5154e01d9b665",
-            "references_sha256": "c241145d0b10d1efd3972ddfaefdb7acb25ac3f0244f1238b3413221c8902499",
-            "review_note": "Reviewed HTTP 429 empty-body handling for cart AJAX; no false success or automatic repeat POST; safe status/error classification preserved."
+            "references_sha256": "4290acbd7071cec5cff8fd015e1a9abf51ae90e6dee3b61741089b4c23d1e2f9",
+            "review_note": "Validated bounded A2UI endpoint errors and fallbacks without leaking exceptions, session contents or untrusted HTML."
         },
         "interface": {
-            "source_sha256": "77a9a0e4dcdbb2c12e411fbb49eea666c23750208a72375848f7e59503053b67",
+            "source_sha256": "6be67aa320998c23e6351f4f4cb6e829080b4e077a5c4447d9055cc452a42f32",
             "references_sha256": "e8d00490b011acd6b130e6055a167108aa929104eddd7d84a52d79f109c0c3b4",
-            "review_note": "Reviewed visible top cart and floating cart logic, error toast on 429 and malformed JSON, null DOM guards and responsive mobile UI."
+            "review_note": "Reviewed strict A2UI 1.0 Basic subset catalog IDs, flat components, bindings, same-origin openUrl, and no generated HTML or unsafe function execution."
         },
         "mail": {
-            "source_sha256": "1ee0a48b5b83b3507208c3040721aa82e196c991090075d05f6d63eaba88d135",
+            "source_sha256": "5b84584d9d5965491c44ee7523062951ed5e68c76ffe39b64defa47067b4b635",
             "references_sha256": "18beda88c1ffe579ede744b8eaf21a97d29f1914644536a9afaab6f8e6227fd8",
-            "review_note": "Verified editorial page and article preview, scheduling and save paths maintain separation from newsletter and order email dispatch."
+            "review_note": "Reviewed read-only A2UI card presentation and verified no mailbox, SMTP, queue or customer message side effect."
         },
         "mcp-clients": {
             "source_sha256": "406108b1ebf6f93e7e79e5fc88f20d5f316d46dd6431a5dd4751a31a69a9d32f",
-            "references_sha256": "d391900475bcf0c0233d93544edcf0437cc965194ba76741ec1761af28141309",
-            "review_note": "Reviewed updated shop documentation and existing local MCP client behavior: restored mobile cart affordance does not alter public MCP schemas, grants, or client scope."
+            "references_sha256": "680423233c9083bf7ec388edde9e0ecccbf4681c095ddaae2b8557a134447349",
+            "review_note": "Reviewed the WebMCP A2UI read-only schema and omitted credentials; existing owner-issued MCP grants remain private."
         },
         "media": {
             "source_sha256": "7b9d3d9aa746f16f1441148550d143e7094388b247c423b90c310ed5441db99d",
-            "references_sha256": "4f2e6ec23a9a2dc8558d3f5d669b3ad351d61c19528d0bc060b20635835e6a87",
-            "review_note": "Reviewed deployment documentation and confirmed media storage and protected file paths remain independent of public article metadata."
+            "references_sha256": "db7b473aad4fa4e6a8bab3d07430ba1030beabfbaeffb0ef4ca39f43237b18f2",
+            "review_note": "Reviewed A2UI Card/Text/Link renderer: no new media upload, image fetch, cross-origin URL or active-reference deletion."
         },
         "operator-help": {
-            "source_sha256": "591a3e011e6b6e93ca67d8235974899bede2b2842183a2d52c4742953346a0e6",
+            "source_sha256": "7eade067dc0b2c1cccd44791d2eec7c197e7190252891ff9d59b48687f4a1465",
             "references_sha256": "3ee8f0a2c48c0c98cb17b41df11b46dad137524c464a9e3ac0daabf7778a8187",
-            "review_note": "Reviewed public header and mobile cart retry feedback against customer help navigation; no operator-only content becomes public."
+            "review_note": "Reviewed owner-only help, role-gated admin chat and shared public presentation: no private Markdown guide enters public A2UI."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
@@ -68,9 +68,9 @@
             "review_note": "Checked public product visibility, published navigation destinations and isolated first-party catalogue and policy discovery."
         },
         "workflow": {
-            "source_sha256": "fce32aea79dc1aab48fcfc7e452b1ede6c7288d27f0300f68659989e999a96fe",
+            "source_sha256": "25eacffc1f8b271fac75e77e942b58c0a584fa643644846b73949f2cde969f29",
             "references_sha256": "94dd586c81b1d91a0332e86219ac2b55c416d5ebc37115c9a2008697d68236d0",
-            "review_note": "Reviewed separate Git HEAD verification and guest mobile-cart acceptance jobs; code CI remains distinct from host-side 429 evidence."
+            "review_note": "Reviewed post-main 60-second Hostinger wait, exact SHA confirmation, isolated cart acceptance and independent live WebMCP-A2UI tool invocation."
         }
     }
 }

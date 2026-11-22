@@ -295,6 +295,8 @@ echo $__googleTags->gtagCode();
 <link rel="stylesheet" href="/assets/css/site-motion.css?v=<?= filemtime(__DIR__ . '/../../assets/css/site-motion.css') ?>">
 <script src="/assets/site-motion.js?v=<?= filemtime(__DIR__ . '/../../assets/site-motion.js') ?>" defer></script>
 <link rel="stylesheet" href="/assets/css/page-actions.css?v=<?= filemtime(app_path('assets/css/page-actions.css')) ?>">
+<link rel="stylesheet" href="/assets/css/a2ui-public.css?v=<?= filemtime(app_path('assets/css/a2ui-public.css')) ?>">
+<script defer src="/assets/a2ui-public-renderer.js?v=<?= filemtime(app_path('assets/a2ui-public-renderer.js')) ?>"></script>
 <script src="/assets/page-actions.js?v=<?= filemtime(app_path('assets/page-actions.js')) ?>" defer></script>
 <noscript><style>
 .site-header>noscript,#primary-nav>noscript,.nojs-menu-open,.nojs-menu-close{display:none}
@@ -308,6 +310,12 @@ echo $__googleTags->gtagCode();
 </style></noscript>
 <?php if ($__modules['shop'] || $__modules['blog']): ?>
 <!-- Pinned official W3C WebMCP polyfill. Does not replace a native modelContext. -->
+<script type="application/json" id="bapx-a2ui-schema"><?= json_encode([
+    'inputSchema'=>\App\Services\PublicA2uiService::inputSchema(),
+    'outputSchema'=>\App\Services\PublicA2uiService::outputSchema()
+], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) ?></script>
+<script defer src="/assets/public-a2ui-webmcp.js?v=<?= filemtime(app_path('assets/public-a2ui-webmcp.js')) ?>"></script>
+
 <script src="/assets/vendor/webmcp/polyfill-0.1.1.js?v=<?= filemtime(__DIR__ . '/../../assets/vendor/webmcp/polyfill-0.1.1.js') ?>"></script>
 <?php endif; ?>
 <?php if ($__modules['shop']): ?>
@@ -536,6 +544,7 @@ if(supportForm){supportForm.addEventListener('submit',async function(e){
         if(!failed)supportPendingRequest=null;
         if(typeof j.conversation_id==='string')supportConversationId=j.conversation_id;
         supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> '+supportReplyHtml(j.reply||j.error||'Unable to answer right now.')+'</p>'+(j.actions?supportActionsHtml(j.actions):''));
+        if (j.a2ui && window.BapxA2ui) window.BapxA2ui.render(supportLog,j.a2ui);
         if(!failed&&!j.ticket_id&&typeof j.turn_id==='string'&&/^[a-f0-9]{32}$/.test(j.turn_id)){
             var feedback=document.createElement('div');feedback.className='support-feedback';feedback.dataset.turnId=j.turn_id;
             feedback.innerHTML='<span>Did this answer your question?</span> <button type="button" data-support-rating="helpful">Yes, resolved</button> <button type="button" data-support-rating="not_helpful">No, need help</button>';

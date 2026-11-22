@@ -95,3 +95,7 @@ copy when you finish. Review publication and subscriber email settings before
 selecting **Save**.
 
 Public site search at `/search` includes visible shop products, published articles and temples. The menu opens the same GET form on mobile and desktop. Hidden and scheduled articles follow the blog publication gate.
+
+### A2UI v1.0 published guide presentation
+
+Both in-site agents and the public WebMCP adapter can display published article/guide cards through `PublicA2uiService`; draft, future and private admin guides remain unavailable. The browser renderer supports only trusted, read-only catalog components. See [A2UI contract](../a2ui.md).

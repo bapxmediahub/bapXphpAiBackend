@@ -7,10 +7,10 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 164 routes, 14 controllers, 74 services, 67 views, 0 data files, 29 tools"]
-    arch_routes["> Routes: 164 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 165 routes, 14 controllers, 75 services, 67 views, 0 data files, 29 tools"]
+    arch_routes["> Routes: 165 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 14"]:::arch
-    arch_svc["> Services: 74"]:::arch
+    arch_svc["> Services: 75"]:::arch
     arch_views["> Views: 67"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 29"]:::arch
@@ -44,6 +44,7 @@ flowchart LR
     route_get_api_temples["GET /api/temples"]:::route
     route_get_api_knowledge_articles["GET /api/knowledge/articles"]:::route
     route_get_api_knowledge_products["GET /api/knowledge/products"]:::route
+    route_get_api_knowledge_a2ui["GET /api/knowledge/a2ui"]:::route
     route_get_feeds_google_products_xml["GET /feeds/google-products.xml"]:::route
     route_get_sitemap_xml["GET /sitemap.xml"]:::route
     route_get_contact["GET /contact — Contact form GET"]:::route
@@ -275,6 +276,7 @@ flowchart LR
     service_productimportservice["ProductImportService"]:::code
     service_productservice["ProductService"]:::code
     service_projectmapservice["ProjectMapService"]:::code
+    service_publica2uiservice["PublicA2uiService"]:::code
     service_publicknowledgeservice["PublicKnowledgeService"]:::code
     service_ratelimiter["RateLimiter"]:::code
     service_requestfailureservice["RequestFailureService"]:::code
@@ -523,6 +525,10 @@ flowchart LR
   route_get_api_knowledge_products --> controller_apicontroller
   controller_apicontroller --> service_publicknowledgeservice
   controller_apicontroller --> service_productservice
+  controller_apicontroller -. renders .-> view_public_404
+  route_get_api_knowledge_a2ui --> controller_apicontroller
+  controller_apicontroller --> service_publica2uiservice
+  controller_apicontroller --> service_publicknowledgeservice
   controller_apicontroller -. renders .-> view_public_404
   route_get_cart --> controller_publiccontroller
   controller_publiccontroller --> service_cartservice
