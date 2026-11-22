@@ -1,6 +1,11 @@
 <?php
 require __DIR__ . '/../app/bootstrap.php';
 
+// Capture the real bootstrap result before any fixture can preload or stub an integration.
+$stripeBootstrapLoaded = class_exists(\App\Integrations\Stripe\StripeClient::class);
+$stripeBootstrapSource = $stripeBootstrapLoaded
+    ? (new ReflectionClass(\App\Integrations\Stripe\StripeClient::class))->getFileName() : null;
+
 use App\Services\EnvService;
 use App\Services\CategoryService;
 use App\Services\DatabaseService;
@@ -59,6 +64,11 @@ function assertMinCount(int $min, array $items, string $msg): void {
 
 $failures = [];
 $tests = [];
+$tests['Stripe integration autoloads from its canonical file through the real bootstrap'] = static function () use ($stripeBootstrapLoaded, $stripeBootstrapSource): void {
+    assertTrue($stripeBootstrapLoaded, 'The application bootstrap must autoload the configured Stripe client before any fixture preload');
+    assertSame(realpath(app_path('integrations/stripe/StripeClient.php')), realpath($stripeBootstrapSource),
+        'Stripe must load the existing canonical integration rather than a test stub or parallel client');
+};
 require __DIR__ . '/google-reporting.php';
 
 $tests['legitimate internal ticket activity is evaluated without exposing it as a model capability'] = static function (): void {
