@@ -33,9 +33,9 @@
             "review_note": "Reviewed the integrations/layout dependency changes: new webhook secret controls and commerce assets do not change Google tag values, consent, account linking or reporting. The existing settings guide retains the configuration-versus-provider-verification distinction."
         },
         "http-errors": {
-            "source_sha256": "90c4bc390ccda05771902e0d2bb1bc16a20c400f4529f18ecf605810848b4093",
+            "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
             "references_sha256": "7a1a19d88900be4d0bba1040c1aa4642b7b9774f97f3b2796090e24eb57809ea",
-            "review_note": "Reviewed exact stateless MCP and signed webhook bootstrap exceptions alongside the request-failure boundary. Safe uncertainty and no automatic payment retry remain documented; ordinary sessions and correlated failures retain their existing contract."
+            "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
         },
         "interface": {
             "source_sha256": "321dd56f4379621ea7357f16a62376d2db6a2f4e0d104c4f9cc54575bbe4f473",
@@ -63,14 +63,14 @@
             "review_note": "Rechecked explicit JSON webhook map against its signed stateless controller, updated operator webhook settings Help and unchanged account/customer guidance. JSON route metadata does not introduce an HTML page, additional authorization or customer lookup."
         },
         "public-mcp": {
-            "source_sha256": "0168519256fd40dd6521351aaf397b866c65e812bf0436f208a179a97d0d708c",
+            "source_sha256": "0849ab438301bb4a3a4b9ff735504caebd65958ed1480d4ce3cc0c1963f214f5",
             "references_sha256": "f0eb7593d4e42d4e487807fd6a4f5d349d564e01359580a70c0e0691f91f7bfc",
-            "review_note": "Rechecked MCP route dependencies and fixed private collection wiring after explicit JSON response metadata. Six canonical commerce scopes, public schemas, guide and payment-only continuation remain accurate; native HTTP and SDK acceptance passed the first integrated CI run."
+            "review_note": "Cross-checked the shared bootstrap change against the exact stateless MCP route and public dispatcher documentation. Adding the explicit canonical Stripe path does not change session bypass, tool scopes, capability checks, public projections or host payment behavior."
         },
         "remote-commerce": {
             "source_sha256": "1966c34fbe250f75b05e376c9a0fd6effd73d1073fef2c0d0061931afbfc8731",
-            "references_sha256": "a30176c56b3462bacc98304e31b83107fa93a26b029266bef77b645cf508c57d",
-            "review_note": "Cross-reviewed canonical cart and checkout services, atomic MySQL and authenticated bridge operations, captured-order persistence, six named schemas, native/App UI, cancellation and capability recovery. Docs state actual quote/retention limits, explicit confirmation, merchant payment boundary and synthetic versus native/live verification."
+            "references_sha256": "c8d5b44cb8c1d7bac9fbeb05adf843b3a4cea02447c371dd5a18b600915188e5",
+            "review_note": "Reviewed the checkout page explanation against the canonical Stripe client, shared bootstrap and browser checkout creation/return handlers. The change repairs class loading only; anonymous remote checkout still uses its existing Razorpay contract, with no provider calls, configuration or payment-policy change."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",

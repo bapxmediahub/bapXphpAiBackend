@@ -12,6 +12,12 @@ Controller: `PublicController@checkout`
 
 Purpose: collect shipping contact details and start Razorpay or Stripe checkout when that gateway is configured.
 
+The shared PHP bootstrap explicitly maps `App\Integrations\Stripe\StripeClient`
+to `integrations/stripe/StripeClient.php` for checkout creation and the Stripe
+return handler. The regression in `tests/run.php` captures this class-loading
+result before fixtures run and verifies the canonical source file without
+contacting a payment provider.
+
 Key checks: name, email, phone, address, city, state/Union Territory, and PIN are retained through payment verification; the state is selected from the Indian state master before a gateway opens. Missing gateway configuration is shown clearly instead of silently failing. Razorpay verifies the returned payment id, order id, signature, captured status, INR currency and exact integer amount before saving. Stripe returns through `/payment/stripe/return`, where the server retrieves the Checkout Session and verifies paid status, INR currency, amount, and the session held for that customer. Both gateways share `VerifiedOrderService` and land on the owned order detail with the payment-success state. Verification failures retain the pending payment and permit a status/retry action; an uncertain charge must not silently ask the shopper to pay again. Browser cleanup only clears its matching pending order and matching cart.
 
 An external assistant can create an anonymous cart, submit delivery/coupon

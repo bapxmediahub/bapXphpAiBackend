@@ -31,6 +31,7 @@ spl_autoload_register(function (string $class): void {
     $relative = str_replace('\\', '/', substr($class, strlen($prefix))) . '.php';
     $paths = [__DIR__ . '/' . $relative];
     if (str_starts_with($relative, 'Integrations/Razorpay/')) $paths[] = app_path('integrations/razorpay/' . basename($relative));
+    if (str_starts_with($relative, 'Integrations/Stripe/')) $paths[] = app_path('integrations/stripe/' . basename($relative));
     if (str_starts_with($relative, 'Integrations/GoogleOAuth/')) $paths[] = app_path('integrations/google-oauth/' . basename($relative));
     if (str_starts_with($relative, 'Integrations/MetaPixel/')) $paths[] = app_path('integrations/meta-pixel/' . basename($relative));
     if (str_starts_with($relative, 'Integrations/GoogleSiteKit/')) $paths[] = app_path('integrations/google-site-kit/' . basename($relative));
