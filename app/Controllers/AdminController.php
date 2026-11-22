@@ -539,11 +539,13 @@ final class AdminController extends BaseController {
             $this->jsonResponse(['error'=>'Conversation not found'], 404);
             return;
         }
+        $presenter = new \App\Services\AgentAnswerPresentationService();
         $turns = array_map(static fn(array $t): array => [
             'question'=>(string)($t['question'] ?? ''),
             'answer'=>(string)($t['answer'] ?? ''),
             'at'=>(string)($t['at'] ?? ''),
-        ] + (($t['outcome'] ?? '') === 'error' ? ['outcome'=>'error', 'turn_id'=>(string)($t['turn_id'] ?? '')] : []), $document['turns'] ?? []);
+        ] + (($t['outcome'] ?? '') === 'error' ? ['outcome'=>'error', 'turn_id'=>(string)($t['turn_id'] ?? '')]
+            : $presenter->responseData((string)($t['answer']??''),'admin',[],null,\App\Services\AgentAnswerPresentationService::toolsForTurn($t))), $document['turns'] ?? []);
         $this->jsonResponse(['conversation_id'=>$document['id'], 'turns'=>$turns]);
     }
 
@@ -666,7 +668,9 @@ final class AdminController extends BaseController {
                     'answer' => $localAnswer,
                     'missing' => $attachments['missing'],
                     'run' => $this->agentRunMeta($traceId, 'local', $startedAt, $tools),
-                ] + (($ui=(new \App\Services\PublicA2uiService())->forQuestion($message)) === null ? [] : ['a2ui'=>$ui]) + $record);
+                ] + (new \App\Services\AgentAnswerPresentationService())->responseData(
+                    $localAnswer,'admin',$tools->sourceLinks(),
+                    $this->agentPublicReferences($message,$localAnswer,$tools->activity()),$tools->activity()) + $record);
                 return;
             }
             $secrets = new SecretService();
@@ -704,12 +708,40 @@ final class AdminController extends BaseController {
                 ($outcome === 'error' ? 'error' : 'answer') => $answer,
                 'missing' => $attachments['missing'],
                 'run' => $this->agentRunMeta($traceId, $outcome, $startedAt, $tools, $attempts),
-            ] + ($outcome === 'error' || ($ui=(new \App\Services\PublicA2uiService())->forQuestion($message)) === null ? [] : ['a2ui'=>$ui]) + $record, $outcome === 'error' ? 502 : 200);
+            ] + ($outcome === 'error' ? [] : (new \App\Services\AgentAnswerPresentationService())->responseData(
+                $answer,'admin',$tools->sourceLinks(),
+                $this->agentPublicReferences($message,$answer,$tools->activity()),$tools->activity())) + $record, $outcome === 'error' ? 502 : 200);
         } catch (\Throwable $e) {
             (new AuditLogService())->agentRun('admin', 'error', $startedAt, 'internal_error', traceId: $traceId);
             error_log('Owner agent request failed (' . get_class($e) . ')');
             $this->jsonResponse(['error' => 'The owner agent could not complete this request. Please try again.', 'run' => $this->agentRunMeta($traceId, 'error', $startedAt)], 500);
         }
+    }
+
+    /** Owner aggregates must never trigger a public catalogue lookup. */
+    private function agentPublicReferences(string $message,string $answer,array $activity): ?array
+    {
+        $groundedPublic=false;$businessView=null;
+        foreach($activity as $entry) {
+            if(!is_array($entry))continue;
+            $name=$entry['name']??'';
+            if(!in_array($name,['product_status','search_articles','get_public_contact','list_public_services'],true))return null;
+            if(($entry['status']??'')!=='complete')continue;
+            if(in_array($name,['get_public_contact','list_public_services'],true)) {
+                $evidence=\App\Services\AgentTraceService::safeTool($entry)['evidence'];
+                if($name==='get_public_contact'&&$evidence['source']==='public_contact'&&$evidence['result_count']===1) {
+                    $businessView='contact';$groundedPublic=true;
+                } elseif($name==='list_public_services'&&$evidence['source']==='public_services'
+                    &&is_int($evidence['result_count'])&&$evidence['result_count']>0&&$evidence['result_count']<=4) {
+                    $businessView='services';$groundedPublic=true;
+                }
+            }
+            if($name==='product_status'&&preg_match('~/product/[A-Za-z0-9%_.-]{1,2039}(?![A-Za-z0-9%_.-])~',$answer))$groundedPublic=true;
+            if($name==='search_articles'&&preg_match('~/blog/[a-z0-9-]{1,120}~',$answer))$groundedPublic=true;
+        }
+        if(!$groundedPublic)return null;
+        return (new \App\Services\PublicA2uiService())->forQuestion(
+            $message,$businessView===null?[]:['public_business_view'=>$businessView],$answer);
     }
 
     private function agentConversationRecord(

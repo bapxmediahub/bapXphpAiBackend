@@ -25,6 +25,7 @@ framework, extra model subscription or conversation SQL table.
 | Provider failover | `AiClient`, configured by `SecretService` |
 | Private chat/ownership | `AgentConversationService` |
 | Sanitized correlated spans | `AgentTraceService` |
+| Native answer sections and recorded fact cards | `AgentAnswerPresentationService` after the authorized tool flow |
 | Deterministic checks | `AgentEvaluationService`, `tests/fixtures/agent-golden*.json` |
 | Operational metadata-only logs | `AuditLogService::agentRun` → existing MySQL `audit_events` |
 | Owner session UI | GET `/admin/agent/history` and `/admin/agent/history/{id}` |
@@ -52,6 +53,14 @@ admin's existing JSON conversation → resolve simple aggregates locally or
 execute named allowlisted read-only PHP tools → assemble sources/result counts
 → bounded model response/fallback → record trace and evaluation. New Chat clears
 the active ID; History reopens only that admin's previous chats.
+
+Both native chats then format the accepted answer into bounded A2UI sections.
+Enterprise fact cards project only completed, sanitized aggregate evidence;
+labels are server-owned and numbers never come from model prose. History uses
+the recorded tool evidence and timing without repeating a lookup. Public
+product/article/contact/service references use a separate published-data
+projection; private facts never enter public WebMCP or MCP Apps. Presentation
+failure retains the complete original answer. See [the presentation contract](a2ui.md).
 
 ## One JSON file per conversation
 

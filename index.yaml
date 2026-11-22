@@ -44,8 +44,8 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 464
-  relationships: 389
+  concepts: 465
+  relationships: 390
   by_type:
     blog: 16
     controller: 14
@@ -55,7 +55,7 @@ summary:
     route: 166
     runtime_instruction: 6
     schema: 22
-    service: 75
+    service: 76
     skill: 12
 concepts:
   - id: "blog:benefits-of-rudraksha"
@@ -334,8 +334,8 @@ concepts:
     header_image: ""
   - id: "doc:a2ui"
     type: "doc"
-    title: "A2UI v1.0 public agent presentations"
-    description: "Trusted, published-data generative UI subset shared by both site chat agents and WebMCP."
+    title: "A2UI structured answers and public references"
+    description: "Server-owned structured answers for Support and Enterprise, with published cards shared by WebMCP and external MCP Apps."
     resource: "docs/a2ui.md"
     tags:
       - "docs"
@@ -4877,6 +4877,14 @@ concepts:
     tags:
       - "code"
       - "service"
+  - id: "service:AgentAnswerPresentationService"
+    type: "service"
+    title: "AgentAnswerPresentationService"
+    description: "Service: AgentAnswerPresentationService"
+    resource: "app/Services/AgentAnswerPresentationService.php"
+    tags:
+      - "code"
+      - "service"
   - id: "service:AgentAttachmentService"
     type: "service"
     title: "AgentAttachmentService"
@@ -5906,6 +5914,9 @@ relationships:
   - from: "controller:SupportController"
     to: "service:SupportToolRegistry"
     relation: "uses"
+  - from: "doc:agent-observability"
+    to: "doc:a2ui"
+    relation: "references"
   - from: "doc:architecture"
     to: "doc:a2ui"
     relation: "references"

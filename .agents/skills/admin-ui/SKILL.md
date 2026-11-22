@@ -146,3 +146,7 @@ restore, a conflicting revision, and save acknowledgement in a local fixture
 at desktop and 375px. Keep private drafts and screenshots out of Git.
 
 In Products, the catalogue query and pagination execute on MySQL. Keep the edit-by-ID and unsaved validation-draft paths independent of list filters. CSV confirmation uses the current session's reviewed file digest, CSRF and a create-only database operation. Test the editable and paged list alongside upload, preview, row errors and confirmation.
+
+## Structured Enterprise answers
+
+Use the private `AgentAnswerPresentationService` only after the existing admin authorization and tool flow. Render its answer sections, recorded aggregate facts and approved source navigation as the primary response with `{scope:"admin"}`. Keep the complete original answer as fallback and keep draft writes in the existing review form. Project at most two fact groups from completed allowlisted tool evidence, with recorded source/date/observation context; never parse model claims into metrics. Restore those facts from saved tools/trace spans without new retrieval. Owner aggregate questions must not trigger public catalogue lookups. Keep public WebMCP/MCP Apps on the default public renderer scope. Verify live response, saved-history presentation, unsupported-input fallback and 375px layout in `tests/agent-history-browser.cjs`; read `docs/a2ui.md` for budgets and trust boundaries.

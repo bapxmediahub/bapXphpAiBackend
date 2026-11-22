@@ -7,14 +7,14 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 167 routes, 14 controllers, 75 services, 67 views, 0 data files, 29 tools"]
+  subgraph ARCH["Architecture Overview — 167 routes, 14 controllers, 76 services, 67 views, 0 data files, 29 tools"]
     arch_routes["> Routes: 167 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 14"]:::arch
-    arch_svc["> Services: 75"]:::arch
+    arch_svc["> Services: 76"]:::arch
     arch_views["> Views: 67"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 29"]:::arch
-    arch_gaps["> Gaps: 11"]:::arch
+    arch_gaps["> Gaps: 12"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -229,6 +229,7 @@ flowchart LR
   subgraph SERVICES["Services"]
     service_addressservice["AddressService"]:::code
     service_adminhelpservice["AdminHelpService"]:::code
+    service_agentanswerpresentationservice["AgentAnswerPresentationService"]:::code
     service_agentattachmentservice["AgentAttachmentService"]:::code
     service_agentbudgetexception["AgentBudgetException"]:::code
     service_agentcapabilitypolicy["AgentCapabilityPolicy"]:::code
@@ -441,14 +442,15 @@ flowchart LR
   end
 
   subgraph GAPS["Gaps & Missing Links"]
-    gap_77a61cfde1["unwired_services: AgentBudgetException"]:::gap
-    gap_0e0fa6b7b8["unwired_services: AstrologerService"]:::gap
-    gap_fda71b28ab["unwired_services: BlogConflictException"]:::gap
-    gap_7893297d25["unwired_services: CourierService"]:::gap
-    gap_d1a24f9ede["unwired_services: ProjectMapService"]:::gap
-    gap_15afa0e45d["unwired_services: RequestFailureService"]:::gap
-    gap_ef0e670931["unwired_services: SmtpDeliveryUncertainException"]:::gap
-    gap_0e57a81a9b["unwired_services: StoragePermissionService"]:::gap
+    gap_43f054c140["unwired_services: AgentAnswerPresentationService"]:::gap
+    gap_3021cb4637["unwired_services: AgentBudgetException"]:::gap
+    gap_9d47bad6dc["unwired_services: AstrologerService"]:::gap
+    gap_5d01c7af75["unwired_services: BlogConflictException"]:::gap
+    gap_c99ac2d6fa["unwired_services: CourierService"]:::gap
+    gap_5f994ad529["unwired_services: ProjectMapService"]:::gap
+    gap_785da2e9a0["unwired_services: RequestFailureService"]:::gap
+    gap_45ed51c5f0["unwired_services: SmtpDeliveryUncertainException"]:::gap
+    gap_ed583eef92["unwired_services: StoragePermissionService"]:::gap
     gap_02fdee86e5["POST /admin/email-templates/test — missing AuditLogService"]:::gap
     gap_63c4de0521["POST /admin/blog/enhance-title — missing AuditLogService"]:::gap
     gap_90db15aec7["POST /admin/blog/enhance-content — missing AuditLogService"]:::gap
@@ -1303,14 +1305,15 @@ flowchart LR
   tool_validate_project_map --> systematic_map
   tool_smoke_local --> ROUTES_PUBLIC
   tool_smoke_local --> ROUTES_ADMIN
-  gap_77a61cfde1 -. missing .-> service_agentbudgetexception
-  gap_0e0fa6b7b8 -. missing .-> service_astrologerservice
-  gap_fda71b28ab -. missing .-> service_blogconflictexception
-  gap_7893297d25 -. missing .-> service_courierservice
-  gap_d1a24f9ede -. missing .-> service_projectmapservice
-  gap_15afa0e45d -. missing .-> service_requestfailureservice
-  gap_ef0e670931 -. missing .-> service_smtpdeliveryuncertainexception
-  gap_0e57a81a9b -. missing .-> service_storagepermissionservice
+  gap_43f054c140 -. missing .-> service_agentanswerpresentationservice
+  gap_3021cb4637 -. missing .-> service_agentbudgetexception
+  gap_9d47bad6dc -. missing .-> service_astrologerservice
+  gap_5d01c7af75 -. missing .-> service_blogconflictexception
+  gap_c99ac2d6fa -. missing .-> service_courierservice
+  gap_5f994ad529 -. missing .-> service_projectmapservice
+  gap_785da2e9a0 -. missing .-> service_requestfailureservice
+  gap_45ed51c5f0 -. missing .-> service_smtpdeliveryuncertainexception
+  gap_ed583eef92 -. missing .-> service_storagepermissionservice
   gap_02fdee86e5 -. missing .-> controller_admincontroller
   gap_63c4de0521 -. missing .-> controller_admincontroller
   gap_90db15aec7 -. missing .-> controller_admincontroller

@@ -321,14 +321,12 @@ echo $__googleTags->gtagCode();
     ]
 ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) ?></script>
 <script defer src="/assets/public-business-webmcp.js?v=<?= filemtime(app_path('assets/public-business-webmcp.js')) ?>"></script>
-<?php if ($__modules['shop'] || $__modules['blog']): ?>
 <script type="application/json" id="bapx-a2ui-schema"><?= json_encode([
     'inputSchema'=>\App\Services\PublicA2uiService::inputSchema(),
     'outputSchema'=>\App\Services\PublicA2uiService::outputSchema()
 ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) ?></script>
 <script defer src="/assets/public-a2ui-webmcp.js?v=<?= filemtime(app_path('assets/public-a2ui-webmcp.js')) ?>"></script>
 
-<?php endif; ?>
 <?php if ($__modules['shop']): ?>
 <script type="application/json" id="bapx-public-products-schema"><?= json_encode([
     'inputSchema'=>\App\Services\PublicKnowledgeService::productInputSchema(),
@@ -524,6 +522,12 @@ function supportRandomId(){var bytes=new Uint8Array(16);crypto.getRandomValues(b
 function supportEscape(value){return String(value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c];});}
 function supportReplyHtml(value){var safe=supportEscape(value);var allowed=/\/(?:shop|cart|checkout|temples|contact|blog(?:\/[a-z0-9-]+|\/category\/[a-z0-9-]+)?|product\/(?:[a-z0-9-]|%20)+|account\/dashboard(?:\/orders|\/install)?)(?=$|[\s.,)])/gi;return safe.replace(allowed,function(path){return '<a class="support-action" href="'+path+'">Open '+supportEscape(path.replace(/^\//,'').replace(/%20|[-/]/g,' '))+'</a>';});}
 function supportActionsHtml(actions){if(!actions||!actions.length)return'';var h='<div class="support-actions">';for(var i=0;i<actions.length;i++){var a=actions[i];if(a.type==='navigate'&&a.path){h+='<a class="btn btn-sm btn-outline support-action-btn" href="'+supportEscape(a.path)+'">'+supportEscape(a.label)+'</a>';}}return h+'</div>';}
+function supportRenderAnswer(answer){
+    var block=document.createElement('div');block.className='support-answer';
+    var rendered=answer.a2ui&&window.BapxA2ui&&window.BapxA2ui.render(block,answer.a2ui,{scope:'support'});
+    if(!rendered)block.innerHTML='<p><strong>Support:</strong> '+supportReplyHtml(answer.reply||answer.error||'Unable to answer right now.')+'</p>'+(answer.actions?supportActionsHtml(answer.actions):'');
+    supportLog.appendChild(block);
+}
 function supportToggle(open){if(!supportPanel||!supportFab)return;supportPanel.hidden=!open;supportFab.setAttribute('aria-expanded',open?'true':'false');}
 function supportSaveLog(){try{if(!supportPanel||!supportLog)return;sessionStorage.setItem(supportPanel.dataset.supportKey,supportLog.innerHTML);sessionStorage.setItem(supportPanel.dataset.supportKey+':conversation_id',supportConversationId||'');}catch(e){}}
 function supportLoadLog(){try{if(!supportPanel||!supportLog)return;var saved=sessionStorage.getItem(supportPanel.dataset.supportKey);if(saved){supportLog.innerHTML=saved;}var cid=sessionStorage.getItem(supportPanel.dataset.supportKey+':conversation_id');if(cid&&/^[a-f0-9]{32}$/.test(cid))supportConversationId=cid;}catch(e){}}
@@ -554,8 +558,7 @@ if(supportForm){supportForm.addEventListener('submit',async function(e){
         var j=await r.json();failed=!r.ok||!!j.error;
         if(!failed)supportPendingRequest=null;
         if(typeof j.conversation_id==='string')supportConversationId=j.conversation_id;
-        supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> '+supportReplyHtml(j.reply||j.error||'Unable to answer right now.')+'</p>'+(j.actions?supportActionsHtml(j.actions):''));
-        if (j.a2ui && window.BapxA2ui) window.BapxA2ui.render(supportLog,j.a2ui);
+        supportRenderAnswer(j);
         if(!failed&&!j.ticket_id&&typeof j.turn_id==='string'&&/^[a-f0-9]{32}$/.test(j.turn_id)){
             var feedback=document.createElement('div');feedback.className='support-feedback';feedback.dataset.turnId=j.turn_id;
             feedback.innerHTML='<span>Did this answer your question?</span> <button type="button" data-support-rating="helpful">Yes, resolved</button> <button type="button" data-support-rating="not_helpful">No, need help</button>';
