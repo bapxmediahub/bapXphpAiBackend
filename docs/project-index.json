@@ -3,9 +3,9 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 173,
-        "controllers": 15,
-        "services": 77,
+        "routes": 174,
+        "controllers": 16,
+        "services": 79,
         "views": 69,
         "collections": 22
     },
@@ -1280,6 +1280,18 @@
         },
         {
             "method": "GET",
+            "path": "/api/agent-tools",
+            "name": "api.agent-tools",
+            "controller": "PublicAgentDiscoveryController@index",
+            "view": "public/404",
+            "services": [
+                "PublicAgentDiscoveryService",
+                "PublicMcpService",
+                "PublicSiteUrlService"
+            ]
+        },
+        {
+            "method": "GET",
             "path": "/api/categories",
             "name": "api.categories",
             "controller": "ApiController@categories",
@@ -1998,6 +2010,7 @@
         "BlogController",
         "CommerceController",
         "ConsultationController",
+        "PublicAgentDiscoveryController",
         "PublicController",
         "PublicMcpController",
         "RemoteDbController",
@@ -2058,8 +2071,10 @@
         "ProductService",
         "ProjectMapService",
         "PublicA2uiService",
+        "PublicAgentDiscoveryService",
         "PublicKnowledgeService",
         "PublicMcpService",
+        "PublicSiteUrlService",
         "RateLimiter",
         "RequestFailureService",
         "ResourceService",

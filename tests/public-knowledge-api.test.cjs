@@ -17,7 +17,7 @@ test('public discovery survives the real rewritten front controller', { timeout:
     // the front controller's independent route gate (the production 404 cause).
     await writeFile(fixture, `<?php
 declare(strict_types=1);
-putenv('BAPX_TEST_MODE=1');putenv('APP_URL=https://public.example');
+putenv('BAPX_TEST_MODE=1');putenv('APP_URL='.($argv[3]??'https://public.example'));
 $_SERVER['REQUEST_URI']=$argv[1];
 $_SERVER['REQUEST_METHOD']=$argv[2]??'GET';
 $_SERVER['SCRIPT_NAME']='/index.php';
@@ -31,8 +31,8 @@ http_response_code(200);
 register_shutdown_function(static function():void { fwrite(STDERR,"\\nSTATUS:".(int)http_response_code()."\\n"); });
 require getcwd().'/index.php';
 `);
-    const request = async (uri, method = 'GET') => {
-        const result = await execute('php', [fixture, uri, method], {
+    const request = async (uri, method = 'GET', configuredOrigin = 'https://public.example') => {
+        const result = await execute('php', [fixture, uri, method, configuredOrigin], {
             cwd: root, env: { ...process.env, BAPX_TEST_MODE: '1', APP_URL: 'https://public.example' },
             timeout: 15000, maxBuffer: 1024 * 1024,
         });
@@ -53,6 +53,28 @@ require getcwd().'/index.php';
         assert.equal(guide.status, 200, 'The public guide must pass the same entry gate');
         assert.match(guide.body, /<h1\b[^>]*>Use Sri Panchami with an AI assistant<\/h1>/);
         assert.ok(guide.body.includes('https://public.example/api/mcp'));
+        assert.ok(guide.body.includes('https://public.example/api/agent-tools'));
+        const discovery = await request('/api/agent-tools');
+        assert.equal(discovery.status, 200, 'HTTP discovery must pass the actual API/front-controller routing');
+        const tools = JSON.parse(discovery.body);
+        assert.equal(tools.format, 'bapx.agent-tools');
+        assert.equal(tools.origin, 'https://public.example');
+        assert.equal(tools.transport.url, 'https://public.example/api/mcp');
+        assert.ok(tools.tools.some(tool => tool.name === 'get_public_contact'));
+        assert.ok(tools.tools.some(tool => tool.name === 'search_public_products'
+            && tool.outputSchema.properties.products.items.properties.productUrl));
+        const query = await request('/api/agent-tools?cartToken=must-not-be-reflected');
+        assert.equal(query.status, 400, 'Discovery accepts no capability or query values');
+        assert.equal(query.body.includes('must-not-be-reflected'), false);
+        assert.equal((await request('/api/agent-tools', 'POST')).status, 404, 'Metadata is GET-only');
+        assert.equal((await request('/api/agent-tools/private')).status, 404, 'Metadata is an exact public route');
+        assert.equal((await request('/api/agent-tools', 'GET', 'http://invalid.example')).status, 503,
+            'Invalid public origin must fail discovery without inventing an HTTPS URL');
+        assert.equal((await request('/api/knowledge/products', 'GET', '')).status, 503,
+            'Missing public origin must fail URL-producing reads');
+        const ordinaryShop = await request('/shop', 'GET', 'http://invalid.example');
+        assert.equal(ordinaryShop.status, 200, 'Invalid connector origin must preserve the ordinary storefront');
+        assert.match(ordinaryShop.body, /"publicOrigin":null/);
         for (const uri of ['/llms.txt/private', '/ai-assistants/private', '/.bapX/support.md']) {
             assert.equal((await request(uri)).status, 404, 'Discovery must not broaden access to ' + uri);
         }

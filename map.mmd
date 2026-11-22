@@ -7,10 +7,10 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 173 routes, 15 controllers, 77 services, 69 views, 0 data files, 29 tools"]
-    arch_routes["> Routes: 173 (Public + Auth + Payment + Admin + Support)"]:::arch
-    arch_ctrl["> Controllers: 15"]:::arch
-    arch_svc["> Services: 77"]:::arch
+  subgraph ARCH["Architecture Overview — 174 routes, 16 controllers, 79 services, 69 views, 0 data files, 29 tools"]
+    arch_routes["> Routes: 174 (Public + Auth + Payment + Admin + Support)"]:::arch
+    arch_ctrl["> Controllers: 16"]:::arch
+    arch_svc["> Services: 79"]:::arch
     arch_views["> Views: 69"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 29"]:::arch
@@ -44,6 +44,7 @@ flowchart LR
     route_get_api_categories["GET /api/categories"]:::route
     route_get_api_product_slug["GET /api/product/{slug}"]:::route
     route_get_api_temples["GET /api/temples"]:::route
+    route_get_api_agent_tools["GET /api/agent-tools"]:::route
     route_get_api_knowledge_articles["GET /api/knowledge/articles"]:::route
     route_get_api_knowledge_products["GET /api/knowledge/products"]:::route
     route_get_api_knowledge_contact["GET /api/knowledge/contact"]:::route
@@ -226,6 +227,7 @@ flowchart LR
     controller_blogcontroller["BlogController"]:::code
     controller_commercecontroller["CommerceController"]:::code
     controller_consultationcontroller["ConsultationController"]:::code
+    controller_publicagentdiscoverycontroller["PublicAgentDiscoveryController"]:::code
     controller_publiccontroller["PublicController"]:::code
     controller_publicmcpcontroller["PublicMcpController"]:::code
     controller_remotedbcontroller["RemoteDbController"]:::code
@@ -287,8 +289,10 @@ flowchart LR
     service_productservice["ProductService"]:::code
     service_projectmapservice["ProjectMapService"]:::code
     service_publica2uiservice["PublicA2uiService"]:::code
+    service_publicagentdiscoveryservice["PublicAgentDiscoveryService"]:::code
     service_publicknowledgeservice["PublicKnowledgeService"]:::code
     service_publicmcpservice["PublicMcpService"]:::code
+    service_publicsiteurlservice["PublicSiteUrlService"]:::code
     service_ratelimiter["RateLimiter"]:::code
     service_requestfailureservice["RequestFailureService"]:::code
     service_resourceservice["ResourceService"]:::code
@@ -540,6 +544,11 @@ flowchart LR
   route_get_api_temples --> controller_apicontroller
   controller_apicontroller --> service_templeservice
   controller_apicontroller -. renders .-> view_public_404
+  route_get_api_agent_tools --> controller_publicagentdiscoverycontroller
+  controller_publicagentdiscoverycontroller --> service_publicagentdiscoveryservice
+  controller_publicagentdiscoverycontroller --> service_publicmcpservice
+  controller_publicagentdiscoverycontroller --> service_publicsiteurlservice
+  controller_publicagentdiscoverycontroller -. renders .-> view_public_404
   route_get_api_knowledge_articles --> controller_apicontroller
   controller_apicontroller --> service_publicknowledgeservice
   controller_apicontroller --> service_blogservice
@@ -1258,6 +1267,7 @@ flowchart LR
   controller_blogcontroller --> controller_basecontroller
   controller_commercecontroller --> controller_basecontroller
   controller_consultationcontroller --> controller_basecontroller
+  controller_publicagentdiscoverycontroller --> controller_basecontroller
   controller_publiccontroller --> controller_basecontroller
   controller_publicmcpcontroller --> controller_basecontroller
   controller_remotedbcontroller --> controller_basecontroller

@@ -36,6 +36,13 @@ them, avoiding the previous combined-name search failure. See the
 [public assistant guide](/ai-assistants) for connection and human-review flows;
 the companion `/llms.txt` is advisory discovery information.
 
+API-only agents can read `/api/agent-tools` for the actual public MCP registry,
+access scopes and executable curl requests. Product projections add an absolute
+`productUrl`; approved photos add `imageUrl`, and selected galleries add matching
+`imageUrls`. These use the configured official HTTPS origin, never the request
+Host. Relative paths remain available for native cards. Missing photos have no
+invented substitute; see [HTTP discovery](../public-mcp.md).
+
 `public_policy` reads the same guest guidance used by customer Support. Pass one `key` from `tracking`, `returns_or_problems`, `shipping_cost` or `payment_methods`. The result contains a single `value` string. For example, `./bapXphp mcp:policy tracking` prints the tracking policy as JSON. Existing customers can read these policies when the shop is disabled. Neither command accepts actor credentials or a customer identifier.
 
 For owner-approved reporting, open **Admin → Integrations → Manage local MCP clients**, name the client and authorize paid-sales access. Copy the credential from its single display into the trusted client's secret manager. Supply it as the child process environment variable `BAPX_MCP_CLIENT_TOKEN` when launching `bapXphp mcp:stdio`. Keep the credential out of arguments, tool inputs and logs.

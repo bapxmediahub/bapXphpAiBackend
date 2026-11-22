@@ -50,6 +50,15 @@ standard. The guide links both representations and distinguishes public reads,
 signed-in Support, and the owner-authorized Enterprise agent. New consultation
 booking is retired; enquiries use the existing contact form.
 
+The custom `/api/agent-tools` JSON document supplies the same live public MCP
+registry, module gates, access metadata and copyable curl requests. It is not a
+standard well-known manifest. API-only clients can use the listed HTTP endpoints
+or MCP transport without a browser. Product results add official absolute
+`productUrl`, optional `imageUrl`, and selected `imageUrls`, while preserving
+relative paths for in-site rendering. The browser adapter validates absolute
+URLs against the canonical origin emitted by the page. See [HTTP discovery and
+verification](public-mcp.md).
+
 Both discovery URLs are generated PHP responses, not static copies. They must
 pass the public route gate in `index.php` as well as the registered router after
 the hosting rewrite. Registering a controller route alone does not make it

@@ -70,7 +70,9 @@ jobs:
       - name: Verify browser knowledge tool registration, paging and private-path rejection
         run: node --test tests/public-knowledge-webmcp.test.cjs tests/public-products-webmcp.test.cjs tests/public-business-webmcp.test.cjs tests/public-knowledge-api.test.cjs
       - name: Check live WebMCP A2UI acceptance probe syntax
-        run: node --check tests/live-webmcp-a2ui-browser.cjs
+        run: |
+          node --check tests/live-webmcp-a2ui-browser.cjs
+          node --check tests/live-agent-http-discovery.cjs
       - name: Test real W3C WebMCP 0.1.1 polyfill with Chromium
         run: |
           npm install --prefix "$RUNNER_TEMP/w3c-webmcp" --no-audit --no-fund --ignore-scripts @w3c/webmcp-polyfill@0.1.1 playwright@1.62.1

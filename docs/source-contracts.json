@@ -23,24 +23,24 @@
             "review_note": "Reviewed public ProductService and BlogService published selection and exclusion of future, draft, retired or private Markdown and paths."
         },
         "foundation": {
-            "source_sha256": "feebc7a76f4d6ae7080a60f9bb9dde863a1ee323e152774535bdea0310049452",
-            "references_sha256": "4dc16999ac73fb64ac22efa5b2da78a85076bfb38f184880884e08af5a58dbce",
-            "review_note": "Reviewed bounded A2UI API layout/slugs input and generated knowledge index against architecture, WebMCP, JSON-storage and deployment guidance. Canonical public selection and fixed catalogs remain the source; native saved evidence replays without new retrieval, and no storage, checkout, booking or deployment authority is added."
+            "source_sha256": "ae8140da7cacb75699f28f7f269dbe7e923c45ea23bc45aa2061e38d6e526c30",
+            "references_sha256": "62294d3476723ee2f9afb62918b99c5c9409e7a1c761a0789aef8901e7a17b22",
+            "review_note": "Reviewed actual-registry discovery, configured official URL projections and public guide against architecture, WebMCP and deployment guidance. Independent review confirmed curl uses fixed read calls and argv with no credentials or browser state; raster acceptance now also includes canonical GIF images. Missing media is never substituted and retired booking is not advertised."
         },
         "google-tags": {
-            "source_sha256": "5d85546a76fc792fb9cc11dde1a3633519354a11e4bb6a9cd87a07910b305c84",
+            "source_sha256": "5c3491682b9d9107b2a165bd3c35c4f666610a38d72d24a98b8bde62ea1c5139",
             "references_sha256": "1a28ebe30f759c5ba10ea3b906ba9b6c0c4fcde7f7a3956dfecf3bb1c680edda",
-            "review_note": "Reviewed the frontend skill addition against integration and settings guidance. It documents container-aware agent cards and native photo disclosures only; Google tag consent, configuration and reporting behavior remain the existing implementation."
+            "review_note": "Inspected the public layout diff and existing Google tag/integration guidance. The new JSON_HEX encoded product origin is after the existing tag renderer and does not change analytics IDs, reporting grants, destinations or consent handling."
         },
         "http-errors": {
             "source_sha256": "e93e09e81fb4c32aad806a41efd342e0bd24b3ac8335b8307f3894e5cd9e1ac0",
-            "references_sha256": "774e00a00cf6d18ebca054d55e9f34023355777c099bdae4c08fec0b442ce4ef",
-            "review_note": "Reviewed shared backend guidance changes and existing request-failure references. Commerce report additions do not alter bootstrap or HTTP error handling; the newly fixed public discovery entry routes remain preserved."
+            "references_sha256": "fb998091b38a21d2ce49ced2fc111b566a8a45fa500477951be667d901846e61",
+            "review_note": "Reviewed the public discovery controller no-store JSON 400/503 boundary and actual front-controller invalid-origin tests against request-failure and deployment guidance. Normal storefront HTML remains available; curl and browser HTTP failures remain visible."
         },
         "interface": {
-            "source_sha256": "915340ab5983c4f5febb9a8e595e530963e84524bb248af0855b0aa117c8a802",
+            "source_sha256": "a9352860e066e416af744836c8de76f8831eef0b51f9c4a31d228e870eeab111",
             "references_sha256": "ed652c6d897a28231284520bbb430915af9a0f717a9b292e09cb75fb38e9abe3",
-            "review_note": "Cross-reviewed the native agent row/bubble flex and maximum-width rules with inline-size card containment. The final scoped flex-basis/min-width fix gives live and restored surfaces available width without relying on a status label; docs/a2ui.md explains the host requirement. Original desktop/375px history, exact saved rows, fallback and no-resubmission checks remain, with new usable-width assertions."
+            "review_note": "Reviewed the layout fallback and product-adapter validation against Design and frontend/admin UI boundaries. Invalid connector origin preserves ordinary storefront rendering; optional absolute URLs must match the configured origin and safe existing paths. Native A2UI relative navigation and private scopes remain intact."
         },
         "mail": {
             "source_sha256": "3b0589d28bd4923c657f85a867084b79ef9f22dd942ea529fd08af2f1332b249",
@@ -49,8 +49,8 @@
         },
         "mcp-clients": {
             "source_sha256": "f8245d49c8c4fa9d576bdf2fe5ad28b84d2b0e7f9df980c0b7c2f17c0f30854d",
-            "references_sha256": "6a90257071cfda99e5c288a3a1565ad40f7b28c0ca2524bea1c6c84d74422bb2",
-            "review_note": "Cross-checked STDIO product selectors against PublicKnowledgeService schemas and shop/integrations guidance; owner grants and local credential transport remain unchanged."
+            "references_sha256": "1b27d167353aded1081fed4ce2d36c688885052c325956ca1305e2047692e31c",
+            "review_note": "Compared shared public product URL fields and the updated shop guide with private STDIO grants and integration controls. Official absolute URLs add no private MCP grant, account session or reporting tool."
         },
         "media": {
             "source_sha256": "7b9d3d9aa746f16f1441148550d143e7094388b247c423b90c310ed5441db99d",
@@ -58,14 +58,14 @@
             "review_note": "Reviewed the admin UI skill addition against media deletion verification and architecture. Card images remain approved public raster paths, and disclosures change local visibility only; upload, deletion, ownership and stale-media safeguards are unchanged."
         },
         "operator-help": {
-            "source_sha256": "487887d5b9318a24a19ecb0beed81eddeaf8f4d4b2d9c19780b54afcd671b02c",
+            "source_sha256": "d1a4e7c2eded9fb4d690d45abb2d157ad1f575f29e8d7e9fef61a857756c3725",
             "references_sha256": "6af265eaf64755b4f9eb981ae86e961cb2202205f780ba8ce820a3b89d7c7844",
-            "review_note": "Reviewed the native presenter and updated admin UI guidance against the existing Enterprise help: report cards use only completed sanitized evidence, retain source/date/basis and editable task prompts, and do not change owner permissions or help access."
+            "review_note": "Compared the new exact public discovery route and safely encoded layout origin with the fixed operator/public help references. Discovery returns no owner guide or actor records; existing Help authorization and navigation remain accurate."
         },
         "public-mcp": {
-            "source_sha256": "72058f7b402167024bf15322dc92558866ab7a06984225a8846aed0284d09abe",
-            "references_sha256": "61d3de7356893e0c3646f217c3c8adfd845659d92cdf7c38654b0f766ae622c5",
-            "review_note": "Reviewed the final shared CSS change and docs/a2ui.md after native browser evidence exposed shrink-wrapped Enterprise replay bubbles. Scoped flex allocation applies only inside a native .agent-bubble containing a bounded surface; public iframe schemas, safe URLs, transport data and controls are unchanged. The original visible-history waits are preserved and explicit readable-width assertions were added."
+            "source_sha256": "d2a64c98d34ae0bc1cff49a44f7d83455cd841a7b98450babaff1b47972e1148",
+            "references_sha256": "3a42c891d771c597b2b4709453cabd376dff960863194d4c7213e6ad39d50fb0",
+            "review_note": "Reviewed actual-registry discovery, protocol headers and executable list/contact examples, canonical HTTPS origin/path/image parity, module gates and exact-result cards against public MCP, shop and A2UI guidance. Both official SDK profiles and focused PHP/router tests passed; live curl checks are separately gated after deployment."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
@@ -73,9 +73,9 @@
             "review_note": "Checked public product visibility, published navigation destinations and isolated first-party catalogue and policy discovery."
         },
         "workflow": {
-            "source_sha256": "34bbd014822ffbe6946f0be468f55d3cf61cabd2aa53e3e852b9380397279011",
+            "source_sha256": "7edb3a3e4cade4fc93920ca27d60a91a4a5bc73013a426f960bd5a010adc2a66",
             "references_sha256": "94dd586c81b1d91a0332e86219ac2b55c416d5ebc37115c9a2008697d68236d0",
-            "review_note": "Reviewed updated UI skills, generated index and existing development/review workflow. This slice has focused PHP and real Chrome fixtures for the two native agents and public cards; exact-head CI and deployment acceptance remain required, with no dependency or release-policy change."
+            "review_note": "Compared the CI syntax check, post-SHA real curl probe and safe llms diagnostic headers with deployment and Git/documentation workflow guidance. Read-only acceptance preserves failures, uses no retry bypass, and does not close unresolved host 429 issues. Regenerated maps and indexes from the actual new route."
         }
     }
 }
