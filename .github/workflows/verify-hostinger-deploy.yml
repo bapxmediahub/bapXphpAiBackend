@@ -29,6 +29,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.expected_sha || github.event.workflow_run.head_sha }}
+          persist-credentials: false
       - name: Cross-check the live checkout SHA after main validation
         env:
           EXPECTED: ${{ github.event_name == 'workflow_dispatch' && inputs.expected_sha || github.event.workflow_run.head_sha }}
@@ -62,3 +66,10 @@ jobs:
             echo '- Do not infer a successful deployment from a successful merge.'
           } >> "$GITHUB_STEP_SUMMARY"
           exit 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify live phone header and real isolated cart interaction
+        run: |
+          npm install --prefix "$RUNNER_TEMP/live-browser" --no-audit --no-fund --ignore-scripts playwright@1.62.1
+          NODE_PATH="$RUNNER_TEMP/live-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/live-mobile-deployment-browser.cjs
