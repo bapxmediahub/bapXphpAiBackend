@@ -590,18 +590,46 @@ cmd_test() {
 
 cmd_lint() {
   require_php
+  if [ "$#" -gt 1 ]; then
+    err "Usage: bapXphp lint [file-or-directory]"
+    return 1
+  fi
   local target="${1:-}"
+  local -a paths
   if [ -n "$target" ]; then
+    [[ "$target" == /* ]] || target="$PWD/$target"
     if [ -f "$target" ]; then
       php -l "$target"
-    else
-      find "$target" -name '*.php' -exec php -l {} \; 2>&1 | grep -v 'No syntax errors' || true
+      return $?
     fi
+    if [ ! -d "$target" ]; then
+      err "Lint target is not a file or directory: $target"
+      return 1
+    fi
+    paths=("$target")
   else
-    find "$ROOT/app" "$ROOT/api" "$ROOT/tests" "$ROOT/cli" "$ROOT/views" "$ROOT/index.php" -name '*.php' 2>/dev/null \
-      -exec php -l {} \; 2>&1 | grep -v 'No syntax errors' || true
-    ok "PHP syntax check complete"
+    paths=("$ROOT/app" "$ROOT/api" "$ROOT/tests" "$ROOT/cli" "$ROOT/views" "$ROOT/index.php")
   fi
+  # POSIX find -exec ... {} + propagates a failed batch; the ; form does not.
+  # https://pubs.opengroup.org/onlinepubs/9799919799/utilities/find.html
+  if ! find "${paths[@]}" -name '*.php' -exec sh -c '
+    failed=0
+    for file do
+      if output=$(php -l "$file" 2>&1); then
+        printf "%s\n" "$output" | sed "/^No syntax errors detected in /d"
+      else
+        printf "%s\n" "$output" >&2
+        printf "PHP syntax check failed: %s\n" "$file" >&2
+        failed=1
+      fi
+    done
+    exit "$failed"
+  ' bapxphp-lint {} +; then
+    err "PHP syntax check failed"
+    return 1
+  fi
+  if [ -z "$target" ]; then ok "PHP syntax check complete"; fi
+  return 0
 }
 
 cmd_ci() {
@@ -2158,7 +2186,9 @@ main() {
     schema|add|remove|tool)
       local cmd="$1"; shift
       "cmd_${cmd}" "$@" ;;
-    test|lint|check|ci|update|serve|smoke)
+    lint)
+      shift; cmd_lint "$@" ;;
+    test|check|ci|update|serve|smoke)
       cmd_"$1" ;;
     dev:user|dev-user)
       shift; cmd_dev_user "$@" ;;

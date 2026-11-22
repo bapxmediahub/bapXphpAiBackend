@@ -51,6 +51,27 @@ Run the browser desktop/375px flows for UI changes and isolated socket/database
 fixtures for mutations. Production reads are not authorization for destructive
 customer actions, payment tests or historical mail replay.
 
+## PHP lint failure propagation
+
+`./bapXphp lint <file>` checks that file, `./bapXphp lint <directory>` recursively
+checks matching PHP paths, and `./bapXphp lint` checks the normal application,
+API, test, CLI and view roots plus `index.php`. Quoted paths may contain spaces.
+Parser and traversal failures return nonzero with the affected paths. Directory
+scans filter normal success lines without using that filter as the failure
+status, continue reporting other malformed files, and never emit a successful
+scan summary after a failure. The `ci` command records `LINT FAILED`, runs its
+other gates and finishes unsuccessfully when lint fails.
+
+The required `node --test tests/cli-lint.test.cjs` regression uses native PHP and
+copies the actual public CLI launchers into a temporary miniature project.
+It checks explicit-file argument forwarding, directory/default aggregation and
+an overall CI failure with every unrelated CI stage passing. Those unrelated
+test/map/documentation/smoke stages are fixture scripts, so the check isolates
+lint rather than depending on application databases or generated-file state.
+No malformed fixture is written into the application checkout. The direct
+parser-status precheck fails if an interpreter wrapper prints syntax errors
+but returns zero; that environment cannot substitute for native PHP acceptance.
+
 ## Source-to-documentation review gate
 
 `config/documentation.php` maps source areas to their durable guides/skills.

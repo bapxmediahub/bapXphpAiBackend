@@ -41,6 +41,13 @@ admin-editable values.
 `update` regenerates committed maps and indexes; `ci` checks drift. Never hand-edit
 generated maps or `index.yaml`.
 
+`lint` accepts one file or directory, or scans the normal source roots when the
+path is omitted. An explicit path is forwarded to the handler; an invalid path,
+PHP parser failure or directory traversal error must return nonzero. Directory
+scans suppress ordinary successful parser lines while retaining all failed
+filenames. A failed default scan must not print its success summary, and `ci`
+must retain the lint failure while collecting the remaining gate results.
+
 ## Content, database and operations
 
 ```bash
@@ -70,6 +77,14 @@ the active coding client's explicit tools and paths, outside this application CL
 For a CLI change, compare `./bapXphp help` with the dispatch and target file, execute
 the smallest safe command, then run `./bapXphp ci`. Never print environment files,
 credentials, secret values or customer records.
+
+For lint/CI changes, run `node --test tests/cli-lint.test.cjs` with native PHP.
+It copies the actual CLI launchers into a temporary miniature project and uses
+real parser failures, paths with spaces and multiple malformed files. Only
+unrelated CI stages are replaced by passing fixture scripts. The application
+checkout and business data are untouched. A PHP wrapper that reports syntax
+errors but exits zero cannot establish parser-status acceptance; the fixture
+fails explicitly in that environment rather than skipping the check.
 
 ## Keeping this skill current
 
