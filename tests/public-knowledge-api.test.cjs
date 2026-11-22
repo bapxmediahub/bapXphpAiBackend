@@ -17,7 +17,7 @@ declare(strict_types=1);
 putenv('BAPX_TEST_MODE=1');
 require getcwd().'/app/bootstrap.php';
 $_GET=json_decode($argv[2],true,512,JSON_THROW_ON_ERROR);
-$methods=['contact'=>'knowledgeContact','services'=>'knowledgeServices','products'=>'knowledgeProducts','articles'=>'knowledgeArticles'];
+$methods=['contact'=>'knowledgeContact','services'=>'knowledgeServices','products'=>'knowledgeProducts','articles'=>'knowledgeArticles','a2ui'=>'knowledgeA2ui'];
 register_shutdown_function(static function():void { fwrite(STDERR,"\\nSTATUS:".(int)http_response_code()."\\n"); });
 (new App\\Controllers\\ApiController())->{$methods[$argv[1]]}();
 `);
@@ -42,6 +42,14 @@ register_shutdown_function(static function():void { fwrite(STDERR,"\\nSTATUS:".(
         assert.equal(services.status, 200);
         assert.equal(services.body.total, 1);
         assert.equal(services.body.services[0].path, '/contact?subject=temple#contact-form');
+        for(const view of ['contact','services']) {
+            const result=await call('a2ui',{view,limit:'4'});
+            assert.equal(result.status,200);
+            const surface=result.body.messages[0].createSurface;
+            assert.ok(surface.surfaceId.startsWith('bapx_'+view+'_'));
+            assert.equal(surface.dataModel.items.length,4);
+            assert.ok(surface.dataModel.items.every(item=>item.path.startsWith('/contact')));
+        }
 
         for (const [method, args] of [
             ['contact', { role: 'admin' }],
@@ -52,6 +60,8 @@ register_shutdown_function(static function():void { fwrite(STDERR,"\\nSTATUS:".(
             ['products', { offset: '2147483648' }],
             ['articles', { offset: '999999999999999999999' }],
             ['products', { limit: '2', actor: 'admin' }],
+            ['a2ui', { view: 'admin', limit: '1' }],
+            ['a2ui', { view: 'contact', actor: 'admin' }],
         ]) {
             const response = await call(method, args);
             assert.equal(response.status, 400, method + ' must reject ' + Object.keys(args).join(','));

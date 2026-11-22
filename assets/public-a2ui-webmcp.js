@@ -6,14 +6,16 @@
     let contract;
     try { contract=JSON.parse(node.textContent); } catch { return; }
     if (!contract?.inputSchema || !contract?.outputSchema) return;
+    const views=contract.inputSchema.properties?.view?.enum;
+    if(!Array.isArray(views))return;
     const lifecycle=new AbortController();
     window.addEventListener('pagehide',event=>{
         if(!event.persisted)lifecycle.abort();
     });
     const register = async () => { await registry.registerTool({
         name:'present_public_knowledge',
-        title:'Present public shop or guide cards with A2UI',
-        description:'Return a declarative A2UI 1.0 surface from published products or articles. It uses read-only public data and approved native Card, Column, Text and same-site navigation components. No checkout, private guides, admin or agent transcripts.',
+        title:'Present public business information as cards',
+        description:'Return up to four A2UI 1.0 cards for published products, articles, contact details or enquiry services. Include query for relevant named items. Uses public data, safe local images and website links. No checkout, owner records, private guides or conversation access.',
         inputSchema:contract.inputSchema,
         outputSchema:contract.outputSchema,
         annotations:{readOnlyHint:true,untrustedContentHint:true},
@@ -23,10 +25,10 @@
                 throw new TypeError('Invalid A2UI input.');
             }
             const {view,query='',limit=4}=input;
-            if(!['products','articles'].includes(view)
+            if(typeof view!=='string' || !views.includes(view)
                 || typeof query!=='string' || query.length>120
                 || !Number.isInteger(limit) || limit<1 || limit>4) {
-                throw new TypeError('Choose products or articles and limit 1..4.');
+                throw new TypeError('Choose a public view and limit 1..4.');
             }
             const url=new URL('/api/knowledge/a2ui',window.location.origin);
             url.searchParams.set('view',view);

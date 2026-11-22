@@ -40,7 +40,8 @@ final class SupportController extends BaseController {
                 $turn=$prepared['replay'];
                 $this->jsonResponse(['reply'=>$turn['answer'],'ticket_id'=>$turn['ticket_id']??null,
                     'conversation_id'=>$conversationId,'turn_id'=>$turn['turn_id'],
-                    'evaluation'=>$turn['evaluation'],'replayed'=>true,'run'=>['trace_id'=>$traceId]]);
+                    'evaluation'=>$turn['evaluation'],'replayed'=>true,'run'=>['trace_id'=>$traceId]]
+                    + (new \App\Services\AgentAnswerPresentationService())->responseData((string)$turn['answer'],'support'));
             }
             \App\Services\AgentTraceService::begin($traceId,
                 static fn(array $trace)=>$conversations->checkpoint('support',$actor,$conversationId,$traceId,$trace));
@@ -54,8 +55,10 @@ final class SupportController extends BaseController {
                 (array)($answer['run']['tools'] ?? []), isset($answer['ticket_id']) ? (string)$answer['ticket_id'] : null,
                 null, (array)($answer['run']['attempts'] ?? []), (array)($answer['run']['retrieval'] ?? []), (array)($answer['knowledge']??[])
             );
-            $a2ui = (new \App\Services\PublicA2uiService())->forQuestion($message);
-            $this->jsonResponse($answer + ($a2ui === null ? [] : ['a2ui'=>$a2ui]) + $record);
+            $references = (new \App\Services\PublicA2uiService())->forQuestion($message,(array)($answer['knowledge']??[]),(string)($answer['reply']??''));
+            $presentation = (new \App\Services\AgentAnswerPresentationService())->responseData(
+                (string)($answer['reply']??''),'support',(array)($answer['actions']??[]),$references);
+            $this->jsonResponse($answer + $presentation + $record);
         } catch (\LogicException $e) {
             if(!empty($user['email']) && is_string($conversationId) && preg_match('/^[a-f0-9]{32}$/D',$conversationId)) {
                 try {

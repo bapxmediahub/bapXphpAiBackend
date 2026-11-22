@@ -32,6 +32,8 @@ test('live landing and shop WebMCP tools can be discovered and invoked ('+(nativ
                 services:await invoke('list_public_services',{limit:4}),
                 products:await invoke('search_public_products',{limit:1}),
                 articles:await invoke('search_public_articles',{limit:1}),
+                contactUi:await invoke('present_public_knowledge',{view:'contact',limit:4}),
+                servicesUi:await invoke('present_public_knowledge',{view:'services',limit:4}),
                 ui:await invoke('present_public_knowledge',{view:'products',limit:1})};
         },native);
         assert.deepEqual(landing.names,['get_public_contact','list_public_services','present_public_knowledge','search_public_articles','search_public_products']);
@@ -41,6 +43,10 @@ test('live landing and shop WebMCP tools can be discovered and invoked ('+(nativ
         assert.ok(landing.services.services.every(s=>/^\/contact\?subject=(product|temple|order|general)#contact-form$/.test(s.path)));
         assert.equal(typeof landing.products.products[0]?.description,'string');
         assert.equal(landing.ui.messages[0].version,'1.0');
+        assert.ok(landing.contactUi.messages[0].createSurface.surfaceId.startsWith('bapx_contact_'));
+        assert.equal(landing.contactUi.messages[0].createSurface.dataModel.items.length,4);
+        assert.ok(landing.servicesUi.messages[0].createSurface.surfaceId.startsWith('bapx_services_'));
+        assert.equal(landing.servicesUi.messages[0].createSurface.dataModel.items.length,4);
         assert.ok(Number.isInteger(landing.articles.total));
         await page.goto(site+'/shop',{waitUntil:'load',timeout:20000});
         await page.waitForFunction(async()=>typeof document.modelContext?.getTools==='function'

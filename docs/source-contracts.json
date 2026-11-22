@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "95b849cc061fa19e3693bfcb9ead0daeede9475f01c1d0dc14129aea49629524",
-            "references_sha256": "fbe1fd5928af30dec4f3361ace08c07bc3149b7f4675a7c3116996e74dce67f7",
-            "review_note": "Reviewed both registry declarations, capability policy, public-business Support routing, context and redacted tool evidence. Updated generated tool contracts and observability guidance. Public knowledge shortcuts perform actual scoped reads; existing private role and conversation boundaries remain intact."
+            "source_sha256": "e8391973892060f06d6304eaaf4cc90ce0fc39fd316ea92747a7d0e3c6610c50",
+            "references_sha256": "bf9791131322d62d86adb221e8ba9b6de1b1a21af81df2ee9e58eec57c4a597e",
+            "review_note": "Reviewed Support/Admin integration and AgentAnswerPresentationService against actual registry evidence: two existing PHP agents, bounded recorded metrics, no presentation retrieval, current-source isolation, saved history and complete fallback are documented in agent observability and A2UI contracts."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
@@ -23,29 +23,29 @@
             "review_note": "Reviewed public ProductService and BlogService published selection and exclusion of future, draft, retired or private Markdown and paths."
         },
         "foundation": {
-            "source_sha256": "5ae68689d180f458a002acb8f043c9e8528d0bdc9e99a1f975f6e5a5f7368db0",
-            "references_sha256": "8c6c8bf655acf10de3abd13ca17cf5a2b466505ca877e392456771c086376896",
-            "review_note": "Cross-reviewed final canonical product path and image validators against the public contract. Preserve valid Tamil combining marks, bound encoded product paths to2048 characters, reject unsafe rows before pagination, and document these limits without changing data authority."
+            "source_sha256": "c85453d2e3d00a4784b873a469b07ddb6e814c185d8bc65eb2a7d714396ff032",
+            "references_sha256": "f7dd947f3fb8212e8a02467b28065a3a95c3289d4ee44ed8471c57c9bacb975c",
+            "review_note": "Reviewed PublicA2uiService, public controller contract and durable architecture/WebMCP/A2UI docs: public views include contact/services even with shop/blog disabled; personal requests and owner private or ungrounded activity cannot select business cards; exact tool-result projection, Unicode paths, safe images and full fallback remain bounded."
         },
         "google-tags": {
-            "source_sha256": "268175b9bec757e20d47ca0dcf625a3a909401b4fcdde953b3979c837881b94c",
-            "references_sha256": "febb26983815ce7a341e901eb08fdb64a75614ff9901e6528fdb0fe2cc937aa5",
-            "review_note": "Reviewed shared public head changes against GoogleSiteKitClient integration. Polyfill and typed business discovery scripts are independent of existing verification/meta/gtag output; new frontend skill guidance does not alter tag validation or OAuth behavior."
+            "source_sha256": "3103146fdbe5bffc2336f4dceafc352f84aebe4f10429c47e7b544a5f6eda319",
+            "references_sha256": "01cae380570ae0dd193dba792a7caf44dfa6f30b02e182fd531f48ed0afaea0f",
+            "review_note": "Reviewed public layout script changes and frontend guidance against integration docs: global presentation and Support rendering do not alter Google tag configuration, script identity or reporting authorization."
         },
         "http-errors": {
             "source_sha256": "9f0f3883c318dbfe074d6297e66c3bd7c497975f27804b142af5154e01d9b665",
-            "references_sha256": "8fcb9b49d900464323f7720a9c3d4a9be29a09bca8531c09196ed3f9b37a25bc",
-            "review_note": "Reviewed public controller validation and deployment guide against RequestFailureService. Known bad parameters return400 through existing JSON response handling; ordinary failure containment remains unchanged. Corrected live SHA guidance to use the existing actual-checkout endpoint."
+            "references_sha256": "62ed72bb4fa72d8fce389d9352d98e182c932518fbf7ffac150261066267f240",
+            "review_note": "Reviewed unchanged request failure boundary against the architecture presentation update: optional formatter failure preserves successful answer text; native request failure semantics and response buffering remain accurate."
         },
         "interface": {
-            "source_sha256": "9cf89bbd9e1420615d33d8fa90756fabeffb656ab6ece82f1ea689c73a0ebbc0",
-            "references_sha256": "8186aa110fee10b5c55e7e228f3ba8067243a19efd2cc8327ae36c31f4e03e04",
-            "review_note": "Cross-reviewed final browser product validator with canonical PHP projection and Unicode fixtures. Both accept safe Tamil and encoded-space segments, enforce2048-character product paths and512-character raster image paths, and reject traversal before presentation."
+            "source_sha256": "79a9a231a0af510eedf044541b485ad19dad797167d4cff0a3ee10f24f68f550",
+            "references_sha256": "d11502d83d22bdbce28a8f36f7e38102ba3ade0b6861e2879a359196520f0105",
+            "review_note": "Reviewed renderer, Support and Enterprise templates, CSS, Design.md and UI skills: native scope requires matching answer first, public-only legacy responses fall back completely, reference cards are relevant/bounded, links stay approved and mobile/keyboard checks use production presenter fixtures."
         },
         "mail": {
-            "source_sha256": "5b84584d9d5965491c44ee7523062951ed5e68c76ffe39b64defa47067b4b635",
+            "source_sha256": "45e094a1fc75a9b16a7f4ed583b7b2933d168e195944e91f299e6f52dbf9b522",
             "references_sha256": "f042d78231977166a8613d16cc30c7a6b9b87388f050882fe55efce16d71cc80",
-            "review_note": "The shared backend skill gains a public knowledge section only. Reviewed its added guidance against unchanged queue ownership, transactional recipient rules and SMTP uncertainty documentation; no mail source or delivery contract changes."
+            "review_note": "Reviewed AdminController diff: changes are restricted to agent response/history/public-reference methods; mail actions, canonical delivery state and documented no-resend guarantees are unchanged."
         },
         "mcp-clients": {
             "source_sha256": "68efed716f750107dc03b4520cd5ce6e096d431ef11b2d941ab1fb741083235a",
@@ -54,13 +54,13 @@
         },
         "media": {
             "source_sha256": "7b9d3d9aa746f16f1441148550d143e7094388b247c423b90c310ed5441db99d",
-            "references_sha256": "ed0468877ab37b663df3b8f30c9b669f37021ce493b6856e1e7da00acce3d2ee",
-            "review_note": "Public catalogue projection now exports only normalized local raster image paths. Reviewed this against unchanged upload storage and guarded deletion contracts; it neither reads arbitrary files nor changes owner media mutations."
+            "references_sha256": "a0075d3a46f7738102e6582267bc282fa42b8288ae92fc9a82db4e56137ffece",
+            "review_note": "Reviewed architecture and admin UI guidance changes against media deletion contract: public raster image rendering adds no media mutation or upload/delete path; existing ownership and deletion verification remain accurate."
         },
         "operator-help": {
-            "source_sha256": "67350b2483d976e21f35e5dc905d77d13b47b29905c993b7bfa22079f0edf789",
-            "references_sha256": "3ee8f0a2c48c0c98cb17b41df11b46dad137524c464a9e3ac0daabf7778a8187",
-            "review_note": "Compared changed contact controller, shared layout and route registry against help dependencies. Public contact facts now have a single explicit source; private Help authorization, guide visibility and actor-owned history are unchanged."
+            "source_sha256": "4f2a46c8d65d9ca57a443308748a20492d083f1282f69fea0bbe6224bc4c19ae",
+            "references_sha256": "f1534b1c75666a620a6481adcfe614a98dee2ef82717f3c432178df2ce2515b5",
+            "review_note": "Reviewed owner guide, AdminController agent history/ask and layout changes: documented structured recorded facts, source dates, history and full-text fallback; Help role guards and named source resolution remain consistent."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
@@ -68,9 +68,9 @@
             "review_note": "Checked public product visibility, published navigation destinations and isolated first-party catalogue and policy discovery."
         },
         "workflow": {
-            "source_sha256": "0d9577badf6a34f04164e797ffbd0a71402cba0ac5f50ae37d15ac44e1093d0e",
+            "source_sha256": "a111358232c40f0f39825f5ac5f8aeabbaf5af7a63d5a7f158ed118b5443a67b",
             "references_sha256": "94dd586c81b1d91a0332e86219ac2b55c416d5ebc37115c9a2008697d68236d0",
-            "review_note": "Reviewed CI and deployment workflow additions and generated inventories against development and Git skills. Native isolated-world WebMCP and official-polyfill checks are separate required commands; existing exact-head CI and live SHA gates remain intact."
+            "review_note": "Reviewed CI additions, repository UI skills and regenerated project inventory: native browser gates now cover strict answer envelopes, fallback/history and contact/services; local PHP-WASM limitations are not represented as native CI success."
         }
     }
 }

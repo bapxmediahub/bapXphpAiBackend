@@ -56,7 +56,9 @@ jobs:
       - name: Gate published public knowledge and hidden Markdown isolation
         run: php tests/public-knowledge.php
       - name: Gate A2UI v1.0 published data, role isolation and safe actions
-        run: php tests/public-a2ui.php
+        run: |
+          php tests/public-a2ui.php
+          php tests/agent-presentation-scope.php
       - name: Verify browser knowledge tool registration, paging and private-path rejection
         run: node --test tests/public-knowledge-webmcp.test.cjs tests/public-products-webmcp.test.cjs tests/public-business-webmcp.test.cjs tests/public-knowledge-api.test.cjs
       - name: Check live WebMCP A2UI acceptance probe syntax

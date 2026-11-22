@@ -4,6 +4,8 @@ Open Enterprise Agent → Chat. Name the business fact and time period you need,
 
 For instructions, type **/help** to see available topics or **/help blog-publishing** to open the article workflow in chat. The answer links to the same owner guide you can read in Help.
 
+Answers use readable sections and relevant cards. When a completed report tool provides figures, the answer shows labelled facts with the recorded source, date range and observation time. Missing figures remain unavailable. Use the source link to inspect the underlying report.
+
 ## Attach a reference
 
 Use the paperclip to upload an image to Media and attach it to the message you are writing. For an existing image, page or article, type `@` and part of its name. Choose a suggestion with the arrow keys and Enter. Escape dismisses the list. Review the attachment names before sending.
@@ -11,6 +13,8 @@ Use the paperclip to upload an image to Media and attach it to the message you a
 ## Continue or start fresh
 
 Use **History** to reopen your own earlier conversations and **New chat** to reset the active context. Report follow-ups can reuse a verified previous period; explicit new dates should replace it. Do not assume reopening visible text gives every answer complete or fresh context—check the stated sources and dates.
+
+History keeps the figures recorded with that answer. Ask a new question to obtain current figures. If a card cannot be displayed, the complete saved answer remains readable as text.
 
 ## Review before acting
 

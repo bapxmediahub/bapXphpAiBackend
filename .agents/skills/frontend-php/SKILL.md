@@ -94,3 +94,7 @@ registerTool to support native void and promise implementations, catch refusal,
 and use AbortSignal lifecycle cleanup. Public GETs omit credentials and consume
 the shared PHP schemas. Verify native isolated-world discovery separately from
 polyfill tests; neither implies installation in an external chat. See docs/webmcp.md.
+
+## Structured Support answers
+
+Use `AgentAnswerPresentationService` for already-authorized answer sections and `PublicA2uiService` for published references. Render the surface as the primary reply with `{scope:"support"}`; keep the full original reply when the renderer rejects unsupported data. Never append a second flat copy. Query named products and articles rather than substituting an unrelated catalogue sample. Keep public images and navigation bounded; format stored replay text without fetching new prices. Verify primary rendering, complete fallback, reload, keyboard links and no overflow at 1280px and 375px with `tests/a2ui-public-browser.cjs`. See `docs/a2ui.md` for public versus actor-scoped contracts.

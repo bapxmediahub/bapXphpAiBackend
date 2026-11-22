@@ -42,16 +42,13 @@ const schemaProcess=spawnSync('php',['-r',
   join(__dirname,'../app/Services/PublicKnowledgeService.php'),join(__dirname,'../app/Services/PublicA2uiService.php')],{encoding:'utf8'});
 assert.equal(schemaProcess.status,0,schemaProcess.stderr||'PHP contract generation failed');
 const schemas=JSON.parse(schemaProcess.stdout);
+const presentationProcess=spawnSync('php',[join(__dirname,'fixtures/a2ui-responses.php')],{encoding:'utf8'});
+assert.equal(presentationProcess.status,0,presentationProcess.stderr||'Public presentation fixtures failed');
+const presentations=JSON.parse(presentationProcess.stdout);
 const contact={name:'Fixture Business',path:'/contact',phones:[{label:'Support',number:'+919789444037'}],
   email:'support@example.test',hours:[{days:'Mon–Sat',hours:'9 AM–7 PM'}],servicePath:'/contact#contact-form'};
 const services={services:[{name:'Temple Guidance',description:'Help using the published temple guides.',
   path:'/contact?subject=temple#contact-form'}],total:1,nextOffset:null};
-const presentation={messages:[{version:'1.0',createSurface:{
-  surfaceId:'bapx_products_0123456789abcdef',catalogId:'https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json',
-  components:[{id:'root',component:'Column',children:['heading']},
-    {id:'heading',component:'Text',text:{'@path':'/heading'}}],
-  dataModel:{heading:'Published products',items:[]}
-}}]};
 const globalTools=['get_public_contact','list_public_services','present_public_knowledge','search_public_articles','search_public_products'];
 function cards(count){
   return Array.from({length:count},(_,i)=>'<article class="product-card">'+
@@ -75,7 +72,12 @@ const server=createServer((req,res)=>{
   if(assets[url.pathname]){
     res.writeHead(200,{'content-type':'application/javascript'});res.end(assets[url.pathname]);return;
   }
-  const simpleResponses={'/api/knowledge/contact':contact,'/api/knowledge/services':services,'/api/knowledge/a2ui':presentation};
+  if(url.pathname==='/api/knowledge/a2ui'){
+    const view=url.searchParams.get('view');
+    res.writeHead(200,{'content-type':'application/json','cache-control':'no-store'});
+    res.end(JSON.stringify(view==='contact'?presentations.contact:view==='services'?presentations.services:presentations.product));return;
+  }
+  const simpleResponses={'/api/knowledge/contact':contact,'/api/knowledge/services':services};
   if(simpleResponses[url.pathname]){
     res.writeHead(200,{'content-type':'application/json','cache-control':'no-store'});
     res.end(JSON.stringify(simpleResponses[url.pathname]));return;
@@ -105,11 +107,13 @@ const server=createServer((req,res)=>{
     const script=path=>'<script src="/assets/'+path+'" defer></script>';
     const html='<!doctype html><html><head><title>WebMCP test</title>'+load+
       schema('bapx-public-business-schema',{contact:schemas.contact,services:schemas.services})+
-      (catalogue?schema('bapx-public-knowledge-schema',schemas.articles)+schema('bapx-public-products-schema',schemas.products)+schema('bapx-a2ui-schema',schemas.a2ui):'')+
+      schema('bapx-a2ui-schema',schemas.a2ui)+
+      (catalogue?schema('bapx-public-knowledge-schema',schemas.articles)+schema('bapx-public-products-schema',schemas.products):'')+
       '</head><body><h1>Business landing page</h1>'+
       (url.pathname==='/shop'?'<div class="shop-results">'+cards(45)+'</div>':'')+
       script('public-business-webmcp.js')+script('shop-webmcp.js')+
-      (catalogue?script('public-knowledge-webmcp.js')+script('public-products-webmcp.js')+script('a2ui-public-renderer.js')+script('public-a2ui-webmcp.js'):'')+
+      script('a2ui-public-renderer.js')+script('public-a2ui-webmcp.js')+
+      (catalogue?script('public-knowledge-webmcp.js')+script('public-products-webmcp.js'):'')+
       '</body></html>';
     res.writeHead(200,{'content-type':'text/html; charset=utf-8'});res.end(html);return;
   }
@@ -225,13 +229,16 @@ async function main(){
       'A pagehide must remove registered tools or render document discovery unavailable');
 
     await page.goto('http://127.0.0.1:'+port+'/contact-only',{waitUntil:'load'});
-    await waitForTools(page,2);
+    await waitForTools(page,3);
     const contactOnly=await page.evaluate(async()=>{
       const tools=await document.modelContext.getTools();
-      return {names:tools.map(x=>x.name).sort(),contact:JSON.parse(await document.modelContext.executeTool(tools.find(t=>t.name==='get_public_contact'),{}))};
+      return {names:tools.map(x=>x.name).sort(),contact:JSON.parse(await document.modelContext.executeTool(tools.find(t=>t.name==='get_public_contact'),{})),
+        presentation:JSON.parse(await document.modelContext.executeTool(tools.find(t=>t.name==='present_public_knowledge'),{view:'contact',limit:4}))};
     });
-    assert.deepEqual(contactOnly.names,['get_public_contact','list_public_services']);
+    assert.deepEqual(contactOnly.names,['get_public_contact','list_public_services','present_public_knowledge']);
     assert.deepEqual(contactOnly.contact,contact);
+    assert.equal(contactOnly.presentation.messages[0].version,'1.0');
+    assert.ok(contactOnly.presentation.messages[0].createSurface.surfaceId.startsWith('bapx_contact_'));
     if(!native){
       const without=await browser.newPage();
       const fallbackErrors=[];without.on('pageerror',error=>fallbackErrors.push(error.message));

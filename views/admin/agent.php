@@ -227,6 +227,21 @@
         }
     }
 
+    function renderAnswer(container, answer, surface, sources = []) {
+        const rendered = surface && window.BapxA2ui && window.BapxA2ui.render(container, surface, {scope:'admin'});
+        if (rendered) return;
+        container.innerHTML = renderMarkdown(answer || 'No response.');
+        for (const source of sources) {
+            if (typeof source.path !== 'string' || !/^\/admin\/(?:support-tickets|docs\/[a-z0-9-]{1,80}|tax-report\?report=(?:sales|tax)&from=\d{4}-\d{2}-\d{2}&to=\d{4}-\d{2}-\d{2})$/.test(source.path)) continue;
+            const line = document.createElement('p');
+            const link = document.createElement('a');
+            link.href = source.path;
+            link.textContent = source.label;
+            line.appendChild(link);
+            container.appendChild(line);
+        }
+    }
+
     async function restoreConversation(id) {
         if (input.disabled || uploadBtn.disabled || !/^[a-f0-9]{32}$/.test(String(id))) return;
         transcriptRequest?.abort();
@@ -256,7 +271,7 @@
                     bubble.className = 'agent-bubble agent-bubble--error';
                     showRequestError(bubble, turn.answer, id, turn.turn_id);
                 } else {
-                    addRow('bot', renderMarkdown(String(turn.answer || '')));
+                    renderAnswer(addRow('bot', ''), String(turn.answer || ''), turn.a2ui);
                 }
             }
             clear.hidden = false;
@@ -618,17 +633,7 @@
             } else if (data.draft) {
                 response.appendChild(buildDraftForm(data.draft));
             } else {
-                response.innerHTML = renderMarkdown(data.answer || 'No response.');
-                if (data.a2ui && window.BapxA2ui) window.BapxA2ui.render(response,data.a2ui);
-                for (const source of data.run?.sources || []) {
-                    if (typeof source.path !== 'string' || !source.path.startsWith('/admin/')) continue;
-                    const line = document.createElement('p');
-                    const link = document.createElement('a');
-                    link.href = source.path;
-                    link.textContent = source.label;
-                    line.appendChild(link);
-                    response.appendChild(line);
-                }
+                renderAnswer(response, data.answer, data.a2ui, data.run?.sources || []);
             }
             appendRunMeta(thinking, data.run);
             if (data.missing && data.missing.length) {

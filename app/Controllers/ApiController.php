@@ -95,8 +95,8 @@ final class ApiController extends BaseController {
         $view=$_GET['view'] ?? null;
         $query=$_GET['query'] ?? '';
         $limit=$_GET['limit'] ?? '4';
-        if (!is_string($view) || !in_array($view,['products','articles'],true)
-            || !is_string($query) || mb_strlen($query)>120
+        if (!is_string($view) || !in_array($view,PublicA2uiService::inputSchema()['properties']['view']['enum'],true)
+            || !is_string($query) || !mb_check_encoding($query,'UTF-8') || mb_strlen($query)>120
             || !is_scalar($limit) || !preg_match('/^[1-4]$/D',(string)$limit)
             || array_diff(array_keys($_GET),['view','query','limit'])) {
             $this->jsonResponse(['error'=>'Choose a public view and optional bounded query.'],400);

@@ -174,3 +174,66 @@ test('Failed question returns to the composer with the recorded turn and no auto
         await page.close();
     }
 });
+
+const presentations=JSON.parse(execFileSync('php',['tests/fixtures/a2ui-responses.php'],{cwd:root,encoding:'utf8'}));
+for(const width of [1280,375]) {
+    test(`Enterprise structured answer, history and complete fallback at ${width}px`, async()=>{
+        const page=await browser.newPage({viewport:{width,height:800}});
+        const errors=[];page.on('pageerror',error=>errors.push(error.message));
+        let sends=0;
+        try {
+            await page.route(origin+'/admin/agent',route=>route.fulfill({contentType:'text/html',body:view}));
+            await page.route(origin+'/admin/agent/ask',route=>{
+                sends++;
+                const a2ui=structuredClone(sends===2?presentations.product:presentations.enterprise);
+                if(sends>2)a2ui.messages[0].version='unsupported';
+                return route.fulfill({json:{conversation_id:first,answer:sends===1
+                    ?'Sales for the selected period.\n\nThe completed read-only lookup returned ₹1,250.00.'
+                    :sends===2?'Complete original answer after public-only presentation.':'Complete original answer after unsupported presentation.',a2ui,
+                    run:{sources:[{label:'Sales report',path:'/admin/tax-report?report=sales&from=2026-11-01&to=2026-11-22'}]}}});
+            });
+            await page.route(origin+'/admin/agent/history',route=>route.fulfill({json:{conversations:[
+                {id:first,preview:'Structured saved chat',pending_turn_count:1}
+            ]}}));
+            await page.route(origin+'/admin/agent/history/'+first,route=>{
+                const bad=structuredClone(presentations.history);bad.messages[0].version='unsupported';
+                return route.fulfill({json:{conversation_id:first,turns:[
+                    {question:'Saved question',answer:'Saved authorized answer.',a2ui:presentations.history},
+                    {question:'Legacy saved question',answer:'Legacy full fallback.',a2ui:bad},
+                ]}});
+            });
+            await page.goto(origin+'/admin/agent');
+            await page.addScriptTag({path:path.join(root,'assets/agent-status.js')});
+            await page.addScriptTag({path:path.join(root,'assets/a2ui-public-renderer.js')});
+            await page.addStyleTag({path:path.join(root,'assets/css/a2ui-public.css')});
+            const input=page.getByRole('textbox',{name:'Message'});
+            await input.fill('Sales for the selected period');await input.press('Enter');
+            await page.locator('.bapx-a2ui--answer').waitFor();
+            assert.equal(await page.getByText('Sales for the selected period.',{exact:true}).count(),1,'Full flat response is not duplicated');
+            const source=page.getByRole('link',{name:'Sales report',exact:true});
+            assert.equal(await source.count(),1,'Source action appears once');
+            assert.equal(await page.locator('.bapx-a2ui__row').count(),2,'Recorded tool values render as facts');
+            assert.equal(await page.getByText('₹1,250.00',{exact:true}).count(),1);
+            assert.ok(await source.evaluate(el=>el.getBoundingClientRect().height>=44));
+            await source.focus();assert.equal(await source.evaluate(el=>el===document.activeElement),true);
+            assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+            await page.getByRole('button',{name:'History',exact:true}).click();
+            await page.getByRole('button',{name:/Structured saved chat/}).click();
+            await page.getByText('Saved authorized answer.',{exact:true}).waitFor();
+            assert.equal(await page.locator('.bapx-a2ui--answer').count(),1);
+            assert.equal(await page.getByText('Legacy full fallback.',{exact:true}).count(),1);
+            assert.equal(await page.locator('.bapx-a2ui__row').count(),2,'History retains recorded facts');
+            assert.match(await page.locator('.bapx-a2ui--answer').innerText(),/2026-11-22 09:30:00.000000 UTC/);
+            assert.equal(await page.locator('.bapx-a2ui__image').count(),0,'Restored answers do not retrieve current catalogue data');
+            assert.equal(sends,1,'History reads do not resend questions');
+            await input.fill('A follow-up');await input.press('Enter');
+            await page.getByText('Complete original answer after public-only presentation.',{exact:true}).waitFor();
+            assert.equal(await page.locator('.bapx-a2ui--answer').count(),1,'Public-only response cannot replace the full native answer');
+            assert.equal(await page.locator('.bapx-a2ui:not(.bapx-a2ui--answer)').count(),0,'Rejected public-only response adds no cards');
+            await input.fill('Unsupported response');await input.press('Enter');
+            await page.getByText('Complete original answer after unsupported presentation.',{exact:true}).waitFor();
+            assert.equal(await page.locator('.bapx-a2ui--answer').count(),1,'Unsupported surface keeps complete text fallback');
+            assert.deepEqual(errors,[]);
+        } finally {await page.close();}
+    });
+}
