@@ -75,34 +75,6 @@ jobs:
         run: php tests/documentation-review.php
       - name: Validate code, tests, maps, and routes
         run: ./bapXphp ci
-      # CARTDOC-TEMP-BEGIN
-      - name: Regenerate customer cart release documentation (temporary extraction)
-        if: always()
-        run: |
-          python3 -c 'from pathlib import Path; p=Path(".github/workflows/ci.yml"); s=p.read_text(); a=s.index("      # CARTDOC-TEMP-BEGIN\n"); b=s.index("      # CARTDOC-TEMP-END\n",a)+len("      # CARTDOC-TEMP-END\n"); p.write_text(s[:a]+s[b:])'
-          ./bapXphp update || true
-          php -r 'require "app/bootstrap.php"; require "cli/lib/DocumentationReview.php"; $r=new DocumentationReview(getcwd(),require "config/documentation.php"); $notes=[
-          "operator-help"=>"Reviewed public header and mobile cart retry feedback against customer help navigation; no operator-only content becomes public.",
-          "http-errors"=>"Reviewed HTTP 429 empty-body handling for cart AJAX; no false success or automatic repeat POST; safe status/error classification preserved.",
-          "workflow"=>"Reviewed separate Git HEAD verification and guest mobile-cart acceptance jobs; code CI remains distinct from host-side 429 evidence.",
-          "foundation"=>"Reviewed unchanged private JSON storage and deployed Git revision service; the guest cart acceptance only touches an isolated session.",
-          "interface"=>"Reviewed visible top cart and floating cart logic, error toast on 429 and malformed JSON, null DOM guards and responsive mobile UI.",
-          "google-tags"=>"Checked the public layout cart handler change does not modify analytics consent, tags or Google account integration.",
-          "mail"=>"Verified no mail dispatch, retry, template, provider access or customer notification on failed cart AJAX.",
-          "commerce"=>"Reviewed failed cart POST behavior, safe cart state validation, original add/decrement contract and rate limit evidence.",
-          "auth"=>"Reviewed public cart guest CSRF and session handling remains unchanged, with no credentials or unsafe new endpoint.",
-          "mcp-clients"=>"Confirmed cart response safety changes do not alter MCP client scopes, issuance, revocation or public WebMCP registration.",
-          "sales-channels"=>"Confirmed no product feed, catalogue pricing, paid ad integration or sales-channel publishing changes.",
-          "media"=>"Confirmed no upload or media deletion behavior changes in this cart-failure handling repair.",
-          "agents"=>"Confirmed no runtime prompt, trace history or internal Support and Enterprise tools are exposed by this patch.",
-          "content"=>"Reviewed Hostinger troubleshooting documentation and unchanged blog publishing boundaries."
-          ]; foreach($r->check() as $e){if(preg_match("/^([a-z][a-z0-9-]+): source\/doc review missing or stale/",$e,$m)){if(!isset($notes[$m[1]]))exit(3);$r->record($m[1],$notes[$m[1]]);}}'
-          for f in docs/agent-tool-contracts.md docs/systematic-map.mmd docs/map.mmd docs/project-index.json index.yaml map.mmd docs/source-contracts.json; do
-            echo "CARTDOC_START $f"
-            base64 -w 3000 "$f" | sed 's/^/CARTDOC_B64 /'
-            echo "CARTDOC_END $f"
-          done
-      # CARTDOC-TEMP-END
 
 
 
