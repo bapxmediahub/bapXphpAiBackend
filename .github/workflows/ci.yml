@@ -60,7 +60,7 @@ jobs:
       - name: Exercise the owner composer, installed admin app and public header editing in Chrome
         run: |
           npm install --prefix "$RUNNER_TEMP/agent-browser" --no-audit --no-fund --ignore-scripts playwright@1.62.1 @modelcontextprotocol/client@2.4.0
-          NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/agent-history-browser.cjs tests/admin-pwa-browser.cjs tests/header-menu-browser.cjs
+          NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/agent-history-browser.cjs tests/admin-pwa-browser.cjs tests/header-menu-browser.cjs tests/mobile-cart-restore-browser.cjs
       - name: Verify the public tools with the official MCP client
         run: node tests/catalogue-mcp-interop.cjs "$RUNNER_TEMP/agent-browser"
       - name: Validate public catalogue MCP scope and framing
