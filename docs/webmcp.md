@@ -50,6 +50,11 @@ standard. The guide links both representations and distinguishes public reads,
 signed-in Support, and the owner-authorized Enterprise agent. New consultation
 booking is retired; enquiries use the existing contact form.
 
+Both discovery URLs are generated PHP responses, not static copies. They must
+pass the public route gate in `index.php` as well as the registered router after
+the hosting rewrite. Registering a controller route alone does not make it
+reachable through that entry point.
+
 ## Search followed by exact product selection
 
 The existing `search_public_products` tool accepts an optional `slugs` array of
@@ -140,6 +145,12 @@ descriptors. The PHP schema remains canonical and returned values are checked
 in either lane. Unit fixtures cover both void and promise registration and
 synchronous refusal. HTTP/controller fixtures exercise bounded input and
 public/private separation.
+
+`tests/public-knowledge-api.test.cjs` also enters the real `index.php` with a
+rewritten script target and the original requested URI. It checks both discovery
+URLs, the plain-text query-string variant, GET-only dispatch and rejected path
+suffixes. The separate `tests/public-agent-discovery.php` verifies the reviewed
+source, configured origin, controller content and discovery links.
 
 After the deployment SHA gate, `tests/live-webmcp-a2ui-browser.cjs` independently
 checks the real landing and shop pages in polyfill and native modes. It renders

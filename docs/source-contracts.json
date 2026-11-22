@@ -23,9 +23,9 @@
             "review_note": "Reviewed public ProductService and BlogService published selection and exclusion of future, draft, retired or private Markdown and paths."
         },
         "foundation": {
-            "source_sha256": "7f1816ec1e9cbb28e24b45c93b13a9b9121ab2ee607334409904f6b902897740",
-            "references_sha256": "d1bf9b73d422f885e03eed0be9528d1dbb8e526372709bcc070a0d9ab5600051",
-            "review_note": "Cross-checked fixed public Markdown guide, canonical route registry, API/controller projections and webmcp/architecture/storage/deployment docs; no private instructions, records or conversation files are published."
+            "source_sha256": "20cd2e6017d569e8544c16fbafb80a09e21f7495b3485971459aa1418b065d3d",
+            "references_sha256": "6d956420bce6857ef16ca8f29d04ee01aa067ca79dcf562c37753cd883cd7c8a",
+            "review_note": "Reviewed the narrow index.php route fix against its registered controllers and hosting rewrite. Documented the independent entry gate in docs/webmcp.md; tests reproduce the former 404 and prove both guide responses while preserving invalid-method/path rejection."
         },
         "google-tags": {
             "source_sha256": "5d85546a76fc792fb9cc11dde1a3633519354a11e4bb6a9cd87a07910b305c84",
@@ -33,9 +33,9 @@
             "review_note": "Inspected layout diff limited to public help metadata and footer navigation; tag identity, consent, scripts and settings guidance remain unchanged."
         },
         "http-errors": {
-            "source_sha256": "511eef32b2e0352fea40dfed92aeb6d31aeeec2b9cc36726acff2773c79692bd",
+            "source_sha256": "e93e09e81fb4c32aad806a41efd342e0bd24b3ac8335b8307f3894e5cd9e1ac0",
             "references_sha256": "015f6d08ee26a5fadc37e4dfc79fd759d3c18a09324493e8efbadaa4a6c03ecd",
-            "review_note": "Reviewed the shared backend skill addition for named comparisons; response-failure routes, privacy, and deployment recovery contracts remain unchanged."
+            "review_note": "Reviewed index.php route gating and unknown-route handling with the new real-entry regression. Only the two registered public discovery URLs are admitted; unknown suffixes and private paths remain 404, and the existing failure-response contract is unchanged."
         },
         "interface": {
             "source_sha256": "b9255f91d6ee7bbbfcfa1dbdee98a3c63881270ea8b55851dc9ccff1847a4324",
@@ -58,14 +58,14 @@
             "review_note": "Compared the architecture change with media ownership/deletion guidance. The widget consumes the same validated public raster paths and introduces no upload, deletion, metadata mutation or additional media authority."
         },
         "operator-help": {
-            "source_sha256": "002112ff8c9775095f2f0a80a70abe62e3160a0883376c87ef7bd449dfdab86d",
+            "source_sha256": "43d20e5b3dae5ad3af6a2b774e0442c34e0929de53faf04825f2bcf84fe483f1",
             "references_sha256": "f1534b1c75666a620a6481adcfe614a98dee2ef82717f3c432178df2ce2515b5",
-            "review_note": "Cross-checked public AI guide routes and footer/head links against the fixed help catalogue; no operator access, help body lookup, or admin workflow changes."
+            "review_note": "Reviewed both public discovery routes through the real front controller and the shared landing/footer links. The two added public prefixes do not change admin help authorization or its documented owner workflows."
         },
         "public-mcp": {
             "source_sha256": "1c804b6daa48eddac7deaf679ff3adb7b1f0205c09f31db63d4926943b863590",
-            "references_sha256": "20b2856ed95c9e6b8e434141ce36fc031c3f37716fe92c5070d95014a38bd243",
-            "review_note": "Reviewed both protocol profiles, shared exact-slug validation, bounded selected product details, guide origin/URLs and docs; existing resource bridge and text fallback remain authoritative."
+            "references_sha256": "f35133fb7116cc19be316f40d7398cc31db0cf170d26d76286640bb354cc9ed4",
+            "review_note": "Reviewed the public guide, configured endpoint and repeatable verification documentation. Added explicit real-index.php checks for both discovery routes; MCP transport, client negotiation, public schemas and scope stay unchanged."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
