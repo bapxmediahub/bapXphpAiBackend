@@ -44,18 +44,18 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 465
-  relationships: 390
+  concepts: 472
+  relationships: 399
   by_type:
     blog: 16
-    controller: 14
-    doc: 52
+    controller: 15
+    doc: 53
     image: 89
     operator_guide: 12
-    route: 166
+    route: 170
     runtime_instruction: 6
     schema: 22
-    service: 76
+    service: 77
     skill: 12
 concepts:
   - id: "blog:benefits-of-rudraksha"
@@ -287,6 +287,14 @@ concepts:
     title: "PublicController"
     description: "Controller: PublicController"
     resource: "app/Controllers/PublicController.php"
+    tags:
+      - "code"
+      - "controller"
+  - id: "controller:PublicMcpController"
+    type: "controller"
+    title: "PublicMcpController"
+    description: "Controller: PublicMcpController"
+    resource: "app/Controllers/PublicMcpController.php"
     tags:
       - "code"
       - "controller"
@@ -663,6 +671,15 @@ concepts:
     tags:
       - "docs"
     filename: "product-list.md"
+    header_image: ""
+  - id: "doc:public-mcp"
+    type: "doc"
+    title: "Public MCP tools and chat cards"
+    description: "Stateless public Streamable HTTP MCP and the bounded MCP Apps presentation."
+    resource: "docs/public-mcp.md"
+    tags:
+      - "docs"
+    filename: "public-mcp.md"
     header_image: ""
   - id: "doc:pwa"
     type: "doc"
@@ -2014,6 +2031,20 @@ concepts:
       - "operator-help"
       - "private"
       - "agents"
+  - id: "route:delete__api_mcp"
+    type: "route"
+    title: "DELETE /api/mcp"
+    description: "api.mcp.delete"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "DELETE"
+    path: "/api/mcp"
+    controller: "PublicMcpController@handle"
+    services:
+      - "PublicMcpService"
+    view: "public/404"
   - id: "route:get"
     type: "route"
     title: "GET /"
@@ -2969,6 +3000,20 @@ concepts:
     services:
       - "PublicKnowledgeService"
     view: "public/404"
+  - id: "route:get__api_mcp"
+    type: "route"
+    title: "GET /api/mcp"
+    description: "api.mcp.method"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/api/mcp"
+    controller: "PublicMcpController@handle"
+    services:
+      - "PublicMcpService"
+    view: "public/404"
   - id: "route:get__api_product__slug"
     type: "route"
     title: "GET /api/product/{slug}"
@@ -3502,6 +3547,20 @@ concepts:
     controller: "PublicController@terms"
     services: []
     view: "public/terms"
+  - id: "route:options__api_mcp"
+    type: "route"
+    title: "OPTIONS /api/mcp"
+    description: "api.mcp.options"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "OPTIONS"
+    path: "/api/mcp"
+    controller: "PublicMcpController@handle"
+    services:
+      - "PublicMcpService"
+    view: "public/404"
   - id: "route:post__account_dashboard_addresses_delete"
     type: "route"
     title: "POST /account/dashboard/addresses/delete"
@@ -4324,6 +4383,22 @@ concepts:
       - "AuthService"
       - "ConsultationService"
     view: "admin/list"
+  - id: "route:post__api_mcp"
+    type: "route"
+    title: "POST /api/mcp"
+    description: "api.mcp"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/api/mcp"
+    controller: "PublicMcpController@handle"
+    services:
+      - "PublicMcpService"
+      - "PublicKnowledgeService"
+      - "PublicA2uiService"
+    view: "public/mcp-app"
   - id: "route:post__cart_add"
     type: "route"
     title: "POST /cart/add"
@@ -5293,6 +5368,14 @@ concepts:
     tags:
       - "code"
       - "service"
+  - id: "service:PublicMcpService"
+    type: "service"
+    title: "PublicMcpService"
+    description: "Service: PublicMcpService"
+    resource: "app/Services/PublicMcpService.php"
+    tags:
+      - "code"
+      - "service"
   - id: "service:RateLimiter"
     type: "service"
     title: "RateLimiter"
@@ -5866,6 +5949,15 @@ relationships:
   - from: "controller:PublicController"
     to: "service:TempleService"
     relation: "uses"
+  - from: "controller:PublicMcpController"
+    to: "service:PublicA2uiService"
+    relation: "uses"
+  - from: "controller:PublicMcpController"
+    to: "service:PublicKnowledgeService"
+    relation: "uses"
+  - from: "controller:PublicMcpController"
+    to: "service:PublicMcpService"
+    relation: "uses"
   - from: "controller:RemoteDbController"
     to: "service:DatabaseService"
     relation: "uses"
@@ -5926,6 +6018,9 @@ relationships:
   - from: "doc:deployment-hostinger"
     to: "doc:a2ui"
     relation: "references"
+  - from: "doc:public-mcp"
+    to: "doc:a2ui"
+    relation: "references"
   - from: "doc:rea-agent-commerce-gap-audit"
     to: "doc:ai-review-workflow"
     relation: "references"
@@ -5940,6 +6035,9 @@ relationships:
     relation: "references"
   - from: "doc:webmcp"
     to: "doc:a2ui"
+    relation: "references"
+  - from: "doc:webmcp"
+    to: "doc:public-mcp"
     relation: "references"
   - from: "operator_guide:agent-monitoring"
     to: "service:AgentConversationService"
@@ -6079,6 +6177,9 @@ relationships:
   - from: "operator_guide:support-tickets"
     to: "service:AdminHelpService"
     relation: "rendered_by"
+  - from: "route:delete__api_mcp"
+    to: "controller:PublicMcpController"
+    relation: "handled_by"
   - from: "route:get"
     to: "controller:PublicController"
     relation: "handled_by"
@@ -6265,6 +6366,9 @@ relationships:
   - from: "route:get__api_knowledge_services"
     to: "controller:ApiController"
     relation: "handled_by"
+  - from: "route:get__api_mcp"
+    to: "controller:PublicMcpController"
+    relation: "handled_by"
   - from: "route:get__api_product__slug"
     to: "controller:ApiController"
     relation: "handled_by"
@@ -6375,6 +6479,9 @@ relationships:
     relation: "handled_by"
   - from: "route:get__terms"
     to: "controller:PublicController"
+    relation: "handled_by"
+  - from: "route:options__api_mcp"
+    to: "controller:PublicMcpController"
     relation: "handled_by"
   - from: "route:post__account_dashboard_addresses_delete"
     to: "controller:AccountController"
@@ -6525,6 +6632,9 @@ relationships:
     relation: "handled_by"
   - from: "route:post__api_consultations__id__status"
     to: "controller:ConsultationController"
+    relation: "handled_by"
+  - from: "route:post__api_mcp"
+    to: "controller:PublicMcpController"
     relation: "handled_by"
   - from: "route:post__cart_add"
     to: "controller:CommerceController"

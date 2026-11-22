@@ -8,6 +8,10 @@ if (PHP_SAPI !== 'cli') {
 }
 
 date_default_timezone_set('Asia/Kolkata');
+// Public MCP never reads browser login state or issues a PHP session cookie.
+$publicMcpRequest=defined('BAPX_PUBLIC_MCP_REQUEST') && BAPX_PUBLIC_MCP_REQUEST===true
+    && PHP_SAPI!=='cli' && parse_url((string)($_SERVER['REQUEST_URI']??''),PHP_URL_PATH)==='/api/mcp';
+if (!$publicMcpRequest) {
 ini_set('session.gc_maxlifetime', (string)(60 * 60 * 24 * 30));
 session_set_cookie_params([
     'lifetime' => 60 * 60 * 24 * 30,
@@ -17,6 +21,7 @@ session_set_cookie_params([
     'samesite' => 'Lax',
 ]);
 session_start();
+}
 
 spl_autoload_register(function (string $class): void {
     $prefix = 'App\\';

@@ -9,6 +9,10 @@ $rules = [
   'dependencies'=>['app/Services/SecretService.php','app/Services/OrderService.php','app/Services/StoreStatsService.php','app/Services/AuditLogService.php'],
   'references'=>['docs/pages/shop.md','docs/pages/integrations.md','content/help/admin/settings.md','.agents/skills/bapxphp-cli/SKILL.md']],
 
+ 'public-mcp'=>['sources'=>['app/Controllers/PublicMcpController.php','app/Services/PublicMcpService.php','views/public/mcp-app.php','assets/public-mcp-app.js','tests/public-mcp*'],
+  'dependencies'=>['api/index.php','app/bootstrap.php','app/Services/ProjectMapService.php','app/Services/PublicKnowledgeService.php','app/Services/PublicA2uiService.php','assets/a2ui-public-renderer.js','assets/css/a2ui-public.css'],
+  'references'=>['docs/public-mcp.md','docs/pages/shop.md','docs/a2ui.md','.agents/skills/backend-php-mysql/SKILL.md']],
+
  'google-tags'=>['sources'=>['integrations/google-site-kit/*','app/Controllers/AdminGoogleReportingController.php','views/admin/google-reporting.php','tests/google-reporting.php'],
   'dependencies'=>['views/layouts/app.php','views/admin/dashboard.php','views/admin/integrations.php','app/Services/SecretService.php'],
   'references'=>['docs/pages/integrations.md','content/help/admin/settings.md','.agents/skills/frontend-php/SKILL.md']],

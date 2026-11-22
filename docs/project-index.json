@@ -3,10 +3,10 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 167,
-        "controllers": 14,
-        "services": 76,
-        "views": 67,
+        "routes": 171,
+        "controllers": 15,
+        "services": 77,
+        "views": 68,
         "collections": 22
     },
     "routes": [
@@ -1352,6 +1352,48 @@
             ]
         },
         {
+            "method": "DELETE",
+            "path": "/api/mcp",
+            "name": "api.mcp.delete",
+            "controller": "PublicMcpController@handle",
+            "view": "public/404",
+            "services": [
+                "PublicMcpService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/api/mcp",
+            "name": "api.mcp.method",
+            "controller": "PublicMcpController@handle",
+            "view": "public/404",
+            "services": [
+                "PublicMcpService"
+            ]
+        },
+        {
+            "method": "OPTIONS",
+            "path": "/api/mcp",
+            "name": "api.mcp.options",
+            "controller": "PublicMcpController@handle",
+            "view": "public/404",
+            "services": [
+                "PublicMcpService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/api/mcp",
+            "name": "api.mcp",
+            "controller": "PublicMcpController@handle",
+            "view": "public/mcp-app",
+            "services": [
+                "PublicMcpService",
+                "PublicKnowledgeService",
+                "PublicA2uiService"
+            ]
+        },
+        {
             "method": "GET",
             "path": "/api/product/{slug}",
             "name": "api.product",
@@ -1935,6 +1977,7 @@
         "CommerceController",
         "ConsultationController",
         "PublicController",
+        "PublicMcpController",
         "RemoteDbController",
         "ReviewController",
         "SupportController"
@@ -1994,6 +2037,7 @@
         "ProjectMapService",
         "PublicA2uiService",
         "PublicKnowledgeService",
+        "PublicMcpService",
         "RateLimiter",
         "RequestFailureService",
         "ResourceService",
@@ -2072,6 +2116,7 @@
         "public/home-collections",
         "public/home-product-card",
         "public/login",
+        "public/mcp-app",
         "public/merchant-feed",
         "public/privacy",
         "public/product",

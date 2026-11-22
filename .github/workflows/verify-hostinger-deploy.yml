@@ -88,6 +88,25 @@ jobs:
           NODE_PATH="$RUNNER_TEMP/live-webmcp/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/live-webmcp-a2ui-browser.cjs
       - name: Verify native browser discovery and invocation independently of the polyfill
         run: NODE_PATH="$RUNNER_TEMP/live-webmcp/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" WEBMCP_NATIVE=1 xvfb-run -a node --test tests/live-webmcp-a2ui-browser.cjs
+  public_mcp_acceptance:
+    name: Live public MCP default and modern client acceptance
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.expected_sha || github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Discover public tools and read actual product cards through both MCP profiles
+        env:
+          PUBLIC_MCP_URL: https://sripanchamispiritual.com/api/mcp
+        run: |
+          npm install --prefix "$RUNNER_TEMP/live-mcp" --no-audit --no-fund --ignore-scripts @modelcontextprotocol/client@2.4.0
+          node tests/public-mcp-http.cjs "$RUNNER_TEMP/live-mcp"
   mobile_acceptance:
     name: Live mobile header and guest cart acceptance
     needs: verify

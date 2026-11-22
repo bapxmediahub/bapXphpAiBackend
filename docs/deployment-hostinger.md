@@ -266,3 +266,13 @@ read-only live acceptance after releases; never deploy an intentional crash prob
 Hostinger hPanel's **Advanced → Git → Auto Deployment** is asynchronous. After a green `main` run, the separate SHA-verification workflow now waits **60 seconds** before its bounded polling of `/is-sha-valid?sha=<merge_sha>`; a mismatch/503 stays unverified, not a deployment success. Run independent mobile cart acceptance only after the SHA gate passes. For A2UI releases, confirm the live `GET /api/knowledge/a2ui?view=products&limit=1` JSON envelope, `assets/a2ui-public-renderer.js` and `assets/public-a2ui-webmcp.js`, and then the official WebMCP browser-tool discovery/execution. A2UI access from an unrelated ChatGPT chat requires a separate connector, not the website's WebMCP script. See [A2UI contract](a2ui.md).
 
 After the A2UI release's post-merge SHA verification, the `webmcp_acceptance` job independently checks the live landing page for `search_public_products`, `search_public_articles`, `get_public_contact`, `list_public_services` and `present_public_knowledge`, then verifies the additional `list_shop_results` tool on `/shop`. Separate official-polyfill and native headed-Chrome runs check discovery, read-only execution and safe A2UI rendering. Native Chrome before 159 may omit discovered output schemas; actual output is still validated. The native run requires the real browser API, so it cannot silently pass using the polyfill. Record that browser evidence separately from a direct ChatGPT MCP connector (not installed by WebMCP alone).
+
+The separate `public_mcp_acceptance` job also depends on the verified live SHA.
+It connects to `POST /api/mcp` with the unmodified default official client and
+the explicitly modern profile, reads all four public tools and the UI resource,
+and requires actual published products with card metadata. It checks that no
+browser or MCP session is issued. This production probe performs only public
+reads; its local malformed-request and private-scope fixtures are not sent to
+the live site. The independent pre-merge AppBridge browser test verifies the
+shipped widget at desktop and 375px. Neither check claims that a connector was
+installed into an unrelated ChatGPT conversation. See [public MCP](public-mcp.md).
