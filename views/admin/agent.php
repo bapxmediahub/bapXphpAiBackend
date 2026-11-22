@@ -144,8 +144,8 @@
     .agent-hint { display:none; }
 }
 </style>
-<link rel="stylesheet" href="/assets/css/a2ui-public.css?v=<?= filemtime(app_path('assets/css/a2ui-public.css')) ?>">
-<script src="/assets/a2ui-public-renderer.js?v=<?= filemtime(app_path('assets/a2ui-public-renderer.js')) ?>"></script>
+<link rel="stylesheet" href="/assets/css/a2ui-public.css?v=<?= filemtime(__DIR__ . '/../../assets/css/a2ui-public.css') ?>">
+<script src="/assets/a2ui-public-renderer.js?v=<?= filemtime(__DIR__ . '/../../assets/a2ui-public-renderer.js') ?>"></script>
 
 <script>
 (function () {
