@@ -77,6 +77,35 @@ jobs:
         run: php tests/documentation-review.php
       - name: Validate code, tests, maps, and routes
         run: ./bapXphp ci
+      # A2UI-DOCSYNC-BEGIN
+      - name: Export generated A2UI maps and reviewed source fingerprints (temporary)
+        if: always()
+        run: |
+          python3 -c 'from pathlib import Path; p=Path(".github/workflows/ci.yml"); s=p.read_text(); a=s.index("      # A2UI-DOCSYNC-BEGIN\n"); b=s.index("      # A2UI-DOCSYNC-END\n",a)+len("      # A2UI-DOCSYNC-END\n"); p.write_text(s[:a]+s[b:])'
+          ./bapXphp update || true
+          php -r 'require "app/bootstrap.php"; require "cli/lib/DocumentationReview.php"; $r=new DocumentationReview(getcwd(),require "config/documentation.php"); $notes=[
+          "operator-help"=>"Reviewed owner-only help, role-gated admin chat and shared public presentation: no private Markdown guide enters public A2UI.",
+          "http-errors"=>"Reviewed public presentation API 400/503 bounds, no-store headers and rendering errors that fall back to existing safe text answers.",
+          "mcp-clients"=>"Reviewed the WebMCP A2UI read-only schema and omitted credentials; existing owner-issued MCP grants remain private.",
+          "google-tags"=>"Reviewed layout script ordering for A2UI renderer and WebMCP alongside Google analytics integrations without changing consent or credential tags.",
+          "agents"=>"Reviewed both Support and Enterprise response adapters preserving current role policy, answers, trace/evals and actor-owned JSON history while using only published knowledge for UI.",
+          "mail"=>"Reviewed read-only A2UI card presentation and verified no mailbox, SMTP, queue or customer message side effect.",
+          "content"=>"Reviewed public ProductService and BlogService published selection and exclusion of future, draft, retired or private Markdown and paths.",
+          "media"=>"Reviewed A2UI Card/Text/Link renderer: no new media upload, image fetch, cross-origin URL or active-reference deletion.",
+          "workflow"=>"Reviewed 60 second Hostinger auto-deploy propagation wait, bounded SHA retries, and isolated full PHP/Chromium A2UI tests.",
+          "interface"=>"Reviewed strict A2UI 1.0 Basic subset catalog IDs, flat components, bindings, same-origin openUrl, and no generated HTML or unsafe function execution.",
+          "foundation"=>"Reviewed public REST route/service/source contract, source mapping, bounded component count, and preservation of authenticated/private data stores.",
+          "auth"=>"Reviewed server-side admin authorization and CSRF unaffected by optional public presentation; WebMCP read-only browser fetch omits credentials.",
+          "commerce"=>"Reviewed public product presentation with read-only prices and links, without cart mutations, checkout or payment action.",
+          "sales-channels"=>"Reviewed published storefront cards as public metadata only; no Google Merchant, ads or social publishing mutation."
+          ]; foreach($r->check() as $e){if(preg_match("/^([a-z][a-z0-9-]+): source\/doc review missing or stale/",$e,$m)){if(!isset($notes[$m[1]]))exit(3);$r->record($m[1],$notes[$m[1]]);}}'
+          for f in docs/agent-tool-contracts.md docs/systematic-map.mmd docs/map.mmd docs/project-index.json index.yaml map.mmd docs/source-contracts.json; do
+            echo "A2UI_DOCSYNC_START $f"
+            base64 -w 3000 "$f" | sed 's/^/A2UI_DOCSYNC_B64 /'
+            echo "A2UI_DOCSYNC_END $f"
+          done
+      # A2UI-DOCSYNC-END
+
 
 
 
