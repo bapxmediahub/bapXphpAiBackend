@@ -38,7 +38,7 @@ final class KnowledgeGraphService {
                 'resource' => $concept['filePath'],
                 'tags' => array_values($concept['tags'] ?? []),
             ];
-            foreach (['filename', 'mime', 'header_image', 'exists', 'status', 'usage_count', 'used_in', 'data_source', 'collection', 'schema_file', 'method', 'path', 'controller', 'services', 'view'] as $field) {
+            foreach (['filename', 'mime', 'header_image', 'exists', 'status', 'usage_count', 'used_in', 'data_source', 'collection', 'schema_file', 'method', 'path', 'controller', 'services', 'view', 'response', 'provenance'] as $field) {
                 if (array_key_exists($field, $concept)) $row[$field] = $concept[$field];
             }
             $concepts[] = $row;
@@ -69,6 +69,7 @@ final class KnowledgeGraphService {
                 'Blog Markdown and image binaries remain local files.',
                 'Read discovery first; query only the relevant section or resource. Do not load this entire index into agent context.',
                 'Use at most three discovery hops: entry instructions, exact index match, original source. Avoid broad listings and recursive scans unless the target is absent.',
+                'Code relationships are declared associations or bounded static references, not a runtime call graph. Follow docs/project-index.json relationship_provenance and original source before inferring behavior.',
             ],
             'discovery' => [
                 ['question' => 'Which controller, view and services handle a route?', 'use' => 'docs/project-index.json: select by HTTP method and exact route pattern'],
@@ -412,6 +413,7 @@ final class KnowledgeGraphService {
                 'method' => $route['method'] ?? 'GET', 'path' => $route['path'] ?? '',
                 'controller' => $route['controller'] ?? '', 'services' => array_values($route['services'] ?? []),
                 'view' => $route['page'] ?? '',
+                'response' => $route['response'] ?? null, 'provenance' => 'route_registry',
                 'tags' => ['code', 'route'], 'body' => '',
             ]);
 
@@ -420,14 +422,14 @@ final class KnowledgeGraphService {
                 $this->addEdge($rid, 'controller:' . $controller, 'handled_by');
             }
             foreach ($route['services'] ?? [] as $svc) {
-                $this->addEdge('controller:' . $controller, 'service:' . $svc, 'uses');
+                $this->addEdge('controller:' . $controller, 'service:' . $svc, 'declared_service');
             }
         }
 
         $sc = ProjectMapService::serviceCollections();
         foreach ($sc as $service => $cols) {
             foreach ($cols as $col) {
-                $this->addEdge('service:' . $service, 'schema:' . $col, 'stores');
+                $this->addEdge('service:' . $service, 'schema:' . $col, 'collection_reference');
             }
         }
     }

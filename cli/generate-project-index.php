@@ -30,6 +30,8 @@ foreach ($map['routes'] as $route) {
         'name' => $route['name'] ?? '',
         'controller' => $route['controller'] ?? '',
         'view' => $route['page'] ?? '',
+        'response' => $route['response'] ?? null,
+        'provenance' => 'route_registry',
         'services' => array_values($route['services'] ?? []),
     ];
 }
@@ -48,7 +50,9 @@ $normalise = static function (array $rows): array {
 $index = [
     'generated_by' => 'cli/generate-project-index.php',
     'source' => 'App\\Services\\ProjectMapService::scan()',
-    'note' => 'Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.',
+    'note' => 'Generated file inventory with declared associations and bounded static references. This is not proof of runtime reachability, authorization, autoload availability or a working feature.',
+    'relationship_provenance' => $map['relationship_provenance'],
+    'source_relationships' => $map['source_relationships'],
     'summary' => [
         'routes' => count($routes),
         'controllers' => count($map['controllers']),
@@ -62,8 +66,8 @@ $index = [
     'views' => $normalise($map['views']),
     'collections' => $normalise($map['schema_collections']),
     'integrations' => $normalise($map['integrations']),
-    // Keyed by gap category (missing_view_files, unwired_services, ...). Kept keyed
-    // rather than flattened so an agent can ask "is X actually wired up?" directly.
+    // Inventory checks only: missing declarations/references are candidates for
+    // source inspection, not proof of unused code or missing runtime behavior.
     'gaps' => array_map('array_values', $map['gaps']),
 ];
 

@@ -1,4 +1,5 @@
 flowchart LR
+  %% Generated static inventory, not a runtime call graph. See docs/development-workflow.md.
   classDef gap fill:#fee2e2,stroke:#b91c1c,color:#7f1d1d
   classDef route fill:#e0f2fe,stroke:#0369a1,color:#0c4a6e
   classDef code fill:#ecfdf5,stroke:#047857,color:#064e3b
@@ -7,6 +8,12 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
+  subgraph PROVENANCE["Relationship evidence"]
+    legend_declared["Declared: registry services, related views and manual associations"]:::arch
+    legend_source["Source: named class extends, literal new and static references"]:::arch
+    legend_limits["No execution, autoload or dynamic reachability proof; gaps are inspection candidates"]:::arch
+  end
+
   subgraph ARCH["Architecture Overview — 178 routes, 17 controllers, 84 services, 71 views, 0 data files, 30 tools"]
     arch_routes["> Routes: 178 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 17"]:::arch
@@ -14,7 +21,7 @@ flowchart LR
     arch_views["> Views: 71"]:::arch
     arch_data["> Collections: 24 schema | 0 files"]:::arch
     arch_tools["> Tools: 30"]:::arch
-    arch_gaps["> Gaps: 13"]:::arch
+    arch_gaps["> Gaps: 5"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -470,952 +477,1276 @@ flowchart LR
     tool_bapxphp["bapXphp"]:::tool
   end
 
-  subgraph GAPS["Gaps & Missing Links"]
-    gap_43f054c140["unwired_services: AgentAnswerPresentationService"]:::gap
-    gap_3021cb4637["unwired_services: AgentBudgetException"]:::gap
-    gap_9d47bad6dc["unwired_services: AstrologerService"]:::gap
-    gap_5d01c7af75["unwired_services: BlogConflictException"]:::gap
-    gap_c99ac2d6fa["unwired_services: CourierService"]:::gap
-    gap_5f994ad529["unwired_services: ProjectMapService"]:::gap
-    gap_5dac5861de["unwired_services: RemoteCartException"]:::gap
-    gap_42762e9713["unwired_services: RequestFailureService"]:::gap
-    gap_3dfb6bf986["unwired_services: SmtpDeliveryUncertainException"]:::gap
-    gap_95dfc6c8f4["unwired_services: StoragePermissionService"]:::gap
+  subgraph GAPS["Gaps & Missing Links — inventory checks"]
+    gap_35faf425c4["no declared or scanned reference: AstrologerService"]:::gap
+    gap_006b2fd1e7["no declared or scanned reference: RequestFailureService"]:::gap
     gap_02fdee86e5["POST /admin/email-templates/test — missing AuditLogService"]:::gap
     gap_63c4de0521["POST /admin/blog/enhance-title — missing AuditLogService"]:::gap
     gap_90db15aec7["POST /admin/blog/enhance-content — missing AuditLogService"]:::gap
   end
 
-  route_get --> controller_publiccontroller
-  controller_publiccontroller --> service_productservice
-  controller_publiccontroller --> service_templeservice
-  controller_publiccontroller --> service_categoryservice
-  controller_publiccontroller -. renders .-> view_public_home
-  route_get_search --> controller_publiccontroller
-  controller_publiccontroller --> service_authoredpageservice
-  controller_publiccontroller --> service_productservice
-  controller_publiccontroller --> service_blogservice
-  controller_publiccontroller --> service_templeservice
-  controller_publiccontroller -. renders .-> view_public_search
-  route_get_pages_slug --> controller_publiccontroller
-  controller_publiccontroller --> service_authoredpageservice
-  controller_publiccontroller --> service_markdownrenderer
-  controller_publiccontroller -. renders .-> view_public_authored_page
-  route_get_about --> controller_publiccontroller
-  controller_publiccontroller -. renders .-> view_public_about
-  route_get_ai_assistants --> controller_publiccontroller
-  controller_publiccontroller --> service_publicmcpservice
-  controller_publiccontroller --> service_markdownrenderer
-  controller_publiccontroller -. renders .-> view_public_ai_assistants
-  route_get_llms_txt --> controller_publiccontroller
-  controller_publiccontroller --> service_publicmcpservice
-  controller_publiccontroller --> service_markdownrenderer
-  controller_publiccontroller -. renders .-> view_public_ai_assistants
-  route_get_sri_panchami_spiritual --> controller_publiccontroller
-  controller_publiccontroller -. renders .-> view_public_spiritual
-  route_get_spiritual --> controller_publiccontroller
-  controller_publiccontroller -. renders .-> view_public_spiritual
-  route_get_terms --> controller_publiccontroller
-  controller_publiccontroller -. renders .-> view_public_terms
-  route_get_privacy --> controller_publiccontroller
-  controller_publiccontroller -. renders .-> view_public_privacy
-  route_get_consult --> controller_publiccontroller
-  controller_publiccontroller -. renders .-> view_public_shop
-  route_get_consult_slug --> controller_publiccontroller
-  controller_publiccontroller -. renders .-> view_public_shop
-  route_get_temples --> controller_publiccontroller
-  controller_publiccontroller --> service_templeservice
-  controller_publiccontroller -. renders .-> view_public_temples
-  route_get_temples_slug --> controller_publiccontroller
-  controller_publiccontroller --> service_templeservice
-  controller_publiccontroller -. renders .-> view_public_temple
-  route_get_shop --> controller_publiccontroller
-  controller_publiccontroller --> service_productservice
-  controller_publiccontroller --> service_categoryservice
-  controller_publiccontroller -. renders .-> view_public_shop
-  route_get_categories --> controller_publiccontroller
-  controller_publiccontroller --> service_categoryservice
-  controller_publiccontroller -. renders .-> view_public_categories
-  route_get_product_slug --> controller_publiccontroller
-  controller_publiccontroller --> service_productservice
-  controller_publiccontroller -. renders .-> view_public_product
-  route_get_api --> controller_apicontroller
-  controller_apicontroller -. renders .-> view_public_404
-  route_get_is_sha_valid --> controller_apicontroller
-  controller_apicontroller --> service_deploymentrevisionservice
-  controller_apicontroller -. renders .-> view_public_404
-  route_get_api_is_sha_valid --> controller_apicontroller
-  controller_apicontroller --> service_deploymentrevisionservice
-  controller_apicontroller -. renders .-> view_public_404
-  route_get_api_shop --> controller_apicontroller
-  controller_apicontroller --> service_productservice
-  controller_apicontroller --> service_categoryservice
-  controller_apicontroller -. renders .-> view_public_404
-  route_get_api_categories --> controller_apicontroller
-  controller_apicontroller --> service_categoryservice
-  controller_apicontroller -. renders .-> view_public_404
-  route_get_api_product_slug --> controller_apicontroller
-  controller_apicontroller --> service_productservice
-  controller_apicontroller -. renders .-> view_public_404
-  route_get_api_temples --> controller_apicontroller
-  controller_apicontroller --> service_templeservice
-  controller_apicontroller -. renders .-> view_public_404
-  route_get_api_agent_tools --> controller_publicagentdiscoverycontroller
-  controller_publicagentdiscoverycontroller --> service_publicagentdiscoveryservice
-  controller_publicagentdiscoverycontroller --> service_publicmcpservice
-  controller_publicagentdiscoverycontroller --> service_publicsiteurlservice
-  controller_publicagentdiscoverycontroller -. renders .-> view_public_404
-  route_get_api_knowledge_articles --> controller_apicontroller
-  controller_apicontroller --> service_publicknowledgeservice
-  controller_apicontroller --> service_blogservice
-  controller_apicontroller -. renders .-> view_public_404
-  route_get_api_knowledge_products --> controller_apicontroller
-  controller_apicontroller --> service_publicknowledgeservice
-  controller_apicontroller --> service_productservice
-  controller_apicontroller -. renders .-> view_public_404
-  route_get_api_knowledge_contact --> controller_apicontroller
-  controller_apicontroller --> service_publicknowledgeservice
-  controller_apicontroller -. renders .-> view_public_404
-  route_get_api_knowledge_services --> controller_apicontroller
-  controller_apicontroller --> service_publicknowledgeservice
-  controller_apicontroller -. renders .-> view_public_404
-  route_get_api_knowledge_a2ui --> controller_apicontroller
-  controller_apicontroller --> service_publica2uiservice
-  controller_apicontroller --> service_publicknowledgeservice
-  controller_apicontroller -. renders .-> view_public_404
-  route_post_api_mcp --> controller_publicmcpcontroller
-  controller_publicmcpcontroller --> service_publicmcpservice
-  controller_publicmcpcontroller --> service_publicknowledgeservice
-  controller_publicmcpcontroller --> service_publica2uiservice
-  controller_publicmcpcontroller --> service_remotecartservice
-  controller_publicmcpcontroller --> service_remotecheckoutservice
-  controller_publicmcpcontroller --> service_remotecheckoutstateservice
-  controller_publicmcpcontroller --> service_verifiedorderservice
-  controller_publicmcpcontroller -. renders .-> view_public_mcp_app
-  route_get_api_mcp --> controller_publicmcpcontroller
-  controller_publicmcpcontroller --> service_publicmcpservice
-  controller_publicmcpcontroller -. renders .-> view_public_404
-  route_delete_api_mcp --> controller_publicmcpcontroller
-  controller_publicmcpcontroller --> service_publicmcpservice
-  controller_publicmcpcontroller -. renders .-> view_public_404
-  route_options_api_mcp --> controller_publicmcpcontroller
-  controller_publicmcpcontroller --> service_publicmcpservice
-  controller_publicmcpcontroller -. renders .-> view_public_404
-  route_get_cart --> controller_publiccontroller
-  controller_publiccontroller --> service_cartservice
-  controller_publiccontroller --> service_productservice
-  controller_publiccontroller --> service_sitetelemetryservice
-  controller_publiccontroller -. renders .-> view_public_cart
-  route_get_cart_agent_checkout --> controller_commercecontroller
-  controller_commercecontroller --> service_remotecartservice
-  controller_commercecontroller --> service_publicknowledgeservice
-  controller_commercecontroller --> service_productservice
-  controller_commercecontroller --> service_databaseservice
-  controller_commercecontroller -. renders .-> view_public_agent_checkout
-  route_post_cart_agent_checkout --> controller_commercecontroller
-  controller_commercecontroller --> service_remotecartservice
-  controller_commercecontroller --> service_cartservice
-  controller_commercecontroller --> service_databaseservice
-  controller_commercecontroller -. renders .-> view_public_agent_checkout
-  route_get_checkout --> controller_publiccontroller
-  controller_publiccontroller --> service_cartservice
-  controller_publiccontroller --> service_productservice
-  controller_publiccontroller --> service_secretservice
-  controller_publiccontroller --> service_addressservice
-  controller_publiccontroller --> service_settingsservice
-  controller_publiccontroller -. renders .-> view_public_checkout
-  route_get_checkout_payment --> controller_remotecheckoutcontroller
-  controller_remotecheckoutcontroller --> service_remotecheckoutservice
-  controller_remotecheckoutcontroller --> service_databaseservice
-  controller_remotecheckoutcontroller -. renders .-> view_public_agent_payment
-  route_post_api_payments_razorpay_webhook --> controller_remotecheckoutcontroller
-  controller_remotecheckoutcontroller --> service_remotecheckoutservice
-  controller_remotecheckoutcontroller --> service_paymentservice
-  controller_remotecheckoutcontroller --> service_verifiedorderservice
-  controller_remotecheckoutcontroller --> service_databaseservice
-  controller_remotecheckoutcontroller --> service_secretservice
-  route_get_feeds_google_products_xml --> controller_publiccontroller
-  controller_publiccontroller --> service_merchantfeedservice
-  controller_publiccontroller --> service_productservice
-  controller_publiccontroller --> service_settingsservice
-  controller_publiccontroller -. renders .-> view_public_merchant_feed
-  route_get_sitemap_xml --> controller_publiccontroller
-  controller_publiccontroller --> service_blogservice
-  controller_publiccontroller --> service_productservice
-  controller_publiccontroller --> service_authoredpageservice
-  controller_publiccontroller -. renders .-> view_public_sitemap
-  route_get_contact --> controller_publiccontroller
-  controller_publiccontroller --> service_publicknowledgeservice
-  controller_publiccontroller -. renders .-> view_public_contact
-  route_post_contact --> controller_publiccontroller
-  controller_publiccontroller --> service_contactservice
-  controller_publiccontroller --> service_publicknowledgeservice
-  controller_publiccontroller -. renders .-> view_public_contact
-  route_get_login --> controller_publiccontroller
-  controller_publiccontroller --> service_authservice
-  controller_publiccontroller -. renders .-> view_public_login
-  route_get_forgot_password --> controller_authcontroller
-  controller_authcontroller --> service_passwordresetservice
-  controller_authcontroller -. renders .-> view_public_forgot_password
-  route_post_forgot_password --> controller_authcontroller
-  controller_authcontroller --> service_passwordresetservice
-  controller_authcontroller -. renders .-> view_public_forgot_password
-  route_get_reset_password --> controller_authcontroller
-  controller_authcontroller --> service_passwordresetservice
-  controller_authcontroller -. renders .-> view_public_reset_password
-  route_post_reset_password --> controller_authcontroller
-  controller_authcontroller --> service_passwordresetservice
-  controller_authcontroller -. renders .-> view_public_reset_password
-  route_get_auth_google --> controller_authcontroller
-  controller_authcontroller --> service_secretservice
-  controller_authcontroller -. renders .-> view_public_login
-  route_get_auth_google_callback --> controller_authcontroller
-  controller_authcontroller --> service_secretservice
-  controller_authcontroller --> service_databaseservice
-  controller_authcontroller -. renders .-> view_public_login
-  route_get_register --> controller_authcontroller
-  controller_authcontroller -. renders .-> view_public_register
-  route_post_register --> controller_authcontroller
-  controller_authcontroller --> service_databaseservice
-  controller_authcontroller -. renders .-> view_public_register
-  route_post_login --> controller_authcontroller
-  controller_authcontroller --> service_databaseservice
-  controller_authcontroller -. renders .-> view_public_login
-  route_get_logout --> controller_authcontroller
-  controller_authcontroller --> service_authservice
-  controller_authcontroller -. renders .-> view_public_login
-  route_get_account_dashboard --> controller_accountcontroller
-  controller_accountcontroller --> service_authservice
-  controller_accountcontroller -. renders .-> view_account_orders
-  route_get_account_dashboard_orders --> controller_accountcontroller
-  controller_accountcontroller --> service_authservice
-  controller_accountcontroller --> service_orderservice
-  controller_accountcontroller --> service_reviewservice
-  controller_accountcontroller -. renders .-> view_account_orders
-  route_get_account_dashboard_sessions --> controller_accountcontroller
-  controller_accountcontroller --> service_authservice
-  controller_accountcontroller -. renders .-> view_account_orders
-  route_get_account_dashboard_install --> controller_accountcontroller
-  controller_accountcontroller --> service_authservice
-  controller_accountcontroller -. renders .-> view_account_install
-  route_get_account_dashboard_profile --> controller_accountcontroller
-  controller_accountcontroller --> service_authservice
-  controller_accountcontroller --> service_databaseservice
-  controller_accountcontroller -. renders .-> view_account_profile
-  route_post_account_dashboard_profile --> controller_accountcontroller
-  controller_accountcontroller --> service_authservice
-  controller_accountcontroller --> service_databaseservice
-  controller_accountcontroller -. renders .-> view_account_profile
-  route_post_account_dashboard_profile_password --> controller_accountcontroller
-  controller_accountcontroller --> service_authservice
-  controller_accountcontroller --> service_databaseservice
-  controller_accountcontroller --> service_passwordresetservice
-  controller_accountcontroller -. renders .-> view_account_profile
-  route_get_account_dashboard_addresses --> controller_accountcontroller
-  controller_accountcontroller --> service_authservice
-  controller_accountcontroller --> service_addressservice
-  controller_accountcontroller --> service_taxservice
-  controller_accountcontroller -. renders .-> view_account_addresses
-  route_post_account_dashboard_addresses_save --> controller_accountcontroller
-  controller_accountcontroller --> service_authservice
-  controller_accountcontroller --> service_addressservice
-  controller_accountcontroller -. renders .-> view_account_addresses
-  route_post_account_dashboard_addresses_delete --> controller_accountcontroller
-  controller_accountcontroller --> service_authservice
-  controller_accountcontroller --> service_addressservice
-  controller_accountcontroller -. renders .-> view_account_addresses
-  route_get_account_orders --> controller_accountcontroller
-  controller_accountcontroller --> service_authservice
-  controller_accountcontroller -. renders .-> view_account_orders
-  route_get_orders --> controller_accountcontroller
-  controller_accountcontroller --> service_authservice
-  controller_accountcontroller -. renders .-> view_account_orders
-  route_get_account_orders_orderid_invoice --> controller_accountcontroller
-  controller_accountcontroller --> service_authservice
-  controller_accountcontroller --> service_orderservice
-  controller_accountcontroller --> service_settingsservice
-  controller_accountcontroller --> service_taxservice
-  controller_accountcontroller -. renders .-> view_account_invoice
-  route_get_account_orders_orderid --> controller_accountcontroller
-  controller_accountcontroller --> service_authservice
-  controller_accountcontroller --> service_orderservice
-  controller_accountcontroller --> service_settingsservice
-  controller_accountcontroller -. renders .-> view_account_order
-  route_get_account_bookings --> controller_accountcontroller
-  controller_accountcontroller --> service_authservice
-  controller_accountcontroller -. renders .-> view_account_orders
-  route_post_api_consultations_id_status --> controller_consultationcontroller
-  controller_consultationcontroller --> service_authservice
-  controller_consultationcontroller --> service_consultationservice
-  controller_consultationcontroller -. renders .-> view_admin_list
-  route_get_admin --> controller_admincontroller
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_dashboard
-  route_get_admin_slash --> controller_admincontroller
-  controller_admincontroller --> service_resourceservice
-  controller_admincontroller --> service_orderservice
-  controller_admincontroller --> service_storestatsservice
-  controller_admincontroller --> service_siteinsightsservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_dashboard
-  route_get_admin_system_health --> controller_admincontroller
-  controller_admincontroller --> service_authservice
-  controller_admincontroller --> service_runtimehealthservice
-  controller_admincontroller --> service_databaseservice
-  controller_admincontroller -. renders .-> view_admin_system_health
-  route_get_admin_docs --> controller_admincontroller
-  controller_admincontroller --> service_adminhelpservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_help
-  route_get_admin_docs_slug --> controller_admincontroller
-  controller_admincontroller --> service_adminhelpservice
-  controller_admincontroller --> service_markdownrenderer
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_help
-  route_get_admin_mcp_clients --> controller_adminmcpclientcontroller
-  controller_adminmcpclientcontroller --> service_mcpclientservice
-  controller_adminmcpclientcontroller --> service_authservice
-  controller_adminmcpclientcontroller --> service_auditlogservice
-  controller_adminmcpclientcontroller -. renders .-> view_admin_mcp_clients
-  route_post_admin_mcp_clients_issue --> controller_adminmcpclientcontroller
-  controller_adminmcpclientcontroller --> service_mcpclientservice
-  controller_adminmcpclientcontroller --> service_authservice
-  controller_adminmcpclientcontroller --> service_auditlogservice
-  controller_adminmcpclientcontroller -. renders .-> view_admin_mcp_clients
-  route_post_admin_mcp_clients_revoke --> controller_adminmcpclientcontroller
-  controller_adminmcpclientcontroller --> service_mcpclientservice
-  controller_adminmcpclientcontroller --> service_authservice
-  controller_adminmcpclientcontroller --> service_auditlogservice
-  controller_adminmcpclientcontroller -. renders .-> view_admin_mcp_clients
-  route_get_admin_google_reporting --> controller_admingooglereportingcontroller
-  controller_admingooglereportingcontroller --> service_secretservice
-  controller_admingooglereportingcontroller --> service_authservice
-  controller_admingooglereportingcontroller --> service_auditlogservice
-  controller_admingooglereportingcontroller -. renders .-> view_admin_google_reporting
-  route_post_admin_google_reporting_connect --> controller_admingooglereportingcontroller
-  controller_admingooglereportingcontroller --> service_secretservice
-  controller_admingooglereportingcontroller --> service_authservice
-  controller_admingooglereportingcontroller --> service_auditlogservice
-  controller_admingooglereportingcontroller -. renders .-> view_admin_google_reporting
-  route_get_admin_google_reporting_callback --> controller_admingooglereportingcontroller
-  controller_admingooglereportingcontroller --> service_secretservice
-  controller_admingooglereportingcontroller --> service_authservice
-  controller_admingooglereportingcontroller --> service_auditlogservice
-  controller_admingooglereportingcontroller -. renders .-> view_admin_google_reporting
-  route_post_admin_google_reporting_select --> controller_admingooglereportingcontroller
-  controller_admingooglereportingcontroller --> service_secretservice
-  controller_admingooglereportingcontroller --> service_authservice
-  controller_admingooglereportingcontroller --> service_auditlogservice
-  controller_admingooglereportingcontroller -. renders .-> view_admin_google_reporting
-  route_post_admin_google_reporting_disconnect --> controller_admingooglereportingcontroller
-  controller_admingooglereportingcontroller --> service_secretservice
-  controller_admingooglereportingcontroller --> service_authservice
-  controller_admingooglereportingcontroller --> service_auditlogservice
-  controller_admingooglereportingcontroller -. renders .-> view_admin_google_reporting
-  route_get_admin_google_merchant --> controller_admincontroller
-  controller_admincontroller --> service_merchantfeedservice
-  controller_admincontroller --> service_productservice
-  controller_admincontroller --> service_settingsservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_google_merchant
-  route_get_admin_products --> controller_admincontroller
-  controller_admincontroller --> service_productservice
-  controller_admincontroller --> service_schemaservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_product_form
-  route_get_admin_categories --> controller_admincontroller
-  controller_admincontroller --> service_categoryservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_resource
-  route_get_admin_collections --> controller_admincontroller
-  controller_admincontroller --> service_categoryservice
-  controller_admincontroller --> service_productservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_collections
-  route_get_admin_coupons --> controller_admincontroller
-  controller_admincontroller --> service_couponservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_resource
-  route_get_admin_users --> controller_admincontroller
-  controller_admincontroller --> service_resourceservice
-  controller_admincontroller --> service_orderservice
-  controller_admincontroller --> service_userorderhistoryservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_users
-  route_get_admin_orders --> controller_admincontroller
-  controller_admincontroller --> service_orderservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_list
-  route_get_admin_orders_id_invoice --> controller_admincontroller
-  controller_admincontroller --> service_orderservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_account_invoice
-  route_get_admin_orders_id --> controller_admincontroller
-  controller_admincontroller --> service_orderservice
-  controller_admincontroller --> service_shippingservice
-  controller_admincontroller --> service_taxservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_detail
-  route_post_admin_orders_id_status --> controller_admincontroller
-  controller_admincontroller --> service_orderservice
-  controller_admincontroller --> service_mailqueueservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_detail
-  route_post_admin_orders_id_refund --> controller_admincontroller
-  controller_admincontroller --> service_orderservice
-  controller_admincontroller --> service_secretservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_detail
-  route_post_admin_orders_id_tax_review --> controller_admincontroller
-  controller_admincontroller --> service_orderservice
-  controller_admincontroller --> service_taxservice
-  controller_admincontroller --> service_settingsservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_detail
-  route_get_admin_shipping --> controller_admincontroller
-  controller_admincontroller --> service_shippingservice
-  controller_admincontroller --> service_settingsservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_settings
-  route_get_admin_astrologers --> controller_admincontroller
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_dashboard
-  route_get_admin_appointments --> controller_admincontroller
-  controller_admincontroller --> service_appointmentservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_list
-  route_get_admin_consultation_analytics --> controller_admincontroller
-  controller_admincontroller --> service_consultationservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_consultation_analytics
-  route_get_admin_tax_report --> controller_admincontroller
-  controller_admincontroller --> service_orderservice
-  controller_admincontroller --> service_productservice
-  controller_admincontroller --> service_storestatsservice
-  controller_admincontroller --> service_taxservice
-  controller_admincontroller --> service_gstregisterservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_tax_report
-  route_get_admin_temples --> controller_admincontroller
-  controller_admincontroller --> service_templeservice
-  controller_admincontroller --> service_schemaservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_temples
-  route_get_admin_settings --> controller_admincontroller
-  controller_admincontroller --> service_settingsservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_settings
-  route_post_admin_settings_save --> controller_admincontroller
-  controller_admincontroller --> service_settingsservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_settings
-  route_post_admin_settings_admin_credentials --> controller_admincontroller
-  controller_admincontroller --> service_envservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_settings
-  route_get_admin_integrations --> controller_admincontroller
-  controller_admincontroller --> service_settingsservice
-  controller_admincontroller --> service_paymentservice
-  controller_admincontroller --> service_secretservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_integrations
-  route_get_admin_agent --> controller_admincontroller
-  controller_admincontroller --> service_secretservice
-  controller_admincontroller --> service_databaseservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_agent
-  route_get_admin_agent_history --> controller_admincontroller
-  controller_admincontroller --> service_agentconversationservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_agent
-  route_get_admin_agent_history_id --> controller_admincontroller
-  controller_admincontroller --> service_agentconversationservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_agent
-  route_post_admin_agent_history_id_delete --> controller_admincontroller
-  controller_admincontroller --> service_agentconversationservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_agent
-  route_get_admin_agent_review_id --> controller_admincontroller
-  controller_admincontroller --> service_authservice
-  controller_admincontroller --> service_agentconversationservice
-  controller_admincontroller --> service_agentevaluationservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller -. renders .-> view_admin_agent_review
-  route_post_admin_agent_review_id --> controller_admincontroller
-  controller_admincontroller --> service_authservice
-  controller_admincontroller --> service_agentconversationservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller -. renders .-> view_admin_agent_review
-  route_get_admin_agent_conversation_id --> controller_admincontroller
-  controller_admincontroller --> service_agentconversationservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_agent_monitoring
-  route_get_admin_agent_monitoring --> controller_admincontroller
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_databaseservice
-  controller_admincontroller --> service_agentconversationservice
-  controller_admincontroller --> service_agentevaluationservice
-  controller_admincontroller --> service_sitetelemetryservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_agent_monitoring
-  route_post_admin_agent_ask --> controller_admincontroller
-  controller_admincontroller --> service_secretservice
-  controller_admincontroller --> service_databaseservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_agentattachmentservice
-  controller_admincontroller --> service_agentdraftservice
-  controller_admincontroller --> service_agentinstructionservice
-  controller_admincontroller --> service_agenttoolregistry
-  controller_admincontroller --> service_enterprisetoolregistry
-  controller_admincontroller --> service_agentconversationservice
-  controller_admincontroller --> service_agenttraceservice
-  controller_admincontroller --> service_agentevaluationservice
-  controller_admincontroller --> service_agenttranscriptsanitizer
-  controller_admincontroller --> service_agentcapabilitypolicy
-  controller_admincontroller --> service_agentcontextservice
-  controller_admincontroller --> service_gstregisterservice
-  controller_admincontroller --> service_aireplycleaner
-  controller_admincontroller --> service_aiclient
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_agent
-  route_get_admin_contact_submissions --> controller_admincontroller
-  controller_admincontroller --> service_contactservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_resource
-  route_post_admin_contact_submissions_save --> controller_admincontroller
-  controller_admincontroller --> service_resourceservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_resource
-  route_post_admin_contact_submissions_delete --> controller_admincontroller
-  controller_admincontroller --> service_resourceservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_resource
-  route_get_admin_email_templates --> controller_admincontroller
-  controller_admincontroller --> service_mailtemplateservice
-  controller_admincontroller --> service_mailqueueservice
-  controller_admincontroller --> service_secretservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_email_templates
-  route_post_admin_email_templates_test --> controller_admincontroller
-  controller_admincontroller --> service_mailtemplateservice
-  controller_admincontroller --> service_mailqueueservice
-  controller_admincontroller --> service_secretservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_email_templates
-  route_get_admin_email_inbox --> controller_admincontroller
-  controller_admincontroller --> service_mailstorageservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_mailbox
-  route_get_admin_email_outbox --> controller_admincontroller
-  controller_admincontroller --> service_mailstorageservice
-  controller_admincontroller --> service_mailqueueservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_mailbox
-  route_get_admin_support_tickets --> controller_admincontroller
-  controller_admincontroller --> service_databaseservice
-  controller_admincontroller --> service_supportticketservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_list
-  route_post_admin_support_tickets_save --> controller_admincontroller
-  controller_admincontroller --> service_supportticketservice
-  controller_admincontroller --> service_databaseservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_list
-  route_get_admin_appearance --> controller_admincontroller
-  controller_admincontroller --> service_settingsservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_appearance
-  route_get_admin_appearance_menu --> controller_admincontroller
-  controller_admincontroller --> service_settingsservice
-  controller_admincontroller --> service_authoredpageservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_header_menu
-  route_post_admin_appearance_menu --> controller_admincontroller
-  controller_admincontroller --> service_settingsservice
-  controller_admincontroller --> service_authoredpageservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_header_menu
-  route_post_admin_appearance_save --> controller_admincontroller
-  controller_admincontroller --> service_settingsservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_appearance
-  route_get_admin_media --> controller_admincontroller
-  controller_admincontroller --> service_mediaservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_media
-  route_post_admin_media_upload --> controller_admincontroller
-  controller_admincontroller --> service_mediaservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_media
-  route_post_admin_media_delete --> controller_admincontroller
-  controller_admincontroller --> service_mediaservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_media
-  route_get_admin_products_import --> controller_admincontroller
-  controller_admincontroller --> service_productimportservice
-  controller_admincontroller --> service_databaseservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_product_import
-  route_post_admin_products_import --> controller_admincontroller
-  controller_admincontroller --> service_productimportservice
-  controller_admincontroller --> service_databaseservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_product_import
-  route_post_admin_products_save --> controller_admincontroller
-  controller_admincontroller --> service_resourceservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_product_form
-  route_post_admin_products_delete --> controller_admincontroller
-  controller_admincontroller --> service_resourceservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_product_form
-  route_post_admin_categories_save --> controller_admincontroller
-  controller_admincontroller --> service_resourceservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_resource
-  route_post_admin_collections_save --> controller_admincontroller
-  controller_admincontroller --> service_resourceservice
-  controller_admincontroller --> service_categoryservice
-  controller_admincontroller --> service_productservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_collections
-  route_post_admin_collections_delete --> controller_admincontroller
-  controller_admincontroller --> service_resourceservice
-  controller_admincontroller --> service_categoryservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_collections
-  route_post_admin_categories_delete --> controller_admincontroller
-  controller_admincontroller --> service_resourceservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_resource
-  route_post_admin_coupons_save --> controller_admincontroller
-  controller_admincontroller --> service_resourceservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_resource
-  route_post_admin_coupons_delete --> controller_admincontroller
-  controller_admincontroller --> service_resourceservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_resource
-  route_post_admin_temples_save --> controller_admincontroller
-  controller_admincontroller --> service_resourceservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_resource
-  route_post_admin_temples_delete --> controller_admincontroller
-  controller_admincontroller --> service_resourceservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_resource
-  route_post_admin_integrations_test_email --> controller_admincontroller
-  controller_admincontroller --> service_secretservice
-  controller_admincontroller --> service_smtpmailer
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_integrations
-  route_post_admin_integrations_test_ai --> controller_admincontroller
-  controller_admincontroller --> service_secretservice
-  controller_admincontroller --> service_aiclient
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_integrations
-  route_post_admin_integrations_save --> controller_admincontroller
-  controller_admincontroller --> service_secretservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_integrations
-  route_post_cart_add --> controller_commercecontroller
-  controller_commercecontroller --> service_cartservice
-  controller_commercecontroller --> service_productservice
-  controller_commercecontroller -. renders .-> view_public_cart
-  route_post_cart_remove --> controller_commercecontroller
-  controller_commercecontroller --> service_cartservice
-  controller_commercecontroller -. renders .-> view_public_cart
-  route_post_cart_update --> controller_commercecontroller
-  controller_commercecontroller --> service_cartservice
-  controller_commercecontroller -. renders .-> view_public_cart
-  route_post_checkout_create_order --> controller_commercecontroller
-  controller_commercecontroller --> service_secretservice
-  controller_commercecontroller --> service_paymentservice
-  controller_commercecontroller --> service_sitetelemetryservice
-  controller_commercecontroller -. renders .-> view_public_checkout
-  route_post_payment_verify --> controller_commercecontroller
-  controller_commercecontroller --> service_secretservice
-  controller_commercecontroller --> service_paymentservice
-  controller_commercecontroller --> service_verifiedorderservice
-  controller_commercecontroller --> service_databaseservice
-  controller_commercecontroller --> service_taxservice
-  controller_commercecontroller --> service_settingsservice
-  controller_commercecontroller -. renders .-> view_public_checkout
-  route_get_payment_stripe_return --> controller_commercecontroller
-  controller_commercecontroller --> service_secretservice
-  controller_commercecontroller --> service_databaseservice
-  controller_commercecontroller --> service_taxservice
-  controller_commercecontroller --> service_settingsservice
-  controller_commercecontroller --> service_mailqueueservice
-  controller_commercecontroller -. renders .-> view_account_order
-  route_post_create_order --> controller_commercecontroller
-  controller_commercecontroller --> service_secretservice
-  controller_commercecontroller --> service_paymentservice
-  controller_commercecontroller -. renders .-> view_public_checkout
-  route_post_verify_payment --> controller_commercecontroller
-  controller_commercecontroller --> service_secretservice
-  controller_commercecontroller --> service_paymentservice
-  controller_commercecontroller --> service_verifiedorderservice
-  controller_commercecontroller --> service_databaseservice
-  controller_commercecontroller --> service_taxservice
-  controller_commercecontroller --> service_settingsservice
-  controller_commercecontroller -. renders .-> view_public_checkout
-  route_post_consultation_initiate --> controller_consultationcontroller
-  controller_consultationcontroller --> service_authservice
-  controller_consultationcontroller -. renders .-> view_public_contact
-  route_post_reviews_product --> controller_reviewcontroller
-  controller_reviewcontroller --> service_reviewservice
-  controller_reviewcontroller --> service_authservice
-  controller_reviewcontroller -. renders .-> view_account_orders
-  route_get_support --> controller_supportcontroller
-  controller_supportcontroller --> service_seoservice
-  controller_supportcontroller -. renders .-> view_public_support
-  route_post_support_ask --> controller_supportcontroller
-  controller_supportcontroller --> service_supportbotservice
-  controller_supportcontroller --> service_agentcontextservice
-  controller_supportcontroller --> service_supportticketservice
-  controller_supportcontroller --> service_supporttoolregistry
-  controller_supportcontroller --> service_agentconversationservice
-  controller_supportcontroller --> service_agenttraceservice
-  controller_supportcontroller --> service_agentevaluationservice
-  controller_supportcontroller --> service_auditlogservice
-  controller_supportcontroller --> service_aiclient
-  controller_supportcontroller --> service_aireplycleaner
-  controller_supportcontroller -. renders .-> view_public_support
-  route_post_support_feedback --> controller_supportcontroller
-  controller_supportcontroller --> service_agentconversationservice
-  controller_supportcontroller --> service_ratelimiter
-  controller_supportcontroller -. renders .-> view_public_support
-  route_get_docs --> controller_publiccontroller
-  controller_publiccontroller -. renders .-> view_public_blog
-  route_get_help_slug --> controller_publiccontroller
-  controller_publiccontroller -. renders .-> view_public_blog_post
-  route_post_remotedb --> controller_remotedbcontroller
-  controller_remotedbcontroller --> service_databaseservice
-  controller_remotedbcontroller --> service_secretservice
-  controller_remotedbcontroller -. renders .-> view_public_404
-  route_get_blog --> controller_blogcontroller
-  controller_blogcontroller --> service_blogservice
-  controller_blogcontroller --> service_markdownrenderer
-  controller_blogcontroller -. renders .-> view_public_blog
-  route_get_blog_slug --> controller_blogcontroller
-  controller_blogcontroller --> service_blogservice
-  controller_blogcontroller --> service_markdownrenderer
-  controller_blogcontroller -. renders .-> view_public_blog_post
-  route_get_blog_category_slug --> controller_blogcontroller
-  controller_blogcontroller --> service_blogservice
-  controller_blogcontroller --> service_markdownrenderer
-  controller_blogcontroller -. renders .-> view_public_blog
-  route_get_admin_pages --> controller_admincontroller
-  controller_admincontroller --> service_authoredpageservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_pages
-  route_post_admin_pages_delete --> controller_admincontroller
-  controller_admincontroller --> service_authoredpageservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_pages
-  route_post_admin_pages_save --> controller_admincontroller
-  controller_admincontroller --> service_authoredpageservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_pages
-  route_get_admin_blog --> controller_admincontroller
-  controller_admincontroller --> service_blogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_blog
-  route_post_admin_blog_save --> controller_admincontroller
-  controller_admincontroller --> service_blogservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_blog
-  route_get_admin_blog_history_slug --> controller_admincontroller
-  controller_admincontroller --> service_blogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_blog_history
-  route_post_admin_blog_history_slug_restore --> controller_admincontroller
-  controller_admincontroller --> service_blogservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_blog_history
-  route_post_admin_blog_toggle --> controller_admincontroller
-  controller_admincontroller --> service_blogservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_blog
-  route_post_admin_blog_delete --> controller_admincontroller
-  controller_admincontroller --> service_blogservice
-  controller_admincontroller --> service_auditlogservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_blog
-  route_post_admin_blog_preview --> controller_admincontroller
-  controller_admincontroller --> service_blogservice
-  controller_admincontroller --> service_markdownrenderer
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_blog
-  route_post_admin_blog_enhance_title --> controller_admincontroller
-  controller_admincontroller --> service_secretservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_blog
-  route_post_admin_blog_enhance_content --> controller_admincontroller
-  controller_admincontroller --> service_secretservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_blog
-  route_post_admin_blog_ai_draft --> controller_admincontroller
-  controller_admincontroller --> service_blogservice
-  controller_admincontroller --> service_blogdraftservice
-  controller_admincontroller --> service_authservice
-  controller_admincontroller -. renders .-> view_admin_blog
-  view_admin_list -. includes .-> view_admin_list_controls
-  view_admin_media -. includes .-> view_admin_list_controls
-  nav_contact --> route_get_contact
-  nav_account_dashboard --> route_get_account_dashboard
-  nav_account_dashboard_orders --> route_get_account_dashboard_orders
-  nav_account_dashboard_sessions --> route_get_account_dashboard_sessions
-  nav_account_dashboard_install --> route_get_account_dashboard_install
-  controller_accountcontroller --> controller_basecontroller
-  controller_admincontroller --> controller_basecontroller
-  controller_admingooglereportingcontroller --> controller_basecontroller
-  controller_adminmcpclientcontroller --> controller_basecontroller
-  controller_apicontroller --> controller_basecontroller
-  controller_authcontroller --> controller_basecontroller
-  controller_blogcontroller --> controller_basecontroller
-  controller_commercecontroller --> controller_basecontroller
-  controller_consultationcontroller --> controller_basecontroller
-  controller_publicagentdiscoverycontroller --> controller_basecontroller
-  controller_publiccontroller --> controller_basecontroller
-  controller_publicmcpcontroller --> controller_basecontroller
-  controller_remotecheckoutcontroller --> controller_basecontroller
-  controller_remotedbcontroller --> controller_basecontroller
-  controller_reviewcontroller --> controller_basecontroller
-  controller_supportcontroller --> controller_basecontroller
-  controller_basecontroller --> service_seoservice
-  tool_import_product_images --> service_imageoptimizerservice
-  tool_import_product_images --> service_databaseservice
-  tool_import_product_images --> collection_products
-  service_addressservice --> collection_addresses
-  service_agentcontextservice --> collection_orders
-  service_agentcontextservice --> collection_users
-  service_agentcontextservice --> collection_products
-  service_agentcontextservice --> collection_appointments
-  service_agentcontextservice --> collection_support_tickets
-  service_appointmentservice --> collection_appointments
-  service_astrologerservice --> collection_astrologers
-  service_auditlogservice --> collection_audit_events
-  service_authoredpageservice --> collection_settings
-  service_categoryservice --> collection_categories
-  service_consultationservice --> collection_appointments
-  service_consultationservice --> collection_consultation_messages
-  service_consultationservice --> collection_consultation_signals
-  service_contactservice --> collection_contact_submissions
-  service_couponservice --> collection_coupons
-  service_couponservice --> collection_orders
-  service_mailqueueservice --> collection_mail_queue
-  service_mailstorageservice --> collection_mail_inbox
-  service_mailstorageservice --> collection_mail_outbox
-  service_mcpclientservice --> collection_secrets
-  service_mcpclientservice --> collection_audit_events
-  service_mediaservice --> collection_media_files
-  service_orderservice --> collection_orders
-  service_passwordresetservice --> collection_users
-  service_productservice --> collection_products
-  service_productservice --> collection_orders
-  service_reviewservice --> collection_reviews
-  service_reviewservice --> collection_appointments
-  service_reviewservice --> collection_orders
-  service_settingsservice --> collection_settings
-  service_supportticketservice --> collection_support_tickets
-  service_templeservice --> collection_temples
-  service_resourceservice --> collection_products
-  service_resourceservice --> collection_users
-  service_resourceservice --> collection_appointments
-  service_resourceservice --> collection_categories
-  service_resourceservice --> collection_orders
-  service_databaseservice --> collection_users
-  service_databaseservice --> collection_addresses
-  service_databaseservice --> collection_products
-  service_databaseservice --> collection_orders
-  service_databaseservice --> collection_appointments
-  service_databaseservice --> collection_consultation_messages
-  service_databaseservice --> collection_consultation_signals
-  service_databaseservice --> collection_secrets
-  service_databaseservice --> collection_mail_inbox
-  service_databaseservice --> collection_mail_outbox
-  service_databaseservice --> collection_contact_submissions
-  service_databaseservice --> collection_agent_carts
-  service_databaseservice --> collection_checkout_attempts
-  service_remotecartservice --> collection_agent_carts
-  service_remotecheckoutservice --> collection_agent_carts
-  service_remotecheckoutservice --> collection_checkout_attempts
-  service_verifiedorderservice --> collection_orders
-  service_paymentservice --> integration_razorpayclient
-  service_paymentservice --> integration_stripeclient
-  service_paymentservice --> integration_razorpayclient
-  service_paymentservice --> integration_stripeclient
-  service_paymentservice --> integration_razorpayclient
-  service_paymentservice --> integration_stripeclient
-  service_paymentservice --> integration_razorpayclient
-  service_paymentservice --> integration_stripeclient
-  service_paymentservice --> integration_razorpayclient
-  service_paymentservice --> integration_stripeclient
-  controller_authcontroller --> integration_googleoauthclient
-  controller_authcontroller --> integration_googleoauthclient
-  controller_admincontroller --> integration_googlereportingclient
-  controller_admingooglereportingcontroller --> integration_googlereportingclient
-  controller_admingooglereportingcontroller --> integration_googlereportingclient
-  controller_admingooglereportingcontroller --> integration_googlereportingclient
-  controller_admingooglereportingcontroller --> integration_googlereportingclient
-  controller_admingooglereportingcontroller --> integration_googlereportingclient
-  service_paymentservice --> integration_razorpayclient
-  service_paymentservice --> integration_stripeclient
-  service_paymentservice --> integration_razorpayclient
-  service_paymentservice --> integration_stripeclient
-  service_paymentservice --> integration_razorpayclient
-  service_paymentservice --> integration_stripeclient
-  service_paymentservice --> integration_razorpayclient
-  service_paymentservice --> integration_stripeclient
+  route_get -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared service .-> service_productservice
+  controller_publiccontroller -. declared service .-> service_templeservice
+  controller_publiccontroller -. declared service .-> service_categoryservice
+  controller_publiccontroller -. declared related view .-> view_public_home
+  route_get_search -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared service .-> service_authoredpageservice
+  controller_publiccontroller -. declared service .-> service_productservice
+  controller_publiccontroller -. declared service .-> service_blogservice
+  controller_publiccontroller -. declared service .-> service_templeservice
+  controller_publiccontroller -. declared related view .-> view_public_search
+  route_get_pages_slug -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared service .-> service_authoredpageservice
+  controller_publiccontroller -. declared service .-> service_markdownrenderer
+  controller_publiccontroller -. declared related view .-> view_public_authored_page
+  route_get_about -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared related view .-> view_public_about
+  route_get_ai_assistants -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared service .-> service_publicmcpservice
+  controller_publiccontroller -. declared service .-> service_markdownrenderer
+  controller_publiccontroller -. declared related view .-> view_public_ai_assistants
+  route_get_llms_txt -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared service .-> service_publicmcpservice
+  controller_publiccontroller -. declared service .-> service_markdownrenderer
+  controller_publiccontroller -. declared related view .-> view_public_ai_assistants
+  route_get_sri_panchami_spiritual -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared related view .-> view_public_spiritual
+  route_get_spiritual -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared related view .-> view_public_spiritual
+  route_get_terms -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared related view .-> view_public_terms
+  route_get_privacy -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared related view .-> view_public_privacy
+  route_get_consult -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared related view .-> view_public_shop
+  route_get_consult_slug -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared related view .-> view_public_shop
+  route_get_temples -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared service .-> service_templeservice
+  controller_publiccontroller -. declared related view .-> view_public_temples
+  route_get_temples_slug -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared service .-> service_templeservice
+  controller_publiccontroller -. declared related view .-> view_public_temple
+  route_get_shop -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared service .-> service_productservice
+  controller_publiccontroller -. declared service .-> service_categoryservice
+  controller_publiccontroller -. declared related view .-> view_public_shop
+  route_get_categories -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared service .-> service_categoryservice
+  controller_publiccontroller -. declared related view .-> view_public_categories
+  route_get_product_slug -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared service .-> service_productservice
+  controller_publiccontroller -. declared related view .-> view_public_product
+  route_get_api -- registered handler --> controller_apicontroller
+  controller_apicontroller -. declared related view .-> view_public_404
+  route_get_is_sha_valid -- registered handler --> controller_apicontroller
+  controller_apicontroller -. declared service .-> service_deploymentrevisionservice
+  controller_apicontroller -. declared related view .-> view_public_404
+  route_get_api_is_sha_valid -- registered handler --> controller_apicontroller
+  controller_apicontroller -. declared service .-> service_deploymentrevisionservice
+  controller_apicontroller -. declared related view .-> view_public_404
+  route_get_api_shop -- registered handler --> controller_apicontroller
+  controller_apicontroller -. declared service .-> service_productservice
+  controller_apicontroller -. declared service .-> service_categoryservice
+  controller_apicontroller -. declared related view .-> view_public_404
+  route_get_api_categories -- registered handler --> controller_apicontroller
+  controller_apicontroller -. declared service .-> service_categoryservice
+  controller_apicontroller -. declared related view .-> view_public_404
+  route_get_api_product_slug -- registered handler --> controller_apicontroller
+  controller_apicontroller -. declared service .-> service_productservice
+  controller_apicontroller -. declared related view .-> view_public_404
+  route_get_api_temples -- registered handler --> controller_apicontroller
+  controller_apicontroller -. declared service .-> service_templeservice
+  controller_apicontroller -. declared related view .-> view_public_404
+  route_get_api_agent_tools -- registered handler --> controller_publicagentdiscoverycontroller
+  controller_publicagentdiscoverycontroller -. declared service .-> service_publicagentdiscoveryservice
+  controller_publicagentdiscoverycontroller -. declared service .-> service_publicmcpservice
+  controller_publicagentdiscoverycontroller -. declared service .-> service_publicsiteurlservice
+  controller_publicagentdiscoverycontroller -. declared related view .-> view_public_404
+  route_get_api_knowledge_articles -- registered handler --> controller_apicontroller
+  controller_apicontroller -. declared service .-> service_publicknowledgeservice
+  controller_apicontroller -. declared service .-> service_blogservice
+  controller_apicontroller -. declared related view .-> view_public_404
+  route_get_api_knowledge_products -- registered handler --> controller_apicontroller
+  controller_apicontroller -. declared service .-> service_publicknowledgeservice
+  controller_apicontroller -. declared service .-> service_productservice
+  controller_apicontroller -. declared related view .-> view_public_404
+  route_get_api_knowledge_contact -- registered handler --> controller_apicontroller
+  controller_apicontroller -. declared service .-> service_publicknowledgeservice
+  controller_apicontroller -. declared related view .-> view_public_404
+  route_get_api_knowledge_services -- registered handler --> controller_apicontroller
+  controller_apicontroller -. declared service .-> service_publicknowledgeservice
+  controller_apicontroller -. declared related view .-> view_public_404
+  route_get_api_knowledge_a2ui -- registered handler --> controller_apicontroller
+  controller_apicontroller -. declared service .-> service_publica2uiservice
+  controller_apicontroller -. declared service .-> service_publicknowledgeservice
+  controller_apicontroller -. declared related view .-> view_public_404
+  route_post_api_mcp -- registered handler --> controller_publicmcpcontroller
+  controller_publicmcpcontroller -. declared service .-> service_publicmcpservice
+  controller_publicmcpcontroller -. declared service .-> service_publicknowledgeservice
+  controller_publicmcpcontroller -. declared service .-> service_publica2uiservice
+  controller_publicmcpcontroller -. declared service .-> service_remotecartservice
+  controller_publicmcpcontroller -. declared service .-> service_remotecheckoutservice
+  controller_publicmcpcontroller -. declared service .-> service_remotecheckoutstateservice
+  controller_publicmcpcontroller -. declared service .-> service_verifiedorderservice
+  controller_publicmcpcontroller -. declared related view .-> view_public_mcp_app
+  route_get_api_mcp -- registered handler --> controller_publicmcpcontroller
+  controller_publicmcpcontroller -. declared service .-> service_publicmcpservice
+  controller_publicmcpcontroller -. declared related view .-> view_public_404
+  route_delete_api_mcp -- registered handler --> controller_publicmcpcontroller
+  controller_publicmcpcontroller -. declared service .-> service_publicmcpservice
+  controller_publicmcpcontroller -. declared related view .-> view_public_404
+  route_options_api_mcp -- registered handler --> controller_publicmcpcontroller
+  controller_publicmcpcontroller -. declared service .-> service_publicmcpservice
+  controller_publicmcpcontroller -. declared related view .-> view_public_404
+  route_get_cart -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared service .-> service_cartservice
+  controller_publiccontroller -. declared service .-> service_productservice
+  controller_publiccontroller -. declared service .-> service_sitetelemetryservice
+  controller_publiccontroller -. declared related view .-> view_public_cart
+  route_get_cart_agent_checkout -- registered handler --> controller_commercecontroller
+  controller_commercecontroller -. declared service .-> service_remotecartservice
+  controller_commercecontroller -. declared service .-> service_publicknowledgeservice
+  controller_commercecontroller -. declared service .-> service_productservice
+  controller_commercecontroller -. declared service .-> service_databaseservice
+  controller_commercecontroller -. declared related view .-> view_public_agent_checkout
+  route_post_cart_agent_checkout -- registered handler --> controller_commercecontroller
+  controller_commercecontroller -. declared service .-> service_remotecartservice
+  controller_commercecontroller -. declared service .-> service_cartservice
+  controller_commercecontroller -. declared service .-> service_databaseservice
+  controller_commercecontroller -. declared related view .-> view_public_agent_checkout
+  route_get_checkout -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared service .-> service_cartservice
+  controller_publiccontroller -. declared service .-> service_productservice
+  controller_publiccontroller -. declared service .-> service_secretservice
+  controller_publiccontroller -. declared service .-> service_addressservice
+  controller_publiccontroller -. declared service .-> service_settingsservice
+  controller_publiccontroller -. declared related view .-> view_public_checkout
+  route_get_checkout_payment -- registered handler --> controller_remotecheckoutcontroller
+  controller_remotecheckoutcontroller -. declared service .-> service_remotecheckoutservice
+  controller_remotecheckoutcontroller -. declared service .-> service_databaseservice
+  controller_remotecheckoutcontroller -. declared related view .-> view_public_agent_payment
+  route_post_api_payments_razorpay_webhook -- registered handler --> controller_remotecheckoutcontroller
+  controller_remotecheckoutcontroller -. declared service .-> service_remotecheckoutservice
+  controller_remotecheckoutcontroller -. declared service .-> service_paymentservice
+  controller_remotecheckoutcontroller -. declared service .-> service_verifiedorderservice
+  controller_remotecheckoutcontroller -. declared service .-> service_databaseservice
+  controller_remotecheckoutcontroller -. declared service .-> service_secretservice
+  route_get_feeds_google_products_xml -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared service .-> service_merchantfeedservice
+  controller_publiccontroller -. declared service .-> service_productservice
+  controller_publiccontroller -. declared service .-> service_settingsservice
+  controller_publiccontroller -. declared related view .-> view_public_merchant_feed
+  route_get_sitemap_xml -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared service .-> service_blogservice
+  controller_publiccontroller -. declared service .-> service_productservice
+  controller_publiccontroller -. declared service .-> service_authoredpageservice
+  controller_publiccontroller -. declared related view .-> view_public_sitemap
+  route_get_contact -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared service .-> service_publicknowledgeservice
+  controller_publiccontroller -. declared related view .-> view_public_contact
+  route_post_contact -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared service .-> service_contactservice
+  controller_publiccontroller -. declared service .-> service_publicknowledgeservice
+  controller_publiccontroller -. declared related view .-> view_public_contact
+  route_get_login -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared service .-> service_authservice
+  controller_publiccontroller -. declared related view .-> view_public_login
+  route_get_forgot_password -- registered handler --> controller_authcontroller
+  controller_authcontroller -. declared service .-> service_passwordresetservice
+  controller_authcontroller -. declared related view .-> view_public_forgot_password
+  route_post_forgot_password -- registered handler --> controller_authcontroller
+  controller_authcontroller -. declared service .-> service_passwordresetservice
+  controller_authcontroller -. declared related view .-> view_public_forgot_password
+  route_get_reset_password -- registered handler --> controller_authcontroller
+  controller_authcontroller -. declared service .-> service_passwordresetservice
+  controller_authcontroller -. declared related view .-> view_public_reset_password
+  route_post_reset_password -- registered handler --> controller_authcontroller
+  controller_authcontroller -. declared service .-> service_passwordresetservice
+  controller_authcontroller -. declared related view .-> view_public_reset_password
+  route_get_auth_google -- registered handler --> controller_authcontroller
+  controller_authcontroller -. declared service .-> service_secretservice
+  controller_authcontroller -. declared related view .-> view_public_login
+  route_get_auth_google_callback -- registered handler --> controller_authcontroller
+  controller_authcontroller -. declared service .-> service_secretservice
+  controller_authcontroller -. declared service .-> service_databaseservice
+  controller_authcontroller -. declared related view .-> view_public_login
+  route_get_register -- registered handler --> controller_authcontroller
+  controller_authcontroller -. declared related view .-> view_public_register
+  route_post_register -- registered handler --> controller_authcontroller
+  controller_authcontroller -. declared service .-> service_databaseservice
+  controller_authcontroller -. declared related view .-> view_public_register
+  route_post_login -- registered handler --> controller_authcontroller
+  controller_authcontroller -. declared service .-> service_databaseservice
+  controller_authcontroller -. declared related view .-> view_public_login
+  route_get_logout -- registered handler --> controller_authcontroller
+  controller_authcontroller -. declared service .-> service_authservice
+  controller_authcontroller -. declared related view .-> view_public_login
+  route_get_account_dashboard -- registered handler --> controller_accountcontroller
+  controller_accountcontroller -. declared service .-> service_authservice
+  controller_accountcontroller -. declared related view .-> view_account_orders
+  route_get_account_dashboard_orders -- registered handler --> controller_accountcontroller
+  controller_accountcontroller -. declared service .-> service_authservice
+  controller_accountcontroller -. declared service .-> service_orderservice
+  controller_accountcontroller -. declared service .-> service_reviewservice
+  controller_accountcontroller -. declared related view .-> view_account_orders
+  route_get_account_dashboard_sessions -- registered handler --> controller_accountcontroller
+  controller_accountcontroller -. declared service .-> service_authservice
+  controller_accountcontroller -. declared related view .-> view_account_orders
+  route_get_account_dashboard_install -- registered handler --> controller_accountcontroller
+  controller_accountcontroller -. declared service .-> service_authservice
+  controller_accountcontroller -. declared related view .-> view_account_install
+  route_get_account_dashboard_profile -- registered handler --> controller_accountcontroller
+  controller_accountcontroller -. declared service .-> service_authservice
+  controller_accountcontroller -. declared service .-> service_databaseservice
+  controller_accountcontroller -. declared related view .-> view_account_profile
+  route_post_account_dashboard_profile -- registered handler --> controller_accountcontroller
+  controller_accountcontroller -. declared service .-> service_authservice
+  controller_accountcontroller -. declared service .-> service_databaseservice
+  controller_accountcontroller -. declared related view .-> view_account_profile
+  route_post_account_dashboard_profile_password -- registered handler --> controller_accountcontroller
+  controller_accountcontroller -. declared service .-> service_authservice
+  controller_accountcontroller -. declared service .-> service_databaseservice
+  controller_accountcontroller -. declared service .-> service_passwordresetservice
+  controller_accountcontroller -. declared related view .-> view_account_profile
+  route_get_account_dashboard_addresses -- registered handler --> controller_accountcontroller
+  controller_accountcontroller -. declared service .-> service_authservice
+  controller_accountcontroller -. declared service .-> service_addressservice
+  controller_accountcontroller -. declared service .-> service_taxservice
+  controller_accountcontroller -. declared related view .-> view_account_addresses
+  route_post_account_dashboard_addresses_save -- registered handler --> controller_accountcontroller
+  controller_accountcontroller -. declared service .-> service_authservice
+  controller_accountcontroller -. declared service .-> service_addressservice
+  controller_accountcontroller -. declared related view .-> view_account_addresses
+  route_post_account_dashboard_addresses_delete -- registered handler --> controller_accountcontroller
+  controller_accountcontroller -. declared service .-> service_authservice
+  controller_accountcontroller -. declared service .-> service_addressservice
+  controller_accountcontroller -. declared related view .-> view_account_addresses
+  route_get_account_orders -- registered handler --> controller_accountcontroller
+  controller_accountcontroller -. declared service .-> service_authservice
+  controller_accountcontroller -. declared related view .-> view_account_orders
+  route_get_orders -- registered handler --> controller_accountcontroller
+  controller_accountcontroller -. declared service .-> service_authservice
+  controller_accountcontroller -. declared related view .-> view_account_orders
+  route_get_account_orders_orderid_invoice -- registered handler --> controller_accountcontroller
+  controller_accountcontroller -. declared service .-> service_authservice
+  controller_accountcontroller -. declared service .-> service_orderservice
+  controller_accountcontroller -. declared service .-> service_settingsservice
+  controller_accountcontroller -. declared service .-> service_taxservice
+  controller_accountcontroller -. declared related view .-> view_account_invoice
+  route_get_account_orders_orderid -- registered handler --> controller_accountcontroller
+  controller_accountcontroller -. declared service .-> service_authservice
+  controller_accountcontroller -. declared service .-> service_orderservice
+  controller_accountcontroller -. declared service .-> service_settingsservice
+  controller_accountcontroller -. declared related view .-> view_account_order
+  route_get_account_bookings -- registered handler --> controller_accountcontroller
+  controller_accountcontroller -. declared service .-> service_authservice
+  controller_accountcontroller -. declared related view .-> view_account_orders
+  route_post_api_consultations_id_status -- registered handler --> controller_consultationcontroller
+  controller_consultationcontroller -. declared service .-> service_authservice
+  controller_consultationcontroller -. declared service .-> service_consultationservice
+  controller_consultationcontroller -. declared related view .-> view_admin_list
+  route_get_admin -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_dashboard
+  route_get_admin_slash -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_resourceservice
+  controller_admincontroller -. declared service .-> service_orderservice
+  controller_admincontroller -. declared service .-> service_storestatsservice
+  controller_admincontroller -. declared service .-> service_siteinsightsservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_dashboard
+  route_get_admin_system_health -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared service .-> service_runtimehealthservice
+  controller_admincontroller -. declared service .-> service_databaseservice
+  controller_admincontroller -. declared related view .-> view_admin_system_health
+  route_get_admin_docs -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_adminhelpservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_help
+  route_get_admin_docs_slug -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_adminhelpservice
+  controller_admincontroller -. declared service .-> service_markdownrenderer
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_help
+  route_get_admin_mcp_clients -- registered handler --> controller_adminmcpclientcontroller
+  controller_adminmcpclientcontroller -. declared service .-> service_mcpclientservice
+  controller_adminmcpclientcontroller -. declared service .-> service_authservice
+  controller_adminmcpclientcontroller -. declared service .-> service_auditlogservice
+  controller_adminmcpclientcontroller -. declared related view .-> view_admin_mcp_clients
+  route_post_admin_mcp_clients_issue -- registered handler --> controller_adminmcpclientcontroller
+  controller_adminmcpclientcontroller -. declared service .-> service_mcpclientservice
+  controller_adminmcpclientcontroller -. declared service .-> service_authservice
+  controller_adminmcpclientcontroller -. declared service .-> service_auditlogservice
+  controller_adminmcpclientcontroller -. declared related view .-> view_admin_mcp_clients
+  route_post_admin_mcp_clients_revoke -- registered handler --> controller_adminmcpclientcontroller
+  controller_adminmcpclientcontroller -. declared service .-> service_mcpclientservice
+  controller_adminmcpclientcontroller -. declared service .-> service_authservice
+  controller_adminmcpclientcontroller -. declared service .-> service_auditlogservice
+  controller_adminmcpclientcontroller -. declared related view .-> view_admin_mcp_clients
+  route_get_admin_google_reporting -- registered handler --> controller_admingooglereportingcontroller
+  controller_admingooglereportingcontroller -. declared service .-> service_secretservice
+  controller_admingooglereportingcontroller -. declared service .-> service_authservice
+  controller_admingooglereportingcontroller -. declared service .-> service_auditlogservice
+  controller_admingooglereportingcontroller -. declared related view .-> view_admin_google_reporting
+  route_post_admin_google_reporting_connect -- registered handler --> controller_admingooglereportingcontroller
+  controller_admingooglereportingcontroller -. declared service .-> service_secretservice
+  controller_admingooglereportingcontroller -. declared service .-> service_authservice
+  controller_admingooglereportingcontroller -. declared service .-> service_auditlogservice
+  controller_admingooglereportingcontroller -. declared related view .-> view_admin_google_reporting
+  route_get_admin_google_reporting_callback -- registered handler --> controller_admingooglereportingcontroller
+  controller_admingooglereportingcontroller -. declared service .-> service_secretservice
+  controller_admingooglereportingcontroller -. declared service .-> service_authservice
+  controller_admingooglereportingcontroller -. declared service .-> service_auditlogservice
+  controller_admingooglereportingcontroller -. declared related view .-> view_admin_google_reporting
+  route_post_admin_google_reporting_select -- registered handler --> controller_admingooglereportingcontroller
+  controller_admingooglereportingcontroller -. declared service .-> service_secretservice
+  controller_admingooglereportingcontroller -. declared service .-> service_authservice
+  controller_admingooglereportingcontroller -. declared service .-> service_auditlogservice
+  controller_admingooglereportingcontroller -. declared related view .-> view_admin_google_reporting
+  route_post_admin_google_reporting_disconnect -- registered handler --> controller_admingooglereportingcontroller
+  controller_admingooglereportingcontroller -. declared service .-> service_secretservice
+  controller_admingooglereportingcontroller -. declared service .-> service_authservice
+  controller_admingooglereportingcontroller -. declared service .-> service_auditlogservice
+  controller_admingooglereportingcontroller -. declared related view .-> view_admin_google_reporting
+  route_get_admin_google_merchant -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_merchantfeedservice
+  controller_admincontroller -. declared service .-> service_productservice
+  controller_admincontroller -. declared service .-> service_settingsservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_google_merchant
+  route_get_admin_products -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_productservice
+  controller_admincontroller -. declared service .-> service_schemaservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_product_form
+  route_get_admin_categories -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_categoryservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_resource
+  route_get_admin_collections -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_categoryservice
+  controller_admincontroller -. declared service .-> service_productservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_collections
+  route_get_admin_coupons -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_couponservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_resource
+  route_get_admin_users -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_resourceservice
+  controller_admincontroller -. declared service .-> service_orderservice
+  controller_admincontroller -. declared service .-> service_userorderhistoryservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_users
+  route_get_admin_orders -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_orderservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_list
+  route_get_admin_orders_id_invoice -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_orderservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_account_invoice
+  route_get_admin_orders_id -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_orderservice
+  controller_admincontroller -. declared service .-> service_shippingservice
+  controller_admincontroller -. declared service .-> service_taxservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_detail
+  route_post_admin_orders_id_status -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_orderservice
+  controller_admincontroller -. declared service .-> service_mailqueueservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_detail
+  route_post_admin_orders_id_refund -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_orderservice
+  controller_admincontroller -. declared service .-> service_secretservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_detail
+  route_post_admin_orders_id_tax_review -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_orderservice
+  controller_admincontroller -. declared service .-> service_taxservice
+  controller_admincontroller -. declared service .-> service_settingsservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_detail
+  route_get_admin_shipping -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_shippingservice
+  controller_admincontroller -. declared service .-> service_settingsservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_settings
+  route_get_admin_astrologers -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_dashboard
+  route_get_admin_appointments -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_appointmentservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_list
+  route_get_admin_consultation_analytics -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_consultationservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_consultation_analytics
+  route_get_admin_tax_report -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_orderservice
+  controller_admincontroller -. declared service .-> service_productservice
+  controller_admincontroller -. declared service .-> service_storestatsservice
+  controller_admincontroller -. declared service .-> service_taxservice
+  controller_admincontroller -. declared service .-> service_gstregisterservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_tax_report
+  route_get_admin_temples -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_templeservice
+  controller_admincontroller -. declared service .-> service_schemaservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_temples
+  route_get_admin_settings -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_settingsservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_settings
+  route_post_admin_settings_save -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_settingsservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_settings
+  route_post_admin_settings_admin_credentials -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_envservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_settings
+  route_get_admin_integrations -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_settingsservice
+  controller_admincontroller -. declared service .-> service_paymentservice
+  controller_admincontroller -. declared service .-> service_secretservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_integrations
+  route_get_admin_agent -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_secretservice
+  controller_admincontroller -. declared service .-> service_databaseservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_agent
+  route_get_admin_agent_history -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_agentconversationservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_agent
+  route_get_admin_agent_history_id -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_agentconversationservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_agent
+  route_post_admin_agent_history_id_delete -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_agentconversationservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_agent
+  route_get_admin_agent_review_id -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared service .-> service_agentconversationservice
+  controller_admincontroller -. declared service .-> service_agentevaluationservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared related view .-> view_admin_agent_review
+  route_post_admin_agent_review_id -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared service .-> service_agentconversationservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared related view .-> view_admin_agent_review
+  route_get_admin_agent_conversation_id -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_agentconversationservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_agent_monitoring
+  route_get_admin_agent_monitoring -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_databaseservice
+  controller_admincontroller -. declared service .-> service_agentconversationservice
+  controller_admincontroller -. declared service .-> service_agentevaluationservice
+  controller_admincontroller -. declared service .-> service_sitetelemetryservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_agent_monitoring
+  route_post_admin_agent_ask -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_secretservice
+  controller_admincontroller -. declared service .-> service_databaseservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_agentattachmentservice
+  controller_admincontroller -. declared service .-> service_agentdraftservice
+  controller_admincontroller -. declared service .-> service_agentinstructionservice
+  controller_admincontroller -. declared service .-> service_agenttoolregistry
+  controller_admincontroller -. declared service .-> service_enterprisetoolregistry
+  controller_admincontroller -. declared service .-> service_agentconversationservice
+  controller_admincontroller -. declared service .-> service_agenttraceservice
+  controller_admincontroller -. declared service .-> service_agentevaluationservice
+  controller_admincontroller -. declared service .-> service_agenttranscriptsanitizer
+  controller_admincontroller -. declared service .-> service_agentcapabilitypolicy
+  controller_admincontroller -. declared service .-> service_agentcontextservice
+  controller_admincontroller -. declared service .-> service_gstregisterservice
+  controller_admincontroller -. declared service .-> service_aireplycleaner
+  controller_admincontroller -. declared service .-> service_aiclient
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_agent
+  route_get_admin_contact_submissions -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_contactservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_resource
+  route_post_admin_contact_submissions_save -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_resourceservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_resource
+  route_post_admin_contact_submissions_delete -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_resourceservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_resource
+  route_get_admin_email_templates -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_mailtemplateservice
+  controller_admincontroller -. declared service .-> service_mailqueueservice
+  controller_admincontroller -. declared service .-> service_secretservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_email_templates
+  route_post_admin_email_templates_test -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_mailtemplateservice
+  controller_admincontroller -. declared service .-> service_mailqueueservice
+  controller_admincontroller -. declared service .-> service_secretservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_email_templates
+  route_get_admin_email_inbox -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_mailstorageservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_mailbox
+  route_get_admin_email_outbox -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_mailstorageservice
+  controller_admincontroller -. declared service .-> service_mailqueueservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_mailbox
+  route_get_admin_support_tickets -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_databaseservice
+  controller_admincontroller -. declared service .-> service_supportticketservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_list
+  route_post_admin_support_tickets_save -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_supportticketservice
+  controller_admincontroller -. declared service .-> service_databaseservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_list
+  route_get_admin_appearance -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_settingsservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_appearance
+  route_get_admin_appearance_menu -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_settingsservice
+  controller_admincontroller -. declared service .-> service_authoredpageservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_header_menu
+  route_post_admin_appearance_menu -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_settingsservice
+  controller_admincontroller -. declared service .-> service_authoredpageservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_header_menu
+  route_post_admin_appearance_save -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_settingsservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_appearance
+  route_get_admin_media -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_mediaservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_media
+  route_post_admin_media_upload -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_mediaservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_media
+  route_post_admin_media_delete -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_mediaservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_media
+  route_get_admin_products_import -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_productimportservice
+  controller_admincontroller -. declared service .-> service_databaseservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_product_import
+  route_post_admin_products_import -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_productimportservice
+  controller_admincontroller -. declared service .-> service_databaseservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_product_import
+  route_post_admin_products_save -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_resourceservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_product_form
+  route_post_admin_products_delete -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_resourceservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_product_form
+  route_post_admin_categories_save -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_resourceservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_resource
+  route_post_admin_collections_save -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_resourceservice
+  controller_admincontroller -. declared service .-> service_categoryservice
+  controller_admincontroller -. declared service .-> service_productservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_collections
+  route_post_admin_collections_delete -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_resourceservice
+  controller_admincontroller -. declared service .-> service_categoryservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_collections
+  route_post_admin_categories_delete -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_resourceservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_resource
+  route_post_admin_coupons_save -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_resourceservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_resource
+  route_post_admin_coupons_delete -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_resourceservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_resource
+  route_post_admin_temples_save -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_resourceservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_resource
+  route_post_admin_temples_delete -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_resourceservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_resource
+  route_post_admin_integrations_test_email -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_secretservice
+  controller_admincontroller -. declared service .-> service_smtpmailer
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_integrations
+  route_post_admin_integrations_test_ai -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_secretservice
+  controller_admincontroller -. declared service .-> service_aiclient
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_integrations
+  route_post_admin_integrations_save -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_secretservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_integrations
+  route_post_cart_add -- registered handler --> controller_commercecontroller
+  controller_commercecontroller -. declared service .-> service_cartservice
+  controller_commercecontroller -. declared service .-> service_productservice
+  controller_commercecontroller -. declared related view .-> view_public_cart
+  route_post_cart_remove -- registered handler --> controller_commercecontroller
+  controller_commercecontroller -. declared service .-> service_cartservice
+  controller_commercecontroller -. declared related view .-> view_public_cart
+  route_post_cart_update -- registered handler --> controller_commercecontroller
+  controller_commercecontroller -. declared service .-> service_cartservice
+  controller_commercecontroller -. declared related view .-> view_public_cart
+  route_post_checkout_create_order -- registered handler --> controller_commercecontroller
+  controller_commercecontroller -. declared service .-> service_secretservice
+  controller_commercecontroller -. declared service .-> service_paymentservice
+  controller_commercecontroller -. declared service .-> service_sitetelemetryservice
+  controller_commercecontroller -. declared related view .-> view_public_checkout
+  route_post_payment_verify -- registered handler --> controller_commercecontroller
+  controller_commercecontroller -. declared service .-> service_secretservice
+  controller_commercecontroller -. declared service .-> service_paymentservice
+  controller_commercecontroller -. declared service .-> service_verifiedorderservice
+  controller_commercecontroller -. declared service .-> service_databaseservice
+  controller_commercecontroller -. declared service .-> service_taxservice
+  controller_commercecontroller -. declared service .-> service_settingsservice
+  controller_commercecontroller -. declared related view .-> view_public_checkout
+  route_get_payment_stripe_return -- registered handler --> controller_commercecontroller
+  controller_commercecontroller -. declared service .-> service_secretservice
+  controller_commercecontroller -. declared service .-> service_databaseservice
+  controller_commercecontroller -. declared service .-> service_taxservice
+  controller_commercecontroller -. declared service .-> service_settingsservice
+  controller_commercecontroller -. declared service .-> service_mailqueueservice
+  controller_commercecontroller -. declared related view .-> view_account_order
+  route_post_create_order -- registered handler --> controller_commercecontroller
+  controller_commercecontroller -. declared service .-> service_secretservice
+  controller_commercecontroller -. declared service .-> service_paymentservice
+  controller_commercecontroller -. declared related view .-> view_public_checkout
+  route_post_verify_payment -- registered handler --> controller_commercecontroller
+  controller_commercecontroller -. declared service .-> service_secretservice
+  controller_commercecontroller -. declared service .-> service_paymentservice
+  controller_commercecontroller -. declared service .-> service_verifiedorderservice
+  controller_commercecontroller -. declared service .-> service_databaseservice
+  controller_commercecontroller -. declared service .-> service_taxservice
+  controller_commercecontroller -. declared service .-> service_settingsservice
+  controller_commercecontroller -. declared related view .-> view_public_checkout
+  route_post_consultation_initiate -- registered handler --> controller_consultationcontroller
+  controller_consultationcontroller -. declared service .-> service_authservice
+  controller_consultationcontroller -. declared related view .-> view_public_contact
+  route_post_reviews_product -- registered handler --> controller_reviewcontroller
+  controller_reviewcontroller -. declared service .-> service_reviewservice
+  controller_reviewcontroller -. declared service .-> service_authservice
+  controller_reviewcontroller -. declared related view .-> view_account_orders
+  route_get_support -- registered handler --> controller_supportcontroller
+  controller_supportcontroller -. declared service .-> service_seoservice
+  controller_supportcontroller -. declared related view .-> view_public_support
+  route_post_support_ask -- registered handler --> controller_supportcontroller
+  controller_supportcontroller -. declared service .-> service_supportbotservice
+  controller_supportcontroller -. declared service .-> service_agentcontextservice
+  controller_supportcontroller -. declared service .-> service_supportticketservice
+  controller_supportcontroller -. declared service .-> service_supporttoolregistry
+  controller_supportcontroller -. declared service .-> service_agentconversationservice
+  controller_supportcontroller -. declared service .-> service_agenttraceservice
+  controller_supportcontroller -. declared service .-> service_agentevaluationservice
+  controller_supportcontroller -. declared service .-> service_auditlogservice
+  controller_supportcontroller -. declared service .-> service_aiclient
+  controller_supportcontroller -. declared service .-> service_aireplycleaner
+  controller_supportcontroller -. declared related view .-> view_public_support
+  route_post_support_feedback -- registered handler --> controller_supportcontroller
+  controller_supportcontroller -. declared service .-> service_agentconversationservice
+  controller_supportcontroller -. declared service .-> service_ratelimiter
+  controller_supportcontroller -. declared related view .-> view_public_support
+  route_get_docs -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared related view .-> view_public_blog
+  route_get_help_slug -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared related view .-> view_public_blog_post
+  route_post_remotedb -- registered handler --> controller_remotedbcontroller
+  controller_remotedbcontroller -. declared service .-> service_databaseservice
+  controller_remotedbcontroller -. declared service .-> service_secretservice
+  controller_remotedbcontroller -. declared related view .-> view_public_404
+  route_get_blog -- registered handler --> controller_blogcontroller
+  controller_blogcontroller -. declared service .-> service_blogservice
+  controller_blogcontroller -. declared service .-> service_markdownrenderer
+  controller_blogcontroller -. declared related view .-> view_public_blog
+  route_get_blog_slug -- registered handler --> controller_blogcontroller
+  controller_blogcontroller -. declared service .-> service_blogservice
+  controller_blogcontroller -. declared service .-> service_markdownrenderer
+  controller_blogcontroller -. declared related view .-> view_public_blog_post
+  route_get_blog_category_slug -- registered handler --> controller_blogcontroller
+  controller_blogcontroller -. declared service .-> service_blogservice
+  controller_blogcontroller -. declared service .-> service_markdownrenderer
+  controller_blogcontroller -. declared related view .-> view_public_blog
+  route_get_admin_pages -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_authoredpageservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_pages
+  route_post_admin_pages_delete -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_authoredpageservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_pages
+  route_post_admin_pages_save -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_authoredpageservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_pages
+  route_get_admin_blog -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_blogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_blog
+  route_post_admin_blog_save -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_blogservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_blog
+  route_get_admin_blog_history_slug -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_blogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_blog_history
+  route_post_admin_blog_history_slug_restore -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_blogservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_blog_history
+  route_post_admin_blog_toggle -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_blogservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_blog
+  route_post_admin_blog_delete -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_blogservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_blog
+  route_post_admin_blog_preview -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_blogservice
+  controller_admincontroller -. declared service .-> service_markdownrenderer
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_blog
+  route_post_admin_blog_enhance_title -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_secretservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_blog
+  route_post_admin_blog_enhance_content -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_secretservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_blog
+  route_post_admin_blog_ai_draft -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_blogservice
+  controller_admincontroller -. declared service .-> service_blogdraftservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_blog
+  view_admin_list -. declared include .-> view_admin_list_controls
+  view_admin_media -. declared include .-> view_admin_list_controls
+  nav_contact -- registered destination --> route_get_contact
+  nav_account_dashboard -- registered destination --> route_get_account_dashboard
+  nav_account_dashboard_orders -- registered destination --> route_get_account_dashboard_orders
+  nav_account_dashboard_sessions -- registered destination --> route_get_account_dashboard_sessions
+  nav_account_dashboard_install -- registered destination --> route_get_account_dashboard_install
+  controller_accountcontroller -. source new .-> service_addressservice
+  controller_accountcontroller -. source new .-> service_authservice
+  controller_accountcontroller -. source new .-> service_databaseservice
+  controller_accountcontroller -. source new .-> service_mailqueueservice
+  controller_accountcontroller -. source new .-> service_orderservice
+  controller_accountcontroller -. source new .-> service_reviewservice
+  controller_accountcontroller -. source new .-> service_settingsservice
+  controller_accountcontroller -- extends --> controller_basecontroller
+  controller_accountcontroller -. static reference .-> service_authservice
+  controller_accountcontroller -. static reference .-> service_passwordresetservice
+  controller_accountcontroller -. static reference .-> service_taxservice
+  controller_admincontroller -. source new .-> integration_googlereportingclient
+  controller_admincontroller -. source new .-> integration_googlesitekitclient
+  controller_admincontroller -. source new .-> service_adminhelpservice
+  controller_admincontroller -. source new .-> service_agentanswerpresentationservice
+  controller_admincontroller -. source new .-> service_agentattachmentservice
+  controller_admincontroller -. source new .-> service_agentconversationservice
+  controller_admincontroller -. source new .-> service_agentdraftservice
+  controller_admincontroller -. source new .-> service_aiclient
+  controller_admincontroller -. source new .-> service_aireplycleaner
+  controller_admincontroller -. source new .-> service_auditlogservice
+  controller_admincontroller -. source new .-> service_authservice
+  controller_admincontroller -. source new .-> service_authoredpageservice
+  controller_admincontroller -. source new .-> service_blogdraftservice
+  controller_admincontroller -. source new .-> service_blogservice
+  controller_admincontroller -. source new .-> service_categoryservice
+  controller_admincontroller -. source new .-> service_consultationservice
+  controller_admincontroller -. source new .-> service_databaseservice
+  controller_admincontroller -. source new .-> service_enterprisetoolregistry
+  controller_admincontroller -. source new .-> service_envservice
+  controller_admincontroller -. source new .-> service_mailqueueservice
+  controller_admincontroller -. source new .-> service_mailstorageservice
+  controller_admincontroller -. source new .-> service_markdownrenderer
+  controller_admincontroller -. source new .-> service_mediaservice
+  controller_admincontroller -. source new .-> service_merchantfeedservice
+  controller_admincontroller -. source new .-> service_orderservice
+  controller_admincontroller -. source new .-> service_productservice
+  controller_admincontroller -. source new .-> service_publica2uiservice
+  controller_admincontroller -. source new .-> service_resourceservice
+  controller_admincontroller -. source new .-> service_runtimehealthservice
+  controller_admincontroller -. source new .-> service_schemaservice
+  controller_admincontroller -. source new .-> service_secretservice
+  controller_admincontroller -. source new .-> service_settingsservice
+  controller_admincontroller -. source new .-> service_smtpmailer
+  controller_admincontroller -. source new .-> service_storagepermissionservice
+  controller_admincontroller -. source new .-> service_supportticketservice
+  controller_admincontroller -- extends --> controller_basecontroller
+  controller_admincontroller -. static reference .-> service_agentanswerpresentationservice
+  controller_admincontroller -. static reference .-> service_agentconversationservice
+  controller_admincontroller -. static reference .-> service_agentdraftservice
+  controller_admincontroller -. static reference .-> service_agentevaluationservice
+  controller_admincontroller -. static reference .-> service_agentinstructionservice
+  controller_admincontroller -. static reference .-> service_agenttraceservice
+  controller_admincontroller -. static reference .-> service_aiclient
+  controller_admincontroller -. static reference .-> service_auditlogservice
+  controller_admincontroller -. static reference .-> service_blogdraftservice
+  controller_admincontroller -. static reference .-> service_enterprisetoolregistry
+  controller_admincontroller -. static reference .-> service_gstregisterservice
+  controller_admincontroller -. static reference .-> service_mailqueueservice
+  controller_admincontroller -. static reference .-> service_mailtemplateservice
+  controller_admincontroller -. static reference .-> service_mediaservice
+  controller_admincontroller -. static reference .-> service_productimportservice
+  controller_admincontroller -. static reference .-> service_productservice
+  controller_admincontroller -. static reference .-> service_secretservice
+  controller_admincontroller -. static reference .-> service_settingsservice
+  controller_admincontroller -. static reference .-> service_siteinsightsservice
+  controller_admincontroller -. static reference .-> service_sitetelemetryservice
+  controller_admincontroller -. static reference .-> service_storestatsservice
+  controller_admincontroller -. static reference .-> service_taxservice
+  controller_admincontroller -. static reference .-> service_templeservice
+  controller_admincontroller -. static reference .-> service_userorderhistoryservice
+  controller_admingooglereportingcontroller -. source new .-> integration_googlereportingclient
+  controller_admingooglereportingcontroller -. source new .-> service_auditlogservice
+  controller_admingooglereportingcontroller -. source new .-> service_authservice
+  controller_admingooglereportingcontroller -. source new .-> service_secretservice
+  controller_admingooglereportingcontroller -- extends --> controller_basecontroller
+  controller_adminmcpclientcontroller -. source new .-> service_authservice
+  controller_adminmcpclientcontroller -. source new .-> service_mcpclientservice
+  controller_adminmcpclientcontroller -- extends --> controller_basecontroller
+  controller_apicontroller -. source new .-> service_categoryservice
+  controller_apicontroller -. source new .-> service_deploymentrevisionservice
+  controller_apicontroller -. source new .-> service_productservice
+  controller_apicontroller -. source new .-> service_publica2uiservice
+  controller_apicontroller -. source new .-> service_publicknowledgeservice
+  controller_apicontroller -. source new .-> service_templeservice
+  controller_apicontroller -- extends --> controller_basecontroller
+  controller_apicontroller -. static reference .-> service_publica2uiservice
+  controller_authcontroller -. source new .-> integration_googleoauthclient
+  controller_authcontroller -. source new .-> service_addressservice
+  controller_authcontroller -. source new .-> service_databaseservice
+  controller_authcontroller -. source new .-> service_envservice
+  controller_authcontroller -. source new .-> service_mailqueueservice
+  controller_authcontroller -. source new .-> service_passwordresetservice
+  controller_authcontroller -. source new .-> service_secretservice
+  controller_authcontroller -- extends --> controller_basecontroller
+  controller_authcontroller -. static reference .-> service_taxservice
+  controller_basecontroller -. source new .-> service_cartservice
+  controller_basecontroller -. source new .-> service_ratelimiter
+  controller_basecontroller -. source new .-> service_secretservice
+  controller_basecontroller -. source new .-> service_seoservice
+  controller_basecontroller -. source new .-> service_settingsservice
+  controller_basecontroller -. static reference .-> service_cartservice
+  controller_blogcontroller -. source new .-> service_blogservice
+  controller_blogcontroller -- extends --> controller_basecontroller
+  controller_blogcontroller -. static reference .-> service_blogservice
+  controller_commercecontroller -. source new .-> integration_razorpayclient
+  controller_commercecontroller -. source new .-> integration_stripeclient
+  controller_commercecontroller -. source new .-> service_addressservice
+  controller_commercecontroller -. source new .-> service_couponservice
+  controller_commercecontroller -. source new .-> service_databaseservice
+  controller_commercecontroller -. source new .-> service_mailqueueservice
+  controller_commercecontroller -. source new .-> service_paymentservice
+  controller_commercecontroller -. source new .-> service_productservice
+  controller_commercecontroller -. source new .-> service_remotecartexception
+  controller_commercecontroller -. source new .-> service_remotecartservice
+  controller_commercecontroller -. source new .-> service_secretservice
+  controller_commercecontroller -. source new .-> service_settingsservice
+  controller_commercecontroller -. source new .-> service_sitetelemetryservice
+  controller_commercecontroller -. source new .-> service_verifiedorderservice
+  controller_commercecontroller -- extends --> controller_basecontroller
+  controller_commercecontroller -. static reference .-> service_authservice
+  controller_commercecontroller -. static reference .-> service_paymentservice
+  controller_commercecontroller -. static reference .-> service_taxservice
+  controller_consultationcontroller -. source new .-> service_authservice
+  controller_consultationcontroller -. source new .-> service_consultationservice
+  controller_consultationcontroller -- extends --> controller_basecontroller
+  controller_publicagentdiscoverycontroller -. source new .-> service_publicagentdiscoveryservice
+  controller_publiccontroller -. source new .-> service_addressservice
+  controller_publiccontroller -. source new .-> service_authservice
+  controller_publiccontroller -. source new .-> service_authoredpageservice
+  controller_publiccontroller -. source new .-> service_blogservice
+  controller_publiccontroller -. source new .-> service_categoryservice
+  controller_publiccontroller -. source new .-> service_contactservice
+  controller_publiccontroller -. source new .-> service_mailqueueservice
+  controller_publiccontroller -. source new .-> service_markdownrenderer
+  controller_publiccontroller -. source new .-> service_merchantfeedservice
+  controller_publiccontroller -. source new .-> service_productservice
+  controller_publiccontroller -. source new .-> service_publicknowledgeservice
+  controller_publiccontroller -. source new .-> service_publicmcpservice
+  controller_publiccontroller -. source new .-> service_reviewservice
+  controller_publiccontroller -. source new .-> service_secretservice
+  controller_publiccontroller -. source new .-> service_seoservice
+  controller_publiccontroller -. source new .-> service_settingsservice
+  controller_publiccontroller -. source new .-> service_templeservice
+  controller_publiccontroller -- extends --> controller_basecontroller
+  controller_publiccontroller -. static reference .-> service_authoredpageservice
+  controller_publiccontroller -. static reference .-> service_mailqueueservice
+  controller_publiccontroller -. static reference .-> service_publicknowledgeservice
+  controller_publiccontroller -. static reference .-> service_taxservice
+  controller_publicmcpcontroller -. source new .-> service_publicmcpservice
+  controller_publicmcpcontroller -. static reference .-> service_publicmcpservice
+  controller_remotecheckoutcontroller -. source new .-> service_remotecartexception
+  controller_remotecheckoutcontroller -. source new .-> service_remotecheckoutservice
+  controller_remotedbcontroller -. source new .-> service_addressservice
+  controller_remotedbcontroller -. source new .-> service_databaseservice
+  controller_reviewcontroller -. source new .-> service_authservice
+  controller_reviewcontroller -. source new .-> service_reviewservice
+  controller_reviewcontroller -- extends --> controller_basecontroller
+  controller_supportcontroller -. source new .-> service_agentanswerpresentationservice
+  controller_supportcontroller -. source new .-> service_agentconversationservice
+  controller_supportcontroller -. source new .-> service_auditlogservice
+  controller_supportcontroller -. source new .-> service_authservice
+  controller_supportcontroller -. source new .-> service_publica2uiservice
+  controller_supportcontroller -. source new .-> service_ratelimiter
+  controller_supportcontroller -. source new .-> service_supportbotservice
+  controller_supportcontroller -. source new .-> service_supportticketservice
+  controller_supportcontroller -- extends --> controller_basecontroller
+  controller_supportcontroller -. static reference .-> service_agentconversationservice
+  controller_supportcontroller -. static reference .-> service_agenttraceservice
+  service_addressservice -. source new .-> service_databaseservice
+  service_addressservice -. static reference .-> service_taxservice
+  service_adminhelpservice -. source new .-> service_markdownrenderer
+  service_agentanswerpresentationservice -. static reference .-> service_agenttraceservice
+  service_agentanswerpresentationservice -. static reference .-> service_publica2uiservice
+  service_agentattachmentservice -. source new .-> service_blogservice
+  service_agentattachmentservice -. source new .-> service_mediaservice
+  service_agentcontextservice -. source new .-> service_categoryservice
+  service_agentcontextservice -. source new .-> service_databaseservice
+  service_agentcontextservice -. source new .-> service_productservice
+  service_agentcontextservice -. source new .-> service_publicknowledgeservice
+  service_agentcontextservice -. source new .-> service_schemaservice
+  service_agentcontextservice -. source new .-> service_settingsservice
+  service_agentcontextservice -. source new .-> service_supportticketservice
+  service_agentcontextservice -. static reference .-> service_publicknowledgeservice
+  service_agentconversationservice -. static reference .-> service_agentevaluationservice
+  service_agentconversationservice -. static reference .-> service_agenttraceservice
+  service_agentconversationservice -. static reference .-> service_agenttranscriptsanitizer
+  service_agentdraftservice -. source new .-> service_aiclient
+  service_agentdraftservice -. source new .-> service_schemaservice
+  service_agentevaluationservice -. source new .-> service_agenttoolregistry
+  service_agentevaluationservice -. source new .-> service_categoryservice
+  service_agentevaluationservice -. static reference .-> service_agentcapabilitypolicy
+  service_agentevaluationservice -. static reference .-> service_agentcontextservice
+  service_agentevaluationservice -. static reference .-> service_agentconversationservice
+  service_agentevaluationservice -. static reference .-> service_agenttoolregistry
+  service_agentevaluationservice -. static reference .-> service_agenttraceservice
+  service_agentevaluationservice -. static reference .-> service_auditlogservice
+  service_agentevaluationservice -. static reference .-> service_gstregisterservice
+  service_agentevaluationservice -. static reference .-> service_supportbotservice
+  service_agentinstructionservice -. static reference .-> service_agenttraceservice
+  service_agenttoolregistry -. source new .-> service_adminhelpservice
+  service_agenttoolregistry -. source new .-> service_agentcontextservice
+  service_agenttoolregistry -. source new .-> service_couponservice
+  service_agenttoolregistry -. source new .-> service_databaseservice
+  service_agenttoolregistry -. source new .-> service_orderservice
+  service_agenttoolregistry -. source new .-> service_productservice
+  service_agenttoolregistry -. source new .-> service_publicknowledgeservice
+  service_agenttoolregistry -. source new .-> service_settingsservice
+  service_agenttoolregistry -. source new .-> service_supportticketservice
+  service_agenttoolregistry -. static reference .-> service_adminhelpservice
+  service_agenttoolregistry -. static reference .-> service_agentcontextservice
+  service_agenttoolregistry -. static reference .-> service_agenttraceservice
+  service_agenttoolregistry -. static reference .-> service_gstregisterservice
+  service_agenttoolregistry -. static reference .-> service_publicknowledgeservice
+  service_agenttoolregistry -. static reference .-> service_storestatsservice
+  service_agenttraceservice -. source new .-> service_agentbudgetexception
+  service_agenttraceservice -. static reference .-> service_agenttoolregistry
+  service_agenttraceservice -. static reference .-> service_secretservice
+  service_aiclient -. source new .-> service_secretservice
+  service_aiclient -. static reference .-> service_agenttraceservice
+  service_aiclient -. static reference .-> service_databaseservice
+  service_aiclient -. static reference .-> service_secretservice
+  service_appointmentservice -. source new .-> service_databaseservice
+  service_astrologerservice -. source new .-> service_databaseservice
+  service_auditlogservice -. source new .-> service_databaseservice
+  service_auditlogservice -. static reference .-> service_agentcapabilitypolicy
+  service_auditlogservice -. static reference .-> service_agenttraceservice
+  service_auditlogservice -. static reference .-> service_secretservice
+  service_authoredpageservice -. source new .-> service_databaseservice
+  service_authoredpageservice -. source new .-> service_markdownrenderer
+  service_blogdraftservice -. source new .-> service_markdownrenderer
+  service_blogservice -. source new .-> service_blogconflictexception
+  service_blogservice -. source new .-> service_markdownrenderer
+  service_blogservice -. static reference .-> service_mediaservice
+  service_cartservice -. source new .-> service_productservice
+  service_categoryservice -. source new .-> service_databaseservice
+  service_consultationservice -. source new .-> service_databaseservice
+  service_consultationservice -. source new .-> service_mailqueueservice
+  service_consultationservice -. source new .-> service_resourceservice
+  service_contactservice -. source new .-> service_databaseservice
+  service_contactservice -. source new .-> service_mailstorageservice
+  service_couponservice -. source new .-> service_databaseservice
+  service_databaseservice -. source new .-> service_remotecartexception
+  service_databaseservice -. source new .-> service_taxservice
+  service_databaseservice -. static reference .-> service_authoredpageservice
+  service_databaseservice -. static reference .-> service_mailqueueservice
+  service_databaseservice -. static reference .-> service_orderservice
+  service_databaseservice -. static reference .-> service_productimportservice
+  service_databaseservice -. static reference .-> service_remotecartservice
+  service_databaseservice -. static reference .-> service_remotecheckoutservice
+  service_databaseservice -. static reference .-> service_remotecheckoutstateservice
+  service_databaseservice -. static reference .-> service_settingsservice
+  service_databaseservice -. static reference .-> service_supportticketservice
+  service_docsmapservice -. static reference .-> service_projectmapservice
+  service_enterprisetoolregistry -- extends --> service_agenttoolregistry
+  service_enterprisetoolregistry -. static reference .-> service_adminhelpservice
+  service_enterprisetoolregistry -. static reference .-> service_agentcapabilitypolicy
+  service_envservice -. source new .-> service_settingsservice
+  service_gstregisterservice -. static reference .-> service_taxservice
+  service_knowledgegraphservice -. static reference .-> service_adminhelpservice
+  service_knowledgegraphservice -. static reference .-> service_projectmapservice
+  service_mailqueueservice -. source new .-> service_databaseservice
+  service_mailqueueservice -. source new .-> service_mailstorageservice
+  service_mailqueueservice -. source new .-> service_mailtemplateservice
+  service_mailqueueservice -. source new .-> service_secretservice
+  service_mailqueueservice -. source new .-> service_settingsservice
+  service_mailqueueservice -. source new .-> service_smtpmailer
+  service_mailstorageservice -. source new .-> service_databaseservice
+  service_mailtemplateservice -. static reference .-> service_mailqueueservice
+  service_mcpclientservice -. source new .-> service_auditlogservice
+  service_mcpclientservice -. source new .-> service_databaseservice
+  service_mcpclientservice -. source new .-> service_orderservice
+  service_mcpclientservice -. static reference .-> service_databaseservice
+  service_mediaservice -. source new .-> service_blogservice
+  service_mediaservice -. source new .-> service_databaseservice
+  service_mediaservice -. source new .-> service_imageoptimizerservice
+  service_mediaservice -. static reference .-> service_resourceservice
+  service_merchantfeedservice -. source new .-> service_productservice
+  service_merchantfeedservice -. static reference .-> service_mediaservice
+  service_orderservice -. source new .-> integration_razorpayclient
+  service_orderservice -. source new .-> integration_stripeclient
+  service_orderservice -. source new .-> service_databaseservice
+  service_orderservice -. source new .-> service_mailqueueservice
+  service_orderservice -. source new .-> service_secretservice
+  service_orderservice -. static reference .-> service_courierservice
+  service_orderservice -. static reference .-> service_storestatsservice
+  service_passwordresetservice -. source new .-> service_databaseservice
+  service_productservice -. source new .-> service_databaseservice
+  service_publica2uiservice -. source new .-> service_publicknowledgeservice
+  service_publica2uiservice -. static reference .-> service_agentcontextservice
+  service_publicagentdiscoveryservice -. source new .-> service_publicmcpservice
+  service_publicagentdiscoveryservice -. static reference .-> service_publicmcpservice
+  service_publicagentdiscoveryservice -. static reference .-> service_remotecartservice
+  service_publicagentdiscoveryservice -. static reference .-> service_remotecheckoutservice
+  service_publicknowledgeservice -. source new .-> service_blogservice
+  service_publicknowledgeservice -. source new .-> service_productservice
+  service_publicknowledgeservice -. source new .-> service_settingsservice
+  service_publicknowledgeservice -. static reference .-> service_agentcontextservice
+  service_publicknowledgeservice -. static reference .-> service_publicsiteurlservice
+  service_publicmcpservice -. source new .-> service_publica2uiservice
+  service_publicmcpservice -. source new .-> service_publicknowledgeservice
+  service_publicmcpservice -. source new .-> service_remotecartexception
+  service_publicmcpservice -. source new .-> service_remotecartservice
+  service_publicmcpservice -. source new .-> service_remotecheckoutservice
+  service_publicmcpservice -. source new .-> service_settingsservice
+  service_publicmcpservice -. static reference .-> service_databaseservice
+  service_publicmcpservice -. static reference .-> service_publicknowledgeservice
+  service_publicmcpservice -. static reference .-> service_publicsiteurlservice
+  service_publicmcpservice -. static reference .-> service_remotecartservice
+  service_publicmcpservice -. static reference .-> service_remotecheckoutservice
+  service_publicmcpservice -. static reference .-> service_taxservice
+  service_remotecartservice -. source new .-> service_databaseservice
+  service_remotecartservice -. source new .-> service_productservice
+  service_remotecartservice -. source new .-> service_publicknowledgeservice
+  service_remotecartservice -. source new .-> service_remotecartexception
+  service_remotecartservice -. source new .-> service_settingsservice
+  service_remotecartservice -. static reference .-> service_cartservice
+  service_remotecartservice -. static reference .-> service_publicknowledgeservice
+  service_remotecartservice -. static reference .-> service_publicsiteurlservice
+  service_remotecartservice -. static reference .-> service_remotecheckoutservice
+  service_remotecheckoutservice -. source new .-> integration_razorpayclient
+  service_remotecheckoutservice -. source new .-> service_cartservice
+  service_remotecheckoutservice -. source new .-> service_couponservice
+  service_remotecheckoutservice -. source new .-> service_databaseservice
+  service_remotecheckoutservice -. source new .-> service_productservice
+  service_remotecheckoutservice -. source new .-> service_remotecartexception
+  service_remotecheckoutservice -. source new .-> service_remotecartservice
+  service_remotecheckoutservice -. source new .-> service_secretservice
+  service_remotecheckoutservice -. source new .-> service_settingsservice
+  service_remotecheckoutservice -. source new .-> service_taxservice
+  service_remotecheckoutservice -. source new .-> service_verifiedorderservice
+  service_remotecheckoutservice -. static reference .-> service_authservice
+  service_remotecheckoutservice -. static reference .-> service_cartservice
+  service_remotecheckoutservice -. static reference .-> service_paymentservice
+  service_remotecheckoutservice -. static reference .-> service_publicsiteurlservice
+  service_remotecheckoutservice -. static reference .-> service_remotecartservice
+  service_remotecheckoutservice -. static reference .-> service_taxservice
+  service_remotecheckoutstateservice -. source new .-> service_remotecartexception
+  service_remotecheckoutstateservice -. static reference .-> service_remotecartservice
+  service_remotecheckoutstateservice -. static reference .-> service_remotecheckoutservice
+  service_resourceservice -. source new .-> service_databaseservice
+  service_reviewservice -. source new .-> service_databaseservice
+  service_runtimehealthservice -. source new .-> service_databaseservice
+  service_secretservice -. source new .-> service_databaseservice
+  service_secretservice -. static reference .-> service_mcpclientservice
+  service_seoservice -. static reference .-> service_mediaservice
+  service_settingsservice -. source new .-> service_authoredpageservice
+  service_settingsservice -. source new .-> service_databaseservice
+  service_settingsservice -. static reference .-> service_authoredpageservice
+  service_siteinsightsservice -. static reference .-> service_storestatsservice
+  service_sitetelemetryservice -. source new .-> service_auditlogservice
+  service_smtpmailer -. source new .-> service_settingsservice
+  service_smtpmailer -. source new .-> service_smtpdeliveryuncertainexception
+  service_storestatsservice -. static reference .-> service_orderservice
+  service_supportbotservice -. source new .-> service_agentcontextservice
+  service_supportbotservice -. source new .-> service_aiclient
+  service_supportbotservice -. source new .-> service_aireplycleaner
+  service_supportbotservice -. source new .-> service_auditlogservice
+  service_supportbotservice -. source new .-> service_blogservice
+  service_supportbotservice -. source new .-> service_databaseservice
+  service_supportbotservice -. source new .-> service_productservice
+  service_supportbotservice -. source new .-> service_secretservice
+  service_supportbotservice -. source new .-> service_supportticketservice
+  service_supportbotservice -. source new .-> service_supporttoolregistry
+  service_supportbotservice -. static reference .-> service_agentcontextservice
+  service_supportbotservice -. static reference .-> service_agentevaluationservice
+  service_supportbotservice -. static reference .-> service_agentinstructionservice
+  service_supportbotservice -. static reference .-> service_agenttraceservice
+  service_supportbotservice -. static reference .-> service_orderservice
+  service_supportticketservice -. source new .-> service_auditlogservice
+  service_supportticketservice -. source new .-> service_databaseservice
+  service_supportticketservice -. static reference .-> service_agenttranscriptsanitizer
+  service_supporttoolregistry -. source new .-> service_agentcontextservice
+  service_supporttoolregistry -. source new .-> service_publicknowledgeservice
+  service_supporttoolregistry -. static reference .-> service_agentcapabilitypolicy
+  service_supporttoolregistry -. static reference .-> service_publicknowledgeservice
+  service_templeservice -. source new .-> service_databaseservice
+  service_verifiedorderservice -. source new .-> service_databaseservice
+  service_verifiedorderservice -. source new .-> service_mailqueueservice
+  service_verifiedorderservice -. source new .-> service_productservice
+  service_verifiedorderservice -. source new .-> service_settingsservice
+  service_verifiedorderservice -. source new .-> service_taxservice
+  service_verifiedorderservice -. static reference .-> service_taxservice
+  tool_import_product_images -. declared dependency .-> service_imageoptimizerservice
+  tool_import_product_images -. declared dependency .-> service_databaseservice
+  tool_import_product_images -. declared collection .-> collection_products
+  service_addressservice -. collection reference .-> collection_addresses
+  service_agentcontextservice -. collection reference .-> collection_orders
+  service_agentcontextservice -. collection reference .-> collection_users
+  service_agentcontextservice -. collection reference .-> collection_products
+  service_agentcontextservice -. collection reference .-> collection_appointments
+  service_agentcontextservice -. collection reference .-> collection_support_tickets
+  service_appointmentservice -. collection reference .-> collection_appointments
+  service_astrologerservice -. collection reference .-> collection_astrologers
+  service_auditlogservice -. collection reference .-> collection_audit_events
+  service_authoredpageservice -. collection reference .-> collection_settings
+  service_categoryservice -. collection reference .-> collection_categories
+  service_consultationservice -. collection reference .-> collection_appointments
+  service_consultationservice -. collection reference .-> collection_consultation_messages
+  service_consultationservice -. collection reference .-> collection_consultation_signals
+  service_contactservice -. collection reference .-> collection_contact_submissions
+  service_couponservice -. collection reference .-> collection_coupons
+  service_couponservice -. collection reference .-> collection_orders
+  service_mailqueueservice -. collection reference .-> collection_mail_queue
+  service_mailstorageservice -. collection reference .-> collection_mail_inbox
+  service_mailstorageservice -. collection reference .-> collection_mail_outbox
+  service_mcpclientservice -. collection reference .-> collection_secrets
+  service_mcpclientservice -. collection reference .-> collection_audit_events
+  service_mediaservice -. collection reference .-> collection_media_files
+  service_orderservice -. collection reference .-> collection_orders
+  service_passwordresetservice -. collection reference .-> collection_users
+  service_productservice -. collection reference .-> collection_products
+  service_productservice -. collection reference .-> collection_orders
+  service_reviewservice -. collection reference .-> collection_reviews
+  service_reviewservice -. collection reference .-> collection_appointments
+  service_reviewservice -. collection reference .-> collection_orders
+  service_settingsservice -. collection reference .-> collection_settings
+  service_supportticketservice -. collection reference .-> collection_support_tickets
+  service_templeservice -. collection reference .-> collection_temples
+  service_resourceservice -. collection reference .-> collection_products
+  service_resourceservice -. collection reference .-> collection_users
+  service_resourceservice -. collection reference .-> collection_appointments
+  service_resourceservice -. collection reference .-> collection_categories
+  service_resourceservice -. collection reference .-> collection_orders
+  service_databaseservice -. collection reference .-> collection_users
+  service_databaseservice -. collection reference .-> collection_addresses
+  service_databaseservice -. collection reference .-> collection_products
+  service_databaseservice -. collection reference .-> collection_orders
+  service_databaseservice -. collection reference .-> collection_appointments
+  service_databaseservice -. collection reference .-> collection_consultation_messages
+  service_databaseservice -. collection reference .-> collection_consultation_signals
+  service_databaseservice -. collection reference .-> collection_secrets
+  service_databaseservice -. collection reference .-> collection_mail_inbox
+  service_databaseservice -. collection reference .-> collection_mail_outbox
+  service_databaseservice -. collection reference .-> collection_contact_submissions
+  service_databaseservice -. collection reference .-> collection_agent_carts
+  service_databaseservice -. collection reference .-> collection_checkout_attempts
+  service_remotecartservice -. collection reference .-> collection_agent_carts
+  service_remotecheckoutservice -. collection reference .-> collection_agent_carts
+  service_remotecheckoutservice -. collection reference .-> collection_checkout_attempts
+  service_verifiedorderservice -. collection reference .-> collection_orders
   tool_generate_project_map --> systematic_map["docs/systematic-map.mmd"]:::data
   tool_validate_project_map --> systematic_map
-  tool_smoke_local --> ROUTES_PUBLIC
-  tool_smoke_local --> ROUTES_ADMIN
-  gap_43f054c140 -. missing .-> service_agentanswerpresentationservice
-  gap_3021cb4637 -. missing .-> service_agentbudgetexception
-  gap_9d47bad6dc -. missing .-> service_astrologerservice
-  gap_5d01c7af75 -. missing .-> service_blogconflictexception
-  gap_c99ac2d6fa -. missing .-> service_courierservice
-  gap_5f994ad529 -. missing .-> service_projectmapservice
-  gap_5dac5861de -. missing .-> service_remotecartexception
-  gap_42762e9713 -. missing .-> service_requestfailureservice
-  gap_3dfb6bf986 -. missing .-> service_smtpdeliveryuncertainexception
-  gap_95dfc6c8f4 -. missing .-> service_storagepermissionservice
+  tool_smoke_local -. declared probe coverage .-> ROUTES_PUBLIC
+  tool_smoke_local -. declared probe coverage .-> ROUTES_ADMIN
+  gap_35faf425c4 -. inspect .-> service_astrologerservice
+  gap_006b2fd1e7 -. inspect .-> service_requestfailureservice
   gap_02fdee86e5 -. missing .-> controller_admincontroller
   gap_63c4de0521 -. missing .-> controller_admincontroller
   gap_90db15aec7 -. missing .-> controller_admincontroller
