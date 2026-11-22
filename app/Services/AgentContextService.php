@@ -130,18 +130,84 @@ final class AgentContextService {
     /** Match only exact public catalogue aliases, not loose words that can collide. */
     public static function matchesNamedProduct(string $message, array $product): bool
     {
-        $normalise = static fn(string $value): string => trim((string)preg_replace('/[^a-z0-9]+/i', ' ', mb_strtolower($value)));
-        $haystack = ' ' . $normalise($message) . ' ';
+        $haystack = ' ' . self::productAlias($message) . ' ';
         $aliases = [
-            $normalise((string)($product['name'] ?? '')),
-            $normalise((string)($product['slug'] ?? '')),
+            self::productAlias((string)($product['name'] ?? '')),
+            self::productAlias((string)($product['slug'] ?? '')),
         ];
         foreach (array_unique(array_filter($aliases)) as $alias) {
             // Requiring at least two words avoids treating a generic one-word slug such
             // as "ring" or "paste" as a named-product request.
-            if (str_word_count($alias) >= 2 && str_contains($haystack, ' ' . $alias . ' ')) return true;
+            if (str_contains($alias, ' ') && str_contains($haystack, ' ' . $alias . ' ')) return true;
         }
         return false;
+    }
+
+    private static function productAlias(string $value): string {
+        return trim((string)preg_replace('/[^\p{L}\p{M}\p{N}]+/u', ' ', mb_strtolower($value)));
+    }
+
+    /** Two or three exact published identities, ordered as mentioned; never type-based substitutes. */
+    public static function namedComparisonProducts(array $visibleProducts, string $message): array {
+        if (!self::isProductComparison($message)) return [];
+        $haystack = ' ' . self::productAlias($message) . ' ';
+        $matches = [];
+        foreach ($visibleProducts as $product) {
+            if (!is_array($product) || !empty($product['is_hidden']) || !is_string($product['slug'] ?? null)
+                || PublicKnowledgeService::productPath($product['slug']) === null) continue;
+            foreach (array_unique([self::productAlias((string)($product['name'] ?? '')), self::productAlias($product['slug'])]) as $alias) {
+                if (!str_contains($alias, ' ')) continue;
+                $offset = 0;
+                while (($position = strpos($haystack, ' ' . $alias . ' ', $offset)) !== false) {
+                    $matches[] = ['start'=>$position + 1, 'end'=>$position + 1 + strlen($alias), 'product'=>$product];
+                    $offset = $position + 1;
+                }
+            }
+        }
+        // A complete longer name takes precedence over an alias embedded inside it.
+        usort($matches, static fn(array $a, array $b): int =>
+            ($b['end'] - $b['start']) <=> ($a['end'] - $a['start']) ?: $a['start'] <=> $b['start']);
+        $accepted = [];
+        foreach ($matches as $match) {
+            $overlap = false;
+            foreach ($accepted as $other) {
+                if ($match['start'] >= $other['end'] || $match['end'] <= $other['start']) continue;
+                if ($match['start'] === $other['start'] && $match['end'] === $other['end']
+                    && $match['product']['slug'] !== $other['product']['slug']) return [];
+                $overlap = true;
+                break;
+            }
+            if (!$overlap) $accepted[] = $match;
+        }
+        usort($accepted, static fn(array $a, array $b): int => $a['start'] <=> $b['start']);
+        $selected = [];
+        foreach ($accepted as $match) $selected[$match['product']['slug']] ??= $match['product'];
+        if (count($selected) < 2 || count($selected) > 3) return [];
+        // Match the complete comparison framing, not just its successfully resolved names.
+        // An unknown/hidden third choice must not silently become a two-item comparison.
+        $masked = $haystack;
+        foreach (array_reverse($accepted) as $match) {
+            $masked = substr_replace($masked, '@', $match['start'], $match['end'] - $match['start']);
+        }
+        $masked = trim((string)preg_replace('/\s+/u', ' ', $masked));
+        $prefix = '(?:(?:(?:can|could|would) you )?(?:please )?(?:compare|explain (?:the )?differences? between'
+            . '|what (?:is|are|s) (?:the )?differences? between|(?:the )?(?:differences?|comparison) (?:between|of)'
+            . '|show(?: me)? (?:a |the )?comparison (?:between|of)|how (?:does|do)) )?';
+        $operand = '(?:the )?@';
+        $separator = ' (?:(?:and|with|versus|vs|differ from) )?';
+        $qualifier = '(?: (?:by|on|for|in terms of|based on|considering) [\p{L}\p{M}\p{N} ]+)?'
+            . '(?: (?:and )?(?:which|what|tell me|show me) [\p{L}\p{M}\p{N} ]+)?';
+        if (!preg_match('~^' . $prefix . $operand . '(?:' . $separator . $operand . '){1,2}' . $qualifier . '$~uD', $masked)) return [];
+        return array_values($selected);
+    }
+
+    /** Generic type examples are allowed only when both operands are explicit product types. */
+    private static function isGenericProductComparison(string $message): bool {
+        $type = '(?:pendants?|malas?|malais?|rings?|bracelets?|statues?|idols?)';
+        return (bool)preg_match('/(?:\b(?:compare|between)\s+|^)(?:a |an |the )?' . $type
+            . '\s+(?:and|with|versus|vs\.?)\s+(?:a |an |the )?' . $type
+            . '(?=[?!.]|$|\s+(?:for|in|to|when|which|what|please|on|as|by)\b)/i', $message)
+            || (bool)preg_match('/^how does (?:a )?' . $type . ' differ from (?:a )?' . $type . '[?!.]*$/i', $message);
     }
 
     /**
@@ -181,9 +247,9 @@ final class AgentContextService {
     /** Reproducible, bounded catalogue decisions. No match never means the first 20 products. */
     public static function catalogueSelection(array $visibleProducts, string $message, array $collections = []): array {
         $products=array_values(array_filter($visibleProducts,static fn($p):bool=>is_array($p)&&empty($p['is_hidden'])
-            &&preg_match('/^[\p{L}\p{M}\p{N} _.-]{1,160}$/uD',(string)($p['slug']??''))));
+            &&is_string($p['slug']??null)&&PublicKnowledgeService::productPath($p['slug'])!==null));
         $collection=null;$chosen=[];$intent='unknown';$status='not_applicable';$reason='not_a_catalogue_request';
-        $collectionQuery=(bool)preg_match('/\b(?:festival|festive|collection|sale)\b|பண்டிகை|திருவிழா|அய்யப்ப|ஐயப்ப|சஷ்டி/iu',$message);
+        $collectionQuery=!self::isProductComparison($message)&&(bool)preg_match('/\b(?:festival|festive|collection|sale)\b|பண்டிகை|திருவிழா|அய்யப்ப|ஐயப்ப|சஷ்டி/iu',$message);
         if(preg_match('/\b(?:my|latest|recent)\s+(?:support\s+)?tickets?\b/i',$message)){$intent='own_ticket';}
         elseif(preg_match('/\b(?:my|latest|recent)\s+(?:order|orders|payment|refund)|\border\s*#\s*[a-f0-9]{16}\b/i',$message)){$intent='own_order';}
         elseif(preg_match('/\b(?:shipping|delivery|dispatch|tracking|refund policy|return policy)\b|விநியோகம்/iu',$message)){$intent='public_policy';}
@@ -194,14 +260,19 @@ final class AgentContextService {
         }else{
             $exact=array_values(array_filter($products,static fn(array $p):bool=>self::matchesNamedProduct($message,$p)));
             if(self::isProductComparison($message)){
-                $intent='comparison';$chosen=$exact;
-                foreach(['pendants?','malas?|malais?','rings?','bracelets?','statues?|idols?'] as $type){
-                    $pattern='/\b(?:'.$type.')\b/i';if(!preg_match($pattern,$message))continue;
-                    $examples=array_filter($products,static fn(array $p):bool=>(bool)preg_match($pattern,(string)($p['name']??'')));
-                    $chosen=array_merge($chosen,array_slice(array_values($examples),0,3));
+                $intent='comparison';$chosen=self::namedComparisonProducts($products,$message);
+                $reason='exact_comparison_aliases';
+                if($chosen===[] && $exact===[] && self::isGenericProductComparison($message)) {
+                    foreach(['pendants?','malas?|malais?','rings?','bracelets?','statues?|idols?'] as $type){
+                        $pattern='/\b(?:'.$type.')\b/i';if(!preg_match($pattern,$message))continue;
+                        $examples=array_filter($products,static fn(array $p):bool=>(bool)preg_match($pattern,(string)($p['name']??'')));
+                        $chosen=array_merge($chosen,array_slice(array_values($examples),0,3));
+                    }
+                    $chosen=array_values(array_column($chosen,null,'slug'));
+                    $reason='comparison_examples';
                 }
-                $chosen=array_values(array_column($chosen,null,'slug'));
-                $status=count($chosen)>=2?'matched':'clarification';$reason='comparison_examples';
+                $status=count($chosen)>=2?'matched':'clarification';
+                if($status==='clarification'){$chosen=[];$reason='comparison_names_required';}
             }elseif($exact!==[]){$intent='catalogue_search';$chosen=$exact;$status='matched';$reason='exact_public_alias';}
             elseif(preg_match('/^(?:what (?:do you sell|products? (?:do you (?:sell|have)|are available))|(?:show|list|browse)(?: me)? (?:all |your |the )?(?:products?|catalogue|catalog|shop|items?))[?!. ]*$/iu',trim($message))){
                 $intent='catalogue_browse';$chosen=$products;$status=$chosen===[]?'no_match':'matched';$reason='explicit_catalogue_browse';
@@ -240,7 +311,7 @@ final class AgentContextService {
     private function siteContext(string $message): array {
         $visibleProducts = (new ProductService($this->store))->visible();
         $collection = null;
-        $collectionQuery=(bool)preg_match('/\b(?:festival|festive|collection|sale)\b|பண்டிகை|திருவிழா|அய்யப்ப|ஐயப்ப|சஷ்டி/iu',$message);
+        $collectionQuery=!self::isProductComparison($message)&&(bool)preg_match('/\b(?:festival|festive|collection|sale)\b|பண்டிகை|திருவிழா|அய்யப்ப|ஐயப்ப|சஷ்டி/iu',$message);
         $collections=$collectionQuery?(new CategoryService($this->store))->collections():[];
         $selection=self::catalogueSelection($visibleProducts,$message,$collections);
         $collection=$selection['collection'];$selected=$selection['products'];

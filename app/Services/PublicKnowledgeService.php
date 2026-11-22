@@ -82,7 +82,13 @@ final class PublicKnowledgeService
 
     public static function productInputSchema(): array
     {
-        return self::articleInputSchema();
+        $schema=self::articleInputSchema();
+        $schema['properties']['slugs']=[
+            'type'=>'array','maxItems'=>3,'uniqueItems'=>true,
+            'items'=>['type'=>'string','minLength'=>1,'maxLength'=>2039],
+            'description'=>'Up to three exact raw product slugs decoded once from returned product paths, in the desired order. Use an empty query, offset 0 and a limit at least as large as this selection. Missing or unpublished products are omitted.',
+        ];
+        return $schema;
     }
 
     public static function productOutputSchema(): array
@@ -96,6 +102,17 @@ final class PublicKnowledgeService
             'description' => ['type' => 'string', 'maxLength' => 280],
             'imagePath' => ['type' => 'string', 'maxLength' => 512,
                 'pattern' => '^/assets/images/[A-Za-z0-9%_./-]+$'],
+            'imagePaths' => ['type'=>'array','maxItems'=>3,'uniqueItems'=>true,
+                'items'=>['type'=>'string','maxLength'=>512,'pattern'=>'^/assets/images/[A-Za-z0-9%_./-]+$']],
+            'highlights' => ['type'=>'array','maxItems'=>4,
+                'items'=>['type'=>'string','minLength'=>1,'maxLength'=>160]],
+            'specifications' => ['type'=>'array','maxItems'=>6,'items'=>[
+                'type'=>'object','additionalProperties'=>false,
+                'properties'=>[
+                    'label'=>['type'=>'string','minLength'=>1,'maxLength'=>80],
+                    'value'=>['type'=>'string','minLength'=>1,'maxLength'=>240],
+                ],'required'=>['label','value'],
+            ]],
         ];
         return [
             'type' => 'object', 'additionalProperties' => false,
@@ -223,8 +240,8 @@ final class PublicKnowledgeService
         return mb_substr(trim($text), 0, $limit);
     }
 
-    /** Encode a single stored slug once; separators and encoded traversal are never routes. */
-    private static function productPath(string $slug): ?string
+    /** Shared public identity boundary: encode once; separators and encoded traversal are never routes. */
+    public static function productPath(string $slug): ?string
     {
         if (strlen($slug) > 2039 || !mb_check_encoding($slug, 'UTF-8')
             || !preg_match('/^[\\p{L}\\p{N}_][\\p{L}\\p{N}\\p{M}._ -]*$/uD', $slug)) return null;
@@ -264,15 +281,79 @@ final class PublicKnowledgeService
         return strlen($path) <= 512 && preg_match('/\\.(?:avif|gif|jpe?g|png|webp)$/iD', $path) ? $path : null;
     }
 
+    /** Share the server's bounded named-comparison resolver, using this injected public catalogue. */
+    public function comparisonSlugs(string $question): array
+    {
+        if(!(new SettingsService())->modules(requireReadable:true)['shop'])return [];
+        return array_column(AgentContextService::namedComparisonProducts($this->catalogue()->visible(),$question),'slug');
+    }
+
+    /** Exact selectors are raw slugs, never URLs, path fragments or a second search query. */
+    private static function checkProductSelection(array $slugs,string $query,int $offset,int $limit): void
+    {
+        if(!array_is_list($slugs)||count($slugs)>3)throw new \InvalidArgumentException('Select at most three product slugs.');
+        foreach($slugs as $slug) {
+            if(!is_string($slug)||self::productPath($slug)===null)throw new \InvalidArgumentException('Use exact raw product slugs.');
+        }
+        if(count(array_unique($slugs,SORT_STRING))!==count($slugs)
+            || ($slugs!==[]&&(trim($query)!==''||$offset!==0||$limit<count($slugs)))) {
+            throw new \InvalidArgumentException('Exact selections require unique slugs, an empty query, offset 0 and a limit covering the selection.');
+        }
+    }
+
+    /** Extra detail is published product content, bounded independently of the underlying record. */
+    private static function selectedProductDetails(array $item): array
+    {
+        $images=[];
+        $gallery=$item['image_urls']??[];
+        if(is_string($gallery))$gallery=preg_split('/[\r\n,]+/',$gallery)?:[];
+        if(!is_array($gallery))$gallery=[];
+        foreach(array_merge([$item['image_url']??null],array_slice($gallery,0,30)) as $image) {
+            $path=self::imagePath($image);
+            if($path!==null&&!in_array($path,$images,true))$images[]=$path;
+            if(count($images)===3)break;
+        }
+        $highlights=[];
+        foreach(array_slice(is_array($item['highlights']??null)?$item['highlights']:[],0,20) as $value) {
+            if(!is_string($value))continue;
+            $value=self::plainText($value,160);
+            if($value!=='')$highlights[]=$value;
+            if(count($highlights)===4)break;
+        }
+        $specifications=[];
+        foreach(array_slice(is_array($item['specifications']??null)?$item['specifications']:[],0,30,true) as $label=>$value) {
+            if(!is_string($label)||(!is_string($value)&&!is_int($value)&&!is_float($value)))continue;
+            $label=self::plainText($label,80);$value=self::plainText((string)$value,240);
+            if($label!==''&&$value!=='')$specifications[]=['label'=>$label,'value'=>$value];
+            if(count($specifications)===6)break;
+        }
+        $details=[];
+        if($images!==[])$details['imagePaths']=$images;
+        if($highlights!==[])$details['highlights']=$highlights;
+        if($specifications!==[])$details['specifications']=$specifications;
+        return $details;
+    }
+
     /** Canonical catalogue projection: visibility and current offer price come from ProductService. */
-    public function products(string $query='', int $offset=0, int $limit=20): array
+    public function products(string $query='', int $offset=0, int $limit=20,array $slugs=[]): array
     {
         self::checkPage($query,$offset,$limit);
+        self::checkProductSelection($slugs,$query,$offset,$limit);
         if (!(new SettingsService())->modules(requireReadable:true)['shop']) {
             return ['products'=>[], 'total'=>0,'nextOffset'=>null];
         }
         $service=$this->catalogue();
-        $matches=$service->discover($service->visible(),trim($query),'');
+        $visible=$service->visible();
+        if($slugs===[]) {
+            $matches=$service->discover($visible,trim($query),'');
+        } else {
+            $matches=[];
+            foreach($slugs as $slug) {
+                $exact=array_values(array_filter($visible,static fn(array $item):bool=>($item['slug']??null)===$slug));
+                if(count($exact)>1)throw new \RuntimeException('Public product selection is ambiguous.');
+                if($exact!==[])$matches[]=$exact[0];
+            }
+        }
         // Page over valid public destinations, so a rejected legacy row cannot produce an empty page.
         $matches=array_values(array_filter($matches, static fn(array $item): bool =>
             self::productPath((string)($item['slug']??'')) !== null
@@ -289,6 +370,7 @@ final class PublicKnowledgeService
             ];
             $imagePath = self::imagePath($item['image_url'] ?? null);
             if ($imagePath !== null) $row['imagePath'] = $imagePath;
+            if($slugs!==[])$row+=self::selectedProductDetails($item);
             $out[] = $row;
         }
         $end=min(count($matches),$offset+$limit);

@@ -108,6 +108,14 @@ bounded class/file diagnostic; they cannot masquerade as successful HTML output.
 
 ## Provider calls and owner how-to questions
 
+Support resolves named product comparisons before calling a provider. Two or three
+exact published name/slug matches are kept in the customer's mention order, with
+current catalogue prices, descriptions and listed specifications. Missing, hidden
+or ambiguous choices require clarification; the resolver never fills a missing
+named choice with an unrelated item of the same type. Explicit generic type
+comparisons may still use clearly labelled catalogue examples. The same resolver
+feeds exact product identities to public A2UI, so the text and cards agree.
+
 Enterprise Chat can read a fixed operator guide through `operator_guide`. The server validates the topic and owner session, reads the same Markdown as Admin Help, and records its source link. The explicit `/help` command and questions about drafting an article can take this path without a provider call. A question about the number of drafts still needs a business-data lookup.
 
 The application executes each allowed function and sends its result back using the originating provider's call format. Model text is never authority to grant a capability. Google documents the hosted Gemma identifiers and native function calling. OpenAI recommends clear tool schemas and doing known work in application code. Those contracts apply to their respective clients. [Google AI Studio function calling](https://aistudio.google.com/docs/function-calling) · [Hosted Gemma models](https://gemma.ai/deployment/gemini-api/) · [OpenAI function calling](https://developers.openai.com/api/docs/guides/function-calling)

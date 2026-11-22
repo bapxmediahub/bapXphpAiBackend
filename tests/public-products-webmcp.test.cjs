@@ -10,7 +10,8 @@ const contract={
     inputSchema:{type:'object',additionalProperties:false,
         properties:{query:{type:'string',maxLength:120},
             offset:{type:'integer',minimum:0,maximum:2147483647},
-            limit:{type:'integer',minimum:1,maximum:20}}},
+            limit:{type:'integer',minimum:1,maximum:20},
+            slugs:{type:'array',maxItems:3,uniqueItems:true,items:{type:'string',minLength:1,maxLength:2039}}}},
     outputSchema:{type:'object',additionalProperties:false,
         required:['products','total','nextOffset'],properties:{
             products:{type:'array',maxItems:20},total:{type:'integer'},nextOffset:{type:['integer','null']}}}
@@ -70,6 +71,65 @@ test('product registration supports synchronous native APIs and catches synchron
     await new Promise(resolve=>setImmediate(resolve));
     assert.equal(denied.tool,undefined);
     assert.equal(denied.warnings.length,1);
+});
+
+test('exact selections forward raw Unicode identities and accept bounded selected details',async()=>{
+    const row={name:'Selected',path:'/product/item',priceInr:10,available:true,description:'Published',
+        imagePath:'/assets/images/one.webp',imagePaths:['/assets/images/one.webp','/assets/images/two.png'],
+        highlights:['Published highlight'],specifications:[{label:'Material',value:'Published material'}]};
+    const result={products:[row],total:1,nextOffset:null};
+    const ctx=setup(result);
+    assert.deepEqual(JSON.parse(JSON.stringify(await ctx.tool.execute({slugs:['தமிழ் pendant','item'],limit:2}))),result);
+    assert.deepEqual(new URL(ctx.calls[0].url).searchParams.getAll('slugs[]'),['தமிழ் pendant','item']);
+    for(const args of [{slugs:'item'},{slugs:['item','item']},{slugs:['a','b','c','d']},
+        {slugs:['item'],query:'item'},{slugs:['item'],offset:1},{slugs:['a','b'],limit:1},
+        {slugs:['../private']},{slugs:['item%2Fprivate']},{slugs:['்item']},{slugs:Array(1)}]) {
+        const invalid=setup(result);
+        await assert.rejects(invalid.tool.execute(args),{name:'TypeError'});
+        assert.equal(invalid.calls.length,0);
+    }
+    const unicode=setup(result);
+    await unicode.tool.execute({query:'𐐀'.repeat(120)});
+    await assert.rejects(unicode.tool.execute({query:'𐐀'.repeat(121)}),{name:'TypeError'});
+    for(const extra of [{imagePaths:['/assets/images/one.webp','/assets/images/one.webp']},
+        {imagePaths:['https://foreign.example/image.png']},{imagePaths:Array(4).fill('/assets/images/one.webp')},
+        {highlights:['x'.repeat(161)]},{highlights:Array(5).fill('Visible')},
+        {specifications:[{label:'Material',value:'Published',privateCost:20}]},
+        {specifications:[{label:'Material',value:'x'.repeat(241)}]}]) {
+        await assert.rejects(setup({...result,products:[{...row,...extra}]}).tool.execute(),{name:'TypeError'});
+    }
+});
+
+test('shop snapshot adds only visible bounded descriptions and safe local images',()=>{
+    const shopSource=readFileSync(join(__dirname,'../assets/shop-webmcp.js'),'utf8');
+    const card=(name,href,image,description='Visible description')=>({querySelector(selector){
+        return ({'a.product-card__title[href]':{textContent:name,href},'.price':{textContent:'₹100'},
+            '[data-cart-control]':{},'.product-card__desc':{textContent:description},
+            '.product-card__image img':{currentSrc:image}})[selector]||null;
+    }});
+    const cards=[card('𐐀'.repeat(160),'https://shop.example.test/product/'+encodeURIComponent('தமிழ் pendant'),
+        'https://shop.example.test/assets/images/'+encodeURIComponent('தமிழ்')+'.png','𐐀'.repeat(300)),
+        card('Other','https://shop.example.test/product/other','https://outside.test/image.webp'),
+        card('Unsafe','https://shop.example.test/product/..%2Fadmin','/assets/images/one.webp')];
+    let tool;
+    vm.runInNewContext(shopSource,{document:{modelContext:{registerTool(value){tool=value;}},
+        querySelector:()=>({querySelectorAll:()=>cards})},window:{location:{origin:'https://shop.example.test',
+        href:'https://shop.example.test/shop'},addEventListener(){}},AbortController,URL,console});
+    const result=tool.execute({limit:2});
+    assert.equal(result.total,3);
+    assert.equal(result.nextOffset,2);
+    assert.equal(result.products.length,2);
+    assert.equal(Array.from(result.products[0].description).length,280);
+    assert.equal(result.products[0].imagePath,'/assets/images/'+encodeURIComponent('தமிழ்')+'.png');
+    assert.equal(result.products[1].imagePath,undefined);
+    assert.equal(tool.execute({offset:2}).products.length,0);
+    assert.match(tool.description,/current search, category and sort/);
+    assert.match(tool.description,/full published catalogue/);
+    for(const image of ['/assets/images/../images/one.webp','/assets/images/%2e%2e/images/one.webp',
+        '/assets/images/item%2Fprivate.webp','/assets/images/item%252Fprivate.webp']) {
+        cards[0]=card('Valid','https://shop.example.test/product/valid',image);
+        assert.equal(tool.execute({limit:1}).products[0].imagePath,undefined);
+    }
 });
 
 test('product projection rejects extra fields and unsafe image paths without losing safe descriptions',async()=>{

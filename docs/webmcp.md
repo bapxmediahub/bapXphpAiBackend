@@ -39,6 +39,43 @@ pagination. Published article visibility,
 future-date filtering and module switches remain enforced on the server.
 Unknown arguments, private fields and unapproved response paths are rejected.
 
+## Finding the public tools
+
+Every public page links to the human-readable `/ai-assistants` guide in its
+footer and its head metadata. `/llms.txt` serves the same fixed, reviewed
+`content/ai-assistants.md` source as plain text, with the configured HTTPS origin
+and real `/api/mcp` URL. These are advisory discovery documents. They do not
+install a connector, grant access, or establish a universal agent-discovery
+standard. The guide links both representations and distinguishes public reads,
+signed-in Support, and the owner-authorized Enterprise agent. New consultation
+booking is retired; enquiries use the existing contact form.
+
+## Search followed by exact product selection
+
+The existing `search_public_products` tool accepts an optional `slugs` array of
+up to three unique raw product slugs. Obtain them by decoding the final segment
+of a returned product path once. Selection requires an empty query, offset zero,
+and a limit at least as large as the selection. PHP, browser WebMCP, local STDIO
+and public HTTP MCP share that contract. JSON GET clients use repeated
+`slugs[]=...` values. Results preserve requested order and omit hidden, missing
+or invalid products; they never substitute the first catalogue results.
+
+Ordinary search stays compact. Selected products may additionally contain up to
+three safe `imagePaths`, four plain-text `highlights` (160 characters each), and
+six `specifications` rows (`label` up to 80, `value` up to 240 characters). These
+fields come only from published ProductService records. Empty details are
+omitted. Description and query limits count Unicode characters consistently;
+safe Tamil combining marks remain valid in slugs and images.
+
+Support's named comparison lookup resolves two or three separately named
+products against the visible catalogue, accepting an exact or unambiguous name
+for each. It does not run all names as one all-token search or invent missing
+matches. Explicit external selections use the raw slug contract above.
+
+The shop-only `list_shop_results` remains a snapshot of the current document's
+cards. It can add the card's visible description and safe local image, but does
+not search unseen records, infer hidden product details, or change a cart.
+
 ## Registration and client capability
 
 The layout loads the pinned official W3C polyfill before the adapters. The
@@ -77,6 +114,15 @@ The [current imperative API](https://developer.chrome.com/docs/ai/webmcp/imperat
 and [WebMCP draft](https://webmachinelearning.github.io/webmcp/) are the API
 references. This PHP/native-JavaScript site does not need a frontend framework
 or a general-purpose agent tool for each page element.
+
+[BigCommerce's WebMCP guide](https://docs.bigcommerce.com/developer/api-reference/mcp/webmcp)
+uses shared server/browser storefront tasks with search followed by exact
+product detail. This site follows that useful sequence through one bounded
+product tool; it does not add commerce writes or checkout automation.
+[Chrome's tool-design guidance](https://developer.chrome.com/docs/ai/webmcp/build-tools)
+also supports keeping capabilities scoped to the current role, page state and
+task. Public catalogue reads and authorized commerce administration therefore
+remain separate.
 
 ## Verification boundaries
 

@@ -26,7 +26,7 @@
         }
         for (const product of data.products) {
             if (!product || typeof product !== 'object'
-                || Object.keys(product).some(key => !['name', 'path', 'priceInr', 'available', 'description', 'imagePath'].includes(key))
+                || Object.keys(product).some(key => !['name', 'path', 'priceInr', 'available', 'description', 'imagePath', 'imagePaths', 'highlights', 'specifications'].includes(key))
                 || typeof product.name !== 'string' || !product.name.trim()
                 || Array.from(product.name).length > 160
                 || !safeProductPath(product.path)
@@ -34,7 +34,17 @@
                 || !Number.isFinite(product.priceInr) || product.priceInr < 0
                 || typeof product.available !== 'boolean'
                 || typeof product.description !== 'string' || Array.from(product.description).length > 280
-                || (product.imagePath !== undefined && !safeImage(product.imagePath))) {
+                || (product.imagePath !== undefined && !safeImage(product.imagePath))
+                || (product.imagePaths !== undefined && (!Array.isArray(product.imagePaths)
+                    || product.imagePaths.length > 3 || new Set(product.imagePaths).size !== product.imagePaths.length
+                    || product.imagePaths.some(path => !safeImage(path))))
+                || (product.highlights !== undefined && (!Array.isArray(product.highlights)
+                    || product.highlights.length > 4 || product.highlights.some(value => !boundedText(value,160))))
+                || (product.specifications !== undefined && (!Array.isArray(product.specifications)
+                    || product.specifications.length > 6 || product.specifications.some(row =>
+                        !row || typeof row !== 'object' || Array.isArray(row)
+                        || Object.keys(row).some(key => !['label','value'].includes(key))
+                        || !boundedText(row.label,80) || !boundedText(row.value,240))))) {
                 throw new TypeError('Invalid public catalogue product.');
             }
         }
@@ -54,30 +64,39 @@
                 /^[\p{L}\p{N}_][\p{L}\p{N}\p{M}._ -]*$/u.test(decodeURIComponent(segment)));
         } catch { return false; }
     };
+    const boundedText = (value, max) => typeof value === 'string' && value.trim()
+        && Array.from(value).length <= max;
+    const safeRawSlug = slug => typeof slug === 'string'
+        && /^[\p{L}\p{N}_][\p{L}\p{N}\p{M}._ -]*$/u.test(slug)
+        && encodeURIComponent(slug).length + '/product/'.length <= 2048;
 
     // Native implementations may return void; the official polyfill returns a Promise.
     const register = async () => { await registry.registerTool({
         name: 'search_public_products',
         title: 'Search full public product catalogue',
-        description: 'Search the full published product catalogue by name or description. Returns current INR prices, availability, short descriptions, safe product images and paths. Follow nextOffset. For up to four display cards, use present_public_knowledge with view products.',
+        description: 'Search the full published catalogue by query and follow nextOffset. Returns current INR prices, availability, short descriptions, safe product images and paths. For exact detail or comparison, pass up to three raw slugs decoded once from returned product paths, with query empty, offset 0 and a limit covering the selection. Only matching published products return, in selected order, with bounded galleries, highlights and specifications. Use present_public_knowledge with view products for cards. list_shop_results only reads the current shop document.',
         inputSchema: contract.inputSchema,
         outputSchema: contract.outputSchema,
         annotations: { readOnlyHint: true, untrustedContentHint: true },
         async execute(input = {}) {
             if (!input || typeof input !== 'object' || Array.isArray(input)
-                || Object.keys(input).some(key => !['query', 'offset', 'limit'].includes(key))) {
+                || Object.keys(input).some(key => !['query', 'offset', 'limit', 'slugs'].includes(key))) {
                 throw new TypeError('Invalid public product search arguments.');
             }
-            const { query = '', offset = 0, limit = 20 } = input;
-            if (typeof query !== 'string' || query.length > 120
+            const { query = '', offset = 0, limit = 20, slugs = [] } = input;
+            if (typeof query !== 'string' || Array.from(query).length > 120
                 || !Number.isSafeInteger(offset) || offset < 0 || offset > 2147483647
-                || !Number.isInteger(limit) || limit < 1 || limit > 20) {
-                throw new TypeError('Use a short query, nonnegative offset and limit 1 to 20.');
+                || !Number.isInteger(limit) || limit < 1 || limit > 20
+                || !Array.isArray(slugs) || slugs.length > 3 || new Set(slugs).size !== slugs.length
+                || Array.from(slugs).some(slug => !safeRawSlug(slug))
+                || (slugs.length && (query.trim() || offset !== 0 || limit < slugs.length))) {
+                throw new TypeError('Use bounded search arguments, or up to three unique raw slugs with query empty, offset 0 and limit covering the selection.');
             }
             const url = new URL('/api/knowledge/products', window.location.origin);
             url.searchParams.set('q', query);
             url.searchParams.set('offset', String(offset));
             url.searchParams.set('limit', String(limit));
+            for (const slug of slugs) url.searchParams.append('slugs[]', slug);
             const response = await fetch(url, {
                 method: 'GET',
                 credentials: 'omit',

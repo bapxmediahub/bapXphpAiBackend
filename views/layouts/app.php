@@ -24,6 +24,8 @@ $__faviconMime = str_contains($__favicon,'.svg') ? 'image/svg+xml' : 'image/png'
 <meta name="apple-mobile-web-app-title" content="Sri Panchami Spiritual">
 <link rel="apple-touch-icon" href="/assets/images/logo-square.jpeg">
 <link rel="canonical" href="<?= e($seo['canonical']) ?>">
+<link rel="help" href="/ai-assistants" title="Connect an AI assistant">
+<link rel="describedby" type="text/plain" href="/llms.txt" title="Advisory guide for AI assistants">
 <meta property="og:type" content="<?= e($seo['og_type'] ?? 'website') ?>">
 <meta property="og:site_name" content="<?= e($seo['og_site_name'] ?? 'Sri Panchami Spiritual') ?>">
 <meta property="og:title" content="<?= e($seo['og_title'] ?? $pageTitle) ?>">
@@ -466,6 +468,7 @@ if ($__flash):
                     <li><a href="/contact">Contact</a></li>
                     <li><a href="/terms">Terms</a></li>
                     <li><a href="/privacy">Privacy</a></li>
+                    <li><a href="/ai-assistants">AI assistants</a></li>
                 </ul>
             </div>
             <div>

@@ -14,7 +14,13 @@ final class PublicMcpService
     public const UI_MIME = 'text/html;profile=mcp-app';
     public const SURFACE_META = 'in.bapx/publicSurface';
     private const INFO = ['name'=>'bapx-public-knowledge','version'=>'1.0.0'];
-    private const INSTRUCTIONS = 'Read published products, articles, contact details and enquiry services. Prices are INR. Open the linked website to buy or contact the team.';
+    private const INSTRUCTIONS = 'Read only published products, articles, contact details and enquiry options. '
+        . 'Search the requested product or topic; an empty result is not permission to substitute unrelated items. Follow nextOffset for search pages. '
+        . 'For product detail or comparison, reuse up to three exact raw slugs decoded once from returned /product/ paths in slugs, with an empty query, offset 0 and a limit covering the selection. Missing or unpublished selections are omitted. '
+        . 'Use returned INR prices, availability, descriptions, optional images, highlights and specifications without inventing claims. Resolve relative paths against this website origin. '
+        . 'A compatible MCP Apps host can render the linked public cards; all tools also return readable text and structured data. '
+        . 'Open the product page to purchase or the contact form to send an enquiry. Consultation booking is retired; enquiry options are not bookable appointments. '
+        . 'These tools never expose owner reports, customer records, private instructions or conversations, and never submit a form, purchase or booking. Connection guidance is at /ai-assistants; /llms.txt is an advisory guide, not an authorization or automatic installation mechanism.';
     private string $origin;
 
     public function __construct(
@@ -206,7 +212,7 @@ final class PublicMcpService
         $modules=(new SettingsService())->modules(requireReadable:true);
         $definitions=[];
         if ($modules['shop']) $definitions[]=['search_public_products','Search published products',
-            'Find current published products, prices in INR, availability and product links. Use query to narrow the catalogue.',
+            'Search the published catalogue by query, following nextOffset. Returns current INR prices, availability, descriptions and safe image paths. For exact detail or comparison use up to three raw slugs from returned product paths, with query empty, offset 0 and limit covering the selection; only those published products return, with bounded galleries, highlights and specifications.',
             PublicKnowledgeService::productInputSchema(),PublicKnowledgeService::productOutputSchema()];
         if ($modules['blog']) $definitions[]=['search_public_articles','Search published articles and guides',
             'Find published blog articles and customer guides. Excludes drafts, scheduled and private help.',
@@ -251,11 +257,13 @@ final class PublicMcpService
             if (!(new SettingsService())->modules(requireReadable:true)[$module]) throw new \InvalidArgumentException();
         }
         $arguments=get_object_vars($params->arguments??(object)[]);
-        $contact=$name==='get_public_contact';
+        $contact=$name==='get_public_contact';$products=$name==='search_public_products';
         $query=$arguments['query']??''; $offset=$arguments['offset']??0; $limit=$arguments['limit']??5;
-        $allowed=$contact ? [] : ['query','offset','limit'];
+        $slugs=$arguments['slugs']??[];
+        $allowed=$contact ? [] : ($products?['query','offset','limit','slugs']:['query','offset','limit']);
         if (array_diff(array_keys($arguments),$allowed) || !is_string($query) || !mb_check_encoding($query,'UTF-8') || mb_strlen($query)>120
             || !is_int($offset) || $offset<0 || $offset>2147483647 || !is_int($limit) || $limit<1 || $limit>20
+            || !is_array($slugs)
             || array_filter($arguments,static fn(mixed $value):bool=>$value===null)) {
             return $this->complete(['isError'=>true,'content'=>[['type'=>'text','text'=>$contact
                 ? 'Contact details take no arguments.' : 'Use query up to 120 characters, offset 0..2147483647 and limit 1..20.']]]);
@@ -265,10 +273,17 @@ final class PublicMcpService
             'search_public_products'=>'products', 'search_public_articles'=>'articles',
             'get_public_contact'=>'contact', 'list_public_services'=>'services',
         };
-        $data=$contact ? $source->contact() : $source->{$view}($query,$offset,$limit);
+        try {
+            $data=$contact ? $source->contact() : ($products
+                ? $source->products($query,$offset,$limit,$slugs) : $source->{$view}($query,$offset,$limit));
+        } catch (\InvalidArgumentException) {
+            return $this->complete(['isError'=>true,'content'=>[['type'=>'text',
+                'text'=>'Use valid search arguments, or up to three unique exact product slugs with an empty query, offset 0 and a limit covering the selection.']]]);
+        }
         $result=['structuredContent'=>$data, 'content'=>[['type'=>'text','text'=>$this->textAnswer($view,$data)]]];
         try {
-            $surface=($this->presentation??=new PublicA2uiService($source))->fromResult($view,$data,4);
+            $layout=$products&&count($slugs)>1?'compare':($products&&count($slugs)===1?'detail':'auto');
+            $surface=($this->presentation??=new PublicA2uiService($source))->fromResult($view,$data,4,$layout);
             $result['_meta']=[self::SURFACE_META=>$surface];
         } catch (\Throwable $error) {
             // Presentation is progressive enhancement; retain the verified public data and text.
