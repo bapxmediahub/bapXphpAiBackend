@@ -28,17 +28,13 @@ final class PublicMcpService
         private ?PublicA2uiService $presentation = null,
         ?string $publicUrl = null
     ) {
-        $url = parse_url($publicUrl ?? (string)getenv('APP_URL'));
-        if (!is_array($url) || ($url['scheme']??'')!=='https' || empty($url['host'])
-            || isset($url['user']) || isset($url['pass']) || isset($url['query']) || isset($url['fragment'])
-            || !in_array($url['path']??'', ['', '/'], true)) {
-            throw new \RuntimeException('The public HTTPS site origin is unavailable.');
-        }
-        $this->origin = 'https://'.strtolower($url['host'])
-            .(isset($url['port']) && $url['port']!==443 ? ':'.$url['port'] : '');
+        $this->origin = PublicSiteUrlService::origin($publicUrl);
     }
 
     public function origin(): string { return $this->origin; }
+
+    /** Public discovery shares the actual transport registry and current module gates. */
+    public function toolDefinitions(): array { return $this->tools(); }
 
     /** Headers are lower-case HTTP field names. The caller owns HTTP I/O and Origin validation. */
     public function handle(string $body, array $headers): array
@@ -229,7 +225,8 @@ final class PublicMcpService
                 'annotations'=>['readOnlyHint'=>true,'destructiveHint'=>false,'idempotentHint'=>true,'openWorldHint'=>false]];
             // Metadata is safe public data. Hosts without Apps ignore it and use the meaningful text result.
             // This also supports reference hosts that do not advertise their UI capability at discovery.
-            $tool['_meta']=['ui'=>['resourceUri'=>self::UI_URI,'visibility'=>['model','app']]];
+            $tool['_meta']=['ui'=>['resourceUri'=>self::UI_URI,'visibility'=>['model','app']],
+                'in.bapx/access'=>['scope'=>'public_information','authorization'=>'none']];
             return $tool;
         },$definitions);
     }
@@ -268,7 +265,7 @@ final class PublicMcpService
             return $this->complete(['isError'=>true,'content'=>[['type'=>'text','text'=>$contact
                 ? 'Contact details take no arguments.' : 'Use query up to 120 characters, offset 0..2147483647 and limit 1..20.']]]);
         }
-        $source=$this->knowledge??=new PublicKnowledgeService();
+        $source=$this->knowledge??=new PublicKnowledgeService(publicUrl:$this->origin);
         $view=match($name) {
             'search_public_products'=>'products', 'search_public_articles'=>'articles',
             'get_public_contact'=>'contact', 'list_public_services'=>'services',

@@ -8,6 +8,48 @@ category: docs
 
 The public endpoint is `POST <APP_URL>/api/mcp`. It reads the same published knowledge as the website and offers four tools: `search_public_products`, `search_public_articles`, `get_public_contact`, and `list_public_services`. Shop and Blog tools follow the current module settings. No browser login, administrator grant, customer order, private guide, conversation, provider call, contact submission or booking is part of this endpoint. The separate trusted local STDIO interface retains its own grant boundary.
 
+## HTTP discovery and official product URLs
+
+`GET /api/agent-tools` is a **site-specific** JSON discovery document, with
+`format: bapx.agent-tools` and `version: 1`. It is not a standardized
+`.well-known` manifest. `PublicAgentDiscoveryService` consumes the actual
+`PublicMcpService::toolDefinitions()` registry, including current module gates,
+input/output schemas, annotations and MCP Apps metadata. It never manufactures
+an alternate list of agent tools. Existing public GET handlers are listed as
+HTTP equivalents only when their corresponding tool is currently published.
+
+The document includes the configured origin, MCP URL, supported protocol
+versions, exact public read requests and shell-quoted curl examples. The
+canonical public guide at `/ai-assistants` and `/llms.txt` includes GET reads and
+complete MCP list/call examples for agents with no browser. Tool errors may
+still use HTTP 200; clients must check both JSON-RPC `error` and `result.isError`.
+MCP Apps rendering requires a compatible connected host. Discovery alone does
+not install a connector, grant a capability or create buttons in an arbitrary
+chat session.
+
+Each registry entry carries explicit `_meta["in.bapx/access"]` scope and
+authorization metadata. The discovery service groups those declarations and
+does not infer public access from `readOnlyHint`: a capability-scoped cart read
+would still have a different access boundary from public catalogue data. No
+capability values, cookies, actor records or private tool registry enter this
+response. The route accepts GET with no query parameters and returns no-store
+JSON; unavailable configuration/source returns 503 without raw error details.
+
+`PublicSiteUrlService::origin()` shares the validated configured HTTPS origin
+with MCP and public product projections. It never uses the request's Host
+header. Every current product result includes `productUrl`; an approved
+`imagePath` also has `imageUrl`, and selected `imagePaths` have matching
+`imageUrls` in the same order. Only approved media already present in the
+published product record qualify. Missing or foreign images receive no
+substitute. The original relative fields remain intact for A2UI, and the
+additional schema fields are optional for older payload compatibility.
+
+The browser product adapter validates absolute fields against the canonical
+origin safely embedded in the page and the matching validated relative paths.
+An alias host cannot replace that authority. Invalid origin configuration
+keeps normal storefront HTML available, while public URL-producing reads fail
+closed; legacy relative-only fixtures still validate.
+
 ## Transport contract
 
 The public `/ai-assistants` page and advisory `/llms.txt` explain how to connect
@@ -85,19 +127,35 @@ Publishing this endpoint does not install a ChatGPT connector or make all browse
 
 ## Repeatable verification
 
+After the actual deployed Git SHA is verified, `node --test tests/live-agent-http-discovery.cjs`
+uses the real curl executable with no browser, cookies or credentials. It reads
+the discovery document, executes its published tools/list and contact requests,
+compares MCP and ordinary GET contact facts, and checks a live product's absolute
+official URL plus its actual raster image when present. It never invokes an
+action tool. The deployed-revision workflow runs this after the existing public
+SDK check. HTTP errors, including 429, remain failures and are not retried or
+converted to empty success. The separate browser probe records only safe
+response headers when `/llms.txt` fails, so intermittent hosting responses can be
+diagnosed without publishing cookies or page bodies.
+
 `php tests/public-mcp.php` checks both wire profiles, strict modern framing, legacy initialization and notifications, metadata, errors, public scope, canonical output, exact-page cards and resource limits. `node tests/public-mcp-sdk.cjs <sdk-directory>` uses both the unmodified default official MCP client and an explicitly modern client against the real PHP dispatcher through an in-process fetch adapter; this checks SDK interoperability without claiming a network test.
 
 `php tests/public-product-selection.php` checks ordered exact selection, missing
 and hidden records, selected-only details, Unicode limits, module gates and both
 HTTP MCP profiles using an in-request synthetic catalogue. `php
-tests/public-agent-discovery.php` checks the canonical guide source, configured
-URLs, real public routes and shared discovery links. Neither test contacts or
-changes a production catalogue.
+tests/public-agent-discovery.php` checks registry parity, module gates, explicit
+scope declarations, canonical URLs, guide source, real routes and discovery
+links. It executes every published MCP curl body against the real dispatcher.
+The product-selection fixture checks official URL/path/image ordering and
+foreign-image exclusion. Neither test contacts or changes a production
+catalogue. `node --test tests/public-products-webmcp.test.cjs` checks browser
+origin/path parity, Unicode selectors, malformed URL rejection and compatibility
+with older relative-only responses.
 
 `node --test tests/public-knowledge-api.test.cjs` executes the real `index.php`
-entry point for `/ai-assistants` and `/llms.txt`, preserving the original URI
+entry point for `/ai-assistants`, `/llms.txt` and `/api/agent-tools`, preserving the original URI
 after the hosting rewrite. It checks the text query variant, GET-only dispatch
-and rejected suffix/private paths, so a registered but unreachable discovery
+and rejected suffix/private paths and discovery query values, so a registered but unreachable discovery
 route cannot pass solely through direct controller tests.
 
 With native PHP, `node tests/public-mcp-http.cjs <sdk-directory>` runs the actual `/api/mcp` controller through both official client profiles, checking methods, MIME/Accept, Origin, sizes, errors and cookie/session independence. `CHROMIUM_PATH=<chrome> node tests/public-mcp-app-browser.cjs <sdk-directory>` first discovers the actual resource and contact result through the default client, then drives the shipped widget with the official `AppBridge` through a sandboxed browser fixture at desktop and 375px. It checks readiness, product/contact cards, keyboard links, overflow, denied payloads and text fallback. Test dependencies are installed outside the application checkout: `@modelcontextprotocol/client@2.4.0`, `@modelcontextprotocol/ext-apps@2.0.4`, `playwright@1.62.1`.

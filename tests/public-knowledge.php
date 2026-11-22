@@ -159,7 +159,7 @@ try {
         foreach (['https://public.example/assets/images/media/item.webp'=>'/assets/images/media/item.webp',
             '/assets/images/media/தமிழ்.png'=>'/assets/images/media/%E0%AE%A4%E0%AE%AE%E0%AE%BF%E0%AE%B4%E0%AF%8D.png',
             '/assets/images/media/item%20photo.jpg'=>'/assets/images/media/item%20photo.jpg'] as $input=>$expected) {
-            if ($imagePath->invoke(null, $input) !== $expected) throw new RuntimeException('Safe local product image was lost.');
+            if ($imagePath->invoke(null, $input,'https://public.example') !== $expected) throw new RuntimeException('Safe local product image was lost.');
         }
         foreach (['/assets/images/../private.png', '/assets/images/%2e%2e/private.png',
             '/assets/images/%252e%252e/private.png', '/assets/images/media/a%2fb.webp',
@@ -168,7 +168,7 @@ try {
             '//public.example/assets/images/item.webp', '/assets/images/item.svg',
             '/assets/images/item.webp?redirect=private', 'data:image/png;base64,AAAA',
             '/assets/images/%E0%AF%8Ditem.png'] as $unsafeImage) {
-            if ($imagePath->invoke(null, $unsafeImage) !== null) throw new RuntimeException('Unsafe product image was exposed.');
+            if ($imagePath->invoke(null, $unsafeImage,'https://public.example') !== null) throw new RuntimeException('Unsafe product image was exposed.');
         }
     } finally {
         if ($previousUrl === null) unset($_SERVER['APP_URL']); else $_SERVER['APP_URL'] = $previousUrl;

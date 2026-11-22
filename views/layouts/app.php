@@ -330,7 +330,13 @@ echo $__googleTags->gtagCode();
 <script defer src="/assets/public-a2ui-webmcp.js?v=<?= filemtime(app_path('assets/public-a2ui-webmcp.js')) ?>"></script>
 
 <?php if ($__modules['shop']): ?>
+<?php
+// Invalid public connection configuration must not take the normal storefront down.
+try { $__publicProductsOrigin=\App\Services\PublicSiteUrlService::origin(); }
+catch (\RuntimeException) { $__publicProductsOrigin=null; }
+?>
 <script type="application/json" id="bapx-public-products-schema"><?= json_encode([
+    'publicOrigin'=>$__publicProductsOrigin,
     'inputSchema'=>\App\Services\PublicKnowledgeService::productInputSchema(),
     'outputSchema'=>\App\Services\PublicKnowledgeService::productOutputSchema()
 ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) ?></script>

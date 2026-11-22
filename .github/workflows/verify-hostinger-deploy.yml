@@ -107,6 +107,8 @@ jobs:
         run: |
           npm install --prefix "$RUNNER_TEMP/live-mcp" --no-audit --no-fund --ignore-scripts @modelcontextprotocol/client@2.4.0
           node tests/public-mcp-http.cjs "$RUNNER_TEMP/live-mcp"
+      - name: Verify discoverable HTTP instructions and actual curl reads without browser state
+        run: node --test tests/live-agent-http-discovery.cjs
   mobile_acceptance:
     name: Live mobile header and guest cart acceptance
     needs: verify

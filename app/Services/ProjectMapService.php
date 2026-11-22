@@ -37,6 +37,7 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/api/categories','name'=>'api.categories','page'=>'public/404','controller'=>'ApiController@categories','services'=>['CategoryService']],
             ['method'=>'GET','path'=>'/api/product/{slug}','name'=>'api.product','page'=>'public/404','controller'=>'ApiController@product','services'=>['ProductService']],
             ['method'=>'GET','path'=>'/api/temples','name'=>'api.temples','page'=>'public/404','controller'=>'ApiController@temples','services'=>['TempleService']],
+            ['method'=>'GET','path'=>'/api/agent-tools','name'=>'api.agent-tools','page'=>'public/404','controller'=>'PublicAgentDiscoveryController@index','services'=>['PublicAgentDiscoveryService','PublicMcpService','PublicSiteUrlService']],
             ['method'=>'GET','path'=>'/api/knowledge/articles','name'=>'api.knowledge.articles','page'=>'public/404','controller'=>'ApiController@knowledgeArticles','services'=>['PublicKnowledgeService','BlogService']],
             ['method'=>'GET','path'=>'/api/knowledge/products','name'=>'api.knowledge.products','page'=>'public/404','controller'=>'ApiController@knowledgeProducts','services'=>['PublicKnowledgeService','ProductService']],
             ['method'=>'GET','path'=>'/api/knowledge/contact','name'=>'api.knowledge.contact','page'=>'public/404','controller'=>'ApiController@knowledgeContact','services'=>['PublicKnowledgeService']],

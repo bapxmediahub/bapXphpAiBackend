@@ -45,11 +45,14 @@ $settings->setValue(null,[]);
 $_SERVER['APP_URL']='https://public.example';
 putenv('BAPX_TEST_MODE=0');
 try {
-    $knowledge=new PublicKnowledgeService(new ProductService($store));
+    $knowledge=new PublicKnowledgeService(new ProductService($store),publicUrl:'https://public.example');
     $compact=$knowledge->products();
     selectedCheck($compact['total']===3,'Hidden or unsafe product entered public search.');
     foreach($compact['products'] as $row) {
-        selectedCheck(array_intersect(['imagePaths','highlights','specifications'],array_keys($row))===[],'Default search did not stay compact.');
+        selectedCheck(array_intersect(['imagePaths','imageUrls','highlights','specifications'],array_keys($row))===[],'Default search did not stay compact.');
+        selectedCheck($row['productUrl']==='https://public.example'.$row['path'],'Product URL did not use the configured official origin and canonical path.');
+        selectedCheck(isset($row['imagePath'])?($row['imageUrl']??null)==='https://public.example'.$row['imagePath']
+            :!isset($row['imageUrl']),'Compact image URL diverged from its approved relative path.');
     }
     $slugs=['varahi-amman-pendant','sri-varahi-amman-ring'];
     $selected=$knowledge->products('',0,2,$slugs);
@@ -57,6 +60,9 @@ try {
         &&$selected['total']===2&&$selected['nextOffset']===null,'Selection order, count or paging changed.');
     $ring=$selected['products'][1];
     selectedCheck($ring['imagePaths']===['/assets/images/ring.webp','/assets/images/ring-side.png','/assets/images/ring-back.avif'],'Selected gallery lost primary ordering, bounds or local image filtering.');
+    selectedCheck($ring['imageUrls']===array_map(static fn(string $path):string=>'https://public.example'.$path,$ring['imagePaths'])
+        &&$ring['imageUrl']===$ring['imageUrls'][0],'Absolute gallery URLs lost official origin, ordering or primary-image parity.');
+    selectedCheck(!str_contains(json_encode($selected),'untrusted.invalid'),'An external/search image entered a public product URL.');
     selectedCheck(count($ring['highlights'])===4&&$ring['highlights'][0]==='Real feature'
         &&mb_strlen($ring['highlights'][1])===160,'Highlights were not bounded public plain text.');
     selectedCheck(count($ring['specifications'])===6&&mb_strlen($ring['specifications'][4]['label'])===80
@@ -68,7 +74,10 @@ try {
         &&$missing['total']===1,'Missing/hidden selections were disclosed or substituted.');
     $tamil=$knowledge->products('',0,1,['தமிழ் pendant'])['products'][0];
     selectedCheck($tamil['path']==='/product/'.rawurlencode('தமிழ் pendant')
-        &&$tamil['imagePaths']===['/assets/images/'.rawurlencode('தமிழ்').'.webp'],'Raw Unicode selectors or selected gallery were encoded incorrectly.');
+        &&$tamil['imagePaths']===['/assets/images/'.rawurlencode('தமிழ்').'.webp']
+        &&$tamil['productUrl']==='https://public.example'.$tamil['path']
+        &&$tamil['imageUrls']===['https://public.example'.$tamil['imagePaths'][0]]
+        &&!isset($tamil['imagePath'])&&!isset($tamil['imageUrl']),'Raw Unicode selectors, official URLs or selected gallery were encoded incorrectly.');
     foreach([
         ['ring',0,3,$slugs],['',1,3,$slugs],['',0,1,$slugs],
         ['',0,3,['sri-varahi-amman-ring','sri-varahi-amman-ring']],
@@ -94,6 +103,9 @@ try {
             ['jsonrpc'=>'2.0','id'=>1,'method'=>'tools/call','params'=>$parameters],JSON_THROW_ON_ERROR),$headers);
         $reply=$call($params);
         selectedCheck($reply['status']===200&&($reply['body']['result']['structuredContent']??null)===$selected,'MCP profile changed selected public product data.');
+        $cards=$reply['body']['result']['_meta'][PublicMcpService::SURFACE_META]['messages'][0]['createSurface']['dataModel']['items']??[];
+        selectedCheck(array_column($cards,'path')===array_column($selected['products'],'path')
+            &&($cards[1]['imagePath']??null)===$ring['imagePath'],'Additive absolute URLs broke the existing relative-path A2UI cards.');
         $params['arguments']['query']='ring';
         selectedCheck(($call($params)['body']['result']['isError']??false)===true,'MCP did not report ambiguous selection arguments as a tool error.');
     }

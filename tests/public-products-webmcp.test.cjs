@@ -7,6 +7,7 @@ const {test}=require('node:test');
 
 const source=readFileSync(join(__dirname,'../assets/public-products-webmcp.js'),'utf8');
 const contract={
+    publicOrigin:'https://official.example.test',
     inputSchema:{type:'object',additionalProperties:false,
         properties:{query:{type:'string',maxLength:120},
             offset:{type:'integer',minimum:0,maximum:2147483647},
@@ -16,7 +17,7 @@ const contract={
         required:['products','total','nextOffset'],properties:{
             products:{type:'array',maxItems:20},total:{type:'integer'},nextOffset:{type:['integer','null']}}}
 };
-function setup(payload,enabled=true,mode='promise') {
+function setup(payload,enabled=true,mode='promise',schema=contract) {
     let registration,handle;
     const calls=[];
     const warnings=[];
@@ -26,7 +27,7 @@ function setup(payload,enabled=true,mode='promise') {
     }}:undefined;
     vm.runInNewContext(source,{
         document:{modelContext,getElementById:id=>id==='bapx-public-products-schema'
-            ?{textContent:JSON.stringify(contract)}:null},
+            ?{textContent:JSON.stringify(schema)}:null},
         window:{location:{origin:'https://shop.example.test'},
             addEventListener:(name,listener)=>{if(name==='pagehide')handle=listener}},
         AbortController,URL,
@@ -146,6 +147,38 @@ test('product projection rejects extra fields and unsafe image paths without los
     await assert.rejects(setup(payload({...product,adminEmail:'private@example.test'})).tool.execute(),{name:'TypeError'});
     await assert.rejects(setup(payload({...product,description:'x'.repeat(281)})).tool.execute(),{name:'TypeError'});
     await assert.rejects(setup({...payload(product),owner:{name:'private'}}).tool.execute(),{name:'TypeError'});
+});
+
+test('absolute product and image URLs use the configured official origin and matching safe relative paths',async()=>{
+    const product={name:'Item',path:'/product/item',priceInr:10,available:true,description:'Published',
+        productUrl:'https://official.example.test/product/item',
+        imagePath:'/assets/images/item.webp',imageUrl:'https://official.example.test/assets/images/item.webp',
+        imagePaths:['/assets/images/item.webp','/assets/images/item-side.png'],
+        imageUrls:['https://official.example.test/assets/images/item.webp','https://official.example.test/assets/images/item-side.png']};
+    const payload=row=>({products:[row],total:1,nextOffset:null});
+    assert.deepEqual(JSON.parse(JSON.stringify(await setup(payload(product)).tool.execute())),payload(product));
+    // The page is served from an alias; only the trusted configured origin may be used.
+    for(const change of [
+        {productUrl:'https://shop.example.test/product/item'},
+        {productUrl:'https://external.invalid/product/item'},
+        {productUrl:'https://official.example.test/product/different'},
+        {productUrl:'https://official.example.test/product/item?redirect=1'},
+        {productUrl:'http://official.example.test/product/item'},
+        {imageUrl:'https://external.invalid/assets/images/item.webp'},
+        {imageUrl:'https://official.example.test/assets/images/other.webp'},
+        {imagePath:undefined},
+        {imageUrls:['https://official.example.test/assets/images/item-side.png','https://official.example.test/assets/images/item.webp']},
+        {imageUrls:['https://official.example.test/assets/images/item.webp']},
+        {imageUrls:Array(2)},
+        {imagePaths:undefined},
+    ]) await assert.rejects(setup(payload({...product,...change})).tool.execute(),{name:'TypeError'});
+    for(const publicOrigin of [undefined,null,'http://official.example.test','https://official.example.test/path',
+        'https://user:password@official.example.test','https://official.example.test/']) {
+        const invalidContract={...contract,publicOrigin};
+        await assert.rejects(setup(payload(product),true,'promise',invalidContract).tool.execute(),{name:'TypeError'});
+        const relative={name:'Legacy',path:'/product/item',priceInr:10,available:true,description:''};
+        assert.deepEqual(JSON.parse(JSON.stringify(await setup(payload(relative),true,'promise',invalidContract).tool.execute())),payload(relative));
+    }
 });
 
 test('product paths retain safe encoded legacy slugs and reject browser-normalized or encoded traversal',async()=>{

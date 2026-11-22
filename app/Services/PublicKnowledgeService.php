@@ -25,7 +25,11 @@ final class PublicKnowledgeService
         'general' => 'Send a general store enquiry through the contact form.',
     ];
 
-    public function __construct(private ?ProductService $products = null, private ?BlogService $blog = null) {}
+    public function __construct(
+        private ?ProductService $products = null,
+        private ?BlogService $blog = null,
+        private ?string $publicUrl = null
+    ) {}
 
     private function catalogue(): ProductService
     {
@@ -97,13 +101,23 @@ final class PublicKnowledgeService
             'name' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 160],
             'path' => ['type' => 'string', 'maxLength' => 2048,
                 'pattern' => '^/product/[A-Za-z0-9%_.-]+$'],
+            'productUrl' => ['type'=>'string','format'=>'uri','maxLength'=>4096,
+                'pattern'=>'^https://[^/?#]+/product/[A-Za-z0-9%_.-]+$',
+                'description'=>'Absolute official product URL; the configured public site origin followed by path.'],
             'priceInr' => ['type' => 'number', 'minimum' => 0],
             'available' => ['type' => 'boolean'],
             'description' => ['type' => 'string', 'maxLength' => 280],
             'imagePath' => ['type' => 'string', 'maxLength' => 512,
                 'pattern' => '^/assets/images/[A-Za-z0-9%_./-]+$'],
+            'imageUrl' => ['type'=>'string','format'=>'uri','maxLength'=>2560,
+                'pattern'=>'^https://[^/?#]+/assets/images/[A-Za-z0-9%_./-]+$',
+                'description'=>'Absolute official image URL for imagePath. Absent when no approved product image exists.'],
             'imagePaths' => ['type'=>'array','maxItems'=>3,'uniqueItems'=>true,
                 'items'=>['type'=>'string','maxLength'=>512,'pattern'=>'^/assets/images/[A-Za-z0-9%_./-]+$']],
+            'imageUrls' => ['type'=>'array','maxItems'=>3,'uniqueItems'=>true,
+                'items'=>['type'=>'string','format'=>'uri','maxLength'=>2560,
+                    'pattern'=>'^https://[^/?#]+/assets/images/[A-Za-z0-9%_./-]+$'],
+                'description'=>'Absolute official URLs corresponding to selected imagePaths in the same order.'],
             'highlights' => ['type'=>'array','maxItems'=>4,
                 'items'=>['type'=>'string','minLength'=>1,'maxLength'=>160]],
             'specifications' => ['type'=>'array','maxItems'=>6,'items'=>[
@@ -250,7 +264,7 @@ final class PublicKnowledgeService
     }
 
     /** Only stored local raster media may cross into public presentation cards. */
-    private static function imagePath(mixed $image): ?string
+    private static function imagePath(mixed $image, ?string $publicOrigin = null): ?string
     {
         if (!is_string($image) || $image === '' || strlen($image) > 2048
             || str_contains($image, '\\') || preg_match('/[\\x00-\\x20\\x7F]/', $image)) return null;
@@ -258,9 +272,7 @@ final class PublicKnowledgeService
         if (!is_array($parts) || isset($parts['user']) || isset($parts['pass']) || isset($parts['query'])
             || isset($parts['fragment'])) return null;
         if (isset($parts['host']) || isset($parts['scheme'])) {
-            $configured = $_SERVER['APP_URL'] ?? $_ENV['APP_URL'] ?? getenv('APP_URL');
-            $origin = parse_url(is_string($configured) && $configured !== ''
-                ? $configured : 'https://sripanchamispiritual.com');
+            $origin = parse_url($publicOrigin ?? PublicSiteUrlService::origin());
             if (!is_array($origin) || !in_array($parts['scheme'] ?? '', ['http', 'https'], true)
                 || strtolower($parts['host'] ?? '') !== strtolower($origin['host'] ?? '')
                 || ($parts['scheme'] ?? '') !== ($origin['scheme'] ?? '')
@@ -302,14 +314,14 @@ final class PublicKnowledgeService
     }
 
     /** Extra detail is published product content, bounded independently of the underlying record. */
-    private static function selectedProductDetails(array $item): array
+    private static function selectedProductDetails(array $item, string $publicOrigin): array
     {
         $images=[];
         $gallery=$item['image_urls']??[];
         if(is_string($gallery))$gallery=preg_split('/[\r\n,]+/',$gallery)?:[];
         if(!is_array($gallery))$gallery=[];
         foreach(array_merge([$item['image_url']??null],array_slice($gallery,0,30)) as $image) {
-            $path=self::imagePath($image);
+            $path=self::imagePath($image,$publicOrigin);
             if($path!==null&&!in_array($path,$images,true))$images[]=$path;
             if(count($images)===3)break;
         }
@@ -328,7 +340,10 @@ final class PublicKnowledgeService
             if(count($specifications)===6)break;
         }
         $details=[];
-        if($images!==[])$details['imagePaths']=$images;
+        if($images!==[]) {
+            $details['imagePaths']=$images;
+            $details['imageUrls']=array_map(static fn(string $path):string=>$publicOrigin.$path,$images);
+        }
         if($highlights!==[])$details['highlights']=$highlights;
         if($specifications!==[])$details['specifications']=$specifications;
         return $details;
@@ -342,6 +357,7 @@ final class PublicKnowledgeService
         if (!(new SettingsService())->modules(requireReadable:true)['shop']) {
             return ['products'=>[], 'total'=>0,'nextOffset'=>null];
         }
+        $origin=PublicSiteUrlService::origin($this->publicUrl);
         $service=$this->catalogue();
         $visible=$service->visible();
         if($slugs===[]) {
@@ -364,13 +380,17 @@ final class PublicKnowledgeService
             $row=[
                 'name'=>$name,
                 'path'=>self::productPath((string)$item['slug']),
+                'productUrl'=>$origin.self::productPath((string)$item['slug']),
                 'priceInr'=>$service->priceOf($item),
                 'available'=>in_array($item['stock_status']??'in_stock',['in_stock','active'],true),
                 'description'=>self::plainText((string)($item['description']??''),280),
             ];
-            $imagePath = self::imagePath($item['image_url'] ?? null);
-            if ($imagePath !== null) $row['imagePath'] = $imagePath;
-            if($slugs!==[])$row+=self::selectedProductDetails($item);
+            $imagePath = self::imagePath($item['image_url'] ?? null,$origin);
+            if ($imagePath !== null) {
+                $row['imagePath'] = $imagePath;
+                $row['imageUrl'] = $origin.$imagePath;
+            }
+            if($slugs!==[])$row+=self::selectedProductDetails($item,$origin);
             $out[] = $row;
         }
         $end=min(count($matches),$offset+$limit);

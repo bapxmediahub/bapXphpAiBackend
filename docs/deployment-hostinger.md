@@ -126,6 +126,13 @@ green independently of a blocked or failed cart acceptance job. No checkout, pay
 customer login or mail is performed. The test attempts to undo the guest cart change
 even if an assertion fails. Neither job changes the independent code-CI result.
 
+The public MCP acceptance job also runs `tests/live-agent-http-discovery.cjs`
+with the actual curl executable. It compares `/api/agent-tools` with the real
+MCP registry, executes the published contact read, and verifies canonical
+product/image URLs without cookies, login or write tools. A 429 remains a
+failure. The separate WebMCP probe records only selected safe response headers
+when `/llms.txt` fails; it never prints cookies or response bodies for diagnosis.
+
 ### HTTP 429 on the guest cart acceptance
 
 The first real post-deploy mobile verification on 22 November 2026 confirmed the

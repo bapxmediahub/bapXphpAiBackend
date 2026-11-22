@@ -9,6 +9,17 @@
     catch { return; }
     if (!contract?.inputSchema || !contract?.outputSchema) return;
 
+    // This value is emitted by the page from deployment configuration. A response
+    // cannot select its own image origin, and aliases must use the canonical site.
+    let publicOrigin = null;
+    try {
+        const origin = new URL(contract.publicOrigin);
+        if (origin.protocol === 'https:' && origin.origin === contract.publicOrigin
+            && !origin.username && !origin.password) publicOrigin = origin.origin;
+    } catch { /* Old relative-only fixtures and ordinary page rendering still work. */ }
+    const officialUrl = (value, path, maxLength) => typeof value === 'string'
+        && value.length <= maxLength && publicOrigin !== null && value === publicOrigin + path;
+
     const lifecycle = new AbortController();
     window.addEventListener('pagehide', event => {
         if (!event.persisted) lifecycle.abort();
@@ -26,18 +37,24 @@
         }
         for (const product of data.products) {
             if (!product || typeof product !== 'object'
-                || Object.keys(product).some(key => !['name', 'path', 'priceInr', 'available', 'description', 'imagePath', 'imagePaths', 'highlights', 'specifications'].includes(key))
+                || Object.keys(product).some(key => !['name', 'path', 'productUrl', 'priceInr', 'available', 'description', 'imagePath', 'imageUrl', 'imagePaths', 'imageUrls', 'highlights', 'specifications'].includes(key))
                 || typeof product.name !== 'string' || !product.name.trim()
                 || Array.from(product.name).length > 160
                 || !safeProductPath(product.path)
+                || (product.productUrl !== undefined && !officialUrl(product.productUrl,product.path,4096))
                 || typeof product.priceInr !== 'number'
                 || !Number.isFinite(product.priceInr) || product.priceInr < 0
                 || typeof product.available !== 'boolean'
                 || typeof product.description !== 'string' || Array.from(product.description).length > 280
                 || (product.imagePath !== undefined && !safeImage(product.imagePath))
+                || (product.imageUrl !== undefined && (product.imagePath === undefined
+                    || !officialUrl(product.imageUrl,product.imagePath,2560)))
                 || (product.imagePaths !== undefined && (!Array.isArray(product.imagePaths)
                     || product.imagePaths.length > 3 || new Set(product.imagePaths).size !== product.imagePaths.length
-                    || product.imagePaths.some(path => !safeImage(path))))
+                    || Array.from(product.imagePaths).some(path => !safeImage(path))))
+                || (product.imageUrls !== undefined && (!Array.isArray(product.imagePaths)
+                    || !Array.isArray(product.imageUrls) || product.imageUrls.length !== product.imagePaths.length
+                    || Array.from(product.imageUrls).some((url,index) => !officialUrl(url,product.imagePaths[index],2560))))
                 || (product.highlights !== undefined && (!Array.isArray(product.highlights)
                     || product.highlights.length > 4 || product.highlights.some(value => !boundedText(value,160))))
                 || (product.specifications !== undefined && (!Array.isArray(product.specifications)

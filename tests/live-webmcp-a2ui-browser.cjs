@@ -18,7 +18,12 @@ test('live landing and shop WebMCP tools can be discovered and invoked ('+(nativ
         assert.equal(response?.status(),200);
         assert.ok(await page.locator('a[href="/ai-assistants"]').count()>0,'Landing page exposes the public connection guide');
         const instructions=await page.request.get(site+'/llms.txt');
-        assert.equal(instructions.status(),200);
+        // Preserve the HTTP assertion and retain only safe diagnostic headers
+        // when the hosting layer intermittently rejects a public read.
+        const instructionHeaders=instructions.headers();
+        const diagnosticHeaders=Object.fromEntries(['server','content-type','retry-after','x-hcdn-request-id','x-hcdn-cache-status']
+            .filter(name=>instructionHeaders[name]).map(name=>[name,instructionHeaders[name]]));
+        assert.equal(instructions.status(),200,'Public /llms.txt read failed: '+JSON.stringify(diagnosticHeaders));
         const instructionText=await instructions.text();
         assert.ok(instructionText.includes('/api/mcp')&&instructionText.includes('/ai-assistants'),'Advisory index points to the real public interface');
         await page.waitForFunction(async()=>{

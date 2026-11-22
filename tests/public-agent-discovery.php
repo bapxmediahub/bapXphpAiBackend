@@ -6,13 +6,79 @@ require dirname(__DIR__).'/app/bootstrap.php';
 function discoveryCheck(bool $condition,string $message):void {
     if(!$condition)throw new RuntimeException($message);
 }
+$mcp=new \App\Services\PublicMcpService();
+$discovery=new \App\Services\PublicAgentDiscoveryService($mcp);
+$metadata=$discovery->document();
+discoveryCheck($metadata['format']==='bapx.agent-tools'&&$metadata['version']===1
+    &&str_contains($metadata['standardsStatus'],'Site-specific'),'Custom discovery claimed an unsupported standard.');
+discoveryCheck(json_encode($metadata['tools'],JSON_THROW_ON_ERROR)===json_encode($mcp->toolDefinitions(),JSON_THROW_ON_ERROR)
+    &&$metadata['transport']['url']==='https://public.example/api/mcp'
+    &&$metadata['transport']['supportedProtocols']===\App\Services\PublicMcpService::SUPPORTED_PROTOCOLS,
+    'Discovery diverged from the current transport registry or protocol contract.');
+foreach($metadata['tools'] as $tool) {
+    discoveryCheck(($tool['_meta']['in.bapx/access']??null)===['scope'=>'public_information','authorization'=>'none'],
+        'Public scope was missing from the authoritative registry.');
+}
+discoveryCheck(array_column($metadata['httpReads'],'tool')===array_column($metadata['tools'],'name')
+    &&$metadata['capabilities']===[['scope'=>'public_information','authorization'=>'none',
+        'tools'=>array_column($metadata['tools'],'name')]],'Public HTTP bindings or explicit capability grouping diverged.');
+foreach($metadata['examples'] as $example) {
+    discoveryCheck(str_contains($example['curl'],"'".$example['url']."'")
+        &&!str_contains($example['curl'],'--insecure'),'Copyable requests lost their configured URL or TLS verification.');
+    if($example['method']!=='POST')continue;
+    $headers=array_change_key_case($example['headers'],CASE_LOWER);
+    $response=$mcp->handle(json_encode($example['body'],JSON_THROW_ON_ERROR),$headers);
+    discoveryCheck($response['status']===200&&!isset($response['body']['error'])
+        &&!($response['body']['result']['isError']??false),'A published MCP curl example cannot execute against the real dispatcher.');
+    if($example['id']==='list_tools')discoveryCheck(json_encode($response['body']['result']['tools'],JSON_THROW_ON_ERROR)
+        ===json_encode($metadata['tools'],JSON_THROW_ON_ERROR),
+        'HTTP discovery no longer matches MCP tools/list.');
+}
+$settings=new ReflectionProperty(\App\Services\SettingsService::class,'cache');
+$priorSettings=$settings->getValue();
+try {
+    $settings->setValue(null,['module_shop'=>'0','module_blog'=>'0']);
+    $disabled=$discovery->document();
+    discoveryCheck(array_column($disabled['tools'],'name')===['get_public_contact','list_public_services']
+        &&array_column($disabled['httpReads'],'tool')===['get_public_contact','list_public_services']
+        &&!in_array('search_products_http',array_column($disabled['examples'],'id'),true),
+        'Discovery advertised a disabled module or an unavailable product example.');
+} finally { $settings->setValue(null,$priorSettings); }
+$previousHost=$_SERVER['HTTP_HOST']??null;
+$_SERVER['HTTP_HOST']='untrusted.invalid';
+try {
+    discoveryCheck(\App\Services\PublicSiteUrlService::origin()==='https://public.example'
+        &&\App\Services\PublicSiteUrlService::origin('https://Public.Example:443/')==='https://public.example'
+        &&(new \App\Services\PublicMcpService(publicUrl:'https://official.example:8443/'))->origin()==='https://official.example:8443',
+        'Canonical public links trusted Host or lost explicit origin injection.');
+    foreach(['','http://public.example','https://user:secret@public.example',
+        'https://public.example/subpath','https://public.example?query=1','https://public.example#fragment'] as $invalid) {
+        $denied=false;
+        try { \App\Services\PublicSiteUrlService::origin($invalid); } catch(RuntimeException) { $denied=true; }
+        discoveryCheck($denied,'An invalid configured public origin was accepted.');
+    }
+} finally {
+    if($previousHost===null)unset($_SERVER['HTTP_HOST']);else $_SERVER['HTTP_HOST']=$previousHost;
+}
 $controller=new \App\Controllers\PublicController();
 $guide=(new ReflectionMethod($controller,'publicAssistantGuide'))->invoke($controller);
 discoveryCheck(str_contains($guide['text'],'https://public.example/api/mcp')
     &&str_contains($guide['html'],'https://public.example/api/mcp')
     &&!str_contains($guide['text'],'{{SITE_URL}}')&&!str_contains($guide['text'],'{{MCP_URL}}'),'Guide did not use the configured public origin.');
-foreach(['New consultation booking is retired','advisory discovery','search_public_products','slugs','readable text'] as $fact) {
+foreach(['New consultation booking is retired','advisory discovery','search_public_products','slugs','readable text',
+    '/api/agent-tools','curl --fail-with-body','Mcp-Method: tools/list','Mcp-Name: get_public_contact',
+    'productUrl','imageUrl','does not install a connector'] as $fact) {
     discoveryCheck(str_contains($guide['text'],$fact),'Public guide omitted its actual capability or limitation.');
+}
+preg_match_all("/--data-raw '([^']+)'/",$guide['text'],$guideRequests);
+discoveryCheck(count($guideRequests[1])===2,'The guide lost its copyable MCP list/read requests.');
+foreach($guideRequests[1] as $request) {
+    $decoded=json_decode($request,true,32,JSON_THROW_ON_ERROR);
+    $headers=['mcp-protocol-version'=>\App\Services\PublicMcpService::PROTOCOL,'mcp-method'=>$decoded['method']];
+    if(isset($decoded['params']['name']))$headers['mcp-name']=$decoded['params']['name'];
+    $response=$mcp->handle($request,$headers);
+    discoveryCheck($response['status']===200&&!isset($response['body']['error'])
+        &&!($response['body']['result']['isError']??false),'The canonical guide advertises a broken MCP request.');
 }
 ob_start();$controller->assistantInstructions();$plain=ob_get_clean();
 discoveryCheck($plain===$guide['text']&&!str_contains($plain,'<html'),'Plain text endpoint diverged from the public guide.');
@@ -25,10 +91,13 @@ foreach(['/ai-assistants'=>'aiAssistants','/llms.txt'=>'assistantInstructions'] 
     $matches=array_values(array_filter($routes,static fn(array $route):bool=>$route['path']===$path&&$route['method']==='GET'));
     discoveryCheck(count($matches)===1&&$matches[0]['controller']==='PublicController@'.$method,'Public discovery route missing.');
 }
+$jsonRoute=array_values(array_filter($routes,static fn(array $route):bool=>$route['path']==='/api/agent-tools'&&$route['method']==='GET'));
+discoveryCheck(count($jsonRoute)===1&&$jsonRoute[0]['controller']==='PublicAgentDiscoveryController@index',
+    'Site-specific HTTP discovery route is missing.');
 $layout=file_get_contents(app_path('views/layouts/app.php'));
 discoveryCheck(str_contains($layout,'rel="help" href="/ai-assistants"')
     &&str_contains($layout,'type="text/plain" href="/llms.txt"')
     &&str_contains($layout,'<a href="/ai-assistants">AI assistants</a>'),'Public discovery links missing from the shared layout.');
 discoveryCheck(!str_contains($plain,'.bapX/')&&!str_contains($plain,'AGENTS.md')
     &&!str_contains($plain,'BAPX_MCP_CLIENT_TOKEN'),'Private developer/runtime instructions entered public discovery.');
-echo "Public guide, configured origin, advisory plain text, real routes and shared discovery links PASS.\n";
+echo "Actual-registry HTTP discovery, executable curl requests, module scopes, official origins, canonical guide and route contracts PASS.\n";

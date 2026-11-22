@@ -44,18 +44,18 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 474
-  relationships: 406
+  concepts: 478
+  relationships: 410
   by_type:
     blog: 16
-    controller: 15
+    controller: 16
     doc: 53
     image: 89
     operator_guide: 12
-    route: 172
+    route: 173
     runtime_instruction: 6
     schema: 22
-    service: 77
+    service: 79
     skill: 12
 concepts:
   - id: "blog:benefits-of-rudraksha"
@@ -279,6 +279,14 @@ concepts:
     title: "ConsultationController"
     description: "Controller: ConsultationController"
     resource: "app/Controllers/ConsultationController.php"
+    tags:
+      - "code"
+      - "controller"
+  - id: "controller:PublicAgentDiscoveryController"
+    type: "controller"
+    title: "PublicAgentDiscoveryController"
+    description: "Controller: PublicAgentDiscoveryController"
+    resource: "app/Controllers/PublicAgentDiscoveryController.php"
     tags:
       - "code"
       - "controller"
@@ -2914,6 +2922,22 @@ concepts:
     controller: "ApiController@index"
     services: []
     view: "public/404"
+  - id: "route:get__api_agent_tools"
+    type: "route"
+    title: "GET /api/agent-tools"
+    description: "api.agent-tools"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/api/agent-tools"
+    controller: "PublicAgentDiscoveryController@index"
+    services:
+      - "PublicAgentDiscoveryService"
+      - "PublicMcpService"
+      - "PublicSiteUrlService"
+    view: "public/404"
   - id: "route:get__api_categories"
     type: "route"
     title: "GET /api/categories"
@@ -5390,6 +5414,14 @@ concepts:
     tags:
       - "code"
       - "service"
+  - id: "service:PublicAgentDiscoveryService"
+    type: "service"
+    title: "PublicAgentDiscoveryService"
+    description: "Service: PublicAgentDiscoveryService"
+    resource: "app/Services/PublicAgentDiscoveryService.php"
+    tags:
+      - "code"
+      - "service"
   - id: "service:PublicKnowledgeService"
     type: "service"
     title: "PublicKnowledgeService"
@@ -5403,6 +5435,14 @@ concepts:
     title: "PublicMcpService"
     description: "Service: PublicMcpService"
     resource: "app/Services/PublicMcpService.php"
+    tags:
+      - "code"
+      - "service"
+  - id: "service:PublicSiteUrlService"
+    type: "service"
+    title: "PublicSiteUrlService"
+    description: "Service: PublicSiteUrlService"
+    resource: "app/Services/PublicSiteUrlService.php"
     tags:
       - "code"
       - "service"
@@ -5934,6 +5974,15 @@ relationships:
   - from: "controller:ConsultationController"
     to: "service:ConsultationService"
     relation: "uses"
+  - from: "controller:PublicAgentDiscoveryController"
+    to: "service:PublicAgentDiscoveryService"
+    relation: "uses"
+  - from: "controller:PublicAgentDiscoveryController"
+    to: "service:PublicMcpService"
+    relation: "uses"
+  - from: "controller:PublicAgentDiscoveryController"
+    to: "service:PublicSiteUrlService"
+    relation: "uses"
   - from: "controller:PublicController"
     to: "service:AddressService"
     relation: "uses"
@@ -6392,6 +6441,9 @@ relationships:
     relation: "handled_by"
   - from: "route:get__api"
     to: "controller:ApiController"
+    relation: "handled_by"
+  - from: "route:get__api_agent_tools"
+    to: "controller:PublicAgentDiscoveryController"
     relation: "handled_by"
   - from: "route:get__api_categories"
     to: "controller:ApiController"

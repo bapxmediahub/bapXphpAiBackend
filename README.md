@@ -1,6 +1,6 @@
 ---
 title: Sri Panchami Spiritual Web Application
-description: PHP/MySQL storefront, consultation booking, blog, customer account, and owner administration for shared hosting.
+description: PHP/MySQL storefront, customer enquiries, blog, customer account, and owner administration for shared hosting.
 category: root
 ---
 
