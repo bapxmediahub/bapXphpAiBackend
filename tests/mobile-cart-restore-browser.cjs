@@ -94,6 +94,17 @@ test('restored mobile brand, header cart, no bottom nav, and post-add floating c
         assert.equal(await page.locator('#synthetic-cart-product button').isDisabled(),false,
             'Rate-limited add must re-enable the cart button');
         await page.evaluate(()=>{
+            window.fetch=async()=>({ok:false,status:422,json:async()=>({
+                error:'<img src=x onerror=alert(1)>'
+            })});
+            document.querySelector('#synthetic-cart-product form[data-cart-add]').requestSubmit();
+        });
+        await page.waitForFunction(()=>[...document.querySelectorAll('.toast--error .toast__text')]
+            .some(node=>node.textContent.includes('<img src=x')),null,{timeout:5000});
+        assert.equal(await page.locator('.toast--error .toast__text img').count(),0,
+            'Untrusted server error must never be inserted as markup');
+        assert.equal(await tray.isVisible(),false,'Rejected response cannot reveal floating cart');
+        await page.evaluate(()=>{
             window.fetch=async()=>({ok:true,status:200,json:async()=>({
                 slug:'synthetic-cart-product',quantity:1,cart_count:1
             })});
