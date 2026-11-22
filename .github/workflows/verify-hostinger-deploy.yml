@@ -69,6 +69,23 @@ jobs:
             echo '- Do not infer a successful deployment from a successful merge.'
           } >> "$GITHUB_STEP_SUMMARY"
           exit 1
+  webmcp_acceptance:
+    name: Live WebMCP and A2UI public tool acceptance
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.expected_sha || github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Discover and invoke public WebMCP tools and render A2UI 1.0 in Chromium
+        run: |
+          npm install --prefix "$RUNNER_TEMP/live-webmcp" --no-audit --no-fund --ignore-scripts playwright@1.62.1
+          NODE_PATH="$RUNNER_TEMP/live-webmcp/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/live-webmcp-a2ui-browser.cjs
   mobile_acceptance:
     name: Live mobile header and guest cart acceptance
     needs: verify
