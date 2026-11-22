@@ -47,3 +47,15 @@ WebMCP registration runs after the locally vendored, pinned **official `@w3c/web
 Run `php tests/public-knowledge.php`, `node --test tests/public-knowledge-webmcp.test.cjs tests/catalogue-mcp.test.cjs` and the official client interop checks before merging. A successful synthetic test is not proof of native browser discovery or a production deploy.
 
 [MCP stdio transport](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/stdio) · [Protocol versioning](https://modelcontextprotocol.io/specification/2026-07-28/basic/versioning)
+
+
+## Mobile header and floating cart restoration
+
+The public mobile header retains the circular logo, visible **Sri Panchami Spiritual** brand text, the accessible top cart icon/count, and the Menu button. At phone widths the brand may wrap naturally without hiding the text or pushing the cart outside the viewport. The unrequested fixed bottom navigation has been removed; the ordinary header remains the primary navigation.
+
+The separate `mobile-cart-tray` is intentionally **not** the removed bottom navigation. It remains hidden when the cart is empty and is shown on the home, shop, category and product pages after a successful add-to-cart response (`cart_count > 0`), linking to `/cart`. On narrow screens the floating tray and Support button sit side by side without overlapping. The standalone cart page retains its context-sensitive checkout shortcut, now without an artificial bottom-navigation gap.
+
+Historical source: the bottom navigation and mobile brand hiding were introduced in commit `58be472ff828b42ecd8ccd308a7b4b22031c1bb6` (27 May 2026), and the brand-hiding rule was later duplicated in the critical inline CSS by `975c3aea3085f579c4aed62ce75f5fc472143896` (29 May 2026). This is a selective mobile-layout restoration, not a revert of newer shop, cart, Help, or WebMCP functionality.
+
+Regression: `tests/mobile-cart-restore-browser.cjs` exercises actual PHP-rendered shop HTML and styles at 320, 375, 390, 744, 860 and 1280 pixels, with a synthetic AJAX add-to-cart response, a visible floating tray, count synchronization, no bottom nav, and unobstructed click target. No production order or payment is created.
+

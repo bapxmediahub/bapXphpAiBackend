@@ -124,7 +124,7 @@ HTML;
             dock.hidden = true;
             return;
         }
-        const navHeight = document.getElementById('bottom-nav')?.offsetHeight ?? 70;
+        const navHeight = document.getElementById('bottom-nav')?.offsetHeight ?? 0;
         if (navHeight !== measuredNavHeight) {
             measuredNavHeight = navHeight;
             document.documentElement.style.setProperty('--cart-bottom-nav', navHeight + 'px');
