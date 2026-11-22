@@ -173,13 +173,13 @@ Source: `app/Services/EnterpriseToolRegistry.php`; instruction version 2.
 
 Private runtime Markdown is not duplicated into developer documentation.
 
-- `.bapX/enterpriseagent.md` — SHA-256 `ebfdc4bcf95f838da9b7b5a05ab49311c1b0b18cd4ebb4703413fe1918ba6298`
+- `.bapX/enterpriseagent.md` — SHA-256 `488b908267cc25cf98136655a21c6b58b33fbbf0047a880cd3123f9ec876f198`
 - `.bapX/bapXcl/skill.md` — SHA-256 `4acade6d2f5dfd9ae0926807364315b9400efabcad5b55deabd33254f7f64f5d`
 - `.bapX/bapXcl/support/catalog.md` — SHA-256 `0b85f5605a1eee35dcb09a147d8905059508151be9d46465d226a9b0816cc9a6`
 - `.bapX/bapXcl/support/policy-and-tickets.md` — SHA-256 `4d7cefdc76d5f24b56be31848b568147bb2ce3af8bfcbd65081a93c5a9740892`
-- `.bapX/bapXcl/enterprise/reporting.md` — SHA-256 `b337d17b8810e0d76126ac0d5c74607dfe1a6099e22fb6fbf9bfae4cb33ed7fe`
+- `.bapX/bapXcl/enterprise/reporting.md` — SHA-256 `432827fa7c6fa1d5bc7a57d6a3c77bd4f29832d35fa3dd07df6a09ab55f7f942`
 
-Bundle SHA-256: `cc12f61810ac31f045a4e7f50738ef67fe4a1bf93ac87509399b19668c0d28fa`.
+Bundle SHA-256: `1fd5bf210e7c2e6249df662f169ae4582ff26600edd1f987c3f48b36e3f51108`.
 
 ### `find_order`
 
@@ -251,6 +251,47 @@ Verified paid orders, net revenue after verified refunds, status counts and best
             ]
         }
     }
+}
+```
+
+### `commerce_report`
+
+Read a bounded owner report: product sales by units, current stock status, anonymous customer order-frequency groups, or coupon usage. Paid-order reports use order dates and recorded refunds; they do not measure profit, cash flow, lifetime retention or promotion attribution. Stock is a current status snapshot, not inventory quantities.
+
+**Access:** Authenticated admin, enforced server-side.
+
+```json
+{
+    "type": "object",
+    "properties": {
+        "report": {
+            "type": "string",
+            "enum": [
+                "products",
+                "stock",
+                "customers",
+                "coupons"
+            ]
+        },
+        "from": {
+            "type": "string",
+            "description": "Inclusive start date YYYY-MM-DD. Defaults to 29 days before today."
+        },
+        "to": {
+            "type": "string",
+            "description": "Inclusive end date YYYY-MM-DD. Defaults to today (India time)."
+        },
+        "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "description": "Maximum returned rows, 1 to 10; defaults to 6. Summary covers every matching row. Omit dates for stock."
+        }
+    },
+    "required": [
+        "report"
+    ],
+    "additionalProperties": false
 }
 ```
 

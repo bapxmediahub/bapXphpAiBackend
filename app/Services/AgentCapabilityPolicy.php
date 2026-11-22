@@ -13,7 +13,7 @@ final class AgentCapabilityPolicy {
         'public_catalog', 'public_policy', 'get_public_contact', 'list_public_services', 'own_ticket_status',
     ];
     private const ENTERPRISE_TOOLS = [
-        'find_order', 'product_status', 'sales_summary', 'gst_register_summary',
+        'find_order', 'product_status', 'sales_summary', 'commerce_report', 'gst_register_summary',
         'support_enquiries', 'store_count', 'search_articles', 'operator_guide', 'coupon_status',
         'get_public_contact', 'list_public_services',
     ];
