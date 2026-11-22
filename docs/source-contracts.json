@@ -24,8 +24,8 @@
         },
         "foundation": {
             "source_sha256": "6badcd417c927a874a5f55a8d6d4dc5fc48647dd44f795cf10bdee3035d5c102",
-            "references_sha256": "e24efe061bc5a5fba11603ad8bee45dfea7bb3e86ec7b74b4f1a40c09458c165",
-            "review_note": "Reviewed public REST route/service/source contract, source mapping, bounded component count, and preservation of authenticated/private data stores."
+            "references_sha256": "636d1f9ecd6fa5bcce851c684e909c0ba69fbc12b368f0249b03d5d2e75d21af",
+            "review_note": "Reviewed safe public REST A2UI route, generated maps, version 1.0 envelope, bounded components and unchanged database/chat schema."
         },
         "google-tags": {
             "source_sha256": "a734ab9d4c7a5d1363dcfee40e62f33c337978d2c6dde180fe54a873e3ad0539",
@@ -34,8 +34,8 @@
         },
         "http-errors": {
             "source_sha256": "9f0f3883c318dbfe074d6297e66c3bd7c497975f27804b142af5154e01d9b665",
-            "references_sha256": "46503c561d54d7c78cf833b2e79b7a43cf2040339501c8b9cfe0f166857574fd",
-            "review_note": "Reviewed public presentation API 400/503 bounds, no-store headers and rendering errors that fall back to existing safe text answers."
+            "references_sha256": "4290acbd7071cec5cff8fd015e1a9abf51ae90e6dee3b61741089b4c23d1e2f9",
+            "review_note": "Validated bounded A2UI endpoint errors and fallbacks without leaking exceptions, session contents or untrusted HTML."
         },
         "interface": {
             "source_sha256": "6be67aa320998c23e6351f4f4cb6e829080b4e077a5c4447d9055cc452a42f32",
@@ -68,9 +68,9 @@
             "review_note": "Checked public product visibility, published navigation destinations and isolated first-party catalogue and policy discovery."
         },
         "workflow": {
-            "source_sha256": "4e69e533f0e3768e0c72291d67732f6cd8fe83ffc5650a17166d71dcabab36a7",
+            "source_sha256": "25eacffc1f8b271fac75e77e942b58c0a584fa643644846b73949f2cde969f29",
             "references_sha256": "94dd586c81b1d91a0332e86219ac2b55c416d5ebc37115c9a2008697d68236d0",
-            "review_note": "Reviewed 60 second Hostinger auto-deploy propagation wait, bounded SHA retries, and isolated full PHP/Chromium A2UI tests."
+            "review_note": "Reviewed post-main 60-second Hostinger wait, exact SHA confirmation, isolated cart acceptance and independent live WebMCP-A2UI tool invocation."
         }
     }
 }
