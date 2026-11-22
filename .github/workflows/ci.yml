@@ -77,6 +77,8 @@ jobs:
         run: php tests/enterprise-commerce.php
       - name: Verify browser knowledge tool registration, paging and private-path rejection
         run: node --test tests/public-knowledge-webmcp.test.cjs tests/public-products-webmcp.test.cjs tests/public-business-webmcp.test.cjs tests/public-knowledge-api.test.cjs
+      - name: Validate bounded WebMCP CDP discovery and invocation correlation
+        run: node --test tests/webmcp-cdp.test.cjs
       - name: Verify commerce cancellation, native UI synchronization and captured payment callbacks
         run: node --test tests/public-commerce-webmcp.test.cjs tests/support-checkout.test.cjs tests/checkout-payment.test.cjs
       - name: Check live WebMCP A2UI acceptance probe syntax
@@ -89,7 +91,7 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/w3c-webmcp" --no-audit --no-fund --ignore-scripts @w3c/webmcp-polyfill@0.1.1 playwright@1.62.1
           CHROMIUM_PATH="$(command -v google-chrome)" node tests/webmcp-official-browser.cjs "$RUNNER_TEMP/w3c-webmcp"
           CHROMIUM_PATH="$(command -v google-chrome)" node tests/public-commerce-webmcp-browser.cjs "$RUNNER_TEMP/w3c-webmcp"
-      - name: Test native WebMCP landing discovery from an isolated agent world
+      - name: Test native WebMCP through CDP and an isolated agent world
         run: |
           CHROMIUM_PATH="$(command -v google-chrome)" xvfb-run -a node tests/webmcp-official-browser.cjs "$RUNNER_TEMP/w3c-webmcp" --native
           CHROMIUM_PATH="$(command -v google-chrome)" xvfb-run -a node tests/public-commerce-webmcp-browser.cjs "$RUNNER_TEMP/w3c-webmcp" --native

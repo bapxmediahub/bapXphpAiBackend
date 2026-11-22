@@ -817,7 +817,7 @@ concepts:
   - id: "doc:webmcp"
     type: "doc"
     title: "Public WebMCP business tools"
-    description: "Landing-page discovery, shared public contracts and separate native and polyfill verification."
+    description: "Landing-page discovery, shared public contracts and separate native CDP, JavaScript and polyfill verification."
     resource: "docs/webmcp.md"
     tags:
       - "docs"

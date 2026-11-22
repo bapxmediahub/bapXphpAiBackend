@@ -51,6 +51,15 @@ Run the browser desktop/375px flows for UI changes and isolated socket/database
 fixtures for mutations. Production reads are not authorization for destructive
 customer actions, payment tests or historical mail replay.
 
+Native WebMCP acceptance keeps separate page JavaScript, isolated-world and CDP
+checks, alongside the official polyfill lane. The CDP diagnostic runs only in the
+Chrome instance launched by CI, records its browser/protocol identity, verifies
+the exact page registry and invokes only published contact information. Unknown
+protocol shapes and unsupported domains fail explicitly. Mock correlation tests
+do not replace the native browser run, and a passing CI browser does not certify
+a managed external agent bridge or install a chat connector. See
+[WebMCP verification boundaries](webmcp.md#verification-boundaries).
+
 ## PHP lint failure propagation
 
 `./bapXphp lint <file>` checks that file, `./bapXphp lint <directory>` recursively

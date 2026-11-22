@@ -10,6 +10,7 @@ const {join,resolve}=require('node:path');
 const {createHash}=require('node:crypto');
 const {once}=require('node:events');
 const {spawnSync}=require('node:child_process');
+const {inspectPagePublicContact}=require('./fixtures/webmcp-cdp.cjs');
 const native=process.argv.includes('--native');
 const fixture=process.argv[2];
 if(!fixture)throw new Error('Provide isolated npm fixture directory');
@@ -162,9 +163,17 @@ async function main(){
       assert.deepEqual(probe.result.value.names,globalTools);
       assert.deepEqual(probe.result.value.contact,contact);
       await cdp.detach();
+      const external=await inspectPagePublicContact(page,{expectedNames:globalTools});
+      assert.deepEqual(external.contact,contact,'Native CDP returns the canonical public contact');
+      console.log('LOCAL WEBMCP CDP landing: '+JSON.stringify({browser:external.browser,profile:external.profile,names:external.names}));
     }
     await page.goto('http://127.0.0.1:'+port+'/shop',{waitUntil:'load'});
     await waitForTools(page,6);
+    if(native){
+      const external=await inspectPagePublicContact(page,{expectedNames:[...globalTools,'list_shop_results']});
+      assert.deepEqual(external.contact,contact,'Native CDP contact read also works on the shop page');
+      console.log('LOCAL WEBMCP CDP shop: '+JSON.stringify({browser:external.browser,profile:external.profile,names:external.names}));
+    }
     const result=await page.evaluate(async()=>{
       const ctx=document.modelContext;
       const list=await ctx.getTools();
@@ -247,7 +256,7 @@ async function main(){
       assert.deepEqual(fallbackErrors,[],'Unsupported browsers must retain a working page');
       await without.close();
     }
-    console.log((native?'NATIVE WEBMCP (no polyfill, isolated agent world)':'OFFICIAL @w3c/webmcp-polyfill@0.1.1')+
+    console.log((native?'NATIVE WEBMCP (no polyfill, isolated agent world and CDP discovery/contact)':'OFFICIAL @w3c/webmcp-polyfill@0.1.1')+
       ': landing 5 tools, shop 6 tools, contact without commerce/blog, 45-card DOM snapshot, 67 server-side products, article/service paging, contact, A2UI, invalid input and pagehide PASS.');
     await page.close();
   } finally {

@@ -1,7 +1,7 @@
 ---
 type: doc
 title: Public WebMCP business tools
-description: Landing-page discovery, shared public contracts and separate native and polyfill verification.
+description: Landing-page discovery, shared public contracts and separate native CDP, JavaScript and polyfill verification.
 category: docs
 ---
 # Public business tools on the landing page
@@ -197,6 +197,38 @@ execution world. Failure to provide the native API fails that lane; it is not
 reported as a successful polyfill test. Both lanes test `/` without shop cards,
 the shop-only extra tool, and contact/services with commerce and blog absent.
 
+The native lane additionally uses the browser's experimental
+[WebMCP CDP domain](https://chromedevtools.github.io/devtools-protocol/tot/WebMCP/)
+through `tests/fixtures/webmcp-cdp.cjs`. It installs listeners before
+`WebMCP.enable`, checks the exact main-frame tool names on the landing and shop
+pages, and invokes only `get_public_contact` with empty arguments. The command's
+`invocationId` must match both the invocation and completion events, including
+the observed frame/tool identity. The returned public contact must equal the
+existing native JavaScript result. Discovery of a commerce tool does not execute
+that tool.
+
+Each CDP result logs `Browser.getVersion` product, protocol version and revision,
+plus the observed descriptor profile and tool names. The helper uses the opaque
+`toolId` when Chrome reports it. Older descriptors without IDs use the documented
+`frameId`/`toolName` shape; mixed or malformed descriptors fail. These two shapes
+are defined in the
+[current Chromium protocol](https://github.com/ChromeDevTools/devtools-protocol/blob/master/pdl/domains/WebMCP.pdl)
+and its
+[earlier name-based revision](https://chromium.googlesource.com/chromium/src/+/7b2b2f1d8406dafea7bd199ebf6844c4f593753d/third_party/blink/public/devtools_protocol/domains/WebMCP.pdl).
+The diagnostic has an eight-second deadline per page, invokes once, and fails on
+an unsupported domain, missing tools, mismatched events, a changed registration,
+or an unsuccessful completion. It does not retry with another protocol shape or
+substitute page JavaScript for a failed CDP invocation. The focused
+`node --test tests/webmcp-cdp.test.cjs` fixtures check event correlation, timeout
+and schema rejection; only the real native Chrome lane establishes CDP acceptance.
+
+This diagnostic attaches only to the Chrome instance launched by the repository's
+own CI fixtures. It does not attach to a managed cloud browser, change page
+permissions or relax an origin policy. A pass establishes the controlled Chrome
+version's CDP behavior. An empty tool list in another browser/agent bridge still
+requires that host's supported capability and version evidence; a native CDP pass
+does not prove that the host consumes a JavaScript polyfill registry.
+
 `tests/public-commerce-webmcp-browser.cjs` adds both real-polyfill and native
 isolated-world commerce lanes at 1280px and 375px. They execute all six canonical
 tools through the real PHP dispatcher with an isolated synthetic provider,
@@ -222,6 +254,8 @@ source, configured origin, controller content and discovery links.
 
 After the deployment SHA gate, `tests/live-webmcp-a2ui-browser.cjs` independently
 checks the real landing and shop pages in polyfill and native modes. It renders
-a returned card in a test host on the page. This proves browser-level production
-behavior; it does not claim that an unrelated chat client has installed the
-site's connector or rendered its MCP App.
+a returned card in a test host on the page. The native mode repeats the bounded
+CDP discovery and public contact read on both pages, without invoking commerce
+actions. This proves browser-level production behavior in the recorded Chrome
+version; it does not claim that an unrelated chat client has installed the site's
+connector or rendered its MCP App.
