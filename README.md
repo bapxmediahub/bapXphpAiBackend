@@ -111,42 +111,44 @@ An owner edit and a customer read converge on the same business records. Blog bo
 
 ```mermaid
 flowchart TB
-  Browser["Customer and owner browsers"] -->|"HTTP request + session cookie"| Entry["index.php + Router"]
-  Entry -->|"shop / product / temples"| Public["PublicController"]
-  Entry -->|"published blog routes"| BlogPage["BlogController"]
-  Entry -->|"signed-in account routes"| Account["AccountController"]
-  Entry -->|"admin role; CSRF on POST"| Admin["AdminController"]
-
-  Public <-->|"visible catalogue and temples"| Catalogue["Product / Category / Temple services"]
-  Account <-->|"own orders and addresses"| CustomerData["OrderService + AddressService"]
-  Admin <-->|"list and save business records"| Resource["ResourceService"]
-  Admin -->|"save article + revision check"| Blog["BlogService + MarkdownRenderer"]
-  BlogPage <-->|"published article + rendered body"| Blog
-  Admin -->|"validated image upload"| Media["MediaService"]
-
-  Catalogue <-->|"read records"| DB["DatabaseService"]
-  CustomerData <-->|"read / controlled writes"| DB
-  Resource <-->|"query / validated save"| DB
-  Media -->|"upsert media_files metadata"| DB
-  DB <-->|"direct PDO: rows / writes"| MySQL[("Hosted MySQL")]
-  DB -.->|"direct unavailable; configured other host"| Bridge["Authenticated POST /remotedb"]
-  Bridge <-->|"RemoteDbController: force direct PDO"| MySQL
-  Bridge -.->|"JSON result or error"| DB
-  Blog <-->|"read / atomic save"| Markdown[("content/blog/posts/*.md")]
-  Media -->|"binary and optimized image"| Images[("assets/images + sibling .sps-media")]
-  Images -->|"image bytes via public URL"| Browser
-
-  Public -->|"selected records"| Response["PHP views / controller response"]
-  BlogPage -->|"article HTML"| Response
-  Account -->|"customer-owned records"| Response
-  Admin -->|"page data / save outcome"| Response
-  Response -->|"HTML, JSON or redirect"| Browser
-
+  Browser["Customer / owner browser"] <-->|"request / response"| Router["index.php + Router"]
+  Router <-->|"public pages"| Public["PublicController"]
+  Router <-->|"signed-in account"| Account["AccountController"]
+  Router <-->|"admin + POST CSRF"| Admin["AdminController"]
+  Public <-->|"visible records"| Catalogue["Product / Category / Temple"]
+  Account <-->|"own orders / addresses"| CustomerData["Order / Address services"]
+  Admin <-->|"list / save"| Resource["ResourceService"]
+  Catalogue <-->|"read"| DB["DatabaseService"]
+  CustomerData <-->|"read / write"| DB
+  Resource <-->|"query / save"| DB
+  DB <-->|"direct PDO"| MySQL[("Hosted MySQL")]
+  DB <-.->|"conditional JSON transport"| Bridge["POST /remotedb"]
+  Bridge <-->|"authenticated; forced-direct PDO"| MySQL
   classDef store fill:#fff7ed,stroke:#c2410c,color:#431407
   classDef boundary fill:#e0f2fe,stroke:#0369a1,color:#0c4a6e
-  class MySQL,Markdown,Images store
-  class Entry,Bridge boundary
+  class MySQL store
+  class Router,Bridge boundary
 ```
+
+The controller returns selected data through PHP templates, JSON or redirects. `DatabaseService` normally uses direct PDO; `/remotedb` is a fallback only when direct access is unavailable and a different host is configured. `RemoteDbController` forces direct access on that host, avoiding a recursive bridge.
+
+**Content and media use separate file boundaries:**
+
+```mermaid
+flowchart TB
+  Admin["AdminController"] -->|"save + revision check"| Blog["BlogService + MarkdownRenderer"]
+  Admin -->|"validated upload"| Media["MediaService"]
+  Blog <-->|"read / atomic write"| Posts[("Article Markdown")]
+  Blog <-->|"published content"| Page["BlogController"]
+  Media -->|"metadata via DatabaseService"| Metadata[("MySQL: media_files")]
+  Media -->|"optimized binary"| Uploads[("Sibling .sps-media")]
+  Page -->|"article HTML + image URLs"| Browser["Customer browser"]
+  Uploads -->|"image bytes via index.php"| Browser
+  Bundled[("assets/images") ] -->|"bundled image bytes"| Browser
+  classDef store fill:#fff7ed,stroke:#c2410c,color:#431407
+  class Posts,Metadata,Uploads,Bundled store
+```
+
 
 `app/routes.php` obtains its executable route list from `ProjectMapService::registry()`; `Router::dispatch()` invokes the declared controller action. Account/admin checks run in their controllers, while public browsing remains public. `/api/...` uses `api/index.php` and JSON responses; the public tool adapters are detailed in view 4.
 
@@ -213,50 +215,76 @@ sequenceDiagram
 
 The two PHP agents have different orchestration. **Support selects context and handles several intents in PHP; Enterprise can run a provider function-call loop.** Neither path receives developer indexes or `.agents/` as runtime instructions.
 
+**Support: PHP selects the context and the intent.**
+
 ```mermaid
 flowchart TB
-  SupportUI["Support widget"] -->|"POST /support/ask"| SupportHTTP["SupportController"]
-  OwnerUI["Owner chat"] -->|"POST /admin/agent/ask"| OwnerHTTP["AdminController"]
-
-  SupportHTTP -->|"message + owned history; checked actor"| Support["SupportBotService"]
-  Support <-->|"PHP-selected facts and lookups"| Context["AgentContextService + SupportToolRegistry"]
-  Context <-->|"public facts / own records only"| Facts["Business services + published Markdown"]
-  Support -->|"optional prompt with built context"| TextAI["AiClient.completeOrNull"]
-  TextAI -->|"model text or null"| Support
-  TextAI <-->|"prompt / text response"| Provider["Configured model provider"]
-  Support -->|"signed-in escalation"| Tickets["SupportTicketService"]
-  Tickets -->|"idempotent ticket creation"| Business[("MySQL business records")]
-
-  OwnerHTTP -->|"admin + CSRF; local report or model branch"| OwnerTools["EnterpriseToolRegistry + capability policy"]
-  OwnerTools -->|"local answer / report data"| OwnerHTTP
-  OwnerHTTP -->|"prompt + tool declarations"| ToolAI["AiClient.completeWithTools"]
-  ToolAI <-->|"messages / function calls / final answer"| Provider
-  ToolAI -->|"validated call name and arguments"| OwnerTools
-  OwnerTools -->|"bounded tool result"| ToolAI
-  ToolAI -->|"final model answer"| OwnerHTTP
-  OwnerTools <-->|"scoped read-only queries"| Facts
-  Facts <-->|"DatabaseService reads"| Business
-  Facts <-->|"BlogService: published article reads"| Articles[("Article Markdown")]
-  OwnerHTTP -->|"explicit draft command"| Draft["AgentDraftService"]
-  Draft -->|"filled form; owner presses Save"| Save["Existing admin save routes"]
-
-  Instructions["AgentInstructionService: fixed .bapX role files"] -.->|"Support model-prompt branch"| Support
-  Instructions -.->|"Enterprise callAiApi branch"| OwnerHTTP
-  SupportHTTP <-->|"prepare turn / history / final record"| State["AgentConversationService + AgentTraceService"]
-  OwnerHTTP <-->|"prepare turn / history / final record"| State
-  State <-->|"pending turn, spans, answer, feedback"| Chats[("Private conversation JSON")]
-
-  Support -->|"answer + retrieval/tool evidence"| SupportHTTP
-  SupportHTTP -->|"authorized answer"| Presentation["AgentAnswerPresentationService"]
-  OwnerHTTP -->|"authorized answer and completed evidence"| Presentation
-  Presentation -->|"JSON: full text + optional scoped A2UI"| Render["Native chat renderer"]
-  Render -->|"visible answer / cards; text fallback"| Reader["Customer or owner"]
-
+  HTTP["SupportController"] <-->|"message + owned history / answer"| Bot["SupportBotService"]
+  Bot <-->|"facts / scoped lookups"| Context["AgentContextService + SupportToolRegistry"]
+  Context <-->|"services + DatabaseService"| DB[("Public / own MySQL records")]
+  Context <-->|"BlogService: published only"| Posts[("Article Markdown")]
+  Bot <-->|"optional prompt / text"| AI["AiClient.completeOrNull"]
+  AI <-->|"request / response"| Provider["Model provider"]
+  Rules[".bapX Support role files"] -.->|"AgentInstructionService; model branch"| Bot
+  Bot -->|"signed-in escalation"| Ticket["SupportTicketService"]
+  Ticket -->|"idempotent ticket write"| DB
+  HTTP -->|"authorized answer"| Present["AgentAnswerPresentationService"]
+  Present -->|"text + optional A2UI"| Widget["Support widget"]
   classDef store fill:#fff7ed,stroke:#c2410c,color:#431407
   classDef external fill:#f3e8ff,stroke:#7e22ce,color:#3b0764
-  class Business,Chats,Articles store
+  class DB,Posts store
   class Provider external
 ```
+
+**Enterprise: the provider can request declared PHP tools.** The local report branch can return without a provider call; the model branch loops through validated tool calls and returns their results to the provider.
+
+```mermaid
+sequenceDiagram
+  participant Admin as AdminController
+  participant AI as AiClient
+  participant Model as Model provider
+  participant Tools as Enterprise tool registry
+
+  Note over Admin: Admin + CSRF; owned history; pending turn saved
+  alt Local help or aggregate report
+    Admin->>Tools: Recognized local query
+    Tools-->>Admin: Scoped answer / report data
+  else Model branch
+    Note over Admin: AgentInstructionService loads Enterprise role files
+    Admin->>AI: completeWithTools: prompt + declarations
+    AI->>Model: Messages and declared tools
+    loop Bounded tool rounds
+      Model-->>AI: Function name + arguments
+      AI->>Tools: Validate call; execute with actor policy
+      Note over Tools: Bounded business-service / published-article reads
+      Tools-->>AI: Structured tool result
+      AI->>Model: Paired function result
+    end
+    Model-->>AI: Final answer
+    AI-->>Admin: Answer + actual execution evidence
+  end
+  Note over Admin: Save final turn; format text + scoped A2UI for owner chat
+```
+
+Enterprise reads use `AgentToolRegistry` and `AgentCapabilityPolicy` before the relevant business service, `DatabaseService` or `BlogService`. Explicit `/create-blog` and `/add-product` commands take a separate `AgentDraftService` branch: generated fields fill the existing admin form, and **the owner must press Save** before the normal product/Markdown persistence path runs.
+
+**Both chats share this persistence and response boundary:**
+
+```mermaid
+flowchart TB
+  Controllers["SupportController / AdminController"] <-->|"prepare turn / owned history"| State["AgentConversationService"]
+  State <-->|"pending turn / final answer / feedback"| File[("One private JSON per chat")]
+  Controllers -->|"after pending turn is saved"| Work["Context / tool / provider work"]
+  Work -->|"actual span checkpoints"| Trace["AgentTraceService"]
+  Trace -->|"correlated spans in same file"| State
+  Controllers -->|"sanitized operational metadata"| Audit["AuditLogService"]
+  Audit -->|"best-effort write"| DB[("MySQL: audit_events")]
+  Controllers -->|"authorized answer"| Presentation["AgentAnswerPresentationService"]
+  Presentation -->|"text + scoped A2UI"| UI["Support / owner renderer"]
+  classDef store fill:#fff7ed,stroke:#c2410c,color:#431407
+  class File,DB store
+```
+
 
 Support checks its rate limit and requires CSRF for signed-in requests; the admin controller requires the admin role and POST CSRF. Both controllers persist the actor-owned pending request **before** provider/tool work. `AgentTraceService` checkpoints actual retrieval, provider and tool spans into that same conversation JSON. The controller then records the sanitized answer/evaluation. `AuditLogService` separately writes operational metadata to MySQL `audit_events`; a failed audit does not undo successful business work.
 
@@ -272,40 +300,43 @@ Browser WebMCP and HTTP MCP reach the same public projections through different 
 
 ```mermaid
 flowchart TB
-  BrowserAgent["Browser agent"] -->|"discover / invoke"| WebMCP["document.modelContext + site tool scripts"]
-  WebMCP -->|"GET; credentials omitted"| API["/api/knowledge/* via ApiController"]
-  WebMCP -->|"shop-only list_shop_results"| ShopDOM["Rendered shop product cards"]
-  ShopDOM -->|"current visible card snapshot"| WebMCP
-
-  Host["External MCP host"] -->|"JSON-RPC POST /api/mcp"| MCP["PublicMcpController + PublicMcpService"]
-  MCP -->|"four allowlisted public tools"| Knowledge["PublicKnowledgeService"]
-  API -->|"products / articles / contact / services"| Knowledge
-  Knowledge <-->|"visible catalogue records"| Products["ProductService + DatabaseService"]
-  Products <-->|"read"| MySQL[("Hosted MySQL")]
-  Knowledge <-->|"published articles"| Blogs["BlogService"]
-  Blogs <-->|"read"| Markdown[("Article Markdown")]
-  BusinessInfo["Allowlisted contact / enquiry facts"] -->|"public projection"| Knowledge
-
-  API -->|"A2UI endpoint: present"| Cards["PublicA2uiService"]
-  Cards <-->|"present: public lookup / result"| Knowledge
-  MCP -->|"fromResult: exact tool result"| Cards
-  Knowledge -->|"public data for text and structuredContent"| MCP
-  Knowledge -->|"public JSON records"| API
-  Cards -->|"public surface metadata"| MCP
-  Cards -->|"validated public A2UI data"| API
-  API -->|"JSON / surface data"| WebMCP
-  WebMCP -->|"tool result"| BrowserAgent
-  MCP -->|"tool result + optional public surface"| Host
-  Host -->|"optional resources/read"| MCP
-  MCP -->|"UI HTML response to resource read"| Host
-  Host -->|"compatible host loads UI; delivers tool result"| App["Public AppBridge + safe card renderer"]
-  App -->|"public cards / same-origin links"| Person["User in the connected host"]
-
+  Browser["Browser agent + WebMCP scripts"] <-->|"GET / JSON; credentials omitted"| API["ApiController: /api/knowledge/*"]
+  Host["External MCP host"] <-->|"JSON-RPC: /api/mcp"| MCP["PublicMcpController + PublicMcpService"]
+  API <-->|"public lookup / records"| Knowledge["PublicKnowledgeService"]
+  MCP <-->|"four public tools / records"| Knowledge
+  Knowledge <-->|"ProductService + DatabaseService"| DB[("Visible MySQL catalogue")]
+  Knowledge <-->|"BlogService: published only"| Posts[("Article Markdown")]
+  Facts["Allowlisted contact / enquiry facts"] -->|"public projection"| Knowledge
   classDef store fill:#fff7ed,stroke:#c2410c,color:#431407
   classDef boundary fill:#e0f2fe,stroke:#0369a1,color:#0c4a6e
-  class MySQL,Markdown store
-  class MCP,API,Knowledge boundary
+  class DB,Posts store
+  class API,MCP,Knowledge boundary
 ```
+
+**Optional presentation is a separate step.** Ordinary public JSON works without a card renderer. For browser `present_public_knowledge`, the A2UI endpoint calls `PublicA2uiService::present()`, which performs a bounded public lookup and returns validated surface data. HTTP MCP uses `fromResult()` so its cards reflect the exact tool result, including its requested page:
+
+```mermaid
+sequenceDiagram
+  participant Host as MCP host
+  participant MCP as PublicMcpService
+  participant Cards as PublicA2uiService
+  participant App as Public App bridge
+
+  Host->>MCP: tools/call: public tool + arguments
+  MCP->>MCP: Validate; query PublicKnowledgeService
+  opt Public surface available
+    MCP->>Cards: fromResult: exact public result
+    Cards-->>MCP: Validated public A2UI surface
+  end
+  MCP-->>Host: Text + structuredContent + optional surface metadata
+  opt Compatible host displays the public UI
+    Host->>MCP: resources/read: ui://bapx/public-knowledge.html
+    MCP-->>Host: HTML with renderer, styles and bridge
+    Host->>App: Load UI; deliver tool-result notification
+    App-->>Host: Public cards; same-origin link actions
+  end
+```
+
 
 The HTTP MCP path deliberately avoids PHP browser sessions. Products/articles are checked against publication and module visibility; contact/services are explicit public projections. The browser `present_public_knowledge` tool returns validated surface data. Whether that becomes an interactive card depends on the connected host; registering WebMCP on a website does not install a connector into an unrelated chat. `list_shop_results` reads the current shop DOM rather than querying the backend again.
 
