@@ -1,7 +1,7 @@
 <?php
 namespace App\Controllers;
 
-use App\Services\{ProductService,CategoryService,TempleService,PublicKnowledgeService};
+use App\Services\{ProductService,CategoryService,TempleService,PublicKnowledgeService,DeploymentRevisionService};
 
 final class ApiController extends BaseController {
     public function index(): void {
@@ -12,9 +12,36 @@ final class ApiController extends BaseController {
             '/api/temples',
             '/api/knowledge/articles',
             '/api/knowledge/products',
+            '/is-sha-valid?sha={40-character-sha}',
         ]]);
     }
 
+    /** Compare against the checkout running on this host, never GitHub's main tip. */
+    public function isShaValid(): void {
+        header('Cache-Control: no-store, no-cache, max-age=0');
+        header('Pragma: no-cache');
+        header('X-Robots-Tag: noindex, nofollow');
+        header('Referrer-Policy: no-referrer');
+        $expected = $_GET['sha'] ?? null;
+        if (!is_string($expected) || preg_match('/^[0-9a-f]{40}$/D', $expected) !== 1
+            || array_diff(array_keys($_GET), ['sha']) !== []) {
+            $this->jsonResponse(['status'=>'invalid','error'=>'Supply exactly one lowercase 40-character Git SHA in sha.'], 400);
+        }
+        $deployed = (new DeploymentRevisionService())->checkoutSha();
+        if ($deployed === null) {
+            $this->jsonResponse([
+                'status'=>'unavailable', 'match'=>null, 'expected_sha'=>$expected,
+                'deployed_sha'=>null, 'source'=>null,
+                'message'=>'This host cannot establish the deployed Git HEAD.',
+            ], 503);
+        }
+        $match = hash_equals($deployed, $expected);
+        $this->jsonResponse([
+            'status'=>$match ? 'match' : 'mismatch', 'match'=>$match,
+            'expected_sha'=>$expected, 'deployed_sha'=>$deployed,
+            'source'=>'git_head',
+        ]);
+    }
     public function shop(): void {
         $service = new ProductService();
         // The public API is a storefront surface: hidden products stay out of it.
