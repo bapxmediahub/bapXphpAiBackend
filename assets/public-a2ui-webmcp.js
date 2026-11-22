@@ -10,7 +10,7 @@
     window.addEventListener('pagehide',event=>{
         if(!event.persisted)lifecycle.abort();
     });
-    registry.registerTool({
+    const register = async () => { await registry.registerTool({
         name:'present_public_knowledge',
         title:'Present public shop or guide cards with A2UI',
         description:'Return a declarative A2UI 1.0 surface from published products or articles. It uses read-only public data and approved native Card, Column, Text and same-site navigation components. No checkout, private guides, admin or agent transcripts.',
@@ -44,7 +44,8 @@
             window.BapxA2ui.validate(payload);
             return payload;
         }
-    },{signal:lifecycle.signal}).catch(()=>{
+    },{signal:lifecycle.signal}); };
+    register().catch(()=>{
         console.warn('A2UI browser tool unavailable.');
     });
 })();

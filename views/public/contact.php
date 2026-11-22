@@ -10,11 +10,12 @@
             <aside class="contact-card" aria-label="Contact options">
                 <h2 id="contact-direct" data-page-section="Phone and email" tabindex="-1">Call or email us</h2>
                 <div class="contact-direct-list">
-                    <a class="contact-direct-link" href="tel:+919789444037">+91 97894 44037</a>
-                    <a class="contact-direct-link" href="tel:+919789444038">+91 97894 44038</a>
-                    <a class="contact-direct-link contact-direct-link--mail" href="mailto:support@sripanchamispiritual.com"><span class="contact-email-address">support@sripanchamispiritual.com</span><span class="contact-email-label">Email support</span></a>
+                    <?php foreach ($publicContact['phones'] as $phone): ?>
+                        <a class="contact-direct-link" href="tel:<?= e($phone['number']) ?>"><?= e($phone['label']) ?></a>
+                    <?php endforeach; ?>
+                    <a class="contact-direct-link contact-direct-link--mail" href="mailto:<?= e($publicContact['email']) ?>"><span class="contact-email-address"><?= e($publicContact['email']) ?></span><span class="contact-email-label">Email support</span></a>
                 </div>
-                <p>Mon–Sat, 9 AM–7 PM · Sun, 10 AM–5 PM</p>
+                <p><?= e(implode(' · ', array_map(static fn(array $slot): string => $slot['days'] . ', ' . $slot['hours'], $publicContact['hours']))) ?></p>
             </aside>
 
             <div class="contact-form-card" id="contact-form" data-page-section="Message" tabindex="-1">

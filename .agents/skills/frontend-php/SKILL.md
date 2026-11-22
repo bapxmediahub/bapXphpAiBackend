@@ -83,3 +83,14 @@ Render the public header from SettingsService's approved menu selection.
 Keep Shop/Blog module gating and the Blog dropdown consistent with the editor.
 Verify the 375px Menu and Close menu links with JavaScript disabled, including
 keyboard operation and the independent mobile shortcut bar.
+
+## Public browser tools
+
+Register public business discovery from the shared layout so it works on `/`.
+Keep contact/services available when Shop and Blog are off; keep the visible
+shop-results snapshot scoped to its real DOM. Load the official pinned polyfill
+before adapters without replacing native document.modelContext. Await
+registerTool to support native void and promise implementations, catch refusal,
+and use AbortSignal lifecycle cleanup. Public GETs omit credentials and consume
+the shared PHP schemas. Verify native isolated-world discovery separately from
+polyfill tests; neither implies installation in an external chat. See docs/webmcp.md.

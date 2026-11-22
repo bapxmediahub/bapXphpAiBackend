@@ -38,11 +38,14 @@ grant. Business mutations remain explicit admin forms/drafts with CSRF and audit
 ## Request and tool lifecycle
 
 **Support:** server-identify guest/customer → rate limit → recognize ticket,
-public policy, named product/collection, or other request → retrieve only
+public policy, contact/services, named product/collection, or other request → retrieve only
 public visible records or the authenticated customer's own tickets → optionally
 use bounded model synthesis → save one redacted turn and its trace → return
 the produced answer → wait for explicit customer feedback. A named Ayyappa festive collection
 uses verified collection membership, not the first 20 random product listings.
+Contact and service answers execute the same public knowledge tools used by
+Enterprise. Their spans retain the public source category and result count;
+service search text and submitted contact content are not copied into evidence.
 
 **Enterprise:** verify admin/CSRF → load a previous report only from that
 admin's existing JSON conversation → resolve simple aggregates locally or

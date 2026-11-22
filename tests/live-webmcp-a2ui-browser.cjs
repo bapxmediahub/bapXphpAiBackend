@@ -2,17 +2,19 @@
 const assert=require('node:assert/strict');
 const {chromium}=require('playwright');
 const {test}=require('node:test');
+const native=process.env.WEBMCP_NATIVE==='1';
 
-test('live public WebMCP tools including A2UI v1.0 can be discovered and invoked', {timeout:45000}, async()=>{
-    const browser=await chromium.launch({headless:true,
+test('live landing and shop WebMCP tools can be discovered and invoked ('+(native?'native':'official polyfill')+')', {timeout:65000}, async()=>{
+    const browser=await chromium.launch({headless:!native,
         executablePath:process.env.CHROMIUM_PATH||undefined,
-        args:['--no-sandbox','--disable-features=WebMCP']});
+        args:native?['--no-sandbox','--enable-features=WebMCP,WebMCPTesting,DevToolsWebMCPSupport']
+            :['--no-sandbox','--disable-features=WebMCP,WebMCPTesting']});
     try{
         const page=await browser.newPage({viewport:{width:375,height:812}});
         const errors=[];
         page.on('pageerror',e=>errors.push(e.message));
         const site='https://sripanchamispiritual.com';
-        const response=await page.goto(site+'/shop',{waitUntil:'load',timeout:20000});
+        const response=await page.goto(site+'/',{waitUntil:'load',timeout:20000});
         assert.equal(response?.status(),200);
         await page.waitForFunction(async()=>{
             if(typeof document.modelContext?.getTools!=='function')return false;
@@ -20,14 +22,37 @@ test('live public WebMCP tools including A2UI v1.0 can be discovered and invoked
                 .some(tool=>tool.name==='present_public_knowledge');}
             catch{return false}
         },null,{timeout:12000});
-        const results=await page.evaluate(async()=>{
+        const landing=await page.evaluate(async native=>{
+            const ctx=document.modelContext;
+            if(native&&!String(ctx.registerTool).includes('[native code]'))throw Error('Native probe must use the browser implementation');
+            const all=await ctx.getTools();
+            const names=all.map(t=>t.name).sort();
+            const invoke=async(name,args)=>JSON.parse(await ctx.executeTool(all.find(t=>t.name===name),args));
+            return {names,contact:await invoke('get_public_contact',{}),
+                services:await invoke('list_public_services',{limit:4}),
+                products:await invoke('search_public_products',{limit:1}),
+                articles:await invoke('search_public_articles',{limit:1}),
+                ui:await invoke('present_public_knowledge',{view:'products',limit:1})};
+        },native);
+        assert.deepEqual(landing.names,['get_public_contact','list_public_services','present_public_knowledge','search_public_articles','search_public_products']);
+        assert.equal(landing.contact.path,'/contact');
+        assert.ok(landing.contact.phones.length>0&&landing.contact.email);
+        assert.equal(landing.services.total,4);
+        assert.ok(landing.services.services.every(s=>/^\/contact\?subject=(product|temple|order|general)#contact-form$/.test(s.path)));
+        assert.equal(typeof landing.products.products[0]?.description,'string');
+        assert.equal(landing.ui.messages[0].version,'1.0');
+        assert.ok(Number.isInteger(landing.articles.total));
+        await page.goto(site+'/shop',{waitUntil:'load',timeout:20000});
+        await page.waitForFunction(async()=>typeof document.modelContext?.getTools==='function'
+            &&(await document.modelContext.getTools()).some(t=>t.name==='list_shop_results'));
+        const results=await page.evaluate(async native=>{
             const context=document.modelContext;
             const all=await context.getTools();
-            const required=['list_shop_results','search_public_products','search_public_articles','present_public_knowledge'];
+            const required=['list_shop_results','search_public_products','search_public_articles','get_public_contact','list_public_services','present_public_knowledge'];
             if(required.some(n=>!all.some(t=>t.name===n)))throw Error('Public WebMCP capabilities not discoverable');
             const invoke=async(name,args)=>{
                 const tool=all.find(t=>t.name===name);
-                if(!tool?.outputSchema)throw Error('Public tool lacks outputSchema: '+name);
+                if(!native&&!tool?.outputSchema)throw Error('Public tool lacks outputSchema: '+name);
                 return JSON.parse(await context.executeTool(tool,args));
             };
             const dom=await invoke('list_shop_results',{offset:0,limit:1});
@@ -46,7 +71,7 @@ test('live public WebMCP tools including A2UI v1.0 can be discovered and invoked
                 rendered,cardCount:host.querySelectorAll('.bapx-a2ui__card').length,
                 href:host.querySelector('a.bapx-a2ui__link')?.getAttribute('href'),
             };
-        });
+        },native);
         assert.equal(results.domCount,1);
         assert.equal(results.productsCount,1);
         assert.ok(Number.isInteger(results.domTotal)&&results.domTotal>=1);
@@ -57,7 +82,7 @@ test('live public WebMCP tools including A2UI v1.0 can be discovered and invoked
         assert.equal(results.cardCount,1);
         assert.match(results.href,/^\/product\/[A-Za-z0-9%_.-]+$/);
         assert.deepEqual(errors,[]);
-        console.log('LIVE WEBMCP A2UI PASS: discovered/executed '+results.names.join(', ')+', rendered 1 public item, no JS exceptions.');
+        console.log('LIVE WEBMCP '+(native?'NATIVE':'POLYFILL')+' A2UI PASS: landing 5 tools; shop '+results.names.join(', ')+', rendered 1 public item, no JS exceptions.');
         await page.close();
     }finally{
         await browser.close();

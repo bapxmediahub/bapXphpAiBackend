@@ -26,36 +26,12 @@ const ARTICLE_TOOL = 'search_public_articles';
 
 function shopToolDefinition(): array
 {
-    $product = [
-        'name' => ['type' => 'string'],
-        'path' => ['type' => 'string'],
-        'priceInr' => ['type' => 'number'],
-        'available' => ['type' => 'boolean'],
-    ];
     return [
         'name' => SHOP_TOOL,
         'title' => 'Search public products',
-        'description' => 'Search published shop products by keyword. Returns current prices in INR and store-relative product links in catalogue order.',
-        'inputSchema' => [
-            'type' => 'object', 'additionalProperties' => false,
-            'properties' => [
-                'query' => ['type' => 'string', 'maxLength' => 120],
-                'offset' => ['type' => 'integer', 'minimum' => 0, 'maximum' => 2147483647],
-                'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 20],
-            ],
-        ],
-        'outputSchema' => [
-            'type' => 'object', 'additionalProperties' => false,
-            'properties' => [
-                'products' => ['type' => 'array', 'maxItems' => 20, 'items' => [
-                    'type' => 'object', 'properties' => $product,
-                    'required' => array_keys($product), 'additionalProperties' => false,
-                ]],
-                'total' => ['type' => 'integer', 'minimum' => 0],
-                'nextOffset' => ['type' => ['integer', 'null']],
-            ],
-            'required' => ['products', 'total', 'nextOffset'],
-        ],
+        'description' => 'Search published shop products by keyword. Returns current INR prices, public descriptions, safe local images and store-relative product links in catalogue order.',
+        'inputSchema' => PublicKnowledgeService::productInputSchema(),
+        'outputSchema' => PublicKnowledgeService::productOutputSchema(),
         'annotations' => ['readOnlyHint' => true, 'destructiveHint' => false, 'idempotentHint' => true, 'openWorldHint' => false],
     ];
 }

@@ -22,6 +22,7 @@ final class AgentTraceService
         'own_ticket_status' => 'support_tickets', 'search_articles' => 'published_blog',
         'coupon_status' => 'coupons', 'public_catalog' => 'visible_products',
         'public_policy' => 'public_policy', 'operator_guide' => 'operator_help',
+        'get_public_contact' => 'public_contact', 'list_public_services' => 'public_services',
     ];
 
     public static function toolEvidence(string $name, array $args, array $result): array
@@ -47,6 +48,8 @@ final class AgentTraceService
                 break;
             }
         }
+        if ($name === 'get_public_contact' && !isset($result['error'])
+            && ($result['path'] ?? null) === '/contact') $count = 1;
         $facts=self::aggregateFacts($name,$result);
         return [
             'observed_at'=>self::now(),
@@ -231,7 +234,7 @@ final class AgentTraceService
     }
 
     public static function safeRetrieval(array $entry): array {
-        $intent=in_array($entry['intent']??'',['catalogue_search','catalogue_browse','collection','comparison','public_policy','own_order','own_ticket','unknown'],true)?$entry['intent']:'unknown';
+        $intent=in_array($entry['intent']??'',['catalogue_search','catalogue_browse','collection','comparison','public_policy','public_contact','public_services','own_order','own_ticket','unknown'],true)?$entry['intent']:'unknown';
         $sources=[];
         foreach(array_slice((array)($entry['sources']??[]),0,20) as $source){
             if(!is_array($source)||!preg_match('/^product:(?:[a-zA-Z0-9_.-]|%[a-fA-F0-9]{2}){1,640}$/D',(string)($source['id']??'')))continue;

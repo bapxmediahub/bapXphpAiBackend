@@ -327,12 +327,8 @@ final class PublicController extends BaseController {
     public function contact(): void {
         $this->detectApiRequest();
         $this->seoKey = 'contact';
-        $subjects = [
-            'product' => 'Product Inquiry',
-            'temple' => 'Temple Guidance',
-            'order' => 'Order Support',
-            'general' => 'General Question',
-        ];
+        $subjects = \App\Services\PublicKnowledgeService::contactSubjects();
+        $publicContact = (new \App\Services\PublicKnowledgeService())->contact();
         $submission = array_fill_keys(['name', 'email', 'phone', 'subject', 'message'], '');
         $submission['subject'] = is_string($_GET['subject'] ?? null) ? $_GET['subject'] : '';
         $errors = [];
@@ -351,7 +347,7 @@ final class PublicController extends BaseController {
             if ($submission['message'] === '') $errors['message'] = 'Enter your message.';
             if ($errors) {
                 http_response_code(422);
-                $this->render('public/contact', ['success' => false, 'subjects' => $subjects, 'submission' => $submission, 'errors' => $errors]);
+                $this->render('public/contact', ['success' => false, 'subjects' => $subjects, 'submission' => $submission, 'errors' => $errors, 'publicContact' => $publicContact]);
                 return;
             }
 
@@ -374,7 +370,7 @@ final class PublicController extends BaseController {
             $_SESSION['contact_received'] = true;
             $this->redirect('/contact#contact-form');
         }
-        $this->render('public/contact', ['success' => $success, 'subjects' => $subjects, 'submission' => $submission, 'errors' => $errors]);
+        $this->render('public/contact', ['success' => $success, 'subjects' => $subjects, 'submission' => $submission, 'errors' => $errors, 'publicContact' => $publicContact]);
     }
     
     public function login(): void { 
