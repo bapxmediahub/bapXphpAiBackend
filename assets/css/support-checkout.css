@@ -1,0 +1,19 @@
+/* Native shell only. Cart, form and quote styles are shared with MCP Apps. */
+.support-panel[hidden],.support-panel [hidden]{display:none!important}
+.support-commerce-toggle,.support-commerce-back,.support-commerce-actions button{min-height:44px;padding:8px 12px;border:1px solid var(--color-border,#d8ccb7);border-radius:8px;background:var(--color-bg-alt,#faf7f0);color:var(--color-text,#222);font:inherit;cursor:pointer}
+.support-commerce-toggle:disabled,.support-commerce-actions button:disabled{opacity:.55;cursor:default}
+.support-commerce-toggle:focus-visible,.support-commerce-back:focus-visible,.support-commerce-actions button:focus-visible{outline:3px solid var(--color-maroon,#3a0003);outline-offset:2px}
+.support-commerce-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.support-commerce-actions button{font-size:.8rem}
+.support-commerce-actions button:first-child{background:var(--color-maroon,#3a0003);color:#fff}
+.support-panel[data-commerce-open="true"]{display:flex;flex-direction:column;width:min(560px,calc(100vw - 24px));max-height:calc(100dvh - 112px)}
+.support-panel[data-commerce-open="true"] .support-panel__head{flex-shrink:0;gap:8px}
+.support-panel[data-commerce-open="true"] .support-help-guide{display:none}
+.support-commerce{padding:12px;overflow:auto;min-height:0;overscroll-behavior:contain}
+.support-commerce__head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.support-commerce__head h2{font-size:1.1rem;margin:0}
+.support-commerce__status{margin:8px 0;font-size:.9rem}
+.support-commerce__status:empty{display:none}
+.support-commerce__content{min-width:0}
+.support-commerce__recovery{font-size:.8rem;color:var(--color-text-muted,#6a6259);margin:12px 0}
+@media(max-width:420px){.support-panel__head{gap:6px;padding:10px}.support-commerce-toggle{font-size:.8rem}.support-commerce{padding:10px}}

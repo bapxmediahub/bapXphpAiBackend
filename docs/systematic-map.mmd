@@ -7,14 +7,14 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 174 routes, 16 controllers, 79 services, 69 views, 0 data files, 29 tools"]
-    arch_routes["> Routes: 174 (Public + Auth + Payment + Admin + Support)"]:::arch
-    arch_ctrl["> Controllers: 16"]:::arch
-    arch_svc["> Services: 79"]:::arch
-    arch_views["> Views: 69"]:::arch
-    arch_data["> Collections: 22 schema | 0 files"]:::arch
-    arch_tools["> Tools: 29"]:::arch
-    arch_gaps["> Gaps: 12"]:::arch
+  subgraph ARCH["Architecture Overview — 178 routes, 17 controllers, 84 services, 71 views, 0 data files, 30 tools"]
+    arch_routes["> Routes: 178 (Public + Auth + Payment + Admin + Support)"]:::arch
+    arch_ctrl["> Controllers: 17"]:::arch
+    arch_svc["> Services: 84"]:::arch
+    arch_views["> Views: 71"]:::arch
+    arch_data["> Collections: 24 schema | 0 files"]:::arch
+    arch_tools["> Tools: 30"]:::arch
+    arch_gaps["> Gaps: 14"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -54,6 +54,7 @@ flowchart LR
     route_get_api_mcp["GET /api/mcp"]:::route
     route_delete_api_mcp["DELETE /api/mcp"]:::route
     route_options_api_mcp["OPTIONS /api/mcp"]:::route
+    route_post_api_payments_razorpay_webhook["POST /api/payments/razorpay-webhook"]:::route
     route_get_feeds_google_products_xml["GET /feeds/google-products.xml"]:::route
     route_get_sitemap_xml["GET /sitemap.xml"]:::route
     route_get_contact["GET /contact — Contact form GET"]:::route
@@ -100,7 +101,10 @@ flowchart LR
 
   subgraph ROUTES_PAYMENT["PAYMENT Routes"]
     route_get_cart["GET /cart — Cart page — items, qty, totals"]:::route
+    route_get_cart_agent_checkout["GET /cart/agent-checkout — Anonymous cart review — explicit CSRF-protected browser cart replacement"]:::route
+    route_post_cart_agent_checkout["POST /cart/agent-checkout — Anonymous cart review — explicit CSRF-protected browser cart replacement"]:::route
     route_get_checkout["GET /checkout — Checkout page — address, Razorpay payment"]:::route
+    route_get_checkout_payment["GET /checkout/payment"]:::route
     route_post_cart_add["POST /cart/add — Cart — add item"]:::route
     route_post_cart_remove["POST /cart/remove — Cart — remove item"]:::route
     route_post_cart_update["POST /cart/update — Cart — update quantity"]:::route
@@ -230,6 +234,7 @@ flowchart LR
     controller_publicagentdiscoverycontroller["PublicAgentDiscoveryController"]:::code
     controller_publiccontroller["PublicController"]:::code
     controller_publicmcpcontroller["PublicMcpController"]:::code
+    controller_remotecheckoutcontroller["RemoteCheckoutController"]:::code
     controller_remotedbcontroller["RemoteDbController"]:::code
     controller_reviewcontroller["ReviewController"]:::code
     controller_supportcontroller["SupportController"]:::code
@@ -294,6 +299,10 @@ flowchart LR
     service_publicmcpservice["PublicMcpService"]:::code
     service_publicsiteurlservice["PublicSiteUrlService"]:::code
     service_ratelimiter["RateLimiter"]:::code
+    service_remotecartexception["RemoteCartException"]:::code
+    service_remotecartservice["RemoteCartService"]:::code
+    service_remotecheckoutservice["RemoteCheckoutService"]:::code
+    service_remotecheckoutstateservice["RemoteCheckoutStateService"]:::code
     service_requestfailureservice["RequestFailureService"]:::code
     service_resourceservice["ResourceService"]:::code
     service_reviewservice["ReviewService"]:::code
@@ -315,6 +324,7 @@ flowchart LR
     service_taxservice["TaxService"]:::code
     service_templeservice["TempleService"]:::code
     service_userorderhistoryservice["UserOrderHistoryService"]:::code
+    service_verifiedorderservice["VerifiedOrderService"]:::code
   end
 
   subgraph VIEWS["Views"]
@@ -360,6 +370,8 @@ flowchart LR
     view_layouts_app["layouts/app"]:::code
     view_public_404["public/404"]:::code
     view_public_about["public/about"]:::code
+    view_public_agent_checkout["public/agent-checkout"]:::code
+    view_public_agent_payment["public/agent-payment"]:::code
     view_public_ai_assistants["public/ai-assistants"]:::code
     view_public_authored_page["public/authored-page"]:::code
     view_public_blog["public/blog"]:::code
@@ -401,6 +413,8 @@ flowchart LR
   subgraph SCHEMA["Schema Collections"]
     collection_users["users"]:::data
     collection_addresses["addresses"]:::data
+    collection_agent_carts["agent_carts"]:::data
+    collection_checkout_attempts["checkout_attempts"]:::data
     collection_products["products"]:::data
     collection_astrologers["astrologers"]:::data
     collection_temples["temples"]:::data
@@ -445,6 +459,7 @@ flowchart LR
     tool_optimize_images["optimize-images"]:::tool
     tool_product_read["product-read"]:::tool
     tool_product_write["product-write"]:::tool
+    tool_reconcile_checkouts["reconcile-checkouts"]:::tool
     tool_reconcile_media["reconcile-media"]:::tool
     tool_refresh_blog_cache["refresh-blog-cache"]:::tool
     tool_runtime_check["runtime-check"]:::tool
@@ -456,15 +471,17 @@ flowchart LR
   end
 
   subgraph GAPS["Gaps & Missing Links"]
+    gap_83a5f47d60["POST /api/payments/razorpay-webhook missing mapping"]:::gap
     gap_43f054c140["unwired_services: AgentAnswerPresentationService"]:::gap
     gap_3021cb4637["unwired_services: AgentBudgetException"]:::gap
     gap_9d47bad6dc["unwired_services: AstrologerService"]:::gap
     gap_5d01c7af75["unwired_services: BlogConflictException"]:::gap
     gap_c99ac2d6fa["unwired_services: CourierService"]:::gap
     gap_5f994ad529["unwired_services: ProjectMapService"]:::gap
-    gap_785da2e9a0["unwired_services: RequestFailureService"]:::gap
-    gap_45ed51c5f0["unwired_services: SmtpDeliveryUncertainException"]:::gap
-    gap_ed583eef92["unwired_services: StoragePermissionService"]:::gap
+    gap_5dac5861de["unwired_services: RemoteCartException"]:::gap
+    gap_42762e9713["unwired_services: RequestFailureService"]:::gap
+    gap_3dfb6bf986["unwired_services: SmtpDeliveryUncertainException"]:::gap
+    gap_95dfc6c8f4["unwired_services: StoragePermissionService"]:::gap
     gap_02fdee86e5["POST /admin/email-templates/test — missing AuditLogService"]:::gap
     gap_63c4de0521["POST /admin/blog/enhance-title — missing AuditLogService"]:::gap
     gap_90db15aec7["POST /admin/blog/enhance-content — missing AuditLogService"]:::gap
@@ -571,6 +588,10 @@ flowchart LR
   controller_publicmcpcontroller --> service_publicmcpservice
   controller_publicmcpcontroller --> service_publicknowledgeservice
   controller_publicmcpcontroller --> service_publica2uiservice
+  controller_publicmcpcontroller --> service_remotecartservice
+  controller_publicmcpcontroller --> service_remotecheckoutservice
+  controller_publicmcpcontroller --> service_remotecheckoutstateservice
+  controller_publicmcpcontroller --> service_verifiedorderservice
   controller_publicmcpcontroller -. renders .-> view_public_mcp_app
   route_get_api_mcp --> controller_publicmcpcontroller
   controller_publicmcpcontroller --> service_publicmcpservice
@@ -586,6 +607,17 @@ flowchart LR
   controller_publiccontroller --> service_productservice
   controller_publiccontroller --> service_sitetelemetryservice
   controller_publiccontroller -. renders .-> view_public_cart
+  route_get_cart_agent_checkout --> controller_commercecontroller
+  controller_commercecontroller --> service_remotecartservice
+  controller_commercecontroller --> service_publicknowledgeservice
+  controller_commercecontroller --> service_productservice
+  controller_commercecontroller --> service_databaseservice
+  controller_commercecontroller -. renders .-> view_public_agent_checkout
+  route_post_cart_agent_checkout --> controller_commercecontroller
+  controller_commercecontroller --> service_remotecartservice
+  controller_commercecontroller --> service_cartservice
+  controller_commercecontroller --> service_databaseservice
+  controller_commercecontroller -. renders .-> view_public_agent_checkout
   route_get_checkout --> controller_publiccontroller
   controller_publiccontroller --> service_cartservice
   controller_publiccontroller --> service_productservice
@@ -593,6 +625,16 @@ flowchart LR
   controller_publiccontroller --> service_addressservice
   controller_publiccontroller --> service_settingsservice
   controller_publiccontroller -. renders .-> view_public_checkout
+  route_get_checkout_payment --> controller_remotecheckoutcontroller
+  controller_remotecheckoutcontroller --> service_remotecheckoutservice
+  controller_remotecheckoutcontroller --> service_databaseservice
+  controller_remotecheckoutcontroller -. renders .-> view_public_agent_payment
+  route_post_api_payments_razorpay_webhook --> controller_remotecheckoutcontroller
+  controller_remotecheckoutcontroller --> service_remotecheckoutservice
+  controller_remotecheckoutcontroller --> service_paymentservice
+  controller_remotecheckoutcontroller --> service_verifiedorderservice
+  controller_remotecheckoutcontroller --> service_databaseservice
+  controller_remotecheckoutcontroller --> service_secretservice
   route_get_feeds_google_products_xml --> controller_publiccontroller
   controller_publiccontroller --> service_merchantfeedservice
   controller_publiccontroller --> service_productservice
@@ -1123,6 +1165,7 @@ flowchart LR
   route_post_payment_verify --> controller_commercecontroller
   controller_commercecontroller --> service_secretservice
   controller_commercecontroller --> service_paymentservice
+  controller_commercecontroller --> service_verifiedorderservice
   controller_commercecontroller --> service_databaseservice
   controller_commercecontroller --> service_taxservice
   controller_commercecontroller --> service_settingsservice
@@ -1141,6 +1184,7 @@ flowchart LR
   route_post_verify_payment --> controller_commercecontroller
   controller_commercecontroller --> service_secretservice
   controller_commercecontroller --> service_paymentservice
+  controller_commercecontroller --> service_verifiedorderservice
   controller_commercecontroller --> service_databaseservice
   controller_commercecontroller --> service_taxservice
   controller_commercecontroller --> service_settingsservice
@@ -1270,6 +1314,7 @@ flowchart LR
   controller_publicagentdiscoverycontroller --> controller_basecontroller
   controller_publiccontroller --> controller_basecontroller
   controller_publicmcpcontroller --> controller_basecontroller
+  controller_remotecheckoutcontroller --> controller_basecontroller
   controller_remotedbcontroller --> controller_basecontroller
   controller_reviewcontroller --> controller_basecontroller
   controller_supportcontroller --> controller_basecontroller
@@ -1326,6 +1371,20 @@ flowchart LR
   service_databaseservice --> collection_mail_inbox
   service_databaseservice --> collection_mail_outbox
   service_databaseservice --> collection_contact_submissions
+  service_databaseservice --> collection_agent_carts
+  service_databaseservice --> collection_checkout_attempts
+  service_remotecartservice --> collection_agent_carts
+  service_remotecheckoutservice --> collection_agent_carts
+  service_remotecheckoutservice --> collection_checkout_attempts
+  service_verifiedorderservice --> collection_orders
+  service_paymentservice --> integration_razorpayclient
+  service_paymentservice --> integration_stripeclient
+  service_paymentservice --> integration_razorpayclient
+  service_paymentservice --> integration_stripeclient
+  service_paymentservice --> integration_razorpayclient
+  service_paymentservice --> integration_stripeclient
+  service_paymentservice --> integration_razorpayclient
+  service_paymentservice --> integration_stripeclient
   service_paymentservice --> integration_razorpayclient
   service_paymentservice --> integration_stripeclient
   controller_authcontroller --> integration_googleoauthclient
@@ -1348,15 +1407,17 @@ flowchart LR
   tool_validate_project_map --> systematic_map
   tool_smoke_local --> ROUTES_PUBLIC
   tool_smoke_local --> ROUTES_ADMIN
+  gap_83a5f47d60 -. missing .-> controller_remotecheckoutcontroller
   gap_43f054c140 -. missing .-> service_agentanswerpresentationservice
   gap_3021cb4637 -. missing .-> service_agentbudgetexception
   gap_9d47bad6dc -. missing .-> service_astrologerservice
   gap_5d01c7af75 -. missing .-> service_blogconflictexception
   gap_c99ac2d6fa -. missing .-> service_courierservice
   gap_5f994ad529 -. missing .-> service_projectmapservice
-  gap_785da2e9a0 -. missing .-> service_requestfailureservice
-  gap_45ed51c5f0 -. missing .-> service_smtpdeliveryuncertainexception
-  gap_ed583eef92 -. missing .-> service_storagepermissionservice
+  gap_5dac5861de -. missing .-> service_remotecartexception
+  gap_42762e9713 -. missing .-> service_requestfailureservice
+  gap_3dfb6bf986 -. missing .-> service_smtpdeliveryuncertainexception
+  gap_95dfc6c8f4 -. missing .-> service_storagepermissionservice
   gap_02fdee86e5 -. missing .-> controller_admincontroller
   gap_63c4de0521 -. missing .-> controller_admincontroller
   gap_90db15aec7 -. missing .-> controller_admincontroller

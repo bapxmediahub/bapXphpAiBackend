@@ -52,7 +52,7 @@ The renderer validates the complete envelope before appending any surface. An in
 
 ## External discovery and chat rendering
 
-Public pages, including `/`, expose five read-only browser tools: `search_public_products`, `search_public_articles`, `get_public_contact`, `list_public_services` and `present_public_knowledge`. The shop also exposes the DOM-scoped `list_shop_results`. The presentation endpoint is `GET /api/knowledge/a2ui?view=products&limit=4`, with the other approved views available through the same validated contract. For an explicit comparison, use `view=products`, `layout=compare` and a JSON-encoded `slugs` array containing two or three raw published slugs. The browser adapter forwards the same arguments and enforces Unicode code-point query limits.
+Public pages, including `/`, expose five read-only browser tools: `search_public_products`, `search_public_articles`, `get_public_contact`, `list_public_services` and `present_public_knowledge`. The shop also exposes the DOM-scoped `list_shop_results`. Six separate named commerce tools use the shared HTTP contract for capability-bound cart and checkout actions; they do not turn presentation components into arbitrary executable instructions. The presentation endpoint is `GET /api/knowledge/a2ui?view=products&limit=4`, with the other approved views available through the same validated contract. For an explicit comparison, use `view=products`, `layout=compare` and a JSON-encoded `slugs` array containing two or three raw published slugs. The browser adapter forwards the same arguments and enforces Unicode code-point query limits.
 
 WebMCP tool discovery depends on the browser host. The adapter supports native `document.modelContext` and the pinned official polyfill; real native-browser and polyfill checks are distinct acceptance paths. Registering WebMCP tools on a website does not itself register those tools in an ordinary external chat session.
 
@@ -70,7 +70,18 @@ The shared styles use the site's maroon/gold tokens, natural wrapping, contained
 
 ## Deliberate limits
 
-This implementation does not provide general streaming updates, two-way forms, arbitrary function calls, model-generated layouts, checkout actions or a complete A2UI SDK. Extensions must add specific server-owned view models and renderer capabilities with tests. Private business data must remain on the authenticated native route; public tool access is not a path into owner tools or conversation storage.
+The A2UI renderer does not provide general streaming updates, two-way forms,
+arbitrary function calls, model-generated layouts or a complete A2UI SDK.
+Checkout uses a separate fixed controller, `assets/public-mcp-shopping.js`,
+shared by the public MCP App and native Support commerce pane. It renders only
+the server's cart, review and status contracts; its explicit actions call named
+tools after validation. A model cannot supply executable form markup or select
+an arbitrary tool. Delivery/contact values and capabilities are excluded from
+ordinary conversation persistence. Browser WebMCP waits for accepted native
+updates before returning; unavailable native UI still permits a structured result
+for the external client. See [remote commerce](remote-commerce.md)
+for the action and payment boundary. Private business data remains on the
+authenticated native route; public tools cannot access owner tools or conversation storage.
 
 ## Verification
 

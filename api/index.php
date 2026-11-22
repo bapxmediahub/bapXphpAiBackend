@@ -1,6 +1,14 @@
 <?php
 declare(strict_types=1);
 
+// Exact provider callback: its raw-body HMAC is the only authority, never a browser session.
+if(parse_url((string)($_SERVER['REQUEST_URI']??''),PHP_URL_PATH)==='/api/payments/razorpay-webhook') {
+    define('BAPX_PAYMENT_WEBHOOK_REQUEST',true);
+    try { require __DIR__.'/../app/bootstrap.php'; (new \App\Controllers\RemoteCheckoutController())->webhook(); }
+    catch(\Throwable){http_response_code(503);header('Content-Type: application/json');header('Cache-Control: no-store');echo '{"received":false}';}
+    exit;
+}
+
 // Only this exact public endpoint uses the stateless MCP transport. Keep normal API/session routing intact.
 if (parse_url((string)($_SERVER['REQUEST_URI']??''),PHP_URL_PATH)==='/api/mcp') {
     define('BAPX_PUBLIC_MCP_REQUEST',true);

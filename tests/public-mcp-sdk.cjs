@@ -34,8 +34,9 @@ for(const profile of ['default','modern'])test(`official MCP SDK ${profile} clie
         if(profile==='modern')assert.deepEqual((await client.discover()).supportedVersions,['2026-07-28','2025-11-25']);
         else assert.equal(client.getServerVersion().name,'bapx-public-knowledge');
         const tools=(await client.listTools()).tools;
-        assert.equal(tools.length,4);
-        assert.ok(tools.every(tool=>tool._meta.ui.resourceUri==='ui://bapx/public-knowledge.html'));
+        assert.equal(tools.length,10);
+        assert.ok(tools.every(tool=>tool._meta.ui.resourceUri===
+            (['search_public_products','create_cart','get_cart','set_cart_quantity','review_checkout','prepare_checkout_payment','get_checkout_status'].includes(tool.name)?'ui://bapx/public-shopping.html':'ui://bapx/public-knowledge.html')));
         for(const name of ['get_public_contact','list_public_services','search_public_products','search_public_articles']) {
             const result=await client.callTool({name,arguments:{}});
             assert.equal(result.isError,undefined);
@@ -46,6 +47,8 @@ for(const profile of ['default','modern'])test(`official MCP SDK ${profile} clie
         assert.equal(resources.resources[0].uri,'ui://bapx/public-knowledge.html');
         const resource=await client.readResource({uri:resources.resources[0].uri});
         assert.equal(resource.contents[0].mimeType,'text/html;profile=mcp-app');
+        const shopping=await client.readResource({uri:'ui://bapx/public-shopping.html'});
+        assert.ok(shopping.contents[0].text.includes('BapxShopping'));
         await assert.rejects(client.callTool({name:'paid_sales_summary',arguments:{}}));
         if(profile==='modern')assert.ok(!seen.includes('initialize') && seen.includes('server/discover'));
         else {

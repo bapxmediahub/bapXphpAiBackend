@@ -109,6 +109,10 @@ jobs:
           node tests/public-mcp-http.cjs "$RUNNER_TEMP/live-mcp"
       - name: Verify discoverable HTTP instructions and actual curl reads without browser state
         run: node --test tests/live-agent-http-discovery.cjs
+      - name: Verify isolated curl cart actions and remove the selected test item
+        env:
+          PUBLIC_MCP_URL: https://sripanchamispiritual.com/api/mcp
+        run: node --test tests/live-agent-cart.cjs
   mobile_acceptance:
     name: Live mobile header and guest cart acceptance
     needs: verify

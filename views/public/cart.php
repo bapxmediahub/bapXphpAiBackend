@@ -36,8 +36,8 @@ HTML;
                     <div class="cart-items">
                         <?php foreach ($items as $item): ?>
                             <?php
-                            $unitPrice = ($item['offer_price'] ?? 0) ?: ($item['price'] ?? 0);
-                            $lineTotal = round($unitPrice * $item['qty'], 2);
+                            $unitPrice = $item['unit_price'] ?? (($item['offer_price'] ?? 0) ?: ($item['price'] ?? 0));
+                            $lineTotal = $item['line_total'];
                             $productUrl = '/product/' . rawurlencode(trim((string)$item['slug']));
                             $placeholder = placeholder_img($item['name']);
                             ?>

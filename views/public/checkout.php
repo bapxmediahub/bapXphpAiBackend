@@ -18,9 +18,9 @@
                     <?php // A failed payment used to be a toast that disappeared before it could
                           // be read, leaving the shopper on a full cart with no idea what happened. ?>
                     <div class="pay-failed" id="pay-failed" role="alert" aria-live="assertive">
-                        <h3>Your payment did not go through</h3>
-                        <p id="pay-failed-reason">No money has left your account, and nothing has been ordered.</p>
-                        <p>Your cart is exactly as you left it, so you can try again whenever you are ready.</p>
+                        <h3 id="pay-failed-title">Payment needs attention</h3>
+                        <p id="pay-failed-reason">We could not confirm the payment result.</p>
+                        <p id="pay-failed-next">Your cart is still available. Check your payment status before trying again.</p>
                         <div class="pay-failed__actions">
                             <button type="button" class="btn btn-primary btn-sm" id="pay-retry">Try payment again</button>
                             <a href="/contact" class="btn btn-sm btn-ghost">Contact us</a>
@@ -125,27 +125,24 @@
                         <script>
                         // Shown in place of a toast: a payment failure is the one message a
                         // shopper must be able to read at their own pace and act on.
-                        function showPaymentFailure(reason) {
+                        function showPaymentFailure(reason, state = 'failed') {
                             var panel = document.getElementById('pay-failed');
                             if (!panel) return;
+                            var pending = state === 'pending' || state === 'verified';
+                            var title = document.getElementById('pay-failed-title');
                             var line = document.getElementById('pay-failed-reason');
-                            if (line) {
-                                line.textContent = reason
-                                    ? reason + ' No money has left your account, and nothing has been ordered.'
-                                    : 'No money has left your account, and nothing has been ordered.';
-                            }
+                            var next = document.getElementById('pay-failed-next');
+                            var retry = document.getElementById('pay-retry');
+                            if (title) title.textContent = state === 'verified' ? 'Payment verified; order confirmation pending'
+                                : pending ? 'Payment confirmation needs checking' : 'Payment was not completed';
+                            if (line) line.textContent = reason || 'We could not confirm the payment result.';
+                            if (next) next.textContent = pending
+                                ? 'Do not make another payment. Check this same payment again, or contact us if confirmation remains unavailable.'
+                                : 'Your cart is still available. Check your bank or payment app before trying payment again.';
+                            if (retry) retry.textContent = pending ? 'Check payment status' : 'Try payment again';
                             panel.classList.add('is-open');
                             panel.scrollIntoView({behavior: 'smooth', block: 'center'});
                         }
-                        document.addEventListener('DOMContentLoaded', function () {
-                            var retry = document.getElementById('pay-retry');
-                            if (!retry) return;
-                            retry.addEventListener('click', function () {
-                                document.getElementById('pay-failed').classList.remove('is-open');
-                                var pay = document.getElementById('pay-now');
-                                if (pay) { pay.disabled = false; pay.click(); }
-                            });
-                        });
                         const checkoutGateways = {
                             razorpay: <?= $hasRazorpay ? 'true' : 'false' ?>,
                             stripe: <?= $hasStripe ? 'true' : 'false' ?>
@@ -181,7 +178,44 @@
                         (() => {
                             const button = document.getElementById('pay-now');
                             const form = document.querySelector('.checkout-form');
+                            const retry = document.getElementById('pay-retry');
+                            let pendingVerification = null;
+                            let verifying = false;
+                            // Provider callbacks run after the outer click handler has returned.
+                            // A failed verification must retry this payment, never create another one.
+                            const verifyPayment = async () => {
+                                if (!pendingVerification || verifying) return;
+                                verifying = true;
+                                button.disabled = true;
+                                if (retry) retry.disabled = true;
+                                let state = 'pending';
+                                try {
+                                    showToast('Verifying payment...', 'info');
+                                    const response = await fetch('/payment/verify', {
+                                        method: 'POST', body: new URLSearchParams(pendingVerification)
+                                    });
+                                    const result = await response.json();
+                                    if (result?.payment_verified === true) state = 'verified';
+                                    if (!response.ok || result?.verified !== true || typeof result.order_id !== 'string'
+                                        || !/^[a-f0-9]{16}$/.test(result.order_id)) {
+                                        throw new Error(result?.error || 'Payment confirmation is not available yet.');
+                                    }
+                                    window.location.href = '/account/orders/' + encodeURIComponent(result.order_id) + '?placed=1';
+                                } catch (error) {
+                                    showPaymentFailure(error.message || 'Payment confirmation is not available yet.', state);
+                                } finally {
+                                    verifying = false;
+                                    if (retry) retry.disabled = false;
+                                }
+                            };
+                            if (retry) retry.addEventListener('click', () => {
+                                if (pendingVerification) { void verifyPayment(); return; }
+                                document.getElementById('pay-failed').classList.remove('is-open');
+                                button.disabled = false;
+                                button.click();
+                            });
                             button.addEventListener('click', async () => {
+                                if (pendingVerification) { await verifyPayment(); return; }
                                 const method = document.querySelector('input[name="payment_method"]:checked');
                                 const paymentMethod = method ? method.value : 'razorpay';
                                 const fields = ['name', 'email', 'phone', 'address', 'city', 'pincode', 'state'];
@@ -194,7 +228,7 @@
                                     _csrf: csrf,
                                     payment_method: paymentMethod,
                                     coupon_code: document.getElementById('coupon-code').value,
-                                    amount: '<?= (int)($total * 100) ?>',
+                                    amount: '<?= (int)round($total * 100) ?>',
                                     name: form.querySelector('[name="name"]').value,
                                     email: form.querySelector('[name="email"]').value,
                                     phone: form.querySelector('[name="phone"]').value,
@@ -260,36 +294,23 @@
                                         },
                                         modal: {
                                             ondismiss: () => {
+                                                if (pendingVerification) return;
                                                 button.disabled = false;
                                                 showToast('Payment was cancelled before completion.', 'info');
                                             }
                                         },
                                         handler: async (resp) => {
-                                            showToast('Verifying payment...', 'info');
-                                            const body = new URLSearchParams({
+                                            pendingVerification = {
                                                 _csrf: csrf,
                                                 razorpay_order_id: order.order_id,
                                                 razorpay_payment_id: resp.razorpay_payment_id,
-                                                razorpay_signature: resp.razorpay_signature,
-                                                name: form.querySelector('[name="name"]').value,
-                                                email: form.querySelector('[name="email"]').value,
-                                                phone: form.querySelector('[name="phone"]').value,
-                                                address: form.querySelector('[name="address"]').value,
-                                                city: form.querySelector('[name="city"]').value,
-                                    pincode: form.querySelector('[name="pincode"]').value
-                                });
-                                            const verifyResponse = await fetch('/payment/verify', {method: 'POST', body});
-                                            const result = await verifyResponse.json();
-                                            if (!verifyResponse.ok || !result.verified) {
-                                                throw new Error(result.error || 'Payment verification failed.');
-                                            }
-                                            // Land on the order itself, not the list. A toast that
-                                            // vanishes was the whole acknowledgement a customer got
-                                            // for the moment they had just paid.
-                                            window.location.href = '/account/orders/' + encodeURIComponent(result.order_id) + '?placed=1';
+                                                razorpay_signature: resp.razorpay_signature
+                                            };
+                                            await verifyPayment();
                                         }
                                     });
                                     razorpay.on('payment.failed', (event) => {
+                                        if (pendingVerification) return;
                                         button.disabled = false;
                                         const reason = event.error && event.error.description ? event.error.description : '';
                                         showPaymentFailure(reason);

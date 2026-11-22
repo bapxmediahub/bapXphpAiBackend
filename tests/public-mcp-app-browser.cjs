@@ -96,6 +96,7 @@ test('default MCP client discovers the widget and official AppBridge renders bou
                 await bridge.close();await page.close();continue;
             }
             await Promise.race([initialized,new Promise((_,reject)=>setTimeout(()=>reject(Error('Apps handshake timed out')),5000))]);
+            await bridge.sendToolInput({arguments:{}});
             await bridge.sendToolResult(fixture.result);
             const view=page.frameLocator('#sandbox').frameLocator('#view');
             await view.getByText('Fixture public ring',{exact:true}).waitFor();

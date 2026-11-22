@@ -16,7 +16,7 @@ jobs:
   validate:
     if: github.actor != 'ci-ai-bot' && endsWith(github.repository, 'bapXphpAiBackend')
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     services:
       order-test-mysql:
         image: mysql:8.4
@@ -62,7 +62,13 @@ jobs:
           php tests/public-product-selection.php
           php tests/public-agent-discovery.php
       - name: Gate public MCP modern and legacy profiles and data isolation
-        run: php tests/public-mcp.php
+        run: |
+          php tests/public-mcp.php
+          php tests/remote-cart.php
+          php tests/remote-checkout.php
+          php tests/verified-order.php
+          php tests/public-mcp-shopping.php
+          php tests/public-mcp-checkout.php
       - name: Gate A2UI v1.0 published data, role isolation and safe actions
         run: |
           php tests/public-a2ui.php
@@ -71,28 +77,43 @@ jobs:
         run: php tests/enterprise-commerce.php
       - name: Verify browser knowledge tool registration, paging and private-path rejection
         run: node --test tests/public-knowledge-webmcp.test.cjs tests/public-products-webmcp.test.cjs tests/public-business-webmcp.test.cjs tests/public-knowledge-api.test.cjs
+      - name: Verify commerce cancellation, native UI synchronization and captured payment callbacks
+        run: node --test tests/public-commerce-webmcp.test.cjs tests/support-checkout.test.cjs tests/checkout-payment.test.cjs
       - name: Check live WebMCP A2UI acceptance probe syntax
         run: |
           node --check tests/live-webmcp-a2ui-browser.cjs
           node --check tests/live-agent-http-discovery.cjs
+          node --check tests/live-agent-cart.cjs
       - name: Test real W3C WebMCP 0.1.1 polyfill with Chromium
         run: |
           npm install --prefix "$RUNNER_TEMP/w3c-webmcp" --no-audit --no-fund --ignore-scripts @w3c/webmcp-polyfill@0.1.1 playwright@1.62.1
           CHROMIUM_PATH="$(command -v google-chrome)" node tests/webmcp-official-browser.cjs "$RUNNER_TEMP/w3c-webmcp"
+          CHROMIUM_PATH="$(command -v google-chrome)" node tests/public-commerce-webmcp-browser.cjs "$RUNNER_TEMP/w3c-webmcp"
       - name: Test native WebMCP landing discovery from an isolated agent world
-        run: CHROMIUM_PATH="$(command -v google-chrome)" xvfb-run -a node tests/webmcp-official-browser.cjs "$RUNNER_TEMP/w3c-webmcp" --native
+        run: |
+          CHROMIUM_PATH="$(command -v google-chrome)" xvfb-run -a node tests/webmcp-official-browser.cjs "$RUNNER_TEMP/w3c-webmcp" --native
+          CHROMIUM_PATH="$(command -v google-chrome)" xvfb-run -a node tests/public-commerce-webmcp-browser.cjs "$RUNNER_TEMP/w3c-webmcp" --native
       - name: Exercise the owner composer, installed admin app and public header editing in Chrome
         run: |
           npm install --prefix "$RUNNER_TEMP/agent-browser" --no-audit --no-fund --ignore-scripts playwright@1.62.1 @modelcontextprotocol/client@2.4.0 @modelcontextprotocol/ext-apps@2.0.4
           NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/agent-history-browser.cjs tests/admin-pwa-browser.cjs tests/header-menu-browser.cjs tests/mobile-cart-restore-browser.cjs tests/a2ui-public-browser.cjs tests/enterprise-capabilities-browser.cjs
+      - name: Exercise native Support checkout and explicit cart handoff at desktop and mobile widths
+        run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/support-checkout-browser.cjs tests/remote-cart-review-browser.cjs
       - name: Verify the public tools with the official MCP client
         run: node tests/catalogue-mcp-interop.cjs "$RUNNER_TEMP/agent-browser"
       - name: Verify default and modern official clients against the public MCP dispatcher
-        run: node tests/public-mcp-sdk.cjs "$RUNNER_TEMP/agent-browser"
+        run: |
+          node tests/public-mcp-sdk.cjs "$RUNNER_TEMP/agent-browser"
+          node tests/public-mcp-shopping-sdk.cjs "$RUNNER_TEMP/agent-browser"
       - name: Verify public MCP over native HTTP without browser or owner sessions
-        run: node tests/public-mcp-http.cjs "$RUNNER_TEMP/agent-browser"
+        run: |
+          node tests/public-mcp-http.cjs "$RUNNER_TEMP/agent-browser"
+          node tests/public-mcp-shopping-http.cjs "$RUNNER_TEMP/agent-browser"
+          node tests/public-mcp-checkout-http.cjs "$RUNNER_TEMP/agent-browser"
       - name: Render public cards with the official MCP Apps host bridge in Chrome
-        run: CHROMIUM_PATH="$(command -v google-chrome)" node tests/public-mcp-app-browser.cjs "$RUNNER_TEMP/agent-browser"
+        run: |
+          CHROMIUM_PATH="$(command -v google-chrome)" node tests/public-mcp-app-browser.cjs "$RUNNER_TEMP/agent-browser"
+          CHROMIUM_PATH="$(command -v google-chrome)" node tests/public-mcp-shopping-browser.cjs "$RUNNER_TEMP/agent-browser"
       - name: Validate public catalogue MCP scope and framing
         run: node --test tests/catalogue-mcp.test.cjs
       - name: Validate progressive motion policy and native-scroll bounds
@@ -129,6 +150,10 @@ jobs:
         run: php tests/google-reporting-storage.php
       - name: Test concurrent verified payments against isolated MySQL
         run: php tests/order-concurrency.php
+      - name: Test anonymous cart revisions and durable checkout reconciliation against isolated MySQL
+        run: |
+          php tests/remote-cart-mysql.php
+          php tests/remote-checkout-mysql.php
       - name: Test concurrent private JSON conversation appends
         run: php tests/agent-concurrency.php
       - name: Test concurrent structured answer review in private JSON

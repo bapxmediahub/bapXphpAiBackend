@@ -4,18 +4,18 @@
     "reviews": {
         "agents": {
             "source_sha256": "1ee2f812f5e0e8a6a49560cf3d62a8517b1749bafe6d270150e2539fa51f928d",
-            "references_sha256": "d03bcc5d7841205128a6730e9d35ea4fc567136368168a1735baee3353106a3e",
-            "review_note": "Reviewed exact-name comparison selection and runtime guidance: optional show/show me presentation suffix preserves the same verified identities, while the anchored grammar still rejects an unresolved third product. Public scope, trace storage, schemas and golden expectations are unchanged."
+            "references_sha256": "c3ffaa80e5b0014fd3a9dde3682bf091943bf1e4c05be007f51d9b31b140e842",
+            "review_note": "Cross-checked the shared backend guidance with unchanged Support/Enterprise registries and private conversation persistence. New anonymous shopping capabilities add no agent identity, owner query, raw tool evidence or developer instruction exposure."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
-            "references_sha256": "3f417079dd2b4ebe4152631a234301d0ef7bb6345bbe08569e6889598f64510c",
-            "review_note": "Reviewed owner-only capability policy and unchanged authentication routes against the shared backend guidance. Browser claims cannot grant commerce_report; guest/customer denial and foreign-owner saved evidence denial are covered. Existing auth references remain accurate."
+            "references_sha256": "a37b80ee37ae802219a1b11b3de3edfdadbba714b5dac3b1453fc1eaa02543c6",
+            "review_note": "Reviewed the backend skill changes and capability boundary against unchanged account/login authorization: anonymous cart/status handles cannot read accounts, saved addresses or private owner records; browser credentials do not authorize remote tools."
         },
         "commerce": {
-            "source_sha256": "1aa1c2d02eb7112758482fa1b76a4d49f4ad07caec43f5a8d6f0b72280a5a7b3",
-            "references_sha256": "aa5cbdcee485b0e0d4c82a49085d8bbd90e7e3b1b029aa1238a4ad04fb458ff3",
-            "review_note": "Reviewed product, stock, customer and coupon projections against existing StoreStats calculations. Documented line-count versus order-count, allocated refunds, within-period anonymous customer bands, missing customer keys and current status without quantities. Canonical commerce services and normal payment/order flows are unchanged."
+            "source_sha256": "a05e401e6a379a17ad8d6353f0f6d59396679f9f6d8d8d99afe33cbc7a57f9f2",
+            "references_sha256": "cdd72d403114deaaf663a00fce495f195dba284e2c25a75cfbd34f1688d028f2",
+            "review_note": "Cross-reviewed current-price cart paise precision, captured-INR predicate, shared idempotent VerifiedOrderService, actual-discount GST and frozen tax evidence. Order/checkout docs distinguish captured payment from saved order and preserve later browser-cart edits on retry."
         },
         "content": {
             "source_sha256": "12e40630e473f8d50774e654dc207c19fe3c8b5eb8158ea8da0e392330a3655d",
@@ -23,49 +23,54 @@
             "review_note": "Reviewed public ProductService and BlogService published selection and exclusion of future, draft, retired or private Markdown and paths."
         },
         "foundation": {
-            "source_sha256": "ae8140da7cacb75699f28f7f269dbe7e923c45ea23bc45aa2061e38d6e526c30",
-            "references_sha256": "62294d3476723ee2f9afb62918b99c5c9409e7a1c761a0789aef8901e7a17b22",
-            "review_note": "Cross-reviewed canonical HTTP discovery and official product URLs against WebMCP/deployment guidance. Native CI exercised shared STDIO projection and exposed two old full-object assertions; updated their explicit expected official URLs, added ordered gallery URL and foreign-image exclusion checks, retained strict equality and all scope/transport assertions. The production curl probe remains bounded and read-only."
+            "source_sha256": "12a2968832644135d8e5ec7c02adc1315ef59919588c7bd5f3f3440a6c46da89",
+            "references_sha256": "6d1471dfccdb5947c548c5bbf538c38e107f3d43443bb136243d081da2250781",
+            "review_note": "Reviewed route/bootstrap/schema and shared-service changes against architecture, WebMCP, remote commerce and hosted storage guidance. Private cart/attempt rows use the existing database host, signed completion and bounded recovery; no local business mirror or public appointment flow is introduced."
         },
         "google-tags": {
-            "source_sha256": "5c3491682b9d9107b2a165bd3c35c4f666610a38d72d24a98b8bde62ea1c5139",
-            "references_sha256": "1a28ebe30f759c5ba10ea3b906ba9b6c0c4fcde7f7a3956dfecf3bb1c680edda",
-            "review_note": "Inspected the public layout diff and existing Google tag/integration guidance. The new JSON_HEX encoded product origin is after the existing tag renderer and does not change analytics IDs, reporting grants, destinations or consent handling."
+            "source_sha256": "b5c80a0b7cb70228f2ebfede071488a194147d1457955d3760fb6c82dabe82c7",
+            "references_sha256": "26e94426f789029d906ad5f355bf847a8010cd6f4126defae0ee3748d848a08a",
+            "review_note": "Reviewed the integrations/layout dependency changes: new webhook secret controls and commerce assets do not change Google tag values, consent, account linking or reporting. The existing settings guide retains the configuration-versus-provider-verification distinction."
         },
         "http-errors": {
-            "source_sha256": "e93e09e81fb4c32aad806a41efd342e0bd24b3ac8335b8307f3894e5cd9e1ac0",
-            "references_sha256": "fb998091b38a21d2ce49ced2fc111b566a8a45fa500477951be667d901846e61",
-            "review_note": "Reviewed the public discovery controller no-store JSON 400/503 boundary and actual front-controller invalid-origin tests against request-failure and deployment guidance. Normal storefront HTML remains available; curl and browser HTTP failures remain visible."
+            "source_sha256": "90c4bc390ccda05771902e0d2bb1bc16a20c400f4529f18ecf605810848b4093",
+            "references_sha256": "7a1a19d88900be4d0bba1040c1aa4642b7b9774f97f3b2796090e24eb57809ea",
+            "review_note": "Reviewed exact stateless MCP and signed webhook bootstrap exceptions alongside the request-failure boundary. Safe uncertainty and no automatic payment retry remain documented; ordinary sessions and correlated failures retain their existing contract."
         },
         "interface": {
-            "source_sha256": "a9352860e066e416af744836c8de76f8831eef0b51f9c4a31d228e870eeab111",
-            "references_sha256": "ed652c6d897a28231284520bbb430915af9a0f717a9b292e09cb75fb38e9abe3",
-            "review_note": "Reviewed the layout fallback and product-adapter validation against Design and frontend/admin UI boundaries. Invalid connector origin preserves ordinary storefront rendering; optional absolute URLs must match the configured origin and safe existing paths. Native A2UI relative navigation and private scopes remain intact."
+            "source_sha256": "321dd56f4379621ea7357f16a62376d2db6a2f4e0d104c4f9cc54575bbe4f473",
+            "references_sha256": "e7ecc460e33d237449f71f6aca6842a50fc6d7f75737242f77d275c20e0f7733",
+            "review_note": "Cross-reviewed native Support product actions, inline form, quote/status and history isolation, Shop-off recovery, shared MCP App and merchant continuation against Design and frontend skill. Public A2UI stays declarative; native/external fallback limits are explicit."
         },
         "mail": {
             "source_sha256": "3b0589d28bd4923c657f85a867084b79ef9f22dd942ea529fd08af2f1332b249",
-            "references_sha256": "e729053eb0aab0f30b6a4816c5151c4a0e1bf58f8f83cf60e797e08ebee30a70",
-            "review_note": "Reviewed AdminController changes limited to Enterprise capabilities and follow-up report context. No mail scheduling, transport, inbox or template behavior changes; existing email setup and backend references remain accurate."
+            "references_sha256": "6d6153ae2fed6f1aebbf9fa93225d6cc74b6c098d9a34deffce7bc4f3c6e9273",
+            "review_note": "Reviewed verified-order extraction and its winning-insert-only existing queue boundary. Payment/order persistence does not prove SMTP acceptance or inbox delivery, and no mail provider, recipient or replay behavior is broadened."
         },
         "mcp-clients": {
-            "source_sha256": "f8245d49c8c4fa9d576bdf2fe5ad28b84d2b0e7f9df980c0b7c2f17c0f30854d",
-            "references_sha256": "db33aa276b2311acc8cb82b891c596a55ed30e5e00c45905e68a77401e483e3c",
-            "review_note": "Reviewed the CLI skill and existing MCP client setup guidance. The shared skill adds parser-failure testing; MCP commands, framing, credential handling and installation steps remain unchanged."
+            "source_sha256": "bcf8dec01e7199a8f3e76eb4a8506d6ab8067917efde8c8ce336bc156f1af373",
+            "references_sha256": "7d62db6cdfdd338a430372c319eaca0b42b78fbf5592a707285986084328a7e0",
+            "review_note": "Cross-checked public HTTP commerce scopes against the unchanged owner STDIO grant path; shop and integrations docs explicitly separate six remote actions from local reporting credentials and describe the new webhook fields."
         },
         "media": {
             "source_sha256": "7b9d3d9aa746f16f1441148550d143e7094388b247c423b90c310ed5441db99d",
-            "references_sha256": "55f49a2fb16565733c3748bbabea736ff1e1e2585d77f906f94555bd942ee5f3",
-            "review_note": "Reviewed the admin UI skill addition against media deletion verification and architecture. Card images remain approved public raster paths, and disclosures change local visibility only; upload, deletion, ownership and stale-media safeguards are unchanged."
+            "references_sha256": "5f10d6d0f7556158e1d5aab575d8d67240ec3261e47e8c5ac59b1a156add58ca",
+            "review_note": "Cross-checked architecture and official product image paths against unchanged media ownership/storage rules. Chat cards use bounded published same-origin raster projections; no image binary, upload location or media permissions changed."
         },
         "operator-help": {
-            "source_sha256": "d1a4e7c2eded9fb4d690d45abb2d157ad1f575f29e8d7e9fef61a857756c3725",
-            "references_sha256": "6af265eaf64755b4f9eb981ae86e961cb2202205f780ba8ce820a3b89d7c7844",
-            "review_note": "Compared the new exact public discovery route and safely encoded layout origin with the fixed operator/public help references. Discovery returns no owner guide or actor records; existing Help authorization and navigation remain accurate."
+            "source_sha256": "49cd1e3a6797399c645eac59110bc79c9592cef095f7e7040d7c2c3fc9aea263",
+            "references_sha256": "3f129d14bb19eefb373b6c1d5bd04037aa8314bc247fbff6eec830c06724e290",
+            "review_note": "Cross-checked the actual Razorpay mode-specific webhook fields and operator settings guidance, private payment recovery and no-live-purchase QA boundary; existing customer/account Help and owner authorization remain accurate."
         },
         "public-mcp": {
-            "source_sha256": "d2a64c98d34ae0bc1cff49a44f7d83455cd841a7b98450babaff1b47972e1148",
-            "references_sha256": "3a42c891d771c597b2b4709453cabd376dff960863194d4c7213e6ad39d50fb0",
-            "review_note": "Reviewed actual-registry discovery, protocol headers and executable list/contact examples, canonical HTTPS origin/path/image parity, module gates and exact-result cards against public MCP, shop and A2UI guidance. Both official SDK profiles and focused PHP/router tests passed; live curl checks are separately gated after deployment."
+            "source_sha256": "b6389d4698d38470a45014f72c02146dc35085c842bbfc5e2923920688e9e335",
+            "references_sha256": "f0eb7593d4e42d4e487807fd6a4f5d349d564e01359580a70c0e0691f91f7bfc",
+            "review_note": "Reviewed the actual registry, both protocol dispatch profiles, model/App visibility, scoped capabilities and exact-result resources against public MCP, discovery, shop and A2UI docs. Private delivery fields and owner grants are excluded; status survives Shop disablement."
+        },
+        "remote-commerce": {
+            "source_sha256": "1966c34fbe250f75b05e376c9a0fd6effd73d1073fef2c0d0061931afbfc8731",
+            "references_sha256": "a30176c56b3462bacc98304e31b83107fa93a26b029266bef77b645cf508c57d",
+            "review_note": "Cross-reviewed canonical cart and checkout services, atomic MySQL and authenticated bridge operations, captured-order persistence, six named schemas, native/App UI, cancellation and capability recovery. Docs state actual quote/retention limits, explicit confirmation, merchant payment boundary and synthetic versus native/live verification."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
@@ -73,9 +78,9 @@
             "review_note": "Reviewed the sales-channel CLI references and catalogue guidance. This change only fixes generic PHP lint argument forwarding and failure propagation; feed, channel and catalogue operations are unchanged."
         },
         "workflow": {
-            "source_sha256": "615402ed3cbbb9970b15585b2b7815585a15fdf82804bb642ae89b0cf26202e5",
+            "source_sha256": "f6d03f3539b9a5edd81f3713e2f7a64a29998a5900bd25a7eeca52d3005163d9",
             "references_sha256": "d9259d2fc5ee2fda87748a3b74350427be83c2bea522e9d2df4b31de7b388a0d",
-            "review_note": "Reviewed lint dispatch, POSIX find batch status, failed-path diagnostics, CI aggregation and the native-PHP fixture. Development workflow and CLI skill now explain truthful nonzero failures and the local wrapper limitation; generated resources remain deterministic."
+            "review_note": "Reviewed required PHP, HTTP, SDK, native/polyfill Chrome, minimal-sandbox AppBridge and MySQL gates; generated maps reflect the new fixed routes and private collections. Deployment checks retain exact Git SHA delay and add one isolated curl cart cleaned to empty, with no payment submission."
         }
     }
 }

@@ -3465,8 +3465,10 @@ $tests['a product can be hidden without deleting it, and an offer expires'] = fu
     $api = file_get_contents(app_path('app/Controllers/ApiController.php'));
     assertTrue(substr_count($api, '$service->visible()') >= 2, 'The public API should expose visible products only');
     $base = file_get_contents(app_path('app/Controllers/BaseController.php'));
-    assertTrue(str_contains($base, 'ProductService())->bySlug()'),
-        'The cart must price through ProductService so an expired offer is not charged');
+    $cart = file_get_contents(app_path('app/Services/CartService.php'));
+    assertTrue(str_contains($base, 'CartService())->resolve(')
+        && str_contains($cart, '$service->bySlug()') && str_contains($cart, '$service->priceOf($product)'),
+        'The shared cart resolver must use visible products and the canonical current offer price');
     $commerce = file_get_contents(app_path('app/Controllers/CommerceController.php'));
     assertTrue(!str_contains($commerce, "foreach (\$store->read('products') as \$p)")
         && !str_contains($commerce, "foreach (\$db->read('products') as \$p)"),
@@ -4544,7 +4546,8 @@ $tests['verified payment survives concurrent stock changes with one atomic order
     $remoteSource = file_get_contents(app_path('app/Controllers/RemoteDbController.php'));
     assertTrue(str_contains($dbSource, 'INSERT IGNORE INTO') && str_contains($remoteSource, "insert_if_absent"), 'Direct MySQL and remotedb expose the same atomic insert boundary');
     $commerceSource = file_get_contents(app_path('app/Controllers/CommerceController.php'));
-    assertTrue(str_contains($commerceSource, "!empty(\$insert['inserted'])"), 'Only the winning callback queues confirmation mail');
+    $verifiedSource = file_get_contents(app_path('app/Services/VerifiedOrderService.php'));
+    assertTrue(str_contains($verifiedSource, "!empty(\$insert['inserted'])"), 'Only the winning callback queues confirmation mail');
     assertSame(2, substr_count($commerceSource, '$this->persistVerifiedOrder('), 'Razorpay and Stripe share the atomic persistence boundary');
 };
 

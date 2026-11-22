@@ -276,3 +276,36 @@ See `docs/site-motion.md` for source attribution and browser acceptance.
   recovery after reload, and absence of page overflow at 375px and desktop.
 
 The mobile homepage places the primary action beside the devotional portrait. Visitors switch portraits manually. Group the temple name and address beside the photo, give hours and the detail action the full card width, and group rail navigation in a single row above the cards. The order guide, temples and values each hand off to the next section within a short, measured overlap.
+
+## Chat checkout
+
+Support product cards offer Add to cart, Buy now and Checkout as explicit controls.
+Keep the cart and checkout form inside the Support panel, with a clear Back to chat
+control and visible request status. The form scrolls within the available viewport;
+fields and actions remain usable at 375px without widening the page. Keep 44px
+targets, labelled inputs and keyboard focus return to the initiating product control.
+
+The same fixed shopping and checkout components serve native Support and MCP Apps.
+PHP owns product eligibility, prices, totals, delivery validation and payment status.
+Keep the public A2UI answer renderer read-only; it cannot interpret arbitrary form
+HTML, model-defined actions or owner tools. Enterprise report surfaces remain separate.
+Collect delivery details in the trusted form and show the returned quote before an
+explicit payment-preparation action. A separate button opens the validated merchant
+payment page; chat never embeds third-party payment inputs or provider scripts.
+
+Mount native checkout outside the saved Support conversation. Native session recovery
+may contain only the bounded anonymous cart/status capabilities, revision and expiry,
+never address, contact, coupon, card or quote data. Refresh server state before showing
+recovered facts, clear expired handles and explain storage denial beside the form.
+External MCP Apps do not adopt native browser storage. Clear typed form data on teardown.
+Retain valid recovery access through temporary refresh failures and offer a retry without
+showing stale cart facts. When Shop is disabled, keep existing payment-status access
+visible while removing product actions, cart changes and checkout submission.
+
+Completed browser tool results update the same native component before the tool resolves.
+Wait for an active human action, validate the result family and handle, and discard a
+canceled queued update without clearing the human form or its recovery access.
+
+Payment failures must distinguish an unconfirmed payment from a verified payment whose
+order is not yet saved. A verification retry checks the same payment; it must not open
+a second payment attempt or claim that no money was debited without confirmation.

@@ -298,6 +298,178 @@ final class DatabaseService {
         }catch(\Throwable $error){if($pdo->inTransaction())$pdo->rollBack();throw $error;}
     }
 
+    /** Fixed anonymous-cart protocol; the DB host owns the clock, row lock and creation limits. */
+    public function remoteCartOperation(string $operation,array $payload): array {
+        if(!in_array($operation,['create','get','set_quantity','prepare_checkout','preview_checkout','claim_checkout'],true)
+            || !is_string($payload['id']??null) || !preg_match('/^[a-f0-9]{32}$/D',$payload['id'])) {
+            throw new RemoteCartException('invalid_arguments','Invalid cart operation.');
+        }
+        if($this->isTestMode())throw new \RuntimeException('Cart persistence requires an isolated database test.');
+        if($this->isRemote()) {
+            $result=$this->remoteMutation('remote_cart_operation','agent_carts',[
+                'operation'=>$operation,'payload'=>$payload])['result']??null;
+            if(!is_array($result))throw new \RuntimeException('Invalid remote cart response.');
+            if(isset($result['cart_error'])) {
+                $error=$result['cart_error'];
+                if(!is_array($error)||!is_string($error['code']??null)||!is_string($error['message']??null)
+                    ||!is_int($error['status']??null)||!is_int($error['retry_after']??null)) {
+                    throw new \RuntimeException('Invalid remote cart failure.');
+                }
+                throw new RemoteCartException($error['code'],$error['message'],$error['status'],$error['retry_after']);
+            }
+            return $result;
+        }
+        $this->ensureAgentCartTable();$pdo=$this->db();
+        if($operation==='create') {
+            // Serialize creation on MySQL, not in a process-local limiter. Concurrent
+            // clients and the remote bridge cannot race through the resource limits.
+            $lock=$pdo->query("SELECT GET_LOCK(CONCAT('sps:agent-carts:',SHA1(DATABASE())),5)");
+            if((int)$lock->fetchColumn()!==1)throw new RemoteCartException('cart_busy','Cart creation is busy. Retry shortly.',429,5);
+            try {
+                $now=time();
+                $result=RemoteCartService::transition(null,$operation,$payload,$now);
+                $cutoff=gmdate('Y-m-d H:i:s',$now-RemoteCartService::CART_TTL);
+                $cleanup=$pdo->prepare('DELETE FROM agent_carts WHERE _created_at <= ? ORDER BY _created_at LIMIT 100');
+                $cleanup->execute([$cutoff]);
+                $count=$pdo->prepare('SELECT COUNT(*) FROM agent_carts WHERE _owner = ? AND _created_at > ?');
+                foreach([[60,10],[3600,20]] as [$seconds,$maximum]) {
+                    $count->execute([$payload['creationKey'],gmdate('Y-m-d H:i:s',$now-$seconds)]);
+                    if((int)$count->fetchColumn()>=$maximum)throw new RemoteCartException('cart_rate_limited','Too many new carts. Reuse an existing cart or try later.',429,$seconds);
+                }
+                $capacity=$pdo->prepare('SELECT COUNT(*) FROM agent_carts WHERE _created_at > ?');$capacity->execute([$cutoff]);
+                if((int)$capacity->fetchColumn()>=10000)throw new RemoteCartException('cart_capacity','New carts are temporarily unavailable. Try later.',429,3600);
+                $record=$result['record'];
+                $insert=$pdo->prepare('INSERT INTO agent_carts (id,_data,_owner,_status,_created_at,_updated_at) VALUES (?,?,?,?,?,?)');
+                $insert->execute([$record['id'],json_encode($record,JSON_THROW_ON_ERROR),$record['creation_key'],
+                    $record['status'],$record['created_at'],$record['updated_at']]);
+                self::$remoteQueryCache=[];return $result;
+            } finally {
+                $pdo->query("SELECT RELEASE_LOCK(CONCAT('sps:agent-carts:',SHA1(DATABASE())))");
+            }
+        }
+        $pdo->beginTransaction();
+        try {
+            $query=$pdo->prepare('SELECT id,_data FROM agent_carts WHERE id = ? FOR UPDATE');$query->execute([$payload['id']]);
+            $now=time();
+            $row=$query->fetch(\PDO::FETCH_ASSOC);
+            $record=$row?json_decode($row['_data'],true,512,JSON_THROW_ON_ERROR):null;
+            if($record!==null)$record['id']=$row['id'];
+            $result=RemoteCartService::transition($record,$operation,$payload,$now);
+            if($result['record']!==$record) {
+                $updated=$result['record'];
+                $write=$pdo->prepare('UPDATE agent_carts SET _data = ?, _status = ?, _updated_at = ? WHERE id = ?');
+                $write->execute([json_encode($updated,JSON_THROW_ON_ERROR),$updated['status'],$updated['updated_at'],$updated['id']]);
+            }
+            $pdo->commit();self::$remoteQueryCache=[];return $result;
+        } catch(\Throwable $error) { if($pdo->inTransaction())$pdo->rollBack();throw $error; }
+    }
+
+    private function ensureAgentCartTable(): void {
+        try { $this->db()->query('SELECT id FROM agent_carts LIMIT 0'); }
+        catch(\PDOException $error) {
+            if(($error->errorInfo[0]??null)!=='42S02')throw $error;
+            // Same generic JSON-record layout as canonical schema initialization.
+            // DDL precedes every transaction so MySQL cannot implicitly commit a claim.
+            $this->db()->exec('CREATE TABLE IF NOT EXISTS agent_carts (
+                id VARCHAR(36) PRIMARY KEY, _data JSON NOT NULL,
+                _owner VARCHAR(255) DEFAULT NULL, _status VARCHAR(50) DEFAULT NULL,
+                _created_at DATETIME DEFAULT NULL, _updated_at DATETIME DEFAULT NULL,
+                INDEX idx_owner (_owner), INDEX idx_status (_status), INDEX idx_created (_created_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+        }
+    }
+
+    /** Fixed checkout protocol: durable attempts and the cart lock live on the MySQL host. */
+    public function remoteCheckoutOperation(string $operation,array $payload):array {
+        $operations=['read_cart','save_review','begin_payment','read_attempt','read_handoff','read_internal','claim_reconcile','update_attempt','list_pending'];
+        if(!in_array($operation,$operations,true)||($operation!=='list_pending'
+            &&(!is_string($payload['id']??null)||!preg_match('/^[a-f0-9]{32}$/D',$payload['id'])))) {
+            throw new RemoteCartException('invalid_arguments','Invalid checkout operation.');
+        }
+        if($this->isTestMode())throw new \RuntimeException('Checkout persistence requires an isolated database test.');
+        if($this->isRemote()) {
+            $result=$this->remoteMutation('remote_checkout_operation','checkout_attempts',['operation'=>$operation,'payload'=>$payload])['result']??null;
+            if(!is_array($result))throw new \RuntimeException('Invalid remote checkout response.');
+            if(isset($result['cart_error'])) {
+                $error=$result['cart_error'];
+                if(!is_array($error)||!is_string($error['code']??null)||!is_string($error['message']??null)
+                    ||!is_int($error['status']??null)||!is_int($error['retry_after']??null))throw new \RuntimeException('Invalid remote checkout failure.');
+                throw new RemoteCartException($error['code'],$error['message'],$error['status'],$error['retry_after']);
+            }
+            return $result;
+        }
+        $this->ensureCheckoutAttemptTable();$pdo=$this->db();
+        if($operation==='list_pending') {
+            $limit=$payload['limit']??null;
+            if(!is_int($limit)||$limit<1||$limit>20)throw new RemoteCartException('invalid_arguments','Use a bounded reconciliation limit.');
+            $now=time();$query=$pdo->prepare("SELECT id,_data FROM checkout_attempts WHERE _status NOT IN ('completed','expired','cancelled') AND _updated_at <= ? ORDER BY _updated_at,id LIMIT ".$limit);
+            $query->execute([gmdate('Y-m-d H:i:s',$now-30)]);$attempts=[];
+            foreach($query->fetchAll(\PDO::FETCH_ASSOC) as $row){$attempt=json_decode($row['_data'],true,512,JSON_THROW_ON_ERROR);$attempt['id']=$row['id'];$attempts[]=$attempt;}
+            return ['attempts'=>$attempts,'now'=>$now];
+        }
+        $cartOperation=in_array($operation,['read_cart','save_review','begin_payment'],true);
+        if($cartOperation)$this->ensureAgentCartTable();
+        $creationLock=$operation==='begin_payment';
+        if($creationLock) {
+            $lock=$pdo->query("SELECT GET_LOCK(CONCAT('sps:checkout-attempts:',SHA1(DATABASE())),5)");
+            if((int)$lock->fetchColumn()!==1)throw new RemoteCartException('checkout_busy','Checkout preparation is busy. Retry this same quote shortly.',429,5);
+        }
+        try {
+            $pdo->beginTransaction();$record=$attempt=null;
+            if($cartOperation) {
+                $read=$pdo->prepare('SELECT id,_data FROM agent_carts WHERE id = ? FOR UPDATE');$read->execute([$payload['id']]);$row=$read->fetch(\PDO::FETCH_ASSOC);
+                if($row){$record=json_decode($row['_data'],true,512,JSON_THROW_ON_ERROR);$record['id']=$row['id'];}
+                $attemptId=$record['checkout_receipt']['attempt_id']??null;
+                if(is_string($attemptId)) {
+                    $read=$pdo->prepare('SELECT id,_data FROM checkout_attempts WHERE id = ? FOR UPDATE');$read->execute([$attemptId]);$row=$read->fetch(\PDO::FETCH_ASSOC);
+                    if($row){$attempt=json_decode($row['_data'],true,512,JSON_THROW_ON_ERROR);$attempt['id']=$row['id'];}
+                }
+                $now=time();$result=RemoteCheckoutStateService::cart($record,$attempt,$operation,$payload,$now);
+                if(($result['created']??false)===true) {
+                    // Completed/expired receipts live for seven days. Unresolved money
+                    // is retained and reconciled even after the 24-hour cart is removed.
+                    $cleanup=$pdo->prepare("DELETE FROM checkout_attempts WHERE _status IN ('completed','expired','cancelled') AND _created_at <= ? ORDER BY _created_at LIMIT 100");
+                    $cleanup->execute([gmdate('Y-m-d H:i:s',$now-RemoteCheckoutService::STATUS_TTL)]);
+                    if((int)$pdo->query('SELECT COUNT(*) FROM checkout_attempts')->fetchColumn()>=20000) {
+                        throw new RemoteCartException('checkout_capacity','New checkouts are temporarily unavailable. Existing payment status remains available.',429,3600);
+                    }
+                    $new=$result['attempt'];$insert=$pdo->prepare('INSERT INTO checkout_attempts (id,_data,_owner,_status,_created_at,_updated_at) VALUES (?,?,?,?,?,?)');
+                    $insert->execute([$new['id'],json_encode($new,JSON_THROW_ON_ERROR),$new['cart_id'],$new['state'],$new['created_at'],$new['updated_at']]);
+                }
+                if($result['record']!==$record) {
+                    $updated=$result['record'];$write=$pdo->prepare('UPDATE agent_carts SET _data = ?, _status = ?, _updated_at = ? WHERE id = ?');
+                    $write->execute([json_encode($updated,JSON_THROW_ON_ERROR),$updated['status'],$updated['updated_at'],$updated['id']]);
+                }
+            } else {
+                $read=$pdo->prepare('SELECT id,_data FROM checkout_attempts WHERE id = ? FOR UPDATE');$read->execute([$payload['id']]);$row=$read->fetch(\PDO::FETCH_ASSOC);
+                if($row){$attempt=json_decode($row['_data'],true,512,JSON_THROW_ON_ERROR);$attempt['id']=$row['id'];}
+                $result=RemoteCheckoutStateService::attempt($attempt,$operation,$payload,time());
+                if($result['attempt']!==$attempt) {
+                    $updated=$result['attempt'];$write=$pdo->prepare('UPDATE checkout_attempts SET _data = ?, _status = ?, _updated_at = ? WHERE id = ?');
+                    $write->execute([json_encode($updated,JSON_THROW_ON_ERROR),$updated['state'],$updated['updated_at'],$updated['id']]);
+                }
+            }
+            $pdo->commit();self::$remoteQueryCache=[];return $result;
+        } catch(\Throwable $error) {
+            if($pdo->inTransaction())$pdo->rollBack();throw $error;
+        } finally {
+            if($creationLock)$pdo->query("SELECT RELEASE_LOCK(CONCAT('sps:checkout-attempts:',SHA1(DATABASE())))");
+        }
+    }
+
+    private function ensureCheckoutAttemptTable():void {
+        try{$this->db()->query('SELECT id FROM checkout_attempts LIMIT 0');}
+        catch(\PDOException $error) {
+            if(($error->errorInfo[0]??null)!=='42S02')throw $error;
+            $this->db()->exec('CREATE TABLE IF NOT EXISTS checkout_attempts (
+                id VARCHAR(36) PRIMARY KEY, _data JSON NOT NULL,
+                _owner VARCHAR(255) DEFAULT NULL, _status VARCHAR(50) DEFAULT NULL,
+                _created_at DATETIME DEFAULT NULL, _updated_at DATETIME DEFAULT NULL,
+                INDEX idx_owner (_owner), INDEX idx_status (_status), INDEX idx_created (_created_at), INDEX idx_updated (_updated_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+        }
+    }
+
     public function recordOrderRefund(string $id, string $paymentId, string $refundId, int $amount): array {
         if ($this->isTestMode()) throw new \RuntimeException('Order writes are disabled in test mode.');
         if ($this->isRemote()) {

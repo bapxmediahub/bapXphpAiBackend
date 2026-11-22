@@ -3,11 +3,11 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 174,
-        "controllers": 16,
-        "services": 79,
-        "views": 69,
-        "collections": 22
+        "routes": 178,
+        "controllers": 17,
+        "services": 84,
+        "views": 71,
+        "collections": 24
     },
     "routes": [
         {
@@ -1413,7 +1413,25 @@
             "services": [
                 "PublicMcpService",
                 "PublicKnowledgeService",
-                "PublicA2uiService"
+                "PublicA2uiService",
+                "RemoteCartService",
+                "RemoteCheckoutService",
+                "RemoteCheckoutStateService",
+                "VerifiedOrderService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/api/payments/razorpay-webhook",
+            "name": "checkout.payment-webhook",
+            "controller": "RemoteCheckoutController@webhook",
+            "view": "",
+            "services": [
+                "RemoteCheckoutService",
+                "PaymentService",
+                "VerifiedOrderService",
+                "DatabaseService",
+                "SecretService"
             ]
         },
         {
@@ -1525,6 +1543,31 @@
             ]
         },
         {
+            "method": "GET",
+            "path": "/cart/agent-checkout",
+            "name": "cart.agent-checkout",
+            "controller": "CommerceController@agentCheckout",
+            "view": "public/agent-checkout",
+            "services": [
+                "RemoteCartService",
+                "PublicKnowledgeService",
+                "ProductService",
+                "DatabaseService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/cart/agent-checkout",
+            "name": "cart.agent-checkout.import",
+            "controller": "CommerceController@importAgentCheckout",
+            "view": "public/agent-checkout",
+            "services": [
+                "RemoteCartService",
+                "CartService",
+                "DatabaseService"
+            ]
+        },
+        {
             "method": "POST",
             "path": "/cart/remove",
             "name": "cart.remove",
@@ -1578,6 +1621,17 @@
                 "SecretService",
                 "PaymentService",
                 "SiteTelemetryService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/checkout/payment",
+            "name": "checkout.payment-handoff",
+            "controller": "RemoteCheckoutController@payment",
+            "view": "public/agent-payment",
+            "services": [
+                "RemoteCheckoutService",
+                "DatabaseService"
             ]
         },
         {
@@ -1781,6 +1835,7 @@
             "services": [
                 "SecretService",
                 "PaymentService",
+                "VerifiedOrderService",
                 "DatabaseService",
                 "TaxService",
                 "SettingsService"
@@ -1993,6 +2048,7 @@
             "services": [
                 "SecretService",
                 "PaymentService",
+                "VerifiedOrderService",
                 "DatabaseService",
                 "TaxService",
                 "SettingsService"
@@ -2013,6 +2069,7 @@
         "PublicAgentDiscoveryController",
         "PublicController",
         "PublicMcpController",
+        "RemoteCheckoutController",
         "RemoteDbController",
         "ReviewController",
         "SupportController"
@@ -2076,6 +2133,10 @@
         "PublicMcpService",
         "PublicSiteUrlService",
         "RateLimiter",
+        "RemoteCartException",
+        "RemoteCartService",
+        "RemoteCheckoutService",
+        "RemoteCheckoutStateService",
         "RequestFailureService",
         "ResourceService",
         "ReviewService",
@@ -2096,7 +2157,8 @@
         "SupportToolRegistry",
         "TaxService",
         "TempleService",
-        "UserOrderHistoryService"
+        "UserOrderHistoryService",
+        "VerifiedOrderService"
     ],
     "views": [
         "account/_nav",
@@ -2141,6 +2203,8 @@
         "layouts/app",
         "public/404",
         "public/about",
+        "public/agent-checkout",
+        "public/agent-payment",
         "public/ai-assistants",
         "public/authored-page",
         "public/blog",
@@ -2171,10 +2235,12 @@
     ],
     "collections": [
         "addresses",
+        "agent_carts",
         "appointments",
         "astrologers",
         "audit_events",
         "categories",
+        "checkout_attempts",
         "consultation_messages",
         "consultation_signals",
         "contact_submissions",
@@ -2202,7 +2268,21 @@
         "StripeClient"
     ],
     "gaps": {
-        "missing_route_mappings": [],
+        "missing_route_mappings": [
+            {
+                "method": "POST",
+                "path": "/api/payments/razorpay-webhook",
+                "name": "checkout.payment-webhook",
+                "controller": "RemoteCheckoutController@webhook",
+                "services": [
+                    "RemoteCheckoutService",
+                    "PaymentService",
+                    "VerifiedOrderService",
+                    "DatabaseService",
+                    "SecretService"
+                ]
+            }
+        ],
         "missing_controller_files": [],
         "missing_service_files": [],
         "missing_view_files": [],
@@ -2215,6 +2295,7 @@
             "BlogConflictException",
             "CourierService",
             "ProjectMapService",
+            "RemoteCartException",
             "RequestFailureService",
             "SmtpDeliveryUncertainException",
             "StoragePermissionService"

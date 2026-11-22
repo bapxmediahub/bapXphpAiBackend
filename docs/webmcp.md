@@ -19,6 +19,10 @@ before asking an external browser agent about the business.
 | `list_public_services` | The four existing enquiry options, descriptions and contact-form subject links | Every public page |
 | `present_public_knowledge` | A bounded declarative A2UI surface for a supported public view | Public layout; see the [presentation contract](a2ui.md) |
 | `list_shop_results` | A paged snapshot of the products actually displayed under the current shop filters | Only the shop document containing `.shop-results` |
+| `create_cart`, `get_cart`, `set_cart_quantity` | An isolated anonymous cart, current product facts and revision-bound absolute quantities | Every public page when Shop is enabled |
+| `review_checkout` | Inline delivery completeness, coupon result and an expiring server-calculated quote | Every public page when Shop is enabled |
+| `prepare_checkout_payment` | An explicitly confirmed durable payment attempt and optional merchant payment handoff | Every public page when Shop is enabled; requires configured payment credentials and webhook secret |
+| `get_checkout_status` | Verified payment and saved-order status for one capability | Every public page, including when Shop is disabled |
 
 Contact and service facts are selected explicitly. They are not a serialized
 settings row. The four offerings are Product Inquiry, Temple Guidance, Order
@@ -106,9 +110,52 @@ chat render cards. A compatible external host needs discovery and rendering
 support; MCP Apps uses a separate remote MCP transport and sandboxed UI resource.
 The site's [public MCP endpoint](public-mcp.md) at `/api/mcp` supplies that
 transport for compatible chat hosts, with the same four published data tools
-and cards attached to each result. A host still needs to connect explicitly.
+and six named commerce tools when Shop is enabled. A host still needs to connect explicitly.
 Public tools must never inherit owner MCP credentials, private Help, customer
 records, agent instructions or conversation JSON.
+
+## Shared commerce actions and inline checkout
+
+`assets/public-commerce-webmcp.js` reads the actual public MCP definitions emitted
+by PHP and calls `/api/mcp` without cookies or authorization headers. A cart is
+authorized by its own opaque capability; payment status uses a separate
+capability. These handles must not be copied into ordinary chat text, analytics
+or saved conversation markup. Product images and links come from the published
+catalogue under the configured HTTPS origin.
+
+The fixed six-tool group registers atomically. A partial registration failure
+aborts the group; one existing tool cannot leave a misleading partial shopping
+surface. Every execute call forwards its caller AbortSignal into fetch and native
+UI synchronization. The request timeout ends after a valid response arrives,
+while caller and page-lifecycle cancellation continue through UI synchronization.
+The adapter validates canonical inputs and outputs and never automatically retries
+a possibly applied write. Read/write and consequence annotations are guidance;
+the server still enforces capabilities, revisions and explicit quote confirmation.
+
+When native Support accepts a canonical result, execution waits for its separate
+commerce pane to update visibly. If the native pane is unavailable or rejects
+the result, the validated structured result remains available to the external
+client; that fallback is not proof of a visible native update. The shared renderer provides product
+actions, cart quantities, delivery/contact fields, coupon entry, final totals,
+confirmation and payment/order status. The same module runs inside the remote
+MCP App. Delivery values remain in the active form and private checkout record,
+outside saved conversation markup. A minimal MCP Apps sandbox needs no native
+form-submission permission: explicit buttons and Enter handling validate fields.
+
+`review_checkout` never creates a payment. `prepare_checkout_payment` requires
+`confirm: true`, the exact current revision and an unexpired quote ID. The server
+saves the attempt and locks the cart before provider I/O. After a lost response,
+`get_cart` returns its existing status-recovery receipt; `get_checkout_status`
+reconciles that attempt without creating another. An uncertain provider response
+stays uncertain until verified evidence is available. Captured payment and saved
+order are reported separately, allowing recovery from an interrupted order save.
+
+Payment authorization follows the host's supported payment integration. This
+implementation keeps checkout review and status in chat and offers an explicit
+merchant-domain payment step; it does not embed a third-party payment iframe in
+an unsupported host or claim an approved host-native payment integration. No raw
+card, CVV or payment PIN enters the agent tools. Merchant webhook configuration
+and bounded reconciliation are described in [remote commerce](remote-commerce.md).
 
 ## Comparison with existing implementations
 
@@ -132,7 +179,8 @@ or a general-purpose agent tool for each page element.
 [BigCommerce's WebMCP guide](https://docs.bigcommerce.com/developer/api-reference/mcp/webmcp)
 uses shared server/browser storefront tasks with search followed by exact
 product detail. This site follows that useful sequence through one bounded
-product tool; it does not add commerce writes or checkout automation.
+product tool. Its commerce actions use the same server-owned cart and checkout
+contract in the browser adapter, HTTP tools and chat renderer.
 [Chrome's tool-design guidance](https://developer.chrome.com/docs/ai/webmcp/build-tools)
 also supports keeping capabilities scoped to the current role, page state and
 task. Public catalogue reads and authorized commerce administration therefore
@@ -148,6 +196,17 @@ enabled, and also discovers and calls the contact tool from an isolated
 execution world. Failure to provide the native API fails that lane; it is not
 reported as a successful polyfill test. Both lanes test `/` without shop cards,
 the shop-only extra tool, and contact/services with commerce and blog absent.
+
+`tests/public-commerce-webmcp-browser.cjs` adds both real-polyfill and native
+isolated-world commerce lanes at 1280px and 375px. They execute all six canonical
+tools through the real PHP dispatcher with an isolated synthetic provider,
+check visible native chat synchronization, and distinguish captured payment from
+saved-order status. They assert that review does not create payment, that one
+explicit confirmation creates one attempt, and that cookies, delivery details
+and automatic navigation do not leak across the boundary. Separate HTTP/SDK,
+MCP Apps host-bridge and native MySQL tests are documented in
+[public MCP](public-mcp.md) and [remote commerce](remote-commerce.md). Fixture
+success does not certify merchant provider configuration or a real paid purchase.
 
 Native Chrome versions before 159 need not expose `outputSchema` in discovered
 descriptors. The PHP schema remains canonical and returned values are checked
