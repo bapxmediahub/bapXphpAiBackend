@@ -666,7 +666,7 @@ final class AdminController extends BaseController {
                     'answer' => $localAnswer,
                     'missing' => $attachments['missing'],
                     'run' => $this->agentRunMeta($traceId, 'local', $startedAt, $tools),
-                ] + $record);
+                ] + (($ui=(new \App\Services\PublicA2uiService())->forQuestion($message)) === null ? [] : ['a2ui'=>$ui]) + $record);
                 return;
             }
             $secrets = new SecretService();
