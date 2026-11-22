@@ -1,7 +1,7 @@
 <?php
 namespace App\Controllers;
 
-use App\Services\{ProductService,CategoryService,TempleService,PublicKnowledgeService,DeploymentRevisionService};
+use App\Services\{ProductService,CategoryService,TempleService,PublicKnowledgeService,DeploymentRevisionService,PublicA2uiService};
 
 final class ApiController extends BaseController {
     public function index(): void {
@@ -12,6 +12,7 @@ final class ApiController extends BaseController {
             '/api/temples',
             '/api/knowledge/articles',
             '/api/knowledge/products',
+            '/api/knowledge/a2ui',
             '/is-sha-valid?sha={40-character-sha}',
         ]]);
     }
@@ -52,6 +53,30 @@ final class ApiController extends BaseController {
 
     /** Only published blog/help metadata, never private Markdown or JSON sessions. */
     /** Bounded public catalogue projection used by WebMCP and native MCP. */
+    /** Read-only A2UI v1 Basic-catalog surface from the published source. */
+    public function knowledgeA2ui(): void {
+        header('Cache-Control: no-store');
+        header('X-Robots-Tag: noindex');
+        $view=$_GET['view'] ?? null;
+        $query=$_GET['query'] ?? '';
+        $limit=$_GET['limit'] ?? '4';
+        if (!is_string($view) || !in_array($view,['products','articles'],true)
+            || !is_string($query) || mb_strlen($query)>120
+            || !is_scalar($limit) || !preg_match('/^[1-4]$/D',(string)$limit)
+            || array_diff(array_keys($_GET),['view','query','limit'])) {
+            $this->jsonResponse(['error'=>'Choose a public view and optional bounded query.'],400);
+        }
+        try {
+            $surface=(new PublicA2uiService())->present($view,$query,(int)$limit);
+        } catch (\InvalidArgumentException) {
+            $this->jsonResponse(['error'=>'Invalid presentation request.'],400);
+        } catch (\Throwable $error) {
+            error_log('Public A2UI presentation failed ('.$error::class.')');
+            $this->jsonResponse(['error'=>'Public presentation unavailable.'],503);
+        }
+        $this->jsonResponse($surface);
+    }
+
     public function knowledgeProducts(): void {
         header('Cache-Control: no-store');
         $query=$_GET['q'] ?? '';
