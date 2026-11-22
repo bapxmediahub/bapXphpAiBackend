@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "b314e84b51cebc80b40b05e294ef8bed131352dcec53f7d6b6179dea827a42ae",
+            "source_sha256": "d74d75c78da625a3139934b5b40e6e8b4f84a620f97c35850728f0506fd3fe84",
             "references_sha256": "f14268376d2e27015e98540db4f303c8f81df456d82b18e3c61ec0516541e1e2",
-            "review_note": "Reviewed canonical StoreStats report reuse, strict report/date/limit validation, actor policy, sanitized private evidence replay and capability help. Updated runtime instructions, observability and generated contracts. Private source navigation works in both successful A2UI and fallback answers; focused80 and golden33 checks pass."
+            "review_note": "Reviewed AgentAnswerPresentationService against runtime-agent, observability and generated tool contracts. Fixed report families consume AgentTraceService safeTool evidence.report, preserve original observed values/history without retrieval, bound rows and keep complete accepted-answer fallback; executable tools and permissions are unchanged."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
@@ -23,14 +23,14 @@
             "review_note": "Reviewed public ProductService and BlogService published selection and exclusion of future, draft, retired or private Markdown and paths."
         },
         "foundation": {
-            "source_sha256": "6d00c70e4768fb7a2048b78d4da07cb375fc753bb8878c00893b01061dc15dc4",
+            "source_sha256": "feebc7a76f4d6ae7080a60f9bb9dde863a1ee323e152774535bdea0310049452",
             "references_sha256": "4dc16999ac73fb64ac22efa5b2da78a85076bfb38f184880884e08af5a58dbce",
-            "review_note": "Reviewed the bounded Enterprise extension, source dependency metadata and shared guidance. Business records remain in MySQL and sanitized report evidence stays within actor-owned conversation JSON. No new public privileges, booking flow, runtime agent, application dependency or storage format was introduced."
+            "review_note": "Reviewed bounded A2UI API layout/slugs input and generated knowledge index against architecture, WebMCP, JSON-storage and deployment guidance. Canonical public selection and fixed catalogs remain the source; native saved evidence replays without new retrieval, and no storage, checkout, booking or deployment authority is added."
         },
         "google-tags": {
             "source_sha256": "5d85546a76fc792fb9cc11dde1a3633519354a11e4bb6a9cd87a07910b305c84",
-            "references_sha256": "13bcd0c9956aeddddcb948b0099a05a23e2811f487dcf8c6f132912146588313",
-            "review_note": "Reviewed the shared frontend guidance correction: it now describes existing retired public consultation routes. Google reporting, consent, tag delivery and integration source behavior are unchanged; its integration references remain accurate."
+            "references_sha256": "1a28ebe30f759c5ba10ea3b906ba9b6c0c4fcde7f7a3956dfecf3bb1c680edda",
+            "review_note": "Reviewed the frontend skill addition against integration and settings guidance. It documents container-aware agent cards and native photo disclosures only; Google tag consent, configuration and reporting behavior remain the existing implementation."
         },
         "http-errors": {
             "source_sha256": "e93e09e81fb4c32aad806a41efd342e0bd24b3ac8335b8307f3894e5cd9e1ac0",
@@ -38,9 +38,9 @@
             "review_note": "Reviewed shared backend guidance changes and existing request-failure references. Commerce report additions do not alter bootstrap or HTTP error handling; the newly fixed public discovery entry routes remain preserved."
         },
         "interface": {
-            "source_sha256": "b21e3f86159de9509cfebd6c48b0bde01a300e611b9be5d751460f74c5b05a02",
-            "references_sha256": "e93b24baabd471b72635b3944ba3ba5a6aeda82bb2bb890c60b68477a004bfef",
-            "review_note": "Reviewed the task disclosure, pointer/keyboard editable prompts, no-JavaScript text, canonical report links and owner/public renderer boundaries. Updated admin/help guidance and corrected the stale frontend booking sentence to the existing retired route behavior. Native browser checks are required in CI."
+            "source_sha256": "1dde35f843c56b8ad778ea324ea7b4687fb9630bbbaa183032d7a794227469d5",
+            "references_sha256": "ed652c6d897a28231284520bbb430915af9a0f717a9b292e09cb75fb38e9abe3",
+            "review_note": "Cross-checked PHP presenters, renderer, native chat handlers and CSS against updated Design.md, frontend/admin UI skills and docs/a2ui.md. Product grid/list/detail/compare, grouped contacts, services and private report cards use container widths, 44px controls, native replay-safe photo disclosure and complete fallback. Public surfaces reject private report data/links."
         },
         "mail": {
             "source_sha256": "3b0589d28bd4923c657f85a867084b79ef9f22dd942ea529fd08af2f1332b249",
@@ -54,18 +54,18 @@
         },
         "media": {
             "source_sha256": "7b9d3d9aa746f16f1441148550d143e7094388b247c423b90c310ed5441db99d",
-            "references_sha256": "d9af0865501a12cdf83b5d5f54daa32c6c1d659f844e614bbd296e239b7b2541",
-            "review_note": "Compared the architecture change with media ownership/deletion guidance. The widget consumes the same validated public raster paths and introduces no upload, deletion, metadata mutation or additional media authority."
+            "references_sha256": "55f49a2fb16565733c3748bbabea736ff1e1e2585d77f906f94555bd942ee5f3",
+            "review_note": "Reviewed the admin UI skill addition against media deletion verification and architecture. Card images remain approved public raster paths, and disclosures change local visibility only; upload, deletion, ownership and stale-media safeguards are unchanged."
         },
         "operator-help": {
             "source_sha256": "487887d5b9318a24a19ecb0beed81eddeaf8f4d4b2d9c19780b54afcd671b02c",
-            "references_sha256": "41217a26c6d4e71fb34add5be4428b825c68d06cd8f802176b901d59e9b373e7",
-            "review_note": "Reviewed the Enterprise task guide against actor-filtered capabilities, report contracts and the actual fill-only composer. Added registry, policy and trace sources to the guide dependency manifest so later changes require review. Owner source links and retired-booking limits match the implemented routes."
+            "references_sha256": "6af265eaf64755b4f9eb981ae86e961cb2202205f780ba8ce820a3b89d7c7844",
+            "review_note": "Reviewed the native presenter and updated admin UI guidance against the existing Enterprise help: report cards use only completed sanitized evidence, retain source/date/basis and editable task prompts, and do not change owner permissions or help access."
         },
         "public-mcp": {
-            "source_sha256": "ed978d9eea858fb1a875ad738f0d9ef015cd19708c719648d86b4f15891f0ef4",
-            "references_sha256": "9ac62bbd867ba8b5fc6b08360f164e4be98b87e92538fa0ca9354c81aa33cd2e",
-            "review_note": "Reviewed public MCP and A2UI references against the new owner-only report link allowlists. Public tools and data remain unchanged; Support/public scopes reject private report navigation. Focused scope tests cover these boundaries."
+            "source_sha256": "cbd053e0c9edd051fd48756a5f77b6a8137438483ae4460da2252b77dda08706",
+            "references_sha256": "fa0a08384a0aac3ec9c523e1ed2b8f10e60c57dc4f4680b4794565ed637e2013",
+            "review_note": "Cross-checked PublicMcpService exact-result presentation, PublicA2uiService layouts and public renderer with docs/public-mcp.md, docs/pages/shop.md and the updated docs/a2ui.md. Four read tools keep their transport/data scopes and safe links; selected products render real detail/comparison fields and the requested selection count."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
@@ -73,9 +73,9 @@
             "review_note": "Checked public product visibility, published navigation destinations and isolated first-party catalogue and policy discovery."
         },
         "workflow": {
-            "source_sha256": "1dc43594d9e5c90dfb2c58bc458ab54a6961a2e7fa39bbb888373260b67706e5",
+            "source_sha256": "34bbd014822ffbe6946f0be468f55d3cf61cabd2aa53e3e852b9380397279011",
             "references_sha256": "94dd586c81b1d91a0332e86219ac2b55c416d5ebc37115c9a2008697d68236d0",
-            "review_note": "Reviewed CI wiring for the new80-check commerce regression on native PHP versions and capability/link Chrome fixtures. Generated contracts/maps reflect the fixed two-agent architecture; GitHub remains the issue tracker and source documentation review rules remain unchanged."
+            "review_note": "Reviewed updated UI skills, generated index and existing development/review workflow. This slice has focused PHP and real Chrome fixtures for the two native agents and public cards; exact-head CI and deployment acceptance remain required, with no dependency or release-policy change."
         }
     }
 }

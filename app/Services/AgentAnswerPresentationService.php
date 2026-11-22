@@ -20,7 +20,7 @@ final class AgentAnswerPresentationService
     public static function toolsForTurn(array $turn): array
     {
         $tools=array_values(array_filter((array)($turn['tools']??[]),'is_array'));
-        if(array_filter($tools,static fn(array $tool):bool=>!empty($tool['evidence']['facts'])))return array_slice($tools,0,32);
+        if(array_filter($tools,static fn(array $tool):bool=>!empty($tool['evidence']['facts'])||!empty($tool['evidence']['report'])))return array_slice($tools,0,32);
         $spans=array_slice(array_values(array_filter((array)($turn['trace']['spans']??[]),
             static fn($span):bool=>is_array($span)&&($span['type']??'')==='tool')),0,32);
         return $spans!==[]?$spans:array_slice($tools,0,32);
@@ -84,7 +84,8 @@ final class AgentAnswerPresentationService
             $signature=$tool['name'].':'.json_encode($filters,JSON_THROW_ON_ERROR);
             if(isset($seen[$signature]))continue;
             $seen[$signature]=true;
-            $group=['title'=>$title,'context'=>mb_substr($context,0,320),'metrics'=>$metrics];
+            $primary=$tool['name']==='sales_summary'?array_search('Net revenue',array_column($metrics,'label'),true):0;
+            $group=['title'=>$title,'context'=>mb_substr($context,0,320),'metrics'=>$metrics,'primary'=>$primary===false?0:$primary];
             if(is_string($evidence['source_path'])&&self::safeActionPath($evidence['source_path'],'admin')) {
                 $group['source']=['label'=>$definition['title'].' source','path'=>$evidence['source_path']];
             }
@@ -92,6 +93,69 @@ final class AgentAnswerPresentationService
             if(count($groups)===2)break;
         }
         return array_reverse($groups);
+    }
+
+    /** One bounded, typed report from recorded evidence; never the raw result or answer prose. */
+    private static function commerceReport(array $tools): ?array
+    {
+        foreach(array_reverse(array_slice($tools,0,32)) as $entry) {
+            if(!is_array($entry)||($entry['name']??'')!=='commerce_report'||($entry['status']??'')!=='complete')continue;
+            $tool=AgentTraceService::safeTool($entry);$evidence=$tool['evidence'];$report=$evidence['report']??null;
+            if(($evidence['source']??'')!=='commerce_reports'||!is_array($report))continue;
+            $kind=$report['type'];
+            $titles=['products'=>'Product performance','stock'=>'Stock status','customers'=>'Customer frequency','coupons'=>'Coupon performance'];
+            $summaryFields=[
+                'products'=>['products'=>['Products','count'],'units'=>['Units purchased','count'],
+                    'gross_line_value'=>['Gross line value','money'],'allocated_net'=>['Allocated net','money']],
+                'stock'=>['products'=>['Product records','count'],'in_stock'=>['Available status','count'],
+                    'out_of_stock'=>['Out of stock','count'],'inactive'=>['Inactive status','count'],
+                    'draft'=>['Draft status','count'],'unknown_status'=>['Unknown status','count']],
+                'customers'=>['customers'=>['Identified customers','count'],'repeat_customers'=>['Repeat customers','count'],
+                    'paid_orders'=>['Paid orders','count'],'unidentified_orders'=>['Orders without customer identity','count'],
+                    'gross_paid'=>['Gross paid','money'],'recorded_refunds'=>['Recorded refunds','money'],'net_paid'=>['Net paid','money']],
+                'coupons'=>['coupons'=>['Coupons used','count'],'uses'=>['Uses','count'],
+                    'discount'=>['Discount value','money'],'net'=>['Associated net','money']],
+            ];
+            $rowFields=[
+                'products'=>['units'=>['Units purchased','count'],'order_lines'=>['Order lines','count'],
+                    'gross'=>['Gross line value','money'],'net'=>['Allocated net','money']],
+                'stock'=>['price'=>['Listed price','money']],
+                'customers'=>['customers'=>['Customers','count'],'orders'=>['Paid orders','count'],
+                    'gross'=>['Gross paid','money'],'refunded'=>['Recorded refunds','money'],'net'=>['Net paid','money']],
+                'coupons'=>['uses'=>['Uses','count'],'discount'=>['Discount value','money'],'net'=>['Associated net','money']],
+            ];
+            if(!isset($titles[$kind]))continue;
+            $format=static fn(int|float $value,string $type):string=>($type==='money'?'₹':'').number_format((float)$value,$type==='money'?2:0);
+            $metrics=[];
+            foreach($summaryFields[$kind] as $key=>[$label,$type])$metrics[]=['label'=>$label,'value'=>$format($report['summary'][$key],$type)];
+            $context='Commerce reports · '.($kind==='stock'?'Current stock-status snapshot':$report['from'].' to '.$report['to']);
+            $context.=$evidence['observed_at']!==null?' · Observed '.str_replace(['T','Z'],[' ',' UTC'],$evidence['observed_at']):' · Observation time unavailable';
+            $rows=[];
+            foreach(array_slice($report['rows'],0,6) as $row) {
+                $title=match($kind) {
+                    'customers'=>match($row['band']){'one_order'=>'One paid order','two_to_four'=>'Two to four paid orders','five_or_more'=>'Five or more paid orders'},
+                    'coupons'=>$row['coupon'],default=>$row['product'],
+                };
+                $values=[];
+                if($kind==='stock')$values[]=['label'=>'Stock status','value'=>match($row['status']) {
+                    'in_stock','active'=>'Available','out_of_stock'=>'Out of stock','inactive'=>'Inactive','draft'=>'Draft',default=>'Unknown status',
+                }];
+                foreach($rowFields[$kind] as $key=>[$label,$type])$values[]=['label'=>$label,'value'=>$format($row[$key],$type)];
+                if($kind==='stock')$values[]=['label'=>'Current offer','value'=>$row['offer_price']===null?'No current offer':$format($row['offer_price'],'money')];
+                $rows[]=['title'=>$title,'values'=>$values];
+            }
+            $shown=count($rows);$total=$report['total_rows'];
+            $coverage=$total===0?($kind==='customers'?'No identified customer groups for this period.':'No matching records.')
+                :'Showing '.$shown.' of '.number_format($total).' rows.'.($shown<$total?' Open the full report for remaining rows.':'');
+            return [
+                'fact'=>['title'=>$titles[$kind],'context'=>mb_substr($context,0,320),'metrics'=>$metrics,
+                    'primary'=>match($kind){'products'=>3,'customers'=>1,'coupons'=>2,default=>0}],
+                'report'=>['kind'=>$kind,'title'=>$titles[$kind].' details','context'=>mb_substr($context,0,320),
+                    'basis'=>mb_substr($report['basis'],0,500),'coverage'=>$coverage,'rows'=>$rows],
+                'source'=>['label'=>'Open '.$titles[$kind].' report','path'=>$report['report_url']],
+            ];
+        }
+        return null;
     }
 
     private static function validDate(mixed $value): bool
@@ -109,6 +173,9 @@ final class AgentAnswerPresentationService
         $chunks=preg_split('/\n\s*\n/u',trim($answer),8)?:[''];
         $sections=array_map(static fn(string $chunk):array=>['body'=>$chunk],$chunks);
         $facts=$scope==='admin'?self::factGroups($tools):[];
+        $commerce=$scope==='admin'?self::commerceReport($tools):null;
+        $reports=$commerce!==null?[$commerce['report']]:[];
+        if($commerce!==null){array_unshift($facts,$commerce['fact']);$facts=array_slice($facts,0,2);$actions[]=$commerce['source'];}
         foreach($facts as $fact)if(isset($fact['source']))$actions[]=$fact['source'];
         $safeActions=[];$seen=[];
         foreach(array_slice($actions,0,16) as $action) {
@@ -138,6 +205,27 @@ final class AgentAnswerPresentationService
                 $components[]=['id'=>'fact_body_'.$i,'component'=>'Column','children'=>$children];
             }
         }
+        if($reports) {
+            $components[0]['children'][]='report';
+            $components[]=['id'=>'report','component'=>'Column','children'=>['report_title','report_context','report_basis','report_coverage','report_rows']];
+            foreach(['title','context','basis','coverage'] as $key) {
+                $component=['id'=>'report_'.$key,'component'=>'Text','text'=>['@path'=>'/reports/0/'.$key]];
+                if($key!=='title')$component['variant']='caption';
+                $components[]=$component;
+            }
+            $components[]=['id'=>'report_rows','component'=>'Column','children'=>array_map(static fn(int $i):string=>'report_row_'.$i,array_keys($reports[0]['rows']))];
+            foreach($reports[0]['rows'] as $i=>$row) {
+                $children=['report_row_title_'.$i];
+                $components[]=['id'=>'report_row_'.$i,'component'=>'Card','child'=>'report_row_body_'.$i];
+                $components[]=['id'=>'report_row_title_'.$i,'component'=>'Text','text'=>['@path'=>"/reports/0/rows/$i/title"]];
+                foreach($row['values'] as $j=>$value) {
+                    $id="report_value_{$i}_$j";$children[]=$id;
+                    $components[]=['id'=>$id,'component'=>'Row','children'=>[$id.'_label',$id.'_value']];
+                    foreach(['label','value'] as $key)$components[]=['id'=>$id.'_'.$key,'component'=>'Text','text'=>['@path'=>"/reports/0/rows/$i/values/$j/$key"]];
+                }
+                $components[]=['id'=>'report_row_body_'.$i,'component'=>'Column','children'=>$children];
+            }
+        }
         foreach($sections as $i=>$section) {
             $components[0]['children'][]='answer_'.$i;
             $components[]=['id'=>'answer_'.$i,'component'=>'Card','child'=>'answer_text_'.$i];
@@ -156,7 +244,8 @@ final class AgentAnswerPresentationService
             'surfaceId'=>'bapx_'.$scope.'_'.bin2hex(random_bytes(8)),
             'catalogId'=>PublicA2uiService::CATALOG,'components'=>$components,
             'dataModel'=>['heading'=>$scope==='admin'?'Enterprise answer':'Support answer',
-                'sections'=>$sections,'facts'=>$facts,'actions'=>$safeActions],
+                'presentation'=>$facts||$reports?'report_summary':'answer_sections',
+                'sections'=>$sections,'facts'=>$facts,'reports'=>$reports,'actions'=>$safeActions],
         ]]];
         // History/replay deliberately omit current public references: no new prices.
         if(isset($references['messages'][0])&&count($references['messages'])===1)$messages[]=$references['messages'][0];

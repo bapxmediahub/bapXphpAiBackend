@@ -177,6 +177,42 @@ test('Failed question returns to the composer with the recorded turn and no auto
 
 const presentations=JSON.parse(execFileSync('php',['tests/fixtures/a2ui-responses.php'],{cwd:root,encoding:'utf8'}));
 for(const width of [1280,375]) {
+    test(`Enterprise recorded report rows survive history at ${width}px`,async()=>{
+        const page=await browser.newPage({viewport:{width,height:800}});
+        const errors=[];page.on('pageerror',error=>errors.push(error.message));
+        let sends=0;
+        try {
+            await page.route(origin+'/admin/agent',route=>route.fulfill({contentType:'text/html',body:view}));
+            await page.route(origin+'/admin/agent/ask',route=>{
+                sends++;return route.fulfill({json:{conversation_id:first,answer:'Published report rows are shown below.',a2ui:presentations.commerce}});
+            });
+            await page.route(origin+'/admin/agent/history',route=>route.fulfill({json:{conversations:[{id:first,preview:'Recorded product report'}]}}));
+            await page.route(origin+'/admin/agent/history/'+first,route=>route.fulfill({json:{conversation_id:first,turns:[
+                {question:'Show product performance',answer:'Saved product report.',a2ui:presentations.commerceHistory},
+            ]}}));
+            await page.goto(origin+'/admin/agent');
+            await page.addScriptTag({path:path.join(root,'assets/agent-status.js')});
+            await page.addScriptTag({path:path.join(root,'assets/a2ui-public-renderer.js')});
+            await page.addStyleTag({path:path.join(root,'assets/css/a2ui-public.css')});
+            const input=page.getByRole('textbox',{name:'Message'});
+            await input.fill('Show product performance');await input.press('Enter');
+            await page.locator('.bapx-a2ui__report-item').first().waitFor();
+            assert.equal(await page.locator('.bapx-a2ui__report-item').count(),2);
+            assert.equal(await page.getByText('Published report rows are shown below.',{exact:true}).count(),1);
+            const before=await page.locator('.bapx-a2ui__report-rows').innerText();
+            const source=page.getByRole('link',{name:'Open Product performance report',exact:true});
+            assert.equal(await source.getAttribute('href'),'/admin/tax-report?report=products&from=2026-11-01&to=2026-11-22');
+            await source.focus();assert.equal(await source.evaluate(element=>element===document.activeElement),true);
+            await page.getByRole('button',{name:'History',exact:true}).click();
+            await page.getByRole('button',{name:/Recorded product report/}).click();
+            await page.getByText('Saved product report.',{exact:true}).waitFor();
+            assert.equal(await page.locator('.bapx-a2ui__report-rows').innerText(),before,'History must keep exact recorded report rows');
+            assert.match(await page.locator('.bapx-a2ui--answer').innerText(),/2026-11-22 10:00:00.000000 UTC/);
+            assert.equal(sends,1,'History must not execute the report again');
+            assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+            assert.deepEqual(errors,[]);
+        } finally {await page.close();}
+    });
     test(`Enterprise structured answer, history and complete fallback at ${width}px`, async()=>{
         const page=await browser.newPage({viewport:{width,height:800}});
         const errors=[];page.on('pageerror',error=>errors.push(error.message));
