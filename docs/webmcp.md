@@ -53,6 +53,9 @@ WebMCP is a browser-tab interface. Its existence on a page does not install a
 tool into an ordinary external chat, and A2UI JSON does not by itself make that
 chat render cards. A compatible external host needs discovery and rendering
 support; MCP Apps uses a separate remote MCP transport and sandboxed UI resource.
+The site's [public MCP endpoint](public-mcp.md) at `/api/mcp` supplies that
+transport for compatible chat hosts, with the same four published data tools
+and cards attached to each result. A host still needs to connect explicitly.
 Public tools must never inherit owner MCP credentials, private Help, customer
 records, agent instructions or conversation JSON.
 

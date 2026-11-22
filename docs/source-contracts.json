@@ -4,18 +4,18 @@
     "reviews": {
         "agents": {
             "source_sha256": "e8391973892060f06d6304eaaf4cc90ce0fc39fd316ea92747a7d0e3c6610c50",
-            "references_sha256": "bf9791131322d62d86adb221e8ba9b6de1b1a21af81df2ee9e58eec57c4a597e",
-            "review_note": "Reviewed Support/Admin integration and AgentAnswerPresentationService against actual registry evidence: two existing PHP agents, bounded recorded metrics, no presentation retrieval, current-source isolation, saved history and complete fallback are documented in agent observability and A2UI contracts."
+            "references_sha256": "701add0bdbbd33e2eb3ee9e35b552cf40c1b17c9fbdf664386f49042190e6cdf",
+            "review_note": "Compared the shared backend guidance with the existing two PHP agents and runtime/tool contracts. The new HTTP adapter formats public knowledge only and introduces no agent, provider call, private trace access or conversation store."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
-            "references_sha256": "977ba9ac3d00ace5b8f8c91f8b9ceffdd46ff04a6487206c06ab96cc1a4d0b2b",
-            "review_note": "Reviewed added public knowledge skill guidance against unchanged identity, account ownership and OAuth contracts. New public lookups omit credentials and never accept an actor selector; no authentication or session rule changes."
+            "references_sha256": "9b950dec5f856b038e5e22fe12bd99a511bc29a030e4164af3794b0b4f503030",
+            "review_note": "Reviewed the exact public route session bypass against authentication and Google OAuth guides. Only /api/mcp skips session initialization; client cookies, tokens and capabilities do not select an actor, and normal login/API session handling remains intact."
         },
         "commerce": {
             "source_sha256": "1aa1c2d02eb7112758482fa1b76a4d49f4ad07caec43f5a8d6f0b72280a5a7b3",
-            "references_sha256": "ed96a32389a6fd0bf0144fe490d7562952bbc77c3f6e59a4a7485931c99fccfb",
-            "review_note": "Reviewed public product projection changes against existing visible/discover/priceOf contract. Bounded display descriptions and optional safe images add no price authority, checkout mutation, tax calculation or business-storage change; commerce guides remain accurate."
+            "references_sha256": "1bf7387c11650d49fc637139403ddefec9fad3eccf6c020ea92fa4033afadb04",
+            "review_note": "Compared the public knowledge projection and new transport with catalogue/order/GST guides. Only published product data is reused; order ownership, payment writes, stock mutation and GST evidence stay behind existing authorized services."
         },
         "content": {
             "source_sha256": "12e40630e473f8d50774e654dc207c19fe3c8b5eb8158ea8da0e392330a3655d",
@@ -24,8 +24,8 @@
         },
         "foundation": {
             "source_sha256": "c85453d2e3d00a4784b873a469b07ddb6e814c185d8bc65eb2a7d714396ff032",
-            "references_sha256": "f7dd947f3fb8212e8a02467b28065a3a95c3289d4ee44ed8471c57c9bacb975c",
-            "review_note": "Reviewed PublicA2uiService, public controller contract and durable architecture/WebMCP/A2UI docs: public views include contact/services even with shop/blog disabled; personal requests and owner private or ungrounded activity cannot select business cards; exact tool-result projection, Unicode paths, safe images and full fallback remain bounded."
+            "references_sha256": "4d3b72c3b02d60c2360124f1ed5650f3446203a2613e5d9af4ac03ea8494d1e8",
+            "review_note": "Compared API/bootstrap and generated map changes with architecture, WebMCP, private JSON storage and deployment guides. Documented the stateless public endpoint separately from document-scoped tools and native agent answers, preserving MySQL business authority, private chat files and real-host acceptance limits."
         },
         "google-tags": {
             "source_sha256": "3103146fdbe5bffc2336f4dceafc352f84aebe4f10429c47e7b544a5f6eda319",
@@ -33,9 +33,9 @@
             "review_note": "Reviewed public layout script changes and frontend guidance against integration docs: global presentation and Support rendering do not alter Google tag configuration, script identity or reporting authorization."
         },
         "http-errors": {
-            "source_sha256": "9f0f3883c318dbfe074d6297e66c3bd7c497975f27804b142af5154e01d9b665",
-            "references_sha256": "62ed72bb4fa72d8fce389d9352d98e182c932518fbf7ffac150261066267f240",
-            "review_note": "Reviewed unchanged request failure boundary against the architecture presentation update: optional formatter failure preserves successful answer text; native request failure semantics and response buffering remain accurate."
+            "source_sha256": "511eef32b2e0352fea40dfed92aeb6d31aeeec2b9cc36726acff2773c79692bd",
+            "references_sha256": "5f0f89c36b516bb1607c193041c57ed7d7c1fe63cfe3c819e605a27bb19f2e06",
+            "review_note": "Compared the exact API MCP dispatch and bootstrap session guard with RequestFailureService and request-failures.md. The normal failure boundary still installs before environment work; the public transport catches its own failures as bounded 503 JSON without exception detail or session cookies."
         },
         "interface": {
             "source_sha256": "79a9a231a0af510eedf044541b485ad19dad797167d4cff0a3ee10f24f68f550",
@@ -44,23 +44,28 @@
         },
         "mail": {
             "source_sha256": "45e094a1fc75a9b16a7f4ed583b7b2933d168e195944e91f299e6f52dbf9b522",
-            "references_sha256": "f042d78231977166a8613d16cc30c7a6b9b87388f050882fe55efce16d71cc80",
-            "review_note": "Reviewed AdminController diff: changes are restricted to agent response/history/public-reference methods; mail actions, canonical delivery state and documented no-resend guarantees are unchanged."
+            "references_sha256": "1ea123d2d866afd31b8e2f86c6684c8c2da82c846ed6807d488cc56e60d16dc3",
+            "review_note": "Reviewed the shared backend guidance and transactional mail contract. The public MCP tools expose published contact facts without contact submission, mail enqueueing or recipient changes; mail behavior is unchanged."
         },
         "mcp-clients": {
             "source_sha256": "68efed716f750107dc03b4520cd5ce6e096d431ef11b2d941ab1fb741083235a",
-            "references_sha256": "58019cfbb75d17356b2c2b24891dda0e2b682cfb2350ac4fc2904858e6602066",
-            "review_note": "Compared CLI shopToolDefinition with canonical PublicKnowledgeService product schemas and updated shop documentation for bounded descriptions and safe images. Private MCP grant issuance, revocation, expiry and owner authorization are unchanged."
+            "references_sha256": "589bfe16d65084b9f51ae39175a2f82afdf245ec378c0e5b7cb60ee17ea873aa",
+            "review_note": "Compared the trusted local STDIO interface and grant service with the shop and integrations guides. Clarified that its process has no HTTP listener; the separate public endpoint never consumes owner grants."
         },
         "media": {
             "source_sha256": "7b9d3d9aa746f16f1441148550d143e7094388b247c423b90c310ed5441db99d",
-            "references_sha256": "a0075d3a46f7738102e6582267bc282fa42b8288ae92fc9a82db4e56137ffece",
-            "review_note": "Reviewed architecture and admin UI guidance changes against media deletion contract: public raster image rendering adds no media mutation or upload/delete path; existing ownership and deletion verification remain accurate."
+            "references_sha256": "d9af0865501a12cdf83b5d5f54daa32c6c1d659f844e614bbd296e239b7b2541",
+            "review_note": "Compared the architecture change with media ownership/deletion guidance. The widget consumes the same validated public raster paths and introduces no upload, deletion, metadata mutation or additional media authority."
         },
         "operator-help": {
-            "source_sha256": "4f2a46c8d65d9ca57a443308748a20492d083f1282f69fea0bbe6224bc4c19ae",
+            "source_sha256": "74c65a85b80d17ebc41f81af46208f87736f16cd5d00d90083fbffd1e5faeec2",
             "references_sha256": "f1534b1c75666a620a6481adcfe614a98dee2ef82717f3c432178df2ce2515b5",
-            "review_note": "Reviewed owner guide, AdminController agent history/ask and layout changes: documented structured recorded facts, source dates, history and full-text fallback; Help role guards and named source resolution remain consistent."
+            "review_note": "Reviewed the ProjectMap dependency and AdminHelp reference manifest. The added public MCP routes are static map metadata only; operator guide role checks and content loading remain unchanged."
+        },
+        "public-mcp": {
+            "source_sha256": "2a5bad9e9692c18b4013c231f3c5c27dd604f9322634b476f538ddb46fdb59cc",
+            "references_sha256": "4a138805d83e59572d1f9c83649a28a9b5a460aa2d3ab16154ea05f4a29da33d",
+            "review_note": "Reviewed the dispatcher, controller, exact bootstrap route, public knowledge/A2UI projection, iframe bridge and official SDK/HTTP/AppBridge fixtures. Documented both explicit protocol profiles, four public tools, exact-page cards, origin/session boundaries, teardown/link recovery, native gates and the distinction between a tested host fixture and an installed chat connector."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
@@ -68,9 +73,9 @@
             "review_note": "Checked public product visibility, published navigation destinations and isolated first-party catalogue and policy discovery."
         },
         "workflow": {
-            "source_sha256": "a111358232c40f0f39825f5ac5f8aeabbaf5af7a63d5a7f158ed118b5443a67b",
+            "source_sha256": "67972d59442a6f72436aabd7cb7e987349379a3afc1b2d1ad2c8d91527100dd2",
             "references_sha256": "94dd586c81b1d91a0332e86219ac2b55c416d5ebc37115c9a2008697d68236d0",
-            "review_note": "Reviewed CI additions, repository UI skills and regenerated project inventory: native browser gates now cover strict answer envelopes, fallback/history and contact/services; local PHP-WASM limitations are not represented as native CI success."
+            "review_note": "Reviewed CI, deployment workflow, documentation ownership and project-map source changes against the development workflow. Added required native default/modern client, HTTP and AppBridge gates plus read-only live MCP acceptance after the deployed-SHA gate; regenerated maps without changing review or deployment approval rules."
         }
     }
 }

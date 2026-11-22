@@ -7,11 +7,11 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 167 routes, 14 controllers, 76 services, 67 views, 0 data files, 29 tools"]
-    arch_routes["> Routes: 167 (Public + Auth + Payment + Admin + Support)"]:::arch
-    arch_ctrl["> Controllers: 14"]:::arch
-    arch_svc["> Services: 76"]:::arch
-    arch_views["> Views: 67"]:::arch
+  subgraph ARCH["Architecture Overview — 171 routes, 15 controllers, 77 services, 68 views, 0 data files, 29 tools"]
+    arch_routes["> Routes: 171 (Public + Auth + Payment + Admin + Support)"]:::arch
+    arch_ctrl["> Controllers: 15"]:::arch
+    arch_svc["> Services: 77"]:::arch
+    arch_views["> Views: 68"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 29"]:::arch
     arch_gaps["> Gaps: 12"]:::arch
@@ -47,6 +47,10 @@ flowchart LR
     route_get_api_knowledge_contact["GET /api/knowledge/contact"]:::route
     route_get_api_knowledge_services["GET /api/knowledge/services"]:::route
     route_get_api_knowledge_a2ui["GET /api/knowledge/a2ui"]:::route
+    route_post_api_mcp["POST /api/mcp"]:::route
+    route_get_api_mcp["GET /api/mcp"]:::route
+    route_delete_api_mcp["DELETE /api/mcp"]:::route
+    route_options_api_mcp["OPTIONS /api/mcp"]:::route
     route_get_feeds_google_products_xml["GET /feeds/google-products.xml"]:::route
     route_get_sitemap_xml["GET /sitemap.xml"]:::route
     route_get_contact["GET /contact — Contact form GET"]:::route
@@ -221,6 +225,7 @@ flowchart LR
     controller_commercecontroller["CommerceController"]:::code
     controller_consultationcontroller["ConsultationController"]:::code
     controller_publiccontroller["PublicController"]:::code
+    controller_publicmcpcontroller["PublicMcpController"]:::code
     controller_remotedbcontroller["RemoteDbController"]:::code
     controller_reviewcontroller["ReviewController"]:::code
     controller_supportcontroller["SupportController"]:::code
@@ -281,6 +286,7 @@ flowchart LR
     service_projectmapservice["ProjectMapService"]:::code
     service_publica2uiservice["PublicA2uiService"]:::code
     service_publicknowledgeservice["PublicKnowledgeService"]:::code
+    service_publicmcpservice["PublicMcpService"]:::code
     service_ratelimiter["RateLimiter"]:::code
     service_requestfailureservice["RequestFailureService"]:::code
     service_resourceservice["ResourceService"]:::code
@@ -360,6 +366,7 @@ flowchart LR
     view_public_home_collections["public/home-collections"]:::code
     view_public_home_product_card["public/home-product-card"]:::code
     view_public_login["public/login"]:::code
+    view_public_mcp_app["public/mcp-app"]:::code
     view_public_merchant_feed["public/merchant-feed"]:::code
     view_public_privacy["public/privacy"]:::code
     view_public_product["public/product"]:::code
@@ -540,6 +547,20 @@ flowchart LR
   controller_apicontroller --> service_publica2uiservice
   controller_apicontroller --> service_publicknowledgeservice
   controller_apicontroller -. renders .-> view_public_404
+  route_post_api_mcp --> controller_publicmcpcontroller
+  controller_publicmcpcontroller --> service_publicmcpservice
+  controller_publicmcpcontroller --> service_publicknowledgeservice
+  controller_publicmcpcontroller --> service_publica2uiservice
+  controller_publicmcpcontroller -. renders .-> view_public_mcp_app
+  route_get_api_mcp --> controller_publicmcpcontroller
+  controller_publicmcpcontroller --> service_publicmcpservice
+  controller_publicmcpcontroller -. renders .-> view_public_404
+  route_delete_api_mcp --> controller_publicmcpcontroller
+  controller_publicmcpcontroller --> service_publicmcpservice
+  controller_publicmcpcontroller -. renders .-> view_public_404
+  route_options_api_mcp --> controller_publicmcpcontroller
+  controller_publicmcpcontroller --> service_publicmcpservice
+  controller_publicmcpcontroller -. renders .-> view_public_404
   route_get_cart --> controller_publiccontroller
   controller_publiccontroller --> service_cartservice
   controller_publiccontroller --> service_productservice
@@ -1227,6 +1248,7 @@ flowchart LR
   controller_commercecontroller --> controller_basecontroller
   controller_consultationcontroller --> controller_basecontroller
   controller_publiccontroller --> controller_basecontroller
+  controller_publicmcpcontroller --> controller_basecontroller
   controller_remotedbcontroller --> controller_basecontroller
   controller_reviewcontroller --> controller_basecontroller
   controller_supportcontroller --> controller_basecontroller

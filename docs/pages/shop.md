@@ -18,7 +18,7 @@ The optional integer `limit` ranges from 1 to 20 and defaults to 20. The zero-ba
 
 ## Local MCP client
 
-An operator can configure a trusted local MCP client to launch the absolute path to `bapXphp` with the argument `mcp:stdio`. The client must support protocol revision `2026-07-28`. The command uses the site's standard PHP database configuration. Access to launch the process is the local trust boundary. The server has no HTTP listener.
+An operator can configure a trusted local MCP client to launch the absolute path to `bapXphp` with the argument `mcp:stdio`. The client must support protocol revision `2026-07-28`. The command uses the site's standard PHP database configuration. Access to launch the process is the local trust boundary. This STDIO process has no HTTP listener. The separate [public MCP endpoint](../public-mcp.md) exposes only published website information and never accepts private STDIO grants.
 
 To inspect the current public tool names, input and output schemas, and read-only annotations, run `./bapXphp mcp:tools`. The JSON catalogue matches guest `tools/list` on STDIO. MCP clients can also call `server/discover` and `tools/call`.
 
@@ -42,7 +42,7 @@ WebMCP registration runs after the locally vendored, pinned **official `@w3c/web
 
 `GET /api/knowledge/articles?q=...&offset=0&limit=5` returns only `articles`, `total`, and `nextOffset`; every article includes a published title, site-relative `/blog/{slug}` path, category and ranking score. `limit` is 1–20, `offset` is nonnegative and the query is at most 120 Unicode characters. The Blog module must be enabled. Draft, future, retired, module-disabled and linked Markdown is filtered by `BlogService::all(false)`.
 
-`search_public_articles` exposes that same PHP source over local STDIO MCP and over browser WebMCP on public pages. WebMCP input/output schemas are emitted from PHP into the public page; the JavaScript browser adapter fetches only the public metadata endpoint with credentials omitted and checks returned fields. A WebMCP-capable browser may discover the tool; a plain ChatGPT conversation does **not** get direct invocation of site WebMCP without a suitable browser agent or separately authorized MCP connector. The application has no remote HTTP MCP transport.
+`search_public_articles` exposes that same PHP source over local STDIO MCP and over browser WebMCP on public pages. WebMCP input/output schemas are emitted from PHP into the public page; the JavaScript browser adapter fetches only the public metadata endpoint with credentials omitted and checks returned fields. A WebMCP-capable browser may discover the tool; ordinary chat access requires a suitable browser agent or a host connected to the separate [public Streamable HTTP MCP endpoint](../public-mcp.md). Compatible MCP Apps hosts can render its public cards; creating the endpoint does not install a connector in a chat session.
 
 The shared layout also registers `get_public_contact` and `list_public_services` on the landing page, including when Shop and Blog are disabled. The same PHP facts populate the human contact page and both agent registries. See [public business tools](../webmcp.md) for schemas, module gates and separate native/polyfill verification.
 
@@ -63,4 +63,4 @@ Regression: `tests/mobile-cart-restore-browser.cjs` exercises actual PHP-rendere
 
 ### A2UI v1.0 product presentation
 
-For agents that support A2UI, `present_public_knowledge` can return an explicit `createSurface` containing a bounded, read-only published product list and safe same-site product links. Support and Enterprise text answers may display the same cards natively. This does not add checkout commands, write access or direct ChatGPT connectivity. See [A2UI contract](../a2ui.md).
+For agents that support A2UI, `present_public_knowledge` returns an explicit `createSurface` containing bounded published product, article, contact or service cards and safe website links. Support and Enterprise render their actor-scoped answer first, with relevant public cards as optional references and complete-text fallback. The public HTTP MCP tools attach cards from the exact result page for compatible MCP Apps hosts. This adds no checkout commands or write access; a chat host still needs to connect. See [A2UI contract](../a2ui.md) and [public MCP](../public-mcp.md).

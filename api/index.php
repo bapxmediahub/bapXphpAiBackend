@@ -1,6 +1,21 @@
 <?php
 declare(strict_types=1);
 
+// Only this exact public endpoint uses the stateless MCP transport. Keep normal API/session routing intact.
+if (parse_url((string)($_SERVER['REQUEST_URI']??''),PHP_URL_PATH)==='/api/mcp') {
+    define('BAPX_PUBLIC_MCP_REQUEST',true);
+    try {
+        require __DIR__.'/../app/bootstrap.php';
+        (new \App\Controllers\PublicMcpController())->handle();
+    } catch (\Throwable) {
+        http_response_code(503);
+        header('Content-Type: application/json; charset=utf-8');
+        header('Cache-Control: no-store');
+        echo '{"jsonrpc":"2.0","error":{"code":-32603,"message":"Public information is temporarily unavailable."}}';
+    }
+    exit;
+}
+
 header('Content-Type: application/json');
 $allowedOrigin = rtrim((string)(getenv('APP_URL') ?: ''), '/');
 if ($allowedOrigin !== '') {

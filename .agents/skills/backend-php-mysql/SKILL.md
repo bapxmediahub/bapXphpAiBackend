@@ -138,3 +138,16 @@ entries. Trace contact/service retrieval as observed tool calls with counts,
 not raw contact submissions or user search text. Product descriptions are
 bounded plain text and images must be safe same-origin raster media paths.
 See docs/webmcp.md and tests/public-knowledge.php.
+
+## Public MCP transport
+
+Keep `/api/mcp` as an exact stateless public route with its own fixed four-tool
+dispatcher. Never reuse the trusted local STDIO grant registry or a browser
+actor. Preserve strict modern framing and the explicit default-client legacy
+profile without a downgrade fallback or stored initialization state. Validate
+Origin against the configured HTTPS site; skip PHP sessions only on this exact
+route. Build MCP Apps cards from the returned public page without a second
+lookup, retain text fallback, and let the host authorize navigation. Run the
+official default/modern client, native HTTP and AppBridge browser fixtures;
+after the live SHA gate run the public read-only endpoint probe. See
+docs/public-mcp.md for contracts and client-capability limits.

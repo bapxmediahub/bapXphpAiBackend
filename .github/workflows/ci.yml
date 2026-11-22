@@ -55,6 +55,8 @@ jobs:
         run: php tests/storefront-search.php
       - name: Gate published public knowledge and hidden Markdown isolation
         run: php tests/public-knowledge.php
+      - name: Gate public MCP modern and legacy profiles and data isolation
+        run: php tests/public-mcp.php
       - name: Gate A2UI v1.0 published data, role isolation and safe actions
         run: |
           php tests/public-a2ui.php
@@ -71,10 +73,16 @@ jobs:
         run: CHROMIUM_PATH="$(command -v google-chrome)" xvfb-run -a node tests/webmcp-official-browser.cjs "$RUNNER_TEMP/w3c-webmcp" --native
       - name: Exercise the owner composer, installed admin app and public header editing in Chrome
         run: |
-          npm install --prefix "$RUNNER_TEMP/agent-browser" --no-audit --no-fund --ignore-scripts playwright@1.62.1 @modelcontextprotocol/client@2.4.0
+          npm install --prefix "$RUNNER_TEMP/agent-browser" --no-audit --no-fund --ignore-scripts playwright@1.62.1 @modelcontextprotocol/client@2.4.0 @modelcontextprotocol/ext-apps@2.0.4
           NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/agent-history-browser.cjs tests/admin-pwa-browser.cjs tests/header-menu-browser.cjs tests/mobile-cart-restore-browser.cjs tests/a2ui-public-browser.cjs
       - name: Verify the public tools with the official MCP client
         run: node tests/catalogue-mcp-interop.cjs "$RUNNER_TEMP/agent-browser"
+      - name: Verify default and modern official clients against the public MCP dispatcher
+        run: node tests/public-mcp-sdk.cjs "$RUNNER_TEMP/agent-browser"
+      - name: Verify public MCP over native HTTP without browser or owner sessions
+        run: node tests/public-mcp-http.cjs "$RUNNER_TEMP/agent-browser"
+      - name: Render public cards with the official MCP Apps host bridge in Chrome
+        run: CHROMIUM_PATH="$(command -v google-chrome)" node tests/public-mcp-app-browser.cjs "$RUNNER_TEMP/agent-browser"
       - name: Validate public catalogue MCP scope and framing
         run: node --test tests/catalogue-mcp.test.cjs
       - name: Validate progressive motion policy and native-scroll bounds
