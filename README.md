@@ -103,67 +103,15 @@ client's browser capability and is not part of the application runtime.
 
 ## Architecture: the application and its source-grounded development system
 
-This is a **working PHP customer application**, not a graph search service. The diagram below is a compact, source-reviewed view of the actual [route registry](app/routes.php), [controllers](app/Controllers), [services](app/Services), [storage schema](storage/schema/collections.php), and public/agent interfaces. It is not a second route registry or a complete call graph. For **every registered route, service, view, schema collection, tool, and detected mapping gap**, use the committed, CI-checked [code dependency graph](map.mmd) and [systematic map](docs/systematic-map.mmd).
+This is a **working PHP customer application**, not a graph search service. The diagram below is a compact, source-reviewed view of the actual [route registry](app/routes.php), [controllers](app/Controllers), [services](app/Services), [storage schema](storage/schema/collections.php), and public/agent interfaces. It is deliberately compact so its labels remain readable on mobile; it is not a second route registry or a complete call graph. For **every registered route, service, view, schema collection, tool, and detected mapping gap**, use the committed, CI-checked [code dependency graph](map.mmd) and [systematic map](docs/systematic-map.mmd).
 
 ```mermaid
 flowchart TB
-  subgraph CLIENTS["Client surfaces"]
-    PUBLIC["Public website, shop, blog and enquiries"]
-    ACCOUNT["Signed-in customer account"]
-    OWNER["Owner administration"]
-    CHATS["Support and Enterprise chats"]
-    EXT["External browser / public MCP clients"]
-  end
-  subgraph APP["One native PHP application"]
-    ROUTES["index.php / app/routes.php"]
-    CONTROLLERS["app/Controllers/*"]
-    SERVICES["app/Services/*"]
-    VIEWS["views/* + assets/*"]
-    POLICY["AuthService + AgentCapabilityPolicy"]
-    AGENTS["AgentContextService + scoped tool registries"]
-    PUBLIC_KNOW["PublicKnowledgeService"]
-    PRESENT["PublicA2uiService + answer presentation"]
-    MCP["PublicMcpController + PublicMcpService"]
-    DATA["DatabaseService"]
-    BLOG["BlogService"]
-    MEDIA["MediaService"]
-    CHAT_STORE["AgentConversationService + AgentTraceService"]
-  end
-  subgraph STORES["Authoritative data and owned files"]
-    MYSQL[("Hosted MySQL: business records and media metadata")]
-    MD[("Published Markdown: content/blog/posts/*.md")]
-    IMAGES[("Bundled and persistent image files")]
-    JSON[("Private storage/agent-conversations/*.json")]
-  end
-  PUBLIC --> ROUTES
-  ACCOUNT --> ROUTES
-  OWNER --> ROUTES
-  CHATS --> ROUTES
-  EXT --> MCP
-  EXT --> ROUTES
-  ROUTES --> CONTROLLERS
-  CONTROLLERS --> SERVICES
-  CONTROLLERS --> VIEWS
-  SERVICES --> POLICY
-  SERVICES --> AGENTS
-  SERVICES --> PUBLIC_KNOW
-  SERVICES --> PRESENT
-  SERVICES --> DATA
-  SERVICES --> BLOG
-  SERVICES --> MEDIA
-  SERVICES --> CHAT_STORE
-  MCP --> PUBLIC_KNOW
-  PUBLIC_KNOW --> DATA
-  PUBLIC_KNOW --> BLOG
-  PUBLIC_KNOW --> PRESENT
-  AGENTS --> POLICY
-  AGENTS --> DATA
-  AGENTS --> CHAT_STORE
-  DATA --> MYSQL
-  BLOG --> MD
-  MEDIA --> MYSQL
-  MEDIA --> IMAGES
-  CHAT_STORE --> JSON
+  CLIENTS["Public shop, blog, and customer account<br/>Owner admin and Support/Enterprise chat<br/>Browser WebMCP and public HTTP MCP"]
+  ROUTING["Native PHP routing<br/>index.php, api/index.php, app/routes.php<br/>Controllers and server-rendered views"]
+  SERVICES["Application services and access policies<br/>Commerce, CMS, PublicKnowledgeService<br/>Role-scoped agent tools and A2UI"]
+  DATA["Authoritative data and files<br/>Hosted MySQL, published Markdown, images<br/>Private JSON chat conversations and traces"]
+  CLIENTS --> ROUTING --> SERVICES --> DATA
 ```
 
 **Authority and isolation:** Application code and [canonical schema](storage/schema/collections.php) define implementation behaviour; the actual hosted MySQL records define live business facts. The [published article source](content/blog/posts) and owned media files remain their own authoritative content. Support, Enterprise and public MCP capabilities do **not** share unrestricted permissions: [agent capability policy](app/Services/AgentCapabilityPolicy.php), [runtime instruction allowlists](app/Services/AgentInstructionService.php), and public-only [MCP](app/Services/PublicMcpService.php) enforce separate boundaries. Coding-agent [AGENTS.md](AGENTS.md) and [skills](.agents/skills) are developer instructions, **never** runtime customer-agent prompts.
