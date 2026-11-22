@@ -65,6 +65,9 @@ jobs:
         run: |
           npm install --prefix "$RUNNER_TEMP/agent-browser" --no-audit --no-fund --ignore-scripts playwright@1.62.1 @modelcontextprotocol/client@2.4.0
           NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/agent-history-browser.cjs tests/admin-pwa-browser.cjs tests/header-menu-browser.cjs tests/mobile-cart-restore-browser.cjs
+      - name: Diagnose live mobile cart behavior on cart-fix pull requests
+        if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'fix/live-cart-')
+        run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/live-mobile-deployment-browser.cjs
       - name: Verify the public tools with the official MCP client
         run: node tests/catalogue-mcp-interop.cjs "$RUNNER_TEMP/agent-browser"
       - name: Validate public catalogue MCP scope and framing
