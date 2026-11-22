@@ -1,0 +1,64 @@
+name: Verify Hostinger deployed revision
+
+on:
+  workflow_run:
+    workflows: ['Validate application']
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: 'Full 40-character commit SHA to verify on the running Hostinger site'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-hostinger-deployment
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Cross-check the live checkout SHA after main validation
+        env:
+          EXPECTED: ${{ github.event_name == 'workflow_dispatch' && inputs.expected_sha || github.event.workflow_run.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED" =~ ^[a-f0-9]{40}$ ]] || { echo 'Invalid requested SHA' >&2; exit 2; }
+          url='https://sripanchamispiritual.com/is-sha-valid'
+          file="$RUNNER_TEMP/hostinger-deploy.json"
+          echo "Expected GitHub SHA: $EXPECTED"
+          for attempt in $(seq 1 16); do
+            code=$(curl --silent --show-error --max-time 12 --no-progress-meter --output "$file" \
+              --write-out '%{http_code}' --header 'Cache-Control: no-cache' \
+              "$url?sha=$EXPECTED" || true)
+            if [[ "$code" == '200' ]] && jq --exit-status --arg sha "$EXPECTED" \
+                '.status == "match" and .match == true and .deployed_sha == $sha and .source == "git_head"' \
+                "$file" >/dev/null 2>&1; then
+              echo "Hostinger verified running $EXPECTED"
+              { echo '### Hostinger deployment verified'; echo ''; echo "- Expected and served checkout SHA: \`$EXPECTED\`"; echo "- Endpoint: $url"; echo '- Evidence: live Git HEAD (not GitHub main alone)'; } >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            echo "Attempt $attempt/16: Hostinger SHA not yet verifiable (HTTP $code)."
+            if [[ "$attempt" -lt 16 ]]; then sleep 15; fi
+          done
+          {
+            echo '### Hostinger deployment NOT verified'
+            echo ''
+            echo "- Expected GitHub SHA: \`$EXPECTED\`"
+            echo "- Check: $url?sha=$EXPECTED"
+            echo '- Mismatch, HTTP 503, unavailable Git metadata or host/network failure must be investigated.'
+            echo '- Do not infer a successful deployment from a successful merge.'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
