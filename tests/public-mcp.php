@@ -33,10 +33,13 @@ foreach(['server/discover','tools/list','resources/list','resources/templates/li
     mcpCheck($result['resultType']==='complete' && $result['ttlMs']===0 && $result['cacheScope']==='public','Missing modern result/cache fields');
 }
 $tools=$invoke('tools/list',[], $ui)['body']['result']['tools'];
-mcpCheck(array_column($tools,'name')===['search_public_products','search_public_articles','get_public_contact','list_public_services'],'Unexpected public tools');
+mcpCheck(array_column($tools,'name')===['search_public_products','search_public_articles','get_public_contact','list_public_services','create_cart','get_cart','set_cart_quantity','review_checkout','prepare_checkout_payment','get_checkout_status'],'Unexpected public/scoped tools');
 foreach($tools as $tool) {
-    mcpCheck($tool['_meta']['ui']['resourceUri']===PublicMcpService::UI_URI,'Missing tool UI linkage');
-    mcpCheck($tool['annotations']['readOnlyHint']===true && $tool['annotations']['destructiveHint']===false,'Unsafe public annotation');
+    $scoped=in_array($tool['name'],['create_cart','get_cart','set_cart_quantity','review_checkout','prepare_checkout_payment','get_checkout_status'],true);
+    $shopping=$scoped||$tool['name']==='search_public_products';
+    mcpCheck($tool['_meta']['ui']['resourceUri']===($shopping?PublicMcpService::SHOPPING_UI_URI:PublicMcpService::UI_URI),'Missing tool UI linkage');
+    mcpCheck($tool['annotations']['readOnlyHint']===(!$scoped||$tool['name']==='get_cart') && $tool['annotations']['idempotentHint']===(!in_array($tool['name'],['create_cart','review_checkout'],true)),'Unsafe tool annotations');
+    mcpCheck($tool['_meta']['in.bapx/access']['scope']===(!$scoped?'public_information':(in_array($tool['name'],['create_cart','get_cart','set_cart_quantity'],true)?'anonymous_cart':($tool['name']==='get_checkout_status'?'checkout_status':'anonymous_checkout'))),'Scope metadata drifted');
     mcpCheck($tool['inputSchema']['additionalProperties']===false,'Loose public arguments');
 }
 foreach($invoke('tools/list')['body']['result']['tools'] as $tool) mcpCheck(isset($tool['_meta']['ui']),'Default clients cannot discover optional public UI');
@@ -76,6 +79,10 @@ mcpCheck($resource['ttlMs']===0 && $resource['cacheScope']==='public','Resource 
 mcpCheck($resource['contents'][0]['mimeType']===PublicMcpService::UI_MIME,'Wrong Apps MIME');
 mcpCheck(str_contains($resource['contents'][0]['text'],'ui/initialize') && !str_contains($resource['contents'][0]['text'],'<script src='),'Widget is not self contained');
 mcpCheck($resource['contents'][0]['_meta']['ui']['csp']['connectDomains']===[],'Widget gained network permission');
+$shoppingResource=$invoke('resources/read',['uri'=>PublicMcpService::SHOPPING_UI_URI])['body']['result']['contents'][0];
+mcpCheck(str_contains($shoppingResource['text'],'BapxShopping') && str_contains($shoppingResource['text'],'serverTools'),'Shopping template missing host capability gate');
+mcpCheck(!str_contains($resource['contents'][0]['text'],'window.BapxShopping ='),'Read-only information gained shopping controls');
+mcpCheck($shoppingResource['_meta']['ui']['csp']===$resource['contents'][0]['_meta']['ui']['csp'],'Shopping widget gained network permissions');
 mcpCheck($invoke('resources/read',['uri'=>'file:///storage/secrets'])['body']['error']['code']===-32602,'Arbitrary resource path accepted');
 mcpCheck($service->handle('{',[])['body']['error']['code']===-32700,'Malformed JSON accepted');
 mcpCheck($service->handle('[]',[])['body']['error']['code']===-32600,'Batch accepted');

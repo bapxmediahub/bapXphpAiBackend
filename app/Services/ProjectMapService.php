@@ -43,12 +43,16 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/api/knowledge/contact','name'=>'api.knowledge.contact','page'=>'public/404','controller'=>'ApiController@knowledgeContact','services'=>['PublicKnowledgeService']],
             ['method'=>'GET','path'=>'/api/knowledge/services','name'=>'api.knowledge.services','page'=>'public/404','controller'=>'ApiController@knowledgeServices','services'=>['PublicKnowledgeService']],
             ['method'=>'GET','path'=>'/api/knowledge/a2ui','name'=>'api.knowledge.a2ui','page'=>'public/404','controller'=>'ApiController@knowledgeA2ui','services'=>['PublicA2uiService','PublicKnowledgeService']],
-            ['method'=>'POST','path'=>'/api/mcp','name'=>'api.mcp','page'=>'public/mcp-app','controller'=>'PublicMcpController@handle','services'=>['PublicMcpService','PublicKnowledgeService','PublicA2uiService']],
+            ['method'=>'POST','path'=>'/api/mcp','name'=>'api.mcp','page'=>'public/mcp-app','controller'=>'PublicMcpController@handle','services'=>['PublicMcpService','PublicKnowledgeService','PublicA2uiService','RemoteCartService','RemoteCheckoutService','RemoteCheckoutStateService','VerifiedOrderService']],
             ['method'=>'GET','path'=>'/api/mcp','name'=>'api.mcp.method','page'=>'public/404','controller'=>'PublicMcpController@handle','services'=>['PublicMcpService']],
             ['method'=>'DELETE','path'=>'/api/mcp','name'=>'api.mcp.delete','page'=>'public/404','controller'=>'PublicMcpController@handle','services'=>['PublicMcpService']],
             ['method'=>'OPTIONS','path'=>'/api/mcp','name'=>'api.mcp.options','page'=>'public/404','controller'=>'PublicMcpController@handle','services'=>['PublicMcpService']],
             ['method'=>'GET','path'=>'/cart','name'=>'cart','page'=>'public/cart','controller'=>'PublicController@cart','services'=>['CartService','ProductService','SiteTelemetryService']],
+            ['method'=>'GET','path'=>'/cart/agent-checkout','name'=>'cart.agent-checkout','page'=>'public/agent-checkout','controller'=>'CommerceController@agentCheckout','services'=>['RemoteCartService','PublicKnowledgeService','ProductService','DatabaseService']],
+            ['method'=>'POST','path'=>'/cart/agent-checkout','name'=>'cart.agent-checkout.import','page'=>'public/agent-checkout','controller'=>'CommerceController@importAgentCheckout','services'=>['RemoteCartService','CartService','DatabaseService']],
             ['method'=>'GET','path'=>'/checkout','name'=>'checkout','page'=>'public/checkout','controller'=>'PublicController@checkout','services'=>['CartService','ProductService','SecretService','AddressService','SettingsService']],
+            ['method'=>'GET','path'=>'/checkout/payment','name'=>'checkout.payment-handoff','page'=>'public/agent-payment','controller'=>'RemoteCheckoutController@payment','services'=>['RemoteCheckoutService','DatabaseService']],
+            ['method'=>'POST','path'=>'/api/payments/razorpay-webhook','name'=>'checkout.payment-webhook','response'=>'json','controller'=>'RemoteCheckoutController@webhook','services'=>['RemoteCheckoutService','PaymentService','VerifiedOrderService','DatabaseService','SecretService']],
             ['method'=>'GET','path'=>'/feeds/google-products.xml','name'=>'merchant.feed','page'=>'public/merchant-feed','controller'=>'PublicController@merchantFeed','services'=>['MerchantFeedService','ProductService','SettingsService']],
             ['method'=>'GET','path'=>'/sitemap.xml','name'=>'sitemap','page'=>'public/sitemap','controller'=>'PublicController@sitemap','services'=>['BlogService','ProductService','AuthoredPageService']],
             ['method'=>'GET','path'=>'/contact','name'=>'contact','page'=>'public/contact','controller'=>'PublicController@contact','services'=>['PublicKnowledgeService']],
@@ -159,10 +163,10 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/cart/remove','name'=>'cart.remove','page'=>'public/cart','controller'=>'CommerceController@removeFromCart','services'=>['CartService']],
             ['method'=>'POST','path'=>'/cart/update','name'=>'cart.update','page'=>'public/cart','controller'=>'CommerceController@updateCart','services'=>['CartService']],
             ['method'=>'POST','path'=>'/checkout/create-order','name'=>'checkout.create-order','page'=>'public/checkout','controller'=>'CommerceController@createOrder','services'=>['SecretService','PaymentService','SiteTelemetryService']],
-            ['method'=>'POST','path'=>'/payment/verify','name'=>'payment.verify','page'=>'public/checkout','controller'=>'CommerceController@verifyPayment','services'=>['SecretService','PaymentService','DatabaseService','TaxService','SettingsService']],
+            ['method'=>'POST','path'=>'/payment/verify','name'=>'payment.verify','page'=>'public/checkout','controller'=>'CommerceController@verifyPayment','services'=>['SecretService','PaymentService','VerifiedOrderService','DatabaseService','TaxService','SettingsService']],
             ['method'=>'GET','path'=>'/payment/stripe/return','name'=>'payment.stripe.return','page'=>'account/order','controller'=>'CommerceController@completeStripe','services'=>['SecretService','DatabaseService','TaxService','SettingsService','MailQueueService']],
             ['method'=>'POST','path'=>'/create-order','name'=>'api.checkout.create-order','page'=>'public/checkout','controller'=>'CommerceController@createOrder','services'=>['SecretService','PaymentService']],
-            ['method'=>'POST','path'=>'/verify-payment','name'=>'api.payment.verify','page'=>'public/checkout','controller'=>'CommerceController@verifyPayment','services'=>['SecretService','PaymentService','DatabaseService','TaxService','SettingsService']],
+            ['method'=>'POST','path'=>'/verify-payment','name'=>'api.payment.verify','page'=>'public/checkout','controller'=>'CommerceController@verifyPayment','services'=>['SecretService','PaymentService','VerifiedOrderService','DatabaseService','TaxService','SettingsService']],
             ['method'=>'POST','path'=>'/consultation/initiate','name'=>'consultation.initiate','page'=>'public/contact','controller'=>'ConsultationController@initiate','services'=>['AuthService']],
             ['method'=>'POST','path'=>'/reviews/product','name'=>'reviews.product','page'=>'account/orders','controller'=>'ReviewController@saveProduct','services'=>['ReviewService']],
             ['method'=>'GET','path'=>'/support','name'=>'support.page','page'=>'public/support','controller'=>'SupportController@page','services'=>['SeoService']],
@@ -203,10 +207,16 @@ final class ProjectMapService {
         $services = $map['services'] ?? self::phpBasenames(app_path('app/Services'));
         $schema = require app_path('storage/schema/collections.php');
         $collections = $map['collections'] ?? array_keys($schema['collections'] ?? []);
-        $missingRouteMappings = array_values(array_filter($map['routes'] ?? [], fn($r) => empty($r['controller']) || empty($r['page'])));
+        $missingRouteMappings = array_values(array_filter($map['routes'] ?? [], self::missingRouteMapping(...)));
         $used = array_unique(array_merge(...array_map(fn($r) => $r['services'] ?? [], $map['routes'] ?? [])));
         $missingServices = array_values(array_diff($used, $services));
         return ['missing_route_mappings'=>$missingRouteMappings,'missing_services'=>$missingServices,'missing_collections'=>[]];
+    }
+
+    private static function missingRouteMapping(array $route): bool {
+        // A declared JSON handler has no HTML view. Missing controllers and
+        // undeclared/misspelled response kinds still fail the mapping gate.
+        return empty($route['controller']) || (empty($route['page']) && ($route['response'] ?? null) !== 'json');
     }
 
     public static function scan(): array {
@@ -244,7 +254,7 @@ final class ProjectMapService {
         $allScCollections = array_values(array_unique(array_merge(...array_values(self::serviceCollections()))));
 
         $gaps = [
-            'missing_route_mappings' => array_values(array_filter($map['routes'], fn($route) => empty($route['controller']) || empty($route['page']))),
+            'missing_route_mappings' => array_values(array_filter($map['routes'], self::missingRouteMapping(...))),
             'missing_controller_files' => array_values(array_diff($routeControllers, $controllers)),
             'missing_service_files' => array_values(array_diff($routeServices, $services)),
             'missing_view_files' => array_values(array_diff($routeViews, $views)),
@@ -316,6 +326,7 @@ final class ProjectMapService {
             '/auth/google'     => 'Google OAuth redirect',
             '/auth/google/callback' => 'Google OAuth callback — upsert user',
             '/cart'            => 'Cart page — items, qty, totals',
+            '/cart/agent-checkout' => 'Anonymous cart review — explicit CSRF-protected browser cart replacement',
             '/checkout'        => 'Checkout page — address, Razorpay payment',
             '/cart/add'        => 'Cart — add item',
             '/cart/remove'     => 'Cart — remove item',
@@ -669,7 +680,11 @@ final class ProjectMapService {
     private static function applyManualOverrides(array &$mapping): void {
         $overrides = [
             'AgentContextService' => ['users', 'orders', 'appointments', 'support_tickets'],
-            'DatabaseService' => ['users', 'addresses', 'products', 'orders', 'appointments', 'consultation_messages', 'consultation_signals', 'secrets', 'mail_inbox', 'mail_outbox', 'contact_submissions'],
+            'DatabaseService' => ['users', 'addresses', 'products', 'orders', 'appointments', 'consultation_messages', 'consultation_signals', 'secrets', 'mail_inbox', 'mail_outbox', 'contact_submissions', 'agent_carts', 'checkout_attempts'],
+            // Fixed atomic database protocols are not recognized by the generic CRUD scan.
+            'RemoteCartService' => ['agent_carts'],
+            'RemoteCheckoutService' => ['agent_carts', 'checkout_attempts'],
+            'VerifiedOrderService' => ['orders'],
         ];
         foreach ($overrides as $service => $cols) {
             $existing = $mapping[$service] ?? [];

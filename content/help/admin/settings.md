@@ -50,6 +50,23 @@ menu** and follow **View the public header** to check it. Published pages from t
 its category dropdown. Shop and Blog become visible only when their modules
 are enabled. The mobile shortcut bar and account links have separate roles.
 
+## Configure chat checkout completion
+
+In **Integrations → Razorpay**, select the intended test or live mode and use its
+matching credentials and **Test checkout webhook secret** or **Live checkout
+webhook secret**. The provider webhook points to the official site's
+`/api/payments/razorpay-webhook` endpoint. Ask the authorized provider/hosting
+operator to configure Payment Link paid, partially paid, expired and cancelled
+events and the bounded recovery schedule. Saving these fields does not perform
+that provider setup or prove payment works.
+
+Customers can review their cart, delivery fields and totals inside Support or a
+compatible connected chat. Payment may continue through an explicit merchant
+page. Missing credentials or the matching webhook secret keep chat payment
+unavailable. If a payment response is interrupted, check the existing payment
+and order status before asking the customer to pay again. Do not submit a real
+payment solely to test these settings.
+
 ## Authorize a local reporting client
 
 Open **Integrations → Manage local MCP clients**. Authorize a named client to read paid-sales totals for 7, 30 or 90 days. Copy the credential from its single display into the trusted client’s secret manager as `BAPX_MCP_CLIENT_TOKEN` for `bapXphp mcp:stdio`. Grants expire after 30 days. Return to this page to check the last successful read or revoke access.

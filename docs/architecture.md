@@ -123,4 +123,30 @@ requires checking state before repeating it. See `request-failures.md`.
 
 ### Declarative agent answers and public references (A2UI v1.0)
 
-Both Support and Enterprise present successful answers through server-owned A2UI templates. `AgentAnswerPresentationService` formats the already-authorized answer, bounded recorded aggregate facts and read-only navigation in the existing native chat; it performs no retrieval and creates no new agent or storage layer. Enterprise fact groups use completed allowlisted tool evidence, with recorded period/source/observation context. History restores those saved facts; Support replay formats the saved answer without fetching current catalogue prices. `PublicA2uiService` separately projects published products, articles, contact details and service options from `PublicKnowledgeService`; exact tool results can become public cards without repeating a query or resetting pagination. Only these public references are exposed through WebMCP and `GET /api/knowledge/a2ui`. The stateless `POST /api/mcp` adapter exposes the same four public data tools with exact-result cards through an MCP Apps resource; both supported protocol profiles remain separate from owner STDIO grants and browser sessions. The shared renderer defaults to public scope and rejects private answer surfaces unless the native host explicitly supplies its Support or admin scope. It allows bounded Card/Column/Text/Image/navigation components and private label/value Rows, fails atomically on unsupported input and keeps the full original answer as fallback. See [A2UI design and acceptance](a2ui.md).
+Both Support and Enterprise present successful answers through server-owned A2UI templates. `AgentAnswerPresentationService` formats the already-authorized answer, bounded recorded aggregate facts and read-only navigation in the existing native chat; it performs no retrieval and creates no new agent or storage layer. Enterprise fact groups use completed allowlisted tool evidence, with recorded period/source/observation context. History restores those saved facts; Support replay formats the saved answer without fetching current catalogue prices. `PublicA2uiService` separately projects published products, articles, contact details and service options from `PublicKnowledgeService`; exact tool results can become public cards without repeating a query or resetting pagination. These public references are exposed through WebMCP and `GET /api/knowledge/a2ui`. The stateless `POST /api/mcp` adapter exposes the same four public data tools with exact-result cards through an MCP Apps resource and six separately authorized commerce tools. Both supported protocol profiles remain separate from owner STDIO grants and browser sessions. The shared renderer defaults to public scope and rejects private answer surfaces unless the native host explicitly supplies its Support or admin scope. It allows bounded Card/Column/Text/Image/navigation components and private label/value Rows, fails atomically on unsupported input and keeps the full original answer as fallback. See [A2UI design and acceptance](a2ui.md).
+
+### Capability-bound chat checkout
+
+`RemoteCartService` provides anonymous, revision-bound carts through six fixed
+HTTP MCP and browser WebMCP wrappers. `RemoteCheckoutService` and
+`RemoteCheckoutStateService` reuse current products, coupon and GST rules, then
+freeze an exact quote and save a durable attempt before provider I/O. Private
+`agent_carts` and `checkout_attempts` records live in the configured hosted database,
+using the same atomic operations directly or through the authenticated remote
+bridge. They are absent from owner-managed record lists and agent context.
+
+Native Support and the MCP App share a small commerce controller for product
+actions, cart quantities, delivery/contact fields, coupons, quote confirmation
+and payment/order status. Commerce state is separate from conversation markup.
+The browser adapter waits for accepted native-pane updates before resolving;
+the external client can still use a validated result when native UI is unavailable.
+Owner Enterprise reporting and private customer data retain their existing
+authorization; cart capabilities never grant those permissions.
+
+Payment authorization can require an explicit merchant-domain step. Signed
+callbacks and bounded reconciliation re-fetch provider evidence, require an exact
+captured INR payment, and pass the frozen snapshot to `VerifiedOrderService`.
+The existing database boundary deduplicates verified payment/order writes.
+Captured payment and saved-order status remain distinct so an interrupted save
+can recover without a second payment. See [remote commerce](remote-commerce.md)
+for retention, provider configuration and acceptance boundaries.

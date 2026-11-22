@@ -9,9 +9,13 @@ $rules = [
   'dependencies'=>['app/Services/SecretService.php','app/Services/OrderService.php','app/Services/StoreStatsService.php','app/Services/AuditLogService.php'],
   'references'=>['docs/pages/shop.md','docs/pages/integrations.md','content/help/admin/settings.md','.agents/skills/bapxphp-cli/SKILL.md']],
 
+ 'remote-commerce'=>['sources'=>['app/Services/RemoteCart*.php','app/Services/RemoteCheckout*.php','app/Controllers/RemoteCheckoutController.php','assets/public-commerce-webmcp.js','assets/public-mcp-shopping.js','assets/support-checkout.js','assets/checkout-form.js','assets/css/chat-commerce.css','assets/css/support-checkout.css','views/public/agent-checkout.php','views/public/agent-payment.php','cli/reconcile-checkouts.php','tests/remote-cart*','tests/remote-checkout*','tests/public-commerce-webmcp*','tests/public-mcp-shopping*','tests/public-mcp-checkout*','tests/support-checkout*','tests/checkout-payment*','tests/live-agent-cart.cjs'],
+  'dependencies'=>['app/Services/DatabaseService.php','app/Controllers/RemoteDbController.php','app/Services/VerifiedOrderService.php','app/Services/PaymentService.php','app/Services/SecretService.php','integrations/razorpay/RazorpayClient.php','storage/schema/collections.php','app/Services/PublicMcpService.php','views/layouts/app.php','views/public/checkout.php'],
+  'references'=>['docs/remote-commerce.md','docs/public-mcp.md','docs/webmcp.md','docs/pages/checkout.md','docs/modules/orders.md','Design.md','.agents/skills/backend-php-mysql/SKILL.md','.agents/skills/frontend-php/SKILL.md']],
+
  'public-mcp'=>['sources'=>['app/Controllers/PublicMcpController.php','app/Services/PublicMcpService.php','views/public/mcp-app.php','assets/public-mcp-app.js','tests/public-mcp*'],
   'dependencies'=>['api/index.php','app/bootstrap.php','app/Services/ProjectMapService.php','app/Services/PublicKnowledgeService.php','app/Services/PublicA2uiService.php','assets/a2ui-public-renderer.js','assets/css/a2ui-public.css'],
-  'references'=>['docs/public-mcp.md','docs/pages/shop.md','docs/a2ui.md','.agents/skills/backend-php-mysql/SKILL.md']],
+  'references'=>['docs/public-mcp.md','docs/remote-commerce.md','docs/pages/shop.md','docs/a2ui.md','.agents/skills/backend-php-mysql/SKILL.md']],
 
  'google-tags'=>['sources'=>['integrations/google-site-kit/*','app/Controllers/AdminGoogleReportingController.php','views/admin/google-reporting.php','tests/google-reporting.php'],
   'dependencies'=>['views/layouts/app.php','views/admin/dashboard.php','views/admin/integrations.php','app/Services/SecretService.php'],
@@ -28,7 +32,7 @@ $rules = [
   'references'=>['docs/email-setup.md','.agents/skills/backend-php-mysql/SKILL.md']],
  'content'=>['sources'=>['app/Services/Blog*.php','app/Services/SeoService.php','app/Services/MarkdownRenderer.php','app/Controllers/BlogController.php','views/public/blog*.php','views/admin/blog*.php','app/Services/AuthoredPageService.php','views/public/authored-page.php','views/admin/pages.php','content/blog/*'],
   'references'=>['docs/pages/blog.md','docs/modules/content-and-seo.md','.agents/skills/docs/SKILL.md']],
- 'commerce'=>['sources'=>['app/Services/Order*.php','app/Services/Product*.php','app/Services/Category*.php','app/Services/Cart*.php','app/Services/Coupon*.php','app/Services/StoreStats*.php','app/Services/Gst*.php','app/Services/Tax*.php','app/Services/Razorpay*.php','app/Controllers/CommerceController.php'],
+ 'commerce'=>['sources'=>['app/Services/Order*.php','app/Services/Product*.php','app/Services/Category*.php','app/Services/Cart*.php','app/Services/Coupon*.php','app/Services/StoreStats*.php','app/Services/Gst*.php','app/Services/Tax*.php','app/Services/Razorpay*.php','app/Services/PaymentService.php','app/Services/VerifiedOrderService.php','integrations/razorpay/RazorpayClient.php','app/Controllers/CommerceController.php','tests/verified-order.php'],
   'references'=>['docs/modules/gst-commerce.md','docs/modules/orders.md','docs/modules/catalog.md','.agents/skills/backend-php-mysql/SKILL.md']],
  'auth'=>['sources'=>['app/Services/Auth*.php','app/Services/EnvService.php','app/Services/Address*.php','app/Services/GoogleOAuth*.php','app/Controllers/AuthController.php','app/Controllers/AccountController.php'],
   'references'=>['docs/modules/auth.md','docs/modules/google-oauth.md','.agents/skills/backend-php-mysql/SKILL.md']],

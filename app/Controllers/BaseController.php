@@ -112,25 +112,10 @@ abstract class BaseController {
     }
 
     protected function resolveCartItems(): array {
-        if (empty($_SESSION['cart'])) return [];
-        // Through ProductService, so a hidden product and an expired offer price are
-        // already applied. Reading the table directly meant the cart could still price
-        // an offer that had ended, charging a figure the product page no longer showed.
-        $products = (new \App\Services\ProductService())->bySlug();
-        $items = [];
-        foreach ($_SESSION['cart'] as $line) {
-            $slug = $line['slug'] ?? '';
-            if (isset($products[$slug])) {
-                $p = $products[$slug];
-                $price = (int)(($p['offer_price'] ?? 0) ?: ($p['price'] ?? 0));
-                $qty = (int)($line['qty'] ?? 1);
-                $items[] = ['product' => $p, 'slug' => $slug, 'name' => $p['name'], 'image_url' => $p['image_url'] ?? '', 'category' => $p['category'] ?? '', 'price' => $p['price'], 'offer_price' => $p['offer_price'] ?? null, 'qty' => $qty, 'line_total' => $price * $qty];
-            }
-        }
-        return $items;
+        return (new \App\Services\CartService())->resolve($_SESSION['cart'] ?? []);
     }
-    protected function cartTotal(array $items): int {
-        return array_sum(array_column($items, 'line_total'));
+    protected function cartTotal(array $items): float {
+        return \App\Services\CartService::total($items);
     }
     protected function cartCount(): int {
         if (empty($_SESSION['cart'])) return 0;

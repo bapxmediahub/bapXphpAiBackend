@@ -87,6 +87,19 @@ final class RemoteDbController {
         }
         try {
             $store = $this->store;
+            if (($collection === 'agent_carts' && $action === 'remote_cart_operation')
+                ||($collection === 'checkout_attempts' && $action === 'remote_checkout_operation')) {
+                if (!is_string($input['operation']??null) || !is_array($input['payload']??null)) throw new \InvalidArgumentException('Cart operation and payload are required.');
+                try { $result=$action==='remote_cart_operation'?$store->remoteCartOperation($input['operation'],$input['payload'])
+                    :$store->remoteCheckoutOperation($input['operation'],$input['payload']); }
+                catch (\App\Services\RemoteCartException $error) {
+                    // Preserve safe business failures across the authenticated internal
+                    // bridge, including rate-limit status and retry timing.
+                    $result=['cart_error'=>['code'=>$error->errorCode,'message'=>$error->getMessage(),
+                        'status'=>$error->httpStatus,'retry_after'=>$error->retryAfter]];
+                }
+                echo json_encode(['success'=>true,'result'=>$result],JSON_THROW_ON_ERROR);return;
+            }
             if ($collection === 'settings' && $action === 'delete_authored_page') {
                 if (!is_string($input['slug'] ?? null) || !is_string($input['expected'] ?? null)) throw new \InvalidArgumentException('Page and revision required.');
                 echo json_encode(['success'=>true, 'deleted'=>$store->deleteAuthoredPage($input['slug'], $input['expected'])]);

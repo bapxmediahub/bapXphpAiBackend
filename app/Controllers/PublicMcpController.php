@@ -4,9 +4,12 @@ namespace App\Controllers;
 
 use App\Services\PublicMcpService;
 
-/** Streamable HTTP framing for the fixed, unauthenticated public knowledge adapter. */
+/** Streamable HTTP framing for public information and explicit anonymous commerce capabilities. */
 final class PublicMcpController
 {
+    /** In-process dependency injection for controller fixtures; never selected by an HTTP parameter. */
+    public function __construct(private ?PublicMcpService $service=null) {}
+
     public function handle(): void
     {
         header('Content-Type: application/json; charset=utf-8');
@@ -14,7 +17,7 @@ final class PublicMcpController
         header('X-Content-Type-Options: nosniff');
         header('Vary: Origin');
         try {
-            $service=new PublicMcpService();
+            $service=$this->service??new PublicMcpService();
             $origin=(string)($_SERVER['HTTP_ORIGIN']??'');
             // Server-side agents normally send no Origin. Browser callers must be the configured site itself.
             if ($origin!=='' && $origin!==$service->origin()) {

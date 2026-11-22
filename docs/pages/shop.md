@@ -18,7 +18,7 @@ The optional integer `limit` ranges from 1 to 20 and defaults to 20. The zero-ba
 
 ## Local MCP client
 
-An operator can configure a trusted local MCP client to launch the absolute path to `bapXphp` with the argument `mcp:stdio`. The client must support protocol revision `2026-07-28`. The command uses the site's standard PHP database configuration. Access to launch the process is the local trust boundary. This STDIO process has no HTTP listener. The separate [public MCP endpoint](../public-mcp.md) exposes only published website information and never accepts private STDIO grants.
+An operator can configure a trusted local MCP client to launch the absolute path to `bapXphp` with the argument `mcp:stdio`. The client must support protocol revision `2026-07-28`. The command uses the site's standard PHP database configuration. Access to launch the process is the local trust boundary. This STDIO process has no HTTP listener. The separate [public MCP endpoint](../public-mcp.md) exposes published website information and isolated capability-bound shopping actions; it never accepts private STDIO grants. The new commerce actions belong to HTTP MCP and browser WebMCP, and do not silently extend the local STDIO tool catalogue.
 
 To inspect the current public tool names, input and output schemas, and read-only annotations, run `./bapXphp mcp:tools`. The JSON catalogue matches guest `tools/list` on STDIO. MCP clients can also call `server/discover` and `tools/call`.
 
@@ -82,4 +82,22 @@ Regression: `tests/mobile-cart-restore-browser.cjs` exercises actual PHP-rendere
 
 ### A2UI v1.0 product presentation
 
-For agents that support A2UI, `present_public_knowledge` returns an explicit `createSurface` containing bounded published product, article, contact or service cards and safe website links. Support and Enterprise render their actor-scoped answer first, with relevant public cards as optional references and complete-text fallback. The public HTTP MCP tools attach cards from the exact result page for compatible MCP Apps hosts. This adds no checkout commands or write access; a chat host still needs to connect. See [A2UI contract](../a2ui.md) and [public MCP](../public-mcp.md).
+For agents that support A2UI, `present_public_knowledge` returns an explicit `createSurface` containing bounded published product, article, contact or service cards and safe website links. Support and Enterprise render their actor-scoped answer first, with relevant public cards as optional references and complete-text fallback. The public HTTP MCP tools attach cards from the exact result page for compatible MCP Apps hosts. The presentation surface remains read-only; the separate, fixed commerce controller adds explicit product/cart/checkout controls to the native Support pane and MCP App. A chat host still needs to connect. See [A2UI contract](../a2ui.md) and [public MCP](../public-mcp.md).
+
+### Shopping and checkout inside chat
+
+Public HTTP clients and compatible browser agents can create an isolated cart,
+read it, set an absolute product quantity, review checkout, explicitly prepare
+payment and read payment/order status. Native Support cards supply Add to cart,
+Buy now and Checkout controls. The checkout pane shows delivery/contact fields,
+coupon entry, server-calculated totals and explicit confirmation. It is separate
+from saved chat markup; only bounded recovery handles survive a page reload in
+session storage. Saved product cards are revalidated before a new shopping action.
+
+The cart uses current catalogue data and revisions. An expired or changed quote
+must be reviewed again. Confirmation creates one durable attempt; status recovery
+does not start another payment. Payment authorization may use an explicit
+merchant-domain step when the external host does not support an approved native
+payment integration. Paid status and saved-order status are distinct, and status
+recovery remains available when Shop is disabled. See [remote commerce](../remote-commerce.md)
+for capabilities, configuration and recovery limits.

@@ -100,3 +100,37 @@ polyfill tests; neither implies installation in an external chat. See docs/webmc
 Use `AgentAnswerPresentationService` for already-authorized answer sections and `PublicA2uiService` for published references. Render the surface as the primary reply with `{scope:"support"}`; keep the full original reply when the renderer rejects unsupported data. Never append a second flat copy. Query named products and articles rather than substituting an unrelated catalogue sample. Keep public images and navigation bounded; format stored replay text without fetching new prices. Verify primary rendering, complete fallback, reload, keyboard links and no overflow at 1280px and 375px with `tests/a2ui-public-browser.cjs`. See `docs/a2ui.md` for public versus actor-scoped contracts.
 
 Use the fixed product grid/list/detail/comparison, article list, contact panel and service enquiry families. Detail/comparison fields come from the selected canonical public products; resolve named comparisons through the shared published-product resolver and exact slugs, never an all-token `A versus B` search. Missing attributes remain missing or explicitly Not listed. Contact is one panel with its canonical fields and one enquiry link. Responsive rules use container width because desktop drawers and external apps can be narrow. Additional photos use native disclosures so controls remain keyboard-operable after Support restores saved HTML. Test the disclosure after real session reload, not only after initial rendering. Public card families cannot include owner reports or private account records.
+
+## Fixed chat checkout components
+
+Reuse `BapxShopping` and `BapxCheckout` for native Support and MCP Apps. The native
+`support-checkout.js` adapter calls only fixed public shopping tools through
+`/api/mcp` with `credentials: 'omit'`; it does not extend owner or Support model
+permissions. Keep validated product card controls usable after saved HTML replay.
+PHP remains authoritative for products, delivery, discounts, totals and payment.
+Do not add write actions or arbitrary form/event interpretation to the public
+A2UI renderer. Enterprise reports never opt into the shopping component.
+
+Mount the native form outside `support-log`, whose HTML is saved for chat history.
+Only a bounded sessionStorage capability receipt may survive native reload: cart
+and payment-status tokens, revision and expiry. Reject extra fields, refresh from
+the server before displaying facts, clear expired/reset handles and show a recovery
+warning when storage is unavailable. Do not save delivery/contact/coupon data or
+reuse this storage mechanism in external MCP Apps. Abort stale work and clear form
+drafts on teardown; refresh status after a back/forward-cache restore.
+Preserve validated recovery access on temporary network/service errors, with an explicit
+retry and no stale facts. A disabled Shop keeps only existing payment-status recovery;
+remove restored product-action controls and block every new cart or checkout action.
+
+Browser WebMCP uses `BapxSupportCheckout.acceptToolResult(name,args,result,{signal})`
+to await the shared canonical render. Validate the fixed result family and capability
+binding, strip delivery/coupon arguments and unrelated App metadata, and preserve the
+active human checkout when a queued external result is malformed or canceled.
+
+Payment preparation and navigation require separate human actions. Open only the
+validated merchant payment page from chat; do not inject third-party payment
+scripts or frames into chat. The ordinary checkout page retains its provider UI.
+Its asynchronous verification callback must contain failures, preserve the original
+payment receipt for retry and distinguish verified-but-unsaved orders from uncertain
+payments. Run the focused Node checks in `tests/checkout-payment.test.cjs` and
+`tests/support-checkout.test.cjs`, plus the desktop/375px native checkout browser fixture.

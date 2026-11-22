@@ -32,10 +32,12 @@
         <div class="admin-form__row">
             <label>Test Key ID<input name="razorpay_test_key_id" value="<?= e($secrets['razorpay_test_key_id']??'') ?>" placeholder="rzp_test_xxxx"></label>
             <label>Test Key Secret<input name="razorpay_test_key_secret" value="<?= e($secrets['razorpay_test_key_secret']??'') ?>" placeholder="Paste test key secret"></label>
+            <label>Test checkout webhook secret<input type="password" name="razorpay_test_webhook_secret" value="<?= e($secrets['razorpay_test_webhook_secret']??'') ?>" autocomplete="new-password"><small>Use the same secret on the Razorpay test webhook for payment_link.paid, payment_link.partially_paid, payment_link.expired and payment_link.cancelled.</small></label>
         </div>
         <div class="admin-form__row">
             <label>Live Key ID<input name="razorpay_live_key_id" value="<?= e($secrets['razorpay_live_key_id']??'') ?>" placeholder="rzp_live_xxxx"></label>
             <label>Live Key Secret<input name="razorpay_live_key_secret" value="<?= e($secrets['razorpay_live_key_secret']??'') ?>" placeholder="Paste live key secret"></label>
+            <label>Live checkout webhook secret<input type="password" name="razorpay_live_webhook_secret" value="<?= e($secrets['razorpay_live_webhook_secret']??'') ?>" autocomplete="new-password"><small>Checkout completion endpoint: <code>/api/payments/razorpay-webhook</code>. Configure the matching live webhook before enabling chat payment. No test or live payment is created by saving these settings.</small></label>
         </div>
         <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Test mode uses test keys for trial payments. Switch to live mode only when production keys are saved and real customer payments are ready.</p>
 

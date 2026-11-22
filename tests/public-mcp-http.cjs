@@ -33,9 +33,10 @@ async function verifyPublicClients(url,{live=false}={}){
             }}));
             if(profile==='modern')assert.deepEqual((await client.discover()).supportedVersions,['2026-07-28','2025-11-25']);
             const {tools}=await client.listTools();
-            assert.deepEqual(tools.map(tool=>tool.name),['search_public_products','search_public_articles','get_public_contact','list_public_services']);
-            assert.ok(tools.every(tool=>tool._meta.ui.resourceUri==='ui://bapx/public-knowledge.html'));
-            assert.ok(tools.every(tool=>tool.annotations.readOnlyHint===true));
+            assert.deepEqual(tools.map(tool=>tool.name),['search_public_products','search_public_articles','get_public_contact','list_public_services','create_cart','get_cart','set_cart_quantity','review_checkout','prepare_checkout_payment','get_checkout_status']);
+            assert.ok(tools.every(tool=>tool._meta.ui.resourceUri===
+                (['search_public_products','create_cart','get_cart','set_cart_quantity','review_checkout','prepare_checkout_payment','get_checkout_status'].includes(tool.name)?'ui://bapx/public-shopping.html':'ui://bapx/public-knowledge.html')));
+            assert.ok(tools.every(tool=>tool.annotations.readOnlyHint===!['create_cart','set_cart_quantity','review_checkout','prepare_checkout_payment','get_checkout_status'].includes(tool.name)));
             const contact=await client.callTool({name:'get_public_contact',arguments:{}});
             assert.equal(contact.isError,undefined);assert.equal(contact.structuredContent.path,'/contact');
             assert.equal(contact._meta['in.bapx/publicSurface'].messages.length,1);
@@ -56,6 +57,8 @@ async function verifyPublicClients(url,{live=false}={}){
             const resource=await client.readResource({uri:resources.resources[0].uri});
             assert.equal(resource.contents[0].mimeType,'text/html;profile=mcp-app');
             assert.ok(resource.contents[0].text.includes('ui/initialize'));
+            const shoppingResource=await client.readResource({uri:'ui://bapx/public-shopping.html'});
+            assert.ok(shoppingResource.contents[0].text.includes('BapxShopping'));
             if(!live){
                 await assert.rejects(client.callTool({name:'paid_sales_summary',arguments:{}}));
                 await assert.rejects(client.readResource({uri:'file:///storage/secrets'}));
@@ -113,7 +116,7 @@ test(liveUrl?'deployed public MCP accepts default and modern clients with actual
         const legacyPublic=await legacy({jsonrpc:'2.0',id:51,method:'tools/list'});
         assert.equal(legacyPublic.status,200);assert.equal(legacyPublic.headers.get('set-cookie'),null);
         assert.equal(legacyPublic.headers.get('mcp-session-id'),null);
-        assert.equal((await legacyPublic.json()).result.tools.length,4);
+        assert.equal((await legacyPublic.json()).result.tools.length,10);
         const privateLegacy=await legacy({jsonrpc:'2.0',id:52,method:'tools/call',params:{name:'paid_sales_summary',arguments:{}}});
         assert.equal((await privateLegacy.json()).error.code,-32602);
         const normal=await fetch(`http://127.0.0.1:${port}/api/knowledge/articles`);

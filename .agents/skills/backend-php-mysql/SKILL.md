@@ -147,13 +147,56 @@ Run tests/catalogue-comparison.php when this selection contract changes.
 
 ## Public MCP transport
 
-Keep `/api/mcp` as an exact stateless public route with its own fixed four-tool
+Keep `/api/mcp` as an exact stateless public route with its own fixed allowlisted
 dispatcher. Never reuse the trusted local STDIO grant registry or a browser
 actor. Preserve strict modern framing and the explicit default-client legacy
 profile without a downgrade fallback or stored initialization state. Validate
-Origin against the configured HTTPS site; skip PHP sessions only on this exact
-route. Build MCP Apps cards from the returned public page without a second
+Origin against the configured HTTPS site; the MCP session bypass must match only
+this exact route. The separate exact Razorpay webhook bypass accepts only raw-body
+HMAC authority and must never inherit a browser actor. Build MCP Apps cards from the returned public page without a second
 lookup, retain text fallback, and let the host authorize navigation. Run the
 official default/modern client, native HTTP and AppBridge browser fixtures;
 after the live SHA gate run the public read-only endpoint probe. See
 docs/public-mcp.md for contracts and client-capability limits.
+
+## Anonymous remote commerce
+
+`RemoteCartService` owns anonymous cart create/get/absolute-quantity updates
+and the website review fallback. Public MCP exposes separate create/get/set,
+review, confirmed payment preparation and status tools; never hide operations
+behind a model-callable generic selector. MySQL `agent_carts` is not an admin resource or
+agent-context collection. Keep the per-cart secret explicit and bounded to 24 hours,
+store only its digest, and use the fixed database-host operation/row lock for
+both direct and authenticated remote persistence. Preserve creation limits,
+resource ceilings, revision conflicts and immediate replay semantics.
+
+The website fallback uses a separate 15-minute ticket, never the persistent cart token in a
+URL. GET cannot import a cart. The explicit replacement checkbox and CSRF POST
+claim the ticket for the server session before importing browser lines. Preserve
+same-browser interrupted-save recovery and the session replay receipt so an old
+POST cannot overwrite later edits. The fallback itself creates no order/payment.
+Resolve current public products and
+offer prices, retain paise through display/gateway rounding, and reject stale
+availability. Run the pure, disposable MySQL/HTTP and browser checks described
+in docs/remote-commerce.md; never create a live order merely for QA.
+
+`RemoteCheckoutService` owns atomic delivery/coupon review and the server quote,
+not an account/address book. Keep full contact/address/coupon data out of tool
+responses, model summaries and stored chat HTML. Bind explicit confirmation to
+the exact cart revision, quote digest/ID and expiry. Persist the private
+`checkout_attempts` row and cart lock atomically before provider I/O; use unique
+reference lookup after uncertainty and never blindly repeat provider creation.
+Unknown lookup is not proof of expiry. Payment requires the provider's minimum
+INR amount, current availability and the same normalized mode credentials used
+by execution. Keep the merchant payment ticket separate from cart and seven-day
+status capabilities; the fixed chat form must not embed a generic provider
+checkout or collect payment credentials.
+
+Only authenticated captured-INR verification may enter `VerifiedOrderService`.
+Preserve actual discount and complete frozen supplier/product tax fields; missing
+product availability still creates a fulfillment hold. Shared persistence never
+clears a browser session. Signed raw-body webhooks and bounded reconciliation
+must recover order saves after chat/cart expiry. Unresolved attempts survive
+cart cleanup, and capacity rejection must roll back the cart lock. Test with
+real pure transitions, a fake gateway, disposable SQL/HTTP concurrency and native
+form recovery; never treat fixture success as live payment proof.

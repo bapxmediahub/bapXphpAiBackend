@@ -1,6 +1,7 @@
 /* MCP Apps iframe protocol 2026-01-26; independent of the outer MCP transport version.
  * https://apps.extensions.modelcontextprotocol.io/api/documents/overview.html
- * This view renders server-authored public A2UI. It makes no network or business tool calls.
+ * Public A2UI is read-only. The optional fixed shopping template calls only its named scoped
+ * server tools after a human action; all calls pass through the host, never direct fetch.
  */
 (() => {
     'use strict';
@@ -10,11 +11,20 @@
     const configNode = document.getElementById('bapx-mcp-config');
     if (!status || !cards || !fallback || !configNode) return;
     let origin;
+    let shoppingEnabled = false;
+    let deliveryStates = [];
+    let canShop = true;
     try {
         const config = JSON.parse(configNode.textContent);
         const url = new URL(config.publicBaseUrl);
         if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash || url.pathname !== '/') throw Error();
         origin = url.origin;
+        shoppingEnabled = config.shopping === true;
+        if (shoppingEnabled && (!Array.isArray(config.deliveryStates) || config.deliveryStates.length > 50
+            || !config.deliveryStates.every(value => typeof value === 'string' && value.length <= 80)
+            || new Set(config.deliveryStates).size !== config.deliveryStates.length)) throw Error();
+        deliveryStates = config.deliveryStates || [];
+        canShop = config.canShop !== false;
     } catch (_) {
         status.textContent = 'Public information could not be opened. See the chat answer.';
         return;
@@ -42,7 +52,7 @@
         const text = Array.isArray(result?.content)
             ? result.content.filter(x => x?.type === 'text' && typeof x.text === 'string').map(x => x.text).join('\n')
             : '';
-        fallback.textContent = text.slice(0, 65536);
+        fallback.textContent = text.replace(/\b(?:cart|payment)_[a-f0-9]{32}\.[a-f0-9]{64}\b/g, '[shopping access omitted]').slice(0, 65536);
         fallback.hidden = !fallback.textContent;
     };
     const resize = () => {
@@ -70,7 +80,7 @@
         const timer = setTimeout(() => {
             pending.delete(id);
             reject(Error('The chat application did not respond.'));
-        }, 10000);
+        }, method === 'tools/call' ? 45000 : 10000);
         pending.set(id, { resolve, reject, timer });
         send({ id, method, params });
     });
@@ -80,20 +90,27 @@
         const current = () => !stopped && revision === displayRevision && attempt === linkAttempt;
         try {
             const url = new URL(target);
-            if (url.origin !== origin || url.username || url.password) throw Error();
+            if (!hostCapabilities.openLinks || url.origin !== origin || url.username || url.password) throw Error();
             const result = await request('ui/open-link', { url: url.href });
             if (result?.isError) throw Error('The host declined this link.');
             if (current() && status.textContent === linkError) {
                 status.textContent = '';
                 resize();
             }
+            return true;
         } catch (_) {
             if (current()) {
                 status.textContent = linkError;
                 resize();
             }
+            return false;
         }
     };
+    const shopping = shoppingEnabled && window.BapxShopping ? window.BapxShopping.create({
+        container: cards, origin, request, openLink, resize, deliveryStates, canShop,
+        capabilities: () => hostCapabilities,
+        setStatus: message => { status.textContent = message; }
+    }) : null;
     const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(resize) : null;
     observer?.observe(document.body);
     const initTimer = setTimeout(() => {
@@ -107,6 +124,7 @@
         if (!message || typeof message !== 'object' || message.jsonrpc !== '2.0') return;
         if (message.method === 'ui/resource-teardown' && message.id !== undefined) {
             stopped = true;
+            shopping?.teardown();
             clearTimeout(initTimer);
             observer?.disconnect();
             if (resizeFrame) cancelAnimationFrame(resizeFrame);
@@ -156,17 +174,27 @@
         }
         if (message.method === 'ui/notifications/tool-cancelled') {
             displayRevision++;
+            shopping?.cancel();
             cards.replaceChildren();
             fallback.hidden = true;
             status.textContent = 'This request was cancelled.';
             resize();
             return;
         }
+        if (message.method === 'ui/notifications/tool-input') {
+            shopping?.onToolInput(message.params);
+            return;
+        }
         if (message.method !== 'ui/notifications/tool-result') return;
         const result = message.params;
         displayRevision++;
-        cards.replaceChildren();
         showFallback(result);
+        if (shopping?.render(result)) {
+            fallback.hidden = true;
+            resize();
+            return;
+        }
+        cards.replaceChildren();
         const surface = result?._meta?.['in.bapx/publicSurface'];
         let rendered = false;
         if (!result?.isError && surface && window.BapxA2ui) {
@@ -192,7 +220,7 @@
     window.addEventListener('message', receive);
     send({ id: initId, method: 'ui/initialize', params: {
         protocolVersion: version,
-        appInfo: { name: 'bapx-public-knowledge', version: '1.0.0' },
+        appInfo: { name: shoppingEnabled ? 'bapx-public-shopping' : 'bapx-public-knowledge', version: '1.0.0' },
         appCapabilities: { availableDisplayModes: ['inline'] }
     } });
 })();

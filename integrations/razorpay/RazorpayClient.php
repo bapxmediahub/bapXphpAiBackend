@@ -11,6 +11,36 @@ final class RazorpayClient {
         return $this->get('refunds/' . rawurlencode($refundId));
     }
 
+    public function fetchPaymentLink(string $id):array {
+        // https://razorpay.com/docs/api/payments/payment-links/fetch-id-standard
+        return $this->get('payment_links/'.rawurlencode($id));
+    }
+
+    public function findPaymentLinks(string $reference):array {
+        // https://razorpay.com/docs/api/payments/payment-links/fetch-all-standard
+        return $this->get('payment_links?reference_id='.rawurlencode($reference).'&count=20');
+    }
+
+    public function fetchOrderPayments(string $orderId):array {
+        // https://razorpay.com/docs/api/orders/fetch-payments
+        return $this->get('orders/'.rawurlencode($orderId).'/payments');
+    }
+
+    /** Called once per durably persisted checkout attempt; a timeout is reconciled by reference. */
+    public function createPaymentLink(array $payload):array {
+        // https://razorpay.com/docs/api/payments/payment-links/create-standard
+        $payload=array_intersect_key($payload,array_flip(['amount','currency','accept_partial','reference_id','expire_by','description','notify','reminder_enable']));
+        $ch=curl_init('https://api.razorpay.com/v1/payment_links');
+        curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_POST=>true,
+            CURLOPT_POSTFIELDS=>json_encode($payload,JSON_THROW_ON_ERROR),CURLOPT_HTTPHEADER=>['Content-Type: application/json'],
+            CURLOPT_USERPWD=>$this->keyId.':'.$this->keySecret,CURLOPT_TIMEOUT=>20]);
+        $body=curl_exec($ch);$status=curl_getinfo($ch,CURLINFO_HTTP_CODE);curl_close($ch);
+        $decoded=is_string($body)&&$body!==''?json_decode($body,true):null;
+        // Do not propagate provider error bodies: they can echo contact or request data.
+        if($status<200||$status>=300||!is_array($decoded))throw new \RuntimeException('Razorpay payment-link request failed',$status?:503);
+        return $decoded;
+    }
+
     private function get(string $path): array {
         $ch = curl_init('https://api.razorpay.com/v1/' . $path);
         curl_setopt_array($ch, [

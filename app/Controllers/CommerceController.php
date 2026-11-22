@@ -1,9 +1,80 @@
 <?php
 namespace App\Controllers;
-use App\Services\{CartService,ProductService,SecretService,PaymentService,DatabaseService,MailQueueService,TaxService,SettingsService};
+use App\Services\{CartService,ProductService,SecretService,PaymentService,DatabaseService,MailQueueService,TaxService,SettingsService,RemoteCartService,RemoteCartException};
 use App\Integrations\Razorpay\RazorpayClient;
 use App\Integrations\Stripe\StripeClient;
 final class CommerceController extends BaseController {
+    public function __construct(private ?RemoteCartService $remoteCarts=null) {}
+
+    /** The separate review capability never selects a customer account or mutates a cart on GET. */
+    public function agentCheckout(): void {
+        $this->agentCheckoutHeaders();
+        $ticket=is_string($_GET['ticket']??null)?$_GET['ticket']:'';
+        $this->renderAgentCheckout($ticket);
+    }
+
+    public function importAgentCheckout(): void {
+        $this->agentCheckoutHeaders();
+        $csrf=$_POST['_csrf']??null;$expected=$_SESSION['csrf_token']??null;
+        if(!is_string($csrf)||!is_string($expected)||$csrf===''||!hash_equals($expected,$csrf)
+            ||($_POST['confirm']??null)!=='replace') {
+            $this->renderAgentCheckout('', 'Confirm cart replacement from a fresh review page before continuing.',419);return;
+        }
+        $ticket=is_string($_POST['ticket']??null)?$_POST['ticket']:'';
+        $quote=is_string($_POST['quote']??null)?$_POST['quote']:'';
+        $service=$this->remoteCarts??=new RemoteCartService();
+        try {
+            $binding=$this->agentCheckoutBinding();$preview=$service->previewCheckout($ticket,$binding);
+            $receiptKey=hash('sha256',$ticket);$receipts=$_SESSION['agent_checkout_receipts']??[];
+            if(!is_array($receipts))$receipts=[];
+            $receipts=array_filter($receipts,static fn(mixed $expires):bool=>is_int($expires)&&$expires>time());
+            // A repeated POST must not replace browser changes made after a successful import.
+            // A DB claim without this session receipt is recoverable by the same browser.
+            if(isset($receipts[$receiptKey])&&$preview['alreadyImported'])$this->redirect('/checkout');
+            if(count($receipts)>=100)throw new RemoteCartException('checkout_limit','Too many checkout reviews in this browser. Continue with your current cart or try later.',429,900);
+            $claimed=$service->claimCheckout($ticket,$binding,$quote);
+            $_SESSION['cart']=$claimed['lines'];
+            $receipts[$receiptKey]=strtotime($preview['expiresAt']);
+            $_SESSION['agent_checkout_receipts']=$receipts;
+            $this->redirect('/checkout');
+        }catch(RemoteCartException $error){
+            if($error->retryAfter>0)header('Retry-After: '.$error->retryAfter);
+            $this->renderAgentCheckout($ticket,$error->getMessage(),$error->httpStatus);
+        }
+    }
+
+    private function agentCheckoutHeaders():void {
+        header('Content-Type: text/html; charset=utf-8');
+        header('Cache-Control: private, no-store, max-age=0');
+        header('Referrer-Policy: no-referrer');
+        header('X-Robots-Tag: noindex, nofollow, noarchive');
+        header('X-Content-Type-Options: nosniff');
+        header("Content-Security-Policy: default-src 'none'; style-src 'self'; img-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'");
+    }
+
+    private function agentCheckoutBinding():string {
+        if(!is_string($_SESSION['agent_checkout_binding']??null)
+            ||!preg_match('/^[a-f0-9]{64}$/D',$_SESSION['agent_checkout_binding'])) {
+            $_SESSION['agent_checkout_binding']=bin2hex(random_bytes(32));
+        }
+        return hash('sha256',$_SESSION['agent_checkout_binding']);
+    }
+
+    private function renderAgentCheckout(string $ticket,?string $error=null,int $status=200):void {
+        $preview=null;
+        if($ticket!=='') {
+            try{$preview=($this->remoteCarts??=new RemoteCartService())->previewCheckout($ticket,$this->agentCheckoutBinding());}
+            catch(RemoteCartException $failure){$error??=$failure->getMessage();if($status===200)$status=$failure->httpStatus;}
+        }elseif($error===null){$error='Open the complete checkout review link supplied with your cart.';$status=400;}
+        $csrf=$_SESSION['csrf_token']??=bin2hex(random_bytes(16));
+        $browserItemCount=array_sum(array_map(static fn(array $line):int=>max(0,(int)($line['qty']??0)),$_SESSION['cart']??[]));
+        $alreadyImported=$preview!==null&&$preview['alreadyImported']
+            &&(int)($_SESSION['agent_checkout_receipts'][hash('sha256',$ticket)]??0)>time();
+        http_response_code($status);
+        // Deliberately omit the analytics-enabled public layout on a capability URL.
+        require app_path('views/public/agent-checkout.php');
+    }
+
     public function addToCart(): void {
         $this->validateCsrf();
         $slug = trim($_POST['slug'] ?? '');
@@ -203,7 +274,7 @@ final class CommerceController extends BaseController {
                 $this->jsonResponse(['error' => $e->getMessage()], 422);
             }
         }
-        $cartAmount = max(0, $this->cartTotal($items) - $discount) * 100;
+        $cartAmount = (int)round(max(0, $this->cartTotal($items) - $discount) * 100);
         $amount = $cartAmount > 0 ? $cartAmount : (int)($_POST['amount'] ?? 0);
         if ($amount < 100) {
             $this->jsonResponse(['error' => 'Amount must be at least 100 paise.'], 400);
@@ -243,7 +314,7 @@ final class CommerceController extends BaseController {
         $this->validateCsrf();
         $pendingOrder = $_SESSION['pending_order'] ?? null;
         if (!$pendingOrder || ($pendingOrder['razorpay_order_id'] ?? '') === '') {
-            $this->jsonResponse(['verified' => false, 'error' => 'No pending order found. Please start checkout again.'], 400);
+            $this->jsonResponse(['verified' => false, 'error' => 'This browser no longer has the pending checkout. Check your account or order confirmation email, or contact support with the payment reference before making another payment.'], 400);
         }
         $secrets = (new SecretService())->all();
         if (!(new SecretService())->razorpayReadyForCurrentHost($secrets)) {
@@ -264,12 +335,8 @@ final class CommerceController extends BaseController {
             $signature
         );
         if (!$ok) {
-            // Keep the cart: the customer has not been charged and should be able to
-            // retry without rebuilding their order.
-            try { (new MailQueueService())->enqueuePaymentFailure($pendingOrder, 'Payment signature could not be verified.'); }
-            catch (\Throwable $e) { error_log('Payment failure mail failed: ' . $e->getMessage()); }
-            unset($_SESSION['pending_order']);
-            $this->jsonResponse(['verified' => false, 'error' => 'Payment signature mismatch.'], 400);
+            // A bad callback proves neither payment failure nor that no charge occurred.
+            $this->jsonResponse(['verified' => false, 'error' => 'Payment signature could not be verified. Keep the payment reference and check again or contact support.'], 400);
         }
         $razorpay = new RazorpayClient($secrets['razorpay_key_id'], $secrets['razorpay_key_secret']);
         try {
@@ -278,10 +345,9 @@ final class CommerceController extends BaseController {
             $this->jsonResponse(['verified' => false, 'error' => 'Failed to verify payment with gateway.'], 502);
         }
         $expectedPaise = (int)round(((float)($pendingOrder['total'] ?? 0)) * 100);
-        $actualPaise = (int)($payment['amount'] ?? 0);
-        if ($actualPaise !== $expectedPaise || (string)($payment['order_id'] ?? '') !== $orderId) {
-            unset($_SESSION['pending_order']);
-            $this->jsonResponse(['verified' => false, 'error' => 'Payment amount mismatch.'], 400);
+        if (!PaymentService::isCapturedRazorpayPayment($payment, $paymentId, $orderId, $expectedPaise)) {
+            $this->jsonResponse(['verified' => false, 'payment_pending' => true,
+                'error' => 'The gateway has not confirmed a captured INR payment matching this checkout. Keep the payment reference and check again; do not start another payment.'], 409);
         }
         try {
             $localId = $this->persistVerifiedOrder($pendingOrder, $paymentId, [
@@ -349,90 +415,22 @@ final class CommerceController extends BaseController {
         $this->redirect('/account/orders/' . rawurlencode($localId) . '?placed=1');
     }
 
-    /** Persist either gateway through one idempotent, tax-aware order boundary. */
+    /** Browser adapter for the shared, session-independent verified-order boundary. */
     private function persistVerifiedOrder(array $pendingOrder, string $paymentId, array $gatewayFields, ?array $testPorts = null): string {
-        $paymentId = trim($paymentId);
-        if ($paymentId === '') throw new \InvalidArgumentException('Verified payment id is required.');
-        // Optional private ports permit deterministic tests without touching hosted records.
-        $db = $testPorts === null ? new DatabaseService() : null;
-        $existingOrders = $testPorts === null ? $db->read('orders') : ($testPorts['readOrders'])();
-        foreach ($existingOrders as $existing) {
-            if (($existing['payment_id'] ?? '') === $paymentId) return (string)$existing['id'];
-            if (!empty($gatewayFields['stripe_session_id']) && ($existing['stripe_session_id'] ?? '') === $gatewayFields['stripe_session_id']) {
-                return (string)$existing['id'];
-            }
+        $localId = (new \App\Services\VerifiedOrderService())->persist($pendingOrder, $paymentId, $gatewayFields, $testPorts);
+        // A callback must not clear a different checkout or a later browser cart.
+        if (isset($_SESSION['pending_order']) && $_SESSION['pending_order'] === $pendingOrder) {
+            $canonicalLines = static function (array $items): array {
+                $lines = array_map(static fn(array $item): array =>
+                    ['slug'=>(string)($item['slug'] ?? ''), 'qty'=>(int)($item['qty'] ?? 0)], $items);
+                usort($lines, static fn(array $a, array $b): int => $a['slug'] <=> $b['slug']);
+                return $lines;
+            };
+            $expectedCart = $canonicalLines($pendingOrder['items'] ?? []);
+            $currentCart = $canonicalLines($_SESSION['cart'] ?? []);
+            unset($_SESSION['pending_order']);
+            if ($expectedCart !== [] && $currentCart === $expectedCart) unset($_SESSION['cart']);
         }
-
-        $orderItems = $pendingOrder['items'] ?? [];
-        $products = $testPorts === null ? (new ProductService())->bySlug() : ($testPorts['products'])();
-        $unavailable = [];
-        $missingProduct = false;
-        foreach ($orderItems as $item) {
-            $product = $products[$item['slug'] ?? ''] ?? null;
-            if ($product === null) $missingProduct = true;
-            if (!in_array($product['stock_status'] ?? '', ['in_stock', 'active'], true)) {
-                $unavailable[] = (string)($item['name'] ?? 'A product');
-            }
-        }
-
-        $itemsWithRates = array_map(function (array $item) use ($products): array {
-            $product = $products[$item['slug'] ?? ''] ?? [];
-            $item['gst_rate'] = (float)($product['gst_rate'] ?? 0);
-            $item['hsn_code'] = (string)($product['hsn_code'] ?? '');
-            $item['unit_price'] = (float)($item['line_total'] ?? 0) / max(1, (int)($item['qty'] ?? 1));
-            return $item;
-        }, $orderItems);
-        $settings = $testPorts === null ? (new SettingsService())->public() : ($testPorts['settings'])();
-        $tax = $missingProduct ? null : (new TaxService())->snapshotForVerifiedPayment($itemsWithRates, 0, (string)($pendingOrder['shipping_state'] ?? ''), $settings);
-        // Every callback for one verified payment converges on the same primary key.
-        // insertIfAbsent then makes the first persisted snapshot the atomic winner.
-        $localId = substr(hash('sha256', 'verified-payment:' . $paymentId), 0, 16);
-        $order = array_merge([
-            'id' => $localId,
-            'status' => $unavailable ? 'on_hold' : 'confirmed',
-            'fulfillment_review_required' => !empty($unavailable),
-            'fulfillment_review_reason' => $unavailable ? 'Product availability changed after checkout' : '',
-            'total' => $pendingOrder['total'],
-            'payment_id' => $paymentId,
-            'payment_email_status' => 'pending',
-            'customer_email' => $pendingOrder['customer_email'],
-            'customer_name' => $pendingOrder['customer_name'],
-            'customer_phone' => $pendingOrder['customer_phone'],
-            'shipping_address' => $pendingOrder['shipping_address'],
-            'shipping_city' => $pendingOrder['shipping_city'],
-            'shipping_pincode' => $pendingOrder['shipping_pincode'],
-            'shipping_state' => $pendingOrder['shipping_state'] ?? '',
-            // Preserve the rate/HSN/unit-price inputs even when state is unavailable,
-            // so a later reviewed invoice does not depend on changed catalogue data.
-            'items' => $itemsWithRates,
-            'coupon_code' => $pendingOrder['coupon_code'] ?? '',
-            'discount' => $pendingOrder['discount'] ?? 0,
-            'customer_gstin' => $pendingOrder['customer_gstin'] ?? '',
-            'tax_review_required' => $tax === null,
-            'tax_review_reason' => $tax === null ? ($missingProduct ? 'Product tax details unavailable at payment confirmation' : 'Missing or invalid delivery or supplier state at payment confirmation') : '',
-            'created_at' => date('c'),
-        ], $gatewayFields);
-        if ($tax !== null) {
-            unset($tax['total']); // Gateway-verified total remains authoritative.
-            $order = array_merge($order, $tax);
-        }
-        if ($testPorts !== null && $tax !== null) {
-            $order = array_merge($order, (new TaxService())->nextInvoice($existingOrders));
-        }
-        if ($testPorts === null) {
-            $saved = $db->saveVerifiedOrder($order, $tax !== null);
-            $insert = ['inserted' => $saved['created'], 'record' => $saved['record']];
-        } elseif (isset($testPorts['insertOrder'])) {
-            $insert = ($testPorts['insertOrder'])($order);
-        } else {
-            ($testPorts['saveOrder'])($order);
-            $insert = ['inserted' => true, 'record' => $order];
-        }
-        $stored = $insert['record'] ?? $order;
-        $localId = (string)($stored['id'] ?? $localId);
-        try { if ($testPorts === null && !empty($insert['inserted'])) (new MailQueueService())->enqueuePaymentConfirmation($stored); }
-        catch (\Throwable $error) { error_log('Payment confirmation mail could not be queued.'); }
-        unset($_SESSION['pending_order'], $_SESSION['cart']);
         return $localId;
     }
 }

@@ -3,6 +3,29 @@ const assert=require('node:assert/strict');
 const {chromium}=require('playwright');
 const {test}=require('node:test');
 const native=process.env.WEBMCP_NATIVE==='1';
+const commerceNames=['create_cart','get_cart','set_cart_quantity','review_checkout','prepare_checkout_payment','get_checkout_status'];
+const landingNames=['get_public_contact','list_public_services','present_public_knowledge','search_public_articles','search_public_products',...commerceNames].sort();
+const shopNames=[...landingNames,'list_shop_results'].sort();
+async function waitForTools(page,expected){
+    await page.waitForFunction(async expected=>{
+        if(typeof document.modelContext?.getTools!=='function')return false;
+        try{
+            const names=(await document.modelContext.getTools()).map(tool=>tool.name).sort();
+            return names.length===expected.length&&names.every((name,index)=>name===expected[index]);
+        }catch{return false}
+    },expected,{timeout:12000});
+}
+function checkCommerceAnnotations(tools){
+    for(const name of commerceNames){
+        const annotations=tools[name];
+        if(!native)assert.ok(annotations&&typeof annotations==='object','Commerce annotations missing: '+name);
+        const readOnly=name==='get_cart';
+        for(const [hint,value]of Object.entries({readOnlyHint:readOnly,consequentialHint:!readOnly,untrustedContentHint:true})){
+            // Native Chrome releases may omit annotations from discovered descriptors.
+            if(!native||Object.hasOwn(annotations??{},hint))assert.equal(annotations?.[hint],value,name+' '+hint);
+        }
+    }
+}
 
 test('live landing and shop WebMCP tools can be discovered and invoked ('+(native?'native':'official polyfill')+')', {timeout:65000}, async()=>{
     const browser=await chromium.launch({headless:!native,
@@ -26,13 +49,8 @@ test('live landing and shop WebMCP tools can be discovered and invoked ('+(nativ
         assert.equal(instructions.status(),200,'Public /llms.txt read failed: '+JSON.stringify(diagnosticHeaders));
         const instructionText=await instructions.text();
         assert.ok(instructionText.includes('/api/mcp')&&instructionText.includes('/ai-assistants'),'Advisory index points to the real public interface');
-        await page.waitForFunction(async()=>{
-            if(typeof document.modelContext?.getTools!=='function')return false;
-            try{return (await document.modelContext.getTools())
-                .some(tool=>tool.name==='present_public_knowledge');}
-            catch{return false}
-        },null,{timeout:12000});
-        const landing=await page.evaluate(async native=>{
+        await waitForTools(page,landingNames);
+        const landing=await page.evaluate(async({native,commerceNames})=>{
             const ctx=document.modelContext;
             if(native&&!String(ctx.registerTool).includes('[native code]'))throw Error('Native probe must use the browser implementation');
             const all=await ctx.getTools();
@@ -41,15 +59,17 @@ test('live landing and shop WebMCP tools can be discovered and invoked ('+(nativ
             const products=await invoke('search_public_products',{limit:2});
             const slugs=products.products.map(item=>decodeURIComponent(item.path.slice('/product/'.length)));
             const selected=await invoke('search_public_products',{slugs,limit:Math.max(1,slugs.length)});
-            return {names,contact:await invoke('get_public_contact',{}),
+            return {names,commerceAnnotations:Object.fromEntries(all.filter(tool=>commerceNames.includes(tool.name)).map(tool=>[tool.name,tool.annotations??null])),
+                contact:await invoke('get_public_contact',{}),
                 services:await invoke('list_public_services',{limit:4}),
                 products,selected,
                 articles:await invoke('search_public_articles',{limit:1}),
                 contactUi:await invoke('present_public_knowledge',{view:'contact',limit:4}),
                 servicesUi:await invoke('present_public_knowledge',{view:'services',limit:4}),
                 ui:await invoke('present_public_knowledge',{view:'products',limit:1})};
-        },native);
-        assert.deepEqual(landing.names,['get_public_contact','list_public_services','present_public_knowledge','search_public_articles','search_public_products']);
+        },{native,commerceNames});
+        assert.deepEqual(landing.names,landingNames);
+        checkCommerceAnnotations(landing.commerceAnnotations);
         assert.equal(landing.contact.path,'/contact');
         assert.ok(landing.contact.phones.length>0&&landing.contact.email);
         assert.equal(landing.services.total,4);
@@ -66,12 +86,10 @@ test('live landing and shop WebMCP tools can be discovered and invoked ('+(nativ
         assert.equal(landing.servicesUi.messages[0].createSurface.dataModel.items.length,4);
         assert.ok(Number.isInteger(landing.articles.total));
         await page.goto(site+'/shop',{waitUntil:'load',timeout:20000});
-        await page.waitForFunction(async()=>typeof document.modelContext?.getTools==='function'
-            &&(await document.modelContext.getTools()).some(t=>t.name==='list_shop_results'));
-        const results=await page.evaluate(async native=>{
+        await waitForTools(page,shopNames);
+        const results=await page.evaluate(async({native,commerceNames,required})=>{
             const context=document.modelContext;
             const all=await context.getTools();
-            const required=['list_shop_results','search_public_products','search_public_articles','get_public_contact','list_public_services','present_public_knowledge'];
             if(required.some(n=>!all.some(t=>t.name===n)))throw Error('Public WebMCP capabilities not discoverable');
             const invoke=async(name,args)=>{
                 const tool=all.find(t=>t.name===name);
@@ -86,7 +104,8 @@ test('live landing and shop WebMCP tools can be discovered and invoked ('+(nativ
             host.id='a2ui-live-fixture';document.body.appendChild(host);
             const rendered=window.BapxA2ui?.render(host,ui)===true;
             return {
-                names:all.map(t=>t.name),
+                names:all.map(t=>t.name).sort(),
+                commerceAnnotations:Object.fromEntries(all.filter(tool=>commerceNames.includes(tool.name)).map(tool=>[tool.name,tool.annotations??null])),
                 domCount:dom.products?.length,domTotal:dom.total,domNext:dom.nextOffset,
                 productsCount:products.products?.length,productsTotal:products.total,productsNext:products.nextOffset,
                 articlesCount:articles.articles?.length,articlesTotal:articles.total,
@@ -94,7 +113,9 @@ test('live landing and shop WebMCP tools can be discovered and invoked ('+(nativ
                 rendered,cardCount:host.querySelectorAll('.bapx-a2ui__card').length,
                 href:host.querySelector('a.bapx-a2ui__link')?.getAttribute('href'),
             };
-        },native);
+        },{native,commerceNames,required:shopNames});
+        assert.deepEqual(results.names,shopNames);
+        checkCommerceAnnotations(results.commerceAnnotations);
         assert.equal(results.domCount,1);
         assert.equal(results.productsCount,1);
         assert.ok(Number.isInteger(results.domTotal)&&results.domTotal>=1);
@@ -105,7 +126,7 @@ test('live landing and shop WebMCP tools can be discovered and invoked ('+(nativ
         assert.equal(results.cardCount,1);
         assert.match(results.href,/^\/product\/[A-Za-z0-9%_.-]+$/);
         assert.deepEqual(errors,[]);
-        console.log('LIVE WEBMCP '+(native?'NATIVE':'POLYFILL')+' A2UI PASS: landing 5 tools; shop '+results.names.join(', ')+', rendered 1 public item, no JS exceptions.');
+        console.log('LIVE WEBMCP '+(native?'NATIVE':'POLYFILL')+' A2UI PASS: landing 11 tools; shop 12 tools ('+results.names.join(', ')+'), rendered 1 public item, no commerce actions invoked, no JS exceptions.');
         await page.close();
     }finally{
         await browser.close();

@@ -299,6 +299,19 @@ echo $__googleTags->gtagCode();
 <link rel="stylesheet" href="/assets/css/page-actions.css?v=<?= filemtime(app_path('assets/css/page-actions.css')) ?>">
 <link rel="stylesheet" href="/assets/css/a2ui-public.css?v=<?= filemtime(app_path('assets/css/a2ui-public.css')) ?>">
 <script defer src="/assets/a2ui-public-renderer.js?v=<?= filemtime(app_path('assets/a2ui-public-renderer.js')) ?>"></script>
+<?php
+try { $__supportCommerceOrigin=\App\Services\PublicSiteUrlService::origin(); }
+catch (\Throwable) { $__supportCommerceOrigin=null; }
+?>
+<link rel="stylesheet" href="/assets/css/chat-commerce.css?v=<?= filemtime(app_path('assets/css/chat-commerce.css')) ?>">
+<link rel="stylesheet" href="/assets/css/support-checkout.css?v=<?= filemtime(app_path('assets/css/support-checkout.css')) ?>">
+<script type="application/json" id="bapx-support-commerce-config"><?= json_encode([
+    'publicOrigin'=>$__supportCommerceOrigin,'protocolVersion'=>\App\Services\PublicMcpService::PROTOCOL,
+    'deliveryStates'=>\App\Services\TaxService::states(), 'canShop'=>$__modules['shop']
+], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) ?></script>
+<script defer src="/assets/checkout-form.js?v=<?= filemtime(app_path('assets/checkout-form.js')) ?>"></script>
+<script defer src="/assets/public-mcp-shopping.js?v=<?= filemtime(app_path('assets/public-mcp-shopping.js')) ?>"></script>
+<script defer src="/assets/support-checkout.js?v=<?= filemtime(app_path('assets/support-checkout.js')) ?>"></script>
 <script src="/assets/page-actions.js?v=<?= filemtime(app_path('assets/page-actions.js')) ?>" defer></script>
 <noscript><style>
 .site-header>noscript,#primary-nav>noscript,.nojs-menu-open,.nojs-menu-close{display:none}
@@ -312,6 +325,18 @@ echo $__googleTags->gtagCode();
 </style></noscript>
 <!-- Pinned official W3C WebMCP polyfill. Does not replace a native modelContext. -->
 <script src="/assets/vendor/webmcp/polyfill-0.1.1.js?v=<?= filemtime(app_path('assets/vendor/webmcp/polyfill-0.1.1.js')) ?>"></script>
+<?php
+// Reuse the real HTTP registry, including status recovery after Shop is disabled.
+$__commerceToolNames=['create_cart','get_cart','set_cart_quantity','review_checkout','prepare_checkout_payment','get_checkout_status'];
+try {
+    $__commerceTools=array_values(array_filter((new \App\Services\PublicMcpService())->toolDefinitions(),
+        static fn(array $tool):bool=>in_array($tool['name'],$__commerceToolNames,true)));
+} catch (\Throwable) { $__commerceTools=[]; }
+?>
+<script type="application/json" id="bapx-public-commerce-schema"><?= json_encode([
+    'publicOrigin'=>$__supportCommerceOrigin, 'protocolVersion'=>\App\Services\PublicMcpService::PROTOCOL, 'tools'=>$__commerceTools
+], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) ?></script>
+<script defer src="/assets/public-commerce-webmcp.js?v=<?= filemtime(app_path('assets/public-commerce-webmcp.js')) ?>"></script>
 <script type="application/json" id="bapx-public-business-schema"><?= json_encode([
     'contact'=>[
         'inputSchema'=>\App\Services\PublicKnowledgeService::contactInputSchema(),
@@ -441,12 +466,20 @@ if ($__flash):
 <section class="support-panel" id="support-panel" data-support-key="sps-support-chat-<?= !empty($_SESSION['user']['email']) ? e(strtolower((string)$_SESSION['user']['email'])) : 'guest' ?>" hidden>
     <div class="support-panel__head">
         <strong>Support</strong>
+        <button type="button" id="support-commerce-toggle" class="support-commerce-toggle" aria-controls="support-commerce" aria-expanded="false" disabled><?= $__modules['shop'] ? 'Cart &amp; checkout' : 'Checkout status' ?></button>
         <button type="button" class="support-panel__close" aria-label="Close support">×</button>
     </div>
     <div class="support-panel__body" id="support-log" aria-live="polite">
         <p>Ask about products, delivery, orders, or support tickets.</p>
         <?php if(empty($_SESSION['user'])): ?><p>Sign in to check your orders or support tickets.</p><?php endif; ?>
     </div>
+    <section id="support-commerce" class="support-commerce" aria-label="Cart and checkout" hidden>
+        <div class="support-commerce__head"><h2 tabindex="-1">Chat cart &amp; checkout</h2><button type="button" id="support-commerce-back" class="support-commerce-back">Back to chat</button></div>
+        <p id="support-commerce-status" class="support-commerce__status" role="status" aria-live="polite"></p>
+        <div id="support-commerce-content" class="support-commerce__content"></div>
+        <p id="support-commerce-recovery" class="support-commerce__recovery">Delivery details stay in this form and are sent only when you review checkout.</p>
+        <button type="button" id="support-commerce-reset" class="support-commerce-back">Clear chat shopping access</button>
+    </section>
     <?php if(module_on('blog')): ?><a class="support-help-guide" href="/blog/get-support">Read support guide</a><?php endif; ?>
     <form class="support-panel__form" id="support-form">
         <input type="hidden" name="_csrf" value="<?= e((string)($_SESSION['csrf_token'] ?? '')) ?>">

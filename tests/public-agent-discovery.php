@@ -15,13 +15,27 @@ discoveryCheck(json_encode($metadata['tools'],JSON_THROW_ON_ERROR)===json_encode
     &&$metadata['transport']['url']==='https://public.example/api/mcp'
     &&$metadata['transport']['supportedProtocols']===\App\Services\PublicMcpService::SUPPORTED_PROTOCOLS,
     'Discovery diverged from the current transport registry or protocol contract.');
+$reads=['search_public_products','search_public_articles','get_public_contact','list_public_services'];
+$actions=['create_cart','get_cart','set_cart_quantity','review_checkout','prepare_checkout_payment','get_checkout_status'];
+$scopes=[];
 foreach($metadata['tools'] as $tool) {
-    discoveryCheck(($tool['_meta']['in.bapx/access']??null)===['scope'=>'public_information','authorization'=>'none'],
-        'Public scope was missing from the authoritative registry.');
+    $access=$tool['_meta']['in.bapx/access']??null;
+    discoveryCheck(is_array($access)&&is_string($access['scope']??null)&&is_string($access['authorization']??null),
+        'Explicit scope was missing from the authoritative registry.');
+    if(in_array($tool['name'],$reads,true))discoveryCheck($access===['scope'=>'public_information','authorization'=>'none'],'Public read scope drifted.');
+    else discoveryCheck($access['scope']!=='public_information'&&!array_key_exists('operation',(array)$tool['inputSchema']['properties']),'Scoped commerce is disguised as public information or a generic executor.');
+    $key=$access['scope'].'|'.$access['authorization'];
+    $scopes[$key]??=$access+['tools'=>[]];$scopes[$key]['tools'][]=$tool['name'];
 }
-discoveryCheck(array_column($metadata['httpReads'],'tool')===array_column($metadata['tools'],'name')
-    &&$metadata['capabilities']===[['scope'=>'public_information','authorization'=>'none',
-        'tools'=>array_column($metadata['tools'],'name')]],'Public HTTP bindings or explicit capability grouping diverged.');
+discoveryCheck(array_column($metadata['httpReads'],'tool')===$reads&&$metadata['capabilities']===array_values($scopes)
+    &&$metadata['commerce']['availableTools']===$actions,'Public HTTP reads or explicit commerce grouping diverged.');
+$byName=array_column($metadata['tools'],null,'name');
+discoveryCheck($byName['get_cart']['annotations']['readOnlyHint']===true
+    &&$byName['get_cart']['_meta']['in.bapx/access']['authorization']==='cart_capability'
+    &&!in_array('get_cart',array_column($metadata['httpReads'],'tool'),true),'Read-only hint incorrectly granted unscoped HTTP cart access.');
+discoveryCheck($metadata['commerce']['cartCapability']['lifetimeSeconds']===86400
+    &&$metadata['commerce']['checkout']['quoteLifetimeSeconds']===600
+    &&$metadata['commerce']['checkout']['statusLifetimeSeconds']===604800,'Documented capability lifetimes drifted.');
 foreach($metadata['examples'] as $example) {
     discoveryCheck(str_contains($example['curl'],"'".$example['url']."'")
         &&!str_contains($example['curl'],'--insecure'),'Copyable requests lost their configured URL or TLS verification.');
@@ -39,8 +53,9 @@ $priorSettings=$settings->getValue();
 try {
     $settings->setValue(null,['module_shop'=>'0','module_blog'=>'0']);
     $disabled=$discovery->document();
-    discoveryCheck(array_column($disabled['tools'],'name')===['get_public_contact','list_public_services']
+    discoveryCheck(array_column($disabled['tools'],'name')===['get_public_contact','list_public_services','get_checkout_status']
         &&array_column($disabled['httpReads'],'tool')===['get_public_contact','list_public_services']
+        &&$disabled['commerce']['availableTools']===['get_checkout_status']
         &&!in_array('search_products_http',array_column($disabled['examples'],'id'),true),
         'Discovery advertised a disabled module or an unavailable product example.');
 } finally { $settings->setValue(null,$priorSettings); }

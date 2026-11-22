@@ -23,6 +23,7 @@ Purpose: configure Razorpay (test/live), Stripe, Google OAuth, SMTP, Meta Pixel,
 | Field | Environment variable (fallback) |
 |---|---|
 | Razorpay Mode, Test ID/Secret, Live ID/Secret | `RAZORPAY_MODE`, `RAZORPAY_TEST_KEY_ID`, etc. |
+| Test checkout webhook secret / Live checkout webhook secret | `RAZORPAY_TEST_WEBHOOK_SECRET`, `RAZORPAY_LIVE_WEBHOOK_SECRET` |
 | Stripe Secret Key | `STRIPE_SECRET_KEY` |
 | Google Client ID / Secret | — |
 | Meta Pixel ID | `META_PIXEL_ID` |
@@ -33,6 +34,23 @@ Purpose: configure Razorpay (test/live), Stripe, Google OAuth, SMTP, Meta Pixel,
 | SMTP Host, Port, Encryption, Username, Password | — |
 
 Key checks: API setup links are visible, secrets are stored outside normal catalog JSON, and Google Calendar/Meet is not requested.
+
+## Chat checkout completion
+
+The Razorpay section has separate test and live checkout webhook secrets. Choose
+the intended payment mode and configure that mode's credentials and matching
+webhook at the official site's `/api/payments/razorpay-webhook` endpoint. The
+supported Payment Link events are `payment_link.paid`,
+`payment_link.partially_paid`, `payment_link.expired` and `payment_link.cancelled`.
+An owner-authorized provider setup is required; saving these fields does not
+configure the Razorpay dashboard or prove a completed payment.
+
+Chat payment remains unavailable while the selected mode lacks its key pair or
+webhook secret. Cart and checkout review can still be inspected. Completion uses
+the verified captured amount/currency and a durable attempt; a signed notification
+alone is not treated as payment proof. The hosting operator can schedule the
+bounded reconciliation command documented in [remote commerce](../remote-commerce.md)
+to recover missed callbacks. Do not submit a real purchase as a configuration test.
 
 ## Google tags versus connected reporting
 
