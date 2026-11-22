@@ -94,6 +94,12 @@ tests/public-agent-discovery.php` checks the canonical guide source, configured
 URLs, real public routes and shared discovery links. Neither test contacts or
 changes a production catalogue.
 
+`node --test tests/public-knowledge-api.test.cjs` executes the real `index.php`
+entry point for `/ai-assistants` and `/llms.txt`, preserving the original URI
+after the hosting rewrite. It checks the text query variant, GET-only dispatch
+and rejected suffix/private paths, so a registered but unreachable discovery
+route cannot pass solely through direct controller tests.
+
 With native PHP, `node tests/public-mcp-http.cjs <sdk-directory>` runs the actual `/api/mcp` controller through both official client profiles, checking methods, MIME/Accept, Origin, sizes, errors and cookie/session independence. `CHROMIUM_PATH=<chrome> node tests/public-mcp-app-browser.cjs <sdk-directory>` first discovers the actual resource and contact result through the default client, then drives the shipped widget with the official `AppBridge` through a sandboxed browser fixture at desktop and 375px. It checks readiness, product/contact cards, keyboard links, overflow, denied payloads and text fallback. Test dependencies are installed outside the application checkout: `@modelcontextprotocol/client@2.4.0`, `@modelcontextprotocol/ext-apps@2.0.4`, `playwright@1.62.1`.
 
 For read-only post-deployment acceptance, run `PUBLIC_MCP_URL=https://<site-origin>/api/mcp node tests/public-mcp-http.cjs <sdk-directory>`. This mode uses default and modern clients to discover and call the four public tools and read the declared resource. It checks actual published catalogue data and product-card metadata, without fixture data, cookies, owner tokens, private-tool probes, or mutations. It requires a published product, so an empty catalogue is reported as a failed product-card acceptance check. The local fixture-only negative requests and ordinary API session check are not sent to production.
