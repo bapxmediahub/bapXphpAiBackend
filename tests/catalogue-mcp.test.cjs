@@ -96,14 +96,16 @@ test('local catalogue MCP checks the current shop settings and publishes only vi
         assert.equal((await call({ query: null })).result.isError, true);
         assert.equal((await call([])).error.code, -32602);
         const first = (await call({ limit: 1 })).result.structuredContent;
-        assert.deepEqual(first, { products: [{ name: 'Pendant', path: '/product/pendant', priceInr: 400, available: true,
-            description: 'Published pendant details.', imagePath: '/assets/images/media/pendant.webp' }], total: 2, nextOffset: 1 });
+        assert.deepEqual(first, { products: [{ name: 'Pendant', path: '/product/pendant', productUrl: 'https://public.example/product/pendant', priceInr: 400, available: true,
+            description: 'Published pendant details.', imagePath: '/assets/images/media/pendant.webp', imageUrl: 'https://public.example/assets/images/media/pendant.webp' }], total: 2, nextOffset: 1 });
         const last = (await call({ offset: first.nextOffset })).result.structuredContent;
-        assert.deepEqual(last, { products: [{ name: 'Ring', path: '/product/ring', priceInr: 100, available: false, description: '' }], total: 2, nextOffset: null });
+        assert.deepEqual(last, { products: [{ name: 'Ring', path: '/product/ring', productUrl: 'https://public.example/product/ring', priceInr: 100, available: false, description: '' }], total: 2, nextOffset: null });
         assert.deepEqual((await call({ limit: 1 })).result.structuredContent, first);
         const selected=(await call({slugs:['ring','pendant'],limit:2})).result.structuredContent;
         assert.deepEqual(selected.products.map(row=>row.path),['/product/ring','/product/pendant']);
         assert.deepEqual(selected.products[1].imagePaths,['/assets/images/media/pendant.webp','/assets/images/media/pendant-back.webp']);
+        assert.deepEqual(selected.products[1].imageUrls,['https://public.example/assets/images/media/pendant.webp','https://public.example/assets/images/media/pendant-back.webp']);
+        assert.equal(selected.products[0].imageUrl,undefined,'A foreign image cannot gain an official absolute URL.');
         assert.deepEqual(selected.products[1].highlights,['Published pendant highlight']);
         assert.deepEqual(selected.products[1].specifications,[{label:'Material',value:'Published alloy'}]);
         assert.equal(selected.nextOffset,null);

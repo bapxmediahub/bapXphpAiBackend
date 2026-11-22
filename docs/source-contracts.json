@@ -25,7 +25,7 @@
         "foundation": {
             "source_sha256": "ae8140da7cacb75699f28f7f269dbe7e923c45ea23bc45aa2061e38d6e526c30",
             "references_sha256": "62294d3476723ee2f9afb62918b99c5c9409e7a1c761a0789aef8901e7a17b22",
-            "review_note": "Reviewed actual-registry discovery, configured official URL projections and public guide against architecture, WebMCP and deployment guidance. Independent review confirmed curl uses fixed read calls and argv with no credentials or browser state; raster acceptance now also includes canonical GIF images. Missing media is never substituted and retired booking is not advertised."
+            "review_note": "Cross-reviewed canonical HTTP discovery and official product URLs against WebMCP/deployment guidance. Native CI exercised shared STDIO projection and exposed two old full-object assertions; updated their explicit expected official URLs, added ordered gallery URL and foreign-image exclusion checks, retained strict equality and all scope/transport assertions. The production curl probe remains bounded and read-only."
         },
         "google-tags": {
             "source_sha256": "5c3491682b9d9107b2a165bd3c35c4f666610a38d72d24a98b8bde62ea1c5139",
