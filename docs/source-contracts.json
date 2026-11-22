@@ -49,8 +49,8 @@
         },
         "mcp-clients": {
             "source_sha256": "f8245d49c8c4fa9d576bdf2fe5ad28b84d2b0e7f9df980c0b7c2f17c0f30854d",
-            "references_sha256": "1b27d167353aded1081fed4ce2d36c688885052c325956ca1305e2047692e31c",
-            "review_note": "Compared shared public product URL fields and the updated shop guide with private STDIO grants and integration controls. Official absolute URLs add no private MCP grant, account session or reporting tool."
+            "references_sha256": "db33aa276b2311acc8cb82b891c596a55ed30e5e00c45905e68a77401e483e3c",
+            "review_note": "Reviewed the CLI skill and existing MCP client setup guidance. The shared skill adds parser-failure testing; MCP commands, framing, credential handling and installation steps remain unchanged."
         },
         "media": {
             "source_sha256": "7b9d3d9aa746f16f1441148550d143e7094388b247c423b90c310ed5441db99d",
@@ -69,13 +69,13 @@
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
-            "references_sha256": "8a09ea8084b571eb7cbdf0f648ec0a8cb54d62cb09a4187604ed031a476454cb",
-            "review_note": "Checked public product visibility, published navigation destinations and isolated first-party catalogue and policy discovery."
+            "references_sha256": "ce84b911bce7bb5435cc905a83819e015bad8a111c795fd143c86cb59f903c4f",
+            "review_note": "Reviewed the sales-channel CLI references and catalogue guidance. This change only fixes generic PHP lint argument forwarding and failure propagation; feed, channel and catalogue operations are unchanged."
         },
         "workflow": {
-            "source_sha256": "7edb3a3e4cade4fc93920ca27d60a91a4a5bc73013a426f960bd5a010adc2a66",
-            "references_sha256": "94dd586c81b1d91a0332e86219ac2b55c416d5ebc37115c9a2008697d68236d0",
-            "review_note": "Compared the CI syntax check, post-SHA real curl probe and safe llms diagnostic headers with deployment and Git/documentation workflow guidance. Read-only acceptance preserves failures, uses no retry bypass, and does not close unresolved host 429 issues. Regenerated maps and indexes from the actual new route."
+            "source_sha256": "615402ed3cbbb9970b15585b2b7815585a15fdf82804bb642ae89b0cf26202e5",
+            "references_sha256": "d9259d2fc5ee2fda87748a3b74350427be83c2bea522e9d2df4b31de7b388a0d",
+            "review_note": "Reviewed lint dispatch, POSIX find batch status, failed-path diagnostics, CI aggregation and the native-PHP fixture. Development workflow and CLI skill now explain truthful nonzero failures and the local wrapper limitation; generated resources remain deterministic."
         }
     }
 }
