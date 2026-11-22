@@ -12,7 +12,7 @@ category: page
 
 On supported browsers, the shop page registers `list_shop_results` through `document.modelContext`. It reads the currently rendered results in display order. Each result includes the name, product URL, displayed price and whether the card offers a purchase control. An empty search returns an empty list.
 
-The optional integer `limit` ranges from 1 to 20 and defaults to 20. The zero-based `offset` defaults to 0. The response includes `products`, `total` and `nextOffset`. Pass a numeric `nextOffset` to read the next page. A null value marks the end of the list. The tool makes no network requests and exposes only public card fields. Its output schema declares the four product fields plus `total` and `nextOffset`; malformed cards are omitted while the pagination cursor advances. This display-only tool counts rendered cards, not all backend catalogue records.
+The optional integer `limit` ranges from 1 to 20 and defaults to 20. The zero-based `offset` defaults to 0. The response includes `products`, `total` and `nextOffset`. Pass a numeric `nextOffset` to read the next page. A null value marks the end of the list. The tool makes no network requests and exposes only public card fields. Its output schema declares the four required product fields and optional visible `description` (280 Unicode characters) and same-origin raster `imagePath`, plus `total` and `nextOffset`; malformed cards are omitted while the pagination cursor advances. This display-only tool counts rendered cards, not all backend catalogue records. It cannot change filters or a cart; use `search_public_products` for the full catalogue or exact product details.
 
 [WebMCP imperative API](https://webmachinelearning.github.io/webmcp/#dom-modelcontext-registertool)
 
@@ -23,6 +23,18 @@ An operator can configure a trusted local MCP client to launch the absolute path
 To inspect the current public tool names, input and output schemas, and read-only annotations, run `./bapXphp mcp:tools`. The JSON catalogue matches guest `tools/list` on STDIO. MCP clients can also call `server/discover` and `tools/call`.
 
 `search_public_products` accepts an optional `query` up to 120 characters, zero-based `offset`, and `limit` from 1 to 20 (default 20). It searches the public catalogue, applies the current offer price, and returns the product name, site-relative path, price in INR, availability, a plain-text description of up to 280 characters and an optional safe local raster `imagePath`. Pass `nextOffset` to continue. Published records and the shop module setting are checked on each catalogue read. Disabling the shop removes the tool from discovery and rejects subsequent calls from clients that previously discovered it.
+
+For exact details, pass `slugs` with one to three unique raw slugs obtained by
+decoding the last segment of returned product paths once. Keep the query empty,
+offset zero and limit at least the selection count. The response preserves that
+order and omits missing or unpublished matches. Only this selected mode may add
+up to three `imagePaths`, four `highlights` and six `specifications` label/value
+rows from the real product record. Ordinary searches remain compact. These
+arguments and schemas are shared across WebMCP, public HTTP MCP, and local
+STDIO. Support resolves separately named comparison products before selecting
+them, avoiding the previous combined-name search failure. See the
+[public assistant guide](/ai-assistants) for connection and human-review flows;
+the companion `/llms.txt` is advisory discovery information.
 
 `public_policy` reads the same guest guidance used by customer Support. Pass one `key` from `tracking`, `returns_or_problems`, `shipping_cost` or `payment_methods`. The result contains a single `value` string. For example, `./bapXphp mcp:policy tracking` prints the tracking policy as JSON. Existing customers can read these policies when the shop is disabled. Neither command accepts actor credentials or a customer identifier.
 

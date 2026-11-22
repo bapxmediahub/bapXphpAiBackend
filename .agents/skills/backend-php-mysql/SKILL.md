@@ -139,6 +139,12 @@ not raw contact submissions or user search text. Product descriptions are
 bounded plain text and images must be safe same-origin raster media paths.
 See docs/webmcp.md and tests/public-knowledge.php.
 
+Named public comparisons share AgentContextService::namedComparisonProducts and
+PublicKnowledgeService's exact-slug projection. Keep two or three verified choices
+in mention order; never substitute type examples for a missing named product.
+Support's local comparison answer and rendered cards must use the same identities.
+Run tests/catalogue-comparison.php when this selection contract changes.
+
 ## Public MCP transport
 
 Keep `/api/mcp` as an exact stateless public route with its own fixed four-tool

@@ -16,6 +16,11 @@ test('live landing and shop WebMCP tools can be discovered and invoked ('+(nativ
         const site='https://sripanchamispiritual.com';
         const response=await page.goto(site+'/',{waitUntil:'load',timeout:20000});
         assert.equal(response?.status(),200);
+        assert.ok(await page.locator('a[href="/ai-assistants"]').count()>0,'Landing page exposes the public connection guide');
+        const instructions=await page.request.get(site+'/llms.txt');
+        assert.equal(instructions.status(),200);
+        const instructionText=await instructions.text();
+        assert.ok(instructionText.includes('/api/mcp')&&instructionText.includes('/ai-assistants'),'Advisory index points to the real public interface');
         await page.waitForFunction(async()=>{
             if(typeof document.modelContext?.getTools!=='function')return false;
             try{return (await document.modelContext.getTools())
@@ -28,9 +33,12 @@ test('live landing and shop WebMCP tools can be discovered and invoked ('+(nativ
             const all=await ctx.getTools();
             const names=all.map(t=>t.name).sort();
             const invoke=async(name,args)=>JSON.parse(await ctx.executeTool(all.find(t=>t.name===name),args));
+            const products=await invoke('search_public_products',{limit:2});
+            const slugs=products.products.map(item=>decodeURIComponent(item.path.slice('/product/'.length)));
+            const selected=await invoke('search_public_products',{slugs,limit:Math.max(1,slugs.length)});
             return {names,contact:await invoke('get_public_contact',{}),
                 services:await invoke('list_public_services',{limit:4}),
-                products:await invoke('search_public_products',{limit:1}),
+                products,selected,
                 articles:await invoke('search_public_articles',{limit:1}),
                 contactUi:await invoke('present_public_knowledge',{view:'contact',limit:4}),
                 servicesUi:await invoke('present_public_knowledge',{view:'services',limit:4}),
@@ -42,6 +50,10 @@ test('live landing and shop WebMCP tools can be discovered and invoked ('+(nativ
         assert.equal(landing.services.total,4);
         assert.ok(landing.services.services.every(s=>/^\/contact\?subject=(product|temple|order|general)#contact-form$/.test(s.path)));
         assert.equal(typeof landing.products.products[0]?.description,'string');
+        assert.deepEqual(landing.selected.products.map(item=>item.path),landing.products.products.map(item=>item.path));
+        assert.ok(landing.selected.products.every(item=>(item.imagePaths===undefined||Array.isArray(item.imagePaths))
+            &&(item.highlights===undefined||Array.isArray(item.highlights))
+            &&(item.specifications===undefined||Array.isArray(item.specifications))),'Published detail stays typed when present');
         assert.equal(landing.ui.messages[0].version,'1.0');
         assert.ok(landing.contactUi.messages[0].createSurface.surfaceId.startsWith('bapx_contact_'));
         assert.equal(landing.contactUi.messages[0].createSurface.dataModel.items.length,4);

@@ -12,7 +12,9 @@ test('local catalogue MCP checks the current shop settings and publishes only vi
     const records = [
         { id: '1', slug: 'pendant', name: 'Pendant', price: 400, private_cost: 20,
             description: '<p>Published <strong>pendant</strong> details.</p><script>hiddenCode()</script>',
-            image_url: 'https://public.example/assets/images/media/pendant.webp' },
+            image_url: 'https://public.example/assets/images/media/pendant.webp',
+            image_urls: ['/assets/images/media/pendant.webp','/assets/images/media/pendant-back.webp'],
+            highlights: ['Published pendant highlight'], specifications: { Material: 'Published alloy' } },
         { id: '2', slug: 'ring', name: 'Ring', price: 100, stock_status: 'out_of_stock',
             image_url: 'https://untrusted.invalid/assets/images/ring.webp' },
         { id: '3', slug: 'draft', name: 'Preview', price: 300, status: 'draft' }
@@ -99,6 +101,17 @@ test('local catalogue MCP checks the current shop settings and publishes only vi
         const last = (await call({ offset: first.nextOffset })).result.structuredContent;
         assert.deepEqual(last, { products: [{ name: 'Ring', path: '/product/ring', priceInr: 100, available: false, description: '' }], total: 2, nextOffset: null });
         assert.deepEqual((await call({ limit: 1 })).result.structuredContent, first);
+        const selected=(await call({slugs:['ring','pendant'],limit:2})).result.structuredContent;
+        assert.deepEqual(selected.products.map(row=>row.path),['/product/ring','/product/pendant']);
+        assert.deepEqual(selected.products[1].imagePaths,['/assets/images/media/pendant.webp','/assets/images/media/pendant-back.webp']);
+        assert.deepEqual(selected.products[1].highlights,['Published pendant highlight']);
+        assert.deepEqual(selected.products[1].specifications,[{label:'Material',value:'Published alloy'}]);
+        assert.equal(selected.nextOffset,null);
+        assert.equal((await call({slugs:['draft','missing']})).result.structuredContent.total,0);
+        for(const args of [{slugs:'pendant'},{slugs:['pendant'],query:'pendant'},
+            {slugs:['pendant'],offset:1},{slugs:['ring','pendant'],limit:1},{slugs:['../private']}]) {
+            assert.equal((await call(args)).result.isError,true);
+        }
         for (const image of ['/assets/images/../private.png', '/assets/images/%2e%2e/private.png',
             '/assets/images/%252e%252e/private.png', '/assets/images/media/a%2fb.webp',
             'https://public.example:444/assets/images/pendant.webp',

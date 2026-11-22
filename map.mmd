@@ -7,11 +7,11 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 171 routes, 15 controllers, 77 services, 68 views, 0 data files, 29 tools"]
-    arch_routes["> Routes: 171 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 173 routes, 15 controllers, 77 services, 69 views, 0 data files, 29 tools"]
+    arch_routes["> Routes: 173 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 15"]:::arch
     arch_svc["> Services: 77"]:::arch
-    arch_views["> Views: 68"]:::arch
+    arch_views["> Views: 69"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 29"]:::arch
     arch_gaps["> Gaps: 12"]:::arch
@@ -24,6 +24,8 @@ flowchart LR
     route_get_search["GET /search — Search published storefront content"]:::route
     route_get_pages_slug["GET /pages/{slug}"]:::route
     route_get_about["GET /about — About SPS — story, values, CTA"]:::route
+    route_get_ai_assistants["GET /ai-assistants"]:::route
+    route_get_llms_txt["GET /llms.txt"]:::route
     route_get_sri_panchami_spiritual["GET /sri-panchami-spiritual — Sri Panchami Spiritual landing page"]:::route
     route_get_spiritual["GET /spiritual — Short spiritual landing redirect-equivalent page"]:::route
     route_get_terms["GET /terms — Terms of Service — 15 sections, legal"]:::route
@@ -354,6 +356,7 @@ flowchart LR
     view_layouts_app["layouts/app"]:::code
     view_public_404["public/404"]:::code
     view_public_about["public/about"]:::code
+    view_public_ai_assistants["public/ai-assistants"]:::code
     view_public_authored_page["public/authored-page"]:::code
     view_public_blog["public/blog"]:::code
     view_public_blog_post["public/blog-post"]:::code
@@ -480,6 +483,14 @@ flowchart LR
   controller_publiccontroller -. renders .-> view_public_authored_page
   route_get_about --> controller_publiccontroller
   controller_publiccontroller -. renders .-> view_public_about
+  route_get_ai_assistants --> controller_publiccontroller
+  controller_publiccontroller --> service_publicmcpservice
+  controller_publiccontroller --> service_markdownrenderer
+  controller_publiccontroller -. renders .-> view_public_ai_assistants
+  route_get_llms_txt --> controller_publiccontroller
+  controller_publiccontroller --> service_publicmcpservice
+  controller_publiccontroller --> service_markdownrenderer
+  controller_publiccontroller -. renders .-> view_public_ai_assistants
   route_get_sri_panchami_spiritual --> controller_publiccontroller
   controller_publiccontroller -. renders .-> view_public_spiritual
   route_get_spiritual --> controller_publiccontroller

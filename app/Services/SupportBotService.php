@@ -65,6 +65,10 @@ final class SupportBotService {
             $reply='I could not verify a matching product in the current public catalogue. Please give the exact product name or browse /shop; I will not substitute unrelated items.';
             $outcome='local';
         }
+        if($reply===null&&($retrieval[0]['intent']??'')==='comparison'&&($retrieval[0]['status']??'')==='clarification') {
+            $reply='Please name two or three published products to compare. I could not verify all the requested choices in the current catalogue. Browse /shop for their exact names.';
+            $outcome='local';
+        }
         if ($reply === null && module_on('shop') && is_array($context['site']['matched_collection'] ?? null)) {
             // Collection membership comes from stored product_ids, not model guesses.
             $reply = self::collectionListingReply(
@@ -565,6 +569,27 @@ final class SupportBotService {
     }
 
     public static function catalogComparisonReply(string $message, array $products): ?string {
+        $named = AgentContextService::namedComparisonProducts($products, $message);
+        if ($named !== []) {
+            $details = [];
+            foreach ($named as $product) {
+                $line = trim(strip_tags((string)($product['name'] ?? '')));
+                $price = $product['offer_price'] ?? $product['price'] ?? null;
+                if (is_numeric($price) && (float)$price >= 0) $line .= ' — ₹' . number_format((float)$price, 2);
+                $description = trim(strip_tags((string)($product['description'] ?? '')));
+                if ($description !== '') $line .= '. ' . mb_strimwidth($description, 0, 260, '…');
+                $specs = [];
+                foreach ((array)($product['specifications'] ?? []) as $label => $value) {
+                    if (!is_string($label) || !is_scalar($value) || trim((string)$value) === '') continue;
+                    $specs[] = mb_substr(trim(strip_tags($label)), 0, 80) . ': ' . mb_substr(trim(strip_tags((string)$value)), 0, 160);
+                    if (count($specs) === 3) break;
+                }
+                if ($specs !== []) $line .= '. ' . implode('; ', $specs);
+                $details[] = $line . '. /product/' . rawurlencode((string)$product['slug']);
+            }
+            return "Here are the current published details for these products:\n" . implode("\n", $details)
+                . "\nOnly listed details are compared; the product pages show the full specifications.";
+        }
         $question = '~^(?:(?:can you explain )?the difference between|how does) (?:a )?pendant (?:and|differ from) (?:a )?mala(?:i)?(?: for everyday devotional use)?[?!.]*$~i';
         $commonQuestion = '~^what(?: is|\x27s) the difference between (?:a )?pendant and (?:a )?mala(?:i)?(?: for everyday devotional use)?[?!.]*$~i';
         if (!preg_match($question, $message) && !preg_match($commonQuestion, $message)) return null;

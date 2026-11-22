@@ -44,15 +44,15 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 472
-  relationships: 399
+  concepts: 474
+  relationships: 402
   by_type:
     blog: 16
     controller: 15
     doc: 53
     image: 89
     operator_guide: 12
-    route: 170
+    route: 172
     runtime_instruction: 6
     schema: 22
     service: 77
@@ -2886,6 +2886,21 @@ concepts:
       - "UserOrderHistoryService"
       - "AuthService"
     view: "admin/users"
+  - id: "route:get__ai_assistants"
+    type: "route"
+    title: "GET /ai-assistants"
+    description: "ai-assistants"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/ai-assistants"
+    controller: "PublicController@aiAssistants"
+    services:
+      - "PublicMcpService"
+      - "MarkdownRenderer"
+    view: "public/ai-assistants"
   - id: "route:get__api"
     type: "route"
     title: "GET /api"
@@ -3289,6 +3304,21 @@ concepts:
     services:
       - "DeploymentRevisionService"
     view: "public/404"
+  - id: "route:get__llms_txt"
+    type: "route"
+    title: "GET /llms.txt"
+    description: "ai-assistants.text"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/llms.txt"
+    controller: "PublicController@assistantInstructions"
+    services:
+      - "PublicMcpService"
+      - "MarkdownRenderer"
+    view: "public/ai-assistants"
   - id: "route:get__login"
     type: "route"
     title: "GET /login"
@@ -5938,6 +5968,9 @@ relationships:
     to: "service:PublicKnowledgeService"
     relation: "uses"
   - from: "controller:PublicController"
+    to: "service:PublicMcpService"
+    relation: "uses"
+  - from: "controller:PublicController"
     to: "service:SecretService"
     relation: "uses"
   - from: "controller:PublicController"
@@ -6342,6 +6375,9 @@ relationships:
   - from: "route:get__admin_users"
     to: "controller:AdminController"
     relation: "handled_by"
+  - from: "route:get__ai_assistants"
+    to: "controller:PublicController"
+    relation: "handled_by"
   - from: "route:get__api"
     to: "controller:ApiController"
     relation: "handled_by"
@@ -6425,6 +6461,9 @@ relationships:
     relation: "handled_by"
   - from: "route:get__is_sha_valid"
     to: "controller:ApiController"
+    relation: "handled_by"
+  - from: "route:get__llms_txt"
+    to: "controller:PublicController"
     relation: "handled_by"
   - from: "route:get__login"
     to: "controller:PublicController"

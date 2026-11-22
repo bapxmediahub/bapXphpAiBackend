@@ -16,6 +16,8 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/search','name'=>'search','page'=>'public/search','controller'=>'PublicController@search','services'=>['AuthoredPageService','ProductService','BlogService','TempleService']],
             ['method'=>'GET','path'=>'/pages/{slug}','name'=>'pages.show','page'=>'public/authored-page','controller'=>'PublicController@authoredPage','services'=>['AuthoredPageService','MarkdownRenderer']],
             ['method'=>'GET','path'=>'/about','name'=>'about','page'=>'public/about','controller'=>'PublicController@about','services'=>[]],
+            ['method'=>'GET','path'=>'/ai-assistants','name'=>'ai-assistants','page'=>'public/ai-assistants','controller'=>'PublicController@aiAssistants','services'=>['PublicMcpService','MarkdownRenderer']],
+            ['method'=>'GET','path'=>'/llms.txt','name'=>'ai-assistants.text','page'=>'public/ai-assistants','controller'=>'PublicController@assistantInstructions','services'=>['PublicMcpService','MarkdownRenderer']],
             ['method'=>'GET','path'=>'/sri-panchami-spiritual','name'=>'spiritual','page'=>'public/spiritual','controller'=>'PublicController@spiritual','services'=>[]],
             ['method'=>'GET','path'=>'/spiritual','name'=>'spiritual.short','page'=>'public/spiritual','controller'=>'PublicController@spiritual','services'=>[]],
             ['method'=>'GET','path'=>'/terms','name'=>'terms','page'=>'public/terms','controller'=>'PublicController@terms','services'=>[]],

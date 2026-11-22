@@ -10,6 +10,13 @@ The public endpoint is `POST <APP_URL>/api/mcp`. It reads the same published kno
 
 ## Transport contract
 
+The public `/ai-assistants` page and advisory `/llms.txt` explain how to connect
+this endpoint. Both use the same reviewed public Markdown source and configured
+HTTPS origin. They do not install a connector or grant credentials. Server
+instructions describe the same search, exact-selection, human-link and public
+scope boundaries; they explicitly state that new consultation booking is
+retired.
+
 The endpoint supports two explicit profiles: [MCP revision 2026-07-28](https://modelcontextprotocol.io/specification/2026-07-28/basic/versioning) and the narrow [2025-11-25 handshake profile](https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle). Both expose the same four public tools and remain stateless: no MCP session identifier, PHP session, GET event stream, or DELETE session operation. Older protocol revisions are not advertised.
 
 Every POST carries one JSON-RPC 2.0 message and `Content-Type: application/json`. The client accepts both `application/json` and `text/event-stream`; this bounded server responds with JSON. A request body is limited to 64 KiB.
@@ -46,6 +53,16 @@ The exact `/api/mcp` route skips PHP session initialization. Cookies and bearer 
 
 ## Cards inside a compatible host
 
+For product details or a comparison, call `search_public_products` first, then
+pass up to three unique raw slugs from those published results in `slugs`.
+Decode each product path's last segment once. This mode requires an empty
+`query`, `offset: 0`, and a `limit` covering the selected count. It returns exact
+visible matches in the requested order, omitting missing or hidden products.
+The ordinary compact search remains unchanged. Selected records may add real,
+bounded `imagePaths` (three), `highlights` (four), and `specifications` (six
+label/value rows). Safe image paths are relative to the configured site origin.
+No private stock, supplier, customer or owner fields enter this projection.
+
 [MCP Apps](https://apps.extensions.modelcontextprotocol.io/api/documents/overview.html) is a host rendering extension. Tool definitions include `_meta.ui.resourceUri: "ui://bapx/public-knowledge.html"` in both profiles. A supporting client should advertise `extensions["io.modelcontextprotocol/ui"].mimeTypes: ["text/html;profile=mcp-app"]` in modern per-request capabilities or legacy initialization capabilities.
 
 The public resource linkage and card metadata are also available to clients that omit that advertisement, including the default reference host. This is an intentional compatibility choice: the [Apps specification](https://github.com/modelcontextprotocol/ext-apps/blob/main/specification/2026-01-26/apps.mdx#clientserver-capability-negotiation) recommends checking capabilities, but its resource-discovery behavior allows standard text fallback when a host does not render the linked UI. The [OpenAI quickstart](https://developers.openai.com/plugins/build/app-quickstart) likewise registers public tool UI metadata without a capability-dependent variant. Metadata does not execute an app or grant a capability; the host controls resource loading, the separate UI handshake, and every UI action.
@@ -69,6 +86,13 @@ Publishing this endpoint does not install a ChatGPT connector or make all browse
 ## Repeatable verification
 
 `php tests/public-mcp.php` checks both wire profiles, strict modern framing, legacy initialization and notifications, metadata, errors, public scope, canonical output, exact-page cards and resource limits. `node tests/public-mcp-sdk.cjs <sdk-directory>` uses both the unmodified default official MCP client and an explicitly modern client against the real PHP dispatcher through an in-process fetch adapter; this checks SDK interoperability without claiming a network test.
+
+`php tests/public-product-selection.php` checks ordered exact selection, missing
+and hidden records, selected-only details, Unicode limits, module gates and both
+HTTP MCP profiles using an in-request synthetic catalogue. `php
+tests/public-agent-discovery.php` checks the canonical guide source, configured
+URLs, real public routes and shared discovery links. Neither test contacts or
+changes a production catalogue.
 
 With native PHP, `node tests/public-mcp-http.cjs <sdk-directory>` runs the actual `/api/mcp` controller through both official client profiles, checking methods, MIME/Accept, Origin, sizes, errors and cookie/session independence. `CHROMIUM_PATH=<chrome> node tests/public-mcp-app-browser.cjs <sdk-directory>` first discovers the actual resource and contact result through the default client, then drives the shipped widget with the official `AppBridge` through a sandboxed browser fixture at desktop and 375px. It checks readiness, product/contact cards, keyboard links, overflow, denied payloads and text fallback. Test dependencies are installed outside the application checkout: `@modelcontextprotocol/client@2.4.0`, `@modelcontextprotocol/ext-apps@2.0.4`, `playwright@1.62.1`.
 

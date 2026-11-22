@@ -54,7 +54,11 @@ jobs:
       - name: Validate mixed storefront search results and module visibility
         run: php tests/storefront-search.php
       - name: Gate published public knowledge and hidden Markdown isolation
-        run: php tests/public-knowledge.php
+        run: |
+          php tests/public-knowledge.php
+          php tests/catalogue-comparison.php
+          php tests/public-product-selection.php
+          php tests/public-agent-discovery.php
       - name: Gate public MCP modern and legacy profiles and data isolation
         run: php tests/public-mcp.php
       - name: Gate A2UI v1.0 published data, role isolation and safe actions

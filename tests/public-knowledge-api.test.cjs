@@ -42,6 +42,9 @@ register_shutdown_function(static function():void { fwrite(STDERR,"\\nSTATUS:".(
         assert.equal(services.status, 200);
         assert.equal(services.body.total, 1);
         assert.equal(services.body.services[0].path, '/contact?subject=temple#contact-form');
+        const selection=await call('products',{slugs:['missing-published-fixture'],limit:'1'});
+        assert.equal(selection.status,200);
+        assert.deepEqual(selection.body,{products:[],total:0,nextOffset:null});
         for(const view of ['contact','services']) {
             const result=await call('a2ui',{view,limit:'4'});
             assert.equal(result.status,200);
@@ -60,6 +63,12 @@ register_shutdown_function(static function():void { fwrite(STDERR,"\\nSTATUS:".(
             ['products', { offset: '2147483648' }],
             ['articles', { offset: '999999999999999999999' }],
             ['products', { limit: '2', actor: 'admin' }],
+            ['products', { slugs: 'item' }],
+            ['products', { slugs: null }],
+            ['products', { slugs: ['../private'] }],
+            ['products', { slugs: ['item'], q: 'item' }],
+            ['products', { slugs: ['item'], offset: '1' }],
+            ['products', { slugs: ['a','b'], limit: '1' }],
             ['a2ui', { view: 'admin', limit: '1' }],
             ['a2ui', { view: 'contact', actor: 'admin' }],
         ]) {

@@ -29,7 +29,7 @@ function shopToolDefinition(): array
     return [
         'name' => SHOP_TOOL,
         'title' => 'Search public products',
-        'description' => 'Search published shop products by keyword. Returns current INR prices, public descriptions, safe local images and store-relative product links in catalogue order.',
+        'description' => 'Search published products by query in catalogue order, following nextOffset. Returns INR prices, availability, descriptions and safe image paths. Select up to three exact raw slugs for bounded product galleries, highlights and specifications in requested order; use an empty query, offset 0 and a limit covering the selection.',
         'inputSchema' => PublicKnowledgeService::productInputSchema(),
         'outputSchema' => PublicKnowledgeService::productOutputSchema(),
         'annotations' => ['readOnlyHint' => true, 'destructiveHint' => false, 'idempotentHint' => true, 'openWorldHint' => false],
@@ -108,17 +108,17 @@ function toolFailure(string $message): array
 function searchProducts(stdClass $arguments): array
 {
     $values = get_object_vars($arguments);
-    $options = $values + ['query' => '', 'offset' => 0, 'limit' => 20];
-    ['query' => $query, 'offset' => $offset, 'limit' => $limit] = $options;
-    if (array_diff(array_keys($values), ['query', 'offset', 'limit'])
-        || !is_string($query) || mb_strlen($query) > 120
+    $options = $values + ['query' => '', 'offset' => 0, 'limit' => 20,'slugs'=>[]];
+    ['query' => $query, 'offset' => $offset, 'limit' => $limit,'slugs'=>$slugs] = $options;
+    if (array_diff(array_keys($values), ['query', 'offset', 'limit','slugs'])
+        || !is_string($query) || !mb_check_encoding($query,'UTF-8') || mb_strlen($query) > 120 || !is_array($slugs)
         || !is_int($offset) || $offset < 0 || $offset > 2147483647
         || !is_int($limit) || $limit < 1 || $limit > 20) {
         return toolFailure('Use a query of up to 120 characters, a nonnegative offset up to 2147483647 and a limit from 1 to 20.');
     }
     // One published catalogue projection for native MCP and other PHP callers.
     try {
-        $output=(new PublicKnowledgeService())->products($query,$offset,$limit);
+        $output=(new PublicKnowledgeService())->products($query,$offset,$limit,$slugs);
     } catch (\InvalidArgumentException) {
         return toolFailure('Invalid public catalogue query.');
     }

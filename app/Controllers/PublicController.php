@@ -82,6 +82,37 @@ final class PublicController extends BaseController {
         $this->render('public/about'); 
     }
 
+    /** Public connection guidance, never a developer or private business-agent instruction file. */
+    public function aiAssistants(): void {
+        $document=$this->publicAssistantGuide();
+        $this->seoOverrides=[
+            'title'=>$document['title'].' | Sri Panchami Spiritual',
+            'description'=>'Connect a compatible AI assistant to published products, guides, contact details and enquiry options.',
+            'canonical'=>$this->siteUrl('/ai-assistants'),
+        ];
+        $this->render('public/ai-assistants',['document'=>$document]);
+    }
+
+    /** Advisory plain text; it cannot grant access, install a connector or restore booking. */
+    public function assistantInstructions(): void {
+        $document=$this->publicAssistantGuide();
+        header('Content-Type: text/plain; charset=utf-8');
+        header('X-Content-Type-Options: nosniff');
+        header('Cache-Control: no-store');
+        echo $document['text'];
+    }
+
+    private function publicAssistantGuide(): array {
+        $origin=(new \App\Services\PublicMcpService())->origin();
+        $raw=file_get_contents(app_path('content/ai-assistants.md'));
+        if($raw===false)throw new \RuntimeException('Public assistant guide unavailable.');
+        $text=str_replace(['{{SITE_URL}}','{{MCP_URL}}'],[$origin,$origin.'/api/mcp'],$raw);
+        preg_match('/^#\s+(.+)$/m',$text,$heading);
+        $body=trim((string)preg_replace('/^#\s+.+\R?/m','',$text,1));
+        return ['title'=>$heading[1]??'AI assistants','text'=>$text,
+            'html'=>(new MarkdownRenderer())->render($body)];
+    }
+
     public function spiritual(): void {
         $this->detectApiRequest();
         $this->seoKey = 'spiritual';
@@ -288,7 +319,7 @@ final class PublicController extends BaseController {
         $base = rtrim($this->siteUrl('/'), '/');
 
         $pages = [
-            '/', '/about', '/temples', '/shop', '/contact', '/blog',
+            '/', '/about', '/ai-assistants', '/temples', '/shop', '/contact', '/blog',
             '/terms', '/privacy', '/spiritual',
         ];
         $products = [];

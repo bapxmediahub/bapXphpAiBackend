@@ -73,11 +73,11 @@ final class ApiController extends BaseController {
     }
 
     /** Validate the HTTP adapter before casting, so overflow cannot become a valid bound. */
-    private function knowledgeSearchArguments(int $defaultLimit): array {
+    private function knowledgeSearchArguments(int $defaultLimit,array $extraKeys=[]): array {
         $query = $_GET['q'] ?? '';
         $offset = $_GET['offset'] ?? '0';
         $limit = $_GET['limit'] ?? (string)$defaultLimit;
-        if (array_diff(array_keys($_GET), ['q', 'offset', 'limit'])
+        if (array_diff(array_keys($_GET), array_merge(['q', 'offset', 'limit'],$extraKeys))
             || !is_string($query) || !mb_check_encoding($query, 'UTF-8') || mb_strlen($query) > 120
             || !is_scalar($offset) || !is_scalar($limit)
             || !preg_match('/^(0|[1-9][0-9]{0,9})$/D', (string)$offset)
@@ -114,10 +114,12 @@ final class ApiController extends BaseController {
 
     public function knowledgeProducts(): void {
         header('Cache-Control: no-store');
-        [$query, $offset, $limit] = $this->knowledgeSearchArguments(20);
+        [$query, $offset, $limit] = $this->knowledgeSearchArguments(20,['slugs']);
+        $slugs=array_key_exists('slugs',$_GET)?$_GET['slugs']:[];
+        if(!is_array($slugs))$this->jsonResponse(['error'=>'Use an array of exact product slugs.'],400);
         try {
             $answer=(new PublicKnowledgeService())->products(
-                $query,(int)$offset,(int)$limit
+                $query,(int)$offset,(int)$limit,$slugs
             );
         } catch (\InvalidArgumentException) {
             $this->jsonResponse(['error'=>'Invalid search arguments'],400);
