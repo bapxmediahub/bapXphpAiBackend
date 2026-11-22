@@ -61,13 +61,25 @@ test('Hostinger mobile brand and real add/remove cart remain functional', {timeo
                 'Mobile menu must stay tappable at '+width);
             assert.ok(current.width<=width+2,'Horizontal viewport overflow at '+width);
         }
+        console.log('LIVE_MOBILE_HEADER_PASS: brand, top cart, menu and absent bottom navigation at 320/375/390px');
         await page.setViewportSize({width:375,height:812});
         const tray=page.locator('#mobile-cart-tray');
         assert.equal(await tray.count(),1);
         assert.equal(await tray.isVisible(),false,'Empty session must not show floating cart');
         const add=page.locator('.shop-results form[data-cart-add]:not([hidden]) button').first();
         assert.ok(await add.count()===1,'Public shop needs at least one addable product');
+        const addResponsePromise=page.waitForResponse(response=>
+            new URL(response.url()).pathname==='/cart/add'
+            && response.request().method()==='POST',{timeout:15000});
         await add.click();
+        const addResponse=await addResponsePromise;
+        if(addResponse.status()===429) {
+            console.log('LIVE_CART_BACKEND_BLOCKED: POST /cart/add HTTP 429 (rate-limited upstream; not a successful cart addition).');
+            throw new Error('Real guest cart acceptance blocked by Hostinger/upstream HTTP 429 rate limiting; inspect host access logs and WAF policy.');
+        }
+        if(!addResponse.ok()){
+            throw new Error('Real guest cart POST failed with HTTP '+addResponse.status());
+        }
         added=true;
         try {
             await page.waitForFunction(()=>document.querySelector('.cart-count')?.textContent.trim()==='1'
