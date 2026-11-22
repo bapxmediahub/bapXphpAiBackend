@@ -3,9 +3,9 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 164,
+        "routes": 165,
         "controllers": 14,
-        "services": 74,
+        "services": 75,
         "views": 67,
         "collections": 22
     },
@@ -1300,6 +1300,17 @@
         },
         {
             "method": "GET",
+            "path": "/api/knowledge/a2ui",
+            "name": "api.knowledge.a2ui",
+            "controller": "ApiController@knowledgeA2ui",
+            "view": "public/404",
+            "services": [
+                "PublicA2uiService",
+                "PublicKnowledgeService"
+            ]
+        },
+        {
+            "method": "GET",
             "path": "/api/knowledge/articles",
             "name": "api.knowledge.articles",
             "controller": "ApiController@knowledgeArticles",
@@ -1957,6 +1968,7 @@
         "ProductImportService",
         "ProductService",
         "ProjectMapService",
+        "PublicA2uiService",
         "PublicKnowledgeService",
         "RateLimiter",
         "RequestFailureService",
