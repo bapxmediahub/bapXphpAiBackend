@@ -66,6 +66,16 @@ jobs:
             echo '- Do not infer a successful deployment from a successful merge.'
           } >> "$GITHUB_STEP_SUMMARY"
           exit 1
+  mobile_acceptance:
+    name: Live mobile header and guest cart acceptance
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.expected_sha || github.event.workflow_run.head_sha }}
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
