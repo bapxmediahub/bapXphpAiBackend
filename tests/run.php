@@ -2034,6 +2034,21 @@ $tests['project map registry has no missing route mappings'] = function (): void
     assertSame([], $validation['missing_route_mappings'], 'Routes should map to controllers');
     assertSame([], $validation['missing_services'], 'Routes should reference declared services');
     assertSame([], $validation['missing_collections'], 'Collections should be declared');
+    $webhooks = array_values(array_filter($map['routes'], static fn(array $route): bool =>
+        ($route['method'] ?? '') === 'POST' && ($route['path'] ?? '') === '/api/payments/razorpay-webhook'));
+    assertSame(1, count($webhooks), 'The signed payment webhook must have one explicit route');
+    $webhook = $webhooks[0];
+    assertSame('json', $webhook['response'] ?? null, 'The webhook declares its actual JSON response');
+    assertTrue(!isset($webhook['page']), 'A JSON webhook must not invent an HTML page mapping');
+    assertSame([], ProjectMapService::validate(['routes'=>[$webhook]])['missing_route_mappings'], 'An explicit JSON controller is a complete route mapping');
+    foreach ([
+        ['method'=>'POST','path'=>'/fixture/missing-controller','response'=>'json'],
+        ['method'=>'POST','path'=>'/fixture/missing-response','controller'=>'RemoteCheckoutController@webhook'],
+        ['method'=>'POST','path'=>'/fixture/misspelled-response','controller'=>'RemoteCheckoutController@webhook','response'=>'josn'],
+    ] as $invalidRoute) {
+        assertSame([$invalidRoute], ProjectMapService::validate(['routes'=>[$invalidRoute]])['missing_route_mappings'],
+            'Missing controllers and undeclared or misspelled response kinds must still fail route mapping');
+    }
 };
 
 $tests['project map generation lists schema collections without runtime stores'] = function (): void {
@@ -2792,10 +2807,15 @@ $tests['order shipping workflow sets review date and queues customer emails'] = 
 
 $tests['checkout and admin order pages wire customer email workflow'] = function (): void {
     $commerce = file_get_contents(app_path('app/Controllers/CommerceController.php'));
+    $verified = file_get_contents(app_path('app/Services/VerifiedOrderService.php'));
     $admin = file_get_contents(app_path('app/Controllers/AdminController.php'));
     $detailView = file_get_contents(app_path('views/admin/detail.php'));
     routeExists('/admin/orders/{id}/status', 'Project map should include the admin order status save route');
-    assertTrue(str_contains($commerce, 'enqueuePaymentConfirmation'), 'Successful payment verification should queue payment confirmation email');
+    assertTrue(str_contains($commerce, 'VerifiedOrderService())->persist('), 'Browser payment verification must use the shared verified-order boundary');
+    $savePosition = strpos($verified, '$db->saveVerifiedOrder(');
+    $mailPosition = strpos($verified, '->enqueuePaymentConfirmation($stored)');
+    assertTrue($savePosition !== false && $mailPosition !== false && $savePosition < $mailPosition
+        && str_contains($verified, "!empty(\$insert['inserted'])"), 'Only a successfully inserted verified order should queue payment confirmation email');
     assertTrue(str_contains($admin, 'saveOrderStatus'), 'Admin controller should expose order status updates');
     assertTrue(str_contains($detailView, 'name="status"'), 'Order detail should expose a status update form');
 };
@@ -2830,9 +2850,32 @@ $tests['verified payments remain recoverable when order persistence fails'] = fu
     assertTrue(str_contains($commerce, "'[order-persistence-failed] payment_id='"), 'Failed order writes should produce an operator-visible error with payment correlation');
     assertTrue(str_contains($commerce, "'payment_verified' => true"), 'The checkout response should distinguish a verified payment from a persisted order');
     assertTrue(str_contains($commerce, 'Your cart has been preserved.'), 'Customers should be told that failed order persistence did not clear their cart');
-    $persistPosition = strpos($commerce, '$db->saveVerifiedOrder(');
-    $clearPosition = strpos($commerce, "unset(\$_SESSION['pending_order'], \$_SESSION['cart'])");
-    assertTrue($persistPosition !== false && $clearPosition !== false && $persistPosition < $clearPosition, 'Checkout state must only be cleared after the order write succeeds');
+    $pending = ['total'=>105, 'customer_email'=>'recovery@example.invalid', 'customer_name'=>'Recovery fixture', 'customer_phone'=>'',
+        'shipping_address'=>'Fixture', 'shipping_city'=>'Fixture', 'shipping_pincode'=>'000000', 'shipping_state'=>'Tamil Nadu',
+        'items'=>[['slug'=>'recovery-item','name'=>'Fixture item','qty'=>1,'line_total'=>105]]];
+    $sessionBefore = $_SESSION;
+    $persist = (new ReflectionMethod(\App\Controllers\CommerceController::class, 'persistVerifiedOrder'))
+        ->getClosure(new \App\Controllers\CommerceController());
+    try {
+        $_SESSION = ['pending_order'=>$pending, 'cart'=>[['slug'=>'recovery-item','qty'=>1]]];
+        $recovery = $_SESSION;
+        $ports = [
+            'readOrders'=>static fn(): array=>[],
+            'products'=>static fn(): array=>['recovery-item'=>['stock_status'=>'in_stock','gst_rate'=>5,'hsn_code'=>'8306']],
+            'settings'=>static fn(): array=>['gst_state'=>'Tamil Nadu'],
+            'insertOrder'=>static function (array $order) use ($recovery): array {
+                assertSame($recovery, $_SESSION, 'The browser recovery state must still exist when the shared order write starts');
+                throw new RuntimeException('Synthetic order write failure');
+            },
+        ];
+        try {
+            $persist($pending, 'recovery-payment-fixture', [], $ports);
+            assertTrue(false, 'A failed verified-order write must propagate to the browser recovery handler');
+        } catch (RuntimeException $error) {
+            assertSame('Synthetic order write failure', $error->getMessage(), 'The shared persistence failure must reach the browser adapter');
+        }
+        assertSame($recovery, $_SESSION, 'A failed shared order write must preserve both the pending checkout and browser cart');
+    } finally { $_SESSION = $sessionBefore; }
 };
 
 $tests['cart quantity controls update progressively and remove at zero'] = function (): void {
@@ -3764,11 +3807,14 @@ $tests['an unpaid checkout never registers an order'] = function (): void {
     // in the admin with a real total against a customer who never paid. Razorpay always
     // held it in the session; both now do.
     $commerce = file_get_contents(app_path('app/Controllers/CommerceController.php'));
+    $verified = file_get_contents(app_path('app/Services/VerifiedOrderService.php'));
     $beforeVerify = substr($commerce, 0, strpos($commerce, 'public function verifyPayment'));
-    assertTrue(!str_contains($beforeVerify, "saveVerifiedOrder(") && !str_contains($beforeVerify, "upsert('orders'"),
+    assertTrue(!str_contains($beforeVerify, 'persistVerifiedOrder(') && !str_contains($beforeVerify, 'VerifiedOrderService')
+        && !str_contains($beforeVerify, 'saveVerifiedOrder(') && !str_contains($beforeVerify, "upsert('orders'"),
         'No order may be written before the payment is verified');
-    assertTrue(substr_count($commerce, "->saveVerifiedOrder(") === 1,
-        'Orders should be written in exactly one place, after verification');
+    assertSame(0, substr_count($commerce, '->saveVerifiedOrder('), 'The browser controller must not bypass shared verified-order persistence');
+    assertSame(1, substr_count($verified, '->saveVerifiedOrder('), 'Verified orders should use one shared atomic database write boundary');
+    assertTrue(str_contains($commerce, 'VerifiedOrderService())->persist('), 'The browser adapter must delegate its verified payment to the shared service');
     assertTrue(str_contains($beforeVerify, "\$_SESSION['pending_order']"),
         'An unpaid checkout should be held in the session');
 
@@ -3786,7 +3832,10 @@ $tests['Stripe return verifies and lands on the order confirmation'] = function 
     assertTrue(str_contains($commerce, "['amount_total'] ?? 0) === \$expected"), 'Stripe return should verify the paid amount');
     assertTrue(str_contains($commerce, "['currency'] ?? '')) === 'inr'"), 'Stripe return should verify INR');
     assertTrue(str_contains($commerce, "?placed=1"), 'Stripe success should land on the order-specific thank-you state');
-    assertTrue(substr_count($commerce, "->saveVerifiedOrder(") === 1, 'Both gateways should share one order persistence boundary');
+    assertSame(2, substr_count($commerce, '$this->persistVerifiedOrder('), 'Razorpay and Stripe must both call the browser verified-order adapter');
+    assertTrue(str_contains($commerce, 'VerifiedOrderService())->persist('), 'Both browser gateways must reach shared verified-order persistence');
+    $verified = file_get_contents(app_path('app/Services/VerifiedOrderService.php'));
+    assertSame(1, substr_count($verified, '->saveVerifiedOrder('), 'Both gateways should share one atomic order persistence boundary');
 };
 
 $tests['shipping an order requires a courier tracking id and link'] = function (): void {
@@ -4472,8 +4521,9 @@ $tests['verified payment tax review preserves missing-state orders without issui
     assertSame(null, $tax->snapshotForVerifiedPayment($items, 0, 'Tamil Nadu', ['gst_state'=>'invalid']), 'Invalid supplier state requires review');
     $valid = $tax->snapshotForVerifiedPayment($items, 0, 'Karnataka', ['gst_state'=>'Tamil Nadu']);
     assertSame('interstate', $valid['supply_type'] ?? '', 'Valid paid checkout still receives correct classification');
-    $controller = file_get_contents(app_path('app/Controllers/CommerceController.php'));
-    assertTrue(str_contains($controller, "'tax_review_required' => \$tax === null"), 'Paid records carry review flag when classification is unavailable');
+    $verified = file_get_contents(app_path('app/Services/VerifiedOrderService.php'));
+    assertTrue(str_contains($verified, "'tax_review_required'=>\$tax === null"), 'Shared paid-order persistence carries a review flag when classification is unavailable');
+    assertTrue(str_contains($verified, '$db->saveVerifiedOrder($order, $tax !== null)'), 'Only a validated tax snapshot may request an invoice from atomic persistence');
 };
 
 $tests['verified legacy payment is persisted once without a fabricated invoice'] = function (): void {

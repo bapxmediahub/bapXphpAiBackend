@@ -2268,21 +2268,7 @@
         "StripeClient"
     ],
     "gaps": {
-        "missing_route_mappings": [
-            {
-                "method": "POST",
-                "path": "/api/payments/razorpay-webhook",
-                "name": "checkout.payment-webhook",
-                "controller": "RemoteCheckoutController@webhook",
-                "services": [
-                    "RemoteCheckoutService",
-                    "PaymentService",
-                    "VerifiedOrderService",
-                    "DatabaseService",
-                    "SecretService"
-                ]
-            }
-        ],
+        "missing_route_mappings": [],
         "missing_controller_files": [],
         "missing_service_files": [],
         "missing_view_files": [],

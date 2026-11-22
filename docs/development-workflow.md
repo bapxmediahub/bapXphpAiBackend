@@ -133,3 +133,13 @@ credential blocks without pretending they are review approval. See
 `engineering/ai-review-workflow.md` for the trusted metadata coordinator.
 
 Reference: [GitHub issue/PR linking behavior](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue).
+
+## JSON response mappings
+
+A route that intentionally returns JSON can declare `response: json` in the
+ProjectMapService registry without inventing an HTML template. Both registry
+validation and the systematic scan use that explicit contract. A controller is
+still required; an undeclared or misspelled response kind does not bypass the
+missing-page gate. The signed payment webhook uses this mapping. Fixed atomic
+database operations declare their actual private collection dependencies in the
+existing explicit overrides because the generic CRUD scanner cannot infer them.

@@ -52,7 +52,7 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/cart/agent-checkout','name'=>'cart.agent-checkout.import','page'=>'public/agent-checkout','controller'=>'CommerceController@importAgentCheckout','services'=>['RemoteCartService','CartService','DatabaseService']],
             ['method'=>'GET','path'=>'/checkout','name'=>'checkout','page'=>'public/checkout','controller'=>'PublicController@checkout','services'=>['CartService','ProductService','SecretService','AddressService','SettingsService']],
             ['method'=>'GET','path'=>'/checkout/payment','name'=>'checkout.payment-handoff','page'=>'public/agent-payment','controller'=>'RemoteCheckoutController@payment','services'=>['RemoteCheckoutService','DatabaseService']],
-            ['method'=>'POST','path'=>'/api/payments/razorpay-webhook','name'=>'checkout.payment-webhook','controller'=>'RemoteCheckoutController@webhook','services'=>['RemoteCheckoutService','PaymentService','VerifiedOrderService','DatabaseService','SecretService']],
+            ['method'=>'POST','path'=>'/api/payments/razorpay-webhook','name'=>'checkout.payment-webhook','response'=>'json','controller'=>'RemoteCheckoutController@webhook','services'=>['RemoteCheckoutService','PaymentService','VerifiedOrderService','DatabaseService','SecretService']],
             ['method'=>'GET','path'=>'/feeds/google-products.xml','name'=>'merchant.feed','page'=>'public/merchant-feed','controller'=>'PublicController@merchantFeed','services'=>['MerchantFeedService','ProductService','SettingsService']],
             ['method'=>'GET','path'=>'/sitemap.xml','name'=>'sitemap','page'=>'public/sitemap','controller'=>'PublicController@sitemap','services'=>['BlogService','ProductService','AuthoredPageService']],
             ['method'=>'GET','path'=>'/contact','name'=>'contact','page'=>'public/contact','controller'=>'PublicController@contact','services'=>['PublicKnowledgeService']],
@@ -207,10 +207,16 @@ final class ProjectMapService {
         $services = $map['services'] ?? self::phpBasenames(app_path('app/Services'));
         $schema = require app_path('storage/schema/collections.php');
         $collections = $map['collections'] ?? array_keys($schema['collections'] ?? []);
-        $missingRouteMappings = array_values(array_filter($map['routes'] ?? [], fn($r) => empty($r['controller']) || empty($r['page'])));
+        $missingRouteMappings = array_values(array_filter($map['routes'] ?? [], self::missingRouteMapping(...)));
         $used = array_unique(array_merge(...array_map(fn($r) => $r['services'] ?? [], $map['routes'] ?? [])));
         $missingServices = array_values(array_diff($used, $services));
         return ['missing_route_mappings'=>$missingRouteMappings,'missing_services'=>$missingServices,'missing_collections'=>[]];
+    }
+
+    private static function missingRouteMapping(array $route): bool {
+        // A declared JSON handler has no HTML view. Missing controllers and
+        // undeclared/misspelled response kinds still fail the mapping gate.
+        return empty($route['controller']) || (empty($route['page']) && ($route['response'] ?? null) !== 'json');
     }
 
     public static function scan(): array {
@@ -248,7 +254,7 @@ final class ProjectMapService {
         $allScCollections = array_values(array_unique(array_merge(...array_values(self::serviceCollections()))));
 
         $gaps = [
-            'missing_route_mappings' => array_values(array_filter($map['routes'], fn($route) => empty($route['controller']) || empty($route['page']))),
+            'missing_route_mappings' => array_values(array_filter($map['routes'], self::missingRouteMapping(...))),
             'missing_controller_files' => array_values(array_diff($routeControllers, $controllers)),
             'missing_service_files' => array_values(array_diff($routeServices, $services)),
             'missing_view_files' => array_values(array_diff($routeViews, $views)),

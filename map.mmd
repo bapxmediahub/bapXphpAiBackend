@@ -14,7 +14,7 @@ flowchart LR
     arch_views["> Views: 71"]:::arch
     arch_data["> Collections: 24 schema | 0 files"]:::arch
     arch_tools["> Tools: 30"]:::arch
-    arch_gaps["> Gaps: 14"]:::arch
+    arch_gaps["> Gaps: 13"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -471,7 +471,6 @@ flowchart LR
   end
 
   subgraph GAPS["Gaps & Missing Links"]
-    gap_83a5f47d60["POST /api/payments/razorpay-webhook missing mapping"]:::gap
     gap_43f054c140["unwired_services: AgentAnswerPresentationService"]:::gap
     gap_3021cb4637["unwired_services: AgentBudgetException"]:::gap
     gap_9d47bad6dc["unwired_services: AstrologerService"]:::gap
@@ -1407,7 +1406,6 @@ flowchart LR
   tool_validate_project_map --> systematic_map
   tool_smoke_local --> ROUTES_PUBLIC
   tool_smoke_local --> ROUTES_ADMIN
-  gap_83a5f47d60 -. missing .-> controller_remotecheckoutcontroller
   gap_43f054c140 -. missing .-> service_agentanswerpresentationservice
   gap_3021cb4637 -. missing .-> service_agentbudgetexception
   gap_9d47bad6dc -. missing .-> service_astrologerservice

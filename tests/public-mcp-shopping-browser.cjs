@@ -175,7 +175,10 @@ test('official MCP Apps shopping controls use real photos, isolated carts, absol
                 const delivery={name:'Synthetic App Shopper',email:'app-fixture@example.test',phone:'9876543210',
                     address:'24 Synthetic App Street',city:'Chennai',pincode:'600001',state:'Tamil Nadu'};
                 for(const[label,key]of [['Full name','name'],['Email','email'],['Phone','phone'],['Delivery address','address'],['City','city'],['PIN code','pincode']])await checkout.getByLabel(label,{exact:true}).fill(delivery[key]);
-                await checkout.getByLabel('State or union territory',{exact:true}).selectOption(delivery.state);
+                // A wrapping label's text includes option descendants; use the exact accessible combobox name.
+                const deliveryState=checkout.getByRole('combobox',{name:'State or union territory',exact:true});
+                await deliveryState.selectOption(delivery.state);
+                assert.equal(await deliveryState.inputValue(),delivery.state);
                 assert.equal(host.hostCalls.length,beforeFields,'Typing delivery fields does not execute tools');
                 assert.equal(adapter.state.gatewayCalls.length,0,'No provider request before quote confirmation');
                 host.echo=true;

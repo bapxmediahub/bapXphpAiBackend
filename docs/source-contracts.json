@@ -58,14 +58,14 @@
             "review_note": "Cross-checked architecture and official product image paths against unchanged media ownership/storage rules. Chat cards use bounded published same-origin raster projections; no image binary, upload location or media permissions changed."
         },
         "operator-help": {
-            "source_sha256": "49cd1e3a6797399c645eac59110bc79c9592cef095f7e7040d7c2c3fc9aea263",
+            "source_sha256": "4ffd0adb467d3d86b83c9e333689e8956cb47c248b63230eecb85aafe71d6334",
             "references_sha256": "3f129d14bb19eefb373b6c1d5bd04037aa8314bc247fbff6eec830c06724e290",
-            "review_note": "Cross-checked the actual Razorpay mode-specific webhook fields and operator settings guidance, private payment recovery and no-live-purchase QA boundary; existing customer/account Help and owner authorization remain accurate."
+            "review_note": "Rechecked explicit JSON webhook map against its signed stateless controller, updated operator webhook settings Help and unchanged account/customer guidance. JSON route metadata does not introduce an HTML page, additional authorization or customer lookup."
         },
         "public-mcp": {
-            "source_sha256": "b6389d4698d38470a45014f72c02146dc35085c842bbfc5e2923920688e9e335",
+            "source_sha256": "0168519256fd40dd6521351aaf397b866c65e812bf0436f208a179a97d0d708c",
             "references_sha256": "f0eb7593d4e42d4e487807fd6a4f5d349d564e01359580a70c0e0691f91f7bfc",
-            "review_note": "Reviewed the actual registry, both protocol dispatch profiles, model/App visibility, scoped capabilities and exact-result resources against public MCP, discovery, shop and A2UI docs. Private delivery fields and owner grants are excluded; status survives Shop disablement."
+            "review_note": "Rechecked MCP route dependencies and fixed private collection wiring after explicit JSON response metadata. Six canonical commerce scopes, public schemas, guide and payment-only continuation remain accurate; native HTTP and SDK acceptance passed the first integrated CI run."
         },
         "remote-commerce": {
             "source_sha256": "1966c34fbe250f75b05e376c9a0fd6effd73d1073fef2c0d0061931afbfc8731",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed the sales-channel CLI references and catalogue guidance. This change only fixes generic PHP lint argument forwarding and failure propagation; feed, channel and catalogue operations are unchanged."
         },
         "workflow": {
-            "source_sha256": "f6d03f3539b9a5edd81f3713e2f7a64a29998a5900bd25a7eeca52d3005163d9",
-            "references_sha256": "d9259d2fc5ee2fda87748a3b74350427be83c2bea522e9d2df4b31de7b388a0d",
-            "review_note": "Reviewed required PHP, HTTP, SDK, native/polyfill Chrome, minimal-sandbox AppBridge and MySQL gates; generated maps reflect the new fixed routes and private collections. Deployment checks retain exact Git SHA delay and add one isolated curl cart cleaned to empty, with no payment submission."
+            "source_sha256": "a19fc598a35f6aee4461143752b2d5b81da79cb5f78f3f8e068c662ec7e89ccf",
+            "references_sha256": "d80724bec71cbdf67774896dffd329f7a12d6a79f0d542dd84992687d824ce1b",
+            "review_note": "Reviewed the explicit response=json mapping gate and focused rejection tests for missing controller/page and misspelled kinds. Regenerated maps preserve real routes without inventing a webhook template. Native CI retains source-contract, SQL, browser and payment-boundary assertions; revised callback assertions follow the shared verified-order service."
         }
     }
 }
