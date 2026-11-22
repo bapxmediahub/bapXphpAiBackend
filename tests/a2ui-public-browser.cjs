@@ -12,6 +12,7 @@ const scripts={
     '/renderer.js':readFileSync(path.join(root,'assets/a2ui-public-renderer.js')),
     '/webmcp.js':readFileSync(path.join(root,'assets/public-a2ui-webmcp.js')),
 };
+const css=readFileSync(path.join(root,'assets/css/a2ui-public.css'));
 const catalog='https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json';
 const a2ui=(label,pathValue)=>({messages:[{
     version:'1.0',createSurface:{
@@ -41,6 +42,9 @@ const schema={
 test('official WebMCP polyfill executes a read-only A2UI v1.0 tool and renderer rejects untrusted code', {timeout:30000},async()=>{
     const server=createServer((req,res)=>{
         const url=new URL(req.url,'http://localhost');
+        if(url.pathname==='/style.css'){
+            res.writeHead(200,{'content-type':'text/css'});res.end(css);return;
+        }
         if(scripts[url.pathname]){
             res.writeHead(200,{'content-type':'application/javascript'});res.end(scripts[url.pathname]);return;
         }
@@ -50,6 +54,7 @@ test('official WebMCP polyfill executes a read-only A2UI v1.0 tool and renderer 
         }
         if(url.pathname==='/'){
             const html='<!doctype html><html><head>'+
+                '<link rel="stylesheet" href="/style.css">'+
                 '<script src="/polyfill.js"></script>'+
                 '<script id="bapx-a2ui-schema" type="application/json">'+JSON.stringify(schema)+'</script>'+
                 '<script src="/renderer.js" defer></script>'+
