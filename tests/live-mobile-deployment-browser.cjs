@@ -12,7 +12,28 @@ test('Hostinger mobile brand and real add/remove cart remain functional', {timeo
     let added=false;
     const page=await context.newPage();
     const errors=[];
+    const cartResponses=[];
     page.on('pageerror',error=>errors.push(error.message));
+    page.on('requestfailed',req=>{
+        if(/\/cart\/(add|update|remove)/.test(new URL(req.url()).pathname)) {
+            console.log('Cart network failed', req.failure()?.errorText || 'unknown');
+        }
+    });
+    page.on('response',async response=>{
+        if(!/\/cart\/(add|update|remove)/.test(new URL(response.url()).pathname))return;
+        let payload=null;
+        try{
+            const raw=await response.text();
+            const json=JSON.parse(raw);
+            payload={keys:Object.keys(json),quantity:json.quantity,cart_count:json.cart_count,
+                error:typeof json.error==='string'?json.error.slice(0,180):undefined};
+        }catch{}
+        const row={method:response.request().method(),status:response.status(),
+            type:response.headers()['content-type']?.split(';')[0]||null,
+            payload};
+        cartResponses.push(row);
+        console.log('CART_HTTP',JSON.stringify(row));
+    });
     try {
         const response=await page.goto(origin+'/shop',{waitUntil:'domcontentloaded',timeout:25000});
         assert.equal(response?.status(),200,'Storefront must respond HTTP 200');
@@ -48,8 +69,22 @@ test('Hostinger mobile brand and real add/remove cart remain functional', {timeo
         assert.ok(await add.count()===1,'Public shop needs at least one addable product');
         await add.click();
         added=true;
-        await page.waitForFunction(()=>document.querySelector('.cart-count')?.textContent.trim()==='1'
-            && !document.getElementById('mobile-cart-tray')?.hidden,null,{timeout:12000});
+        try {
+            await page.waitForFunction(()=>document.querySelector('.cart-count')?.textContent.trim()==='1'
+                && !document.getElementById('mobile-cart-tray')?.hidden,null,{timeout:12000});
+        } catch(error) {
+            const state=await page.evaluate(()=>({
+                url:location.pathname,
+                badge:document.querySelector('.cart-count')?.textContent?.trim(),
+                trayHidden:document.getElementById('mobile-cart-tray')?.hidden,
+                toast:document.querySelector('.toast--error .toast__text')?.textContent?.slice(0,180),
+                addHidden:document.querySelector('.shop-results form[data-cart-add]')?.hidden,
+                stepperHidden:document.querySelector('.shop-results [data-cart-stepper]')?.hidden,
+            }));
+            console.log('CART_UI_AFTER_CLICK',JSON.stringify(state));
+            console.log('CART_HTTP_SUMMARY',JSON.stringify(cartResponses));
+            throw error;
+        }
         assert.equal(await tray.getAttribute('href'),'/cart');
         const target=await page.evaluate(()=>{
             const e=document.getElementById('mobile-cart-tray');
