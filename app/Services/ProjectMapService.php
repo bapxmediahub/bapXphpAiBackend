@@ -249,6 +249,11 @@ final class ProjectMapService {
         $sharedServices = self::SHARED_SERVICES;
         $sharedViews = self::SHARED_VIEWS;
         $knownUnwiredCollections = self::KNOWN_UNWIRED_COLLECTIONS;
+        $sourceRelationships = self::sourceRelationships();
+        $referencedServices = [];
+        foreach ($sourceRelationships as $edge) {
+            if (str_starts_with($edge['to'], 'service:')) $referencedServices[] = substr($edge['to'], 8);
+        }
 
         $adminPostRoutes = array_values(array_filter($map['routes'], fn($r) => str_starts_with($r['path'] ?? '', '/admin') && ($r['method'] ?? 'GET') === 'POST' && !str_contains($r['path'] ?? '', 'sw.js') && !str_contains($r['path'] ?? '', 'manifest.json') && !str_contains($r['path'] ?? '', '/agent/ask') && !str_contains($r['path'] ?? '', '/blog/preview') && !str_contains($r['path'] ?? '', '/blog/ai-draft')));
         $allScCollections = array_values(array_unique(array_merge(...array_values(self::serviceCollections()))));
@@ -260,7 +265,9 @@ final class ProjectMapService {
             'missing_view_files' => array_values(array_diff($routeViews, $views)),
             'navigation_without_get_route' => array_values(array_diff($navigation, $getRoutePaths)),
             'unwired_controllers' => array_values(array_diff($controllers, $routeControllers, $sharedControllers)),
-            'unwired_services' => array_values(array_diff($services, $routeServices, $sharedServices)),
+            // A candidate for inspection, not proof of unused code: function-only
+            // entrypoints, injected objects and dynamic dispatch are outside this scan.
+            'unreferenced_services' => array_values(array_diff($services, $routeServices, $sharedServices, $referencedServices)),
             'unwired_views' => array_values(array_diff($views, $routeViews, $sharedViews)),
             'admin_mutations_without_audit' => array_values(array_filter($adminPostRoutes, fn($r) => !in_array('AuditLogService', $r['services'] ?? [], true))),
             'unwired_schema_collections' => array_values(array_diff($schemaCollections, $allScCollections, $knownUnwiredCollections)),
@@ -276,6 +283,8 @@ final class ProjectMapService {
             'schema_collections' => $schemaCollections,
             'storage_files' => $storageFiles,
             'tools' => $tools,
+            'relationship_provenance' => self::relationshipProvenance(),
+            'source_relationships' => $sourceRelationships,
             'gaps' => $gaps,
             'summary' => [
                 'routes' => count($map['routes']),
@@ -289,6 +298,157 @@ final class ProjectMapService {
                 'gaps' => array_sum(array_map('count', $gaps)),
             ],
         ];
+    }
+
+    public static function relationshipProvenance(): array {
+        return [
+            'route_registry' => 'Registered handlers; services and related views are declared associations, not proof of direct calls or rendered responses.',
+            'source_token' => 'Named class extends, literal new and static class references (including ::class) in controller, service and integration PHP files. Source presence is not runtime execution or working autoload.',
+            'collection_reference' => 'Bounded textual collection scan plus explicit overrides; no read/write direction or runtime reachability is inferred.',
+            'coverage' => 'No dynamic dispatch, variable class names, anonymous class bodies, dependency injection, trait propagation or function-only entrypoints. Unreferenced entries are inspection candidates within this limited coverage, not proven dead code.',
+        ];
+    }
+
+    /** Read source only; never autoload a class, run a constructor or infer a call from a route name. */
+    public static function sourceRelationships(): array {
+        $known = $parsed = [];
+        foreach (['controller'=>'app/Controllers', 'service'=>'app/Services', 'integration'=>'integrations'] as $kind=>$directory) {
+            foreach (self::phpFiles(app_path($directory)) as $file) {
+                $source = self::sourceReferences((string)file_get_contents($file));
+                $path = substr($file, strlen(app_path()) + 1);
+                foreach ($source['classes'] as $class) {
+                    $name = substr($class, (int)strrpos('\\' . $class, '\\'));
+                    // The inventory is file-based; other named classes in a file
+                    // remain outside it rather than acquiring a guessed node.
+                    if ($name === basename($file, '.php')) $known[strtolower($class)] = $kind . ':' . $name;
+                }
+                $parsed[$path] = $source['references'];
+            }
+        }
+        $edges = [];
+        foreach ($parsed as $path=>$references) {
+            foreach ($references as $reference) {
+                $from = $known[strtolower($reference['from'])] ?? null;
+                $to = $known[strtolower($reference['to'])] ?? null;
+                if ($from === null || $to === null || $from === $to) continue;
+                $key = $from . '|' . $reference['relation'] . '|' . $to;
+                $edges[$key] ??= ['from'=>$from, 'to'=>$to, 'relation'=>$reference['relation'],
+                    'provenance'=>'source_token', 'source'=>$path, 'line'=>$reference['line']];
+            }
+        }
+        ksort($edges, SORT_STRING);
+        return array_values($edges);
+    }
+
+    /**
+     * A small lexical inventory, not a PHP AST or method call graph. Resolve
+     * namespace/import names only at literal extends/new/Class:: sites.
+     * Comments, strings, unused imports and dynamic targets cannot create edges.
+     */
+    public static function sourceReferences(string $source): array {
+        if (strlen($source) > 2 * 1024 * 1024) throw new \LengthException('Map source exceeds the 2 MiB per-file scan budget.');
+        $tokens = array_values(array_filter(token_get_all($source), static fn($token): bool =>
+            !is_array($token) || !in_array($token[0], [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true)));
+        $text = static fn($token): string => is_array($token) ? $token[1] : (string)$token;
+        $id = static fn($token): ?int => is_array($token) ? $token[0] : null;
+        $isName = static fn($token): bool => is_array($token)
+            && in_array($token[0], [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED, T_NAME_RELATIVE], true);
+        $blockEnd = static function(int $open) use ($tokens, $id): int {
+            $depth = 1;
+            for ($i = $open + 1, $count = count($tokens); $i < $count; $i++) {
+                if ($tokens[$i] === '{' || in_array($id($tokens[$i]), [T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES], true)) $depth++;
+                if ($tokens[$i] === '}' && --$depth === 0) return $i;
+            }
+            throw new \UnexpectedValueException('Map source has an unclosed class body.');
+        };
+        $bodyStart = static function(int $start) use ($tokens, $id): ?int {
+            $parens = $brackets = 0;
+            for ($i = $start, $count = count($tokens); $i < $count; $i++) {
+                $value = is_string($tokens[$i]) ? $tokens[$i] : ($id($tokens[$i]) === T_ATTRIBUTE ? '#[' : '');
+                if ($value === '(') $parens++;
+                elseif ($value === ')') $parens--;
+                elseif ($value === '[' || $value === '#[') $brackets++;
+                elseif ($value === ']') $brackets--;
+                elseif ($value === '{' && $parens === 0 && $brackets === 0) return $i;
+                elseif ($value === ';' && $parens === 0 && $brackets === 0) return null;
+            }
+            return null;
+        };
+        $namespace = '';
+        $aliases = $classes = $references = [];
+        $resolve = static function(string $name) use (&$namespace, &$aliases): ?string {
+            if (in_array(strtolower($name), ['self', 'parent', 'static'], true)) return null;
+            if (str_starts_with($name, '\\')) return ltrim($name, '\\');
+            if (str_starts_with(strtolower($name), 'namespace\\')) return ($namespace === '' ? '' : $namespace . '\\') . substr($name, 10);
+            $parts = explode('\\', $name, 2);
+            if (isset($aliases[strtolower($parts[0])])) return $aliases[strtolower($parts[0])] . (isset($parts[1]) ? '\\' . $parts[1] : '');
+            return ($namespace === '' ? '' : $namespace . '\\') . $name;
+        };
+        $addImport = static function(array $part, string $prefix) use (&$aliases, $text, $id): void {
+            if ($part === [] || in_array($id($part[0]), [T_FUNCTION, T_CONST], true)) return;
+            $name = $alias = '';
+            $as = false;
+            foreach ($part as $token) {
+                if ($id($token) === T_AS) { $as = true; continue; }
+                if ($as) $alias .= $text($token); else $name .= $text($token);
+            }
+            $name = ltrim($prefix . $name, '\\');
+            if ($name !== '') $aliases[strtolower($alias ?: substr($name, (int)strrpos('\\' . $name, '\\')))] = $name;
+        };
+        for ($i = 0, $count = count($tokens); $i < $count; $i++) {
+            if ($id($tokens[$i]) === T_NAMESPACE) {
+                $namespace = '';
+                $aliases = [];
+                while (++$i < $count && !in_array($text($tokens[$i]), [';', '{'], true)) $namespace .= $text($tokens[$i]);
+                continue;
+            }
+            if ($id($tokens[$i]) === T_USE && $text($tokens[$i + 1] ?? '') !== '(') {
+                $prefix = '';
+                $part = [];
+                $ignore = in_array($id($tokens[$i + 1] ?? null), [T_FUNCTION, T_CONST], true);
+                while (++$i < $count && $text($tokens[$i]) !== ';') {
+                    $value = $text($tokens[$i]);
+                    if ($ignore) continue;
+                    if ($value === '{') { $prefix = implode('', array_map($text, $part)); $part = []; }
+                    elseif ($value === ',' || $value === '}') { $addImport($part, $prefix); $part = []; }
+                    else $part[] = $tokens[$i];
+                }
+                if (!$ignore) $addImport($part, $prefix);
+                continue;
+            }
+            if (!in_array($id($tokens[$i]), [T_CLASS, T_TRAIT, T_INTERFACE, T_ENUM], true)
+                || $id($tokens[$i - 1] ?? null) === T_DOUBLE_COLON) continue;
+            $open = $bodyStart($i + 1);
+            if ($open === null) continue;
+            $close = $blockEnd($open);
+            if ($id($tokens[$i]) !== T_CLASS || $id($tokens[$i + 1] ?? null) !== T_STRING) { $i = $close; continue; }
+            $class = ($namespace === '' ? '' : $namespace . '\\') . $text($tokens[$i + 1]);
+            $classes[] = $class;
+            for ($j = $i + 2; $j < $close; $j++) {
+                $token = $tokens[$j];
+                $kind = null;
+                $target = null;
+                if ($j < $open && $id($token) === T_EXTENDS && $isName($tokens[$j + 1] ?? null)) {
+                    $kind = 'extends'; $target = $resolve($text($tokens[$j + 1]));
+                } elseif ($j > $open && in_array($id($token), [T_CLASS, T_TRAIT, T_INTERFACE, T_ENUM], true)
+                    && $id($tokens[$j - 1] ?? null) !== T_DOUBLE_COLON) {
+                    // Nested/anonymous classes have their own scope; do not
+                    // attribute their bodies to the enclosing named class.
+                    $nested = $bodyStart($j + 1);
+                    if ($nested !== null) $j = $blockEnd($nested);
+                    continue;
+                } elseif ($j > $open && $id($token) === T_NEW && $isName($tokens[$j + 1] ?? null)
+                    && $id($tokens[$j + 2] ?? null) !== T_DOUBLE_COLON) {
+                    $kind = 'constructs'; $target = $resolve($text($tokens[$j + 1]));
+                } elseif ($j > $open && $isName($token) && $id($tokens[$j + 1] ?? null) === T_DOUBLE_COLON
+                    && !in_array($id($tokens[$j - 1] ?? null), [T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR, T_DOUBLE_COLON], true)) {
+                    $kind = 'static_reference'; $target = $resolve($text($token));
+                }
+                if ($target !== null) $references[] = ['from'=>$class, 'to'=>$target, 'relation'=>$kind, 'line'=>$token[2]];
+            }
+            $i = $close;
+        }
+        return ['classes'=>$classes, 'references'=>$references];
     }
 
     private static function routeDesc(string $path, string $method = 'GET'): string {
@@ -400,6 +560,7 @@ final class ProjectMapService {
         $scan = self::scan();
         $lines = [
             'flowchart LR',
+            '  %% Generated static inventory, not a runtime call graph. See docs/development-workflow.md.',
             '  classDef gap fill:#fee2e2,stroke:#b91c1c,color:#7f1d1d',
             '  classDef route fill:#e0f2fe,stroke:#0369a1,color:#0c4a6e',
             '  classDef code fill:#ecfdf5,stroke:#047857,color:#064e3b',
@@ -409,6 +570,12 @@ final class ProjectMapService {
             '  classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12',
             '',
         ];
+        $lines[] = '  subgraph PROVENANCE["Relationship evidence"]';
+        $lines[] = '    legend_declared["Declared: registry services, related views and manual associations"]:::arch';
+        $lines[] = '    legend_source["Source: named class extends, literal new and static references"]:::arch';
+        $lines[] = '    legend_limits["No execution, autoload or dynamic reachability proof; gaps are inspection candidates"]:::arch';
+        $lines[] = '  end';
+        $lines[] = '';
 
         $summary = $scan['summary'];
         $lines[] = '  subgraph ARCH["Architecture Overview — ' . $summary['routes'] . ' routes, ' . $summary['controllers'] . ' controllers, ' . $summary['services'] . ' services, ' . $summary['views'] . ' views, ' . $summary['storage_files'] . ' data files, ' . $summary['tools'] . ' tools"]';
@@ -466,13 +633,15 @@ final class ProjectMapService {
         }
 
         $gapNodes = [];
-        $lines[] = '  subgraph GAPS["Gaps & Missing Links"]';
+        $lines[] = '  subgraph GAPS["Gaps & Missing Links — inventory checks"]';
         foreach ($scan['gaps'] as $kind => $items) {
             foreach ($items as $index => $item) {
                 if ($kind === 'admin_mutations_without_audit' && is_array($item)) {
                     $label = (($item['method'] ?? '') . ' ' . ($item['path'] ?? '') . ' — missing AuditLogService');
                 } elseif (is_array($item)) {
                     $label = (($item['method'] ?? '') . ' ' . ($item['path'] ?? '') . ' missing mapping');
+                } elseif ($kind === 'unreferenced_services') {
+                    $label = 'no declared or scanned reference: ' . $item;
                 } else {
                     $label = ($kind . ': ' . $item);
                 }
@@ -492,18 +661,18 @@ final class ProjectMapService {
             $controller = (string)($route['controller'] ?? '');
             [$controllerClass] = array_pad(explode('@', $controller), 2, '');
             if ($controllerClass !== '') {
-                $lines[] = '  ' . $routeId . ' --> ' . self::controllerId($controllerClass);
+                $lines[] = '  ' . $routeId . ' -- registered handler --> ' . self::controllerId($controllerClass);
             }
             foreach ($route['services'] ?? [] as $service) {
-                $lines[] = '  ' . self::controllerId($controllerClass) . ' --> ' . self::serviceId($service);
+                $lines[] = '  ' . self::controllerId($controllerClass) . ' -. declared service .-> ' . self::serviceId($service);
             }
             if (!empty($route['page'])) {
-                $lines[] = '  ' . self::controllerId($controllerClass) . ' -. renders .-> ' . self::viewId((string)$route['page']);
+                $lines[] = '  ' . self::controllerId($controllerClass) . ' -. declared related view .-> ' . self::viewId((string)$route['page']);
             }
         }
 
         foreach (['admin/list','admin/media'] as $parentView) {
-            $lines[] = '  '.self::viewId($parentView).' -. includes .-> '.self::viewId('admin/list-controls');
+            $lines[] = '  '.self::viewId($parentView).' -. declared include .-> '.self::viewId('admin/list-controls');
         }
 
         $routeByGetPath = [];
@@ -512,43 +681,34 @@ final class ProjectMapService {
         }
         foreach ($scan['navigation'] as $path) {
             if (isset($routeByGetPath[$path])) {
-                $lines[] = '  ' . self::navId($path) . ' --> ' . self::routeId($routeByGetPath[$path]);
+                $lines[] = '  ' . self::navId($path) . ' -- registered destination --> ' . self::routeId($routeByGetPath[$path]);
             }
         }
 
-        foreach ($scan['controllers'] as $controller) {
-            if ($controller !== 'BaseController') $lines[] = '  ' . self::controllerId($controller) . ' --> ' . self::controllerId('BaseController');
+        foreach ($scan['source_relationships'] as $edge) {
+            [$fromKind, $fromName] = explode(':', $edge['from'], 2);
+            [$toKind, $toName] = explode(':', $edge['to'], 2);
+            $relation = match ($edge['relation']) {
+                'extends' => ' -- extends --> ',
+                'constructs' => ' -. source new .-> ',
+                'static_reference' => ' -. static reference .-> ',
+            };
+            $lines[] = '  ' . self::nodeId($fromKind, $fromName) . $relation . self::nodeId($toKind, $toName);
         }
-        $lines[] = '  ' . self::controllerId('BaseController') . ' --> ' . self::serviceId('SeoService');
         if (in_array('import-product-images', $scan['tools'], true)) {
-            $lines[] = '  ' . self::toolId('import-product-images') . ' --> ' . self::serviceId('ImageOptimizerService');
-            $lines[] = '  ' . self::toolId('import-product-images') . ' --> ' . self::serviceId('DatabaseService');
-            $lines[] = '  ' . self::toolId('import-product-images') . ' --> ' . self::collectionId('products');
+            $lines[] = '  ' . self::toolId('import-product-images') . ' -. declared dependency .-> ' . self::serviceId('ImageOptimizerService');
+            $lines[] = '  ' . self::toolId('import-product-images') . ' -. declared dependency .-> ' . self::serviceId('DatabaseService');
+            $lines[] = '  ' . self::toolId('import-product-images') . ' -. declared collection .-> ' . self::collectionId('products');
         }
 
         foreach (self::serviceCollections() as $service => $collections) {
             foreach ($collections as $collection) {
-                $lines[] = '  ' . self::serviceId($service) . ' --> ' . self::collectionId($collection);
+                $lines[] = '  ' . self::serviceId($service) . ' -. collection reference .-> ' . self::collectionId($collection);
             }
         }
         foreach ($scan['schema_collections'] as $collection) {
             if (in_array($collection, $scan['storage_files'], true)) {
-                $lines[] = '  ' . self::collectionId($collection) . ' --> ' . self::storageId($collection);
-            }
-        }
-        foreach ($scan['routes'] as $route) {
-            $controller = (string)($route['controller'] ?? '');
-            [$controllerClass] = array_pad(explode('@', $controller), 2, '');
-            $path = (string)($route['path'] ?? '');
-            if ($path === '/admin/' || str_starts_with($path, '/admin/google-reporting')) {
-                $lines[] = '  ' . self::controllerId($controllerClass) . ' --> ' . self::integrationId('GoogleReportingClient');
-            }
-            if (str_contains($path, 'auth/google')) {
-                $lines[] = '  ' . self::controllerId($controllerClass) . ' --> ' . self::integrationId('GoogleOAuthClient');
-            }
-            if (str_contains($path, 'payment') || str_contains($path, 'checkout') || str_contains($path, 'recharge')) {
-                $lines[] = '  ' . self::serviceId('PaymentService') . ' --> ' . self::integrationId('RazorpayClient');
-                $lines[] = '  ' . self::serviceId('PaymentService') . ' --> ' . self::integrationId('StripeClient');
+                $lines[] = '  ' . self::collectionId($collection) . ' -. matching file name .-> ' . self::storageId($collection);
             }
         }
         if (in_array('generate-project-map', $scan['tools'], true)) {
@@ -558,14 +718,14 @@ final class ProjectMapService {
             $lines[] = '  ' . self::toolId('validate-project-map') . ' --> systematic_map';
         }
         if (in_array('smoke-local', $scan['tools'], true)) {
-            $lines[] = '  ' . self::toolId('smoke-local') . ' --> ROUTES_PUBLIC';
-            $lines[] = '  ' . self::toolId('smoke-local') . ' --> ROUTES_ADMIN';
+            $lines[] = '  ' . self::toolId('smoke-local') . ' -. declared probe coverage .-> ROUTES_PUBLIC';
+            $lines[] = '  ' . self::toolId('smoke-local') . ' -. declared probe coverage .-> ROUTES_ADMIN';
         }
 
         foreach ($gapNodes as [$kind, $item, $id]) {
             if (is_string($item)) {
                 if (str_contains($kind, 'service')) {
-                    $lines[] = '  ' . $id . ' -. missing .-> ' . self::serviceId($item);
+                    $lines[] = '  ' . $id . ' -. inspect .-> ' . self::serviceId($item);
                 } elseif (str_contains($kind, 'view')) {
                     $lines[] = '  ' . $id . ' -. missing .-> ' . self::viewId($item);
                 } elseif (str_contains($kind, 'controller')) {

@@ -70,6 +70,7 @@ $tests['Stripe integration autoloads from its canonical file through the real bo
         'Stripe must load the existing canonical integration rather than a test stub or parallel client');
 };
 require __DIR__ . '/google-reporting.php';
+require __DIR__ . '/project-map.php';
 
 $tests['legitimate internal ticket activity is evaluated without exposing it as a model capability'] = static function (): void {
     $result=\App\Services\AgentEvaluationService::evaluate('support','show my tickets','You have no matching tickets.',[
@@ -2080,7 +2081,7 @@ $tests['project map grounds shared navigation in registered get routes'] = funct
         if (!array_key_exists($kind, $scan['gaps'])) continue;
         assertSame([], $scan['gaps'][$kind], "Systematic map should not report unresolved {$kind} gaps");
     }
-    foreach (['unwired_services', 'unwired_schema_collections', 'admin_mutations_without_audit'] as $kind) {
+    foreach (['unreferenced_services', 'unwired_schema_collections', 'admin_mutations_without_audit'] as $kind) {
         if (!empty($scan['gaps'][$kind])) {
             $items = is_array($scan['gaps'][$kind]) ? $scan['gaps'][$kind] : [$scan['gaps'][$kind]];
             $label = is_array($items[0] ?? null) ? array_map(fn($r) => $r['method'] . ' ' . $r['path'], $items) : $items;

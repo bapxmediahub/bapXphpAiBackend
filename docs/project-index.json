@@ -1,7 +1,3079 @@
 {
     "generated_by": "cli/generate-project-index.php",
     "source": "App\\Services\\ProjectMapService::scan()",
-    "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
+    "note": "Generated file inventory with declared associations and bounded static references. This is not proof of runtime reachability, authorization, autoload availability or a working feature.",
+    "relationship_provenance": {
+        "route_registry": "Registered handlers; services and related views are declared associations, not proof of direct calls or rendered responses.",
+        "source_token": "Named class extends, literal new and static class references (including ::class) in controller, service and integration PHP files. Source presence is not runtime execution or working autoload.",
+        "collection_reference": "Bounded textual collection scan plus explicit overrides; no read/write direction or runtime reachability is inferred.",
+        "coverage": "No dynamic dispatch, variable class names, anonymous class bodies, dependency injection, trait propagation or function-only entrypoints. Unreferenced entries are inspection candidates within this limited coverage, not proven dead code."
+    },
+    "source_relationships": [
+        {
+            "from": "controller:AccountController",
+            "to": "service:AddressService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AccountController.php",
+            "line": 88
+        },
+        {
+            "from": "controller:AccountController",
+            "to": "service:AuthService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AccountController.php",
+            "line": 6
+        },
+        {
+            "from": "controller:AccountController",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AccountController.php",
+            "line": 15
+        },
+        {
+            "from": "controller:AccountController",
+            "to": "service:MailQueueService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AccountController.php",
+            "line": 68
+        },
+        {
+            "from": "controller:AccountController",
+            "to": "service:OrderService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AccountController.php",
+            "line": 129
+        },
+        {
+            "from": "controller:AccountController",
+            "to": "service:ReviewService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AccountController.php",
+            "line": 135
+        },
+        {
+            "from": "controller:AccountController",
+            "to": "service:SettingsService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AccountController.php",
+            "line": 156
+        },
+        {
+            "from": "controller:AccountController",
+            "to": "controller:BaseController",
+            "relation": "extends",
+            "provenance": "source_token",
+            "source": "app/Controllers/AccountController.php",
+            "line": 4
+        },
+        {
+            "from": "controller:AccountController",
+            "to": "service:AuthService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AccountController.php",
+            "line": 34
+        },
+        {
+            "from": "controller:AccountController",
+            "to": "service:PasswordResetService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AccountController.php",
+            "line": 61
+        },
+        {
+            "from": "controller:AccountController",
+            "to": "service:TaxService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AccountController.php",
+            "line": 101
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "integration:GoogleReportingClient",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 88
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "integration:GoogleSiteKitClient",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 77
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:AdminHelpService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 17
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:AgentAnswerPresentationService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 542
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:AgentAttachmentService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 607
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:AgentConversationService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 489
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:AgentDraftService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 643
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:AiClient",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 825
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:AiReplyCleaner",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 796
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:AuditLogService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 135
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:AuthService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 7
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:AuthoredPageService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 1144
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:BlogDraftService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 1378
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:BlogService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 54
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:CategoryService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 167
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:ConsultationService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 368
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 108
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:EnterpriseToolRegistry",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 658
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:EnvService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 436
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:MailQueueService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 966
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:MailStorageService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 1007
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:MarkdownRenderer",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 1353
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:MediaService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 425
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:MerchantFeedService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 41
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:OrderService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 55
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:ProductService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 111
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:PublicA2uiService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 746
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:ResourceService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 52
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:RuntimeHealthService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 35
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:SchemaService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 1602
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:SecretService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 75
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:SettingsService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 40
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:SmtpMailer",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 1120
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:StoragePermissionService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 1077
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:SupportTicketService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 63
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "controller:BaseController",
+            "relation": "extends",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 4
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:AgentAnswerPresentationService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 548
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:AgentConversationService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 509
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:AgentDraftService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 641
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:AgentEvaluationService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 494
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:AgentInstructionService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 814
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:AgentTraceService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 629
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:AiClient",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 700
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:AuditLogService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 482
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:BlogDraftService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 1404
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:EnterpriseToolRegistry",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 609
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:GstRegisterService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 1429
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:MailQueueService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 1016
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:MailTemplateService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 963
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:MediaService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 1029
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:ProductImportService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 146
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:ProductService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 1531
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:SecretService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 1089
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:SettingsService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 449
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:SiteInsightsService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 54
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:SiteTelemetryService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 490
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:StoreStatsService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 60
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:TaxService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 270
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:TempleService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 412
+        },
+        {
+            "from": "controller:AdminController",
+            "to": "service:UserOrderHistoryService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 225
+        },
+        {
+            "from": "controller:AdminGoogleReportingController",
+            "to": "integration:GoogleReportingClient",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminGoogleReportingController.php",
+            "line": 21
+        },
+        {
+            "from": "controller:AdminGoogleReportingController",
+            "to": "service:AuditLogService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminGoogleReportingController.php",
+            "line": 64
+        },
+        {
+            "from": "controller:AdminGoogleReportingController",
+            "to": "service:AuthService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminGoogleReportingController.php",
+            "line": 18
+        },
+        {
+            "from": "controller:AdminGoogleReportingController",
+            "to": "service:SecretService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminGoogleReportingController.php",
+            "line": 20
+        },
+        {
+            "from": "controller:AdminGoogleReportingController",
+            "to": "controller:BaseController",
+            "relation": "extends",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminGoogleReportingController.php",
+            "line": 9
+        },
+        {
+            "from": "controller:AdminMcpClientController",
+            "to": "service:AuthService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminMcpClientController.php",
+            "line": 16
+        },
+        {
+            "from": "controller:AdminMcpClientController",
+            "to": "service:McpClientService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminMcpClientController.php",
+            "line": 18
+        },
+        {
+            "from": "controller:AdminMcpClientController",
+            "to": "controller:BaseController",
+            "relation": "extends",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminMcpClientController.php",
+            "line": 7
+        },
+        {
+            "from": "controller:ApiController",
+            "to": "service:CategoryService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/ApiController.php",
+            "line": 52
+        },
+        {
+            "from": "controller:ApiController",
+            "to": "service:DeploymentRevisionService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/ApiController.php",
+            "line": 33
+        },
+        {
+            "from": "controller:ApiController",
+            "to": "service:ProductService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/ApiController.php",
+            "line": 49
+        },
+        {
+            "from": "controller:ApiController",
+            "to": "service:PublicA2uiService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/ApiController.php",
+            "line": 115
+        },
+        {
+            "from": "controller:ApiController",
+            "to": "service:PublicKnowledgeService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/ApiController.php",
+            "line": 60
+        },
+        {
+            "from": "controller:ApiController",
+            "to": "service:TempleService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/ApiController.php",
+            "line": 177
+        },
+        {
+            "from": "controller:ApiController",
+            "to": "controller:BaseController",
+            "relation": "extends",
+            "provenance": "source_token",
+            "source": "app/Controllers/ApiController.php",
+            "line": 6
+        },
+        {
+            "from": "controller:ApiController",
+            "to": "service:PublicA2uiService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/ApiController.php",
+            "line": 107
+        },
+        {
+            "from": "controller:AuthController",
+            "to": "integration:GoogleOAuthClient",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AuthController.php",
+            "line": 9
+        },
+        {
+            "from": "controller:AuthController",
+            "to": "service:AddressService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AuthController.php",
+            "line": 86
+        },
+        {
+            "from": "controller:AuthController",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AuthController.php",
+            "line": 18
+        },
+        {
+            "from": "controller:AuthController",
+            "to": "service:EnvService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AuthController.php",
+            "line": 101
+        },
+        {
+            "from": "controller:AuthController",
+            "to": "service:MailQueueService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AuthController.php",
+            "line": 27
+        },
+        {
+            "from": "controller:AuthController",
+            "to": "service:PasswordResetService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AuthController.php",
+            "line": 138
+        },
+        {
+            "from": "controller:AuthController",
+            "to": "service:SecretService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AuthController.php",
+            "line": 7
+        },
+        {
+            "from": "controller:AuthController",
+            "to": "controller:BaseController",
+            "relation": "extends",
+            "provenance": "source_token",
+            "source": "app/Controllers/AuthController.php",
+            "line": 5
+        },
+        {
+            "from": "controller:AuthController",
+            "to": "service:TaxService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AuthController.php",
+            "line": 73
+        },
+        {
+            "from": "controller:BaseController",
+            "to": "service:CartService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/BaseController.php",
+            "line": 115
+        },
+        {
+            "from": "controller:BaseController",
+            "to": "service:RateLimiter",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/BaseController.php",
+            "line": 44
+        },
+        {
+            "from": "controller:BaseController",
+            "to": "service:SecretService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/BaseController.php",
+            "line": 70
+        },
+        {
+            "from": "controller:BaseController",
+            "to": "service:SeoService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/BaseController.php",
+            "line": 71
+        },
+        {
+            "from": "controller:BaseController",
+            "to": "service:SettingsService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/BaseController.php",
+            "line": 86
+        },
+        {
+            "from": "controller:BaseController",
+            "to": "service:CartService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/BaseController.php",
+            "line": 118
+        },
+        {
+            "from": "controller:BlogController",
+            "to": "service:BlogService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/BlogController.php",
+            "line": 13
+        },
+        {
+            "from": "controller:BlogController",
+            "to": "controller:BaseController",
+            "relation": "extends",
+            "provenance": "source_token",
+            "source": "app/Controllers/BlogController.php",
+            "line": 6
+        },
+        {
+            "from": "controller:BlogController",
+            "to": "service:BlogService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/BlogController.php",
+            "line": 53
+        },
+        {
+            "from": "controller:CommerceController",
+            "to": "integration:RazorpayClient",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/CommerceController.php",
+            "line": 284
+        },
+        {
+            "from": "controller:CommerceController",
+            "to": "integration:StripeClient",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/CommerceController.php",
+            "line": 222
+        },
+        {
+            "from": "controller:CommerceController",
+            "to": "service:AddressService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/CommerceController.php",
+            "line": 207
+        },
+        {
+            "from": "controller:CommerceController",
+            "to": "service:CouponService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/CommerceController.php",
+            "line": 267
+        },
+        {
+            "from": "controller:CommerceController",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/CommerceController.php",
+            "line": 185
+        },
+        {
+            "from": "controller:CommerceController",
+            "to": "service:MailQueueService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/CommerceController.php",
+            "line": 401
+        },
+        {
+            "from": "controller:CommerceController",
+            "to": "service:PaymentService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/CommerceController.php",
+            "line": 332
+        },
+        {
+            "from": "controller:CommerceController",
+            "to": "service:ProductService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/CommerceController.php",
+            "line": 91
+        },
+        {
+            "from": "controller:CommerceController",
+            "to": "service:RemoteCartException",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/CommerceController.php",
+            "line": 34
+        },
+        {
+            "from": "controller:CommerceController",
+            "to": "service:RemoteCartService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/CommerceController.php",
+            "line": 25
+        },
+        {
+            "from": "controller:CommerceController",
+            "to": "service:SecretService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/CommerceController.php",
+            "line": 180
+        },
+        {
+            "from": "controller:CommerceController",
+            "to": "service:SettingsService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/CommerceController.php",
+            "line": 170
+        },
+        {
+            "from": "controller:CommerceController",
+            "to": "service:SiteTelemetryService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/CommerceController.php",
+            "line": 115
+        },
+        {
+            "from": "controller:CommerceController",
+            "to": "service:VerifiedOrderService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/CommerceController.php",
+            "line": 420
+        },
+        {
+            "from": "controller:CommerceController",
+            "to": "controller:BaseController",
+            "relation": "extends",
+            "provenance": "source_token",
+            "source": "app/Controllers/CommerceController.php",
+            "line": 6
+        },
+        {
+            "from": "controller:CommerceController",
+            "to": "service:AuthService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/CommerceController.php",
+            "line": 177
+        },
+        {
+            "from": "controller:CommerceController",
+            "to": "service:PaymentService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/CommerceController.php",
+            "line": 348
+        },
+        {
+            "from": "controller:CommerceController",
+            "to": "service:TaxService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/CommerceController.php",
+            "line": 170
+        },
+        {
+            "from": "controller:ConsultationController",
+            "to": "service:AuthService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/ConsultationController.php",
+            "line": 9
+        },
+        {
+            "from": "controller:ConsultationController",
+            "to": "service:ConsultationService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/ConsultationController.php",
+            "line": 11
+        },
+        {
+            "from": "controller:ConsultationController",
+            "to": "controller:BaseController",
+            "relation": "extends",
+            "provenance": "source_token",
+            "source": "app/Controllers/ConsultationController.php",
+            "line": 5
+        },
+        {
+            "from": "controller:PublicAgentDiscoveryController",
+            "to": "service:PublicAgentDiscoveryService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicAgentDiscoveryController.php",
+            "line": 21
+        },
+        {
+            "from": "controller:PublicController",
+            "to": "service:AddressService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicController.php",
+            "line": 295
+        },
+        {
+            "from": "controller:PublicController",
+            "to": "service:AuthService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicController.php",
+            "line": 224
+        },
+        {
+            "from": "controller:PublicController",
+            "to": "service:AuthoredPageService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicController.php",
+            "line": 28
+        },
+        {
+            "from": "controller:PublicController",
+            "to": "service:BlogService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicController.php",
+            "line": 47
+        },
+        {
+            "from": "controller:PublicController",
+            "to": "service:CategoryService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicController.php",
+            "line": 9
+        },
+        {
+            "from": "controller:PublicController",
+            "to": "service:ContactService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicController.php",
+            "line": 386
+        },
+        {
+            "from": "controller:PublicController",
+            "to": "service:MailQueueService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicController.php",
+            "line": 387
+        },
+        {
+            "from": "controller:PublicController",
+            "to": "service:MarkdownRenderer",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicController.php",
+            "line": 113
+        },
+        {
+            "from": "controller:PublicController",
+            "to": "service:MerchantFeedService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicController.php",
+            "line": 307
+        },
+        {
+            "from": "controller:PublicController",
+            "to": "service:ProductService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicController.php",
+            "line": 11
+        },
+        {
+            "from": "controller:PublicController",
+            "to": "service:PublicKnowledgeService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicController.php",
+            "line": 362
+        },
+        {
+            "from": "controller:PublicController",
+            "to": "service:PublicMcpService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicController.php",
+            "line": 106
+        },
+        {
+            "from": "controller:PublicController",
+            "to": "service:ReviewService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicController.php",
+            "line": 252
+        },
+        {
+            "from": "controller:PublicController",
+            "to": "service:SecretService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicController.php",
+            "line": 238
+        },
+        {
+            "from": "controller:PublicController",
+            "to": "service:SeoService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicController.php",
+            "line": 238
+        },
+        {
+            "from": "controller:PublicController",
+            "to": "service:SettingsService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicController.php",
+            "line": 41
+        },
+        {
+            "from": "controller:PublicController",
+            "to": "service:TempleService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicController.php",
+            "line": 16
+        },
+        {
+            "from": "controller:PublicController",
+            "to": "controller:BaseController",
+            "relation": "extends",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicController.php",
+            "line": 4
+        },
+        {
+            "from": "controller:PublicController",
+            "to": "service:AuthoredPageService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicController.php",
+            "line": 30
+        },
+        {
+            "from": "controller:PublicController",
+            "to": "service:MailQueueService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicController.php",
+            "line": 388
+        },
+        {
+            "from": "controller:PublicController",
+            "to": "service:PublicKnowledgeService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicController.php",
+            "line": 361
+        },
+        {
+            "from": "controller:PublicController",
+            "to": "service:TaxService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicController.php",
+            "line": 263
+        },
+        {
+            "from": "controller:PublicMcpController",
+            "to": "service:PublicMcpService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicMcpController.php",
+            "line": 20
+        },
+        {
+            "from": "controller:PublicMcpController",
+            "to": "service:PublicMcpService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicMcpController.php",
+            "line": 24
+        },
+        {
+            "from": "controller:RemoteCheckoutController",
+            "to": "service:RemoteCartException",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/RemoteCheckoutController.php",
+            "line": 30
+        },
+        {
+            "from": "controller:RemoteCheckoutController",
+            "to": "service:RemoteCheckoutService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/RemoteCheckoutController.php",
+            "line": 18
+        },
+        {
+            "from": "controller:RemoteDbController",
+            "to": "service:AddressService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/RemoteDbController.php",
+            "line": 149
+        },
+        {
+            "from": "controller:RemoteDbController",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/RemoteDbController.php",
+            "line": 13
+        },
+        {
+            "from": "controller:ReviewController",
+            "to": "service:AuthService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/ReviewController.php",
+            "line": 8
+        },
+        {
+            "from": "controller:ReviewController",
+            "to": "service:ReviewService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/ReviewController.php",
+            "line": 14
+        },
+        {
+            "from": "controller:ReviewController",
+            "to": "controller:BaseController",
+            "relation": "extends",
+            "provenance": "source_token",
+            "source": "app/Controllers/ReviewController.php",
+            "line": 6
+        },
+        {
+            "from": "controller:SupportController",
+            "to": "service:AgentAnswerPresentationService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/SupportController.php",
+            "line": 44
+        },
+        {
+            "from": "controller:SupportController",
+            "to": "service:AgentConversationService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/SupportController.php",
+            "line": 36
+        },
+        {
+            "from": "controller:SupportController",
+            "to": "service:AuditLogService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/SupportController.php",
+            "line": 73
+        },
+        {
+            "from": "controller:SupportController",
+            "to": "service:AuthService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/SupportController.php",
+            "line": 26
+        },
+        {
+            "from": "controller:SupportController",
+            "to": "service:PublicA2uiService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/SupportController.php",
+            "line": 58
+        },
+        {
+            "from": "controller:SupportController",
+            "to": "service:RateLimiter",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/SupportController.php",
+            "line": 20
+        },
+        {
+            "from": "controller:SupportController",
+            "to": "service:SupportBotService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/SupportController.php",
+            "line": 50
+        },
+        {
+            "from": "controller:SupportController",
+            "to": "service:SupportTicketService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/SupportController.php",
+            "line": 65
+        },
+        {
+            "from": "controller:SupportController",
+            "to": "controller:BaseController",
+            "relation": "extends",
+            "provenance": "source_token",
+            "source": "app/Controllers/SupportController.php",
+            "line": 5
+        },
+        {
+            "from": "controller:SupportController",
+            "to": "service:AgentConversationService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/SupportController.php",
+            "line": 29
+        },
+        {
+            "from": "controller:SupportController",
+            "to": "service:AgentTraceService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/SupportController.php",
+            "line": 46
+        },
+        {
+            "from": "service:AddressService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AddressService.php",
+            "line": 5
+        },
+        {
+            "from": "service:AddressService",
+            "to": "service:TaxService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AddressService.php",
+            "line": 57
+        },
+        {
+            "from": "service:AdminHelpService",
+            "to": "service:MarkdownRenderer",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AdminHelpService.php",
+            "line": 81
+        },
+        {
+            "from": "service:AgentAnswerPresentationService",
+            "to": "service:AgentTraceService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentAnswerPresentationService.php",
+            "line": 62
+        },
+        {
+            "from": "service:AgentAnswerPresentationService",
+            "to": "service:PublicA2uiService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentAnswerPresentationService.php",
+            "line": 13
+        },
+        {
+            "from": "service:AgentAttachmentService",
+            "to": "service:BlogService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AgentAttachmentService.php",
+            "line": 31
+        },
+        {
+            "from": "service:AgentAttachmentService",
+            "to": "service:MediaService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AgentAttachmentService.php",
+            "line": 32
+        },
+        {
+            "from": "service:AgentContextService",
+            "to": "service:CategoryService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AgentContextService.php",
+            "line": 258
+        },
+        {
+            "from": "service:AgentContextService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AgentContextService.php",
+            "line": 5
+        },
+        {
+            "from": "service:AgentContextService",
+            "to": "service:ProductService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AgentContextService.php",
+            "line": 312
+        },
+        {
+            "from": "service:AgentContextService",
+            "to": "service:PublicKnowledgeService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AgentContextService.php",
+            "line": 336
+        },
+        {
+            "from": "service:AgentContextService",
+            "to": "service:SchemaService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AgentContextService.php",
+            "line": 5
+        },
+        {
+            "from": "service:AgentContextService",
+            "to": "service:SettingsService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AgentContextService.php",
+            "line": 126
+        },
+        {
+            "from": "service:AgentContextService",
+            "to": "service:SupportTicketService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AgentContextService.php",
+            "line": 17
+        },
+        {
+            "from": "service:AgentContextService",
+            "to": "service:PublicKnowledgeService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentContextService.php",
+            "line": 157
+        },
+        {
+            "from": "service:AgentConversationService",
+            "to": "service:AgentEvaluationService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentConversationService.php",
+            "line": 107
+        },
+        {
+            "from": "service:AgentConversationService",
+            "to": "service:AgentTraceService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentConversationService.php",
+            "line": 105
+        },
+        {
+            "from": "service:AgentConversationService",
+            "to": "service:AgentTranscriptSanitizer",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentConversationService.php",
+            "line": 54
+        },
+        {
+            "from": "service:AgentDraftService",
+            "to": "service:AiClient",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AgentDraftService.php",
+            "line": 38
+        },
+        {
+            "from": "service:AgentDraftService",
+            "to": "service:SchemaService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AgentDraftService.php",
+            "line": 39
+        },
+        {
+            "from": "service:AgentEvaluationService",
+            "to": "service:AgentToolRegistry",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AgentEvaluationService.php",
+            "line": 142
+        },
+        {
+            "from": "service:AgentEvaluationService",
+            "to": "service:CategoryService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AgentEvaluationService.php",
+            "line": 113
+        },
+        {
+            "from": "service:AgentEvaluationService",
+            "to": "service:AgentCapabilityPolicy",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentEvaluationService.php",
+            "line": 13
+        },
+        {
+            "from": "service:AgentEvaluationService",
+            "to": "service:AgentContextService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentEvaluationService.php",
+            "line": 103
+        },
+        {
+            "from": "service:AgentEvaluationService",
+            "to": "service:AgentConversationService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentEvaluationService.php",
+            "line": 162
+        },
+        {
+            "from": "service:AgentEvaluationService",
+            "to": "service:AgentToolRegistry",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentEvaluationService.php",
+            "line": 118
+        },
+        {
+            "from": "service:AgentEvaluationService",
+            "to": "service:AgentTraceService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentEvaluationService.php",
+            "line": 79
+        },
+        {
+            "from": "service:AgentEvaluationService",
+            "to": "service:AuditLogService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentEvaluationService.php",
+            "line": 80
+        },
+        {
+            "from": "service:AgentEvaluationService",
+            "to": "service:GstRegisterService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentEvaluationService.php",
+            "line": 134
+        },
+        {
+            "from": "service:AgentEvaluationService",
+            "to": "service:SupportBotService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentEvaluationService.php",
+            "line": 84
+        },
+        {
+            "from": "service:AgentInstructionService",
+            "to": "service:AgentTraceService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentInstructionService.php",
+            "line": 25
+        },
+        {
+            "from": "service:AgentToolRegistry",
+            "to": "service:AdminHelpService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AgentToolRegistry.php",
+            "line": 302
+        },
+        {
+            "from": "service:AgentToolRegistry",
+            "to": "service:AgentContextService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AgentToolRegistry.php",
+            "line": 298
+        },
+        {
+            "from": "service:AgentToolRegistry",
+            "to": "service:CouponService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AgentToolRegistry.php",
+            "line": 972
+        },
+        {
+            "from": "service:AgentToolRegistry",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AgentToolRegistry.php",
+            "line": 96
+        },
+        {
+            "from": "service:AgentToolRegistry",
+            "to": "service:OrderService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AgentToolRegistry.php",
+            "line": 104
+        },
+        {
+            "from": "service:AgentToolRegistry",
+            "to": "service:ProductService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AgentToolRegistry.php",
+            "line": 103
+        },
+        {
+            "from": "service:AgentToolRegistry",
+            "to": "service:PublicKnowledgeService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AgentToolRegistry.php",
+            "line": 303
+        },
+        {
+            "from": "service:AgentToolRegistry",
+            "to": "service:SettingsService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AgentToolRegistry.php",
+            "line": 876
+        },
+        {
+            "from": "service:AgentToolRegistry",
+            "to": "service:SupportTicketService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AgentToolRegistry.php",
+            "line": 902
+        },
+        {
+            "from": "service:AgentToolRegistry",
+            "to": "service:AdminHelpService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentToolRegistry.php",
+            "line": 211
+        },
+        {
+            "from": "service:AgentToolRegistry",
+            "to": "service:AgentContextService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentToolRegistry.php",
+            "line": 189
+        },
+        {
+            "from": "service:AgentToolRegistry",
+            "to": "service:AgentTraceService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentToolRegistry.php",
+            "line": 290
+        },
+        {
+            "from": "service:AgentToolRegistry",
+            "to": "service:GstRegisterService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentToolRegistry.php",
+            "line": 875
+        },
+        {
+            "from": "service:AgentToolRegistry",
+            "to": "service:PublicKnowledgeService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentToolRegistry.php",
+            "line": 232
+        },
+        {
+            "from": "service:AgentToolRegistry",
+            "to": "service:StoreStatsService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentToolRegistry.php",
+            "line": 610
+        },
+        {
+            "from": "service:AgentTraceService",
+            "to": "service:AgentBudgetException",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AgentTraceService.php",
+            "line": 319
+        },
+        {
+            "from": "service:AgentTraceService",
+            "to": "service:AgentToolRegistry",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentTraceService.php",
+            "line": 120
+        },
+        {
+            "from": "service:AgentTraceService",
+            "to": "service:SecretService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentTraceService.php",
+            "line": 300
+        },
+        {
+            "from": "service:AiClient",
+            "to": "service:SecretService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AiClient.php",
+            "line": 81
+        },
+        {
+            "from": "service:AiClient",
+            "to": "service:AgentTraceService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AiClient.php",
+            "line": 525
+        },
+        {
+            "from": "service:AiClient",
+            "to": "service:DatabaseService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AiClient.php",
+            "line": 562
+        },
+        {
+            "from": "service:AiClient",
+            "to": "service:SecretService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AiClient.php",
+            "line": 55
+        },
+        {
+            "from": "service:AppointmentService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AppointmentService.php",
+            "line": 3
+        },
+        {
+            "from": "service:AstrologerService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AstrologerService.php",
+            "line": 3
+        },
+        {
+            "from": "service:AuditLogService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AuditLogService.php",
+            "line": 44
+        },
+        {
+            "from": "service:AuditLogService",
+            "to": "service:AgentCapabilityPolicy",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AuditLogService.php",
+            "line": 94
+        },
+        {
+            "from": "service:AuditLogService",
+            "to": "service:AgentTraceService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AuditLogService.php",
+            "line": 54
+        },
+        {
+            "from": "service:AuditLogService",
+            "to": "service:SecretService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AuditLogService.php",
+            "line": 80
+        },
+        {
+            "from": "service:AuthoredPageService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AuthoredPageService.php",
+            "line": 6
+        },
+        {
+            "from": "service:AuthoredPageService",
+            "to": "service:MarkdownRenderer",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AuthoredPageService.php",
+            "line": 98
+        },
+        {
+            "from": "service:BlogDraftService",
+            "to": "service:MarkdownRenderer",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/BlogDraftService.php",
+            "line": 49
+        },
+        {
+            "from": "service:BlogService",
+            "to": "service:BlogConflictException",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/BlogService.php",
+            "line": 146
+        },
+        {
+            "from": "service:BlogService",
+            "to": "service:MarkdownRenderer",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/BlogService.php",
+            "line": 315
+        },
+        {
+            "from": "service:BlogService",
+            "to": "service:MediaService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/BlogService.php",
+            "line": 63
+        },
+        {
+            "from": "service:CartService",
+            "to": "service:ProductService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/CartService.php",
+            "line": 17
+        },
+        {
+            "from": "service:CategoryService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/CategoryService.php",
+            "line": 6
+        },
+        {
+            "from": "service:ConsultationService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/ConsultationService.php",
+            "line": 5
+        },
+        {
+            "from": "service:ConsultationService",
+            "to": "service:MailQueueService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/ConsultationService.php",
+            "line": 118
+        },
+        {
+            "from": "service:ConsultationService",
+            "to": "service:ResourceService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/ConsultationService.php",
+            "line": 87
+        },
+        {
+            "from": "service:ContactService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/ContactService.php",
+            "line": 8
+        },
+        {
+            "from": "service:ContactService",
+            "to": "service:MailStorageService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/ContactService.php",
+            "line": 30
+        },
+        {
+            "from": "service:CouponService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/CouponService.php",
+            "line": 27
+        },
+        {
+            "from": "service:DatabaseService",
+            "to": "service:RemoteCartException",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/DatabaseService.php",
+            "line": 305
+        },
+        {
+            "from": "service:DatabaseService",
+            "to": "service:TaxService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/DatabaseService.php",
+            "line": 243
+        },
+        {
+            "from": "service:DatabaseService",
+            "to": "service:AuthoredPageService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/DatabaseService.php",
+            "line": 658
+        },
+        {
+            "from": "service:DatabaseService",
+            "to": "service:MailQueueService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/DatabaseService.php",
+            "line": 278
+        },
+        {
+            "from": "service:DatabaseService",
+            "to": "service:OrderService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/DatabaseService.php",
+            "line": 491
+        },
+        {
+            "from": "service:DatabaseService",
+            "to": "service:ProductImportService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/DatabaseService.php",
+            "line": 631
+        },
+        {
+            "from": "service:DatabaseService",
+            "to": "service:RemoteCartService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/DatabaseService.php",
+            "line": 330
+        },
+        {
+            "from": "service:DatabaseService",
+            "to": "service:RemoteCheckoutService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/DatabaseService.php",
+            "line": 432
+        },
+        {
+            "from": "service:DatabaseService",
+            "to": "service:RemoteCheckoutStateService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/DatabaseService.php",
+            "line": 427
+        },
+        {
+            "from": "service:DatabaseService",
+            "to": "service:SettingsService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/DatabaseService.php",
+            "line": 684
+        },
+        {
+            "from": "service:DatabaseService",
+            "to": "service:SupportTicketService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/DatabaseService.php",
+            "line": 296
+        },
+        {
+            "from": "service:DocsMapService",
+            "to": "service:ProjectMapService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/DocsMapService.php",
+            "line": 152
+        },
+        {
+            "from": "service:EnterpriseToolRegistry",
+            "to": "service:AgentToolRegistry",
+            "relation": "extends",
+            "provenance": "source_token",
+            "source": "app/Services/EnterpriseToolRegistry.php",
+            "line": 8
+        },
+        {
+            "from": "service:EnterpriseToolRegistry",
+            "to": "service:AdminHelpService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/EnterpriseToolRegistry.php",
+            "line": 78
+        },
+        {
+            "from": "service:EnterpriseToolRegistry",
+            "to": "service:AgentCapabilityPolicy",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/EnterpriseToolRegistry.php",
+            "line": 44
+        },
+        {
+            "from": "service:EnvService",
+            "to": "service:SettingsService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/EnvService.php",
+            "line": 65
+        },
+        {
+            "from": "service:GstRegisterService",
+            "to": "service:TaxService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/GstRegisterService.php",
+            "line": 40
+        },
+        {
+            "from": "service:KnowledgeGraphService",
+            "to": "service:AdminHelpService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/KnowledgeGraphService.php",
+            "line": 298
+        },
+        {
+            "from": "service:KnowledgeGraphService",
+            "to": "service:ProjectMapService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/KnowledgeGraphService.php",
+            "line": 383
+        },
+        {
+            "from": "service:MailQueueService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/MailQueueService.php",
+            "line": 5
+        },
+        {
+            "from": "service:MailQueueService",
+            "to": "service:MailStorageService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/MailQueueService.php",
+            "line": 225
+        },
+        {
+            "from": "service:MailQueueService",
+            "to": "service:MailTemplateService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/MailQueueService.php",
+            "line": 270
+        },
+        {
+            "from": "service:MailQueueService",
+            "to": "service:SecretService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/MailQueueService.php",
+            "line": 245
+        },
+        {
+            "from": "service:MailQueueService",
+            "to": "service:SettingsService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/MailQueueService.php",
+            "line": 35
+        },
+        {
+            "from": "service:MailQueueService",
+            "to": "service:SmtpMailer",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/MailQueueService.php",
+            "line": 245
+        },
+        {
+            "from": "service:MailStorageService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/MailStorageService.php",
+            "line": 5
+        },
+        {
+            "from": "service:MailTemplateService",
+            "to": "service:MailQueueService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/MailTemplateService.php",
+            "line": 32
+        },
+        {
+            "from": "service:McpClientService",
+            "to": "service:AuditLogService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/McpClientService.php",
+            "line": 31
+        },
+        {
+            "from": "service:McpClientService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/McpClientService.php",
+            "line": 12
+        },
+        {
+            "from": "service:McpClientService",
+            "to": "service:OrderService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/McpClientService.php",
+            "line": 106
+        },
+        {
+            "from": "service:McpClientService",
+            "to": "service:DatabaseService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/McpClientService.php",
+            "line": 68
+        },
+        {
+            "from": "service:MediaService",
+            "to": "service:BlogService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/MediaService.php",
+            "line": 411
+        },
+        {
+            "from": "service:MediaService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/MediaService.php",
+            "line": 10
+        },
+        {
+            "from": "service:MediaService",
+            "to": "service:ImageOptimizerService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/MediaService.php",
+            "line": 9
+        },
+        {
+            "from": "service:MediaService",
+            "to": "service:ResourceService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/MediaService.php",
+            "line": 205
+        },
+        {
+            "from": "service:MerchantFeedService",
+            "to": "service:ProductService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/MerchantFeedService.php",
+            "line": 10
+        },
+        {
+            "from": "service:MerchantFeedService",
+            "to": "service:MediaService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/MerchantFeedService.php",
+            "line": 108
+        },
+        {
+            "from": "service:OrderService",
+            "to": "integration:RazorpayClient",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/OrderService.php",
+            "line": 55
+        },
+        {
+            "from": "service:OrderService",
+            "to": "integration:StripeClient",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/OrderService.php",
+            "line": 49
+        },
+        {
+            "from": "service:OrderService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/OrderService.php",
+            "line": 6
+        },
+        {
+            "from": "service:OrderService",
+            "to": "service:MailQueueService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/OrderService.php",
+            "line": 9
+        },
+        {
+            "from": "service:OrderService",
+            "to": "service:SecretService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/OrderService.php",
+            "line": 47
+        },
+        {
+            "from": "service:OrderService",
+            "to": "service:CourierService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/OrderService.php",
+            "line": 143
+        },
+        {
+            "from": "service:OrderService",
+            "to": "service:StoreStatsService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/OrderService.php",
+            "line": 35
+        },
+        {
+            "from": "service:PasswordResetService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/PasswordResetService.php",
+            "line": 5
+        },
+        {
+            "from": "service:ProductService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/ProductService.php",
+            "line": 40
+        },
+        {
+            "from": "service:PublicA2uiService",
+            "to": "service:PublicKnowledgeService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/PublicA2uiService.php",
+            "line": 73
+        },
+        {
+            "from": "service:PublicA2uiService",
+            "to": "service:AgentContextService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/PublicA2uiService.php",
+            "line": 379
+        },
+        {
+            "from": "service:PublicAgentDiscoveryService",
+            "to": "service:PublicMcpService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/PublicAgentDiscoveryService.php",
+            "line": 22
+        },
+        {
+            "from": "service:PublicAgentDiscoveryService",
+            "to": "service:PublicMcpService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/PublicAgentDiscoveryService.php",
+            "line": 73
+        },
+        {
+            "from": "service:PublicAgentDiscoveryService",
+            "to": "service:RemoteCartService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/PublicAgentDiscoveryService.php",
+            "line": 83
+        },
+        {
+            "from": "service:PublicAgentDiscoveryService",
+            "to": "service:RemoteCheckoutService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/PublicAgentDiscoveryService.php",
+            "line": 85
+        },
+        {
+            "from": "service:PublicKnowledgeService",
+            "to": "service:BlogService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/PublicKnowledgeService.php",
+            "line": 41
+        },
+        {
+            "from": "service:PublicKnowledgeService",
+            "to": "service:ProductService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/PublicKnowledgeService.php",
+            "line": 36
+        },
+        {
+            "from": "service:PublicKnowledgeService",
+            "to": "service:SettingsService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/PublicKnowledgeService.php",
+            "line": 299
+        },
+        {
+            "from": "service:PublicKnowledgeService",
+            "to": "service:AgentContextService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/PublicKnowledgeService.php",
+            "line": 300
+        },
+        {
+            "from": "service:PublicKnowledgeService",
+            "to": "service:PublicSiteUrlService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/PublicKnowledgeService.php",
+            "line": 275
+        },
+        {
+            "from": "service:PublicMcpService",
+            "to": "service:PublicA2uiService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/PublicMcpService.php",
+            "line": 335
+        },
+        {
+            "from": "service:PublicMcpService",
+            "to": "service:PublicKnowledgeService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/PublicMcpService.php",
+            "line": 319
+        },
+        {
+            "from": "service:PublicMcpService",
+            "to": "service:RemoteCartException",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/PublicMcpService.php",
+            "line": 354
+        },
+        {
+            "from": "service:PublicMcpService",
+            "to": "service:RemoteCartService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/PublicMcpService.php",
+            "line": 357
+        },
+        {
+            "from": "service:PublicMcpService",
+            "to": "service:RemoteCheckoutService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/PublicMcpService.php",
+            "line": 361
+        },
+        {
+            "from": "service:PublicMcpService",
+            "to": "service:SettingsService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/PublicMcpService.php",
+            "line": 218
+        },
+        {
+            "from": "service:PublicMcpService",
+            "to": "service:DatabaseService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/PublicMcpService.php",
+            "line": 127
+        },
+        {
+            "from": "service:PublicMcpService",
+            "to": "service:PublicKnowledgeService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/PublicMcpService.php",
+            "line": 222
+        },
+        {
+            "from": "service:PublicMcpService",
+            "to": "service:PublicSiteUrlService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/PublicMcpService.php",
+            "line": 41
+        },
+        {
+            "from": "service:PublicMcpService",
+            "to": "service:RemoteCartService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/PublicMcpService.php",
+            "line": 245
+        },
+        {
+            "from": "service:PublicMcpService",
+            "to": "service:RemoteCheckoutService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/PublicMcpService.php",
+            "line": 254
+        },
+        {
+            "from": "service:PublicMcpService",
+            "to": "service:TaxService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/PublicMcpService.php",
+            "line": 444
+        },
+        {
+            "from": "service:RemoteCartService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCartService.php",
+            "line": 18
+        },
+        {
+            "from": "service:RemoteCartService",
+            "to": "service:ProductService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCartService.php",
+            "line": 24
+        },
+        {
+            "from": "service:RemoteCartService",
+            "to": "service:PublicKnowledgeService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCartService.php",
+            "line": 25
+        },
+        {
+            "from": "service:RemoteCartService",
+            "to": "service:RemoteCartException",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCartService.php",
+            "line": 100
+        },
+        {
+            "from": "service:RemoteCartService",
+            "to": "service:SettingsService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCartService.php",
+            "line": 122
+        },
+        {
+            "from": "service:RemoteCartService",
+            "to": "service:CartService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCartService.php",
+            "line": 36
+        },
+        {
+            "from": "service:RemoteCartService",
+            "to": "service:PublicKnowledgeService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCartService.php",
+            "line": 155
+        },
+        {
+            "from": "service:RemoteCartService",
+            "to": "service:PublicSiteUrlService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCartService.php",
+            "line": 204
+        },
+        {
+            "from": "service:RemoteCartService",
+            "to": "service:RemoteCheckoutService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCartService.php",
+            "line": 68
+        },
+        {
+            "from": "service:RemoteCheckoutService",
+            "to": "integration:RazorpayClient",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCheckoutService.php",
+            "line": 442
+        },
+        {
+            "from": "service:RemoteCheckoutService",
+            "to": "service:CartService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCheckoutService.php",
+            "line": 249
+        },
+        {
+            "from": "service:RemoteCheckoutService",
+            "to": "service:CouponService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCheckoutService.php",
+            "line": 259
+        },
+        {
+            "from": "service:RemoteCheckoutService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCheckoutService.php",
+            "line": 23
+        },
+        {
+            "from": "service:RemoteCheckoutService",
+            "to": "service:ProductService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCheckoutService.php",
+            "line": 33
+        },
+        {
+            "from": "service:RemoteCheckoutService",
+            "to": "service:RemoteCartException",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCheckoutService.php",
+            "line": 155
+        },
+        {
+            "from": "service:RemoteCheckoutService",
+            "to": "service:RemoteCartService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCheckoutService.php",
+            "line": 34
+        },
+        {
+            "from": "service:RemoteCheckoutService",
+            "to": "service:SecretService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCheckoutService.php",
+            "line": 189
+        },
+        {
+            "from": "service:RemoteCheckoutService",
+            "to": "service:SettingsService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCheckoutService.php",
+            "line": 176
+        },
+        {
+            "from": "service:RemoteCheckoutService",
+            "to": "service:TaxService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCheckoutService.php",
+            "line": 266
+        },
+        {
+            "from": "service:RemoteCheckoutService",
+            "to": "service:VerifiedOrderService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCheckoutService.php",
+            "line": 503
+        },
+        {
+            "from": "service:RemoteCheckoutService",
+            "to": "service:AuthService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCheckoutService.php",
+            "line": 217
+        },
+        {
+            "from": "service:RemoteCheckoutService",
+            "to": "service:CartService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCheckoutService.php",
+            "line": 257
+        },
+        {
+            "from": "service:RemoteCheckoutService",
+            "to": "service:PaymentService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCheckoutService.php",
+            "line": 489
+        },
+        {
+            "from": "service:RemoteCheckoutService",
+            "to": "service:PublicSiteUrlService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCheckoutService.php",
+            "line": 404
+        },
+        {
+            "from": "service:RemoteCheckoutService",
+            "to": "service:RemoteCartService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCheckoutService.php",
+            "line": 54
+        },
+        {
+            "from": "service:RemoteCheckoutService",
+            "to": "service:TaxService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCheckoutService.php",
+            "line": 47
+        },
+        {
+            "from": "service:RemoteCheckoutStateService",
+            "to": "service:RemoteCartException",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCheckoutStateService.php",
+            "line": 9
+        },
+        {
+            "from": "service:RemoteCheckoutStateService",
+            "to": "service:RemoteCartService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCheckoutStateService.php",
+            "line": 20
+        },
+        {
+            "from": "service:RemoteCheckoutStateService",
+            "to": "service:RemoteCheckoutService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/RemoteCheckoutStateService.php",
+            "line": 38
+        },
+        {
+            "from": "service:ResourceService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/ResourceService.php",
+            "line": 4
+        },
+        {
+            "from": "service:ReviewService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/ReviewService.php",
+            "line": 5
+        },
+        {
+            "from": "service:RuntimeHealthService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/RuntimeHealthService.php",
+            "line": 11
+        },
+        {
+            "from": "service:SecretService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/SecretService.php",
+            "line": 17
+        },
+        {
+            "from": "service:SecretService",
+            "to": "service:McpClientService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/SecretService.php",
+            "line": 22
+        },
+        {
+            "from": "service:SeoService",
+            "to": "service:MediaService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/SeoService.php",
+            "line": 342
+        },
+        {
+            "from": "service:SettingsService",
+            "to": "service:AuthoredPageService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/SettingsService.php",
+            "line": 76
+        },
+        {
+            "from": "service:SettingsService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/SettingsService.php",
+            "line": 31
+        },
+        {
+            "from": "service:SettingsService",
+            "to": "service:AuthoredPageService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/SettingsService.php",
+            "line": 111
+        },
+        {
+            "from": "service:SiteInsightsService",
+            "to": "service:StoreStatsService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/SiteInsightsService.php",
+            "line": 56
+        },
+        {
+            "from": "service:SiteTelemetryService",
+            "to": "service:AuditLogService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/SiteTelemetryService.php",
+            "line": 17
+        },
+        {
+            "from": "service:SmtpMailer",
+            "to": "service:SettingsService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/SmtpMailer.php",
+            "line": 195
+        },
+        {
+            "from": "service:SmtpMailer",
+            "to": "service:SmtpDeliveryUncertainException",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/SmtpMailer.php",
+            "line": 161
+        },
+        {
+            "from": "service:StoreStatsService",
+            "to": "service:OrderService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/StoreStatsService.php",
+            "line": 90
+        },
+        {
+            "from": "service:SupportBotService",
+            "to": "service:AgentContextService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/SupportBotService.php",
+            "line": 8
+        },
+        {
+            "from": "service:SupportBotService",
+            "to": "service:AiClient",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/SupportBotService.php",
+            "line": 419
+        },
+        {
+            "from": "service:SupportBotService",
+            "to": "service:AiReplyCleaner",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/SupportBotService.php",
+            "line": 427
+        },
+        {
+            "from": "service:SupportBotService",
+            "to": "service:AuditLogService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/SupportBotService.php",
+            "line": 33
+        },
+        {
+            "from": "service:SupportBotService",
+            "to": "service:BlogService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/SupportBotService.php",
+            "line": 498
+        },
+        {
+            "from": "service:SupportBotService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/SupportBotService.php",
+            "line": 7
+        },
+        {
+            "from": "service:SupportBotService",
+            "to": "service:ProductService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/SupportBotService.php",
+            "line": 53
+        },
+        {
+            "from": "service:SupportBotService",
+            "to": "service:SecretService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/SupportBotService.php",
+            "line": 6
+        },
+        {
+            "from": "service:SupportBotService",
+            "to": "service:SupportTicketService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/SupportBotService.php",
+            "line": 106
+        },
+        {
+            "from": "service:SupportBotService",
+            "to": "service:SupportToolRegistry",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/SupportBotService.php",
+            "line": 142
+        },
+        {
+            "from": "service:SupportBotService",
+            "to": "service:AgentContextService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/SupportBotService.php",
+            "line": 56
+        },
+        {
+            "from": "service:SupportBotService",
+            "to": "service:AgentEvaluationService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/SupportBotService.php",
+            "line": 93
+        },
+        {
+            "from": "service:SupportBotService",
+            "to": "service:AgentInstructionService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/SupportBotService.php",
+            "line": 396
+        },
+        {
+            "from": "service:SupportBotService",
+            "to": "service:AgentTraceService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/SupportBotService.php",
+            "line": 30
+        },
+        {
+            "from": "service:SupportBotService",
+            "to": "service:OrderService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/SupportBotService.php",
+            "line": 485
+        },
+        {
+            "from": "service:SupportTicketService",
+            "to": "service:AuditLogService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/SupportTicketService.php",
+            "line": 116
+        },
+        {
+            "from": "service:SupportTicketService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/SupportTicketService.php",
+            "line": 5
+        },
+        {
+            "from": "service:SupportTicketService",
+            "to": "service:AgentTranscriptSanitizer",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/SupportTicketService.php",
+            "line": 40
+        },
+        {
+            "from": "service:SupportToolRegistry",
+            "to": "service:AgentContextService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/SupportToolRegistry.php",
+            "line": 21
+        },
+        {
+            "from": "service:SupportToolRegistry",
+            "to": "service:PublicKnowledgeService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/SupportToolRegistry.php",
+            "line": 55
+        },
+        {
+            "from": "service:SupportToolRegistry",
+            "to": "service:AgentCapabilityPolicy",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/SupportToolRegistry.php",
+            "line": 42
+        },
+        {
+            "from": "service:SupportToolRegistry",
+            "to": "service:PublicKnowledgeService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/SupportToolRegistry.php",
+            "line": 30
+        },
+        {
+            "from": "service:TempleService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/TempleService.php",
+            "line": 5
+        },
+        {
+            "from": "service:VerifiedOrderService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/VerifiedOrderService.php",
+            "line": 18
+        },
+        {
+            "from": "service:VerifiedOrderService",
+            "to": "service:MailQueueService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/VerifiedOrderService.php",
+            "line": 110
+        },
+        {
+            "from": "service:VerifiedOrderService",
+            "to": "service:ProductService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/VerifiedOrderService.php",
+            "line": 30
+        },
+        {
+            "from": "service:VerifiedOrderService",
+            "to": "service:SettingsService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/VerifiedOrderService.php",
+            "line": 34
+        },
+        {
+            "from": "service:VerifiedOrderService",
+            "to": "service:TaxService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/VerifiedOrderService.php",
+            "line": 60
+        },
+        {
+            "from": "service:VerifiedOrderService",
+            "to": "service:TaxService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/VerifiedOrderService.php",
+            "line": 49
+        }
+    ],
     "summary": {
         "routes": 178,
         "controllers": 17,
@@ -16,6 +3088,8 @@
             "name": "home",
             "controller": "PublicController@home",
             "view": "public/home",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ProductService",
                 "TempleService",
@@ -28,6 +3102,8 @@
             "name": "about",
             "controller": "PublicController@about",
             "view": "public/about",
+            "response": null,
+            "provenance": "route_registry",
             "services": []
         },
         {
@@ -36,6 +3112,8 @@
             "name": "account.bookings.legacy",
             "controller": "AccountController@legacyBookings",
             "view": "account/orders",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService"
             ]
@@ -46,6 +3124,8 @@
             "name": "account.dashboard",
             "controller": "AccountController@dashboard",
             "view": "account/orders",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService"
             ]
@@ -56,6 +3136,8 @@
             "name": "account.dashboard.addresses",
             "controller": "AccountController@addresses",
             "view": "account/addresses",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService",
                 "AddressService",
@@ -68,6 +3150,8 @@
             "name": "account.addresses.delete",
             "controller": "AccountController@deleteAddress",
             "view": "account/addresses",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService",
                 "AddressService"
@@ -79,6 +3163,8 @@
             "name": "account.addresses.save",
             "controller": "AccountController@saveAddress",
             "view": "account/addresses",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService",
                 "AddressService"
@@ -90,6 +3176,8 @@
             "name": "account.dashboard.install",
             "controller": "AccountController@install",
             "view": "account/install",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService"
             ]
@@ -100,6 +3188,8 @@
             "name": "account.dashboard.orders",
             "controller": "AccountController@orders",
             "view": "account/orders",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService",
                 "OrderService",
@@ -112,6 +3202,8 @@
             "name": "account.dashboard.profile",
             "controller": "AccountController@profile",
             "view": "account/profile",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService",
                 "DatabaseService"
@@ -123,6 +3215,8 @@
             "name": "account.profile.save",
             "controller": "AccountController@saveProfile",
             "view": "account/profile",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService",
                 "DatabaseService"
@@ -134,6 +3228,8 @@
             "name": "account.profile.password",
             "controller": "AccountController@changePassword",
             "view": "account/profile",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService",
                 "DatabaseService",
@@ -146,6 +3242,8 @@
             "name": "account.dashboard.sessions",
             "controller": "AccountController@bookings",
             "view": "account/orders",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService"
             ]
@@ -156,6 +3254,8 @@
             "name": "account.orders.legacy",
             "controller": "AccountController@legacyOrders",
             "view": "account/orders",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService"
             ]
@@ -166,6 +3266,8 @@
             "name": "account.order",
             "controller": "AccountController@order",
             "view": "account/order",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService",
                 "OrderService",
@@ -178,6 +3280,8 @@
             "name": "account.invoice",
             "controller": "AccountController@invoice",
             "view": "account/invoice",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService",
                 "OrderService",
@@ -191,6 +3295,8 @@
             "name": "admin.dashboard.legacy",
             "controller": "AdminController@legacyDashboard",
             "view": "admin/dashboard",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService"
             ]
@@ -201,6 +3307,8 @@
             "name": "admin.dashboard",
             "controller": "AdminController@dashboard",
             "view": "admin/dashboard",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ResourceService",
                 "OrderService",
@@ -215,6 +3323,8 @@
             "name": "admin.agent",
             "controller": "AdminController@agent",
             "view": "admin/agent",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SecretService",
                 "DatabaseService",
@@ -227,6 +3337,8 @@
             "name": "admin.agent.ask",
             "controller": "AdminController@agentAsk",
             "view": "admin/agent",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SecretService",
                 "DatabaseService",
@@ -254,6 +3366,8 @@
             "name": "admin.agent.conversation",
             "controller": "AdminController@agentConversation",
             "view": "admin/agent-monitoring",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AgentConversationService",
                 "AuthService"
@@ -265,6 +3379,8 @@
             "name": "admin.agent.history",
             "controller": "AdminController@agentHistory",
             "view": "admin/agent",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AgentConversationService",
                 "AuthService"
@@ -276,6 +3392,8 @@
             "name": "admin.agent.history.show",
             "controller": "AdminController@agentHistoryShow",
             "view": "admin/agent",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AgentConversationService",
                 "AuthService"
@@ -287,6 +3405,8 @@
             "name": "admin.agent.history.delete",
             "controller": "AdminController@agentHistoryDelete",
             "view": "admin/agent",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AgentConversationService",
                 "AuditLogService",
@@ -299,6 +3419,8 @@
             "name": "admin.agent.monitoring",
             "controller": "AdminController@agentMonitoring",
             "view": "admin/agent-monitoring",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuditLogService",
                 "DatabaseService",
@@ -314,6 +3436,8 @@
             "name": "admin.agent.review",
             "controller": "AdminController@agentReview",
             "view": "admin/agent-review",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService",
                 "AgentConversationService",
@@ -327,6 +3451,8 @@
             "name": "admin.agent.review.save",
             "controller": "AdminController@agentReviewSave",
             "view": "admin/agent-review",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService",
                 "AgentConversationService",
@@ -339,6 +3465,8 @@
             "name": "admin.appearance",
             "controller": "AdminController@appearance",
             "view": "admin/appearance",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SettingsService",
                 "AuthService"
@@ -350,6 +3478,8 @@
             "name": "admin.appearance.menu",
             "controller": "AdminController@headerMenu",
             "view": "admin/header-menu",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SettingsService",
                 "AuthoredPageService",
@@ -362,6 +3492,8 @@
             "name": "admin.appearance.menu.save",
             "controller": "AdminController@saveHeaderMenu",
             "view": "admin/header-menu",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SettingsService",
                 "AuthoredPageService",
@@ -375,6 +3507,8 @@
             "name": "admin.appearance.save",
             "controller": "AdminController@saveAppearance",
             "view": "admin/appearance",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SettingsService",
                 "AuditLogService",
@@ -387,6 +3521,8 @@
             "name": "admin.appointments",
             "controller": "AdminController@appointments",
             "view": "admin/list",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AppointmentService",
                 "AuthService"
@@ -398,6 +3534,8 @@
             "name": "admin.astrologers",
             "controller": "AdminController@astrologers",
             "view": "admin/dashboard",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService"
             ]
@@ -408,6 +3546,8 @@
             "name": "admin.blog",
             "controller": "AdminController@blog",
             "view": "admin/blog",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "BlogService",
                 "AuthService"
@@ -419,6 +3559,8 @@
             "name": "admin.blog.ai-draft",
             "controller": "AdminController@aiDraftBlog",
             "view": "admin/blog",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "BlogService",
                 "BlogDraftService",
@@ -431,6 +3573,8 @@
             "name": "admin.blog.delete",
             "controller": "AdminController@deleteBlog",
             "view": "admin/blog",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "BlogService",
                 "AuditLogService",
@@ -443,6 +3587,8 @@
             "name": "admin.blog.enhance-content",
             "controller": "AdminController@enhanceBlogContent",
             "view": "admin/blog",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SecretService",
                 "AuthService"
@@ -454,6 +3600,8 @@
             "name": "admin.blog.enhance-title",
             "controller": "AdminController@enhanceBlogTitle",
             "view": "admin/blog",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SecretService",
                 "AuthService"
@@ -465,6 +3613,8 @@
             "name": "admin.blog.history",
             "controller": "AdminController@blogHistory",
             "view": "admin/blog-history",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "BlogService",
                 "AuthService"
@@ -476,6 +3626,8 @@
             "name": "admin.blog.restore",
             "controller": "AdminController@restoreBlogRevision",
             "view": "admin/blog-history",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "BlogService",
                 "AuditLogService",
@@ -488,6 +3640,8 @@
             "name": "admin.blog.preview",
             "controller": "AdminController@previewBlog",
             "view": "admin/blog",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "BlogService",
                 "MarkdownRenderer",
@@ -500,6 +3654,8 @@
             "name": "admin.blog.save",
             "controller": "AdminController@saveBlog",
             "view": "admin/blog",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "BlogService",
                 "AuditLogService",
@@ -512,6 +3668,8 @@
             "name": "admin.blog.toggle",
             "controller": "AdminController@toggleBlog",
             "view": "admin/blog",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "BlogService",
                 "AuditLogService",
@@ -524,6 +3682,8 @@
             "name": "admin.categories",
             "controller": "AdminController@categories",
             "view": "admin/resource",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "CategoryService",
                 "AuthService"
@@ -535,6 +3695,8 @@
             "name": "admin.categories.delete",
             "controller": "AdminController@deleteCategory",
             "view": "admin/resource",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ResourceService",
                 "AuditLogService",
@@ -547,6 +3709,8 @@
             "name": "admin.categories.save",
             "controller": "AdminController@saveCategory",
             "view": "admin/resource",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ResourceService",
                 "AuditLogService",
@@ -559,6 +3723,8 @@
             "name": "admin.collections",
             "controller": "AdminController@collections",
             "view": "admin/collections",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "CategoryService",
                 "ProductService",
@@ -571,6 +3737,8 @@
             "name": "admin.collections.delete",
             "controller": "AdminController@deleteCollection",
             "view": "admin/collections",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ResourceService",
                 "CategoryService",
@@ -584,6 +3752,8 @@
             "name": "admin.collections.save",
             "controller": "AdminController@saveCollection",
             "view": "admin/collections",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ResourceService",
                 "CategoryService",
@@ -598,6 +3768,8 @@
             "name": "admin.consultation-analytics",
             "controller": "AdminController@consultationAnalytics",
             "view": "admin/consultation-analytics",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ConsultationService",
                 "AuthService"
@@ -609,6 +3781,8 @@
             "name": "admin.contact-submissions",
             "controller": "AdminController@contactSubmissions",
             "view": "admin/resource",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ContactService",
                 "AuthService"
@@ -620,6 +3794,8 @@
             "name": "admin.contact-submissions.delete",
             "controller": "AdminController@deleteContactSubmission",
             "view": "admin/resource",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ResourceService",
                 "AuditLogService",
@@ -632,6 +3808,8 @@
             "name": "admin.contact-submissions.save",
             "controller": "AdminController@saveContactSubmission",
             "view": "admin/resource",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ResourceService",
                 "AuditLogService",
@@ -644,6 +3822,8 @@
             "name": "admin.coupons",
             "controller": "AdminController@coupons",
             "view": "admin/resource",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "CouponService",
                 "AuthService"
@@ -655,6 +3835,8 @@
             "name": "admin.coupons.delete",
             "controller": "AdminController@deleteCoupon",
             "view": "admin/resource",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ResourceService",
                 "AuditLogService",
@@ -667,6 +3849,8 @@
             "name": "admin.coupons.save",
             "controller": "AdminController@saveCoupon",
             "view": "admin/resource",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ResourceService",
                 "AuditLogService",
@@ -679,6 +3863,8 @@
             "name": "admin.docs",
             "controller": "AdminController@helpIndex",
             "view": "admin/help",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AdminHelpService",
                 "AuthService"
@@ -690,6 +3876,8 @@
             "name": "admin.docs.guide",
             "controller": "AdminController@helpGuide",
             "view": "admin/help",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AdminHelpService",
                 "MarkdownRenderer",
@@ -702,6 +3890,8 @@
             "name": "admin.email-inbox",
             "controller": "AdminController@emailInbox",
             "view": "admin/mailbox",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "MailStorageService",
                 "AuthService"
@@ -713,6 +3903,8 @@
             "name": "admin.email-outbox",
             "controller": "AdminController@emailOutbox",
             "view": "admin/mailbox",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "MailStorageService",
                 "MailQueueService",
@@ -725,6 +3917,8 @@
             "name": "admin.email-templates",
             "controller": "AdminController@emailTemplates",
             "view": "admin/email-templates",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "MailTemplateService",
                 "MailQueueService",
@@ -738,6 +3932,8 @@
             "name": "admin.email-templates.test",
             "controller": "AdminController@testEmailTemplate",
             "view": "admin/email-templates",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "MailTemplateService",
                 "MailQueueService",
@@ -751,6 +3947,8 @@
             "name": "admin.merchant",
             "controller": "AdminController@googleMerchant",
             "view": "admin/google-merchant",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "MerchantFeedService",
                 "ProductService",
@@ -764,6 +3962,8 @@
             "name": "admin.google.reporting.settings",
             "controller": "AdminGoogleReportingController@settings",
             "view": "admin/google-reporting",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SecretService",
                 "AuthService",
@@ -776,6 +3976,8 @@
             "name": "admin.google.reporting.callback",
             "controller": "AdminGoogleReportingController@callback",
             "view": "admin/google-reporting",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SecretService",
                 "AuthService",
@@ -788,6 +3990,8 @@
             "name": "admin.google.reporting.connect",
             "controller": "AdminGoogleReportingController@connect",
             "view": "admin/google-reporting",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SecretService",
                 "AuthService",
@@ -800,6 +4004,8 @@
             "name": "admin.google.reporting.disconnect",
             "controller": "AdminGoogleReportingController@disconnect",
             "view": "admin/google-reporting",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SecretService",
                 "AuthService",
@@ -812,6 +4018,8 @@
             "name": "admin.google.reporting.select",
             "controller": "AdminGoogleReportingController@select",
             "view": "admin/google-reporting",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SecretService",
                 "AuthService",
@@ -824,6 +4032,8 @@
             "name": "admin.integrations",
             "controller": "AdminController@integrations",
             "view": "admin/integrations",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SettingsService",
                 "PaymentService",
@@ -837,6 +4047,8 @@
             "name": "admin.integrations.save",
             "controller": "AdminController@saveIntegrations",
             "view": "admin/integrations",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SecretService",
                 "AuditLogService",
@@ -849,6 +4061,8 @@
             "name": "admin.integrations.test-ai",
             "controller": "AdminController@testAi",
             "view": "admin/integrations",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SecretService",
                 "AiClient",
@@ -862,6 +4076,8 @@
             "name": "admin.integrations.test-email",
             "controller": "AdminController@testEmail",
             "view": "admin/integrations",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SecretService",
                 "SmtpMailer",
@@ -875,6 +4091,8 @@
             "name": "admin.mcp.clients.settings",
             "controller": "AdminMcpClientController@settings",
             "view": "admin/mcp-clients",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "McpClientService",
                 "AuthService",
@@ -887,6 +4105,8 @@
             "name": "admin.mcp.clients.issue",
             "controller": "AdminMcpClientController@issue",
             "view": "admin/mcp-clients",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "McpClientService",
                 "AuthService",
@@ -899,6 +4119,8 @@
             "name": "admin.mcp.clients.revoke",
             "controller": "AdminMcpClientController@revoke",
             "view": "admin/mcp-clients",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "McpClientService",
                 "AuthService",
@@ -911,6 +4133,8 @@
             "name": "admin.media",
             "controller": "AdminController@media",
             "view": "admin/media",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "MediaService",
                 "AuthService"
@@ -922,6 +4146,8 @@
             "name": "admin.media.delete",
             "controller": "AdminController@deleteMedia",
             "view": "admin/media",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "MediaService",
                 "AuditLogService",
@@ -934,6 +4160,8 @@
             "name": "admin.media.upload",
             "controller": "AdminController@uploadMedia",
             "view": "admin/media",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "MediaService",
                 "AuditLogService",
@@ -946,6 +4174,8 @@
             "name": "admin.orders",
             "controller": "AdminController@orders",
             "view": "admin/list",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "OrderService",
                 "AuthService"
@@ -957,6 +4187,8 @@
             "name": "admin.order.show",
             "controller": "AdminController@order",
             "view": "admin/detail",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "OrderService",
                 "ShippingService",
@@ -970,6 +4202,8 @@
             "name": "admin.order.invoice",
             "controller": "AdminController@orderInvoice",
             "view": "account/invoice",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "OrderService",
                 "AuthService"
@@ -981,6 +4215,8 @@
             "name": "admin.order.refund",
             "controller": "AdminController@importOrderRefund",
             "view": "admin/detail",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "OrderService",
                 "SecretService",
@@ -994,6 +4230,8 @@
             "name": "admin.order.status",
             "controller": "AdminController@saveOrderStatus",
             "view": "admin/detail",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "OrderService",
                 "MailQueueService",
@@ -1007,6 +4245,8 @@
             "name": "admin.order.tax-review",
             "controller": "AdminController@resolveOrderTaxReview",
             "view": "admin/detail",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "OrderService",
                 "TaxService",
@@ -1021,6 +4261,8 @@
             "name": "admin.pages",
             "controller": "AdminController@pages",
             "view": "admin/pages",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthoredPageService",
                 "AuthService"
@@ -1032,6 +4274,8 @@
             "name": "admin.pages.delete",
             "controller": "AdminController@deleteAuthoredPage",
             "view": "admin/pages",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthoredPageService",
                 "AuditLogService",
@@ -1044,6 +4288,8 @@
             "name": "admin.pages.save",
             "controller": "AdminController@saveAuthoredPage",
             "view": "admin/pages",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthoredPageService",
                 "AuditLogService",
@@ -1056,6 +4302,8 @@
             "name": "admin.products",
             "controller": "AdminController@products",
             "view": "admin/product-form",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ProductService",
                 "SchemaService",
@@ -1068,6 +4316,8 @@
             "name": "admin.products.delete",
             "controller": "AdminController@deleteProduct",
             "view": "admin/product-form",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ResourceService",
                 "AuditLogService",
@@ -1080,6 +4330,8 @@
             "name": "admin.products.import",
             "controller": "AdminController@importProducts",
             "view": "admin/product-import",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ProductImportService",
                 "DatabaseService",
@@ -1092,6 +4344,8 @@
             "name": "admin.products.import.submit",
             "controller": "AdminController@importProducts",
             "view": "admin/product-import",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ProductImportService",
                 "DatabaseService",
@@ -1105,6 +4359,8 @@
             "name": "admin.products.save",
             "controller": "AdminController@saveProduct",
             "view": "admin/product-form",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ResourceService",
                 "AuditLogService",
@@ -1117,6 +4373,8 @@
             "name": "admin.settings",
             "controller": "AdminController@settings",
             "view": "admin/settings",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SettingsService",
                 "AuthService"
@@ -1128,6 +4386,8 @@
             "name": "admin.settings.admin-credentials",
             "controller": "AdminController@saveAdminCredentials",
             "view": "admin/settings",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "EnvService",
                 "AuditLogService",
@@ -1140,6 +4400,8 @@
             "name": "admin.settings.save",
             "controller": "AdminController@saveSettings",
             "view": "admin/settings",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SettingsService",
                 "AuditLogService",
@@ -1152,6 +4414,8 @@
             "name": "admin.shipping",
             "controller": "AdminController@shipping",
             "view": "admin/settings",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ShippingService",
                 "SettingsService",
@@ -1164,6 +4428,8 @@
             "name": "admin.support-tickets",
             "controller": "AdminController@supportTickets",
             "view": "admin/list",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "DatabaseService",
                 "SupportTicketService",
@@ -1176,6 +4442,8 @@
             "name": "admin.support-tickets.save",
             "controller": "AdminController@saveSupportTicket",
             "view": "admin/list",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SupportTicketService",
                 "DatabaseService",
@@ -1189,6 +4457,8 @@
             "name": "admin.system_health",
             "controller": "AdminController@systemHealth",
             "view": "admin/system-health",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService",
                 "RuntimeHealthService",
@@ -1201,6 +4471,8 @@
             "name": "admin.tax-report",
             "controller": "AdminController@taxReport",
             "view": "admin/tax-report",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "OrderService",
                 "ProductService",
@@ -1216,6 +4488,8 @@
             "name": "admin.temples",
             "controller": "AdminController@temples",
             "view": "admin/temples",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "TempleService",
                 "SchemaService",
@@ -1228,6 +4502,8 @@
             "name": "admin.temples.delete",
             "controller": "AdminController@deleteTemple",
             "view": "admin/resource",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ResourceService",
                 "AuditLogService",
@@ -1240,6 +4516,8 @@
             "name": "admin.temples.save",
             "controller": "AdminController@saveTemple",
             "view": "admin/resource",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ResourceService",
                 "AuditLogService",
@@ -1252,6 +4530,8 @@
             "name": "admin.users",
             "controller": "AdminController@users",
             "view": "admin/users",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ResourceService",
                 "OrderService",
@@ -1265,6 +4545,8 @@
             "name": "ai-assistants",
             "controller": "PublicController@aiAssistants",
             "view": "public/ai-assistants",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "PublicMcpService",
                 "MarkdownRenderer"
@@ -1276,6 +4558,8 @@
             "name": "api.index",
             "controller": "ApiController@index",
             "view": "public/404",
+            "response": null,
+            "provenance": "route_registry",
             "services": []
         },
         {
@@ -1284,6 +4568,8 @@
             "name": "api.agent-tools",
             "controller": "PublicAgentDiscoveryController@index",
             "view": "public/404",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "PublicAgentDiscoveryService",
                 "PublicMcpService",
@@ -1296,6 +4582,8 @@
             "name": "api.categories",
             "controller": "ApiController@categories",
             "view": "public/404",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "CategoryService"
             ]
@@ -1306,6 +4594,8 @@
             "name": "api.consultation.status",
             "controller": "ConsultationController@status",
             "view": "admin/list",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService",
                 "ConsultationService"
@@ -1317,6 +4607,8 @@
             "name": "api.deployment.verify",
             "controller": "ApiController@isShaValid",
             "view": "public/404",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "DeploymentRevisionService"
             ]
@@ -1327,6 +4619,8 @@
             "name": "api.knowledge.a2ui",
             "controller": "ApiController@knowledgeA2ui",
             "view": "public/404",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "PublicA2uiService",
                 "PublicKnowledgeService"
@@ -1338,6 +4632,8 @@
             "name": "api.knowledge.articles",
             "controller": "ApiController@knowledgeArticles",
             "view": "public/404",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "PublicKnowledgeService",
                 "BlogService"
@@ -1349,6 +4645,8 @@
             "name": "api.knowledge.contact",
             "controller": "ApiController@knowledgeContact",
             "view": "public/404",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "PublicKnowledgeService"
             ]
@@ -1359,6 +4657,8 @@
             "name": "api.knowledge.products",
             "controller": "ApiController@knowledgeProducts",
             "view": "public/404",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "PublicKnowledgeService",
                 "ProductService"
@@ -1370,6 +4670,8 @@
             "name": "api.knowledge.services",
             "controller": "ApiController@knowledgeServices",
             "view": "public/404",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "PublicKnowledgeService"
             ]
@@ -1380,6 +4682,8 @@
             "name": "api.mcp.delete",
             "controller": "PublicMcpController@handle",
             "view": "public/404",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "PublicMcpService"
             ]
@@ -1390,6 +4694,8 @@
             "name": "api.mcp.method",
             "controller": "PublicMcpController@handle",
             "view": "public/404",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "PublicMcpService"
             ]
@@ -1400,6 +4706,8 @@
             "name": "api.mcp.options",
             "controller": "PublicMcpController@handle",
             "view": "public/404",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "PublicMcpService"
             ]
@@ -1410,6 +4718,8 @@
             "name": "api.mcp",
             "controller": "PublicMcpController@handle",
             "view": "public/mcp-app",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "PublicMcpService",
                 "PublicKnowledgeService",
@@ -1426,6 +4736,8 @@
             "name": "checkout.payment-webhook",
             "controller": "RemoteCheckoutController@webhook",
             "view": "",
+            "response": "json",
+            "provenance": "route_registry",
             "services": [
                 "RemoteCheckoutService",
                 "PaymentService",
@@ -1440,6 +4752,8 @@
             "name": "api.product",
             "controller": "ApiController@product",
             "view": "public/404",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ProductService"
             ]
@@ -1450,6 +4764,8 @@
             "name": "api.shop",
             "controller": "ApiController@shop",
             "view": "public/404",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ProductService",
                 "CategoryService"
@@ -1461,6 +4777,8 @@
             "name": "api.temples",
             "controller": "ApiController@temples",
             "view": "public/404",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "TempleService"
             ]
@@ -1471,6 +4789,8 @@
             "name": "auth.google",
             "controller": "AuthController@googleRedirect",
             "view": "public/login",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SecretService"
             ]
@@ -1481,6 +4801,8 @@
             "name": "auth.google.callback",
             "controller": "AuthController@callback",
             "view": "public/login",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SecretService",
                 "DatabaseService"
@@ -1492,6 +4814,8 @@
             "name": "blog.index",
             "controller": "BlogController@index",
             "view": "public/blog",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "BlogService",
                 "MarkdownRenderer"
@@ -1503,6 +4827,8 @@
             "name": "blog.category",
             "controller": "BlogController@category",
             "view": "public/blog",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "BlogService",
                 "MarkdownRenderer"
@@ -1514,6 +4840,8 @@
             "name": "blog.show",
             "controller": "BlogController@show",
             "view": "public/blog-post",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "BlogService",
                 "MarkdownRenderer"
@@ -1525,6 +4853,8 @@
             "name": "cart",
             "controller": "PublicController@cart",
             "view": "public/cart",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "CartService",
                 "ProductService",
@@ -1537,6 +4867,8 @@
             "name": "cart.add",
             "controller": "CommerceController@addToCart",
             "view": "public/cart",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "CartService",
                 "ProductService"
@@ -1548,6 +4880,8 @@
             "name": "cart.agent-checkout",
             "controller": "CommerceController@agentCheckout",
             "view": "public/agent-checkout",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "RemoteCartService",
                 "PublicKnowledgeService",
@@ -1561,6 +4895,8 @@
             "name": "cart.agent-checkout.import",
             "controller": "CommerceController@importAgentCheckout",
             "view": "public/agent-checkout",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "RemoteCartService",
                 "CartService",
@@ -1573,6 +4909,8 @@
             "name": "cart.remove",
             "controller": "CommerceController@removeFromCart",
             "view": "public/cart",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "CartService"
             ]
@@ -1583,6 +4921,8 @@
             "name": "cart.update",
             "controller": "CommerceController@updateCart",
             "view": "public/cart",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "CartService"
             ]
@@ -1593,6 +4933,8 @@
             "name": "categories",
             "controller": "PublicController@categories",
             "view": "public/categories",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "CategoryService"
             ]
@@ -1603,6 +4945,8 @@
             "name": "checkout",
             "controller": "PublicController@checkout",
             "view": "public/checkout",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "CartService",
                 "ProductService",
@@ -1617,6 +4961,8 @@
             "name": "checkout.create-order",
             "controller": "CommerceController@createOrder",
             "view": "public/checkout",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SecretService",
                 "PaymentService",
@@ -1629,6 +4975,8 @@
             "name": "checkout.payment-handoff",
             "controller": "RemoteCheckoutController@payment",
             "view": "public/agent-payment",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "RemoteCheckoutService",
                 "DatabaseService"
@@ -1640,6 +4988,8 @@
             "name": "consult",
             "controller": "PublicController@consult",
             "view": "public/shop",
+            "response": null,
+            "provenance": "route_registry",
             "services": []
         },
         {
@@ -1648,6 +4998,8 @@
             "name": "consult.show",
             "controller": "PublicController@consultant",
             "view": "public/shop",
+            "response": null,
+            "provenance": "route_registry",
             "services": []
         },
         {
@@ -1656,6 +5008,8 @@
             "name": "consultation.initiate",
             "controller": "ConsultationController@initiate",
             "view": "public/contact",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService"
             ]
@@ -1666,6 +5020,8 @@
             "name": "contact",
             "controller": "PublicController@contact",
             "view": "public/contact",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "PublicKnowledgeService"
             ]
@@ -1676,6 +5032,8 @@
             "name": "contact.post",
             "controller": "PublicController@contact",
             "view": "public/contact",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ContactService",
                 "PublicKnowledgeService"
@@ -1687,6 +5045,8 @@
             "name": "api.checkout.create-order",
             "controller": "CommerceController@createOrder",
             "view": "public/checkout",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SecretService",
                 "PaymentService"
@@ -1698,6 +5058,8 @@
             "name": "docs.index",
             "controller": "PublicController@docs",
             "view": "public/blog",
+            "response": null,
+            "provenance": "route_registry",
             "services": []
         },
         {
@@ -1706,6 +5068,8 @@
             "name": "merchant.feed",
             "controller": "PublicController@merchantFeed",
             "view": "public/merchant-feed",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "MerchantFeedService",
                 "ProductService",
@@ -1718,6 +5082,8 @@
             "name": "forgot-password",
             "controller": "AuthController@forgotPassword",
             "view": "public/forgot-password",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "PasswordResetService"
             ]
@@ -1728,6 +5094,8 @@
             "name": "forgot-password.post",
             "controller": "AuthController@forgotPasswordPost",
             "view": "public/forgot-password",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "PasswordResetService"
             ]
@@ -1738,6 +5106,8 @@
             "name": "help.show",
             "controller": "PublicController@doc",
             "view": "public/blog-post",
+            "response": null,
+            "provenance": "route_registry",
             "services": []
         },
         {
@@ -1746,6 +5116,8 @@
             "name": "deployment.verify",
             "controller": "ApiController@isShaValid",
             "view": "public/404",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "DeploymentRevisionService"
             ]
@@ -1756,6 +5128,8 @@
             "name": "ai-assistants.text",
             "controller": "PublicController@assistantInstructions",
             "view": "public/ai-assistants",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "PublicMcpService",
                 "MarkdownRenderer"
@@ -1767,6 +5141,8 @@
             "name": "login",
             "controller": "PublicController@login",
             "view": "public/login",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService"
             ]
@@ -1777,6 +5153,8 @@
             "name": "login.post",
             "controller": "AuthController@loginPost",
             "view": "public/login",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "DatabaseService"
             ]
@@ -1787,6 +5165,8 @@
             "name": "logout",
             "controller": "AuthController@logout",
             "view": "public/login",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService"
             ]
@@ -1797,6 +5177,8 @@
             "name": "orders.legacy",
             "controller": "AccountController@legacyOrders",
             "view": "account/orders",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthService"
             ]
@@ -1807,6 +5189,8 @@
             "name": "pages.show",
             "controller": "PublicController@authoredPage",
             "view": "public/authored-page",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthoredPageService",
                 "MarkdownRenderer"
@@ -1818,6 +5202,8 @@
             "name": "payment.stripe.return",
             "controller": "CommerceController@completeStripe",
             "view": "account/order",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SecretService",
                 "DatabaseService",
@@ -1832,6 +5218,8 @@
             "name": "payment.verify",
             "controller": "CommerceController@verifyPayment",
             "view": "public/checkout",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SecretService",
                 "PaymentService",
@@ -1847,6 +5235,8 @@
             "name": "privacy",
             "controller": "PublicController@privacy",
             "view": "public/privacy",
+            "response": null,
+            "provenance": "route_registry",
             "services": []
         },
         {
@@ -1855,6 +5245,8 @@
             "name": "product.show",
             "controller": "PublicController@product",
             "view": "public/product",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ProductService"
             ]
@@ -1865,6 +5257,8 @@
             "name": "register",
             "controller": "AuthController@register",
             "view": "public/register",
+            "response": null,
+            "provenance": "route_registry",
             "services": []
         },
         {
@@ -1873,6 +5267,8 @@
             "name": "register.post",
             "controller": "AuthController@registerPost",
             "view": "public/register",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "DatabaseService"
             ]
@@ -1883,6 +5279,8 @@
             "name": "api.remotedb",
             "controller": "RemoteDbController@__invoke",
             "view": "public/404",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "DatabaseService",
                 "SecretService"
@@ -1894,6 +5292,8 @@
             "name": "reset-password",
             "controller": "AuthController@resetPassword",
             "view": "public/reset-password",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "PasswordResetService"
             ]
@@ -1904,6 +5304,8 @@
             "name": "reset-password.post",
             "controller": "AuthController@resetPasswordPost",
             "view": "public/reset-password",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "PasswordResetService"
             ]
@@ -1914,6 +5316,8 @@
             "name": "reviews.product",
             "controller": "ReviewController@saveProduct",
             "view": "account/orders",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ReviewService",
                 "AuthService"
@@ -1925,6 +5329,8 @@
             "name": "search",
             "controller": "PublicController@search",
             "view": "public/search",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AuthoredPageService",
                 "ProductService",
@@ -1938,6 +5344,8 @@
             "name": "shop",
             "controller": "PublicController@shop",
             "view": "public/shop",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "ProductService",
                 "CategoryService"
@@ -1949,6 +5357,8 @@
             "name": "sitemap",
             "controller": "PublicController@sitemap",
             "view": "public/sitemap",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "BlogService",
                 "ProductService",
@@ -1961,6 +5371,8 @@
             "name": "spiritual.short",
             "controller": "PublicController@spiritual",
             "view": "public/spiritual",
+            "response": null,
+            "provenance": "route_registry",
             "services": []
         },
         {
@@ -1969,6 +5381,8 @@
             "name": "spiritual",
             "controller": "PublicController@spiritual",
             "view": "public/spiritual",
+            "response": null,
+            "provenance": "route_registry",
             "services": []
         },
         {
@@ -1977,6 +5391,8 @@
             "name": "support.page",
             "controller": "SupportController@page",
             "view": "public/support",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SeoService"
             ]
@@ -1987,6 +5403,8 @@
             "name": "support.ask",
             "controller": "SupportController@ask",
             "view": "public/support",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SupportBotService",
                 "AgentContextService",
@@ -2006,6 +5424,8 @@
             "name": "support.feedback",
             "controller": "SupportController@feedback",
             "view": "public/support",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "AgentConversationService",
                 "RateLimiter"
@@ -2017,6 +5437,8 @@
             "name": "temples",
             "controller": "PublicController@temples",
             "view": "public/temples",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "TempleService"
             ]
@@ -2027,6 +5449,8 @@
             "name": "temple.show",
             "controller": "PublicController@temple",
             "view": "public/temple",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "TempleService"
             ]
@@ -2037,6 +5461,8 @@
             "name": "terms",
             "controller": "PublicController@terms",
             "view": "public/terms",
+            "response": null,
+            "provenance": "route_registry",
             "services": []
         },
         {
@@ -2045,6 +5471,8 @@
             "name": "api.payment.verify",
             "controller": "CommerceController@verifyPayment",
             "view": "public/checkout",
+            "response": null,
+            "provenance": "route_registry",
             "services": [
                 "SecretService",
                 "PaymentService",
@@ -2274,17 +5702,9 @@
         "missing_view_files": [],
         "navigation_without_get_route": [],
         "unwired_controllers": [],
-        "unwired_services": [
-            "AgentAnswerPresentationService",
-            "AgentBudgetException",
+        "unreferenced_services": [
             "AstrologerService",
-            "BlogConflictException",
-            "CourierService",
-            "ProjectMapService",
-            "RemoteCartException",
-            "RequestFailureService",
-            "SmtpDeliveryUncertainException",
-            "StoragePermissionService"
+            "RequestFailureService"
         ],
         "unwired_views": [],
         "admin_mutations_without_audit": [

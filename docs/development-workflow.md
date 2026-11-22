@@ -21,6 +21,40 @@ fix its generator rather than merely editing or trusting the output. The local
 blog source is `content/blog/posts/*.md` through `BlogService`; the legacy
 `GitHubDocService` file does not establish an active remote-content workflow.
 
+### Reading generated relationship evidence
+
+Root `map.mmd` and `docs/systematic-map.mmd` are generated from the same
+ProjectMapService inventory. They distinguish registered handlers, declared
+service/related-view associations, literal source references and collection
+references. A related view can be a redirect destination, fallback or resource
+template; that association does not prove the handler renders it. Explicit
+`response: json` metadata is retained in `docs/project-index.json` and `index.yaml`
+without adding an HTML view.
+
+The bounded source scanner reads PHP tokens in controller, service and integration
+files. It records named-class `extends`, literal `new` and static class references,
+including `::class`; it resolves namespace imports and aliases without autoloading
+or executing the classes. Each deduplicated source relationship in the project
+index points to the original file and first matching line. Comments, strings and
+unused imports do not establish relationships. Scan input is limited to 2 MiB
+per PHP file and an oversized file fails generation.
+
+This is a discovery aid, not a runtime call graph. Variable class names, injected
+objects, anonymous/nested class bodies, trait propagation and function-only
+entrypoints are outside the scanner's coverage. A literal reference does not
+establish successful autoload, a reachable branch, a method invocation, permissions
+or a working integration. `unreferenced_services` means no route/shared declaration
+or incoming reference was found within that coverage; inspect the original code
+before calling it unused. Collection links combine a bounded textual scan and
+explicit overrides and do not establish read/write direction. The project index's
+`relationship_provenance` explains these limits; knowledge-router relations use
+`declared_service` and `collection_reference` rather than claiming calls or writes.
+
+Run `php tests/project-map.php` for focused source/decoy, inheritance, gateway,
+presenter and metadata regressions. The same tests run in `tests/run.php` under
+the required `./bapXphp ci` gate. Regenerate with `./bapXphp update`; never patch
+generated edges by hand.
+
 Read the relevant developer skill and current code, issue comments and merged
 PRs. Use REA pinned-source evidence to form testable questions, not proof that
 a feature is missing in the current revision. Public/admin instructions and

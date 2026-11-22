@@ -19,8 +19,8 @@
         },
         "content": {
             "source_sha256": "12e40630e473f8d50774e654dc207c19fe3c8b5eb8158ea8da0e392330a3655d",
-            "references_sha256": "193e5d29e6fe4e8180bb517c72bfd9f1465b1a87196bcb6e74a7f174dd8c0b06",
-            "review_note": "Reviewed public ProductService and BlogService published selection and exclusion of future, draft, retired or private Markdown and paths."
+            "references_sha256": "1dbca4f4b169d19f1046bee61138053549c0ecff231d0c389c2628f74f517cf1",
+            "review_note": "Reviewed the Docs skill provenance guidance against the unchanged BlogService and authored-content guide boundary. Static map references are discovery evidence only; publication visibility, Markdown storage, rendering and private-help exclusion remain the existing source contracts."
         },
         "foundation": {
             "source_sha256": "12a2968832644135d8e5ec7c02adc1315ef59919588c7bd5f3f3440a6c46da89",
@@ -58,14 +58,14 @@
             "review_note": "Cross-checked architecture and official product image paths against unchanged media ownership/storage rules. Chat cards use bounded published same-origin raster projections; no image binary, upload location or media permissions changed."
         },
         "operator-help": {
-            "source_sha256": "4ffd0adb467d3d86b83c9e333689e8956cb47c248b63230eecb85aafe71d6334",
-            "references_sha256": "3f129d14bb19eefb373b6c1d5bd04037aa8314bc247fbff6eec830c06724e290",
-            "review_note": "Rechecked explicit JSON webhook map against its signed stateless controller, updated operator webhook settings Help and unchanged account/customer guidance. JSON route metadata does not introduce an HTML page, additional authorization or customer lookup."
+            "source_sha256": "6a128cd848ad8bf3bfb120941a4a35aab039f71822302eb05309841aedb40fa9",
+            "references_sha256": "39d00b0c3f725cf303c6e6bce3dfe276bba07638972bd72de0323c05f1bf8807",
+            "review_note": "Compared the unchanged private guide manifest and metadata-only KnowledgeGraph indexing with the operator-help guide. The generator now labels declared relationships and preserves JSON response metadata; it does not change guide permissions, bodies, routes or user controls. Reviewed the updated Docs skill limits."
         },
         "public-mcp": {
-            "source_sha256": "0849ab438301bb4a3a4b9ff735504caebd65958ed1480d4ce3cc0c1963f214f5",
+            "source_sha256": "8823a7fe30afc8b3ec5e23b1e1983c9f4243a0ff7963fd5a53627f41bf0d7e25",
             "references_sha256": "f0eb7593d4e42d4e487807fd6a4f5d349d564e01359580a70c0e0691f91f7bfc",
-            "review_note": "Cross-checked the shared bootstrap change against the exact stateless MCP route and public dispatcher documentation. Adding the explicit canonical Stripe path does not change session bypass, tool scopes, capability checks, public projections or host payment behavior."
+            "review_note": "Compared the unchanged stateless MCP/discovery controllers and registered handlers with the public transport guide. Corrected map-only inheritance and related-view claims; source references do not imply browser-session inheritance, successful gateway autoload or a rendered JSON response. No protocol, capability or checkout behavior changed."
         },
         "remote-commerce": {
             "source_sha256": "1966c34fbe250f75b05e376c9a0fd6effd73d1073fef2c0d0061931afbfc8731",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed the sales-channel CLI references and catalogue guidance. This change only fixes generic PHP lint argument forwarding and failure propagation; feed, channel and catalogue operations are unchanged."
         },
         "workflow": {
-            "source_sha256": "129c2b8b0db4736390a7c10757bc718b63ddc71d7f39b05d593cfee41b7db660",
-            "references_sha256": "f6ac5079ee895f5c49c65cf00a054d8e4172d9779042cdab14332c7a994747fa",
-            "review_note": "Compared CI and post-deploy native WebMCP commands with the new bounded CDP helper and correlation tests. Both existing JS/polyfill lanes remain; documented actual browser identity, one contact read, explicit protocol failures and the external-host evidence limit."
+            "source_sha256": "56784e635866578fb6009d869060da8a5b2b3efa36fcfc53a6124103c45c868f",
+            "references_sha256": "6bddcf08be3819fe8ec98d7f78e96b359a9571f9043255f5ce207927e4732284",
+            "review_note": "Compared the bounded map tokenizer, source line evidence, import/interpolation decoys, JSON response metadata and declared relationship labels with the development workflow and Docs skill. Also read the merged CDP helper and both CI hooks: the exact page registry, one correlated public contact read, explicit protocol failures and separate polyfill/native/external-host limits remain intact. Preserved the early Stripe bootstrap regression; no application dispatch or checkout behavior changed."
         }
     }
 }

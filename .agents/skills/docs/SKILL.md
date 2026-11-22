@@ -14,6 +14,14 @@ description: Use when editing README, docs, project-map docs, or agent-facing in
   service, view, schema, storage, tool, skill, blog metadata, or documentation changes.
 - Never hand-edit generated Mermaid. Fix deterministic scan/render inputs, then regenerate through the tool.
 - Use the map like a source index: follow affected nodes to the actual files and verify route, page, schema, storage, and navigation behavior before documenting completion.
+- Preserve relationship provenance. Registry service/related-view associations
+  are declarations; a related view is not proof of rendering. Named-class
+  inheritance and literal new/static references come from bounded PHP token
+  inspection, not runtime execution or successful autoload. Collection references
+  combine a textual scan and explicit overrides and do not establish writes.
+  `unreferenced_services` is a candidate within that limited scan, not proof of
+  dead code. Read `relationship_provenance` in the project index and the original
+  source before interpreting a graph edge. See `docs/development-workflow.md`.
 - Search existing docs and code before adding a file; a gap node is not automatic permission to scaffold one.
 - Query `index.yaml` narrowly to locate original files; never load it wholesale or treat generated summaries as the source of truth. `docs/project-index.json` is the machine-readable code index.
 - Validate with `./bapXphp ci`.
@@ -22,6 +30,11 @@ description: Use when editing README, docs, project-map docs, or agent-facing in
 ## Testing
 
 `./bapXphp update` to regenerate maps, then `./bapXphp ci`. Map validation alone is not enough: for each affected map path, open the real route, controller, service and rendered page.
+
+For generator changes, run `php tests/project-map.php` as well. Its pure fixtures
+exercise real callers, import aliases, misleading strings/comments, dynamic and
+anonymous exclusions, response metadata and deterministic output without loading
+gateway clients or using business data.
 
 ## Keeping this skill current
 
