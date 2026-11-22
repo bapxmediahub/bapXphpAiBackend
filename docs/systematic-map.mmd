@@ -7,10 +7,10 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 162 routes, 14 controllers, 73 services, 67 views, 0 data files, 29 tools"]
-    arch_routes["> Routes: 162 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 164 routes, 14 controllers, 74 services, 67 views, 0 data files, 29 tools"]
+    arch_routes["> Routes: 164 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 14"]:::arch
-    arch_svc["> Services: 73"]:::arch
+    arch_svc["> Services: 74"]:::arch
     arch_views["> Views: 67"]:::arch
     arch_data["> Collections: 22 schema | 0 files"]:::arch
     arch_tools["> Tools: 29"]:::arch
@@ -36,6 +36,8 @@ flowchart LR
     route_get_categories["GET /categories — Products filtered by category"]:::route
     route_get_product_slug["GET /product/{slug} — Product detail — gallery, add-to-cart, buy-now"]:::route
     route_get_api["GET /api"]:::route
+    route_get_is_sha_valid["GET /is-sha-valid"]:::route
+    route_get_api_is_sha_valid["GET /api/is-sha-valid"]:::route
     route_get_api_shop["GET /api/shop"]:::route
     route_get_api_categories["GET /api/categories"]:::route
     route_get_api_product_slug["GET /api/product/{slug}"]:::route
@@ -252,6 +254,7 @@ flowchart LR
     service_couponservice["CouponService"]:::code
     service_courierservice["CourierService"]:::code
     service_databaseservice["DatabaseService"]:::code
+    service_deploymentrevisionservice["DeploymentRevisionService"]:::code
     service_docsmapservice["DocsMapService"]:::code
     service_enterprisetoolregistry["EnterpriseToolRegistry"]:::code
     service_envservice["EnvService"]:::code
@@ -493,6 +496,12 @@ flowchart LR
   controller_publiccontroller --> service_productservice
   controller_publiccontroller -. renders .-> view_public_product
   route_get_api --> controller_apicontroller
+  controller_apicontroller -. renders .-> view_public_404
+  route_get_is_sha_valid --> controller_apicontroller
+  controller_apicontroller --> service_deploymentrevisionservice
+  controller_apicontroller -. renders .-> view_public_404
+  route_get_api_is_sha_valid --> controller_apicontroller
+  controller_apicontroller --> service_deploymentrevisionservice
   controller_apicontroller -. renders .-> view_public_404
   route_get_api_shop --> controller_apicontroller
   controller_apicontroller --> service_productservice

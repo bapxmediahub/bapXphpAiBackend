@@ -137,7 +137,7 @@ if ($uri !== null && $uri !== '/' && $uri !== '/admin/' && str_ends_with($uri, '
 }
 
 // PHP routes (admin + public pages)
-$phpRoutes = ['/','/pages','/search','/shop','/shop/','/product','/cart','/checkout','/payment','/support','/about','/contact','/temples','/consult','/consultation','/auth','/login','/logout','/register','/forgot-password','/reset-password','/account','/orders','/reviews','/sri-panchami-spiritual','/spiritual','/categories','/terms','/privacy','/blog','/docs','/help','/sitemap.xml','/feeds/google-products.xml'];
+$phpRoutes = ['/','/pages','/search','/shop','/shop/','/product','/cart','/checkout','/payment','/support','/about','/contact','/temples','/consult','/consultation','/auth','/login','/logout','/register','/forgot-password','/reset-password','/account','/orders','/reviews','/sri-panchami-spiritual','/spiritual','/categories','/terms','/privacy','/blog','/docs','/help','/sitemap.xml','/feeds/google-products.xml','/is-sha-valid'];
 $isPhpRoute = false;
 foreach ($phpRoutes as $route) {
     if (strpos($uri, $route . '/') === 0 || $uri === $route) {

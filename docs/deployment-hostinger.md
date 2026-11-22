@@ -79,6 +79,64 @@ For the shared knowledge release, check `/shop`, `/blog`, `/api/knowledge/articl
 
 If checks fail, stop promotion and compare the actual Hostinger checkout and server logs with the expected SHA. Roll back to the last known-working code revision **only after checking data compatibility**, preserving the media directory, database and private chats; recheck those paths after recovery. Record unresolved acceptance on the PR/issue rather than closing it because CI passed.
 
+## Live commit verification API
+
+Do not infer deployment from GitHub's `main` branch or from public page assets alone. The
+deployed PHP application now provides two read-only aliases:
+
+- `GET /is-sha-valid?sha=<40-lowercase-hex-Git-SHA>`
+- `GET /api/is-sha-valid?sha=<40-lowercase-hex-Git-SHA>`
+
+These endpoints read **this Hostinger checkout's actual `.git/HEAD`** (including
+detached HEAD, loose refs and `packed-refs`) without invoking Git through the public
+PHP runtime, without MySQL and without returning paths or credentials. They disable
+HTTP caching and indexing. A response has one of three meanings:
+
+| HTTP status | `status` | Meaning |
+| --- | --- | --- |
+| 200 | `match` | `match: true`, `deployed_sha` equals the requested Git SHA and `source: git_head` |
+| 200 | `mismatch` | `match: false`, Hostinger is still running a different checkout |
+| 503 | `unavailable` | `.git/HEAD` cannot be read reliably; **do not claim a deployment** |
+| 400 | `invalid` | Missing, uppercase or malformed SHA, or unexpected query parameters |
+
+Example after a successful merge:
+
+```bash
+expected=$(git rev-parse HEAD)     # Run in the trusted checkout before release
+curl --fail-with-body -H 'Cache-Control: no-cache' \
+  "https://sripanchamispiritual.com/is-sha-valid?sha=$expected"
+```
+
+The response should show `status: match`, `match: true`, the same
+`deployed_sha`, and `source: git_head`. The current GitHub main commit is **not**
+a substitute for the running site's Git metadata. Match alone proves which
+checkout that PHP process sees; cart, checkout, mail, private chat and mobile UI
+still require independent smoke tests. Browser/cache or load-balancer differences
+should be checked across actual served instances as applicable.
+
+`.github/workflows/verify-hostinger-deploy.yml` now runs as a **separate
+post-deployment evidence workflow** after a successful `Validate application`
+push to `main`. It retries this live endpoint with the exact merge SHA,
+reports a verified or failed/unknown result, and can also be rerun manually with
+`workflow_dispatch` and an explicit full SHA. After a successful SHA match it runs a
+fresh Chromium session at 320/375/390 pixels, checks the visible Sri Panchami Spiritual
+brand, top cart and absence of the unwanted bottom bar, then performs an isolated
+real add-to-cart / decrement test using only its disposable guest session. It never
+checks out or pays for an order, and it attempts to clear the cart even after a failed
+assertion. A failed cart acceptance marks the deployment workflow red without changing
+the result of the independent code CI. Never run this workflow against customer
+sessions or supply a production user credential.
+
+**Hostinger caveat:** hPanel may copy the release files without including a
+readable `.git` checkout, or PHP permissions may prevent reading `.git/HEAD`.
+In that case `/is-sha-valid` returns **503**, not a fabricated match. On the
+actual Hostinger hosting workspace, inspect `git rev-parse HEAD` and deployment
+destination, and record the result in GitHub. To support archive/FTP deployments
+without Git metadata, add an explicit **atomic post-deploy revision receipt**
+written by a trusted deployment hook from the exact deployed artifact, with
+expiration and stale-release detection; never put an assumed `main` SHA in a
+committed PHP constant or pretend a static stale file proves deployment.
+
 ## Release workflow
 
 1. Work from the linked issue on a branch. Run `./bapXphp update` for generated
