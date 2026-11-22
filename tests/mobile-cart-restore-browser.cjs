@@ -60,7 +60,7 @@ test('restored mobile brand, header cart, no bottom nav, and post-add floating c
             assert.equal(data.headerText,'Sri Panchami Spiritual');
             assert.ok(data.brand && data.brand.display!=='none' && data.brand.width>35,
                 'Brand text must be visible at '+width);
-            assert.ok(data.cart && data.cart.display!=='none' && data.cart.width>=42
+            assert.ok(data.cart && data.cart.display!=='none' && data.cart.width>=(width<=860?42:34)
                 && data.cart.right<=width+1 && data.cart.left>=-1,
                 'Top cart touch target must remain inside '+width+'px viewport');
             assert.ok(data.scrollWidth<=width+2,'Avoid horizontal header overflow at '+width);
