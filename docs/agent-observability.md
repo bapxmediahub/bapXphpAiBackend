@@ -97,9 +97,30 @@ when supplied by the provider; missing counts and unconfigured costs remain unkn
 Only allowlisted fields can enter tool evidence: e.g. report `from`
 and `to`, topic/status, source category, result count and an
 approved admin report URL. Email addresses, private order identifiers, raw SQL,
-coupon codes, provider bodies, credentials and hidden reasoning are excluded.
+lookup coupon arguments, provider bodies, credentials and hidden reasoning are excluded.
 The conversation text itself remains sensitive business/customer content;
 admin JSON export is protected and must never be linked as a static asset.
+
+`commerce_report` has one narrow private presentation projection, `evidence.report`,
+validated by `AgentTraceService::safeCommerceReport` both when recorded and when
+replayed. It contains a fixed report type, canonical basis, INR currency, effective
+range (absent for current stock), row limit, full row count, typed summary and up to
+ten typed rows. Product names and report coupon labels are intentionally retained
+for this authorized owner report. Customer rows contain only fixed anonymous
+frequency bands, never email addresses, order references or arbitrary labels.
+This is not permission to save raw tool results. Unknown fields are discarded;
+missing/invalid amounts reject the presentation instead of becoming zeros.
+
+Report evidence uses source `commerce_reports` and a derived
+`/admin/tax-report?report=products|stock|customers|coupons` URL with the effective
+dates for dated reports. The evidence fingerprint includes its recorded report
+values. Summaries cover all matching rows even when the displayed ranking is
+limited; customer bands exclude invalid/missing email keys while their paid orders
+remain in the overall totals and a separate unidentified count. Paid-order
+amounts use order dates and recorded verified refunds, not payment settlement
+dates, profit or causal coupon attribution. Stock status cannot establish
+on-hand quantities. Run `php tests/enterprise-commerce.php` for the canonical
+calculation, strict scope, policy, redaction and saved-evidence fixtures.
 
 ## Pre-execution checkpoints and interrupted requests
 

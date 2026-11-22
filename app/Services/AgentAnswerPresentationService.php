@@ -13,7 +13,7 @@ final class AgentAnswerPresentationService
         if(PublicA2uiService::safePublicPath($path))return true;
         if(preg_match('~^/(?:login|cart|checkout|account/dashboard(?:/orders|/install)?)$~D',$path))return true;
         if($scope!=='admin')return false;
-        return (bool)preg_match('~^/admin/(?:support-tickets|docs/[a-z0-9-]{1,80}|tax-report\?report=(?:sales|tax)&from=\d{4}-\d{2}-\d{2}&to=\d{4}-\d{2}-\d{2})$~D',$path);
+        return (bool)preg_match('~^/admin/(?:support-tickets|docs/[a-z0-9-]{1,80}|tax-report\?report=stock|tax-report\?report=(?:sales|tax|products|customers|coupons)&from=\d{4}-\d{2}-\d{2}&to=\d{4}-\d{2}-\d{2})$~D',$path);
     }
 
     /** History uses only recorded evidence; legacy traces may have it in tool spans. */

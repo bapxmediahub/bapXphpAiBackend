@@ -1,11 +1,31 @@
 <section class="enterprise-chat" aria-labelledby="enterprise-agent-title">
     <header class="enterprise-chat__intro">
         <h1 id="enterprise-agent-title">Enterprise Agent</h1>
-        <p>Ask about orders, sales, GST, stock, or support tickets.</p>
+        <p>Ask about business performance, orders, stock status, and customer support.</p>
         <?php if (empty($modelConfig['configured'])): ?>
             <p class="agent-notice">Connect a model in <a href="/admin/integrations">Integrations</a> for questions that need one.</p>
         <?php endif; ?>
     </header>
+    <?php if (!empty($agentCapabilities)): ?>
+        <details class="agent-capabilities" id="agent-capabilities">
+            <summary>What can I ask?</summary>
+            <p>Choose a question to edit, or ask for a specific period. Reports show recorded data and link to the admin source.</p>
+            <ul class="agent-capabilities__tasks">
+                <?php foreach ($agentCapabilities as $capability): ?>
+                    <li>
+                        <strong><?= e($capability['title']) ?></strong>
+                        <span><?= e($capability['description']) ?></span>
+                        <?php if (is_string($capability['prompt'])): ?>
+                            <button type="button" class="agent-suggestion" aria-label="<?= e('Use ' . $capability['title'] . ' question') ?>" data-capability-prompt="<?= e($capability['prompt']) ?>" hidden>Use this question</button>
+                            <noscript><span>Example: <?= e($capability['prompt']) ?></span></noscript>
+                        <?php endif; ?>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+            <p class="agent-capabilities__limits"><?= e($agentCapabilityLimits ?? '') ?></p>
+            <a href="/admin/docs/enterprise-agent">Read the Enterprise Agent guide</a>
+        </details>
+    <?php endif; ?>
     <div class="enterprise-chat__thread">
         <div class="agent-history-actions">
             <button type="button" class="agent-suggestion" id="agent-history-toggle"
@@ -20,7 +40,7 @@
     <div id="agent-messages" class="agent-messages" role="log" aria-live="polite" aria-label="Conversation"></div>
 
     <div class="agent-suggestions" id="agent-suggestions">
-        <?php foreach (['Which products sell best?', 'What is the revenue this month?', 'How many open support tickets are there?', 'How do I draft a blog post?'] as $__s): ?>
+        <?php foreach (array_slice(array_values(array_filter(array_column($agentCapabilities ?? [], 'prompt'), 'is_string')), 0, 4) as $__s): ?>
             <button type="button" class="agent-suggestion" data-q="<?= e($__s) ?>"><?= e($__s) ?></button>
         <?php endforeach; ?>
     </div>
@@ -69,6 +89,15 @@
 .agent-chip--ok { color:#15803d; border-color:#15803d; background:rgba(21,128,61,0.08); }
 .agent-chip--warn { color:#b45309; border-color:#b45309; background:rgba(180,83,9,0.08); }
 .agent-notice { margin-top:var(--space-md); padding:var(--space-sm) var(--space-md); border-radius:var(--radius-md); border:1px solid #ffc107; background:#fff8e1; font-size:0.85rem; }
+.agent-capabilities { margin:var(--space-md) 0; border-block:1px solid var(--color-border); padding:var(--space-sm) 0; }
+.agent-capabilities summary { cursor:pointer; font-weight:600; padding:var(--space-xs); }
+.agent-capabilities summary:focus-visible, .agent-capabilities button:focus-visible { outline:2px solid var(--color-maroon); outline-offset:3px; }
+.agent-capabilities p, .agent-capabilities a { font-size:0.85rem; line-height:1.5; }
+.agent-capabilities__tasks { list-style:none; padding:0; display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr)); gap:var(--space-md); }
+.agent-capabilities__tasks li { display:flex; flex-direction:column; align-items:flex-start; gap:var(--space-xs); min-width:0; overflow-wrap:anywhere; }
+.agent-capabilities__tasks span { font-size:0.82rem; color:var(--color-text-muted); line-height:1.5; }
+.agent-capabilities__limits { color:var(--color-text-muted); }
+.agent-capabilities [hidden] { display:none !important; }
 
 .agent-shell { margin-top:var(--space-lg); display:flex; flex-direction:column; }
 .agent-messages { display:flex; flex-direction:column; gap:var(--space-md); min-height:220px; max-height:52vh; overflow-y:auto; padding:var(--space-xs) var(--space-2xs) var(--space-md); scroll-behavior:smooth; }
@@ -232,7 +261,7 @@
         if (rendered) return;
         container.innerHTML = renderMarkdown(answer || 'No response.');
         for (const source of sources) {
-            if (typeof source.path !== 'string' || !/^\/admin\/(?:support-tickets|docs\/[a-z0-9-]{1,80}|tax-report\?report=(?:sales|tax)&from=\d{4}-\d{2}-\d{2}&to=\d{4}-\d{2}-\d{2})$/.test(source.path)) continue;
+            if (typeof source.path !== 'string' || !/^\/admin\/(?:support-tickets|docs\/[a-z0-9-]{1,80}|tax-report\?report=stock|tax-report\?report=(?:sales|tax|products|customers|coupons)&from=\d{4}-\d{2}-\d{2}&to=\d{4}-\d{2}-\d{2})$/.test(source.path)) continue;
             const line = document.createElement('p');
             const link = document.createElement('a');
             link.href = source.path;
@@ -433,7 +462,15 @@
         if (!btn) return;
         input.value = btn.dataset.q;
         autoGrow();
-        form.requestSubmit();
+        input.focus();
+    });
+    document.querySelectorAll('[data-capability-prompt]').forEach(button => { button.hidden = false; });
+    document.getElementById('agent-capabilities')?.addEventListener('click', function (event) {
+        const button = event.target.closest('[data-capability-prompt]');
+        if (!button) return;
+        input.value = button.dataset.capabilityPrompt;
+        autoGrow();
+        input.focus();
     });
 
     // ── Draft forms ────────────────────────────────────────────────────────

@@ -3,19 +3,19 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "8a812b701cb87beb0d73933732676287f9d437fb1cd8a45bcbb336494e5539f1",
-            "references_sha256": "b92f668ebce60b02c8147968b561e6a53a3069cf9b9b554649ef74ec8349efcf",
-            "review_note": "Cross-reviewed named comparison retrieval and local Support answers including missing/hidden third choices, Unicode aliases and public path parity; runtime documentation and backend skill match the 26-check regression."
+            "source_sha256": "b314e84b51cebc80b40b05e294ef8bed131352dcec53f7d6b6179dea827a42ae",
+            "references_sha256": "f14268376d2e27015e98540db4f303c8f81df456d82b18e3c61ec0516541e1e2",
+            "review_note": "Reviewed canonical StoreStats report reuse, strict report/date/limit validation, actor policy, sanitized private evidence replay and capability help. Updated runtime instructions, observability and generated contracts. Private source navigation works in both successful A2UI and fallback answers; focused80 and golden33 checks pass."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
-            "references_sha256": "405427fe2e64baa6c5d527d530783b38182eccffa225431c387fcdebe436f8e7",
-            "review_note": "Reviewed public guide and shared backend documentation boundaries; no authentication, identity, session or private-account permission changes."
+            "references_sha256": "3f417079dd2b4ebe4152631a234301d0ef7bb6345bbe08569e6889598f64510c",
+            "review_note": "Reviewed owner-only capability policy and unchanged authentication routes against the shared backend guidance. Browser claims cannot grant commerce_report; guest/customer denial and foreign-owner saved evidence denial are covered. Existing auth references remain accurate."
         },
         "commerce": {
             "source_sha256": "1aa1c2d02eb7112758482fa1b76a4d49f4ad07caec43f5a8d6f0b72280a5a7b3",
-            "references_sha256": "a8403ac910478daeb273cc59685b7a11d248baeb3cb5ea8d89b5141c78e370c5",
-            "review_note": "Cross-checked product detail projection and comparison price inputs against canonical ProductService; purchase, payment, tax, stock and refund writes remain unchanged."
+            "references_sha256": "aa5cbdcee485b0e0d4c82a49085d8bbd90e7e3b1b029aa1238a4ad04fb458ff3",
+            "review_note": "Reviewed product, stock, customer and coupon projections against existing StoreStats calculations. Documented line-count versus order-count, allocated refunds, within-period anonymous customer bands, missing customer keys and current status without quantities. Canonical commerce services and normal payment/order flows are unchanged."
         },
         "content": {
             "source_sha256": "12e40630e473f8d50774e654dc207c19fe3c8b5eb8158ea8da0e392330a3655d",
@@ -23,29 +23,29 @@
             "review_note": "Reviewed public ProductService and BlogService published selection and exclusion of future, draft, retired or private Markdown and paths."
         },
         "foundation": {
-            "source_sha256": "20cd2e6017d569e8544c16fbafb80a09e21f7495b3485971459aa1418b065d3d",
-            "references_sha256": "6d956420bce6857ef16ca8f29d04ee01aa067ca79dcf562c37753cd883cd7c8a",
-            "review_note": "Reviewed the narrow index.php route fix against its registered controllers and hosting rewrite. Documented the independent entry gate in docs/webmcp.md; tests reproduce the former 404 and prove both guide responses while preserving invalid-method/path rejection."
+            "source_sha256": "6d00c70e4768fb7a2048b78d4da07cb375fc753bb8878c00893b01061dc15dc4",
+            "references_sha256": "4dc16999ac73fb64ac22efa5b2da78a85076bfb38f184880884e08af5a58dbce",
+            "review_note": "Reviewed the bounded Enterprise extension, source dependency metadata and shared guidance. Business records remain in MySQL and sanitized report evidence stays within actor-owned conversation JSON. No new public privileges, booking flow, runtime agent, application dependency or storage format was introduced."
         },
         "google-tags": {
             "source_sha256": "5d85546a76fc792fb9cc11dde1a3633519354a11e4bb6a9cd87a07910b305c84",
-            "references_sha256": "01cae380570ae0dd193dba792a7caf44dfa6f30b02e182fd531f48ed0afaea0f",
-            "review_note": "Inspected layout diff limited to public help metadata and footer navigation; tag identity, consent, scripts and settings guidance remain unchanged."
+            "references_sha256": "13bcd0c9956aeddddcb948b0099a05a23e2811f487dcf8c6f132912146588313",
+            "review_note": "Reviewed the shared frontend guidance correction: it now describes existing retired public consultation routes. Google reporting, consent, tag delivery and integration source behavior are unchanged; its integration references remain accurate."
         },
         "http-errors": {
             "source_sha256": "e93e09e81fb4c32aad806a41efd342e0bd24b3ac8335b8307f3894e5cd9e1ac0",
-            "references_sha256": "015f6d08ee26a5fadc37e4dfc79fd759d3c18a09324493e8efbadaa4a6c03ecd",
-            "review_note": "Reviewed index.php route gating and unknown-route handling with the new real-entry regression. Only the two registered public discovery URLs are admitted; unknown suffixes and private paths remain 404, and the existing failure-response contract is unchanged."
+            "references_sha256": "774e00a00cf6d18ebca054d55e9f34023355777c099bdae4c08fec0b442ce4ef",
+            "review_note": "Reviewed shared backend guidance changes and existing request-failure references. Commerce report additions do not alter bootstrap or HTTP error handling; the newly fixed public discovery entry routes remain preserved."
         },
         "interface": {
-            "source_sha256": "b9255f91d6ee7bbbfcfa1dbdee98a3c63881270ea8b55851dc9ccff1847a4324",
-            "references_sha256": "d11502d83d22bdbce28a8f36f7e38102ba3ade0b6861e2879a359196520f0105",
-            "review_note": "Cross-checked rendered guide template, existing document styles, public head/footer links and current-document shop snapshot against frontend guidance; card variants remain in the next separate slice."
+            "source_sha256": "b21e3f86159de9509cfebd6c48b0bde01a300e611b9be5d751460f74c5b05a02",
+            "references_sha256": "e93b24baabd471b72635b3944ba3ba5a6aeda82bb2bb890c60b68477a004bfef",
+            "review_note": "Reviewed the task disclosure, pointer/keyboard editable prompts, no-JavaScript text, canonical report links and owner/public renderer boundaries. Updated admin/help guidance and corrected the stale frontend booking sentence to the existing retired route behavior. Native browser checks are required in CI."
         },
         "mail": {
-            "source_sha256": "45e094a1fc75a9b16a7f4ed583b7b2933d168e195944e91f299e6f52dbf9b522",
-            "references_sha256": "78b690e807a3b2a67eb52fa7377189d981186da0b058dbcf29cfe9af95828dbe",
-            "review_note": "Reviewed the shared backend documentation change; no queue, mail template, SMTP, recipient or retry code changed and existing mail guidance remains accurate."
+            "source_sha256": "3b0589d28bd4923c657f85a867084b79ef9f22dd942ea529fd08af2f1332b249",
+            "references_sha256": "e729053eb0aab0f30b6a4816c5151c4a0e1bf58f8f83cf60e797e08ebee30a70",
+            "review_note": "Reviewed AdminController changes limited to Enterprise capabilities and follow-up report context. No mail scheduling, transport, inbox or template behavior changes; existing email setup and backend references remain accurate."
         },
         "mcp-clients": {
             "source_sha256": "f8245d49c8c4fa9d576bdf2fe5ad28b84d2b0e7f9df980c0b7c2f17c0f30854d",
@@ -58,14 +58,14 @@
             "review_note": "Compared the architecture change with media ownership/deletion guidance. The widget consumes the same validated public raster paths and introduces no upload, deletion, metadata mutation or additional media authority."
         },
         "operator-help": {
-            "source_sha256": "43d20e5b3dae5ad3af6a2b774e0442c34e0929de53faf04825f2bcf84fe483f1",
-            "references_sha256": "f1534b1c75666a620a6481adcfe614a98dee2ef82717f3c432178df2ce2515b5",
-            "review_note": "Reviewed both public discovery routes through the real front controller and the shared landing/footer links. The two added public prefixes do not change admin help authorization or its documented owner workflows."
+            "source_sha256": "487887d5b9318a24a19ecb0beed81eddeaf8f4d4b2d9c19780b54afcd671b02c",
+            "references_sha256": "41217a26c6d4e71fb34add5be4428b825c68d06cd8f802176b901d59e9b373e7",
+            "review_note": "Reviewed the Enterprise task guide against actor-filtered capabilities, report contracts and the actual fill-only composer. Added registry, policy and trace sources to the guide dependency manifest so later changes require review. Owner source links and retired-booking limits match the implemented routes."
         },
         "public-mcp": {
-            "source_sha256": "1c804b6daa48eddac7deaf679ff3adb7b1f0205c09f31db63d4926943b863590",
-            "references_sha256": "f35133fb7116cc19be316f40d7398cc31db0cf170d26d76286640bb354cc9ed4",
-            "review_note": "Reviewed the public guide, configured endpoint and repeatable verification documentation. Added explicit real-index.php checks for both discovery routes; MCP transport, client negotiation, public schemas and scope stay unchanged."
+            "source_sha256": "ed978d9eea858fb1a875ad738f0d9ef015cd19708c719648d86b4f15891f0ef4",
+            "references_sha256": "9ac62bbd867ba8b5fc6b08360f164e4be98b87e92538fa0ca9354c81aa33cd2e",
+            "review_note": "Reviewed public MCP and A2UI references against the new owner-only report link allowlists. Public tools and data remain unchanged; Support/public scopes reject private report navigation. Focused scope tests cover these boundaries."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
@@ -73,9 +73,9 @@
             "review_note": "Checked public product visibility, published navigation destinations and isolated first-party catalogue and policy discovery."
         },
         "workflow": {
-            "source_sha256": "09f952626be69490ed016f2229a2b829c0cfd8d8812327e9d946102b05b71101",
+            "source_sha256": "1dc43594d9e5c90dfb2c58bc458ab54a6961a2e7fa39bbb888373260b67706e5",
             "references_sha256": "94dd586c81b1d91a0332e86219ac2b55c416d5ebc37115c9a2008697d68236d0",
-            "review_note": "Reviewed ready-PR/live-acceptance workflow rules, new focused CI fixtures and regenerated route/maps; documentation update instructions remain accurate."
+            "review_note": "Reviewed CI wiring for the new80-check commerce regression on native PHP versions and capability/link Chrome fixtures. Generated contracts/maps reflect the fixed two-agent architecture; GitHub remains the issue tracker and source documentation review rules remain unchanged."
         }
     }
 }

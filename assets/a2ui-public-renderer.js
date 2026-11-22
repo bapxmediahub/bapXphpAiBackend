@@ -20,7 +20,7 @@
         && /\.(?:avif|gif|jpe?g|png|webp)$/i.test(path) && path.slice(15).split('/').every(safeSegment);
     const safeActionPath = (path,scope) => safePublicPath(path)
         || (scope !== 'public' && /^\/(?:login|cart|checkout|account\/dashboard(?:\/orders|\/install)?)$/.test(path))
-        || (scope === 'admin' && /^\/admin\/(?:support-tickets|docs\/[a-z0-9-]{1,80}|tax-report\?report=(?:sales|tax)&from=\d{4}-\d{2}-\d{2}&to=\d{4}-\d{2}-\d{2})$/.test(path));
+        || (scope === 'admin' && /^\/admin\/(?:support-tickets|docs\/[a-z0-9-]{1,80}|tax-report\?report=stock|tax-report\?report=(?:sales|tax|products|customers|coupons)&from=\d{4}-\d{2}-\d{2}&to=\d{4}-\d{2}-\d{2})$/.test(path));
 
     function validate(payload, options = {}) {
         const scope = options.scope || 'public';

@@ -65,6 +65,8 @@ jobs:
         run: |
           php tests/public-a2ui.php
           php tests/agent-presentation-scope.php
+      - name: Gate owner commerce reports and saved evidence isolation
+        run: php tests/enterprise-commerce.php
       - name: Verify browser knowledge tool registration, paging and private-path rejection
         run: node --test tests/public-knowledge-webmcp.test.cjs tests/public-products-webmcp.test.cjs tests/public-business-webmcp.test.cjs tests/public-knowledge-api.test.cjs
       - name: Check live WebMCP A2UI acceptance probe syntax
@@ -78,7 +80,7 @@ jobs:
       - name: Exercise the owner composer, installed admin app and public header editing in Chrome
         run: |
           npm install --prefix "$RUNNER_TEMP/agent-browser" --no-audit --no-fund --ignore-scripts playwright@1.62.1 @modelcontextprotocol/client@2.4.0 @modelcontextprotocol/ext-apps@2.0.4
-          NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/agent-history-browser.cjs tests/admin-pwa-browser.cjs tests/header-menu-browser.cjs tests/mobile-cart-restore-browser.cjs tests/a2ui-public-browser.cjs
+          NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/agent-history-browser.cjs tests/admin-pwa-browser.cjs tests/header-menu-browser.cjs tests/mobile-cart-restore-browser.cjs tests/a2ui-public-browser.cjs tests/enterprise-capabilities-browser.cjs
       - name: Verify the public tools with the official MCP client
         run: node tests/catalogue-mcp-interop.cjs "$RUNNER_TEMP/agent-browser"
       - name: Verify default and modern official clients against the public MCP dispatcher
@@ -159,6 +161,8 @@ jobs:
         run: ./bapXphp ci
       - name: Verify deterministic agent fixtures
         run: php cli/agent-eval.php
+      - name: Verify bounded owner commerce reports
+        run: php tests/enterprise-commerce.php
       - name: Verify isolated Markdown compare-and-swap concurrency
         run: BAPX_TEST_MODE=1 php tests/blog-concurrency.php
 

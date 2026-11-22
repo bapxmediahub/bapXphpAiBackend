@@ -17,7 +17,7 @@ description: Use when editing public, account, shop, consultant, temple, cart, c
 - Audit card families together. Product, consultant, account, authentication, and admin cards have different jobs but share the geometry and focus rules in `Design.md`.
 - Reuse the circular top-overlapping marketplace card geometry and face-focused clipped portrait frame on home and consultation surfaces. Render only real profile metadata and reviews, and keep hero slides isolated on a warm-neutral image frame.
 - Keep public help guides in `content/blog/posts/*.md` with `category: help`. Render them through existing blog cards and article pages; `/docs` and `/help/{slug}` are compatibility redirects only.
-- Public consultation actions create scheduled appointment requests only. Do not expose live calls, messaging, signaling, or wallet pricing. `ConsultationService` and the consultation message/signal collections are retained legacy code, not permission to surface those features; restore them only under an explicit product change with matching routes, authorization, UI, schema, and tests.
+- Public consultation booking is retired. `/consult` redirects to the shop, and legacy submissions go to the enquiry form. Historical appointment records do not establish bookable availability. Do not expose booking, live calls, messaging, signaling or wallet pricing; a future booking workflow requires an explicit product change with matching routes, authorization, UI, schema and tests.
 - Validate with `php -l` for changed templates, `php tests/run.php`, and the active coding client's browser workflow for changed pages. Do not add a browser runtime or browser dependency to the application repository.
 
 ## Testing

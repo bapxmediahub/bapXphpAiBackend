@@ -6,6 +6,29 @@ For instructions, type **/help** to see available topics or **/help blog-publish
 
 Answers use readable sections and relevant cards. When a completed report tool provides figures, the answer shows labelled facts with the recorded source, date range and observation time. Missing figures remain unavailable. Use the source link to inspect the underlying report.
 
+## Choose an owner task
+
+Open **What can I ask?** above the conversation or type **/capabilities**. The guide is based on the tools your authenticated owner session can use. **Use this question** fills the composer so you can add a product name or change the period before sending.
+
+| Task | Example question | What the answer means |
+|---|---|---|
+| Product performance | Show the product performance report for the last 30 days. | Units, recorded line value and allocated net line value, grouped by product name. |
+| Current availability | Show the current stock status report. | Current product statuses and effective prices, including internal products; no stock quantities. |
+| Customer patterns | Show customer order-frequency groups for the last 30 days. | Anonymous groups with one, two to four, or five or more paid orders in that period. |
+| Coupon performance | Show coupon performance for the last 30 days. | Recorded uses, discounts and associated net order value, not proof a promotion caused the sales. |
+| Individual order | Where is order followed by its exact order ID? | A scoped order lookup; include the exact identifier in your own question. |
+
+Dated commerce reports cover at most 366 inclusive calendar days through today.
+They return up to ten rows; summary values cover every matching record. The source
+report link opens the full admin report. Stock is a current snapshot and does not
+accept historical dates.
+
+Paid-order amounts use recorded order dates and verified refunds on those orders.
+They are not profit or settlement-date cash flow. Customer repeat counts describe
+the selected period, not lifetime retention; orders with no valid customer key
+remain separately identified in the aggregate count. Historical appointments can
+be counted, but live availability, booking and rescheduling are not offered.
+
 ## Attach a reference
 
 Use the paperclip to upload an image to Media and attach it to the message you are writing. For an existing image, page or article, type `@` and part of its name. Choose a suggestion with the arrow keys and Enter. Escape dismisses the list. Review the attachment names before sending.

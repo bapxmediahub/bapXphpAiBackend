@@ -65,7 +65,7 @@ class AgentToolRegistry
     {
         if (!self::refersToPreviousPeriod($this->ownerQuestion) || $this->previousReport === null) return null;
         $tool = $this->previousReport['tool'] ?? null;
-        if (!in_array($tool, ['support_enquiries', 'gst_register_summary', 'sales_summary'], true)
+        if (!in_array($tool, ['support_enquiries', 'gst_register_summary', 'sales_summary', 'commerce_report'], true)
             || !isset($this->previousReport['from'], $this->previousReport['to'])) return null;
         $limit = $tool === 'sales_summary' ? self::salesDateLimit($this->previousReport) : 366;
         $range = self::reportDates($this->previousReport, $limit);
@@ -74,6 +74,11 @@ class AgentToolRegistry
         $topic = $this->previousReport['topic'] ?? '';
         if ($tool === 'support_enquiries' && is_string($topic) && isset(self::ENQUIRY_TOPICS[$topic])) {
             $context['topic'] = $topic;
+        }
+        if ($tool === 'commerce_report') {
+            $report = $this->previousReport['report'] ?? null;
+            if (!is_string($report) || $report === 'stock' || !isset(self::COMMERCE_REPORT_BASES[$report])) return null;
+            $context['report'] = $report;
         }
         return $context;
     }
@@ -139,6 +144,22 @@ class AgentToolRegistry
                         'days' => ['type' => 'integer', 'description' => 'How many calendar days to include through today. Defaults to 30.'],
                         'period' => ['type' => 'string', 'enum' => ['this_month', 'all_time']],
                     ],
+                ],
+            ],
+            [
+                'name' => 'commerce_report',
+                'description' => 'Read a bounded owner report: product sales by units, current stock status, anonymous customer order-frequency groups, or coupon usage. '
+                    . 'Paid-order reports use order dates and recorded refunds; they do not measure profit, cash flow, lifetime retention or promotion attribution. Stock is a current status snapshot, not inventory quantities.',
+                'parameters' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'report' => ['type'=>'string', 'enum'=>array_keys(self::COMMERCE_REPORT_BASES)],
+                    ] + self::DATE_PROPERTIES + [
+                        'limit' => ['type'=>'integer', 'minimum'=>1, 'maximum'=>10,
+                            'description'=>'Maximum returned rows, 1 to 10; defaults to 6. Summary covers every matching row. Omit dates for stock.'],
+                    ],
+                    'required' => ['report'],
+                    'additionalProperties' => false,
                 ],
             ],
             [
@@ -272,6 +293,7 @@ class AgentToolRegistry
                 'find_order' => $this->findOrder($args),
                 'product_status' => $this->productStatus($args),
                 'sales_summary' => $this->salesSummary($args),
+                'commerce_report' => $this->commerceReport($args),
                 'gst_register_summary' => $this->gstRegisterSummary($args),
                 'store_count' => (new AgentContextService($this->store))->ownerCount($args['entity'] ?? null),
                 'support_enquiries' => $this->supportEnquiries($args),
@@ -304,6 +326,7 @@ class AgentToolRegistry
                     'gst_register_summary' => 'GST invoice register',
                     'support_enquiries' => 'AI Support Tickets',
                     'sales_summary' => 'Sales report',
+                    'commerce_report' => 'Commerce report',
                     'operator_guide' => $result['title'],
                     default => null,
                 };
@@ -311,6 +334,7 @@ class AgentToolRegistry
                 if ($label !== null && isset($result['from'], $result['to'])) {
                     $context = ['tool' => $name, 'from' => $result['from'], 'to' => $result['to']];
                     if ($name === 'support_enquiries' && $result['topic'] !== '') $context['topic'] = $result['topic'];
+                    if ($name === 'commerce_report') $context['report'] = $result['report'];
                     $this->reportContexts[implode(':', $context)] = $context;
                 }
             }
@@ -595,6 +619,118 @@ class AgentToolRegistry
             'best_sellers' => array_column($products, 'units', 'product'),
             'report_url' => '/admin/tax-report?' . http_build_query(['report' => 'sales'] + $range),
         ];
+    }
+
+    /** Fixed report meanings, shared with the saved-evidence validator and native cards. */
+    public const COMMERCE_REPORT_BASES = [
+        'products' => 'Paid orders by order date, excluding cancelled/failed orders. Grouped by recorded product name; order_lines counts matching item rows. Net line value allocates recorded order refunds proportionally. Not profit or item-level returns.',
+        'stock' => 'Current product stock status and effective prices, including internal products. Status is not an on-hand quantity, reservation or restock forecast. Visibility is a separate product setting.',
+        'customers' => 'Paid orders by order date, excluding cancelled/failed orders. Groups use distinct recorded email keys without returning identities. Repeat means multiple orders in this period, not lifetime retention. Orders without a valid customer key are counted separately.',
+        'coupons' => 'Paid orders by order date, excluding cancelled/failed orders. Uses count orders with the recorded coupon; net is their order total after recorded refunds. Associated sales are not sales caused by the promotion.',
+    ];
+
+    private static function commerceScope(array $args): array
+    {
+        if (array_diff(array_keys($args), ['report','from','to','limit'])
+            || !is_string($args['report'] ?? null)
+            || !isset(self::COMMERCE_REPORT_BASES[$args['report']])) {
+            return ['error'=>'Choose products, stock, customers or coupons for the report.'];
+        }
+        $limit = array_key_exists('limit', $args) ? $args['limit'] : 6;
+        if (!is_int($limit) || $limit < 1 || $limit > 10) return ['error'=>'Choose a report limit from 1 to 10.'];
+        foreach (['from','to'] as $key) {
+            if (array_key_exists($key, $args) && !is_string($args[$key])) return ['error'=>self::DATE_ERROR];
+        }
+        if ($args['report'] === 'stock') {
+            if (array_key_exists('from', $args) || array_key_exists('to', $args)) {
+                return ['error'=>'Stock is a current snapshot. Omit dates; historical quantities are not recorded.'];
+            }
+            return ['report'=>'stock', 'limit'=>$limit];
+        }
+        $range = self::reportDates($args);
+        if ($range === null) return ['error'=>self::DATE_ERROR];
+        return ['report'=>$args['report'], 'limit'=>$limit] + $range;
+    }
+
+    private function commerceReport(array $args): array
+    {
+        if (($args['report'] ?? '') !== 'stock') $args = $this->withOwnerRelativeWindow($args);
+        $scope = self::commerceScope($args);
+        if (isset($scope['error'])) return $scope;
+        return self::commerceReportFromRecords(
+            $scope['report'] === 'stock' ? [] : $this->orders->all(),
+            $scope['report'] === 'stock' ? $this->products->all() : [],
+            $scope
+        );
+    }
+
+    /** Canonical report helpers are also used by AdminController::taxReport(). No identities leave this projection. */
+    public static function commerceReportFromRecords(array $orders, array $products, array $args): array
+    {
+        $scope = self::commerceScope($args);
+        if (isset($scope['error'])) return $scope;
+        $type = $scope['report'];
+        $from = $scope['from'] ?? '';
+        $to = $scope['to'] ?? '';
+        $rows = match ($type) {
+            'products' => StoreStatsService::productsPurchased($orders, $from, $to),
+            'stock' => StoreStatsService::stock($products),
+            'customers' => StoreStatsService::customers($orders, $from, $to),
+            'coupons' => StoreStatsService::coupons($orders, $from, $to),
+        };
+        $sum = static fn(string $key): float => round(array_sum(array_column($rows, $key)), 2);
+        $summary = match ($type) {
+            'products' => ['products'=>count($rows), 'units'=>(int)$sum('units'),
+                'gross_line_value'=>$sum('gross'), 'allocated_net'=>$sum('net')],
+            'stock' => ['products'=>count($rows), 'in_stock'=>0, 'out_of_stock'=>0, 'inactive'=>0, 'draft'=>0, 'unknown_status'=>0],
+            'customers' => ['customers'=>0, 'repeat_customers'=>0, 'paid_orders'=>(int)$sum('orders'),
+                'unidentified_orders'=>0, 'gross_paid'=>$sum('gross'), 'recorded_refunds'=>$sum('refunded'), 'net_paid'=>$sum('net')],
+            'coupons' => ['coupons'=>count($rows), 'uses'=>(int)$sum('uses'), 'discount'=>$sum('discount'), 'net'=>$sum('net')],
+        };
+        if ($type === 'customers') {
+            $bands = [];
+            foreach (['one_order','two_to_four','five_or_more'] as $band) {
+                $bands[$band] = ['band'=>$band, 'customers'=>0, 'orders'=>0, 'gross'=>0.0, 'refunded'=>0.0, 'net'=>0.0];
+            }
+            foreach ($rows as $row) {
+                if (!filter_var($row['customer'] ?? '', FILTER_VALIDATE_EMAIL)) {
+                    $summary['unidentified_orders'] += (int)$row['orders'];
+                    continue;
+                }
+                $summary['customers']++;
+                if ($row['orders'] > 1) $summary['repeat_customers']++;
+                $band = $row['orders'] === 1 ? 'one_order' : ($row['orders'] < 5 ? 'two_to_four' : 'five_or_more');
+                $bands[$band]['customers']++;
+                foreach (['orders','gross','refunded','net'] as $key) $bands[$band][$key] += $row[$key];
+            }
+            $rows = array_values(array_filter($bands, static fn(array $row): bool => $row['customers'] > 0));
+            foreach ($rows as &$row) {
+                foreach (['gross','refunded','net'] as $key) $row[$key] = round($row[$key], 2);
+            }
+            unset($row);
+        } elseif ($type === 'products') {
+            foreach ($rows as &$row) {
+                $row['order_lines'] = $row['orders'];
+                unset($row['orders']);
+            }
+            unset($row);
+        } elseif ($type === 'stock') {
+            foreach ($rows as &$row) {
+                $row['status'] = in_array($row['status'], ['in_stock','active','out_of_stock','inactive','draft'], true)
+                    ? $row['status'] : 'unknown_status';
+                $summary[$row['status'] === 'active' ? 'in_stock' : $row['status']]++;
+            }
+            unset($row);
+        }
+        $reportPath = '/admin/tax-report?' . http_build_query(['report'=>$type] + ($type === 'stock' ? [] : ['from'=>$from,'to'=>$to]));
+        $result = $scope + ['basis'=>self::COMMERCE_REPORT_BASES[$type], 'currency'=>'INR',
+            'total_rows'=>count($rows), 'rows'=>array_slice($rows, 0, $scope['limit']), 'summary'=>$summary,
+            'report_url'=>$reportPath];
+        // One strict projection bounds both provider output and saved presentation evidence.
+        $projection = AgentTraceService::safeCommerceReport($result);
+        if ($projection === null) return ['error'=>'The report contains unavailable or invalid recorded values.'];
+        unset($projection['type']);
+        return $scope + $projection;
     }
 
     private const DATE_PROPERTIES = [

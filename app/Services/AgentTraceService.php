@@ -15,7 +15,7 @@ final class AgentTraceService
     private static int $beganNs = 0;
 
     private const SOURCES = [
-        'find_order' => 'orders', 'sales_summary' => 'orders',
+        'find_order' => 'orders', 'sales_summary' => 'orders', 'commerce_report' => 'commerce_reports',
         'gst_register_summary' => 'orders', 'product_status' => 'products',
         'store_count' => 'business_counts', 'support_enquiries' => 'support_tickets',
         'customer_ticket_lookup' => 'support_tickets',
@@ -28,12 +28,13 @@ final class AgentTraceService
     public static function toolEvidence(string $name, array $args, array $result): array
     {
         $filters = [];
-        foreach (['from', 'to', 'period', 'topic', 'status', 'entity'] as $key) {
+        foreach (['from', 'to', 'period', 'topic', 'status', 'entity', 'report'] as $key) {
             $value = isset($result['error']) ? null : ($result[$key] ?? null);
             if (!is_string($value) || !preg_match('/^[a-z0-9_-]{1,40}$/i', $value)) continue;
             $filters[$key] = $value;
         }
         if (!isset($result['error']) && isset($result['days']) && is_int($result['days'])) $filters['days'] = max(0, min(36500, $result['days']));
+        if ($name === 'commerce_report' && !isset($result['error']) && is_int($result['limit'] ?? null)) $filters['limit'] = $result['limit'];
         if (isset($args['order_id'])) $filters['order_id_provided'] = true;
         if (isset($args['customer_email'])) $filters['customer_email_provided'] = true;
         if (isset($args['slug'])) $filters['product_selector_provided'] = true;
@@ -42,7 +43,7 @@ final class AgentTraceService
         if (isset($args['reference'])) $filters['ticket_reference_provided'] = $args['reference'] !== null;
 
         $count = null;
-        foreach (['found', 'count', 'total', 'issued_invoices', 'orders'] as $key) {
+        foreach (['found', 'count', 'total', 'total_rows', 'issued_invoices', 'orders'] as $key) {
             if (isset($result[$key]) && is_numeric($result[$key])) {
                 $count = max(0, (int)$result[$key]);
                 break;
@@ -51,10 +52,13 @@ final class AgentTraceService
         if ($name === 'get_public_contact' && !isset($result['error'])
             && ($result['path'] ?? null) === '/contact') $count = 1;
         $facts=self::aggregateFacts($name,$result);
-        return [
+        $report = $name === 'commerce_report' && !isset($result['error']) ? self::safeCommerceReport($result) : null;
+        $fingerprint = ['filters'=>$filters,'facts'=>$facts];
+        if ($report !== null) $fingerprint['report'] = $report;
+        $evidence = [
             'observed_at'=>self::now(),
             'facts'=>$facts,
-            'facts_sha256'=>hash('sha256',json_encode(['filters'=>$filters,'facts'=>$facts],JSON_THROW_ON_ERROR)),
+            'facts_sha256'=>hash('sha256',json_encode($fingerprint,JSON_THROW_ON_ERROR)),
             'tool_version_sha256'=>hash_file('sha256',app_path('app/Services/AgentToolRegistry.php')),
             'source' => self::SOURCES[$name] ?? 'unknown',
             'filters' => $filters,
@@ -63,6 +67,8 @@ final class AgentTraceService
                 && preg_match('#^/admin/[a-z0-9/?=&_%-]+$#i', $result['report_url'])
                 ? mb_substr($result['report_url'], 0, 250) : null,
         ];
+        if ($report !== null) $evidence['report'] = $report;
+        return $evidence;
     }
 
     public static function safeTool(array $tool): array
@@ -70,7 +76,7 @@ final class AgentTraceService
         $name = (string)($tool['name'] ?? '');
         $evidence = $tool['evidence'] ?? [];
         if (!is_array($evidence)) $evidence = [];
-        return [
+        $safe = [
             'name' => mb_substr($name, 0, 64),
             'status' => in_array($tool['status'] ?? null, ['complete','error'], true) ? $tool['status'] : 'error',
             'reason' => preg_match('/^[a-z_]{1,48}$/', (string)($tool['reason'] ?? '')) ? $tool['reason'] : null,
@@ -87,6 +93,110 @@ final class AgentTraceService
                     && preg_match('#^/admin/[a-z0-9/?=&_%-]+$#i',$evidence['source_path']))
                     ? mb_substr($evidence['source_path'],0,250) : null,
             ],
+        ];
+        if ($name === 'commerce_report' && $safe['status'] === 'complete'
+            && $safe['evidence']['source'] === 'commerce_reports' && is_array($evidence['report'] ?? null)) {
+            $report = self::safeCommerceReport($evidence['report']);
+            if ($report !== null) {
+                $safe['evidence']['report'] = $report;
+                // The saved payload cannot attach a different period or navigation target.
+                $safe['evidence']['filters'] = ['report'=>$report['type'],'limit'=>$report['limit']]
+                    + (isset($report['from']) ? ['from'=>$report['from'],'to'=>$report['to']] : []);
+                $safe['evidence']['source_path'] = $report['report_url'];
+                $safe['evidence']['result_count'] = $report['total_rows'];
+            }
+        }
+        return $safe;
+    }
+
+    /**
+     * Private, typed presentation evidence, never a generic saved tool-result channel.
+     * Customer rows contain only fixed frequency bands. Product/coupon labels are
+     * intentionally retained for this owner report; lookup arguments and identities are not.
+     */
+    public static function safeCommerceReport(array $result): ?array
+    {
+        $type = $result['type'] ?? $result['report'] ?? null;
+        if (!is_string($type) || !isset(AgentToolRegistry::COMMERCE_REPORT_BASES[$type])
+            || (isset($result['type'], $result['report']) && $result['type'] !== $result['report'])
+            || ($result['currency'] ?? null) !== 'INR') return null;
+        $limit = $result['limit'] ?? null;
+        $total = $result['total_rows'] ?? null;
+        $rows = $result['rows'] ?? null;
+        if (!is_int($limit) || $limit < 1 || $limit > 10 || !is_int($total) || $total < 0 || $total > 1_000_000_000
+            || !is_array($rows) || !array_is_list($rows) || count($rows) > $limit || count($rows) > $total
+            || count($rows) !== min($limit, $total) || !is_array($result['summary'] ?? null)) return null;
+        $range = [];
+        if ($type === 'stock') {
+            if (array_key_exists('from', $result) || array_key_exists('to', $result)) return null;
+        } else {
+            foreach (['from','to'] as $key) {
+                $value = $result[$key] ?? null;
+                if (!is_string($value) || !preg_match('/^\d{4}-\d{2}-\d{2}$/D', $value)) return null;
+                $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+                if ($date === false || $date->format('Y-m-d') !== $value) return null;
+                $range[$key] = $value;
+            }
+            if ($range['from'] > $range['to']
+                || (new \DateTimeImmutable($range['from']))->diff(new \DateTimeImmutable($range['to']))->days > 365) return null;
+        }
+        $number = static function (mixed $value, bool $integer): int|float|null {
+            if ((!is_int($value) && !is_float($value)) || !is_finite((float)$value)
+                || $value < 0 || $value > ($integer ? 1_000_000_000 : 1e15)
+                || ($integer && floor((float)$value) !== (float)$value)) return null;
+            return $integer ? (int)$value : round((float)$value, 2);
+        };
+        $text = static function (mixed $value, int $max): ?string {
+            if (!is_string($value) || !mb_check_encoding($value, 'UTF-8')) return null;
+            $value = trim((string)preg_replace('/[\x00-\x1F\x7F]/u', ' ', strip_tags($value)));
+            return $value !== '' ? mb_substr($value, 0, $max) : null;
+        };
+        // true = a count, false = an amount in INR.
+        $summaries = [
+            'products'=>['products'=>true,'units'=>true,'gross_line_value'=>false,'allocated_net'=>false],
+            'stock'=>['products'=>true,'in_stock'=>true,'out_of_stock'=>true,'inactive'=>true,'draft'=>true,'unknown_status'=>true],
+            'customers'=>['customers'=>true,'repeat_customers'=>true,'paid_orders'=>true,'unidentified_orders'=>true,
+                'gross_paid'=>false,'recorded_refunds'=>false,'net_paid'=>false],
+            'coupons'=>['coupons'=>true,'uses'=>true,'discount'=>false,'net'=>false],
+        ];
+        $rowNumbers = [
+            'products'=>['order_lines'=>true,'units'=>true,'gross'=>false,'net'=>false],
+            'stock'=>['price'=>false],
+            'customers'=>['customers'=>true,'orders'=>true,'gross'=>false,'refunded'=>false,'net'=>false],
+            'coupons'=>['uses'=>true,'discount'=>false,'net'=>false],
+        ];
+        $summary = [];
+        foreach ($summaries[$type] as $key=>$integer) {
+            $value = $number($result['summary'][$key] ?? null, $integer);
+            if ($value === null) return null;
+            $summary[$key] = $value;
+        }
+        $safeRows = [];
+        foreach ($rows as $row) {
+            if (!is_array($row)) return null;
+            $safe = [];
+            $labelKey = match ($type) { 'customers'=>'band', 'coupons'=>'coupon', default=>'product' };
+            $label = $text($row[$labelKey] ?? null, $type === 'coupons' ? 80 : 160);
+            if ($label === null || ($type === 'customers' && !in_array($label, ['one_order','two_to_four','five_or_more'], true))) return null;
+            $safe[$labelKey] = $label;
+            if ($type === 'stock') {
+                if (!in_array($row['status'] ?? null, ['in_stock','active','out_of_stock','inactive','draft','unknown_status'], true)
+                    || !array_key_exists('offer_price', $row)) return null;
+                $safe['status'] = $row['status'];
+                $safe['offer_price'] = $row['offer_price'] === null ? null : $number($row['offer_price'], false);
+                if ($row['offer_price'] !== null && $safe['offer_price'] === null) return null;
+            }
+            foreach ($rowNumbers[$type] as $key=>$integer) {
+                $value = $number($row[$key] ?? null, $integer);
+                if ($value === null) return null;
+                $safe[$key] = $value;
+            }
+            $safeRows[] = $safe;
+        }
+        return ['type'=>$type] + $range + [
+            'basis'=>AgentToolRegistry::COMMERCE_REPORT_BASES[$type], 'currency'=>'INR',
+            'limit'=>$limit, 'total_rows'=>$total, 'rows'=>$safeRows, 'summary'=>$summary,
+            'report_url'=>'/admin/tax-report?' . http_build_query(['report'=>$type] + $range),
         ];
     }
 
@@ -112,7 +222,7 @@ final class AgentTraceService
     private static function safeFilters(array $filters): array
     {
         $out = [];
-        foreach (['from','to','period','days','topic','status','entity',
+        foreach (['from','to','period','days','topic','status','entity','report','limit',
                   'order_id_provided','customer_email_provided',
                   'product_selector_provided','search_query_provided',
                   'coupon_code_provided','ticket_reference_provided'] as $key) {

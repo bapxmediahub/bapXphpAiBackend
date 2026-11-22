@@ -35,6 +35,21 @@ factual accuracy. See [agent observability](agent-observability.md).
 
 In Enterprise Agent, use the paperclip to upload and attach an image while composing a message. To attach an existing page, article or image, type `@`, use the arrow keys to select a suggestion, and press Enter. Escape closes the suggestions.
 
+Open **What can I ask?** for tasks available to your owner session. **Use this
+question** places an example in the composer for editing before you send it.
+Typing `/capabilities` gives the same task guidance. Ask for product performance,
+current stock status, anonymous customer order-frequency groups or coupon
+performance. Dated reports accept up to 366 inclusive calendar days; rows are
+limited to ten and summaries cover the full matching period.
+
+Product net line values are allocated after recorded refunds. Coupon totals
+describe associated paid orders, not marketing attribution. Customer groups
+describe the chosen period without identifying people; their repeat count is not
+lifetime retention. Stock has status and effective prices, not inventory
+quantities. Ask for an exact order ID or customer email explicitly when you need
+an individual order lookup. Profit, cash flow and live appointment booking are
+outside these tools.
+
 ## Other workflows
 
 Media uploads live outside Git releases; their metadata is in MySQL

@@ -45,7 +45,7 @@ query_examples:
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
   concepts: 474
-  relationships: 402
+  relationships: 406
   by_type:
     blog: 16
     controller: 15
@@ -6058,6 +6058,9 @@ relationships:
     to: "doc:ai-review-workflow"
     relation: "references"
   - from: "doc:runtime-agents"
+    to: "doc:agent-observability"
+    relation: "references"
+  - from: "doc:runtime-agents"
     to: "doc:client-runtime-adaptation"
     relation: "references"
   - from: "doc:shop"
@@ -6142,7 +6145,16 @@ relationships:
     to: "controller:AdminController"
     relation: "explains"
   - from: "operator_guide:enterprise-agent"
+    to: "service:AgentCapabilityPolicy"
+    relation: "explains"
+  - from: "operator_guide:enterprise-agent"
     to: "service:AgentToolRegistry"
+    relation: "explains"
+  - from: "operator_guide:enterprise-agent"
+    to: "service:AgentTraceService"
+    relation: "explains"
+  - from: "operator_guide:enterprise-agent"
+    to: "service:EnterpriseToolRegistry"
     relation: "explains"
   - from: "operator_guide:enterprise-agent"
     to: "service:AdminHelpService"
