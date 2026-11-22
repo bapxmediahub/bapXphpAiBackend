@@ -196,7 +196,7 @@ final class AgentContextService {
         $operand = '(?:the )?@';
         $separator = ' (?:(?:and|with|versus|vs|differ from) )?';
         $qualifier = '(?: (?:by|on|for|in terms of|based on|considering) [\p{L}\p{M}\p{N} ]+)?'
-            . '(?: (?:and )?(?:which|what|tell me|show me) [\p{L}\p{M}\p{N} ]+)?';
+            . '(?: (?:and )?(?:which|what|tell me|show(?: me)?) [\p{L}\p{M}\p{N} ]+)?';
         if (!preg_match('~^' . $prefix . $operand . '(?:' . $separator . $operand . '){1,2}' . $qualifier . '$~uD', $masked)) return [];
         return array_values($selected);
     }

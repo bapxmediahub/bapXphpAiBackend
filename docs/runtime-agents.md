@@ -115,6 +115,9 @@ or ambiguous choices require clarification; the resolver never fills a missing
 named choice with an unrelated item of the same type. Explicit generic type
 comparisons may still use clearly labelled catalogue examples. The same resolver
 feeds exact product identities to public A2UI, so the text and cards agree.
+An ordinary presentation request such as “Show their photos and current prices”
+after the comparison preserves those identities; it cannot discard a missing
+third comparison choice.
 
 Enterprise Chat can read a fixed operator guide through `operator_guide`. The server validates the topic and owner session, reads the same Markdown as Admin Help, and records its source link. The explicit `/help` command and questions about drafting an article can take this path without a provider call. A question about the number of drafts still needs a business-data lookup.
 
