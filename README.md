@@ -101,20 +101,248 @@ the fixed customer test ID are in ignored `.env.test-user`; never print or commi
 There is no `bapXphp tui` or agent-orchestration CLI. Web QA uses the active coding
 client's browser capability and is not part of the application runtime.
 
-## Architecture: the application and its source-grounded development system
+## Application architecture and data flows
 
-This is a **working PHP customer application**, not a graph search service. The diagram below is a compact, source-reviewed view of the actual [route registry](app/routes.php), [controllers](app/Controllers), [services](app/Services), [storage schema](storage/schema/collections.php), and public/agent interfaces. It is deliberately compact so its labels remain readable on mobile; it is not a second route registry or a complete call graph. For **every registered route, service, view, schema collection, tool, and detected mapping gap**, use the committed, CI-checked [code dependency graph](map.mmd) and [systematic map](docs/systematic-map.mmd).
+The views below follow the request handlers and persistence code behind the [generated dependency map](map.mmd). They show **who calls whom, what is read or written, and what returns to the caller**. The [systematic map](docs/systematic-map.mmd) and [project index](docs/project-index.json) provide the longer route/class inventory. Their declared and statically inferred edges are discovery aids; the linked implementations determine execution order, permissions and data direction.
+
+### 1. Website, owner edits and authoritative storage
+
+An owner edit and a customer read converge on the same business records. Blog bodies and image binaries take different paths. In this view, arrows name operations; two-way arrows include the returned records/content.
 
 ```mermaid
 flowchart TB
-  CLIENTS["Public shop, blog, and customer account<br/>Owner admin and Support/Enterprise chat<br/>Browser WebMCP and public HTTP MCP"]
-  ROUTING["Native PHP routing<br/>index.php, api/index.php, app/routes.php<br/>Controllers and server-rendered views"]
-  SERVICES["Application services and access policies<br/>Commerce, CMS, PublicKnowledgeService<br/>Role-scoped agent tools and A2UI"]
-  DATA["Authoritative data and files<br/>Hosted MySQL, published Markdown, images<br/>Private JSON chat conversations and traces"]
-  CLIENTS --> ROUTING --> SERVICES --> DATA
+  Browser["Customer / owner browser"] <-->|"request / response"| Router["index.php + Router"]
+  Router <-->|"public pages"| Public["PublicController"]
+  Router <-->|"signed-in account"| Account["AccountController"]
+  Router <-->|"admin + POST CSRF"| Admin["AdminController"]
+  Public <-->|"visible records"| Catalogue["Product / Category / Temple"]
+  Account <-->|"own orders / addresses"| CustomerData["Order / Address services"]
+  Admin <-->|"list / save"| Resource["ResourceService"]
+  Catalogue <-->|"read"| DB["DatabaseService"]
+  CustomerData <-->|"read / write"| DB
+  Resource <-->|"query / save"| DB
+  DB <-->|"direct PDO"| MySQL[("Hosted MySQL")]
+  DB <-.->|"conditional JSON transport"| Bridge["POST /remotedb"]
+  Bridge <-->|"authenticated; forced-direct PDO"| MySQL
+  classDef store fill:#fff7ed,stroke:#c2410c,color:#431407
+  classDef boundary fill:#e0f2fe,stroke:#0369a1,color:#0c4a6e
+  class MySQL store
+  class Router,Bridge boundary
 ```
 
-**Authority and isolation:** Application code and [canonical schema](storage/schema/collections.php) define implementation behaviour; the actual hosted MySQL records define live business facts. The [published article source](content/blog/posts) and owned media files remain their own authoritative content. Support, Enterprise and public MCP capabilities do **not** share unrestricted permissions: [agent capability policy](app/Services/AgentCapabilityPolicy.php), [runtime instruction allowlists](app/Services/AgentInstructionService.php), and public-only [MCP](app/Services/PublicMcpService.php) enforce separate boundaries. Coding-agent [AGENTS.md](AGENTS.md) and [skills](.agents/skills) are developer instructions, **never** runtime customer-agent prompts.
+The controller returns selected data through PHP templates, JSON or redirects. `DatabaseService` normally uses direct PDO; `/remotedb` is a fallback only when direct access is unavailable and a different host is configured. `RemoteDbController` forces direct access on that host, avoiding a recursive bridge.
+
+**Content and media use separate file boundaries:**
+
+```mermaid
+flowchart TB
+  Admin["AdminController"] -->|"save + revision check"| Blog["BlogService + MarkdownRenderer"]
+  Admin -->|"validated upload"| Media["MediaService"]
+  Blog <-->|"read / atomic write"| Posts[("Article Markdown")]
+  Blog <-->|"published content"| Page["BlogController"]
+  Media -->|"metadata via DatabaseService"| Metadata[("MySQL: media_files")]
+  Media -->|"optimized binary"| Uploads[("Sibling .sps-media")]
+  Page -->|"article HTML + image URLs"| Browser["Customer browser"]
+  Uploads -->|"image bytes via index.php"| Browser
+  Bundled[("assets/images")] -->|"bundled image bytes"| Browser
+  classDef store fill:#fff7ed,stroke:#c2410c,color:#431407
+  class Posts,Metadata,Uploads,Bundled store
+```
+
+
+`app/routes.php` obtains its executable route list from `ProjectMapService::registry()`; `Router::dispatch()` invokes the declared controller action. Account/admin checks run in their controllers, while public browsing remains public. `/api/...` uses `api/index.php` and JSON responses; the public tool adapters are detailed in view 4.
+
+**Source trail:** [entry and image serving](index.php), [route dispatch](app/Router.php), [page reads](app/Controllers/PublicController.php), [account ownership](app/Controllers/AccountController.php), [owner saves](app/Controllers/AdminController.php), [resource persistence](app/Services/ResourceService.php), [database transport](app/Services/DatabaseService.php), [remote bridge](app/Controllers/RemoteDbController.php), [blog persistence](app/Services/BlogService.php), [media persistence](app/Services/MediaService.php), [response rendering](app/Controllers/BaseController.php).
+
+| Data | Authority and writer | How it reaches a reader |
+|---|---|---|
+| Products, categories, users, addresses, orders, settings and secrets | Hosted MySQL through `DatabaseService`; canonical fields in [collections.php](storage/schema/collections.php) | Services return selected records to controllers or scoped tools. Public responses do not expose entire settings/secret records. |
+| Cart, login identity and pending checkout | Server-side PHP session; browser holds its session cookie | Cart stores slugs/quantities. Current prices and visibility are resolved from `ProductService` before checkout. |
+| Article body and frontmatter | `BlogService` reads/writes `content/blog/posts/*.md` | Publication checks and `MarkdownRenderer` produce the public blog body. |
+| Image bytes and metadata | `MediaService` writes uploads outside the checkout in sibling `.sps-media`; new metadata goes to MySQL `media_files` | Product/article records carry image URLs. The browser fetches bytes separately. Bundled images and read-only legacy YAML remain compatibility inputs. |
+| Chat turns, feedback and execution traces | `AgentConversationService` owns one private JSON per conversation | Actor/surface checks gate history and context. Traces are checkpointed into the same file; view 3 shows this path. |
+| Mail and operational audit | MySQL `mail_queue`, `mail_outbox`, `audit_events` | Delivery attempts update queue/outbox state; audit metadata is separate from private chat transcripts. |
+
+### 2. Cart to verified order: the Razorpay path
+
+The durable order is created **after server verification**. The browser's payment callback alone does not write an order. This sequence follows the Razorpay implementation; it is not a claim that every optional gateway is configured or live-tested.
+
+```mermaid
+sequenceDiagram
+  actor Buyer
+  participant Web as CommerceController
+  participant Gateway as Razorpay
+  participant Store as Data services
+  participant Mail as Mail queue
+
+  Buyer->>Web: POST /cart/add
+  Web->>Store: Read product + stock
+  Store-->>Web: Current product
+  Note over Web: Session: cart slug + quantity
+  Web-->>Buyer: Cart JSON or redirect
+
+  Buyer->>Web: POST /checkout/create-order
+  Web->>Store: Prices + checkout config
+  Store-->>Web: Current server inputs
+  Web->>Gateway: Create provider order
+  Gateway-->>Web: Order ID + amount
+  Note over Web: Session: pending snapshot
+  Web-->>Buyer: Open provider checkout
+  Buyer->>Gateway: Complete payment
+  Gateway-->>Buyer: Payment callback
+  Buyer->>Web: POST /payment/verify
+  Web->>Web: Verify HMAC
+  Web->>Gateway: Fetch payment
+  Gateway-->>Web: Amount + order ID
+  Web->>Web: Match pending snapshot
+  Web->>Store: Locked saveVerifiedOrder
+  Store-->>Web: Order + inserted flag
+  opt Newly inserted order
+    Web->>Mail: Enqueue confirmations
+    Mail->>Store: Persist queue + outbox
+    Mail->>Mail: Claim, attempt SMTP
+    Mail->>Store: Store delivery receipt
+  end
+  Note over Web: Clear cart + pending state
+  Web-->>Buyer: Return saved order ID
+```
+
+The sequence groups `ProductService`, `SettingsService`, `SecretService` and `DatabaseService` as data services. `PaymentService` performs the HMAC check; `RazorpayClient` performs provider requests. The cart handler validates CSRF and requested slug/quantity; `saveVerifiedOrder()` is locked and duplicate-aware. The checkout UI uses the returned ID to open the customer-owned order page.
+
+`MailQueueService` persists the queue before an ordinary in-request SMTP attempt. Scheduled messages use later bounded processing. SMTP acceptance is recorded separately from recipient inbox receipt. Owner fulfillment changes go through `AdminController::saveOrderStatus()` and `OrderService::updateStatus()`; customers subsequently read their own saved order/tracking data through `AccountController`.
+
+**Source trail:** [cart, create-order, verification and persistence](app/Controllers/CommerceController.php), [browser checkout callback](views/public/checkout.php), [Razorpay client](integrations/razorpay/RazorpayClient.php), [signature verification](app/Services/PaymentService.php), [order lock/deduplication](app/Services/DatabaseService.php), [mail enqueue/claim/receipt](app/Services/MailQueueService.php), [SMTP acknowledgement](app/Services/SmtpMailer.php), [fulfillment updates](app/Services/OrderService.php).
+
+### 3. Support and Enterprise: context, tools, provider and saved evidence
+
+The two PHP agents have different orchestration. **Support selects context and handles several intents in PHP; Enterprise can run a provider function-call loop.** Neither path receives developer indexes or `.agents/` as runtime instructions.
+
+**Support: PHP selects the context and the intent.**
+
+```mermaid
+flowchart TB
+  HTTP["SupportController"] <-->|"message + owned history / answer"| Bot["SupportBotService"]
+  Bot <-->|"facts / scoped lookups"| Context["AgentContextService + SupportToolRegistry"]
+  Context <-->|"services + DatabaseService"| DB[("Public / own MySQL records")]
+  Context <-->|"BlogService: published only"| Posts[("Article Markdown")]
+  Bot <-->|"optional prompt / text"| AI["AiClient.completeOrNull"]
+  AI <-->|"request / response"| Provider["Model provider"]
+  Rules[".bapX Support role files"] -.->|"AgentInstructionService; model branch"| Bot
+  Bot -->|"signed-in escalation"| Ticket["SupportTicketService"]
+  Ticket -->|"idempotent ticket write"| DB
+  HTTP -->|"authorized answer"| Present["AgentAnswerPresentationService"]
+  Present -->|"text + optional A2UI"| Widget["Support widget"]
+  classDef store fill:#fff7ed,stroke:#c2410c,color:#431407
+  classDef external fill:#f3e8ff,stroke:#7e22ce,color:#3b0764
+  class DB,Posts store
+  class Provider external
+```
+
+**Enterprise: the provider can request declared PHP tools.** The local report branch can return without a provider call; the model branch loops through validated tool calls and returns their results to the provider.
+
+```mermaid
+sequenceDiagram
+  participant Admin as AdminController
+  participant AI as AiClient
+  participant Model as Model provider
+  participant Tools as Enterprise tools
+
+  Note over Admin: Owner + CSRF, saved turn
+  alt Local help or aggregate report
+    Admin->>Tools: Recognized local query
+    Tools-->>Admin: Scoped answer / report data
+  else Model branch
+    Note over Admin: Load Enterprise role rules
+    Admin->>AI: completeWithTools
+    AI->>Model: Prompt + tool declarations
+    loop Bounded tool rounds
+      Model-->>AI: Function name + arguments
+      AI->>Tools: Validate + scope call
+      Note over Tools: Scoped service reads
+      Tools-->>AI: Structured tool result
+      AI->>Model: Paired function result
+    end
+    Model-->>AI: Final answer
+    AI-->>Admin: Answer + execution evidence
+  end
+  Note over Admin: Save answer, render for owner
+```
+
+Enterprise reads use `AgentToolRegistry` and `AgentCapabilityPolicy` before the relevant business service, `DatabaseService` or `BlogService`. Explicit `/create-blog` and `/add-product` commands take a separate `AgentDraftService` branch: generated fields fill the existing admin form, and **the owner must press Save** before the normal product/Markdown persistence path runs.
+
+**Both chats share this persistence and response boundary:**
+
+```mermaid
+flowchart TB
+  Controllers["SupportController / AdminController"] <-->|"prepare turn / owned history"| State["AgentConversationService"]
+  State <-->|"pending turn / final answer / feedback"| File[("One private JSON per chat")]
+  Controllers -->|"after pending turn is saved"| Work["Context / tool / provider work"]
+  Work -->|"actual span checkpoints"| Trace["AgentTraceService"]
+  Trace -->|"correlated spans in same file"| State
+  Controllers -->|"sanitized operational metadata"| Audit["AuditLogService"]
+  Audit -->|"best-effort write"| DB[("MySQL: audit_events")]
+  Controllers -->|"authorized answer"| Presentation["AgentAnswerPresentationService"]
+  Presentation -->|"text + scoped A2UI"| UI["Support / owner renderer"]
+  classDef store fill:#fff7ed,stroke:#c2410c,color:#431407
+  class File,DB store
+```
+
+
+Support checks its rate limit and requires CSRF for signed-in requests; the admin controller requires the admin role and POST CSRF. Both controllers persist the actor-owned pending request **before** provider/tool work. `AgentTraceService` checkpoints actual retrieval, provider and tool spans into that same conversation JSON. The controller then records the sanitized answer/evaluation. `AuditLogService` separately writes operational metadata to MySQL `audit_events`; a failed audit does not undo successful business work.
+
+Support's public/policy/catalogue answers can finish locally. Its model branch uses `completeOrNull()` with PHP-built context, without provider tool declarations. A signed-in escalation may create a support ticket, so the whole Support flow must not be described as read-only. Enterprise's model loop executes only declared tools with actor, argument and scope checks; tool results return to the provider for the next round. Local aggregate answers and draft commands are separate branches. Drafts do not save products/articles until the owner submits the existing admin form.
+
+`AgentAnswerPresentationService` structures an already authorized answer; it does not retrieve records. Optional public reference cards come from `PublicA2uiService`. Native chat uses `BapxA2ui` with the appropriate Support/Admin scope and retains the complete text fallback. Public MCP never receives the private answer surface.
+
+**Source trail:** [Support request/state boundary](app/Controllers/SupportController.php), [Support intent/context/model branches](app/Services/SupportBotService.php), [context scope](app/Services/AgentContextService.php), [Enterprise orchestration](app/Controllers/AdminController.php), [provider loop](app/Services/AiClient.php), [Enterprise registry](app/Services/EnterpriseToolRegistry.php), [tool execution and arguments](app/Services/AgentToolRegistry.php), [capability policy](app/Services/AgentCapabilityPolicy.php), [instruction allowlists](app/Services/AgentInstructionService.php), [conversation persistence](app/Services/AgentConversationService.php), [trace checkpoints](app/Services/AgentTraceService.php), [answer presentation](app/Services/AgentAnswerPresentationService.php).
+
+### 4. External public tools: two adapters, shared published knowledge
+
+Browser WebMCP and HTTP MCP reach the same public projections through different adapters. These calls do not enter Support or Enterprise and do not inherit an owner's logged-in permissions.
+
+```mermaid
+flowchart TB
+  Browser["Browser agent + WebMCP scripts"] <-->|"GET / JSON; credentials omitted"| API["ApiController: /api/knowledge/*"]
+  Host["External MCP host"] <-->|"JSON-RPC: /api/mcp"| MCP["PublicMcpController + PublicMcpService"]
+  API <-->|"public lookup / records"| Knowledge["PublicKnowledgeService"]
+  MCP <-->|"four public tools / records"| Knowledge
+  Knowledge <-->|"ProductService + DatabaseService"| DB[("Visible MySQL catalogue")]
+  Knowledge <-->|"BlogService: published only"| Posts[("Article Markdown")]
+  Facts["Allowlisted contact / enquiry facts"] -->|"public projection"| Knowledge
+  classDef store fill:#fff7ed,stroke:#c2410c,color:#431407
+  classDef boundary fill:#e0f2fe,stroke:#0369a1,color:#0c4a6e
+  class DB,Posts store
+  class API,MCP,Knowledge boundary
+```
+
+**Optional presentation is a separate step.** Ordinary public JSON works without a card renderer. For browser `present_public_knowledge`, the A2UI endpoint calls `PublicA2uiService::present()`, which performs a bounded public lookup and returns validated surface data. HTTP MCP uses `fromResult()` so its cards reflect the exact tool result, including its requested page. `tools/call` returns text, `structuredContent` and optional surface metadata; the compatible host separately reads `ui://bapx/public-knowledge.html`:
+
+```mermaid
+sequenceDiagram
+  participant Host as MCP host
+  participant MCP as PublicMcpService
+  participant Cards as PublicA2uiService
+  participant App as Public App bridge
+
+  Host->>MCP: tools/call + arguments
+  MCP->>MCP: Validate, query public data
+  opt Public surface available
+    MCP->>Cards: fromResult: exact records
+    Cards-->>MCP: Public A2UI surface
+  end
+  MCP-->>Host: Public result + optional UI
+  opt Compatible UI host
+    Host->>MCP: resources/read: UI URI
+    MCP-->>Host: HTML + renderer + bridge
+    Host->>App: Load UI, deliver tool result
+    App-->>Host: Cards + safe link actions
+  end
+```
+
+
+The HTTP MCP path deliberately avoids PHP browser sessions. Products/articles are checked against publication and module visibility; contact/services are explicit public projections. The browser `present_public_knowledge` tool returns validated surface data. Whether that becomes an interactive card depends on the connected host; registering WebMCP on a website does not install a connector into an unrelated chat. `list_shop_results` reads the current shop DOM rather than querying the backend again.
+
+**Source trail:** [HTTP/session boundary](api/index.php), [MCP validation](app/Controllers/PublicMcpController.php), [tool/resource dispatch](app/Services/PublicMcpService.php), [public JSON endpoints](app/Controllers/ApiController.php), [public projections](app/Services/PublicKnowledgeService.php), [public surfaces](app/Services/PublicA2uiService.php), [WebMCP callbacks](assets/public-knowledge-webmcp.js), [public products callback](assets/public-products-webmcp.js), [A2UI callback](assets/public-a2ui-webmcp.js), [shop DOM tool](assets/shop-webmcp.js), [MCP App bridge](assets/public-mcp-app.js).
 
 ### How source-derived project knowledge constrains an agent change
 
