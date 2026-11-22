@@ -310,6 +310,12 @@ echo $__googleTags->gtagCode();
 </style></noscript>
 <?php if ($__modules['shop'] || $__modules['blog']): ?>
 <!-- Pinned official W3C WebMCP polyfill. Does not replace a native modelContext. -->
+<script type="application/json" id="bapx-a2ui-schema"><?= json_encode([
+    'inputSchema'=>\App\Services\PublicA2uiService::inputSchema(),
+    'outputSchema'=>\App\Services\PublicA2uiService::outputSchema()
+], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) ?></script>
+<script defer src="/assets/public-a2ui-webmcp.js?v=<?= filemtime(app_path('assets/public-a2ui-webmcp.js')) ?>"></script>
+
 <script src="/assets/vendor/webmcp/polyfill-0.1.1.js?v=<?= filemtime(__DIR__ . '/../../assets/vendor/webmcp/polyfill-0.1.1.js') ?>"></script>
 <?php endif; ?>
 <?php if ($__modules['shop']): ?>
