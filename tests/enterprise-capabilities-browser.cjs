@@ -28,10 +28,12 @@ const reportSurfaces = JSON.parse(execFileSync('php', ['-r', [
 ].join('\n')], {cwd:root,encoding:'utf8'}));
 const assets = new Map([
     'assets/css/band.css','assets/css/admin-refinement.css','assets/css/admin-workspaces.css',
-    'assets/css/a2ui-public.css','assets/a2ui-public-renderer.js',
+    'assets/css/a2ui-public.css','assets/a2ui-public-renderer.js','assets/agent-status.js',
 ].map(file => ['/' + file, readFileSync(path.join(root, file), 'utf8')]));
 const html = '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">'
     + Array.from(assets.keys()).filter(file=>file.endsWith('.css')).map(file=>'<link rel="stylesheet" href="'+file+'">').join('')
+    // The real admin layout loads this before a question can be submitted.
+    + '<script src="/assets/agent-status.js" defer></script>'
     + '</head><body><main style="padding:16px;min-width:0">' + view + '</main></body></html>';
 let browser;
 before(async () => { browser = await chromium.launch({executablePath:process.env.CHROMIUM_PATH || undefined}); });
