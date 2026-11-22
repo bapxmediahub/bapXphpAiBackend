@@ -15,10 +15,14 @@ const contract={
         required:['products','total','nextOffset'],properties:{
             products:{type:'array',maxItems:20},total:{type:'integer'},nextOffset:{type:['integer','null']}}}
 };
-function setup(payload,enabled=true) {
+function setup(payload,enabled=true,mode='promise') {
     let registration,handle;
     const calls=[];
-    const modelContext=enabled?{registerTool(tool,opts){registration={tool,opts};return Promise.resolve()}}:undefined;
+    const warnings=[];
+    const modelContext=enabled?{registerTool(tool,opts){
+        if(mode==='throw')throw new Error('Registration denied');
+        registration={tool,opts};return mode==='void'?undefined:Promise.resolve();
+    }}:undefined;
     vm.runInNewContext(source,{
         document:{modelContext,getElementById:id=>id==='bapx-public-products-schema'
             ?{textContent:JSON.stringify(contract)}:null},
@@ -26,10 +30,10 @@ function setup(payload,enabled=true) {
             addEventListener:(name,listener)=>{if(name==='pagehide')handle=listener}},
         AbortController,URL,
         fetch:async(url,opts)=>{calls.push({url:String(url),opts});return {ok:true,json:async()=>payload}},
-        console:{warn(){}}
+        console:{warn(message){warnings.push(message)}}
     });
     return {get tool(){return registration?.tool},get signal(){return registration?.opts.signal},
-        get event(){return handle},calls};
+        get event(){return handle},calls,warnings};
 }
 
 test('browser registers canonical public catalogue tool and PHP-compatible schemas',()=>{
@@ -46,7 +50,8 @@ test('browser registers canonical public catalogue tool and PHP-compatible schem
 });
 
 test('product tool supports bounded remote-free public API paging with omitted credentials',async()=>{
-    const result={products:[{name:'Item A',path:'/product/item-a',priceInr:99,available:true}],total:30,nextOffset:1};
+    const result={products:[{name:'Item A',path:'/product/item-a',priceInr:99,available:true,
+        description:'Published product description',imagePath:'/assets/images/item-a.webp'}],total:30,nextOffset:1};
     const ctx=setup(result);
     const answer=await ctx.tool.execute({query:'A',limit:1,offset:0});
     assert.deepEqual(JSON.parse(JSON.stringify(answer)),result);
@@ -57,6 +62,42 @@ test('product tool supports bounded remote-free public API paging with omitted c
     assert.equal(url.searchParams.get('limit'),'1');
     assert.equal(ctx.calls[0].opts.credentials,'omit');
     assert.equal(ctx.calls[0].opts.method,'GET');
+});
+
+test('product registration supports synchronous native APIs and catches synchronous refusal',async()=>{
+    assert.equal(setup({},true,'void').tool.name,'search_public_products');
+    const denied=setup({},true,'throw');
+    await new Promise(resolve=>setImmediate(resolve));
+    assert.equal(denied.tool,undefined);
+    assert.equal(denied.warnings.length,1);
+});
+
+test('product projection rejects extra fields and unsafe image paths without losing safe descriptions',async()=>{
+    const product={name:'Item',path:'/product/item',priceInr:10,available:true,description:'A short description'};
+    const payload=row=>({products:[row],total:1,nextOffset:null});
+    assert.equal((await setup(payload(product)).tool.execute()).products[0].description,product.description);
+    for(const imagePath of ['https://outside.test/image.png','/assets/images/../private.png',
+        '/assets/images/%2e%2e/private.png','/assets/images/%2Fprivate.png',
+        '/assets/images/image.svg','data:image/png;base64,xxx']) {
+        await assert.rejects(setup(payload({...product,imagePath})).tool.execute(),{name:'TypeError'});
+    }
+    await assert.rejects(setup(payload({...product,adminEmail:'private@example.test'})).tool.execute(),{name:'TypeError'});
+    await assert.rejects(setup(payload({...product,description:'x'.repeat(281)})).tool.execute(),{name:'TypeError'});
+    await assert.rejects(setup({...payload(product),owner:{name:'private'}}).tool.execute(),{name:'TypeError'});
+});
+
+test('product paths retain safe encoded legacy slugs and reject browser-normalized or encoded traversal',async()=>{
+    const product={name:'𐐀'.repeat(160),path:'/product/item',priceInr:10,available:true,description:''};
+    const payload=row=>({products:[row],total:1,nextOffset:null});
+    for(const path of ['/product/legacy%20item.v2','/product/%E7%8F%8A%E7%91%9A%20pendant','/product/_legacy-2']) {
+        assert.equal((await setup(payload({...product,path})).tool.execute()).products[0].path,path);
+    }
+    for(const path of ['/product/.','/product/..','/product/%2e%2e','/product/..%2fadmin',
+        '/product/item%2Fprivate','/product/item%5cprivate','/product/item%00name','/product/item%0Aname',
+        '/product/%252e%252e','/product/item%252Fprivate','/product/%FF','/product/']) {
+        await assert.rejects(setup(payload({...product,path})).tool.execute(),{name:'TypeError'});
+    }
+    await assert.rejects(setup(payload({...product,name:'𐐀'.repeat(161)})).tool.execute(),{name:'TypeError'});
 });
 
 test('product tool rejects invalid input and private/external or malformed output',async()=>{

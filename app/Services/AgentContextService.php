@@ -275,6 +275,8 @@ final class AgentContextService {
                 'contact' => '/contact',
                 'orders' => '/account/dashboard/orders',
             ],
+            'contact' => (new PublicKnowledgeService())->contact(),
+            'services' => (new PublicKnowledgeService())->services()['services'],
             'articles' => $publicArticles,
             'products' => $products,
             'retrieval' => array_diff_key($selection,array_flip(['products','collection'])),

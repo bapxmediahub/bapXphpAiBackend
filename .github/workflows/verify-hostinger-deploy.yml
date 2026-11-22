@@ -86,6 +86,8 @@ jobs:
         run: |
           npm install --prefix "$RUNNER_TEMP/live-webmcp" --no-audit --no-fund --ignore-scripts playwright@1.62.1
           NODE_PATH="$RUNNER_TEMP/live-webmcp/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/live-webmcp-a2ui-browser.cjs
+      - name: Verify native browser discovery and invocation independently of the polyfill
+        run: NODE_PATH="$RUNNER_TEMP/live-webmcp/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" WEBMCP_NATIVE=1 xvfb-run -a node --test tests/live-webmcp-a2ui-browser.cjs
   mobile_acceptance:
     name: Live mobile header and guest cart acceptance
     needs: verify

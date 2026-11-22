@@ -35,7 +35,7 @@ $rules = [
  'interface'=>['sources'=>['views/*','assets/*','Design.md','content/help/*','app/Services/*Help*.php'],
   'references'=>['docs/admin-guide.md','docs/site-motion.md','Design.md','.agents/skills/frontend-php/SKILL.md','.agents/skills/admin-ui/SKILL.md']],
  'foundation'=>['sources'=>['*'],
-  'references'=>['docs/architecture.md','docs/json-storage.md','docs/deployment-hostinger.md','.agents/skills/backend-php-mysql/SKILL.md']],
+  'references'=>['docs/architecture.md','docs/webmcp.md','docs/json-storage.md','docs/deployment-hostinger.md','.agents/skills/backend-php-mysql/SKILL.md']],
 ];
 
 // Operator help needs its actual feature dependencies, not just its own prose/templates.

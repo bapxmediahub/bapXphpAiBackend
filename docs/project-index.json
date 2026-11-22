@@ -3,7 +3,7 @@
     "source": "App\\Services\\ProjectMapService::scan()",
     "note": "Authoritative inventory of what exists. If it is not here, it does not exist — do not assume, add it first.",
     "summary": {
-        "routes": 165,
+        "routes": 167,
         "controllers": 14,
         "services": 75,
         "views": 67,
@@ -1322,6 +1322,16 @@
         },
         {
             "method": "GET",
+            "path": "/api/knowledge/contact",
+            "name": "api.knowledge.contact",
+            "controller": "ApiController@knowledgeContact",
+            "view": "public/404",
+            "services": [
+                "PublicKnowledgeService"
+            ]
+        },
+        {
+            "method": "GET",
             "path": "/api/knowledge/products",
             "name": "api.knowledge.products",
             "controller": "ApiController@knowledgeProducts",
@@ -1329,6 +1339,16 @@
             "services": [
                 "PublicKnowledgeService",
                 "ProductService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/api/knowledge/services",
+            "name": "api.knowledge.services",
+            "controller": "ApiController@knowledgeServices",
+            "view": "public/404",
+            "services": [
+                "PublicKnowledgeService"
             ]
         },
         {
@@ -1527,7 +1547,9 @@
             "name": "contact",
             "controller": "PublicController@contact",
             "view": "public/contact",
-            "services": []
+            "services": [
+                "PublicKnowledgeService"
+            ]
         },
         {
             "method": "POST",
@@ -1536,7 +1558,8 @@
             "controller": "PublicController@contact",
             "view": "public/contact",
             "services": [
-                "ContactService"
+                "ContactService",
+                "PublicKnowledgeService"
             ]
         },
         {

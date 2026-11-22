@@ -20,6 +20,10 @@ final class SupportBotService {
         if ($ticketLookup !== null) {
             return $this->answerTicketQuestion($message, (string)($user['email'] ?? ''), $ticketLookup, $startedAt);
         }
+        $publicLookup = self::publicBusinessLookup($message);
+        if ($publicLookup !== null) {
+            return $this->answerPublicBusinessQuestion($publicLookup, $user, $startedAt);
+        }
         // Exact general tracking questions use the store policy without loading account data.
         if (preg_match('/^(?:how (?:can|do) i|where can i) track (?:an order|orders)[?!.]*$/i', $message)
             && module_on('shop')) {
@@ -110,6 +114,55 @@ final class SupportBotService {
         $result['run'] = ['outcome'=>$outcome,'trace_id'=>$this->traceId,'tools'=>[],
             'attempts'=>$attempts,'retrieval'=>$retrieval];
         return $result;
+    }
+
+    /** Match public business questions without intercepting personal contact changes. */
+    public static function publicBusinessLookup(string $message): ?string {
+        $message = trim($message);
+        if (preg_match('/^(?:(?:please )?(?:show|give|tell)(?: me)? )?(?:your )?(?:contact details|contact information|contact number|phone number|email address|opening hours|business hours)[?!. ]*$/i', $message)
+            || preg_match('/^what(?: is| are|\'s) (?:your|the (?:store|shop|business)(?:\'s)?) (?:contact(?: details| information| number)?|phone(?: number)?|email(?: address)?|opening hours|business hours)[?!. ]*$/i', $message)
+            || preg_match('/^how (?:can|do) I (?:contact|call|email) (?:you|support|the (?:store|shop))[?!. ]*$/i', $message)
+            || preg_match('/^(?:உங்கள் தொடர்பு எண்|உங்கள் தொலைபேசி எண்|தொடர்பு விவரங்கள்)[?!. ]*$/u', $message)) {
+            return 'get_public_contact';
+        }
+        if (preg_match('/^(?:what services (?:do you (?:offer|provide)|are available)|(?:please )?(?:show|list)(?: me)? (?:your |the )?services|your services)[?!. ]*$/i', $message)
+            || preg_match('/^(?:உங்கள் சேவைகள்|என்ன சேவைகள் உள்ளன)[?!. ]*$/u', $message)) {
+            return 'list_public_services';
+        }
+        return null;
+    }
+
+    private function answerPublicBusinessQuestion(string $tool, ?array $user, float $startedAt): array {
+        $lookupStartedAt = microtime(true);
+        $span = AgentTraceService::startSpan('tool', $tool);
+        $facts = (new SupportToolRegistry($user, $this->agentContext))->run($tool, []);
+        if (isset($facts['error'])) throw new \RuntimeException('Public business lookup unavailable.');
+        if ($tool === 'get_public_contact') {
+            $reply = $facts['name'] . "\nPhone: " . implode(' / ', array_column($facts['phones'], 'label'))
+                . "\nEmail: " . $facts['email']
+                . "\nHours: " . implode(' · ', array_map(static fn(array $slot): string => $slot['days'] . ', ' . $slot['hours'], $facts['hours']))
+                . "\nContact form: " . $facts['servicePath'];
+            $intent = 'public_contact';
+            $count = 1;
+        } else {
+            $reply = "You can contact our team for:\n" . implode("\n", array_map(
+                static fn(array $service): string => $service['name'] . ': ' . $service['description'] . ' ' . $service['path'],
+                $facts['services']
+            ));
+            $intent = 'public_services';
+            $count = $facts['total'];
+        }
+        $evidence = AgentTraceService::toolEvidence($tool, [], $facts);
+        AgentTraceService::endSpan($span, 'complete', ['evidence'=>$evidence]);
+        $tools = [['name'=>$tool, 'status'=>'complete',
+            'duration_ms'=>(int)round((microtime(true) - $lookupStartedAt) * 1000), 'evidence'=>$evidence]];
+        (new AuditLogService($this->store))->agentRun('support', 'local', $startedAt,
+            tools:$tools, traceId:$this->traceId);
+        return ['reply'=>$reply, 'ticket_id'=>null, 'memory'=>'browser_session',
+            'actions'=>$this->extractActions($reply),
+            'run'=>['outcome'=>'local', 'trace_id'=>$this->traceId, 'tools'=>$tools, 'attempts'=>[],
+                'retrieval'=>[AgentTraceService::safeRetrieval(['intent'=>$intent, 'status'=>'matched',
+                    'reason'=>'published_business_facts', 'result_count'=>$count, 'candidate_count'=>$count])]]];
     }
 
     /** Recognize questions about existing tickets without treating ticket creation as a lookup. */

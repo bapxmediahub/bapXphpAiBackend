@@ -16,6 +16,7 @@
 
     const validate = data => {
         if (!data || typeof data !== 'object' || Array.isArray(data)
+            || Object.keys(data).some(key => !['products', 'total', 'nextOffset'].includes(key))
             || !Array.isArray(data.products)
             || data.products.length > 20
             || !Number.isSafeInteger(data.total) || data.total < 0
@@ -25,22 +26,40 @@
         }
         for (const product of data.products) {
             if (!product || typeof product !== 'object'
+                || Object.keys(product).some(key => !['name', 'path', 'priceInr', 'available', 'description', 'imagePath'].includes(key))
                 || typeof product.name !== 'string' || !product.name.trim()
-                || typeof product.path !== 'string'
-                || !/^\/product\/[^/?#]+$/.test(product.path)
+                || Array.from(product.name).length > 160
+                || !safeProductPath(product.path)
                 || typeof product.priceInr !== 'number'
                 || !Number.isFinite(product.priceInr) || product.priceInr < 0
-                || typeof product.available !== 'boolean') {
+                || typeof product.available !== 'boolean'
+                || typeof product.description !== 'string' || Array.from(product.description).length > 280
+                || (product.imagePath !== undefined && !safeImage(product.imagePath))) {
                 throw new TypeError('Invalid public catalogue product.');
             }
         }
         return data;
     };
+    const safeProductPath = path => {
+        if (typeof path !== 'string' || !/^\/product\/[A-Za-z0-9%_.-]+$/.test(path)) return false;
+        try {
+            return /^[\p{L}\p{N}_][\p{L}\p{N}._ -]*$/u.test(decodeURIComponent(path.slice('/product/'.length)));
+        } catch { return false; }
+    };
+    const safeImage = path => {
+        if (typeof path !== 'string' || path.length > 512
+            || !/^\/assets\/images\/[A-Za-z0-9%_./-]+\.(?:avif|gif|jpe?g|png|webp)$/i.test(path)) return false;
+        try {
+            return path.slice('/assets/images/'.length).split('/').every(segment =>
+                /^[\p{L}\p{N}_][\p{L}\p{N}._ -]*$/u.test(decodeURIComponent(segment)));
+        } catch { return false; }
+    };
 
-    registry.registerTool({
+    // Native implementations may return void; the official polyfill returns a Promise.
+    const register = async () => { await registry.registerTool({
         name: 'search_public_products',
         title: 'Search full public product catalogue',
-        description: 'Search the currently published shop catalogue. Unlike list_shop_results, this queries public server-side records beyond the cards currently in the DOM. Returns current INR prices, availability and product paths. Follow nextOffset.',
+        description: 'Search the full published product catalogue by name or description. Returns current INR prices, availability, short descriptions, safe product images and paths. Follow nextOffset. For up to four display cards, use present_public_knowledge with view products.',
         inputSchema: contract.inputSchema,
         outputSchema: contract.outputSchema,
         annotations: { readOnlyHint: true, untrustedContentHint: true },
@@ -68,7 +87,8 @@
             if (!response.ok) throw new Error('Public product search unavailable.');
             return validate(await response.json());
         }
-    }, { signal: lifecycle.signal }).catch(() => {
+    }, { signal: lifecycle.signal }); };
+    register().catch(() => {
         console.warn('Public catalogue browser tool could not be registered.');
     });
 })();

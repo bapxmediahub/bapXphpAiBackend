@@ -26,6 +26,10 @@ final class SupportToolRegistry {
              'parameters'=>['type'=>'object','properties'=>['question'=>['type'=>'string','minLength'=>1,'maxLength'=>256]],'required'=>['question']]],
             ['name'=>'public_policy', 'description'=>'Read the public shipping, returns, or payment policy.',
              'parameters'=>self::policyInputSchema()],
+            ['name'=>'get_public_contact', 'description'=>'Read the published business phone numbers, email, opening hours and contact form link. No customer or owner records.',
+             'parameters'=>PublicKnowledgeService::contactInputSchema()],
+            ['name'=>'list_public_services', 'description'=>'List the existing public enquiry offerings and contact form destinations. These are enquiries, not booking or payment actions.',
+             'parameters'=>PublicKnowledgeService::serviceInputSchema()],
             ['name'=>'own_ticket_status', 'description'=>'Read only the authenticated customer support-ticket metadata.',
              'parameters'=>['type'=>'object','properties'=>[
                 'reference'=>['type'=>['string','null'],'pattern'=>'^[a-f0-9]{16}$'],
@@ -46,6 +50,20 @@ final class SupportToolRegistry {
         if ($tool === 'public_policy') {
             if (array_keys($args) !== ['key'] || !is_string($args['key'])) return ['error'=>'Invalid arguments'];
             return isset(self::PUBLIC_POLICIES[$args['key']]) ? ['value'=>self::PUBLIC_POLICIES[$args['key']]] : ['error'=>'Invalid policy'];
+        }
+        if ($tool === 'get_public_contact') {
+            return $args === [] ? (new PublicKnowledgeService())->contact() : ['error'=>'Invalid arguments'];
+        }
+        if ($tool === 'list_public_services') {
+            if (array_diff(array_keys($args), ['query', 'offset', 'limit'])
+                || (array_key_exists('query', $args) && !is_string($args['query']))
+                || (array_key_exists('offset', $args) && !is_int($args['offset']))
+                || (array_key_exists('limit', $args) && !is_int($args['limit']))) return ['error'=>'Invalid arguments'];
+            try {
+                return (new PublicKnowledgeService())->services($args['query'] ?? '', $args['offset'] ?? 0, $args['limit'] ?? 20);
+            } catch (\InvalidArgumentException) {
+                return ['error'=>'Invalid arguments'];
+            }
         }
         if ($tool === 'own_ticket_status') {
             if (array_diff(array_keys($args), ['reference','status','period'])) return ['error'=>'Invalid arguments'];

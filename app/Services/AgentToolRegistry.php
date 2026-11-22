@@ -205,6 +205,16 @@ class AgentToolRegistry
                     'required' => ['code'],
                 ],
             ],
+            [
+                'name' => 'get_public_contact',
+                'description' => 'Read the published store contact channels and opening hours. This never returns owner settings or customer contacts.',
+                'parameters' => PublicKnowledgeService::contactInputSchema(),
+            ],
+            [
+                'name' => 'list_public_services',
+                'description' => 'List existing public store enquiry offerings and their contact form links, without creating a booking or message.',
+                'parameters' => PublicKnowledgeService::serviceInputSchema(),
+            ],
         ];
         if ($this->probeProductSlug === null) return $declarations;
         return array_values(array_filter($declarations, static fn(array $tool): bool => $tool['name'] === 'product_status'));
@@ -229,8 +239,9 @@ class AgentToolRegistry
         $schema = $this->toolParameters($name);
         if ($schema === null || array_diff($schema['required'] ?? [], array_keys($args))) return false;
         foreach ($args as $key => $value) {
-            if (!array_key_exists($key, $schema['properties'])) return false;
-            $property = $schema['properties'][$key];
+            $properties = (array)($schema['properties'] ?? []);
+            if (!array_key_exists($key, $properties)) return false;
+            $property = $properties[$key];
             $validType = match ($property['type'] ?? '') {
                 'integer' => is_int($value),
                 'string' => is_string($value) && mb_strlen($value) <= 256,
@@ -267,6 +278,8 @@ class AgentToolRegistry
                 'search_articles' => $this->searchArticles($args),
                 'coupon_status' => $this->couponStatus($args),
                 'operator_guide' => (new AdminHelpService())->agentExcerpt($args['topic'], $_SESSION['user'] ?? null, $args['section'] ?? null),
+                'get_public_contact' => (new PublicKnowledgeService())->contact(),
+                'list_public_services' => (new PublicKnowledgeService())->services($args['query'] ?? '', $args['offset'] ?? 0, $args['limit'] ?? 20),
                 default => ['error' => 'Lookup unavailable.'],
             } : ['error' => 'Invalid lookup parameters.'];
             $this->activity[] = [

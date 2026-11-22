@@ -77,6 +77,49 @@ Read the public shipping, returns, or payment policy.
 }
 ```
 
+### `get_public_contact`
+
+Read the published business phone numbers, email, opening hours and contact form link. No customer or owner records.
+
+**Access:** Guest or authenticated customer; published/public data only.
+
+```json
+{
+    "type": "object",
+    "properties": {},
+    "additionalProperties": false
+}
+```
+
+### `list_public_services`
+
+List the existing public enquiry offerings and contact form destinations. These are enquiries, not booking or payment actions.
+
+**Access:** Guest or authenticated customer; published/public data only.
+
+```json
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "query": {
+            "type": "string",
+            "maxLength": 120
+        },
+        "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+        },
+        "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+        }
+    }
+}
+```
+
 ### `own_ticket_status`
 
 Read only the authenticated customer support-ticket metadata.
@@ -376,5 +419,48 @@ Whether a coupon is currently usable, and why not if it is refused: expired, not
     "required": [
         "code"
     ]
+}
+```
+
+### `get_public_contact`
+
+Read the published store contact channels and opening hours. This never returns owner settings or customer contacts.
+
+**Access:** Authenticated admin, enforced server-side.
+
+```json
+{
+    "type": "object",
+    "properties": {},
+    "additionalProperties": false
+}
+```
+
+### `list_public_services`
+
+List existing public store enquiry offerings and their contact form links, without creating a booking or message.
+
+**Access:** Authenticated admin, enforced server-side.
+
+```json
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "query": {
+            "type": "string",
+            "maxLength": 120
+        },
+        "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+        },
+        "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+        }
+    }
 }
 ```

@@ -12,6 +12,8 @@ final class ApiController extends BaseController {
             '/api/temples',
             '/api/knowledge/articles',
             '/api/knowledge/products',
+            '/api/knowledge/contact',
+            '/api/knowledge/services',
             '/api/knowledge/a2ui',
             '/is-sha-valid?sha={40-character-sha}',
         ]]);
@@ -51,8 +53,41 @@ final class ApiController extends BaseController {
         $this->jsonResponse(['success' => true, 'products' => $products, 'categories' => $categories]);
     }
 
-    /** Only published blog/help metadata, never private Markdown or JSON sessions. */
-    /** Bounded public catalogue projection used by WebMCP and native MCP. */
+    /** Explicit public contact facts only; this is never a settings export. */
+    public function knowledgeContact(): void {
+        header('Cache-Control: no-store');
+        if ($_GET !== []) $this->jsonResponse(['error'=>'Contact lookup accepts no arguments.'],400);
+        $this->jsonResponse((new PublicKnowledgeService())->contact());
+    }
+
+    /** Existing enquiry offerings, not booking or commerce actions. */
+    public function knowledgeServices(): void {
+        header('Cache-Control: no-store');
+        [$query, $offset, $limit] = $this->knowledgeSearchArguments(20);
+        try {
+            $answer = (new PublicKnowledgeService())->services($query, $offset, $limit);
+        } catch (\InvalidArgumentException) {
+            $this->jsonResponse(['error'=>'Invalid search arguments'],400);
+        }
+        $this->jsonResponse($answer);
+    }
+
+    /** Validate the HTTP adapter before casting, so overflow cannot become a valid bound. */
+    private function knowledgeSearchArguments(int $defaultLimit): array {
+        $query = $_GET['q'] ?? '';
+        $offset = $_GET['offset'] ?? '0';
+        $limit = $_GET['limit'] ?? (string)$defaultLimit;
+        if (array_diff(array_keys($_GET), ['q', 'offset', 'limit'])
+            || !is_string($query) || !mb_check_encoding($query, 'UTF-8') || mb_strlen($query) > 120
+            || !is_scalar($offset) || !is_scalar($limit)
+            || !preg_match('/^(0|[1-9][0-9]{0,9})$/D', (string)$offset)
+            || (float)$offset > 2147483647
+            || !preg_match('/^(?:[1-9]|1[0-9]|20)$/D', (string)$limit)) {
+            $this->jsonResponse(['error'=>'Invalid search arguments'],400);
+        }
+        return [$query, (int)$offset, (int)$limit];
+    }
+
     /** Read-only A2UI v1 Basic-catalog surface from the published source. */
     public function knowledgeA2ui(): void {
         header('Cache-Control: no-store');
@@ -79,14 +114,7 @@ final class ApiController extends BaseController {
 
     public function knowledgeProducts(): void {
         header('Cache-Control: no-store');
-        $query=$_GET['q'] ?? '';
-        $offset=$_GET['offset'] ?? '0';
-        $limit=$_GET['limit'] ?? '20';
-        if (!is_string($query) || !is_scalar($offset) || !is_scalar($limit)
-            || !preg_match('/^(0|[1-9][0-9]*)$/D', (string)$offset)
-            || !preg_match('/^[1-9][0-9]*$/D', (string)$limit)) {
-            $this->jsonResponse(['error'=>'Invalid search arguments'],400);
-        }
+        [$query, $offset, $limit] = $this->knowledgeSearchArguments(20);
         try {
             $answer=(new PublicKnowledgeService())->products(
                 $query,(int)$offset,(int)$limit
@@ -101,14 +129,7 @@ final class ApiController extends BaseController {
 
     public function knowledgeArticles(): void {
         header('Cache-Control: no-store');
-        $query=$_GET['q'] ?? '';
-        $offset=$_GET['offset'] ?? '0';
-        $limit=$_GET['limit'] ?? '5';
-        if (!is_string($query) || !is_scalar($offset) || !is_scalar($limit)
-            || !preg_match('/^(0|[1-9][0-9]*)$/D', (string)$offset)
-            || !preg_match('/^[1-9][0-9]*$/D', (string)$limit)) {
-            $this->jsonResponse(['error'=>'Invalid search arguments'],400);
-        }
+        [$query, $offset, $limit] = $this->knowledgeSearchArguments(5);
         try {
             $answer=(new PublicKnowledgeService())->articles(
                 $query, (int)$offset, (int)$limit

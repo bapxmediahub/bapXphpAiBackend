@@ -2428,11 +2428,18 @@ $tests['contact page exposes general enquiry form and confirmation delivery'] = 
         assertTrue(str_contains($view, $field), "Contact form should include {$field}");
     }
     foreach (['Product Inquiry', 'Temple Guidance', 'Order Support', 'General Question'] as $subject) {
-        assertTrue(str_contains(file_get_contents(app_path('app/Controllers/PublicController.php')), $subject), "Contact form should include the {$subject} subject");
+        assertTrue(in_array($subject, \App\Services\PublicKnowledgeService::contactSubjects(), true), "Contact form should include the {$subject} subject");
     }
     assertTrue(!str_contains($view, 'Astrology Consultation'), 'Contact form should not offer a retired consultation subject');
+    $rendered = (static function (): string {
+        $publicContact = (new \App\Services\PublicKnowledgeService())->contact();
+        $subjects = \App\Services\PublicKnowledgeService::contactSubjects();
+        $success = false; $errors = [];
+        $submission = array_fill_keys(['name','email','phone','subject','message'], '');
+        ob_start(); require app_path('views/public/contact.php'); return ob_get_clean();
+    })();
     foreach (['tel:+919789444037', 'tel:+919789444038', 'mailto:support@sripanchamispiritual.com', 'contact-direct-link--mail'] as $needle) {
-        assertTrue(str_contains($view, $needle), "Contact page should expose {$needle}");
+        assertTrue(str_contains($rendered, $needle), "Contact page should expose {$needle}");
     }
     assertTrue(strpos($view, 'Contact options') < strpos($view, '<form'), 'Direct contact options should be reachable before the form');
     assertTrue(str_contains($view, 'Phone (optional)') && str_contains($view, 'Email (required)'), 'Contact fields should describe their requirements');

@@ -7,8 +7,8 @@ flowchart LR
   classDef arch fill:#f1f5f9,stroke:#475569,color:#1e293b
   classDef nav fill:#fff7ed,stroke:#c2410c,color:#7c2d12
 
-  subgraph ARCH["Architecture Overview — 165 routes, 14 controllers, 75 services, 67 views, 0 data files, 29 tools"]
-    arch_routes["> Routes: 165 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 167 routes, 14 controllers, 75 services, 67 views, 0 data files, 29 tools"]
+    arch_routes["> Routes: 167 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 14"]:::arch
     arch_svc["> Services: 75"]:::arch
     arch_views["> Views: 67"]:::arch
@@ -44,6 +44,8 @@ flowchart LR
     route_get_api_temples["GET /api/temples"]:::route
     route_get_api_knowledge_articles["GET /api/knowledge/articles"]:::route
     route_get_api_knowledge_products["GET /api/knowledge/products"]:::route
+    route_get_api_knowledge_contact["GET /api/knowledge/contact"]:::route
+    route_get_api_knowledge_services["GET /api/knowledge/services"]:::route
     route_get_api_knowledge_a2ui["GET /api/knowledge/a2ui"]:::route
     route_get_feeds_google_products_xml["GET /feeds/google-products.xml"]:::route
     route_get_sitemap_xml["GET /sitemap.xml"]:::route
@@ -526,6 +528,12 @@ flowchart LR
   controller_apicontroller --> service_publicknowledgeservice
   controller_apicontroller --> service_productservice
   controller_apicontroller -. renders .-> view_public_404
+  route_get_api_knowledge_contact --> controller_apicontroller
+  controller_apicontroller --> service_publicknowledgeservice
+  controller_apicontroller -. renders .-> view_public_404
+  route_get_api_knowledge_services --> controller_apicontroller
+  controller_apicontroller --> service_publicknowledgeservice
+  controller_apicontroller -. renders .-> view_public_404
   route_get_api_knowledge_a2ui --> controller_apicontroller
   controller_apicontroller --> service_publica2uiservice
   controller_apicontroller --> service_publicknowledgeservice
@@ -553,9 +561,11 @@ flowchart LR
   controller_publiccontroller --> service_authoredpageservice
   controller_publiccontroller -. renders .-> view_public_sitemap
   route_get_contact --> controller_publiccontroller
+  controller_publiccontroller --> service_publicknowledgeservice
   controller_publiccontroller -. renders .-> view_public_contact
   route_post_contact --> controller_publiccontroller
   controller_publiccontroller --> service_contactservice
+  controller_publiccontroller --> service_publicknowledgeservice
   controller_publiccontroller -. renders .-> view_public_contact
   route_get_login --> controller_publiccontroller
   controller_publiccontroller --> service_authservice

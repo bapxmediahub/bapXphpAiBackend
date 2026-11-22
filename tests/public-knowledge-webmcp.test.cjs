@@ -19,12 +19,14 @@ const contract = {
     },
 };
 
-function fixture(fetchData, modelContext = true) {
+function fixture(fetchData, modelContext = true, mode = 'promise') {
     let registered, event;
     const calls = [];
+    const warnings = [];
     const registry = modelContext ? {registerTool(tool, opts) {
+        if(mode==='throw')throw new Error('Registration denied');
         registered = {tool, opts};
-        return Promise.resolve();
+        return mode==='void'?undefined:Promise.resolve();
     }} : undefined;
     const context = {
         document:{
@@ -41,10 +43,10 @@ function fixture(fetchData, modelContext = true) {
             calls.push({url:String(url),opts});
             return {ok:true,json:async()=>fetchData};
         },
-        console:{warn(){}}
+        console:{warn(message){warnings.push(message)}}
     };
     vm.runInNewContext(source, context);
-    return {get registration(){return registered},get event(){return event},calls};
+    return {get registration(){return registered},get event(){return event},calls,warnings};
 }
 
 test('public article browser registration uses server-derived schemas and abort lifecycle', () => {
@@ -58,6 +60,14 @@ test('public article browser registration uses server-derived schemas and abort 
     x.event({persisted:false});
     assert.equal(x.registration.opts.signal.aborted,true);
     assert.equal(fixture({},false).registration,undefined);
+});
+
+test('article registration accepts void and contains synchronous registration errors',async()=>{
+    assert.equal(fixture({},true,'void').registration.tool.name,'search_public_articles');
+    const denied=fixture({},true,'throw');
+    await new Promise(resolve=>setImmediate(resolve));
+    assert.equal(denied.registration,undefined);
+    assert.equal(denied.warnings.length,1);
 });
 
 test('browser execution returns bounded public articles using unauthenticated GET', async()=>{

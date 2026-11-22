@@ -126,3 +126,15 @@ without an explicit compatible response design. See `docs/request-failures.md`.
 ### Product catalogue imports
 
 Product creation from the owner form and CSV confirmation share a database-host lock. The import revalidates the entire bounded CSV, preserves slugs excluded at preview, rechecks current slugs and commits new hidden products in one transaction. Remote clients use the authenticated products actions `save_catalog_product` and `import_products` so these checks run on one MySQL connection. Verify replay, rollback and legacy IDs on an isolated fixture database.
+
+## Public knowledge contracts
+
+Keep product/article/contact/service facts in PublicKnowledgeService, with
+shared PHP schemas and explicit public projections. Never expose a settings
+row through a public tool. The human contact page uses the same public values
+and four enquiry subjects; no retired consultation booking is advertised.
+Support and Enterprise use the same public tool implementation and policy
+entries. Trace contact/service retrieval as observed tool calls with counts,
+not raw contact submissions or user search text. Product descriptions are
+bounded plain text and images must be safe same-origin raster media paths.
+See docs/webmcp.md and tests/public-knowledge.php.

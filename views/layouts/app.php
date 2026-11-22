@@ -308,15 +308,26 @@ echo $__googleTags->gtagCode();
     .site-header #primary-nav:target{display:flex;max-height:75vh;overflow-y:auto}
 }
 </style></noscript>
-<?php if ($__modules['shop'] || $__modules['blog']): ?>
 <!-- Pinned official W3C WebMCP polyfill. Does not replace a native modelContext. -->
+<script src="/assets/vendor/webmcp/polyfill-0.1.1.js?v=<?= filemtime(app_path('assets/vendor/webmcp/polyfill-0.1.1.js')) ?>"></script>
+<script type="application/json" id="bapx-public-business-schema"><?= json_encode([
+    'contact'=>[
+        'inputSchema'=>\App\Services\PublicKnowledgeService::contactInputSchema(),
+        'outputSchema'=>\App\Services\PublicKnowledgeService::contactOutputSchema()
+    ],
+    'services'=>[
+        'inputSchema'=>\App\Services\PublicKnowledgeService::serviceInputSchema(),
+        'outputSchema'=>\App\Services\PublicKnowledgeService::serviceOutputSchema()
+    ]
+], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) ?></script>
+<script defer src="/assets/public-business-webmcp.js?v=<?= filemtime(app_path('assets/public-business-webmcp.js')) ?>"></script>
+<?php if ($__modules['shop'] || $__modules['blog']): ?>
 <script type="application/json" id="bapx-a2ui-schema"><?= json_encode([
     'inputSchema'=>\App\Services\PublicA2uiService::inputSchema(),
     'outputSchema'=>\App\Services\PublicA2uiService::outputSchema()
 ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) ?></script>
 <script defer src="/assets/public-a2ui-webmcp.js?v=<?= filemtime(app_path('assets/public-a2ui-webmcp.js')) ?>"></script>
 
-<script src="/assets/vendor/webmcp/polyfill-0.1.1.js?v=<?= filemtime(__DIR__ . '/../../assets/vendor/webmcp/polyfill-0.1.1.js') ?>"></script>
 <?php endif; ?>
 <?php if ($__modules['shop']): ?>
 <script type="application/json" id="bapx-public-products-schema"><?= json_encode([

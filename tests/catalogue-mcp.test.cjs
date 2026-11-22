@@ -10,8 +10,11 @@ test('local catalogue MCP checks the current shop settings and publishes only vi
     let enabled = true;
     let online = true;
     const records = [
-        { id: '1', slug: 'pendant', name: 'Pendant', price: 400, private_cost: 20 },
-        { id: '2', slug: 'ring', name: 'Ring', price: 100, stock_status: 'out_of_stock' },
+        { id: '1', slug: 'pendant', name: 'Pendant', price: 400, private_cost: 20,
+            description: '<p>Published <strong>pendant</strong> details.</p><script>hiddenCode()</script>',
+            image_url: 'https://public.example/assets/images/media/pendant.webp' },
+        { id: '2', slug: 'ring', name: 'Ring', price: 100, stock_status: 'out_of_stock',
+            image_url: 'https://untrusted.invalid/assets/images/ring.webp' },
         { id: '3', slug: 'draft', name: 'Preview', price: 300, status: 'draft' }
     ];
     const reads = new Set();
@@ -28,7 +31,7 @@ test('local catalogue MCP checks the current shop settings and publishes only vi
     });
     bridge.listen(0, '127.0.0.1');
     await once(bridge, 'listening');
-    const env = { ...process.env, BAPX_TEST_MODE: '0', BAPX_MYSQL_HOST: '127.0.0.1', BAPX_MYSQL_PORT: '1',
+    const env = { ...process.env, APP_URL: 'https://public.example', BAPX_TEST_MODE: '0', BAPX_MYSQL_HOST: '127.0.0.1', BAPX_MYSQL_PORT: '1',
         BAPX_MYSQL_DB: 'fixture', BAPX_MYSQL_USER: 'fixture', BAPX_MYSQL_PASS: 'fixture',
         BAPX_REMOTE_DB_URL: 'http://127.0.0.1:' + bridge.address().port + '/remotedb' };
     const child = spawn('./bapXphp', ['mcp:stdio'], { env, stdio: ['pipe', 'pipe', 'inherit'] });
@@ -91,10 +94,38 @@ test('local catalogue MCP checks the current shop settings and publishes only vi
         assert.equal((await call({ query: null })).result.isError, true);
         assert.equal((await call([])).error.code, -32602);
         const first = (await call({ limit: 1 })).result.structuredContent;
-        assert.deepEqual(first, { products: [{ name: 'Pendant', path: '/product/pendant', priceInr: 400, available: true }], total: 2, nextOffset: 1 });
+        assert.deepEqual(first, { products: [{ name: 'Pendant', path: '/product/pendant', priceInr: 400, available: true,
+            description: 'Published pendant details.', imagePath: '/assets/images/media/pendant.webp' }], total: 2, nextOffset: 1 });
         const last = (await call({ offset: first.nextOffset })).result.structuredContent;
-        assert.deepEqual(last, { products: [{ name: 'Ring', path: '/product/ring', priceInr: 100, available: false }], total: 2, nextOffset: null });
+        assert.deepEqual(last, { products: [{ name: 'Ring', path: '/product/ring', priceInr: 100, available: false, description: '' }], total: 2, nextOffset: null });
         assert.deepEqual((await call({ limit: 1 })).result.structuredContent, first);
+        for (const image of ['/assets/images/../private.png', '/assets/images/%2e%2e/private.png',
+            '/assets/images/%252e%252e/private.png', '/assets/images/media/a%2fb.webp',
+            'https://public.example:444/assets/images/pendant.webp',
+            'https://public.example@untrusted.invalid/assets/images/pendant.webp',
+            '//public.example/assets/images/pendant.webp', '/assets/images/pendant.svg',
+            '/assets/images/pendant.webp?redirect=private', 'data:image/png;base64,AAAA']) {
+            records[0].image_url = image;
+            assert.equal((await call({ query: 'pendant' })).result.structuredContent.products[0].imagePath, undefined);
+        }
+        records[0].image_url = '/assets/images/media/pendant%20photo.webp';
+        records[0].description = '<p>' + 'x'.repeat(400) + '</p>';
+        const bounded = (await call({ query: 'pendant' })).result.structuredContent.products[0];
+        assert.equal(bounded.imagePath, '/assets/images/media/pendant%20photo.webp');
+        assert.equal(bounded.description.length, 280);
+        records[0].name = '𐐀'.repeat(161);
+        assert.equal((await call({ query: 'pendant' })).result.structuredContent.products[0].name, '𐐀'.repeat(160));
+        records[0].name = 'Pendant';
+        for (const slug of ['..', '../admin', '%2e%2e', 'item%2Fprivate']) {
+            records[0].slug = slug;
+            const safePage = (await call({ limit: 1 })).result.structuredContent;
+            assert.equal(safePage.total, 1);
+            assert.equal(safePage.products[0].path, '/product/ring');
+            assert.equal(safePage.nextOffset, null);
+        }
+        records[0].slug = '珊瑚 pendant';
+        assert.equal((await call({ query: 'pendant' })).result.structuredContent.products[0].path, '/product/%E7%8F%8A%E7%91%9A%20pendant');
+        records[0].slug = 'pendant';
         records[0].status = 'hidden';
         assert.equal((await call({ query: 'Pendant' })).result.structuredContent.total, 0);
         enabled = false;

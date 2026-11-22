@@ -16,6 +16,7 @@
 
     const validate = data => {
         if (!data || typeof data !== 'object' || Array.isArray(data)
+            || Object.keys(data).some(key => !['articles', 'total', 'nextOffset'].includes(key))
             || !Array.isArray(data.articles) || !Number.isSafeInteger(data.total)
             || data.total < 0 || data.articles.length > 20
             || !(data.nextOffset === null
@@ -24,6 +25,7 @@
         }
         for (const article of data.articles) {
             if (!article || typeof article.title !== 'string' || !article.title.trim()
+                || Object.keys(article).some(key => !['title', 'path', 'category', 'score'].includes(key))
                 || typeof article.path !== 'string'
                 || !/^\/blog\/[a-z0-9-]{1,120}$/.test(article.path)
                 || typeof article.category !== 'string'
@@ -34,7 +36,7 @@
         return data;
     };
 
-    registry.registerTool({
+    const register = async () => { await registry.registerTool({
         name: 'search_public_articles',
         title: 'Search published articles and guides',
         description: 'Search publicly published blog posts and customer help guides. Returns only titles, paths, categories and relevance; not drafts, private admin help or agent sessions. Pass nextOffset to continue.',
@@ -65,7 +67,8 @@
             if (!response.ok) throw new Error('Public article search unavailable.');
             return validate(await response.json());
         }
-    }, { signal: lifecycle.signal }).catch(() => {
+    }, { signal: lifecycle.signal }); };
+    register().catch(() => {
         console.warn('Public article browser tool could not be registered.');
     });
 })();

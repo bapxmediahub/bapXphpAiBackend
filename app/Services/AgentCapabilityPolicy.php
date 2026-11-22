@@ -10,11 +10,12 @@ final class AgentCapabilityPolicy {
     public const ENTERPRISE = 'enterprise';
 
     private const SUPPORT_TOOLS = [
-        'public_catalog', 'public_policy', 'own_ticket_status',
+        'public_catalog', 'public_policy', 'get_public_contact', 'list_public_services', 'own_ticket_status',
     ];
     private const ENTERPRISE_TOOLS = [
         'find_order', 'product_status', 'sales_summary', 'gst_register_summary',
         'support_enquiries', 'store_count', 'search_articles', 'operator_guide', 'coupon_status',
+        'get_public_contact', 'list_public_services',
     ];
 
     public static function tools(string $agent): array {

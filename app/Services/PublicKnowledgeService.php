@@ -10,6 +10,21 @@ namespace App\Services;
  */
 final class PublicKnowledgeService
 {
+    /** These are the existing public contact form topics, not bookable services. */
+    private const CONTACT_SUBJECTS = [
+        'product' => 'Product Inquiry',
+        'temple' => 'Temple Guidance',
+        'order' => 'Order Support',
+        'general' => 'General Question',
+    ];
+
+    private const SERVICE_DESCRIPTIONS = [
+        'product' => 'Ask about a spiritual product or its published details.',
+        'temple' => 'Ask for temple guidance or help planning a temple visit.',
+        'order' => 'Get help with an order through the existing support team.',
+        'general' => 'Send a general store enquiry through the contact form.',
+    ];
+
     public function __construct(private ?ProductService $products = null, private ?BlogService $blog = null) {}
 
     private function catalogue(): ProductService
@@ -73,10 +88,13 @@ final class PublicKnowledgeService
     public static function productOutputSchema(): array
     {
         $fields = [
-            'name' => ['type' => 'string', 'minLength' => 1],
+            'name' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 160],
             'path' => ['type' => 'string', 'pattern' => '^/product/[A-Za-z0-9%_.-]+$'],
             'priceInr' => ['type' => 'number', 'minimum' => 0],
             'available' => ['type' => 'boolean'],
+            'description' => ['type' => 'string', 'maxLength' => 280],
+            'imagePath' => ['type' => 'string', 'maxLength' => 512,
+                'pattern' => '^/assets/images/[A-Za-z0-9%_./-]+$'],
         ];
         return [
             'type' => 'object', 'additionalProperties' => false,
@@ -84,13 +102,164 @@ final class PublicKnowledgeService
                 'products' => [
                     'type' => 'array', 'maxItems' => 20,
                     'items' => ['type' => 'object', 'additionalProperties' => false,
-                        'properties' => $fields, 'required' => array_keys($fields)]
+                        'properties' => $fields,
+                        'required' => ['name', 'path', 'priceInr', 'available', 'description']]
                 ],
                 'total' => ['type' => 'integer', 'minimum' => 0],
                 'nextOffset' => ['type' => ['integer', 'null'], 'minimum' => 0],
             ],
             'required' => ['products', 'total', 'nextOffset'],
         ];
+    }
+
+    public static function contactInputSchema(): array
+    {
+        return ['type' => 'object', 'properties' => new \stdClass(), 'additionalProperties' => false];
+    }
+
+    public static function contactOutputSchema(): array
+    {
+        $fields = [
+            'name' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 160],
+            'path' => ['type' => 'string', 'const' => '/contact'],
+            'phones' => ['type' => 'array', 'maxItems' => 2, 'items' => [
+                'type' => 'object', 'additionalProperties' => false,
+                'properties' => [
+                    'label' => ['type' => 'string', 'maxLength' => 32],
+                    'number' => ['type' => 'string', 'pattern' => '^\\+[0-9]{7,15}$'],
+                ], 'required' => ['label', 'number'],
+            ]],
+            'email' => ['type' => 'string', 'format' => 'email', 'maxLength' => 254],
+            'hours' => ['type' => 'array', 'maxItems' => 2, 'items' => [
+                'type' => 'object', 'additionalProperties' => false,
+                'properties' => [
+                    'days' => ['type' => 'string', 'maxLength' => 40],
+                    'hours' => ['type' => 'string', 'maxLength' => 40],
+                ], 'required' => ['days', 'hours'],
+            ]],
+            'servicePath' => ['type' => 'string', 'const' => '/contact#contact-form'],
+        ];
+        return ['type' => 'object', 'additionalProperties' => false,
+            'properties' => $fields, 'required' => array_keys($fields)];
+    }
+
+    public static function serviceInputSchema(): array
+    {
+        return self::articleInputSchema();
+    }
+
+    public static function serviceOutputSchema(): array
+    {
+        $fields = [
+            'name' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 160],
+            'description' => ['type' => 'string', 'maxLength' => 280],
+            'path' => ['type' => 'string', 'enum' => array_map(
+                static fn(string $subject): string => '/contact?subject=' . $subject . '#contact-form',
+                array_keys(self::CONTACT_SUBJECTS)
+            )],
+        ];
+        return ['type' => 'object', 'additionalProperties' => false, 'properties' => [
+            'services' => ['type' => 'array', 'maxItems' => 4, 'items' => [
+                'type' => 'object', 'additionalProperties' => false,
+                'properties' => $fields, 'required' => array_keys($fields),
+            ]],
+            'total' => ['type' => 'integer', 'minimum' => 0, 'maximum' => 4],
+            'nextOffset' => ['type' => ['integer', 'null'], 'minimum' => 0],
+        ], 'required' => ['services', 'total', 'nextOffset']];
+    }
+
+    /** Public business facts are explicitly selected; never expose a settings row. */
+    public function contact(): array
+    {
+        return [
+            'name' => 'Sri Panchami Spiritual',
+            'path' => '/contact',
+            'phones' => [
+                ['label' => '+91 97894 44037', 'number' => '+919789444037'],
+                ['label' => '+91 97894 44038', 'number' => '+919789444038'],
+            ],
+            'email' => 'support@sripanchamispiritual.com',
+            'hours' => [
+                ['days' => 'Mon–Sat', 'hours' => '9 AM–7 PM'],
+                ['days' => 'Sun', 'hours' => '10 AM–5 PM'],
+            ],
+            'servicePath' => '/contact#contact-form',
+        ];
+    }
+
+    public static function contactSubjects(): array
+    {
+        return self::CONTACT_SUBJECTS;
+    }
+
+    /** Existing enquiry offerings remain public even when shop/blog are disabled. */
+    public function services(string $query = '', int $offset = 0, int $limit = 20): array
+    {
+        self::checkPage($query, $offset, $limit);
+        $words = preg_split('/\\s+/u', mb_strtolower(trim($query)), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $matches = [];
+        foreach (self::CONTACT_SUBJECTS as $subject => $name) {
+            $description = self::SERVICE_DESCRIPTIONS[$subject];
+            $text = mb_strtolower($name . ' ' . $description);
+            foreach ($words as $word) {
+                if (mb_strpos($text, $word) === false) continue 2;
+            }
+            $matches[] = ['name' => $name, 'description' => $description,
+                'path' => '/contact?subject=' . $subject . '#contact-form'];
+        }
+        $total = count($matches);
+        $end = min($total, $offset + $limit);
+        return ['services' => array_slice($matches, $offset, $limit),
+            'total' => $total, 'nextOffset' => $end < $total ? $end : null];
+    }
+
+    private static function plainText(string $text, int $limit): string
+    {
+        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = preg_replace('~<(script|style)\\b[^>]*>.*?</\\1\\s*>~is', '', $text) ?? '';
+        $text = strip_tags(preg_replace('~</?(?:p|br|div|li|h[1-6])\\b[^>]*>~i', ' ', $text) ?? '');
+        $text = preg_replace('/[\\s\\x00-\\x1F\\x7F]+/u', ' ', $text) ?? '';
+        return mb_substr(trim($text), 0, $limit);
+    }
+
+    /** Encode a single stored slug once; separators and encoded traversal are never routes. */
+    private static function productPath(string $slug): ?string
+    {
+        if (!mb_check_encoding($slug, 'UTF-8')
+            || !preg_match('/^[\\p{L}\\p{N}_][\\p{L}\\p{N}._ -]*$/uD', $slug)) return null;
+        return '/product/' . rawurlencode($slug);
+    }
+
+    /** Only stored local raster media may cross into public presentation cards. */
+    private static function imagePath(mixed $image): ?string
+    {
+        if (!is_string($image) || $image === '' || strlen($image) > 2048
+            || str_contains($image, '\\') || preg_match('/[\\x00-\\x20\\x7F]/', $image)) return null;
+        $parts = parse_url($image);
+        if (!is_array($parts) || isset($parts['user']) || isset($parts['pass']) || isset($parts['query'])
+            || isset($parts['fragment'])) return null;
+        if (isset($parts['host']) || isset($parts['scheme'])) {
+            $configured = $_SERVER['APP_URL'] ?? $_ENV['APP_URL'] ?? getenv('APP_URL');
+            $origin = parse_url(is_string($configured) && $configured !== ''
+                ? $configured : 'https://sripanchamispiritual.com');
+            if (!is_array($origin) || !in_array($parts['scheme'] ?? '', ['http', 'https'], true)
+                || strtolower($parts['host'] ?? '') !== strtolower($origin['host'] ?? '')
+                || ($parts['scheme'] ?? '') !== ($origin['scheme'] ?? '')
+                || ($parts['port'] ?? ($parts['scheme'] === 'https' ? 443 : 80))
+                    !== ($origin['port'] ?? (($origin['scheme'] ?? '') === 'https' ? 443 : 80))) return null;
+        }
+        $path = $parts['path'] ?? '';
+        if (!str_starts_with($path, '/assets/images/')) return null;
+        $segments = explode('/', substr($path, strlen('/assets/images/')));
+        foreach ($segments as &$segment) {
+            $segment = rawurldecode($segment);
+            if (!mb_check_encoding($segment, 'UTF-8')
+                || !preg_match('/^[\\p{L}\\p{N}_][\\p{L}\\p{N}._ -]*$/uD', $segment)) return null;
+            $segment = rawurlencode($segment);
+        }
+        unset($segment);
+        $path = '/assets/images/' . implode('/', $segments);
+        return strlen($path) <= 512 && preg_match('/\\.(?:avif|gif|jpe?g|png|webp)$/iD', $path) ? $path : null;
     }
 
     /** Canonical catalogue projection: visibility and current offer price come from ProductService. */
@@ -102,17 +271,23 @@ final class PublicKnowledgeService
         }
         $service=$this->catalogue();
         $matches=$service->discover($service->visible(),trim($query),'');
+        // Page over valid public destinations, so a rejected legacy row cannot produce an empty page.
+        $matches=array_values(array_filter($matches, static fn(array $item): bool =>
+            self::productPath((string)($item['slug']??'')) !== null
+            && self::plainText((string)($item['name']??''),160) !== ''));
         $out=[];
         foreach(array_slice($matches,$offset,$limit) as $item){
-            $slug=(string)($item['slug']??'');
-            $name=trim((string)($item['name']??''));
-            if($slug===''||$name==='')continue;
-            $out[]=[
+            $name=self::plainText((string)($item['name']??''),160);
+            $row=[
                 'name'=>$name,
-                'path'=>'/product/'.rawurlencode($slug),
+                'path'=>self::productPath((string)$item['slug']),
                 'priceInr'=>$service->priceOf($item),
                 'available'=>in_array($item['stock_status']??'in_stock',['in_stock','active'],true),
+                'description'=>self::plainText((string)($item['description']??''),280),
             ];
+            $imagePath = self::imagePath($item['image_url'] ?? null);
+            if ($imagePath !== null) $row['imagePath'] = $imagePath;
+            $out[] = $row;
         }
         $end=min(count($matches),$offset+$limit);
         return ['products'=>$out,'total'=>count($matches),'nextOffset'=>$end<count($matches)?$end:null];

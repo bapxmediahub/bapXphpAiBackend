@@ -9,6 +9,8 @@ const {readFileSync}=require('node:fs');
 const {join,resolve}=require('node:path');
 const {createHash}=require('node:crypto');
 const {once}=require('node:events');
+const {spawnSync}=require('node:child_process');
+const native=process.argv.includes('--native');
 const fixture=process.argv[2];
 if(!fixture)throw new Error('Provide isolated npm fixture directory');
 const installed=resolve(fixture,'node_modules');
@@ -20,52 +22,37 @@ assert.equal(digest(polyfill),digest(upstream),'Vendored standalone bundle must 
 const shopSource=readFileSync(join(__dirname,'../assets/shop-webmcp.js'));
 const knowledgeSource=readFileSync(join(__dirname,'../assets/public-knowledge-webmcp.js'));
 const productSource=readFileSync(join(__dirname,'../assets/public-products-webmcp.js'));
-const apiProducts=Array.from({length:67},(_,i)=>({name:'Fixture item '+i,path:'/product/fixture-'+i,priceInr:i+1,available:i%2===0}));
+const businessSource=readFileSync(join(__dirname,'../assets/public-business-webmcp.js'));
+const presentationSource=readFileSync(join(__dirname,'../assets/public-a2ui-webmcp.js'));
+const rendererSource=readFileSync(join(__dirname,'../assets/a2ui-public-renderer.js'));
+const apiProducts=Array.from({length:67},(_,i)=>({name:'Fixture item '+i,path:'/product/fixture-'+i,priceInr:i+1,available:i%2===0,description:'Published fixture description'}));
 const apiRecords=[
   {title:'Public help guide',path:'/blog/public-help',category:'help',score:2},
   {title:'Public article',path:'/blog/public-article',category:'guides',score:1}
 ];
-const articleSchema={
-  inputSchema:{
-    type:'object',additionalProperties:false,properties:{
-      query:{type:'string',maxLength:120},
-      offset:{type:'integer',minimum:0,maximum:2147483647},
-      limit:{type:'integer',minimum:1,maximum:20},
-    }
-  },
-  outputSchema:{
-    type:'object',additionalProperties:false,
-    properties:{
-      articles:{type:'array',maxItems:20,items:{
-        type:'object',additionalProperties:false,
-        properties:{
-          title:{type:'string',minLength:1},
-          path:{type:'string',pattern:'^/blog/[a-z0-9-]+$'},
-          category:{type:'string'},
-          score:{type:'integer',minimum:1}
-        },required:['title','path','category','score']
-      }},
-      total:{type:'integer',minimum:0},
-      nextOffset:{type:['integer','null'],minimum:0}
-    },required:['articles','total','nextOffset']
-  }
-};
-const productSchema={
-  inputSchema:articleSchema.inputSchema,
-  outputSchema:{type:'object',additionalProperties:false,
-    required:['products','total','nextOffset'],properties:{
-      products:{type:'array',maxItems:20,items:{type:'object',additionalProperties:false,
-        properties:{
-          name:{type:'string',minLength:1},
-          path:{type:'string',minLength:10},
-          priceInr:{type:'number',minimum:0},
-          available:{type:'boolean'}
-        },required:['name','path','priceInr','available']
-      }},
-      total:{type:'integer',minimum:0},
-      nextOffset:{type:['integer','null'],minimum:0}
-    }}
-};
+// Use the PHP contract itself; browser fixtures must not silently drift from it.
+const schemaProcess=spawnSync('php',['-r',
+  'require $argv[1]; require $argv[2]; '+
+  '$k=App\\Services\\PublicKnowledgeService::class; $a=App\\Services\\PublicA2uiService::class; '+
+  'echo json_encode(["articles"=>["inputSchema"=>$k::articleInputSchema(),"outputSchema"=>$k::articleOutputSchema()],'+
+  '"products"=>["inputSchema"=>$k::productInputSchema(),"outputSchema"=>$k::productOutputSchema()],'+
+  '"contact"=>["inputSchema"=>$k::contactInputSchema(),"outputSchema"=>$k::contactOutputSchema()],'+
+  '"services"=>["inputSchema"=>$k::serviceInputSchema(),"outputSchema"=>$k::serviceOutputSchema()],'+
+  '"a2ui"=>["inputSchema"=>$a::inputSchema(),"outputSchema"=>$a::outputSchema()]],JSON_THROW_ON_ERROR);',
+  join(__dirname,'../app/Services/PublicKnowledgeService.php'),join(__dirname,'../app/Services/PublicA2uiService.php')],{encoding:'utf8'});
+assert.equal(schemaProcess.status,0,schemaProcess.stderr||'PHP contract generation failed');
+const schemas=JSON.parse(schemaProcess.stdout);
+const contact={name:'Fixture Business',path:'/contact',phones:[{label:'Support',number:'+919789444037'}],
+  email:'support@example.test',hours:[{days:'Mon–Sat',hours:'9 AM–7 PM'}],servicePath:'/contact#contact-form'};
+const services={services:[{name:'Temple Guidance',description:'Help using the published temple guides.',
+  path:'/contact?subject=temple#contact-form'}],total:1,nextOffset:null};
+const presentation={messages:[{version:'1.0',createSurface:{
+  surfaceId:'bapx_products_0123456789abcdef',catalogId:'https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json',
+  components:[{id:'root',component:'Column',children:['heading']},
+    {id:'heading',component:'Text',text:{'@path':'/heading'}}],
+  dataModel:{heading:'Published products',items:[]}
+}}]};
+const globalTools=['get_public_contact','list_public_services','present_public_knowledge','search_public_articles','search_public_products'];
 function cards(count){
   return Array.from({length:count},(_,i)=>'<article class="product-card">'+
     '<a class="product-card__title" href="/product/item-'+i+'">Item '+i+'</a>'+
@@ -77,14 +64,21 @@ const server=createServer((req,res)=>{
   if(url.pathname==='/polyfill.js'){
     res.writeHead(200,{'content-type':'application/javascript'});res.end(polyfill);return;
   }
-  if(url.pathname==='/assets/shop-webmcp.js'){
-    res.writeHead(200,{'content-type':'application/javascript'});res.end(shopSource);return;
+  const assets={
+    '/assets/shop-webmcp.js':shopSource,
+    '/assets/public-products-webmcp.js':productSource,
+    '/assets/public-knowledge-webmcp.js':knowledgeSource,
+    '/assets/public-business-webmcp.js':businessSource,
+    '/assets/public-a2ui-webmcp.js':presentationSource,
+    '/assets/a2ui-public-renderer.js':rendererSource,
+  };
+  if(assets[url.pathname]){
+    res.writeHead(200,{'content-type':'application/javascript'});res.end(assets[url.pathname]);return;
   }
-  if(url.pathname==='/assets/public-products-webmcp.js'){
-    res.writeHead(200,{'content-type':'application/javascript'});res.end(productSource);return;
-  }
-  if(url.pathname==='/assets/public-knowledge-webmcp.js'){
-    res.writeHead(200,{'content-type':'application/javascript'});res.end(knowledgeSource);return;
+  const simpleResponses={'/api/knowledge/contact':contact,'/api/knowledge/services':services,'/api/knowledge/a2ui':presentation};
+  if(simpleResponses[url.pathname]){
+    res.writeHead(200,{'content-type':'application/json','cache-control':'no-store'});
+    res.end(JSON.stringify(simpleResponses[url.pathname]));return;
   }
   if(url.pathname==='/api/knowledge/products'){
     const offset=Number(url.searchParams.get('offset')||0);
@@ -104,15 +98,19 @@ const server=createServer((req,res)=>{
     res.writeHead(200,{'content-type':'application/json','cache-control':'no-store'});
     res.end(JSON.stringify({articles:matches.slice(offset,end),total:matches.length,nextOffset:end<matches.length?end:null}));return;
   }
-  if(url.pathname==='/'||url.pathname==='/without-polyfill'){
-    const load=url.pathname==='/'?'<script src="/polyfill.js"></script>':'';
+  if(['/', '/shop', '/without-polyfill', '/contact-only'].includes(url.pathname)){
+    const load=!native&&url.pathname!=='/without-polyfill'?'<script src="/polyfill.js"></script>':'';
+    const catalogue=url.pathname!=='/contact-only';
+    const schema=(id,contract)=>'<script id="'+id+'" type="application/json">'+JSON.stringify(contract)+'</script>';
+    const script=path=>'<script src="/assets/'+path+'" defer></script>';
     const html='<!doctype html><html><head><title>WebMCP test</title>'+load+
-      '<script id="bapx-public-knowledge-schema" type="application/json">'+JSON.stringify(articleSchema)+'</script>'+ 
-      '<script id="bapx-public-products-schema" type="application/json">'+JSON.stringify(productSchema)+'</script></head>'+ 
-      '<body><div class="shop-results">'+cards(45)+'</div>'+
-      '<script src="/assets/shop-webmcp.js" defer></script>'+
-      '<script src="/assets/public-knowledge-webmcp.js" defer></script>'+ 
-      '<script src="/assets/public-products-webmcp.js" defer></script></body></html>';
+      schema('bapx-public-business-schema',{contact:schemas.contact,services:schemas.services})+
+      (catalogue?schema('bapx-public-knowledge-schema',schemas.articles)+schema('bapx-public-products-schema',schemas.products)+schema('bapx-a2ui-schema',schemas.a2ui):'')+
+      '</head><body><h1>Business landing page</h1>'+
+      (url.pathname==='/shop'?'<div class="shop-results">'+cards(45)+'</div>':'')+
+      script('public-business-webmcp.js')+script('shop-webmcp.js')+
+      (catalogue?script('public-knowledge-webmcp.js')+script('public-products-webmcp.js')+script('a2ui-public-renderer.js')+script('public-a2ui-webmcp.js'):'')+
+      '</body></html>';
     res.writeHead(200,{'content-type':'text/html; charset=utf-8'});res.end(html);return;
   }
   res.writeHead(404);res.end('Not found');
@@ -121,18 +119,48 @@ async function main(){
   server.listen(0,'127.0.0.1');await once(server,'listening');
   const port=server.address().port;
   const browser=await playwright.chromium.launch({
-    headless:true,
+    headless:!native,
     executablePath:process.env.CHROMIUM_PATH||undefined,
     // The official polyfill must own the context in this test, not Chrome's native
     // Origin Trial implementation (which can reject calls under its permissions policy).
-    args:['--no-sandbox','--disable-features=WebMCP'],
+    args:native?['--no-sandbox','--enable-features=WebMCP,WebMCPTesting,DevToolsWebMCPSupport']
+      :['--no-sandbox','--disable-features=WebMCP,WebMCPTesting'],
   });
   try{
     const page=await browser.newPage();
     const errors=[];page.on('pageerror',e=>errors.push(e.message));
     await page.goto('http://127.0.0.1:'+port+'/',{waitUntil:'load'});
-    await page.waitForFunction(async()=>typeof document.modelContext?.getTools==='function'
-      && (await document.modelContext.getTools()).some(x=>x.name==='list_shop_results'),{timeout:15000});
+    const waitForTools=async(target,count)=>target.waitForFunction(async count=>
+      typeof document.modelContext?.getTools==='function' && (await document.modelContext.getTools()).length===count,count,{timeout:15000});
+    await waitForTools(page,5);
+    const landing=await page.evaluate(async()=>{
+      const list=await document.modelContext.getTools();
+      const call=async(name,args={})=>JSON.parse(await document.modelContext.executeTool(list.find(t=>t.name===name),args));
+      return {names:list.map(t=>t.name).sort(),contact:await call('get_public_contact'),
+        services:await call('list_public_services',{query:'temple',limit:1}),
+        ui:await call('present_public_knowledge',{view:'products',limit:1}),
+        scripts:[...document.scripts].map(s=>s.src)};
+    });
+    assert.deepEqual(landing.names,globalTools,'Landing page exposes the complete public tool set without a shop DOM');
+    assert.deepEqual(landing.contact,contact);
+    assert.deepEqual(landing.services,services);
+    assert.equal(landing.ui.messages[0].version,'1.0');
+    if(native){
+      assert.ok(!landing.scripts.some(url=>url.endsWith('/polyfill.js')),'Native lane must load no polyfill');
+      // An isolated execution world approximates a browser extension/agent; the
+      // page-only WeakMap registry of the polyfill cannot satisfy this check.
+      const cdp=await page.context().newCDPSession(page);
+      const {frameTree}=await cdp.send('Page.getFrameTree');
+      const {executionContextId}=await cdp.send('Page.createIsolatedWorld',{frameId:frameTree.frame.id,worldName:'webmcp-ci-agent'});
+      const probe=await cdp.send('Runtime.evaluate',{contextId:executionContextId,awaitPromise:true,returnByValue:true,
+        expression:'(async()=>{const tools=await document.modelContext.getTools(); const contact=tools.find(t=>t.name==="get_public_contact"); return {names:tools.map(t=>t.name).sort(),contact:JSON.parse(await document.modelContext.executeTool(contact,{}))};})()'});
+      assert.equal(probe.exceptionDetails,undefined,'Native tools must be visible and callable from the isolated agent world');
+      assert.deepEqual(probe.result.value.names,globalTools);
+      assert.deepEqual(probe.result.value.contact,contact);
+      await cdp.detach();
+    }
+    await page.goto('http://127.0.0.1:'+port+'/shop',{waitUntil:'load'});
+    await waitForTools(page,6);
     const result=await page.evaluate(async()=>{
       const ctx=document.modelContext;
       const list=await ctx.getTools();
@@ -168,7 +196,7 @@ async function main(){
     assert.deepEqual(result.backend.map(x=>x.products.length),[20,20,20,7]);
     assert.equal(result.backend[0].total,67,'Backend must page beyond the 45 visible DOM cards');
     assert.deepEqual(result.backend.map(x=>x.nextOffset),[20,40,60,null]);
-    assert.deepEqual(result.backendSchema.required,['products','total','nextOffset']);
+    if(!native)assert.deepEqual(result.backendSchema.required,['products','total','nextOffset']);
     assert.equal(result.knowledge.articles.length,1);
     assert.equal(result.knowledge.total,2);
     assert.equal(result.knowledge.nextOffset,1);
@@ -176,8 +204,11 @@ async function main(){
     assert.equal(result.skip.products.length,3,'Missing price and cross-origin links must be rejected');
     assert.equal(result.skip.nextOffset,null);
     assert.equal(result.skip.total,45);
-    assert.ok(result.schema,'Discovered shop tool should include outputSchema');
-    assert.deepEqual(result.schema.required,['products','total','nextOffset']);
+    // Chrome before 159 does not expose outputSchema; the returned data is still checked above.
+    if(!native){
+      assert.ok(result.schema,'Polyfill descriptor should include outputSchema');
+      assert.deepEqual(result.schema.required,['products','total','nextOffset']);
+    }
     assert.deepEqual(errors,[],'No uncaught Chrome exceptions');
     const lifecycle=await page.evaluate(async()=>{
       window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:false}));
@@ -193,12 +224,24 @@ async function main(){
       && !lifecycle.names.includes('search_public_products')),
       'A pagehide must remove registered tools or render document discovery unavailable');
 
-    const without=await browser.newPage();
-    await without.goto('http://127.0.0.1:'+port+'/without-polyfill',{waitUntil:'load'});
-    const noContext=await without.evaluate(()=>typeof document.modelContext==='undefined');
-    assert.equal(noContext,true,'Without native or polyfill context, script should not falsely register');
-    await without.close();
-    console.log('OFFICIAL @w3c/webmcp-polyfill@0.1.1: registration, discovered schemas, 45-card DOM snapshot, 67 server-side products across 4 pages, argument rejection, 1 malformed card, public article API, lifecycle unregister, and no-polyfill fallback PASS.');
+    await page.goto('http://127.0.0.1:'+port+'/contact-only',{waitUntil:'load'});
+    await waitForTools(page,2);
+    const contactOnly=await page.evaluate(async()=>{
+      const tools=await document.modelContext.getTools();
+      return {names:tools.map(x=>x.name).sort(),contact:JSON.parse(await document.modelContext.executeTool(tools.find(t=>t.name==='get_public_contact'),{}))};
+    });
+    assert.deepEqual(contactOnly.names,['get_public_contact','list_public_services']);
+    assert.deepEqual(contactOnly.contact,contact);
+    if(!native){
+      const without=await browser.newPage();
+      const fallbackErrors=[];without.on('pageerror',error=>fallbackErrors.push(error.message));
+      await without.goto('http://127.0.0.1:'+port+'/without-polyfill',{waitUntil:'load'});
+      assert.equal(await without.evaluate(()=>typeof document.modelContext==='undefined'),true);
+      assert.deepEqual(fallbackErrors,[],'Unsupported browsers must retain a working page');
+      await without.close();
+    }
+    console.log((native?'NATIVE WEBMCP (no polyfill, isolated agent world)':'OFFICIAL @w3c/webmcp-polyfill@0.1.1')+
+      ': landing 5 tools, shop 6 tools, contact without commerce/blog, 45-card DOM snapshot, 67 server-side products, article/service paging, contact, A2UI, invalid input and pagehide PASS.');
     await page.close();
   } finally {
     await browser.close();await new Promise(resolve=>server.close(resolve));
