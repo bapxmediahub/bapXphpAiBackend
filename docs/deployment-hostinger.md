@@ -260,3 +260,7 @@ an order/mail/action was rolled back. Inspect known operation evidence before
 retrying. Static-server/startup failures and previously flushed headers remain
 outside this application boundary. See `request-failures.md` and retain normal
 read-only live acceptance after releases; never deploy an intentional crash probe.
+
+### Agent UI and deployment timing
+
+Hostinger hPanel's **Advanced → Git → Auto Deployment** is asynchronous. After a green `main` run, the separate SHA-verification workflow now waits **60 seconds** before its bounded polling of `/is-sha-valid?sha=<merge_sha>`; a mismatch/503 stays unverified, not a deployment success. Run independent mobile cart acceptance only after the SHA gate passes. For A2UI releases, confirm the live `GET /api/knowledge/a2ui?view=products&limit=1` JSON envelope, `assets/a2ui-public-renderer.js` and `assets/public-a2ui-webmcp.js`, and then the official WebMCP browser-tool discovery/execution. A2UI access from an unrelated ChatGPT chat requires a separate connector, not the website's WebMCP script. See [A2UI contract](a2ui.md).
