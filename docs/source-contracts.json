@@ -24,8 +24,8 @@
         },
         "foundation": {
             "source_sha256": "12a2968832644135d8e5ec7c02adc1315ef59919588c7bd5f3f3440a6c46da89",
-            "references_sha256": "6d1471dfccdb5947c548c5bbf538c38e107f3d43443bb136243d081da2250781",
-            "review_note": "Reviewed route/bootstrap/schema and shared-service changes against architecture, WebMCP, remote commerce and hosted storage guidance. Private cart/attempt rows use the existing database host, signed completion and bounded recovery; no local business mirror or public appointment flow is introduced."
+            "references_sha256": "600dd5525d00ff0ab1a91b78a357f4dfa6ca0c89f5394ff65df8c58023ce5c47",
+            "review_note": "Reviewed the WebMCP verification guide against local/live native fixtures, the shared CDP adapter and official Chromium schemas. Documented toolId/name selection, exact registry and correlated contact completion; architecture, permissions and production application code are unchanged."
         },
         "google-tags": {
             "source_sha256": "b5c80a0b7cb70228f2ebfede071488a194147d1457955d3760fb6c82dabe82c7",
@@ -69,8 +69,8 @@
         },
         "remote-commerce": {
             "source_sha256": "1966c34fbe250f75b05e376c9a0fd6effd73d1073fef2c0d0061931afbfc8731",
-            "references_sha256": "c8d5b44cb8c1d7bac9fbeb05adf843b3a4cea02447c371dd5a18b600915188e5",
-            "review_note": "Reviewed the checkout page explanation against the canonical Stripe client, shared bootstrap and browser checkout creation/return handlers. The change repairs class loading only; anonymous remote checkout still uses its existing Razorpay contract, with no provider calls, configuration or payment-policy change."
+            "references_sha256": "132d4cba7ef4698abf8629046b83b666ed89ab76ebd9514fadf6b02b62f3adf9",
+            "review_note": "Reviewed both merged checkout and WebMCP guide changes against their sources. The canonical Stripe bootstrap mapping and before-fixture regression are preserved. New live CDP checks discover the unchanged six commerce names but invoke only get_public_contact with empty input; no provider operation, cart/payment mutation or external-host rendering acceptance is implied."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed the sales-channel CLI references and catalogue guidance. This change only fixes generic PHP lint argument forwarding and failure propagation; feed, channel and catalogue operations are unchanged."
         },
         "workflow": {
-            "source_sha256": "a19fc598a35f6aee4461143752b2d5b81da79cb5f78f3f8e068c662ec7e89ccf",
-            "references_sha256": "d80724bec71cbdf67774896dffd329f7a12d6a79f0d542dd84992687d824ce1b",
-            "review_note": "Reviewed the explicit response=json mapping gate and focused rejection tests for missing controller/page and misspelled kinds. Regenerated maps preserve real routes without inventing a webhook template. Native CI retains source-contract, SQL, browser and payment-boundary assertions; revised callback assertions follow the shared verified-order service."
+            "source_sha256": "129c2b8b0db4736390a7c10757bc718b63ddc71d7f39b05d593cfee41b7db660",
+            "references_sha256": "f6ac5079ee895f5c49c65cf00a054d8e4172d9779042cdab14332c7a994747fa",
+            "review_note": "Compared CI and post-deploy native WebMCP commands with the new bounded CDP helper and correlation tests. Both existing JS/polyfill lanes remain; documented actual browser identity, one contact read, explicit protocol failures and the external-host evidence limit."
         }
     }
 }

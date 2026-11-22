@@ -2,6 +2,7 @@
 const assert=require('node:assert/strict');
 const {chromium}=require('playwright');
 const {test}=require('node:test');
+const {inspectPagePublicContact}=require('./fixtures/webmcp-cdp.cjs');
 const native=process.env.WEBMCP_NATIVE==='1';
 const commerceNames=['create_cart','get_cart','set_cart_quantity','review_checkout','prepare_checkout_payment','get_checkout_status'];
 const landingNames=['get_public_contact','list_public_services','present_public_knowledge','search_public_articles','search_public_products',...commerceNames].sort();
@@ -85,8 +86,18 @@ test('live landing and shop WebMCP tools can be discovered and invoked ('+(nativ
         assert.ok(landing.servicesUi.messages[0].createSurface.surfaceId.startsWith('bapx_services_'));
         assert.equal(landing.servicesUi.messages[0].createSurface.dataModel.items.length,4);
         assert.ok(Number.isInteger(landing.articles.total));
+        if(native){
+            const external=await inspectPagePublicContact(page,{expectedNames:landingNames});
+            assert.deepEqual(external.contact,landing.contact,'CDP and native JS expose the same published contact');
+            console.log('LIVE WEBMCP CDP landing: '+JSON.stringify({browser:external.browser,profile:external.profile,names:external.names}));
+        }
         await page.goto(site+'/shop',{waitUntil:'load',timeout:20000});
         await waitForTools(page,shopNames);
+        if(native){
+            const external=await inspectPagePublicContact(page,{expectedNames:shopNames});
+            assert.deepEqual(external.contact,landing.contact,'Shop CDP returns the same published contact');
+            console.log('LIVE WEBMCP CDP shop: '+JSON.stringify({browser:external.browser,profile:external.profile,names:external.names}));
+        }
         const results=await page.evaluate(async({native,commerceNames,required})=>{
             const context=document.modelContext;
             const all=await context.getTools();
