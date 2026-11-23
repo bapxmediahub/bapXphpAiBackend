@@ -1,0 +1,33 @@
+name: Live read-only Chromium agent QA
+on:
+  push:
+    branches: [qa/live-agents-chromium-20261124]
+permissions:
+  contents: read
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned Playwright
+        run: npm install --prefix "$RUNNER_TEMP/live-qa" --no-audit --no-fund --ignore-scripts playwright@1.62.1
+      - name: Chromium public agent QA and authorized owner read-only gate
+        env:
+          SPS_QA_ADMIN_IDENTIFIER: ${{ secrets.SPS_QA_ADMIN_IDENTIFIER }}
+          SPS_QA_ADMIN_PASSWORD: ${{ secrets.SPS_QA_ADMIN_PASSWORD }}
+        run: |
+          NODE_PATH="$RUNNER_TEMP/live-qa/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/live-agents-readonly-qa.cjs
+      - name: Upload public-only screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-chromium-public-qa
+          path: qa-live-artifacts/
+          retention-days: 3
+          if-no-files-found: ignore
