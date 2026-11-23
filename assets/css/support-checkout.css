@@ -17,3 +17,19 @@
 .support-commerce__content{min-width:0}
 .support-commerce__recovery{font-size:.8rem;color:var(--color-text-muted,#6a6259);margin:12px 0}
 @media(max-width:420px){.support-panel__head{gap:6px;padding:10px}.support-commerce-toggle{font-size:.8rem}.support-commerce{padding:10px}}
+
+/* Existing Support panel's contact form, loaded from the real /contact page. */
+.support-enquiry{flex:1 1 auto;min-height:0;overflow-y:auto;padding:12px 14px;display:grid;align-content:start;gap:12px}
+.support-enquiry[hidden]{display:none!important}
+.support-enquiry__head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.support-enquiry__head h2{margin:0;font-size:1rem}
+.support-enquiry>p{margin:0;line-height:1.5;font-size:.88rem}
+.support-panel[data-enquiry-open="true"] :is(#support-log,#support-form,#support-commerce,.support-help-guide){display:none!important}
+.support-enquiry .contact-form{display:grid;gap:10px;min-width:0}
+.support-enquiry .contact-form__row{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.support-enquiry .form-group{min-width:0}
+.support-enquiry .contact-form :is(input,select,textarea){box-sizing:border-box;width:100%;max-width:100%;min-height:44px;font-size:16px}
+.support-enquiry .contact-form textarea{min-height:90px;resize:vertical}
+.support-enquiry .contact-form button[type="submit"]{min-height:44px}
+.support-enquiry :is(button,input,select,textarea,a):focus-visible{outline:3px solid var(--color-maroon,#3a0003);outline-offset:2px}
+#support-enquiry-status:not(:empty){padding:9px;border-radius:7px;background:var(--color-background-primary,#faf7f0)}

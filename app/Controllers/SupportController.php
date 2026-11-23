@@ -41,7 +41,8 @@ final class SupportController extends BaseController {
                 $this->jsonResponse(['reply'=>$turn['answer'],'ticket_id'=>$turn['ticket_id']??null,
                     'conversation_id'=>$conversationId,'turn_id'=>$turn['turn_id'],
                     'evaluation'=>$turn['evaluation'],'replayed'=>true,'run'=>['trace_id'=>$traceId]]
-                    + (new \App\Services\AgentAnswerPresentationService())->responseData((string)$turn['answer'],'support'));
+                    + (new \App\Services\AgentAnswerPresentationService())->responseData((string)$turn['answer'],'support')
+                    + (SupportBotService::newBookingEnquiry($message) ? ['ui'=>['kind'=>'contact_enquiry','subject'=>'general']] : []));
             }
             \App\Services\AgentTraceService::begin($traceId,
                 static fn(array $trace)=>$conversations->checkpoint('support',$actor,$conversationId,$traceId,$trace));
