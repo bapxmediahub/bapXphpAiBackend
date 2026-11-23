@@ -36,6 +36,23 @@ $secrets->saveGoogleGrant('private-fixture-refresh');
 $old = $secrets->googleReporting();
 rejectsStale(fn()=>$secrets->saveGoogleGrant('conflicting-token'));
 $secrets->save(['reporting_fixture_setting'=>'ordinary']);
+$routerFixture='sk-or-v1-'.str_repeat('f',64); // synthetic test credential only
+$secrets->save(['ai_openrouter_enabled'=>'0','ai_openrouter_key'=>$routerFixture,'ai_api_key'=>'fixture-google-key']);
+checkReporting(!str_contains(json_encode($db->read('secrets')),$routerFixture),
+    'OpenRouter key was stored as plaintext in the SQL record.');
+$secrets->save(['ai_openrouter_enabled'=>'1','ai_openrouter_key'=>'']);
+checkReporting(($secrets->getModelConfig()['provider']??'')==='openrouter'
+    && ($secrets->getModelConfig()['model']??'')===SecretService::OPENROUTER_MODEL
+    && ($secrets->getGoogleFallbackConfig()['model']??'')===SecretService::PRIMARY_MODEL,
+    'Enabled OpenRouter did not preserve existing Google Gemma backup.');
+$rejected=false;
+try {$secrets->save(['ai_openrouter_enabled'=>'invalid']);} catch (InvalidArgumentException) {$rejected=true;}
+checkReporting($rejected,'Unsafe OpenRouter toggle was accepted.');
+$secrets->save(['ai_openrouter_enabled'=>'0','ai_openrouter_key'=>'']);
+checkReporting(($secrets->getModelConfig()['provider']??'')==='google'
+    && ($secrets->all()['ai_openrouter_key']??'')===$routerFixture,
+    'Disabling OpenRouter must keep the encrypted key and restore Google.');
+
 checkReporting(!isset($secrets->all()['refresh_token']), 'Integration form copied a refresh token.');
 checkReporting(!str_contains(json_encode($db->read('secrets')), 'private-fixture-refresh'), 'Token appeared in plaintext storage.');
 $firstTab = $secondTab = ['generation'=>$old['generation'], 'revision'=>$old['revision']];

@@ -106,6 +106,17 @@ content hashes, never runtime prompt bodies. This does not grant production
 browser access. Uncaught CLI exceptions fail with a nonzero exit code and a
 bounded class/file diagnostic; they cannot masquerade as successful HTML output.
 
+## OpenRouter Free routing
+
+The owner can turn on `openrouter/free` for both existing PHP agents in Admin →
+Integrations. `AiClient` uses its established Chat Completions transport and
+keeps the same bounded tool registry. If an OpenRouter attempt fails **before any
+tool executes**, it can use the separately configured Google API key to try the
+existing Gemma 4 31B and 26B A4B models under the same deadline. It never
+replays a partial model/tool exchange against a different provider.
+Model attempts, HTTP statuses and timings are observable, not credentials or
+provider messages. Turning the option off restores the previous provider route.
+
 ## Provider calls and owner how-to questions
 
 Support resolves named product comparisons before calling a provider. Two or three

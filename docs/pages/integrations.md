@@ -12,6 +12,29 @@ Controller: `AdminController@integrations`
 
 Purpose: configure Razorpay (test/live), Stripe, Google OAuth, SMTP, Meta Pixel, native Google tag settings, Support Bot, and SEO defaults.
 
+## OpenRouter Free optional provider
+
+The existing AI Provider form contains a separate **Enable OpenRouter Free** toggle and
+a masked OpenRouter API Key directly below Google API Key. The model ID and endpoint
+are fixed to `openrouter/free` and `https://openrouter.ai/api/v1`; the owner
+does not supply another URL. This option is **off by default** and leaves the
+ordinary Google/OpenAI-compatible provider selection untouched when off.
+
+Enabling requires a saved OpenRouter key. An empty masked input preserves an existing
+key, and turning the option off retains it encrypted for a future opt-in. Both
+Support and Enterprise try OpenRouter first. If an OpenRouter model cannot
+answer **before any permitted tool call executes**, the existing Google
+`gemma-4-31b-it` and `gemma-4-26b-a4b-it` routes are tried within the
+original generation deadline, using the separately stored Google key. A completed
+tool exchange is never replayed to a different provider. A missing Google key
+cannot create a real fallback; failed attempts remain visible through the
+existing safe timing/model diagnostics in Test AI Connection.
+
+The same encrypted `app_secrets` row in hosted MySQL remains authoritative.
+The page never returns a saved OpenRouter key in a password input, code, logs,
+tests, A2UI or chat history. No key is supplied in sample documentation or CI
+fixtures. Reference: https://openrouter.ai/openrouter/free .
+
 ## Secrets Storage
 
 - Secrets are encrypted and stored in the remote MySQL `secrets` collection through Admin → Integrations.

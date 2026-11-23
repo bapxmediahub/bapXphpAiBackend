@@ -44,6 +44,16 @@ full user lists, payment data, or unrelated customer records. A future write
 operation needs an explicit controller/service contract, authorization, confirmation,
 CSRF protection and audit event; a prompt alone is never authorization.
 
+## OpenRouter Free in existing AI settings
+
+Keep the OpenRouter enable checkbox and masked API key adjacent to Google API Key.
+The saved key exists only in encrypted `app_secrets` (hosted MySQL); blank
+password means preserve, and disable retains it. A successful Test AI Connection
+must say which model actually answered, especially after a Google fallback.
+Test this owner-only form using Chromium Playwright at 1280px and 375px, and
+assert the password never appears in HTML or screenshots. Do not create a new
+frontend, local secret copy or separate provider client.
+
 ## AI Integration Secrets
 
 Configured in Admin → Integrations with these fields stored in MySQL `secrets` table:

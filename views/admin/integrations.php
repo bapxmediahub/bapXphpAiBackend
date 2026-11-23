@@ -63,7 +63,7 @@
         <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Customer login requests sign-in permissions. The owner authorizes reporting separately. Calendar and Google Meet are not used for this platform.</p>
 
         <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">AI Provider</h2>
-        <p>Customer support and owner chat share this provider. The compatible endpoint must support Chat Completions. Owner chat also uses function calling.</p>
+        <p>Customer support and owner chat share these settings. OpenRouter Free is an independent first-provider toggle; the selected Google or compatible provider below remains unchanged when it is off. Owner chat requires function calling.</p>
         <div class="admin-form__row">
             <label>Provider
                 <select name="ai_provider">
@@ -77,6 +77,25 @@
             <legend>Google Gemini API</legend>
             <p><?= e(\App\Services\SecretService::PRIMARY_MODEL) ?> is tried first, with <?= e(\App\Services\SecretService::FALLBACK_MODEL) ?> as fallback. A rate limit triggers immediate fallback.</p>
             <label>Google API Key<input type="password" name="ai_api_key" placeholder="Leave blank to keep saved key" autocomplete="new-password"></label>
+        </fieldset>
+        <fieldset class="ai-openrouter-settings" aria-describedby="openrouter-free-help">
+            <legend>OpenRouter Free · optional first provider</legend>
+            <input type="hidden" name="ai_openrouter_enabled" value="0">
+            <label class="ai-openrouter-toggle" for="ai-openrouter-enabled">
+                <input type="checkbox" id="ai-openrouter-enabled" name="ai_openrouter_enabled" value="1"
+                    <?= ($secrets['ai_openrouter_enabled'] ?? '0') === '1' ? 'checked' : '' ?>>
+                Enable OpenRouter Free
+            </label>
+            <p id="openrouter-free-help">When enabled, both agents try the fixed <code>openrouter/free</code> model
+                through <code>https://openrouter.ai/api/v1</code> first. If it fails before
+                executing any tool calls, Google Gemma 4 31B and then 26B A4B can answer
+                using the saved Google API key. Free models may be rate-limited or unavailable.</p>
+            <label for="ai-openrouter-key">OpenRouter API Key</label>
+            <input id="ai-openrouter-key" type="password" name="ai_openrouter_key" value=""
+                placeholder="Leave blank to keep the encrypted saved key" autocomplete="new-password"
+                minlength="16" maxlength="512" spellcheck="false">
+            <small id="ai-openrouter-key-status" role="status"><?= !empty($secrets['ai_openrouter_key'])
+                ? 'A key is saved. Its value is never shown here.' : 'No key has been saved.' ?></small>
         </fieldset>
         <fieldset>
             <legend>OpenAI-compatible API</legend>
