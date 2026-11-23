@@ -1095,10 +1095,13 @@ final class AdminController extends BaseController {
         $timings = $client->transferTimings();
         $lastAttempt = end($timings);
         $answeringModel = $ok ? ($lastAttempt['model'] ?? $model) : $model;
+        $answeringEndpoint = in_array($answeringModel, \App\Services\SecretService::GOOGLE_MODELS, true)
+            ? \App\Services\SecretService::GOOGLE_ENDPOINT
+            : (string)($config['endpoint'] ?? '');
         $_SESSION['ai_test_result'] = [
             'ok' => $ok,
             'model' => $answeringModel,
-            'endpoint' => (string)($config['endpoint'] ?? ''),
+            'endpoint' => $answeringEndpoint,
             'message' => $ok ? trim($answer) : ($answer !== '' ? $answer : 'The provider returned an empty response.'),
             'timings' => $timings,
             'tool_calls' => null,

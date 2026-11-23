@@ -43,24 +43,24 @@
                         ? '<p class="error" id="contact-' . $field . '-error">' . e($errors[$field]) . '</p>'
                         : '';
                     ?>
-                    <form method="post" action="/contact#contact-form" class="contact-form">
+                    <form method="post" action="/contact#contact-form" class="contact-form" toolname="prepare_contact_enquiry" tooldescription="Fill this existing customer enquiry form for human review. Submission sends a message, not a consultation booking, and needs the visitor to click Send message.">
                         <input type="hidden" name="_csrf" value="<?= e($_SESSION['csrf_token'] ??= bin2hex(random_bytes(16))) ?>">
                         <div class="contact-form__row">
                             <div class="form-group">
                                 <label for="contact-name">Name (required)</label>
-                                <input id="contact-name" type="text" name="name" autocomplete="name" required value="<?= e($submission['name']) ?>"<?= $fieldError('name') ?>>
+                                <input id="contact-name" type="text" name="name" autocomplete="name" toolparamdescription="Customer full name" required value="<?= e($submission['name']) ?>"<?= $fieldError('name') ?>>
                                 <?= $errorMessage('name') ?>
                             </div>
                             <div class="form-group">
                                 <label for="contact-email">Email (required)</label>
-                                <input id="contact-email" type="email" name="email" autocomplete="email" required value="<?= e($submission['email']) ?>"<?= $fieldError('email') ?>>
+                                <input id="contact-email" type="email" name="email" autocomplete="email" toolparamdescription="Reply-to email address" required value="<?= e($submission['email']) ?>"<?= $fieldError('email') ?>>
                                 <?= $errorMessage('email') ?>
                             </div>
                         </div>
                         <div class="contact-form__row">
                             <div class="form-group">
                                 <label for="contact-subject">Subject (required)</label>
-                                <select id="contact-subject" name="subject" required<?= $fieldError('subject') ?>>
+                                <select id="contact-subject" name="subject" toolparamdescription="Choose product, temple, order or general enquiry; no appointment booking" required<?= $fieldError('subject') ?>>
                                     <option value="">Select a subject</option>
                                     <?php foreach ($subjects as $key => $label): ?>
                                         <option value="<?= e($key) ?>"<?= $submission['subject'] === $key ? ' selected' : '' ?>><?= e($label) ?></option>
@@ -70,12 +70,12 @@
                             </div>
                             <div class="form-group">
                                 <label for="contact-phone">Phone (optional)</label>
-                                <input id="contact-phone" type="tel" name="phone" autocomplete="tel" value="<?= e($submission['phone']) ?>">
+                                <input id="contact-phone" type="tel" name="phone" autocomplete="tel" toolparamdescription="Optional callback number" value="<?= e($submission['phone']) ?>">
                             </div>
                         </div>
                         <div class="form-group">
                             <label for="contact-message">Message (required)</label>
-                            <textarea id="contact-message" name="message" rows="4" required<?= $fieldError('message') ?>><?= e($submission['message']) ?></textarea>
+                            <textarea id="contact-message" name="message" rows="4" toolparamdescription="Customer enquiry details; preferred date can be mentioned but no slot is reserved" required<?= $fieldError('message') ?>><?= e($submission['message']) ?></textarea>
                             <?= $errorMessage('message') ?>
                         </div>
                         <button class="btn btn-primary" type="submit">Send message</button>

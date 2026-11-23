@@ -1469,6 +1469,7 @@ flowchart LR
   controller_supportcontroller -- extends --> controller_basecontroller
   controller_supportcontroller -. static reference .-> service_agentconversationservice
   controller_supportcontroller -. static reference .-> service_agenttraceservice
+  controller_supportcontroller -. static reference .-> service_supportbotservice
   service_addressservice -. source new .-> service_databaseservice
   service_addressservice -. static reference .-> service_taxservice
   service_adminhelpservice -. source new .-> service_markdownrenderer

@@ -121,7 +121,16 @@ final class AiClient
         $this->transferTimings = [];
         $this->toolCalls = 0;
         $config = $this->secrets->getModelConfig();
-        if ($config['provider'] === 'openai_compatible') {
+        $deadline = null;
+        if ($config['provider'] === 'openrouter') {
+            $deadline = hrtime(true) + self::GENERATION_TIMEOUT_NS;
+            $routerAnswer = $this->completeCompatible($config, $prompt, $maxTokens,
+                $modelOverride, $tools, $maxRounds, $deadline, true);
+            if (!$this->routerNeedsGoogleFallback()) return $routerAnswer;
+            $google = $this->secrets->getGoogleFallbackConfig();
+            if (!$google['configured']) return $routerAnswer;
+            $config = $google;
+        } elseif ($config['provider'] === 'openai_compatible') {
             return $this->completeCompatible($config, $prompt, $maxTokens, $modelOverride, $tools, $maxRounds);
         }
 
@@ -136,7 +145,7 @@ final class AiClient
 
         $contents = [['role' => 'user', 'parts' => [['text' => $this->withAnswerFence($prompt)]]]];
 
-        $deadline = hrtime(true) + self::GENERATION_TIMEOUT_NS;
+        $deadline ??= hrtime(true) + self::GENERATION_TIMEOUT_NS;
         for ($round = 0; $round <= $maxRounds; $round++) {
             $finalRound = $round === $maxRounds;
             $request = [
@@ -244,6 +253,7 @@ final class AiClient
     {
         $this->failureCategory = null;
         $this->transferTimings = [];
+        $this->toolCalls = 0;
         $config = $this->secrets->getModelConfig();
         $endpoint = rtrim((string)($config['endpoint'] ?? 'https://api.openai.com/v1'), '/');
         $model = $modelOverride ?? (string)($config['model'] ?? SecretService::PRIMARY_MODEL);
@@ -268,6 +278,20 @@ final class AiClient
         // thinking. See ANSWER_OPEN below.
         $prompt = $this->withAnswerFence($prompt);
 
+        $deadline = null;
+        if ($provider === 'openrouter') {
+            $deadline = hrtime(true) + self::GENERATION_TIMEOUT_NS;
+            $routerAnswer = $this->completeCompatible($config, $prompt, $maxTokens,
+                $modelOverride, null, 0, $deadline, true);
+            if (!$this->routerNeedsGoogleFallback()) return $routerAnswer;
+            $google = $this->secrets->getGoogleFallbackConfig();
+            if (!$google['configured']) return $routerAnswer;
+            $provider = 'google';
+            $model = $google['model'];
+            $endpoint = $google['endpoint'];
+            $key = $google['apiKey'];
+        }
+
         if ($provider === 'google') {
             $payload = json_encode([
                 'contents' => [['parts' => [['text' => $prompt]]]],
@@ -289,7 +313,7 @@ final class AiClient
             $headers = ['Content-Type: application/json', 'x-goog-api-key: ' . $key];
             $modelLocked = false;
             $body = $this->postGoogleRouted(
-                $endpoint, $model, $payload, $headers, $status, $modelLocked
+                $endpoint, $model, $payload, $headers, $status, $modelLocked, $deadline
             );
             if ($status !== 200 || $body === false) return $this->failureMessage($status, $body);
             $result = json_decode((string)$body, true);
@@ -312,7 +336,9 @@ final class AiClient
         int $maxTokens,
         ?string $modelOverride,
         ?AgentToolRegistry $tools = null,
-        int $maxRounds = 0
+        int $maxRounds = 0,
+        ?int $deadline = null,
+        bool $laterGoogleFallback = false
     ): string {
         if (!$config['configured']) {
             $this->failureCategory = 'not_configured';
@@ -322,7 +348,7 @@ final class AiClient
             $this->failureCategory = 'transport';
             return 'AI request failed: cURL is not available on this server.';
         }
-        $deadline = hrtime(true) + self::GENERATION_TIMEOUT_NS;
+        $deadline ??= hrtime(true) + self::GENERATION_TIMEOUT_NS;
         $host = parse_url($config['endpoint'], PHP_URL_HOST);
         $port = parse_url($config['endpoint'], PHP_URL_PORT) ?? 443;
         $addresses = dns_get_record($host, DNS_A | DNS_AAAA) ?: [];
@@ -361,11 +387,13 @@ final class AiClient
                     $payload['tools'] = $declarations;
                     $payload['tool_choice'] = $round < $maxRounds ? 'auto' : 'none';
                 }
-                $hasAlternate = $round === 0 && $index + 1 < count($models);
+                $hasModelAlternate = $round === 0 && $index + 1 < count($models);
+                $hasAlternate = $hasModelAlternate || ($round === 0 && $laterGoogleFallback
+                    && $this->toolCalls === 0);
                 $body = $this->post($url, json_encode($payload, JSON_THROW_ON_ERROR), $headers, $status,
                     $model, $deadline, $hasAlternate, $options);
                 if ($status !== 200 || $body === false) {
-                    if ($hasAlternate && $this->waitForFailover($status, $deadline, $index)) break;
+                    if ($hasModelAlternate && $this->waitForFailover($status, $deadline, $index)) break;
                     return $this->failureMessage($status, $body);
                 }
                 $message = json_decode($body, true)['choices'][0]['message'] ?? [];
@@ -409,6 +437,13 @@ final class AiClient
             }
         }
         return $status === 200 ? '' : $this->failureMessage($status, $body);
+    }
+
+    /** Cross-provider recovery is allowed only before a tool result has been executed.
+     * A partial tool exchange must never be replayed through another model/provider. */
+    private function routerNeedsGoogleFallback(): bool {
+        return $this->toolCalls === 0 && $this->failureCategory !== null
+            && !in_array($this->failureCategory, ['provider_budget'], true);
     }
 
     private const ANSWER_OPEN = '<final_answer>';

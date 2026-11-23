@@ -480,6 +480,15 @@ if ($__flash):
         <p id="support-commerce-recovery" class="support-commerce__recovery">Delivery details stay in this form and are sent only when you review checkout.</p>
         <button type="button" id="support-commerce-reset" class="support-commerce-back">Clear chat shopping access</button>
     </section>
+    <section id="support-enquiry" class="support-enquiry" aria-label="Send an enquiry to Sri Panchami" hidden>
+        <div class="support-enquiry__head">
+            <h2 tabindex="-1">Send an enquiry</h2>
+            <button type="button" id="support-enquiry-back" class="support-commerce-back">Back to chat</button>
+        </div>
+        <p>New consultation bookings are not available. Describe what you need, including a preferred date if useful; the team can reply but no appointment is reserved.</p>
+        <p id="support-enquiry-status" role="status" aria-live="polite"></p>
+        <div id="support-enquiry-form-container"></div>
+    </section>
     <?php if(module_on('blog')): ?><a class="support-help-guide" href="/blog/get-support">Read support guide</a><?php endif; ?>
     <form class="support-panel__form" id="support-form">
         <input type="hidden" name="_csrf" value="<?= e((string)($_SESSION['csrf_token'] ?? '')) ?>">
@@ -564,6 +573,91 @@ function supportRandomId(){var bytes=new Uint8Array(16);crypto.getRandomValues(b
 function supportEscape(value){return String(value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c];});}
 function supportReplyHtml(value){var safe=supportEscape(value);var allowed=/\/(?:shop|cart|checkout|temples|contact|blog(?:\/[a-z0-9-]+|\/category\/[a-z0-9-]+)?|product\/(?:[a-z0-9-]|%20)+|account\/dashboard(?:\/orders|\/install)?)(?=$|[\s.,)])/gi;return safe.replace(allowed,function(path){return '<a class="support-action" href="'+path+'">Open '+supportEscape(path.replace(/^\//,'').replace(/%20|[-/]/g,' '))+'</a>';});}
 function supportActionsHtml(actions){if(!actions||!actions.length)return'';var h='<div class="support-actions">';for(var i=0;i<actions.length;i++){var a=actions[i];if(a.type==='navigate'&&a.path){h+='<a class="btn btn-sm btn-outline support-action-btn" href="'+supportEscape(a.path)+'">'+supportEscape(a.label)+'</a>';}}return h+'</div>';}
+var supportEnquiry=document.getElementById('support-enquiry'),
+    supportEnquiryBack=document.getElementById('support-enquiry-back'),
+    supportEnquiryStatus=document.getElementById('support-enquiry-status'),
+    supportEnquiryContainer=document.getElementById('support-enquiry-form-container'),
+    supportEnquiryLoading=false;
+function supportCloseEnquiry(){
+    if(!supportEnquiry||!supportPanel)return;
+    supportPanel.dataset.enquiryOpen='false'; supportEnquiry.hidden=true;
+}
+async function supportOpenEnquiry(){
+    if(!supportEnquiry||!supportPanel||!supportEnquiryContainer||supportEnquiryLoading)return;
+    var commerceBack=document.getElementById('support-commerce-back');
+    if(supportPanel.dataset.commerceOpen==='true'&&commerceBack)commerceBack.click();
+    supportPanel.dataset.enquiryOpen='true';supportEnquiry.hidden=false;
+    supportToggle(true);
+    supportEnquiry.querySelector('h2')?.focus({preventScroll:true});
+    if(supportEnquiryContainer.querySelector('form.contact-form'))return;
+    supportEnquiryLoading=true;
+    supportEnquiryStatus.textContent='Loading the existing contact form…';
+    try{
+        var response=await fetch('/contact?subject=general',{method:'GET',credentials:'same-origin',cache:'no-store',headers:{Accept:'text/html'}});
+        if(!response.ok||!String(response.headers.get('Content-Type')||'').includes('text/html'))throw Error();
+        var html=await response.text();if(html.length>500000)throw Error();
+        var page=new DOMParser().parseFromString(html,'text/html');
+        var source=page.querySelector('form.contact-form');
+        if(!source||source.getAttribute('method')?.toLowerCase()!=='post')throw Error();
+        var target=new URL(source.getAttribute('action')||'',location.href);
+        if(target.origin!==location.origin||target.pathname!=='/contact')throw Error();
+        var fields=Array.from(source.querySelectorAll('[name]'));
+        if(fields.some(function(field){return !['_csrf','name','email','subject','phone','message'].includes(field.name);})
+            || !['_csrf','name','email','subject','message'].every(function(name){return fields.some(function(field){return field.name===name;});}))throw Error();
+        var form=document.importNode(source,true);
+        form.action='/contact';form.id='support-enquiry-form';
+        var subject=form.elements.namedItem('subject');
+        if(subject && Array.from(subject.options||[]).some(function(option){return option.value==='general';}))subject.value='general';
+        supportEnquiryContainer.replaceChildren(form);supportEnquiryStatus.textContent='';
+    }catch(_){
+        supportEnquiryStatus.textContent='The form could not be loaded here. The existing contact page is still available.';
+        var fallback=document.createElement('a');
+        fallback.href='/contact#contact-form';fallback.textContent='Open the contact form';
+        supportEnquiryContainer.replaceChildren(fallback);
+    }finally{supportEnquiryLoading=false;}
+}
+supportEnquiryBack?.addEventListener('click',function(){supportCloseEnquiry();supportLog?.focus?.();});
+document.getElementById('support-commerce-toggle')?.addEventListener('click',supportCloseEnquiry);
+supportLog?.addEventListener('click',function(event){
+    var anchor=event.target instanceof Element?event.target.closest('a[href]'):null;
+    if(!anchor)return;
+    try{
+        var dest=new URL(anchor.href,location.href);
+        if(dest.origin===location.origin&&dest.pathname==='/contact'){
+            event.preventDefault();void supportOpenEnquiry();
+        }
+    }catch(_){}
+});
+supportEnquiry?.addEventListener('submit',async function(event){
+    var form=event.target;
+    if(!(form instanceof HTMLFormElement)||!form.classList.contains('contact-form'))return;
+    event.preventDefault();
+    if(form.dataset.busy==='true'||!form.reportValidity())return;
+    var submit=form.querySelector('button[type="submit"]');
+    form.dataset.busy='true';if(submit)submit.disabled=true;
+    supportEnquiryStatus.textContent='Sending your enquiry…';
+    try{
+        var response=await fetch('/contact',{method:'POST',credentials:'same-origin',
+            headers:{Accept:'text/html'},body:new FormData(form),redirect:'follow'});
+        var reply=await response.text();
+        if(reply.length>500000)throw Error();
+        var page=new DOMParser().parseFromString(reply,'text/html');
+        if(response.ok&&new URL(response.url).origin===location.origin
+            &&page.querySelector('[data-contact-feedback]')?.textContent?.trim().startsWith('Message received')){
+            supportEnquiryContainer.replaceChildren();
+            supportEnquiryStatus.textContent='Your enquiry was received. The team can reply, but no appointment has been booked.';
+        }else if(response.status===422){
+            supportEnquiryStatus.textContent=page.querySelector('.contact-form__errors')?.textContent?.trim()
+                ||'Please check the required fields and try again.';
+        }else if(response.status===429){
+            supportEnquiryStatus.textContent='Too many requests. Please try later, without submitting repeated messages now.';
+        }else{
+            supportEnquiryStatus.textContent='The submission could not be confirmed. Please check with the team before sending it again.';
+        }
+    }catch(_){
+        supportEnquiryStatus.textContent='The submission status is unknown. Your form remains here; please check before resending.';
+    }finally{form.dataset.busy='false';if(submit)submit.disabled=false;}
+});
 function supportRenderAnswer(answer){
     var block=document.createElement('div');block.className='support-answer';
     var rendered=answer.a2ui&&window.BapxA2ui&&window.BapxA2ui.render(block,answer.a2ui,{scope:'support'});
@@ -601,6 +695,7 @@ if(supportForm){supportForm.addEventListener('submit',async function(e){
         if(!failed)supportPendingRequest=null;
         if(typeof j.conversation_id==='string')supportConversationId=j.conversation_id;
         supportRenderAnswer(j);
+        if(!failed&&j.ui?.kind==='contact_enquiry')void supportOpenEnquiry();
         if(!failed&&!j.ticket_id&&typeof j.turn_id==='string'&&/^[a-f0-9]{32}$/.test(j.turn_id)){
             var feedback=document.createElement('div');feedback.className='support-feedback';feedback.dataset.turnId=j.turn_id;
             feedback.innerHTML='<span>Did this answer your question?</span> <button type="button" data-support-rating="helpful">Yes, resolved</button> <button type="button" data-support-rating="not_helpful">No, need help</button>';

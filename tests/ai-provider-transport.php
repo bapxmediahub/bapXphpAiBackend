@@ -85,6 +85,21 @@ try {
     check($status === 0 && $reason === 'request_deadline' && $attempts === [], 'Local deadline expiry is not a network timeout');
     check(!AiClient::canFailOver(0, 60) && !AiClient::canFailOver(501, 0), 'Certificate and unsupported protocol failures are terminal');
 
+    // The provider switch is valid only before any executed tool call.
+    $gate=new ReflectionMethod(AiClient::class,'routerNeedsGoogleFallback');
+    $failure=new ReflectionProperty(AiClient::class,'failureCategory');
+    $executed=new ReflectionProperty(AiClient::class,'toolCalls');
+    $unit=new AiClient();
+    $failure->setValue($unit,'rate_limit');
+    check($gate->invoke($unit)===true,'OpenRouter rate limit must permit the Google backup.');
+    $failure->setValue($unit,'authentication');
+    check($gate->invoke($unit)===true,'A revoked OpenRouter key can still use the saved Google key.');
+    $executed->setValue($unit,1);
+    check($gate->invoke($unit)===false,'An executed tool exchange must not cross providers.');
+    $executed->setValue($unit,0);
+    $failure->setValue($unit,null);
+    check($gate->invoke($unit)===false,'A healthy model must not trigger duplicate inference.');
+
     AgentTraceService::begin(str_repeat('a',16), null, ['max_model_calls' => 1]);
     $prior = AgentTraceService::startSpan('model_attempt', SecretService::PRIMARY_MODEL);
     AgentTraceService::endSpan($prior, 'complete');
