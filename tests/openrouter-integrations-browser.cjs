@@ -33,7 +33,7 @@ for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at 
             if(url.pathname==='/admin/integrations/save'){
                 const params=new URLSearchParams(req.postData());
                 sent.push({
-                    enabled:params.get('ai_openrouter_enabled'),
+                    enabled:params.getAll('ai_openrouter_enabled').at(-1), // PHP uses the last value after the hidden off sentinel
                     keyMatches:params.get('ai_openrouter_key')===fakeKey,
                     keyEmpty:params.get('ai_openrouter_key')==='',
                     csrf:params.get('_csrf')==='fixture-only',
