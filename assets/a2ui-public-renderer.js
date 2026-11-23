@@ -160,6 +160,11 @@
                         } else {
                             element = document.createElement('div'); element.className = 'bapx-a2ui__column';
                             if (id === 'items') element.classList.add('bapx-a2ui__items');
+                            if (id === 'items' && (presentation === 'product_grid' || presentation === 'product_list') && (data.items?.length ?? 0) > 1 && (scope === 'support' || scope === 'admin')) {
+                                element.tabIndex = 0;
+                                element.setAttribute('role', 'region');
+                                element.setAttribute('aria-label', 'Products. Swipe or use the arrow keys to browse.');
+                            }
                             if (/^body_[0-3]$/.test(id)) element.classList.add('bapx-a2ui__item-body');
                             if (/^highlights_[0-3]$/.test(id)) element.classList.add('bapx-a2ui__highlights');
                             if (/^specifications_[0-3]$/.test(id)) element.classList.add('bapx-a2ui__specifications');

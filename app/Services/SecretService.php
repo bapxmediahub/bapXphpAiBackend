@@ -6,6 +6,8 @@ final class SecretService {
     public const FALLBACK_MODEL = 'gemma-4-26b-a4b-it';
     public const GOOGLE_MODELS = [self::PRIMARY_MODEL, self::FALLBACK_MODEL];
     public const GOOGLE_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models';
+    public const OPENROUTER_ENDPOINT = 'https://openrouter.ai/api/v1';
+    public const OPENROUTER_MODEL = 'openrouter/free';
 
     public function __construct(private ?DatabaseService $store = null) {}
     public function razorpayReadyForCurrentHost(array $secrets): bool {
@@ -58,7 +60,27 @@ final class SecretService {
         foreach (['ai_api_key', 'ai_compatible_key'] as $field) {
             if (array_key_exists('ai_provider', $values) && ($values[$field] ?? null) === '') unset($values[$field]);
         }
+        // Never clear the separately stored OpenRouter key when the masked field is blank.
+        // The toggle persists independently of the older Google/compatible selection.
+        if (array_key_exists('ai_openrouter_key', $values)) {
+            if (!is_string($values['ai_openrouter_key'])) {
+                throw new \InvalidArgumentException('Enter a valid OpenRouter API key.');
+            }
+            if (trim($values['ai_openrouter_key']) === '') {
+                unset($values['ai_openrouter_key']);
+            } elseif (!self::validOpenRouterKey($values['ai_openrouter_key'])) {
+                throw new \InvalidArgumentException('Enter a valid OpenRouter API key.');
+            }
+        }
+        if (array_key_exists('ai_openrouter_enabled', $values)
+            && !in_array($values['ai_openrouter_enabled'], ['0','1'], true)) {
+            throw new \InvalidArgumentException('Select a valid OpenRouter on/off setting.');
+        }
         $merged = array_replace($existing, $values);
+        if (($merged['ai_openrouter_enabled'] ?? '0') === '1'
+            && !self::validOpenRouterKey((string)($merged['ai_openrouter_key'] ?? ''))) {
+            throw new \InvalidArgumentException('Save the OpenRouter API key before enabling OpenRouter Free.');
+        }
         $config = self::compatibleConfig($merged);
         $oldEndpoint = self::compatibleConfig($existing)['endpoint'];
         if ($oldEndpoint !== $config['endpoint'] && !array_key_exists('ai_compatible_key', $values)) {
@@ -127,14 +149,35 @@ final class SecretService {
         $all[$key] = $value;
         $this->save($all);
     }
+    /** Selecting OpenRouter does not overwrite or disable the existing Google credentials. */
     public function getModelConfig(): array {
         $secrets = $this->all();
+        if (($secrets['ai_openrouter_enabled'] ?? '0') === '1') {
+            $apiKey = trim((string)($secrets['ai_openrouter_key'] ?? ''));
+            if (self::validOpenRouterKey($apiKey)) {
+                return ['provider'=>'openrouter', 'model'=>self::OPENROUTER_MODEL,
+                    'models'=>[self::OPENROUTER_MODEL], 'endpoint'=>self::OPENROUTER_ENDPOINT,
+                    'apiKey'=>$apiKey, 'configured'=>true];
+            }
+            // Invalid legacy configuration cannot silently try an unsafe endpoint.
+        }
         if (($secrets['ai_provider'] ?? '') === 'openai_compatible') return self::compatibleConfig($secrets);
+        return $this->googleConfig($secrets);
+    }
+
+    /** Only the model router uses this second read, and only after failed OpenRouter inference. */
+    public function getGoogleFallbackConfig(): array {
+        return $this->googleConfig($this->all());
+    }
+
+    private static function validOpenRouterKey(string $key): bool {
+        return strlen($key) >= 16 && strlen($key) <= 512
+            && preg_match('/[^\\x21-\\x7e]/', $key) !== 1;
+    }
+
+    private function googleConfig(array $secrets): array {
         $apiKey = $this->firstValue($secrets, ['ai_api_key', 'agent_api_key', 'support_bot_google_api_key'], ['AI_API_KEY', 'AGENT_API_KEY', 'BAPX_AI_API_KEY']);
         $model = $this->firstValue($secrets, ['agent_model', 'support_bot_model'], ['AGENT_MODEL', 'BAPX_AI_MODEL']);
-        // The native Google configuration uses the two hosted Gemma 4 models.
-        // Google does not publish a Gemma 4 27B Gemini API identifier; the documented
-        // smaller hosted model is the 26B A4B variant.
         // https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api#supported-models
         if (!in_array($model, self::GOOGLE_MODELS, true)) $model = self::PRIMARY_MODEL;
         $endpoint = self::GOOGLE_ENDPOINT;

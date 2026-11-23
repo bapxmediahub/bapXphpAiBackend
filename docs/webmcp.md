@@ -43,6 +43,13 @@ pagination. Published article visibility,
 future-date filtering and module switches remain enforced on the server.
 Unknown arguments, private fields and unapproved response paths are rejected.
 
+
+## Declarative reuse of existing forms
+
+The shop's real \`GET /shop\` keyword/category/sort form advertises \`filter_visible_shop\` with \`toolautosubmit\` because it only navigates to filtered public results. This does not duplicate the canonical \`search_public_products\` read, which queries the entire published catalogue.
+
+The existing \`POST /contact\` form advertises \`prepare_contact_enquiry\` with field descriptions and **no** \`toolautosubmit\`: an AI-enabled browser may help fill fields, but the visitor must explicitly submit the message. A contact enquiry never books a retired consultation. Support may reuse this same-origin form inside its existing panel, with the original server's CSRF, validation, rate limit and confirmation. WebMCP registration on these elements does not install remote chat tools or permit unattended writes.
+
 ## Finding the public tools
 
 Every public page links to the human-readable `/ai-assistants` guide in its

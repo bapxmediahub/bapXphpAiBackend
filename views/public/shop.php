@@ -42,14 +42,14 @@
                 <h1><?= e($category === '' ? 'Shop' : $shopHeading) ?></h1>
                 <p class="shop-toolbar__count"><?= count($items) ?> product<?= count($items) === 1 ? '' : 's' ?></p>
             </header>
-            <form class="shop-discovery" action="/shop" method="get" aria-label="Find products">
+            <form class="shop-discovery" action="/shop" method="get" aria-label="Find products" toolname="filter_visible_shop" tooldescription="Filter and sort this shop page using the existing category, keyword and sort controls. This changes only the visible listing." toolautosubmit>
                 <label class="shop-discovery__search">
                     Search products
-                    <input type="search" name="q" value="<?= e($search) ?>" maxlength="120" placeholder="Try pendant or rudraksha">
+                    <input type="search" name="q" toolparamdescription="Search keywords or a published product name" value="<?= e($search) ?>" maxlength="120" placeholder="Try pendant or rudraksha">
                 </label>
                 <label class="shop-discovery__category">
                     Category or collection
-                    <select name="category">
+                    <select name="category" toolparamdescription="Current shop category or published collection">
                         <?php foreach ($categoryLabels as $slug => $label): ?>
                             <option value="<?= e((string)$slug) ?>"<?= $category === (string)$slug ? ' selected' : '' ?>><?= e($label) ?></option>
                         <?php endforeach; ?>
@@ -57,7 +57,7 @@
                 </label>
                 <label>
                     Sort by
-                    <select name="sort">
+                    <select name="sort" toolparamdescription="Visible product sort order">
                         <?php foreach ($sortOptions as $value => $label): ?>
                             <option value="<?= e($value) ?>"<?= $sort === $value ? ' selected' : '' ?>><?= e($label) ?></option>
                         <?php endforeach; ?>

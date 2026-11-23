@@ -20,6 +20,23 @@ final class SupportBotService {
         if ($ticketLookup !== null) {
             return $this->answerTicketQuestion($message, (string)($user['email'] ?? ''), $ticketLookup, $startedAt);
         }
+        if (self::newBookingEnquiry($message)) {
+            $span = AgentTraceService::startSpan('retrieval', 'retired_consultation_policy');
+            AgentTraceService::endSpan($span, 'complete', ['result_count'=>1]);
+            (new AuditLogService($this->store))->agentRun('support', 'local', $startedAt, traceId:$this->traceId);
+            return [
+                'reply'=>'New consultation appointments cannot currently be booked online. You can send a general enquiry to our team right here instead. Enter your name, email and a short message about what you need; a phone number is optional. Sending an enquiry does not reserve a slot.',
+                'ticket_id'=>null, 'memory'=>'browser_session',
+                'actions'=>[['type'=>'navigate', 'label'=>'Send an enquiry', 'path'=>'/contact']],
+                'ui'=>['kind'=>'contact_enquiry', 'subject'=>'general'],
+                'run'=>['outcome'=>'local', 'trace_id'=>$this->traceId,
+                    'tools'=>[], 'attempts'=>[],
+                    'retrieval'=>[AgentTraceService::safeRetrieval([
+                        'intent'=>'service_enquiry', 'status'=>'matched',
+                        'reason'=>'retired_booking_enquiry', 'result_count'=>1
+                    ])]],
+            ];
+        }
         $publicLookup = self::publicBusinessLookup($message);
         if ($publicLookup !== null) {
             return $this->answerPublicBusinessQuestion($publicLookup, $user, $startedAt);
@@ -118,6 +135,16 @@ final class SupportBotService {
         $result['run'] = ['outcome'=>$outcome,'trace_id'=>$this->traceId,'tools'=>[],
             'attempts'=>$attempts,'retrieval'=>$retrieval];
         return $result;
+    }
+
+    /** A request to arrange a NEW consultation, never a lookup of an old appointment. */
+    public static function newBookingEnquiry(string $message): bool
+    {
+        $message=trim($message);
+        if($message===''||mb_strlen($message)>2000)return false;
+        return preg_match('/\b(?:book|schedule|reserve|request)\b.{0,80}\b(?:appointment|consultation|session|slot)\b/iu',$message)===1
+            || preg_match('/\b(?:appointment|consultation|session|slot)\b.{0,80}\b(?:book|schedule|reserve|availability|available)\b/iu',$message)===1
+            || preg_match('/(?:சந்திப்பு|ஆலோசனை|அப்பாயிண்ட்மெண்ட்).{0,40}(?:முன்பதிவு|பதிவு|வேண்டும்)|(?:முன்பதிவு|புக்).{0,40}(?:சந்திப்பு|ஆலோசனை|அப்பாயிண்ட்மெண்ட்)/u',$message)===1;
     }
 
     /** Match public business questions without intercepting personal contact changes. */
@@ -405,7 +432,7 @@ final class SupportBotService {
             . "For product comparisons, describe differences supported by the supplied catalog examples and identify them as examples. If a side is missing, say which one is missing.\n"
             . "You may help with: " . $this->allowedHelp() . ".\n"
             . "End with one exact internal path (e.g., /shop, /product/slug, /cart, /checkout, /contact) written as part of a normal sentence, so the UI can show a navigation button.\n"
-            . "Consultation bookings have been retired. Never mention /consult, consultants, astrologers, appointments, or sessions.\n"
+            . "Consultation booking is retired. Never offer slots or claim a reservation; if asked, explain the policy and offer a general enquiry inside Support. Do not point to /consult.\n"
             . "For buying a product: explain step-by-step — browse /shop, click a product, add to cart, go to /cart, proceed to /checkout, enter address, pay with card/UPI, view order at /account/dashboard/orders.\n"
             . "For product issues or returns: ask the customer to use the /contact form.\n"
             . "Never invent admin paths, external URLs, or claim that an action already happened.\n"

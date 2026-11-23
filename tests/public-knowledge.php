@@ -137,6 +137,21 @@ try {
             throw new RuntimeException('Public business question did not use its grounded read-only tool.');
         }
     }
+
+    foreach (['Please book me an appointment','Can I schedule a consultation?','Appointment availability?','நான் ஆலோசனை முன்பதிவு செய்ய வேண்டும்'] as $bookingQuestion) {
+        if (!SupportBotService::newBookingEnquiry($bookingQuestion)) throw new RuntimeException('New booking request did not select the honest enquiry path.');
+    }
+    foreach (['What is my previous appointment status?','Can you book a product?','How can I contact you?'] as $notNewBooking) {
+        if (SupportBotService::newBookingEnquiry($notNewBooking)) throw new RuntimeException('Unrelated request was diverted to a new booking enquiry.');
+    }
+    $booking=(new SupportBotService())->answer('Please book me an appointment',null);
+    if (($booking['run']['outcome']??null)!=='local'
+        || ($booking['ui']['kind']??null)!=='contact_enquiry'
+        || ($booking['run']['attempts']??null)!==[]
+        || !str_contains($booking['reply'],'cannot currently be booked')
+        || !str_contains($booking['reply'],'does not reserve a slot')) {
+        throw new RuntimeException('Retired booking response was not grounded and reviewable.');
+    }
     $productPath = new ReflectionMethod(PublicKnowledgeService::class, 'productPath');
     foreach (['legacy item.v2'=>'/product/legacy%20item.v2', '珊瑚 pendant'=>'/product/%E7%8F%8A%E7%91%9A%20pendant',
         'தமிழ் pendant'=>'/product/%E0%AE%A4%E0%AE%AE%E0%AE%BF%E0%AE%B4%E0%AF%8D%20pendant',
@@ -186,6 +201,12 @@ try {
         $submission = array_fill_keys(['name','email','phone','subject','message'], '');
         ob_start(); require app_path('views/public/contact.php'); return ob_get_clean();
     })();
+    if (!str_contains($renderedContact, 'toolname="prepare_contact_enquiry"')
+        || str_contains($renderedContact, 'toolautosubmit')
+        || !str_contains(file_get_contents(app_path('views/public/shop.php')), 'toolname="filter_visible_shop"')
+        || !str_contains(file_get_contents(app_path('views/public/shop.php')), 'toolautosubmit')) {
+        throw new RuntimeException('Existing web forms lost safe declarative WebMCP semantics.');
+    }
     if (!str_contains($renderedContact, 'tel:+919789444037')
         || !str_contains($renderedContact, 'mailto:' . $contact['email'])
         || !str_contains($renderedContact, 'Mon–Sat, 9 AM–7 PM · Sun, 10 AM–5 PM')) {

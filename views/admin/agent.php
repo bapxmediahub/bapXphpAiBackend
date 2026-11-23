@@ -141,6 +141,24 @@
 
 /* A draft is a form, not a sentence — it needs the width a chat bubble caps. */
 .agent-bubble:has(.agent-draft) { max-width:100%; width:100%; }
+/* Native Enterprise answers are workspaces, not narrow text-message bubbles. */
+.agent-row--bot { width:100%; }
+.agent-row--bot .agent-bubble {
+    width:min(100%,900px);
+    max-width:min(100%,900px);
+    flex:1 1 auto;
+}
+.agent-row--user { max-width:100%; }
+.agent-row--user .agent-bubble { max-width:min(85%,640px); }
+.agent-row--bot .bapx-a2ui { max-width:100%; }
+.agent-row--bot .bapx-a2ui__report-rows { min-width:0; }
+@media(max-width:768px) {
+    .agent-row--bot { gap:6px; }
+    .agent-row--bot .agent-avatar { width:25px;height:25px; }
+    .agent-row--bot .agent-bubble { padding:10px; min-width:0; }
+    .agent-messages { max-height:62dvh; }
+}
+
 /* A draft the owner reviews. Nothing here has been saved. */
 .agent-draft__note { margin:0 0 var(--space-sm); font-size:0.85rem; }
 .agent-draft__form { display:flex; flex-direction:column; gap:var(--space-sm); }

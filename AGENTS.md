@@ -148,6 +148,14 @@ that is not there.
   still filters any reasoning from the returned text. Reference:
   <https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api#thinking>.
 
+The owner can also opt into the fixed `openrouter/free` first-provider route
+using a separately encrypted key and on/off toggle near Google API Key in
+Integrations. Both agents share `AiClient`, with Google Gemma 4 31B then
+26B A4B fallback on an OpenRouter failure *before any tool execution*.
+Keep the original generation deadline and never replay a partially completed
+tool exchange across providers. The toggle defaults off and preserves the
+current provider selection. Reference: <https://openrouter.ai/openrouter/free>.
+
 The owner can opt into an HTTPS OpenAI-compatible Chat Completions provider in
 Integrations with a dedicated key and up to five ordered model IDs. Both agents
 share the selection. Owner tools require Chat Completions function calling.

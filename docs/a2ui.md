@@ -8,6 +8,10 @@ category: docs
 
 The two existing PHP agents use a bounded subset of [A2UI 1.0](https://a2ui.org/). The server selects trusted components and supplies their data; the native chat or external app renders them. The model never supplies executable HTML, JavaScript, component definitions or new tool permissions.
 
+### Native inline enquiry in Support
+
+A request to **book a new consultation** returns a deterministic policy response: booking is retired and no appointment slot can be reserved. Support opens a native in-panel enquiry view, loads the actual same-origin \`/contact?subject=general\` form, and submits only when the visitor presses **Send message**. Form fields are not inserted into saved conversation HTML or passed to the model. It reuses the same public contact validation, CSRF, rate limiting, contact persistence and mail queue; the response is confirmed only when the existing contact page returns its real **Message received** state. A failed or uncertain response never claims delivery or silently retries. The normal contact URL remains the fallback when the form cannot load. This is not a new booking route or a new A2UI component catalog.
+
 ## Answer presentation
 
 Successful Support and Enterprise responses include an optional `a2ui` envelope alongside the complete original `reply` or `answer`. The chat renders the structured surface as its primary response. If the renderer is missing or rejects an unsupported surface, it shows the complete original response instead. A successful surface is not followed by a duplicate flat answer.
@@ -90,3 +94,40 @@ authenticated native route; public tools cannot access owner tools or conversati
 `tests/a2ui-public-browser.cjs` covers the polyfill presentation tool, safe public and native rendering, product images, configured external origins, trusted keyboard link callbacks, Unicode/path parity, contact/service cards, recorded private facts, malicious text, unsafe links, cycles and atomic rejection. It exercises the actual Support interaction script at 1280px and 375px, including primary presentation, keyboard links and photo disclosures, complete fallback and session restoration without resubmission. Variant fixtures also check wide versus narrow containers within a desktop viewport and reject unknown families, mismatched comparison fields and private reports on public surfaces.
 
 `tests/agent-history-browser.cjs` checks Enterprise primary presentation, approved source actions, visibly restored structured history and exact recorded report rows, readable live/replay container width, legacy/unsupported fallback, draft and history switching, and mobile layout. Native WebMCP CI and the post-deployment landing/shop probe separately verify browser tool discovery. A successful deployment probe demonstrates website/browser capability; it does not claim that an unrelated external chat client supports WebMCP or MCP Apps.
+
+
+## Native chat canvas layout and browser QA (November 2026)
+
+The existing \`BapxA2ui\` renderer continues to own the public product cards and
+server-grounded Enterprise answer/report components. In **native Support and
+Enterprise chat only**, a multi-product list/grid renders as a horizontally
+scroll-snapping rail *inside the same answer canvas*, not as a second store or
+frontend. Cards preserve the exact server-provided published product URL,
+official image and current price. The rail has a keyboard-focusable named
+region for arrow-key scrolling; public website pages and external MCP App
+hosts retain their own layouts, and unconnected web-search hosts do not gain
+write permissions.
+
+The native Support panel reserves most of its bounded viewport for the
+conversation and gives its composer a compact, accessible single-row message +
+Send layout. The Enterprise bot answer uses the available safe width for
+evidence and report cards without overflowing 375px mobile. None of these
+presentation-only changes call tools, create a cart, submit a contact message,
+or change the RBAC/CSRF/model configuration.
+
+Repeatable **headless Chromium Playwright** QA is a developer/CI activity:
+
+\`\`\`sh
+# On a machine with PHP CLI, Node.js, Playwright and Chromium installed:
+bash cli/agent-browser-qa.sh
+\`\`\`
+
+The self-contained runner uses actual PHP Support and Enterprise templates,
+synthetic product/report inputs, the A2UI renderer and isolated request
+interception. It tests 375px and 1280px canvas/viewport bounds, readable
+composer/answers, focusable swipeable products and no page JS errors. The
+native GitHub Actions QA job installs pinned Playwright on the runner and
+publishes screenshot artifacts. It **does not** ship a second browser engine
+to Hostinger, log in to a production owner, contact real provider models,
+or prove the production deployment SHA. Live production acceptance must
+be recorded separately with the deployed SHA and permitted credentials.
