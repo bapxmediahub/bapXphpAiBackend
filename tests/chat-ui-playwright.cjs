@@ -60,7 +60,7 @@ for(const width of [375,1280])test('Existing Support panel compact composer and 
   const b=await browser(),page=await b.newPage({viewport:{width,height:width===375?812:900}});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   try{
-    await route(page,support.html);await page.goto(origin,{waitUntil:'load'});
+    await route(page,support.html.replace('<head>','<head><meta charset="utf-8">'));await page.goto(origin,{waitUntil:'load'});
     await page.getByRole('button',{name:'Support',exact:true}).click();
     const rendered=await page.evaluate(surface=>{
       const target=document.createElement('section');
@@ -102,7 +102,7 @@ for(const width of [375,1280])test('Existing Enterprise chat shows a full-width 
   const b=await browser(),page=await b.newPage({viewport:{width,height:width===375?812:900}});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   try{
-    const html='<html><head><meta name="viewport" content="width=device-width,initial-scale=1">'
+    const html='<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
        +'<link rel="stylesheet" href="/assets/css/band.css">'
        +'<link rel="stylesheet" href="/assets/css/admin-refinement.css">'
        +'<link rel="stylesheet" href="/assets/css/admin-workspaces.css">'
