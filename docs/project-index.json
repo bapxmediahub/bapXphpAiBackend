@@ -1759,7 +1759,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/AiClient.php",
-            "line": 81
+            "line": 103
         },
         {
             "from": "service:AiClient",
@@ -1767,7 +1767,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AiClient.php",
-            "line": 525
+            "line": 551
         },
         {
             "from": "service:AiClient",
@@ -1775,7 +1775,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AiClient.php",
-            "line": 562
+            "line": 588
         },
         {
             "from": "service:AiClient",
@@ -1783,7 +1783,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AiClient.php",
-            "line": 55
+            "line": 77
         },
         {
             "from": "service:AppointmentService",
@@ -2759,7 +2759,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SecretService.php",
-            "line": 17
+            "line": 19
         },
         {
             "from": "service:SecretService",
@@ -2767,7 +2767,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/SecretService.php",
-            "line": 22
+            "line": 24
         },
         {
             "from": "service:SeoService",
