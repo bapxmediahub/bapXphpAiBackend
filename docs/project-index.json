@@ -1295,7 +1295,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/SupportController.php",
-            "line": 73
+            "line": 74
         },
         {
             "from": "controller:SupportController",
@@ -1311,7 +1311,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/SupportController.php",
-            "line": 58
+            "line": 59
         },
         {
             "from": "controller:SupportController",
@@ -1327,7 +1327,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/SupportController.php",
-            "line": 50
+            "line": 51
         },
         {
             "from": "controller:SupportController",
@@ -1335,7 +1335,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/SupportController.php",
-            "line": 65
+            "line": 66
         },
         {
             "from": "controller:SupportController",
@@ -1359,7 +1359,15 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/SupportController.php",
-            "line": 46
+            "line": 47
+        },
+        {
+            "from": "controller:SupportController",
+            "to": "service:SupportBotService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/SupportController.php",
+            "line": 45
         },
         {
             "from": "service:AddressService",
@@ -2855,7 +2863,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 419
+            "line": 446
         },
         {
             "from": "service:SupportBotService",
@@ -2863,7 +2871,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 427
+            "line": 454
         },
         {
             "from": "service:SupportBotService",
@@ -2871,7 +2879,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 33
+            "line": 26
         },
         {
             "from": "service:SupportBotService",
@@ -2879,7 +2887,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 498
+            "line": 525
         },
         {
             "from": "service:SupportBotService",
@@ -2895,7 +2903,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 53
+            "line": 70
         },
         {
             "from": "service:SupportBotService",
@@ -2911,7 +2919,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 106
+            "line": 123
         },
         {
             "from": "service:SupportBotService",
@@ -2919,7 +2927,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 142
+            "line": 169
         },
         {
             "from": "service:SupportBotService",
@@ -2927,7 +2935,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 56
+            "line": 73
         },
         {
             "from": "service:SupportBotService",
@@ -2935,7 +2943,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 93
+            "line": 110
         },
         {
             "from": "service:SupportBotService",
@@ -2943,7 +2951,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 396
+            "line": 423
         },
         {
             "from": "service:SupportBotService",
@@ -2951,7 +2959,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 30
+            "line": 24
         },
         {
             "from": "service:SupportBotService",
@@ -2959,7 +2967,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 485
+            "line": 512
         },
         {
             "from": "service:SupportTicketService",
