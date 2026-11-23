@@ -28,6 +28,7 @@ jobs:
           require 'cli/lib/DocumentationReview.php';
           $review=new DocumentationReview(getcwd(),require 'config/documentation.php');
           $notes=[
+            'mcp-clients'=>'Reviewed owner MCP client connection and integration dependencies: model provider selection does not modify grants, owner sessions, MCP tools, client secrets or tool permissions.',
             'operator-help'=>'Reviewed unchanged owner guides and admin integration dependencies: OpenRouter is an optional first provider; owner roles, account settings and help access remain unchanged.',
             'remote-commerce'=>'Reviewed shared provider usage with existing native Support checkout: OpenRouter changes only model transport; it cannot alter cart, order, payment or idempotent checkout actions.',
             'public-mcp'=>'Reviewed public MCP boundaries: no remote tool exposure, no API key in public responses, and no change to published public MCP or browser WebMCP tool declarations.',
