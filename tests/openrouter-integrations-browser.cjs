@@ -68,7 +68,17 @@ for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at 
         assert.equal(sent[1].enabled,'0');
         assert.equal(sent[1].keyEmpty,true,'Blank input preserves the saved key in the backend.');
         assert.equal(sent[1].csrf,true);
-        assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
+        const overflow=await page.evaluate(()=>({
+            viewport:innerWidth,
+            width:document.documentElement.scrollWidth,
+            offenders:[...document.querySelectorAll('body *')].filter(element=>{
+                const bounds=element.getBoundingClientRect(),display=getComputedStyle(element).display;
+                return display!=='none' && bounds.width>0 && bounds.right>innerWidth+1;
+            }).slice(0,8).map(element=>({tag:element.tagName,id:element.id,
+                className:String(element.className||'').slice(0,70),right:Math.round(element.getBoundingClientRect().right)}))
+        }));
+        assert.equal(overflow.width<=overflow.viewport+1,true,
+            'Integrations must fit the phone viewport: '+JSON.stringify(overflow));
         assert.deepEqual(errors,[]);
     }finally{await context.close();await browser.close();}
 });

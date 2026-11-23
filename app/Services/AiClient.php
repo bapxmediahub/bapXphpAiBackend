@@ -253,6 +253,7 @@ final class AiClient
     {
         $this->failureCategory = null;
         $this->transferTimings = [];
+        $this->toolCalls = 0;
         $config = $this->secrets->getModelConfig();
         $endpoint = rtrim((string)($config['endpoint'] ?? 'https://api.openai.com/v1'), '/');
         $model = $modelOverride ?? (string)($config['model'] ?? SecretService::PRIMARY_MODEL);
