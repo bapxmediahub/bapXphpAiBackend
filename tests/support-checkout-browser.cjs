@@ -59,6 +59,7 @@ for(const width of [1280,375])test(`native Support cart, inline checkout and pri
         });
         await page.goto(origin);
         await page.getByRole('button',{name:'Support',exact:true}).click();
+        assert.equal(await page.locator('.support-fab').isVisible(),false,'The floating launcher must not overlap the open Support canvas');
         await page.getByRole('textbox',{name:'Support message'}).fill('Add the Sri Varahi Amman Ring to my cart.');
         await page.getByRole('button',{name:'Send',exact:true}).click();
         const add=page.locator('#support-log').getByRole('button',{name:'Add to cart',exact:true});
