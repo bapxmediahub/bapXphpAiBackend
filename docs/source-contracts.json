@@ -3,7 +3,7 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "bfeb75c329cfe2f37dbd05dc9dbcd43ec7158e8c7a446fdb0507e7f7c3d83576",
+            "source_sha256": "bde49cc39054d672333d90a91890ce637b68ea405474f3665226c1e14ad1e36b",
             "references_sha256": "4db8c915776e898bd080ad21d7b88500ee584a1f02134bc05f2751fd0db4084c",
             "review_note": "Reviewed actual AiClient and SecretService changes against agent instructions and role tools: OpenRouter free is optional; the shared deadline and no cross-provider tool replay guard stay enforced."
         },
@@ -38,7 +38,7 @@
             "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
         },
         "interface": {
-            "source_sha256": "1f6801b9ef7abdfd5fbb328c07f15f9331becfae2b2ed5b845219246f60a4a97",
+            "source_sha256": "6848bb3a6b6908ba456b2f0f43bfcf9df59ec838acc8bf74c255df807abf0374",
             "references_sha256": "bff9a14168a36201f57f076af1f2537353f85ad4d321258efd3c402933a4b899",
             "review_note": "Cross-reviewed desktop and narrow Integrations UI, Google/compatible selection, masked router key, toggle and update semantics against existing Admin UI and responsive guidelines."
         },
