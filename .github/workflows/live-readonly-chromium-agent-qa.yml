@@ -23,6 +23,9 @@ jobs:
           SPS_QA_ADMIN_PASSWORD: ${{ secrets.SPS_QA_ADMIN_PASSWORD }}
         run: |
           NODE_PATH="$RUNNER_TEMP/live-qa/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/live-agents-readonly-qa.cjs
+      - name: Validate live WebMCP registry and real A2UI using Chromium
+        run: |
+          NODE_PATH="$RUNNER_TEMP/live-qa/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/live-webmcp-a2ui-browser.cjs
       - name: Upload public-only screenshots
         if: always()
         uses: actions/upload-artifact@v4
