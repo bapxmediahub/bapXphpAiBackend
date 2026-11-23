@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "1ee2f812f5e0e8a6a49560cf3d62a8517b1749bafe6d270150e2539fa51f928d",
-            "references_sha256": "c3ffaa80e5b0014fd3a9dde3682bf091943bf1e4c05be007f51d9b31b140e842",
-            "review_note": "Cross-checked the shared backend guidance with unchanged Support/Enterprise registries and private conversation persistence. New anonymous shopping capabilities add no agent identity, owner query, raw tool evidence or developer instruction exposure."
+            "source_sha256": "f82e6811e4e72d390c373f0b79a2c6fb044d8c320234351b2214e92ef2581492",
+            "references_sha256": "4db8c915776e898bd080ad21d7b88500ee584a1f02134bc05f2751fd0db4084c",
+            "review_note": "Compared Support deterministic retired-booking path, Enterprise grounded answers, shared OpenRouter/Gemma failover, tool result replay guard and role policy against current source; existing private chat JSON location remains unchanged."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
@@ -23,14 +23,14 @@
             "review_note": "Reviewed the Docs skill provenance guidance against the unchanged BlogService and authored-content guide boundary. Static map references are discovery evidence only; publication visibility, Markdown storage, rendering and private-help exclusion remain the existing source contracts."
         },
         "foundation": {
-            "source_sha256": "12a2968832644135d8e5ec7c02adc1315ef59919588c7bd5f3f3440a6c46da89",
-            "references_sha256": "600dd5525d00ff0ab1a91b78a357f4dfa6ca0c89f5394ff65df8c58023ce5c47",
-            "review_note": "Reviewed the WebMCP verification guide against local/live native fixtures, the shared CDP adapter and official Chromium schemas. Documented toolId/name selection, exact registry and correlated contact completion; architecture, permissions and production application code are unchanged."
+            "source_sha256": "d0bac5d94dca18432bfb88b24cfef3e82a92c17a7b2d53bb42041b4025aab5c4",
+            "references_sha256": "44504ddbd485f9ab5d6c71a6443726f531f7e0d7ed34ec16215741902635cc0e",
+            "review_note": "Cross-checked merged Support/Enterprise/WebMCP/OpenRouter source against architecture maps and docs. No separate chatbot app, SQL schema, external chat plugin or production browser engine is introduced."
         },
         "google-tags": {
-            "source_sha256": "b5c80a0b7cb70228f2ebfede071488a194147d1457955d3760fb6c82dabe82c7",
-            "references_sha256": "26e94426f789029d906ad5f355bf847a8010cd6f4126defae0ee3748d848a08a",
-            "review_note": "Reviewed the integrations/layout dependency changes: new webhook secret controls and commerce assets do not change Google tag values, consent, account linking or reporting. The existing settings guide retains the configuration-versus-provider-verification distinction."
+            "source_sha256": "f05c993af547a7e72406e694a7d049d905c3f21410f1eddeb54a9b86f8fce54e",
+            "references_sha256": "1bc780fef929af6855d54ec574f50f3ed194f65ebd66ddb6bdbbcf4952a51081",
+            "review_note": "Reviewed public layout changes against existing Google Analytics and advertising tags. Google AI credentials remain independent of OAuth, analytics tags and OpenRouter encrypted provider key."
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
@@ -38,39 +38,39 @@
             "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
         },
         "interface": {
-            "source_sha256": "321dd56f4379621ea7357f16a62376d2db6a2f4e0d104c4f9cc54575bbe4f473",
-            "references_sha256": "e7ecc460e33d237449f71f6aca6842a50fc6d7f75737242f77d275c20e0f7733",
-            "review_note": "Cross-reviewed native Support product actions, inline form, quote/status and history isolation, Shop-off recovery, shared MCP App and merchant continuation against Design and frontend skill. Public A2UI stays declarative; native/external fallback limits are explicit."
+            "source_sha256": "09a98a797beca8b092e8f1613c9b178469945c31c92a1c4cd6e008cfe0ed975f",
+            "references_sha256": "bff9a14168a36201f57f076af1f2537353f85ad4d321258efd3c402933a4b899",
+            "review_note": "Reviewed 375px and 1280px screenshots and synthetic Chromium fixtures. Existing Support panel gains a compact composer, inline contact view and bounded product swipe rail; Enterprise answer cards gain wider responsive layout."
         },
         "mail": {
-            "source_sha256": "3b0589d28bd4923c657f85a867084b79ef9f22dd942ea529fd08af2f1332b249",
+            "source_sha256": "064a2db84e324ad8cdf377ad2d9ee07289391409e44d5bfd92a0dba85586993a",
             "references_sha256": "6d6153ae2fed6f1aebbf9fa93225d6cc74b6c098d9a34deffce7bc4f3c6e9273",
-            "review_note": "Reviewed verified-order extraction and its winning-insert-only existing queue boundary. Payment/order persistence does not prove SMTP acceptance or inbox delivery, and no mail provider, recipient or replay behavior is broadened."
+            "review_note": "Reviewed the in-panel reuse of original /contact form with existing ContactService persistence and SMTP mail queue; no automatic real contact submission, mass retry or new email notification route was introduced."
         },
         "mcp-clients": {
-            "source_sha256": "bcf8dec01e7199a8f3e76eb4a8506d6ab8067917efde8c8ce336bc156f1af373",
-            "references_sha256": "7d62db6cdfdd338a430372c319eaca0b42b78fbf5592a707285986084328a7e0",
-            "review_note": "Cross-checked public HTTP commerce scopes against the unchanged owner STDIO grant path; shop and integrations docs explicitly separate six remote actions from local reporting credentials and describe the new webhook fields."
+            "source_sha256": "8b2e7629876c1e5facae0a92e30f91e7e11ba59bd979a528022807b0193be7bc",
+            "references_sha256": "912c2decd557b138de9c5ca0f72cd5aab0f94d8430c46bd5c442c73d6cdccde8",
+            "review_note": "Compared existing MCP client grants and owner-only tool restrictions against merged WebMCP annotations and OpenRouter model routing; the changes do not issue an owner grant or promote browser agent capabilities."
         },
         "media": {
             "source_sha256": "7b9d3d9aa746f16f1441148550d143e7094388b247c423b90c310ed5441db99d",
-            "references_sha256": "5f10d6d0f7556158e1d5aab575d8d67240ec3261e47e8c5ac59b1a156add58ca",
-            "review_note": "Cross-checked architecture and official product image paths against unchanged media ownership/storage rules. Chat cards use bounded published same-origin raster projections; no image binary, upload location or media permissions changed."
+            "references_sha256": "9e2512ff958dd3a7cb3241f21cbc5132977edab9c5ba4535eebf3ea69cc79b1d",
+            "review_note": "Reviewed product image paths and the bounded A2UI gallery against current media hosting paths; styling does not move uploads, delete media or expose private asset directories."
         },
         "operator-help": {
-            "source_sha256": "6a128cd848ad8bf3bfb120941a4a35aab039f71822302eb05309841aedb40fa9",
-            "references_sha256": "39d00b0c3f725cf303c6e6bce3dfe276bba07638972bd72de0323c05f1bf8807",
-            "review_note": "Compared the unchanged private guide manifest and metadata-only KnowledgeGraph indexing with the operator-help guide. The generator now labels declared relationships and preserves JSON response metadata; it does not change guide permissions, bodies, routes or user controls. Reviewed the updated Docs skill limits."
+            "source_sha256": "d1b66edea41bf1876d3e5bc741fadb89fb541bc50bd13ed73a20932064ee9edf",
+            "references_sha256": "2201c0efbcc49c20384beab8cbef25fa6bcd6928e2928d7fd8474d6522cdf6bf",
+            "review_note": "Reviewed existing admin guide and settings dependencies after adding the opt-in OpenRouter field and Enterprise answer-width CSS; operator scope and help links remain, with no new permission surface."
         },
         "public-mcp": {
-            "source_sha256": "8823a7fe30afc8b3ec5e23b1e1983c9f4243a0ff7963fd5a53627f41bf0d7e25",
-            "references_sha256": "f0eb7593d4e42d4e487807fd6a4f5d349d564e01359580a70c0e0691f91f7bfc",
-            "review_note": "Compared the unchanged stateless MCP/discovery controllers and registered handlers with the public transport guide. Corrected map-only inheritance and related-view claims; source references do not imply browser-session inheritance, successful gateway autoload or a rendered JSON response. No protocol, capability or checkout behavior changed."
+            "source_sha256": "22723ee0587e495732100b21d8b8f1f94997d25ed12f6ddde8349cd88989f5fd",
+            "references_sha256": "66f314f4d27575d8d1ab7394d8e28aae3feb90467ef6445ce18d804604d40f3d",
+            "review_note": "Reviewed existing public MCP registry and A2UI renderer with declarative shop GET and contact POST forms; public tools remain bounded and read-only except already authorized cart capabilities, and contact POST never auto-submits."
         },
         "remote-commerce": {
-            "source_sha256": "1966c34fbe250f75b05e376c9a0fd6effd73d1073fef2c0d0061931afbfc8731",
-            "references_sha256": "132d4cba7ef4698abf8629046b83b666ed89ab76ebd9514fadf6b02b62f3adf9",
-            "review_note": "Reviewed both merged checkout and WebMCP guide changes against their sources. The canonical Stripe bootstrap mapping and before-fixture regression are preserved. New live CDP checks discover the unchanged six commerce names but invoke only get_public_contact with empty input; no provider operation, cart/payment mutation or external-host rendering acceptance is implied."
+            "source_sha256": "ef0c9447d0aa3f5fd98b57b38d2ec8c757a187302aa156f0a1d2e8022a706aae",
+            "references_sha256": "c9b0ed4ab144ead0c449c61a45498cf875fc248de8f8e0df2f68ef76b11801a6",
+            "review_note": "Reviewed existing cart, payment, remote checkout and support-commerce fixtures with the merged inline enquiry and native product rail: no new payment method, cart mutation tool or changes to confirmed order callbacks."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed the sales-channel CLI references and catalogue guidance. This change only fixes generic PHP lint argument forwarding and failure propagation; feed, channel and catalogue operations are unchanged."
         },
         "workflow": {
-            "source_sha256": "56784e635866578fb6009d869060da8a5b2b3efa36fcfc53a6124103c45c868f",
+            "source_sha256": "fb89630853d0fa8032e863c9359bd125444a4c218390786bb85cd6012ebb1356",
             "references_sha256": "6bddcf08be3819fe8ec98d7f78e96b359a9571f9043255f5ce207927e4732284",
-            "review_note": "Compared the bounded map tokenizer, source line evidence, import/interpolation decoys, JSON response metadata and declared relationship labels with the development workflow and Docs skill. Also read the merged CDP helper and both CI hooks: the exact page registry, one correlated public contact read, explicit protocol failures and separate polyfill/native/external-host limits remain intact. Preserved the early Stripe bootstrap regression; no application dispatch or checkout behavior changed."
+            "review_note": "Reviewed trusted CI jobs, reviewer coordinator and new Chromium fixture runner: isolated synthetic screenshots and test data, no API keys or admin passwords in workflows, and no privileged fork checkout."
         }
     }
 }
