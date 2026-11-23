@@ -15,7 +15,8 @@ const render=enabled=>execFileSync(process.env.PHP_BINARY||'php',['-r',[
     "$csrf='fixture-only'; $comparisonModels=[];",
     "$secrets=['ai_provider'=>'google','ai_api_key'=>'fixture-google-key',",
     "'ai_openrouter_enabled'=>'"+(enabled?'1':'0')+"','ai_openrouter_key'=>'"+fakeKey+"'];",
-    "include 'views/admin/integrations.php';"
+    "$fixture=new class extends \\App\\Controllers\\BaseController { public function show($secrets,$csrf,$comparisonModels){ include 'views/admin/integrations.php'; } };",
+    "$fixture->show($secrets,$csrf,$comparisonModels);"
 ].join(' ')],{cwd:root,encoding:'utf8',maxBuffer:2*1024*1024});
 for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at '+width+'px',async()=>{
     const html=render(false);
