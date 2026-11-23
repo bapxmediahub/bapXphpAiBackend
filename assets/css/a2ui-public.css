@@ -110,3 +110,108 @@
     .bapx-a2ui__card { padding: .65rem; }
     .bapx-a2ui__detail-row { grid-template-columns: 1fr; gap: .15rem; }
 }
+
+
+/* Shared native-chat UX: one horizontal product rail inside the existing answer surface.
+   Keep the source-backed product cards and actions; no duplicate shopping app. */
+:is(.support-panel,.enterprise-chat) .bapx-a2ui--product-grid .bapx-a2ui__items,
+:is(.support-panel,.enterprise-chat) .bapx-a2ui--product-list .bapx-a2ui__items {
+    display:grid;
+    grid-auto-flow:column;
+    grid-auto-columns:minmax(200px, min(84%, 260px));
+    grid-template-columns:none;
+    gap:.65rem;
+    overflow-x:auto;
+    overflow-y:hidden;
+    overscroll-behavior-inline:contain;
+    scroll-snap-type:x proximity;
+    scroll-padding-inline:.25rem;
+    padding:0 .25rem .65rem;
+    scrollbar-width:thin;
+    -webkit-overflow-scrolling:touch;
+}
+:is(.support-panel,.enterprise-chat) .bapx-a2ui--product-grid .bapx-a2ui__items > *,
+:is(.support-panel,.enterprise-chat) .bapx-a2ui--product-list .bapx-a2ui__items > * {
+    scroll-snap-align:start;
+    min-width:0;
+}
+:is(.support-panel,.enterprise-chat) .bapx-a2ui--product-list .bapx-a2ui__item-body {
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+}
+:is(.support-panel,.enterprise-chat) .bapx-a2ui--product-list .bapx-a2ui__item-body > *,
+:is(.support-panel,.enterprise-chat) .bapx-a2ui--product-list .bapx-a2ui__image {
+    grid-column:auto;
+    grid-row:auto;
+}
+:is(.support-panel,.enterprise-chat) .bapx-a2ui__image {
+    height:auto;
+    max-height:150px;
+    aspect-ratio:5 / 4;
+}
+:is(.support-panel,.enterprise-chat) .bapx-a2ui__items:focus-visible {
+    outline:3px solid var(--color-gold,#b6994f);
+    outline-offset:1px;
+    border-radius:8px;
+}
+
+/* The existing Support chat should allocate space to conversation and content,
+   not a 3-row textarea and a full-width Send button. */
+.support-panel:not([hidden]) {
+    display:flex;
+    flex-direction:column;
+    height:min(78dvh,720px);
+    max-height:calc(100dvh - 24px);
+}
+.support-panel__head { flex:0 0 auto;min-height:54px;gap:8px; }
+.support-panel__body {
+    flex:1 1 auto;
+    min-height:100px;
+    max-height:none;
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+}
+.support-panel__form {
+    flex:0 0 auto;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    align-items:end;
+    gap:8px;
+    padding:10px 12px;
+}
+.support-panel__form textarea {
+    grid-column:1;
+    height:52px;
+    min-height:48px;
+    max-height:128px;
+    padding:10px 12px;
+    font-size:16px;
+    line-height:1.4;
+}
+.support-panel__form button[type="submit"],
+.support-panel__form button:not([type]) {
+    grid-column:2;
+    min-height:48px;
+    min-width:66px;
+    margin:0;
+    padding:8px 12px;
+}
+.support-panel__form :is(textarea,button):focus-visible {
+    outline:3px solid var(--color-gold,#b6994f);
+    outline-offset:2px;
+}
+@media(max-width:700px){
+    .support-panel:not([hidden]) {
+        width:min(430px,calc(100vw - 24px));
+        right:12px;
+        bottom:12px;
+        height:min(82dvh,680px);
+        max-height:calc(100dvh - 24px);
+    }
+    .support-panel__head {padding:10px 12px;}
+    .support-panel__form {padding:8px 10px;}
+}
+@media(prefers-reduced-motion:reduce){
+    :is(.support-panel,.enterprise-chat) .bapx-a2ui__items {scroll-behavior:auto;}
+}
