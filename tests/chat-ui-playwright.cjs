@@ -18,9 +18,11 @@ const productSurface=JSON.parse(php([
     "$items=[];for($i=1;$i<=3;$i++)$items[]=['name'=>'Verified fixture product '.$i,",
     "'path'=>'/product/fixture-product-'.$i,'priceInr'=>899+$i,'available'=>true,",
     "'description'=>'A product from the synthetic browser fixture.'];",
-    "$surface=(new \\App\\Services\\PublicA2uiService())->fromResult('products',",
+    "$reference=(new \\App\\Services\\PublicA2uiService())->fromResult('products',",
     "['products'=>$items,'total'=>3,'nextOffset'=>null]);",
-    "echo json_encode($surface,JSON_THROW_ON_ERROR);"
+    "$answer=(new \\App\\Services\\AgentAnswerPresentationService())->responseData(",
+    "'Three published fixture products are available.','support',[],$reference);",
+    "echo json_encode($answer['a2ui'],JSON_THROW_ON_ERROR);"
 ].join(' ')));
 const adminHtml=php([
     "putenv('BAPX_TEST_MODE=1'); require 'app/bootstrap.php';",
