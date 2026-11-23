@@ -46,3 +46,6 @@
 .ai-openrouter-toggle input[type="checkbox"]:focus-visible{outline:3px solid var(--color-gold,#d1b368);outline-offset:3px;}
 @media(prefers-reduced-motion:reduce){.ai-openrouter-toggle input[type="checkbox"],.ai-openrouter-toggle input[type="checkbox"]::before{transition:none;}}
 @media(max-width:600px){.ai-openrouter-settings{padding:12px;}.admin-form__row{grid-template-columns:minmax(0,1fr);}}
+
+/* Long OAuth callback and provider paths must wrap inside the narrow admin form. */
+.admin-form code{white-space:normal;overflow-wrap:anywhere;word-break:break-word;}
