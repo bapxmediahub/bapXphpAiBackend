@@ -5,7 +5,7 @@
         "agents": {
             "source_sha256": "ab29af7622b610fa849a4f66601e9572290c7551d7a51075ef42fbb8e27bd426",
             "references_sha256": "c3ffaa80e5b0014fd3a9dde3682bf091943bf1e4c05be007f51d9b31b140e842",
-            "review_note": "Reviewed grounded retired-consultation intent and Support tool policy, including bounded browser fixture and refusal to claim a booked appointment or failed contact submission as success."
+            "review_note": "Reviewed existing Support/Enterprise separation: the regression changes only launcher visibility; no prompt, model tools, actor identity or chat persistence is expanded."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
@@ -25,12 +25,12 @@
         "foundation": {
             "source_sha256": "12a2968832644135d8e5ec7c02adc1315ef59919588c7bd5f3f3440a6c46da89",
             "references_sha256": "44504ddbd485f9ab5d6c71a6443726f531f7e0d7ed34ec16215741902635cc0e",
-            "review_note": "Cross-checked reference docs and existing WebMCP/A2UI boundaries against the changed Support widget and live contact-form reuse. No owner tool, private chat export or payment authority introduced."
+            "review_note": "Reviewed generated architecture and WebMCP references with the unchanged commerce semantics: the UI fix remains in the existing Support panel, not a new interface."
         },
         "google-tags": {
             "source_sha256": "51020e0352cef0ac0648eb85d3ecea8ab0ffd1b4308386f7c69b3f799e1d347c",
             "references_sha256": "26e94426f789029d906ad5f355bf847a8010cd6f4126defae0ee3748d848a08a",
-            "review_note": "Checked the changed public page layout against unchanged analytics, verification and pixel tags. The Support enquiry pane introduces no tracking secret or new Google integration."
+            "review_note": "Reviewed public layout and analytics dependency: no new Google tag, OAuth setting, event or external credential is touched by the Support CSS change."
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
@@ -40,7 +40,7 @@
         "interface": {
             "source_sha256": "75e7b3413d5e1e8d7b988dbeaf09e7bf93972620168333c4cd459211126befaa",
             "references_sha256": "e7ecc460e33d237449f71f6aca6842a50fc6d7f75737242f77d275c20e0f7733",
-            "review_note": "Compared the real native Support and contact templates, accessible desktop/mobile fixtures, privacy/retry/error behavior, and unchanged design guidelines. No second application or form contract added."
+            "review_note": "Inspected live production mobile/desktop screenshots showing the duplicate Support launcher behind the open panel. Visibility hiding is reversible and new Chromium assertion covers it."
         },
         "mail": {
             "source_sha256": "3b0589d28bd4923c657f85a867084b79ef9f22dd942ea529fd08af2f1332b249",
@@ -50,7 +50,7 @@
         "mcp-clients": {
             "source_sha256": "bcf8dec01e7199a8f3e76eb4a8506d6ab8067917efde8c8ce336bc156f1af373",
             "references_sha256": "7d62db6cdfdd338a430372c319eaca0b42b78fbf5592a707285986084328a7e0",
-            "review_note": "Cross-checked public HTTP commerce scopes against the unchanged owner STDIO grant path; shop and integrations docs explicitly separate six remote actions from local reporting credentials and describe the new webhook fields."
+            "review_note": "Checked native Support CSS and browser regression against the unchanged MCP client grant and public tool boundaries: no new client access or tool mutations."
         },
         "media": {
             "source_sha256": "7b9d3d9aa746f16f1441148550d143e7094388b247c423b90c310ed5441db99d",
@@ -60,17 +60,17 @@
         "operator-help": {
             "source_sha256": "4f5c569228bc36d56f3aa500bfa8b150a97e648365deed8288c8d0033e6d84a7",
             "references_sha256": "39d00b0c3f725cf303c6e6bce3dfe276bba07638972bd72de0323c05f1bf8807",
-            "review_note": "Compared current native admin help and unchanged access rules against the Support reuse of the canonical contact form. No operator guide, role or business record is exposed."
+            "review_note": "Reviewed unchanged admin help and existing Support form action: hiding the floating launcher when the panel opens does not expand operator permissions or change guide semantics."
         },
         "public-mcp": {
             "source_sha256": "8823a7fe30afc8b3ec5e23b1e1983c9f4243a0ff7963fd5a53627f41bf0d7e25",
             "references_sha256": "ad052aeaf529bf34e13a2a20f195e54fa8a13146e88ad8f1515d4c53cc9f0cae",
-            "review_note": "Verified current source and documentation scopes. Declarative GET shop filters are read-only, and the existing contact POST requires an explicit human Send without modifying HTTP MCP."
+            "review_note": "Reviewed existing public MCP/Apps tool registration; the launcher visibility rule is confined to native Support styling and does not change MCP transport or schemas."
         },
         "remote-commerce": {
-            "source_sha256": "8bf0c110dc3e0e5acdbd21a6118033fc3b2c69822b277af8ead92fa1a62bcb45",
+            "source_sha256": "4fee6ed947e36aaa076d077f566825c678b4083580c93c7a4b18781976e60467",
             "references_sha256": "c9b0ed4ab144ead0c449c61a45498cf875fc248de8f8e0df2f68ef76b11801a6",
-            "review_note": "Reviewed existing checkout and Support browser regressions together: new form remains separate from cart, payment and recovery; fixture never submits to a production host."
+            "review_note": "Reviewed native Support checkout UI alongside new launcher visibility rule and Chromium checks. Cart actions, payment boundaries and saved capability access are unchanged."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
