@@ -203,3 +203,98 @@ test('native Support keeps verified payment status available when Shop is disabl
         assert.deepEqual(errors,[]);
     }finally{await context.close();await browser.close();}
 });
+
+
+// Reuse the real PHP contact template, but prevent any production contact, booking, or
+// mail action. This exercises the native Support widget without a second form implementation.
+const contactFixtureCode = [
+    "putenv('BAPX_TEST_MODE=1'); require 'app/bootstrap.php';",
+    "$_SESSION['csrf_token']='fixture-csrf';",
+    "$subjects=\\App\\Services\\PublicKnowledgeService::contactSubjects();",
+    "$publicContact=(new \\App\\Services\\PublicKnowledgeService())->contact();",
+    "$submission=['name'=>'','email'=>'','phone'=>'','subject'=>'general','message'=>''];",
+    "$errors=[]; $success=false; ob_start(); include 'views/public/contact.php'; $normal=ob_get_clean();",
+    "$success=true; ob_start(); include 'views/public/contact.php'; $received=ob_get_clean();",
+    "echo json_encode(['normal'=>$normal,'received'=>$received],JSON_THROW_ON_ERROR);"
+].join(' ');
+const contactView=JSON.parse(execFileSync(process.env.PHP_BINARY||'php',['-r',contactFixtureCode],{
+    cwd:root,encoding:'utf8',maxBuffer:2*1024*1024
+}));
+
+for(const width of [1280,375])test('Existing contact form opens inside Support, preserves privacy and confirms only real submission at '+width+'px',
+    {timeout:120000},async()=>{
+    const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox']});
+    const context=await browser.newContext({viewport:{width,height:850}}),page=await context.newPage();
+    const errors=[];page.on('pageerror',error=>errors.push(error.message));
+    let questions=0,posts=0,postsData=[];
+    try{
+        await page.route('**/*',async route=>{
+            const req=route.request(),url=new URL(req.url());
+            assert.equal(url.origin,origin,'Inline enquiry fixture cannot visit production.');
+            if(url.pathname==='/support/ask'){
+                questions++;
+                return route.fulfill({json:{
+                    reply:'New consultation appointments cannot currently be booked online. You may send a general enquiry; it is not a booking.',
+                    ui:{kind:'contact_enquiry',subject:'general'}
+                }});
+            }
+            if(url.pathname==='/contact'){
+                if(req.method()==='GET')return route.fulfill({contentType:'text/html',body:contactView.normal});
+                assert.equal(req.method(),'POST');
+                posts++;postsData.push(req.postData());
+                return route.fulfill({status:posts===1?422:200,contentType:'text/html',
+                    body:posts===1?contactView.normal:contactView.received});
+            }
+            if(url.pathname.startsWith('/assets/')&&allowedAssets.has(path.basename(url.pathname))){
+                return route.fulfill({contentType:url.pathname.endsWith('.js')?'application/javascript':
+                    url.pathname.endsWith('.css')?'text/css':'image/webp',
+                    body:readFileSync(path.join(root,url.pathname))});
+            }
+            if(url.pathname==='/'||url.pathname==='/favicon.ico')
+                return route.fulfill({contentType:'text/html',body:url.pathname==='/'?view.html:''});
+            return route.fulfill({status:404,body:'Fixture route unavailable'});
+        });
+        await page.goto(origin);
+        await page.getByRole('button',{name:'Support',exact:true}).click();
+        await page.getByRole('textbox',{name:'Support message'}).fill('Please book me an appointment');
+        await page.getByRole('button',{name:'Send',exact:true}).click();
+        const panel=page.locator('#support-enquiry');
+        await panel.getByRole('heading',{name:'Send an enquiry'}).waitFor();
+        await panel.locator('form.contact-form').waitFor();
+        assert.equal(questions,1);
+        assert.equal(posts,0,'Opening the form does not submit a message');
+        assert.equal(await panel.locator('form').getAttribute('action'),'/contact');
+        assert.equal(await panel.locator('select[name="subject"]').inputValue(),'general');
+        assert.equal(await panel.locator('input[name="_csrf"]').inputValue(),'fixture-csrf');
+        assert.equal(await panel.locator('form').getAttribute('toolautosubmit'),null,
+            'Writing a contact enquiry may never auto-submit an agent tool');
+
+        await panel.locator('input[name="name"]').fill('PRIVATE_INLINE_NAME');
+        await panel.locator('input[name="email"]').fill('private-inline@example.test');
+        await panel.locator('textarea[name="message"]').fill('PRIVATE_INLINE_APPOINTMENT_REQUEST');
+        await page.evaluate(()=>supportSaveLog());
+        const saved=await page.evaluate(()=>Object.values(sessionStorage).join(' '));
+        assert.doesNotMatch(saved,/PRIVATE_INLINE_NAME|private-inline@example\.test|PRIVATE_INLINE_APPOINTMENT_REQUEST/,
+            'Private contact drafts cannot be persisted in the Support conversation or cart recovery');
+        assert.equal(await page.locator('#support-log').isVisible(),false,'The enquiry uses the existing panel, not a second page');
+        await panel.getByRole('button',{name:'Send message',exact:true}).click();
+        await panel.getByText('Please check the required fields and try again.').waitFor();
+        assert.equal(posts,1);
+        assert.equal(await panel.locator('input[name="email"]').inputValue(),'private-inline@example.test');
+        assert.doesNotMatch(await panel.getByRole('status').innerText(),/received|booked/i);
+        // A second attempt must be an explicit visitor click, not an agent/network retry.
+        await panel.getByRole('button',{name:'Send message',exact:true}).click();
+        await panel.getByText(/Your enquiry was received/).waitFor();
+        assert.equal(posts,2);
+        assert.ok(postsData.every(body=>body.includes('fixture-csrf')&&body.includes('PRIVATE_INLINE_NAME')));
+        assert.equal(await panel.locator('form.contact-form').count(),0,'Only the existing server receipt confirms submission');
+        assert.match(await panel.getByRole('status').innerText(),/no appointment has been booked/);
+        await panel.getByRole('button',{name:'Back to chat'}).click();
+        assert.equal(await page.locator('#support-log').isVisible(),true);
+        assert.equal(page.url(),origin+'/','Enquiry stays in the same Support page');
+        assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
+        const box=await page.locator('#support-panel').boundingBox();
+        assert.ok(box.x>=0&&box.x+box.width<=width+1,'Existing Support pane cannot exceed the viewport');
+        assert.deepEqual(errors,[]);
+    }finally{await context.close();await browser.close();}
+});
