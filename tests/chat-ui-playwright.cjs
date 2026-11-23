@@ -89,7 +89,7 @@ for(const width of [375,1280])test('Existing Support panel compact composer and 
     await snap(page,'support-'+width);
     await page.locator('.bapx-a2ui__items').focus();
     await page.keyboard.press('ArrowRight');
-    await page.waitForFunction(()=>document.querySelector('.bapx-a2ui__items').scrollLeft>0,{timeout:2000}).catch(()=>{});
+    await page.waitForFunction(()=>document.querySelector('.bapx-a2ui__items').scrollLeft>0,null,{timeout:2000}).catch(()=>{});
     const scroll=await page.locator('.bapx-a2ui__items').evaluate(x=>x.scrollLeft);
     assert.ok(scroll>0,'Focused product rail must respond to keyboard browsing');
     assert.deepEqual(errors,[]);
