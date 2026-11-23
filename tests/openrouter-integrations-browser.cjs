@@ -18,6 +18,11 @@ const render=enabled=>execFileSync(process.env.PHP_BINARY||'php',['-r',[
     "$fixture=new class extends \\App\\Controllers\\BaseController { public function show($secrets,$csrf,$comparisonModels){ include 'views/admin/integrations.php'; } };",
     "$fixture->show($secrets,$csrf,$comparisonModels);"
 ].join(' ')],{cwd:root,encoding:'utf8',maxBuffer:2*1024*1024});
+const renderPage=enabled=>'<!doctype html><html lang="en"><head>'
+    +'<meta name="viewport" content="width=device-width,initial-scale=1">'
+    +'<link rel="stylesheet" href="/assets/css/band.css">'
+    +'<link rel="stylesheet" href="/assets/css/admin-refinement.css">'
+    +'</head><body><main class="admin-body">'+render(enabled)+'</main></body></html>';
 for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at '+width+'px',async()=>{
     const html=render(false);
     assert.ok(!html.includes(fakeKey),'Rendered admin HTML cannot expose the saved key.');
@@ -39,7 +44,7 @@ for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at 
                     csrf:params.get('_csrf')==='fixture-only',
                     provider:params.get('ai_provider'),
                 });
-                return route.fulfill({status:200,contentType:'text/html',body:render(true)});
+                return route.fulfill({status:200,contentType:'text/html',body:renderPage(true)});
             }
             if(url.pathname.startsWith('/assets/')){
                 const name=url.pathname.replace(/^\//,'');
@@ -47,7 +52,7 @@ for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at 
                     return route.fulfill({contentType:'text/css',body:readFileSync(path.join(root,name))});
             }
             if(url.pathname==='/admin/integrations')
-                return route.fulfill({contentType:'text/html',body:render(false)});
+                return route.fulfill({contentType:'text/html',body:renderPage(false)});
             return route.fulfill({status:404,body:'Fixture route not available'});
         });
         await page.goto(origin+'/admin/integrations');
