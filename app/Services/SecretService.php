@@ -5,6 +5,8 @@ final class SecretService {
     public const PRIMARY_MODEL = 'gemma-4-31b-it';
     public const FALLBACK_MODEL = 'gemma-4-26b-a4b-it';
     public const GOOGLE_MODELS = [self::PRIMARY_MODEL, self::FALLBACK_MODEL];
+    public const OPENROUTER_ENDPOINT = 'https://openrouter.ai/api/v1';
+    public const OPENROUTER_MODEL = 'openrouter/free';
     public const GOOGLE_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models';
 
     public function __construct(private ?DatabaseService $store = null) {}
@@ -55,8 +57,11 @@ final class SecretService {
             // merge is impossible, so refuse rather than overwrite with a subset.
             throw new \RuntimeException('Could not read existing settings, so nothing was saved. Try again.');
         }
-        foreach (['ai_api_key', 'ai_compatible_key'] as $field) {
+        foreach (['ai_api_key', 'ai_compatible_key', 'ai_openrouter_key'] as $field) {
             if (array_key_exists('ai_provider', $values) && ($values[$field] ?? null) === '') unset($values[$field]);
+        }
+        if (isset($values['ai_openrouter_enabled']) && !in_array($values['ai_openrouter_enabled'], ['0','1'], true)) {
+            throw new \InvalidArgumentException('Invalid OpenRouter toggle.');
         }
         $merged = array_replace($existing, $values);
         $config = self::compatibleConfig($merged);
@@ -129,6 +134,15 @@ final class SecretService {
     }
     public function getModelConfig(): array {
         $secrets = $this->all();
+        if (($secrets['ai_openrouter_enabled'] ?? '0') === '1') {
+            $key = trim((string)($secrets['ai_openrouter_key'] ?? ''));
+            if ($key !== '' && !preg_match('/[\r\n]/', $key)) return [
+                'provider'=>'openai_compatible', 'endpoint'=>self::OPENROUTER_ENDPOINT,
+                'apiKey'=>$key, 'model'=>self::OPENROUTER_MODEL,
+                'models'=>[self::OPENROUTER_MODEL], 'configured'=>true,
+                'google_fallback'=>true,
+            ];
+        }
         if (($secrets['ai_provider'] ?? '') === 'openai_compatible') return self::compatibleConfig($secrets);
         $apiKey = $this->firstValue($secrets, ['ai_api_key', 'agent_api_key', 'support_bot_google_api_key'], ['AI_API_KEY', 'AGENT_API_KEY', 'BAPX_AI_API_KEY']);
         $model = $this->firstValue($secrets, ['agent_model', 'support_bot_model'], ['AGENT_MODEL', 'BAPX_AI_MODEL']);
@@ -140,6 +154,14 @@ final class SecretService {
         $endpoint = self::GOOGLE_ENDPOINT;
         $provider = 'google';
         return compact('provider', 'model', 'endpoint', 'apiKey') + ['configured' => $apiKey !== ''];
+    }
+    /** Google is independent of the selected OpenRouter/compatible provider. */
+    public function googleModelConfig(): array {
+        $secrets=$this->all();
+        $key=$this->firstValue($secrets,['ai_api_key','agent_api_key','support_bot_google_api_key'],['AI_API_KEY','AGENT_API_KEY','BAPX_AI_API_KEY']);
+        $model=$this->firstValue($secrets,['agent_model','support_bot_model'],['AGENT_MODEL','BAPX_AI_MODEL']);
+        if(!in_array($model,self::GOOGLE_MODELS,true))$model=self::PRIMARY_MODEL;
+        return ['provider'=>'google','endpoint'=>self::GOOGLE_ENDPOINT,'apiKey'=>$key,'model'=>$model,'configured'=>$key!==''];
     }
     public static function validModelId(string $model): bool {
         return preg_match('~\A[A-Za-z0-9][A-Za-z0-9._:/@+\-]{0,199}\z~', $model) === 1;

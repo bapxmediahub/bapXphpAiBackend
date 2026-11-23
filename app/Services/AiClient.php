@@ -30,6 +30,25 @@ final class AiClient
     private ?string $failureCategory = null;
     private array $transferTimings = [];
     private int $toolCalls = 0;
+    private bool $forceGoogle = false;
+    private function selectedConfig(): array {
+        return $this->forceGoogle ? $this->secrets->googleModelConfig() : $this->secrets->getModelConfig();
+    }
+    private function shouldTryGoogle(array $config): bool {
+        return !empty($config['google_fallback']) && in_array($this->failureCategory,
+            ['timeout','transport','rate_limit','provider_server','empty_response','provider_response','provider_request'],true)
+            && $this->secrets->googleModelConfig()['configured'];
+    }
+    private function fallbackToGoogle(callable $run): string {
+        $attempts=$this->transferTimings;
+        $previousCalls=$this->toolCalls;
+        $this->forceGoogle=true;
+        try { $result=$run(); }
+        finally { $this->forceGoogle=false; }
+        $this->transferTimings=array_merge($attempts,$this->transferTimings);
+        $this->toolCalls += $previousCalls;
+        return $result;
+    }
 
     /** Bounded operational category; never includes provider messages or credentials. */
     public function failureCategory(): ?string { return $this->failureCategory; }
@@ -83,7 +102,7 @@ final class AiClient
     /** True when a key is present, so callers can skip the round trip. */
     public function configured(): bool
     {
-        return trim((string)($this->secrets->getModelConfig()['apiKey'] ?? '')) !== '';
+        return trim((string)($this->selectedConfig()['apiKey'] ?? '')) !== '';
     }
 
     /** Model text, or null when the provider could not be reached. */
@@ -120,9 +139,11 @@ final class AiClient
         $this->failureCategory = null;
         $this->transferTimings = [];
         $this->toolCalls = 0;
-        $config = $this->secrets->getModelConfig();
+        $config = $this->selectedConfig();
         if ($config['provider'] === 'openai_compatible') {
-            return $this->completeCompatible($config, $prompt, $maxTokens, $modelOverride, $tools, $maxRounds);
+            $answer=$this->completeCompatible($config,$prompt,$maxTokens,$modelOverride,$tools,$maxRounds);
+            if (!$this->shouldTryGoogle($config)) return $answer;
+            return $this->fallbackToGoogle(fn()=> $this->completeWithTools($prompt,$tools,$maxTokens,$temperature,$maxRounds));
         }
 
         $key = trim((string)($config['apiKey'] ?? ''));
@@ -244,7 +265,7 @@ final class AiClient
     {
         $this->failureCategory = null;
         $this->transferTimings = [];
-        $config = $this->secrets->getModelConfig();
+        $config = $this->selectedConfig();
         $endpoint = rtrim((string)($config['endpoint'] ?? 'https://api.openai.com/v1'), '/');
         $model = $modelOverride ?? (string)($config['model'] ?? SecretService::PRIMARY_MODEL);
         $key = trim((string)($config['apiKey'] ?? ''));
@@ -298,7 +319,9 @@ final class AiClient
             return $answer;
         }
 
-        return $this->completeCompatible($config, $prompt, $maxTokens, $modelOverride);
+        $answer=$this->completeCompatible($config,$prompt,$maxTokens,$modelOverride);
+        if (!$this->shouldTryGoogle($config)) return $answer;
+        return $this->fallbackToGoogle(fn()=> $this->complete($prompt,$maxTokens,$temperature));
     }
 
     /**

@@ -78,6 +78,16 @@
             <p><?= e(\App\Services\SecretService::PRIMARY_MODEL) ?> is tried first, with <?= e(\App\Services\SecretService::FALLBACK_MODEL) ?> as fallback. A rate limit triggers immediate fallback.</p>
             <label>Google API Key<input type="password" name="ai_api_key" placeholder="Leave blank to keep saved key" autocomplete="new-password"></label>
         </fieldset>
+        <fieldset id="openrouter-provider">
+            <legend>OpenRouter Free — optional first provider</legend>
+            <p>When enabled with a saved key, both agents first use <code>openrouter/free</code>. If the service fails, the existing two Google Gemma models are tried in order. The Google API key stays independent. Free models have rate limits.</p>
+            <input type="hidden" name="ai_openrouter_enabled" value="0">
+            <label><input type="checkbox" name="ai_openrouter_enabled" value="1" <?= ($secrets['ai_openrouter_enabled'] ?? '0') === '1' ? 'checked' : '' ?>> Enable OpenRouter first</label>
+            <label>OpenRouter API key
+                <input type="password" name="ai_openrouter_key" placeholder="Leave blank to retain encrypted key" autocomplete="new-password">
+            </label>
+            <p><?= !empty($secrets['ai_openrouter_key']) ? 'An OpenRouter key is saved in encrypted remote settings.' : 'No OpenRouter key is saved yet.' ?></p>
+        </fieldset>
         <fieldset>
             <legend>OpenAI-compatible API</legend>
             <label>API Base URL<input type="url" name="ai_compatible_url" value="<?= e($secrets['ai_compatible_url'] ?? '') ?>" placeholder="https://api.openai.com/v1"></label>
