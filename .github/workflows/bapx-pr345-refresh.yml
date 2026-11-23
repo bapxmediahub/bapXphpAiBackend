@@ -1,0 +1,48 @@
+name: Regenerate reviewed PR 345 artefacts (one-time)
+on:
+  push:
+    branches: [fix/support-inline-enquiry-webmcp-20261123]
+permissions:
+  contents: write
+jobs:
+  refresh:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: curl, json, mbstring, pdo_mysql
+      - name: Remove this temporary runner and regenerate exact source outputs
+        run: |
+          git rm .github/workflows/bapx-pr345-refresh.yml
+          ./bapXphp update
+          php <<'PHP'
+          <?php
+          declare(strict_types=1);
+          require 'app/bootstrap.php';
+          require 'cli/lib/DocumentationReview.php';
+          $review=new DocumentationReview(getcwd(),require 'config/documentation.php');
+          $notes=[
+            'operator-help'=>'Compared current native admin help and unchanged access rules against the Support reuse of the canonical contact form. No operator guide, role or business record is exposed.',
+            'remote-commerce'=>'Reviewed existing checkout and Support browser regressions together: new form remains separate from cart, payment and recovery; fixture never submits to a production host.',
+            'public-mcp'=>'Verified current source and documentation scopes. Declarative GET shop filters are read-only, and the existing contact POST requires an explicit human Send without modifying HTTP MCP.',
+            'google-tags'=>'Checked the changed public page layout against unchanged analytics, verification and pixel tags. The Support enquiry pane introduces no tracking secret or new Google integration.',
+            'agents'=>'Reviewed grounded retired-consultation intent and Support tool policy, including bounded browser fixture and refusal to claim a booked appointment or failed contact submission as success.',
+            'interface'=>'Compared the real native Support and contact templates, accessible desktop/mobile fixtures, privacy/retry/error behavior, and unchanged design guidelines. No second application or form contract added.',
+            'foundation'=>'Cross-checked reference docs and existing WebMCP/A2UI boundaries against the changed Support widget and live contact-form reuse. No owner tool, private chat export or payment authority introduced.'
+          ];
+          foreach($notes as $area=>$reason)$review->record($area,$reason);
+          $errors=$review->check();
+          if($errors){fwrite(STDERR,implode("\n",$errors)."\n");exit(1);}
+          PHP
+          git add -A
+          git diff --cached --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'chore: refresh generated maps and reviewed documents [generated]'
+          git push origin HEAD:refs/heads/fix/support-inline-enquiry-webmcp-20261123
