@@ -33,3 +33,6 @@
 .support-enquiry .contact-form button[type="submit"]{min-height:44px}
 .support-enquiry :is(button,input,select,textarea,a):focus-visible{outline:3px solid var(--color-maroon,#3a0003);outline-offset:2px}
 #support-enquiry-status:not(:empty){padding:9px;border-radius:7px;background:var(--color-background-primary,#faf7f0)}
+
+/* Hide the duplicate floating launcher while its existing chat panel is open. */
+.support-fab[aria-expanded="true"]{visibility:hidden;pointer-events:none}
