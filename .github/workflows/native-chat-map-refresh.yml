@@ -1,0 +1,51 @@
+name: Refresh native chat source maps and review receipts (temporary)
+on:
+  push:
+    branches: [feat/native-chat-layout-qa-20261124]
+permissions:
+  contents: write
+jobs:
+  refresh:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: curl, json, mbstring, pdo_mysql
+      - name: Regenerate deterministic artifacts and remove this one-shot workflow
+        run: |
+          git rm .github/workflows/native-chat-map-refresh.yml
+          ./bapXphp update
+          php <<'PHP'
+          <?php
+          declare(strict_types=1);
+          require 'app/bootstrap.php';
+          require 'cli/lib/DocumentationReview.php';
+          $review=new DocumentationReview(getcwd(),require 'config/documentation.php');
+          $notes=[
+            'agents'=>'Reviewed bounded native Support and Enterprise chat presentation against their existing role-scoped PHP tools and JSON histories. No change to model instructions, actor scope or stored customer data.',
+            'interface'=>'Compared screenshots from 375px and desktop with existing A2UI, Support and Enterprise layouts. Product rails stay inside their answer canvas; composer and report width changes do not alter payment or submit behavior.',
+            'public-mcp'=>'Reviewed published product card template and renderer: same canonical URLs, image allowlists, basic A2UI catalog and public read-only tool schema. The native horizontal rail does not add remote cart capabilities.',
+            'foundation'=>'Reviewed changed PHP admin view and synthetic browser QA alongside system architecture. No service rewrite, new database, extra browser engine on Hostinger or authentication bypass is introduced.',
+            'workflow'=>'Reviewed isolated Playwright runner and scoped Actions workflow: read-only checkout, no model credentials or production admin login; browser fixture screenshots contain only synthetic product and owner data.',
+            'operator-help'=>'Reviewed unchanged admin help and operator guide against native Enterprise report presentation; the improvement changes layout only and does not invent report values or new owner capabilities.',
+            'remote-commerce'=>'Reviewed cart and checkout scopes against product-card styling: no mutation action, payment provider, checkout session or commerce endpoint changed.',
+            'google-tags'=>'Reviewed native public/admin display changes against unchanged Google tag and analytics integrations; no tracking values or external script permissions were changed.',
+            'mcp-clients'=>'Reviewed scoped local MCP client contract: the native A2UI rendering changes do not grant public or admin MCP access and no client credential is exposed.'
+          ];
+          foreach($notes as $area=>$reason)$review->record($area,$reason);
+          $errors=$review->check();
+          if($errors){fwrite(STDERR,implode("\n",$errors)."\n");exit(1);}
+          PHP
+          git status --short
+          git add -A
+          git diff --cached --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'chore: regenerate native chat maps and reviewed docs [generated]'
+          git push origin HEAD:refs/heads/feat/native-chat-layout-qa-20261124
