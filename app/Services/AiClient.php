@@ -21,6 +21,8 @@ final class AiClient
 {
     private const MODEL_ATTEMPT_TIMEOUT_MS = 12000;
     private const GENERATION_TIMEOUT_NS = 26_000_000_000;
+    private const OPENROUTER_FALLBACK_BUDGET_NS = 8_000_000_000;
+    private const GOOGLE_AFTER_FALLBACK_BUDGET_NS = 20_000_000_000;
     private const FINALIZE_RESERVE_MS = 2000;
     private const MIN_ATTEMPT_MS = 1000;
     private const MAX_TOOL_CALLS_PER_ROUND = 8;
@@ -35,7 +37,8 @@ final class AiClient
         return $this->forceGoogle ? $this->secrets->googleModelConfig() : $this->secrets->getModelConfig();
     }
     private function shouldTryGoogle(array $config): bool {
-        return !empty($config['google_fallback']) && in_array($this->failureCategory,
+        // A provider that has already executed a tool must not trigger replay of that action.
+        return $this->toolCalls === 0 && !empty($config['google_fallback']) && in_array($this->failureCategory,
             ['timeout','transport','rate_limit','provider_server','empty_response','provider_response','provider_request'],true)
             && $this->secrets->googleModelConfig()['configured'];
     }
@@ -157,7 +160,7 @@ final class AiClient
 
         $contents = [['role' => 'user', 'parts' => [['text' => $this->withAnswerFence($prompt)]]]];
 
-        $deadline = hrtime(true) + self::GENERATION_TIMEOUT_NS;
+        $deadline = hrtime(true) + ($this->forceGoogle ? self::GOOGLE_AFTER_FALLBACK_BUDGET_NS : self::GENERATION_TIMEOUT_NS);
         for ($round = 0; $round <= $maxRounds; $round++) {
             $finalRound = $round === $maxRounds;
             $request = [
@@ -345,7 +348,7 @@ final class AiClient
             $this->failureCategory = 'transport';
             return 'AI request failed: cURL is not available on this server.';
         }
-        $deadline = hrtime(true) + self::GENERATION_TIMEOUT_NS;
+        $deadline = hrtime(true) + (!empty($config['google_fallback']) ? self::OPENROUTER_FALLBACK_BUDGET_NS : self::GENERATION_TIMEOUT_NS);
         $host = parse_url($config['endpoint'], PHP_URL_HOST);
         $port = parse_url($config['endpoint'], PHP_URL_PORT) ?? 443;
         $addresses = dns_get_record($host, DNS_A | DNS_AAAA) ?: [];
@@ -524,7 +527,7 @@ final class AiClient
         bool &$modelLocked,
         ?int $deadline = null
     ) {
-        $deadline ??= hrtime(true) + self::GENERATION_TIMEOUT_NS;
+        $deadline ??= hrtime(true) + ($this->forceGoogle ? self::GOOGLE_AFTER_FALLBACK_BUDGET_NS : self::GENERATION_TIMEOUT_NS);
         $plan = self::googleAttemptPlan($activeModel, $modelLocked);
         $body = false;
         foreach ($plan as $index => $attempt) {
