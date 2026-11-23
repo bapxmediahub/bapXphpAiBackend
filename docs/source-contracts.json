@@ -78,9 +78,9 @@
             "review_note": "Reviewed the sales-channel CLI references and catalogue guidance. This change only fixes generic PHP lint argument forwarding and failure propagation; feed, channel and catalogue operations are unchanged."
         },
         "workflow": {
-            "source_sha256": "fb89630853d0fa8032e863c9359bd125444a4c218390786bb85cd6012ebb1356",
+            "source_sha256": "6334311e40c48472574558cb34081bc758457f33fb53243b412fba4298e6a3d1",
             "references_sha256": "6bddcf08be3819fe8ec98d7f78e96b359a9571f9043255f5ce207927e4732284",
-            "review_note": "Reviewed trusted CI jobs, reviewer coordinator and new Chromium fixture runner: isolated synthetic screenshots and test data, no API keys or admin passwords in workflows, and no privileged fork checkout."
+            "review_note": "Reviewed the existing developer-only Playwright runner on macOS and GitHub Linux. The Chrome executable discovery now honors CHROMIUM_PATH and checks both PATH and standard macOS app locations; the synthetic admin monitoring test fixture supplies the controller optional golden suite. Verified PHP 293/293 and Support Enterprise A2UI Chromium QA; no production credentials or new runtime dependency."
         }
     }
 }

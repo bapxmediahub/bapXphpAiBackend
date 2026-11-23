@@ -1506,6 +1506,8 @@ $tests['monitoring links failed tool runs from chat when the operational audit i
         $chats->record('admin', $actor, $id, 'Later fixture question', 'Lookup completed',
             'fedcba9876543210', 'local', [['name' => 'support_enquiries', 'status' => 'complete']]);
         $agentMonitoring = null;
+        // Match the real controller's optional golden-suite input when rendering this fixture.
+        $agentGoldenSuite = null;
         $agentConversations = $chats->recent(40);
         assertSame([['trace_id' => $trace, 'turn_id' => $saved['turn_id'], 'errors' => 3]],
             $agentConversations[0]['failed_tool_runs'], 'Failed lookup reference survives a later successful turn');
