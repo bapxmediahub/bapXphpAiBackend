@@ -3086,7 +3086,7 @@
         "routes": 178,
         "controllers": 17,
         "services": 84,
-        "views": 71,
+        "views": 72,
         "collections": 24
     },
     "routes": [
@@ -5653,6 +5653,7 @@
         "public/home",
         "public/home-collections",
         "public/home-product-card",
+        "public/home-rail-controls",
         "public/login",
         "public/mcp-app",
         "public/merchant-feed",

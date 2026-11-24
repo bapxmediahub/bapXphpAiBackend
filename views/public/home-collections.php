@@ -4,8 +4,9 @@
         $collectionUrl = '/shop?category=' . rawurlencode((string)$collection['slug']);
     ?>
     <section class="section home-collection" aria-labelledby="<?= e($titleId) ?>">
-        <div class="container">
-            <div class="product-grid home-collection__grid">
+        <div class="container" data-home-rail>
+            <?php $railId = $titleId . '-rail'; require __DIR__ . '/home-rail-controls.php'; ?>
+            <div class="product-grid home-collection__grid home-product-rail" id="<?= e($railId) ?>" data-home-track tabindex="0" role="region" aria-label="<?= e($collection['name']) ?>">
                 <a class="home-collection__lead" href="<?= e($collectionUrl) ?>"
                    aria-labelledby="<?= e($titleId . '-action ' . $titleId) ?>">
                     <h2 id="<?= e($titleId) ?>"<?= $collectionIndex === 0 ? ' data-page-section="Collections" tabindex="-1"' : '' ?>><?= e($collection['name']) ?></h2>

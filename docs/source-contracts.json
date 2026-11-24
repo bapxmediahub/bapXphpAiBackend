@@ -20,17 +20,17 @@
         "content": {
             "source_sha256": "31a628f8963f037d93aa9f927866829b951dfac10282993b91f7cfa6cee433f0",
             "references_sha256": "e8ef7076f00fa294db6d59bae7e381e0de58e018ddfa15ae5b6306409d14d427",
-            "review_note": "Authored-page source and content guide agree that autosave is browser-only, revision-scoped, never publishes, and server compare-and-swap is unchanged."
+            "review_note": "Reviewed owner-scoped local draft recovery, revision check, explicit save and preview; server remains authoritative."
         },
         "foundation": {
             "source_sha256": "243648083c433823dca521dfaa422902874535b840bca0f4c7299043498d1dab",
             "references_sha256": "44504ddbd485f9ab5d6c71a6443726f531f7e0d7ed34ec16215741902635cc0e",
-            "review_note": "Test additions and unchanged MySQL page persistence retain existing storage contracts; browser snapshots do not write to the server."
+            "review_note": "Regenerated source inventory after reconciling main; no new storage service."
         },
         "google-tags": {
-            "source_sha256": "f05c993af547a7e72406e694a7d049d905c3f21410f1eddeb54a9b86f8fce54e",
+            "source_sha256": "9931f2724eec9875f4be1105fee72b70167373d61e7ecf95888dae86b1cdbd40",
             "references_sha256": "1bc780fef929af6855d54ec574f50f3ed194f65ebd66ddb6bdbbcf4952a51081",
-            "review_note": "Reviewed public layout changes against existing Google Analytics and advertising tags. Google AI credentials remain independent of OAuth, analytics tags and OpenRouter encrypted provider key."
+            "review_note": "Reviewed shared layout footer/description changes; Google tags, consent and script configuration unchanged."
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
@@ -38,14 +38,14 @@
             "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
         },
         "interface": {
-            "source_sha256": "96ec78fa126b21efe932aab44988dd535c637f877bbb1677cca055b185698779",
-            "references_sha256": "bff9a14168a36201f57f076af1f2537353f85ad4d321258efd3c402933a4b899",
-            "review_note": "New native form recovery controls respect existing admin layout, are accessible and work at desktop and 375px; no shared design change."
+            "source_sha256": "42d68578c08dcdf9af1d5a509645a0857d44b6f3595f3a01a61bfe3f9ec8ef1c",
+            "references_sha256": "f1fc313dfc585e3dc0569dd2c52ac2b412aa8924f154978be71464130fe13375",
+            "review_note": "Reviewed page editor recovery controls and existing homepage layout without changes to public presentation."
         },
         "mail": {
             "source_sha256": "8bc59511587d4566f6dbe8df2da8387b7043b940ae73a77babcfa06f4cf8f6d9",
             "references_sha256": "6d6153ae2fed6f1aebbf9fa93225d6cc74b6c098d9a34deffce7bc4f3c6e9273",
-            "review_note": "AdminController edits are limited to authored pages and saved draft tokens; no email queue or mailbox changes."
+            "review_note": "Admin controller changes are confined to authored-page draft context; mail routes unchanged."
         },
         "mcp-clients": {
             "source_sha256": "8b2e7629876c1e5facae0a92e30f91e7e11ba59bd979a528022807b0193be7bc",
@@ -58,19 +58,19 @@
             "review_note": "Reviewed product image paths and the bounded A2UI gallery against current media hosting paths; styling does not move uploads, delete media or expose private asset directories."
         },
         "operator-help": {
-            "source_sha256": "1034184d6f9021f4acc35202970e7027ea2b91433ed21a5c5a37d0401bd956b7",
+            "source_sha256": "6f157a0528b3ad5b053366ba418c167f0d2a3f903e047151e41dcba4b826ecc0",
             "references_sha256": "04b203673f70a32b750cba3ee14044d1c8fd258cc3de07f3ef4113b13310f6dc",
-            "review_note": "Cross-checked authored page UI, controller token handling and owner guide; added restore, discard, stale download and explicit publication instructions."
+            "review_note": "Reviewed page-draft recovery and existing authored-page guide; main homepage help remains intact."
         },
         "public-mcp": {
-            "source_sha256": "22723ee0587e495732100b21d8b8f1f94997d25ed12f6ddde8349cd88989f5fd",
+            "source_sha256": "63c58fcaa8f86f54433c86067579355c9632622a41e732eb14b29ce7509d5af9",
             "references_sha256": "66f314f4d27575d8d1ab7394d8e28aae3feb90467ef6445ce18d804604d40f3d",
-            "review_note": "Reviewed existing public MCP registry and A2UI renderer with declarative shop GET and contact POST forms; public tools remain bounded and read-only except already authorized cart capabilities, and contact POST never auto-submits."
+            "review_note": "Shared view registration adds only native homepage rail controls; public MCP registry, schemas and actions unchanged."
         },
         "remote-commerce": {
-            "source_sha256": "ef0c9447d0aa3f5fd98b57b38d2ec8c757a187302aa156f0a1d2e8022a706aae",
-            "references_sha256": "c9b0ed4ab144ead0c449c61a45498cf875fc248de8f8e0df2f68ef76b11801a6",
-            "review_note": "Reviewed existing cart, payment, remote checkout and support-commerce fixtures with the merged inline enquiry and native product rail: no new payment method, cart mutation tool or changes to confirmed order callbacks."
+            "source_sha256": "4158663ee0618880bed2832d4e0c789789f46c71af15cd68796652a3e2e272d8",
+            "references_sha256": "e00aba6f254f3552728ebcf0e7cd24d757eceb2ffa55060db99dd42562b481e9",
+            "review_note": "Reviewed native hero controls and outer slide corners; existing product, checkout, and cart forms unchanged."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed the sales-channel CLI references and catalogue guidance. This change only fixes generic PHP lint argument forwarding and failure propagation; feed, channel and catalogue operations are unchanged."
         },
         "workflow": {
-            "source_sha256": "4b4b4552c9bf3416f29d36569e8bebf8961afcd6cd2c26c1b6180bd212573af3",
+            "source_sha256": "15eacb29ef5116178b393e4d3e544a9792921163f1a0f4a0e0b477442ca20dd4",
             "references_sha256": "6bddcf08be3819fe8ec98d7f78e96b359a9571f9043255f5ce207927e4732284",
-            "review_note": "CI runs the new Chromium fixture test for reload, tab conflicts, owner isolation, stale recovery and explicit save."
+            "review_note": "Merged main browser suites with authored-page draft acceptance."
         }
     }
 }
