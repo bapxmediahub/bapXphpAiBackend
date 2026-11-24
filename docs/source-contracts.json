@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "597a2eb99d83d50bae7f296eaec0475c4bd869cb7a2351ea20067f8ba94d6277",
-            "references_sha256": "7af3ba6138af83651f676cacc2f40d9ed2c6d92e8405ca90fffabb33476fcf7f",
-            "review_note": "Reviewed exact HTTP cycle fixture, shared browser timeout, provider budgets and synthetic outcome fixtures against current source."
+            "source_sha256": "aec91ae70f3ae5b52e55fedb60689f863dddf722d8eecef2f6ef9617a3ae2824",
+            "references_sha256": "1b60d182cc56dff28e9a580e6e8ac30abcd785d291926835a551417bd90d8d5d",
+            "review_note": "Compared Google REST retry guide, OpenAI SDK retry defaults, Vercel AI SDK settings and OpenRouter Retry-After contract against direct PHP fallback loop; measured waits and model order verified through loopback fixtures."
         },
         "auth": {
             "source_sha256": "6087ca0af2055001f252583a6e14e380aace2bdf067c0e472cb9c63d3f5ade0e",
@@ -28,9 +28,9 @@
             "review_note": "Reviewed encrypted credential storage merge, blank input preservation, provider order and scoped identity matching; no live schema migration."
         },
         "google-tags": {
-            "source_sha256": "b294c37a5d8f8c2616cb5c2d774a2a942496fb1574cd41dae1107cc72e67bc9a",
-            "references_sha256": "3e09e3fa67931d968e98e41c1553d6d73fdf66195364d93c56fcdc755b719b2b",
-            "review_note": "Reviewed saved AI key labels and blank replacement fields; OAuth reporting grants, analytics and Google tags untouched."
+            "source_sha256": "8b68da9256999202a6f234001498211abfad52ce744837490e58ebfd580d3115",
+            "references_sha256": "1f8d916b404e18fe6c8f6e18d277e96ecb8e2a5db480599363003de0bbf40f54",
+            "review_note": "Reviewed integration retry copy; existing analytics and reporting settings unchanged."
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
@@ -38,9 +38,9 @@
             "review_note": "Reviewed shared request failure docs and backend skill; unavailable inference is an explicit saved agent error; HTTP boundary handler unchanged."
         },
         "interface": {
-            "source_sha256": "36d2d5c7f555e5c1293e11b483350088980317839060b47e1e4b8923ef51d988",
+            "source_sha256": "72860b82bccc34fde3d36b9f1362db2c7e281966da93c8d129a285ab46f410fb",
             "references_sha256": "431f6eb3fbd7961de74e85d22454ac61a8e54d3f514fc80e02eaaeb62b4b2aea",
-            "review_note": "Reviewed write-only API-key fields and safe final-four-character status; masked input rejected and browser tests exercise saved values."
+            "review_note": "Reviewed integration provider description; existing saved-key and UI behavior preserved."
         },
         "mail": {
             "source_sha256": "86d313f47cb17e23fccc2aa23a8532f54567418b0d66c730a62ba00e674a8eb1",
@@ -49,8 +49,8 @@
         },
         "mcp-clients": {
             "source_sha256": "84aaa151bd387557657560a31b137ee6238c2cd5cfc4b80f0d9726c5477bbc15",
-            "references_sha256": "63a440e7dbfa093a2e0efda43f0052c5e232d1a36f746265d1282e8e74745766",
-            "review_note": "Reviewed masked-key handling and provider config; no MCP permissions, protocol or business operations changed."
+            "references_sha256": "4b2800bedc35741c04a12a19ebbfeb7da0ea8c464170df72ef62067b01c35018",
+            "review_note": "Reviewed shared inference waits; no changes to public/authorized MCP tool schemas or execution."
         },
         "media": {
             "source_sha256": "c99bf5f35495fb29a3025b39dc32c1fbd2f20640fbacd2784598a53cd3a8584f",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed upload eligibility, revision hash, bounded UTF-8 metadata, row lock, exact patch, no row creation, and view/search/isolated DB tests."
         },
         "operator-help": {
-            "source_sha256": "06e0e59d88747aae28724943a8b1aa682727a8ac52f2807a77f50d56a315aab2",
+            "source_sha256": "7933cd4dbbc447f32070452ae82adacd8639d7deecee2735a37330b8fcc3e58d",
             "references_sha256": "d71ae7fc3cc07db2645077d32f54f7d871609ec9c82f93b55c10e862dda9c49c",
-            "review_note": "Reviewed configured owner identity matching and saved-key status. Existing credentials, explicit help and role checks preserved."
+            "review_note": "Reviewed synchronous documented provider backoff and owner integration text; unchanged authentication and explicit commands."
         },
         "public-mcp": {
             "source_sha256": "94ad00c333b2b9949bcea73134458139ef52bb87a788c5e5a980273a2b66057d",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed MediaService metadata/search patch; URL, binary and usage fields used by published feeds remain unchanged."
         },
         "workflow": {
-            "source_sha256": "76f22edd68b608e4a20766088b7afd6f3a20cff757c659f9a5deee0c0a2c7ed1",
-            "references_sha256": "97e5eb9a8429bd59e24ae6d821597dacb1997dc6224ac64d0894fab3e3d95848",
-            "review_note": "Reviewed binding agent retry instructions, README and generated source maps; existing release gates unchanged."
+            "source_sha256": "81f8753a64b67d54dc3aea7ad9e3c20cbc64cfc0995379e372baf05661bea994",
+            "references_sha256": "e34bc6f1ebc75679c05889ba2d5c65285603a62a53ccb61f230877a7eac24340",
+            "review_note": "Reviewed binding documentation-first rule, project README and generated index; require source-backed minimal implementation and actual live acceptance."
         }
     }
 }

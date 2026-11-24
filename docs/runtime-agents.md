@@ -78,7 +78,7 @@ fixture, not a production browser privilege grant.
 
 ## Provider availability
 
-Both agents use the shared AiClient ordered model scheduler. Ordinary transient
+Both agents use the shared AiClient synchronous fallback loop. Ordinary transient
 failures never reorder the next request. A recorded quota or long provider
 Retry-After can temporarily exclude that model; disabled/unconfigured models
 are not called. Explicit diagnostics retain actual transfers. Tool exchanges
@@ -221,10 +221,10 @@ The default Google-first order is gemma-4-31b-it, gemma-4-26b-a4b-it,
 then openrouter/free when enabled and configured. The preferred connection and
 its model list are editable; OpenRouter is the final enabled connection.
 For each recoverable inference failure, send the identical payload up to three
-times on the same model, with short backoff, before advancing. If all eligible
+times on the same model, with 1s then 2s backoff plus jitter; after the third failure wait 4s plus jitter before advancing. If all eligible
 models fail, restart from the first eligible model for a second cycle. Stop
 immediately on successful inference. Explicit authentication, invalid-request,
-missing-model, quota, TLS, and long Retry-After failures do not get blind
+missing-model, TLS, quota without a short retry hint, and long Retry-After failures do not get blind
 retries. Each request has a 110-second inference deadline and at most 32
 transfers; both browsers wait up to 120 seconds. The trace enforces a
 115-second total execution limit and the existing observed-token budget.
@@ -234,6 +234,9 @@ same model, never repeating completed PHP tools or switching the exchange
 to another provider. A failed exchange is an explicit error, not a canned
 business answer. [Google API troubleshooting](https://ai.google.dev/gemini-api/docs/troubleshooting)
 · [OpenAI error codes](https://developers.openai.com/api/docs/guides/error-codes)
+· [OpenAI SDK retries](https://github.com/openai/openai-python#retries)
+· [Vercel AI SDK settings](https://ai-sdk.dev/docs/ai-sdk-core/settings)
+· [OpenRouter Retry-After](https://openrouter.ai/docs/api_reference/errors-and-debugging)
 
 ## Model-driven Support and Enterprise tools
 

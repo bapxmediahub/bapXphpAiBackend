@@ -228,7 +228,7 @@ try {
         foreach(glob($healthDir.'/*')?:[] as $file)unlink($file);
         rmdir($healthDir);
     }
-    // Exercise the real shared scheduler and both wire adapters over loopback.
+    // Exercise the real synchronous fallback loop and both wire adapters over loopback.
     // The production compatible endpoint's DNS/HTTPS guard is unchanged.
     AgentTraceService::begin(str_repeat('b',16),null,AiClient::agentLimits());
     $client=new AiClient();
@@ -238,8 +238,8 @@ try {
     ];
     $googleText=new ReflectionMethod(AiClient::class,'completeGoogleText');
     $compatibleLoop=new ReflectionMethod(AiClient::class,'completeCompatibleLoop');
-    $ordered=new ReflectionMethod(AiClient::class,'runOrderedPlan');
-    $deadline=hrtime(true)+25000000000;
+    $ordered=new ReflectionMethod(AiClient::class,'completeWithFallbacks');
+    $deadline=hrtime(true)+40000000000;
     $reply=$ordered->invoke($client,$plan,$deadline,true,
         static function(array $cfg)use($client,$googleText,$compatibleLoop,$deadline):string{
             return $cfg['provider']==='google'?$googleText->invoke($client,$cfg,'Fixture',32,0.0,$deadline)
@@ -254,6 +254,10 @@ try {
     check(array_column($attempts,'status')===array_merge(array_fill(0,9,503),[200]),'Actual provider statuses preserved');
     $spans=array_values(array_filter(AgentTraceService::snapshot()['spans'],static fn(array $span):bool=>$span['type']==='model_attempt'));
     check(count($spans)===10&&($spans[9]['cycle']??null)===2,'All ten observed transfers survive trace budget and metadata projection');
+    $waits=array_values(array_filter(AgentTraceService::snapshot()['spans'],static fn(array $span):bool=>$span['name']==='provider_backoff'));
+    check(count($waits)===9,'Every failed attempt waits before the next transfer');
+    foreach($waits as $i=>$wait)check($wait['duration_ms']>=[1000,2000,4000][$i%3]-5,'Observed exponential backoff before retries and model switches');
+
     echo "PASS exact three-model ordered retry cycle: ".implode(' -> ',array_column($attempts,'model'))."\n";
     AgentTraceService::reset();
 

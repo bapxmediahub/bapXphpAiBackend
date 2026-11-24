@@ -77,7 +77,7 @@
             if(trim((string)($secrets[$keyField]??''))!==''){$googleKey=(string)$secrets[$keyField];break;}
         }
         ?>
-        <p>Both agents use enabled connections. The preferred connection runs first, the other enabled connection next, and OpenRouter last. Google model IDs run in their listed order. Each model receives up to three attempts on a transient failure before switching; after the final fallback, a second cycle starts from the first eligible model, within the shared deadline. An interrupted tool exchange stays on its original model.</p>
+        <p>Both agents use enabled connections. The preferred connection runs first, the other enabled connection next, and OpenRouter last. Google model IDs run in their listed order. Each model receives up to three attempts on a transient failure, waiting with exponential backoff before retrying or switching; after the final fallback, a second cycle starts from the first eligible model, within the shared deadline. An interrupted tool exchange stays on its original model.</p>
         <div class="admin-form__row">
             <label>Preferred fallback provider
                 <select name="ai_provider">

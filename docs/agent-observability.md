@@ -230,11 +230,11 @@ failures and timeouts are recorded but do not skip the primary in the next turn.
 Quota or explicit long Retry-After may temporarily exclude a model. Explicit
 diagnostics can contact the chosen model. Successful transfers clear their
 entry. Legacy integer cooldowns are read as transient observations, not
-provider-mandated holds. The shared scheduler tries each eligible model up
+provider-mandated holds. The synchronous fallback loop tries each eligible model up
 to three times, then the next in order; a second cycle starts from the first
 eligible model if necessary and time remains. Each observed transfer records
 provider identity, cycle number and attempt within that model's inference
-round, and retains its own status, duration and request digest. Retries reuse
+round, and retains its own status, duration and request digest. Measured provider_backoff spans record waits within the same request. Retries reuse
 the immutable inference payload; they never replay a completed tool or reroute
 a started exchange. Missing credentials, permanent failures and provider
 holds cannot be hidden as successful attempts.

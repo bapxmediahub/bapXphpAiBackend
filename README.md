@@ -291,7 +291,7 @@ commands remain distinct UI operations, and a draft is not a persisted business
 mutation. An unavailable provider produces an explicit error, not a rule-based answer.
 Gemma 31B → Gemma 26B A4B → OpenRouter Free (when configured) is the default
 order. Each recoverable failure can receive three same-model attempts, then
-advance; a second bounded cycle restarts at the primary. The shared deadline,
+wait with documented exponential backoff and advance; a second bounded cycle restarts at the primary. The shared deadline,
 transfer/token budgets and provider holds can stop the cycle early. Identical
 inference retries never repeat completed PHP tools or switch a started tool
 exchange to another provider.

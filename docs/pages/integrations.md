@@ -35,9 +35,14 @@ a tool exchange starts, it never switches providers. The Google wire adapter
 uses parametersJsonSchema for canonical JSON Schema, retaining server-side
 authorization and validation.
 
-References: https://docs.openwebui.com/getting-started/quick-start/connect-a-provider/starting-with-openai-compatible/
-and https://docs.litellm.ai/docs/router/api_reference/configuration and
-https://ai.google.dev/api/generate-content#FunctionDeclaration .
+Provider references: [Google REST function declarations](https://ai.google.dev/api/generate-content#FunctionDeclaration),
+[Google retry strategy](https://ai.google.dev/gemini-api/docs/troubleshooting#retry-strategy),
+[OpenAI SDK retries](https://github.com/openai/openai-python#retries),
+[Vercel AI SDK settings](https://ai-sdk.dev/docs/ai-sdk-core/settings),
+[OpenRouter error handling](https://openrouter.ai/docs/api_reference/errors-and-debugging).
+The native PHP client applies these patterns synchronously; there is no scheduled
+fallback job. Three attempts per model, the connection order and total budgets
+are product choices, not mandates from the providers.
 
 ## Verify an actual provider response
 

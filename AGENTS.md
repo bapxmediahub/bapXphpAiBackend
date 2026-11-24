@@ -47,6 +47,27 @@ model-selected tool calls, including simple counts and provider failure.
 
 This file is the single binding contract for coding agents in this repository.
 
+### Documentation-first implementation (binding)
+
+- Before changing any integration, identify the official provider documentation,
+  maintained SDK or reference implementation for the exact API/version. Use
+  Google AI, OpenAI, Vercel AI SDK and OpenRouter documentation for their
+  respective model/tool contracts; use native PHP equivalents where needed.
+- Prefer the smallest implementation of the documented pattern in the existing
+  PHP/MySQL/vanilla-JS architecture. No new framework, scheduler, queue,
+  background service, provider or paid dependency merely to reproduce a feature
+  documented by the current provider.
+- Record the specific source URL, contract being implemented, local adaptation
+  and executable regression in the GitHub issue/PR and relevant documentation.
+  Distinguish official defaults from bapX product choices; do not claim universal
+  compatibility from one scripted response.
+- For integration defects, reproduce the documented minimal request first.
+  Then test the actual feature, role boundaries, and deployment against the
+  configured provider. A green fixture or CI run is not live model acceptance.
+  Never change credentials, enable paid models or fabricate successful answers
+  to make an acceptance test pass.
+
+
 ## Repository
 
 - `bapxmediahub/bapXphpAiBackend` is the only working repository and the Hostinger
@@ -207,7 +228,7 @@ model name looks wrong" without checking sends the owner chasing a configuration
 that is not there.
 
 - The default Google provider uses its two hosted Gemma 4 models:
-  `gemma-4-31b-it` is primary and `gemma-4-26b-a4b-it` is the automatic fallback for a transient failure. OpenRouter Free is the final fallback when enabled and configured. Each eligible model receives three attempts for recoverable inference failures before switching; the scheduler repeats from the first eligible model for a second bounded cycle. Stop on success or budget exhaustion. Never blindly retry quota/terminal errors or long Retry-After; once a tool exchange begins, retry only its identical inference payload on the same model, never re-execute completed tools. Google does not publish a hosted Gemma 4 27B identifier.
+  `gemma-4-31b-it` is primary and `gemma-4-26b-a4b-it` is the automatic fallback for a transient failure. OpenRouter Free is the final fallback when enabled and configured. Each eligible model receives three attempts for recoverable inference failures before switching; the synchronous fallback loop repeats from the first eligible model for a second bounded cycle. Stop on success or budget exhaustion. Use documented exponential backoff (1s, 2s, then 4s before switching, plus jitter), honor Retry-After, and never blindly retry terminal errors or a held model; once a tool exchange begins, retry only its identical inference payload on the same model, never re-execute completed tools. Google does not publish a hosted Gemma 4 27B identifier.
   Proof: <https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api#supported-models>.
 - It is a **reasoning model**. Its reply may contain the model thinking out loud, either
   as parts flagged `"thought": true` or as prose before the answer. Read the answer with
