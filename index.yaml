@@ -1097,16 +1097,15 @@ concepts:
   - id: "image:assets/images/hero/guruji-portrait-cutout.png"
     type: "image"
     title: "guruji-portrait-cutout.png"
-    description: "Image referenced by 2 project resource(s)."
+    description: "Image referenced by 1 project resource(s)."
     resource: "assets/images/hero/guruji-portrait-cutout.png"
     tags:
       - "image"
       - "used"
     filename: "guruji-portrait-cutout.png"
     mime: "image/png"
-    usage_count: 2
+    usage_count: 1
     used_in:
-      - "assets/css/band.css"
       - "views/public/home.php"
   - id: "image:assets/images/hero/guruji.png"
     type: "image"

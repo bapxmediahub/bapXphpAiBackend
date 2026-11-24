@@ -17,17 +17,12 @@ change data, fake a chart value or script a purchase.
 - Real product/blog cards, selected headings, auth cards and operational KPI
   surfaces enter once when visible. Public motion is 300 ms / 10 px; admin
   motion is 180 ms / 4 px. Stagger is bounded at 120 ms. Opacity never starts
-  at zero and no final style is retained by the animation. On the homepage,
-  product and temple photos settle inside their frames. Order steps and
-  informational cards enter as they reach the viewport. Product cards, prices,
-  purchase controls and collection links stay still. Public section
-  headings and designated public panels follow native view timelines in
-  browsers that support them. Their motion follows scroll position in both
-  directions and settles within the viewport. Browsers with Web Animations
-  but without view timelines use a once-only entrance at 12% intersection.
-  Quantity and checkout controls stay in place. Keyboard focus pauses motion
-  on the focused content. The homepage temple rail uses
-  native snap and visitor-operated arrows without automatic rotation.
+  at zero and no final style is retained by the animation. Public headings and
+  designated panels outside the homepage stack use native view timelines where
+  available, with once-only entrance fallback. The homepage's complete cards
+  are the transition: no nested photo, heading or panel scroll animations.
+  Product rails use native horizontal scroll snap and visitor-operated arrows.
+  Purchase controls remain steady and reachable at settled snap positions. The homepage uses compact, equal-height merchandise cards with full linked names, two-line title/description previews and unchanged 44px purchase targets.
 - Existing Support/History/navigation controls own their state. A panel or
   new chat message can receive a short entry transition after that real state
   changes. The module does not submit forms or fabricate completion feedback.
@@ -38,13 +33,15 @@ change data, fake a chart value or script a purchase.
   page progress and returns focus to the main document. On mobile, it sits
   above bottom navigation and the cart tray. Native scroll targets leave room
   for those floating controls.
-- The visitor selects a devotional portrait with previous and next buttons.
-  The position updates after each selection. The first portrait renders in PHP.
-- The order guide, temple rail and values sections each have a short native
-  sticky interval. The incoming section covers the outgoing one over 76–150px
-  of scrolling. The wrapper bounds that interval. Tall sections expose their
-  final row before holding. Reduced motion, keyboard focus and fragment
-  targets use ordinary flow for the affected section.
+- The first devotional portrait renders in PHP. Eleven native dot buttons and
+  previous/next controls select the supplied images. Autoplay advances after
+  two seconds with a 420 ms opacity crossfade, only when motion is allowed and
+  the artwork is visible. Previous and next flank eleven compact dots in a single row. Any manual selection or keyboard focus stops rotation for the visit, and hover, hidden tabs and reduced motion suspend it. Image decode must succeed before selection. Full-width scroll cards have square outer edges; internal content cards retain their original rounding.
+- The homepage sections share an opaque native sticky stack. Each fills the
+  available stable viewport, or grows to expose all content. A single
+  ResizeObserver measures card/header heights only when geometry changes;
+  tall cards reach their final row before holding. The homepage header remains pinned independent of animation preferences and JS. The existing single footer moves into the enhanced stack as the final opaque slide, with an explicit contentinfo landmark; FAQ is the last sticky predecessor. Without enhancement the same footer stays in normal document flow. The measured top offset is occupied rather than left blank. Opaque cards retain internal clearance for floating controls; an active cart gets additional mobile clearance. Focus, fragment navigation,
+  reduced motion and missing enhancement restore ordinary flow.
 - Reduced motion and data-saving skip presentation effects. A live preference
   change cancels active animations; no-JS and missing observer/animation APIs
   leave content visible. Print suppresses decorative controls.
@@ -57,13 +54,13 @@ canonical in `Design.md`.
 
 ## Source-derived decisions and scope
 
-The homepage adapts Nebo's opaque, native sticky handoff to the opening.
-The reassurance strip and top sellers scroll over the hero, then the hero's
-sticky region ends with top sellers. The measured height lets tall heroes
-scroll far enough to expose their lower content before holding. Keyboard focus
-inside the hero, reduced motion and missing enhancement restore ordinary flow.
-The temple rail retains native horizontal scrolling. Its image motion follows
-the rail's page position independently of the horizontal scroll container.
+The homepage adapts Nebo's complete opaque editorial stack while keeping the
+existing spiritual product composition and actual purchase forms. The trust
+strip stays inside the opening card. Horizontal product rails snap whole cards,
+with one on mobile and up to three on desktop. No active-card size animation,
+scroll interception or external runtime is used. The pattern follows
+[Chrome scrollytelling guidance](https://developer.chrome.com/docs/modern-web-guidance/guides/ui-behaviors/scrollytelling)
+and [MDN CSS scroll snap](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Scroll_snap).
 [Nebo editorial stack](https://github.com/getwinharris/nebowellness_php_cms/blob/69ff0a26c78908d21a2580a4509b56c11d6ec841/assets/editorial-stack.js) · [Nebo styles](https://github.com/getwinharris/nebowellness_php_cms/blob/69ff0a26c78908d21a2580a4509b56c11d6ec841/assets/css/band.css#L4324) · [Nebo design guidance](https://github.com/getwinharris/nebowellness_php_cms/blob/69ff0a26c78908d21a2580a4509b56c11d6ec841/Design.md)
 
 The requested sources were inspected, not blindly installed:
@@ -84,6 +81,10 @@ all examples or verification tools from those projects are shipped. No paid
 asset generator, new browser runtime, external analytics or new frontend
 framework is added to the application.
 
+The [animation-performance skill](https://github.com/emilkowalski/skills/blob/main/skills/animation-performance/SKILL.md) (reviewed blob c7dd441dde8d597c877e851ed9f9601249351591) distinguishes layout work, painting and compositor animation. Do not add blanket will-change or transition:all. Compare identical scroll paths under the same browser conditions; active animation counts and screenshots are not frame-rate measurements.
+
+The [W3C carousel tutorial](https://www.w3.org/WAI/tutorials/carousels/) guides keyboard-operable navigation and understandable position announcements. A single visible slide announces its position as “1 of 4”, not “1–1 of 4”.
+
 ## Validation contract
 
 Run `node --test tests/site-motion.test.cjs` and the repository's PHP/CI checks.
@@ -94,7 +95,10 @@ Check computed visibility, page errors and horizontal overflow. Capture actual
 screens, not only assertion logs; inspect beginning/middle/end frames.
 For the homepage handoff, also check a short viewport, scroll past the hero
 and return to it by keyboard. Verify that the first shop action stays reachable,
-fragment links land on their sections and the horizontal temple rail advances one card.
+fragment links land on their sections and horizontal temple/product rails advance whole cards.
+Run \`tests/home-full-card-browser.cjs\` at 375x812, 1280x900 and 375x580;
+check native sticky handoff, reverse scrolling, keyboard flow, reduced/no-JS,
+whole-card rail geometry and intact purchase forms. Verify the pinned header meets the incoming section, long product titles do not make ordinary cards unnecessarily tall, and real floating controls do not cover purchase buttons or trust labels at rest, including the active-cart state.
 
 Private admin browser state, customer-page text and screenshots stay outside
 Git. Browser emulation does not certify every physical phone's compositor or
@@ -113,3 +117,15 @@ Escape dismissal, contained keyboard focus and focus return to its trigger.
 Background scroll/focus is disabled only while that explicit modal drawer is
 open, then restored; resizing to desktop removes modal state. This is not a
 page scrolljacking mechanism. The drawer's own contents remain scrollable.
+
+### Whole-page release verification
+
+Use the actual PHP-rendered public layout as well as controlled product fixtures.
+Run tests/homepage-release-browser.cjs locally and after the deployment SHA
+gate with EXPECTED_SHA set to the full expected production revision. The
+post-deployment workflow runs the same test at 1536×850, 1280×900, 375×812 and
+375×580. Verify every consecutive handoff forward and reverse, pinned header
+and brand, real footer landmark, no blank strip at the end, readable footer
+contrast (at least 4.5:1), legal link hit testing, mobile menu, reduced motion and
+no-JS fallback. This is read-only public acceptance, not a purchase or a physical
+phone performance certification. Preserve prior product/cart and WebMCP gates.

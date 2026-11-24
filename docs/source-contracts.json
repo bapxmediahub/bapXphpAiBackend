@@ -25,12 +25,12 @@
         "foundation": {
             "source_sha256": "5a4726b3be4a38c8f8f0df1da01e23744daf743e6c72354891d9c89f9b04f851",
             "references_sha256": "44504ddbd485f9ab5d6c71a6443726f531f7e0d7ed34ec16215741902635cc0e",
-            "review_note": "Revalidated independent native Site Kit PageSpeed feature against REA source and fixed Google API transport; same native PHP module boundaries and no WordPress runtime or schema migration."
+            "review_note": "Regenerated merged project map from actual source, no changes to persistence, runtime dependency or public transport contracts."
         },
         "google-tags": {
-            "source_sha256": "97383b9e02aba9ffc60f5f1d20bd7f9120af322c226072d8ef20fc135e50cf8a",
+            "source_sha256": "5689649b2f935ab7582fabd6b641980be8b607871e5ea8e2ad775180d60710ab",
             "references_sha256": "dcbeba891c1a20d43c247c65e7a204bd593039bd8bc68780fc51b133bffa901e",
-            "review_note": "Reviewed native PageSpeed provider projection, documented mobile/desktop results and added explicit millisecond/CLS presentation units; no Google OAuth scopes or tag injection changed."
+            "review_note": "Reviewed PageSpeed fixed Google HTTPS endpoint, bounded report projection, owner authentication and cooldown; distinct from existing tags and OAuth reporting."
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
@@ -38,9 +38,9 @@
             "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
         },
         "interface": {
-            "source_sha256": "a13258d5ccd0f1719d8ca3746744f1af9cb01cfe75978d53c4f8761341efeaf8",
-            "references_sha256": "bff9a14168a36201f57f076af1f2537353f85ad4d321258efd3c402933a4b899",
-            "review_note": "Checked responsive owner PageSpeed cards, CSRF form, dashboard link, empty/quota states and narrow-width browser rendering against admin UI conventions. No storefront layout or private customer data display was added."
+            "source_sha256": "8930133259d149fcaecbd8e228b403fbd7eb8e953fe6913dbdfdd98b9f257896",
+            "references_sha256": "f1fc313dfc585e3dc0569dd2c52ac2b412aa8924f154978be71464130fe13375",
+            "review_note": "Reviewed PageSpeed dashboard link, report cards and responsive CSS alongside unchanged latest homepage and footer changes."
         },
         "mail": {
             "source_sha256": "064a2db84e324ad8cdf377ad2d9ee07289391409e44d5bfd92a0dba85586993a",
@@ -50,7 +50,7 @@
         "mcp-clients": {
             "source_sha256": "8b2e7629876c1e5facae0a92e30f91e7e11ba59bd979a528022807b0193be7bc",
             "references_sha256": "bd97a5a56a44ee881b4b0f05def05ff2b907d4152e47b848645454b0a038446a",
-            "review_note": "Reviewed existing MCP client allowlists and resource routes against the new PageSpeed page. The new endpoints require owner browser session and CSRF, and are not exposed as MCP tools or credentials."
+            "review_note": "PageSpeed is an owner-only dashboard report, not exposed as a public or remote MCP capability; reviewed integration documentation and unchanged client authorization."
         },
         "media": {
             "source_sha256": "7b9d3d9aa746f16f1441148550d143e7094388b247c423b90c310ed5441db99d",
@@ -58,19 +58,19 @@
             "review_note": "Reviewed product image paths and the bounded A2UI gallery against current media hosting paths; styling does not move uploads, delete media or expose private asset directories."
         },
         "operator-help": {
-            "source_sha256": "21c833139f417facab3ca2c1dd48d1ae7d8475cae850b2df1c75b88e82f66fb8",
+            "source_sha256": "b6cbc01f501da1c00ae757a89761555a46538fe5aa3c574c493d21257a0d3445",
             "references_sha256": "2201c0efbcc49c20384beab8cbef25fa6bcd6928e2928d7fd8474d6522cdf6bf",
-            "review_note": "Reviewed the existing owner help route and source references against the new PageSpeed admin route. No help permissions, guide access or owner agent tools changed; the dashboard links to the independent PageSpeed view."
+            "review_note": "Reconciled PageSpeed dashboard link and native owner-only routes with current homepage layout; existing contextual help routing remains unchanged."
         },
         "public-mcp": {
-            "source_sha256": "7ecfc8e87ade0a404f741f04ece69be1b7cf7fcd117dd1458e6f4cabeb9a9800",
+            "source_sha256": "5ca24beff91e42e8156af0868bc4f8e39060b4790a3a35f921aad58627d3c1b4",
             "references_sha256": "66f314f4d27575d8d1ab7394d8e28aae3feb90467ef6445ce18d804604d40f3d",
-            "review_note": "Reviewed published MCP dispatcher and public A2UI against the PageSpeed owner feature; no public tool, product schema or transport grant changed. Google PageSpeed is an owner-only POST action."
+            "review_note": "Compared added GET and CSRF-protected POST routes against existing public MCP allowlist; no public invocation path added."
         },
         "remote-commerce": {
-            "source_sha256": "ef0c9447d0aa3f5fd98b57b38d2ec8c757a187302aa156f0a1d2e8022a706aae",
-            "references_sha256": "c9b0ed4ab144ead0c449c61a45498cf875fc248de8f8e0df2f68ef76b11801a6",
-            "review_note": "Reviewed existing cart, payment, remote checkout and support-commerce fixtures with the merged inline enquiry and native product rail: no new payment method, cart mutation tool or changes to confirmed order callbacks."
+            "source_sha256": "4158663ee0618880bed2832d4e0c789789f46c71af15cd68796652a3e2e272d8",
+            "references_sha256": "e00aba6f254f3552728ebcf0e7cd24d757eceb2ffa55060db99dd42562b481e9",
+            "review_note": "Reviewed native hero controls and outer slide corners; existing product, checkout, and cart forms unchanged."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed the sales-channel CLI references and catalogue guidance. This change only fixes generic PHP lint argument forwarding and failure propagation; feed, channel and catalogue operations are unchanged."
         },
         "workflow": {
-            "source_sha256": "d467dbac0297bcd4db12efc9eb383f731e200a8de0e9862db5a16e8433fb2080",
+            "source_sha256": "1a04597f3a66f752efdf70feada99843960c861669e8c3586f8e748fb24b91ac",
             "references_sha256": "6bddcf08be3819fe8ec98d7f78e96b359a9571f9043255f5ce207927e4732284",
-            "review_note": "Reviewed CI browser test registration and native PHP service/view route changes with developer workflow. Playwright uses intercepted synthetic result data at 375px and 1280px and the PHP suite uses injectable fake Google transport; no live provider call or hosting credentials in CI."
+            "review_note": "Combined original PageSpeed browser test with both main-branch homepage suites; all other CI and deployment checks preserved."
         }
     }
 }
