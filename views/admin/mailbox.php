@@ -16,7 +16,8 @@
     <section aria-labelledby="mail-health-title" style="margin-bottom:var(--space-lg)">
         <h3 id="mail-health-title">Queue health and delivery evidence</h3>
         <p>All <?= (int)$mailHealth['total'] ?> canonical queue records in this selection.
-            <?= (int)$mailHealth['due_pending'] ?> pending messages are due.
+            <?= (int)$mailHealth['due_pending'] ?> eligible pending messages are due.
+            <?= (int)($mailHealth['held_contact_pending'] ?? 0) ?> pending contact messages are held (included in Pending).
             This page shows up to 100 of <?= (int)$totalOutbox ?> outbox records.</p>
         <div class="admin-stats">
         <?php foreach(['pending'=>'Pending','sending'=>'Attempt in progress or interrupted','sent'=>'SMTP accepted or legacy sent','failed'=>'Not accepted / failed','needs_review'=>'Acceptance unknown: review before retry','unknown'=>'Legacy/unclassified'] as $state=>$label): ?>
@@ -24,7 +25,7 @@
         <?php endforeach; ?>
         </div>
         <p><strong>Inbox receipt is unverified.</strong> SMTP acceptance is not proof of inbox placement.
-            Unknown or interrupted attempts are never automatically replayed. This view does not retry the historical backlog.</p>
+            Automatic contact confirmations and owner enquiry notifications are paused. Review contact messages in the Inbox. Unknown or interrupted attempts are never automatically replayed. This view does not retry the historical backlog.</p>
     </section>
     <?php endif; ?>
     <div class="table-wrap">

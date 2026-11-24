@@ -387,32 +387,33 @@ final class PublicController extends BaseController {
                 $submission[$field] = is_string($_POST[$field] ?? null) ? trim($_POST[$field]) : '';
             }
 
-            if ($submission['name'] === '') $errors['name'] = 'Enter your name.';
-            if (!filter_var($submission['email'], FILTER_VALIDATE_EMAIL)) $errors['email'] = 'Enter a valid email address.';
-            if (!isset($subjects[$submission['subject']])) $errors['subject'] = 'Select a subject.';
-            if ($submission['message'] === '') $errors['message'] = 'Enter your message.';
+            $errors = ContactService::validationErrors($submission, $subjects);
             if ($errors) {
                 http_response_code(422);
                 $this->render('public/contact', ['success' => false, 'subjects' => $subjects, 'submission' => $submission, 'errors' => $errors, 'publicContact' => $publicContact]);
                 return;
             }
 
-            $this->checkRateLimit('contact', 3, 120);
+            // Keep valid enquiries in the owner inbox, not an open SMTP relay.
+            // Admission is atomic across IP, recipient and deployment-wide budgets.
+            try {
+                $admitted = \App\Services\RateLimiter::consumeContact((string)($_SERVER['REMOTE_ADDR'] ?? 'unknown'), $submission['email']);
+            } catch (\Throwable $error) {
+                error_log('Contact admission unavailable; submission was not accepted.');
+                http_response_code(503);
+                $errors['message'] = 'The enquiry form is temporarily unavailable. Please use the direct contact options.';
+                $this->render('public/contact', ['success' => false, 'subjects' => $subjects, 'submission' => $submission, 'errors' => $errors, 'publicContact' => $publicContact]);
+                return;
+            }
+            if (!$admitted) {
+                http_response_code(429);
+                $errors['message'] = 'The enquiry limit has been reached. Please try later or use the direct contact options.';
+                $this->render('public/contact', ['success' => false, 'subjects' => $subjects, 'submission' => $submission, 'errors' => $errors, 'publicContact' => $publicContact]);
+                return;
+            }
             $submission['id'] = (new ContactService())->save($submission);
-            $mailQueue = new \App\Services\MailQueueService();
-            $ownerNotification = \App\Services\MailQueueService::contactOwnerNotification($submission);
-            // The owner was never told a contact form had been submitted; it only
-            // appeared under Admin -> Contacts if someone thought to look.
-            try {
-                $mailQueue->enqueueContactConfirmation($submission);
-            } catch (\Throwable $e) { error_log('Contact receipt failed: ' . $e->getMessage()); }
-            try {
-                $mailQueue->notifyAdmin(
-                    $ownerNotification['subject'],
-                    $ownerNotification['html'],
-                    $ownerNotification['meta']
-                );
-            } catch (\Throwable $e) { error_log('Contact notification failed: ' . $e->getMessage()); }
+            // Automatic visitor and owner contact emails are intentionally held.
+            // ContactService also records the existing Admin Email Inbox entry.
             $_SESSION['contact_received'] = true;
             $this->redirect('/contact#contact-form');
         }

@@ -47,7 +47,7 @@ query_examples:
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
   concepts: 498
-  relationships: 445
+  relationships: 446
   by_type:
     blog: 16
     controller: 18
@@ -5044,6 +5044,7 @@ concepts:
     services:
       - "ContactService"
       - "PublicKnowledgeService"
+      - "RateLimiter"
     view: "public/contact"
     response: null
     provenance: "route_registry"
@@ -6636,6 +6637,9 @@ relationships:
     relation: "declared_service"
   - from: "controller:PublicController"
     to: "service:PublicMcpService"
+    relation: "declared_service"
+  - from: "controller:PublicController"
+    to: "service:RateLimiter"
     relation: "declared_service"
   - from: "controller:PublicController"
     to: "service:SecretService"

@@ -1103,15 +1103,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/PublicController.php",
-            "line": 401
-        },
-        {
-            "from": "controller:PublicController",
-            "to": "service:MailQueueService",
-            "relation": "constructs",
-            "provenance": "source_token",
-            "source": "app/Controllers/PublicController.php",
-            "line": 402
+            "line": 414
         },
         {
             "from": "controller:PublicController",
@@ -1211,11 +1203,11 @@
         },
         {
             "from": "controller:PublicController",
-            "to": "service:MailQueueService",
+            "to": "service:ContactService",
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/PublicController.php",
-            "line": 403
+            "line": 390
         },
         {
             "from": "controller:PublicController",
@@ -1224,6 +1216,14 @@
             "provenance": "source_token",
             "source": "app/Controllers/PublicController.php",
             "line": 376
+        },
+        {
+            "from": "controller:PublicController",
+            "to": "service:RateLimiter",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/PublicController.php",
+            "line": 400
         },
         {
             "from": "controller:PublicController",
@@ -1999,7 +1999,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/ContactService.php",
-            "line": 30
+            "line": 47
         },
         {
             "from": "service:CouponService",
@@ -2183,7 +2183,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/MailQueueService.php",
-            "line": 225
+            "line": 238
         },
         {
             "from": "service:MailQueueService",
@@ -2191,7 +2191,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/MailQueueService.php",
-            "line": 270
+            "line": 284
         },
         {
             "from": "service:MailQueueService",
@@ -2199,7 +2199,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/MailQueueService.php",
-            "line": 245
+            "line": 259
         },
         {
             "from": "service:MailQueueService",
@@ -2215,7 +2215,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/MailQueueService.php",
-            "line": 245
+            "line": 259
         },
         {
             "from": "service:MailStorageService",
@@ -5249,7 +5249,8 @@
             "provenance": "route_registry",
             "services": [
                 "ContactService",
-                "PublicKnowledgeService"
+                "PublicKnowledgeService",
+                "RateLimiter"
             ]
         },
         {

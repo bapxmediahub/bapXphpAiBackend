@@ -661,6 +661,7 @@ flowchart LR
   route_post_contact -- registered handler --> controller_publiccontroller
   controller_publiccontroller -. declared service .-> service_contactservice
   controller_publiccontroller -. declared service .-> service_publicknowledgeservice
+  controller_publiccontroller -. declared service .-> service_ratelimiter
   controller_publiccontroller -. declared related view .-> view_public_contact
   route_get_login -- registered handler --> controller_publiccontroller
   controller_publiccontroller -. declared service .-> service_authservice
@@ -1468,7 +1469,6 @@ flowchart LR
   controller_publiccontroller -. source new .-> service_blogservice
   controller_publiccontroller -. source new .-> service_categoryservice
   controller_publiccontroller -. source new .-> service_contactservice
-  controller_publiccontroller -. source new .-> service_mailqueueservice
   controller_publiccontroller -. source new .-> service_markdownrenderer
   controller_publiccontroller -. source new .-> service_merchantfeedservice
   controller_publiccontroller -. source new .-> service_productservice
@@ -1481,8 +1481,9 @@ flowchart LR
   controller_publiccontroller -. source new .-> service_templeservice
   controller_publiccontroller -- extends --> controller_basecontroller
   controller_publiccontroller -. static reference .-> service_authoredpageservice
-  controller_publiccontroller -. static reference .-> service_mailqueueservice
+  controller_publiccontroller -. static reference .-> service_contactservice
   controller_publiccontroller -. static reference .-> service_publicknowledgeservice
+  controller_publiccontroller -. static reference .-> service_ratelimiter
   controller_publiccontroller -. static reference .-> service_settingsservice
   controller_publiccontroller -. static reference .-> service_taxservice
   controller_publicmcpcontroller -. source new .-> service_publicmcpservice

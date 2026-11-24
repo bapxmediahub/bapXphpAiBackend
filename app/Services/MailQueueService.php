@@ -145,12 +145,22 @@ final class MailQueueService {
         return substr(hash('sha256',$type."\0".strtolower(trim($recipient))."\0".$event),0,16);
     }
 
+    /** Hold only automated contact mail, including legacy records lacking event metadata. */
+    public static function contactAutomationHeld(array $row): bool {
+        $type = $row['type'] ?? $row['source'] ?? '';
+        if (in_array($type, ['contact_customer_confirmation', 'appointment_owner_notification'], true)) return true;
+        if ($type !== 'admin_notification') return false;
+        $meta = is_array($row['meta'] ?? null) ? $row['meta'] : [];
+        return !empty($meta['contact_id']) || !empty($meta['contact_kind'])
+            || in_array($row['subject'] ?? '', ['New contact form submission', 'New consultation or appointment enquiry'], true);
+    }
+
     /** Pure state machine applied while the database host holds this row's lock. */
     public static function transitionDelivery(array $row,string $action,string $attempt,array $fields,\DateTimeImmutable $now): ?array {
         if (!preg_match('/^[a-f0-9]{32}$/D',$attempt)) throw new \InvalidArgumentException('Invalid mail attempt identity.');
         if ($action==='claim') {
             $available=strtotime((string)($row['available_at']??''));
-            if (($row['status']??'')!=='pending'||$available===false||$available>$now->getTimestamp())return null;
+            if (self::contactAutomationHeld($row)||($row['status']??'')!=='pending'||$available===false||$available>$now->getTimestamp())return null;
             $row['status']='sending';$row['delivery_state']='in_progress';$row['attempt_id']=$attempt;
             $row['attempts']=(int)($row['attempts']??0)+1;$row['attempted_at']=$now->format('c');
         } else {
@@ -186,13 +196,14 @@ final class MailQueueService {
     /** Canonical queue snapshot, not a receipt from a recipient mailbox. */
     public static function health(array $rows,?int $now=null): array {
         $now??=time();$states=array_fill_keys(['pending','sending','sent','failed','needs_review','unknown'],0);
-        $due=0;$oldest=null;
+        $due=0;$oldest=null;$heldContact=0;
         foreach($rows as $row){$status=(string)($row['status']??'unknown');
             if(!isset($states[$status]))$status='unknown';$states[$status]++;
+            if($status==='pending' && self::contactAutomationHeld($row)){$heldContact++;continue;}
             if($status==='pending'){$at=strtotime((string)($row['available_at']??''));
                 if($at!==false&&$at<=$now){$due++;$oldest=$oldest===null?$at:min($oldest,$at);}}
         }
-        return ['total'=>count($rows),'states'=>$states,'due_pending'=>$due,
+        return ['total'=>count($rows),'states'=>$states,'due_pending'=>$due,'held_contact_pending'=>$heldContact,
             'oldest_due_age_seconds'=>$oldest===null?null:max(0,$now-$oldest),'inbox_delivery'=>'unverified'];
     }
 
@@ -206,6 +217,8 @@ final class MailQueueService {
      * store notification from something a customer received.
      */
     public function enqueue(string $type, string $to, string $subject, string $html, ?\DateTimeImmutable $availableAt = null, array $meta = [], string $audience = 'customer', ?string $eventKey = null, string $preheader = ''): array {
+        if (self::contactAutomationHeld(['type'=>$type,'subject'=>$subject,'meta'=>$meta]))
+            throw new \DomainException('Automatic contact email is on hold.');
         $html = $this->wrapHtml($html, $audience, $preheader);
         $record = [
             'id' => $eventKey === null ? bin2hex(random_bytes(8)) : self::deliveryIdentity($type,$to,$eventKey),
@@ -236,6 +249,7 @@ final class MailQueueService {
      * checkout, signup or password reset that triggered it.
      */
     public function deliverNow(array $record, ?SmtpMailer $mailer = null): bool {
+        if (self::contactAutomationHeld($record)) return false;
         $attempt=bin2hex(random_bytes(16));$id=(string)($record['id']??'');
         try{$claimed=$this->store->transitionMailDelivery($id,'claim',$attempt,[]);}
         catch(\Throwable){error_log('Mail delivery claim unavailable; no SMTP attempt was made.');return false;}
@@ -449,9 +463,9 @@ final class MailQueueService {
     public function due(?\DateTimeImmutable $now = null): array {
         $now ??= new \DateTimeImmutable();
         $due = array_values(array_filter($this->all(), function (array $record) use ($now): bool {
-            if (($record['status'] ?? 'pending') !== 'pending') return false;
-            $availableAt = new \DateTimeImmutable((string)($record['available_at'] ?? 'now'));
-            return $availableAt <= $now;
+            if (($record['status'] ?? '') !== 'pending' || self::contactAutomationHeld($record)) return false;
+            $availableAt = strtotime((string)($record['available_at'] ?? ''));
+            return $availableAt !== false && $availableAt <= $now->getTimestamp();
         }));
         usort($due, fn($a, $b) => strcmp((string)($a['available_at'] ?? ''), (string)($b['available_at'] ?? '')));
         return $due;

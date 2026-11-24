@@ -62,6 +62,15 @@ with a fixed role allowlist. Update `docs/runtime-agents.md`, instruction
 content fingerprints and isolation tests whenever that contract changes.
 Never route a model-supplied path or developer index into live instructions.
 
+## Public contact admission
+
+Use the existing ContactService and owner Inbox, not an unverified visitor-to-SMTP
+relay. Contact admission budgets are atomic in a private deployment-local file.
+Do not send automatic contact mail or claim held historical contact rows; leave
+account/order notifications and unrelated SMTP states unchanged. Re-enabling
+automatic contact mail requires reviewed recipient verification and anti-abuse
+controls. Never test by flooding the production form or replaying its backlog.
+
 ## SMTP persistence and retry boundary
 
 A pending queue row must be atomically claimed on the database host before
