@@ -33,8 +33,11 @@ change data, fake a chart value or script a purchase.
   page progress and returns focus to the main document. On mobile, it sits
   above bottom navigation and the cart tray. Native scroll targets leave room
   for those floating controls.
-- The visitor selects a devotional portrait with previous and next buttons.
-  The position updates after each selection. The first portrait renders in PHP.
+- The first devotional portrait renders in PHP. Eleven native dot buttons and
+  previous/next controls select the supplied images. Autoplay advances after
+  two seconds with a 420 ms opacity crossfade, only when motion is allowed and
+  the artwork is visible. Pause/play, focus, hover, hidden tabs and reduced
+  motion control rotation; image decode must succeed before selection.
 - The homepage sections share an opaque native sticky stack. Each fills the
   available stable viewport, or grows to expose all content. A single
   ResizeObserver measures card/header heights only when geometry changes;

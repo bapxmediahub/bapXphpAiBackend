@@ -38,9 +38,9 @@
             "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
         },
         "interface": {
-            "source_sha256": "1b1880b8e9aaa7166172295033994ca2acacf495581fa7ccc5d4ef9ddc6c337d",
-            "references_sha256": "1b5415233f3d9991ebf72532c3c1012a4a7c57436bd73e36e989f9afad8a0ef9",
-            "review_note": "Pinned header, final footer slide, contrast, mobile layout and navigation verified in actual PHP browser at four viewport sizes; design and skill updated."
+            "source_sha256": "89501aae882618bc3981ad4d5f1fe7c55b5a576250d420f15f5b2365b22a683a",
+            "references_sha256": "492ac8cbf2d7a12117279170fbc9b30c184d22f06fe3789690c45f6797bf604a",
+            "review_note": "Verified separate automatic cancellation and manual image selection; all scheduling paths check artwork coverage. Added delayed-decode and covered autoplay regression."
         },
         "mail": {
             "source_sha256": "064a2db84e324ad8cdf377ad2d9ee07289391409e44d5bfd92a0dba85586993a",
@@ -69,8 +69,8 @@
         },
         "remote-commerce": {
             "source_sha256": "4158663ee0618880bed2832d4e0c789789f46c71af15cd68796652a3e2e272d8",
-            "references_sha256": "3aefd9aff3710a6450202454fb6aedb0b4e4836877b3c6e8c2fa83adc455894b",
-            "review_note": "Existing purchase forms and cart behavior preserved; viewport tests verify floating controls do not cover actions."
+            "references_sha256": "2cc1550dd3eaa51abc7d026f9dd625eee1f9dd3c31119c240b45459408c2b72c",
+            "review_note": "Reviewed homepage portrait-only changes; product purchase forms and commerce services remain unchanged."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed the sales-channel CLI references and catalogue guidance. This change only fixes generic PHP lint argument forwarding and failure propagation; feed, channel and catalogue operations are unchanged."
         },
         "workflow": {
-            "source_sha256": "0388a969b0d5b3c1bb5f47fdae556821d31608c7439e4c4a509e56a4a891df44",
+            "source_sha256": "4258fef781a62dab002b5a20abc1c86888e605a2f9a7833a1cec700900eeb300",
             "references_sha256": "6bddcf08be3819fe8ec98d7f78e96b359a9571f9043255f5ce207927e4732284",
-            "review_note": "Actual public layout acceptance added to existing CI and post-SHA deployment checks, preserving previous jobs."
+            "review_note": "Re-reviewed portrait browser regression for both independent review findings."
         }
     }
 }

@@ -28,16 +28,24 @@
                 ];
             }
         ?>
-        <div class="hero-deity" data-varahi-slider data-current-slide="guruji">
+        <div class="hero-deity" data-varahi-slider data-current-slide="guruji" data-active-index="0" role="region" aria-roledescription="carousel" aria-label="Devotional portraits">
             <div class="deity-frame">
                 <?php foreach ($heroSlides as $index => $slide): ?>
-                    <img class="varahi-slide <?= e($slide['class']) ?> <?= $index === 0 ? 'is-active' : '' ?>" src="<?= e($slide['src']) ?>" alt="<?= e($slide['alt']) ?>" width="480" height="640" <?= $index === 0 ? 'fetchpriority="high"' : 'loading="lazy"' ?>>
+                    <img class="varahi-slide <?= e($slide['class']) ?> <?= $index === 0 ? 'is-active' : '' ?>" src="<?= e($slide['src']) ?>" alt="<?= e($slide['alt']) ?>" <?= $index === 0 ? '' : 'aria-hidden="true"' ?> width="480" height="640" <?= $index === 0 ? 'fetchpriority="high"' : 'loading="lazy"' ?>>
                 <?php endforeach; ?>
             </div>
             <div class="portrait-controls" data-portrait-controls hidden>
-                <button type="button" aria-label="Previous portrait" data-portrait-step="-1">‹</button>
-                <span role="status" aria-label="Portrait position">1 / <?= count($heroSlides) ?></span>
-                <button type="button" aria-label="Next portrait" data-portrait-step="1">›</button>
+                <div class="portrait-controls__actions">
+                    <button type="button" aria-label="Pause automatic portraits" data-portrait-rotation><span aria-hidden="true">Ⅱ</span></button>
+                    <button type="button" aria-label="Previous portrait" data-portrait-step="-1">‹</button>
+                    <button type="button" aria-label="Next portrait" data-portrait-step="1">›</button>
+                </div>
+                <div class="portrait-dots" role="group" aria-label="Choose a portrait">
+                    <?php foreach ($heroSlides as $index => $slide): ?>
+                    <button type="button" data-portrait-index="<?= $index ?>" aria-label="<?= e($slide['alt']) ?>" aria-current="<?= $index === 0 ? 'true' : 'false' ?>"></button>
+                    <?php endforeach; ?>
+                </div>
+                <span class="sr-only" data-portrait-status aria-live="off"><?= e($heroSlides[0]['alt']) ?></span>
             </div>
         </div>
     </div>

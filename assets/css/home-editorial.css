@@ -262,27 +262,76 @@ body:has(main.home-main) main.home-main { padding-block-end: 0; }
     text-wrap: balance;
 }
 .home-hero .hero-actions { align-items: flex-start; justify-content: flex-start; }
+/* Stable image frame and opacity-only crossfade; native buttons remain readable. */
+.home-hero .hero-deity .deity-frame { background: none; }
+.home-hero .hero-deity .varahi-slide {
+    opacity: 0;
+    visibility: hidden;
+    transition: none;
+}
+.home-hero .hero-deity .varahi-slide.is-active { opacity: 1; visibility: visible; }
+@media (prefers-reduced-motion: no-preference) {
+    html[data-sps-motion="enabled"] .home-hero .hero-deity .varahi-slide {
+        transition: opacity 420ms ease, visibility 0s linear 420ms;
+    }
+    html[data-sps-motion="enabled"] .home-hero .hero-deity .varahi-slide.is-active {
+        transition: opacity 420ms ease, visibility 0s;
+    }
+}
 .portrait-controls:not([hidden]) {
-    display: inline-flex;
+    display: flex;
+    flex-direction: column;
     align-items: center;
+    gap: 2px;
     margin: 6px auto 0;
     color: #fff7e8;
-    border: 1px solid rgb(247 237 212 / .42);
-    border-radius: 24px;
-    background: rgb(36 0 2 / .8);
+    max-width: 100%;
 }
+.portrait-controls__actions, .portrait-dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.portrait-controls__actions { gap: 4px; }
 .portrait-controls button {
-    width: 44px;
-    height: 44px;
     border: 0;
-    border-radius: 50%;
     color: inherit;
     background: transparent;
     cursor: pointer;
+    padding: 0;
+}
+.portrait-controls__actions button {
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgb(247 237 212 / .4);
+    border-radius: 50%;
     font: 1.6rem/1 Georgia, serif;
 }
-.portrait-controls button:focus-visible { outline: 2px solid currentColor; }
-.portrait-controls span { font-size: .75rem; font-variant-numeric: tabular-nums; }
+.portrait-controls__actions [data-portrait-rotation] { font-size: .95rem; }
+.portrait-dots { gap: 0; flex-wrap: wrap; }
+.portrait-dots button { position: relative; width: 24px; height: 28px; border-radius: 6px; }
+.portrait-dots button::before {
+    content: "";
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: 7px;
+    height: 7px;
+    border: 1px solid #f3e8c9;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+.portrait-dots button[aria-current="true"]::before {
+    background: #f3d38a;
+    border-color: #f3d38a;
+    transform: translate(-50%, -50%) scale(1.35);
+}
+.portrait-controls button:focus-visible { outline: 2px solid #fff7e8; outline-offset: 1px; }
+@media (hover: hover) {
+    .portrait-controls button:hover { background: rgb(255 247 232 / .12); }
+}
+@media (max-width: 744px) and (max-height: 650px) {
+    .portrait-dots { max-width: 144px; }
+}
 
 .home-chapter, .home-faq { position: relative; isolation: isolate; }
 .home-chapter > section, .home-faq {
@@ -323,7 +372,7 @@ body:has(main.home-main) main.home-main { padding-block-end: 0; }
     .home-hero { padding: clamp(24px, 6vw, 40px) 16px; }
     .home-hero-inner { min-height: 0; padding-inline: 0; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 12px; align-items: center; }
     .home-hero .hero-deity { order: 0; padding: 0; min-width: 0; }
-    .home-hero .deity-frame, .home-hero .hero-deity[data-current-slide="guruji"] .deity-frame { width: min(100%, 200px); }
+    .home-hero .hero-deity .deity-frame { width: min(100%, 200px); }
     .home-hero h1 { font-size: clamp(1.8rem, 7.4vw, 3rem); margin: 0 0 10px; }
     .home-hero .lede { font-size: .88rem; line-height: 1.45; margin: 0 0 16px; }
     .home-hero .hero-actions .btn { min-width: 0; width: auto; padding-inline: 18px; }
@@ -333,8 +382,7 @@ body:has(main.home-main) main.home-main { padding-block-end: 0; }
     .home-temples .temple-feature-card__body p { margin-bottom: 0; }
 }
 
-.home-hero .hero-deity[data-current-slide="guruji"] .deity-frame { background-image: none; }
-.home-hero .hero-deity[data-current-slide="guruji"] .hero-guruji { opacity: 1; visibility: visible; }
+
 @media (max-width: 744px) {
     .home-bestsellers.section { padding: 26px 16px; }
     .home-bestsellers > .container { padding-inline: 0; }
@@ -380,7 +428,7 @@ body:has(main.home-main) main.home-main { padding-block-end: 0; }
     .home-opening .hero-copy { text-align: center; }
     .home-opening .hero-actions { align-items: center; justify-content: center; }
     .home-opening .home-hero h1 { font-size: clamp(2rem,8vw,3rem); }
-    .home-opening .home-hero .deity-frame, .home-opening .home-hero .hero-deity[data-current-slide="guruji"] .deity-frame {
+    .home-opening .home-hero .hero-deity .deity-frame {
         width: min(56vw, 25svh, 240px);
     }
 }
@@ -527,3 +575,6 @@ body:has(main.home-main) .site-footer a:focus-visible { outline: 2px solid #f3e8
     body:has(main.home-main) .site-footer .footer-grid > :last-child { grid-column: 1 / -1; }
     body:has(main.home-main):has(#mobile-cart-tray:not([hidden])) .site-footer { padding-block-end: 136px; }
 }
+
+.home-hero .hero-deity .deity-frame { background-image: none; }
+.home-hero .hero-deity .varahi-slide.hero-guruji.is-active { opacity: 1; visibility: visible; }
