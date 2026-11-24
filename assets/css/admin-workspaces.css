@@ -101,13 +101,22 @@
 .users-directory__head h2, .users-directory__head p { margin: 0; }
 .users-directory__head h2 { font-size: 1.12rem; }
 .users-directory__head p { margin-top: .25rem; color: var(--color-text-muted); font-size: .82rem; }
+.users-directory__meta { display: flex; align-items: center; flex-wrap: wrap; gap: .25rem .6rem; }
 .users-directory__head .users-result-count {
     padding: .25rem .65rem; margin: 0; background: var(--color-bg-alt);
     border-radius: 6px; font-variant-numeric: tabular-nums;
 }
+.users-reset {
+    display: inline-flex; align-items: center; min-height: 44px; padding-inline: .25rem;
+    color: var(--color-maroon); text-decoration: underline; font-size: .82rem;
+}
 .users-filters {
-    display: grid; grid-template-columns: minmax(8rem, 1.45fr) repeat(4, minmax(0, 1fr)) minmax(4rem, .6fr);
-    gap: .65rem; padding: .15rem 1.2rem 1rem; align-items: end;
+    display: grid; grid-template-columns: minmax(0, 1fr);
+    gap: .6rem; padding: 0 1.2rem .85rem; align-items: start;
+}
+.users-search {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto;
+    gap: .6rem; align-items: end;
 }
 .users-field { display: grid; gap: .35rem; min-width: 0; }
 .users-field label { color: var(--color-text-muted); font-size: .8rem; font-weight: 700; }
@@ -116,9 +125,30 @@
     border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-white); color: var(--color-ink);
     font-size: .87rem;
 }
-.users-actions, .users-pages { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+.users-filter-options { min-width: 0; }
+.users-filter-options summary {
+    display: flex; align-items: center; gap: .4rem; width: fit-content; max-width: 100%;
+    min-height: 44px; padding: .4rem .65rem; border-radius: 8px; border: 1px solid var(--color-border);
+    list-style: none; cursor: pointer; color: var(--color-maroon); font-size: .84rem; font-weight: 650;
+}
+.users-filter-options summary::-webkit-details-marker { display: none; }
+.users-filter-options summary:hover, .users-filter-options[open] summary { background: #fbf7ee; }
+.users-filter-options summary svg { flex-shrink: 0; }
+.users-filter-options summary::after {
+    content: ""; width: .38rem; height: .38rem; margin: -.2rem .15rem 0;
+    border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg);
+}
+.users-filter-options[open] summary::after { margin-top: .2rem; transform: rotate(225deg); }
+.users-filter-count {
+    padding: .06rem .4rem; border-radius: 99px; background: #f4e9ce; font-size: .75rem; white-space: nowrap;
+}
+.users-filter-options[open] .users-filter-fields {
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .65rem;
+    padding: .75rem; margin-top: .55rem; background: #fdfbf6;
+    border: 1px solid var(--color-border); border-radius: 8px;
+}
 .users-actions { grid-column: 1 / -1; }
-.users-actions .btn, .users-pages .btn { min-height: 44px; }
+.users-filters .btn, .users-pages .btn { min-height: 44px; }
 .users-row {
     display: grid; grid-template-columns: minmax(0, 2fr) minmax(6rem, .8fr) minmax(4rem, .55fr) minmax(7.5rem, 1fr) 1rem;
     gap: .75rem; align-items: center; padding: .8rem 1.2rem; font-size: .9rem;
@@ -166,9 +196,12 @@
 .users-history td small { display: none; }
 .users-history p, .users-empty p { margin: .3rem 0 0; color: var(--color-text-muted); font-size: .85rem; }
 .users-empty { padding: 1.8rem 1rem; text-align: center; border-top: 1px solid var(--color-border); }
-.users-pages { justify-content: flex-end; padding: .8rem 1.2rem; border-top: 1px solid var(--color-border); font-size: .85rem; }
+.users-pages {
+    display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; justify-content: flex-end;
+    padding: .8rem 1.2rem; border-top: 1px solid var(--color-border); font-size: .85rem;
+}
 @media (max-width: 1120px) {
-    .users-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .users-filter-options[open] .users-filter-fields { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (max-width: 900px) {
     .users-row { grid-template-columns: minmax(0, 1fr) auto 1rem; gap: .45rem .7rem; }
@@ -185,11 +218,11 @@
     .users-workspace .report-head { flex-direction: row; align-items: flex-start; }
     .users-workspace .report-head .btn { flex: none; min-height: 44px; padding-inline: .75rem; }
     .users-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; }
-    .users-metrics a { padding: .55rem .75rem; }
-    .users-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .users-search { grid-column: 1 / -1; }
-    .users-actions .btn { padding-inline: .65rem; }
+    .users-metrics a { grid-template-columns: minmax(0, 1fr) auto; align-items: center; min-height: 44px; padding: .5rem .6rem; }
+    .users-filter-options[open] .users-filter-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .users-filters .btn { padding-inline: .6rem; }
     .users-directory__head, .users-filters, .users-row, .users-history, .users-pages { padding-inline: .8rem; }
+    .users-directory__head { padding-block: .8rem; gap: .5rem; }
     .users-history table, .users-history tbody { display: block; width: 100%; min-width: 0; }
     .users-history thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
     .users-history tbody tr {

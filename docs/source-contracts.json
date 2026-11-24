@@ -38,9 +38,9 @@
             "review_note": "Reviewed request-failure and hosting guidance against the probe error handling. Retry is bounded to the read-only revision GET, honors server guidance and does not assert deployment on network or HTTP failure."
         },
         "interface": {
-            "source_sha256": "77b65056a8c380b2f2ce9552b1e570c7403a9017023b52b4e0b4baaa79b40e91",
-            "references_sha256": "e2219f34ee5d6cace2c47a96d56761be98b68e685c9adf443c0fb43ead847ab6",
-            "review_note": "Matched the shared muted label color to the white card surface and WCAG small-text requirement. Checked the four actual page consumers at 1280px and 375px, the About CSS failure case and native enquiry navigation."
+            "source_sha256": "4e6608ca5447861a10cb0510e21356b84910495034f4eaaf99e03ee83311b67e",
+            "references_sha256": "2f3e7508dcdea5ae6dc325b987162c34be08af3f9bf14269d935c1cf8016def7",
+            "review_note": "Reviewed the responsive native Users filter disclosure, visible search and reset, keyboard focus and compact mobile segment counts against Design and the Users guide."
         },
         "mail": {
             "source_sha256": "b45d9ee217172b15b4a2bf24d95ef1c27b396c060cbd22a1416c7c022a8cca72",
@@ -54,13 +54,13 @@
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
-            "references_sha256": "f9dc1ab474a5711a942c47a2e50f08ac189d7bf266f8d9d71fe6a25db80f63d2",
-            "review_note": "Reviewed the added admin UI skill guidance alongside guarded media deletion and the sidebar Media Library link; the route and media workflows retain their existing semantics."
+            "references_sha256": "463a55dec5fe5d56c8c237adc15b8725bb47aaa30975338caf58bd23c8c377bb",
+            "review_note": "The admin UI skill change documents Users filtering. Reviewed media verification guidance and confirmed uploads, revision controls and delete paths are outside the change."
         },
         "operator-help": {
-            "source_sha256": "5eae58600192161309b397b846279f6ed938deb62cf27e42ea70d3ccc6cd9695",
-            "references_sha256": "9514c6b0b4ffcb0a09bc116419cfcc30e7ae5a70db7ae01ccc9509fcb1566f6b",
-            "review_note": "Checked Customers help against the owner route, email-matched history, account segments, native combined filters and IST date boundaries; Help for this page still resolves the same guide."
+            "source_sha256": "484dd43f3d1ea7dec9c90dbe98feaea2d217011ed74cf7c018e2bb72c0fc6f5a",
+            "references_sha256": "fdc658baf44765687b0575af60e28f955cde7ea7c327a5cbc5a8db4ded2875ee",
+            "review_note": "Verified the Customers guide against the native Users form, collapsed controls, search submit, active count and result-adjacent reset."
         },
         "public-mcp": {
             "source_sha256": "3342adc5aa7dcf4c375bc8f4c3010f978a98c0b3e42c9c4cc4b9fb51d078c282",
@@ -69,8 +69,8 @@
         },
         "remote-commerce": {
             "source_sha256": "fdbee076578636fc2de96f884ddf628b0660d3931ce118bafe56423314da1511",
-            "references_sha256": "c821c44f420a276a4e43a0f48660c23f3bdab0cdcc245e5336d18ea1693f00cc",
-            "review_note": "Cross-checked the shared enquiry-card token on Home and Shop against the commerce and checkout guidance. Browser navigation reaches the existing contact form; no cart, order or checkout behavior changed."
+            "references_sha256": "711b415d4a43db950e8b0347db24fcdf0d98b16797f2d4cec1028a550416d835",
+            "review_note": "Design edit covers owner directory controls only. Reviewed checkout guidance and confirmed payment and public cart UI are untouched by this view and scoped stylesheet change."
         },
         "sales-channels": {
             "source_sha256": "6e5ee7b44dd92cc4dadec7a3c02f4bb9da797ba98d4e541e9f956687db236142",
@@ -78,9 +78,9 @@
             "review_note": "Confirmed the existing catalogue optimiser and filename handling remain the default. Only brand uploads retain the original raster type."
         },
         "workflow": {
-            "source_sha256": "060ec1eedc633b6b9351f466d4275f4bc377cb4689ffc21957416548ade6a282",
+            "source_sha256": "b91f3590670ed6d83d8284f6847c2f4be5d66a789e58af6a15f08753a7ac01c5",
             "references_sha256": "e34bc6f1ebc75679c05889ba2d5c65285603a62a53ccb61f230877a7eac24340",
-            "review_note": "Checked exact HEAD verification before and after both unchanged browser suites, serial release execution, fixture checks in CI and the independent deployment gate."
+            "review_note": "Added one isolated Chromium regression to the existing CI browser suite. Reviewed the issue-first, exact-head and deployed acceptance workflow; release gates are unchanged."
         }
     }
 }

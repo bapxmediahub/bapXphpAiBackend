@@ -23,9 +23,11 @@ description: Use when editing owner/admin pages, CRUD forms, media library, envi
 Keep decorative sidebar icons aligned with visible link labels and preserve
 active states and module visibility. The user directory is owner-only and
 matches order history by checkout email. Show full-directory segment counts
-separately from filtered result totals. Preserve filters across pagination,
-and verify IST date boundaries, native keyboard expansion, and stacked
-order history at 375px with synthetic accounts.
+separately from filtered result totals. Keep name/email search visible and
+secondary controls in the native More filters disclosure. Keep the active-count
+badge and reset visible when the disclosure closes. Verify combined criteria
+and pagination without JavaScript, native keyboard expansion, IST dates and
+stacked order history at 375px with synthetic accounts.
 
 ## Admin Panel Agent
 
