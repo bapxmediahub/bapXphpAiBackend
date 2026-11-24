@@ -103,6 +103,9 @@ path guards and raw-source denial. Scheduled visibility is not scheduled email.
 MailTemplateService renders pure event content; it does not choose a recipient,
 issue an invoice, create an order or send. MailQueueService owns audience/event
 identity and SMTP acceptance. Preserve configured owner versus customer routing.
+Use the public site profile for subject, shell identity and help links in new
+messages. Keep SMTP sender, Reply-To and recipient configuration independent.
+Previously rendered queue records retain their original message content.
 Google welcome is only for a new persisted verified customer; normal login is
 not signup. Password-change mail follows successful account mutation only.
 Synthetic admin previews/samples must remain conspicuously labelled and cannot

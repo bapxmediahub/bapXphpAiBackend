@@ -2231,7 +2231,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/MailQueueService.php",
-            "line": 5
+            "line": 7
         },
         {
             "from": "service:MailQueueService",
@@ -2239,7 +2239,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/MailQueueService.php",
-            "line": 238
+            "line": 259
         },
         {
             "from": "service:MailQueueService",
@@ -2247,7 +2247,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/MailQueueService.php",
-            "line": 284
+            "line": 14
         },
         {
             "from": "service:MailQueueService",
@@ -2255,7 +2255,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/MailQueueService.php",
-            "line": 259
+            "line": 280
         },
         {
             "from": "service:MailQueueService",
@@ -2263,7 +2263,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/MailQueueService.php",
-            "line": 35
+            "line": 53
         },
         {
             "from": "service:MailQueueService",
@@ -2271,7 +2271,15 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/MailQueueService.php",
-            "line": 259
+            "line": 280
+        },
+        {
+            "from": "service:MailQueueService",
+            "to": "service:SiteProfileService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/MailQueueService.php",
+            "line": 10
         },
         {
             "from": "service:MailStorageService",
@@ -2287,7 +2295,15 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/MailTemplateService.php",
-            "line": 32
+            "line": 36
+        },
+        {
+            "from": "service:MailTemplateService",
+            "to": "service:SiteProfileService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/MailTemplateService.php",
+            "line": 15
         },
         {
             "from": "service:McpClientService",

@@ -6,11 +6,13 @@ namespace App\Services;
 final class MailTemplateService
 {
     private string $base;
-    public function __construct(?string $base=null){
+    private SiteProfileService $profile;
+    public function __construct(?string $base=null, ?SiteProfileService $profile=null){
         $base??=(string)(require app_path('config/database.php'))['app_url'];
         $url=parse_url($base);
         if(!self::safeUrl($base)||isset($url['query'])||isset($url['fragment']))throw new \InvalidArgumentException('Valid site origin required.');
         $this->base=rtrim($base,'/');
+        $this->profile=$profile??SiteProfileService::current(origin:$this->base);
     }
     public static function catalog(): array {
         return [
@@ -27,20 +29,22 @@ final class MailTemplateService
         if(!isset(self::catalog()[$key]))throw new \InvalidArgumentException('Unknown message template.');
         $audience=self::catalog()[$key]['audience'];$body='';$subject='';$preview='';
         $name=self::text($data['customer_name']??$data['name']??'there');
+        $brand=$this->profile->name();
+        $greeting=$this->profile->isReference()?'Vanakkam ':'Hello ';
         if($key==='welcome'){
-            $subject='Welcome to Sri Panchami Spiritual';$preview='Your account is ready. Orders, saved addresses and support in one place.';
-            $body=$this->label('ACCOUNT READY').MailQueueService::heading('Welcome to Sri Panchami Spiritual')
-                .'<p>Vanakkam '.e($name).',</p><p>Your customer account is ready. Keep your order details, delivery addresses and support requests together.</p>'
+            $subject='Welcome to '.$brand;$preview='Your account is ready. Orders, saved addresses and support in one place.';
+            $body=$this->label('ACCOUNT READY').MailQueueService::heading($subject)
+                .'<p>'.e($greeting.$name).',</p><p>Your customer account is ready. Keep your order details, delivery addresses and support requests together.</p>'
                 .MailQueueService::button('Open your account',$this->url('/account/dashboard'))
                 .$this->nextSteps(['Review your profile and delivery address before checkout.','Use the same account to view your orders and issued invoices.','Never share your password or a one-time sign-in code with support.']);
         }elseif(in_array($key,['order_confirmation','owner_order'],true)){
             $id=self::text($data['id']??'');if($id==='')throw new \InvalidArgumentException('Order reference required.');
             $held=!empty($data['fulfillment_review_required']);$owner=$key==='owner_order';
-            $subject=$owner?'New paid order '.$id:($held?'Payment received — order under review':'Order confirmed — Sri Panchami Spiritual');
+            $subject=$owner?'New paid order '.$id:($held?'Payment received — order under review':'Order confirmed — '.$brand);
             $preview=$held?'Payment recorded; product availability requires review before fulfillment.':'Order '.$id.' — '.self::money($data['total']??null).' recorded. View order and invoice details.';
             $body=$this->label($held?'PAYMENT RECORDED · REVIEW REQUIRED':'PAYMENT RECORDED')
                 .MailQueueService::heading($owner?'A new paid order needs your attention':($held?'We received your payment':'Thank you for your order'))
-                .'<p>'.($owner?'Review the saved order before dispatch.':'Vanakkam '.e($name).', your verified payment has been recorded.').'</p>'
+                .'<p>'.($owner?'Review the saved order before dispatch.':e($greeting.$name).', your verified payment has been recorded.').'</p>'
                 .($held?'<p style="padding:14px;background:#fff3d8;border-left:4px solid #b98224"><strong>Product availability review:</strong> fulfillment is on hold while the team checks this order. Payment received does not guarantee immediate dispatch.</p>':'<p>'.($owner?'Use the owner order screen for fulfillment and customer updates.':'The team will prepare your order and send a shipping update when dispatched.').'</p>')
                 .MailQueueService::details(['Order reference'=>e($id),'Payment total'=>e(self::money($data['total']??null)),
                     'Invoice'=>e(self::text($data['invoice_number']??''))]);
@@ -57,14 +61,14 @@ final class MailTemplateService
         }elseif($key==='payment_attention'){
             $subject='Please check your payment status';$preview='Completion was not confirmed. Check the payment reference before trying again.';
             $body=$this->label('PAYMENT CHECK NEEDED').MailQueueService::heading('We could not confirm completion')
-                .'<p>Vanakkam '.e($name).', we could not confirm that this checkout completed. This message does not establish whether your bank has charged or reversed the payment.</p>'
+                .'<p>'.e($greeting.$name).', we could not confirm that this checkout completed. This message does not establish whether your bank has charged or reversed the payment.</p>'
                 .MailQueueService::details(['Reference'=>e(self::text($data['id']??'')),'Attempted amount'=>e(self::money($data['total']??null))])
                 .'<p><strong>Do not pay again while the outcome is uncertain.</strong> Check your order page and the payment-provider or bank reference. Contact the team with that reference if a debit is visible but no confirmed order appears.</p>'
                 .MailQueueService::button('Check your orders',$this->url('/account/dashboard/orders'))
                 .'<p>Your cart may still be available. Retry payment only after you have established the earlier attempt did not complete.</p>';
         }elseif($key==='shipment'){
             $delivered=($data['status']??'')==='delivered';
-            $subject=$delivered?'Your order is marked delivered':'Your Sri Panchami Spiritual order has shipped';
+            $subject=$delivered?'Your order is marked delivered':'Your '.$brand.' order has shipped';
             $preview=$delivered?'Check your delivery and contact the team if anything is missing.':'Courier and tracking details for your order.';
             $body=$this->label($delivered?'DELIVERY UPDATE':'DISPATCH UPDATE').MailQueueService::heading($delivered?'Your order is marked delivered':'Your order is on its way')
                 .'<p>'.($delivered?'The order record is marked delivered. If you have not received it or an item needs attention, contact the team with the order reference.':'The team has recorded your dispatch. Check the courier for current progress; tracking information can take time to appear.').'</p>'
@@ -74,13 +78,13 @@ final class MailTemplateService
         }elseif($key==='password_reset'){
             $link=self::text($data['reset_url']??'');
             if(!self::safeUrl($link)||!str_starts_with($link,$this->base.'/reset-password?'))throw new \InvalidArgumentException('A valid same-site reset link is required.');
-            $subject='Reset your Sri Panchami Spiritual password';$preview='Use your requested reset link; do not share it with anyone.';
+            $subject='Reset your '.$brand.' password';$preview='Use your requested reset link; do not share it with anyone.';
             $body=$this->label('ACCOUNT SECURITY').MailQueueService::heading('Reset your password')
                 .'<p>Use the link below only if you requested a password reset. It is intended for you and must not be forwarded.</p>'
                 .MailQueueService::button('Reset your password',$link)
                 .'<p>If you did not request this, ignore this email. Your password is not changed merely by receiving it. An expired or used link needs a new recovery request.</p>';
         }else{
-            $subject='Your Sri Panchami Spiritual password was changed';$preview='Security notice: review this change if you did not make it.';
+            $subject='Your '.$brand.' password was changed';$preview='Security notice: review this change if you did not make it.';
             $body=$this->label('ACCOUNT SECURITY').MailQueueService::heading('Your password was changed')
                 .'<p>The application confirmed a password change for your account. If this was you, no further action is required.</p>'
                 .'<p><strong>If this was not you, act now:</strong> use the account recovery flow and contact support. Do not send your password or reset link by email.</p>'

@@ -2,7 +2,25 @@
 namespace App\Services;
 
 final class MailQueueService {
+    private ?SiteProfileService $profile = null;
+
     public function __construct(private DatabaseService $store = new DatabaseService()) {}
+
+    private function profile(): SiteProfileService {
+        return $this->profile ??= SiteProfileService::current();
+    }
+
+    private function templates(): MailTemplateService {
+        return new MailTemplateService(profile: $this->profile());
+    }
+
+    private function supportLink(): string {
+        $contact = $this->profile()->contact();
+        $address = $contact['email'] ?? '';
+        $url = $address !== '' ? 'mailto:' . $address : $this->siteUrl($contact['servicePath']);
+        return '<a href="' . e($url) . '" style="color:' . self::BRAND['maroon'] . ';text-decoration:underline;">'
+            . e($address !== '' ? 'Email ' . $address : 'Open the contact form') . '</a>';
+    }
 
     /**
      * Transactional email shell built to the conventions real ecommerce senders use:
@@ -33,11 +51,17 @@ final class MailQueueService {
         $b = self::BRAND;
         $isAdmin = $audience === 'admin';
         $settings = (new SettingsService())->public();
-        $siteName = 'Sri Panchami Spiritual';
+        $profile = $this->profile();
+        $siteName = $profile->name();
         $siteUrl = rtrim($this->siteUrl('/'), '/');
         $logoUrl = trim((string)($settings['logo_url'] ?? ''));
-        if ($logoUrl === '') $logoUrl = $siteUrl . '/assets/images/logo-square.jpeg';
+        if ($logoUrl === '' && $profile->isReference()) $logoUrl = '/assets/images/logo-square.jpeg';
         if (str_starts_with($logoUrl, '/')) $logoUrl = $siteUrl . $logoUrl;
+        $logoSize = $isAdmin ? 44 : 64;
+        $logo = $logoUrl === '' ? '' : '<img src="' . e($logoUrl)
+            . '" width="' . $logoSize . '" height="' . $logoSize . '" alt="' . e($siteName)
+            . '" style="display:block;margin:0 auto 10px;width:' . $logoSize . 'px;height:' . $logoSize
+            . 'px;border-radius:50%;border:2px solid ' . $b['gold'] . ';">';
 
         $legal = [];
         if (!empty($settings['gst_legal_name'])) $legal[] = e((string)$settings['gst_legal_name']);
@@ -65,8 +89,7 @@ final class MailQueueService {
 
             // Header
             . '<tr><td align="center" style="background:' . ($isAdmin ? $b['maroon_deep'] : $b['maroon']) . ';padding:22px 24px;border-bottom:3px solid ' . $b['gold'] . ';">'
-            . '<img src="' . e($logoUrl) . '" width="' . ($isAdmin ? 44 : 64) . '" height="' . ($isAdmin ? 44 : 64) . '" alt="' . e($siteName) . '" '
-            . 'style="display:block;margin:0 auto 10px;width:' . ($isAdmin ? 44 : 64) . 'px;height:' . ($isAdmin ? 44 : 64) . 'px;border-radius:50%;border:2px solid ' . $b['gold'] . ';">'
+            . $logo
             . '<div style="font-family:' . $b['serif'] . ';font-size:' . ($isAdmin ? 16 : 19) . 'px;font-weight:bold;color:' . $b['gold'] . ';letter-spacing:0.4px;">'
             . e($siteName) . '</div>'
             // Admin mail is labelled so it is obvious at a glance in a shared inbox that
@@ -87,8 +110,7 @@ final class MailQueueService {
                   . '<br>Sent to the store owner. Customers do not receive this email.'
                   . '<br><a href="' . e($siteUrl . '/admin') . '" style="color:' . $b['maroon'] . ';text-decoration:underline;">Open the admin panel</a>'
                 : '<strong style="color:' . $b['ink'] . ';font-family:' . $b['serif'] . ';font-size:14px;">' . e($siteName) . '</strong>' . $legalHtml
-                  . '<br><br>Need help? Reply to this email or write to '
-                  . '<a href="mailto:support@sripanchamispiritual.com" style="color:' . $b['maroon'] . ';text-decoration:underline;">support@sripanchamispiritual.com</a>'
+                  . '<br><br>Need help? ' . $this->supportLink() . '.'
                   . '<br><a href="' . e($siteUrl) . '" style="color:' . $b['maroon'] . ';text-decoration:underline;">' . e(preg_replace('#^https?://#', '', $siteUrl)) . '</a>')
             . '</td></tr></table></td></tr>'
 
@@ -123,8 +145,7 @@ final class MailQueueService {
 
     /** Absolute URL for links in email; relative paths are useless in an inbox. */
     private function siteUrl(string $path = '/'): string {
-        $base = rtrim((string)((require app_path('config/database.php'))['app_url'] ?? ''), '/');
-        if ($base === '') $base = 'https://sripanchamispiritual.com';
+        $base = rtrim((string)(require app_path('config/database.php'))['app_url'], '/');
         return $base . '/' . ltrim($path, '/');
     }
 
@@ -281,15 +302,15 @@ final class MailQueueService {
     }
 
     public function templatePreview(string $key): array {
-        $message=(new MailTemplateService())->sample($key);
+        $message=$this->templates()->sample($key);
         $message['html']=$this->wrapHtml($message['html'],$message['audience'],$message['preheader']);return $message;
     }
     public function enqueueTemplate(string $key,array $data,string $to,?string $eventKey=null,array $meta=[]): array {
-        $message=(new MailTemplateService())->render($key,$data);
+        $message=$this->templates()->render($key,$data);
         return $this->enqueue($key,$to,$message['subject'],$message['html'],null,$meta,$message['audience'],$eventKey,$message['preheader']);
     }
     public function enqueueTemplateSample(string $key,string $to,string $eventKey): array {
-        $message=(new MailTemplateService())->sample($key);
+        $message=$this->templates()->sample($key);
         $record=$this->enqueue('template_test',$to,$message['subject'],$message['html'],null,
             ['template'=>$key,'synthetic_sample'=>true],$message['audience'],$eventKey,$message['preheader']);
         return $this->store->find('mail_queue',(string)$record['id'])??$record;
@@ -301,10 +322,10 @@ final class MailQueueService {
     public function enqueuePaymentConfirmation(array $order): ?array {
         $to=trim((string)($order['customer_email']??''));$id=trim((string)($order['id']??''));
         if(!filter_var($to,FILTER_VALIDATE_EMAIL)||$id==='')return null;
-        $customer=(new MailTemplateService())->render('order_confirmation',$order);
+        $customer=$this->templates()->render('order_confirmation',$order);
         $sent=$this->enqueue('payment_confirmation',$to,$customer['subject'],$customer['html'],null,
             ['order_id'=>$id],'customer','paid-order:'.$id,$customer['preheader']);
-        $owner=(new MailTemplateService())->render('owner_order',$order);
+        $owner=$this->templates()->render('owner_order',$order);
         $this->notifyAdmin($owner['subject'],$owner['html'],['order_id'=>$id],'paid-order:'.$id,$owner['preheader']);
         return $sent;
     }
@@ -327,14 +348,15 @@ final class MailQueueService {
         if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) return null;
         $name = trim((string)($submission['name'] ?? ''));
         $subject = trim((string)($submission['subject'] ?? 'General enquiry'));
+        $brand = $this->profile()->name();
         $html = self::heading('We received your enquiry')
-            . '<p>Hello ' . e($name !== '' ? $name : 'there') . ', thank you for contacting Sri Panchami Spiritual. Our team will review your message and reply soon.</p>'
+            . '<p>Hello ' . e($name !== '' ? $name : 'there') . ', thank you for contacting ' . e($brand) . '. Our team will review your message and reply soon.</p>'
             . self::details([
                 'Reference' => e((string)($submission['id'] ?? '')),
                 'Subject' => e($subject),
             ])
             . self::button('Visit the store', $this->siteUrl('/shop'));
-        return $this->enqueue('contact_customer_confirmation', $to, 'We received your enquiry — Sri Panchami Spiritual', $html, null, ['contact_id' => $submission['id'] ?? '']);
+        return $this->enqueue('contact_customer_confirmation', $to, 'We received your enquiry — ' . $brand, $html, null, ['contact_id' => $submission['id'] ?? '']);
     }
 
     /** Identify appointment-style contact enquiries without restoring public booking. */
@@ -395,7 +417,7 @@ final class MailQueueService {
             ['order_id' => $order['id'] ?? '']
         );
         if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) return null;
-        $message=(new MailTemplateService())->render('payment_attention',$order);
+        $message=$this->templates()->render('payment_attention',$order);
         return $this->enqueue('payment_failed',$to,$message['subject'],$message['html'],null,
             ['order_id'=>$order['id']??''],'customer',null,$message['preheader']);
     }
@@ -406,11 +428,11 @@ final class MailQueueService {
         if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) return null;
         $when = date('d M Y, H:i');
         $ip = (string)($_SERVER['REMOTE_ADDR'] ?? 'unknown');
-        return $this->enqueue('login_notification', $email, 'New sign-in to your Sri Panchami Spiritual account',
+        return $this->enqueue('login_notification', $email, 'New sign-in to your ' . $this->profile()->name() . ' account',
             '<p>Hello ' . e($name !== '' ? $name : 'there') . ',</p>'
             . '<p>Your account was signed in to on <strong>' . e($when) . '</strong> (IP ' . e($ip) . ').</p>'
-            . '<p>If this was you, no action is needed. If it was not, change your password immediately '
-            . 'and contact <a href="mailto:support@sripanchamispiritual.com">support@sripanchamispiritual.com</a>.</p>',
+            . '<p>If this was you, no action is needed. Otherwise, change your password immediately.</p><p>'
+            . $this->supportLink() . ' for help.</p>',
             null, ['role' => $role]);
     }
 
@@ -443,7 +465,7 @@ final class MailQueueService {
 
     public function enqueueShipmentNotification(array $order): ?array {
         $to=trim((string)($order['customer_email']??''));if(!filter_var($to,FILTER_VALIDATE_EMAIL)||empty($order['id']))return null;
-        $message=(new MailTemplateService())->render('shipment',$order);
+        $message=$this->templates()->render('shipment',$order);
         $event='fulfillment:'.(string)$order['id'].':'.(string)($order['status']??'shipped').':'.(string)($order['tracking_id']??'');
         return $this->enqueue('shipment_notification',$to,$message['subject'],$message['html'],null,
             ['order_id'=>$order['id']],'customer',$event,$message['preheader']);
@@ -454,7 +476,7 @@ final class MailQueueService {
         if ($to === '') return null;
         $shippedAt = new \DateTimeImmutable((string)($order['shipped_at'] ?? 'now'));
         $availableAt = $shippedAt->modify('+' . max(1, $waitDays) . ' days');
-        $subject = 'How was your Sri Panchami Spiritual product?';
+        $subject = 'How was your ' . $this->profile()->name() . ' product?';
         $html = '<p>We hope your order ' . e((string)($order['id'] ?? '')) . ' reached you well.</p>'
             . '<p>Please share your product rating from your account orders page.</p>';
         return $this->enqueue('product_review_request', $to, $subject, $html, $availableAt, ['order_id' => $order['id'] ?? ''], 'customer', 'review-request:'.(string)($order['id']??''));

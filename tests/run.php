@@ -1476,6 +1476,28 @@ $tests['transactional templates separate customer and owner destinations with au
     $order['fulfillment_review_required']=true;assertTrue(str_contains($t->render('order_confirmation',$order)['html'],'availability review'),'Held paid order is not promised fulfillment');
 };
 
+$tests['transactional subjects use the site profile without changing SMTP address roles'] = static function (): void {
+    $origin='https://fixture.example';
+    $profile=new \App\Services\SiteProfileService(['site_display_name'=>'Caldera & Iris'], $origin);
+    $templates=new \App\Services\MailTemplateService($origin, $profile);
+    $welcome=$templates->render('welcome',['name'=>'Customer']);
+    assertSame('Welcome to Caldera & Iris',$welcome['subject'],'Subject uses the configured public name');
+    assertTrue(str_contains($welcome['html'],'Welcome to Caldera &amp; Iris'),'HTML heading escapes the configured public name');
+    $reset=$templates->render('password_reset',['reset_url'=>$origin.'/reset-password?token=fixture']);
+    assertSame('Reset your Caldera & Iris password',$reset['subject'],'Security subject uses the configured public name');
+    assertTrue(str_contains($reset['html'],$origin.'/reset-password?token=fixture'),'Authorized same-site link is preserved');
+    $settings=['mail_from_email'=>'sender@example.invalid','mail_reply_to'=>'replies@example.invalid',
+        'admin_notification_email'=>'owner@example.invalid','mail_from_name'=>'Configured Sender'];
+    $mailer=new \App\Services\SmtpMailer($settings);
+    $message=$mailer->buildMessage('buyer@example.invalid',$welcome['subject'],$welcome['html']);
+    assertTrue(str_contains($message,"\r\nFrom: Configured Sender <sender@example.invalid>\r\n"),'Configured SMTP display name stays independent');
+    assertTrue(str_contains($message,"\r\nReply-To: replies@example.invalid\r\n"),'Reply-To is the configured delivery address');
+    assertTrue(str_contains($message,"\r\nTo: buyer@example.invalid\r\n") && !str_contains($message,'owner@example.invalid'),'Customer envelope does not expose the owner address');
+    unset($settings['mail_from_name']);
+    $message=(new \App\Services\SmtpMailer($settings))->buildMessage('buyer@example.invalid','Fixture','<p>Message</p>');
+    assertTrue(str_contains($message,"\r\nFrom: sender@example.invalid\r\n"),'Unset display name uses the actual mailbox address');
+};
+
 $tests['payment uncertainty and actual delivered state are not misleading emails'] = static function (): void {
     $t=new \App\Services\MailTemplateService('https://configured.example');
     $failure=$t->render('payment_attention',['id'=>'fixture','total'=>100]);

@@ -209,7 +209,7 @@
             <label>From Email<input name="mail_from_email" value="<?= e($secrets['mail_from_email']??'') ?>" placeholder="support@sripanchamispiritual.com"></label>
         </div>
         <div class="admin-form__row">
-            <label>From Name<input name="mail_from_name" value="<?= e($secrets['mail_from_name']??'Sri Panchami Spiritual') ?>" placeholder="Sri Panchami Spiritual"></label>
+            <label>From Name<input name="mail_from_name" value="<?= e($secrets['mail_from_name'] ?? $secrets['smtp_from_name'] ?? '') ?>" placeholder="Optional sender name"></label>
             <label>Admin Notification Email<input name="admin_notification_email" value="<?= e($secrets['admin_notification_email']??'') ?>" placeholder="sripanchamispiritual@gmail.com"></label>
         </div>
         <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">

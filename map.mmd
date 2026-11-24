@@ -1627,8 +1627,10 @@ flowchart LR
   service_mailqueueservice -. source new .-> service_secretservice
   service_mailqueueservice -. source new .-> service_settingsservice
   service_mailqueueservice -. source new .-> service_smtpmailer
+  service_mailqueueservice -. static reference .-> service_siteprofileservice
   service_mailstorageservice -. source new .-> service_databaseservice
   service_mailtemplateservice -. static reference .-> service_mailqueueservice
+  service_mailtemplateservice -. static reference .-> service_siteprofileservice
   service_mcpclientservice -. source new .-> service_auditlogservice
   service_mcpclientservice -. source new .-> service_databaseservice
   service_mcpclientservice -. source new .-> service_orderservice

@@ -116,6 +116,28 @@ test('two deployments publish separately saved identity and contact facts throug
         assert.equal(wrongToken.status(),302);
         assert.equal(install.settings.site_display_name,name);
 
+        const mailPreviewUrl = install.origin + '/admin/email-templates?template=welcome';
+        await visitor.goto(mailPreviewUrl);
+        assert.equal(new URL(visitor.url()).pathname,'/login');
+        assert.equal((await editor.goto(mailPreviewUrl)).status(),200);
+        const frame = editor.locator('iframe[title="Synthetic email preview"]');
+        assert.equal(await frame.getAttribute('sandbox'),'');
+        const message = frame.contentFrame();
+        await message.getByRole('heading',{name:'Welcome to '+name,exact:true}).waitFor();
+        assert.equal(await message.locator('img').count(),0,'A separate install without an uploaded logo must not show reference art');
+        const helpLink = message.getByRole('link',{name:email ? 'Email '+email : 'Open the contact form',exact:true});
+        assert.equal(await helpLink.getAttribute('href'),email ? 'mailto:'+email : install.canonical+'/contact#contact-form');
+        const plainMail = await editor.locator('[data-mail-plain-preview]').textContent();
+        assert.ok(plainMail.includes(name));
+        assert.ok(!plainMail.includes(otherName) && !plainMail.includes(install.privateMarker));
+        assert.ok(await editor.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+        if (install === alpha) {
+            install.settings.logo_url = '/assets/images/media/2099/01/caldera-logo.png';
+            await editor.reload();
+            assert.equal(await message.locator('img').getAttribute('src'),install.canonical+install.settings.logo_url);
+            delete install.settings.logo_url;
+        }
+
         const forbidden = [otherName, install.privateMarker, 'Sri Panchami Spiritual', 'support@sripanchamispiritual.com'];
         for (const route of ['/', '/about', '/contact']) {
             const response = await visitor.goto(install.origin+route);
