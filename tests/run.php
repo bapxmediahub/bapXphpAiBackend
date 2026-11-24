@@ -1802,6 +1802,28 @@ $tests['CLI article editing preserves metadata and refuses concurrent overwrites
     }
 };
 
+$tests['native shipping zone dry-run is ordered and never invents a delivery fee'] = static function (): void {
+    $service = \App\Services\ShippingService::class;
+    $zones = [
+        ['state'=>'Tamil Nadu','pins'=>'600001, 641*','method'=>'free','fee'=>'','minimum'=>'1000.00'],
+        ['state'=>'Tamil Nadu','pins'=>'','method'=>'flat','fee'=>'75.25','minimum'=>''],
+        ['state'=>'Kerala','pins'=>'','method'=>'flat','fee'=>'90','minimum'=>''],
+    ];
+    assertSame(['status'=>'quoted','zone'=>1,'feePaise'=>0], $service::preview($zones,'Tamil Nadu','641001','1000'), 'Free shipping threshold');
+    assertSame(['status'=>'minimum_not_met','zone'=>1,'feePaise'=>null], $service::preview($zones,'Tamil Nadu','641001','999.99'), 'First matching zone does not silently fall through');
+    assertSame(['status'=>'quoted','zone'=>2,'feePaise'=>7525], $service::preview($zones,'Tamil Nadu','638001','200'), 'Flat fee exact paise');
+    assertSame(['status'=>'quoted','zone'=>3,'feePaise'=>9000], $service::preview($zones,'Kerala','641001','200'), 'State must match even for identical PIN');
+    assertSame(['status'=>'not_covered','zone'=>null,'feePaise'=>null], $service::preview($zones,'Delhi','110001','200'), 'Uncovered region returns no fee');
+    foreach ([['pins'=>'*'],['pins'=>'6000000'],['method'=>'flat','fee'=>'-1'],['method'=>'flat','fee'=>'2.001'],['state'=>'Unknown'],['method'=>'free','fee'=>'99']] as $bad) {
+        try {$service::preview([array_replace($zones[0],$bad)],'Tamil Nadu','641001','1000');assertTrue(false,'Invalid zone must not return a fee');}
+        catch (\InvalidArgumentException) {assertTrue(true,'Invalid rule rejected');}
+    }
+    foreach (['abc','000000','12345'] as $pin) {
+        try {$service::preview($zones,'Tamil Nadu',$pin,'1000');assertTrue(false,'Invalid delivery PIN must be rejected');}
+        catch (\InvalidArgumentException) {assertTrue(true,'Invalid delivery PIN rejected');}
+    }
+};
+
 $tests['authored pages validate immutable addresses and render Markdown with literal raw HTML'] = static function (): void {
     $service = \App\Services\AuthoredPageService::class;
     $input = ['slug'=>'visiting-guide', 'title'=>' Visiting guide ', 'content'=>'## Opening hours', 'status'=>'draft'];

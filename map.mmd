@@ -14,14 +14,14 @@ flowchart LR
     legend_limits["No execution, autoload or dynamic reachability proof; gaps are inspection candidates"]:::arch
   end
 
-  subgraph ARCH["Architecture Overview — 178 routes, 17 controllers, 84 services, 71 views, 0 data files, 30 tools"]
-    arch_routes["> Routes: 178 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 179 routes, 17 controllers, 84 services, 72 views, 0 data files, 30 tools"]
+    arch_routes["> Routes: 179 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 17"]:::arch
     arch_svc["> Services: 84"]:::arch
-    arch_views["> Views: 71"]:::arch
+    arch_views["> Views: 72"]:::arch
     arch_data["> Collections: 24 schema | 0 files"]:::arch
     arch_tools["> Tools: 30"]:::arch
-    arch_gaps["> Gaps: 5"]:::arch
+    arch_gaps["> Gaps: 6"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -155,6 +155,7 @@ flowchart LR
     route_post_admin_orders_id_refund["POST /admin/orders/{id}/refund"]:::route
     route_post_admin_orders_id_tax_review["POST /admin/orders/{id}/tax-review — Admin — correct paid order state and issue reviewed invoice"]:::route
     route_get_admin_shipping["GET /admin/shipping — Admin — shipping settings"]:::route
+    route_post_admin_shipping_preview["POST /admin/shipping/preview"]:::route
     route_get_admin_astrologers["GET /admin/astrologers — Retired admin profile URL — redirects to dashboard"]:::route
     route_get_admin_appointments["GET /admin/appointments — Admin — session list"]:::route
     route_get_admin_consultation_analytics["GET /admin/consultation-analytics — Admin — consultation metrics"]:::route
@@ -369,6 +370,7 @@ flowchart LR
     view_admin_product_import["admin/product-import"]:::code
     view_admin_resource["admin/resource"]:::code
     view_admin_settings["admin/settings"]:::code
+    view_admin_shipping["admin/shipping"]:::code
     view_admin_system_health["admin/system-health"]:::code
     view_admin_tax_report["admin/tax-report"]:::code
     view_admin_temples["admin/temples"]:::code
@@ -480,9 +482,10 @@ flowchart LR
   subgraph GAPS["Gaps & Missing Links — inventory checks"]
     gap_35faf425c4["no declared or scanned reference: AstrologerService"]:::gap
     gap_006b2fd1e7["no declared or scanned reference: RequestFailureService"]:::gap
-    gap_02fdee86e5["POST /admin/email-templates/test — missing AuditLogService"]:::gap
-    gap_63c4de0521["POST /admin/blog/enhance-title — missing AuditLogService"]:::gap
-    gap_90db15aec7["POST /admin/blog/enhance-content — missing AuditLogService"]:::gap
+    gap_254f5f6f10["POST /admin/shipping/preview — missing AuditLogService"]:::gap
+    gap_2ef5891fe7["POST /admin/email-templates/test — missing AuditLogService"]:::gap
+    gap_7af883609a["POST /admin/blog/enhance-title — missing AuditLogService"]:::gap
+    gap_39cbb52331["POST /admin/blog/enhance-content — missing AuditLogService"]:::gap
   end
 
   route_get -- registered handler --> controller_publiccontroller
@@ -876,9 +879,12 @@ flowchart LR
   controller_admincontroller -. declared related view .-> view_admin_detail
   route_get_admin_shipping -- registered handler --> controller_admincontroller
   controller_admincontroller -. declared service .-> service_shippingservice
-  controller_admincontroller -. declared service .-> service_settingsservice
   controller_admincontroller -. declared service .-> service_authservice
-  controller_admincontroller -. declared related view .-> view_admin_settings
+  controller_admincontroller -. declared related view .-> view_admin_shipping
+  route_post_admin_shipping_preview -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_shippingservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_shipping
   route_get_admin_astrologers -- registered handler --> controller_admincontroller
   controller_admincontroller -. declared service .-> service_authservice
   controller_admincontroller -. declared related view .-> view_admin_dashboard
@@ -1365,6 +1371,7 @@ flowchart LR
   controller_admincontroller -. static reference .-> service_productservice
   controller_admincontroller -. static reference .-> service_secretservice
   controller_admincontroller -. static reference .-> service_settingsservice
+  controller_admincontroller -. static reference .-> service_shippingservice
   controller_admincontroller -. static reference .-> service_siteinsightsservice
   controller_admincontroller -. static reference .-> service_sitetelemetryservice
   controller_admincontroller -. static reference .-> service_storestatsservice
@@ -1650,6 +1657,7 @@ flowchart LR
   service_settingsservice -. source new .-> service_authoredpageservice
   service_settingsservice -. source new .-> service_databaseservice
   service_settingsservice -. static reference .-> service_authoredpageservice
+  service_shippingservice -. static reference .-> service_taxservice
   service_siteinsightsservice -. static reference .-> service_storestatsservice
   service_sitetelemetryservice -. source new .-> service_auditlogservice
   service_smtpmailer -. source new .-> service_settingsservice
@@ -1748,6 +1756,7 @@ flowchart LR
   tool_smoke_local -. declared probe coverage .-> ROUTES_ADMIN
   gap_35faf425c4 -. inspect .-> service_astrologerservice
   gap_006b2fd1e7 -. inspect .-> service_requestfailureservice
-  gap_02fdee86e5 -. missing .-> controller_admincontroller
-  gap_63c4de0521 -. missing .-> controller_admincontroller
-  gap_90db15aec7 -. missing .-> controller_admincontroller
+  gap_254f5f6f10 -. missing .-> controller_admincontroller
+  gap_2ef5891fe7 -. missing .-> controller_admincontroller
+  gap_7af883609a -. missing .-> controller_admincontroller
+  gap_39cbb52331 -. missing .-> controller_admincontroller

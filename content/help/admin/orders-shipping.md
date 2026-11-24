@@ -13,3 +13,11 @@ An issued invoice is a historical snapshot. View or download it from the order; 
 ## When something is uncertain
 
 Keep the order/payment/refund reference and the exact visible error for the team. Check the stored state before resubmitting. Do not use a generic status change to bypass tax, payment or fulfillment review.
+
+## Preview proposed shipping zones
+
+Open **Shipping** to try a proposed zone order, state, PIN patterns and flat or
+free shipping method against a hypothetical item subtotal. The first matching
+zone wins. A missing match or a minimum not met returns no fee. This is a dry run:
+it does not save the rules, quote a customer or change any checkout or payment.
+The existing shipping configuration is linked separately.
