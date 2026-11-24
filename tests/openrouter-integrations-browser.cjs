@@ -12,7 +12,7 @@ const origin='http://router-settings.example.test';
 const fakeKey='sk-or-v1-'+('b'.repeat(64));
 const render=enabled=>execFileSync(process.env.PHP_BINARY||'php',['-r',[
     "putenv('BAPX_TEST_MODE=1'); require 'app/bootstrap.php';",
-    "$csrf='fixture-only'; $comparisonModels=[];",
+    "$csrf='fixture-only'; $comparisonModels=[['target'=>'google|shared-model','provider'=>'google','model'=>'shared-model'],['target'=>'openai_compatible|shared-model','provider'=>'openai_compatible','model'=>'shared-model']];",
     "$secrets=['ai_provider'=>'google','ai_api_key'=>'fixture-google-key',",
     "'ai_openrouter_enabled'=>'"+(enabled?'1':'0')+"','ai_openrouter_key'=>'"+fakeKey+"'];",
     "$fixture=new class extends \\App\\Controllers\\BaseController { public function show($secrets,$csrf,$comparisonModels){ include 'views/admin/integrations.php'; } };",
@@ -30,11 +30,16 @@ for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at 
     const context=await browser.newContext({viewport:{width,height:850}});
     const page=await context.newPage();
     const errors=[];page.on('pageerror',error=>errors.push(error.message));
-    const sent=[];
+    const sent=[], probes=[];
     try{
         await page.route(origin+'/**',route=>{
             const req=route.request(),url=new URL(req.url());
             assert.equal(url.origin,origin,'No real network request is permitted.');
+            if(url.pathname==='/admin/integrations/test-ai'){
+                const params=new URLSearchParams(req.postData());
+                probes.push({target:params.get('probe'),mode:params.get('probe_mode'),csrf:params.get('_csrf')});
+                return route.fulfill({status:200,contentType:'text/html',body:renderPage(false)});
+            }
             if(url.pathname==='/admin/integrations/save'){
                 const params=new URLSearchParams(req.postData());
                 sent.push({
@@ -92,6 +97,10 @@ for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at 
         }));
         assert.equal(overflow.width<=overflow.viewport+1,true,
             'Integrations must fit the phone viewport: '+JSON.stringify(overflow));
+        await page.getByLabel('Connection to test').selectOption('openai_compatible|shared-model');
+        await page.getByLabel('Diagnostic',{exact:true}).selectOption('tools');
+        await page.getByRole('button',{name:'Test AI Connection'}).click();
+        assert.deepEqual(probes,[{target:'openai_compatible|shared-model',mode:'tools',csrf:'fixture-only'}]);
         assert.deepEqual(errors,[]);
     }finally{await context.close();await browser.close();}
 });

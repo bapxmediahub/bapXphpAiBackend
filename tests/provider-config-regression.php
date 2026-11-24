@@ -19,4 +19,16 @@ $settings['ai_openrouter_enabled']='0';$settings['ai_compatible_enabled']='0';
 expect($s->providerPlan($settings)===[],'All disabled providers produce no route');
 expect(AiClient::googleAttemptPlan('other-google-model',false,['other-google-model','gemma-4-31b-it'])[0]['model']==='other-google-model','Custom Google model ID reaches route');
 expect(AiClient::googleAttemptPlan('other-google-model',true,['other-google-model','gemma-4-31b-it'])===[['model'=>'other-google-model','timeout_ms'=>12000]],'Tool exchange stays locked');
+$duplicatePlan=[
+    ['provider'=>'openrouter','models'=>['shared/model'],'model'=>'shared/model','endpoint'=>'https://openrouter.ai/api/v1','configured'=>true],
+    ['provider'=>'openai_compatible','models'=>['shared/model','other'],'model'=>'shared/model','endpoint'=>'https://example.com/v1','configured'=>true],
+];
+expect(array_column(AiClient::probeTargets($duplicatePlan),'target')===['openrouter|shared/model','openai_compatible|shared/model','openai_compatible|other'],'Probe identity includes the provider, not just model ID');
+$exact=AiClient::probePlan($duplicatePlan,'openai_compatible|shared/model');
+expect(count($exact)===1&&$exact[0]['provider']==='openai_compatible'&&$exact[0]['models']===['shared/model'],'Exact target cannot silently fall back');
+expect(AiClient::probePlan($duplicatePlan,'google|unknown')===[],'Unknown probe target must not invoke a different model');
+expect(!AiClient::probeSucceeded('unrelated answer','connection ok',0,false),'Nonempty text is not a passed connection test');
+expect(AiClient::probeSucceeded('connection ok','connection ok',0,false),'Exact text response succeeds');
+expect(!AiClient::probeSucceeded('challenge','challenge',0,true),'Guessing the response without tool execution is not a passed tool test');
+expect(AiClient::probeSucceeded('challenge','challenge',1,true),'Executed tool and exact returned challenge required');
 echo "PASS provider schema, model selection and independent fallback toggles\n";

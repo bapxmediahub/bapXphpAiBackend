@@ -2154,24 +2154,12 @@ cmd_ai_probe() {
   require_php
   php -r '
     require "'"$ROOT"'/app/bootstrap.php";
-    $cfg=(new App\Services\SecretService())->getModelConfig();
-    if (empty($cfg["apiKey"])) { fwrite(STDERR, "AI model is not configured in remote MySQL secrets.\n"); exit(2); }
-    $model=$cfg["model"]; $endpoint=rtrim($cfg["endpoint"], "/"); $key=$cfg["apiKey"];
-    if ($cfg["provider"] === "google") {
-      $url=$endpoint . "/" . rawurlencode($model) . ":generateContent";
-      $payload=json_encode(["contents"=>[["parts"=>[["text"=>"Reply with exactly OK"]]]],"generationConfig"=>["temperature"=>0,"maxOutputTokens"=>8]]);
-      $headers=["Content-Type: application/json","x-goog-api-key: ".$key];
-    } else {
-      $url=$endpoint . "/chat/completions";
-      $payload=json_encode(["model"=>$model,"messages"=>[["role"=>"user","content"=>"Reply with exactly OK"]],"max_tokens"=>8]);
-      $headers=["Content-Type: application/json","Authorization: Bearer ".$key];
-    }
-    $ch=curl_init($url);
-    curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_POST=>true,CURLOPT_HTTPHEADER=>$headers,CURLOPT_POSTFIELDS=>$payload,CURLOPT_TIMEOUT=>30,CURLOPT_CONNECTTIMEOUT=>10]);
-    $body=curl_exec($ch); $status=curl_getinfo($ch,CURLINFO_HTTP_CODE); $error=curl_error($ch); curl_close($ch);
-    if ($body === false || $status < 200 || $status >= 300) { fwrite(STDERR, "AI probe failed (HTTP {$status})" . ($error !== "" ? ": {$error}" : "") . "\n"); exit(1); }
-    echo "PASS {$cfg["provider"]} model {$model} responded successfully.\n";
-  '
+    $mode=$argv[1]??"text"; $target=$argv[2]??"";
+    if(!in_array($mode,["text","tools"],true)){fwrite(STDERR,"Usage: bapXphp ai:probe [text|tools] [provider|model]\n");exit(2);}
+    $result=(new App\Services\AiClient())->probe($target,$mode==="tools");
+    echo json_encode($result,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES),"\n";
+    exit($result["ok"]?0:1);
+  ' -- "$@"
 }
 
 # ── Main Dispatch ──────────────────────────────────────────────
@@ -2213,7 +2201,7 @@ main() {
     ai:config|ai-config|model-config)
       cmd_ai_config ;;
     ai:probe|ai-probe)
-      cmd_ai_probe ;;
+      shift; cmd_ai_probe "$@" ;;
     runtime:check|runtime-check)
       shift; cmd_runtime_check "$@" ;;
     media:reconcile)

@@ -1091,35 +1091,16 @@ final class AdminController extends BaseController {
      */
     public function testAi(): void{
         $this->validateCsrf();
-        $secrets = new SecretService();
-        $plan = $secrets->getProviderPlan();
-        $config = $plan[0] ?? $secrets->getModelConfig();
-        $model = (string)($config['model'] ?? \App\Services\SecretService::PRIMARY_MODEL);
-        $client = new \App\Services\AiClient();
-        $probe = (string)($_POST['probe'] ?? '');
-        $override = in_array($probe, self::comparisonModels($plan), true) ? $probe : null;
-        $answer = $client->complete('Reply with exactly: connection ok', 128, 0.0, $override);
-        $ok = !\App\Services\AiClient::isError($answer) && trim($answer) !== '';
-        $timings = $client->transferTimings();
-        $lastAttempt = end($timings);
-        $answeringModel = $ok ? ($lastAttempt['model'] ?? $model) : $model;
-        $answeringEndpoint = in_array($answeringModel, \App\Services\SecretService::GOOGLE_MODELS, true)
-            ? \App\Services\SecretService::GOOGLE_ENDPOINT
-            : (string)($config['endpoint'] ?? '');
-        $_SESSION['ai_test_result'] = [
-            'ok' => $ok,
-            'model' => $answeringModel,
-            'endpoint' => $answeringEndpoint,
-            'message' => $ok ? trim($answer) : ($answer !== '' ? $answer : 'The provider returned an empty response.'),
-            'timings' => $timings,
-            'tool_calls' => null,
-        ];
-        (new AuditLogService())->record('test','ai',$model,['result'=>$ok ? 'ok' : 'failed']);
+        $probe=is_string($_POST['probe']??null)?$_POST['probe']:'';
+        $mode=($_POST['probe_mode']??'')==='tools'?'tools':'text';
+        $result=(new \App\Services\AiClient())->probe($probe,$mode==='tools');
+        $_SESSION['ai_test_result']=$result;
+        (new AuditLogService())->record('test','ai',$result['model'],['result'=>$result['ok']?'ok':'failed','mode'=>$mode]);
         $this->redirect('/admin/integrations');
     }
 
     private static function comparisonModels(array $plan): array {
-        return array_values(array_unique(array_merge([], ...array_map(static fn(array $c):array=>$c['models']??[], $plan))));
+        return \App\Services\AiClient::probeTargets($plan);
     }
 
     public function testEmail(): void{

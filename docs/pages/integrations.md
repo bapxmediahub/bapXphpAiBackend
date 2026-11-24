@@ -36,6 +36,19 @@ References: https://docs.openwebui.com/getting-started/quick-start/connect-a-pro
 and https://docs.litellm.ai/docs/router/api_reference/configuration and
 https://ai.google.dev/api/generate-content#FunctionDeclaration .
 
+## Verify an actual provider response
+
+The connection diagnostic uses the same guarded AiClient as both agents and
+allows an exact provider/model target (even when two connections have the same
+model ID) or the enabled fallback route. The text test requires the expected
+response; the tool test calls an isolated read-only synthetic tool and verifies
+the returned challenge. No order, customer or product data is sent by this
+diagnostic. It records the actual attempted provider, model and safe status
+without displaying keys or provider response bodies. Run the same tests locally
+with bapXphp ai:probe text or bapXphp ai:probe tools, optionally followed by a
+quoted provider|model selector. A missing tool call, unexpected answer, HTTP
+error or timeout is not success.
+
 ## Secrets Storage
 
 - Secrets are encrypted and stored in the remote MySQL `secrets` collection through Admin → Integrations.
