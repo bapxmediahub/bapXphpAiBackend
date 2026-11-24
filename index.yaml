@@ -47,7 +47,7 @@ query_examples:
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
   concepts: 498
-  relationships: 446
+  relationships: 447
   by_type:
     blog: 16
     controller: 18
@@ -4516,9 +4516,6 @@ concepts:
     path: "/admin/integrations/test-email"
     controller: "AdminController@testEmail"
     services:
-      - "SecretService"
-      - "SmtpMailer"
-      - "AuditLogService"
       - "AuthService"
     view: "admin/integrations"
     response: null
@@ -5078,6 +5075,8 @@ concepts:
     controller: "AuthController@forgotPasswordPost"
     services:
       - "PasswordResetService"
+      - "RateLimiter"
+      - "MailQueueService"
     view: "public/forgot-password"
     response: null
     provenance: "route_registry"
@@ -5131,6 +5130,8 @@ concepts:
     controller: "AuthController@registerPost"
     services:
       - "DatabaseService"
+      - "RateLimiter"
+      - "MailQueueService"
     view: "public/register"
     response: null
     provenance: "route_registry"
@@ -6471,9 +6472,6 @@ relationships:
     to: "service:SiteTelemetryService"
     relation: "declared_service"
   - from: "controller:AdminController"
-    to: "service:SmtpMailer"
-    relation: "declared_service"
-  - from: "controller:AdminController"
     to: "service:StoreStatsService"
     relation: "declared_service"
   - from: "controller:AdminController"
@@ -6540,7 +6538,13 @@ relationships:
     to: "service:DatabaseService"
     relation: "declared_service"
   - from: "controller:AuthController"
+    to: "service:MailQueueService"
+    relation: "declared_service"
+  - from: "controller:AuthController"
     to: "service:PasswordResetService"
+    relation: "declared_service"
+  - from: "controller:AuthController"
+    to: "service:RateLimiter"
     relation: "declared_service"
   - from: "controller:AuthController"
     to: "service:SecretService"

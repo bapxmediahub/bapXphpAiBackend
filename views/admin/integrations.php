@@ -229,32 +229,13 @@
     </form>
 
     <div class="admin-card" style="margin-top:var(--space-xl);">
-        <h2 style="font-size:1rem; margin:0 0 var(--space-sm);">Send a Test Email</h2>
+        <h2 style="font-size:1rem; margin:0 0 var(--space-sm);">Verify email delivery</h2>
         <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">
-            Save your SMTP settings first, then send a real message through them. The result below
-            reports the transport used and the exact server error if delivery fails.
+            Save SMTP settings first. Use the existing Email Templates workspace to send one
+            explicitly confirmed, labelled sample through the normal queue. SMTP acceptance
+            is not proof of inbox delivery. Do not retry an uncertain result blindly.
         </p>
-        <?php $mailTest = $_SESSION['mail_test_result'] ?? null; unset($_SESSION['mail_test_result']); ?>
-        <?php if ($mailTest): ?>
-            <div style="margin-bottom:var(--space-md); padding:var(--space-sm) var(--space-md); border-radius:var(--radius-sm); border:1px solid <?= $mailTest['ok'] ? 'var(--color-success, #15803d)' : 'var(--color-error, #b91c1c)' ?>; background:<?= $mailTest['ok'] ? 'rgba(21,128,61,0.08)' : 'rgba(185,28,28,0.08)' ?>;">
-                <strong><?= $mailTest['ok'] ? 'Delivered' : 'Failed' ?></strong>
-                <?php if (!empty($mailTest['transport'])): ?>
-                    <span style="color:var(--color-text-muted);">via <?= e($mailTest['transport']) ?></span>
-                <?php endif; ?>
-                <div style="margin-top:var(--space-2xs); font-size:0.85rem; white-space:pre-wrap;"><?= e($mailTest['message']) ?></div>
-            </div>
-        <?php endif; ?>
-        <form class="admin-form" method="post" action="/admin/integrations/test-email">
-            <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
-            <div class="admin-form__row">
-                <label>Send To
-                    <input type="email" name="test_email" required
-                           value="<?= e($secrets['admin_notification_email'] ?? $secrets['mail_from_email'] ?? '') ?>"
-                           placeholder="you@your-domain.com">
-                </label>
-            </div>
-            <button class="btn btn-secondary" style="margin-top:var(--space-md);">Send Test Email</button>
-        </form>
+        <a class="btn btn-secondary" href="/admin/email-templates?template=welcome">Open email test templates</a>
     </div>
 </div>
 

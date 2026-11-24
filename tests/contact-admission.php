@@ -3,7 +3,11 @@ declare(strict_types=1);
 require dirname(__DIR__).'/app/bootstrap.php';
 use App\Services\RateLimiter;
 if (($argv[1]??'')==='worker') {
-    echo RateLimiter::consumeContact('192.0.2.'.(int)$argv[3],'fixture'.$argv[3].'@example.invalid',$argv[2],1800000000) ? '1' : '0';
+    $i=(int)$argv[3];
+    $admitted=($argv[4]??'')==='register'
+        ? RateLimiter::consumeAccountMail('register','192.0.2.'.$i,'fixture'.$i.'@example.invalid',$argv[2],1800000000)
+        : RateLimiter::consumeContact('192.0.2.'.$i,'fixture'.$i.'@example.invalid',$argv[2],1800000000);
+    echo $admitted ? '1' : '0';
     exit;
 }
 function check(bool $ok,string $msg): void {if(!$ok)throw new RuntimeException($msg);}
@@ -36,7 +40,31 @@ try{
     file_put_contents($path,'bad JSON');$closed=false;
     try{RateLimiter::consumeContact('192.0.3.1','later@example.invalid',$path,$now);}catch(Throwable){$closed=true;}
     check($closed,'Corrupt storage fails closed');
-    echo "Contact admission: concurrent site cap, IP, normalized recipient, daily cap, expiry, private state, failure-closed PASS.\n";
+    $path=$dir.'/account.json';
+    check(RateLimiter::consumeAccountMail('recovery','192.0.2.1','Buyer@EXAMPLE.invalid',$path,$now),'Initial recovery admitted');
+    check(!RateLimiter::consumeAccountMail('recovery','192.0.2.2','buyer@example.invalid',$path,$now+1),'Normalized recipient cannot rotate recovery link during cooldown');
+    check(RateLimiter::consumeAccountMail('register','192.0.2.2','buyer@example.invalid',$path,$now+1),'Recovery and registration budgets independent');
+    check(!RateLimiter::consumeAccountMail('register','192.0.2.3','Buyer@example.invalid',$path,$now+2),'Repeated registration blocked across IPs');
+    foreach([900,1800,2700] as $offset)check(RateLimiter::consumeAccountMail('recovery','192.0.2.1','buyer@example.invalid',$path,$now+$offset),'Recovery available after cooldown');
+    check(!RateLimiter::consumeAccountMail('recovery','192.0.2.1','buyer@example.invalid',$path,$now+3600),'Recovery daily cap enforced');
+    check(RateLimiter::consumeAccountMail('recovery','192.0.2.1','buyer@example.invalid',$path,$now+86400),'Recovery available after day');
+    $path=$dir.'/register-flood.json';$jobs=[];
+    for($i=1;$i<=24;$i++){
+        $proc=proc_open([PHP_BINARY,__FILE__,'worker',$path,(string)$i,'register'],[0=>['pipe','r'],1=>['pipe','w'],2=>['pipe','w']],$pipes);
+        check(is_resource($proc),'Registration worker starts');fclose($pipes[0]);$jobs[]=[$proc,$pipes];
+    }
+    $admitted=0;
+    foreach($jobs as [$proc,$pipes]){
+        $out=stream_get_contents($pipes[1]);$err=stream_get_contents($pipes[2]);fclose($pipes[1]);fclose($pipes[2]);
+        check(proc_close($proc)===0&&in_array($out,['0','1'],true),'Registration worker result valid');$admitted+=(int)$out;
+    }
+    check($admitted===12,'Exactly 12 signup attempts across competing workers');
+    check(RateLimiter::consumeAccountMail('recovery','192.0.2.50','legitimate@example.invalid',$path,$now),'Signup flood does not consume recovery budget');
+    check(!str_contains(file_get_contents($path),'@example.invalid'),'No raw account email in rate state');
+    file_put_contents($path,'bad JSON');$closed=false;
+    try{RateLimiter::consumeAccountMail('recovery','192.0.2.1','buyer@example.invalid',$path,$now);}catch(Throwable){$closed=true;}
+    check($closed,'Corrupt account state fails closed');
+    echo "Contact and account admission: concurrent site caps, IP, normalized recipient, separate recovery, daily cap, expiry, private state, failure-closed PASS.\n";
 }finally{
     foreach(glob($dir.'/*')?:[] as $file)unlink($file);rmdir($dir);
 }

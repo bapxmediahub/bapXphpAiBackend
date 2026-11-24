@@ -46,6 +46,8 @@ customer sign-ins do not resend a welcome or produce a routine login email.
 The configured owner mailbox is not the customer recipient. No welcome backfill
 is run when this code is deployed.
 
+Public manual registration and password-recovery requests reserve independent atomic IP, recipient (case-normalized) and site-wide budgets before any account or reset-token mutation. Both use a 15-minute recipient cooldown; a signup flood cannot consume the recovery budget. Corrupt/unavailable admission state fails closed. A denied recovery does not rotate the active token; the public response is generic and never promises delivery. Google OAuth verified new-account welcome is unchanged.
+
 Password recovery emails its one-time link; successful recovery completion and
 successful My Profile password changes use the shared security template. Profile
 changes notify only after the existing expected-hash compare-and-swap succeeds,

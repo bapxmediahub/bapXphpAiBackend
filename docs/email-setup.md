@@ -66,6 +66,10 @@ Account and commerce notifications retain their existing delivery contract.
 Re-enabling automated enquiry mail requires a reviewed anti-abuse and recipient
 verification policy; do not remove this guard simply to retry old mail.
 
+## Public account mail admission
+
+Manual signup and recovery have separate atomic deployment-local budgets. Signup: 3 per IP per 5 minutes, 12 per site per hour and 30 per site per day; recovery: 3 per IP per 2 minutes, 20 per site per hour and 80 per site per day. Both apply a 15-minute case-normalized recipient cooldown; signup has 2 and recovery 4 admissions per recipient per day. These are attempt-admission caps, not measured provider quotas. Denied recovery does not issue a new reset token or email. Google-verified registration, completed payments and security notices retain existing paths. No unverified guest contact email is enabled by this change.
+
 ## Configuration
 
 All of it lives in **Admin → Integrations**, stored encrypted in the MySQL `secrets`
@@ -149,9 +153,7 @@ mode to manufacture successful evidence.
 
 ## Testing
 
-**Admin → Integrations → Send a Test Email.** It sends a real message through the
-saved settings and reports the transport used, or the exact SMTP error. Use this
-before assuming anything else is wrong.
+**Admin → Integrations → Verify email delivery** links to the existing Email Templates workspace. Send one explicitly confirmed synthetic sample through the normal queue. A legacy direct-test POST redirects without sending. Check the canonical queue result and intended inbox separately; do not blindly repeat a failed or uncertain sample.
 
 ## Diagnosing failures
 
