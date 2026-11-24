@@ -30,7 +30,7 @@ for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at 
     const context=await browser.newContext({viewport:{width,height:850}});
     const page=await context.newPage();
     const errors=[];page.on('pageerror',error=>errors.push(error.message));
-    const sent=[], probes=[];
+    const sent=[], probes=[], submissions=[];
     try{
         await page.route(origin+'/**',route=>{
             const req=route.request(),url=new URL(req.url());
@@ -42,6 +42,7 @@ for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at 
             }
             if(url.pathname==='/admin/integrations/save'){
                 const params=new URLSearchParams(req.postData());
+                submissions.push({aiOnly:params.get('save_ai_only'),smtpHost:params.get('smtp_host')});
                 sent.push({
                     enabled:params.getAll('ai_openrouter_enabled').at(-1), // PHP uses the last value after the hidden off sentinel
                     keyMatches:params.get('ai_openrouter_key')===fakeKey,
@@ -86,6 +87,11 @@ for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at 
         assert.equal(sent[1].enabled,'0');
         assert.equal(sent[1].keyEmpty,true,'Blank input preserves the saved key in the backend.');
         assert.equal(sent[1].csrf,true);
+        await page.getByLabel('SMTP Host',{exact:true}).fill('smtp.fixture.example');
+        await page.getByLabel('SMTP Host',{exact:true}).press('Enter');
+        assert.deepEqual(submissions[2],{aiOnly:null,smtpHost:'smtp.fixture.example'},'Implicit keyboard submit must save the full integration form.');
+        await page.getByRole('button',{name:'Save AI Provider Settings'}).click();
+        assert.equal(submissions[3].aiOnly,'1','Explicit AI-only action retains its scoped submission.');
         const overflow=await page.evaluate(()=>({
             viewport:innerWidth,
             width:document.documentElement.scrollWidth,

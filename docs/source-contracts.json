@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "2b7ff319f8ddfbdaeeed9c004f3e8848cfd013c10d153b97dde8628fc293801f",
+            "source_sha256": "6e1ac25f57bba660e3060d2ff383829b11e0b8aa75ebc8c315a162900740ca78",
             "references_sha256": "4db8c915776e898bd080ad21d7b88500ee584a1f02134bc05f2751fd0db4084c",
-            "review_note": "Reviewed exact target selection, challenge response tool round trip, sanitized failure and shared guarded provider transport."
+            "review_note": "Reviewed object-preserving custom Google wire serialization and actual correlated custom-model tool exchange."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
@@ -28,9 +28,9 @@
             "review_note": "CLI diagnostic uses current service instead of duplicating HTTP; no new dependency or persistence."
         },
         "google-tags": {
-            "source_sha256": "1794c941b2f0dcce13e5e4cda15b69d46565364cb7080ed8c5f4b074f623f938",
+            "source_sha256": "e8358d29b16227e79ba6455e2259f1a5fe357a6cbefc4a27b223929a10ff2fe1",
             "references_sha256": "c1a578dc4920789808501aedecd633d3dccca229eb29d4942401a05d50cf992b",
-            "review_note": "Diagnostic form labels updated; Google tag behavior unchanged."
+            "review_note": "Reviewed default full integrations save behavior including unchanged Google tag fields."
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
@@ -38,9 +38,9 @@
             "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
         },
         "interface": {
-            "source_sha256": "40265f597e6a22a33216538ea762b22178fe359c07d1bb37717e85036e9c7e6b",
+            "source_sha256": "0680d57bd90c9fd1702d7baafdb88055f2137d811c5eb97d97afc7a76caaf4f1",
             "references_sha256": "f1fc313dfc585e3dc0569dd2c52ac2b412aa8924f154978be71464130fe13375",
-            "review_note": "Explicit label associations verified in desktop and mobile Chromium."
+            "review_note": "Verified Enter and explicit AI-only button submission in desktop and 375px Chromium fixtures."
         },
         "mail": {
             "source_sha256": "054b0478701fae161aa768b268ce05ab63ebe944f6b388f4bbd395df66828322",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed product image paths and the bounded A2UI gallery against current media hosting paths; styling does not move uploads, delete media or expose private asset directories."
         },
         "operator-help": {
-            "source_sha256": "f811c5702f18f1a2ebb62c5f99832203318967be5783d0a5cfbdc8f7863cb11e",
+            "source_sha256": "787dbf5cc65ae3eaa43900e9f606be4c806732309d87e56c1929dcaef4110126",
             "references_sha256": "2201c0efbcc49c20384beab8cbef25fa6bcd6928e2928d7fd8474d6522cdf6bf",
-            "review_note": "Verified explicit diagnostic field labels in rendered admin form."
+            "review_note": "Reviewed full-form default keyboard submission and explicit AI-only button; existing integrations routes retained."
         },
         "public-mcp": {
             "source_sha256": "63c58fcaa8f86f54433c86067579355c9632622a41e732eb14b29ce7509d5af9",

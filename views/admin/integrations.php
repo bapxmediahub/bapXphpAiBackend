@@ -5,6 +5,8 @@
 </div>
 <div class="admin-card">
     <form method="post" action="/admin/integrations/save" class="admin-form">
+        <!-- Keep the implicit Enter-key submitter a full save, not the AI-only action. -->
+        <button type="submit" hidden tabindex="-1" aria-hidden="true"></button>
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
 
         <div style="margin:0 0 var(--space-lg); padding:var(--space-sm) var(--space-md); border-radius:var(--radius-md); border:1px solid var(--color-border); background:var(--color-bg-alt); font-size:0.85rem; color:var(--color-text-muted);">
