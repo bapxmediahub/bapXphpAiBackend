@@ -60,6 +60,34 @@ PRs. Use REA pinned-source evidence to form testable questions, not proof that
 a feature is missing in the current revision. Public/admin instructions and
 customer data must not be mixed into coding-harness context indiscriminately.
 
+### Reference-driven implementation
+
+Use the applicable installed development skills, then inspect pinned upstream
+source, actual tool schemas, reference implementations and current official
+documentation. For agent changes compare mainstream execution patterns and PHP
+adaptations; for provider settings compare connection management and routing
+rather than inventing a fixed model selector. Record the comparison and verified
+gaps in GitHub. Reuse existing native services; do not install a framework merely
+to copy a pattern. Keep .agents/ developer-only and .bapX/ business guidance
+role-filtered across internal and external agent transports.
+
+While a release gate is pending, advance a separate issue/worktree where possible.
+Record independently observed failures and preserve unrelated changes. Never
+treat successful lint, an offline fixture or a queued workflow as deployed work.
+
+### Provider and agent acceptance
+
+Test the actual integration form at desktop and 375px. Exercise masked key
+retention, explicit model IDs, independent enable switches, safe endpoint changes,
+and saved configuration reload with isolated credentials. Test Google wire
+schemas against official API contracts; verify a real text response and a real
+authorized tool round-trip separately. Use synthetic non-private questions and
+record only redacted status, exact model, timings and tool results as bounded
+evidence. Distinguish rejected schema, authentication, transport, quota, model
+availability, and actual answer quality. Never label a provider failure a
+successful agent run. After merge, verify exact deployed SHA and repeat the
+affected authenticated and guest flows before closing the corresponding scope.
+
 ## GitHub issue-first loop
 
 Use `gh` on the authorized development machine; hosting requires Git/PHP only.

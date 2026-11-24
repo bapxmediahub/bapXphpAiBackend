@@ -17,8 +17,8 @@ final class SupportToolRegistry {
         return ['type'=>'object', 'properties'=>['key'=>['type'=>'string', 'enum'=>array_keys(self::PUBLIC_POLICIES)]], 'required'=>['key']];
     }
 
-    public function __construct(private ?array $actor, private ?AgentContextService $context = null) {
-        $this->context ??= new AgentContextService();
+    public function __construct(private ?array $actor, private ?AgentContextService $context = null, private DatabaseService $store = new DatabaseService()) {
+        $this->context ??= new AgentContextService($this->store);
     }
     public function declarations(): array {
         return [
@@ -36,11 +36,67 @@ final class SupportToolRegistry {
                 'status'=>['type'=>['string','null'],'enum'=>['open','answered','closed',null]],
                 'period'=>['type'=>['array','null'],'items'=>['type'=>'string','format'=>'date'],'minItems'=>2,'maxItems'=>2]
              ]]],
+            ['name'=>'public_catalogue_summary','description'=>'Count all currently published products and their configured public category memberships. Use for overall catalogue counts and category overview, not a named product or private order.',
+             'parameters'=>['type'=>'object','properties'=>(object)[]]],
+            ['name'=>'public_best_sellers','description'=>'Get up to four currently visible storefront best sellers by recorded paid, non-cancelled, non-refunded orders, all time only. No sales amounts, private orders or date filters.',
+             'parameters'=>['type'=>'object','properties'=>(object)[]]],
         ];
     }
+    /** Project only distinct published identities and configured public categories. */
+    public static function catalogueSummary(array $products,array $categories): array {
+        $labels=[];$counts=[];$seen=[];
+        foreach($categories as $category) {
+            if(!is_array($category)||!empty($category['is_collection']))continue;
+            $slug=$category['slug']??null;$name=$category['name']??null;
+            if(!is_string($slug)||$slug===''||!is_string($name)||trim($name)==='')continue;
+            $labels[$slug]=mb_substr(trim(strip_tags($name)),0,120);
+        }
+        foreach($products as $product) {
+            if(!is_array($product)||!empty($product['is_hidden'])||!is_string($product['slug']??null)
+                ||PublicKnowledgeService::productPath($product['slug'])===null||isset($seen[$product['slug']]))continue;
+            $seen[$product['slug']]=true;
+            $members=[];
+            foreach(array_merge([$product['category']??null],(array)($product['categories']??[])) as $category) {
+                if(is_string($category)&&isset($labels[$category])&&$labels[$category]!=='')$members[$category]=true;
+            }
+            if(!$members)$counts['Uncategorised']=($counts['Uncategorised']??0)+1;
+            else {
+                $names=[];foreach($members as $slug=>$_)$names[$labels[$slug]]=true;
+                foreach($names as $name=>$_)$counts[$name]=($counts[$name]??0)+1;
+            }
+        }
+        uksort($counts,'strnatcasecmp');$rows=[];
+        foreach(array_slice($counts,0,30,true) as $name=>$count)$rows[]=['name'=>(string)$name,'count'=>$count];
+        return ['total'=>count($seen),'categories'=>$rows,'category_count'=>count($counts),'more_categories'=>max(0,count($counts)-30),
+            'membership_note'=>'A product can belong to more than one category.'];
+    }
+
+    /** Public ranking only: never send order identifiers, payment data or revenue. */
+    public static function publicRankedProducts(array $products): array {
+        $rows=[];$seen=[];
+        foreach($products as $product) {
+            if(!is_array($product)||!empty($product['is_hidden'])||!is_string($product['slug']??null)||isset($seen[$product['slug']]))continue;
+            $path=PublicKnowledgeService::productPath($product['slug']);
+            if($path===null||!is_string($product['name']??null)||trim($product['name'])==='')continue;
+            $seen[$product['slug']]=true;
+            $rows[]=['name'=>mb_substr(trim(strip_tags($product['name'])),0,160),'slug'=>$product['slug'],'url'=>$path];
+            if(count($rows)>=4)break;
+        }
+        return $rows;
+    }
+
     public function run(string $tool, array $args): array {
         if (!AgentCapabilityPolicy::allows(AgentCapabilityPolicy::SUPPORT, $tool, $this->actor)) {
             return ['error'=>'Not permitted'];
+        }
+        if (in_array($tool,['public_catalogue_summary','public_best_sellers'],true)) {
+            if($args!==[])return ['error'=>'Invalid arguments'];
+            if(!(new SettingsService($this->store))->modules(requireReadable:true)['shop'])return ['error'=>'Public shop unavailable'];
+            $products=new ProductService($this->store);
+            $visible=$products->visible();
+            if($tool==='public_catalogue_summary')return self::catalogueSummary($visible,(new CategoryService($this->store))->all());
+            $ranked=self::publicRankedProducts($products->bestSellers($visible,4));
+            return ['products'=>$ranked,'count'=>count($ranked),'period'=>'all_time','basis'=>'recorded paid, non-cancelled, non-refunded orders'];
         }
         if ($tool === 'public_catalog') {
             if (array_keys($args) !== ['question'] || !is_string($args['question']) || trim($args['question']) === '' || mb_strlen($args['question']) > 256)

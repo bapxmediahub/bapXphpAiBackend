@@ -520,6 +520,36 @@ final class DatabaseService {
         });
     }
 
+    /** Lock and patch the three owner-editable media fields without creating a row. */
+    public function updateMediaMetadata(string $id, array $fields, string $expected): void {
+        if (!preg_match('/^[a-f0-9]{16}$/D', $id) || !preg_match('/^[a-f0-9]{64}$/D', $expected)) {
+            throw new \InvalidArgumentException('Invalid media identity or revision.');
+        }
+        if ($this->isTestMode()) throw new \RuntimeException('Media edits require an isolated database integration test.');
+        if ($this->isRemote()) {
+            $result = $this->remoteMutation('update_media_metadata', 'media_files', ['id'=>$id,'fields'=>$fields,'expected'=>$expected]);
+            if (($result['updated'] ?? false) !== true) throw new \RuntimeException('Media metadata was not saved.');
+            return;
+        }
+        $pdo = $this->db();
+        $pdo->beginTransaction();
+        try {
+            $read = $pdo->prepare('SELECT id, _data FROM media_files WHERE id = ? FOR UPDATE');
+            $read->execute([$id]);
+            $row = $read->fetch(\PDO::FETCH_ASSOC);
+            if (!$row) throw new \InvalidArgumentException('Uploaded media record not found.');
+            $record = ['id'=>$row['id']] + json_decode($row['_data'], true, 512, JSON_THROW_ON_ERROR);
+            $patch = MediaService::metadataPatch($record, $fields, $expected);
+            $write = $pdo->prepare('UPDATE media_files SET _data = JSON_MERGE_PATCH(_data, ?), _updated_at = CURRENT_TIMESTAMP WHERE id = ?');
+            $write->execute([json_encode($patch, JSON_THROW_ON_ERROR), $id]);
+            $pdo->commit();
+            self::$remoteQueryCache = [];
+        } catch (\Throwable $error) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            throw $error;
+        }
+    }
+
     /** Patch only the intended user fields. Compare credentials before replacing them. */
     public function patchUser(string $id, array $fields, ?string $credential = null, ?string $expected = null): bool {
         $fields = array_intersect_key($fields, array_flip([

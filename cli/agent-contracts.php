@@ -17,7 +17,7 @@ $lines=['---','type: doc','title: Generated Agent Tool and Instruction Contracts
     'Regenerate with `php cli/agent-contracts.php` or `./bapXphp update`; validate with `php cli/agent-contracts.php --check`.',
     'No provider calls, credentials or business-data queries are made during generation. No conversation SQL table is introduced.','',
     'Discovery is not authorization. Every invocation still passes its PHP execution policy. These registries expose only named reads; ticket creation and owner-approved draft saves remain distinct controller/service actions.',
-    'The historical `customer_ticket_lookup` activity label is not an invocable support capability. The Support bot uses local routing and scoped context; declarations do not imply that every model receives an unrestricted tool loop.',''];
+    'The historical `customer_ticket_lookup` activity label is not an invocable support capability. Both model surfaces use the bounded AiClient tool loop through RuntimeAgentToolRegistry. The model adapter filters declarations by the authenticated actor and adds a private read_runtime_skill activation operation, never a public MCP or arbitrary file capability. The file manifest below lists all available role documents; individual model prompts initially load only the constitution and shared runtime contract, then activate relevant skills.',''];
 foreach($surfaces as $surface=>$config){
     $names=array_column($config['tools'],'name');
     if($names!==AgentCapabilityPolicy::tools($config['policy']))throw new RuntimeException('Registry/policy capability mismatch: '.$surface);

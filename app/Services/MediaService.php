@@ -207,7 +207,7 @@ final class MediaService {
         $matches = $this->catalogue($context === '' ? null : $context, true);
         if ($options['search'] !== '') {
             $matches = array_values(array_filter($matches, static function (array $item) use ($options): bool {
-                foreach (['original_name','filename','description','url','path'] as $key) {
+                foreach (['original_name','filename','description','alt_text','caption','url','path'] as $key) {
                     if (mb_stripos((string)($item[$key] ?? ''), $options['search']) !== false) return true;
                 }
                 return false;
@@ -334,6 +334,38 @@ final class MediaService {
         }
         if ($uploaded) $this->writeCatalogue($context, $uploaded);
         return $uploaded;
+    }
+
+    /** Metadata is editable only for actual uploaded records, not bundled or legacy assets. */
+    public static function metadataRevision(array $record): string {
+        $values = [];
+        foreach (['id','url','context','description','alt_text','caption'] as $field) {
+            $values[$field] = (string)($record[$field] ?? '');
+        }
+        return hash('sha256', json_encode($values, JSON_THROW_ON_ERROR));
+    }
+
+    public static function metadataPatch(array $record, array $fields, string $expected): array {
+        if (!self::canDeleteRecord($record) || !in_array($record['context'] ?? '', self::CONTEXTS, true)) {
+            throw new \InvalidArgumentException('Only uploaded library images can be edited.');
+        }
+        if (!hash_equals(self::metadataRevision($record), $expected)) {
+            throw new \InvalidArgumentException('Media metadata changed; reload before saving.');
+        }
+        $patch = [];
+        foreach (['description'=>255, 'alt_text'=>255, 'caption'=>500] as $field=>$limit) {
+            $value = $fields[$field] ?? null;
+            if (!is_string($value) || !mb_check_encoding($value, 'UTF-8') || mb_strlen(trim($value)) > $limit
+                || preg_match('/[\x00-\x1F\x7F]/u', $value)) {
+                throw new \InvalidArgumentException('Enter valid plain text within the displayed limits.');
+            }
+            $patch[$field] = trim($value);
+        }
+        return $patch;
+    }
+
+    public function saveMetadata(string $id, array $fields, string $expected): void {
+        $this->store->updateMediaMetadata($id, $fields, $expected);
     }
 
     /** Only records uploaded through the media library may be removed. */

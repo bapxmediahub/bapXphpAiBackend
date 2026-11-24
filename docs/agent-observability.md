@@ -376,3 +376,14 @@ The 31-case deterministic corpus includes exact net-sales answers with verified
 refund/unpaid/cancelled/out-of-period fixtures and exact GST snapshot/count/scope
 evidence. These synthetic known-answer tests are reproducible regression
 coverage, not human-reviewed real-world labels or tax-filing certification.
+
+### Selective runtime skill evidence
+
+The model-only registry records the actual role constitution and shared skill
+hashes, then adds each selected runtime document to the request's instruction
+manifest. No instruction body or raw provider argument is added to operational
+telemetry. Model-selected Support reads record their own tool spans, evidence
+and public product-source identities. Public catalogue counts and bestseller
+ranking are business reads, not customer or owner-wide private records.
+A deterministic aggregate answer can include provider attempts and tool
+activity; a successful local answer is not proof that the provider recovered.

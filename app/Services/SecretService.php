@@ -76,6 +76,29 @@ final class SecretService {
             && !in_array($values['ai_openrouter_enabled'], ['0','1'], true)) {
             throw new \InvalidArgumentException('Select a valid OpenRouter on/off setting.');
         }
+        foreach (['ai_google_enabled','ai_compatible_enabled'] as $flag) {
+            if (array_key_exists($flag,$values) && !in_array($values[$flag],['0','1'],true))
+                throw new \InvalidArgumentException('Choose a valid provider on/off setting.');
+        }
+        foreach (['ai_google_models','ai_openrouter_models'] as $field) {
+            if (!array_key_exists($field,$values)) continue;
+            if (!is_string($values[$field])) throw new \InvalidArgumentException('Enter valid model IDs.');
+            $models=self::modelIds($values[$field],$field==='ai_google_models');
+            if (!$models) throw new \InvalidArgumentException('Enter one to five valid model IDs.');
+            $values[$field]=implode("\n",$models);
+        }
+        if (array_key_exists('ai_google_model_switches',$values)) {
+            $switches=$values['ai_google_model_switches'];
+            if (!is_array($switches)||count($switches)>5) throw new \InvalidArgumentException('Invalid model switches.');
+            $disabled=[];
+            foreach($switches as $id=>$flag) {
+                if(!is_string($id)||!self::validModelId($id)||!in_array($flag,['0','1'],true))
+                    throw new \InvalidArgumentException('Invalid model switch.');
+                if($flag==='0')$disabled[]=$id;
+            }
+            $values['ai_google_disabled_models']=$disabled;
+            unset($values['ai_google_model_switches']);
+        }
         $merged = array_replace($existing, $values);
         if (($merged['ai_openrouter_enabled'] ?? '0') === '1'
             && !self::validOpenRouterKey((string)($merged['ai_openrouter_key'] ?? ''))) {
@@ -87,7 +110,7 @@ final class SecretService {
             unset($merged['ai_compatible_key']);
             $config = self::compatibleConfig($merged);
         }
-        if (($merged['ai_provider'] ?? '') === 'openai_compatible') {
+        if (($merged['ai_compatible_enabled'] ?? (($merged['ai_provider'] ?? '') === 'openai_compatible' ? '1' : '0')) === '1') {
             if (!$config['configured']) {
                 throw new \InvalidArgumentException('Enter a public HTTPS API URL, an API key and one to five valid model IDs.');
             }
@@ -149,25 +172,36 @@ final class SecretService {
         $all[$key] = $value;
         $this->save($all);
     }
-    /** Selecting OpenRouter does not overwrite or disable the existing Google credentials. */
+    /** One ordered snapshot of independently enabled, configured connections. */
+    public function getProviderPlan(): array { return $this->providerPlan($this->all()); }
+
     public function getModelConfig(): array {
-        $secrets = $this->all();
-        if (($secrets['ai_openrouter_enabled'] ?? '0') === '1') {
-            $apiKey = trim((string)($secrets['ai_openrouter_key'] ?? ''));
-            if (self::validOpenRouterKey($apiKey)) {
-                return ['provider'=>'openrouter', 'model'=>self::OPENROUTER_MODEL,
-                    'models'=>[self::OPENROUTER_MODEL], 'endpoint'=>self::OPENROUTER_ENDPOINT,
-                    'apiKey'=>$apiKey, 'configured'=>true];
-            }
-            // Invalid legacy configuration cannot silently try an unsafe endpoint.
-        }
-        if (($secrets['ai_provider'] ?? '') === 'openai_compatible') return self::compatibleConfig($secrets);
-        return $this->googleConfig($secrets);
+        return $this->getProviderPlan()[0] ?? ['provider'=>'google','model'=>'','models'=>[],
+            'endpoint'=>self::GOOGLE_ENDPOINT,'apiKey'=>'','configured'=>false];
     }
 
-    /** Only the model router uses this second read, and only after failed OpenRouter inference. */
+    public function providerPlan(array $settings): array {
+        $primary=($settings['ai_provider']??'')==='openai_compatible'?'openai_compatible':'google';
+        $routerEnabled=($settings['ai_openrouter_enabled']??'0')==='1';
+        $googleEnabled=($settings['ai_google_enabled']??(($primary==='google'||$routerEnabled)?'1':'0'))==='1';
+        $compatibleEnabled=($settings['ai_compatible_enabled']??($primary==='openai_compatible'?'1':'0'))==='1';
+        $routerModels=self::modelIds((string)($settings['ai_openrouter_models']??self::OPENROUTER_MODEL));
+        $routerKey=trim((string)($settings['ai_openrouter_key']??''));
+        $router=['provider'=>'openrouter','endpoint'=>self::OPENROUTER_ENDPOINT,'models'=>$routerModels,
+            'model'=>$routerModels[0]??'','apiKey'=>$routerKey,
+            'configured'=>$routerEnabled&&self::validOpenRouterKey($routerKey)&&$routerModels!==[]];
+        $google=$this->googleConfig($settings);
+        $google['configured']=$googleEnabled&&$google['configured'];
+        $compatible=self::compatibleConfig($settings);
+        $compatible['configured']=$compatibleEnabled&&$compatible['configured'];
+        $ordered=$primary==='google'?[$router,$google,$compatible]:[$router,$compatible,$google];
+        return array_values(array_filter($ordered,static fn(array $c):bool=>$c['configured']));
+    }
+
     public function getGoogleFallbackConfig(): array {
-        return $this->googleConfig($this->all());
+        $s=$this->all();$config=$this->googleConfig($s);
+        if(($s['ai_google_enabled']??'1')!=='1'){$config['configured']=false;$config['apiKey']='';}
+        return $config;
     }
 
     private static function validOpenRouterKey(string $key): bool {
@@ -175,14 +209,27 @@ final class SecretService {
             && preg_match('/[^\\x21-\\x7e]/', $key) !== 1;
     }
 
+    /** Model IDs are configured, not provider-specific hardcoded routing choices. */
+    public static function modelIds(string $input,bool $google=false): array {
+        $ids=array_values(array_unique(array_filter(array_map('trim',preg_split('/[\r\n,]+/',$input)?:[]),'strlen')));
+        if(count($ids)<1||count($ids)>5)return [];
+        foreach($ids as $id)if(!self::validModelId($id)||($google&&!preg_match('/^[A-Za-z0-9][A-Za-z0-9._-]*$/D',$id)))return [];
+        return $ids;
+    }
+
+    public static function googleModelIds(array $settings): array {
+        if(isset($settings['ai_google_models']))return self::modelIds((string)$settings['ai_google_models'],true);
+        $preferred=(string)($settings['agent_model']??$settings['support_bot_model']??self::PRIMARY_MODEL);
+        if(!in_array($preferred,self::GOOGLE_MODELS,true))$preferred=self::PRIMARY_MODEL;
+        return array_values(array_unique(array_merge([$preferred],self::GOOGLE_MODELS)));
+    }
+
     private function googleConfig(array $secrets): array {
         $apiKey = $this->firstValue($secrets, ['ai_api_key', 'agent_api_key', 'support_bot_google_api_key'], ['AI_API_KEY', 'AGENT_API_KEY', 'BAPX_AI_API_KEY']);
-        $model = $this->firstValue($secrets, ['agent_model', 'support_bot_model'], ['AGENT_MODEL', 'BAPX_AI_MODEL']);
-        // https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api#supported-models
-        if (!in_array($model, self::GOOGLE_MODELS, true)) $model = self::PRIMARY_MODEL;
-        $endpoint = self::GOOGLE_ENDPOINT;
-        $provider = 'google';
-        return compact('provider', 'model', 'endpoint', 'apiKey') + ['configured' => $apiKey !== ''];
+        $models=array_values(array_diff(self::googleModelIds($secrets),(array)($secrets['ai_google_disabled_models']??[])));
+        $model=$models[0]??'';
+        $endpoint=self::GOOGLE_ENDPOINT;$provider='google';
+        return compact('provider','model','models','endpoint','apiKey')+['configured'=>$apiKey!==''&&$models!==[]];
     }
     public static function validModelId(string $model): bool {
         return preg_match('~\A[A-Za-z0-9][A-Za-z0-9._:/@+\-]{0,199}\z~', $model) === 1;

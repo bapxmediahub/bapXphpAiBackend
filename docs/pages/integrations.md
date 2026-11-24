@@ -12,28 +12,42 @@ Controller: `AdminController@integrations`
 
 Purpose: configure Razorpay (test/live), Stripe, Google OAuth, SMTP, Meta Pixel, native Google tag settings, Support Bot, and SEO defaults.
 
-## OpenRouter Free optional provider
+## AI provider connections and model order
 
-The existing AI Provider form contains a separate **Enable OpenRouter Free** toggle and
-a masked OpenRouter API Key directly below Google API Key. The model ID and endpoint
-are fixed to `openrouter/free` and `https://openrouter.ai/api/v1`; the owner
-does not supply another URL. This option is **off by default** and leaves the
-ordinary Google/OpenAI-compatible provider selection untouched when off.
+The owner can independently enable Google Gemini, OpenRouter and one custom
+OpenAI-compatible HTTPS connection. Each connection has a masked API-key field
+and ordered model IDs; Google also has per-model enable switches. The default
+Google IDs remain Gemma 4 31B and 26B A4B; the default OpenRouter ID remains
+openrouter/free. Editing the list adds model IDs rather than modifying PHP.
+OpenRouter is first when enabled, then the preferred enabled connection and
+the other enabled connection. Disabled or unconfigured connections are never
+used as hidden fallbacks. A named model test does not fall back to another
+model. OpenRouter IDs other than free models can have provider charges.
 
-Enabling requires a saved OpenRouter key. An empty masked input preserves an existing
-key, and turning the option off retains it encrypted for a future opt-in. Both
-Support and Enterprise try OpenRouter first. If an OpenRouter model cannot
-answer **before any permitted tool call executes**, the existing Google
-`gemma-4-31b-it` and `gemma-4-26b-a4b-it` routes are tried within the
-original generation deadline, using the separately stored Google key. A completed
-tool exchange is never replayed to a different provider. A missing Google key
-cannot create a real fallback; failed attempts remain visible through the
-existing safe timing/model diagnostics in Test AI Connection.
+Blank masked inputs preserve saved keys; a changed compatible endpoint needs
+its own key. The existing encrypted app_secrets MySQL record remains the only
+runtime credential store. No secret values appear in the AI fields, diagnostics
+or test fixtures. The shared request deadline applies across providers; once
+a tool exchange starts, it never switches providers. The Google wire adapter
+uses parametersJsonSchema for canonical JSON Schema, retaining server-side
+authorization and validation.
 
-The same encrypted `app_secrets` row in hosted MySQL remains authoritative.
-The page never returns a saved OpenRouter key in a password input, code, logs,
-tests, A2UI or chat history. No key is supplied in sample documentation or CI
-fixtures. Reference: https://openrouter.ai/openrouter/free .
+References: https://docs.openwebui.com/getting-started/quick-start/connect-a-provider/starting-with-openai-compatible/
+and https://docs.litellm.ai/docs/router/api_reference/configuration and
+https://ai.google.dev/api/generate-content#FunctionDeclaration .
+
+## Verify an actual provider response
+
+The connection diagnostic uses the same guarded AiClient as both agents and
+allows an exact provider/model target (even when two connections have the same
+model ID) or the enabled fallback route. The text test requires the expected
+response; the tool test calls an isolated read-only synthetic tool and verifies
+the returned challenge. No order, customer or product data is sent by this
+diagnostic. It records the actual attempted provider, model and safe status
+without displaying keys or provider response bodies. Run the same tests locally
+with bapXphp ai:probe text or bapXphp ai:probe tools, optionally followed by a
+quoted provider|model selector. A missing tool call, unexpected answer, HTTP
+error or timeout is not success.
 
 ## Secrets Storage
 
@@ -129,6 +143,29 @@ References:
 - https://developers.google.com/webmaster-tools/v1/how-tos/all-your-data
 - https://developers.google.com/tag-platform/gtagjs/configure
 - https://support.google.com/webmasters/answer/9008080
+
+## Built-in Google PageSpeed Insights
+
+From the existing owner dashboard, open **PageSpeed Insights** at
+`/admin/google-pagespeed`. The native view uses the site's configured HTTPS
+origin and retrieves mobile/desktop results from Google's **fixed**
+PageSpeed Insights v5 API endpoint only after the authenticated owner presses
+**Analyze**. The POST is CSRF-protected. No WordPress plugin, additional Google
+OAuth consent, browser API key or arbitrary target URL is involved.
+
+Results contain the actual provider performance score, Lighthouse lab measurements,
+available CrUX field data and up to four measured opportunities. If Google supplies
+no score, insufficient field data, denies access or exhausts quota, the screen says
+so instead of displaying fabricated zero metrics. A ten-minute PHP session cooldown
+prevents repeated costly requests, and the last report is retained for up to
+30 minutes in that owner's session; no database record or customer data is written.
+
+The source analysis was derived from `google-site-kit.1.192.0.zip` and is
+implemented independently in `PageSpeedInsightsClient` and
+`AdminPageSpeedController`. Site Kit's other modules (AdSense, Tag Manager,
+Ads, consent and email reports) are **not** implicitly implemented.
+See `docs/research/native-wordpress-woocommerce-sitekit-20261124.md` and
+[PageSpeed Insights API](https://developers.google.com/resources/api-libraries/documentation/pagespeedonline/v5/csharp/latest/classGoogle_1_1Apis_1_1PagespeedInsights_1_1v5_1_1PagespeedapiResource_1_1RunpagespeedRequest.html).
 
 ## Local MCP reporting clients
 

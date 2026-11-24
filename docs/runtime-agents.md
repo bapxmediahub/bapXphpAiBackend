@@ -29,7 +29,7 @@ Git, code-generation or developer CLI instructions:
       reporting.md
 ```
 
-## Exact loading contract
+## Exact loading contract and selective activation
 
 | PHP surface | Required files | Permission |
 |---|---|---|
@@ -42,7 +42,25 @@ to choose that surface. The loader supports only those two enums and a fixed
 file manifest. Adding a Markdown file does **not** silently grant a new skill.
 A new runtime module requires a reviewed manifest change and tests.
 
-`forSurface()` returns the selected prompt text. `manifestForSurface()` returns
+The fixed file manifest above defines the complete allowed set, not the initial
+model context. The live model path uses RuntimeAgentToolRegistry, loading only
+the role constitution and shared contract initially, plus the names and
+descriptions of the allowed task skills. The model may call read_runtime_skill
+with a catalogue identifier; related business lookups also load their matching
+guidance automatically. This adapts the Agent Skills progressive-disclosure
+pattern, with no arbitrary filesystem selector and no public transport
+registration. Actual loaded paths and content hashes accumulate in the trace.
+Business declarations use the same authenticated allowlist. A bounded lexical
+match against tool names, descriptions and parameter names seeds up to three
+business tools per turn. The `tool_search` meta-tool can enable up to four
+matching declarations per search, with eight active business tools total; an
+unknown exact identifier never activates a substitute. Both provider loops
+refresh declarations each round while retaining correlated tool-call history.
+Discovery returns metadata, not records. The PHP aggregate fallback can still
+execute a server-selected authorized lookup even when it was not discovered.
+Trace spans record safe activation names and counts, never the raw search text.
+The old forSurface() method remains the full-bundle offline/legacy contract.
+ `manifestForSurface()` returns
 only version, surface, relative paths, per-document SHA-256 and the bundle hash.
 It is a PHP service API, **not a public route**. Required documents must be
 UTF-8, nonempty, regular files no larger than 12 KiB each or 48 KiB per bundle.
@@ -51,7 +69,7 @@ admin access fail closed. The service does not fall back to `AGENTS.md`,
 generated indexes, arbitrary URLs, model-supplied paths or recursive globbing.
 
 The trace fingerprints the **actual loaded Markdown bundle**, not just the PHP
-loader file. Deterministic local answers which never load a model prompt leave
+loader file. Deterministic local answers which never load an instruction document leave
 that trace field unset rather than inventing a loaded instruction. Offline
 evaluations record both role manifests and include their content hashes in the
 implementation fingerprint; the explicit admin actor there is a local test
@@ -82,8 +100,7 @@ rules for each client. Do not hardcode stale prices, stock, refund promises or
 retired booking actions into generic skills. Exact current facts come from
 approved application data. The generated developer index lists runtime file
 **references** with type `runtime_instruction`, separately from developer
-`skill`/`agentfile` entries, without duplicating prompt bodies. Live agents do
-not consume that index as instructions.
+`skill`/`agentfile` entries, without duplicating prompt bodies. Live agents do not consume the generated developer index as instructions. The role-filtered runtime catalogue binds the existing .bapX concepts to executable business tools.
 
 Run `php tests/run.php`, `php cli/agent-eval.php`, `./bapXphp update` and
 `./bapXphp ci`. Verify both role manifests, unauthorized/path/symlink denial,
@@ -141,3 +158,21 @@ Product net values allocate recorded refunds across lines; coupon values are ass
 The application executes each allowed function and sends its result back using the originating provider's call format. Model text is never authority to grant a capability. Google documents the hosted Gemma identifiers and native function calling. OpenAI recommends clear tool schemas and doing known work in application code. Those contracts apply to their respective clients. [Google AI Studio function calling](https://aistudio.google.com/docs/function-calling) · [Hosted Gemma models](https://gemma.ai/deployment/gemini-api/) · [OpenAI function calling](https://developers.openai.com/api/docs/guides/function-calling)
 
 Time-limited retries are for transient transport or service failure. Authentication and invalid-request responses need configuration or request corrections. The owner can inspect per-attempt evidence in Monitoring to distinguish service responses from requests that reached the local timeout without an HTTP response. [Google API troubleshooting](https://aistudio.google.com/docs/troubleshooting) · [OpenAI error codes](https://developers.openai.com/api/docs/guides/error-codes)
+
+## Model-driven Support and Enterprise tools
+
+Both model surfaces reuse AiClient's bounded provider loop and provider fallback
+rules. Support tool declarations hide private account lookups from guests and
+never expose owner reports. Current public catalogue totals, configured
+category membership and all-time published bestseller ranking are retrieved
+from the actual store services. For recognized whole-store aggregate questions,
+the exact tool result is rendered deterministically; when the provider is
+unavailable or misses the tool, the same safe lookup supplies the fallback.
+A failed query does not become an empty catalogue or invented ranking.
+This slice does not add autonomous workers, embeddings, a vector database,
+arbitrary SQL, or another production runtime.
+
+References: https://prismphp.com/core-concepts/tools-function-calling/ ,
+https://docs.neuron-ai.dev/agent/tools ,
+https://github.com/agentskills/agentskills/blob/main/docs/client-implementation/adding-skills-support.mdx .
+These patterns are implemented natively; no external PHP package is installed.

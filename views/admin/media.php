@@ -56,10 +56,25 @@
             <?php foreach($items as $media): ?>
                 <?php $context = (string)($media['context'] ?? 'shared'); ?>
                 <div class="admin-media-tile" data-media-context="<?= e($context) ?>">
-                    <img src="<?= e($media['url'] ?? $media['path']) ?>" alt="<?= e($media['original_name'] ?? $media['filename'] ?? 'Media') ?>" loading="lazy" decoding="async">
+                    <img src="<?= e($media['url'] ?? $media['path']) ?>" alt="<?= e($media['alt_text'] ?? $media['original_name'] ?? $media['filename'] ?? 'Media') ?>" loading="lazy" decoding="async">
                     <strong><?= e($media['original_name'] ?? $media['filename'] ?? 'Media') ?></strong>
                     <?php if(!empty($media['description'])): ?>
                         <small class="media-desc"><?= e($media['description']) ?></small>
+                    <?php endif; ?>
+                    <?php if (!empty($media['caption'])): ?><small><?= e($media['caption']) ?></small><?php endif; ?>
+                    <?php if (\App\Services\MediaService::canDeleteRecord($media) && in_array($context, ['shared','products','temples','blog'], true)): ?>
+                        <details class="admin-media-metadata">
+                            <summary>Edit metadata</summary>
+                            <form method="post" action="/admin/media/metadata" class="admin-form">
+                                <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+                                <input type="hidden" name="id" value="<?= e($media['id']) ?>">
+                                <input type="hidden" name="expected_revision" value="<?= e(\App\Services\MediaService::metadataRevision($media)) ?>">
+                                <label>Description <input name="description" type="text" maxlength="255" value="<?= e($media['description'] ?? '') ?>"></label>
+                                <label>Alternative text <input name="alt_text" type="text" maxlength="255" value="<?= e($media['alt_text'] ?? '') ?>"></label>
+                                <label>Caption <input name="caption" type="text" maxlength="500" value="<?= e($media['caption'] ?? '') ?>"></label>
+                                <button class="btn btn-sm" type="submit">Save metadata</button>
+                            </form>
+                        </details>
                     <?php endif; ?>
                     <span class="badge badge--info"><?= e($context) ?></span>
                     <span><?= e(substr((string)($media['created_at'] ?? ''), 0, 10)) ?></span>

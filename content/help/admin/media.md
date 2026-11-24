@@ -4,6 +4,10 @@ Open Media Library. Choose the appropriate context, add a useful description, se
 
 Use **Search** and **Context** to find images across the full library, including bundled and older files. Apply the filters, then use **Next** or **Previous** to browse the thumbnails. Select **Check product images** to inspect product references and missing binaries.
 
+## Edit upload metadata
+
+On a MySQL-backed upload, expand **Edit metadata** to save a description (255 characters), alternative text (255) and caption (500). Empty fields clear existing text. The library preview uses the saved alternative text; these fields are searchable in Media Library. Existing product and article markup is unchanged. Bundled and legacy items are read-only. If another edit changed the metadata, reload the image before saving again. Saving does not replace or delete the binary or change its usage.
+
 ## Inspect before deleting
 
 Review the image's **Used in** details and the content that refers to it. Only eligible uploaded media shows **Delete upload**. Bundled site images and legacy records are not all deletable through this interface. A used image must be unlinked from its real content before removal.

@@ -93,6 +93,27 @@ foreach (['shared','products','temples','blog'] as $ctx) {
     sort($actual);
     check($actual === $expected, "Filtered $ctx preserves authoritative records and bundled URL ownership");
 }
+
+// Native metadata edits use a locked existing row, not a replacement catalogue.
+$pdo->exec('ALTER TABLE media_files ADD _updated_at DATETIME NULL');
+$upload = ['id'=>'0123456789abcdef','url'=>'/assets/images/media/2099/01/metadata-fixture.webp',
+    'context'=>'shared','description'=>'Before','used_in'=>[['id'=>'keep']],'original_url'=>'/keep-original.webp'];
+$pdo->prepare('INSERT INTO media_files (id, _data, _created_at) VALUES (?, ?, NOW())')->execute([$upload['id'], json_encode($upload, JSON_THROW_ON_ERROR)]);
+$revision = MediaService::metadataRevision($upload);
+$fields = ['description'=>'After','alt_text'=>'Searchable accessible fixture','caption'=>'A caption','url'=>'/forged'];
+$media->saveMetadata($upload['id'], $fields, $revision);
+$stored = $store->find('media_files', $upload['id']);
+check($stored['description'] === 'After' && $stored['alt_text'] === $fields['alt_text'] && $stored['caption'] === 'A caption', 'Metadata persisted');
+check($stored['url'] === $upload['url'] && $stored['original_url'] === $upload['original_url'] && $stored['used_in'] === $upload['used_in'], 'Other fields preserved');
+check(array_column($media->adminPage(['q'=>$fields['alt_text']])['items'],'id') === [$upload['id']], 'New metadata searchable');
+try { $media->saveMetadata($upload['id'], $fields, $revision); throw new RuntimeException('Stale write accepted'); }
+catch (InvalidArgumentException $e) { check(str_contains($e->getMessage(),'changed'),'Stale revision rejected'); }
+try { $media->saveMetadata('abcdef0123456789', $fields, $revision); throw new RuntimeException('Missing row recreated'); }
+catch (InvalidArgumentException $e) { check(str_contains($e->getMessage(),'not found'),'Missing row rejected'); }
+$media->saveMetadata($upload['id'], ['description'=>'','alt_text'=>'','caption'=>''], MediaService::metadataRevision($stored));
+check($store->find('media_files',$upload['id'])['caption'] === '', 'Explicit clearing persists');
+echo "PASS media metadata persistence, stale edits, search and field isolation.\n";
+
 $invalid = ResourceService::listOptions(['page' => [], 'q' => [], 'per_page' => '-1', 'sort' => []]);
 check($invalid === ['search' => '', 'pageSize' => 25, 'page' => 1, 'sort' => 'newest'], 'Invalid input falls back to defaults');
 echo "PASS 501-row order, appointment and media lists, search, sort and page bounds.\n";
