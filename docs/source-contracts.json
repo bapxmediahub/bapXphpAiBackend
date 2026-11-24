@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "c83267b5d8cf2198d259adca52c5130134b9ce4cc42398dab1c22c99c198926b",
+            "source_sha256": "5d2a8318f694c8bdb74b88e8f5b0054198559b0753da6c84ef7784308273b049",
             "references_sha256": "a3194b5f9dd2fdc5f745078b87b7c8ba8413256e7f6727105c1b4622aedfd30b",
-            "review_note": "Combined custom-model object-preserving transport and deferred discovery fixture without dropping either regression."
+            "review_note": "Retain deployed provider missing-cURL guard and its regression in the role-scoped discovery loop."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
