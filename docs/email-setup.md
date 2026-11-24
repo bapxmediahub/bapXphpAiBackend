@@ -54,8 +54,9 @@ characters. A deployment-local private locked JSON admission state applies
 3 accepted submissions per IP per 120 seconds, 2 per normalized email per
 24 hours, 20 per site per hour and 60 per site per 24 hours. All budgets are
 reserved atomically; only hashed bucket identifiers and timestamps are stored.
-Unavailable or corrupt state fails closed. Users can use the direct contact
-options when the form is limited. These limits are a containment measure,
+Unavailable or corrupt state fails closed. Where the owner publishes direct
+contact options in the Public Site Profile, users can use them when the form
+is limited. Public contact fields are independent of SMTP configuration. These limits are a containment measure,
 not proof of human identity or spam classification.
 
 Existing pending contact and legacy appointment automation is excluded from

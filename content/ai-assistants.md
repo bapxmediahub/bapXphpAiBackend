@@ -1,6 +1,6 @@
-# Use Sri Panchami with an AI assistant
+# Use {{SITE_NAME}} with an AI assistant
 
-An assistant can discover Sri Panchami Spiritual, show official products, manage an anonymous cart and review checkout through ordinary HTTP, curl or a compatible MCP client. A browser is optional for these tools. Your assistant or chat app must support the connection method you choose. Opening this page does not install a connector or grant access to an account.
+An assistant can discover this site, show official products, manage an anonymous cart and review checkout through ordinary HTTP, curl or a compatible MCP client. A browser is optional for these tools. Your assistant or chat app must support the connection method you choose. Opening this page does not install a connector or grant access to an account.
 
 ## Start with HTTP discovery
 

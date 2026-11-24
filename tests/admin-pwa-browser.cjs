@@ -17,7 +17,7 @@ test('installed admin launches inside its own scope and remains private offline'
     const port = socket.address().port;
     await new Promise(resolve => socket.close(resolve));
     const origin = 'http://127.0.0.1:' + port;
-    const env = {...process.env, BAPX_TEST_MODE: '1', APP_URL: origin};
+    const env = {...process.env, BAPX_TEST_MODE: '1', APP_URL: 'https://sripanchamispiritual.com'};
     const session = 'adminpwabrowserfixture';
     const options = ['-d', 'session.save_path=' + temp];
     execFileSync('php', [...options, '-r', 'session_id("adminpwabrowserfixture"); session_start(); $_SESSION["user"]=["id"=>"fixture","role"=>"admin"]; session_write_close();'], {cwd:root,env});

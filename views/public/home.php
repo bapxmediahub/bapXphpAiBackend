@@ -4,14 +4,16 @@
 <section class="home-hero">
     <div class="container home-hero-inner">
         <div class="hero-copy">
-            <h1>Authentic Spiritual Products</h1>
-            <p class="lede">Sacred jewellery, rudraksha and pooja essentials, delivered across India.</p>
+            <h1><?= e($siteProfile->isReference() ? 'Authentic Spiritual Products' : $siteProfile->name()) ?></h1>
+            <?php $heroIntro = $siteProfile->summary() ?: ($siteProfile->isReference() ? 'Sacred jewellery, rudraksha and pooja essentials, delivered across India.' : ''); ?>
+            <?php if ($heroIntro !== ''): ?><p class="lede"><?= e($heroIntro) ?></p><?php endif; ?>
+            <?php if (module_on('shop')): ?>
             <div class="hero-actions">
-                <?php if (module_on('shop')): ?>
                 <a href="/shop" class="btn btn-primary">Shop Products</a>
-                <?php endif; ?>
             </div>
+            <?php endif; ?>
         </div>
+        <?php if ($siteProfile->isReference()): ?>
         <?php
             // The supplied Guruji portrait leads the carousel; the existing deity
             // images remain available in their original order afterwards.
@@ -45,10 +47,12 @@
                 <span class="sr-only" data-portrait-status aria-live="off"><?= e($heroSlides[0]['alt']) ?></span>
             </div>
         </div>
+        <?php endif; ?>
     </div>
 </section>
 
 
+<?php if (module_on('shop')): ?>
 <div class="trust-bar">
     <ul class="trust-bar__inner" role="list">
         <li class="trust-item">
@@ -65,6 +69,7 @@
         </li>
     </ul>
 </div>
+<?php endif; ?>
 </div>
 
 <?php if (module_on('shop')): ?>
@@ -138,7 +143,7 @@
 <section class="section section--alt home-temples" aria-labelledby="home-temple-guide">
     <div class="container">
         <div class="home-temples__header">
-            <h2 class="section-title" id="home-temple-guide" data-page-section="Temples" tabindex="-1">Panchami Temples Guide</h2>
+            <h2 class="section-title" id="home-temple-guide" data-page-section="Temples" tabindex="-1"><?= $siteProfile->isReference() ? 'Panchami Temples Guide' : 'Temple guides' ?></h2>
         </div>
         <div class="temple-carousel" data-temple-rail>
             <div class="home-temples__navigation">
@@ -190,7 +195,7 @@
 <section class="section section--warm" aria-labelledby="home-values">
     <div class="container">
         <div class="section-header">
-            <span class="eyebrow serif-accent">Why Sri Panchami Spiritual</span>
+            <span class="eyebrow serif-accent">Why <?= e($siteProfile->name()) ?></span>
             <h2 class="section-title" id="home-values" data-page-section="Our values" tabindex="-1">Faith · Trust · Tradition</h2>
             <p class="lede">Rooted in devotion, committed to authenticity — every product and service reflects our reverence for India's spiritual heritage.</p>
         </div>

@@ -7,16 +7,25 @@
         <div data-section-index hidden></div>
 
         <div class="contact-page__grid">
+            <?php if ($publicContact['phones'] || isset($publicContact['email']) || $publicContact['hours']): ?>
             <aside class="contact-card" aria-label="Contact options">
-                <h2 id="contact-direct" data-page-section="Phone and email" tabindex="-1">Call or email us</h2>
+                <?php
+                $hasPhone = (bool)$publicContact['phones'];
+                $hasEmail = isset($publicContact['email']);
+                $directTitle = $hasPhone ? ($hasEmail ? 'Call or email us' : 'Call us') : ($hasEmail ? 'Email us' : 'Opening hours');
+                ?>
+                <h2 id="contact-direct" data-page-section="<?= e($hasPhone && $hasEmail ? 'Phone and email' : $directTitle) ?>" tabindex="-1"><?= e($directTitle) ?></h2>
                 <div class="contact-direct-list">
                     <?php foreach ($publicContact['phones'] as $phone): ?>
                         <a class="contact-direct-link" href="tel:<?= e($phone['number']) ?>"><?= e($phone['label']) ?></a>
                     <?php endforeach; ?>
+                    <?php if ($hasEmail): ?>
                     <a class="contact-direct-link contact-direct-link--mail" href="mailto:<?= e($publicContact['email']) ?>"><span class="contact-email-address"><?= e($publicContact['email']) ?></span><span class="contact-email-label">Email support</span></a>
+                    <?php endif; ?>
                 </div>
-                <p><?= e(implode(' · ', array_map(static fn(array $slot): string => $slot['days'] . ', ' . $slot['hours'], $publicContact['hours']))) ?></p>
+                <?php if ($publicContact['hours']): ?><p><?= e(implode(' · ', array_map(static fn(array $slot): string => $slot['days'] . ', ' . $slot['hours'], $publicContact['hours']))) ?></p><?php endif; ?>
             </aside>
+            <?php endif; ?>
 
             <div class="contact-form-card" id="contact-form" data-page-section="Message" tabindex="-1">
                 <?php if ($success): ?>
@@ -97,12 +106,4 @@
 </script>
 <?php endif; ?>
 
-<script type="application/ld+json">
-{
-    "@context": "https://schema.org",
-    "@type": "ContactPage",
-    "name": "Contact Sri Panchami Spiritual",
-    "description": "Contact Sri Panchami Spiritual for spiritual products, order support, temple guidance, and pooja services.",
-    "url": "https://sripanchamispiritual.com/contact"
-}
-</script>
+<?= $seo['contact_json_ld'] ?? '' ?>

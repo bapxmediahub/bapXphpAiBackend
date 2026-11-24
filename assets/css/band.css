@@ -267,6 +267,7 @@ label { cursor: pointer; }
     font-family: var(--font-serif);
 }
  .brand img { width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--color-gold); object-fit: cover; }
+.brand span { overflow-wrap: anywhere; }
 .brand:hover { color: var(--color-ink); }
 
 nav:where(#primary-nav) { display: flex; gap: var(--space-lg); }
@@ -2558,6 +2559,7 @@ tr:hover td { background: var(--color-bg-alt); }
     gap: var(--space-lg);
     align-items: start;
 }
+.contact-page__grid > .contact-form-card:only-child { grid-column: 1 / -1; }
 .contact-card,
 .contact-form-card {
     min-width: 0;
@@ -4266,7 +4268,7 @@ body { background: var(--color-bg); }
         min-width: 0;
         font-size: clamp(.73rem, 2.8vw, .9rem);
         line-height: 1.18;
-        overflow-wrap: normal;
+        overflow-wrap: anywhere;
     }
     .site-header .header-actions {
         order: 2;

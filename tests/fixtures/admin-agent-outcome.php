@@ -6,6 +6,7 @@ namespace {
 
 namespace App\Services {
     final class SecretService {
+        public function all(): array { return ['seo_site_name'=>'Fixture Shop']; }
         public function getModelConfig(): array { return ['apiKey'=>'fixture']; }
     }
     final class AiClient {

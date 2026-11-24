@@ -172,7 +172,7 @@ final class PublicKnowledgeService
             'servicePath' => ['type' => 'string', 'const' => '/contact#contact-form'],
         ];
         return ['type' => 'object', 'additionalProperties' => false,
-            'properties' => $fields, 'required' => array_keys($fields)];
+            'properties' => $fields, 'required' => array_values(array_diff(array_keys($fields), ['email']))];
     }
 
     public static function serviceInputSchema(): array
@@ -203,20 +203,7 @@ final class PublicKnowledgeService
     /** Public business facts are explicitly selected; never expose a settings row. */
     public function contact(): array
     {
-        return [
-            'name' => 'Sri Panchami Spiritual',
-            'path' => '/contact',
-            'phones' => [
-                ['label' => '+91 97894 44037', 'number' => '+919789444037'],
-                ['label' => '+91 97894 44038', 'number' => '+919789444038'],
-            ],
-            'email' => 'support@sripanchamispiritual.com',
-            'hours' => [
-                ['days' => 'Mon–Sat', 'hours' => '9 AM–7 PM'],
-                ['days' => 'Sun', 'hours' => '10 AM–5 PM'],
-            ],
-            'servicePath' => '/contact#contact-form',
-        ];
+        return SiteProfileService::current(origin: $this->publicUrl)->contact();
     }
 
     public static function contactSubjects(): array

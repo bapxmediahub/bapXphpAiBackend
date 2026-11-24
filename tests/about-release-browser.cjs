@@ -41,7 +41,7 @@ test('real About route: editorial layout, image loading, canonical metadata and 
     const live=Boolean(expected),root=path.resolve(__dirname,'..'),port=live?null:await freePort();
     const origin=live?'https://sripanchamispiritual.com':'http://127.0.0.1:'+port;
     const tmp=live?null:mkdtempSync(path.join(os.tmpdir(),'bapx-about-release-'));
-    const server=live?null:spawn('php',['-d','session.save_path='+tmp,'-S','127.0.0.1:'+port,'index.php'],{cwd:root,env:{...process.env,BAPX_TEST_MODE:'1',APP_URL:origin},stdio:'ignore'});
+    const server=live?null:spawn('php',['-d','session.save_path='+tmp,'-S','127.0.0.1:'+port,'index.php'],{cwd:root,env:{...process.env,BAPX_TEST_MODE:'1',APP_URL:'https://sripanchamispiritual.com'},stdio:'ignore'});
     let browser;
     try{
         if(live)await verifyLiveRevision(origin,expected);

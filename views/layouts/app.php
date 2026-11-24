@@ -1,45 +1,59 @@
+<?php
+$__settingsService = new \App\Services\SettingsService();
+$__settings = $__settingsService->public();
+$__modules = $__settingsService->modules();
+$siteProfile ??= \App\Services\SiteProfileService::current();
+$__siteName = $siteProfile->name();
+$__siteContact = $siteProfile->contact();
+$__referenceSite = $siteProfile->isReference();
+$__aboutLabel = $siteProfile->hasReferenceName() ? 'About SPS' : 'About';
+$__logo = ($__settings['logo_url'] ?? '') ?: ($__referenceSite ? '/assets/images/logo-small.jpeg' : '');
+$__favicon = ($__settings['favicon_url'] ?? '') ?: ($__referenceSite ? '/assets/images/sps-favicon.svg' : '');
+$__footerDescription = $siteProfile->summary() ?: ($__referenceSite
+    ? 'Authentic spiritual products, sacred jewellery, rudraksha, pooja items, and temple guidance.' : '');
+$__faviconMime = str_contains($__favicon,'.svg') ? 'image/svg+xml' : 'image/png';
+?>
 <!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="format-detection" content="telephone=no">
-<title><?= e($pageTitle ?? 'Sri Panchami Spiritual') ?></title>
+<title><?= e($pageTitle ?? $__siteName) ?></title>
 <meta name="description" content="<?= e($metaDescription ?? 'Shop spiritual products, rudraksha, pooja items, sacred jewellery, and devotional essentials.') ?>">
 <meta name="robots" content="<?= e($metaRobots ?? 'index, follow') ?>">
 <?php $__seoKeywords = $seo['keywords'] ?? ''; if ($__seoKeywords !== ''): ?><meta name="keywords" content="<?= e($__seoKeywords) ?>"><?php endif; ?>
-<?php
-$__settingsService = new \App\Services\SettingsService();
-$__settings = $__settingsService->public();
-$__modules = $__settingsService->modules();
-$__logo = $__settings['logo_url'] ?? '/assets/images/logo-small.jpeg';
-$__favicon = ($__settings['favicon_url'] ?? '') ?: '/assets/images/sps-favicon.svg';
-$__faviconMime = str_contains($__favicon,'.svg') ? 'image/svg+xml' : 'image/png';
-?>
-<link rel="icon" type="<?= e($__faviconMime) ?>" href="<?= e($__favicon) ?>">
+
+<?php if ($__favicon !== ''): ?><link rel="icon" type="<?= e($__faviconMime) ?>" href="<?= e($__favicon) ?>"><?php endif; ?>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#3a0003">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Sri Panchami Spiritual">
-<link rel="apple-touch-icon" href="/assets/images/logo-square.jpeg">
+<meta name="apple-mobile-web-app-title" content="<?= e($__siteName) ?>">
+<?php if ($__referenceSite || $__logo !== ''): ?>
+<link rel="apple-touch-icon" href="<?= e($__referenceSite ? '/assets/images/logo-square.jpeg' : $__logo) ?>">
+<?php endif; ?>
 <link rel="canonical" href="<?= e($seo['canonical']) ?>">
 <link rel="help" href="/ai-assistants" title="Connect an AI assistant">
 <link rel="describedby" type="text/plain" href="/llms.txt" title="Advisory guide for AI assistants">
 <meta property="og:type" content="<?= e($seo['og_type'] ?? 'website') ?>">
-<meta property="og:site_name" content="<?= e($seo['og_site_name'] ?? 'Sri Panchami Spiritual') ?>">
+<meta property="og:site_name" content="<?= e($seo['og_site_name'] ?? $__siteName) ?>">
 <meta property="og:title" content="<?= e($seo['og_title'] ?? $pageTitle) ?>">
 <meta property="og:description" content="<?= e($seo['og_description'] ?? $metaDescription) ?>">
 <meta property="og:url" content="<?= e($seo['og_url']) ?>">
+<?php if (!empty($seo['og_image'])): ?>
 <meta property="og:image" content="<?= e($seo['og_image']) ?>">
+<?php if ($__referenceSite): ?>
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<?php endif; ?>
+<?php endif; ?>
 <meta property="og:locale" content="en_IN">
 <?php if (!empty($seo['twitter_site'])): ?><meta name="twitter:site" content="<?= e($seo['twitter_site']) ?>"><?php endif; ?>
-<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:card" content="<?= !empty($seo['twitter_image']) ? 'summary_large_image' : 'summary' ?>">
 <meta name="twitter:title" content="<?= e($seo['twitter_title'] ?? $seo['og_title'] ?? $pageTitle) ?>">
 <meta name="twitter:description" content="<?= e($seo['twitter_description'] ?? $seo['og_description'] ?? $metaDescription) ?>">
-<meta name="twitter:image" content="<?= e($seo['twitter_image'] ?? $seo['og_image']) ?>">
+<?php if (!empty($seo['twitter_image'])): ?><meta name="twitter:image" content="<?= e($seo['twitter_image']) ?>"><?php endif; ?>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -379,7 +393,10 @@ catch (\RuntimeException) { $__publicProductsOrigin=null; }
 <?php $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/'; ?>
 <?php $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
 <header class="site-header" id="site-header" tabindex="-1">
-    <a href="/" class="brand"><img src="<?= e($__logo) ?>" width="52" height="52" alt="Sri Panchami Spiritual logo"><span>Sri Panchami Spiritual</span></a>
+    <a href="/" class="brand">
+        <?php if ($__logo !== ''): ?><img src="<?= e($__logo) ?>" width="52" height="52" alt="<?= e($__siteName . ' logo') ?>"><?php endif; ?>
+        <span><?= e($__siteName) ?></span>
+    </a>
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Menu">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
@@ -392,7 +409,8 @@ catch (\RuntimeException) { $__publicProductsOrigin=null; }
     <noscript><a class="nojs-menu-open" href="#primary-nav">Menu</a></noscript>
     <nav id="primary-nav" aria-label="Main navigation" tabindex="-1">
         <noscript><a class="nojs-menu-close" href="#site-header">Close menu</a></noscript>
-        <?php foreach ($__settingsService->publicHeaderMenu() as $linkId=>$link): ?>
+        <?php foreach ($__settingsService->publicHeaderMenu() as $linkId=>$link):
+            if ($linkId === 'about') $link['label'] = $__aboutLabel; ?>
             <?php $active = $currentPath === $link['path'] || str_starts_with($currentPath, $link['path'] . '/'); ?>
             <?php if ($linkId === 'blog'): ?>
                 <div class="nav-dropdown">
@@ -480,7 +498,7 @@ if ($__flash):
         <p id="support-commerce-recovery" class="support-commerce__recovery">Delivery details stay in this form and are sent only when you review checkout.</p>
         <button type="button" id="support-commerce-reset" class="support-commerce-back">Clear chat shopping access</button>
     </section>
-    <section id="support-enquiry" class="support-enquiry" aria-label="Send an enquiry to Sri Panchami" hidden>
+    <section id="support-enquiry" class="support-enquiry" aria-label="<?= e('Send an enquiry to ' . $__siteName) ?>" hidden>
         <div class="support-enquiry__head">
             <h2 tabindex="-1">Send an enquiry</h2>
             <button type="button" id="support-enquiry-back" class="support-commerce-back">Back to chat</button>
@@ -503,15 +521,15 @@ if ($__flash):
     <div class="container">
         <div class="footer-grid">
             <div>
-                <span class="footer-brand">Sri Panchami Spiritual</span>
-                <p class="footer-desc">Authentic spiritual products, sacred jewellery, rudraksha, pooja items, and temple guidance.</p>
+                <span class="footer-brand"><?= e($__siteName) ?></span>
+                <?php if ($__footerDescription !== ''): ?><p class="footer-desc"><?= e($__footerDescription) ?></p><?php endif; ?>
             </div>
             <div>
                 <h4 class="footer-heading">Shop</h4>
                 <ul class="footer-links">
                     <?php if ($__modules['shop']): ?><li><a href="/shop">All Products</a></li><?php endif; ?>
                     <li><a href="/temples">Temples</a></li>
-                    <li><a href="/about">About SPS</a></li>
+                    <li><a href="/about"><?= e($__aboutLabel) ?></a></li>
                     <?php if ($__modules['blog']): ?><li><a href="/blog">Blog</a></li><?php endif; ?>
                     <li><a href="/contact">Contact</a></li>
                     <li><a href="/terms">Terms</a></li>
@@ -529,20 +547,26 @@ if ($__flash):
                 <li><a href="/blog/category/<?= e($__cat['slug'] ?? '') ?>"><?= e($__cat['name'] ?? '') ?></a></li>
                 <?php endforeach; ?>
                 <?php endif; ?>
-                <li><a href="/about">About SPS</a></li>
+                <li><a href="/about"><?= e($__aboutLabel) ?></a></li>
                 <li><a href="/contact">Contact</a></li>
             </ul>
             </div>
             <div>
                 <h4 class="footer-heading">Customer Support</h4>
                 <ul class="footer-links">
-                    <li><a href="tel:+919789444037">+91 97894 44037</a></li>
-                    <li><a href="tel:+919789444038">+91 97894 44038</a></li>
-                    <li><a href="mailto:support@sripanchamispiritual.com">support@sripanchamispiritual.com</a></li>
+                    <?php foreach ($__siteContact['phones'] as $phone): ?>
+                    <li><a href="tel:<?= e($phone['number']) ?>"><?= e($phone['label']) ?></a></li>
+                    <?php endforeach; ?>
+                    <?php if (isset($__siteContact['email'])): ?>
+                    <li><a href="mailto:<?= e($__siteContact['email']) ?>"><?= e($__siteContact['email']) ?></a></li>
+                    <?php endif; ?>
+                    <?php if (!$__siteContact['phones'] && !isset($__siteContact['email'])): ?>
+                    <li><a href="/contact#contact-form">Send an enquiry</a></li>
+                    <?php endif; ?>
                 </ul>
             </div>
         </div>
-        <div class="footer-bottom">&copy; <?= date('Y') ?> Sri Panchami Spiritual &middot; <a href="/terms">Terms</a> &middot; <a href="/privacy">Privacy</a> &middot; developed with &#10084;&#65039; by <a href="https://mediahub.bapx.in/" target="_blank" rel="noopener noreferrer">@bapxmediahub</a></div>
+        <div class="footer-bottom">&copy; <?= date('Y') ?> <?= e($__siteName) ?> &middot; <a href="/terms">Terms</a> &middot; <a href="/privacy">Privacy</a> &middot; developed with &#10084;&#65039; by <a href="https://mediahub.bapx.in/" target="_blank" rel="noopener noreferrer">@bapxmediahub</a></div>
     </div>
 </footer>
 <?php endif; ?>

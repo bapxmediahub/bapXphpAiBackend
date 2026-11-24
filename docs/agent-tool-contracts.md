@@ -22,12 +22,12 @@ Source: `app/Services/SupportToolRegistry.php`; instruction version 2.
 
 Private runtime Markdown is not duplicated into developer documentation.
 
-- `.bapX/supportagent.md` — SHA-256 `15ae4e5bd3f606a18ee111098a6f1e81477ad89b90d74db1e7b1f0ccaed2be2f`
+- `.bapX/supportagent.md` — SHA-256 `fae2895879f617ed2aefde742d4d55e2ece190ee1645011173d1a5805eee883d`
 - `.bapX/bapXcl/skill.md` — SHA-256 `bef6836de280f3118cd9e438bcac6babffc1bea6f3c1d85f5fc962c8a01043e9`
 - `.bapX/bapXcl/support/catalog.md` — SHA-256 `0b85f5605a1eee35dcb09a147d8905059508151be9d46465d226a9b0816cc9a6`
 - `.bapX/bapXcl/support/policy-and-tickets.md` — SHA-256 `ed732c56f5da36ac3524940e5170aab9a348c8a68babe7f9d4a55b464abf9138`
 
-Bundle SHA-256: `00366cceb08b06b15e90b4da6e0d75a3c62e330227b82b961ff1b32c12d86973`.
+Bundle SHA-256: `2ad5de312547f533d9c9abab9df4ab9a9c0e083086c133c29ea3b1e3e48482b5`.
 
 ### `public_catalog`
 
@@ -319,13 +319,13 @@ Source: `app/Services/EnterpriseToolRegistry.php`; instruction version 2.
 
 Private runtime Markdown is not duplicated into developer documentation.
 
-- `.bapX/enterpriseagent.md` — SHA-256 `277c6cfa08d3ff912ef7f4d4544a378e68b5df9ec40797388a85398e37ed9d8c`
+- `.bapX/enterpriseagent.md` — SHA-256 `8f13b9e45793e3e1a1172b6d7729208020f2046cf0d9ab10e789fe786f4a30e6`
 - `.bapX/bapXcl/skill.md` — SHA-256 `bef6836de280f3118cd9e438bcac6babffc1bea6f3c1d85f5fc962c8a01043e9`
 - `.bapX/bapXcl/support/catalog.md` — SHA-256 `0b85f5605a1eee35dcb09a147d8905059508151be9d46465d226a9b0816cc9a6`
 - `.bapX/bapXcl/support/policy-and-tickets.md` — SHA-256 `ed732c56f5da36ac3524940e5170aab9a348c8a68babe7f9d4a55b464abf9138`
 - `.bapX/bapXcl/enterprise/reporting.md` — SHA-256 `432827fa7c6fa1d5bc7a57d6a3c77bd4f29832d35fa3dd07df6a09ab55f7f942`
 
-Bundle SHA-256: `2fb0ed19145ffcace10676c41db6431df62fcb24174153333c92f1d3943f4a3e`.
+Bundle SHA-256: `b44e10d59981bfe9388b25b35bda986cddde0e80c8ae66c19d5ca952ccc518a6`.
 
 ### `find_order`
 

@@ -72,39 +72,45 @@ if (PHP_SAPI === 'cli-server' && preg_match('#^/(assets|storage)/#', $uri) === 1
 }
 
 // PWA static files
-$pwaFiles = [
-    '/manifest.json' => 'assets/pwa/manifest-user.json',
-    '/sw.js' => 'assets/pwa/sw-user.js',
-];
-if (isset($pwaFiles[$uri])) {
-    $pwaAsset = __DIR__ . '/' . $pwaFiles[$uri];
-    if (is_file($pwaAsset)) {
-        $mime = str_ends_with($uri, '.json') ? 'application/json' : 'application/javascript';
-        header('Content-Type: ' . $mime);
-        header('Cache-Control: public, max-age=86400');
-        readfile($pwaAsset);
-        exit;
-    }
+if ($uri === '/sw.js') {
+    header('Content-Type: application/javascript; charset=utf-8');
+    header('Cache-Control: public, max-age=86400');
+    readfile(__DIR__ . '/assets/pwa/sw-user.js');
+    exit;
 }
-if ($uri === '/admin/manifest.json') {
-    $manifest = [
-        'name' => 'SPS Admin',
-        'short_name' => 'SPS Admin',
-        'description' => 'Admin panel for Sri Panchami Spiritual.',
-        // Existing installations used the original start URL as their implicit manifest ID.
-        'id' => '/admin',
-        'start_url' => '/admin/',
-        'scope' => '/admin/',
-        'display' => 'standalone',
-        'background_color' => '#222222',
-        'theme_color' => '#3a0003',
+if (in_array($uri, ['/manifest.json', '/admin/manifest.json'], true)) {
+    define('BAPX_PUBLIC_MANIFEST', true);
+    require_once __DIR__ . '/app/bootstrap.php';
+    $profile = \App\Services\SiteProfileService::current();
+    $settings = (new \App\Services\SettingsService())->public();
+    $admin = $uri === '/admin/manifest.json';
+    $manifest = $admin ? [
+        // Keep the installed app's original identity and scope.
+        'id' => '/admin', 'start_url' => '/admin/', 'scope' => '/admin/',
+        'display' => 'standalone', 'background_color' => '#222222', 'theme_color' => '#3a0003',
         'icons' => [
             ['src' => '/assets/images/pwa/icon-192.png', 'sizes' => '192x192', 'type' => 'image/png'],
             ['src' => '/assets/images/pwa/icon-512.png', 'sizes' => '512x512', 'type' => 'image/png'],
         ],
-    ];
-    header('Content-Type: application/json; charset=utf-8');
-    header('Cache-Control: public, max-age=86400');
+    ] : json_decode((string)file_get_contents(__DIR__ . '/assets/pwa/manifest-user.json'), true, flags: JSON_THROW_ON_ERROR);
+    $manifest['name'] = $admin ? $profile->name() . ' Admin' : $profile->name();
+    $manifest['short_name'] = $profile->hasReferenceName() ? ($admin ? 'SPS Admin' : 'SPS') : $manifest['name'];
+    if ($admin) $manifest['description'] = 'Owner workspace for ' . $profile->name() . '.';
+    elseif ($profile->summary() !== '') $manifest['description'] = $profile->summary();
+    elseif ($profile->isReference()) $manifest['description'] = 'Authentic spiritual products and temple guides.';
+    if ($admin && $profile->hasReferenceName()) $manifest['name'] = 'SPS Admin';
+    if (!$profile->isReference()) {
+        $manifest['icons'] = [];
+        foreach (array_unique(array_filter([$settings['logo_url'] ?? null, $settings['favicon_url'] ?? null], 'is_string')) as $url) {
+            if (!preg_match('~^/assets/images/[A-Za-z0-9_./-]+\.(?:png|jpe?g)$~iD', $url) || str_contains($url, '..')) continue;
+            $path = \App\Services\MediaService::storedPathForUrl($url) ?? app_path(ltrim($url, '/'));
+            $image = is_file($path) ? @getimagesize($path) : false;
+            if (!$image || !in_array($image['mime'], ['image/png', 'image/jpeg'], true)) continue;
+            $manifest['icons'][] = ['src' => $url, 'sizes' => $image[0] . 'x' . $image[1], 'type' => $image['mime']];
+        }
+    }
+    header('Content-Type: application/manifest+json; charset=utf-8');
+    header('Cache-Control: no-cache');
     echo json_encode($manifest, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
     exit;
 }

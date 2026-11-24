@@ -14,10 +14,10 @@ flowchart LR
     legend_limits["No execution, autoload or dynamic reachability proof; gaps are inspection candidates"]:::arch
   end
 
-  subgraph ARCH["Architecture Overview — 183 routes, 18 controllers, 86 services, 75 views, 0 data files, 30 tools"]
+  subgraph ARCH["Architecture Overview — 183 routes, 18 controllers, 87 services, 75 views, 0 data files, 30 tools"]
     arch_routes["> Routes: 183 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 18"]:::arch
-    arch_svc["> Services: 86"]:::arch
+    arch_svc["> Services: 87"]:::arch
     arch_views["> Views: 75"]:::arch
     arch_data["> Collections: 24 schema | 0 files"]:::arch
     arch_tools["> Tools: 30"]:::arch
@@ -328,6 +328,7 @@ flowchart LR
     service_settingsservice["SettingsService"]:::code
     service_shippingservice["ShippingService"]:::code
     service_siteinsightsservice["SiteInsightsService"]:::code
+    service_siteprofileservice["SiteProfileService"]:::code
     service_sitetelemetryservice["SiteTelemetryService"]:::code
     service_smtpdeliveryuncertainexception["SmtpDeliveryUncertainException"]:::code
     service_smtpmailer["SmtpMailer"]:::code
@@ -1408,6 +1409,7 @@ flowchart LR
   controller_admincontroller -. static reference .-> service_settingsservice
   controller_admincontroller -. static reference .-> service_shippingservice
   controller_admincontroller -. static reference .-> service_siteinsightsservice
+  controller_admincontroller -. static reference .-> service_siteprofileservice
   controller_admincontroller -. static reference .-> service_sitetelemetryservice
   controller_admincontroller -. static reference .-> service_storestatsservice
   controller_admincontroller -. static reference .-> service_taxservice
@@ -1450,6 +1452,7 @@ flowchart LR
   controller_basecontroller -. source new .-> service_seoservice
   controller_basecontroller -. source new .-> service_settingsservice
   controller_basecontroller -. static reference .-> service_cartservice
+  controller_basecontroller -. static reference .-> service_siteprofileservice
   controller_blogcontroller -. source new .-> service_blogservice
   controller_blogcontroller -- extends --> controller_basecontroller
   controller_blogcontroller -. static reference .-> service_blogservice
@@ -1484,7 +1487,6 @@ flowchart LR
   controller_publiccontroller -. source new .-> service_markdownrenderer
   controller_publiccontroller -. source new .-> service_merchantfeedservice
   controller_publiccontroller -. source new .-> service_productservice
-  controller_publiccontroller -. source new .-> service_publicknowledgeservice
   controller_publiccontroller -. source new .-> service_publicmcpservice
   controller_publiccontroller -. source new .-> service_reviewservice
   controller_publiccontroller -. source new .-> service_secretservice
@@ -1659,6 +1661,7 @@ flowchart LR
   service_publicknowledgeservice -. source new .-> service_settingsservice
   service_publicknowledgeservice -. static reference .-> service_agentcontextservice
   service_publicknowledgeservice -. static reference .-> service_publicsiteurlservice
+  service_publicknowledgeservice -. static reference .-> service_siteprofileservice
   service_publicmcpservice -. source new .-> service_publica2uiservice
   service_publicmcpservice -. source new .-> service_publicknowledgeservice
   service_publicmcpservice -. source new .-> service_remotecartexception
@@ -1706,15 +1709,20 @@ flowchart LR
   service_runtimeagenttoolregistry -. static reference .-> service_agentinstructionservice
   service_runtimeagenttoolregistry -. static reference .-> service_agenttraceservice
   service_runtimeagenttoolregistry -. static reference .-> service_publicknowledgeservice
+  service_runtimeagenttoolregistry -. static reference .-> service_siteprofileservice
   service_runtimehealthservice -. source new .-> service_databaseservice
   service_secretservice -. source new .-> service_databaseservice
   service_secretservice -. static reference .-> service_mcpclientservice
+  service_seoservice -. source new .-> service_settingsservice
   service_seoservice -. static reference .-> service_mediaservice
+  service_seoservice -. static reference .-> service_siteprofileservice
   service_settingsservice -. source new .-> service_authoredpageservice
   service_settingsservice -. source new .-> service_databaseservice
   service_settingsservice -. static reference .-> service_authoredpageservice
   service_shippingservice -. static reference .-> service_taxservice
   service_siteinsightsservice -. static reference .-> service_storestatsservice
+  service_siteprofileservice -. source new .-> service_secretservice
+  service_siteprofileservice -. source new .-> service_settingsservice
   service_sitetelemetryservice -. source new .-> service_auditlogservice
   service_smtpmailer -. source new .-> service_settingsservice
   service_smtpmailer -. source new .-> service_smtpdeliveryuncertainexception

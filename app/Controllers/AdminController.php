@@ -482,13 +482,32 @@ final class AdminController extends BaseController {
         $this->redirect('/admin/temples');
     }
     public function deleteTemple(): void{$this->delete('temples');}
-    public function settings(): void{$this->render('admin/settings',['pageTitle' => 'Settings', 'title' => 'Site Settings', 'settings'=>(new SettingsService())->public(), 'adminCredentials'=>(new EnvService())->adminCredentials()]);}
+    public function settings(): void {
+        header('Cache-Control: private, no-store');
+        $this->render('admin/settings', [
+            'pageTitle' => 'Settings', 'title' => 'Site Settings',
+            'settings' => (new SettingsService())->public(),
+            'adminCredentials' => (new EnvService())->adminCredentials(),
+        ]);
+    }
     public function saveSettings(): void{
-        // The settings page posts several independent forms to this one action, so only
-        // apply the fields actually submitted. Defaulting absent keys would blank out
-        // every field belonging to the other forms (notably the GST configuration).
         $service = new SettingsService();
-        $settings = $service->admin();
+        if (($_POST['save_site_profile'] ?? '') === '1') {
+            try {
+                $changes = \App\Services\SiteProfileService::changes($_POST);
+                $service->savePublic($changes);
+                (new AuditLogService())->record('save', 'settings', 'site-profile', ['fields' => array_keys($changes)]);
+                $this->flash('Public site profile saved.', 'success');
+            } catch (\InvalidArgumentException $error) {
+                $this->flash($error->getMessage(), 'error');
+            } catch (\Throwable $error) {
+                error_log('[settings] site-profile save failed: ' . $error::class);
+                $this->flash('The site profile could not be saved. Try again shortly.', 'error');
+            }
+            $this->redirect('/admin/settings#settings-site-profile');
+        }
+        // Independent settings forms only send the fields they own.
+        $settings = [];
         foreach (['shipping_mode','currency','timezone','gstin','gst_legal_name','gst_trade_name','gst_address','gst_state','gst_state_code','default_hsn_code'] as $key) {
             if (array_key_exists($key, $_POST)) $settings[$key] = trim((string)$_POST[$key]);
         }
@@ -858,7 +877,7 @@ final class AdminController extends BaseController {
         $tools ??= new \App\Services\EnterpriseToolRegistry(ownerQuestion: $message);
         $modelTools = new \App\Services\RuntimeAgentToolRegistry('admin', $_SESSION['user'] ?? null, $tools,$message);
         $prompt = $modelTools->instructionPrompt() . "\n"
-            . "You are the Enterprise Agent for Sri Panchami Spiritual. Answer in plain language.\n"
+            . "Answer in plain language.\n"
             . "The current date in India is {$today}.\n"
             . "You decide what knowledge, instructions and capabilities to retrieve. Use tool_search and read_runtime_skill as needed, inspect results, then formulate the answer. Use the matching read-only tool before making any claim about store records or metrics. "
             . "Tools cover orders, products, coupons, sales, GST, support tickets, store counts and published articles. "

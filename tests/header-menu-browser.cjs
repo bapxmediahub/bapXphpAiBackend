@@ -43,8 +43,29 @@ test('owner edits the public header through remotedb with native controls and co
                 _owner VARCHAR(255), _status VARCHAR(64), _created_at VARCHAR(40), _updated_at VARCHAR(40))");
         }
         if ($store->read('settings')) throw new RuntimeException('An empty disposable settings table is required.');
-        $store->upsert('settings',['id'=>'app_settings','timezone'=>'Asia/Kolkata','module_shop'=>'1','module_blog'=>'1']);`);
+        $store->upsert('settings',['id'=>'legacy_fixture','timezone'=>'Asia/Kolkata',
+            'module_shop'=>'1','module_blog'=>'1','admin_password'=>'synthetic-legacy-plaintext']);`);
         initialized = true;
+        const patches = [
+            "['site_display_name'=>'Menu fixture storefront']",
+            "['flat_rate'=>99]",
+        ];
+        await Promise.all(patches.map(async fields => {
+            const writer = spawn('php',['-r',`
+                require 'app/bootstrap.php';
+                $store = new App\\Services\\DatabaseService(true);
+                for ($attempt = 0; $attempt < 6; ++$attempt) {
+                    $store->upsert('settings', ['id'=>'app_settings'] + ${fields});
+                }
+            `],{cwd:root,env:db,stdio:'ignore'});
+            assert.deepEqual(await once(writer,'exit'),[0,null]);
+        }));
+        const patched = JSON.parse(direct("echo json_encode($store->find('settings','app_settings'));"));
+        assert.equal(patched.site_display_name,'Menu fixture storefront');
+        assert.equal(patched.flat_rate,99);
+        assert.equal(patched.timezone,'Asia/Kolkata');
+        assert.equal(Object.hasOwn(patched,'admin_password'),false);
+
         php('session_id("'+session+'"); session_start(); $_SESSION["user"]=["id"=>"owner","role"=>"admin","email"=>"header-menu-fixture@example.test"]; session_write_close();');
         const bridgePort = await freePort();
         const bridge = spawn('php',['-S','127.0.0.1:'+bridgePort,'index.php'],{cwd:root,env:db,stdio:'ignore'});
@@ -138,11 +159,11 @@ test('owner edits the public header through remotedb with native controls and co
         assert(await visitor.locator('footer a[href^="/blog/category/"]').count()>0);
         const audit = direct("echo count(array_filter($store->read('audit_events'),fn($e)=>$e['resource_id']==='header_menu' && $e['actor_email']==='header-menu-fixture@example.test'));");
         assert.equal(audit,'2');
-        assert.equal(direct("$store->delete('settings','app_settings'); $settings=new App\\Services\\SettingsService($store); echo json_encode([$settings->public()['shipping_mode'],$settings->headerMenu()['items']]);"),'["free",[]]');
+        assert.equal(direct("$store->delete('settings','app_settings'); $store->delete('settings','legacy_fixture'); $settings=new App\\Services\\SettingsService($store); echo json_encode([$settings->public()['shipping_mode'],$settings->headerMenu()['items']]);"),'["free",[]]');
     } finally {
         await browser?.close();
         for (const server of servers) server.kill();
-        if(initialized) direct("$store->delete('settings','app_settings'); $store->delete('settings','header_menu'); $store->delete('settings','pg:festival-hours'); foreach ($store->read('audit_events') as $event) if ($event['actor_email']==='header-menu-fixture@example.test' && in_array($event['resource_id'],['header_menu','public'],true)) $store->delete('audit_events',$event['id']);");
+        if(initialized) direct("$store->delete('settings','app_settings'); $store->delete('settings','legacy_fixture'); $store->delete('settings','header_menu'); $store->delete('settings','pg:festival-hours'); foreach ($store->read('audit_events') as $event) if ($event['actor_email']==='header-menu-fixture@example.test' && in_array($event['resource_id'],['header_menu','public'],true)) $store->delete('audit_events',$event['id']);");
         await rm(temp,{recursive:true,force:true});
     }
 });

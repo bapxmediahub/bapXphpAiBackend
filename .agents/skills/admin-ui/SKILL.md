@@ -29,6 +29,11 @@ badge and reset visible when the disclosure closes. Verify combined criteria
 and pagination without JavaScript, native keyboard expansion, IST dates and
 stacked order history at 375px with synthetic accounts.
 
+The Public Site Profile is a native Site Settings form for published fields.
+Keep its save and validation independent of SMTP, credentials, appearance and
+module controls. Test valid and rejected saves and keyboard feedback at 375px
+with JavaScript disabled, using synthetic owner installations.
+
 ## Admin Panel Agent
 
 The interface at `/admin/agent` is the Enterprise Agent chat workspace.

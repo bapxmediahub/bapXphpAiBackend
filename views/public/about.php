@@ -5,8 +5,10 @@
             <div class="about-hero__copy">
                 <p class="about-kicker">About <?= e($seo['og_site_name']) ?></p>
                 <h1><?= e($about['headline']) ?></h1>
-                <p class="about-hero__lede"><?= e($about['intro']) ?></p>
-                <a class="about-hero__link" href="#our-story">Discover our story <span aria-hidden="true">↓</span></a>
+                <?php if ($about['intro'] !== ''): ?><p class="about-hero__lede"><?= e($about['intro']) ?></p><?php endif; ?>
+                <?php if ($about['story']['paragraphs']): ?>
+                    <a class="about-hero__link" href="#our-story">Discover our story <span aria-hidden="true">↓</span></a>
+                <?php endif; ?>
             </div>
             <?php if (!empty($about['hero_image'])): $image = $about['hero_image']; ?>
                 <div class="about-hero__visual">
@@ -16,6 +18,7 @@
         </div>
     </header>
 
+    <?php if ($about['story']['paragraphs']): ?>
     <section class="about-section" id="our-story" aria-labelledby="about-story-title">
         <div class="container about-story">
             <?php if (!empty($about['story']['image'])): $image = $about['story']['image']; ?>
@@ -27,7 +30,7 @@
                 </figure>
             <?php endif; ?>
             <div class="about-story__copy">
-                <p class="about-kicker"><?= e($about['story']['eyebrow']) ?></p>
+                <?php if ($about['story']['eyebrow'] !== ''): ?><p class="about-kicker"><?= e($about['story']['eyebrow']) ?></p><?php endif; ?>
                 <h2 id="about-story-title"><?= e($about['story']['title']) ?></h2>
                 <?php foreach ($about['story']['paragraphs'] as $paragraph): ?>
                     <p><?= e($paragraph) ?></p>
@@ -35,6 +38,8 @@
             </div>
         </div>
     </section>
+
+    <?php endif; ?>
 
     <?php if ($aboutPaths): ?>
     <section class="about-section about-explore" aria-labelledby="about-explore-title">
@@ -63,15 +68,19 @@
                     <h2 id="about-contact-title"><?= e($about['contact_title']) ?></h2>
                     <p><?= e($about['contact_intro']) ?></p>
                 </div>
+                <?php if ($publicContact['phones'] || isset($publicContact['email']) || $publicContact['hours']): ?>
                 <address class="about-contact__details">
                     <?php foreach ($publicContact['phones'] as $phone): ?>
                         <a href="tel:<?= e($phone['number']) ?>"><?= e($phone['label']) ?></a>
                     <?php endforeach; ?>
-                    <a href="mailto:<?= e($publicContact['email']) ?>"><?= e($publicContact['email']) ?></a>
+                    <?php if (isset($publicContact['email'])): ?>
+                        <a href="mailto:<?= e($publicContact['email']) ?>"><?= e($publicContact['email']) ?></a>
+                    <?php endif; ?>
                     <?php foreach ($publicContact['hours'] as $slot): ?>
                         <span><?= e($slot['days']) ?> · <?= e($slot['hours']) ?></span>
                     <?php endforeach; ?>
                 </address>
+                <?php endif; ?>
             </div>
             <div class="page-cta-card about-contact__cta">
                 <div>

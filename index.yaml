@@ -46,7 +46,7 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 500
+  concepts: 501
   relationships: 448
   by_type:
     blog: 16
@@ -57,7 +57,7 @@ summary:
     route: 182
     runtime_instruction: 6
     schema: 24
-    service: 86
+    service: 87
     skill: 12
 concepts:
   - id: "blog:benefits-of-rudraksha"
@@ -6152,6 +6152,14 @@ concepts:
     title: "SiteInsightsService"
     description: "Service: SiteInsightsService"
     resource: "app/Services/SiteInsightsService.php"
+    tags:
+      - "code"
+      - "service"
+  - id: "service:SiteProfileService"
+    type: "service"
+    title: "SiteProfileService"
+    description: "Service: SiteProfileService"
+    resource: "app/Services/SiteProfileService.php"
     tags:
       - "code"
       - "service"

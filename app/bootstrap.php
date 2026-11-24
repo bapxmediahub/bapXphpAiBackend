@@ -13,7 +13,9 @@ $publicMcpRequest=defined('BAPX_PUBLIC_MCP_REQUEST') && BAPX_PUBLIC_MCP_REQUEST=
     && PHP_SAPI!=='cli' && parse_url((string)($_SERVER['REQUEST_URI']??''),PHP_URL_PATH)==='/api/mcp';
 $paymentWebhookRequest=defined('BAPX_PAYMENT_WEBHOOK_REQUEST') && BAPX_PAYMENT_WEBHOOK_REQUEST===true
     && PHP_SAPI!=='cli' && parse_url((string)($_SERVER['REQUEST_URI']??''),PHP_URL_PATH)==='/api/payments/razorpay-webhook';
-if (!$publicMcpRequest && !$paymentWebhookRequest) {
+$publicManifestRequest=defined('BAPX_PUBLIC_MANIFEST') && BAPX_PUBLIC_MANIFEST===true
+    && in_array(parse_url((string)($_SERVER['REQUEST_URI']??''),PHP_URL_PATH), ['/manifest.json','/admin/manifest.json'], true);
+if (!$publicMcpRequest && !$paymentWebhookRequest && !$publicManifestRequest) {
 ini_set('session.gc_maxlifetime', (string)(60 * 60 * 24 * 30));
 session_set_cookie_params([
     'lifetime' => 60 * 60 * 24 * 30,

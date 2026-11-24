@@ -6,6 +6,7 @@ require dirname(__DIR__,2).'/app/bootstrap.php';
 $_SESSION=['csrf_token'=>'fixture-csrf'];
 $shopEnabled=!in_array('--shop-disabled',$argv??[],true);
 $__modules=['shop'=>$shopEnabled,'blog'=>true];
+$__siteName='Fixture shop';
 $currentPath='/';
 $source=file_get_contents(app_path('views/layouts/app.php'));
 $start=strpos($source,"<?php if (!in_array(rtrim(\$currentPath, '/'), ['/login', '/register', '/contact'], true)): ?>");

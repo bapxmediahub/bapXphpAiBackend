@@ -1,7 +1,4 @@
 {
-  "name": "Sri Panchami Spiritual",
-  "short_name": "SPS",
-  "description": "Authentic spiritual products, online astrology consultation, and temple guides.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

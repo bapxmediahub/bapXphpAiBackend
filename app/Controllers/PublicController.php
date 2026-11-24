@@ -6,13 +6,16 @@ final class PublicController extends BaseController {
     public function home(): void {
         $this->detectApiRequest();
         $this->seoKey = 'home';
-        $categoryService = new CategoryService();
-        $categories = $categoryService->all();
-        $productService = new ProductService();
-        $products = $productService->visible();
-        try { $bestSellers = $productService->bestSellers($products); }
-        catch (\Throwable $e) { $bestSellers = []; error_log('Best sellers unavailable: ' . $e->getMessage()); }
-        $homeCollections = $categoryService->homeCollections($products);
+        $categories = $products = $bestSellers = $homeCollections = [];
+        if (module_on('shop')) {
+            $categoryService = new CategoryService();
+            $categories = $categoryService->all();
+            $productService = new ProductService();
+            $products = $productService->visible();
+            try { $bestSellers = $productService->bestSellers($products); }
+            catch (\Throwable $e) { error_log('Best sellers unavailable: ' . $e->getMessage()); }
+            $homeCollections = $categoryService->homeCollections($products);
+        }
         $temples = (new TempleService())->all();
         $this->render('public/home', [
             'products' => $products,
@@ -79,9 +82,9 @@ final class PublicController extends BaseController {
     public function about(): void { 
         $this->detectApiRequest();
         $this->seoKey = 'about';
-        $about = require app_path('config/about.php');
+        $about = $this->siteProfile()->about();
         $aboutPaths = self::aboutPathways($about, (new SettingsService())->modules());
-        $publicContact = (new \App\Services\PublicKnowledgeService())->contact();
+        $publicContact = $this->siteProfile()->contact();
         $this->seoOverrides = ['description' => $about['intro'], 'canonical' => $this->siteUrl('/about')];
         $this->render('public/about', compact('about', 'aboutPaths', 'publicContact'));
     }
@@ -101,7 +104,7 @@ final class PublicController extends BaseController {
     public function aiAssistants(): void {
         $document=$this->publicAssistantGuide();
         $this->seoOverrides=[
-            'title'=>$document['title'].' | Sri Panchami Spiritual',
+            'title'=>$document['title'].' | '.$this->siteProfile()->name(),
             'description'=>'Connect a compatible AI assistant to published products, guides, contact details and enquiry options.',
             'canonical'=>$this->siteUrl('/ai-assistants'),
         ];
@@ -121,7 +124,8 @@ final class PublicController extends BaseController {
         $origin=(new \App\Services\PublicMcpService())->origin();
         $raw=file_get_contents(app_path('content/ai-assistants.md'));
         if($raw===false)throw new \RuntimeException('Public assistant guide unavailable.');
-        $text=str_replace(['{{SITE_URL}}','{{MCP_URL}}'],[$origin,$origin.'/api/mcp'],$raw);
+        $name = $this->siteProfile()->name();
+        $text=strtr($raw,['{{SITE_URL}}'=>$origin,'{{MCP_URL}}'=>$origin.'/api/mcp','{{SITE_NAME}}'=>$name]);
         preg_match('/^#\s+(.+)$/m',$text,$heading);
         $body=trim((string)preg_replace('/^#\s+.+\R?/m','',$text,1));
         return ['title'=>$heading[1]??'AI assistants','text'=>$text,
@@ -167,7 +171,7 @@ final class PublicController extends BaseController {
         if (!$temple) $this->renderNotFound();
         $this->seoKey = 'temple';
         $this->seoOverrides = [
-            'title' => ($temple['name'] ?? 'Temple') . ' – Temple Timings, Address, Pooja & Darshan at Sri Panchami Spiritual',
+            'title' => ($temple['name'] ?? 'Temple') . ' – Temple Timings, Address, Pooja & Darshan at ' . $this->siteProfile()->name(),
             'description' => 'Explore ' . ($temple['name'] ?? 'this temple') . ' with detailed guide including timings, address, location map, and available pooja services. ' . ($temple['description'] ?? ''),
             'og_image' => $temple['image_url'] ?? '',
         ];
@@ -209,8 +213,8 @@ final class PublicController extends BaseController {
             }
             if ($catName) {
                 $this->seoOverrides = [
-                    'title' => 'Buy ' . $catName . ' Online – Spiritual Products at Sri Panchami Spiritual',
-                    'description' => 'Shop authentic ' . $catName . ' online at Sri Panchami Spiritual. Browse our collection of sacred items for your spiritual practice. Fast shipping across India.',
+                    'title' => 'Buy ' . $catName . ' Online – Spiritual Products at ' . $this->siteProfile()->name(),
+                    'description' => 'Shop authentic ' . $catName . ' online at ' . $this->siteProfile()->name() . '. Browse our collection of sacred items for your spiritual practice. Fast shipping across India.',
                 ];
             }
         }
@@ -252,8 +256,8 @@ final class PublicController extends BaseController {
             $price = $product['offer_price'] ?? $product['price'] ?? 0;
             $schema = (new SeoService((new SecretService())->all()))->productSchema($product);
             $this->seoOverrides = [
-                'title' => ($product['name'] ?? 'Product') . ' – Buy Online at Sri Panchami Spiritual',
-                'description' => 'Buy ' . ($product['name'] ?? 'this product') . ' online at Sri Panchami Spiritual. ' . ($product['description'] ?? '') . ' Price: ₹' . $price . '. Authentic spiritual product with fast shipping.',
+                'title' => ($product['name'] ?? 'Product') . ' – Buy Online at ' . $this->siteProfile()->name(),
+                'description' => 'Buy ' . ($product['name'] ?? 'this product') . ' online at ' . $this->siteProfile()->name() . '. ' . ($product['description'] ?? '') . ' Price: ₹' . $price . '. Authentic spiritual product with fast shipping.',
                 'og_image' => $product['image_url'] ?? '',
                 'json_ld' => '<script type="application/ld+json">' . json_encode($schema) . '</script>',
             ];
@@ -337,10 +341,19 @@ final class PublicController extends BaseController {
             '/', '/about', '/ai-assistants', '/temples', '/shop', '/contact', '/blog',
             '/terms', '/privacy', '/spiritual',
         ];
+        $modules = (new SettingsService())->modules(requireReadable: true);
+        $pages = array_diff($pages, array_keys(array_filter([
+            '/shop' => !$modules['shop'],
+            '/blog' => !$modules['blog'],
+        ])));
         $products = [];
-        try { $products = (new ProductService())->visible(); } catch (\Throwable) {}
+        if ($modules['shop']) {
+            try { $products = (new ProductService())->visible(); } catch (\Throwable) {}
+        }
         $blogPosts = [];
-        try { $blogPosts = (new BlogService())->all(); } catch (\Throwable) {}
+        if ($modules['blog']) {
+            try { $blogPosts = (new BlogService())->all(); } catch (\Throwable) {}
+        }
 
         foreach ((new \App\Services\AuthoredPageService())->published() as $page) {
             $pages[] = '/pages/'.rawurlencode($page['slug']);
@@ -374,7 +387,7 @@ final class PublicController extends BaseController {
         $this->detectApiRequest();
         $this->seoKey = 'contact';
         $subjects = \App\Services\PublicKnowledgeService::contactSubjects();
-        $publicContact = (new \App\Services\PublicKnowledgeService())->contact();
+        $publicContact = $this->siteProfile()->contact();
         $submission = array_fill_keys(['name', 'email', 'phone', 'subject', 'message'], '');
         $submission['subject'] = is_string($_GET['subject'] ?? null) ? $_GET['subject'] : '';
         $errors = [];

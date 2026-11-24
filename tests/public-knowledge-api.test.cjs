@@ -33,7 +33,7 @@ require getcwd().'/index.php';
 `);
     const request = async (uri, method = 'GET', configuredOrigin = 'https://public.example') => {
         const result = await execute('php', [fixture, uri, method, configuredOrigin], {
-            cwd: root, env: { ...process.env, BAPX_TEST_MODE: '1', APP_URL: 'https://public.example' },
+            cwd: root, env: { ...process.env, BAPX_TEST_MODE: '1', APP_URL: 'https://public.example', APP_NAME: 'Public Fixture' },
             timeout: 15000, maxBuffer: 1024 * 1024,
         });
         const status = /STATUS:(\d+)/.exec(result.stderr);
@@ -42,6 +42,7 @@ require getcwd().'/index.php';
     };
     try {
         const expected = (await readFile(join(root, 'content/ai-assistants.md'), 'utf8'))
+            .replaceAll('{{SITE_NAME}}', 'Public Fixture')
             .replaceAll('{{SITE_URL}}', 'https://public.example')
             .replaceAll('{{MCP_URL}}', 'https://public.example/api/mcp');
         for (const uri of ['/llms.txt', '/llms.txt?agent=fixture']) {
@@ -51,7 +52,7 @@ require getcwd().'/index.php';
         }
         const guide = await request('/ai-assistants');
         assert.equal(guide.status, 200, 'The public guide must pass the same entry gate');
-        assert.match(guide.body, /<h1\b[^>]*>Use Sri Panchami with an AI assistant<\/h1>/);
+        assert.match(guide.body, /<h1\b[^>]*>Use Public Fixture with an AI assistant<\/h1>/);
         assert.ok(guide.body.includes('https://public.example/api/mcp'));
         assert.ok(guide.body.includes('https://public.example/api/agent-tools'));
         const discovery = await request('/api/agent-tools');
@@ -99,7 +100,7 @@ register_shutdown_function(static function():void { fwrite(STDERR,"\\nSTATUS:".(
     const call = async (method, args) => {
         const result = await execute('php', [fixture, method, JSON.stringify(args)], {
             cwd: root,
-            env: { ...process.env, BAPX_TEST_MODE: '1' },
+            env: { ...process.env, BAPX_TEST_MODE: '1', APP_URL:'https://sripanchamispiritual.com' },
             timeout: 15000,
             maxBuffer: 1024 * 128,
         });

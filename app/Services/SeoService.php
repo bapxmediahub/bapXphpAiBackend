@@ -4,28 +4,30 @@ final class SeoService {
     private string $siteName;
     private string $defaultOgImage;
     private string $twitterHandle;
-    private array $telephone;
+    private SiteProfileService $profile;
     private string $baseUrl;
 
-    public function __construct(array $secrets = [], ?string $configuredUrl = null) {
+    public function __construct(array $secrets = [], ?string $configuredUrl = null, ?SiteProfileService $profile = null) {
         $configuredUrl ??= (string)(require app_path('config/database.php'))['app_url'];
         $parts=parse_url($configuredUrl);
         if(!self::validWebUrl($configuredUrl)||!is_array($parts)||isset($parts['query'])||isset($parts['fragment'])) {
             throw new \RuntimeException('A valid canonical APP_URL is required.');
         }
         $this->baseUrl=rtrim($configuredUrl,'/');
-        $envName = getenv('APP_NAME') ?: 'Sri Panchami Spiritual';
-        $this->siteName = trim((string)($secrets['seo_site_name'] ?? '')) ?: $envName;
-        $this->defaultOgImage='';
-        foreach(['/assets/images/og-image.jpg','/assets/images/hero-temple-bg.webp'] as $fallback){
-            if($this->localImageExists($fallback)){$this->defaultOgImage=$this->pageUrl($fallback);break;}
+        $this->profile = $profile ?? SiteProfileService::current($secrets, $configuredUrl);
+        $this->siteName = $this->profile->name();
+        $this->defaultOgImage = '';
+        if ($this->profile->isReference()) {
+            foreach (['/assets/images/og-image.jpg', '/assets/images/hero-temple-bg.webp'] as $fallback) {
+                if ($this->localImageExists($fallback)) {
+                    $this->defaultOgImage = $this->pageUrl($fallback);
+                    break;
+                }
+            }
         }
-        if($this->defaultOgImage==='')throw new \RuntimeException('A shipped social-preview fallback image is required.');
         $this->defaultOgImage=$this->imageUrl((string)($secrets['seo_default_og_image']??''));
         $handle = trim((string)($secrets['seo_twitter_handle'] ?? ''));
         $this->twitterHandle = preg_match('/^@?[A-Za-z0-9_]{1,15}$/D', $handle) ? '@' . ltrim($handle, '@') : '';
-        $phone = $secrets['phone'] ?? getenv('CONTACT_PHONE') ?: '';
-        $this->telephone = $phone !== '' ? [$phone] : ['+919789444037', '+919789444038'];
     }
 
     public function page(string $key, array $overrides = []): array {
@@ -49,6 +51,8 @@ final class SeoService {
         $meta['organization_json_ld'] = $this->jsonLdScript($this->organizationSchema());
         if ($key === 'about') {
             $meta['about_json_ld'] = $this->jsonLdScript($this->aboutPageSchema($meta['description'], $meta['canonical']));
+        } elseif ($key === 'contact') {
+            $meta['contact_json_ld'] = $this->jsonLdScript($this->contactPageSchema($meta['canonical']));
         }
         $meta['twitter_title'] ??= $meta['og_title'] ?? $meta['title'];
         $meta['twitter_description'] ??= $meta['og_description'] ?? $meta['description'];
@@ -63,14 +67,17 @@ final class SeoService {
         $desc = 'Shop authentic spiritual products, sacred jewellery, pooja items, and devotional essentials.';
         $maps = [
             'home' => [
-                'title' => $brand . ' – Spiritual Products, Sacred Jewellery & Temple Guide',
-                'description' => 'Shop authentic spiritual products, rudraksha, pooja items, and sacred jewellery for your devotional practice.',
+                'title' => $this->profile->isReference() ? $brand . ' – Spiritual Products, Sacred Jewellery & Temple Guide' : $brand,
+                'description' => $this->profile->summary() ?: ($this->profile->isReference()
+                    ? 'Shop authentic spiritual products, rudraksha, pooja items, and sacred jewellery for your devotional practice.' : $brand),
                 'og_type' => 'website',
                 'robots' => 'index, follow',
             ],
             'shop' => [
-                'title' => 'Shop Spiritual Products – Rudraksha, Pooja Items, Sacred Jewellery Online',
-                'description' => 'Browse authentic spiritual products online at ' . $brand . '. Shop rudraksha, pooja items, sacred jewellery, and more for your spiritual practice. Fast shipping across India.',
+                'title' => $this->profile->isReference() ? 'Shop Spiritual Products – Rudraksha, Pooja Items, Sacred Jewellery Online' : 'Shop – ' . $brand,
+                'description' => $this->profile->isReference()
+                    ? 'Browse authentic spiritual products online at ' . $brand . '. Shop rudraksha, pooja items, sacred jewellery, and more for your spiritual practice. Fast shipping across India.'
+                    : 'Browse available products from ' . $brand . '.',
                 'og_type' => 'website',
                 'robots' => 'index, follow',
             ],
@@ -82,19 +89,21 @@ final class SeoService {
             ],
             'consult' => [
                 'title' => 'Spiritual Products & Temple Guidance',
-                'description' => 'Discover authentic spiritual products, devotional essentials, and temple guidance from Sri Panchami Spiritual.',
+                'description' => 'Discover authentic spiritual products, devotional essentials, and temple guidance from ' . $brand . '.',
                 'og_type' => 'website',
                 'robots' => 'index, follow',
             ],
             'astrologer' => [
                 'title' => 'Spiritual Products & Temple Guidance',
-                'description' => 'Discover authentic spiritual products, devotional essentials, and temple guidance from Sri Panchami Spiritual.',
+                'description' => 'Discover authentic spiritual products, devotional essentials, and temple guidance from ' . $brand . '.',
                 'og_type' => 'profile',
                 'robots' => 'index, follow',
             ],
             'temples' => [
-                'title' => 'Temples in Tamil Nadu – Temple Guide, Address & Pooja Services',
-                'description' => 'Explore temples across Tamil Nadu with detailed guides including addresses and available visitor information. Plan your temple visit with ' . $brand . '.',
+                'title' => $this->profile->isReference() ? 'Temples in Tamil Nadu – Temple Guide, Address & Pooja Services' : 'Temple guides – ' . $brand,
+                'description' => $this->profile->isReference()
+                    ? 'Explore temples across Tamil Nadu with detailed guides including addresses and available visitor information. Plan your temple visit with ' . $brand . '.'
+                    : 'Browse published temple guides from ' . $brand . '.',
                 'og_type' => 'website',
                 'robots' => 'index, follow',
             ],
@@ -106,13 +115,15 @@ final class SeoService {
             ],
             'about' => [
                 'title' => 'About ' . $brand,
-                'description' => 'Learn about ' . $brand . ', our products, purpose and customer support.',
+                'description' => $this->profile->summary() ?: 'Learn about ' . $brand . '.',
                 'og_type' => 'website',
                 'robots' => 'index, follow',
             ],
             'contact' => [
-                'title' => 'Contact ' . $brand . ' – Spiritual Products & Support',
-                'description' => 'Reach out to ' . $brand . ' for inquiries about spiritual products, temple pooja services, order support, or bulk orders. Call or email us.',
+                'title' => 'Contact ' . $brand . ($this->profile->isReference() ? ' – Spiritual Products & Support' : ''),
+                'description' => $this->profile->isReference()
+                    ? 'Reach out to ' . $brand . ' for inquiries about spiritual products, temple pooja services, order support, or bulk orders.'
+                    : 'Send a message to ' . $brand . ' using the contact form.',
                 'og_type' => 'website',
                 'robots' => 'index, follow',
             ],
@@ -216,15 +227,21 @@ final class SeoService {
     }
 
     public function organizationSchema(): array {
-        return [
+        $contact = $this->profile->contact();
+        $organization = [
             '@context' => 'https://schema.org',
-            '@type' => ['Organization', 'OnlineStore'],
+            '@type' => (new SettingsService())->moduleEnabled('shop') ? ['Organization', 'OnlineStore'] : 'Organization',
             'name' => $this->siteName,
-            'description' => 'Authentic spiritual products, sacred jewellery, pooja essentials, and temple guidance.',
             'url' => $this->pageUrl(''),
-            'telephone' => $this->telephone,
-            'email' => 'support@sripanchamispiritual.com',
         ];
+        $description = $this->profile->summary();
+        if ($description === '' && $this->profile->isReference()) {
+            $description = 'Authentic spiritual products, sacred jewellery, pooja essentials, and temple guidance.';
+        }
+        if ($description !== '') $organization['description'] = $description;
+        if ($contact['phones']) $organization['telephone'] = array_column($contact['phones'], 'number');
+        if (isset($contact['email'])) $organization['email'] = $contact['email'];
+        return $organization;
     }
 
     public function breadcrumbSchema(array $items): array {
@@ -289,12 +306,13 @@ final class SeoService {
         ];
     }
 
-    public function contactPageSchema(): array {
+    public function contactPageSchema(?string $canonical = null): array {
         return [
             '@context' => 'https://schema.org',
             '@type' => 'ContactPage',
             'name' => 'Contact ' . $this->siteName,
-            'description' => 'Get in touch with ' . $this->siteName . ' for spiritual products, order support, and temple pooja services.',
+            'description' => $this->defaults('contact')['description'],
+            'url' => $this->overrideUrl($canonical) ?? $this->pageUrl('/contact'),
             'mainEntity' => $this->organizationSchema(),
         ];
     }
