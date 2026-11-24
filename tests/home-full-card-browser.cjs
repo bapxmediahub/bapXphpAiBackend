@@ -141,3 +141,44 @@ test('hero has eleven dot controls, stable frame and accessible rotation', {time
   assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
  } finally {await b.close();}
 });
+
+test('delayed manual portrait survives focus changes; covered artwork never restarts autoplay', {timeout:30000}, async()=>{
+ const b=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined,headless:true,args:['--no-sandbox']});
+ try {
+  const p=await b.newPage({viewport:{width:1280,height:900}});
+  await setup(p);
+  const root=p.locator('[data-varahi-slider]');
+  const dots=root.locator('[data-portrait-index]');
+  await p.evaluate(()=>{
+   const original=HTMLImageElement.prototype.decode;
+   HTMLImageElement.prototype.decode=function(){
+    if(this.closest('[data-varahi-slider]')&&this.src.includes('varahi-10.webp')){
+     const image=this;
+     return new Promise((resolve,reject)=>{window.releasePortrait=()=>original.call(image).then(resolve,reject);});
+    }
+    return original.call(this);
+   };
+  });
+  await dots.nth(10).click();
+  await p.waitForFunction(()=>typeof window.releasePortrait==='function');
+  await dots.nth(9).focus();
+  await p.evaluate(()=>window.releasePortrait());
+  await p.waitForFunction(()=>document.querySelector('[data-varahi-slider]').dataset.activeIndex==='10',{},{timeout:2000});
+  await root.getByRole('button',{name:'Play automatic portraits'}).click();
+  await p.mouse.move(1,1);
+  await p.evaluate(()=>{
+   document.activeElement.blur();
+   const frame=document.querySelector('[data-varahi-slider] .deity-frame').getBoundingClientRect();
+   const cover=document.createElement('div');
+   cover.id='test-portrait-cover';
+   Object.assign(cover.style,{position:'fixed',left:frame.left+'px',top:frame.top+'px',width:frame.width+'px',height:frame.height+'px',zIndex:'2147483647',background:'#fff'});
+   document.body.append(cover);
+   window.dispatchEvent(new Event('scroll'));
+   document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await p.waitForTimeout(2300);
+  assert.equal(await root.getAttribute('data-active-index'),'10','Covered artwork must not restart');
+  await p.evaluate(()=>{document.querySelector('#test-portrait-cover').remove();window.dispatchEvent(new Event('scroll'));});
+  await p.waitForFunction(()=>document.querySelector('[data-varahi-slider]').dataset.activeIndex==='0',{},{timeout:6000});
+ } finally {await b.close();}
+});

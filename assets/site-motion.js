@@ -241,6 +241,8 @@
             var status = controls.querySelector('[data-portrait-status]');
             if (!rotation || !status || dots.length !== slides.length) return;
             var current = 0, timer = null, request = 0;
+            var pending = false, pendingAutomatic = false;
+            var frame = root.querySelector(".deity-frame");
             var playing = true, hovering = false, visible = false;
             function stopTimer() {
                 if (timer !== null) win.clearTimeout(timer);
@@ -255,15 +257,34 @@
                 rotation.firstElementChild.textContent = enabled ? 'Ⅱ' : '▶';
                 status.setAttribute('aria-live', enabled ? 'off' : 'polite');
             }
+            function artworkVisible() {
+                if (!visible || !frame) return false;
+                var box = frame.getBoundingClientRect();
+                var hit = doc.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+                return !!hit && root.contains(hit);
+            }
+            function canRotate() {
+                return isPlaying() && !hovering && artworkVisible();
+            }
+            function cancelAutomatic() {
+                stopTimer();
+                if (pending && pendingAutomatic) {
+                    request++;
+                    pending = pendingAutomatic = false;
+                }
+            }
             function schedule() {
                 stopTimer();
                 renderRotation();
-                if (!isPlaying() || hovering || !visible) return;
-                timer = win.setTimeout(function () { selectPortrait(current + 1, true); }, 2000);
+                if (pending || !canRotate()) return;
+                timer = win.setTimeout(function () {
+                    timer = null;
+                    if (canRotate()) selectPortrait(current + 1, true);
+                }, 2000);
             }
             function pause() {
                 playing = false;
-                request++;
+                cancelAutomatic();
                 schedule();
             }
             function selectPortrait(index, automatic) {
@@ -271,9 +292,17 @@
                 var next = (index + slides.length) % slides.length;
                 var ticket = ++request;
                 var image = slides[next];
+                pending = true;
+                pendingAutomatic = automatic;
+                function finish() {
+                    if (ticket !== request) return false;
+                    pending = pendingAutomatic = false;
+                    return true;
+                }
+                function fail() { if (finish()) schedule(); }
                 function apply() {
-                    if (ticket !== request) return;
-                    if (automatic && (!isPlaying() || hovering || !visible)) { schedule(); return; }
+                    if (!finish()) return;
+                    if (automatic && !canRotate()) { schedule(); return; }
                     if (!image.naturalWidth) { schedule(); return; }
                     slides[current].classList.remove('is-active');
                     slides[current].setAttribute('aria-hidden', 'true');
@@ -288,11 +317,11 @@
                 }
                 // Do not fade to an unloaded image; keep the current artwork visible.
                 image.loading = 'eager';
-                if (typeof image.decode === 'function') image.decode().then(apply, function () { if (ticket === request) schedule(); });
+                if (typeof image.decode === 'function') image.decode().then(apply, fail);
                 else if (image.complete) apply();
                 else {
                     image.addEventListener('load', apply, { once: true });
-                    image.addEventListener('error', function () { if (ticket === request) schedule(); }, { once: true });
+                    image.addEventListener('error', fail, { once: true });
                 }
             }
             controls.querySelectorAll('[data-portrait-step]').forEach(function (button) {
@@ -309,37 +338,40 @@
                 var wasPlaying = pointerAction === null ? isPlaying() : pointerAction;
                 pointerAction = null;
                 playing = !wasPlaying && canMove();
-                request++;
+                cancelAutomatic();
                 schedule();
             });
             root.addEventListener('focusin', function () { pause(); });
             root.addEventListener('pointerenter', function (event) {
-                if (event.pointerType === 'mouse') { hovering = true; request++; schedule(); }
+                if (event.pointerType === 'mouse') { hovering = true; cancelAutomatic(); schedule(); }
             });
             root.addEventListener('pointerleave', function () { hovering = false; schedule(); });
             if (typeof win.IntersectionObserver === 'function') {
                 new win.IntersectionObserver(function (entries) {
                     visible = entries[0].isIntersecting && entries[0].intersectionRatio >= 0.5;
-                    if (!visible) request++;
+                    if (!visible) cancelAutomatic();
                     schedule();
                 }, { threshold: [0, 0.5] }).observe(root);
             }
             // Sticky cards may be geometrically visible but painted under a later slide.
             // Check the actual artwork hit target during native scrolling.
+            var coverCheckQueued = false;
             function checkCover() {
-                if (!visible || !playing) return;
-                var box = root.querySelector('.deity-frame').getBoundingClientRect();
-                var hit = doc.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
-                if (!hit || !root.contains(hit)) { stopTimer(); request++; }
-                else if (timer === null) schedule();
+                if (coverCheckQueued || !playing) return;
+                coverCheckQueued = true;
+                win.requestAnimationFrame(function () {
+                    coverCheckQueued = false;
+                    if (!canRotate()) cancelAutomatic();
+                    else if (timer === null && !pending) schedule();
+                });
             }
             win.addEventListener('scroll', checkCover, { passive: true });
-            doc.addEventListener('visibilitychange', function () { request++; schedule(); });
+            doc.addEventListener('visibilitychange', function () { cancelAutomatic(); schedule(); });
             if (typeof media.addEventListener === 'function') media.addEventListener('change', function () {
                 if (media.matches) playing = false;
-                request++; schedule();
+                cancelAutomatic(); schedule();
             });
-            win.addEventListener('pagehide', function () { request++; stopTimer(); });
+            win.addEventListener('pagehide', cancelAutomatic);
             win.addEventListener('pageshow', schedule);
             controls.hidden = false;
             schedule();

@@ -38,9 +38,9 @@
             "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
         },
         "interface": {
-            "source_sha256": "59ebee71490f9d31df5317d4d38d3a18a06cabd9a70c9ca2fe197359886e61a5",
+            "source_sha256": "89501aae882618bc3981ad4d5f1fe7c55b5a576250d420f15f5b2365b22a683a",
             "references_sha256": "492ac8cbf2d7a12117279170fbc9b30c184d22f06fe3789690c45f6797bf604a",
-            "review_note": "Reviewed native eleven-dot carousel, stable crossfade, pause and accessibility controls against design and motion guidance."
+            "review_note": "Verified separate automatic cancellation and manual image selection; all scheduling paths check artwork coverage. Added delayed-decode and covered autoplay regression."
         },
         "mail": {
             "source_sha256": "064a2db84e324ad8cdf377ad2d9ee07289391409e44d5bfd92a0dba85586993a",
@@ -80,7 +80,7 @@
         "workflow": {
             "source_sha256": "4258fef781a62dab002b5a20abc1c86888e605a2f9a7833a1cec700900eeb300",
             "references_sha256": "6bddcf08be3819fe8ec98d7f78e96b359a9571f9043255f5ce207927e4732284",
-            "review_note": "Existing pre-merge and deployed homepage suites now also cover the portrait controls and autoplay."
+            "review_note": "Re-reviewed portrait browser regression for both independent review findings."
         }
     }
 }
