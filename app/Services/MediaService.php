@@ -252,7 +252,64 @@ final class MediaService {
         return $out;
     }
 
-    public function upload(array $files, string $context = 'shared', ?string $description = null, array $usedIn = []): array {
+    /** Save validated logo and favicon uploads in the regular persistent media library. */
+    public function uploadBrandAssets(array $files): array {
+        $batch = [];
+        foreach (['logo' => 'Logo', 'favicon' => 'Favicon'] as $slot => $label) {
+            $file = $files[$slot . '_file'] ?? null;
+            if ($file === null || ($file['error'] ?? null) === UPLOAD_ERR_NO_FILE) continue;
+            $path = $file['tmp_name'] ?? null;
+            if (($file['error'] ?? null) !== UPLOAD_ERR_OK || !is_string($path) || !is_uploaded_file($path)) {
+                throw new \InvalidArgumentException($label . ' upload could not be received. Check the file size and try again.');
+            }
+            $extension = $this->brandAssetExtension($slot, $label, $path, $file['name'] ?? null);
+            $batch[$slot] = [
+                'name' => ['site-' . $slot . '.' . $extension],
+                'tmp_name' => [$path],
+                'error' => [UPLOAD_ERR_OK],
+            ];
+        }
+
+        // Keep PNG favicons in their original browser-facing format.
+        $urls = [];
+        foreach ($batch as $slot => $upload) {
+            $saved = $this->upload($upload, 'shared', 'Site ' . $slot, optimize: false);
+            $url = $saved[0]['url'] ?? '';
+            if (self::storedPathForUrl($url) === null) {
+                throw new \RuntimeException('The saved brand image is not readable.');
+            }
+            $urls[$slot . '_url'] = $url;
+        }
+        return $urls;
+    }
+
+    private function brandAssetExtension(string $slot, string $label, string $path, mixed $name): string {
+        $limits = $slot === 'logo'
+            ? ['pixels' => 512, 'bytes' => 102400, 'extensions' => ['png', 'jpg', 'jpeg']]
+            : ['pixels' => 64, 'bytes' => 51200, 'extensions' => ['png']];
+        $bytes = filesize($path);
+        if ($bytes === false || $bytes === 0 || $bytes > $limits['bytes']) {
+            throw new \InvalidArgumentException($label . ' must be a non-empty image up to ' . intdiv($limits['bytes'], 1024) . ' KiB.');
+        }
+        $extension = is_string($name) ? strtolower(pathinfo($name, PATHINFO_EXTENSION)) : '';
+        $mime = mime_content_type($path);
+        if (!in_array($extension, $limits['extensions'], true) || $mime !== $this->allowed[$extension]) {
+            $type = $slot === 'logo' ? 'PNG or JPEG' : 'PNG';
+            throw new \InvalidArgumentException($label . ' must be a valid ' . $type . ' image.');
+        }
+        $dimensions = @getimagesize($path);
+        $pixels = $limits['pixels'];
+        if (!$dimensions || $dimensions['mime'] !== $mime
+            || $dimensions[0] < 1 || $dimensions[1] < 1 || max($dimensions[0], $dimensions[1]) > $pixels) {
+            throw new \InvalidArgumentException($label . ' must be a readable image up to ' . $pixels . ' × ' . $pixels . ' pixels.');
+        }
+        if (function_exists('imagecreatefromstring') && !@imagecreatefromstring((string)file_get_contents($path))) {
+            throw new \InvalidArgumentException($label . ' could not be decoded. Export the image again and retry.');
+        }
+        return $mime === 'image/png' ? 'png' : 'jpg';
+    }
+
+    public function upload(array $files, string $context = 'shared', ?string $description = null, array $usedIn = [], bool $optimize = true): array {
         if (empty($files['name']) || !is_array($files['name'])) return [];
         // Validate the complete selection before moving any files. A rejected file
         // must never be reported as a successful upload or a successful product save.
@@ -297,7 +354,7 @@ final class MediaService {
             }
             // Keep the uploaded original as a recovery source. Optimisation is
             // optional; an unavailable encoder must not lose a valid product photo.
-            try { $webpPath = $this->optimizer->optimize($destPath, $dir, ['max_width' => 1920, 'max_height' => 1920, 'quality' => 80, 'preserve_source' => true]); }
+            try { $webpPath = $optimize ? $this->optimizer->optimize($destPath, $dir, ['max_width' => 1920, 'max_height' => 1920, 'quality' => 80, 'preserve_source' => true]) : null; }
             catch (\Throwable) { $webpPath = null; }
             $url = '/' . $folder . '/';
             if ($webpPath && is_file($webpPath) && filesize($webpPath) > 0 && @getimagesize($webpPath)) {

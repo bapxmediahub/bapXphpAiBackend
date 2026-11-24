@@ -134,8 +134,8 @@ final class SettingsService {
         self::flushCache();
     }
 
-    public function public(): array {
-        $settings = $this->load();
+    public function public(bool $requireReadable = false): array {
+        $settings = $this->load($requireReadable);
         return $settings ?: ['shipping_mode' => 'free', 'flat_rate' => 0];
     }
 

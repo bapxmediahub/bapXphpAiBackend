@@ -33,6 +33,11 @@ The existing `/assets/images/media/YYYY/MM/filename` URLs are served by the cons
 image handler in `index.php` when a file is not part of the checkout. Bundled images
 continue to be served directly.
 
+New logo and favicon uploads use the same persistent Media Library directory.
+Existing saved logo and favicon links keep their current paths until an owner
+chooses a replacement. Keep any legacy brand files referenced by those settings
+when replacing a checkout.
+
 Back up both MySQL and the sibling `.sps-media` directory. Deploy code into
 `public_html` only; do not replace or clear `.sps-media`. If the host prevents PHP
 from creating the sibling directory, uploads report a storage-permission error and

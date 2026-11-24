@@ -1,6 +1,6 @@
 <div class="admin-card">
     <h2 style="font-size:1.1rem; margin:0 0 var(--space-sm);">Logo & Favicon</h2>
-    <p style="margin:0 0 var(--space-lg); color:var(--color-text-muted); font-size:0.9rem;">Upload your brand assets. Files are saved to <code>assets/images/brand/</code> and applied site-wide.</p>
+    <p style="margin:0 0 var(--space-lg); color:var(--color-text-muted); font-size:0.9rem;">Upload brand images to the Media Library and apply them across the site.</p>
     <p><a href="/admin/appearance/menu">Edit public header menu</a></p>
 </div>
 
@@ -8,12 +8,12 @@
     <form method="post" action="/admin/appearance/save" class="admin-form" enctype="multipart/form-data">
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
         <h3 style="font-size:1rem; margin:0 0 var(--space-md);">Site Logo</h3>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-xl); align-items:start;">
+        <div class="admin-form__row" style="align-items:start;">
             <div>
-                <label>Upload Logo</label>
+                <label for="logo-file">Upload logo</label>
                 <div style="background:var(--color-bg-alt); border:2px dashed var(--color-border); border-radius:var(--radius-md); padding:var(--space-lg); text-align:center; margin-bottom:var(--space-sm);">
-                    <input type="file" name="logo_file" accept="image/png,image/jpeg,image/jpg" style="margin:0 auto var(--space-sm); display:block;">
-                    <p style="margin:0; font-size:0.8rem; color:var(--color-text-muted);"><strong>Required:</strong> 512×512 px · Max 100 KB · PNG or JPEG</p>
+                    <input id="logo-file" type="file" name="logo_file" accept=".png,.jpg,.jpeg,image/png,image/jpeg" aria-describedby="logo-file-details" style="margin:0 auto var(--space-sm); display:block; width:100%; min-width:0;">
+                    <p id="logo-file-details" style="margin:0; font-size:0.8rem; color:var(--color-text-muted);">PNG or JPEG · Up to 512 × 512 px and 100 KiB</p>
                 </div>
                 <label style="flex-direction:row; align-items:center; gap:var(--space-xs); font-weight:400; font-size:0.85rem;">
                     <input type="checkbox" name="logo_remove" value="1"> Remove logo (use site name text only)
@@ -32,12 +32,12 @@
         </div>
 
         <h3 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-md);">Favicon</h3>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-xl); align-items:start;">
+        <div class="admin-form__row" style="align-items:start;">
             <div>
-                <label>Upload Favicon</label>
+                <label for="favicon-file">Upload favicon</label>
                 <div style="background:var(--color-bg-alt); border:2px dashed var(--color-border); border-radius:var(--radius-md); padding:var(--space-lg); text-align:center; margin-bottom:var(--space-sm);">
-                    <input type="file" name="favicon_file" accept="image/png,image/svg+xml,image/x-icon" style="margin:0 auto var(--space-sm); display:block;">
-                    <p style="margin:0; font-size:0.8rem; color:var(--color-text-muted);"><strong>Required:</strong> 64×64 px · Max 50 KB · PNG or SVG</p>
+                    <input id="favicon-file" type="file" name="favicon_file" accept=".png,image/png" aria-describedby="favicon-file-details" style="margin:0 auto var(--space-sm); display:block; width:100%; min-width:0;">
+                    <p id="favicon-file-details" style="margin:0; font-size:0.8rem; color:var(--color-text-muted);">PNG · Up to 64 × 64 px and 50 KiB</p>
                 </div>
                 <label style="flex-direction:row; align-items:center; gap:var(--space-xs); font-weight:400; font-size:0.85rem;">
                     <input type="checkbox" name="favicon_remove" value="1"> Remove favicon (use default)
@@ -57,7 +57,7 @@
 
         <h3 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-md);">Color Palette</h3>
         <p style="margin:0 0 var(--space-md); color:var(--color-text-muted); font-size:0.85rem;">Customize brand colors site-wide. Uses the <code>--color-*</code> CSS custom property naming.</p>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md) var(--space-xl);">
+        <div class="admin-form__row">
             <div>
                 <label>Primary <span style="font-weight:400; font-size:0.8rem; color:var(--color-text-muted);">(maroon)</span></label>
                 <div style="display:flex; gap:var(--space-sm); align-items:center;">
@@ -95,14 +95,7 @@
             </div>
         </div>
 
-        <?php if(!empty($upload_error)): ?>
-            <div class="flash flash--error" style="margin-top:var(--space-md);"><?= e($upload_error) ?></div>
-        <?php endif; ?>
-        <?php if(!empty($upload_success)): ?>
-            <div class="flash flash--success" style="margin-top:var(--space-md);"><?= e($upload_success) ?></div>
-        <?php endif; ?>
-
-        <div style="display:flex; gap:var(--space-md); margin-top:var(--space-lg);">
+        <div style="display:flex; flex-wrap:wrap; gap:var(--space-md); margin-top:var(--space-lg);">
             <button class="btn btn-primary">Save Appearance</button>
             <button type="submit" name="reset_palette" value="1" class="btn btn-ghost">Reset to Defaults</button>
         </div>
