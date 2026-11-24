@@ -43,6 +43,9 @@ for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at 
                     keyEmpty:params.get('ai_openrouter_key')==='',
                     csrf:params.get('_csrf')==='fixture-only',
                     provider:params.get('ai_provider'),
+                    googleModel:params.getAll('ai_google_model_switches[gemma-4-31b-it]').at(-1),
+                    googleIds:params.get('ai_google_models').replace(/\r/g,''),
+                    routerIds:params.get('ai_openrouter_models').replace(/\r/g,''),
                 });
                 return route.fulfill({status:200,contentType:'text/html',body:renderPage(true)});
             }
@@ -61,10 +64,15 @@ for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at 
         assert.equal(await enabled.isChecked(),false,'Provider must default off.');
         assert.equal(await key.getAttribute('type'),'password');
         assert.equal(await key.inputValue(),'','Stored key may never render as a password value.');
+        const google=page.getByRole('checkbox',{name:'Enable Google models'});
+        assert.equal(await google.isChecked(),true);
+        await page.getByRole('checkbox',{name:'gemma-4-31b-it',exact:true}).uncheck();
+        await page.getByLabel('Google model IDs in fallback order').fill('gemma-4-31b-it\ngemma-4-26b-a4b-it\ncustom-google-model');
+        await page.getByLabel('OpenRouter model IDs in fallback order').fill('openrouter/free\nvendor/model:free');
         await enabled.check();
         await key.fill(fakeKey);
         await page.getByRole('button',{name:'Save Integrations'}).click();
-        assert.deepEqual(sent,[{enabled:'1',keyMatches:true,keyEmpty:false,csrf:true,provider:'google'}]);
+        assert.deepEqual(sent,[{enabled:'1',keyMatches:true,keyEmpty:false,csrf:true,provider:'google',googleModel:'0',googleIds:'gemma-4-31b-it\ngemma-4-26b-a4b-it\ncustom-google-model',routerIds:'openrouter/free\nvendor/model:free'}]);
         assert.equal(await page.getByRole('checkbox',{name:'Enable OpenRouter Free'}).isChecked(),true);
         assert.equal(await page.getByLabel('OpenRouter API Key',{exact:true}).inputValue(),'');
         await page.getByRole('checkbox',{name:'Enable OpenRouter Free'}).uncheck();

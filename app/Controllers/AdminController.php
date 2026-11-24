@@ -463,12 +463,17 @@ final class AdminController extends BaseController {
         $this->render('admin/integrations', [
             'pageTitle' => 'Integrations',
             'secrets' => $secrets->all(),
-            'comparisonModels' => self::comparisonModels($secrets->getModelConfig()),
+            'comparisonModels' => self::comparisonModels($secrets->getProviderPlan()),
         ]);
     }
     public function saveIntegrations(): void {
         try {
-            (new SecretService())->save($_POST);
+            $values=$_POST;
+            if(($values['save_ai_only']??'')==='1') {
+                $values=array_filter($values,static fn($name):bool=>is_string($name)&&(str_starts_with($name,'ai_')||$name==='agent_name'),ARRAY_FILTER_USE_KEY);
+            }
+            unset($values['save_ai_only']);
+            (new SecretService())->save($values);
             (new AuditLogService())->record('save', 'integrations', 'secrets');
             $this->flash('Integration settings saved.', 'success');
         } catch (\InvalidArgumentException $error) {
@@ -1086,11 +1091,13 @@ final class AdminController extends BaseController {
      */
     public function testAi(): void{
         $this->validateCsrf();
-        $config = (new SecretService())->getModelConfig();
+        $secrets = new SecretService();
+        $plan = $secrets->getProviderPlan();
+        $config = $plan[0] ?? $secrets->getModelConfig();
         $model = (string)($config['model'] ?? \App\Services\SecretService::PRIMARY_MODEL);
         $client = new \App\Services\AiClient();
         $probe = (string)($_POST['probe'] ?? '');
-        $override = in_array($probe, self::comparisonModels($config), true) ? $probe : null;
+        $override = in_array($probe, self::comparisonModels($plan), true) ? $probe : null;
         $answer = $client->complete('Reply with exactly: connection ok', 128, 0.0, $override);
         $ok = !\App\Services\AiClient::isError($answer) && trim($answer) !== '';
         $timings = $client->transferTimings();
@@ -1111,8 +1118,8 @@ final class AdminController extends BaseController {
         $this->redirect('/admin/integrations');
     }
 
-    private static function comparisonModels(array $config): array {
-        return $config['models'] ?? [];
+    private static function comparisonModels(array $plan): array {
+        return array_values(array_unique(array_merge([], ...array_map(static fn(array $c):array=>$c['models']??[], $plan))));
     }
 
     public function testEmail(): void{

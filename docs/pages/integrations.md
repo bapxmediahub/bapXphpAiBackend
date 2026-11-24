@@ -12,28 +12,29 @@ Controller: `AdminController@integrations`
 
 Purpose: configure Razorpay (test/live), Stripe, Google OAuth, SMTP, Meta Pixel, native Google tag settings, Support Bot, and SEO defaults.
 
-## OpenRouter Free optional provider
+## AI provider connections and model order
 
-The existing AI Provider form contains a separate **Enable OpenRouter Free** toggle and
-a masked OpenRouter API Key directly below Google API Key. The model ID and endpoint
-are fixed to `openrouter/free` and `https://openrouter.ai/api/v1`; the owner
-does not supply another URL. This option is **off by default** and leaves the
-ordinary Google/OpenAI-compatible provider selection untouched when off.
+The owner can independently enable Google Gemini, OpenRouter and one custom
+OpenAI-compatible HTTPS connection. Each connection has a masked API-key field
+and ordered model IDs; Google also has per-model enable switches. The default
+Google IDs remain Gemma 4 31B and 26B A4B; the default OpenRouter ID remains
+openrouter/free. Editing the list adds model IDs rather than modifying PHP.
+OpenRouter is first when enabled, then the preferred enabled connection and
+the other enabled connection. Disabled or unconfigured connections are never
+used as hidden fallbacks. A named model test does not fall back to another
+model. OpenRouter IDs other than free models can have provider charges.
 
-Enabling requires a saved OpenRouter key. An empty masked input preserves an existing
-key, and turning the option off retains it encrypted for a future opt-in. Both
-Support and Enterprise try OpenRouter first. If an OpenRouter model cannot
-answer **before any permitted tool call executes**, the existing Google
-`gemma-4-31b-it` and `gemma-4-26b-a4b-it` routes are tried within the
-original generation deadline, using the separately stored Google key. A completed
-tool exchange is never replayed to a different provider. A missing Google key
-cannot create a real fallback; failed attempts remain visible through the
-existing safe timing/model diagnostics in Test AI Connection.
+Blank masked inputs preserve saved keys; a changed compatible endpoint needs
+its own key. The existing encrypted app_secrets MySQL record remains the only
+runtime credential store. No secret values appear in the AI fields, diagnostics
+or test fixtures. The shared request deadline applies across providers; once
+a tool exchange starts, it never switches providers. The Google wire adapter
+uses parametersJsonSchema for canonical JSON Schema, retaining server-side
+authorization and validation.
 
-The same encrypted `app_secrets` row in hosted MySQL remains authoritative.
-The page never returns a saved OpenRouter key in a password input, code, logs,
-tests, A2UI or chat history. No key is supplied in sample documentation or CI
-fixtures. Reference: https://openrouter.ai/openrouter/free .
+References: https://docs.openwebui.com/getting-started/quick-start/connect-a-provider/starting-with-openai-compatible/
+and https://docs.litellm.ai/docs/router/api_reference/configuration and
+https://ai.google.dev/api/generate-content#FunctionDeclaration .
 
 ## Secrets Storage
 

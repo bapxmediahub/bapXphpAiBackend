@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "d31a8f177f296f9836d5e7525167383a01eff2a29353333aa63d19894f480cd9",
+            "source_sha256": "353db961c66afe6b2e4794005da849ae1cd570d439a8bd41b5eb47c5f38ef119",
             "references_sha256": "63d78199c80aa4fe00921be8156da0376d7e03244e96a9dcf2ec11e3945700b1",
-            "review_note": "Reviewed native role-scoped selective instruction activation, shared inference loop, aggregate evidence and offline fingerprint; reference Neuron tool/agent skills and Prism multi-step generation."
+            "review_note": "Integrated provider route with both runtime registries; verified type signatures and schema projection."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
@@ -23,14 +23,14 @@
             "review_note": "Reviewed the Docs skill provenance guidance against the unchanged BlogService and authored-content guide boundary. Static map references are discovery evidence only; publication visibility, Markdown storage, rendering and private-help exclusion remain the existing source contracts."
         },
         "foundation": {
-            "source_sha256": "45d5b00b4b23e02d24afcee2eac2e328bf069af20a39081ebf2c9b761e2015e3",
+            "source_sha256": "dfe408381cd344ba29ffff88b4ba2b7aa7926f926a5df2a4c6f7115ebdd6be12",
             "references_sha256": "44504ddbd485f9ab5d6c71a6443726f531f7e0d7ed34ec16215741902635cc0e",
-            "review_note": "Generated map and index refreshed from actual shared adapter, no new runtime dependency or business storage."
+            "review_note": "Regenerated merged source inventory and retained native PHP storage boundaries."
         },
         "google-tags": {
-            "source_sha256": "9931f2724eec9875f4be1105fee72b70167373d61e7ecf95888dae86b1cdbd40",
-            "references_sha256": "1bc780fef929af6855d54ec574f50f3ed194f65ebd66ddb6bdbbcf4952a51081",
-            "review_note": "Reviewed shared layout footer/description changes; Google tags, consent and script configuration unchanged."
+            "source_sha256": "dd767cb1bb15f6696e8a8c4159712ffbdceaca9d07637e6fe0ac9d45974dab9b",
+            "references_sha256": "2d2f47b66a753ff821f0dfe5b30c7d965cfe5e77e7393df0d35714630f15bb50",
+            "review_note": "Google model credentials remain separate from reporting grant, Analytics and tags; updated integrations guide."
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
@@ -38,19 +38,19 @@
             "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
         },
         "interface": {
-            "source_sha256": "42209d1cd026c69769edd045bf59e56afd7dfa9e63d0c12fd7e225c0da1c9c6a",
+            "source_sha256": "d884d3ae4350cadc9ea4c4da3cd5071018daedf4d2e9b2a817fd63b3fa12b895",
             "references_sha256": "f1fc313dfc585e3dc0569dd2c52ac2b412aa8924f154978be71464130fe13375",
-            "review_note": "Compared requested controls and square slide edges with actual CSS, PHP, motion code and updated design guidance; any manual selection stops autoplay."
+            "review_note": "Reviewed responsive native provider cards and accessible controls at 375px and desktop."
         },
         "mail": {
-            "source_sha256": "cdf3f2dcdb3f5c04eb2db5f62d27a4e897b85e083cd88ad1e6cbc34932b75c56",
+            "source_sha256": "95c6574653060c91a839d951f7dc731f8d385c54d5c43eca4754c91d53c1c15e",
             "references_sha256": "6d6153ae2fed6f1aebbf9fa93225d6cc74b6c098d9a34deffce7bc4f3c6e9273",
-            "review_note": "No change to support ticket creation or SMTP behavior; inspected the existing handoff path."
+            "review_note": "Confirmed provider/agent merge retains existing ticket and mail actions."
         },
         "mcp-clients": {
-            "source_sha256": "8b2e7629876c1e5facae0a92e30f91e7e11ba59bd979a528022807b0193be7bc",
-            "references_sha256": "912c2decd557b138de9c5ca0f72cd5aab0f94d8430c46bd5c442c73d6cdccde8",
-            "review_note": "Compared existing MCP client grants and owner-only tool restrictions against merged WebMCP annotations and OpenRouter model routing; the changes do not issue an owner grant or promote browser agent capabilities."
+            "source_sha256": "ffb43129fe7e2633e2b790587a52729a82486fc1e08a692607623632c17756ad",
+            "references_sha256": "fbf4586231a8a57c147f12670d6aa1ff5db8c9720a3c01ab9de63e0223cc722e",
+            "review_note": "Provider configuration docs updated; MCP transport authorization and schemas unchanged."
         },
         "media": {
             "source_sha256": "7b9d3d9aa746f16f1441148550d143e7094388b247c423b90c310ed5441db99d",
@@ -58,19 +58,19 @@
             "review_note": "Reviewed product image paths and the bounded A2UI gallery against current media hosting paths; styling does not move uploads, delete media or expose private asset directories."
         },
         "operator-help": {
-            "source_sha256": "03a0d1bc1506ae8435d86b04fad0ec6eac9427d8a8542d160aa52d1f984ddbe8",
+            "source_sha256": "353f2b68070e1fca185eba097a636726e50c1c87fc5e423e6701b2e82f4b0bda",
             "references_sha256": "2201c0efbcc49c20384beab8cbef25fa6bcd6928e2928d7fd8474d6522cdf6bf",
-            "review_note": "Reviewed model-only adapter against owner guidance and existing operator guide authorization."
+            "review_note": "Reconciled owner guide and model-only runtime adapter with reviewed provider UI changes."
         },
         "public-mcp": {
             "source_sha256": "28e7e05e5eba6567d5a03f8f5b77b2fcfabfc97e280ef0c01df70ac1533e53a2",
             "references_sha256": "66f314f4d27575d8d1ab7394d8e28aae3feb90467ef6445ce18d804604d40f3d",
-            "review_note": "Model-only runtime activation and support aggregate reads do not register public MCP operations; existing transport allowlist unchanged."
+            "review_note": "Confirmed public transport allowlist unchanged; new runtime activation is internal only."
         },
         "remote-commerce": {
-            "source_sha256": "4158663ee0618880bed2832d4e0c789789f46c71af15cd68796652a3e2e272d8",
+            "source_sha256": "fc0f3595df50e982963b63d00e9da7c54abe395b79928bf79e44266c5205e9ac",
             "references_sha256": "e00aba6f254f3552728ebcf0e7cd24d757eceb2ffa55060db99dd42562b481e9",
-            "review_note": "Reviewed native hero controls and outer slide corners; existing product, checkout, and cart forms unchanged."
+            "review_note": "Shared SecretService preserves existing unrelated payment records; scoped AI save leaves commerce settings untouched."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed the sales-channel CLI references and catalogue guidance. This change only fixes generic PHP lint argument forwarding and failure propagation; feed, channel and catalogue operations are unchanged."
         },
         "workflow": {
-            "source_sha256": "8b97055d40ef620e2328061fc84d6cf46daabead0f709190fa7e58ecfa50cc8c",
-            "references_sha256": "6bddcf08be3819fe8ec98d7f78e96b359a9571f9043255f5ce207927e4732284",
-            "review_note": "New role-boundary and aggregate regressions exercise actual PHP runtime adapter; existing synthetic owner request fixture uses updated type."
+            "source_sha256": "a9cf5c7d0e47b2930a0c8a0c7a4507390e451537a2db5df03d58758cf966505a",
+            "references_sha256": "a242b3bec435e5f0b0b1191b95c4d0a8fe98fec35e78981816b1bd71023ecf27",
+            "review_note": "Combined existing provider and native agent regressions without removing any test gate."
         }
     }
 }
