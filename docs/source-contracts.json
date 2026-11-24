@@ -4,8 +4,8 @@
     "reviews": {
         "agents": {
             "source_sha256": "5d2a8318f694c8bdb74b88e8f5b0054198559b0753da6c84ef7784308273b049",
-            "references_sha256": "a3194b5f9dd2fdc5f745078b87b7c8ba8413256e7f6727105c1b4622aedfd30b",
-            "review_note": "Reviewed RuntimeAgentToolRegistry bounded lexical discovery, AiClient declaration refresh, Support/Admin integration and agent contract tests against merged About controller."
+            "references_sha256": "7cb3c6897bd2abd5d80728c2dd1fa4b35d3b800483a88dee7480ddb8b5a59519",
+            "review_note": "Compared README three-RAG processing diagram and runtime docs against both actual AiClient loops, RuntimeAgentToolRegistry, AgentInstructionService and scoped data/trace services."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
@@ -23,9 +23,9 @@
             "review_note": "Verified editorial profile, factual copy, approved image dimensions, module-filtered links and canonical AboutPage metadata against content guide."
         },
         "foundation": {
-            "source_sha256": "2a87cb5f93b3dd0a335d1cf0dba669154636b668486a793270285436784e48eb",
-            "references_sha256": "eeb5a6c867fb13329ea4ed9fd46043a54d3b943e166418d4016a70bc383ea5d2",
-            "review_note": "Cross-checked views/public/shop.php GET declarative form, native CDP and JavaScript exact discovery in actual Chrome, public contact invocation and the official Chrome form documentation; no runtime change."
+            "source_sha256": "c2bb1a457e2c548c1a5a1501ed2b98926543298800f04b94c2897fce988bfa97",
+            "references_sha256": "02bcf2c086ef51d57a58c2cf6946d5ba38f2eaa8bf26bac6aa8bbae04a531939",
+            "review_note": "Cross-checked current shop GET declarative form, exact native and polyfill registry tests, official Chrome documentation and live public contact/filter; no runtime change."
         },
         "google-tags": {
             "source_sha256": "0641eacf6c60aab4a8c8fe3df9cc7695111ca1c6e7d8448d9dabbb425894eb16",
@@ -34,8 +34,8 @@
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
-            "references_sha256": "7a1a19d88900be4d0bba1040c1aa4642b7b9774f97f3b2796090e24eb57809ea",
-            "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
+            "references_sha256": "c8ddca8644145adc5f0116806c8b4f2786dff8ae667f708c216a4cc02c10489e",
+            "review_note": "Reviewed architecture guidance; existing safe failure/HTTP status boundary unchanged by deployment-neutral developer metadata."
         },
         "interface": {
             "source_sha256": "e03caadbc7cc8ec5889f33401b49003ca0a8fcba9090fbfc4ba71ec8fb3e59c8",
@@ -54,13 +54,13 @@
         },
         "media": {
             "source_sha256": "7b9d3d9aa746f16f1441148550d143e7094388b247c423b90c310ed5441db99d",
-            "references_sha256": "9e2512ff958dd3a7cb3241f21cbc5132977edab9c5ba4535eebf3ea69cc79b1d",
-            "review_note": "Reviewed product image paths and the bounded A2UI gallery against current media hosting paths; styling does not move uploads, delete media or expose private asset directories."
+            "references_sha256": "8bc2f30746ed23afee3426d2ffbf03a101ac7c98795bfa62b83f0d5e49503490",
+            "review_note": "Reviewed architecture storage boundaries: no binary relocation in this slice; existing media metadata and domain-local file ownership preserved."
         },
         "operator-help": {
-            "source_sha256": "6c76d3d202b8d4f3d5f5348807b7d77a7bc2ab1265538b008ea7e5299c45972c",
+            "source_sha256": "cd10c640747840e78acd2c2f39ed6f2698c8de8155759b00ded48742ffe57b7d",
             "references_sha256": "2201c0efbcc49c20384beab8cbef25fa6bcd6928e2928d7fd8474d6522cdf6bf",
-            "review_note": "Reviewed AdminController tool-discovery integration; About merge leaves operator-help routes and guidance intact."
+            "review_note": "Reviewed generated knowledge navigation against existing operator guide references; transport selection is deployment-local and no owner guide body or credentials enter the index."
         },
         "public-mcp": {
             "source_sha256": "28e7e05e5eba6567d5a03f8f5b77b2fcfabfc97e280ef0c01df70ac1533e53a2",
@@ -68,9 +68,9 @@
             "review_note": "Role-filtered internal runtime adapter does not register new public MCP methods or broaden external access."
         },
         "remote-commerce": {
-            "source_sha256": "e37cc8ba99c3a47927c78728355f06a8732fca92aff81908560da8281dcafd6a",
+            "source_sha256": "4853741d899eb0745553fcf1620ec564193730671b5005b63662ee10ac44ece0",
             "references_sha256": "aafbc778d27e19816b6069a0bb16194afced7f59b4185261374f1a3c03fa1b72",
-            "review_note": "Cross-checked shop form GET navigation and existing commerce registrations with exact native and polyfill discovery; no commerce invocation, authorization, checkout or payment semantics changed."
+            "review_note": "Cross-checked existing scoped commerce registrations and read-only shop GET navigation; no authorization, checkout or payment semantics changed."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed the sales-channel CLI references and catalogue guidance. This change only fixes generic PHP lint argument forwarding and failure propagation; feed, channel and catalogue operations are unchanged."
         },
         "workflow": {
-            "source_sha256": "2cc114897a4f4f7c2c4a4e956d47fd9823f5f13f910ca8d664e239f6ebfa95e6",
-            "references_sha256": "a242b3bec435e5f0b0b1191b95c4d0a8fe98fec35e78981816b1bd71023ecf27",
-            "review_note": "Added real About browser acceptance before merge and after exact deployed SHA; existing checks retained."
+            "source_sha256": "04e396c7290bc143c12419df2edc8e44196d1687412394252ae6a1fc9a2a2e44",
+            "references_sha256": "02547adbcf78d518e43216cd4f2c24d3bd81892187ee5f6e02347ab81c23e83c",
+            "review_note": "Verified binding white-label and deferred-installer contract, portable index generator, source-linked README diagrams and exact release acceptance; generated data is not runtime knowledge."
         }
     }
 }

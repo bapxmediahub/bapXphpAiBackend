@@ -2103,7 +2103,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/KnowledgeGraphService.php",
-            "line": 298
+            "line": 299
         },
         {
             "from": "service:KnowledgeGraphService",
@@ -2111,7 +2111,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/KnowledgeGraphService.php",
-            "line": 383
+            "line": 384
         },
         {
             "from": "service:MailQueueService",

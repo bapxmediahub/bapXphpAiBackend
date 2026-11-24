@@ -75,6 +75,32 @@ While a release gate is pending, advance a separate issue/worktree where possibl
 Record independently observed failures and preserve unrelated changes. Never
 treat successful lint, an offline fixture or a queued workflow as deployed work.
 
+### Reusable capability acceptance
+
+Read the binding white-label contract in AGENTS.md and
+[client runtime adaptation](client-runtime-adaptation.md) before designing a
+shared feature. Compare actual upstream source and skills, including WordPress
+settings and theme configuration for owner-editable identity/appearance. Reuse
+existing native services and canonical schema; do not create a parallel settings
+system or build the deferred installer.
+
+- Reconcile older REA findings against current source and open PRs; keep actual
+  gaps and acceptance evidence in GitHub, not a second local backlog.
+- Test distinct synthetic client profiles, owner settings persistence,
+  module gating, credentials and data isolation, and reference-site regression.
+  Separate local fixtures, real provider acceptance, independent review and
+  exact deployed acceptance.
+- Independently verify Knowledge RAG facts, Instruction RAG role/hash and Tool
+  RAG authorization/discovery/execution. Never infer actual tool execution from
+  model text or treat the developer index as business-agent authority.
+- Regenerate MMD/JSON/YAML from source after schema/route changes. Committed
+  developer knowledge must be byte-stable across APP_URL and BAPX_REMOTE_DB_URL
+  changes. Review README execution diagrams against real code; static graph
+  edges are not runtime call ordering.
+- Close only verified scope, preserve blockers in issues and advance the next
+  independent reviewed implementation instead of reporting a queued check as
+  finished work.
+
 ### Provider and agent acceptance
 
 Test the actual integration form at desktop and 375px. Exercise masked key
