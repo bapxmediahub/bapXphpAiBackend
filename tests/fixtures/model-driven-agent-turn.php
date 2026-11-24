@@ -53,12 +53,12 @@ namespace {
         $tools=new \App\Services\RuntimeAgentToolRegistry($surface,$actor,
             $surface==='admin'?new \App\Services\EnterpriseToolRegistry(ownerQuestion:$argv[4]):new \App\Services\SupportToolRegistry($actor),$argv[4]);
         $traceId=bin2hex(random_bytes(8));
-        \App\Services\AgentTraceService::begin($traceId);
+        \App\Services\AgentTraceService::begin($traceId,null,\App\Services\AiClient::agentLimits());
         $client=new \App\Services\AiClient();
         $config=(new \App\Services\SecretService())->getProviderPlan()[0];
         $config['provider']='openai_compatible';$config['configured']=true;
         $method=new ReflectionMethod(\App\Services\AiClient::class,'completeCompatibleLoop');
-        $answer=$method->invoke($client,$config,$tools->instructionPrompt()."\n".$argv[4],1024,null,$tools,4,hrtime(true)+26000000000,false,[CURLOPT_PROXY=>'',CURLOPT_FOLLOWLOCATION=>false]);
+        $answer=$method->invoke($client,$config,$tools->instructionPrompt()."\n".$argv[4],1024,null,$tools,4,hrtime(true)+110000000000,false,[CURLOPT_PROXY=>'',CURLOPT_FOLLOWLOCATION=>false]);
         $outcome=\App\Services\AiClient::isError($answer)||trim($answer)===''?'error':'model';
         $conversation=new \App\Services\AgentConversationService();
         $identity=$conversation::actor($surface,$actor);

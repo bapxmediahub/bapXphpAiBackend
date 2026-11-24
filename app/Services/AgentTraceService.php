@@ -279,7 +279,7 @@ final class AgentTraceService
             'ordering'=>'observed_execution', 'started_at'=>self::now(), 'spans'=>[],
             'instruction_sha256'=>null, 'instruction_manifest'=>null,
             'budget'=>[
-                'max_model_calls'=>min(12,max(1,(int)($limits['max_model_calls']??6))),
+                'max_model_calls'=>min(AiClient::MAX_TRANSFERS,max(1,(int)($limits['max_model_calls']??6))),
                 'max_duration_ms'=>min(120000,max(100,(int)($limits['max_duration_ms']??30000))),
                 'max_observed_tokens'=>min(128000,max(1,(int)($limits['max_observed_tokens']??16000))),
                 'model_calls'=>0,'observed_total_tokens'=>0,'usage_complete'=>true,
@@ -367,6 +367,9 @@ final class AgentTraceService
     /** Measured transport metadata and a fixed request-rejection hint; no provider content. */
     public static function attemptTimings(array $attempt): array {
         $timings = [];
+        if(in_array($attempt['provider']??null,['google','openrouter','openai_compatible'],true))$timings['provider']=$attempt['provider'];
+        foreach(['cycle'=>AiClient::MAX_PROVIDER_CYCLES,'attempt_in_model'=>AiClient::ATTEMPTS_PER_MODEL] as $key=>$max)
+            if(is_int($attempt[$key]??null)&&$attempt[$key]>=1&&$attempt[$key]<=$max)$timings[$key]=$attempt[$key];
         if (is_int($attempt['curl_error'] ?? null) && $attempt['curl_error'] >= 0) {
             $timings['curl_error'] = $attempt['curl_error'];
         }
@@ -515,7 +518,7 @@ final class AgentTraceService
                 'evidence'=>$tool['evidence'],
             ];
         }
-        foreach (array_slice($attempts,0,9) as $attempt) {
+        foreach (array_slice($attempts,0,AiClient::MAX_TRANSFERS) as $attempt) {
             if (!is_array($attempt)) continue;
             $status=(int)($attempt['status']??0);
             $spans[]=[

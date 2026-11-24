@@ -668,7 +668,7 @@ final class AdminController extends BaseController {
             $prepared = $conversations->prepareTurn('admin',$actor,$conversationId,$message,$traceId);
             $conversationId = $prepared['conversation_id'];
             \App\Services\AgentTraceService::begin($traceId,
-                static fn(array $trace)=>$conversations->checkpoint('admin',$actor,$conversationId,$traceId,$trace));
+                static fn(array $trace)=>$conversations->checkpoint('admin',$actor,$conversationId,$traceId,$trace), \App\Services\AiClient::agentLimits());
             // @terms, @privacy, @some-article and @filename.jpg pull that document into
             // the prompt. Resolved here so both a draft command and an ordinary question
             // can refer to one.

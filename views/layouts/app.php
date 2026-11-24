@@ -688,7 +688,7 @@ if(supportForm){supportForm.addEventListener('submit',async function(e){
     supportSaveLog();supportForm.reset();
     var progress=window.AgentRequestStatus.start(supportLog),failed=false;
     supportLog.scrollTop=supportLog.scrollHeight;
-    var abort=new AbortController(),timeout=setTimeout(function(){abort.abort();},35000);
+    var abort=new AbortController(),timeout=setTimeout(function(){abort.abort();},window.AgentRequestStatus.timeoutMs);
     try{
         var r=await fetch('/support/ask',{method:'POST',body:data,signal:abort.signal});
         var j=await r.json();failed=!r.ok||!!j.error;

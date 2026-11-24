@@ -2,6 +2,7 @@
 (function () {
     'use strict';
     window.AgentRequestStatus = {
+        timeoutMs: 120000,
         start: function (parent) {
             const started = performance.now();
             const detail = document.createElement('details');

@@ -72,9 +72,12 @@
         $selectedProvider=($secrets['ai_provider']??'')==='openai_compatible'?'openai_compatible':'google';
         $googleEnabled=($secrets['ai_google_enabled']??(($selectedProvider==='google'||($secrets['ai_openrouter_enabled']??'0')==='1')?'1':'0'))==='1';
         $compatibleEnabled=($secrets['ai_compatible_enabled']??($selectedProvider==='openai_compatible'?'1':'0'))==='1';
-        $googleKeySaved=!empty($secrets['ai_api_key'])||!empty($secrets['agent_api_key'])||!empty($secrets['support_bot_google_api_key']);
+        $googleKey='';
+        foreach(['ai_api_key','agent_api_key','support_bot_google_api_key'] as $keyField){
+            if(trim((string)($secrets[$keyField]??''))!==''){$googleKey=(string)$secrets[$keyField];break;}
+        }
         ?>
-        <p>Both agents use enabled connections. OpenRouter is tried first when enabled, followed by the preferred connection and the other enabled connection. Within a connection, model IDs are tried in the order listed. An interrupted tool exchange is not replayed on another provider.</p>
+        <p>Both agents use enabled connections. The preferred connection runs first, the other enabled connection next, and OpenRouter last. Google model IDs run in their listed order. Each model receives up to three attempts on a transient failure before switching; after the final fallback, a second cycle starts from the first eligible model, within the shared deadline. An interrupted tool exchange stays on its original model.</p>
         <div class="admin-form__row">
             <label>Preferred fallback provider
                 <select name="ai_provider">
@@ -90,7 +93,7 @@
             <label class="ai-openrouter-toggle"><input type="checkbox" name="ai_google_enabled" value="1" <?= $googleEnabled?'checked':'' ?>>Enable Google models</label>
             <p class="ai-provider-endpoint"><strong>API endpoint</strong> <code><?= e(\App\Services\SecretService::GOOGLE_ENDPOINT) ?></code></p>
             <label>Google API Key<input type="password" name="ai_api_key" value="" placeholder="Enter or replace API key" autocomplete="new-password"></label>
-            <small role="status"><?= $googleKeySaved?'A Google key is saved. Leave blank to keep it.':'No Google key is saved.' ?></small>
+            <small role="status"><?= e(\App\Services\SecretService::savedKeyLabel($googleKey)) ?></small>
             <label>Google model IDs in fallback order<textarea name="ai_google_models" rows="3" spellcheck="false"><?= e(implode("\n",$googleModels)) ?></textarea></label>
             <small>Enter one to five exact model IDs, one per line. Save to add new IDs. Disable individual models below without removing them.</small>
             <div class="ai-model-switches">
@@ -106,11 +109,11 @@
             <label class="ai-openrouter-toggle" for="ai-openrouter-enabled">
                 <input type="checkbox" id="ai-openrouter-enabled" name="ai_openrouter_enabled" value="1" <?= ($secrets['ai_openrouter_enabled']??'0')==='1'?'checked':'' ?>>Enable OpenRouter Free
             </label>
-            <p id="openrouter-free-help">Choose the free router or specific OpenRouter model IDs. Free models may have usage limits. Other IDs may incur charges according to the provider account.</p>
+            <p id="openrouter-free-help">Use a standard OpenRouter inference API key, not a management API key. Choose the free router or specific model IDs. Free models may have usage limits. Other IDs may incur charges.</p>
             <p class="ai-provider-endpoint"><strong>API endpoint</strong> <code><?= e(\App\Services\SecretService::OPENROUTER_ENDPOINT) ?></code></p>
             <label for="ai-openrouter-key">OpenRouter API Key</label>
             <input id="ai-openrouter-key" type="password" name="ai_openrouter_key" value="" placeholder="Enter or replace API key" autocomplete="new-password" minlength="16" maxlength="512" spellcheck="false">
-            <small id="ai-openrouter-key-status" role="status"><?= !empty($secrets['ai_openrouter_key'])?'A key is saved. Leave blank to keep it.':'No key has been saved.' ?></small>
+            <small id="ai-openrouter-key-status" role="status"><?= e(\App\Services\SecretService::savedKeyLabel((string)($secrets['ai_openrouter_key']??''))) ?></small>
             <label>OpenRouter model IDs in fallback order<textarea name="ai_openrouter_models" rows="3" spellcheck="false"><?= e($secrets['ai_openrouter_models']??\App\Services\SecretService::OPENROUTER_MODEL) ?></textarea></label>
             <small>Keep openrouter/free for automatic free-model selection, or enter exact IDs of models you authorize.</small>
         </fieldset>
@@ -120,7 +123,7 @@
             <label class="ai-openrouter-toggle"><input type="checkbox" name="ai_compatible_enabled" value="1" <?= $compatibleEnabled?'checked':'' ?>>Enable custom connection</label>
             <label>API Base URL<input type="url" name="ai_compatible_url" value="<?= e($secrets['ai_compatible_url']??'') ?>" placeholder="https://api.openai.com/v1"></label>
             <label>Compatible API Key<input type="password" name="ai_compatible_key" value="" placeholder="Enter or replace API key" autocomplete="new-password"></label>
-            <small role="status"><?= !empty($secrets['ai_compatible_key'])?'A key is saved for this endpoint. Leave blank to keep it.':'No compatible API key is saved.' ?></small>
+            <small role="status"><?= e(\App\Services\SecretService::savedKeyLabel((string)($secrets['ai_compatible_key']??''))) ?></small>
             <label>Model IDs in fallback order<textarea name="ai_compatible_models" rows="3" aria-describedby="compatible-model-help" spellcheck="false"><?= e($secrets['ai_compatible_models']??'') ?></textarea></label>
             <p id="compatible-model-help">Enter one to five exact model IDs, one per line. Use a key issued for this HTTPS endpoint. Changing the endpoint requires its own key.</p>
         </fieldset>

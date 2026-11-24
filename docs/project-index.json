@@ -431,7 +431,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 742
+            "line": 671
         },
         {
             "from": "controller:AdminController",
@@ -792,6 +792,14 @@
             "provenance": "source_token",
             "source": "app/Controllers/AuthController.php",
             "line": 5
+        },
+        {
+            "from": "controller:AuthController",
+            "to": "service:AuthService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AuthController.php",
+            "line": 108
         },
         {
             "from": "controller:AuthController",
@@ -1402,6 +1410,14 @@
             "line": 48
         },
         {
+            "from": "controller:SupportController",
+            "to": "service:AiClient",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/SupportController.php",
+            "line": 49
+        },
+        {
             "from": "integration:PageSpeedInsightsClient",
             "to": "service:PublicSiteUrlService",
             "relation": "static_reference",
@@ -1552,6 +1568,14 @@
             "provenance": "source_token",
             "source": "app/Services/AgentConversationService.php",
             "line": 54
+        },
+        {
+            "from": "service:AgentConversationService",
+            "to": "service:AiClient",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentConversationService.php",
+            "line": 126
         },
         {
             "from": "service:AgentDraftService",
@@ -1807,7 +1831,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AgentTraceService.php",
-            "line": 379
+            "line": 282
         },
         {
             "from": "service:AgentTraceService",
@@ -1831,7 +1855,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/AiClient.php",
-            "line": 89
+            "line": 96
         },
         {
             "from": "service:AiClient",
@@ -1839,7 +1863,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/AiClient.php",
-            "line": 87
+            "line": 94
         },
         {
             "from": "service:AiClient",
@@ -1847,7 +1871,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AiClient.php",
-            "line": 531
+            "line": 559
         },
         {
             "from": "service:AiClient",
@@ -1855,7 +1879,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AiClient.php",
-            "line": 742
+            "line": 776
         },
         {
             "from": "service:AiClient",
@@ -1863,7 +1887,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AiClient.php",
-            "line": 59
+            "line": 66
         },
         {
             "from": "service:AppointmentService",

@@ -123,7 +123,7 @@ final class AgentConversationService
                 'model' => substr((string)($attempt['model'] ?? ''), 0, 100),
                 'http_status' => (int)($attempt['status'] ?? 0),
                 'duration_ms' => max(0, (int)round((float)($attempt['total_ms'] ?? 0))),
-            ] + AgentTraceService::attemptTimings($attempt), array_slice($attempts, 0, 9))),
+            ] + AgentTraceService::attemptTimings($attempt), array_slice($attempts, 0, AiClient::MAX_TRANSFERS))),
         ];
         $turn['trace'] = AgentTraceService::build($traceId,$outcome,$tools,$attempts,$evaluation,$answer,$retrieval);
         if ($ticketId !== null) $turn['ticket_id'] = $ticketId;

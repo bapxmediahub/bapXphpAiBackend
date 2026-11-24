@@ -105,7 +105,7 @@ final class AuthController extends BaseController {
     $password = $_POST['password'] ?? '';
     if ($email === '' || $password === '') { $this->flash('Username or email and password required.','error'); $this->redirect('/login'); }
     $admin = (new EnvService())->adminCredentials();
-    if ($admin['email'] !== '' && $admin['password'] !== '' && $email === $admin['email']) {
+    if ($admin['email'] !== '' && $admin['password'] !== '' && \App\Services\AuthService::matchesAdminIdentifier($admin,$email)) {
         if (password_verify($password, $admin['password'])) {
             session_regenerate_id(true);
             $_SESSION['user'] = ['sub'=>'env-admin','email'=>$admin['email'],'name'=>$admin['username'] ?: 'Admin','role'=>'admin'];

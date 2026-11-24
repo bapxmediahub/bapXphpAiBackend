@@ -9,6 +9,8 @@ namespace App\Services {
         public function getModelConfig(): array { return ['apiKey'=>'fixture']; }
     }
     final class AiClient {
+        public const MAX_TRANSFERS=32, MAX_PROVIDER_CYCLES=2, ATTEMPTS_PER_MODEL=3;
+        public static function agentLimits(): array {return ['max_model_calls'=>32,'max_duration_ms'=>115000];}
         public function completeWithTools(string $prompt, AgentToolRegistry|RuntimeAgentToolRegistry $tools): string {
             return $GLOBALS['argv'][1] === 'accepted' ? 'A clear synthetic answer.' : 'Reasoning: private outline';
         }
@@ -18,7 +20,7 @@ namespace App\Services {
     }
     final class AuditLogService {
         public static array $last = [];
-        public function agentRun(string $surface, string $outcome, float $start, ?string $reason): void {
+        public function agentRun(string $surface, string $outcome, float $start, ?string $reason=null,array $attempts=[],array $tools=[],?string $traceId=null): void {
             self::$last = [$outcome, $reason];
         }
     }

@@ -78,7 +78,13 @@ fixture, not a production browser privilege grant.
 
 ## Provider availability
 
-Both agents use the shared AiClient and the same deployment-local transport cooldown. New ordinary generations can skip recently failed connections/models; explicit diagnostics retain actual transfers. Cooldowns do not change saved provider configuration or permit retry of a locked tool exchange. If no model is eligible, the agent reports an explicit unavailable outcome without fabricating HTTP attempts. Owner capability questions are ordinary model turns; explicit /help and /capabilities are separate user-selected UI commands. See [agent observability](agent-observability.md) for evidence semantics and bounds.
+Both agents use the shared AiClient ordered model scheduler. Ordinary transient
+failures never reorder the next request. A recorded quota or long provider
+Retry-After can temporarily exclude that model; disabled/unconfigured models
+are not called. Explicit diagnostics retain actual transfers. Tool exchanges
+stay on their originating model. Owner capability questions are ordinary model
+turns; explicit /help and /capabilities are separate user-selected UI commands.
+See [agent observability](agent-observability.md) for evidence and budgets.
 
 ## Native processing loop: three RAG layers
 
@@ -211,7 +217,23 @@ Product net values allocate recorded refunds across lines; coupon values are ass
 
 The application executes each allowed function and sends its result back using the originating provider's call format. Model text is never authority to grant a capability. Google documents the hosted Gemma identifiers and native function calling. OpenAI recommends clear tool schemas and doing known work in application code. Those contracts apply to their respective clients. [Google AI Studio function calling](https://aistudio.google.com/docs/function-calling) · [Hosted Gemma models](https://gemma.ai/deployment/gemini-api/) · [OpenAI function calling](https://developers.openai.com/api/docs/guides/function-calling)
 
-Time-limited failover is for transient transport or service failure. The tool-enabled loop also permits one same-model replay of the failed inference payload per request for HTTP 408/500/502/503/504, after eligible failover is exhausted or during a locked tool exchange. The replay requires enough remaining deadline and model-call/token budget and honors Retry-After up to a two-second recovery wait. It never re-executes tools or retries a timeout, quota, authentication, schema or malformed-response failure. A provider error is not a business answer. The guest notice distinguishes public questions from customer-owned records. Authentication and invalid-request responses need configuration or request corrections. The owner can inspect per-attempt evidence in Monitoring to distinguish service responses from requests that reached the local timeout without an HTTP response. [Google API troubleshooting](https://aistudio.google.com/docs/troubleshooting) · [OpenAI error codes](https://developers.openai.com/api/docs/guides/error-codes)
+The default Google-first order is gemma-4-31b-it, gemma-4-26b-a4b-it,
+then openrouter/free when enabled and configured. The preferred connection and
+its model list are editable; OpenRouter is the final enabled connection.
+For each recoverable inference failure, send the identical payload up to three
+times on the same model, with short backoff, before advancing. If all eligible
+models fail, restart from the first eligible model for a second cycle. Stop
+immediately on successful inference. Explicit authentication, invalid-request,
+missing-model, quota, TLS, and long Retry-After failures do not get blind
+retries. Each request has a 110-second inference deadline and at most 32
+transfers; both browsers wait up to 120 seconds. The trace enforces a
+115-second total execution limit and the existing observed-token budget.
+The deadline or budget can stop a cycle early. Once tool exchange starts,
+three-attempt recovery resends only the correlated inference request to the
+same model, never repeating completed PHP tools or switching the exchange
+to another provider. A failed exchange is an explicit error, not a canned
+business answer. [Google API troubleshooting](https://ai.google.dev/gemini-api/docs/troubleshooting)
+· [OpenAI error codes](https://developers.openai.com/api/docs/guides/error-codes)
 
 ## Model-driven Support and Enterprise tools
 

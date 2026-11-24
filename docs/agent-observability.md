@@ -224,7 +224,20 @@ to the 24-hour operational metrics.
 
 Each attempt in Recent runs displays the observed HTTP status, cURL error and elapsed duration. New attempts can also carry the effective transfer timeout and a positive measured first-byte time. cURL 28 identifies a client-side timeout and does not determine which network hop or upstream component delayed the request. HTTP 5xx establishes an upstream error response. HTTP 429 directs the operator to provider quota and rate limits. A successful transfer can still produce an unusable answer. Each run keeps its own outcome, independently of its attempt counts.
 
-After an observed HTTP 408/429/500/502/503/504 or cURL timeout, the shared client temporarily excludes that model on that configured connection from **new** ordinary generations. The deployment-local ignored health file contains only hashed provider/endpoint/model identities and expiry times, never keys, prompts, URLs or response bodies. Timeout cooldown is 15 seconds, transient HTTP cooldown 20 seconds, quota cooldown 30 seconds; a valid longer Retry-After can extend an HTTP cooldown up to 120 seconds. Selection preserves the order of eligible configured models. A successful transfer clears that model's entry. Explicit integration probes and explicit model overrides still make real requests. If all configured models are held, the local provider_cooldown reason has zero new transfer attempts. The optional cache fails open and is not an authorization, rate-limit, or quota ledger; concurrent already-started requests may still finish. A locked tool exchange is never rerouted. At most one extra inference HTTP transfer may replay the identical failed payload within the original call/token/time budgets after an explicit transient server response. This applies to the last eligible connection or the already locked model, not to timeouts, 429, authentication or schema failures. Every observed transfer remains visible separately; completed tool calls are never repeated.
+The deployment-local health file stores only hashed model/connection identities,
+bounded expiry timestamps and a provider-hold flag. Ordinary transient server
+failures and timeouts are recorded but do not skip the primary in the next turn.
+Quota or explicit long Retry-After may temporarily exclude a model. Explicit
+diagnostics can contact the chosen model. Successful transfers clear their
+entry. Legacy integer cooldowns are read as transient observations, not
+provider-mandated holds. The shared scheduler tries each eligible model up
+to three times, then the next in order; a second cycle starts from the first
+eligible model if necessary and time remains. Each observed transfer records
+provider identity, cycle number and attempt within that model's inference
+round, and retains its own status, duration and request digest. Retries reuse
+the immutable inference payload; they never replay a completed tool or reroute
+a started exchange. Missing credentials, permanent failures and provider
+holds cannot be hidden as successful attempts.
 
 HTTP 400/422 responses may contribute one allowlisted, heuristic request-error hint (tool schema, tool history, generation configuration, or invalid arguments). The hint is derived from a bounded response in memory, not an exact root-cause diagnosis. Only the fixed category enters existing attempt evidence; raw provider content remains excluded. Unexplained numeric Enterprise replies, unless the owner explicitly requested a number only, are rejected without starting another model/tool generation. No server-generated free-form answer substitutes for the rejected model response.
 
@@ -285,8 +298,11 @@ References (patterns researched, not required installations):
 - Every trace records the instruction-source hash, named tool-code hash, approved
   aggregate facts, result digest and observed timestamp. It does not archive
   private raw result rows or claim a source revision was supplied when it was not.
-- Default per-turn budgets are six provider calls, 30 seconds of execution and
-  16,000 observed total tokens, with bounded configurable values. Missing usage
+- Native chat budgets are 32 provider transfers, a 110-second inference deadline,
+  115 seconds total traced execution and 16,000 observed total tokens. The browser
+  request limit is 120 seconds. Two cycles of three attempts per eligible model
+  are permitted before a tool exchange; later tool rounds stay on the same model.
+  Other trace callers retain their default six calls/30 seconds unless overridden. Missing usage
   is marked incomplete, not zero. Budget checks happen before further work and
   transport timeout is clamped to remaining time. No cost is invented.
 - `AuditLogService` returns `not_persisted` on a failed write and exposes that

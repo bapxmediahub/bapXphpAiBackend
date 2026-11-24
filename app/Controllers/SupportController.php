@@ -46,7 +46,7 @@ final class SupportController extends BaseController {
                     ($turn['outcome']??'')==='error'?503:200);
             }
             \App\Services\AgentTraceService::begin($traceId,
-                static fn(array $trace)=>$conversations->checkpoint('support',$actor,$conversationId,$traceId,$trace));
+                static fn(array $trace)=>$conversations->checkpoint('support',$actor,$conversationId,$traceId,$trace), \App\Services\AiClient::agentLimits());
             $history=$conversations->contextForActor($conversationId,'support',$actor);
             $handoff=['conversation_id'=>$conversationId,'trace_id'=>$traceId,'turn_id'=>$prepared['turn_id']??''];
             $answer = (new SupportBotService(traceId: $traceId))->answer($message, $user,$history,$handoff);
