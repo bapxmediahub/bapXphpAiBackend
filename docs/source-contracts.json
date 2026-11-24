@@ -23,14 +23,14 @@
             "review_note": "Verified editorial profile, factual copy, approved image dimensions, module-filtered links and canonical AboutPage metadata against content guide."
         },
         "foundation": {
-            "source_sha256": "c2bb1a457e2c548c1a5a1501ed2b98926543298800f04b94c2897fce988bfa97",
+            "source_sha256": "52394e2bc05533ebff4bd88aeb4d5db9cd1f5401a5082822c2781449a755d120",
             "references_sha256": "02bcf2c086ef51d57a58c2cf6946d5ba38f2eaa8bf26bac6aa8bbae04a531939",
-            "review_note": "Cross-checked current shop GET declarative form, exact native and polyfill registry tests, official Chrome documentation and live public contact/filter; no runtime change."
+            "review_note": "Reviewed PageSpeed route/controller, fixed integration transport and generated index against current platform contract; no data migration or auth grant."
         },
         "google-tags": {
-            "source_sha256": "0641eacf6c60aab4a8c8fe3df9cc7695111ca1c6e7d8448d9dabbb425894eb16",
-            "references_sha256": "2cec217af686af8cd0bc01452b3c9b9eb1a6582204f53490bd223d1f1e3ff6f2",
-            "review_note": "Canonical About metadata now uses existing SeoService and configured origin; reporting and tag rendering unchanged."
+            "source_sha256": "dd4c57dad073ad54bfc7deda652d9936407a7e5aac192878bdf9052fdc776287",
+            "references_sha256": "657a277dd510eaf66bee6f0b0ada17e7fef2a016752a6b940c9f7084849063e2",
+            "review_note": "Reviewed fixed Google v5 endpoint, canonical HTTPS origin, CSRF owner-only routes, bounded report projection and unavailable/quota states against integration documentation and fixtures."
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
@@ -38,9 +38,9 @@
             "review_note": "Reviewed architecture guidance; existing safe failure/HTTP status boundary unchanged by deployment-neutral developer metadata."
         },
         "interface": {
-            "source_sha256": "e03caadbc7cc8ec5889f33401b49003ca0a8fcba9090fbfc4ba71ec8fb3e59c8",
+            "source_sha256": "4f3e55ceb32a1b01cb1390d5df2e66bc18118b9ae6973f25d0ee66f8147ee974",
             "references_sha256": "e50099f9a28a4e3b06a7c6aebf5ec74dfd115cfeaf5f635fd6109b30ac12ef04",
-            "review_note": "Measured normal-text contrast on the actual About page, corrected low-contrast secondary token on warm surfaces and retained red/green browser contrast regression across desktop and mobile."
+            "review_note": "Reviewed owner PageSpeed view and dashboard link, responsive CSS and browser fixture; no new frontend runtime."
         },
         "mail": {
             "source_sha256": "79925cc0c003645e9e87eceadf1f34ae8c164e65840a4fde5c586fb91296ef75",
@@ -49,8 +49,8 @@
         },
         "mcp-clients": {
             "source_sha256": "ffb43129fe7e2633e2b790587a52729a82486fc1e08a692607623632c17756ad",
-            "references_sha256": "25e54f0d04f478d9a268795bb115ed64e7fb37078a4182a46d9a67a47e4ad679",
-            "review_note": "Synthetic connection probe is owner/CLI only; no public MCP capability changes."
+            "references_sha256": "1390a1ae3be706072f85e628f3065e2170dc2685b3841c008d02536d232f2d1c",
+            "review_note": "Reviewed new PageSpeed integration documentation; owner Google reports are not exposed via MCP and client grants are unchanged."
         },
         "media": {
             "source_sha256": "7b9d3d9aa746f16f1441148550d143e7094388b247c423b90c310ed5441db99d",
@@ -58,14 +58,14 @@
             "review_note": "Reviewed architecture storage boundaries: no binary relocation in this slice; existing media metadata and domain-local file ownership preserved."
         },
         "operator-help": {
-            "source_sha256": "cd10c640747840e78acd2c2f39ed6f2698c8de8155759b00ded48742ffe57b7d",
+            "source_sha256": "6c83bd79f7517530635bba637bfc6d5cea9172862c2440eaf7c78b41806da883",
             "references_sha256": "2201c0efbcc49c20384beab8cbef25fa6bcd6928e2928d7fd8474d6522cdf6bf",
-            "review_note": "Reviewed generated knowledge navigation against existing operator guide references; transport selection is deployment-local and no owner guide body or credentials enter the index."
+            "review_note": "Checked the new owner dashboard PageSpeed link and admin-only route, unchanged operator access and existing help references."
         },
         "public-mcp": {
-            "source_sha256": "28e7e05e5eba6567d5a03f8f5b77b2fcfabfc97e280ef0c01df70ac1533e53a2",
+            "source_sha256": "44e12ad73403a6fc87486a863f502caf12e098da2aac440b8a9b62b2a205a463",
             "references_sha256": "66f314f4d27575d8d1ab7394d8e28aae3feb90467ef6445ce18d804604d40f3d",
-            "review_note": "Role-filtered internal runtime adapter does not register new public MCP methods or broaden external access."
+            "review_note": "Checked ProjectMapService PageSpeed route declaration and public MCP dispatcher boundary: no public PageSpeed capability."
         },
         "remote-commerce": {
             "source_sha256": "4853741d899eb0745553fcf1620ec564193730671b5005b63662ee10ac44ece0",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed the sales-channel CLI references and catalogue guidance. This change only fixes generic PHP lint argument forwarding and failure propagation; feed, channel and catalogue operations are unchanged."
         },
         "workflow": {
-            "source_sha256": "04e396c7290bc143c12419df2edc8e44196d1687412394252ae6a1fc9a2a2e44",
+            "source_sha256": "bdf079118134c4e018ca9893376be6506119677b18567bade01db8d7ad1651c9",
             "references_sha256": "02547adbcf78d518e43216cd4f2c24d3bd81892187ee5f6e02347ab81c23e83c",
-            "review_note": "Verified binding white-label and deferred-installer contract, portable index generator, source-linked README diagrams and exact release acceptance; generated data is not runtime knowledge."
+            "review_note": "Preserved both latest About browser acceptance and native PageSpeed browser test in CI; regenerated project metadata from source."
         }
     }
 }

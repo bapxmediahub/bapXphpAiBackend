@@ -634,6 +634,38 @@
             "line": 7
         },
         {
+            "from": "controller:AdminPageSpeedController",
+            "to": "integration:PageSpeedInsightsClient",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminPageSpeedController.php",
+            "line": 58
+        },
+        {
+            "from": "controller:AdminPageSpeedController",
+            "to": "service:AuthService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminPageSpeedController.php",
+            "line": 22
+        },
+        {
+            "from": "controller:AdminPageSpeedController",
+            "to": "controller:BaseController",
+            "relation": "extends",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminPageSpeedController.php",
+            "line": 11
+        },
+        {
+            "from": "controller:AdminPageSpeedController",
+            "to": "service:PublicSiteUrlService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminPageSpeedController.php",
+            "line": 30
+        },
+        {
             "from": "controller:ApiController",
             "to": "service:CategoryService",
             "relation": "constructs",
@@ -1368,6 +1400,14 @@
             "provenance": "source_token",
             "source": "app/Controllers/SupportController.php",
             "line": 45
+        },
+        {
+            "from": "integration:PageSpeedInsightsClient",
+            "to": "service:PublicSiteUrlService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "integrations/google-site-kit/PageSpeedInsightsClient.php",
+            "line": 29
         },
         {
             "from": "service:AddressService",
@@ -3171,10 +3211,10 @@
         }
     ],
     "summary": {
-        "routes": 178,
-        "controllers": 17,
+        "routes": 180,
+        "controllers": 18,
         "services": 85,
-        "views": 72,
+        "views": 73,
         "collections": 24
     },
     "routes": [
@@ -4051,6 +4091,32 @@
                 "ProductService",
                 "SettingsService",
                 "AuthService"
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/admin/google-pagespeed",
+            "name": "admin.google.pagespeed",
+            "controller": "AdminPageSpeedController@index",
+            "view": "admin/google-pagespeed",
+            "response": null,
+            "provenance": "route_registry",
+            "services": [
+                "AuthService",
+                "PublicSiteUrlService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/google-pagespeed/run",
+            "name": "admin.google.pagespeed.run",
+            "controller": "AdminPageSpeedController@run",
+            "view": "admin/google-pagespeed",
+            "response": null,
+            "provenance": "route_registry",
+            "services": [
+                "AuthService",
+                "PublicSiteUrlService"
             ]
         },
         {
@@ -5587,6 +5653,7 @@
         "AdminController",
         "AdminGoogleReportingController",
         "AdminMcpClientController",
+        "AdminPageSpeedController",
         "ApiController",
         "AuthController",
         "BaseController",
@@ -5709,6 +5776,7 @@
         "admin/detail",
         "admin/email-templates",
         "admin/google-merchant",
+        "admin/google-pagespeed",
         "admin/google-reporting",
         "admin/header-menu",
         "admin/help",
@@ -5793,6 +5861,7 @@
         "GoogleReportingClient",
         "GoogleSiteKitClient",
         "MetaPixelClient",
+        "PageSpeedInsightsClient",
         "RazorpayClient",
         "StripeClient"
     ],
@@ -5809,6 +5878,17 @@
         ],
         "unwired_views": [],
         "admin_mutations_without_audit": [
+            {
+                "method": "POST",
+                "path": "/admin/google-pagespeed/run",
+                "name": "admin.google.pagespeed.run",
+                "page": "admin/google-pagespeed",
+                "controller": "AdminPageSpeedController@run",
+                "services": [
+                    "AuthService",
+                    "PublicSiteUrlService"
+                ]
+            },
             {
                 "method": "POST",
                 "path": "/admin/email-templates/test",

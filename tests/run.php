@@ -70,6 +70,7 @@ $tests['Stripe integration autoloads from its canonical file through the real bo
         'Stripe must load the existing canonical integration rather than a test stub or parallel client');
 };
 require __DIR__ . '/google-reporting.php';
+require __DIR__ . '/google-pagespeed.php';
 require __DIR__ . '/project-map.php';
 
 $tests['legitimate internal ticket activity is evaluated without exposing it as a model capability'] = static function (): void {

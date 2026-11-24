@@ -46,15 +46,15 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 492
-  relationships: 439
+  concepts: 496
+  relationships: 443
   by_type:
     blog: 16
-    controller: 17
-    doc: 54
+    controller: 18
+    doc: 55
     image: 89
     operator_guide: 12
-    route: 177
+    route: 179
     runtime_instruction: 6
     schema: 24
     service: 85
@@ -233,6 +233,14 @@ concepts:
     title: "AdminMcpClientController"
     description: "Controller: AdminMcpClientController"
     resource: "app/Controllers/AdminMcpClientController.php"
+    tags:
+      - "code"
+      - "controller"
+  - id: "controller:AdminPageSpeedController"
+    type: "controller"
+    title: "AdminPageSpeedController"
+    description: "Controller: AdminPageSpeedController"
+    resource: "app/Controllers/AdminPageSpeedController.php"
     tags:
       - "code"
       - "controller"
@@ -662,6 +670,15 @@ concepts:
     tags:
       - "docs"
     filename: "media-deletion-verification.md"
+    header_image: ""
+  - id: "doc:native-wordpress-woocommerce-sitekit-20261124"
+    type: "doc"
+    title: "Native feature reconstruction from WordPress, WooCommerce and Site Kit"
+    description: "Exact ZIP REA evidence, already implemented PHP contracts, source-derived missing features, and safe native development order."
+    resource: "docs/research/native-wordpress-woocommerce-sitekit-20261124.md"
+    tags:
+      - "docs"
+    filename: "native-wordpress-woocommerce-sitekit-20261124.md"
     header_image: ""
   - id: "doc:orders"
     type: "doc"
@@ -2697,6 +2714,23 @@ concepts:
     view: "admin/google-merchant"
     response: null
     provenance: "route_registry"
+  - id: "route:get__admin_google_pagespeed"
+    type: "route"
+    title: "GET /admin/google-pagespeed"
+    description: "admin.google.pagespeed"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/admin/google-pagespeed"
+    controller: "AdminPageSpeedController@index"
+    services:
+      - "AuthService"
+      - "PublicSiteUrlService"
+    view: "admin/google-pagespeed"
+    response: null
+    provenance: "route_registry"
   - id: "route:get__admin_google_reporting"
     type: "route"
     title: "GET /admin/google-reporting"
@@ -4361,6 +4395,23 @@ concepts:
       - "SecretService"
       - "AuthService"
     view: "admin/email-templates"
+    response: null
+    provenance: "route_registry"
+  - id: "route:post__admin_google_pagespeed_run"
+    type: "route"
+    title: "POST /admin/google-pagespeed/run"
+    description: "admin.google.pagespeed.run"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/admin/google-pagespeed/run"
+    controller: "AdminPageSpeedController@run"
+    services:
+      - "AuthService"
+      - "PublicSiteUrlService"
+    view: "admin/google-pagespeed"
     response: null
     provenance: "route_registry"
   - id: "route:post__admin_google_reporting_connect"
@@ -6420,6 +6471,12 @@ relationships:
   - from: "controller:AdminMcpClientController"
     to: "service:McpClientService"
     relation: "declared_service"
+  - from: "controller:AdminPageSpeedController"
+    to: "service:AuthService"
+    relation: "declared_service"
+  - from: "controller:AdminPageSpeedController"
+    to: "service:PublicSiteUrlService"
+    relation: "declared_service"
   - from: "controller:ApiController"
     to: "service:BlogService"
     relation: "declared_service"
@@ -6954,6 +7011,9 @@ relationships:
   - from: "route:get__admin_google_merchant"
     to: "controller:AdminController"
     relation: "handled_by"
+  - from: "route:get__admin_google_pagespeed"
+    to: "controller:AdminPageSpeedController"
+    relation: "handled_by"
   - from: "route:get__admin_google_reporting"
     to: "controller:AdminGoogleReportingController"
     relation: "handled_by"
@@ -7241,6 +7301,9 @@ relationships:
     relation: "handled_by"
   - from: "route:post__admin_email_templates_test"
     to: "controller:AdminController"
+    relation: "handled_by"
+  - from: "route:post__admin_google_pagespeed_run"
+    to: "controller:AdminPageSpeedController"
     relation: "handled_by"
   - from: "route:post__admin_google_reporting_connect"
     to: "controller:AdminGoogleReportingController"
