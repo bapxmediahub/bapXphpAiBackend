@@ -31,6 +31,7 @@ final class AiClient
     private array $transferTimings = [];
     private int $toolCalls = 0;
     private bool $toolExchangeStarted = false;
+    private array $activeConnection = [];
 
     /** Bounded operational category; never includes provider messages or credentials. */
     public function failureCategory(): ?string { return $this->failureCategory; }
@@ -256,10 +257,64 @@ final class AiClient
         return $this->route($prompt,$maxTokens,$temperature,$modelOverride,null,0);
     }
 
-    private function route(string $prompt,int $maxTokens,float $temperature,?string $override,
-        ?AgentToolRegistry $tools,int $rounds): string {
-        $this->failureCategory=null;$this->transferTimings=[];$this->toolCalls=0;$this->toolExchangeStarted=false;
+    /** Diagnostic choices retain connection identity even when model IDs overlap. */
+    public static function probeTargets(array $plan): array {
+        $targets=[];
+        foreach($plan as $connection) {
+            foreach($connection['models'] as $model) {
+                $targets[]=['target'=>$connection['provider'].'|'.$model,'provider'=>$connection['provider'],'model'=>$model];
+            }
+        }
+        return $targets;
+    }
+
+    public static function probePlan(array $plan,string $target): array {
+        foreach($plan as $connection) {
+            foreach($connection['models'] as $model) {
+                if($target===$connection['provider'].'|'.$model) {
+                    $connection['models']=[$model];$connection['model']=$model;
+                    return [$connection];
+                }
+            }
+        }
+        return [];
+    }
+
+    public static function probeSucceeded(string $answer,string $expected,int $calls,bool $withTool): bool {
+        return !self::isError($answer)&&hash_equals($expected,trim($answer))&&(!$withTool||$calls>0);
+    }
+
+    /** Test real inference, optionally a synthetic read-only tool round trip. No business records. */
+    public function probe(string $target='',bool $withTool=false): array {
         $plan=$this->secrets->getProviderPlan();
+        if($target!=='')$plan=self::probePlan($plan,$target);
+        $expected=$withTool?'probe-'.bin2hex(random_bytes(8)):'connection ok';
+        $registry=$withTool?new class($expected) extends AgentToolRegistry {
+            public function __construct(private string $challenge) {}
+            public function declarations(): array {
+                return [['name'=>'connection_probe','description'=>'Return the synthetic verification code. No business data is accessed.',
+                    'parameters'=>['type'=>'object','properties'=>(object)[],'additionalProperties'=>false]]];
+            }
+            public function run(string $name,array $args): array {
+                if($name!=='connection_probe'||$args!==[])return ['error'=>'Invalid diagnostic call'];
+                return ['challenge'=>$this->challenge];
+            }
+        }:null;
+        $prompt=$withTool?'Call connection_probe with no arguments, then return exactly its challenge value as your final answer.':'Reply with exactly: connection ok';
+        $answer=$this->route($prompt,256,0.0,null,$registry,$withTool?2:0,$plan);
+        $ok=self::probeSucceeded($answer,$expected,$this->toolCalls,$withTool);
+        $attempts=$this->transferTimings;$last=end($attempts)?:[];
+        $reason=$ok?null:($this->failureCategory??($withTool&&$this->toolCalls===0?'tool_not_called':'unexpected_probe_answer'));
+        return ['ok'=>$ok,'mode'=>$withTool?'tools':'text','model'=>$last['model']??($plan[0]['model']??''),
+            'provider'=>$last['provider']??($plan[0]['provider']??''),'endpoint'=>$last['endpoint']??($plan[0]['endpoint']??''),
+            'message'=>$ok?($withTool?'Verified tool round trip.':'Verified text response.'):($reason==='not_configured'?'No matching enabled connection.':'Probe failed: '.$reason.'.'),
+            'reason'=>$reason,'timings'=>$attempts,'tool_calls'=>$withTool?$this->toolCalls:null];
+    }
+
+    private function route(string $prompt,int $maxTokens,float $temperature,?string $override,
+        ?AgentToolRegistry $tools,int $rounds,?array $selectedPlan=null): string {
+        $this->failureCategory=null;$this->transferTimings=[];$this->toolCalls=0;$this->toolExchangeStarted=false;$this->activeConnection=[];
+        $plan=$selectedPlan??$this->secrets->getProviderPlan();
         // A deliberate diagnostic model probe must not silently switch model or provider.
         if($override!==null){
             $plan=array_values(array_filter($plan,static fn(array $c):bool=>in_array($override,$c['models'],true)));
@@ -270,6 +325,7 @@ final class AiClient
         $deadline=hrtime(true)+self::GENERATION_TIMEOUT_NS;
         $answer='';
         foreach($plan as $index=>$config){
+            $this->activeConnection=['provider'=>$config['provider'],'endpoint'=>$config['endpoint']];
             if(self::remainingProviderMs($deadline)<self::MIN_ATTEMPT_MS){$this->failureCategory='request_deadline';break;}
             $answer=$config['provider']==='google'
                 ?($tools===null?$this->completeGoogleText($config,$prompt,$maxTokens,$temperature,$deadline)
@@ -629,7 +685,7 @@ final class AiClient
             'ready_ms' => 1000 * curl_getinfo($ch, CURLINFO_PRETRANSFER_TIME),
             'timeout_ms' => $timeoutMs,
             'total_ms' => 1000 * curl_getinfo($ch, CURLINFO_TOTAL_TIME),
-        ] + ($firstByteMs > 0 ? ['first_byte_ms' => $firstByteMs] : []);
+        ] + $this->activeConnection + ($firstByteMs > 0 ? ['first_byte_ms' => $firstByteMs] : []);
         AgentTraceService::endSpan($span,($body===false||$status<200||$status>=300)?'error':'complete',[
             'http_status'=>$status, 'curl_error'=>$this->transportError, 'timeout_ms'=>$timeoutMs,
             'request_sha256'=>hash('sha256',$payload),

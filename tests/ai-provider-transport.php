@@ -12,6 +12,25 @@ if (PHP_SAPI === 'cli-server') {
     [$scenario, $model] = explode('/', trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/'), 2);
     $primary = str_starts_with($model, 'gemma-4-31b-it:');
     header('Content-Type: application/json');
+    if($scenario==='tool_probe') {
+        $request=json_decode((string)file_get_contents('php://input'),true,512,JSON_THROW_ON_ERROR);
+        $tool=$request['tools'][0]['functionDeclarations'][0]??[];
+        if(isset($tool['parameters'])||($tool['parametersJsonSchema']['additionalProperties']??null)!==false) {
+            http_response_code(400);echo '{"error":"wrong schema"}';return;
+        }
+        $contents=$request['contents'];
+        if(count($contents)===1){
+            echo json_encode(['candidates'=>[['content'=>['parts'=>[['functionCall'=>['name'=>'connection_probe','args'=>(object)[],'id'=>'fixture-call']]]]]]]);
+        } else {
+            $response=end($contents)['parts'][0]['functionResponse']??[];
+            $previous=$contents[count($contents)-2]['parts'][0]['functionCall']??[];
+            if(($response['id']??'')!=='fixture-call'||($previous['id']??'')!=='fixture-call'||($response['response']['challenge']??'')!=='fixture-observed-challenge'){
+                http_response_code(400);echo '{"error":"missing correlated response"}';return;
+            }
+            echo json_encode(['candidates'=>[['content'=>['parts'=>[['text'=>'<final_answer>fixture-observed-challenge</final_answer>']]]]]]);
+        }
+        return;
+    }
     if ($scenario === 'slow' && $primary) usleep(6_350_000);
     if ($scenario === 'stalled' && $primary) usleep(3_300_000);
     if (($scenario === 'stalled' && !$primary) || ($scenario === 'retry' && $primary) || $scenario === 'locked') {
@@ -100,6 +119,25 @@ try {
     $failure->setValue($unit,null);
     check($gate->invoke($unit)===false,'A healthy model must not trigger duplicate inference.');
 
+    // Exercise the actual Google two-turn wire exchange against the fixture;
+    // no production key, live business data or provider account.
+    $registry=new class extends \App\Services\AgentToolRegistry {
+        public function __construct() {}
+        public function declarations(): array {
+            return [['name'=>'connection_probe','description'=>'Synthetic fixture',
+                'parameters'=>['type'=>'object','properties'=>(object)[],'additionalProperties'=>false]]];
+        }
+        public function run(string $name,array $args): array {
+            return $name==='connection_probe'&&$args===[]?['challenge'=>'fixture-observed-challenge']:['error'=>'Invalid'];
+        }
+    };
+    $client=new AiClient();
+    $complete=new ReflectionMethod(AiClient::class,'completeGoogleTools');
+    $config=['provider'=>'google','endpoint'=>'http://'.$address.'/tool_probe','apiKey'=>'fixture-key',
+        'model'=>SecretService::PRIMARY_MODEL,'models'=>[SecretService::PRIMARY_MODEL],'configured'=>true];
+    $reply=$complete->invoke($client,$config,'Call the tool.', $registry,256,0.0,2,null,hrtime(true)+6000000000);
+    check(AiClient::probeSucceeded($reply,'fixture-observed-challenge',$client->toolCalls(),true),'Actual tool call, correlated response and final text must all succeed');
+    check(count($client->transferTimings())===2,'Expected exactly two provider transfers');
     AgentTraceService::begin(str_repeat('a',16), null, ['max_model_calls' => 1]);
     $prior = AgentTraceService::startSpan('model_attempt', SecretService::PRIMARY_MODEL);
     AgentTraceService::endSpan($prior, 'complete');

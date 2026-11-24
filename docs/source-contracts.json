@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "494146be882f7ac9d51e5aa97a4730b14234eec7b85f3c1fd9bf5b7f934bb640",
+            "source_sha256": "2b7ff319f8ddfbdaeeed9c004f3e8848cfd013c10d153b97dde8628fc293801f",
             "references_sha256": "4db8c915776e898bd080ad21d7b88500ee584a1f02134bc05f2751fd0db4084c",
-            "review_note": "Verified provider request-schema defect against Google API and model selection against Open WebUI/LiteLLM; documented reference-driven discovery, role-filtered runtime instructions, exact tool probe requirements and PHP 8.5 date format."
+            "review_note": "Reviewed exact target selection, challenge response tool round trip, sanitized failure and shared guarded provider transport."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
@@ -23,14 +23,14 @@
             "review_note": "Reviewed the Docs skill provenance guidance against the unchanged BlogService and authored-content guide boundary. Static map references are discovery evidence only; publication visibility, Markdown storage, rendering and private-help exclusion remain the existing source contracts."
         },
         "foundation": {
-            "source_sha256": "d9ae2a02eee1dc22ec30d5edc2cd517006e9c365cce3601581763013ac3a32dd",
+            "source_sha256": "14643e1b4c7256c0cffb7ecac89d4ae77b423a952a66e7c12cc0b68d9e45bb8c",
             "references_sha256": "44504ddbd485f9ab5d6c71a6443726f531f7e0d7ed34ec16215741902635cc0e",
-            "review_note": "Existing SecretService and database boundary retained, no new storage or runtime dependency."
+            "review_note": "CLI diagnostic uses current service instead of duplicating HTTP; no new dependency or persistence."
         },
         "google-tags": {
-            "source_sha256": "dd767cb1bb15f6696e8a8c4159712ffbdceaca9d07637e6fe0ac9d45974dab9b",
-            "references_sha256": "2d2f47b66a753ff821f0dfe5b30c7d965cfe5e77e7393df0d35714630f15bb50",
-            "review_note": "Google model credentials remain separate from reporting grant, Analytics and tags; updated integrations guide."
+            "source_sha256": "1794c941b2f0dcce13e5e4cda15b69d46565364cb7080ed8c5f4b074f623f938",
+            "references_sha256": "c1a578dc4920789808501aedecd633d3dccca229eb29d4942401a05d50cf992b",
+            "review_note": "Diagnostic form labels updated; Google tag behavior unchanged."
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
@@ -38,19 +38,19 @@
             "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
         },
         "interface": {
-            "source_sha256": "d884d3ae4350cadc9ea4c4da3cd5071018daedf4d2e9b2a817fd63b3fa12b895",
+            "source_sha256": "40265f597e6a22a33216538ea762b22178fe359c07d1bb37717e85036e9c7e6b",
             "references_sha256": "f1fc313dfc585e3dc0569dd2c52ac2b412aa8924f154978be71464130fe13375",
-            "review_note": "Reviewed responsive native provider cards and accessible controls at 375px and desktop."
+            "review_note": "Explicit label associations verified in desktop and mobile Chromium."
         },
         "mail": {
-            "source_sha256": "9bc672aa7f059c2451d279523dac429522f423b62ba265436a2e25b9f00ab49c",
+            "source_sha256": "054b0478701fae161aa768b268ce05ab63ebe944f6b388f4bbd395df66828322",
             "references_sha256": "6d6153ae2fed6f1aebbf9fa93225d6cc74b6c098d9a34deffce7bc4f3c6e9273",
-            "review_note": "AI-specific save filters posted fields; existing encrypted SMTP configuration and mail behavior unchanged."
+            "review_note": "Reviewed existing integrations controller; mail settings and testEmail behavior unchanged."
         },
         "mcp-clients": {
             "source_sha256": "ffb43129fe7e2633e2b790587a52729a82486fc1e08a692607623632c17756ad",
-            "references_sha256": "fbf4586231a8a57c147f12670d6aa1ff5db8c9720a3c01ab9de63e0223cc722e",
-            "review_note": "Provider configuration docs updated; MCP transport authorization and schemas unchanged."
+            "references_sha256": "25e54f0d04f478d9a268795bb115ed64e7fb37078a4182a46d9a67a47e4ad679",
+            "review_note": "Synthetic connection probe is owner/CLI only; no public MCP capability changes."
         },
         "media": {
             "source_sha256": "7b9d3d9aa746f16f1441148550d143e7094388b247c423b90c310ed5441db99d",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed product image paths and the bounded A2UI gallery against current media hosting paths; styling does not move uploads, delete media or expose private asset directories."
         },
         "operator-help": {
-            "source_sha256": "cc0769f139496fb647681fbb5898d26a9a2b0f22d39ed2a36951d58978181521",
+            "source_sha256": "f811c5702f18f1a2ebb62c5f99832203318967be5783d0a5cfbdc8f7863cb11e",
             "references_sha256": "2201c0efbcc49c20384beab8cbef25fa6bcd6928e2928d7fd8474d6522cdf6bf",
-            "review_note": "Reviewed owner-only provider form, masked fields, explicit saves and current model-test controls."
+            "review_note": "Verified explicit diagnostic field labels in rendered admin form."
         },
         "public-mcp": {
             "source_sha256": "63c58fcaa8f86f54433c86067579355c9632622a41e732eb14b29ce7509d5af9",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed the sales-channel CLI references and catalogue guidance. This change only fixes generic PHP lint argument forwarding and failure propagation; feed, channel and catalogue operations are unchanged."
         },
         "workflow": {
-            "source_sha256": "b1d3421ca1e04a8e2c84c1ad7a9c52e314065d9a8ede5e2d98586b25ab4b63a7",
+            "source_sha256": "fb00ac41b8d18e6bea24a1421fa27f8683e0c983095460df0c813d8ecd23ef3e",
             "references_sha256": "a242b3bec435e5f0b0b1191b95c4d0a8fe98fec35e78981816b1bd71023ecf27",
-            "review_note": "Updated binding agent and development instructions for external source/skill comparison, evidence-backed issue discovery, independent progress during CI and exact deployed agent acceptance."
+            "review_note": "Real loopback tool round-trip and desktop/mobile diagnostic controls added; CLI uses same guarded client."
         }
     }
 }

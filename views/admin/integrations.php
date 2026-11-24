@@ -267,14 +267,13 @@ unset($_SESSION['ai_test_result']);
 <div class="admin-card" style="margin-top:var(--space-lg);">
     <h2 style="font-size:1.1rem; margin:0 0 var(--space-sm);">Test the AI connection</h2>
     <p style="color:var(--color-text-muted); margin:0 0 var(--space-md); font-size:0.9rem;">
-        Sends one short question to the configured model. Both the support bot and this admin
-        assistant use these settings, so if this fails they are both falling back to fixed replies.
+        Test saved enabled connections using the same guarded transport as both agents. Text verifies an exact response; the tool test verifies a synthetic read-only round trip without business data.
     </p>
     <?php if ($aiTest): ?>
         <div style="margin-bottom:var(--space-md); padding:var(--space-sm) var(--space-md); border-radius:var(--radius-sm); border:1px solid <?= $aiTest['ok'] ? 'var(--color-success, #15803d)' : 'var(--color-error, #b91c1c)' ?>; background:<?= $aiTest['ok'] ? 'rgba(21,128,61,0.08)' : 'rgba(185,28,28,0.08)' ?>;">
-            <strong><?= $aiTest['ok'] ? 'The model answered' : 'The model did not answer' ?></strong>
+            <strong><?= $aiTest['ok'] ? 'Probe passed' : 'Probe failed' ?></strong>
             <div style="margin-top:var(--space-2xs); font-size:0.82rem; color:var(--color-text-muted);">
-                <?= e((string)($aiTest['model'] ?? '')) ?> · <?= e((string)($aiTest['endpoint'] ?? '')) ?>
+                <?= e((string)($aiTest['provider'] ?? '')) ?> · <?= e((string)($aiTest['model'] ?? '')) ?> · <?= e((string)($aiTest['endpoint'] ?? '')) ?>
             </div>
             <div style="margin-top:var(--space-2xs); font-size:0.85rem; white-space:pre-wrap;"><?= e((string)$aiTest['message']) ?></div>
             <?php if (isset($aiTest['tool_calls'])): ?>
@@ -288,7 +287,7 @@ unset($_SESSION['ai_test_result']);
                         <?php if (!empty($timing['model'])): ?><?= e($timing['model']) ?> · <?php endif; ?>
                         HTTP <?= (int)$timing['status'] ?>, cURL <?= (int)$timing['curl_error'] ?>.
                         <?php foreach (['dns_ms' => 'DNS', 'connect_ms' => 'Connection', 'ready_ms' => 'Ready to transfer', 'first_byte_ms' => 'First byte', 'total_ms' => 'Total'] as $key => $label): ?>
-                            <?= e($label) ?> <?= $timing[$key] > 0 ? number_format($timing[$key], 1) . ' ms' : '—' ?>.
+                            <?= e($label) ?> <?= ($timing[$key] ?? 0) > 0 ? number_format($timing[$key], 1) . ' ms' : '—' ?>.
                         <?php endforeach; ?>
                     </li>
                 <?php endforeach; ?>
@@ -298,12 +297,16 @@ unset($_SESSION['ai_test_result']);
     <?php endif; ?>
     <form class="admin-form" method="post" action="/admin/integrations/test-ai">
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+        <label for="ai-probe-target">Connection to test</label>
+            <select id="ai-probe-target" name="probe">
+                <option value="">Enabled fallback route</option>
+                <?php foreach (($comparisonModels??[]) as $connection): ?>
+                    <option value="<?= e($connection['target']) ?>"><?= e($connection['provider'].' · '.$connection['model']) ?></option>
+                <?php endforeach; ?>
+            </select>
+        <label for="ai-probe-mode">Diagnostic</label>
+        <select id="ai-probe-mode" name="probe_mode"><option value="text">Text response</option><option value="tools">Tool round trip</option></select>
         <button class="btn btn-secondary">Test AI Connection</button>
-        <?php if (!empty($comparisonModels)): ?>
-            <?php foreach ($comparisonModels as $comparisonModel): ?>
-                <button class="btn btn-secondary" name="probe" value="<?= e($comparisonModel) ?>">Test <?= e($comparisonModel) ?></button>
-            <?php endforeach; ?>
-            <small>This runs one connection test without changing the saved model.</small>
-        <?php endif; ?>
+        <small>Tests the saved configuration. A selected provider/model never falls back to another target.</small>
     </form>
 </div>
