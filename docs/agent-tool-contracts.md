@@ -22,12 +22,12 @@ Source: `app/Services/SupportToolRegistry.php`; instruction version 2.
 
 Private runtime Markdown is not duplicated into developer documentation.
 
-- `.bapX/supportagent.md` — SHA-256 `1c2430d764c8528b50cbc41932068bcddc9caa27d282c889080b222053e87380`
-- `.bapX/bapXcl/skill.md` — SHA-256 `300793ad430a1aba904aea06e51665187af5d299502a0e21d3bdae0ea442f354`
+- `.bapX/supportagent.md` — SHA-256 `15ae4e5bd3f606a18ee111098a6f1e81477ad89b90d74db1e7b1f0ccaed2be2f`
+- `.bapX/bapXcl/skill.md` — SHA-256 `bef6836de280f3118cd9e438bcac6babffc1bea6f3c1d85f5fc962c8a01043e9`
 - `.bapX/bapXcl/support/catalog.md` — SHA-256 `0b85f5605a1eee35dcb09a147d8905059508151be9d46465d226a9b0816cc9a6`
 - `.bapX/bapXcl/support/policy-and-tickets.md` — SHA-256 `ed732c56f5da36ac3524940e5170aab9a348c8a68babe7f9d4a55b464abf9138`
 
-Bundle SHA-256: `4474e56cdf30936d4670802e368b4b8bf68dc1c8f07d2eb6b3a7c329af6b761f`.
+Bundle SHA-256: `00366cceb08b06b15e90b4da6e0d75a3c62e330227b82b961ff1b32c12d86973`.
 
 ### `public_catalog`
 
@@ -67,7 +67,10 @@ Read the public shipping, returns, or payment policy.
                 "tracking",
                 "returns_or_problems",
                 "shipping_cost",
-                "payment_methods"
+                "payment_methods",
+                "delivery_within_india",
+                "delivery_outside_india",
+                "consultation_booking"
             ]
         }
     },
@@ -213,6 +216,101 @@ Search published blog and customer help articles by keyword. Returns real titles
 }
 ```
 
+### `public_product_details`
+
+Read exact currently published products by raw slug; use for comparisons, follow-ups and current specifications.
+
+**Access:** Guest or authenticated customer; published/public data only.
+
+```json
+{
+    "type": "object",
+    "properties": {
+        "slugs": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "minItems": 1,
+            "maxItems": 3
+        }
+    },
+    "required": [
+        "slugs"
+    ],
+    "additionalProperties": false
+}
+```
+
+### `own_order_status`
+
+Count matching orders and read up to five recent orders belonging only to the signed-in customer; optional exact order reference. Never accepts an email or user ID.
+
+**Access:** Guest or authenticated customer; published/public data only.
+
+```json
+{
+    "type": "object",
+    "properties": {
+        "reference": {
+            "type": "string",
+            "pattern": "^[a-fA-F0-9]{16}$"
+        }
+    },
+    "additionalProperties": false
+}
+```
+
+### `own_cart`
+
+Read this browser session cart item names, product slugs and quantities. No cart mutation.
+
+**Access:** Guest or authenticated customer; published/public data only.
+
+```json
+{
+    "type": "object",
+    "properties": {},
+    "additionalProperties": false
+}
+```
+
+### `present_contact_enquiry`
+
+Offer the existing customer-reviewed contact form when a human enquiry is useful. Does not submit, email, create tickets or reserve appointments.
+
+**Access:** Guest or authenticated customer; published/public data only.
+
+```json
+{
+    "type": "object",
+    "properties": {},
+    "additionalProperties": false
+}
+```
+
+### `read_published_article`
+
+Read a bounded text excerpt from an exact currently published blog/help article slug. Use after article discovery to answer content questions. No private files.
+
+**Access:** Guest or authenticated customer; published/public data only.
+
+```json
+{
+    "type": "object",
+    "properties": {
+        "slug": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{1,120}$"
+        }
+    },
+    "required": [
+        "slug"
+    ],
+    "additionalProperties": false
+}
+```
+
 ## Enterprise Admin
 
 Source: `app/Services/EnterpriseToolRegistry.php`; instruction version 2.
@@ -221,13 +319,13 @@ Source: `app/Services/EnterpriseToolRegistry.php`; instruction version 2.
 
 Private runtime Markdown is not duplicated into developer documentation.
 
-- `.bapX/enterpriseagent.md` — SHA-256 `488b908267cc25cf98136655a21c6b58b33fbbf0047a880cd3123f9ec876f198`
-- `.bapX/bapXcl/skill.md` — SHA-256 `300793ad430a1aba904aea06e51665187af5d299502a0e21d3bdae0ea442f354`
+- `.bapX/enterpriseagent.md` — SHA-256 `277c6cfa08d3ff912ef7f4d4544a378e68b5df9ec40797388a85398e37ed9d8c`
+- `.bapX/bapXcl/skill.md` — SHA-256 `bef6836de280f3118cd9e438bcac6babffc1bea6f3c1d85f5fc962c8a01043e9`
 - `.bapX/bapXcl/support/catalog.md` — SHA-256 `0b85f5605a1eee35dcb09a147d8905059508151be9d46465d226a9b0816cc9a6`
 - `.bapX/bapXcl/support/policy-and-tickets.md` — SHA-256 `ed732c56f5da36ac3524940e5170aab9a348c8a68babe7f9d4a55b464abf9138`
 - `.bapX/bapXcl/enterprise/reporting.md` — SHA-256 `432827fa7c6fa1d5bc7a57d6a3c77bd4f29832d35fa3dd07df6a09ab55f7f942`
 
-Bundle SHA-256: `e088f79eb9235700e9b90a42cde4e51aa391deca9dd6d6f24ec303a6241cc2a5`.
+Bundle SHA-256: `2fb0ed19145ffcace10676c41db6431df62fcb24174153333c92f1d3943f4a3e`.
 
 ### `find_order`
 
@@ -552,5 +650,57 @@ List existing public store enquiry offerings and their contact form links, witho
             "maximum": 20
         }
     }
+}
+```
+
+### `order_count`
+
+Count all recorded orders (not just paid orders) within explicit inclusive dates. Returns status breakdown; no customer details.
+
+**Access:** Authenticated admin, enforced server-side.
+
+```json
+{
+    "type": "object",
+    "properties": {
+        "from": {
+            "type": "string",
+            "description": "Inclusive start date YYYY-MM-DD. Defaults to 29 days before today."
+        },
+        "to": {
+            "type": "string",
+            "description": "Inclusive end date YYYY-MM-DD. Defaults to today (India time)."
+        },
+        "period": {
+            "type": "string",
+            "enum": [
+                "all_time",
+                "this_month"
+            ]
+        }
+    },
+    "additionalProperties": false
+}
+```
+
+### `read_published_article`
+
+Read a bounded text excerpt from an exact currently published blog/help article slug. Use after article discovery to answer content questions. No private files.
+
+**Access:** Authenticated admin, enforced server-side.
+
+```json
+{
+    "type": "object",
+    "properties": {
+        "slug": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{1,120}$"
+        }
+    },
+    "required": [
+        "slug"
+    ],
+    "additionalProperties": false
 }
 ```

@@ -38,21 +38,32 @@ grant. Business mutations remain explicit admin forms/drafts with CSRF and audit
 
 ## Request and tool lifecycle
 
-**Support:** server-identify guest/customer → rate limit → recognize ticket,
-public policy, contact/services, exact unfiltered catalogue totals and best sellers, named product/collection, or other request → retrieve only
-public visible records or the authenticated customer's own tickets → optionally
-use bounded model synthesis → save one redacted turn and its trace → return
-the produced answer → wait for explicit customer feedback. A named Ayyappa festive collection
-uses verified collection membership, not the first 20 random product listings.
-Contact and service answers execute the same public knowledge tools used by
-Enterprise. Their spans retain the public source category and result count;
-service search text and submitted contact content are not copied into evidence.
+Both wire adapters validate the entire returned call-ID batch and execute only
+functions advertised for that inference round. A rejected call records a safe
+`tool_call_rejected` span (no arbitrary function name or raw arguments). The
+model may correct its request on a later round. Duplicate IDs, incomplete
+finish reasons and unfinished final tool calls cannot become accepted answers.
+Article read evidence retains the bounded excerpt SHA-256. Provider continuation
+fields remain in request-local transport memory, never stored in traces or chat.
+The loopback suite checks both Google and OpenAI-compatible call correlation;
+it is protocol verification, not a model-quality benchmark.
 
-**Enterprise:** verify admin/CSRF → load a previous report only from that
-admin's existing JSON conversation → resolve simple aggregates locally or
-execute named allowlisted read-only PHP tools → assemble sources/result counts
-→ bounded model response/fallback → record trace and evaluation. New Chat clears
-the active ID; History reopens only that admin's previous chats.
+
+**Support:** identify the guest or authenticated customer, apply rate limits,
+save a pending actor-owned turn, and invoke the shared model client. The model
+selects relevant published knowledge, runtime instructions and tools; PHP
+validates every call and returns scoped facts. Own-order and ticket lookups
+require the authenticated customer identity. A model-selected contact form
+proposal does not submit a form or automatically create a ticket.
+
+**Enterprise:** verify admin/CSRF, load owned dialogue and validated previous
+report metadata, then invoke the same model loop with owner-only capabilities.
+The model decides which reports or documents to use and synthesizes the
+answer. Only explicit slash commands use the separate UI-operation path.
+Provider outages are recorded as errors, not successful local answers.
+Both surfaces save the produced turn and observed evidence in their private
+JSON conversation. New Chat clears the active ID; History reopens only the
+actor's previous chats.
 
 Both native chats then format the accepted answer into bounded A2UI sections.
 Enterprise fact cards project only completed, sanitized aggregate evidence;
@@ -215,7 +226,7 @@ Each attempt in Recent runs displays the observed HTTP status, cURL error and el
 
 After an observed HTTP 408/429/500/502/503/504 or cURL timeout, the shared client temporarily excludes that model on that configured connection from **new** ordinary generations. The deployment-local ignored health file contains only hashed provider/endpoint/model identities and expiry times, never keys, prompts, URLs or response bodies. Timeout cooldown is 15 seconds, transient HTTP cooldown 20 seconds, quota cooldown 30 seconds; a valid longer Retry-After can extend an HTTP cooldown up to 120 seconds. Selection preserves the order of eligible configured models. A successful transfer clears that model's entry. Explicit integration probes and explicit model overrides still make real requests. If all configured models are held, the local provider_cooldown reason has zero new transfer attempts. The optional cache fails open and is not an authorization, rate-limit, or quota ledger; concurrent already-started requests may still finish. A locked tool exchange is never rerouted.
 
-HTTP 400/422 responses may contribute one allowlisted, heuristic request-error hint (tool schema, tool history, generation configuration, or invalid arguments). The hint is derived from a bounded response in memory, not an exact root-cause diagnosis. Only the fixed category enters existing attempt evidence; raw provider content remains excluded. Unexplained numeric Enterprise replies, unless the owner explicitly requested a number only, are rejected without starting another model/tool generation. Existing deterministic tool fallbacks remain available.
+HTTP 400/422 responses may contribute one allowlisted, heuristic request-error hint (tool schema, tool history, generation configuration, or invalid arguments). The hint is derived from a bounded response in memory, not an exact root-cause diagnosis. Only the fixed category enters existing attempt evidence; raw provider content remains excluded. Unexplained numeric Enterprise replies, unless the owner explicitly requested a number only, are rejected without starting another model/tool generation. No server-generated free-form answer substitutes for the rejected model response.
 
 Before an execution limit blocks a new step, the trace checkpoints the exhausted deadline, model-call, observed-token or span limit. New local stops appear separately from provider response errors. The blocked call adds no transfer. Historical `provider_budget` remains a combined call/token category. The private conversation export retains measured timing fields. Neither store records arbitrary provider headers, request payloads or response bodies. OpenAI's `x-request-id` is a provider-side identifier. The application's trace ID has a separate origin. [OpenAI debugging requests](https://developers.openai.com/api/reference/overview#debugging-requests) · [OpenAI error codes](https://developers.openai.com/api/docs/guides/error-codes) · [Google Gemini troubleshooting](https://ai.google.dev/gemini-api/docs/troubleshooting) · [cURL error 28](https://curl.se/libcurl/c/libcurl-errors.html)
 
@@ -389,4 +400,4 @@ manifest. No instruction body or raw provider argument is added to operational
 telemetry. Model-selected Support reads record their own tool spans, evidence
 and public product-source identities. Public catalogue counts and bestseller
 ranking are business reads, not customer or owner-wide private records.
-Recognised unfiltered catalogue totals and all-time best sellers bypass model inference. The local business tool and its result evidence are still recorded; lookup failures do not become zero counts. Both agent surfaces use the same published-article declaration and retriever. Article tool evidence records bounded public article source identities, without raw query text or private documents. A successful local answer is not proof that the provider recovered.
+All fresh free-form questions use model inference. Catalogue totals and best sellers are computed by model-selected tools, not natural-language shortcuts. Both surfaces share published article search and bounded exact body retrieval; evidence records public identities and excerpt digests, not raw query text or private documents. A failed lookup never becomes zero counts. Explicit commands and historical local-answer records remain distinguishable from model outcomes.

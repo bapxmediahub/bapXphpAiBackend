@@ -250,31 +250,29 @@ The sequence groups `ProductService`, `SettingsService`, `SecretService` and `Da
 ### 3. Support and Enterprise: context, tools, provider and saved evidence
 
 Both PHP model paths use the same bounded `AiClient::completeWithTools`
-execution loop. Their role policies, data tools and deterministic local paths
-remain distinct. Provider text cannot grant capabilities.
+execution loop for every fresh free-form question. Role policies and available tools
+remain distinct; the model selects knowledge, instructions and tools. PHP executes
+validated operations and never substitutes a keyword-selected answer. Provider text cannot grant capabilities.
 
 ```mermaid
 flowchart TB
   S["Support: guest or own account"] --> Scope
   E["Enterprise: authenticated owner and CSRF"] --> Scope
-  Scope["Save pending actor-owned turn; request budgets"] --> Local{"Authorized local answer or draft?"}
-  Local -->|yes| Trusted["PHP lookup / report / owner-reviewed draft"]
-  Local -->|no| K["Knowledge RAG: scoped current records, published documents, owned history"]
+  Scope["Save pending actor-owned turn; request budgets"] --> K["Owned dialogue and actor metadata; no preselected answer"]
   K --> I["Instruction RAG: role constitution, shared guidance and skill metadata"]
-  I --> T["Tool RAG: role-filtered lexical discovery; initial up to 3 business tools"]
-  T --> M["AiClient: enabled configured provider / model"]
+  I --> T["Tool RAG: role-filtered catalogue and discoverable declarations"]
+  T --> M["Model interprets question and decides retrieval, tools and response"]
   M --> Q{"Declared tool request?"}
   Q -->|yes| Gate["RuntimeAgentToolRegistry: check role, active declaration and arguments"]
   Gate -->|read_runtime_skill| Skill["Allowed .bapX document and actual hash"]
   Gate -->|tool_search| Discover["Up to 4 matches per search; maximum 8 active business tools"]
-  Gate -->|business call| Business["Existing scoped registries and PHP services"]
+  Gate -->|business call| Business["Knowledge RAG: selected scoped records or published document excerpts"]
   Business --> Facts[("MySQL via DatabaseService / approved Markdown")]
   Facts --> Result["Actual result or safe failure; scoped guidance"]
   Skill --> Result
   Discover --> Result
   Result -->|correlated result; bounded next round| M
   Q -->|final response| Finish["Validate and present authorized answer"]
-  Trusted --> Finish
   Finish --> Saved["One private JSON chat; observed traces and evaluation"]
   Finish --> UI["Native text / scoped A2UI"]
 ```
@@ -287,8 +285,10 @@ flowchart TB
 
 The two meta-tools, `read_runtime_skill` and `tool_search`, are model-adapter
 operations, not public MCP tools. Business execution continues through the
-existing scoped registries and services. Local reports and owner-reviewed
-drafts can bypass the model; a draft is not a persisted business mutation.
+existing scoped registries and services. Ordinary questions always use inference;
+PHP calculates exact facts only after the model requests a tool. Explicit slash
+commands remain distinct UI operations, and a draft is not a persisted business
+mutation. An unavailable provider produces an explicit error, not a rule-based answer.
 Provider fallback is bounded and never replays a started tool exchange on
 another provider.
 

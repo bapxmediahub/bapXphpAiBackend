@@ -103,8 +103,8 @@ try {
     echo "{$supportPost['status']} POST /support/ask\n";
     if ($supportPost['status'] === 200 && str_contains($supportPost['body'], 'reply')) {
         // OK
-    } elseif (in_array($supportPost['status'], [400, 503], true)) {
-        echo "  (MySQL or session unavailable, skip support check)\n";
+    } elseif ($supportPost['status'] === 503 && (json_decode($supportPost['body'],true)['run']['outcome']??null)==='error') {
+        echo "  (Model unavailable: explicit agent error, no canned answer)\n";
     } else {
         $failures[] = "POST /support/ask should return a support reply JSON payload";
     }

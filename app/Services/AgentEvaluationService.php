@@ -6,9 +6,11 @@ final class AgentEvaluationService {
     public static function evaluate(string $surface, string $question, string $answer, array $tools = [], string $outcome = 'unknown', array $retrieval = []): array {
         $checks = [];
         $checks['response_present'] = trim($answer) !== '';
+        if($outcome==='error')$checks['turn_completed']=false;
         $checks['no_internal_scaffold'] = !preg_match('/<\/?(?:think|analysis|final_answer)>|\b(?:system prompt|hidden instruction)\b/i', $answer);
         $checks['no_secret_leak'] = !preg_match('/\bsk-[A-Za-z0-9_-]{16,}|-----BEGIN (?:RSA |EC )?PRIVATE KEY-----/i', $answer);
         if($surface==='support'&&$retrieval!==[])$checks['public_product_links_supported']=self::publicProductLinksSupported($answer,$retrieval);
+        if($outcome==='model')$checks['public_article_links_supported']=self::publicArticleLinksSupported($answer,$tools);
         // An internal observed activity label is not an exposed model capability.
         $activityNames=AgentCapabilityPolicy::tools($surface === 'admin' ? 'enterprise' : 'support');
         if($surface==='support')$activityNames[]='customer_ticket_lookup';
@@ -39,6 +41,19 @@ final class AgentEvaluationService {
         foreach($matches[1] as $slug){
             if(!in_array($slug,$known,true)&&!in_array(rtrim($slug,'.,;!'),$known,true))return false;
         }
+        return true;
+    }
+
+    /** Article links in model output must be among actual completed public search results. */
+    public static function publicArticleLinksSupported(string $answer,array $tools): bool {
+        $known=[];
+        foreach($tools as $tool){
+            if(!in_array($tool['name']??'',['search_articles','read_published_article'],true)||($tool['status']??'')!=='complete')continue;
+            foreach((array)($tool['evidence']['sources']??[]) as $source)
+                if(is_string($source['id']??null)&&str_starts_with($source['id'],'article:'))$known[]=substr($source['id'],8);
+        }
+        preg_match_all('~/blog/([^\\s<>"\'\\[\\]\\(\\)]+)~u',$answer,$matches);
+        foreach($matches[1] as $slug)if(!in_array($slug,$known,true)&&!in_array(rtrim($slug,'.,;!'),$known,true))return false;
         return true;
     }
 

@@ -3,19 +3,19 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "fdb3666ddc83471efc2762f85fd7ae5f0819082071b14ae70dc68c26501686cd",
-            "references_sha256": "54329fdd722dd7de093f362e6ef1da91347be2eed177e4737acdb3e9bb3edb01",
-            "review_note": "Reviewed shared bounded provider routing, cooldown scope and expiry, explicit diagnostic bypass, no locked tool replay, redacted 400/422 hints, and removal of duplicate unexplained-number generation."
+            "source_sha256": "cc4640ed0ac4dda4cdbf0b0c4ac41b050d553d1930f973b2b5a5d61c4e715488",
+            "references_sha256": "c25f8f06f7428fab7fbba049ade49d7875a7a0782cde25064ef12db36a6aa987",
+            "review_note": "Reviewed common function execution boundary, per-round declaration snapshots, duplicate call-ID validation, correlated multi-call continuation, explicit incomplete errors, bounded provider continuation memory and article digests across both wire adapters."
         },
         "auth": {
             "source_sha256": "8ab8b0dfe90dd456bb2e5e4f76b35784ecf0d5796d96bcd5beef93f794b73cc6",
-            "references_sha256": "a5d0d5267c378114f6f5feac31855bf8e2a6d70a2da8305a9ce2a88f4115eb5c",
-            "review_note": "Separate atomic public signup/recovery limits, typed signup fields, duplicate case-insensitive checks; no denied token rotation or delivery claim."
+            "references_sha256": "3afeae5396041cd36e7c60f04a04ea342d943555744667675b96b97d5c0ae97d",
+            "review_note": "Reviewed backend skill and session authorization; existing server actor ownership and CSRF remain enforced, no auth implementation changes."
         },
         "commerce": {
             "source_sha256": "a05e401e6a379a17ad8d6353f0f6d59396679f9f6d8d8d99afe33cbc7a57f9f2",
-            "references_sha256": "c07aa15ac052dfcba389342b7ca446f7105343bf5cafaf3e39feb32435619d08",
-            "review_note": "Reviewed shared mail policy: paid-order, shipment and review events remain eligible; existing payment/GST behavior and commerce source unchanged."
+            "references_sha256": "ffa1d152a21fdd630ce28eab2ce5a3b5f1a4d4ae23f2f99cabf6efe25e287b09",
+            "review_note": "Reviewed backend skill and commerce data contracts; read-only model-selected facts do not change payment, order, catalogue or checkout writes."
         },
         "content": {
             "source_sha256": "81e089883371054ee864877c253114a37fa8858f072adf2040da41482d911a85",
@@ -23,34 +23,34 @@
             "review_note": "Reviewed browser snapshot bounds, per-owner and page key, revision conflict, explicit save token cleanup and unchanged MySQL CAS and publication status."
         },
         "foundation": {
-            "source_sha256": "a0402309bd81f65ddc5df05e6f45abd9cf66441c20def334b59b3b25cd747e7e",
-            "references_sha256": "72143dfd889ce423f5ccc0968c40110236a3f849a1e1b5ced859cb29fe18ccc8",
-            "review_note": "Reviewed optional private deployment-local health cache, atomic replacement, bounded expiry, fail-open semantics and no business schema or conversation changes."
+            "source_sha256": "c90863fc623207427f8edd8f045376c53fda9e87484fa7edbafda2aae8d6d1a8",
+            "references_sha256": "946576ecf5f70c6584261be1035171a23570581935217c3eca527a4368e2256c",
+            "review_note": "Reviewed unchanged endpoint pinning and authorization boundaries, private compatible transport loop, trace-only rejection metadata, canonical public knowledge URLs and existing storage."
         },
         "google-tags": {
-            "source_sha256": "74608f4b6615a7a06cdd2df0b96a71cd47560b68c272654f4cf12dedf2fc4658",
+            "source_sha256": "93f7501a5e3218224b83717182e093cc4f62f5661213b4c835c50ec8705cbe8b",
             "references_sha256": "657a277dd510eaf66bee6f0b0ada17e7fef2a016752a6b940c9f7084849063e2",
-            "review_note": "Existing integrations view now links to queued email test; Google settings and reporting unaffected."
+            "review_note": "Reviewed AdminController diff: no Google reporting, integrations or tag behavior changed."
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
-            "references_sha256": "378168667d6800fdba2132f6ab319dca91bcc6302d6989ae3b7e97d9abbc0ea1",
-            "review_note": "Recovery failure and denial now share truthful generic response; no raw transport or token exposure."
+            "references_sha256": "b657b61053f39b7dd1062742849c80194689186c65548a5d26fdcf1019685552",
+            "review_note": "Reviewed shared request failure docs and backend skill; unavailable inference is an explicit saved agent error; HTTP boundary handler unchanged."
         },
         "interface": {
-            "source_sha256": "6cfa1aef3ec799273e87d3b203a26fc30f7d4979eb76b8454c3a9b568520a410",
+            "source_sha256": "bf5bfe6d951311ff0819183fda4d99307e685b86d57e8318e868f324fd9438a9",
             "references_sha256": "431f6eb3fbd7961de74e85d22454ac61a8e54d3f514fc80e02eaaeb62b4b2aea",
-            "review_note": "Existing integrations diagnostic links to canonical sample workspace; contact hold labels corrected."
+            "review_note": "Reviewed native chat model-selected form and reference cards, error retry identity, preserved explicit forms and browser-safety contract."
         },
         "mail": {
-            "source_sha256": "8eb853cb4e129c90b440c156359c4f928d66ee14e50150d267bdcc50fb7b829b",
-            "references_sha256": "94953d8cc1be8d94770cc0ce54fa176e7f8593d84e7bdf969759f205a77f3ee2",
-            "review_note": "Reviewed AdminController diff: only Enterprise inference handling changed; mail triggers, queued samples and SMTP transport remain unchanged."
+            "source_sha256": "8bb6899013b5230197ac942d174512b84cb0d09fb5b2fbb5950d60e11fcbbaaf",
+            "references_sha256": "d0441fde213c5b374c849b9d794dfbaea6d62867d12dda15ceef35633209f768",
+            "review_note": "Reviewed AdminController and SupportController changes; model form proposal never submits or queues mail; existing mail routes and abuse containment unchanged."
         },
         "mcp-clients": {
-            "source_sha256": "cb08fbb82a36095ae5ae7d211a6f0e12904564e2f1f2bb1ee7404184b627b85e",
+            "source_sha256": "c928da291590a33c158a364220c8410fa0d31353613a21488d42985409880886",
             "references_sha256": "1390a1ae3be706072f85e628f3065e2170dc2685b3841c008d02536d232f2d1c",
-            "review_note": "Reviewed shared audit categories and transport metadata; no change to MCP client scopes, authentication, or CLI protocol."
+            "review_note": "Preserved the published four-key STDIO policy schema and enforce its key allowlist on invocation; native-only policy keys do not widen the connector."
         },
         "media": {
             "source_sha256": "c99bf5f35495fb29a3025b39dc32c1fbd2f20640fbacd2784598a53cd3a8584f",
@@ -58,19 +58,19 @@
             "review_note": "Reviewed upload eligibility, revision hash, bounded UTF-8 metadata, row lock, exact patch, no row creation, and view/search/isolated DB tests."
         },
         "operator-help": {
-            "source_sha256": "fc457ebd9df44fb644c78f98bc8943a1aabd1622b9d413943681f4ea25bbdc93",
+            "source_sha256": "304fd9a7a104c7cbbac375e9b16db37269eff90650b0e1136e5a637d71864a6b",
             "references_sha256": "d71ae7fc3cc07db2645077d32f54f7d871609ec9c82f93b55c10e862dda9c49c",
-            "review_note": "Cross-checked owner capability guide and monitoring explanation; exact general task question is local, scoped reports remain on existing authorized paths."
+            "review_note": "Reviewed model-selected operator guidance, native-only policy declarations, unchanged explicit help commands and provider outcome presentation."
         },
         "public-mcp": {
-            "source_sha256": "a995cec1d69a5ce74182a969e99390b21abddac3489fb0219b64c2ac5c9c3259",
-            "references_sha256": "908a2c0d440d75f14ccdfadc3031cc3925f472b239067e2e8f18d31c6c69be81",
-            "review_note": "Shared native article declaration uses existing published projection; no MCP transport, publication rules, or output schema change."
+            "source_sha256": "94ad00c333b2b9949bcea73134458139ef52bb87a788c5e5a980273a2b66057d",
+            "references_sha256": "475a614c13ba4a5e34c83585738934e923a66761a23482f928fa1f8aab00d92b",
+            "review_note": "Verified existing public catalogue framing and published knowledge isolation; normalize UTF-8 media URLs before parsing while retaining safe path validation."
         },
         "remote-commerce": {
-            "source_sha256": "290b7c3db6fb9194fed4286baddd9ef828de57cc9017bbc67dad485ef6c7c050",
-            "references_sha256": "5070a5588ad3871542d24d57f19332056d24d43d2f3efffcb23b69096945c70c",
-            "review_note": "Reviewed shared backend skill and WebMCP docs change; contact submission is independent of cart, checkout and provider calls, existing scoped checkout behavior is unchanged."
+            "source_sha256": "6e33cbd5fc45987a486915a1bcf383f77f1074e76ef6f1b29647c75764ed8424",
+            "references_sha256": "1ff7d74d975b89bf42ca7fe80ac7edfddb91a5d3d4d331286dcc225dff3045d6",
+            "review_note": "Reviewed controller and public projection changes; cart/order tools are read-only and existing remote cart, checkout and payment contracts are unchanged."
         },
         "sales-channels": {
             "source_sha256": "4b05a2d9436a74c6e60b28ce25987bf531cabf698294fb51554219a138c88167",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed MediaService metadata/search patch; URL, binary and usage fields used by published feeds remain unchanged."
         },
         "workflow": {
-            "source_sha256": "9ac3c04c59b23e7d1f07d80e8a3311b1754222bdd79cd22bf483d39dbc4ae735",
-            "references_sha256": "02547adbcf78d518e43216cd4f2c24d3bd81892187ee5f6e02347ab81c23e83c",
-            "review_note": "Existing concurrency fixture expanded; generated route and service map refreshed."
+            "source_sha256": "394b5eb87b837e4825e0c37c559690372ce3ee45741e6037c59d329246945a0f",
+            "references_sha256": "060f3c0b03f3c7fd3adf930a0bd9bd37a85cd4c8d9632045d93aa7041f6ed56e",
+            "review_note": "Reviewed model-first binding AGENTS rule and CI loopback gate, regenerated maps and contracts; no deployment workflow or credentials changed."
         }
     }
 }

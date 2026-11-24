@@ -98,6 +98,39 @@ final class AgentContextService {
             . '- Top 5 products by units sold:' . $top;
     }
 
+    /** Explicit model-selected retrieval; identity is supplied only by the server actor. */
+    public function ownOrderFacts(string $email,?string $reference=null): array {
+        $email=strtolower(trim($email));
+        if($email===''||($reference!==null&&!preg_match('/^[a-f0-9]{16}$/Di',$reference)))return ['error'=>'Sign in and use a valid order reference.'];
+        return self::ownOrderFactsFromRecords($this->store->read('orders'),$email,$reference,$this->schema->agentContextFields('orders'));
+    }
+
+    /** Pure scoped projection; count is all matches, recent is at most five. */
+    public static function ownOrderFactsFromRecords(array $records,string $email,?string $reference,array $schemaFields): array {
+        $email=strtolower(trim($email));
+        if($email===''||($reference!==null&&!preg_match('/^[a-f0-9]{16}$/Di',$reference)))return ['error'=>'Sign in and use a valid order reference.'];
+        $orders=array_values(array_filter($records,static fn(array $order):bool=>
+            strtolower(trim((string)($order['customer_email']??'')))===$email
+            &&($reference===null||strcasecmp((string)($order['id']??''),$reference)===0)));
+        usort($orders,static fn(array $a,array $b):int=>(strtotime((string)($b['created_at']??''))?:0)<=>(strtotime((string)($a['created_at']??''))?:0));
+        $fields=array_flip(array_intersect($schemaFields,['id','status','total','shipped_at','invoice_number','invoice_date','created_at']));
+        $recent=array_map(static function(array $order)use($fields,$schemaFields):array{
+            $row=array_intersect_key($order,$fields);
+            if(in_array('items',$schemaFields,true))$row['items']=array_map(static fn(array $item):array=>[
+                'name'=>mb_substr(strip_tags((string)($item['name']??'')),0,120),'quantity'=>(int)($item['qty']??0)],
+                array_slice(array_filter((array)($order['items']??[]),'is_array'),0,10));
+            return $row;
+        },array_slice($orders,0,5));
+        return ['count'=>count($orders),'recent'=>$recent,'returned_count'=>count($recent),'path'=>'/account/dashboard/orders'];
+    }
+
+    public function publicCatalogueFacts(string $query): array {
+        $site=$this->siteContext($query);
+        return ['products'=>$site['products'],'collection'=>$site['matched_collection'],
+            'available_collections'=>$site['available_collections'],
+            'retrieval'=>$site['retrieval'],'count'=>count($site['products'])];
+    }
+
     /** Share the order state needed for support without delivery addresses or payment identifiers. */
     private function supportOrders(string $email, string $message): array {
         $orders = array_values(array_filter($this->store->read('orders'), static fn(array $order): bool =>

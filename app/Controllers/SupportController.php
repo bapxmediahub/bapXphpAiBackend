@@ -24,7 +24,7 @@ final class SupportController extends BaseController {
         $limiter->hit('support:' . $ip);
         $startedAt = microtime(true);
         $user = (new AuthService())->user();
-        // Signed-in support can create a ticket: enforce CSRF before that possible action.
+        // Protect authenticated support reads and conversation state with CSRF.
         if ($user !== null) $this->validateCsrf();
         $actor = \App\Services\AgentConversationService::actor('support', $user);
         $conversationId = is_string($_POST['conversation_id'] ?? null) && $_POST['conversation_id']!=='' ? $_POST['conversation_id'] : null;
@@ -42,7 +42,8 @@ final class SupportController extends BaseController {
                     'conversation_id'=>$conversationId,'turn_id'=>$turn['turn_id'],
                     'evaluation'=>$turn['evaluation'],'replayed'=>true,'run'=>['trace_id'=>$traceId]]
                     + (new \App\Services\AgentAnswerPresentationService())->responseData((string)$turn['answer'],'support')
-                    + (SupportBotService::newBookingEnquiry($message) ? ['ui'=>['kind'=>'contact_enquiry','subject'=>'general']] : []));
+                    + (($turn['outcome']??'')==='model'&&self::hasContactProposal((array)($turn['tools']??[])) ? ['ui'=>['kind'=>'contact_enquiry','subject'=>'general']] : []),
+                    ($turn['outcome']??'')==='error'?503:200);
             }
             \App\Services\AgentTraceService::begin($traceId,
                 static fn(array $trace)=>$conversations->checkpoint('support',$actor,$conversationId,$traceId,$trace));
@@ -56,10 +57,11 @@ final class SupportController extends BaseController {
                 (array)($answer['run']['tools'] ?? []), isset($answer['ticket_id']) ? (string)$answer['ticket_id'] : null,
                 null, (array)($answer['run']['attempts'] ?? []), (array)($answer['run']['retrieval'] ?? []), (array)($answer['knowledge']??[])
             );
-            $references = (new \App\Services\PublicA2uiService())->forQuestion($message,(array)($answer['knowledge']??[]),(string)($answer['reply']??''));
+            $failed=($answer['run']['outcome']??'')==='error';
+            $references=$failed?null:(new \App\Services\PublicA2uiService())->forAgentEvidence((array)($answer['knowledge']??[]),(array)($answer['run']['tools']??[]),(string)($answer['reply']??''));
             $presentation = (new \App\Services\AgentAnswerPresentationService())->responseData(
                 (string)($answer['reply']??''),'support',(array)($answer['actions']??[]),$references);
-            $this->jsonResponse($answer + $presentation + $record);
+            $this->jsonResponse($answer + $presentation + $record,$failed?503:200);
         } catch (\LogicException $e) {
             if(!empty($user['email']) && is_string($conversationId) && preg_match('/^[a-f0-9]{32}$/D',$conversationId)) {
                 try {
@@ -82,6 +84,11 @@ final class SupportController extends BaseController {
             $this->jsonResponse(['error'=>'The request could not be completed safely. Any saved unfinished action must be checked before retrying.',
                 'conversation_id'=>$conversationId,'request_status'=>'incomplete'],503);
         }
+    }
+
+    private static function hasContactProposal(array $tools): bool {
+        foreach($tools as $tool)if(($tool['name']??'')==='present_contact_enquiry'&&($tool['status']??'')==='complete')return true;
+        return false;
     }
 
     /**

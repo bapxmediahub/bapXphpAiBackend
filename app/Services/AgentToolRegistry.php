@@ -63,11 +63,17 @@ class AgentToolRegistry
 
     public function followUpContext(): ?array
     {
-        if (!self::refersToPreviousPeriod($this->ownerQuestion) || $this->previousReport === null) return null;
+        if (!self::refersToPreviousPeriod($this->ownerQuestion)) return null;
+        return $this->validatedPreviousReport();
+    }
+
+    public function validatedPreviousReport(): ?array
+    {
+        if ($this->previousReport === null) return null;
         $tool = $this->previousReport['tool'] ?? null;
-        if (!in_array($tool, ['support_enquiries', 'gst_register_summary', 'sales_summary', 'commerce_report'], true)
+        if (!in_array($tool, ['support_enquiries', 'gst_register_summary', 'sales_summary', 'commerce_report','order_count'], true)
             || !isset($this->previousReport['from'], $this->previousReport['to'])) return null;
-        $limit = $tool === 'sales_summary' ? self::salesDateLimit($this->previousReport) : 366;
+        $limit = in_array($tool,['sales_summary','order_count'],true) ? self::salesDateLimit($this->previousReport) : 366;
         $range = self::reportDates($this->previousReport, $limit);
         if ($range === null) return null;
         $context = $range + ['tool' => $tool];
@@ -225,6 +231,11 @@ class AgentToolRegistry
                 'description' => 'List existing public store enquiry offerings and their contact form links, without creating a booking or message.',
                 'parameters' => PublicKnowledgeService::serviceInputSchema(),
             ],
+            ['name'=>'order_count','description'=>'Count all recorded orders (not just paid orders) within explicit inclusive dates. Returns status breakdown; no customer details.',
+                'parameters'=>['type'=>'object','properties'=>self::DATE_PROPERTIES+[
+                    'period'=>['type'=>'string','enum'=>['all_time','this_month']]],
+                    'additionalProperties'=>false]],
+            PublicKnowledgeService::agentReadArticleDeclaration(),
         ];
         if ($this->probeProductSlug === null) return $declarations;
         return array_values(array_filter($declarations, static fn(array $tool): bool => $tool['name'] === 'product_status'));
@@ -282,11 +293,13 @@ class AgentToolRegistry
                 'find_order' => $this->findOrder($args),
                 'product_status' => $this->productStatus($args),
                 'sales_summary' => $this->salesSummary($args),
+                'order_count' => $this->orderCountForAgent($args),
                 'commerce_report' => $this->commerceReport($args),
                 'gst_register_summary' => $this->gstRegisterSummary($args),
                 'store_count' => (new AgentContextService($this->store))->ownerCount($args['entity'] ?? null),
                 'support_enquiries' => $this->supportEnquiries($args),
                 'search_articles' => $this->searchArticles($args),
+                'read_published_article' => (new PublicKnowledgeService())->readArticleForAgent($args),
                 'coupon_status' => $this->couponStatus($args),
                 'operator_guide' => (new AdminHelpService())->agentExcerpt($args['topic'], $_SESSION['user'] ?? null, $args['section'] ?? null),
                 'get_public_contact' => (new PublicKnowledgeService())->contact(),
@@ -309,6 +322,10 @@ class AgentToolRegistry
                 'evidence'=>AgentTraceService::toolEvidence($name,$args,$result)]);
             if ($name === 'support_enquiries' && !isset($result['error'])) {
                 $this->completedTicketSummaries[self::ticketSummary($result)] = true;
+            }
+            if($name==='order_count'&&!isset($result['error'])){
+                $context=['tool'=>$name,'from'=>$result['from'],'to'=>$result['to']];
+                $this->reportContexts[implode(':',$context)]=$context;
             }
             if (!isset($result['error']) && isset($result['report_url'])) {
                 $label = match ($name) {
@@ -564,6 +581,35 @@ class AgentToolRegistry
         }
         if ($out === []) return ['found' => 0, 'message' => 'No product matched.'];
         return ['found' => count($out), 'products' => $out];
+    }
+
+    private function orderCountForAgent(array $args): array {
+        $today=new \DateTimeImmutable('today',new \DateTimeZone('Asia/Kolkata'));
+        $period=$args['period']??null;
+        if($period!==null&&(isset($args['from'])||isset($args['to'])))return ['error'=>'Choose a named period or explicit dates.'];
+        $range=match($period){
+            'all_time'=>['from'=>'0001-01-01','to'=>$today->format('Y-m-d')],
+            'this_month'=>['from'=>$today->modify('first day of this month')->format('Y-m-d'),'to'=>$today->format('Y-m-d')],
+            default=>self::reportDates($args,366),
+        };
+        if($range===null)return ['error'=>'Invalid order date range.'];
+        return self::orderCountFacts($this->orders->all(),$range);
+    }
+
+    public static function orderCountFacts(array $orders,array $range): array {
+        $counts=[];$unknownDate=0;$total=0;$zone=new \DateTimeZone('Asia/Kolkata');
+        foreach($orders as $order){
+            $created=(string)($order['created_at']??'');
+            if(!preg_match('/^(\d{4})-(\d{2})-(\d{2})(?:$|[T ])/', $created,$dateParts)||!checkdate((int)$dateParts[2],(int)$dateParts[3],(int)$dateParts[1])){$unknownDate++;continue;}
+            try{$date=(new \DateTimeImmutable($created,$zone))->setTimezone($zone)->format('Y-m-d');}
+            catch(\Throwable){$unknownDate++;continue;}
+            if($date<$range['from']||$date>$range['to'])continue;
+            $status=strtolower((string)($order['status']??'unknown'));
+            if(!preg_match('/^[a-z_]{1,32}$/D',$status))$status='unknown';
+            $counts[$status]=($counts[$status]??0)+1;$total++;
+        }
+        return $range+['count'=>$total,'orders_by_status'=>$counts,'undated_excluded'=>$unknownDate,
+            'basis'=>'All dated order records, including unpaid and cancelled. Not a paid-sales count.'];
     }
 
     private function salesSummary(array $args): array

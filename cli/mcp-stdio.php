@@ -93,7 +93,10 @@ function availableTools(): array
 function publicPolicy(stdClass $arguments): array
 {
     // A guest actor and a fixed operation keep customer and Enterprise capabilities out of this interface.
-    $answer = (new SupportToolRegistry(null))->run(POLICY_TOOL, get_object_vars($arguments));
+    $args=get_object_vars($arguments);
+    if(array_keys($args)!==['key']||!in_array($args['key'],SupportToolRegistry::policyInputSchema()['properties']['key']['enum'],true))
+        return toolFailure('Choose one supported policy key from the input schema.');
+    $answer = (new SupportToolRegistry(null))->run(POLICY_TOOL, $args);
     if (isset($answer['error'])) return toolFailure('Choose one supported policy key from the input schema.');
     $value = $answer['value'] ?? null;
     if (!is_string($value) || $value === '' || mb_strlen($value) > 2048) return toolFailure('The policy is unavailable.');

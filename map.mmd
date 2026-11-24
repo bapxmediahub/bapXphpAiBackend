@@ -1509,7 +1509,6 @@ flowchart LR
   controller_supportcontroller -- extends --> controller_basecontroller
   controller_supportcontroller -. static reference .-> service_agentconversationservice
   controller_supportcontroller -. static reference .-> service_agenttraceservice
-  controller_supportcontroller -. static reference .-> service_supportbotservice
   integration_pagespeedinsightsclient -. static reference .-> service_publicsiteurlservice
   service_addressservice -. source new .-> service_databaseservice
   service_addressservice -. static reference .-> service_taxservice
@@ -1561,6 +1560,7 @@ flowchart LR
   service_agenttraceservice -. static reference .-> service_agentcapabilitypolicy
   service_agenttraceservice -. static reference .-> service_agenttoolregistry
   service_agenttraceservice -. static reference .-> service_aiclient
+  service_agenttraceservice -. static reference .-> service_publicknowledgeservice
   service_agenttraceservice -. static reference .-> service_secretservice
   service_aiclient -. source new .-> service_aiproviderhealthservice
   service_aiclient -. source new .-> service_secretservice
@@ -1637,6 +1637,7 @@ flowchart LR
   service_productservice -. source new .-> service_databaseservice
   service_publica2uiservice -. source new .-> service_publicknowledgeservice
   service_publica2uiservice -. static reference .-> service_agentcontextservice
+  service_publica2uiservice -. static reference .-> service_agenttraceservice
   service_publica2uiservice -. static reference .-> service_supportbotservice
   service_publicagentdiscoveryservice -. source new .-> service_publicmcpservice
   service_publicagentdiscoveryservice -. static reference .-> service_publicmcpservice
@@ -1713,26 +1714,25 @@ flowchart LR
   service_supportbotservice -. source new .-> service_auditlogservice
   service_supportbotservice -. source new .-> service_blogservice
   service_supportbotservice -. source new .-> service_databaseservice
-  service_supportbotservice -. source new .-> service_productservice
   service_supportbotservice -. source new .-> service_runtimeagenttoolregistry
   service_supportbotservice -. source new .-> service_secretservice
-  service_supportbotservice -. source new .-> service_supportticketservice
   service_supportbotservice -. source new .-> service_supporttoolregistry
   service_supportbotservice -. static reference .-> service_agentcontextservice
   service_supportbotservice -. static reference .-> service_agentevaluationservice
-  service_supportbotservice -. static reference .-> service_agenttraceservice
   service_supportbotservice -. static reference .-> service_aiclient
   service_supportbotservice -. static reference .-> service_orderservice
   service_supportticketservice -. source new .-> service_auditlogservice
   service_supportticketservice -. source new .-> service_databaseservice
   service_supportticketservice -. static reference .-> service_agenttranscriptsanitizer
   service_supporttoolregistry -. source new .-> service_agentcontextservice
+  service_supporttoolregistry -. source new .-> service_cartservice
   service_supporttoolregistry -. source new .-> service_categoryservice
   service_supporttoolregistry -. source new .-> service_databaseservice
   service_supporttoolregistry -. source new .-> service_productservice
   service_supporttoolregistry -. source new .-> service_publicknowledgeservice
   service_supporttoolregistry -. source new .-> service_settingsservice
   service_supporttoolregistry -. static reference .-> service_agentcapabilitypolicy
+  service_supporttoolregistry -. static reference .-> service_orderservice
   service_supporttoolregistry -. static reference .-> service_publicknowledgeservice
   service_templeservice -. source new .-> service_databaseservice
   service_verifiedorderservice -. source new .-> service_databaseservice

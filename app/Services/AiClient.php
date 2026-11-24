@@ -141,11 +141,14 @@ final class AiClient
         $contents = [['role' => 'user', 'parts' => [['text' => $this->withAnswerFence($prompt)]]]];
 
         $deadline ??= hrtime(true) + self::GENERATION_TIMEOUT_NS;
+        $seenCalls=[];
         for ($round = 0; $round <= $maxRounds; $round++) {
             $finalRound = $round === $maxRounds;
+            $declared=$tools->declarations();
+            $advertised=array_column($declared,'name');
             $request = [
                 'contents' => $contents,
-                'tools' => [['functionDeclarations' => self::googleDeclarations($tools->declarations())]],
+                'tools' => [['functionDeclarations' => self::googleDeclarations($declared)]],
                 'generationConfig' => [
                     'temperature' => $temperature,
                     'maxOutputTokens' => $maxTokens,
@@ -163,17 +166,21 @@ final class AiClient
             if ($status !== 200 || $body === false) return $this->failureMessage($status, $body);
 
             $result = json_decode((string)$body, true);
-            $parts = $result['candidates'][0]['content']['parts'] ?? [];
+            $candidate=$result['candidates'][0]??[];
+            $parts=$candidate['content']['parts']??[];
+            if(!is_array($candidate)||!is_array($parts)||!self::finishedGoogleCandidate($candidate))return $this->incompleteResponse();
 
             $calls = [];
             foreach ($parts as $part) {
-                if (isset($part['functionCall']['name'])) $calls[] = $part['functionCall'];
+                if(!is_array($part))return $this->incompleteResponse();
+                if(array_key_exists('functionCall',$part))$calls[]=$part['functionCall'];
             }
-            if ($calls === [] || $finalRound) { $answer = self::answerFromParts($parts); if (trim($answer) === '') $this->failureCategory = 'empty_response'; return $answer; }
+            if($finalRound&&$calls!==[])return $this->incompleteResponse();
+            if($calls===[]) { $answer=self::answerFromParts($parts); if(trim($answer)==='')$this->failureCategory='empty_response'; return $answer; }
 
-            if (count($calls) > self::MAX_TOOL_CALLS_PER_ROUND) {
+            if(count($calls)>self::MAX_TOOL_CALLS_PER_ROUND||!self::validCallBatch($calls,$seenCalls,true)) {
                 $this->failureCategory = 'provider_response';
-                return 'AI request failed: the model requested too many lookups in one step.';
+                return 'AI request failed: the model returned an invalid set of lookups.';
             }
 
             // Keep the model's own turn in the history, or the next request has a
@@ -186,10 +193,7 @@ final class AiClient
             foreach ($calls as $call) {
                 $name = (string)$call['name'];
                 $args = $call['args'] ?? [];
-                $result = is_array($args) && ($args === [] || !array_is_list($args)) && $tools->has($name)
-                    ? $tools->run($name, $args)
-                    : ['error' => 'Invalid tool call'];
-                if (!isset($result['error'])) $this->toolCalls++;
+                $result=$this->executeDeclaredTool($tools,$advertised,$name,$args);
                 $responses[] = self::googleFunctionResponse($call, $result);
             }
             $contents[] = ['role' => 'user', 'parts' => $responses];
@@ -407,6 +411,12 @@ final class AiClient
             CURLOPT_PROXY => '',
             CURLOPT_FOLLOWLOCATION => false,
         ];
+        return $this->completeCompatibleLoop($config,$prompt,$maxTokens,$modelOverride,$tools,$maxRounds,$deadline,$laterGoogleFallback,$options);
+    }
+
+    /** Private wire loop; production callers first validate and pin the endpoint. */
+    private function completeCompatibleLoop(array $config,string $prompt,int $maxTokens,?string $modelOverride,
+        AgentToolRegistry|RuntimeAgentToolRegistry|null $tools,int $maxRounds,int $deadline,bool $laterGoogleFallback,array $options): string {
         $headers = ['Content-Type: application/json', 'Authorization: Bearer ' . $config['apiKey']];
         $url = $config['endpoint'] . '/chat/completions';
         $models = in_array($modelOverride, $config['models'], true) ? [$modelOverride] : $config['models'];
@@ -414,11 +424,13 @@ final class AiClient
         $status = 0;
         $body = false;
         foreach ($models as $index => $model) {
+            $seenCalls=[];
             for ($round = 0; $round <= $maxRounds; $round++) {
                 $declarations = $tools === null ? [] : array_map(
                     static fn(array $declaration): array => ['type' => 'function', 'function' => $declaration],
                     $tools->declarations()
                 );
+                $advertised=array_map(static fn(array $declaration):string=>$declaration['function']['name'],$declarations);
                 $payload = ['model' => $model, 'messages' => $messages];
                 $payload[parse_url($url, PHP_URL_HOST) === 'api.openai.com' ? 'max_completion_tokens' : 'max_tokens'] = $maxTokens;
                 if ($declarations !== []) {
@@ -434,34 +446,46 @@ final class AiClient
                     if ($hasModelAlternate && $this->waitForFailover($status, $deadline, $index)) break;
                     return $this->failureMessage($status, $body);
                 }
-                $message = json_decode($body, true)['choices'][0]['message'] ?? [];
-                $calls = $message['tool_calls'] ?? [];
-                if ($calls === [] || $tools === null || $round === $maxRounds) {
-                    $answer = (string)($message['content'] ?? '');
+                $choice=json_decode($body,true)['choices'][0]??[];
+                $message=$choice['message']??[];
+                $calls=$message['tool_calls']??[];
+                if(!is_array($choice)||!is_array($message)||!is_array($calls)||!self::finishedCompatibleChoice($choice))return $this->incompleteResponse();
+                if(($choice['finish_reason']??null)==='tool_calls'&&$calls===[])return $this->incompleteResponse();
+                if($calls!==[]&&($tools===null||$round===$maxRounds))return $this->incompleteResponse();
+                if ($calls === []) {
+                    $answer=is_string($message['content']??null)?$message['content']:'';
                     if (trim($answer) !== '') return self::fencedAnswer($answer) ?? $answer;
                     $this->failureCategory = 'empty_response';
                     if ($round === 0) break;
                     return '';
                 }
-                if (!is_array($calls) || count($calls) > self::MAX_TOOL_CALLS_PER_ROUND) {
+                if(count($calls)>self::MAX_TOOL_CALLS_PER_ROUND||!self::validCallBatch($calls,$seenCalls,false)) {
                     $this->failureCategory = 'provider_response';
                     return 'AI request failed: the model returned an invalid set of lookups.';
                 }
                 $this->toolExchangeStarted=true;
-                $assistant = ['role' => 'assistant', 'content' => $message['content'] ?? null, 'tool_calls' => []];
+                $assistant = ['role'=>'assistant','content'=>is_string($message['content']??null)?$message['content']:'','tool_calls'=>[]];
+                // Documented compatible-provider continuation fields. Preserve only
+                // provider-returned state in this request's locked wire history.
+                // Never include these fields in the answer, saved chat or audit.
+                foreach(['reasoning_content','reasoning_details'] as $field){
+                    if(!isset($message[$field]))continue;
+                    $value=$message[$field];
+                    if(($field==='reasoning_content'&&!is_string($value))
+                        ||($field==='reasoning_details'&&!is_array($value))
+                        ||strlen(json_encode($value,JSON_THROW_ON_ERROR))>262144)return $this->incompleteResponse();
+                    $assistant[$field]=$value;
+                }
+
                 $responses = [];
                 foreach ($calls as $call) {
                     $id = $call['id'] ?? '';
                     $name = $call['function']['name'] ?? '';
                     $arguments = $call['function']['arguments'] ?? '';
-                    if (!is_string($id) || $id === '' || !is_string($name) || !is_string($arguments)) continue;
                     // Chat Completions supplies a JSON object encoded as a string.
                     // https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create
-                    $args = json_decode($arguments, true);
-                    $result = str_starts_with(ltrim($arguments), '{') && is_array($args) && $tools->has($name)
-                        ? $tools->run($name, $args)
-                        : ['error' => 'Invalid tool call'];
-                    if (!isset($result['error'])) $this->toolCalls++;
+                    $args=str_starts_with(ltrim($arguments),'{')?json_decode($arguments,true,64):null;
+                    $result=$this->executeDeclaredTool($tools,$advertised,$name,$args);
                     $assistant['tool_calls'][] = ['id' => $id, 'type' => 'function',
                         'function' => ['name' => $name, 'arguments' => $arguments]];
                     $responses[] = ['role' => 'tool', 'tool_call_id' => $id,
@@ -476,6 +500,46 @@ final class AiClient
             }
         }
         return $status === 200 ? '' : $this->failureMessage($status, $body);
+    }
+
+    /** A malformed or repeated ID cannot execute part of a tool batch. */
+    private static function validCallBatch(array $calls,array &$seen,bool $google): bool {
+        foreach($calls as $call){
+            if(!is_array($call))return false;
+            $name=$google?($call['name']??null):($call['function']['name']??null);
+            if(!is_string($name)||!preg_match('/^[a-zA-Z_][a-zA-Z0-9_-]{0,63}$/D',$name))return false;
+            if(!$google&&(($call['type']??null)!=='function'||!is_string($call['function']['arguments']??null)))return false;
+            $id=$call['id']??null;
+            if($google&&$id===null)continue;
+            if(!is_string($id)||$id===''||strlen($id)>256||isset($seen[$id]))return false;
+            $seen[$id]=true;
+        }
+        return true;
+    }
+
+    /** Shared execution boundary for every supported provider. */
+    private function executeDeclaredTool(AgentToolRegistry|RuntimeAgentToolRegistry $tools,array $advertised,string $name,mixed $args): array {
+        if(!is_array($args)||($args!==[]&&array_is_list($args))||!in_array($name,$advertised,true)||!$tools->has($name)){
+            $span=AgentTraceService::startSpan('retrieval','tool_call_rejected');
+            AgentTraceService::endSpan($span,'error');
+            return ['error'=>'Invalid tool call','guidance'=>'Use advertised functions and JSON object arguments. Discover other authorized functions with tool_search for the next model round.'];
+        }
+        $result=$tools->run($name,$args);
+        if(!isset($result['error']))$this->toolCalls++;
+        return $result;
+    }
+
+    private static function finishedGoogleCandidate(array $candidate): bool {
+        return !isset($candidate['finishReason'])||in_array($candidate['finishReason'],['STOP'],true);
+    }
+
+    private static function finishedCompatibleChoice(array $choice): bool {
+        return !isset($choice['finish_reason'])||in_array($choice['finish_reason'],['stop','tool_calls'],true);
+    }
+
+    private function incompleteResponse(): string {
+        $this->failureCategory='provider_response';
+        return 'AI request failed: the model response was incomplete. Please try the question again.';
     }
 
     /** Cross-provider recovery is allowed only before a tool result has been executed.
@@ -546,7 +610,8 @@ final class AiClient
     {
         $answer = '';
         foreach ($parts as $part) {
-            $text = (string)($part['text'] ?? '');
+            if(!is_array($part)||!is_string($part['text']??null))continue;
+            $text=$part['text'];
             if ($text === '' || !empty($part['thought'])) continue;
             $answer .= $text;
         }

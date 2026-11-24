@@ -81,7 +81,7 @@ test('local catalogue MCP checks the current shop settings and publishes only vi
             assert.ok(answer.structuredContent.value.length > 0);
             assert.deepEqual(await cli(['mcp:policy', key]), answer.structuredContent);
         }
-        for (const args of [{}, { key: 'orders' }, { key: ['tracking'] }, { key: 'tracking', role: 'admin' }]) {
+        for (const args of [{}, { key: 'orders' }, { key: 'delivery_within_india' }, { key: 'consultation_booking' }, { key: ['tracking'] }, { key: 'tracking', role: 'admin' }]) {
             assert.equal((await policy(args)).result.isError, true);
         }
         for (const name of ['own_ticket_status', 'find_order', 'public_catalog']) {
