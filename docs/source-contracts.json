@@ -29,8 +29,8 @@
         },
         "google-tags": {
             "source_sha256": "7edbdefed03dedb366ca2201e7af5423ce0e41c37e60de4ad0e9912f27f10e22",
-            "references_sha256": "ffea01d2a86c8a6ac0417c3923ea3211e8fe37194f5e6099f83634e498fd5c9e",
-            "review_note": "Reviewed the owner settings guide and site head. Brand favicon fallback is independent of Google IDs and authorization."
+            "references_sha256": "9a0ef83889695c7cc43367378840c18bcbfb2ba87e7f5431a967f11599c13084",
+            "review_note": "Reviewed the frontend skill addition alongside consent-aware Google tag rendering. The change applies only to enquiry-card text and introduces no script, tag or consent dependency."
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
@@ -38,9 +38,9 @@
             "review_note": "Checked the common layout and controller feedback against the HTTP response boundary. The appearance redirect reports failed writes without provider details."
         },
         "interface": {
-            "source_sha256": "e0fce2f882d87ca6c1a185cf2b0aff0917af8e70c4df0079e05585b57ac97a28",
-            "references_sha256": "99bd79cb56ec19aebe3cd9227670363f0506693f28e145ab51f0998625bf5345",
-            "review_note": "Verified labels, active menu links, 1440px and 375px layouts, keyboard and native filter behavior against Design.md, the Users operator help and admin guide."
+            "source_sha256": "77b65056a8c380b2f2ce9552b1e570c7403a9017023b52b4e0b4baaa79b40e91",
+            "references_sha256": "e2219f34ee5d6cace2c47a96d56761be98b68e685c9adf443c0fb43ead847ab6",
+            "review_note": "Matched the shared muted label color to the white card surface and WCAG small-text requirement. Checked the four actual page consumers at 1280px and 375px, the About CSS failure case and native enquiry navigation."
         },
         "mail": {
             "source_sha256": "b45d9ee217172b15b4a2bf24d95ef1c27b396c060cbd22a1416c7c022a8cca72",
@@ -69,8 +69,8 @@
         },
         "remote-commerce": {
             "source_sha256": "fdbee076578636fc2de96f884ddf628b0660d3931ce118bafe56423314da1511",
-            "references_sha256": "f0c83802ac237423a25e0567d1c0fd5c5a52cc72e85c3953d4380937db4f9388",
-            "review_note": "Reviewed the new admin directory design guidance against the public cart, checkout and remote commerce references; the new controls are private read-only account filters."
+            "references_sha256": "c821c44f420a276a4e43a0f48660c23f3bdab0cdcc245e5336d18ea1693f00cc",
+            "review_note": "Cross-checked the shared enquiry-card token on Home and Shop against the commerce and checkout guidance. Browser navigation reaches the existing contact form; no cart, order or checkout behavior changed."
         },
         "sales-channels": {
             "source_sha256": "6e5ee7b44dd92cc4dadec7a3c02f4bb9da797ba98d4e541e9f956687db236142",
@@ -78,9 +78,9 @@
             "review_note": "Confirmed the existing catalogue optimiser and filename handling remain the default. Only brand uploads retain the original raster type."
         },
         "workflow": {
-            "source_sha256": "7e1645e1e2b99f44c02129e46c8eb2d478fea92bf68ec4fd8d40c1f99f598eb0",
+            "source_sha256": "f29fd017b20cde6b35871e1eeeff24e5f2ebf6736122476f417cf7639c88fd23",
             "references_sha256": "e34bc6f1ebc75679c05889ba2d5c65285603a62a53ccb61f230877a7eac24340",
-            "review_note": "Cross-checked the added admin UI skill against issue-first browser verification, private fixtures and regenerated route inventory; repository gates and generated map conventions stay consistent."
+            "review_note": "Verified the existing About Chromium suite reproduces the 3.28 contrast defect with the page CSS blocked and passes after the shared style fix. Normal layout checks explicitly require the editorial stylesheet."
         }
     }
 }
