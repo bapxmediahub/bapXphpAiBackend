@@ -36,7 +36,7 @@ foreach ($actual as $caseId => $passed) {
 }
 $implementationFiles = [
     'app/Services/AgentInstructionService.php','app/Services/AgentCapabilityPolicy.php',
-    'app/Services/AgentToolRegistry.php','app/Services/AgentContextService.php',
+    'app/Services/AgentToolRegistry.php','app/Services/SupportToolRegistry.php','app/Services/RuntimeAgentToolRegistry.php','app/Services/AgentContextService.php',
     'app/Services/SupportBotService.php','app/Services/AgentConversationService.php',
     'app/Services/AgentEvaluationService.php','app/Services/AgentTraceService.php',
     'app/Services/AiClient.php','app/Services/CategoryService.php','app/Services/ProductService.php',

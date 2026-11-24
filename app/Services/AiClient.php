@@ -111,7 +111,7 @@ final class AiClient
      */
     public function completeWithTools(
         string $prompt,
-        AgentToolRegistry $tools,
+        AgentToolRegistry|RuntimeAgentToolRegistry $tools,
         int $maxTokens = 1024,
         float $temperature = 0.3,
         int $maxRounds = 4,
@@ -335,7 +335,7 @@ final class AiClient
         string $prompt,
         int $maxTokens,
         ?string $modelOverride,
-        ?AgentToolRegistry $tools = null,
+        AgentToolRegistry|RuntimeAgentToolRegistry|null $tools = null,
         int $maxRounds = 0,
         ?int $deadline = null,
         bool $laterGoogleFallback = false

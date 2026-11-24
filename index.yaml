@@ -45,8 +45,8 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 491
-  relationships: 434
+  concepts: 492
+  relationships: 437
   by_type:
     blog: 16
     controller: 17
@@ -56,7 +56,7 @@ summary:
     route: 177
     runtime_instruction: 6
     schema: 24
-    service: 84
+    service: 85
     skill: 12
 concepts:
   - id: "blog:benefits-of-rudraksha"
@@ -3965,6 +3965,7 @@ concepts:
       - "AgentAttachmentService"
       - "AgentDraftService"
       - "AgentInstructionService"
+      - "RuntimeAgentToolRegistry"
       - "AgentToolRegistry"
       - "EnterpriseToolRegistry"
       - "AgentConversationService"
@@ -5112,6 +5113,8 @@ concepts:
       - "AgentContextService"
       - "SupportTicketService"
       - "SupportToolRegistry"
+      - "AgentInstructionService"
+      - "RuntimeAgentToolRegistry"
       - "AgentConversationService"
       - "AgentTraceService"
       - "AgentEvaluationService"
@@ -5973,6 +5976,14 @@ concepts:
     tags:
       - "code"
       - "service"
+  - id: "service:RuntimeAgentToolRegistry"
+    type: "service"
+    title: "RuntimeAgentToolRegistry"
+    description: "Service: RuntimeAgentToolRegistry"
+    resource: "app/Services/RuntimeAgentToolRegistry.php"
+    tags:
+      - "code"
+      - "service"
   - id: "service:RuntimeHealthService"
     type: "service"
     title: "RuntimeHealthService"
@@ -6349,6 +6360,9 @@ relationships:
     to: "service:ResourceService"
     relation: "declared_service"
   - from: "controller:AdminController"
+    to: "service:RuntimeAgentToolRegistry"
+    relation: "declared_service"
+  - from: "controller:AdminController"
     to: "service:RuntimeHealthService"
     relation: "declared_service"
   - from: "controller:AdminController"
@@ -6601,6 +6615,9 @@ relationships:
     to: "service:AgentEvaluationService"
     relation: "declared_service"
   - from: "controller:SupportController"
+    to: "service:AgentInstructionService"
+    relation: "declared_service"
+  - from: "controller:SupportController"
     to: "service:AgentTraceService"
     relation: "declared_service"
   - from: "controller:SupportController"
@@ -6614,6 +6631,9 @@ relationships:
     relation: "declared_service"
   - from: "controller:SupportController"
     to: "service:RateLimiter"
+    relation: "declared_service"
+  - from: "controller:SupportController"
+    to: "service:RuntimeAgentToolRegistry"
     relation: "declared_service"
   - from: "controller:SupportController"
     to: "service:SeoService"

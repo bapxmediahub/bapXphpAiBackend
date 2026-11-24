@@ -95,6 +95,51 @@ $tests['support exposed tool contracts match executable capabilities and reject 
     assertTrue(isset($customer->run('own_ticket_status',['period'=>['2026-11-15','2026-11-01']])['error']), 'Reversed dates fail before any data lookup');
 };
 
+$tests['runtime model adapter exposes only role-scoped tools and activates existing instructions on demand'] = static function (): void {
+    $support = new \App\Services\RuntimeAgentToolRegistry('support',null,new \App\Services\SupportToolRegistry(null));
+    $adminActor=['role'=>'admin'];
+    $admin = new \App\Services\RuntimeAgentToolRegistry('admin',$adminActor,new \App\Services\EnterpriseToolRegistry());
+    \App\Services\AgentTraceService::begin(bin2hex(random_bytes(8)));
+    try {
+        $prompt=$support->instructionPrompt();
+        assertTrue(str_contains($prompt,'catalogue')&&!str_contains($prompt,'Use only currently visible products and the actual member IDs'),'Initially disclose metadata, not the full catalogue skill');
+        assertTrue(!$support->has('find_order')&&!$support->has('own_ticket_status')&&!$support->has('commerce_report'),'Guest never receives private or owner declarations');
+        assertTrue($support->has('public_catalogue_summary')&&$support->has('public_best_sellers'),'Public facts discoverable by model');
+        assertTrue(isset($support->run('read_runtime_skill',['skill'=>'reporting'])['error']),'No Enterprise skill in Support');
+        assertTrue(isset($support->run('read_runtime_skill',['skill'=>'../enterpriseagent.md'])['error']),'No path-shaped skill selectors');
+        $skill=$support->run('read_runtime_skill',['skill'=>'catalogue']);
+        assertTrue(str_contains($skill['instructions'],'Use only currently visible products'),'Selected runtime instruction loaded');
+        $manifest=\App\Services\AgentTraceService::snapshot()['instruction_manifest'];
+        assertTrue(in_array('.bapX/bapXcl/support/catalog.md',array_column($manifest['files'],'path'),true),'Trace records actually activated skill');
+        assertTrue(!str_contains(json_encode($manifest),'Use only currently visible products'),'Trace contains no instruction body');
+        assertTrue($admin->has('commerce_report')&&$admin->has('read_runtime_skill'),'Admin has owner capabilities');
+        $adminPrompt=$admin->instructionPrompt();
+        assertTrue(!str_contains($adminPrompt,'Enterprise-only reporting'),'Report skill is selectively loaded');
+        assertTrue(str_contains($admin->run('read_runtime_skill',['skill'=>'reporting'])['instructions'],'Enterprise-only reporting'),'Admin can activate reporting');
+        try {
+            new \App\Services\RuntimeAgentToolRegistry('admin',['role'=>'customer'],new \App\Services\EnterpriseToolRegistry());
+            assertTrue(false,'Customer must not construct an owner model adapter');
+        } catch (\RuntimeException) { assertTrue(true,'Owner-only boundary'); }
+    } finally { \App\Services\AgentTraceService::reset(); }
+};
+
+$tests['public catalogue summary and bestseller projection never expose private records'] = static function (): void {
+    $registry=\App\Services\SupportToolRegistry::class;
+    $products=[['slug'=>'lamp','name'=>'Lamp','category'=>'lamps','categories'=>['lamps','puja'],'private_cost'=>10],
+        ['slug'=>'ring','name'=>'Ring','category'=>'rings'],['slug'=>'hidden','name'=>'Hidden','is_hidden'=>true],
+        ['slug'=>'other','name'=>'Other','category'=>'retired']];
+    $categories=[['slug'=>'lamps','name'=>'Lamps'],['slug'=>'puja','name'=>'Puja'],['slug'=>'rings','name'=>'Rings'],['slug'=>'retired','name'=>'Secret Collection','is_collection'=>true]];
+    $summary=$registry::catalogueSummary($products,$categories);
+    assertSame(3,$summary['total'],'Count distinct visible products');
+    assertSame(['Lamps'=>1,'Puja'=>1,'Rings'=>1,'Uncategorised'=>1],array_column($summary['categories'],'count','name'),'Use current public categories only; deduplicate memberships');
+    assertTrue(!str_contains(json_encode($summary),'Secret Collection')&&!str_contains(json_encode($summary),'private_cost'),'No private or retired collection details');
+    $bestsellers=$registry::publicRankedProducts([$products[0],$products[2],$products[1]]);
+    assertSame([['name'=>'Lamp','slug'=>'lamp','url'=>'/product/lamp'],['name'=>'Ring','slug'=>'ring','url'=>'/product/ring']],$bestsellers,'Only approved product links and names, no hidden rows or sales amounts');
+    assertSame('public_catalogue_summary',\App\Services\SupportBotService::aggregateToolForQuestion('how many total products ther are selling in what what categories'),'Original failed question');
+    assertSame('public_best_sellers',\App\Services\SupportBotService::aggregateToolForQuestion('what is top selling'),'Original failed followup');
+    assertSame(null,\App\Services\SupportBotService::aggregateToolForQuestion('How many products are in my order?'),'Never substitute store totals for private orders');
+};
+
 $tests['trace evidence uses executed scope rather than contradictory requested dates'] = static function (): void {
     $e = \App\Services\AgentTraceService::toolEvidence('sales_summary',
         ['from'=>'2026-01-01','to'=>'2026-01-31'],
