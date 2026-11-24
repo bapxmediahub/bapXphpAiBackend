@@ -18,6 +18,15 @@ description: Use when editing owner/admin pages, CRUD forms, media library, envi
 - Astrologer profile management and portraits are retired in admin as well as publicly. Do not restore their navigation, upload category, or bundled assets. Existing historical session and financial records remain owner-accessible; they do not authorize reintroducing profile management.
 - Validate with `php tests/run.php`; use a browser workflow for changed admin pages.
 
+## Navigation and Users directory
+
+Keep decorative sidebar icons aligned with visible link labels and preserve
+active states and module visibility. The user directory is owner-only and
+matches order history by checkout email. Show full-directory segment counts
+separately from filtered result totals. Preserve filters across pagination,
+and verify IST date boundaries, native keyboard expansion, and stacked
+order history at 375px with synthetic accounts.
+
 ## Admin Panel Agent
 
 The interface at `/admin/agent` is the Enterprise Agent chat workspace.

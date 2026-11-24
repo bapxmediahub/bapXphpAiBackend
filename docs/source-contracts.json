@@ -23,9 +23,9 @@
             "review_note": "Reviewed browser snapshot bounds, per-owner and page key, revision conflict, explicit save token cleanup and unchanged MySQL CAS and publication status."
         },
         "foundation": {
-            "source_sha256": "74e608b8003b52bb1baf8c7fad026c9c3ff1cdb118664310f09a5a2bdf2fe34b",
+            "source_sha256": "2be135cc13e6c54384371b407646b276a5026e42ec3b44eb75e1d9f179da7db7",
             "references_sha256": "c2067088cbcfaf8b1b72f6e313c2783c60fb4dc43dd3b986bf911743d9883cfe",
-            "review_note": "Reviewed the isolated file-validation regression and existing settings persistence. Brand uploads reuse the ordinary media store and do not change schema or hosting prerequisites."
+            "review_note": "Checked the existing private route and email-matched read-only data flow against shared hosting, architecture and storage guidance; no schema, routing or persistence contract changed."
         },
         "google-tags": {
             "source_sha256": "7edbdefed03dedb366ca2201e7af5423ce0e41c37e60de4ad0e9912f27f10e22",
@@ -38,14 +38,14 @@
             "review_note": "Checked the common layout and controller feedback against the HTTP response boundary. The appearance redirect reports failed writes without provider details."
         },
         "interface": {
-            "source_sha256": "88da847e29355d7c5eab63edde7185233fcf3da8fa3c181f93a9337e69188b00",
-            "references_sha256": "3aee7b3b984637e05c1e3e0e602bd3b4062a15dbaa8168c426628ab4ab9d5d17",
-            "review_note": "Compared the real 1280 and 375 px previews, labels and failure messages with the appearance design and owner help."
+            "source_sha256": "e0fce2f882d87ca6c1a185cf2b0aff0917af8e70c4df0079e05585b57ac97a28",
+            "references_sha256": "99bd79cb56ec19aebe3cd9227670363f0506693f28e145ab51f0998625bf5345",
+            "review_note": "Verified labels, active menu links, 1440px and 375px layouts, keyboard and native filter behavior against Design.md, the Users operator help and admin guide."
         },
         "mail": {
-            "source_sha256": "bf54512cf96b10c8fa07b6350058fe14b250aa04a19488af9660c3a6d297223e",
+            "source_sha256": "b45d9ee217172b15b4a2bf24d95ef1c27b396c060cbd22a1416c7c022a8cca72",
             "references_sha256": "d0441fde213c5b374c849b9d794dfbaea6d62867d12dda15ceef35633209f768",
-            "review_note": "Compared the appearance-only controller change to mail and authentication routes. The handler stores brand settings and audit events without using SMTP."
+            "review_note": "Reviewed the AdminController diff against queue, outbox and delivery guidance; only users() directory selection and metadata changed."
         },
         "mcp-clients": {
             "source_sha256": "78b45576da2d1ffc37e26fdf5701db6321d7df0b22488288b1879d91472778f1",
@@ -54,13 +54,13 @@
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
-            "references_sha256": "04717572b15051f759dc76de1eb41e169074bbc8baaf4cbcd317f25ded76b57f",
-            "review_note": "Checked format, size and storage controls, original favicon format and existing media deletion references against the host persistence contract."
+            "references_sha256": "f9dc1ab474a5711a942c47a2e50f08ac189d7bf266f8d9d71fe6a25db80f63d2",
+            "review_note": "Reviewed the added admin UI skill guidance alongside guarded media deletion and the sidebar Media Library link; the route and media workflows retain their existing semantics."
         },
         "operator-help": {
-            "source_sha256": "9d45f0f27cdb3295aaa3afc7576f26a9d134484bbae6f51847f5980256a016be",
-            "references_sha256": "5ffe5bfa3bcadef0bf9eda2f506fd6a98918fc20b26531c90c2b052cae6322f5",
-            "review_note": "Compared the active brand preview, file limits, persistent library storage and failure handling with the owner settings guide."
+            "source_sha256": "5eae58600192161309b397b846279f6ed938deb62cf27e42ea70d3ccc6cd9695",
+            "references_sha256": "9514c6b0b4ffcb0a09bc116419cfcc30e7ae5a70db7ae01ccc9509fcb1566f6b",
+            "review_note": "Checked Customers help against the owner route, email-matched history, account segments, native combined filters and IST date boundaries; Help for this page still resolves the same guide."
         },
         "public-mcp": {
             "source_sha256": "3342adc5aa7dcf4c375bc8f4c3010f978a98c0b3e42c9c4cc4b9fb51d078c282",
@@ -69,8 +69,8 @@
         },
         "remote-commerce": {
             "source_sha256": "fdbee076578636fc2de96f884ddf628b0660d3931ce118bafe56423314da1511",
-            "references_sha256": "f4db6eb72be1e05fc6a6f0f3241f6de077b4762466b06cde0f9e64e530fd4f45",
-            "review_note": "Compared the shared layout and Design.md change with checkout and cart guidance. Appearance still uses a distinct owner form and does not touch commerce state."
+            "references_sha256": "f0c83802ac237423a25e0567d1c0fd5c5a52cc72e85c3953d4380937db4f9388",
+            "review_note": "Reviewed the new admin directory design guidance against the public cart, checkout and remote commerce references; the new controls are private read-only account filters."
         },
         "sales-channels": {
             "source_sha256": "6e5ee7b44dd92cc4dadec7a3c02f4bb9da797ba98d4e541e9f956687db236142",
@@ -78,9 +78,9 @@
             "review_note": "Confirmed the existing catalogue optimiser and filename handling remain the default. Only brand uploads retain the original raster type."
         },
         "workflow": {
-            "source_sha256": "658f927bf8de1f7a1ec16b36fe9381189e75b8fbaef9e86d193407eb02a2e127",
+            "source_sha256": "7e1645e1e2b99f44c02129e46c8eb2d478fea92bf68ec4fd8d40c1f99f598eb0",
             "references_sha256": "e34bc6f1ebc75679c05889ba2d5c65285603a62a53ccb61f230877a7eac24340",
-            "review_note": "Reviewed the declared MediaService route relationship and admin testing guidance. The workflow still uses the same route, store and browser verification."
+            "review_note": "Cross-checked the added admin UI skill against issue-first browser verification, private fixtures and regenerated route inventory; repository gates and generated map conventions stay consistent."
         }
     }
 }
