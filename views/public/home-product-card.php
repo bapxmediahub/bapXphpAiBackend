@@ -14,7 +14,7 @@
         <?php endif; ?>
     </a>
     <div class="product-card__body">
-        <h3><a class="product-card__title" href="<?= e($productUrl) ?>"><?= e($item['name']) ?></a></h3>
+        <h3><a class="product-card__title" href="<?= e($productUrl) ?>" title="<?= e($item['name']) ?>"><?= e($item['name']) ?></a></h3>
         <p class="product-card__desc"><?= e(strip_tags((string)($item['description'] ?? ''))) ?></p>
         <div class="product-card__price-row">
             <span class="price">₹<?= e((string)(($item['offer_price'] ?? 0) ?: ($item['price'] ?? 0))) ?></span>

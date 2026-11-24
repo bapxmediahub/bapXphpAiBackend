@@ -26,7 +26,7 @@ section fills the available stable viewport or grows naturally. Tall cards
 scroll until their final controls are exposed. Release the stack for keyboard
 focus and fragment navigation. Avoid per-item entrance animations inside the
 homepage stack. Native horizontal scroll snap advances whole cards; preserve
-purchase forms, short viewport layout and reduced/no-JS behavior.
+purchase forms, short viewport layout and reduced/no-JS behavior. Verify the homepage header physically occupies the measured sticky offset in normal, reduced-motion and no-JS modes. Verify every consecutive section, including FAQ into the real, single footer as the final slide. Use tests/homepage-release-browser.cjs against the actual PHP layout and exact deployed SHA, not only a simplified fixture. Preserve readable dark-footer contrast and all links. Also reserve space inside cards for floating actions rather than shrinking the opaque surface. Rehearse long product names and active-cart states; inspect actual purchase-button hit targets at the resting frame.
 
 Run `node --test tests/site-motion.test.cjs`, PHP/repository CI, then real
 Playwright desktop/375px and reduced/no-JS checks. Inspect intermediate frames at distinct scroll positions and after scrolling back,

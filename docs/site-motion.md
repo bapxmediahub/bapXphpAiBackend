@@ -22,7 +22,7 @@ change data, fake a chart value or script a purchase.
   available, with once-only entrance fallback. The homepage's complete cards
   are the transition: no nested photo, heading or panel scroll animations.
   Product rails use native horizontal scroll snap and visitor-operated arrows.
-  Purchase controls remain steady and fully visible at each snap position.
+  Purchase controls remain steady and reachable at settled snap positions. The homepage uses compact, equal-height merchandise cards with full linked names, two-line title/description previews and unchanged 44px purchase targets.
 - Existing Support/History/navigation controls own their state. A panel or
   new chat message can receive a short entry transition after that real state
   changes. The module does not submit forms or fabricate completion feedback.
@@ -38,7 +38,7 @@ change data, fake a chart value or script a purchase.
 - The homepage sections share an opaque native sticky stack. Each fills the
   available stable viewport, or grows to expose all content. A single
   ResizeObserver measures card/header heights only when geometry changes;
-  tall cards reach their final row before holding. Focus, fragment navigation,
+  tall cards reach their final row before holding. The homepage header remains pinned independent of animation preferences and JS. The existing single footer moves into the enhanced stack as the final opaque slide, with an explicit contentinfo landmark; FAQ is the last sticky predecessor. Without enhancement the same footer stays in normal document flow. The measured top offset is occupied rather than left blank. Opaque cards retain internal clearance for floating controls; an active cart gets additional mobile clearance. Focus, fragment navigation,
   reduced motion and missing enhancement restore ordinary flow.
 - Reduced motion and data-saving skip presentation effects. A live preference
   change cancels active animations; no-JS and missing observer/animation APIs
@@ -81,6 +81,8 @@ framework is added to the application.
 
 The [animation-performance skill](https://github.com/emilkowalski/skills/blob/main/skills/animation-performance/SKILL.md) (reviewed blob c7dd441dde8d597c877e851ed9f9601249351591) distinguishes layout work, painting and compositor animation. Do not add blanket will-change or transition:all. Compare identical scroll paths under the same browser conditions; active animation counts and screenshots are not frame-rate measurements.
 
+The [W3C carousel tutorial](https://www.w3.org/WAI/tutorials/carousels/) guides keyboard-operable navigation and understandable position announcements. A single visible slide announces its position as “1 of 4”, not “1–1 of 4”.
+
 ## Validation contract
 
 Run `node --test tests/site-motion.test.cjs` and the repository's PHP/CI checks.
@@ -94,7 +96,7 @@ and return to it by keyboard. Verify that the first shop action stays reachable,
 fragment links land on their sections and horizontal temple/product rails advance whole cards.
 Run \`tests/home-full-card-browser.cjs\` at 375x812, 1280x900 and 375x580;
 check native sticky handoff, reverse scrolling, keyboard flow, reduced/no-JS,
-whole-card rail geometry and intact purchase forms.
+whole-card rail geometry and intact purchase forms. Verify the pinned header meets the incoming section, long product titles do not make ordinary cards unnecessarily tall, and real floating controls do not cover purchase buttons or trust labels at rest, including the active-cart state.
 
 Private admin browser state, customer-page text and screenshots stay outside
 Git. Browser emulation does not certify every physical phone's compositor or
@@ -113,3 +115,15 @@ Escape dismissal, contained keyboard focus and focus return to its trigger.
 Background scroll/focus is disabled only while that explicit modal drawer is
 open, then restored; resizing to desktop removes modal state. This is not a
 page scrolljacking mechanism. The drawer's own contents remain scrollable.
+
+### Whole-page release verification
+
+Use the actual PHP-rendered public layout as well as controlled product fixtures.
+Run tests/homepage-release-browser.cjs locally and after the deployment SHA
+gate with EXPECTED_SHA set to the full expected production revision. The
+post-deployment workflow runs the same test at 1536×850, 1280×900, 375×812 and
+375×580. Verify every consecutive handoff forward and reverse, pinned header
+and brand, real footer landmark, no blank strip at the end, readable footer
+contrast (at least 4.5:1), legal link hit testing, mobile menu, reduced motion and
+no-JS fallback. This is read-only public acceptance, not a purchase or a physical
+phone performance certification. Preserve prior product/cart and WebMCP gates.
