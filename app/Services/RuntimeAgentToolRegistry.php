@@ -128,10 +128,10 @@ final class RuntimeAgentToolRegistry
     /** Server-owned deterministic fallback, never declared to the model. */
     public function lookupTrusted(string $name,array $args): array {
         if(!isset($this->available[$name]))return ['error'=>'Not permitted'];
-        return $this->executeBusiness($name,$args);
+        return $this->executeBusiness($name,$args,'local_tool_lookup');
     }
 
-    private function executeBusiness(string $name,array $args): array {
+    private function executeBusiness(string $name,array $args,string $origin='model_tool_lookup'): array {
         // Apply relevant task guidance even if the model omitted a separate activation.
         $guidance=[];
         try {
@@ -153,7 +153,13 @@ final class RuntimeAgentToolRegistry
             if(!isset($result['error'])) {
                 $this->results[$name]=$result;
                 if($name==='public_catalogue_summary')$this->retrieval[]=AgentTraceService::safeRetrieval([
-                    'intent'=>'catalogue_summary','status'=>'matched','reason'=>'model_tool_lookup','result_count'=>$result['total']]);
+                    'intent'=>'catalogue_summary','status'=>'matched','reason'=>$origin,'result_count'=>$result['total']]);
+                if($name==='search_articles') {
+                    $sources=AgentTraceService::articleSources($result);
+                    $this->retrieval[]=AgentTraceService::safeRetrieval(['intent'=>'published_articles',
+                        'status'=>$sources?'matched':'no_match','reason'=>$origin,
+                        'candidate_count'=>(int)($result['found']??0),'result_count'=>count($sources),'sources'=>$sources]);
+                }
                 if(in_array($name,['public_catalog','public_best_sellers'],true)) {
                     $sources=[];
                     foreach((array)($result['products']??[]) as $p) {
@@ -161,7 +167,7 @@ final class RuntimeAgentToolRegistry
                         $this->products[$p['slug']]=$p;
                         $sources[]=['id'=>'product:'.rawurlencode($p['slug']),'last_updated'=>null];
                     }
-                    $this->retrieval[]=AgentTraceService::safeRetrieval(['intent'=>$name==='public_best_sellers'?'best_sellers':'catalogue_search','status'=>$sources?'matched':'no_match','reason'=>'model_tool_lookup','result_count'=>count($sources),'sources'=>$sources]);
+                    $this->retrieval[]=AgentTraceService::safeRetrieval(['intent'=>$name==='public_best_sellers'?'best_sellers':'catalogue_search','status'=>$sources?'matched':'no_match','reason'=>$origin,'result_count'=>count($sources),'sources'=>$sources]);
                 }
             }
         }

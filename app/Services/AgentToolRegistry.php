@@ -190,18 +190,7 @@ class AgentToolRegistry
                     'required' => ['entity'],
                 ],
             ],
-            [
-                'name' => 'search_articles',
-                'description' => 'Search published blog and help articles by keyword. Returns titles and their paths '
-                    . 'so an answer can point at real published content.',
-                'parameters' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'query' => ['type' => 'string', 'description' => 'Words to search for.'],
-                    ],
-                    'required' => ['query'],
-                ],
-            ],
+            PublicKnowledgeService::agentArticleDeclaration(),
             [
                 'name' => 'operator_guide',
                 'description' => 'Read the official owner instructions for a task in this store. Use this for how-to questions about the admin screens. For current business figures, use the appropriate business lookup.',
@@ -962,7 +951,7 @@ class AgentToolRegistry
     private function searchArticles(array $args): array
     {
         // Same published Markdown index used by Support and the public MCP adapters.
-        return (new PublicKnowledgeService())->articlesForAgent((string)($args['query'] ?? ''));
+        return (new PublicKnowledgeService())->searchArticlesForAgent($args);
     }
 
     private function couponStatus(array $args): array

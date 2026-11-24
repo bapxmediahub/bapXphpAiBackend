@@ -40,6 +40,7 @@ final class SupportToolRegistry {
              'parameters'=>['type'=>'object','properties'=>(object)[]]],
             ['name'=>'public_best_sellers','description'=>'Get up to four currently visible storefront best sellers by recorded paid, non-cancelled, non-refunded orders, all time only. No sales amounts, private orders or date filters.',
              'parameters'=>['type'=>'object','properties'=>(object)[]]],
+            PublicKnowledgeService::agentArticleDeclaration(),
         ];
     }
     /** Project only distinct published identities and configured public categories. */
@@ -89,6 +90,7 @@ final class SupportToolRegistry {
         if (!AgentCapabilityPolicy::allows(AgentCapabilityPolicy::SUPPORT, $tool, $this->actor)) {
             return ['error'=>'Not permitted'];
         }
+        if ($tool === 'search_articles') return (new PublicKnowledgeService())->searchArticlesForAgent($args);
         if (in_array($tool,['public_catalogue_summary','public_best_sellers'],true)) {
             if($args!==[])return ['error'=>'Invalid arguments'];
             if(!(new SettingsService($this->store))->modules(requireReadable:true)['shop'])return ['error'=>'Public shop unavailable'];

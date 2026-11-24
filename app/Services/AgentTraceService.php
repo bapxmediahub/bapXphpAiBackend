@@ -54,13 +54,15 @@ final class AgentTraceService
             && ($result['path'] ?? null) === '/contact') $count = 1;
         $facts=self::aggregateFacts($name,$result);
         $report = $name === 'commerce_report' && !isset($result['error']) ? self::safeCommerceReport($result) : null;
+        $articleSources=$name==='search_articles'?self::articleSources($result):[];
         $fingerprint = ['filters'=>$filters,'facts'=>$facts];
+        if($name==='search_articles')$fingerprint['sources']=$articleSources;
         if ($report !== null) $fingerprint['report'] = $report;
         $evidence = [
             'observed_at'=>self::now(),
             'facts'=>$facts,
             'facts_sha256'=>hash('sha256',json_encode($fingerprint,JSON_THROW_ON_ERROR)),
-            'tool_version_sha256'=>hash_file('sha256',app_path('app/Services/'.(in_array($name,AgentCapabilityPolicy::tools('support'),true)&&!in_array($name,AgentCapabilityPolicy::tools('enterprise'),true)?'SupportToolRegistry':'AgentToolRegistry').'.php')),
+            'tool_version_sha256'=>hash_file('sha256',app_path('app/Services/'.($name==='search_articles'?'PublicKnowledgeService':(in_array($name,AgentCapabilityPolicy::tools('support'),true)&&!in_array($name,AgentCapabilityPolicy::tools('enterprise'),true)?'SupportToolRegistry':'AgentToolRegistry')).'.php')),
             'source' => self::SOURCES[$name] ?? 'unknown',
             'filters' => $filters,
             'result_count' => $count,
@@ -68,6 +70,7 @@ final class AgentTraceService
                 && preg_match('#^/admin/[a-z0-9/?=&_%-]+$#i', $result['report_url'])
                 ? mb_substr($result['report_url'], 0, 250) : null,
         ];
+        if ($name==='search_articles') $evidence['sources']=$articleSources;
         if ($report !== null) $evidence['report'] = $report;
         return $evidence;
     }
@@ -95,6 +98,10 @@ final class AgentTraceService
                     ? mb_substr($evidence['source_path'],0,250) : null,
             ],
         ];
+        if ($name==='search_articles' && $safe['status']==='complete'
+            && $safe['evidence']['source']==='published_blog') {
+            $safe['evidence']['sources']=self::safeRetrieval(['intent'=>'published_articles','sources'=>$evidence['sources']??[]])['sources'];
+        }
         if ($name === 'commerce_report' && $safe['status'] === 'complete'
             && $safe['evidence']['source'] === 'commerce_reports' && is_array($evidence['report'] ?? null)) {
             $report = self::safeCommerceReport($evidence['report']);
@@ -210,6 +217,9 @@ final class AgentTraceService
             'sales_summary'=>['orders','revenue','units','gross','refunded'],
             'gst_register_summary'=>['issued_invoices','review_invoices','taxable','tax','cgst','sgst','igst'],
             'support_enquiries'=>['total'],
+            'public_catalogue_summary'=>['total','category_count','more_categories'],
+            'public_best_sellers'=>['count'],
+            'search_articles'=>['found'],
             'store_count','customer_ticket_lookup','own_ticket_status'=>['count'],
             'product_status'=>['price','offer_price'],
             default=>[],
@@ -344,11 +354,25 @@ final class AgentTraceService
         return $timings;
     }
 
+    /** Trace only the identities of actual published article results, never query or body. */
+    public static function articleSources(array $result): array {
+        $sources=[];
+        if(isset($result['error']))return [];
+        foreach(array_slice((array)($result['articles']??[]),0,20) as $article) {
+            if(!is_array($article)||!is_string($article['path']??null)
+                ||!preg_match('~^/blog/([a-z0-9-]{1,160})$~D',$article['path'],$match))continue;
+            $sources[$match[1]]=['id'=>'article:'.$match[1],'last_updated'=>null];
+        }
+        return array_values($sources);
+    }
+
     public static function safeRetrieval(array $entry): array {
-        $intent=in_array($entry['intent']??'',['catalogue_search','catalogue_browse','catalogue_summary','best_sellers','collection','comparison','public_policy','public_contact','public_services','own_order','own_ticket','unknown'],true)?$entry['intent']:'unknown';
+        $intent=in_array($entry['intent']??'',['catalogue_search','catalogue_browse','catalogue_summary','best_sellers','collection','comparison','public_policy','public_contact','public_services','own_order','own_ticket','published_articles','unknown'],true)?$entry['intent']:'unknown';
         $sources=[];
         foreach(array_slice((array)($entry['sources']??[]),0,20) as $source){
-            if(!is_array($source)||!preg_match('/^product:(?:[a-zA-Z0-9_.-]|%[a-fA-F0-9]{2}){1,640}$/D',(string)($source['id']??'')))continue;
+            if(!is_array($source))continue;
+            $pattern=$intent==='published_articles'?'/^article:[a-z0-9-]{1,160}$/D':'/^product:(?:[a-zA-Z0-9_.-]|%[a-fA-F0-9]{2}){1,640}$/D';
+            if(!is_string($source['id']??null)||!preg_match($pattern,$source['id']))continue;
             $date=$source['last_updated']??null;
             $sources[]=['id'=>$source['id'],'last_updated'=>is_string($date)&&preg_match('/^\d{4}-\d{2}-\d{2}T/',$date)&&strtotime($date)!==false?$date:null];
         }
