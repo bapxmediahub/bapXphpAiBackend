@@ -289,7 +289,7 @@ existing scoped registries and services. Ordinary questions always use inference
 PHP calculates exact facts only after the model requests a tool. Explicit slash
 commands remain distinct UI operations, and a draft is not a persisted business
 mutation. An unavailable provider produces an explicit error, not a rule-based answer.
-Provider fallback is bounded and never replays a started tool exchange on
+A single bounded same-model retry may resend an identical inference payload after a transient server response, without repeating completed PHP tools. Provider fallback is bounded and never replays a started tool exchange on
 another provider.
 
 **Both chats share this persistence and response boundary:**

@@ -36,7 +36,9 @@ final class SupportBotService {
             &&AgentEvaluationService::publicArticleLinksSupported($reply,$tools->activity());
         if(!$valid){
             $reason??='rejected_response';
-            $reply='The AI assistant could not complete your question right now. Please try again later, or use /contact to reach the team.';
+            $reply=in_array($reason,['provider_server','provider_cooldown','timeout','transport','rate_limit'],true)
+                ?'The AI model is temporarily unavailable. Please try again shortly, or use /contact to reach the team.'
+                :'The AI assistant could not complete your question right now. Please try again later, or use /contact to reach the team.';
         }
         $outcome=$valid?'model':'error';
         (new AuditLogService($this->store))->agentRun('support',$outcome,$startedAt,$reason,$attempts,$tools->activity(),$this->traceId);

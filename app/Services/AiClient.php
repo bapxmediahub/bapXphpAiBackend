@@ -31,6 +31,8 @@ final class AiClient
     private array $transferTimings = [];
     private int $toolCalls = 0;
     private bool $toolExchangeStarted = false;
+    private bool $transientRetryUsed = false;
+    private bool $lastConnection = true;
     private array $activeConnection = [];
 
     /** Bounded operational category; never includes provider messages or credentials. */
@@ -161,7 +163,7 @@ final class AiClient
             $payload = json_encode($request, JSON_UNESCAPED_SLASHES);
 
             $body = $this->postGoogleRouted(
-                $endpoint, $activeModel, $payload, $headers, $status, $modelLocked, $deadline, $config['models']
+                $endpoint, $activeModel, $payload, $headers, $status, $modelLocked, $deadline, $config['models'], true
             );
             if ($status !== 200 || $body === false) return $this->failureMessage($status, $body);
 
@@ -321,6 +323,7 @@ final class AiClient
     private function route(string $prompt,int $maxTokens,float $temperature,?string $override,
         AgentToolRegistry|RuntimeAgentToolRegistry|null $tools,int $rounds,?array $selectedPlan=null,bool $diagnostic=false): string {
         $this->failureCategory=null;$this->transferTimings=[];$this->toolCalls=0;$this->toolExchangeStarted=false;$this->activeConnection=[];
+        $this->transientRetryUsed=false;$this->lastConnection=true;
         $plan=$selectedPlan??$this->secrets->getProviderPlan();
         // A deliberate diagnostic model probe must not silently switch model or provider.
         if($override!==null){
@@ -340,6 +343,7 @@ final class AiClient
         $deadline=hrtime(true)+self::GENERATION_TIMEOUT_NS;
         $answer='';
         foreach($plan as $index=>$config){
+            $this->lastConnection=$index+1===count($plan);
             $this->activeConnection=['provider'=>$config['provider'],'endpoint'=>$config['endpoint']];
             if(self::remainingProviderMs($deadline)<self::MIN_ATTEMPT_MS){$this->failureCategory='request_deadline';break;}
             $answer=$config['provider']==='google'
@@ -440,8 +444,12 @@ final class AiClient
                 $hasModelAlternate = $round === 0 && $index + 1 < count($models);
                 $hasAlternate = $hasModelAlternate || ($round === 0 && $laterGoogleFallback
                     && $this->toolCalls === 0);
-                $body = $this->post($url, json_encode($payload, JSON_THROW_ON_ERROR), $headers, $status,
+                $wire=json_encode($payload,JSON_THROW_ON_ERROR);
+                $body = $this->post($url, $wire, $headers, $status,
                     $model, $deadline, $hasAlternate, $options);
+                if($tools!==null&&!$hasAlternate&&$this->retryTransientInference($status,$deadline)){
+                    $body=$this->post($url,$wire,$headers,$status,$model,$deadline,false,$options);
+                }
                 if ($status !== 200 || $body === false) {
                     if ($hasModelAlternate && $this->waitForFailover($status, $deadline, $index)) break;
                     return $this->failureMessage($status, $body);
@@ -629,8 +637,8 @@ final class AiClient
         return false;
     }
 
-    /** Use each supported model once per generation. A tool exchange stays on
-     * its original model. Short repeated timeouts previously discarded slow replies. */
+    /** Try each eligible model at most once before tools, except the single
+     * bounded transient inference recovery. A tool exchange stays on its original model. */
     private function postGoogleRouted(
         string $endpoint,
         string &$activeModel,
@@ -639,7 +647,8 @@ final class AiClient
         ?int &$status,
         bool &$modelLocked,
         ?int $deadline = null,
-        ?array $configuredModels = null
+        ?array $configuredModels = null,
+        bool $allowRecovery = false
     ) {
         $deadline ??= hrtime(true) + self::GENERATION_TIMEOUT_NS;
         $plan = self::googleAttemptPlan($activeModel, $modelLocked, $configuredModels);
@@ -657,6 +666,11 @@ final class AiClient
                 }
             }
             $body = $this->post($url, $wire, $headers, $status, $model, $deadline, $hasAlternate);
+            if($allowRecovery&&!$hasAlternate&&$this->retryTransientInference($status,$deadline)){
+                // Only replay the same immutable HTTP request. Earlier function
+                // results are already in this payload; no business tool runs again.
+                $body=$this->post($url,$wire,$headers,$status,$model,$deadline,false);
+            }
             if ($status === 200 && $body !== false) {
                 if ($model !== $activeModel) $modelLocked = true;
                 $activeModel = $model;
@@ -671,6 +685,24 @@ final class AiClient
     {
         $local = (int)(($deadline - hrtime(true)) / 1_000_000);
         return min($local, AgentTraceService::remainingMs() - self::FINALIZE_RESERVE_MS);
+    }
+
+    /** At most one extra inference transfer per turn, never an action replay.
+     * Retry only an explicit transient server response, not an ambiguous timeout,
+     * authentication/schema error, quota failure or rejected model answer. */
+    private function retryTransientInference(int $status,int $deadline): bool {
+        if($this->transientRetryUsed||(!$this->lastConnection&&!$this->toolExchangeStarted)
+            ||$this->transportError!==0||!in_array($status,[408,500,502,503,504],true)
+            ||in_array($this->failureCategory,['request_deadline','provider_budget'],true))return false;
+        $budget=AgentTraceService::snapshot()['budget']??[];
+        if(($budget['model_calls']??0)>=($budget['max_model_calls']??6)
+            ||($budget['observed_total_tokens']??0)>=($budget['max_observed_tokens']??16000))return false;
+        $delay=max(random_int(500,1000),$this->retryAfterMs??0);
+        // Do not consume the finalization reserve or wait through a long outage.
+        if($delay>2000||self::remainingProviderMs($deadline)<$delay+4000)return false;
+        $this->transientRetryUsed=true;
+        usleep($delay*1000);
+        return true;
     }
 
     private function waitForFailover(int $status, int $deadline, int $index): bool

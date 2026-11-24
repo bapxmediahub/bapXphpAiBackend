@@ -471,7 +471,7 @@ if ($__flash):
     </div>
     <div class="support-panel__body" id="support-log" aria-live="polite">
         <p>Ask about products, delivery, orders, or support tickets.</p>
-        <?php if(empty($_SESSION['user'])): ?><p>Sign in to check your orders or support tickets.</p><?php endif; ?>
+        <?php if(empty($_SESSION['user'])): ?><p>Guest mode: you can ask about products and policies. Sign in only to check your own orders or support tickets.</p><?php endif; ?>
     </div>
     <section id="support-commerce" class="support-commerce" aria-label="Cart and checkout" hidden>
         <div class="support-commerce__head"><h2 tabindex="-1">Chat cart &amp; checkout</h2><button type="button" id="support-commerce-back" class="support-commerce-back">Back to chat</button></div>
