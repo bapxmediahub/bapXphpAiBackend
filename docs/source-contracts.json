@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "817b3b8099fc2827dcca3127adbe2b2d5c13865a138558c8c1cfe8fe46682732",
-            "references_sha256": "5009b7dfdec2dd41db3f58004301ccb4cb05d0f10e03af4ca72bf1b0bf385d04",
-            "review_note": "Compared the skill note with the agent and trace boundaries. Scheduled mail diagnostics stay in the owner email UI and worker, with no new agent capability or trace claim."
+            "source_sha256": "7e1df21cfab97ef6ea24cf894f03de2cf3e02a725be9a645dc2b719926a08f8f",
+            "references_sha256": "cf0488976972faffaf0cc6e621bb476b2a51a8d996d532f16354a25f398c0c5c",
+            "review_note": "Compared runtime and monitoring documentation with first-byte trace evidence, model eligibility, provider RetryInfo timing, fallback intervals, and unchanged ordered retry limits."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",

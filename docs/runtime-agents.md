@@ -84,8 +84,8 @@ settings and developer instructions remain outside that projection.
 ## Provider availability
 
 Both agents use the shared AiClient synchronous fallback loop. Ordinary transient
-failures never reorder the next request. A recorded quota or long provider
-Retry-After can temporarily exclude that model; disabled/unconfigured models
+failures never reorder the next request. A recorded quota or positive provider
+retry delay can temporarily exclude that model; disabled/unconfigured models
 are not called. Explicit diagnostics retain actual transfers. Tool exchanges
 stay on their originating model. Owner capability questions are ordinary model
 turns; explicit /help and /capabilities are separate user-selected UI commands.
@@ -271,11 +271,14 @@ and use the larger of the body delay and Retry-After header. A known daily or
 explicit zero quota is not retried within the same turn. A short positive
 provider delay (up to the existing eight-second inline policy) can be retried
 inside the bounded loop. Longer delays hold that model; other eligible models
-retain their saved order. Explicit cooldown hints are retained for up to 24 hours,
-rather than truncated to two minutes. Do not invent a daily reset timestamp.
-Provider/model holds are deployment-local and explicit diagnostics can bypass
-them. Already advertised functions may be called directly; tool_search remains
+retain their saved order. Across turns a positive provider delay sets model
+eligibility up to the 24-hour local cap. Without a positive delay, the
+application keeps its existing fallback intervals. The stored expiry rounds
+up to the next second. Ordinary transient observations do not extend an
+active provider hold. Do not infer a daily quota reset time. Provider/model
+holds are deployment-local and explicit diagnostics can bypass them. Already advertised functions may be called directly; tool_search remains
 available for non-advertised authorized functions. No deterministic answer path.
 
-Sources: https://github.com/googleapis/googleapis/blob/master/google/rpc/error_details.proto
-and https://protobuf.dev/programming-guides/json/ .
+See [Google RetryInfo](https://github.com/googleapis/googleapis/blob/master/google/rpc/error_details.proto),
+[ProtoJSON](https://protobuf.dev/programming-guides/json/) and
+[HTTP Retry-After](https://www.rfc-editor.org/rfc/rfc9110.html#name-retry-after).

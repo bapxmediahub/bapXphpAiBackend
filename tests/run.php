@@ -800,6 +800,22 @@ $tests['provider cooldown is bounded, deployment local, and stores no raw creden
         assertSame(['primary'],$health->availablePlan($plan,$now,true)[0]['models'],'Only provider quota hold excludes an ordered model');
         assertSame(['primary'],$health->availablePlan($plan,$now+120,true)[0]['models'],'A longer explicit provider hold is not shortened to 120 seconds');
         assertSame($plan,$health->availablePlan($plan,$now+500),'Explicit provider hold expires at the supplied delay');
+
+        $started = $now + 1000;
+        $health->record($plan[0], 'primary', 503, 0, null, $started);
+        $health->record($plan[0], 'primary', 429, 0, 4000, $started);
+        $health->record($plan[0], 'primary', 503, 0, null, $started + 1);
+        assertSame(['fallback'], $health->availablePlan($plan, $started + 3, true)[0]['models'], 'Four-second hint holds the primary for its full delay');
+        assertSame($plan, $health->availablePlan($plan, $started + 4, true), 'Transient failures cannot turn a four-second hint into a longer hold');
+
+        $health->record($plan[0], 'primary', 503, 0, 1500, $started + 10.8);
+        assertSame(['fallback'], $health->availablePlan($plan, $started + 12, true)[0]['models'], 'A short 503 hint remains active for its fractional minimum');
+        assertSame($plan, $health->availablePlan($plan, $started + 13, true), 'The provider hold releases on the first integer second after the minimum');
+
+        $health->record($plan[0], 'primary', 429, 0, null, $started + 20);
+        assertSame(['fallback'], $health->availablePlan($plan, $started + 49, true)[0]['models'], 'A rate limit without a hint retains its default window');
+        assertSame($plan, $health->availablePlan($plan, $started + 50, true), 'The no-hint window expires at 30 seconds');
+        assertSame(86400, \App\Services\AiProviderHealthService::cooldownSeconds(503, 0, 100000000), 'Explicit durations retain the 24-hour cap');
         assertTrue(!str_contains(file_get_contents($path),'private-fixture-key')&&!str_contains(file_get_contents($path),'provider.example.invalid'),'Only digests and expiry timestamps stored');
         assertSame(0,\App\Services\AiProviderHealthService::cooldownSeconds(400,0),'Malformed request never triggers cooldown');
         assertSame(0,\App\Services\AiProviderHealthService::cooldownSeconds(403,0),'Authentication rejection never triggers cooldown');
