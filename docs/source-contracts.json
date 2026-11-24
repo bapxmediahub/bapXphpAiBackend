@@ -23,9 +23,9 @@
             "review_note": "Reviewed the Docs skill provenance guidance against the unchanged BlogService and authored-content guide boundary. Static map references are discovery evidence only; publication visibility, Markdown storage, rendering and private-help exclusion remain the existing source contracts."
         },
         "foundation": {
-            "source_sha256": "d0bac5d94dca18432bfb88b24cfef3e82a92c17a7b2d53bb42041b4025aab5c4",
+            "source_sha256": "359a3938815ef32d9bfb6e990a205ecb49e472bdc8031d2df8f1b63efebed1b4",
             "references_sha256": "44504ddbd485f9ab5d6c71a6443726f531f7e0d7ed34ec16215741902635cc0e",
-            "review_note": "Cross-checked merged Support/Enterprise/WebMCP/OpenRouter source against architecture maps and docs. No separate chatbot app, SQL schema, external chat plugin or production browser engine is introduced."
+            "review_note": "Rechecked source pinning and current native features versus previous WordPress/Woo 39-row REA matrix and new Site Kit 1.192.0 selected source evidence. No WordPress PHP, application plugin loader, new routes, provider credential or MySQL migration is implemented; preflight remains read-only and incompatible-status only."
         },
         "google-tags": {
             "source_sha256": "f05c993af547a7e72406e694a7d049d905c3f21410f1eddeb54a9b86f8fce54e",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed the sales-channel CLI references and catalogue guidance. This change only fixes generic PHP lint argument forwarding and failure propagation; feed, channel and catalogue operations are unchanged."
         },
         "workflow": {
-            "source_sha256": "6334311e40c48472574558cb34081bc758457f33fb53243b412fba4298e6a3d1",
-            "references_sha256": "6bddcf08be3819fe8ec98d7f78e96b359a9571f9043255f5ce207927e4732284",
-            "review_note": "Reviewed the existing developer-only Playwright runner on macOS and GitHub Linux. The Chrome executable discovery now honors CHROMIUM_PATH and checks both PATH and standard macOS app locations; the synthetic admin monitoring test fixture supplies the controller optional golden suite. Verified PHP 293/293 and Support Enterprise A2UI Chromium QA; no production credentials or new runtime dependency."
+            "source_sha256": "4e1d147595cd5d1147b7056c539ea00ec3c351ece0ffa52185188492f779e31f",
+            "references_sha256": "fdae87875991c567a06109a703fe02429dd59879243f34c6bd5dad157739f240",
+            "review_note": "Verified the offline WordPress ZIP inspector and CLI dispatch against all three supplied archives plus malicious synthetic fixtures. Added PHP zip to GitHub 8.3/8.4/8.5 setup so validation consistently exercises the archive parser without touching hosting. Reviewed developer workflow, REA evidence, app bootstrap and CI scope."
         }
     }
 }

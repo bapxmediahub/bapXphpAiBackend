@@ -3085,7 +3085,7 @@
     "summary": {
         "routes": 178,
         "controllers": 17,
-        "services": 84,
+        "services": 85,
         "views": 71,
         "collections": 24
     },
@@ -5594,7 +5594,8 @@
         "TaxService",
         "TempleService",
         "UserOrderHistoryService",
-        "VerifiedOrderService"
+        "VerifiedOrderService",
+        "WordPressPackageInspector"
     ],
     "views": [
         "account/_nav",
@@ -5712,7 +5713,8 @@
         "unwired_controllers": [],
         "unreferenced_services": [
             "AstrologerService",
-            "RequestFailureService"
+            "RequestFailureService",
+            "WordPressPackageInspector"
         ],
         "unwired_views": [],
         "admin_mutations_without_audit": [

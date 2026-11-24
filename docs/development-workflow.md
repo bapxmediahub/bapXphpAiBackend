@@ -60,6 +60,19 @@ PRs. Use REA pinned-source evidence to form testable questions, not proof that
 a feature is missing in the current revision. Public/admin instructions and
 customer data must not be mixed into coding-harness context indiscriminately.
 
+
+### WordPress ZIP research intake (no install)
+
+For a customer-supplied WordPress, WooCommerce or other WordPress-plugin ZIP,
+run `./bapXphp plugin inspect /absolute/path/file.zip` on the development
+machine. The inspector reads entry names and the main plugin header without
+extracting or executing PHP, and fails on dangerous ZIP structure. It emits the
+package SHA, declared version/requirements, dependencies and a compatibility
+status. A green inspection is **not** permission to activate third-party PHP,
+run WordPress lifecycle hooks, alter the customer hosting directory or claim
+that Google Site Kit / WooCommerce is installed. See
+`docs/research/wordpress-woocommerce-sitekit-20261124.md` and #353/#354.
+
 ## GitHub issue-first loop
 
 Use `gh` on the authorized development machine; hosting requires Git/PHP only.

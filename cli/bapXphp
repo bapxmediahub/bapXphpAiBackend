@@ -72,6 +72,7 @@ set -euo pipefail
 #   bapXphp mcp:stdio               — serve public tools and owner-authorized sales totals to a local MCP client
 #   bapXphp media:reconcile [--apply] — check legacy media metadata against MySQL
 #   bapXphp merchant:check [--json|--schema] — inspect current Google product data without publishing
+#   bapXphp plugin inspect <local.zip> — static WP/Woo/Site Kit ZIP preflight; never installs or executes PHP
 #   bapXphp merchant:feed           — write the public Google RSS feed to stdout
 #   bapXphp mail:process            — process pending mail queue
 #   bapXphp images:optimize         — convert/resize images to WebP
@@ -171,6 +172,14 @@ ROOT="$(cd "$(dirname "$BAPX_SRC")/.." && pwd)"
 # Public capability commands use the site's runtime configuration.
 case "${1:-}" in
   mcp:stdio|mcp:tools|mcp:policy) exec php "$ROOT/cli/mcp-stdio.php" "$@" ;;
+  plugin:inspect)
+    shift
+    exec php "$ROOT/cli/wordpress-package-inspect.php" "$@" ;;
+  plugin)
+    if [ "${2:-}" = "inspect" ]; then
+      shift 2
+      exec php "$ROOT/cli/wordpress-package-inspect.php" "$@"
+    fi ;;
 esac
 
 # Load project and ignored operator connection settings for CLI subcommands.

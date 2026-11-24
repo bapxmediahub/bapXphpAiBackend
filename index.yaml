@@ -45,18 +45,18 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 491
+  concepts: 493
   relationships: 434
   by_type:
     blog: 16
     controller: 17
-    doc: 54
+    doc: 55
     image: 89
     operator_guide: 12
     route: 177
     runtime_instruction: 6
     schema: 24
-    service: 84
+    service: 85
     skill: 12
 concepts:
   - id: "blog:benefits-of-rudraksha"
@@ -823,6 +823,15 @@ concepts:
     tags:
       - "docs"
     filename: "webmcp.md"
+    header_image: ""
+  - id: "doc:wordpress-woocommerce-sitekit-20261124"
+    type: "doc"
+    title: "WordPress, WooCommerce and Google Site Kit source-backed compatibility audit"
+    description: "REA 6.8.0 exact-ZIP provenance, historical matrix reconciliation, native capability boundaries, plugin preflight and executable follow-ups."
+    resource: "docs/research/wordpress-woocommerce-sitekit-20261124.md"
+    tags:
+      - "docs"
+    filename: "wordpress-woocommerce-sitekit-20261124.md"
     header_image: ""
   - id: "image:assets/images/bapXfavicon.png"
     type: "image"
@@ -6123,6 +6132,14 @@ concepts:
     title: "VerifiedOrderService"
     description: "Service: VerifiedOrderService"
     resource: "app/Services/VerifiedOrderService.php"
+    tags:
+      - "code"
+      - "service"
+  - id: "service:WordPressPackageInspector"
+    type: "service"
+    title: "WordPressPackageInspector"
+    description: "Service: WordPressPackageInspector"
+    resource: "app/Services/WordPressPackageInspector.php"
     tags:
       - "code"
       - "service"

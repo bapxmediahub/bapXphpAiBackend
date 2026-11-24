@@ -14,14 +14,14 @@ flowchart LR
     legend_limits["No execution, autoload or dynamic reachability proof; gaps are inspection candidates"]:::arch
   end
 
-  subgraph ARCH["Architecture Overview — 178 routes, 17 controllers, 84 services, 71 views, 0 data files, 30 tools"]
+  subgraph ARCH["Architecture Overview — 178 routes, 17 controllers, 85 services, 71 views, 0 data files, 31 tools"]
     arch_routes["> Routes: 178 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 17"]:::arch
-    arch_svc["> Services: 84"]:::arch
+    arch_svc["> Services: 85"]:::arch
     arch_views["> Views: 71"]:::arch
     arch_data["> Collections: 24 schema | 0 files"]:::arch
-    arch_tools["> Tools: 30"]:::arch
-    arch_gaps["> Gaps: 5"]:::arch
+    arch_tools["> Tools: 31"]:::arch
+    arch_gaps["> Gaps: 6"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -332,6 +332,7 @@ flowchart LR
     service_templeservice["TempleService"]:::code
     service_userorderhistoryservice["UserOrderHistoryService"]:::code
     service_verifiedorderservice["VerifiedOrderService"]:::code
+    service_wordpresspackageinspector["WordPressPackageInspector"]:::code
   end
 
   subgraph VIEWS["Views"]
@@ -474,12 +475,14 @@ flowchart LR
     tool_test_race["test_race"]:::tool
     tool_validate_docs_map["validate-docs-map"]:::tool
     tool_validate_project_map["validate-project-map"]:::tool
+    tool_wordpress_package_inspect["wordpress-package-inspect"]:::tool
     tool_bapxphp["bapXphp"]:::tool
   end
 
   subgraph GAPS["Gaps & Missing Links — inventory checks"]
     gap_35faf425c4["no declared or scanned reference: AstrologerService"]:::gap
     gap_006b2fd1e7["no declared or scanned reference: RequestFailureService"]:::gap
+    gap_44e78a64c1["no declared or scanned reference: WordPressPackageInspector"]:::gap
     gap_02fdee86e5["POST /admin/email-templates/test — missing AuditLogService"]:::gap
     gap_63c4de0521["POST /admin/blog/enhance-title — missing AuditLogService"]:::gap
     gap_90db15aec7["POST /admin/blog/enhance-content — missing AuditLogService"]:::gap
@@ -1748,6 +1751,7 @@ flowchart LR
   tool_smoke_local -. declared probe coverage .-> ROUTES_ADMIN
   gap_35faf425c4 -. inspect .-> service_astrologerservice
   gap_006b2fd1e7 -. inspect .-> service_requestfailureservice
+  gap_44e78a64c1 -. inspect .-> service_wordpresspackageinspector
   gap_02fdee86e5 -. missing .-> controller_admincontroller
   gap_63c4de0521 -. missing .-> controller_admincontroller
   gap_90db15aec7 -. missing .-> controller_admincontroller
