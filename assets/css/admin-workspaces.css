@@ -333,7 +333,7 @@
 
 @media(max-width:743px){
  .admin-topbar__actions { width:100%; gap:8px; }
- .admin-topbar__actions .btn { flex:1 1 0; min-width:0; padding-inline:6px; font-size:.75rem; gap:6px; white-space:normal; text-align:center; }
+ .admin-topbar__actions .btn { flex:1 1 auto; min-width:min-content; padding-inline:6px; font-size:.75rem; gap:6px; white-space:normal; text-align:center; }
 }
 
 /* Native runtime diagnostics: factual status rather than simulated green health scores. */

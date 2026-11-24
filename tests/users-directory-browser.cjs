@@ -83,10 +83,16 @@ test('Users keeps secondary filters collapsed and preserves them through native 
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
         assert.ok((await page.locator('.users-filters').boundingBox()).height < 165);
         assert.ok(await page.locator('.admin-topbar').getByRole('link', {name:'Help & Docs', exact:true}).isVisible());
-        assert.deepEqual(await page.locator('.admin-topbar__actions a').evaluateAll(actions => actions.map(action => {
+        const topbar = await page.locator('.admin-topbar__actions a').evaluateAll(actions => actions.map(action => {
             const icon = action.querySelector('svg[aria-hidden=true]');
-            return (icon?.getBoundingClientRect().width ?? 0) >= 14 && action.scrollWidth <= action.clientWidth + 1;
-        })), [true, true, true], 'Top-bar icons and labels fit at ' + width + 'px');
+            return {label:action.textContent.trim(), iconWidth:icon?.getBoundingClientRect().width ?? 0,
+                scrollWidth:action.scrollWidth, clientWidth:action.clientWidth};
+        }));
+        assert.equal(topbar.length, 3);
+        for (const action of topbar) {
+            assert.ok(action.iconWidth >= 14 && action.scrollWidth <= action.clientWidth + 1,
+                'Top-bar icon and label fit at ' + width + 'px ' + JSON.stringify(action));
+        }
         if (width === 375) assert.ok((await rows.first().boundingBox()).y < 760);
         await optionsToggle.press('Space');
         assert.ok(await role.isVisible());
