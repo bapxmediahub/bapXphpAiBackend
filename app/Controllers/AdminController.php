@@ -360,7 +360,43 @@ final class AdminController extends BaseController {
         }
         $this->redirect('/admin/orders/'.$id);
     }
-    public function shipping(): void{$this->render('admin/settings',['pageTitle' => 'Shipping', 'title' => 'Shipping']);}
+    public function shipping(): void {
+        $this->render('admin/shipping', ['pageTitle'=>'Shipping zone preview', 'form'=>[]]);
+    }
+
+    public function previewShipping(): void {
+        $this->validateCsrf();
+        $form = ['zones'=>[], 'state'=>'', 'pin'=>'', 'subtotal'=>''];
+        $quote = $error = null;
+        try {
+            $zones = $_POST['zones'] ?? [];
+            if (!is_array($zones) || !array_is_list($zones) || count($zones) > \App\Services\ShippingService::MAX_ZONES) {
+                throw new \InvalidArgumentException('Enter up to five ordered zones.');
+            }
+            foreach ($zones as $zone) {
+                if (!is_array($zone)) throw new \InvalidArgumentException('Invalid shipping zone.');
+                $clean = [];
+                foreach (['state','pins','method','fee','minimum'] as $field) {
+                    if (!is_string($zone[$field] ?? null) || strlen($zone[$field]) > ($field === 'pins' ? 500 : 100)) {
+                        throw new \InvalidArgumentException('Invalid shipping zone field.');
+                    }
+                    $clean[$field] = $zone[$field];
+                }
+                $form['zones'][] = $clean;
+            }
+            foreach (['state','pin','subtotal'] as $field) {
+                if (!is_string($_POST[$field] ?? null) || strlen($_POST[$field]) > 100) {
+                    throw new \InvalidArgumentException('Invalid preview input.');
+                }
+                $form[$field] = $_POST[$field];
+            }
+            $quote = \App\Services\ShippingService::preview($form['zones'], $form['state'], $form['pin'], $form['subtotal']);
+        } catch (\InvalidArgumentException $exception) {
+            http_response_code(422);
+            $error = $exception->getMessage();
+        }
+        $this->render('admin/shipping', ['pageTitle'=>'Shipping zone preview','form'=>$form,'quote'=>$quote,'error'=>$error]);
+    }
     public function astrologers(): void{
         $this->redirect('/admin');
     }

@@ -46,15 +46,15 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 497
-  relationships: 444
+  concepts: 498
+  relationships: 445
   by_type:
     blog: 16
     controller: 18
     doc: 55
     image: 89
     operator_guide: 12
-    route: 180
+    route: 181
     runtime_instruction: 6
     schema: 24
     service: 85
@@ -2957,9 +2957,8 @@ concepts:
     controller: "AdminController@shipping"
     services:
       - "ShippingService"
-      - "SettingsService"
       - "AuthService"
-    view: "admin/settings"
+    view: "admin/shipping"
     response: null
     provenance: "route_registry"
   - id: "route:get__admin_support_tickets"
@@ -4797,6 +4796,23 @@ concepts:
       - "AuditLogService"
       - "AuthService"
     view: "admin/settings"
+    response: null
+    provenance: "route_registry"
+  - id: "route:post__admin_shipping_preview"
+    type: "route"
+    title: "POST /admin/shipping/preview"
+    description: "admin.shipping.preview"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/admin/shipping/preview"
+    controller: "AdminController@previewShipping"
+    services:
+      - "ShippingService"
+      - "AuthService"
+    view: "admin/shipping"
     response: null
     provenance: "route_registry"
   - id: "route:post__admin_support_tickets_save"
@@ -7384,6 +7400,9 @@ relationships:
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:post__admin_settings_save"
+    to: "controller:AdminController"
+    relation: "handled_by"
+  - from: "route:post__admin_shipping_preview"
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:post__admin_support_tickets_save"
