@@ -38,9 +38,9 @@
             "review_note": "Reviewed mail rendering through the guarded admin preview. Existing error, rejection and claim handling are preserved."
         },
         "interface": {
-            "source_sha256": "8969f66d12985e18d39abd23af5afe14134a3835b03956f62e71bb4a7e3ef012",
-            "references_sha256": "51af0f8c5927316f5bbd938dd2cec9a57661a67172be98db4b9d26e138519de4",
-            "review_note": "Reviewed the optional sender-name placeholder and labeled template preview and checked both profiles in the real owner browser form at desktop and mobile."
+            "source_sha256": "4c0d0dcc4cd6108c95c62276feeccb70acc0e390bb209ccf0dd49f879f9dec99",
+            "references_sha256": "1b0f6d645882eaf1aee6efc0a77dc06d71928517c70e7419e4644541561f00bd",
+            "review_note": "Compared the directory and navigation with the admin guide and Design. Native filter removal retains other criteria, top-bar actions fit fallback fonts, and the compact overview and collapsed toolbar bring the first account into view."
         },
         "mail": {
             "source_sha256": "478194235d65cf0c290fe1e7e5df9db5459e299eb36c538ae09340d2abd8b4aa",
@@ -54,13 +54,13 @@
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
-            "references_sha256": "9919ef701c829d738ad44034c79768cdbdc7f8d4ac5dbbbe1694830ce40bfe0e",
-            "review_note": "Reviewed persistent brand paths and owner upload contracts. The profile selects approved logo and favicon paths without modifying assets or media deletion and retention behavior."
+            "references_sha256": "d5b739470358d9a6c63987a4ff7da21537b82339bf814d719882545cdf5adfe2",
+            "review_note": "Reviewed the shared admin skill addition. It covers navigation and Users filter controls, and the documented media edit and deletion workflows remain accurate."
         },
         "operator-help": {
-            "source_sha256": "f4a3ada64daecfd04eb41f15623cf24090170a9dff73429f7cbdd2819e3b50a8",
-            "references_sha256": "b0bd3b3f4ff194c800a2fc1aa1edfd8497f53434f3a3225afdf73fb98c9d63ad",
-            "review_note": "Reviewed the operator preview guide against the actual owner UI, fallback contact link, logo precedence and separate Integration fields."
+            "source_sha256": "e4e852e68c709a5d84696c0905abf3ea646018fe730970cdd36c61cc5d8a934a",
+            "references_sha256": "de931c8f89ee01aee25b312db87ddccca4609c6622a5768b167486c8eaef7e97",
+            "review_note": "Compared the fixed Customers guide with the rendered search, individual filter removal and reset. The Help entry retains its existing owner-only destination."
         },
         "public-mcp": {
             "source_sha256": "e5d2bb67604d7b9c3588dba3d04e75ad9925c1c686f3a4d13dffd1dc8dd99325",
@@ -69,8 +69,8 @@
         },
         "remote-commerce": {
             "source_sha256": "e57f1d5e32c8a297bb085291e48e2f4fd3574c39841b0fe2444b2223d3ac59da",
-            "references_sha256": "b04cd12c3a045510b566b11af816dabb060c7e3c2cda67ecf63ba77211987dae",
-            "review_note": "Reviewed payment completion and owner/customer mail boundaries. Body identity and help links change on new messages without modifying checkout, charge or invoice operations."
+            "references_sha256": "91e83c1712919a006485258e4584997647313ab8a6ec695ce14d6242318919f8",
+            "review_note": "Reviewed the Design directory edit against the shared commerce references. Cart, checkout and their existing responsive controls retain the documented contracts."
         },
         "sales-channels": {
             "source_sha256": "6e5ee7b44dd92cc4dadec7a3c02f4bb9da797ba98d4e541e9f956687db236142",
@@ -78,9 +78,9 @@
             "review_note": "Confirmed the existing catalogue optimiser and filename handling remain the default. Only brand uploads retain the original raster type."
         },
         "workflow": {
-            "source_sha256": "656c1b611dd3502f2b2c797c0afa1587cd292b6571030066698f1cee99b3758b",
+            "source_sha256": "52926a5ac5fad1872440d762dacb0bc68ceba57affb905ad43e787b11e0a381e",
             "references_sha256": "7770887213db03241a85f7bbee17bf25b2c58350058ebc59e25fd76b29ad80df",
-            "review_note": "Reviewed the new-client upgrade and mail-preview sequence against current owner settings, public profile and SMTP configuration. Browser assertions use isolated fixture identities."
+            "review_note": "Reviewed the narrow admin skill change against the existing issue-first browser workflow and confirmed the directory regression covers keyboard, pointer and no-JavaScript use."
         }
     }
 }
