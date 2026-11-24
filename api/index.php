@@ -63,6 +63,12 @@ foreach ($routes as $route) {
         [$class, $action] = explode('@', $route['controller']);
         $fqcn = 'App\\Controllers\\' . $class;
         try {
+            if (!\App\Router::moduleAvailable($route)) {
+                http_response_code(404);
+                header('Cache-Control: no-store');
+                echo json_encode(['error' => 'Not found']);
+                exit;
+            }
             $controller = new $fqcn();
             $controller->{$action}(...$matches);
         } catch (\Throwable $e) {

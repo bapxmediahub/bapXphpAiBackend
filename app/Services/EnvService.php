@@ -80,7 +80,7 @@ final class EnvService {
     }
 
     public function saveAdminCredentials(array $data): void {
-        $settings = (new SettingsService())->public();
+        $settings = [];
         foreach (['admin_username', 'admin_email'] as $key) {
             $value = trim((string)($data[$key] ?? ''));
             if ($value !== '') $settings[$key] = $value;

@@ -10,6 +10,11 @@ The public endpoint is `POST <APP_URL>/api/mcp`. It exposes the same four publis
 
 ## HTTP discovery and official product URLs
 
+`get_public_contact` reads the Public Site Profile through the same projection
+as the Contact page and `GET /api/knowledge/contact`. The email field is
+optional. Missing phone or hours entries leave empty lists, with the existing
+Contact form still available.
+
 `GET /api/agent-tools` is a **site-specific** JSON discovery document, with
 `format: bapx.agent-tools` and `version: 1`. It is not a standardized
 `.well-known` manifest. `PublicAgentDiscoveryService` consumes the actual

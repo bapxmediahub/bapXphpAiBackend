@@ -1,5 +1,11 @@
 <?php $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); $csrf = $_SESSION['csrf_token'];
-$__modules = (new \App\Services\SettingsService())->modules();
+$__settingsService = new \App\Services\SettingsService();
+$__modules = $__settingsService->modules();
+$siteProfile ??= \App\Services\SiteProfileService::current();
+$__adminBrand = $siteProfile->name();
+$__adminAppName = $siteProfile->hasReferenceName() ? 'SPS Admin' : $__adminBrand . ' Admin';
+$__settings = $__settingsService->public();
+$__adminLogo = ($__settings['logo_url'] ?? '') ?: ($siteProfile->isReference() ? '/assets/images/logo-square.jpeg' : '');
 
 // The sidebar supplies only literal icon names from this private set.
 $navIcon = static function (string $name): string {
@@ -43,7 +49,7 @@ $navIcon = static function (string $name): string {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title><?= e($pageTitle ?? 'Admin') ?> — Sri Panchami Spiritual</title>
+<title><?= e($pageTitle ?? 'Admin') ?> — <?= e($__adminBrand) ?></title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -52,8 +58,8 @@ $navIcon = static function (string $name): string {
 <meta name="theme-color" content="#3a0003">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="SPS Admin">
-<link rel="apple-touch-icon" href="/assets/images/logo-square.jpeg">
+<meta name="apple-mobile-web-app-title" content="<?= e($__adminAppName) ?>">
+<?php if ($__adminLogo !== ''): ?><link rel="apple-touch-icon" href="<?= e($__adminLogo) ?>"><?php endif; ?>
 <link rel="stylesheet" href="/assets/css/band.css?v=<?= filemtime(__DIR__.'/../../assets/css/band.css') ?>">
 <link rel="stylesheet" href="/assets/css/admin-refinement.css?v=<?= filemtime(__DIR__.'/../../assets/css/admin-refinement.css') ?>">
 <link rel="stylesheet" href="/assets/css/admin-workspaces.css?v=<?= filemtime(__DIR__.'/../../assets/css/admin-workspaces.css') ?>">
@@ -108,8 +114,8 @@ $navIcon = static function (string $name): string {
             <svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg>
         </button>
         <div class="admin-sidebar__brand">
-            <img src="/assets/images/logo-square.jpeg" alt="" width="42" height="42">
-            <div><span>Sri Panchami Spiritual</span><small>Owner workspace</small></div>
+            <?php if ($__adminLogo !== ''): ?><img src="<?= e($__adminLogo) ?>" alt="" width="42" height="42"><?php endif; ?>
+            <div><span><?= e($__adminBrand) ?></span><small>Owner workspace</small></div>
         </div>
         <nav class="admin-sidebar__nav" id="admin-nav">
             <a href="/admin/" class="admin-nav-top <?= (parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) === '/admin/' ? 'active' : '') ?>">
@@ -272,6 +278,7 @@ $navIcon = static function (string $name): string {
             $__type = is_array($__flash) ? ($__flash['type'] ?? 'info') : 'info';
             unset($_SESSION['flash']);
         ?>
+        <noscript><p class="notice" role="<?= $__type === 'error' ? 'alert' : 'status' ?>"><?= e((string)$__msg) ?></p></noscript>
         <script>document.addEventListener('DOMContentLoaded',function(){showToast(<?= json_encode($__msg) ?>,<?= json_encode($__type) ?>);});</script>
         <?php endif; ?>
         <?php $helpContext=\App\Services\AdminHelpService::adminContext($_SERVER['REQUEST_URI']??'/admin'); ?>

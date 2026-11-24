@@ -10,8 +10,9 @@ category: module
 `AdminController::blog/saveBlog` and `views/admin/blog.php` implement the owner
 editor. `BlogService` reads/writes local Markdown with YAML frontmatter in
 `content/blog/posts/`; categories use article frontmatter and the standard labels in `BlogService::categories()`. Public
-`BlogController` filters unpublished/retired/module-disabled content and renders
-through the shared public templates. There is no runtime `users.json`, remote
+`BlogController` filters unpublished and retired content and renders through
+the shared public templates. The route registry gates public Blog access in
+both web and JSON dispatch. There is no runtime `users.json`, remote
 GitHub article index or database-backed blog body.
 
 ## Drafts and enhancement
@@ -98,12 +99,18 @@ controller canonical override is preserved and also becomes the default OG URL.
 Unsafe URL schemes fall back to the configured page URL. Product route segments
 are URL-encoded once, preserving existing spaced/Unicode slugs.
 
-A default local social image must exist and be a readable image: the bundled
-`og-image.jpg`, otherwise `hero-temple-bg.webp`. Missing/unsafe local overrides
-fall back; actual local/persistent images are resolved to absolute URLs. Valid
+A default local social image must exist and be readable. On the Sri Panchami
+reference origin, the fallback is the bundled `og-image.jpg`, then
+`hero-temple-bg.webp`. An independent deployment without an approved image
+omits the image tags. Actual local/persistent images resolve to absolute URLs. Valid
 external HTTP(S) image overrides remain supported without server-side fetching,
 so the service does **not** certify external image reachability or ownership.
-The same resolved image feeds default OpenGraph and Twitter metadata. A saved site name supplies the default title brand, organization name and OpenGraph site name. A blank setting uses the application name. The optional Twitter handle is normalized to an @username for the twitter:site card tag.
+The same resolved image feeds default OpenGraph and Twitter metadata. The Public
+Site Profile supplies the default title brand, organization name and OpenGraph
+site name. With no saved display name, the legacy SEO name and configured
+application name serve as fallbacks. Organization and Contact metadata use the
+same public contact projection as the Contact page. The optional Twitter handle
+is normalized to an @username for the twitter:site card tag.
 
 Product JSON-LD reflects the same purchasable stock states as checkout:
 `in_stock` and legacy `active` produce Schema.org `InStock`; other/missing

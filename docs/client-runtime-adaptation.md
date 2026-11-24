@@ -25,9 +25,9 @@ owner after setup.
 | Authority | Present source | Required reuse boundary |
 |---|---|---|
 | Deployment connection | Ignored .env and config/database.php | Separate origin, DB access and remote transport; never embed resolved deployment values in generated code knowledge |
-| Non-secret owner settings | SettingsService app_settings/header_menu, authored pg: rows, canonical collections.php | Existing logo/favicon/palette, modules, navigation, shipping/tax and pages; consolidate identity/content and validate fields |
+| Non-secret owner settings | SettingsService app_settings/header_menu, authored pg: rows, canonical collections.php | Public Site Profile, logo/favicon/palette, modules, navigation, shipping/tax and authored pages |
 | Integration credentials | SecretService encrypted app_secrets and scoped grants | Never copy client keys, SMTP/OAuth secrets or hashes into a package, fixture, public tool or index |
-| Public identity/content | PublicKnowledgeService, SeoService, layouts, config/about.php, published Markdown and media | Migrate remaining hardcoded business facts to approved client values and one authorized public projection |
+| Public identity/content | SiteProfileService, PublicKnowledgeService, SeoService, layouts and approved published content | Supply client-owned public facts and migrate approved editorial, legal and transactional copy independently |
 | Agent guidance | .bapX, AgentInstructionService, scoped PHP registries | Keep business instructions, tool authorization and facts distinct; no arbitrary file/SQL tools |
 | Storage | Client MySQL, private JSON conversations, blog Markdown, domain-local media | No shared customer records, private files or reference-deployment secrets |
 | Developer contract | AGENTS.md, .agents, canonical schema, generated map.mmd, index.yaml and project-index.json | Shared implementation/source references, not prompt-body or runtime-data mirrors |
@@ -79,9 +79,14 @@ to solve customization.
 4. Map client-approved policies and tools to the fixed role manifests. A new
    service such as booking requires actual controller/schema/auth/UI work and
    regression tests; removing a prompt prohibition does not implement it.
-5. Replace identity/contact/domain and provider configuration at the sources in
-   the table. Verify sender/recipient boundaries and payment test mode before
-   any external test. Never use a real payment to simulate setup success.
+5. Set a unique HTTPS `APP_URL` and `APP_NAME` in the client's deployment configuration.
+   Use **Site Settings → Public Site Profile** for the business name, summary,
+   About story, email, phone numbers and hours. The display name resolves from
+   the saved public name, legacy SEO name, then configured app name. Reference
+   contact defaults and hero/About artwork are scoped to the Sri Panchami
+   origin. Use **Logo & Favicon** for this client's images and select its modules.
+   Verify sender/recipient boundaries and payment test mode before any external
+   test.
 6. Create client-specific golden fixtures for exact catalogue membership,
    multilingual aliases, missing/ambiguous records, policy answers, denied
    customer access and owner report periods. Record the new instruction and
@@ -93,6 +98,23 @@ to solve customization.
 8. Verify real transactional email only to approved test recipients. SMTP
    acceptance and inbox receipt must remain separate evidence. Rollout does
    not authorize a marketing newsletter or historical queue replay.
+
+## Upgrade and check an existing deployment
+
+Back up its MySQL database, private conversation storage, approved content,
+media and configuration before switching the checkout to a reviewed revision.
+Keep the installation's origin, database account, encryption material and
+runtime storage attached to that installation. The public profile fields live
+inside the existing MySQL JSON-backed settings record. Independent settings
+forms patch their own fields, and existing profile values are retained on
+upgrade. The installed app keeps its original start path and scope.
+
+Verify the header and footer, About and Contact, canonical URLs, manifest names
+and the public contact tool. Check a module in both states using navigation,
+direct routes and sitemap results. Verify the working release before public
+traffic. Use only the new client's approved catalogue, articles, legal pages,
+mail wording and policies. Review or remove bundled reference content before
+publishing that installation.
 
 ## Release evidence
 

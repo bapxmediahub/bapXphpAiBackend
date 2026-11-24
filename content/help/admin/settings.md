@@ -2,6 +2,14 @@
 
 Site Settings controls the supported public business/site configuration. Integrations contains provider credentials and payment, mail, login and AI connection settings. Logo & Favicon manages identity images; Temples manages the supported temple records. These are different responsibilities.
 
+## Edit the public site profile
+
+Open **Site Settings → Public Site Profile**. Enter the display name and business summary, then add an approved About story with blank lines between paragraphs. Use international phone numbers beginning with `+` and the country code. Enter both days and hours for each schedule. Save the profile, then check the site header, About and Contact on desktop and mobile.
+
+The published contact details also appear in assistants and search metadata. A blank contact field hides that method. To change where mail is sent or how it is delivered, use **Integrations**. **Logo & Favicon** controls the separate image uploads.
+
+Use **Site Modules** to control Shop and Blog availability. Turning off a module removes its public routes and sitemap entries. Existing records and payment completion flows remain available for their authorized purposes.
+
 ## Update the logo or favicon
 
 Use **Logo & Favicon** to upload a PNG or JPEG logo up to 512 × 512 pixels and 100 KiB, or a PNG favicon up to 64 × 64 pixels and 50 KiB. Convert SVG or ICO files to PNG before uploading. After saving, reload the page and check the previews and public header. New images are available in Media Library under Shared. If saving fails, reload to verify the active images before retrying.

@@ -114,6 +114,14 @@ Public canonical, organization, social-image and sitemap URLs use the configured
 SeoService metadata instead of reconstructing its own origin. This is metadata
 correctness, not a new business-data or search-performance service.
 
+SiteProfileService reads the owner-approved public fields from canonical
+`app_settings` for the storefront, About, Contact, installed app metadata and
+both agent tools. The settings write uses one locked MySQL row so concurrent
+forms preserve each other's fields. Public module routes are gated using
+registry metadata in both dispatchers. The sitemap omits disabled sections,
+while existing customer order records and payment completion retain their
+normal entry points.
+
 ## Runtime diagnostics
 
 The native target is stable PHP>=8.3 and actual MySQL>=8.4.

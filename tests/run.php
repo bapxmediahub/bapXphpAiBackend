@@ -975,6 +975,49 @@ $tests['help review depends on underlying source even when another area owns tha
     }finally{unlink($root.'/app/Feature.php');unlink($root.'/docs/guide.md');rmdir($root.'/app');rmdir($root.'/docs');rmdir($root);}
 };
 
+$tests['site profile selects only approved deployment identity and public channels'] = static function (): void {
+    $reference = new \App\Services\SiteProfileService([], 'https://sripanchamispiritual.com/');
+    $fixture = new \App\Services\SiteProfileService([
+        'site_display_name' => 'Caldera & Iris', 'site_summary' => 'We publish local guides.',
+        'site_story' => "First paragraph.\n\nSecond paragraph.", 'public_contact_email' => 'guide@example.test',
+        'public_contact_phone_1' => '+44 (20) 7000-0123', 'public_contact_phone_2' => '',
+        'public_hours_1_days' => 'Mon', 'public_hours_1_times' => '10–16 UTC',
+        'admin_email' => 'private@example.test', 'admin_password' => 'fixture-secret',
+    ], 'https://caldera.example.test', 'Legacy SEO name', 'Environment name');
+    assertSame('Sri Panchami Spiritual', $reference->name(), 'Reference default keeps its name');
+    assertSame('Caldera & Iris', $fixture->name(), 'Published name wins over previous configuration');
+    assertSame([
+        'name' => 'Caldera & Iris', 'path' => '/contact',
+        'phones' => [['label' => '+44 (20) 7000-0123', 'number' => '+442070000123']],
+        'email' => 'guide@example.test', 'hours' => [['days' => 'Mon', 'hours' => '10–16 UTC']],
+        'servicePath' => '/contact#contact-form',
+    ], $fixture->contact(), 'Only the published contact projection is exposed');
+    assertSame(['First paragraph.', 'Second paragraph.'], $fixture->about()['story']['paragraphs'], 'Approved story preserves paragraphs');
+    assertTrue(!isset($fixture->about()['hero_image']), 'Other brands must not inherit the reference visuals');
+    $empty = new \App\Services\SiteProfileService([], 'https://other.example.test', 'Legacy title');
+    assertSame('Legacy title', $empty->name(), 'Legacy SEO name is still honored');
+    assertSame([], $empty->contact()['phones'], 'A separate deployment has no reference phone numbers');
+    assertTrue(!isset($empty->contact()['email']), 'Missing email is omitted, never taken from the reference');
+    $seo = new \App\Services\SeoService([], 'https://caldera.example.test', $fixture);
+    assertSame('Caldera & Iris', $seo->organizationSchema()['name'], 'Organization uses the published name');
+    assertSame(['+442070000123'], $seo->organizationSchema()['telephone'], 'Organization uses the normalized published number');
+    assertSame('guide@example.test', $seo->organizationSchema()['email'], 'Organization uses the public email');
+    assertSame('https://caldera.example.test/contact', $seo->contactPageSchema()['url'], 'Contact uses the configured origin');
+    $visible = $fixture->valuesForEditor();
+    assertSame($visible, \App\Services\SiteProfileService::changes($visible + ['admin_email' => 'attack@example.test']), 'Profile fields cannot change the owner account');
+    foreach ([
+        ['site_display_name' => 'unsafe <b>business</b>'], ['public_contact_email' => 'bad-address'],
+        ['public_contact_phone_1' => '5555555555'], ['public_hours_1_times' => ''],
+    ] as $bad) {
+        try {
+            \App\Services\SiteProfileService::changes($bad + $visible);
+            assertTrue(false, 'Invalid profile input must be rejected');
+        } catch (InvalidArgumentException) {
+            assertTrue(true, 'The invalid field is rejected');
+        }
+    }
+};
+
 $tests['SEO canonical and organization origins come from trusted configuration not request host'] = static function (): void {
     $server=$_SERVER;
     try {
@@ -998,19 +1041,19 @@ $tests['SEO preserves safe page overrides and private noindex while rejecting un
         assertSame('https://images.example/approved.webp',$m['og_image'],'Valid external image override remains supported');
         $bad=$s->page('product',['canonical'=>'javascript:alert(1)','og_image'=>'data:image/png;base64,unsafe']);
         assertSame('https://configured.example/blog/post',$bad['canonical'],'Unsafe canonical fails back to configured page URL');
-        assertTrue(str_starts_with($bad['og_image'],'https://configured.example/assets/images/'),'Unsafe image uses shipped fallback');
+        assertSame('', $bad['og_image'], 'An unconfigured brand must omit an unsafe image and reference brand fallback');
         foreach(['admin','account','checkout','login'] as $page)assertTrue(str_contains($s->page($page)['robots'],'noindex'),'Private/transactional indexing behavior preserved: '.$page);
     } finally { $_SERVER=$server; }
 };
 
 $tests['SEO default social image exists and nonexistent local overrides fall back'] = static function (): void {
-    $s=new \App\Services\SeoService(['seo_default_og_image'=>'/assets/images/does-not-exist-fixture.jpg'],'https://configured.example');
+    $s=new \App\Services\SeoService(['seo_default_og_image'=>'/assets/images/does-not-exist-fixture.jpg'],'https://sripanchamispiritual.com');
     $m=$s->page('home');$path=parse_url($m['og_image'],PHP_URL_PATH);
     assertTrue(is_string($path)&&is_file(app_path(ltrim($path,'/'))),'Default metadata references a real shipped file');
-    assertTrue(str_starts_with($m['og_image'],'https://configured.example/'),'Default image is absolute under configured origin');
+    assertTrue(str_starts_with($m['og_image'],'https://sripanchamispiritual.com/'),'Default image is absolute under configured origin');
     assertSame($m['og_image'],$m['twitter_image'],'Default Twitter and OG share the same actual image');
     $valid=$s->page('home',['og_image'=>'/assets/images/blog/create-account.webp']);
-    assertSame('https://configured.example/assets/images/blog/create-account.webp',$valid['og_image'],'Real root-relative image becomes absolute');
+    assertSame('https://sripanchamispiritual.com/assets/images/blog/create-account.webp',$valid['og_image'],'Real root-relative image becomes absolute');
 };
 
 $tests['product schema availability follows checkout and preserves valid slug and resolved price'] = static function (): void {
@@ -2680,7 +2723,8 @@ $tests['private account admin and review endpoints enforce authentication guards
 
 $tests['public service worker does not cache dynamic commerce pages first'] = function (): void {
     $sw = file_get_contents(app_path('assets/pwa/sw-user.js'));
-    assertTrue(str_contains($sw, "const CACHE = 'sps-user-v2'"), 'Public service worker cache should be versioned after navigation caching changes');
+    assertTrue(str_contains($sw, "const CACHE = 'sps-user-v3'"), 'Public service worker replaces the cache that stored the old manifest');
+    assertTrue(str_contains($sw, "['/search', '/sitemap.xml', '/manifest.json'].includes(url.pathname)"), 'The live manifest bypasses service worker caching');
     assertTrue(!str_contains($sw, "['/','/shop','/consult','/login']"), 'Public service worker should not precache dynamic PHP pages');
     assertTrue(str_contains($sw, "e.request.mode === 'navigate'"), 'Public service worker should handle navigations explicitly');
     assertTrue(str_contains($sw, "fetch(e.request).catch"), 'Public navigations should be network-first to avoid stale shop/cart/checkout UI');
@@ -3148,12 +3192,14 @@ $tests['temple directions use editor and legacy map fields'] = function (): void
 
 $tests['temple listing and metadata are location neutral'] = function (): void {
     $view = file_get_contents(app_path('views/public/temples.php'));
-    $seo = file_get_contents(app_path('app/Services/SeoService.php'));
     assertTrue(str_contains($view, '>Our Temples</h1>'), 'Temple listing should use a location-neutral heading');
     assertTrue(str_contains($view, 'across Tamil Nadu'), 'Temple listing should welcome records from across Tamil Nadu');
     assertTrue(!str_contains($view, 'Our Temples in Chennai'), 'Temple listing should not claim all temples are in Chennai');
-    assertTrue(!str_contains($seo, "'title' => 'Temples in Chennai"), 'Temple metadata should not claim all temples are in Chennai');
-    assertTrue(str_contains($seo, "'title' => 'Temples in Tamil Nadu"), 'Temple metadata should describe the statewide listing');
+    $reference = (new \App\Services\SeoService([], 'https://sripanchamispiritual.com'))->page('temples');
+    assertTrue(!str_contains($reference['title'], 'Chennai'), 'Temple metadata should not claim all temples are in Chennai');
+    assertTrue(str_contains($reference['title'], 'Temples in Tamil Nadu'), 'Reference metadata describes its statewide listing');
+    $client = (new \App\Services\SeoService([], 'https://client.example.test'))->page('temples');
+    assertTrue(!str_contains($client['title'], 'Tamil Nadu'), 'Another deployment does not inherit the reference geography');
 };
 
 $tests['review service stores five star reviews and calculates averages'] = function (): void {

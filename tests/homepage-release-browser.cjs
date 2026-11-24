@@ -24,7 +24,7 @@ test('actual public layout: pinned brand, complete editorial sequence, readable 
  const temporary=live?null:mkdtempSync(path.join(os.tmpdir(),'bapx-home-release-'));
  const port=live?null:await freePort();
  const origin=live?'https://sripanchamispiritual.com':'http://127.0.0.1:'+port;
- const server=live?null:spawn('php',['-d','session.save_path='+temporary,'-S','127.0.0.1:'+port,'index.php'],{cwd:root,env:{...process.env,BAPX_TEST_MODE:'1',APP_URL:origin},stdio:'ignore'});
+ const server=live?null:spawn('php',['-d','session.save_path='+temporary,'-S','127.0.0.1:'+port,'index.php'],{cwd:root,env:{...process.env,BAPX_TEST_MODE:'1',APP_URL:'https://sripanchamispiritual.com'},stdio:'ignore'});
  let browser;
  try{
   if(live)await verifyLiveRevision(origin,expected);

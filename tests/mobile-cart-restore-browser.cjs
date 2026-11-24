@@ -21,7 +21,7 @@ test('restored mobile brand, header cart, no bottom nav, and post-add floating c
     const port=await freePort();
     const origin='http://127.0.0.1:'+port;
     const server=spawn('php',['-S','127.0.0.1:'+port,'index.php'],{
-        cwd:root,env:{...process.env,BAPX_TEST_MODE:'1',APP_URL:origin},stdio:'ignore'
+        cwd:root,env:{...process.env,BAPX_TEST_MODE:'1',APP_URL:'https://sripanchamispiritual.com'},stdio:'ignore'
     });
     let browser;
     try {

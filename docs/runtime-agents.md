@@ -76,6 +76,11 @@ evaluations record both role manifests and include their content hashes in the
 implementation fingerprint; the explicit admin actor there is a local test
 fixture, not a production browser privilege grant.
 
+The shared registry adds the published deployment display name as a JSON data
+value. Both agents can retrieve the corresponding public contact projection,
+which also feeds the storefront and external MCP. Owner credentials, private
+settings and developer instructions remain outside that projection.
+
 ## Provider availability
 
 Both agents use the shared AiClient synchronous fallback loop. Ordinary transient

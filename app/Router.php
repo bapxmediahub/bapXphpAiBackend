@@ -12,6 +12,11 @@ final class Router {
             if ($route['method'] !== $method) continue;
             $pattern = preg_replace('#\{[^/]+\}#', '([^/]+)', $route['path']);
             if (preg_match('#^' . $pattern . '$#', $path, $matches)) {
+                if (!self::moduleAvailable($route)) {
+                    header('Cache-Control: no-store');
+                    $this->renderNotFound();
+                    return;
+                }
                 array_shift($matches);
                 [$class, $action] = explode('@', $route['controller']);
                 $fqcn = 'App\\Controllers\\' . $class;
@@ -22,6 +27,10 @@ final class Router {
             }
         }
         $this->renderNotFound();
+    }
+
+    public static function moduleAvailable(array $route): bool {
+        return !isset($route['module']) || ((new \App\Services\SettingsService())->modules(requireReadable: true)[$route['module']] ?? false);
     }
 
     private function renderNotFound(): void {

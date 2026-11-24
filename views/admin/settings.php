@@ -2,12 +2,61 @@
     <h2 style="font-size:1rem; margin:0 0 var(--space-sm);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg> Protected Settings</h2>
     <p style="color:var(--color-text-muted); font-size:0.9rem;">Manage API keys in <a href="/admin/integrations">Integrations</a>.</p>
     <div role="navigation" aria-label="Settings sections" class="admin-card__actions">
+        <a class="btn btn-ghost" href="#settings-site-profile">Public Site Profile</a>
         <a class="btn btn-ghost" href="#settings-login">Admin Login</a>
         <a class="btn btn-ghost" href="#settings-modules">Site Modules</a>
         <a class="btn btn-ghost" href="#settings-shipping">Shipping Configuration</a>
         <a class="btn btn-ghost" href="#settings-gst">GST Configuration</a>
     </div>
 </div>
+<section id="settings-site-profile" aria-labelledby="settings-profile-heading" class="admin-card settings-section" tabindex="-1" style="margin-bottom:var(--space-lg);">
+    <h2 id="settings-profile-heading">Public site profile</h2>
+    <p>These details appear on public pages and are available to assistants. Mail delivery settings are managed in <a href="/admin/integrations">Integrations</a>.</p>
+    <?php $profileValues = $siteProfile->valuesForEditor(); ?>
+    <form class="admin-form" method="post" action="/admin/settings/save">
+        <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+        <input type="hidden" name="save_site_profile" value="1">
+        <div class="admin-form__row">
+            <div class="form-group">
+                <label for="site-display-name">Display name</label>
+                <input id="site-display-name" name="site_display_name" maxlength="160" value="<?= e($profileValues['site_display_name']) ?>">
+            </div>
+            <div class="form-group">
+                <label for="site-public-email">Public email</label>
+                <input id="site-public-email" type="email" name="public_contact_email" maxlength="254" value="<?= e($profileValues['public_contact_email']) ?>">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="site-summary">Business summary</label>
+            <input id="site-summary" name="site_summary" maxlength="280" value="<?= e($profileValues['site_summary']) ?>">
+        </div>
+        <div class="form-group">
+            <label for="site-story">About story</label>
+            <textarea id="site-story" name="site_story" rows="5" maxlength="1800"><?= e($profileValues['site_story']) ?></textarea>
+            <small>Separate paragraphs with a blank line.</small>
+        </div>
+        <p>Use international phone numbers. Leave a contact field blank to hide it.</p>
+        <div class="admin-form__row">
+            <?php for ($index = 1; $index <= 2; ++$index): $key = 'public_contact_phone_' . $index; ?>
+            <div class="form-group">
+                <label for="<?= e($key) ?>">Public phone <?= $index ?></label>
+                <input id="<?= e($key) ?>" type="tel" name="<?= e($key) ?>" maxlength="32" value="<?= e($profileValues[$key]) ?>">
+            </div>
+            <?php endfor; ?>
+        </div>
+        <?php for ($index = 1; $index <= 2; ++$index): ?>
+        <div class="admin-form__row">
+            <?php foreach (['days' => 'Days', 'times' => 'Hours'] as $part => $label): $key = 'public_hours_' . $index . '_' . $part; ?>
+            <div class="form-group">
+                <label for="<?= e($key) ?>"><?= e($label) ?> <?= $index ?></label>
+                <input id="<?= e($key) ?>" name="<?= e($key) ?>" maxlength="40" value="<?= e($profileValues[$key]) ?>">
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <?php endfor; ?>
+        <button class="btn btn-primary">Save public site profile</button>
+    </form>
+</section>
 <section id="settings-login" aria-labelledby="settings-login-heading" class="admin-card settings-section" tabindex="-1" style="margin-bottom:var(--space-lg);">
     <h2 id="settings-login-heading" style="font-size:1rem; margin:0 0 var(--space-sm);">Admin Login</h2>
     <p style="margin:0 0 var(--space-lg); color:var(--color-text-muted); font-size:0.9rem;">Admin passwords saved here are hashed before storage.</p>

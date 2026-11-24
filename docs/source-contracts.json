@@ -3,14 +3,14 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "f01ea27859f68dba70d2a25b18331c54b8e1cf3ee66fdbb24490e9a37aa0d8b6",
-            "references_sha256": "ed9de2d0bea74b94666b5c68aba7e505be756c7ff480c9822df7df67f50911df",
-            "review_note": "Reviewed official Google typed RetryInfo and QuotaFailure, Vercel AI SDK step telemetry and OpenTelemetry error conventions; native bounded metadata, exact delay and tool-continuation tests; direct advertised-tool prompt guidance."
+            "source_sha256": "817b3b8099fc2827dcca3127adbe2b2d5c13865a138558c8c1cfe8fe46682732",
+            "references_sha256": "537b3acdd0532320f5b6da5970d6c9191f56c24dfab2768e3d2ba0edfa176ad2",
+            "review_note": "Reviewed role manifests and shared registry identity data, public contact tool schema and allowed role scope. Golden evaluation remains at its existing 33-check baseline."
         },
         "auth": {
-            "source_sha256": "6087ca0af2055001f252583a6e14e380aace2bdf067c0e472cb9c63d3f5ade0e",
+            "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
             "references_sha256": "3afeae5396041cd36e7c60f04a04ea342d943555744667675b96b97d5c0ae97d",
-            "review_note": "Canonical configured username or email matches only the existing owner identity, still requiring password_verify. No credential changes or default password introduced."
+            "review_note": "Reviewed hash-only credentials and patch writes. Blank credential inputs preserve existing values and canonical row bootstrap excludes a legacy unrecognized password."
         },
         "commerce": {
             "source_sha256": "a05e401e6a379a17ad8d6353f0f6d59396679f9f6d8d8d99afe33cbc7a57f9f2",
@@ -18,59 +18,59 @@
             "review_note": "Reviewed backend skill and commerce data contracts; read-only model-selected facts do not change payment, order, catalogue or checkout writes."
         },
         "content": {
-            "source_sha256": "81e089883371054ee864877c253114a37fa8858f072adf2040da41482d911a85",
-            "references_sha256": "233541c29706cce5926813681d7679fa7b852b55743c6e569dca51bca84e31f7",
-            "review_note": "Reviewed browser snapshot bounds, per-owner and page key, revision conflict, explicit save token cleanup and unchanged MySQL CAS and publication status."
+            "source_sha256": "8047c1092ae63a74262a3b32464a4d4b02c698563ab63c8551da0b04ce9c7f72",
+            "references_sha256": "4a7c2e24302ce60d72e88914f1b756cf44e5fc65c6912f6b00ca4501aafbb4f0",
+            "review_note": "Reviewed Blog direct-route gating, sitemap module filtering, canonical URL and optional brand image defaults. Profile story is published as bounded plain paragraphs."
         },
         "foundation": {
-            "source_sha256": "2be135cc13e6c54384371b407646b276a5026e42ec3b44eb75e1d9f179da7db7",
-            "references_sha256": "f2e5f483a05240c3512534f5ff25d322be814ccde451c0f5d421adcd10641f94",
-            "review_note": "Compared the documented deployment checks with the actual workflow and native application boundaries. The changes run in tests and GitHub Actions and introduce no application server, data or hosting mutation."
+            "source_sha256": "2b7b829644173a594e08f1254e83229de6c3991c7214ee915206b48a0c724faa",
+            "references_sha256": "8e3f8639b29ec415355bf632307d458cb75c11b2bed26f0990e423f956256d33",
+            "review_note": "Reviewed approved profile and request configuration, canonical settings row locking and legacy defaults, stateless manifests and shared web/API module dispatch without changing storage types."
         },
         "google-tags": {
-            "source_sha256": "7edbdefed03dedb366ca2201e7af5423ce0e41c37e60de4ad0e9912f27f10e22",
-            "references_sha256": "9a0ef83889695c7cc43367378840c18bcbfb2ba87e7f5431a967f11599c13084",
-            "review_note": "Reviewed the frontend skill addition alongside consent-aware Google tag rendering. The change applies only to enquiry-card text and introduces no script, tag or consent dependency."
+            "source_sha256": "1c01a51f0db97fee97e18369a5bcd405085336fdd01ad5654fbbb6559bd5516a",
+            "references_sha256": "9d01e572e3a406ff428555c7827aeb1d535f02f2a9c88a8eba885f298a8c3db5",
+            "review_note": "Reviewed Settings help and integrations boundaries. Profile identity and social metadata are separate from Google tags, credentials and reporting; no new OAuth permission is requested."
         },
         "http-errors": {
-            "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
-            "references_sha256": "d0ac623d4a8592163e32c117ddd7f3e054c3a4257b3d80344559a796ae54eb9c",
-            "review_note": "Reviewed request-failure and hosting guidance against the probe error handling. Retry is bounded to the read-only revision GET, honors server guidance and does not assert deployment on network or HTTP failure."
+            "source_sha256": "2e2fee3211f50641844c05f86381f277f9c6c10b7fb60fb750c52937b0868e12",
+            "references_sha256": "74e211efca6a0b4cdf8e446bc9444a745016ec5b5d779531ad73b5742f9c154f",
+            "review_note": "Reviewed web and API dispatch. Module-off returns an intentional uncached 404; a settings transport failure still uses the guarded platform failure response."
         },
         "interface": {
-            "source_sha256": "4e6608ca5447861a10cb0510e21356b84910495034f4eaaf99e03ee83311b67e",
-            "references_sha256": "2f3e7508dcdea5ae6dc325b987162c34be08af3f9bf14269d935c1cf8016def7",
-            "review_note": "Reviewed the responsive native Users filter disclosure, visible search and reset, keyboard focus and compact mobile segment counts against Design and the Users guide."
+            "source_sha256": "8769623b84176bb05e84c28885b49a63742971f2974a6f90c0754f52afff8557",
+            "references_sha256": "51af0f8c5927316f5bbd938dd2cec9a57661a67172be98db4b9d26e138519de4",
+            "review_note": "Reviewed profile editing, no-JavaScript save feedback, responsive Contact and About, desktop/mobile reference layout, and consistent app identity without a new frontend."
         },
         "mail": {
-            "source_sha256": "b45d9ee217172b15b4a2bf24d95ef1c27b396c060cbd22a1416c7c022a8cca72",
-            "references_sha256": "d0441fde213c5b374c849b9d794dfbaea6d62867d12dda15ceef35633209f768",
-            "review_note": "Reviewed the AdminController diff against queue, outbox and delivery guidance; only users() directory selection and metadata changed."
+            "source_sha256": "dc2da3735eca951652388827b4f75c0a10d9e72cfe01b874e03c750151b5c038",
+            "references_sha256": "4a0de4be0ef688a713908c0e08f07ae0f1d4bba044fdb9e4da9a37392e69aa53",
+            "review_note": "Reviewed Contact admission and email operations. Published channels and hours remain separate from SMTP settings, recipients, enqueue, claims and delivery policy."
         },
         "mcp-clients": {
             "source_sha256": "78b45576da2d1ffc37e26fdf5701db6321d7df0b22488288b1879d91472778f1",
-            "references_sha256": "833dd5a697abaed9f3e90d7859a8fc9b5d4dfb3b29a3d11ea461e3bf30474ad9",
-            "review_note": "Reviewed the shared site layout and settings guide. Brand-only favicon fallback does not change MCP client grants, prerequisites or URLs."
+            "references_sha256": "d19b8a3fce5a93fac4c742428a288b1d7f06777b4ec6c2c1cff72a5fff2760b9",
+            "review_note": "The Settings help addition covers public profile fields. Reviewed isolated owner reporting grants, revocation and STDIO scope, which retain their existing behavior."
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
-            "references_sha256": "463a55dec5fe5d56c8c237adc15b8725bb47aaa30975338caf58bd23c8c377bb",
-            "review_note": "The admin UI skill change documents Users filtering. Reviewed media verification guidance and confirmed uploads, revision controls and delete paths are outside the change."
+            "references_sha256": "9919ef701c829d738ad44034c79768cdbdc7f8d4ac5dbbbe1694830ce40bfe0e",
+            "review_note": "Reviewed persistent brand paths and owner upload contracts. The profile selects approved logo and favicon paths without modifying assets or media deletion and retention behavior."
         },
         "operator-help": {
-            "source_sha256": "484dd43f3d1ea7dec9c90dbe98feaea2d217011ed74cf7c018e2bb72c0fc6f5a",
-            "references_sha256": "fdc658baf44765687b0575af60e28f955cde7ea7c327a5cbc5a8db4ded2875ee",
-            "review_note": "Verified the Customers guide against the native Users form, collapsed controls, search submit, active count and result-adjacent reset."
+            "source_sha256": "48e7a886259e42299584da3530fad70f943c8c3a9466a106b57f9dbff046f775",
+            "references_sha256": "a7081f75fd4de5a5640067a85e115e61a51824629f9e65015e57285ec89be633",
+            "review_note": "Reviewed Public Site Profile labels, field limits and save feedback, independent mail configuration, and existing module controls against the native forms and validated two-site browser fixture."
         },
         "public-mcp": {
-            "source_sha256": "3342adc5aa7dcf4c375bc8f4c3010f978a98c0b3e42c9c4cc4b9fb51d078c282",
-            "references_sha256": "475a614c13ba4a5e34c83585738934e923a66761a23482f928fa1f8aab00d92b",
-            "review_note": "Checked the route inventory. The MediaService relation describes an existing owner appearance POST and introduces no public tool."
+            "source_sha256": "dff34385c5b9e3eb6f9adb4160aed88ba54142bd95e9104f3c4e806eee74198c",
+            "references_sha256": "2d6a140bfacebbc1241e1b9394d74b952b015245db1e28d466f6863686a97049",
+            "review_note": "Verified the optional public email, scoped names and contact facts through legacy MCP and ordinary GET in two isolated profile fixtures. Existing transport and role boundaries remain enforced."
         },
         "remote-commerce": {
-            "source_sha256": "fdbee076578636fc2de96f884ddf628b0660d3931ce118bafe56423314da1511",
-            "references_sha256": "711b415d4a43db950e8b0347db24fcdf0d98b16797f2d4cec1028a550416d835",
-            "review_note": "Design edit covers owner directory controls only. Reviewed checkout guidance and confirmed payment and public cart UI are untouched by this view and scoped stylesheet change."
+            "source_sha256": "e57f1d5e32c8a297bb085291e48e2f4fd3574c39841b0fe2444b2223d3ac59da",
+            "references_sha256": "9a189619d057fc46241737ffdb4e2949307c2389e7040bf0b7eb0fe4918208de",
+            "review_note": "Reviewed Shop route admission, existing capability and payment callbacks. Disabling Shop blocks new storefront checkout without changing payment completion or receipt access."
         },
         "sales-channels": {
             "source_sha256": "6e5ee7b44dd92cc4dadec7a3c02f4bb9da797ba98d4e541e9f956687db236142",
@@ -78,9 +78,9 @@
             "review_note": "Confirmed the existing catalogue optimiser and filename handling remain the default. Only brand uploads retain the original raster type."
         },
         "workflow": {
-            "source_sha256": "b91f3590670ed6d83d8284f6847c2f4be5d66a789e58af6a15f08753a7ac01c5",
-            "references_sha256": "e34bc6f1ebc75679c05889ba2d5c65285603a62a53ccb61f230877a7eac24340",
-            "review_note": "Added one isolated Chromium regression to the existing CI browser suite. Reviewed the issue-first, exact-head and deployed acceptance workflow; release gates are unchanged."
+            "source_sha256": "ce99153bc5e089b943458fcd268e6923d0ffba2d48808b68e79c868a30c369ef",
+            "references_sha256": "4d8851a49268b7fa43d93877bd463b7e05467a17f73df814d848408934e9840c",
+            "review_note": "Reviewed deployment-owned configuration and upgrade guidance against native persistence and separate fixture installs, with browser checks added to existing CI and no installer."
         }
     }
 }

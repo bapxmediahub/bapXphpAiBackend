@@ -16,7 +16,7 @@ return [
         'eyebrow' => 'Our purpose',
         'title' => 'Faith, trust and tradition.',
         'paragraphs' => [
-            'Sri Panchami Spiritual brings together the sacred objects and practical information that accompany a devotional life. From a pendant worn each day to the essentials of pooja at home, our focus is on making these traditions easier to explore.',
+            '{{SITE_NAME}} brings together the sacred objects and practical information that accompany a devotional life. From a pendant worn each day to the essentials of pooja at home, our focus is on making these traditions easier to explore.',
             'Our purpose is to support devotees with thoughtfully presented spiritual products, temple guides and a clear way to ask questions. We believe that choosing a devotional item should begin with understanding its meaning and details.',
         ],
         'image' => [

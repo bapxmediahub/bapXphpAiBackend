@@ -592,6 +592,9 @@ final class DatabaseService {
             $record['id'] ??= bin2hex(random_bytes(8));
             return $this->remoteMutation('upsert', $table, ['record' => $record])['record'] ?? $record;
         }
+        if ($table === 'settings' && $key === 'id' && ($record['id'] ?? null) === SettingsService::SETTINGS_ID) {
+            return $this->upsertApplicationSettings($record);
+        }
         $clean = preg_replace('/[^a-z_]/', '', $table);
         $id = $record[$key] ?? bin2hex(random_bytes(8));
         $existing = $this->find($table, $id, $key);
@@ -612,6 +615,46 @@ final class DatabaseService {
         }
         return $record;
     }
+    /** Independent owner forms patch the canonical settings row under one row lock. */
+    private function upsertApplicationSettings(array $record): array {
+        $id = SettingsService::SETTINGS_ID;
+        $pdo = $this->db();
+        $pdo->beginTransaction();
+        try {
+            $ensure = $pdo->prepare('INSERT INTO settings (id, _data, _created_at, _updated_at)
+                VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) ON DUPLICATE KEY UPDATE id = id');
+            $ensure->execute([$id, json_encode($record, JSON_THROW_ON_ERROR)]);
+
+            $read = $pdo->prepare('SELECT _data FROM settings WHERE id = ? FOR UPDATE');
+            $read->execute([$id]);
+            $current = json_decode((string)$read->fetchColumn(), true, flags: JSON_THROW_ON_ERROR);
+            if ($ensure->rowCount() === 1) {
+                // Only the request that created the canonical row can seed its legacy defaults.
+                $seed = $pdo->prepare("SELECT _data FROM settings
+                    WHERE id NOT IN (?, ?) AND id NOT LIKE 'pg:%' ORDER BY id LIMIT 1");
+                $seed->execute([$id, SettingsService::HEADER_MENU_ID]);
+                $legacy = json_decode($seed->fetchColumn() ?: '{}', true, flags: JSON_THROW_ON_ERROR);
+                if (password_get_info((string)($legacy['admin_password'] ?? ''))['algo'] === null) {
+                    unset($legacy['admin_password']);
+                }
+                $current += $legacy;
+            }
+            $merged = array_replace($current, $record);
+            $write = $pdo->prepare('UPDATE settings SET _data = ?, _owner = ?, _status = ?, _updated_at = CURRENT_TIMESTAMP WHERE id = ?');
+            $write->execute([
+                json_encode($merged, JSON_THROW_ON_ERROR),
+                $merged['customer_email'] ?? $merged['email'] ?? $merged['user_id'] ?? null,
+                $merged['status'] ?? null,
+                $id,
+            ]);
+            $pdo->commit();
+            return $record;
+        } catch (\Throwable $error) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            throw $error;
+        }
+    }
+
     /** Coordinate owner edits and create-only imports without a change to the hosted schema. */
     private function withProductLock(callable $operation): array {
         $pdo = $this->db();

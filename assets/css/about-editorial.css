@@ -133,6 +133,7 @@ main.about-main { padding: 0; }
     gap: clamp(24px, 5vw, 72px);
     margin-bottom: var(--space-xl);
 }
+.about-contact__grid > :only-child { grid-column: 1 / -1; }
 .about-contact__grid p:not(.about-kicker) { color: var(--color-text-muted); margin-bottom: 0; }
 .about-contact__details {
     display: grid;

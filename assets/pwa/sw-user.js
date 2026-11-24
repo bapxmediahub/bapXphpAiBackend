@@ -1,12 +1,11 @@
-const CACHE = 'sps-user-v2';
-const PRECACHE = ['/manifest.json'];
-self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(PRECACHE)).then(() => self.skipWaiting())); });
+const CACHE = 'sps-user-v3';
+self.addEventListener('install', e => { e.waitUntil(self.skipWaiting()); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(k => Promise.all(k.map(n => n !== CACHE ? caches.delete(n) : null))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
   // Page visibility can change between visits. Read the current page and its public indexes.
-  if (url.pathname.startsWith('/pages/') || url.pathname === '/search' || url.pathname === '/sitemap.xml') return;
+  if (url.pathname.startsWith('/pages/') || ['/search', '/sitemap.xml', '/manifest.json'].includes(url.pathname)) return;
   // The previous admin manifest launched /admin, which falls under this root worker.
   if (url.pathname === '/admin' || url.pathname.startsWith('/admin/')) {
     if (e.request.mode === 'navigate') {

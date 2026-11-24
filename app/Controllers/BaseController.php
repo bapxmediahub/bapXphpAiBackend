@@ -1,11 +1,17 @@
 <?php
 namespace App\Controllers;
-use App\Services\{SeoService,SecretService};
+use App\Services\{SeoService,SecretService,SiteProfileService};
 abstract class BaseController {
     protected string $layout = 'app';
     protected bool $isApiRequest = false;
     protected string $seoKey = 'home';
     protected array $seoOverrides = [];
+
+    private ?SiteProfileService $profile = null;
+
+    protected function siteProfile(?array $seo = null): SiteProfileService {
+        return $this->profile ??= SiteProfileService::current($seo);
+    }
     
     protected function redirect(string $path): never { session_write_close(); header('Location: ' . $path); exit; }
     protected function flash(string $message, string $type = 'info'): void { $_SESSION['flash'] = ['message' => $message, 'type' => $type]; }
@@ -68,7 +74,8 @@ abstract class BaseController {
             return;
         }
         $secrets = (new SecretService())->all();
-        $seo = (new SeoService($secrets))->page($this->seoKey, $this->seoOverrides);
+        $siteProfile = $this->siteProfile($secrets);
+        $seo = (new SeoService($secrets, profile: $siteProfile))->page($this->seoKey, $this->seoOverrides);
         $data['seo'] = $seo;
         $data['pageTitle'] = $seo['title'];
         $data['metaDescription'] = $seo['description'];
@@ -98,7 +105,8 @@ abstract class BaseController {
             exit;
         }
         $secrets = (new \App\Services\SecretService())->all();
-        $seo = (new \App\Services\SeoService($secrets))->page('404', [
+        $siteProfile = $this->siteProfile($secrets);
+        $seo = (new SeoService($secrets, profile: $siteProfile))->page('404', [
             'title' => 'Page not found',
             'description' => 'The page you requested could not be found.',
             'robots' => 'noindex, follow',

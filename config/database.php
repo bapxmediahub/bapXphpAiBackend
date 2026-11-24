@@ -8,6 +8,7 @@ $envValue = static function (string $key, string $default = '') use ($fileEnv): 
 $appUrl = rtrim($envValue('APP_URL', 'https://sripanchamispiritual.com'), '/');
 return [
     'app_url' => $appUrl,
+    'app_name' => $envValue('APP_NAME'),
     'host' => $envValue('BAPX_MYSQL_HOST'),
     'port' => $envValue('BAPX_MYSQL_PORT', '3306'),
     'dbname' => $envValue('BAPX_MYSQL_DB'),
