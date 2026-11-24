@@ -37,7 +37,7 @@ Owner source links remain inside the authenticated owner response. Private answe
 | Product detail | One selected product; up to three safe images, four published highlights and six specification pairs. Additional photos use a native disclosure with a descriptive summary. |
 | Product comparison | Two or three exact selections; repeat the same specification labels and show Not listed for an absent value. No inferred rankings or invented product attributes. |
 | Article list | Published titles, categories and read links in a compact reading list. |
-| Contact panel | Canonical phone, email and hours rows in one panel with one enquiry-form link. Its card limit does not hide contact fields. |
+| Contact panel | Published phone, email and hours rows in one panel with one enquiry-form link. If neither phone nor email is published, the panel still offers the contact form. Its card limit does not hide contact fields. |
 | Service tiles | Existing public enquiry descriptions and subject-specific contact-form links. These are not booking actions. |
 
 An exact product request uses up to three distinct raw `slugs`, with an empty query and a limit large enough for the requested selection. `compare` requires two or three selections. Missing or hidden products never get substitutes; fewer than two returned products use a detail/empty view instead of claiming a completed comparison. Ordinary search remains compact, while exact selected-product results can include the additional published images and structured fields. Price and availability are typed presentation values, not parsed from prose or a combined display string.

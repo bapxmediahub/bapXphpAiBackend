@@ -23,9 +23,9 @@
             "review_note": "Reviewed Blog direct-route gating, sitemap module filtering, canonical URL and optional brand image defaults. Profile story is published as bounded plain paragraphs."
         },
         "foundation": {
-            "source_sha256": "2b7b829644173a594e08f1254e83229de6c3991c7214ee915206b48a0c724faa",
+            "source_sha256": "6ec71f86ddc930a0746ee067036c55e9bf7da3575c91f4116858df615e492572",
             "references_sha256": "8e3f8639b29ec415355bf632307d458cb75c11b2bed26f0990e423f956256d33",
-            "review_note": "Reviewed approved profile and request configuration, canonical settings row locking and legacy defaults, stateless manifests and shared web/API module dispatch without changing storage types."
+            "review_note": "Rechecked shared configuration, row locking and optional contact rendering. The existing contact route is used for a form-only installation, with no new mutation or dependencies."
         },
         "google-tags": {
             "source_sha256": "1c01a51f0db97fee97e18369a5bcd405085336fdd01ad5654fbbb6559bd5516a",
@@ -63,9 +63,9 @@
             "review_note": "Reviewed Public Site Profile labels, field limits and save feedback, independent mail configuration, and existing module controls against the native forms and validated two-site browser fixture."
         },
         "public-mcp": {
-            "source_sha256": "dff34385c5b9e3eb6f9adb4160aed88ba54142bd95e9104f3c4e806eee74198c",
-            "references_sha256": "2d6a140bfacebbc1241e1b9394d74b952b015245db1e28d466f6863686a97049",
-            "review_note": "Verified the optional public email, scoped names and contact facts through legacy MCP and ordinary GET in two isolated profile fixtures. Existing transport and role boundaries remain enforced."
+            "source_sha256": "e5d2bb67604d7b9c3588dba3d04e75ad9925c1c686f3a4d13dffd1dc8dd99325",
+            "references_sha256": "4c6cb909e28f8ad9e9cb1ee10df2472125efc78343d24b5ddd6afeb0ce7f957f",
+            "review_note": "Verified that a profile without published phone or email still has an actionable form link in the official MCP Apps client at both widths; the structured public facts remain optional."
         },
         "remote-commerce": {
             "source_sha256": "e57f1d5e32c8a297bb085291e48e2f4fd3574c39841b0fe2444b2223d3ac59da",

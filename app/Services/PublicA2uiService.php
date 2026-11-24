@@ -326,6 +326,7 @@ final class PublicA2uiService
                 'detail'=>mb_substr((string)($phone['number']??''),0,240),'path'=>'/contact'];
         }
         if(!empty($contact['email']))$items[]=['title'=>'Email','detail'=>mb_substr((string)$contact['email'],0,240),'path'=>'/contact#contact-form'];
+        if (!$items) $items[] = ['title'=>'Contact form','detail'=>'Send a message through the website.','path'=>'/contact#contact-form'];
         $hours=[];
         foreach((array)($contact['hours']??[]) as $row)if(is_array($row))$hours[]=trim((string)($row['days']??'').' '.(string)($row['hours']??''));
         if($hours)$items[]=['title'=>'Hours','detail'=>mb_substr(implode(' · ',$hours),0,240),'path'=>'/contact'];

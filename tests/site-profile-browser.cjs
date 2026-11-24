@@ -148,11 +148,17 @@ test('two deployments publish separately saved identity and contact facts throug
             data:{jsonrpc:'2.0',id:1,method:'tools/call',params:{name:'get_public_contact',arguments:{}}},
         });
         assert.equal(mcp.status(),200);
-        const projected = (await mcp.json()).result.structuredContent;
+        const result = (await mcp.json()).result;
+        const projected = result.structuredContent;
         assert.deepEqual(projected,contact);
         assert.equal(projected.name,name);
         assert.equal(projected.email,email || undefined);
         assert.deepEqual(projected.hours,[{days:'Mon–Fri',hours:'10–16 UTC'}]);
+        if (!email) {
+            const contactCard = result._meta['in.bapx/publicSurface'].messages[0].createSurface.dataModel.items[0];
+            assert.equal(contactCard.title,'Contact form');
+            assert.equal(contactCard.path,'/contact#contact-form');
+        }
         const manifest = await publicContext.request.get(install.origin+'/manifest.json');
         assert.equal((await manifest.json()).name,name);
         assert.equal(manifest.headers()['set-cookie'],undefined);
