@@ -15,7 +15,7 @@
         "commerce": {
             "source_sha256": "a05e401e6a379a17ad8d6353f0f6d59396679f9f6d8d8d99afe33cbc7a57f9f2",
             "references_sha256": "70193e787d7443b2b0ed166a0fb3081cfac6908de8850386dd2224bd04399159",
-            "review_note": "Orders guide explains ordered Indian state and PIN matching, decimal paise arithmetic, fail-closed outcomes and the missing authoritative checkout integration."
+            "review_note": "Reviewed first-match ordered rules, exact paise and no persisted configuration against orders guide."
         },
         "content": {
             "source_sha256": "12e40630e473f8d50774e654dc207c19fe3c8b5eb8158ea8da0e392330a3655d",
@@ -25,12 +25,12 @@
         "foundation": {
             "source_sha256": "d0f460a33ead1a7bec9a8ea43ab1494c962dbb2b0e43553ebf332e7eb66ad18a",
             "references_sha256": "44504ddbd485f9ab5d6c71a6443726f531f7e0d7ed34ec16215741902635cc0e",
-            "review_note": "Pure shipping rule preview and corrected regression assertions exercise integer paise, bounded fields, zone order and explicit no-quote outcomes; no runtime data writes."
+            "review_note": "Regenerated route and service inventory; no persistence or remote DB changes."
         },
         "google-tags": {
-            "source_sha256": "f05c993af547a7e72406e694a7d049d905c3f21410f1eddeb54a9b86f8fce54e",
+            "source_sha256": "9931f2724eec9875f4be1105fee72b70167373d61e7ecf95888dae86b1cdbd40",
             "references_sha256": "1bc780fef929af6855d54ec574f50f3ed194f65ebd66ddb6bdbbcf4952a51081",
-            "review_note": "Reviewed public layout changes against existing Google Analytics and advertising tags. Google AI credentials remain independent of OAuth, analytics tags and OpenRouter encrypted provider key."
+            "review_note": "Reviewed shared layout footer/description changes; Google tags, consent and script configuration unchanged."
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
@@ -38,14 +38,14 @@
             "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
         },
         "interface": {
-            "source_sha256": "cef8599669996f286ec59817ff46519966a69cf0cc5440f80d4d08b53035716c",
-            "references_sha256": "bff9a14168a36201f57f076af1f2537353f85ad4d321258efd3c402933a4b899",
-            "review_note": "Owner shipping preview uses explicit select labels, native admin form controls, and nonpayable quote result; existing shipping configuration remains separate."
+            "source_sha256": "81c8c2b4f7399f6cafc851c793690bb938e3d4020a7136cca324c50127eb16b2",
+            "references_sha256": "f1fc313dfc585e3dc0569dd2c52ac2b412aa8924f154978be71464130fe13375",
+            "review_note": "Reviewed accessible preview form, validation, and link to existing shipping settings."
         },
         "mail": {
             "source_sha256": "23a8f89f83d6fbe76d22b1da4067a766e1a3fe2ede02aaa2b5a58808643bfc41",
             "references_sha256": "6d6153ae2fed6f1aebbf9fa93225d6cc74b6c098d9a34deffce7bc4f3c6e9273",
-            "review_note": "Controller addition handles shipping preview only; existing order email and mail settings paths unchanged."
+            "review_note": "Admin controller change only adds read-only preview; mail unchanged."
         },
         "mcp-clients": {
             "source_sha256": "8b2e7629876c1e5facae0a92e30f91e7e11ba59bd979a528022807b0193be7bc",
@@ -58,19 +58,19 @@
             "review_note": "Reviewed product image paths and the bounded A2UI gallery against current media hosting paths; styling does not move uploads, delete media or expose private asset directories."
         },
         "operator-help": {
-            "source_sha256": "4923cd09cf9d6c142b5feb357fd22e6cb6328e698185df703df9d38e95459dde",
+            "source_sha256": "b808f6e9453d5e78e584dff02612e32384d37d4813d0f0c466bbfd26c4a861a1",
             "references_sha256": "a0ff95e7af0247f590128e004dd07abdd13afe1258daf49f0437103cc3f6c43a",
-            "review_note": "Cross-checked the owner shipping preview and orders guide: dry-run rule matching only; no stored zones, payable quote or shipping setting mutation."
+            "review_note": "Reviewed shipping preview form, state/PIN rules and explicit dry-run limitations with owner help."
         },
         "public-mcp": {
-            "source_sha256": "e673c511726d2a92440939e9a7e7ab43173bfe12ce11e8204714edd8bdff7fc3",
+            "source_sha256": "c4c43d1a3ff76df3d458d400ae8425ab94eb3c7c899c96647969a00ab3b8f188",
             "references_sha256": "66f314f4d27575d8d1ab7394d8e28aae3feb90467ef6445ce18d804604d40f3d",
-            "review_note": "New POST route is owner-only under AdminController, no public MCP, product or checkout tool exposure."
+            "review_note": "No new public tool or shipping quote mutation exposed."
         },
         "remote-commerce": {
-            "source_sha256": "ef0c9447d0aa3f5fd98b57b38d2ec8c757a187302aa156f0a1d2e8022a706aae",
-            "references_sha256": "468e79e693e7e5b02f15f9808fc0c8308e76be0d4e8f68201af68ca6a04aee78",
-            "review_note": "Orders documentation distinguishes hypothetical owner preview from existing authoritative remote checkout; no remote commerce source or payment contract changed."
+            "source_sha256": "4158663ee0618880bed2832d4e0c789789f46c71af15cd68796652a3e2e272d8",
+            "references_sha256": "e69f1df859674ebae909db1f925ea55615d214e260e05f83c368a654a9dfefaa",
+            "review_note": "Preview uses hypothetical subtotal; checkout, payment, tax and remote commerce operations unchanged."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed the sales-channel CLI references and catalogue guidance. This change only fixes generic PHP lint argument forwarding and failure propagation; feed, channel and catalogue operations are unchanged."
         },
         "workflow": {
-            "source_sha256": "81f368baf22eab076f1d2b94e680be1dafda11977776b95d4b8a2c7c419eeabe",
+            "source_sha256": "6484381f714bae20ca786c67101a90a071ce8b433da54f1fc98d6490aa5f4e5b",
             "references_sha256": "6bddcf08be3819fe8ec98d7f78e96b359a9571f9043255f5ce207927e4732284",
-            "review_note": "CI now covers mobile and desktop browser fixtures for hypothetical quote success, minimum failure and no coverage; project maps regenerated."
+            "review_note": "Preserved existing homepage and shipping-specific browser CI."
         }
     }
 }

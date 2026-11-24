@@ -607,12 +607,6 @@ nav:where(#primary-nav) a:hover { color: var(--color-maroon); }
 /* The supplied portrait is isolated on transparency and tightly framed in a
    portrait ratio, so it stays complete and legible in both hero breakpoints. */
 .hero-deity .hero-guruji { object-fit:contain; object-position:center bottom; }
-.hero-deity[data-current-slide="guruji"] .deity-frame {
-    background: url('/assets/images/hero/guruji-portrait-cutout.png') center bottom / contain no-repeat;
-}
-/* Keep the source image available to assistive technology while the frame supplies
-   the same transparent portrait as a reliably complete responsive paint. */
-.hero-deity[data-current-slide="guruji"] .hero-guruji { opacity:0; visibility:hidden; }
 .varahi-dots {
     display: flex;
     justify-content: center;
@@ -692,7 +686,7 @@ nav:where(#primary-nav) a:hover { color: var(--color-maroon); }
 
 /* Consultation workspace */
 .workspace-page,.consultation-room{max-width:1180px;margin:0 auto}.workspace-heading,.consultation-room__header{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-lg);margin-bottom:var(--space-xl)}.workspace-heading h1,.consultation-room__header h1{margin:.15rem 0 var(--space-xs)}.workspace-heading p,.consultation-room__header p{margin:0;color:var(--color-text-muted)}.status-pill{padding:.4rem .7rem;border:1px solid var(--color-border);border-radius:var(--radius-pill);background:var(--color-white);font-size:.75rem;font-weight:700}.workspace-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md);margin-bottom:var(--space-xl)}.workspace-metrics article{padding:var(--space-lg);background:var(--color-white);border:1px solid var(--color-border);border-radius:var(--radius-md)}.workspace-metrics strong{display:block;font-family:var(--font-serif);font-size:1.8rem;color:var(--color-maroon)}.workspace-metrics span{font-size:.8rem;color:var(--color-text-muted)}.workspace-list{padding:0;overflow:hidden}.workspace-list__head{display:flex;justify-content:space-between;padding:var(--space-lg);border-bottom:1px solid var(--color-border)}.workspace-list__head h2{margin:0;font-size:1.1rem}.workspace-session{display:flex;justify-content:space-between;gap:var(--space-md);padding:var(--space-md) var(--space-lg);border-bottom:1px solid var(--color-border-light);color:var(--color-ink)}.workspace-session:hover{background:var(--color-bg-alt)}.workspace-session span{display:grid;gap:.2rem}.workspace-session span:last-child{text-align:right}.workspace-session small{color:var(--color-text-muted)}.workspace-session b{font-size:.72rem;color:var(--color-maroon)}.empty-state{padding:var(--space-xl);text-align:center;color:var(--color-text-muted)}.auth-inline-page{display:grid;place-items:center;min-height:70vh}.auth-inline-page .auth-card{max-width:520px;width:100%}.consultation-room__grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.6fr);gap:var(--space-lg)}.consultation-chat{padding:0;overflow:hidden}.consultation-chat__messages{height:min(58vh,620px);overflow-y:auto;padding:var(--space-lg);display:flex;flex-direction:column;gap:var(--space-sm);background:var(--color-bg-alt)}.chat-message{align-self:flex-start;max-width:78%;padding:.7rem .85rem;background:white;border:1px solid var(--color-border);border-radius:4px 8px 8px 8px}.chat-message.is-own{align-self:flex-end;background:#fff8e7;border-color:rgba(58, 0, 3,.4);border-radius:8px 4px 8px 8px}.chat-message strong,.chat-message small{display:block;font-size:.68rem;color:var(--color-text-muted)}.chat-message p{margin:.25rem 0;white-space:pre-wrap}.consultation-chat__composer{display:grid;grid-template-columns:1fr auto;gap:var(--space-sm);padding:var(--space-md);border-top:1px solid var(--color-border)}.consultation-chat__composer textarea{resize:none}.consultation-call{padding:var(--space-lg);align-self:start}.consultation-call h2{margin-top:0}.call-state{padding:var(--space-md);margin:var(--space-lg) 0;background:var(--color-bg-alt);border:1px solid var(--color-border);text-align:center;font-weight:700}.call-actions{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-sm)}.session-controls{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-xs);margin-top:var(--space-lg)}.session-controls button{padding:.55rem;border:1px solid var(--color-border);background:white;border-radius:var(--radius-sm);cursor:pointer}.session-facts{display:grid;gap:var(--space-sm);margin-top:var(--space-xl)}.session-facts div{display:flex;justify-content:space-between;border-bottom:1px solid var(--color-border-light);padding-bottom:var(--space-xs)}.session-facts dt{color:var(--color-text-muted)}.session-facts dd{margin:0;font-weight:600}
-@media(max-width:744px){.home-hero{padding-bottom:var(--space-md);min-height:auto}.home-hero-inner{grid-template-columns:1fr;gap:var(--space-lg)}.hero-deity{justify-content:center;padding-right:0;order:-1}.hero-deity[data-current-slide="guruji"] .deity-frame{width:min(48vw,190px)}.hero-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-xs)}.hero-stat-value{font-size:1rem}.hero-stat-label{font-size:.58rem}.deity-frame{width:min(55vw,200px);margin:0 auto}.varahi-dots{margin-top:var(--space-sm);gap:8px}.varahi-dot{width:10px;height:10px}.workspace-heading,.consultation-room__header{align-items:flex-start}.workspace-metrics{grid-template-columns:1fr 1fr}.consultation-room__grid{grid-template-columns:1fr}.consultation-call{order:-1}.consultation-chat__messages{height:48vh}}
+@media(max-width:744px){.home-hero{padding-bottom:var(--space-md);min-height:auto}.home-hero-inner{grid-template-columns:1fr;gap:var(--space-lg)}.hero-deity{justify-content:center;padding-right:0;order:-1}.hero-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-xs)}.hero-stat-value{font-size:1rem}.hero-stat-label{font-size:.58rem}.deity-frame{width:min(55vw,200px);margin:0 auto}.varahi-dots{margin-top:var(--space-sm);gap:8px}.varahi-dot{width:10px;height:10px}.workspace-heading,.consultation-room__header{align-items:flex-start}.workspace-metrics{grid-template-columns:1fr 1fr}.consultation-room__grid{grid-template-columns:1fr}.consultation-call{order:-1}.consultation-chat__messages{height:48vh}}
 .admin-metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-md)}
 
 /* ── Icon Utilities ── */
@@ -3648,8 +3642,9 @@ body { background: var(--color-bg); }
 .footer-brand,
 .footer-heading { color: var(--color-gold); }
 .footer-links a,
-.footer-bottom { color: var(--color-text-muted); }
-.footer-links a:hover { color: var(--color-ink); }
+.footer-bottom,
+.footer-desc { color: var(--color-gold-light); opacity: 1; }
+.footer-links a:hover, .footer-bottom a:hover { color: var(--color-white); }
 .footer-bottom { border-top-color: rgba(209, 179, 104, 0.3); }
 .support-fab { background: var(--color-maroon); color: var(--color-gold); border: 1px solid var(--color-gold); }
 
@@ -4208,7 +4203,7 @@ body { background: var(--color-bg); }
     .home-hero { padding: 20px 16px 28px; }
     .home-hero-inner { gap: 10px; padding-top: 0; }
     .home-hero .deity-frame { width: min(46vw, 160px); }
-    .home-hero .hero-deity[data-current-slide="guruji"] .deity-frame { width: min(50vw, 176px); }
+
     .home-hero .eyebrow { margin-bottom: 8px; font-size: 0.68rem; letter-spacing: 0.12em; }
     .home-hero h1 { margin-bottom: 10px; font-size: 1.6rem; }
     .home-hero .lede { max-width: 34rem; margin: 0 auto 14px; font-size: 0.88rem; line-height: 1.5; }
