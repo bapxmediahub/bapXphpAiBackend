@@ -6,6 +6,14 @@ $directoryUrl = static function (array $changes) use ($filters): string {
 };
 $advancedCount = count(array_filter([$role !== '', $activity !== '', $period !== '', $sort !== 'name', $pageSize !== 25]));
 $activeFilters = $query !== '' || $advancedCount > 0;
+$appliedFilters = [
+    'q' => ['Search', $query, ''],
+    'role' => ['Role', $roles[$role] ?? '', ''],
+    'activity' => ['Order activity', $activityOptions[$activity] ?? '', ''],
+    'period' => ['Latest order', $periodOptions[$period] ?? '', ''],
+    'sort' => ['Sort', $sort !== 'name' ? $sortOptions[$sort] : '', 'name'],
+    'per_page' => ['Page size', $pageSize !== 25 ? $pageSize . ' per page' : '', 25],
+];
 $segments = [
     ['activity' => '', 'stat' => 'accounts', 'label' => 'All accounts'],
     ['activity' => 'no_orders', 'stat' => 'no_orders', 'label' => 'No orders'],
@@ -15,7 +23,7 @@ $segments = [
 ?>
 <section class="users-workspace">
     <header class="report-head">
-        <div><h1>Users</h1><p>Review registered accounts and their order history.</p></div>
+        <h1>Users</h1>
         <a class="btn btn-outline" href="/admin/orders">All orders</a>
     </header>
 
@@ -34,15 +42,10 @@ $segments = [
 
     <section class="users-directory" aria-labelledby="users-directory-title">
         <header class="users-directory__head">
-            <div>
-                <h2 id="users-directory-title">Account directory</h2>
-                <p>Orders matched by checkout email. Times in IST.</p>
-            </div>
-            <div class="users-directory__meta">
-                <p class="users-result-count"><?= $count ? 'Showing ' . number_format($offset + 1) . '–' . number_format($offset + count($users)) . ' of ' . number_format($count) : '0' ?>
-                    <?= $count === 1 ? 'account' : 'accounts' ?></p>
-                <?php if ($activeFilters): ?><a class="users-reset" href="/admin/users">Reset filters</a><?php endif; ?>
-            </div>
+            <h2 id="users-directory-title">Account directory</h2>
+            <p class="users-result-count"><?= $count ? number_format($offset + 1) . '–' . number_format($offset + count($users)) . ' of ' . number_format($count) : '0' ?>
+                <?= $count === 1 ? 'account' : 'accounts' ?></p>
+            <p class="users-directory__scope">Orders matched by checkout email. Times in IST.</p>
         </header>
         <form class="users-filters" method="get" action="/admin/users" aria-label="Filter accounts">
             <div class="users-search">
@@ -103,6 +106,21 @@ $segments = [
                 </div>
             </details>
         </form>
+
+        <?php if ($activeFilters): ?>
+            <div class="users-applied">
+                <ul aria-label="Applied filters">
+                    <?php foreach ($appliedFilters as $key => [$label, $value, $reset]): ?>
+                        <?php if ($value === '') continue; ?>
+                        <li><a href="<?= e($directoryUrl([$key => $reset])) ?>" aria-label="<?= e('Remove ' . strtolower($label) . ' filter: ' . $value) ?>">
+                            <span><strong><?= e($label) ?></strong> <?= e($value) ?></span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="m6 6 12 12M18 6 6 18"/></svg>
+                        </a></li>
+                    <?php endforeach; ?>
+                </ul>
+                <a class="users-reset" href="/admin/users">Reset filters</a>
+            </div>
+        <?php endif; ?>
 
         <?php if ($users): ?>
             <div class="users-row users-row--head" aria-hidden="true">

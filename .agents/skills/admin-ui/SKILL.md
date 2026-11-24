@@ -91,6 +91,11 @@ For reports and agents, verify desktop and exact 375px separately. A mobile work
 not a squeezed desktop: remove side rails, keep the scoped-context summary visible, keep
 the composer above the safe area, and prevent horizontal tables.
 
+Keep admin action labels beside their decorative icons. In the Users directory,
+show the applied filters below the toolbar. Each removal keeps the other criteria
+and returns to the first results page. Verify removal by keyboard and touch,
+including long search values and navigation with JavaScript disabled.
+
 ## Keeping this skill current
 
 Update when an admin route, sidebar group, or CRUD form contract changes. The sidebar is gated by `SettingsService::modules()`; re-check both the on and off states.

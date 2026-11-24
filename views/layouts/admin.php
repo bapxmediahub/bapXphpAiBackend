@@ -37,6 +37,7 @@ $navIcon = static function (string $name): string {
         'menu' => 'M4 6h16M4 12h16M4 18h16',
         'plug' => 'M9 3v4m6-4v4M6 7h12v3a6 6 0 0 1-12 0V7Zm6 9v5',
         'settings' => 'M4 7h4m5 0h7M4 17h9m5 0h2M8 4v6m10 4v6',
+        'help' => 'M3 5h5a4 4 0 0 1 4 4v11a4 4 0 0 0-4-3H3zM21 5h-5a4 4 0 0 0-4 4v11a4 4 0 0 1 4-3h5z',
     };
 
     return '<svg class="admin-nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none"'
@@ -205,7 +206,7 @@ $navIcon = static function (string $name): string {
             </div>
             <?php $helpPath=(string)(parse_url($_SERVER['REQUEST_URI']??'/admin',PHP_URL_PATH)?:'/admin'); ?>
             <a data-admin-help-nav href="/admin/docs" class="admin-nav-top <?= $helpPath==='/admin/docs'||str_starts_with($helpPath,'/admin/docs/')?'active':'' ?>"<?= $helpPath==='/admin/docs'?' aria-current="page"':'' ?>>
-                <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h6a3 3 0 0 1 3 3v14a3 3 0 0 0-3-3H4zM13 7a3 3 0 0 1 3-3h5v14h-5a3 3 0 0 0-3 3"/></svg>
+                <?= $navIcon('help') ?>
                 Help &amp; Docs
             </a>
         </nav>
@@ -227,13 +228,13 @@ $navIcon = static function (string $name): string {
             </button>
             <h1><?= e($pageTitle ?? 'Dashboard') ?></h1>
             <div class="admin-topbar__actions">
-                <a class="btn btn-sm btn-ghost" data-admin-help-topbar href="/admin/docs">Help &amp; Docs</a>
+                <a class="btn btn-sm btn-ghost" data-admin-help-topbar href="/admin/docs"><?= $navIcon('help') ?>Help &amp; Docs</a>
                 <a href="/" class="btn btn-sm btn-ghost" target="_blank">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                     View Site
                 </a>
                 <a href="/logout" class="btn btn-sm btn-ghost">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 17"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 17"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                     Logout
                 </a>
             </div>

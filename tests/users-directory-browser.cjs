@@ -82,6 +82,12 @@ test('Users keeps secondary filters collapsed and preserves them through native 
         assert.ok(!await role.isVisible());
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
         assert.ok((await page.locator('.users-filters').boundingBox()).height < 165);
+        assert.ok(await page.locator('.admin-topbar').getByRole('link', {name:'Help & Docs', exact:true}).isVisible());
+        assert.deepEqual(await page.locator('.admin-topbar__actions a').evaluateAll(actions => actions.map(action => {
+            const icon = action.querySelector('svg[aria-hidden=true]');
+            return (icon?.getBoundingClientRect().width ?? 0) >= 14 && action.scrollWidth <= action.clientWidth + 1;
+        })), [true, true, true], 'Top-bar icons and labels fit at ' + width + 'px');
+        if (width === 375) assert.ok((await rows.first().boundingBox()).y < 760);
         await optionsToggle.press('Space');
         assert.ok(await role.isVisible());
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
@@ -119,4 +125,26 @@ test('Users keeps secondary filters collapsed and preserves them through native 
     await mobile.getByRole('button', {name:'Apply filters'}).click();
     assert.equal(await mobile.locator('.users-entry').count(), 1);
     assert.match(await mobile.locator('.users-result-count').innerText(), /of 1 account/);
+    await mobile.getByRole('link', {name:'Remove latest order filter: Last 30 days'}).click();
+    const retained = new URL(mobile.url()).searchParams;
+    assert.equal(retained.get('activity'), 'one_order');
+    assert.ok(!retained.has('period'));
+    assert.ok(await mobile.getByRole('link', {name:'Remove order activity filter: One order'}).isVisible());
+    assert.equal(await mobile.locator('.users-entry').count(), 1);
+
+    await page.goto(url + '?role=customer&sort=order_count&per_page=10&page=2');
+    await page.getByRole('link', {name:'Remove sort filter: Most orders'}).press('Enter');
+    const updated = new URL(page.url()).searchParams;
+    assert.equal(updated.get('role'), 'customer');
+    assert.equal(updated.get('per_page'), '10');
+    assert.equal(updated.get('sort'), 'name');
+    assert.ok(!updated.has('page'));
+    assert.equal(await rows.count(), 10);
+
+    await page.goto(url + '?q=' + 'x'.repeat(150));
+    assert.ok(await page.getByRole('link', {name:/Remove search filter/}).isVisible());
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+    await page.getByRole('link', {name:/Remove search filter/}).press('Enter');
+    assert.ok(!new URL(page.url()).searchParams.has('q'));
+    assert.equal(await rows.count(), 13);
 });
