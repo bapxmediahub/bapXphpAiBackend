@@ -142,6 +142,17 @@ Returning a page to Draft withdraws it from all three. The public renderer
 treats HTML tags as literal text. Existing About, Terms and Privacy routes
 keep their existing templates and URLs.
 
+The dedicated About route uses the deployment-owned public story descriptor
+in config/about.php and a reusable PHP editorial view, with semantic theme
+tokens, approved image dimensions, and existing contact and module services.
+The template does not contain client names or domain literals. Rebrand by
+reviewing the descriptor, shared brand/SEO settings, published contact data
+and assets; this is not an owner-editable page builder or multi-tenant
+provisioner. Do not invent milestones, certifications, testimonials or
+founder identities. The shared SeoService supplies AboutPage JSON-LD from
+the same description, configured origin and organization as the page.
+
+
 Each page occupies a dedicated `pg:<slug>` row in the hosted MySQL `settings`
 table. Slugs are fixed after creation. Creation requires a free slug, and
 updates compare the revision opened by the editor on the database host using

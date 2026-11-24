@@ -311,3 +311,13 @@ canceled queued update without clearing the human form or its recovery access.
 Payment failures must distinguish an unconfirmed payment from a verified payment whose
 order is not yet saved. A verification retry checks the same payment; it must not open
 a second payment attempt or claim that no money was debited without confirmation.
+
+### Editorial About page
+
+Use the deployment-owned story descriptor and the reusable About renderer.
+A contrasting editorial hero, a two-column image-and-story section, module-aware
+text pathways and real contact details replace repetitive icon cards.
+Use shared semantic color roles and typography, natural document scrolling,
+one primary heading, real image dimensions, and a single-column phone layout.
+All content and navigation work without JavaScript. Never borrow competitor
+claims, images or unverifiable milestones.

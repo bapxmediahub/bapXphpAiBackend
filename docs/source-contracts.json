@@ -18,19 +18,19 @@
             "review_note": "Cross-reviewed current-price cart paise precision, captured-INR predicate, shared idempotent VerifiedOrderService, actual-discount GST and frozen tax evidence. Order/checkout docs distinguish captured payment from saved order and preserve later browser-cart edits on retry."
         },
         "content": {
-            "source_sha256": "12e40630e473f8d50774e654dc207c19fe3c8b5eb8158ea8da0e392330a3655d",
-            "references_sha256": "1dbca4f4b169d19f1046bee61138053549c0ecff231d0c389c2628f74f517cf1",
-            "review_note": "Reviewed the Docs skill provenance guidance against the unchanged BlogService and authored-content guide boundary. Static map references are discovery evidence only; publication visibility, Markdown storage, rendering and private-help exclusion remain the existing source contracts."
+            "source_sha256": "d7485310a720a17884d7831b72d467c85d287de941fc4c48e0412fccf666ec16",
+            "references_sha256": "e62f6d23f30dd4b8d56c5c24691140f5ff10f6a95044d9a50c9be191dcd1585e",
+            "review_note": "Verified editorial profile, factual copy, approved image dimensions, module-filtered links and canonical AboutPage metadata against content guide."
         },
         "foundation": {
-            "source_sha256": "53f1ae09d14ffab252fa8d54bf3f2b5d4a47440eb3a79f32678c01d81ee7ea7a",
+            "source_sha256": "7ae4dfefdec9ca683d9fb04ca47eff539a1c3c76fab7ee54e5b55ef03e7c4b13",
             "references_sha256": "44504ddbd485f9ab5d6c71a6443726f531f7e0d7ed34ec16215741902635cc0e",
-            "review_note": "Existing business and conversation storage boundaries unchanged; runtime adapter and source map reflect actual code."
+            "review_note": "Regenerated maps from current PHP controller/view changes; deployment-owned public story config has no credentials or storage mutations."
         },
         "google-tags": {
-            "source_sha256": "e8358d29b16227e79ba6455e2259f1a5fe357a6cbefc4a27b223929a10ff2fe1",
-            "references_sha256": "c1a578dc4920789808501aedecd633d3dccca229eb29d4942401a05d50cf992b",
-            "review_note": "Full integrations keyboard save remains intact."
+            "source_sha256": "0641eacf6c60aab4a8c8fe3df9cc7695111ca1c6e7d8448d9dabbb425894eb16",
+            "references_sha256": "2cec217af686af8cd0bc01452b3c9b9eb1a6582204f53490bd223d1f1e3ff6f2",
+            "review_note": "Canonical About metadata now uses existing SeoService and configured origin; reporting and tag rendering unchanged."
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
@@ -38,9 +38,9 @@
             "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
         },
         "interface": {
-            "source_sha256": "0680d57bd90c9fd1702d7baafdb88055f2137d811c5eb97d97afc7a76caaf4f1",
-            "references_sha256": "f1fc313dfc585e3dc0569dd2c52ac2b412aa8924f154978be71464130fe13375",
-            "review_note": "Verified keyboard and explicit AI-only submitter regression on parent."
+            "source_sha256": "e03caadbc7cc8ec5889f33401b49003ca0a8fcba9090fbfc4ba71ec8fb3e59c8",
+            "references_sha256": "e50099f9a28a4e3b06a7c6aebf5ec74dfd115cfeaf5f635fd6109b30ac12ef04",
+            "review_note": "Measured normal-text contrast on the actual About page, corrected low-contrast secondary token on warm surfaces and retained red/green browser contrast regression across desktop and mobile."
         },
         "mail": {
             "source_sha256": "cc231ae9824a02bc62d144c128574005f524ec2204f9abd61653767483200f84",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed product image paths and the bounded A2UI gallery against current media hosting paths; styling does not move uploads, delete media or expose private asset directories."
         },
         "operator-help": {
-            "source_sha256": "ce03aefb91e5f1473d6ad074490335f9ff839eb712d1ca96e52cd70d30e353f6",
+            "source_sha256": "3cfad82a313e820638bd8f0709777cb57c0363b7d38bc49fcefaef5b78aa691d",
             "references_sha256": "2201c0efbcc49c20384beab8cbef25fa6bcd6928e2928d7fd8474d6522cdf6bf",
-            "review_note": "Retain reviewed full-save default submitter."
+            "review_note": "Reviewed the shared public layout and About contact navigation; operator help routing unchanged."
         },
         "public-mcp": {
             "source_sha256": "28e7e05e5eba6567d5a03f8f5b77b2fcfabfc97e280ef0c01df70ac1533e53a2",
@@ -68,9 +68,9 @@
             "review_note": "Role-filtered internal runtime adapter does not register new public MCP methods or broaden external access."
         },
         "remote-commerce": {
-            "source_sha256": "fc0f3595df50e982963b63d00e9da7c54abe395b79928bf79e44266c5205e9ac",
-            "references_sha256": "e00aba6f254f3552728ebcf0e7cd24d757eceb2ffa55060db99dd42562b481e9",
-            "review_note": "Shared SecretService preserves existing unrelated payment records; scoped AI save leaves commerce settings untouched."
+            "source_sha256": "e37cc8ba99c3a47927c78728355f06a8732fca92aff81908560da8281dcafd6a",
+            "references_sha256": "fbebd2e5642ed22c5c8f2f69659ee88ddc916e097c058a572c0650f31cae8b70",
+            "review_note": "About navigation uses existing module switches and published contact data; no commerce mutation or checkout behavior changed."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed the sales-channel CLI references and catalogue guidance. This change only fixes generic PHP lint argument forwarding and failure propagation; feed, channel and catalogue operations are unchanged."
         },
         "workflow": {
-            "source_sha256": "d3f494d9723dc0ecab53c64fd87c922f326c138417277178b637652192fb6ab9",
+            "source_sha256": "2cc114897a4f4f7c2c4a4e956d47fd9823f5f13f910ca8d664e239f6ebfa95e6",
             "references_sha256": "a242b3bec435e5f0b0b1191b95c4d0a8fe98fec35e78981816b1bd71023ecf27",
-            "review_note": "Both prior feature and provider regression checks preserved; generated maps regenerated after conflict resolution."
+            "review_note": "Added real About browser acceptance before merge and after exact deployed SHA; existing checks retained."
         }
     }
 }
