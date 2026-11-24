@@ -35,6 +35,22 @@ if (PHP_SAPI === 'cli-server') {
         }
         return;
     }
+    if($scenario==='tool_discovery') {
+        $request=json_decode((string)file_get_contents('php://input'),true,512,JSON_THROW_ON_ERROR);
+        $names=array_column($request['tools'][0]['functionDeclarations']??[],'name');
+        $contents=$request['contents'];
+        $n=count($contents);
+        $response=end($contents)['parts'][0]['functionResponse']??[];
+        if($n===1 && $names===['read_runtime_skill','tool_search']) {
+            $parts=[['functionCall'=>['name'=>'tool_search','args'=>['query'=>'public_policy'],'id'=>'fixture-discovery']]];
+        } elseif($n===3 && in_array('public_policy',$names,true) && ($response['id']??'')==='fixture-discovery' && ($response['response']['matches'][0]['name']??'')==='public_policy') {
+            $parts=[['functionCall'=>['name'=>'public_policy','args'=>['key'=>'shipping_cost'],'id'=>'fixture-policy']]];
+        } elseif($n===5 && ($response['id']??'')==='fixture-policy' && ($response['response']['value']??'')==='Shipping is calculated at checkout.') {
+            $parts=[['text'=>'<final_answer>Shipping is calculated at checkout.</final_answer>']];
+        } else { http_response_code(400);echo '{"error":"discovery exchange invalid"}';return; }
+        echo json_encode(['candidates'=>[['content'=>['parts'=>$parts]]]]);
+        return;
+    }
     if ($scenario === 'slow' && $primary) usleep(6_350_000);
     if ($scenario === 'stalled' && $primary) usleep(3_300_000);
     if (($scenario === 'stalled' && !$primary) || ($scenario === 'retry' && $primary) || $scenario === 'locked') {
@@ -146,6 +162,13 @@ try {
     $config['model']='custom-google-model';$config['models']=[$config['model']];
     $reply=$complete->invoke($client,$config,'Call the tool.', $registry,256,0.0,2,null,hrtime(true)+6000000000);
     check(AiClient::probeSucceeded($reply,'fixture-observed-challenge',$client->toolCalls(),true),'Custom Google model preserves JSON object shapes while omitting thinking configuration');
+    $client=new AiClient();
+    $config['model']=SecretService::PRIMARY_MODEL;$config['models']=[$config['model']];
+    $registry=new \App\Services\RuntimeAgentToolRegistry('support',null,new \App\Services\SupportToolRegistry(null),'');
+    $config['endpoint']='http://'.$address.'/tool_discovery';
+    $reply=$complete->invoke($client,$config,'Find the appropriate tool.', $registry,256,0.0,2,null,hrtime(true)+6000000000);
+    check($reply==='Shipping is calculated at checkout.'&&$client->toolCalls()===2,'Deferred discovery must update subsequent wire declarations and execute the actual policy tool');
+    check(count($client->transferTimings())===3,'Expected exactly three provider transfers for discovery and execution');
     AgentTraceService::begin(str_repeat('a',16), null, ['max_model_calls' => 1]);
     $prior = AgentTraceService::startSpan('model_attempt', SecretService::PRIMARY_MODEL);
     AgentTraceService::endSpan($prior, 'complete');

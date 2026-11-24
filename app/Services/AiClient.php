@@ -401,14 +401,14 @@ final class AiClient
         $url = $config['endpoint'] . '/chat/completions';
         $models = in_array($modelOverride, $config['models'], true) ? [$modelOverride] : $config['models'];
         $messages = [['role' => 'user', 'content' => $prompt]];
-        $declarations = $tools === null ? [] : array_map(
-            static fn(array $declaration): array => ['type' => 'function', 'function' => $declaration],
-            $tools->declarations()
-        );
         $status = 0;
         $body = false;
         foreach ($models as $index => $model) {
             for ($round = 0; $round <= $maxRounds; $round++) {
+                $declarations = $tools === null ? [] : array_map(
+                    static fn(array $declaration): array => ['type' => 'function', 'function' => $declaration],
+                    $tools->declarations()
+                );
                 $payload = ['model' => $model, 'messages' => $messages];
                 $payload[parse_url($url, PHP_URL_HOST) === 'api.openai.com' ? 'max_completion_tokens' : 'max_tokens'] = $maxTokens;
                 if ($declarations !== []) {

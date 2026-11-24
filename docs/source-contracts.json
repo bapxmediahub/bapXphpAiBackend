@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "761b364cf797654a002104cb876f7e9ff48a6670cc9a3f5ee5845055379b5e2e",
-            "references_sha256": "63d78199c80aa4fe00921be8156da0376d7e03244e96a9dcf2ec11e3945700b1",
-            "review_note": "Reconciled merged provider missing-cURL guard with the shared role-filtered tool loop; retained red/green transport regression and instruction evidence."
+            "source_sha256": "5d2a8318f694c8bdb74b88e8f5b0054198559b0753da6c84ef7784308273b049",
+            "references_sha256": "a3194b5f9dd2fdc5f745078b87b7c8ba8413256e7f6727105c1b4622aedfd30b",
+            "review_note": "Reviewed RuntimeAgentToolRegistry bounded lexical discovery, AiClient declaration refresh, Support/Admin integration and agent contract tests against merged About controller."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
@@ -23,9 +23,9 @@
             "review_note": "Verified editorial profile, factual copy, approved image dimensions, module-filtered links and canonical AboutPage metadata against content guide."
         },
         "foundation": {
-            "source_sha256": "7ae4dfefdec9ca683d9fb04ca47eff539a1c3c76fab7ee54e5b55ef03e7c4b13",
+            "source_sha256": "2a87cb5f93b3dd0a335d1cf0dba669154636b668486a793270285436784e48eb",
             "references_sha256": "44504ddbd485f9ab5d6c71a6443726f531f7e0d7ed34ec16215741902635cc0e",
-            "review_note": "Regenerated maps from current PHP controller/view changes; deployment-owned public story config has no credentials or storage mutations."
+            "review_note": "Regenerated combined About and role-scoped tool-discovery route/service knowledge map and checked canonical contracts."
         },
         "google-tags": {
             "source_sha256": "0641eacf6c60aab4a8c8fe3df9cc7695111ca1c6e7d8448d9dabbb425894eb16",
@@ -43,9 +43,9 @@
             "review_note": "Measured normal-text contrast on the actual About page, corrected low-contrast secondary token on warm surfaces and retained red/green browser contrast regression across desktop and mobile."
         },
         "mail": {
-            "source_sha256": "cc231ae9824a02bc62d144c128574005f524ec2204f9abd61653767483200f84",
+            "source_sha256": "79925cc0c003645e9e87eceadf1f34ae8c164e65840a4fde5c586fb91296ef75",
             "references_sha256": "6d6153ae2fed6f1aebbf9fa93225d6cc74b6c098d9a34deffce7bc4f3c6e9273",
-            "review_note": "Merged admin chat and integration diagnostic changes do not change SMTP or mail queue behavior."
+            "review_note": "Reviewed SupportBotService discovery-only change against unchanged mail behavior and docs."
         },
         "mcp-clients": {
             "source_sha256": "ffb43129fe7e2633e2b790587a52729a82486fc1e08a692607623632c17756ad",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed product image paths and the bounded A2UI gallery against current media hosting paths; styling does not move uploads, delete media or expose private asset directories."
         },
         "operator-help": {
-            "source_sha256": "3cfad82a313e820638bd8f0709777cb57c0363b7d38bc49fcefaef5b78aa691d",
+            "source_sha256": "6c76d3d202b8d4f3d5f5348807b7d77a7bc2ab1265538b008ea7e5299c45972c",
             "references_sha256": "2201c0efbcc49c20384beab8cbef25fa6bcd6928e2928d7fd8474d6522cdf6bf",
-            "review_note": "Reviewed the shared public layout and About contact navigation; operator help routing unchanged."
+            "review_note": "Reviewed AdminController tool-discovery integration; About merge leaves operator-help routes and guidance intact."
         },
         "public-mcp": {
             "source_sha256": "28e7e05e5eba6567d5a03f8f5b77b2fcfabfc97e280ef0c01df70ac1533e53a2",

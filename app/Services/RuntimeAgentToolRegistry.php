@@ -15,12 +15,21 @@ final class RuntimeAgentToolRegistry
     private array $retrieval = [];
     private array $products = [];
     private array $loadedSkills = [];
+    private array $available = [];
+    private array $active = [];
+    private const MAX_ACTIVE = 8;
+    private const MAX_INITIAL = 3;
 
-    public function __construct(private string $surface,private ?array $actor,private AgentToolRegistry|SupportToolRegistry $business) {
+    public function __construct(private string $surface,private ?array $actor,private AgentToolRegistry|SupportToolRegistry $business,string $question='') {
         $this->catalog=AgentInstructionService::skillCatalog($surface,$actor);
         if(($surface==='support')!==($business instanceof SupportToolRegistry))
             throw new \InvalidArgumentException('Registry does not match agent surface.');
         $this->bundle=AgentInstructionService::modelBundle($surface,$actor);
+        $policy=$surface==='admin'?AgentCapabilityPolicy::ENTERPRISE:AgentCapabilityPolicy::SUPPORT;
+        foreach($business->declarations() as $tool) {
+            if(AgentCapabilityPolicy::allows($policy,$tool['name'],$actor))$this->available[$tool['name']]=$tool;
+        }
+        foreach($this->rank(mb_substr($question,0,256),self::MAX_INITIAL) as $name)$this->enable($name);
     }
 
     public function instructionPrompt(): string {
@@ -29,13 +38,56 @@ final class RuntimeAgentToolRegistry
     }
 
     public function declarations(): array {
-        $policy=$this->surface==='admin'?AgentCapabilityPolicy::ENTERPRISE:AgentCapabilityPolicy::SUPPORT;
-        $tools=array_values(array_filter($this->business->declarations(),fn(array $t):bool=>
-            AgentCapabilityPolicy::allows($policy,$t['name'],$this->actor)));
+        $tools=array_values(array_intersect_key($this->available,$this->active));
         $tools[]=['name'=>'read_runtime_skill','description'=>'Load detailed operating instructions for an available runtime skill by its catalogue identifier. No business data lookup and no file path.',
             'parameters'=>['type'=>'object','properties'=>['skill'=>['type'=>'string','enum'=>array_keys($this->catalog)]],'required'=>['skill']]];
+        $tools[]=['name'=>'tool_search','description'=>'Discover relevant authorized business capabilities by a short query or exact tool identifier. Returns metadata and enables matches for subsequent calls, not business records.',
+            'parameters'=>['type'=>'object','properties'=>['query'=>['type'=>'string','minLength'=>1,'maxLength'=>160],'limit'=>['type'=>'integer','minimum'=>1,'maximum'=>4]],'required'=>['query'],'additionalProperties'=>false]];
         return $tools;
     }
+
+    private static function tokens(string $text): array {
+        preg_match_all('/[\p{L}\p{N}]+/u',mb_strtolower($text),$matches);
+        $stop=['a','an','the','to','of','for','in','is','are','it','my','your','me','i','you','how','what','which','with','and','or','no','not','such','all','can','could','please','show','get','read','use','do','does','by','on','at'];
+        return array_values(array_unique(array_filter($matches[0],static fn(string $word):bool=>mb_strlen($word)>1&&!in_array($word,$stop,true))));
+    }
+
+    private function rank(string $query,int $limit): array {
+        $query=trim(mb_strtolower($query));
+        if(isset($this->available[$query]))return [$query];
+        // An unknown exact identifier must not resolve to another capability.
+        if(preg_match('/^[a-z][a-z0-9_]*_[a-z0-9_]+$/D',$query))return [];
+        $words=self::tokens($query);$scores=[];
+        foreach($this->available as $name=>$tool){
+            $nameWords=self::tokens($name);
+            $descriptionWords=self::tokens($tool['description'].' '.implode(' ',array_keys((array)($tool['parameters']['properties']??[]))));
+            $score=5*count(array_intersect($words,$nameWords))+count(array_intersect($words,$descriptionWords));
+            if($score>0)$scores[$name]=$score;
+        }
+        arsort($scores,SORT_NUMERIC);
+        return array_slice(array_keys($scores),0,$limit);
+    }
+
+    private function enable(string $name): bool {
+        if(isset($this->active[$name]))return true;
+        if(!isset($this->available[$name])||count($this->active)>=self::MAX_ACTIVE)return false;
+        $span=AgentTraceService::startSpan('retrieval','tool_activation:'.$name);
+        $this->active[$name]=true;
+        AgentTraceService::endSpan($span,'complete',['result_count'=>1]);
+        return true;
+    }
+
+    private function search(array $args): array {
+        $query=$args['query']??null;$limit=$args['limit']??3;
+        if(array_diff(array_keys($args),['query','limit'])||!is_string($query)||trim($query)===''||mb_strlen($query)>160||!is_int($limit)||$limit<1||$limit>4)return ['error'=>'Invalid tool search.'];
+        $span=AgentTraceService::startSpan('retrieval','tool_search');$matches=[];
+        foreach($this->rank($query,$limit) as $name){
+            if($this->enable($name))$matches[]=['name'=>$name,'description'=>$this->available[$name]['description']];
+        }
+        AgentTraceService::endSpan($span,'complete',['result_count'=>count($matches)]);
+        return ['matches'=>$matches,'activation_limit_reached'=>count($this->active)>=self::MAX_ACTIVE];
+    }
+
 
     public function has(string $name): bool {
         return in_array($name,array_column($this->declarations(),'name'),true);
@@ -54,6 +106,7 @@ final class RuntimeAgentToolRegistry
 
     public function run(string $name,array $args): array {
         if(!$this->has($name))return ['error'=>'Not permitted'];
+        if($name==='tool_search')return $this->search($args);
         if($name==='read_runtime_skill') {
             if(array_keys($args)!==['skill']||!is_string($args['skill'])||!isset($this->catalog[$args['skill']]))
                 return ['error'=>'Unknown or unavailable runtime skill.'];
@@ -69,6 +122,16 @@ final class RuntimeAgentToolRegistry
                 return ['error'=>'Runtime skill unavailable.'];
             }
         }
+        return $this->executeBusiness($name,$args);
+    }
+
+    /** Server-owned deterministic fallback, never declared to the model. */
+    public function lookupTrusted(string $name,array $args): array {
+        if(!isset($this->available[$name]))return ['error'=>'Not permitted'];
+        return $this->executeBusiness($name,$args);
+    }
+
+    private function executeBusiness(string $name,array $args): array {
         // Apply relevant task guidance even if the model omitted a separate activation.
         $guidance=[];
         try {
