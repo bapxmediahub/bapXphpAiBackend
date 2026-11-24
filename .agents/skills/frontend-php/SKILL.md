@@ -134,3 +134,9 @@ Its asynchronous verification callback must contain failures, preserve the origi
 payment receipt for retry and distinguish verified-but-unsaved orders from uncertain
 payments. Run the focused Node checks in `tests/checkout-payment.test.cjs` and
 `tests/support-checkout.test.cjs`, plus the desktop/375px native checkout browser fixture.
+
+For reusable About pages, keep deployment-specific prose and approved media in
+config/about.php; use the canonical public contact and SEO services and the
+existing module-filtered navigation targets. Do not invent brand history or
+duplicate the domain in the template. Test the real route, configured origin,
+disabled modules, image loading, contact navigation and no-JavaScript phone layout.

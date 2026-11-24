@@ -75,6 +75,27 @@ evaluations record both role manifests and include their content hashes in the
 implementation fingerprint; the explicit admin actor there is a local test
 fixture, not a production browser privilege grant.
 
+## Native processing loop: three RAG layers
+
+See the README processing diagram. Both model paths use the shared bounded
+AiClient loop through RuntimeAgentToolRegistry. Deterministic PHP lookups,
+reports and draft paths can bypass it.
+
+1. Knowledge RAG: retrieve actor-owned context, approved public facts, current
+   business-service results and published articles. Revalidate identities and
+   scope. General authorized MD/JSON excerpts and flexible schema-aware queries
+   remain separate work.
+2. Instruction RAG: load the role constitution and shared contract; discover
+   fixed skill metadata and activate an allowed document by ID. Record its
+   actual path/hash. Never use developer rules as runtime business guidance.
+3. Tool RAG: rank authorized capability metadata, activate bounded declarations
+   and refresh them each provider round. Validate the actual call again before
+   invoking existing services; return the structured result or explicit failure.
+
+The public WebMCP and HTTP MCP surfaces retain separate authorization. A shared
+authorized .bapX projection is the target, not an existing permission to read
+private files. Installer work is deferred until core verification is complete.
+
 ## Security and storage boundaries
 
 Both instruction trees and root `AGENTS.md` are denied to direct HTTP access
@@ -123,16 +144,16 @@ content hashes, never runtime prompt bodies. This does not grant production
 browser access. Uncaught CLI exceptions fail with a nonzero exit code and a
 bounded class/file diagnostic; they cannot masquerade as successful HTML output.
 
-## OpenRouter Free routing
+## Configured provider routing
 
-The owner can turn on `openrouter/free` for both existing PHP agents in Admin →
-Integrations. `AiClient` uses its established Chat Completions transport and
-keeps the same bounded tool registry. If an OpenRouter attempt fails **before any
-tool executes**, it can use the separately configured Google API key to try the
-existing Gemma 4 31B and 26B A4B models under the same deadline. It never
-replays a partial model/tool exchange against a different provider.
-Model attempts, HTTP statuses and timings are observable, not credentials or
-provider messages. Turning the option off restores the previous provider route.
+Admin → Integrations independently enables Google, OpenRouter and the custom
+OpenAI-compatible connection. SecretService supplies ordered configured model
+IDs. Disabled or unconfigured connections are not hidden fallbacks. AiClient
+uses one bounded deadline, preserves correlated tool history and never switches
+provider after a tool exchange begins. Google uses parametersJsonSchema on the
+wire. Text response and synthetic tool challenge are separate diagnostics; an
+offline fixture or HTTP status does not establish successful live inference.
+See [Integrations](pages/integrations.md).
 
 ## Provider calls and owner how-to questions
 

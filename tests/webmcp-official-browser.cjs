@@ -51,6 +51,13 @@ const contact={name:'Fixture Business',path:'/contact',phones:[{label:'Support',
 const services={services:[{name:'Temple Guidance',description:'Help using the published temple guides.',
   path:'/contact?subject=temple#contact-form'}],total:1,nextOffset:null};
 const globalTools=['get_public_contact','list_public_services','present_public_knowledge','search_public_articles','search_public_products'];
+const shopCdpTools=[...globalTools,'list_shop_results','filter_visible_shop'];
+// Mirror the production form's declarative GET contract, not a JS registration.
+const shopFilter='<form action="/shop" method="get" toolname="filter_visible_shop" tooldescription="Filter visible shop results" toolautosubmit>'+
+  '<label>Search <input type="search" name="q" toolparamdescription="Search keywords"></label>'+
+  '<label>Category <select name="category"><option value="">All</option><option value="fixture">Fixture</option></select></label>'+
+  '<label>Sort <select name="sort"><option value="">Default</option></select></label>'+
+  '<button type="submit">Apply</button></form>';
 function cards(count){
   return Array.from({length:count},(_,i)=>'<article class="product-card">'+
     '<a class="product-card__title" href="/product/item-'+i+'">Item '+i+'</a>'+
@@ -111,7 +118,7 @@ const server=createServer((req,res)=>{
       schema('bapx-a2ui-schema',schemas.a2ui)+
       (catalogue?schema('bapx-public-knowledge-schema',schemas.articles)+schema('bapx-public-products-schema',schemas.products):'')+
       '</head><body><h1>Business landing page</h1>'+
-      (url.pathname==='/shop'?'<div class="shop-results">'+cards(45)+'</div>':'')+
+      (url.pathname==='/shop'?'<div class="shop-results">'+shopFilter+cards(45)+'</div>':'')+
       script('public-business-webmcp.js')+script('shop-webmcp.js')+
       script('a2ui-public-renderer.js')+script('public-a2ui-webmcp.js')+
       (catalogue?script('public-knowledge-webmcp.js')+script('public-products-webmcp.js'):'')+
@@ -168,9 +175,9 @@ async function main(){
       console.log('LOCAL WEBMCP CDP landing: '+JSON.stringify({browser:external.browser,profile:external.profile,names:external.names}));
     }
     await page.goto('http://127.0.0.1:'+port+'/shop',{waitUntil:'load'});
-    await waitForTools(page,6);
+    await waitForTools(page,native?7:6);
     if(native){
-      const external=await inspectPagePublicContact(page,{expectedNames:[...globalTools,'list_shop_results']});
+      const external=await inspectPagePublicContact(page,{expectedNames:shopCdpTools});
       assert.deepEqual(external.contact,contact,'Native CDP contact read also works on the shop page');
       console.log('LOCAL WEBMCP CDP shop: '+JSON.stringify({browser:external.browser,profile:external.profile,names:external.names}));
     }
@@ -204,6 +211,7 @@ async function main(){
         backendSchema:product.outputSchema||null,backend,
         a,b,c,knowledge,rejected,skip};
     });
+    assert.deepEqual(result.names.sort(),(native?shopCdpTools:[...globalTools,'list_shop_results']).slice().sort(),'Exact JavaScript shop registry after all declarations register');
     assert.deepEqual([result.a.products.length,result.b.products.length,result.c.products.length],[20,20,5]);
     assert.deepEqual([result.a.nextOffset,result.b.nextOffset,result.c.nextOffset],[20,40,null]);
     assert.deepEqual(result.backend.map(x=>x.products.length),[20,20,20,7]);
@@ -257,7 +265,7 @@ async function main(){
       await without.close();
     }
     console.log((native?'NATIVE WEBMCP (no polyfill, isolated agent world and CDP discovery/contact)':'OFFICIAL @w3c/webmcp-polyfill@0.1.1')+
-      ': landing 5 tools, shop 6 tools, contact without commerce/blog, 45-card DOM snapshot, 67 server-side products, article/service paging, contact, A2UI, invalid input and pagehide PASS.');
+      ': landing 5 tools, shop 6 imperative tools'+(native?' + 1 declarative tool':'')+', contact without commerce/blog, 45-card DOM snapshot, 67 server-side products, article/service paging, contact, A2UI, invalid input and pagehide PASS.');
     await page.close();
   } finally {
     await browser.close();await new Promise(resolve=>server.close(resolve));
