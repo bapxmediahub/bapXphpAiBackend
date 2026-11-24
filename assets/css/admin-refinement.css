@@ -65,6 +65,17 @@
     word-break:break-all;
 }
 
+/* Provider connections: independent, bounded cards and full-width masked fields. */
+.ai-provider-section{min-width:0;max-width:100%;display:grid;gap:14px;margin-block:var(--space-xl);overflow-wrap:anywhere}
+.ai-provider-section h2{font-size:1.1rem;margin:0}
+.ai-provider-section fieldset{display:grid;gap:8px;min-inline-size:0;padding:14px;border:1px solid var(--color-border);border-radius:10px}
+.ai-provider-section legend{padding-inline:5px;font-weight:600}
+.ai-provider-section input:not([type=checkbox]):not([type=hidden]),.ai-provider-section textarea,.ai-provider-section select{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+.ai-provider-section .ai-model-switches{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:4px 12px}
+.ai-provider-section .ai-provider-endpoint{margin:0;overflow-wrap:anywhere}
+.ai-provider-section .ai-provider-endpoint code{display:block;white-space:normal}
+.ai-provider-section>button{justify-self:start}
+
 /* Built-in Google PageSpeed report cards: bounded, keyboard-readable on phones. */
 .google-pagespeed {min-width:0;max-width:100%;overflow-wrap:anywhere}
 .google-pagespeed code {white-space:normal;overflow-wrap:anywhere}

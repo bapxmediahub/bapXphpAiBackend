@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "f82e6811e4e72d390c373f0b79a2c6fb044d8c320234351b2214e92ef2581492",
-            "references_sha256": "4db8c915776e898bd080ad21d7b88500ee584a1f02134bc05f2751fd0db4084c",
-            "review_note": "Compared Support deterministic retired-booking path, Enterprise grounded answers, shared OpenRouter/Gemma failover, tool result replay guard and role policy against current source; existing private chat JSON location remains unchanged."
+            "source_sha256": "5d2a8318f694c8bdb74b88e8f5b0054198559b0753da6c84ef7784308273b049",
+            "references_sha256": "a3194b5f9dd2fdc5f745078b87b7c8ba8413256e7f6727105c1b4622aedfd30b",
+            "review_note": "Retain deployed provider missing-cURL guard and its regression in the role-scoped discovery loop."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
@@ -23,14 +23,14 @@
             "review_note": "Reviewed the Docs skill provenance guidance against the unchanged BlogService and authored-content guide boundary. Static map references are discovery evidence only; publication visibility, Markdown storage, rendering and private-help exclusion remain the existing source contracts."
         },
         "foundation": {
-            "source_sha256": "5a4726b3be4a38c8f8f0df1da01e23744daf743e6c72354891d9c89f9b04f851",
+            "source_sha256": "d1d9f35205c589d45512d0c5f6293c8e64763b7265696e6c953bece1a91ff1fc",
             "references_sha256": "44504ddbd485f9ab5d6c71a6443726f531f7e0d7ed34ec16215741902635cc0e",
-            "review_note": "Regenerated merged project map from actual source, no changes to persistence, runtime dependency or public transport contracts."
+            "review_note": "Regenerated combined project maps from actual source; no persistence boundary changes."
         },
         "google-tags": {
-            "source_sha256": "5689649b2f935ab7582fabd6b641980be8b607871e5ea8e2ad775180d60710ab",
-            "references_sha256": "dcbeba891c1a20d43c247c65e7a204bd593039bd8bc68780fc51b133bffa901e",
-            "review_note": "Reviewed PageSpeed fixed Google HTTPS endpoint, bounded report projection, owner authentication and cooldown; distinct from existing tags and OAuth reporting."
+            "source_sha256": "b22e2a0262f519e899f17885599f6d10995d12e714378f30e15d513618d81f41",
+            "references_sha256": "dc2c123ec3959c5b29d43cffa2e680d0661e3ca68b31fcc52aa8ef1b004b9816",
+            "review_note": "Both configurable AI connections and PageSpeed report guidance survive the merged integrations documentation; Google reporting remains separate."
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
@@ -38,19 +38,19 @@
             "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
         },
         "interface": {
-            "source_sha256": "8930133259d149fcaecbd8e228b403fbd7eb8e953fe6913dbdfdd98b9f257896",
+            "source_sha256": "fa8e9f93ec78f82fdf70e37abcc908200014c5a4f18dbf0546dec2e75ccc8717",
             "references_sha256": "f1fc313dfc585e3dc0569dd2c52ac2b412aa8924f154978be71464130fe13375",
-            "review_note": "Reviewed PageSpeed dashboard link, report cards and responsive CSS alongside unchanged latest homepage and footer changes."
+            "review_note": "Preserved independent provider and PageSpeed CSS blocks and owner dashboard link."
         },
         "mail": {
-            "source_sha256": "064a2db84e324ad8cdf377ad2d9ee07289391409e44d5bfd92a0dba85586993a",
+            "source_sha256": "79925cc0c003645e9e87eceadf1f34ae8c164e65840a4fde5c586fb91296ef75",
             "references_sha256": "6d6153ae2fed6f1aebbf9fa93225d6cc74b6c098d9a34deffce7bc4f3c6e9273",
-            "review_note": "Reviewed the in-panel reuse of original /contact form with existing ContactService persistence and SMTP mail queue; no automatic real contact submission, mass retry or new email notification route was introduced."
+            "review_note": "Reviewed shared AdminController change: no mail behavior or delivery configuration changed."
         },
         "mcp-clients": {
-            "source_sha256": "8b2e7629876c1e5facae0a92e30f91e7e11ba59bd979a528022807b0193be7bc",
-            "references_sha256": "bd97a5a56a44ee881b4b0f05def05ff2b907d4152e47b848645454b0a038446a",
-            "review_note": "PageSpeed is an owner-only dashboard report, not exposed as a public or remote MCP capability; reviewed integration documentation and unchanged client authorization."
+            "source_sha256": "ffb43129fe7e2633e2b790587a52729a82486fc1e08a692607623632c17756ad",
+            "references_sha256": "1390a1ae3be706072f85e628f3065e2170dc2685b3841c008d02536d232f2d1c",
+            "review_note": "PageSpeed reporting remains owner-only and does not expose a public MCP capability."
         },
         "media": {
             "source_sha256": "7b9d3d9aa746f16f1441148550d143e7094388b247c423b90c310ed5441db99d",
@@ -58,19 +58,19 @@
             "review_note": "Reviewed product image paths and the bounded A2UI gallery against current media hosting paths; styling does not move uploads, delete media or expose private asset directories."
         },
         "operator-help": {
-            "source_sha256": "b6cbc01f501da1c00ae757a89761555a46538fe5aa3c574c493d21257a0d3445",
+            "source_sha256": "8e72e5148d1654df7bbbf328ab469b0f6435ab6a4f1e67402001d6fff08116b6",
             "references_sha256": "2201c0efbcc49c20384beab8cbef25fa6bcd6928e2928d7fd8474d6522cdf6bf",
-            "review_note": "Reconciled PageSpeed dashboard link and native owner-only routes with current homepage layout; existing contextual help routing remains unchanged."
+            "review_note": "Compared native owner-only PageSpeed controller, report and dashboard link with the existing integration and agent controls."
         },
         "public-mcp": {
-            "source_sha256": "5ca24beff91e42e8156af0868bc4f8e39060b4790a3a35f921aad58627d3c1b4",
+            "source_sha256": "44e12ad73403a6fc87486a863f502caf12e098da2aac440b8a9b62b2a205a463",
             "references_sha256": "66f314f4d27575d8d1ab7394d8e28aae3feb90467ef6445ce18d804604d40f3d",
-            "review_note": "Compared added GET and CSRF-protected POST routes against existing public MCP allowlist; no public invocation path added."
+            "review_note": "Reviewed the new PageSpeed routes; public MCP authorization unchanged."
         },
         "remote-commerce": {
-            "source_sha256": "4158663ee0618880bed2832d4e0c789789f46c71af15cd68796652a3e2e272d8",
+            "source_sha256": "fc0f3595df50e982963b63d00e9da7c54abe395b79928bf79e44266c5205e9ac",
             "references_sha256": "e00aba6f254f3552728ebcf0e7cd24d757eceb2ffa55060db99dd42562b481e9",
-            "review_note": "Reviewed native hero controls and outer slide corners; existing product, checkout, and cart forms unchanged."
+            "review_note": "Shared SecretService preserves existing unrelated payment records; scoped AI save leaves commerce settings untouched."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed the sales-channel CLI references and catalogue guidance. This change only fixes generic PHP lint argument forwarding and failure propagation; feed, channel and catalogue operations are unchanged."
         },
         "workflow": {
-            "source_sha256": "1a04597f3a66f752efdf70feada99843960c861669e8c3586f8e748fb24b91ac",
-            "references_sha256": "6bddcf08be3819fe8ec98d7f78e96b359a9571f9043255f5ce207927e4732284",
-            "review_note": "Combined original PageSpeed browser test with both main-branch homepage suites; all other CI and deployment checks preserved."
+            "source_sha256": "ebd2fbcfc56d0fd0d39e06fcd2cd54221f96855745f05b170493fe992d0fbdaa",
+            "references_sha256": "a242b3bec435e5f0b0b1191b95c4d0a8fe98fec35e78981816b1bd71023ecf27",
+            "review_note": "Reviewed PageSpeed browser test addition and retained all parent CI and provider regressions."
         }
     }
 }

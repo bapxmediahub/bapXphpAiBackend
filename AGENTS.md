@@ -129,6 +129,31 @@ target is absent, and state that absence as a finding.
   `BAPX_REMOTE_DB_URL`. Every other secret belongs in the MySQL `secrets` table via
   Admin → Integrations.
 
+## External reference and gap-discovery requirement
+
+- Before designing a new capability or repairing an unfamiliar subsystem, inspect
+  relevant installed skills, reference projects' actual source and their SKILL.md
+  files, plus current official provider/protocol documentation. Compare mainstream
+  implementations (OpenAI Agents SDK, Google ADK, Anthropic skills/tool discovery,
+  Vercel AI SDK, LangChain) with applicable PHP equivalents (Neuron, Prism, Maestro).
+  For provider management compare Open WebUI connections and LiteLLM routing.
+  Record exact source URLs/revisions, observed differences, and acceptance criteria
+  on the existing GitHub issue before implementation. Never invent API fields or
+  assume feature parity from README marketing or generated indexes.
+- Adopt missing mechanisms, not entire external frameworks. Preserve native PHP,
+  vanilla JS, MySQL and low-cost shared-hosting constraints; no new paid service,
+  embeddings, vector store or always-running agent process.
+- Treat .agents/ as developer guidance only. .bapX/ is the canonical business-agent
+  knowledge, instruction and tool guidance source for Support, Enterprise, WebMCP
+  and HTTP MCP, with separate authorized projections. Do not expose private files,
+  credentials, arbitrary SQL or developer instructions through public transports.
+  Compare current code with these goals; do not claim unimplemented projections.
+- When reference research or real testing reveals another reproducible gap,
+  search existing issues first, update the appropriate tracker or create a
+  distinct issue with evidence and priority. Continue independent verified work
+  while CI, reviews or hosting are pending; do not confuse a local patch or PR
+  with a completed production fix.
+
 ## Model facts you must not guess
 
 Your training has a cutoff and this project uses models released after it. **Search the
@@ -148,18 +173,15 @@ that is not there.
   still filters any reasoning from the returned text. Reference:
   <https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api#thinking>.
 
-The owner can also opt into the fixed `openrouter/free` first-provider route
-using a separately encrypted key and on/off toggle near Google API Key in
-Integrations. Both agents share `AiClient`, with Google Gemma 4 31B then
-26B A4B fallback on an OpenRouter failure *before any tool execution*.
-Keep the original generation deadline and never replay a partially completed
-tool exchange across providers. The toggle defaults off and preserves the
-current provider selection. Reference: <https://openrouter.ai/openrouter/free>.
-
-The owner can opt into an HTTPS OpenAI-compatible Chat Completions provider in
-Integrations with a dedicated key and up to five ordered model IDs. Both agents
-share the selection. Owner tools require Chat Completions function calling.
-Reference: <https://developers.openai.com/api/docs/guides/function-calling>.
+The owner configures independent Google, OpenRouter and compatible provider
+connections in Admin → Integrations. Google and OpenRouter model IDs are
+editable; Google models can be disabled individually. OpenRouter defaults to
+openrouter/free and off. The existing encrypted key per connection is preserved
+on blank input. Use the ordered enabled/configured provider plan in SecretService,
+with one shared deadline and no cross-provider replay after a tool exchange.
+Google uses parametersJsonSchema for canonical JSON Schema; do not weaken
+server-side input validation to satisfy a provider wire format.
+See docs/pages/integrations.md and https://ai.google.dev/api/generate-content#FunctionDeclaration .
 
 The general rule: when a fact about an external service decides what you change, verify
 it against that service's own documentation and record the URL beside the code.
@@ -247,5 +269,5 @@ Exercise the changed JavaScript controls with keyboard and pointer input, and co
 Work one independently testable issue per Ready-for-Review PR. Use `Refs #N` while
 live acceptance is pending; do not auto-close an issue at merge if its production
 checks remain unverified. After exact-head CI, merge, verify actual live behavior,
-attach evidence with `gh issue comment`, then close only fulfilled scope. Never
+attach evidence with `gh issue comment`, then close only fulfilled scope. For provider changes verify saved-key presence without exposing values, persisted enable/model settings, exact wire schema, real text and tool calls separately, and both live agent surfaces. A successful connectivity probe is not proof of tool execution or customer resolution. Never
 mark provider quota, a sent review command or SMTP acceptance as verified success.

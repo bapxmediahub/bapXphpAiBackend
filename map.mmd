@@ -14,10 +14,10 @@ flowchart LR
     legend_limits["No execution, autoload or dynamic reachability proof; gaps are inspection candidates"]:::arch
   end
 
-  subgraph ARCH["Architecture Overview — 180 routes, 18 controllers, 84 services, 73 views, 0 data files, 30 tools"]
+  subgraph ARCH["Architecture Overview — 180 routes, 18 controllers, 85 services, 73 views, 0 data files, 30 tools"]
     arch_routes["> Routes: 180 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 18"]:::arch
-    arch_svc["> Services: 84"]:::arch
+    arch_svc["> Services: 85"]:::arch
     arch_views["> Views: 73"]:::arch
     arch_data["> Collections: 24 schema | 0 files"]:::arch
     arch_tools["> Tools: 30"]:::arch
@@ -316,6 +316,7 @@ flowchart LR
     service_requestfailureservice["RequestFailureService"]:::code
     service_resourceservice["ResourceService"]:::code
     service_reviewservice["ReviewService"]:::code
+    service_runtimeagenttoolregistry["RuntimeAgentToolRegistry"]:::code
     service_runtimehealthservice["RuntimeHealthService"]:::code
     service_schemaservice["SchemaService"]:::code
     service_secretservice["SecretService"]:::code
@@ -986,6 +987,7 @@ flowchart LR
   controller_admincontroller -. declared service .-> service_agentattachmentservice
   controller_admincontroller -. declared service .-> service_agentdraftservice
   controller_admincontroller -. declared service .-> service_agentinstructionservice
+  controller_admincontroller -. declared service .-> service_runtimeagenttoolregistry
   controller_admincontroller -. declared service .-> service_agenttoolregistry
   controller_admincontroller -. declared service .-> service_enterprisetoolregistry
   controller_admincontroller -. declared service .-> service_agentconversationservice
@@ -1217,6 +1219,8 @@ flowchart LR
   controller_supportcontroller -. declared service .-> service_agentcontextservice
   controller_supportcontroller -. declared service .-> service_supportticketservice
   controller_supportcontroller -. declared service .-> service_supporttoolregistry
+  controller_supportcontroller -. declared service .-> service_agentinstructionservice
+  controller_supportcontroller -. declared service .-> service_runtimeagenttoolregistry
   controller_supportcontroller -. declared service .-> service_agentconversationservice
   controller_supportcontroller -. declared service .-> service_agenttraceservice
   controller_supportcontroller -. declared service .-> service_agentevaluationservice
@@ -1354,6 +1358,7 @@ flowchart LR
   controller_admincontroller -. source new .-> service_productservice
   controller_admincontroller -. source new .-> service_publica2uiservice
   controller_admincontroller -. source new .-> service_resourceservice
+  controller_admincontroller -. source new .-> service_runtimeagenttoolregistry
   controller_admincontroller -. source new .-> service_runtimehealthservice
   controller_admincontroller -. source new .-> service_schemaservice
   controller_admincontroller -. source new .-> service_secretservice
@@ -1366,7 +1371,6 @@ flowchart LR
   controller_admincontroller -. static reference .-> service_agentconversationservice
   controller_admincontroller -. static reference .-> service_agentdraftservice
   controller_admincontroller -. static reference .-> service_agentevaluationservice
-  controller_admincontroller -. static reference .-> service_agentinstructionservice
   controller_admincontroller -. static reference .-> service_agenttraceservice
   controller_admincontroller -. static reference .-> service_aiclient
   controller_admincontroller -. static reference .-> service_auditlogservice
@@ -1378,7 +1382,6 @@ flowchart LR
   controller_admincontroller -. static reference .-> service_mediaservice
   controller_admincontroller -. static reference .-> service_productimportservice
   controller_admincontroller -. static reference .-> service_productservice
-  controller_admincontroller -. static reference .-> service_secretservice
   controller_admincontroller -. static reference .-> service_settingsservice
   controller_admincontroller -. static reference .-> service_siteinsightsservice
   controller_admincontroller -. static reference .-> service_sitetelemetryservice
@@ -1537,6 +1540,7 @@ flowchart LR
   service_agenttoolregistry -. static reference .-> service_publicknowledgeservice
   service_agenttoolregistry -. static reference .-> service_storestatsservice
   service_agenttraceservice -. source new .-> service_agentbudgetexception
+  service_agenttraceservice -. static reference .-> service_agentcapabilitypolicy
   service_agenttraceservice -. static reference .-> service_agenttoolregistry
   service_agenttraceservice -. static reference .-> service_secretservice
   service_aiclient -. source new .-> service_secretservice
@@ -1611,6 +1615,7 @@ flowchart LR
   service_productservice -. source new .-> service_databaseservice
   service_publica2uiservice -. source new .-> service_publicknowledgeservice
   service_publica2uiservice -. static reference .-> service_agentcontextservice
+  service_publica2uiservice -. static reference .-> service_supportbotservice
   service_publicagentdiscoveryservice -. source new .-> service_publicmcpservice
   service_publicagentdiscoveryservice -. static reference .-> service_publicmcpservice
   service_publicagentdiscoveryservice -. static reference .-> service_remotecartservice
@@ -1663,6 +1668,10 @@ flowchart LR
   service_remotecheckoutstateservice -. static reference .-> service_remotecheckoutservice
   service_resourceservice -. source new .-> service_databaseservice
   service_reviewservice -. source new .-> service_databaseservice
+  service_runtimeagenttoolregistry -. static reference .-> service_agentcapabilitypolicy
+  service_runtimeagenttoolregistry -. static reference .-> service_agentinstructionservice
+  service_runtimeagenttoolregistry -. static reference .-> service_agenttraceservice
+  service_runtimeagenttoolregistry -. static reference .-> service_publicknowledgeservice
   service_runtimehealthservice -. source new .-> service_databaseservice
   service_secretservice -. source new .-> service_databaseservice
   service_secretservice -. static reference .-> service_mcpclientservice
@@ -1682,19 +1691,24 @@ flowchart LR
   service_supportbotservice -. source new .-> service_blogservice
   service_supportbotservice -. source new .-> service_databaseservice
   service_supportbotservice -. source new .-> service_productservice
+  service_supportbotservice -. source new .-> service_runtimeagenttoolregistry
   service_supportbotservice -. source new .-> service_secretservice
   service_supportbotservice -. source new .-> service_supportticketservice
   service_supportbotservice -. source new .-> service_supporttoolregistry
   service_supportbotservice -. static reference .-> service_agentcontextservice
   service_supportbotservice -. static reference .-> service_agentevaluationservice
-  service_supportbotservice -. static reference .-> service_agentinstructionservice
   service_supportbotservice -. static reference .-> service_agenttraceservice
+  service_supportbotservice -. static reference .-> service_aiclient
   service_supportbotservice -. static reference .-> service_orderservice
   service_supportticketservice -. source new .-> service_auditlogservice
   service_supportticketservice -. source new .-> service_databaseservice
   service_supportticketservice -. static reference .-> service_agenttranscriptsanitizer
   service_supporttoolregistry -. source new .-> service_agentcontextservice
+  service_supporttoolregistry -. source new .-> service_categoryservice
+  service_supporttoolregistry -. source new .-> service_databaseservice
+  service_supporttoolregistry -. source new .-> service_productservice
   service_supporttoolregistry -. source new .-> service_publicknowledgeservice
+  service_supporttoolregistry -. source new .-> service_settingsservice
   service_supporttoolregistry -. static reference .-> service_agentcapabilitypolicy
   service_supporttoolregistry -. static reference .-> service_publicknowledgeservice
   service_templeservice -. source new .-> service_databaseservice

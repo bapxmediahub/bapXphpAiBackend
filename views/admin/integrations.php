@@ -5,6 +5,8 @@
 </div>
 <div class="admin-card">
     <form method="post" action="/admin/integrations/save" class="admin-form">
+        <!-- Keep the implicit Enter-key submitter a full save, not the AI-only action. -->
+        <button type="submit" hidden tabindex="-1" aria-hidden="true"></button>
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
 
         <div style="margin:0 0 var(--space-lg); padding:var(--space-sm) var(--space-md); border-radius:var(--radius-md); border:1px solid var(--color-border); background:var(--color-bg-alt); font-size:0.85rem; color:var(--color-text-muted);">
@@ -62,50 +64,68 @@
         </div>
         <p style="margin:var(--space-xs) 0 0; color:var(--color-text-muted); font-size:0.8rem;">Customer login requests sign-in permissions. The owner authorizes reporting separately. Calendar and Google Meet are not used for this platform.</p>
 
-        <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">AI Provider</h2>
-        <p>Customer support and owner chat share these settings. OpenRouter Free is an independent first-provider toggle; the selected Google or compatible provider below remains unchanged when it is off. Owner chat requires function calling.</p>
+        <section id="ai-providers" class="ai-provider-section" aria-labelledby="ai-provider-heading">
+        <h2 id="ai-provider-heading">AI Providers and Models</h2>
+        <?php
+        $googleModels=\App\Services\SecretService::googleModelIds($secrets);
+        $googleDisabled=(array)($secrets['ai_google_disabled_models']??[]);
+        $selectedProvider=($secrets['ai_provider']??'')==='openai_compatible'?'openai_compatible':'google';
+        $googleEnabled=($secrets['ai_google_enabled']??(($selectedProvider==='google'||($secrets['ai_openrouter_enabled']??'0')==='1')?'1':'0'))==='1';
+        $compatibleEnabled=($secrets['ai_compatible_enabled']??($selectedProvider==='openai_compatible'?'1':'0'))==='1';
+        $googleKeySaved=!empty($secrets['ai_api_key'])||!empty($secrets['agent_api_key'])||!empty($secrets['support_bot_google_api_key']);
+        ?>
+        <p>Both agents use enabled connections. OpenRouter is tried first when enabled, followed by the preferred connection and the other enabled connection. Within a connection, model IDs are tried in the order listed. An interrupted tool exchange is not replayed on another provider.</p>
         <div class="admin-form__row">
-            <label>Provider
+            <label>Preferred fallback provider
                 <select name="ai_provider">
-                    <option value="google" <?= ($secrets['ai_provider'] ?? '') !== 'openai_compatible' ? 'selected' : '' ?>>Google Gemini API</option>
-                    <option value="openai_compatible" <?= ($secrets['ai_provider'] ?? '') === 'openai_compatible' ? 'selected' : '' ?>>OpenAI-compatible API</option>
+                    <option value="google" <?= $selectedProvider==='google'?'selected':'' ?>>Google Gemini API</option>
+                    <option value="openai_compatible" <?= $selectedProvider==='openai_compatible'?'selected':'' ?>>OpenAI-compatible API</option>
                 </select>
             </label>
-            <label>Agent Name<input name="agent_name" value="<?= e($secrets['agent_name'] ?? 'Agent') ?>"></label>
+            <label>Agent Name<input name="agent_name" value="<?= e($secrets['agent_name']??'Agent') ?>"></label>
         </div>
-        <fieldset>
+        <fieldset class="ai-openrouter-settings">
             <legend>Google Gemini API</legend>
-            <p><?= e(\App\Services\SecretService::PRIMARY_MODEL) ?> is tried first, with <?= e(\App\Services\SecretService::FALLBACK_MODEL) ?> as fallback. A rate limit triggers immediate fallback.</p>
-            <label>Google API Key<input type="password" name="ai_api_key" placeholder="Leave blank to keep saved key" autocomplete="new-password"></label>
+            <input type="hidden" name="ai_google_enabled" value="0">
+            <label class="ai-openrouter-toggle"><input type="checkbox" name="ai_google_enabled" value="1" <?= $googleEnabled?'checked':'' ?>>Enable Google models</label>
+            <p class="ai-provider-endpoint"><strong>API endpoint</strong> <code><?= e(\App\Services\SecretService::GOOGLE_ENDPOINT) ?></code></p>
+            <label>Google API Key<input type="password" name="ai_api_key" value="" placeholder="Enter or replace API key" autocomplete="new-password"></label>
+            <small role="status"><?= $googleKeySaved?'A Google key is saved. Leave blank to keep it.':'No Google key is saved.' ?></small>
+            <label>Google model IDs in fallback order<textarea name="ai_google_models" rows="3" spellcheck="false"><?= e(implode("\n",$googleModels)) ?></textarea></label>
+            <small>Enter one to five exact model IDs, one per line. Save to add new IDs. Disable individual models below without removing them.</small>
+            <div class="ai-model-switches">
+                <?php foreach($googleModels as $id): ?>
+                <input type="hidden" name="ai_google_model_switches[<?= e($id) ?>]" value="0">
+                <label class="ai-openrouter-toggle"><input type="checkbox" name="ai_google_model_switches[<?= e($id) ?>]" value="1" <?= !in_array($id,$googleDisabled,true)?'checked':'' ?>><?= e($id) ?></label>
+                <?php endforeach; ?>
+            </div>
         </fieldset>
         <fieldset class="ai-openrouter-settings" aria-describedby="openrouter-free-help">
-            <legend>OpenRouter Free · optional first provider</legend>
+            <legend>OpenRouter</legend>
             <input type="hidden" name="ai_openrouter_enabled" value="0">
             <label class="ai-openrouter-toggle" for="ai-openrouter-enabled">
-                <input type="checkbox" id="ai-openrouter-enabled" name="ai_openrouter_enabled" value="1"
-                    <?= ($secrets['ai_openrouter_enabled'] ?? '0') === '1' ? 'checked' : '' ?>>
-                Enable OpenRouter Free
+                <input type="checkbox" id="ai-openrouter-enabled" name="ai_openrouter_enabled" value="1" <?= ($secrets['ai_openrouter_enabled']??'0')==='1'?'checked':'' ?>>Enable OpenRouter Free
             </label>
-            <p id="openrouter-free-help">When enabled, both agents try the fixed <code>openrouter/free</code> model
-                through <code>https://openrouter.ai/api/v1</code> first. If it fails before
-                executing any tool calls, Google Gemma 4 31B and then 26B A4B can answer
-                using the saved Google API key. Free models may be rate-limited or unavailable.</p>
+            <p id="openrouter-free-help">Choose the free router or specific OpenRouter model IDs. Free models may have usage limits. Other IDs may incur charges according to the provider account.</p>
+            <p class="ai-provider-endpoint"><strong>API endpoint</strong> <code><?= e(\App\Services\SecretService::OPENROUTER_ENDPOINT) ?></code></p>
             <label for="ai-openrouter-key">OpenRouter API Key</label>
-            <input id="ai-openrouter-key" type="password" name="ai_openrouter_key" value=""
-                placeholder="Leave blank to keep the encrypted saved key" autocomplete="new-password"
-                minlength="16" maxlength="512" spellcheck="false">
-            <small id="ai-openrouter-key-status" role="status"><?= !empty($secrets['ai_openrouter_key'])
-                ? 'A key is saved. Its value is never shown here.' : 'No key has been saved.' ?></small>
+            <input id="ai-openrouter-key" type="password" name="ai_openrouter_key" value="" placeholder="Enter or replace API key" autocomplete="new-password" minlength="16" maxlength="512" spellcheck="false">
+            <small id="ai-openrouter-key-status" role="status"><?= !empty($secrets['ai_openrouter_key'])?'A key is saved. Leave blank to keep it.':'No key has been saved.' ?></small>
+            <label>OpenRouter model IDs in fallback order<textarea name="ai_openrouter_models" rows="3" spellcheck="false"><?= e($secrets['ai_openrouter_models']??\App\Services\SecretService::OPENROUTER_MODEL) ?></textarea></label>
+            <small>Keep openrouter/free for automatic free-model selection, or enter exact IDs of models you authorize.</small>
         </fieldset>
-        <fieldset>
-            <legend>OpenAI-compatible API</legend>
-            <label>API Base URL<input type="url" name="ai_compatible_url" value="<?= e($secrets['ai_compatible_url'] ?? '') ?>" placeholder="https://api.openai.com/v1"></label>
-            <label>Compatible API Key<input type="password" name="ai_compatible_key" placeholder="Leave blank to keep saved key" autocomplete="new-password"></label>
-            <label>Model IDs in fallback order
-                <textarea name="ai_compatible_models" rows="4" aria-describedby="compatible-model-help"><?= e($secrets['ai_compatible_models'] ?? '') ?></textarea>
-            </label>
-            <p id="compatible-model-help">Enter one to five model IDs, one per line. The first is tried first. Use a key issued for this endpoint.</p>
+        <fieldset class="ai-openrouter-settings">
+            <legend>Custom OpenAI-compatible connection</legend>
+            <input type="hidden" name="ai_compatible_enabled" value="0">
+            <label class="ai-openrouter-toggle"><input type="checkbox" name="ai_compatible_enabled" value="1" <?= $compatibleEnabled?'checked':'' ?>>Enable custom connection</label>
+            <label>API Base URL<input type="url" name="ai_compatible_url" value="<?= e($secrets['ai_compatible_url']??'') ?>" placeholder="https://api.openai.com/v1"></label>
+            <label>Compatible API Key<input type="password" name="ai_compatible_key" value="" placeholder="Enter or replace API key" autocomplete="new-password"></label>
+            <small role="status"><?= !empty($secrets['ai_compatible_key'])?'A key is saved for this endpoint. Leave blank to keep it.':'No compatible API key is saved.' ?></small>
+            <label>Model IDs in fallback order<textarea name="ai_compatible_models" rows="3" aria-describedby="compatible-model-help" spellcheck="false"><?= e($secrets['ai_compatible_models']??'') ?></textarea></label>
+            <p id="compatible-model-help">Enter one to five exact model IDs, one per line. Use a key issued for this HTTPS endpoint. Changing the endpoint requires its own key.</p>
         </fieldset>
+        <button type="submit" name="save_ai_only" value="1" class="btn btn-primary">Save AI Provider Settings</button>
+        </section>
         <input type="hidden" name="support_bot_purge_policy" value="always_purge">
 
         <h2 style="font-size:1rem; margin:var(--space-xl) 0 var(--space-sm);">WebRTC TURN Server</h2>
@@ -249,14 +269,13 @@ unset($_SESSION['ai_test_result']);
 <div class="admin-card" style="margin-top:var(--space-lg);">
     <h2 style="font-size:1.1rem; margin:0 0 var(--space-sm);">Test the AI connection</h2>
     <p style="color:var(--color-text-muted); margin:0 0 var(--space-md); font-size:0.9rem;">
-        Sends one short question to the configured model. Both the support bot and this admin
-        assistant use these settings, so if this fails they are both falling back to fixed replies.
+        Test saved enabled connections using the same guarded transport as both agents. Text verifies an exact response; the tool test verifies a synthetic read-only round trip without business data.
     </p>
     <?php if ($aiTest): ?>
         <div style="margin-bottom:var(--space-md); padding:var(--space-sm) var(--space-md); border-radius:var(--radius-sm); border:1px solid <?= $aiTest['ok'] ? 'var(--color-success, #15803d)' : 'var(--color-error, #b91c1c)' ?>; background:<?= $aiTest['ok'] ? 'rgba(21,128,61,0.08)' : 'rgba(185,28,28,0.08)' ?>;">
-            <strong><?= $aiTest['ok'] ? 'The model answered' : 'The model did not answer' ?></strong>
+            <strong><?= $aiTest['ok'] ? 'Probe passed' : 'Probe failed' ?></strong>
             <div style="margin-top:var(--space-2xs); font-size:0.82rem; color:var(--color-text-muted);">
-                <?= e((string)($aiTest['model'] ?? '')) ?> · <?= e((string)($aiTest['endpoint'] ?? '')) ?>
+                <?= e((string)($aiTest['provider'] ?? '')) ?> · <?= e((string)($aiTest['model'] ?? '')) ?> · <?= e((string)($aiTest['endpoint'] ?? '')) ?>
             </div>
             <div style="margin-top:var(--space-2xs); font-size:0.85rem; white-space:pre-wrap;"><?= e((string)$aiTest['message']) ?></div>
             <?php if (isset($aiTest['tool_calls'])): ?>
@@ -270,7 +289,7 @@ unset($_SESSION['ai_test_result']);
                         <?php if (!empty($timing['model'])): ?><?= e($timing['model']) ?> · <?php endif; ?>
                         HTTP <?= (int)$timing['status'] ?>, cURL <?= (int)$timing['curl_error'] ?>.
                         <?php foreach (['dns_ms' => 'DNS', 'connect_ms' => 'Connection', 'ready_ms' => 'Ready to transfer', 'first_byte_ms' => 'First byte', 'total_ms' => 'Total'] as $key => $label): ?>
-                            <?= e($label) ?> <?= $timing[$key] > 0 ? number_format($timing[$key], 1) . ' ms' : '—' ?>.
+                            <?= e($label) ?> <?= ($timing[$key] ?? 0) > 0 ? number_format($timing[$key], 1) . ' ms' : '—' ?>.
                         <?php endforeach; ?>
                     </li>
                 <?php endforeach; ?>
@@ -280,12 +299,16 @@ unset($_SESSION['ai_test_result']);
     <?php endif; ?>
     <form class="admin-form" method="post" action="/admin/integrations/test-ai">
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+        <label for="ai-probe-target">Connection to test</label>
+            <select id="ai-probe-target" name="probe">
+                <option value="">Enabled fallback route</option>
+                <?php foreach (($comparisonModels??[]) as $connection): ?>
+                    <option value="<?= e($connection['target']) ?>"><?= e($connection['provider'].' · '.$connection['model']) ?></option>
+                <?php endforeach; ?>
+            </select>
+        <label for="ai-probe-mode">Diagnostic</label>
+        <select id="ai-probe-mode" name="probe_mode"><option value="text">Text response</option><option value="tools">Tool round trip</option></select>
         <button class="btn btn-secondary">Test AI Connection</button>
-        <?php if (!empty($comparisonModels)): ?>
-            <?php foreach ($comparisonModels as $comparisonModel): ?>
-                <button class="btn btn-secondary" name="probe" value="<?= e($comparisonModel) ?>">Test <?= e($comparisonModel) ?></button>
-            <?php endforeach; ?>
-            <small>This runs one connection test without changing the saved model.</small>
-        <?php endif; ?>
+        <small>Tests the saved configuration. A selected provider/model never falls back to another target.</small>
     </form>
 </div>
