@@ -694,11 +694,47 @@ $tests['agent operational rates use observed attempt and tool denominators plus 
 };
 
 $tests['mail CLI runs safely in test mode with bounded pending processing'] = static function (): void {
-    $output=[];$exit=1;
-    exec('cd '.escapeshellarg(app_path()).' && BAPX_TEST_MODE=1 ./bapXphp mail:process 2>&1',$output,$exit);
-    assertSame(0,$exit,'PHP namespace quoting in the actual CLI command must parse');
-    assertTrue(str_contains(implode("\n",$output),'SMTP accepted 0 queued emails. Inbox receipt is unverified.'),'CLI never claims actual delivery');
-    assertTrue(str_contains(fileRead('cli/bapXphp'),'array_slice($m->due(),0,25)'),'One invocation is bounded to 25 pending records');
+    $command = 'cd ' . escapeshellarg(sys_get_temp_dir()) . ' && BAPX_TEST_MODE=1 ' . escapeshellarg(app_path('bapXphp')) . ' mail:process';
+    foreach (['' => 'queued emails', ' --scheduled-test-only' => 'scheduled samples'] as $flag => $scope) {
+        $output = [];
+        exec($command . $flag . ' 2>&1', $output, $exit);
+        assertSame(0, $exit, 'Worker resolves the checkout independently of the cron working directory');
+        assertTrue(str_contains(implode("\n", $output), 'SMTP accepted 0 ' . $scope . '. Inbox receipt is unverified.'), 'CLI reports the selected scope');
+    }
+    foreach (['--dry-run', '--scheduled-test-only unexpected', "''"] as $invalid) {
+        $output = [];
+        exec($command . ' ' . $invalid . ' 2>&1', $output, $exit);
+        assertTrue($exit !== 0 && str_contains(implode("\n", $output), 'Usage:'), 'Unknown options fail before selecting queue records');
+    }
+    assertTrue(str_contains(fileRead('app/Services/MailQueueService.php'), 'max(0,min(25,$limit))'), 'One invocation is bounded to 25 pending records');
+};
+
+$tests['scheduled mail samples are isolated under claim and expire after thirty minutes'] = static function (): void {
+    $service = \App\Services\MailQueueService::class;
+    $now = new DateTimeImmutable('2026-11-25T06:00:00Z');
+    $stamp = static fn(string $delta): string => $now->modify($delta)->format(DATE_ATOM);
+    $mail = ['status' => 'pending', 'type' => 'order_confirmation', 'available_at' => $stamp('-1 second')];
+    $sample = array_replace($mail, [
+        'type' => $service::SCHEDULED_SAMPLE_TYPE, 'created_at' => $stamp('-3 minutes'),
+        'meta' => ['template' => 'welcome', 'synthetic_sample' => true],
+    ]);
+    $future = array_replace($sample, ['available_at' => $stamp('+1 second')]);
+    $expired = array_replace($sample, ['created_at' => $stamp('-30 minutes')]);
+    $malformed = array_replace($sample, ['meta' => ['template' => 'unlisted', 'synthetic_sample' => true]]);
+    $claim = static fn(array $row, bool $sampleMode): ?array => $service::transitionDelivery(
+        $row, 'claim', str_repeat('a', 32), ['scheduled_samples_only' => $sampleMode], $now
+    );
+    assertSame('sending', $claim($mail, false)['status'] ?? null, 'Regular worker still claims ordinary due mail');
+    assertSame('sending', $claim($sample, true)['status'] ?? null, 'Sample worker claims a valid eligible sample');
+    assertSame(null, $claim($mail, true), 'Sample worker cannot claim ordinary mail under the row lock');
+    assertSame(null, $claim($sample, false), 'Ordinary worker does not claim scheduled test mail');
+    assertSame(null, $claim($future, true), 'Worker waits until the eligibility timestamp');
+    assertSame(null, $claim($expired, true), 'Expiry is exclusive at thirty minutes');
+    assertSame(null, $claim($malformed, true), 'Unknown template fails closed');
+    $health = $service::health([$mail, $sample, $future, $expired, $malformed], $now->getTimestamp());
+    assertSame(1, $health['due_pending'], 'Business backlog excludes every scheduled diagnostic');
+    assertSame(2, $health['scheduled_samples'], 'Ready and waiting samples share the active count');
+    assertSame(2, $health['inactive_samples'], 'Expired and malformed samples remain visible as inactive');
 };
 
 $tests['public retrieval preserves existing spaced and Unicode slugs as encoded evidence'] = static function (): void {

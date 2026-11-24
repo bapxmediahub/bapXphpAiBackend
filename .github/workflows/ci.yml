@@ -105,6 +105,8 @@ jobs:
         run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/about-release-browser.cjs tests/site-profile-browser.cjs
       - name: Exercise native Users search and collapsed filters
         run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/users-directory-browser.cjs
+      - name: Exercise owner scheduled mail confirmation in Chromium
+        run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/mail-scheduled-browser.cjs
       - name: Exercise native Support checkout and explicit cart handoff at desktop and mobile widths
         run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/support-checkout-browser.cjs tests/remote-cart-review-browser.cjs
       - name: Verify the public tools with the official MCP client

@@ -29,11 +29,15 @@ name, sender address, Reply-To and owner destination separately in
 
 ## Verify the correct recipient
 
-For a diagnostic, explicitly confirm **Send test sample once**. Customer templates
+For a diagnostic, use **Confirm test sample**. Customer templates
 use the entered customer test mailbox. Owner templates use only the separately
 configured owner address and cannot be redirected using that field. Review the
-masked role/address before sending; do not change the saved owner recipient just
-to make a customer Gmail test pass.
+masked role and address before sending.
+
+Choose **Send now** for immediate SMTP. **Queue for the sample-only worker**
+creates a scheduled test that becomes eligible after two minutes. The scheduled
+worker has 30 minutes from creation to claim it. Queue a sample when that
+worker is ready and use the Outbox to check its outcome.
 
 The result and Email Outbox distinguish transport acceptance from receipt. Inspect
 the correct inbox and message reference. A received test sample proves that

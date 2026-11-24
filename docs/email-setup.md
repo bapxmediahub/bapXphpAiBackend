@@ -10,9 +10,9 @@ description: How transactional email is sent, how to configure SMTP, and how to 
 Mail is attempted **in the request that generates it**, unless deliberately
 scheduled for later. The old `cli/process-mail-queue.php` was removed. The
 optional `./bapXphp mail:process` command processes at most 25 due **pending**
-messages; it does not retry failed, already accepted, interrupted or unknown
-attempts. Do not run it against a historical backlog without reviewing recipients,
-events, provider limits and delivery evidence first.
+business messages and any pending immediate samples. Failed, accepted,
+interrupted and uncertain attempts are ineligible. Review recipients, events,
+provider limits and delivery evidence before processing a historical backlog.
 
 New transactional mail and owner previews use the **Public Site Profile**
 display name. Customer help links use the published email address when present
@@ -152,7 +152,18 @@ field; templates cannot be sent under the wrong audience. The owner value is
 masked in the UI and is not changed. A short-lived token is consumed before
 transport, the queue uses a stable event identity, and requests are bounded by
 rate limits. An expired/repeated/uncertain request must not be blindly resent.
-The result reports SMTP acceptance and a queue reference, not inbox delivery.
+The result reports a queue reference and the observed state. **Send now**
+attempts SMTP immediately. **Queue for the sample-only worker** schedules the
+confirmed sample, which becomes eligible after two minutes and expires after
+30 minutes. Email Outbox shows pending samples and inactive samples separately
+from the due business backlog.
+
+Run `./bapXphp mail:process --scheduled-test-only` to process eligible scheduled
+samples. The database checks the sample scope, eligibility and expiry again under
+the queue row lock. The default worker excludes scheduled samples. The sample
+mode cannot take a business-mail claim, including held contact automation.
+See [the Hostinger runbook](deployment-hostinger.md) for recording cron output
+and correlating an actual inbox receipt.
 
 To prove receiving behavior, inspect the intended recipient mailbox and correlate
 the sample Message-ID with the queue. A received synthetic sample establishes

@@ -1064,6 +1064,11 @@ final class AdminController extends BaseController {
             $this->redirect('/admin/email-templates');
         }
         $target=is_string($_POST['target']??null)?$_POST['target']:'';
+        $timing=$_POST['sample_timing']??'now';
+        if(!in_array($timing,['now','scheduled'],true)){
+            $this->flash('Choose a valid time for the sample.','error');
+            $this->redirect('/admin/email-templates?template='.rawurlencode($key));
+        }
         $expectedTarget=\App\Services\MailTemplateService::catalog()[$key]['audience']==='admin'?'owner':'customer';
         if($target!==$expectedTarget){$this->flash('The sample recipient role must match the selected template.','error');$this->redirect('/admin/email-templates?template='.rawurlencode($key));}
         try{
@@ -1073,10 +1078,11 @@ final class AdminController extends BaseController {
         // Consume before any transport. A lost response is not permission to replay.
         $_SESSION['template_test_sent']=array_slice((array)($_SESSION['template_test_sent']??[]),-15,null,true);
         $_SESSION['template_test_sent'][$token]=time();unset($_SESSION['template_test_tokens'][$token]);
-        session_write_close();$result=['template'=>$key,'target'=>$target,'status'=>'unknown','queue_id'=>null];
+        session_write_close();$result=['template'=>$key,'target'=>$target,'status'=>'unknown','queue_id'=>null,'timing'=>$timing];
         try{
-            $record=(new MailQueueService())->enqueueTemplateSample($key,$to,'template-test:'.$token);
+            $record=(new MailQueueService())->enqueueTemplateSample($key,$to,'template-test:'.$token,$timing==='scheduled');
             $result['queue_id']=$record['id'];$result['status']=$record['status']??'unknown';
+            if($timing==='scheduled')$result['available_at']=$record['available_at']??null;
         }catch(\Throwable $error){error_log('Template sample outcome could not be confirmed ('.get_class($error).')');}
         session_start();$_SESSION['template_test_result']=$result;
         $this->redirect('/admin/email-templates?template='.rawurlencode($key));

@@ -19,11 +19,29 @@ category: docs
    required. SMTP acceptance is not inbox receipt.
 8. Inspect Admin → Email Outbox before processing delayed mail. An approved operator
    can run `./bapXphp mail:process` from the checkout to process at most **25 due pending**
-   records. It does not retry failed, accepted, interrupted or uncertain attempts.
-   Do not schedule bulk processing or replay historical mail without reviewing the
-   recipients, event identities, provider limits and acceptance evidence first.
+   records in the ordinary queue. Failed, accepted, interrupted and uncertain attempts
+   are ineligible. Use `./bapXphp mail:process --scheduled-test-only` for an
+   explicitly confirmed scheduled sample.
 9. Smoke test public pages, account redirects, admin login, API endpoints, checkout
    configuration and the mail queue. See `docs/email-setup.md` for the transport contract.
+
+## Verify a scheduled mail sample
+
+In the website's hPanel, open **Advanced → Cron Jobs** and use an approved
+**Custom** job with the absolute checkout path to `bapXphp`, followed by
+`mail:process --scheduled-test-only`. Use the installed PHP CLI environment for
+that checkout. Choose a UTC schedule that can run within the sample's eligibility
+window. The timing can be checked in **View Output**.
+[Hostinger cron setup](https://www.hostinger.com/support/1583465-how-to-set-up-a-cron-job-at-hostinger/)
+and [cron output](https://www.hostinger.com/support/5647075-how-to-check-the-output-of-a-cron-job-at-hostinger/)
+document these controls.
+
+Queue one approved test message from **Email → Templates** after the schedule
+is ready. Record its queue reference, the cron execution time, and the canonical
+Outbox result. Match its Message-ID in the intended mailbox and record the
+folder separately. The worker can run from any working directory. Its output
+reports an SMTP acceptance count without recipient data. Review the ordinary
+due queue and provider limits before considering any separate business schedule.
 
 ### Preserve uploaded media
 

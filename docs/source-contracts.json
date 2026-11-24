@@ -4,18 +4,18 @@
     "reviews": {
         "agents": {
             "source_sha256": "817b3b8099fc2827dcca3127adbe2b2d5c13865a138558c8c1cfe8fe46682732",
-            "references_sha256": "fac550b7924aa73cef036476aafbfd0a448671194b98d9a560db3950620ae243",
-            "review_note": "Reviewed the backend skill addition for email rendering; agent instructions, scoped capabilities and trace contracts are unchanged."
+            "references_sha256": "5009b7dfdec2dd41db3f58004301ccb4cb05d0f10e03af4ca72bf1b0bf385d04",
+            "review_note": "Compared the skill note with the agent and trace boundaries. Scheduled mail diagnostics stay in the owner email UI and worker, with no new agent capability or trace claim."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
-            "references_sha256": "2a68bda94aa0fe256bd1311b9258aa64bc3695e5195cc45d1b2646ab35f56ed3",
-            "review_note": "Confirmed profile wording in welcome and recovery preserves account admission, recipient checks and same-site reset links."
+            "references_sha256": "ee198f67d585f331a334248688775e433181b828fbf7a5f58d41dac5a34f3a2d",
+            "review_note": "Compared the shared backend skill and mail change with account lifecycle guidance. Ordinary verified signup and password recovery retain their original event and queue paths."
         },
         "commerce": {
             "source_sha256": "a05e401e6a379a17ad8d6353f0f6d59396679f9f6d8d8d99afe33cbc7a57f9f2",
-            "references_sha256": "9658cdb8c07d654eb00f0a57dfa50284cef48e8bb70ab2f3216ddc5109310345",
-            "review_note": "Confirmed branded order and shipment copy still follows existing verified events, saved links, stable queue keys and chosen owner/customer recipients."
+            "references_sha256": "3cb623c78c3e69961b6e5a14f77c97baed5a32a436c38d3e7558f924b60cd6a5",
+            "review_note": "Compared the queue change with order and shipping guidance. The ordinary pending path and stable order-event keys still apply to paid orders, shipments and reviews."
         },
         "content": {
             "source_sha256": "8047c1092ae63a74262a3b32464a4d4b02c698563ab63c8551da0b04ce9c7f72",
@@ -23,9 +23,9 @@
             "review_note": "Reviewed Blog direct-route gating, sitemap module filtering, canonical URL and optional brand image defaults. Profile story is published as bounded plain paragraphs."
         },
         "foundation": {
-            "source_sha256": "6ec71f86ddc930a0746ee067036c55e9bf7da3575c91f4116858df615e492572",
-            "references_sha256": "3e8f0b03031d549f668e0b04e749c52d85b8593ac72132331734d9f5b5648ae2",
-            "review_note": "Confirmed existing queue records, database authority and delivery claims are preserved; profile data replaces literal branding only in new rendering."
+            "source_sha256": "db1bed98b17f46cf6de486e0d612db3ecc2892cc747d6266b7897fde9c0c4f25",
+            "references_sha256": "5e72734d9a12aeaba4d4bdc192b0b9de3199d6590ba2e7c1b1482350e5cb0bd5",
+            "review_note": "Cross-checked the hosting and backend procedure with canonical MySQL queue ownership and runtime paths. Both modes use the existing per-record transition and preserve the existing collection schema."
         },
         "google-tags": {
             "source_sha256": "187c8971da4cad73fccba340fb2f7424e60c4cb704bed864594f6c2dd3308c72",
@@ -34,18 +34,18 @@
         },
         "http-errors": {
             "source_sha256": "2e2fee3211f50641844c05f86381f277f9c6c10b7fb60fb750c52937b0868e12",
-            "references_sha256": "6e8c4fcbebadacd6b214ad586b98937c86827466a3e31870f7d20b9bb1643d31",
-            "review_note": "Reviewed mail rendering through the guarded admin preview. Existing error, rejection and claim handling are preserved."
+            "references_sha256": "d309fba94f0e9ed81e83cce280b9c5ac3560d4726227d058c866ee0ea4b12cd2",
+            "review_note": "Reviewed the new hosting instructions against existing request-failure guidance. A transport receipt remains distinct from a rendering response, and the worker preserves the canonical queue before reporting an outcome."
         },
         "interface": {
             "source_sha256": "4c0d0dcc4cd6108c95c62276feeccb70acc0e390bb209ccf0dd49f879f9dec99",
-            "references_sha256": "1b0f6d645882eaf1aee6efc0a77dc06d71928517c70e7419e4644541561f00bd",
-            "review_note": "Compared the directory and navigation with the admin guide and Design. Native filter removal retains other criteria, top-bar actions fit fallback fonts, and the compact overview and collapsed toolbar bring the first account into view."
+            "references_sha256": "ad5c5a93ef91df9fea2b55f10ee68971c2a37ce2d1faaebee283cb48c89e80e4",
+            "review_note": "Reviewed the native timing selector and scheduled evidence card in desktop and 375px Chromium. The existing admin layout, labels, focus path and private owner boundary stay consistent with the design."
         },
         "mail": {
-            "source_sha256": "478194235d65cf0c290fe1e7e5df9db5459e299eb36c538ae09340d2abd8b4aa",
-            "references_sha256": "ff7d576232f9ca0c2db09056513a9932dbad4994cd971c1bd5fe46975139e0a5",
-            "review_note": "Verified profile subjects and shell, opt-in public email or form, both MIME parts, configured sender and reply-to roles, and loopback delivery classification."
+            "source_sha256": "76c821847f5750ac8bd563b6147870a757e229e0462a8f77564f3f3fa17805ef",
+            "references_sha256": "e67f0fbc67954b174b852d9fc84ad03d27a8d6b4923528018c622f0097e1a262",
+            "review_note": "Cross-checked the native timing option, queue reference, atomic claim guard, 30-minute expiry and separate inbox proof in the source and mail runbook."
         },
         "mcp-clients": {
             "source_sha256": "78b45576da2d1ffc37e26fdf5701db6321d7df0b22488288b1879d91472778f1",
@@ -54,23 +54,23 @@
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
-            "references_sha256": "d5b739470358d9a6c63987a4ff7da21537b82339bf814d719882545cdf5adfe2",
-            "review_note": "Reviewed the shared admin skill addition. It covers navigation and Users filter controls, and the documented media edit and deletion workflows remain accurate."
+            "references_sha256": "1ccf99d785a7062137f394c4ad80f80202b7c23afa712b0ee4490002d22b30c8",
+            "review_note": "Reviewed the shared admin skill addition against the existing media guidance. Its new directions concern only the native email sample form and leave media actions and retention claims accurate."
         },
         "operator-help": {
-            "source_sha256": "e4e852e68c709a5d84696c0905abf3ea646018fe730970cdd36c61cc5d8a934a",
-            "references_sha256": "de931c8f89ee01aee25b312db87ddccca4609c6622a5768b167486c8eaef7e97",
-            "review_note": "Compared the fixed Customers guide with the rendered search, individual filter removal and reset. The Help entry retains its existing owner-only destination."
+            "source_sha256": "3afb56ffc0386005694b56ab7985bc5a3fed8a13e3adcdc080d15892a140af45",
+            "references_sha256": "f54a60ce8958c6bb4e94d572222578c9c393c9400df93f080364945cba519688",
+            "review_note": "Compared the Email operator guide with the existing owner form, one-use confirmation, native timing control and Outbox summary. The guide uses the current labels and describes the eligibility window."
         },
         "public-mcp": {
             "source_sha256": "e5d2bb67604d7b9c3588dba3d04e75ad9925c1c686f3a4d13dffd1dc8dd99325",
-            "references_sha256": "9a15ece395692fe96ccde8e847e27a5f363174da366588d63ed7d7317cbf6655",
-            "review_note": "Reviewed the published contact projection reused by the mail shell. MCP schemas, transport, authorization and tool behavior are unchanged."
+            "references_sha256": "43d68fd861a0035d83d3af03b2a8d33110f91049d62a8bd70b58034dbd10aa59",
+            "review_note": "Compared the skill addition with the public MCP and commerce tool contracts. Its synthetic samples remain inside the owner email form and CLI, with no change to public transports or tool schemas."
         },
         "remote-commerce": {
             "source_sha256": "e57f1d5e32c8a297bb085291e48e2f4fd3574c39841b0fe2444b2223d3ac59da",
-            "references_sha256": "91e83c1712919a006485258e4584997647313ab8a6ec695ce14d6242318919f8",
-            "review_note": "Reviewed the Design directory edit against the shared commerce references. Cart, checkout and their existing responsive controls retain the documented contracts."
+            "references_sha256": "2722fecd4543a78e924d2c1d07b1d0c18c0a08ce844a75a39999f4ebac0e7ac5",
+            "review_note": "Compared the shared backend skill with cart and checkout documentation. The sample-only mode applies to diagnostics, and checkout order verification retains the ordinary queue and existing idempotency path."
         },
         "sales-channels": {
             "source_sha256": "6e5ee7b44dd92cc4dadec7a3c02f4bb9da797ba98d4e541e9f956687db236142",
@@ -78,9 +78,9 @@
             "review_note": "Confirmed the existing catalogue optimiser and filename handling remain the default. Only brand uploads retain the original raster type."
         },
         "workflow": {
-            "source_sha256": "52926a5ac5fad1872440d762dacb0bc68ceba57affb905ad43e787b11e0a381e",
+            "source_sha256": "b1f5c93e2983f37b08182492951e5afe71e8ca812b52a2e59df555a2ff57c5fe",
             "references_sha256": "7770887213db03241a85f7bbee17bf25b2c58350058ebc59e25fd76b29ad80df",
-            "review_note": "Reviewed the narrow admin skill change against the existing issue-first browser workflow and confirmed the directory regression covers keyboard, pointer and no-JavaScript use."
+            "review_note": "Compared the added Chromium CI step, argument validation and test fixtures with the issue-first workflow. The native form test and disposable worker tests supply different evidence before live acceptance."
         }
     }
 }
