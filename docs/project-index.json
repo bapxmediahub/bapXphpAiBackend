@@ -191,7 +191,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1147
+            "line": 1163
         },
         {
             "from": "controller:AdminController",
@@ -199,7 +199,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1381
+            "line": 1397
         },
         {
             "from": "controller:AdminController",
@@ -271,7 +271,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1356
+            "line": 1372
         },
         {
             "from": "controller:AdminController",
@@ -335,7 +335,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1605
+            "line": 1621
         },
         {
             "from": "controller:AdminController",
@@ -359,7 +359,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1123
+            "line": 1139
         },
         {
             "from": "controller:AdminController",
@@ -367,7 +367,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1077
+            "line": 1093
         },
         {
             "from": "controller:AdminController",
@@ -455,7 +455,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1407
+            "line": 1423
         },
         {
             "from": "controller:AdminController",
@@ -471,7 +471,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1432
+            "line": 1448
         },
         {
             "from": "controller:AdminController",
@@ -511,7 +511,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1534
+            "line": 1550
         },
         {
             "from": "controller:AdminController",
@@ -519,7 +519,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1089
+            "line": 1105
         },
         {
             "from": "controller:AdminController",
@@ -1239,7 +1239,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/RemoteDbController.php",
-            "line": 149
+            "line": 157
         },
         {
             "from": "controller:RemoteDbController",
@@ -1975,7 +1975,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 658
+            "line": 688
         },
         {
             "from": "service:DatabaseService",
@@ -1984,6 +1984,14 @@
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
             "line": 278
+        },
+        {
+            "from": "service:DatabaseService",
+            "to": "service:MediaService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/DatabaseService.php",
+            "line": 542
         },
         {
             "from": "service:DatabaseService",
@@ -1999,7 +2007,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 631
+            "line": 661
         },
         {
             "from": "service:DatabaseService",
@@ -2031,7 +2039,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 684
+            "line": 714
         },
         {
             "from": "service:DatabaseService",
@@ -2207,7 +2215,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/MediaService.php",
-            "line": 411
+            "line": 443
         },
         {
             "from": "service:MediaService",
@@ -3083,7 +3091,7 @@
         }
     ],
     "summary": {
-        "routes": 178,
+        "routes": 179,
         "controllers": 17,
         "services": 84,
         "views": 71,
@@ -4153,6 +4161,20 @@
             "path": "/admin/media/delete",
             "name": "admin.media.delete",
             "controller": "AdminController@deleteMedia",
+            "view": "admin/media",
+            "response": null,
+            "provenance": "route_registry",
+            "services": [
+                "MediaService",
+                "AuditLogService",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/media/metadata",
+            "name": "admin.media.metadata",
+            "controller": "AdminController@updateMediaMetadata",
             "view": "admin/media",
             "response": null,
             "provenance": "route_registry",

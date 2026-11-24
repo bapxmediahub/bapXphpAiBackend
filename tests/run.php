@@ -1959,6 +1959,19 @@ $tests['support named festive collection listing uses only collection members'] 
     assertTrue(str_contains($empty, 'no visible products'), 'Empty collections do not fabricate results');
 };
 
+$tests['native media metadata is bounded and conflict safe'] = static function (): void {
+    $m = \App\Services\MediaService::class;
+    $row = ['id'=>'0123456789abcdef','url'=>'/assets/images/media/2026/11/test.webp','context'=>'shared','used_in'=>[['id'=>'keep']], 'description'=>'Old'];
+    $version = $m::metadataRevision($row);
+    $fields = $m::metadataPatch($row, ['description'=>' New ', 'alt_text'=>'Accessible image', 'caption'=>'Caption', 'url'=>'/forged'], $version);
+    assertSame(['description'=>'New','alt_text'=>'Accessible image','caption'=>'Caption'], $fields, 'Only editable metadata can change');
+    assertTrue($m::metadataRevision($row + ['other'=>'value']) === $version, 'Unrelated usage does not invalidate edits');
+    foreach ([['row'=>array_replace($row,['description'=>'newer']), 'fields'=>$fields], ['row'=>$row,'fields'=>array_replace($fields,['alt_text'=>str_repeat('a',256)])], ['row'=>$row,'fields'=>array_replace($fields,['caption'=>[]])], ['row'=>array_replace($row,['source'=>'legacy']),'fields'=>$fields]] as $case) {
+        try { $m::metadataPatch($case['row'],$case['fields'],$version); assertTrue(false,'Invalid or stale metadata must be rejected'); }
+        catch (\InvalidArgumentException $error) { assertTrue(true,'Rejected unsafe edit'); }
+    }
+};
+
 $tests['media removal is restricted to unused uploaded media with CSRF'] = static function (): void {
     $media = \App\Services\MediaService::class;
     $upload = ['id'=>'0123456789abcdef', 'url'=>'/assets/images/media/2026/11/test.webp', 'context'=>'shared'];

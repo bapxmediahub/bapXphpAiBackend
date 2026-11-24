@@ -139,6 +139,14 @@ final class RemoteDbController {
                 echo json_encode(['success'=>true, 'result'=>$result]);
                 return;
             }
+            if ($collection === 'media_files' && $action === 'update_media_metadata') {
+                if (!is_string($input['id'] ?? null) || !is_array($input['fields'] ?? null) || !is_string($input['expected'] ?? null)) {
+                    throw new \InvalidArgumentException('Media identity, fields and revision are required.');
+                }
+                $store->updateMediaMetadata($input['id'], $input['fields'], $input['expected']);
+                echo json_encode(['success'=>true,'updated'=>true]);
+                return;
+            }
             if ($collection === 'users' && $action === 'patch_user') {
                 $updated = $store->patchUser((string)($input['id'] ?? ''), $input['fields'] ?? [],
                     $input['credential'] ?? null, $input['expected'] ?? null);

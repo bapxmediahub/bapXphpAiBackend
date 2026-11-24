@@ -53,7 +53,7 @@ outside these tools.
 ## Other workflows
 
 Media uploads live outside Git releases; their metadata is in MySQL
-`media_files`. The Media Library permits guarded deletion of unused uploads
+`media_files`. The Media Library supports owner editing of descriptions, alternative text and captions on existing uploads, with revision checks and no binary replacement. Saved alternative text is used in the library preview; storefront markup remains unchanged. The Media Library permits guarded deletion of unused uploads
 with confirmation and CSRF protection. Referenced, bundled and legacy-only
 images are not deletable through that action.
 
