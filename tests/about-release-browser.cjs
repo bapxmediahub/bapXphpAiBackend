@@ -8,6 +8,7 @@ const os=require('node:os');
 const path=require('node:path');
 const {mkdtempSync,rmSync}=require('node:fs');
 const {chromium}=require('playwright');
+const {verifyLiveRevision}=require('./live-browser-revision.cjs');
 
 const expected=process.env.EXPECTED_SHA||'';
 if(expected&&!/^[a-f0-9]{40}$/.test(expected))throw Error('Expected exact deployed Git SHA');
@@ -43,12 +44,12 @@ test('real About route: editorial layout, image loading, canonical metadata and 
     const server=live?null:spawn('php',['-d','session.save_path='+tmp,'-S','127.0.0.1:'+port,'index.php'],{cwd:root,env:{...process.env,BAPX_TEST_MODE:'1',APP_URL:origin},stdio:'ignore'});
     let browser;
     try{
+        if(live)await verifyLiveRevision(origin,expected);
         browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined,headless:true});
         for(const [width,height,js] of [[1280,900,true],[375,812,true],[375,580,true],[375,812,false]]){
             const context=await browser.newContext({viewport:{width,height},javaScriptEnabled:js,reducedMotion:'reduce',serviceWorkers:'block'});
             if(!live)await context.route('https://**/*',r=>r.abort());
             const p=await context.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
-            if(live){const r=await p.request.get(origin+'/is-sha-valid?sha='+expected);assert.equal(r.status(),200);const d=await r.json();assert.equal(d.match,true);assert.equal(d.deployed_sha,expected);assert.equal(d.source,'git_head');}
             for(let i=0;i<20;i++){try{const r=await p.goto(origin+'/about',{waitUntil:'domcontentloaded',timeout:live?25000:2000});assert.equal(r.status(),200);break;}catch(e){if(i===19||live)throw e;await new Promise(r=>setTimeout(r,100));}}
             const page=p.locator('[data-about-editorial]');
             await page.waitFor();
@@ -107,5 +108,6 @@ test('real About route: editorial layout, image loading, canonical metadata and 
             }
             await context.close();
         }
+        if(live)await verifyLiveRevision(origin,expected);
     }finally{await browser?.close();server?.kill();if(tmp)rmSync(tmp,{recursive:true,force:true});}
 });

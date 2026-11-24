@@ -8,6 +8,7 @@ const path=require('node:path');
 const os=require('node:os');
 const {mkdtempSync,rmSync}=require('node:fs');
 const {chromium}=require('playwright');
+const {verifyLiveRevision}=require('./live-browser-revision.cjs');
 
 async function freePort(){
  const socket=net.createServer();
@@ -26,12 +27,12 @@ test('actual public layout: pinned brand, complete editorial sequence, readable 
  const server=live?null:spawn('php',['-d','session.save_path='+temporary,'-S','127.0.0.1:'+port,'index.php'],{cwd:root,env:{...process.env,BAPX_TEST_MODE:'1',APP_URL:origin},stdio:'ignore'});
  let browser;
  try{
+  if(live)await verifyLiveRevision(origin,expected);
   browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined,headless:true});
   for(const [width,height] of [[1536,850],[1280,900],[375,812],[375,580]]){
    const context=await browser.newContext({viewport:{width,height},serviceWorkers:'block'});
    if(!live)await context.route('https://**/*',r=>r.abort());
    const p=await context.newPage();const errors=[];p.on('pageerror',e=>errors.push(e.message));
-   if(live){const r=await p.request.get(origin+'/is-sha-valid?sha='+expected);assert.equal(r.status(),200);const d=await r.json();assert.equal(d.match,true);assert.equal(d.deployed_sha,expected);assert.equal(d.source,'git_head');}
    for(let i=0;i<20;i++){try{const r=await p.goto(origin+'/',{waitUntil:'domcontentloaded',timeout:live?25000:2000});assert.equal(r.status(),200);break;}catch(e){if(i===19||live)throw e;await new Promise(r=>setTimeout(r,100));}}
    await p.locator('[data-home-stack][data-stack-ready]').waitFor({timeout:10000});
    await p.evaluate(()=>document.fonts.ready);
@@ -134,5 +135,6 @@ test('actual public layout: pinned brand, complete editorial sequence, readable 
   await p.getByRole('link',{name:'Close menu',exact:true}).click();
   assert.equal(await p.locator('#primary-nav').isVisible(),false);
   await context.close();
+  if(live)await verifyLiveRevision(origin,expected);
  }finally{await browser?.close();server?.kill();if(temporary)rmSync(temporary,{recursive:true,force:true});}
 });
