@@ -24,8 +24,8 @@
         },
         "foundation": {
             "source_sha256": "c2bb1a457e2c548c1a5a1501ed2b98926543298800f04b94c2897fce988bfa97",
-            "references_sha256": "d27e1582f676e53d27e9bde2c8d217ce5c1cb70b42c1cf8300df3dcba7a7bdd1",
-            "review_note": "Reviewed actual settings writers and schema descriptors for existing logo/favicon, palette, module and ID fields; no additional permission or physical table change. Reviewed architecture and client isolation contract."
+            "references_sha256": "02bcf2c086ef51d57a58c2cf6946d5ba38f2eaa8bf26bac6aa8bbae04a531939",
+            "review_note": "Cross-checked current shop GET declarative form, exact native and polyfill registry tests, official Chrome documentation and live public contact/filter; no runtime change."
         },
         "google-tags": {
             "source_sha256": "0641eacf6c60aab4a8c8fe3df9cc7695111ca1c6e7d8448d9dabbb425894eb16",
@@ -69,8 +69,8 @@
         },
         "remote-commerce": {
             "source_sha256": "4853741d899eb0745553fcf1620ec564193730671b5005b63662ee10ac44ece0",
-            "references_sha256": "fbebd2e5642ed22c5c8f2f69659ee88ddc916e097c058a572c0650f31cae8b70",
-            "review_note": "Reviewed canonical settings schema additions as descriptors for existing owner controls only; no cart, checkout, payment, permission or data migration changes."
+            "references_sha256": "aafbc778d27e19816b6069a0bb16194afced7f59b4185261374f1a3c03fa1b72",
+            "review_note": "Cross-checked existing scoped commerce registrations and read-only shop GET navigation; no authorization, checkout or payment semantics changed."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",

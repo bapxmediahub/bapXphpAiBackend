@@ -7,6 +7,10 @@ const native=process.env.WEBMCP_NATIVE==='1';
 const commerceNames=['create_cart','get_cart','set_cart_quantity','review_checkout','prepare_checkout_payment','get_checkout_status'];
 const landingNames=['get_public_contact','list_public_services','present_public_knowledge','search_public_articles','search_public_products',...commerceNames].sort();
 const shopNames=[...landingNames,'list_shop_results'].sort();
+// The native browser registers declarative HTML forms asynchronously alongside
+// imperative tools. Wait for the full registry, not its transient JS-only set.
+const shopCdpNames=[...shopNames,'filter_visible_shop'].sort();
+const shopExpectedNames=native?shopCdpNames:shopNames;
 async function waitForTools(page,expected){
     await page.waitForFunction(async expected=>{
         if(typeof document.modelContext?.getTools!=='function')return false;
@@ -92,9 +96,9 @@ test('live landing and shop WebMCP tools can be discovered and invoked ('+(nativ
             console.log('LIVE WEBMCP CDP landing: '+JSON.stringify({browser:external.browser,profile:external.profile,names:external.names}));
         }
         await page.goto(site+'/shop',{waitUntil:'load',timeout:20000});
-        await waitForTools(page,shopNames);
+        await waitForTools(page,shopExpectedNames);
         if(native){
-            const external=await inspectPagePublicContact(page,{expectedNames:shopNames});
+            const external=await inspectPagePublicContact(page,{expectedNames:shopCdpNames});
             assert.deepEqual(external.contact,landing.contact,'Shop CDP returns the same published contact');
             console.log('LIVE WEBMCP CDP shop: '+JSON.stringify({browser:external.browser,profile:external.profile,names:external.names}));
         }
@@ -124,8 +128,8 @@ test('live landing and shop WebMCP tools can be discovered and invoked ('+(nativ
                 rendered,cardCount:host.querySelectorAll('.bapx-a2ui__card').length,
                 href:host.querySelector('a.bapx-a2ui__link')?.getAttribute('href'),
             };
-        },{native,commerceNames,required:shopNames});
-        assert.deepEqual(results.names,shopNames);
+        },{native,commerceNames,required:shopExpectedNames});
+        assert.deepEqual(results.names,shopExpectedNames);
         checkCommerceAnnotations(results.commerceAnnotations);
         assert.equal(results.domCount,1);
         assert.equal(results.productsCount,1);
@@ -136,8 +140,21 @@ test('live landing and shop WebMCP tools can be discovered and invoked ('+(nativ
         assert.equal(results.rendered,true);
         assert.equal(results.cardCount,1);
         assert.match(results.href,/^\/product\/[A-Za-z0-9%_.-]+$/);
+        // Verify the declarative form has a safe read-only navigation contract.
+        const filter=page.locator('form[toolname="filter_visible_shop"]');
+        assert.equal(await filter.count(),1);
+        assert.equal(await filter.getAttribute('method'),'get');
+        assert.equal(await filter.getAttribute('action'),'/shop');
+        assert.notEqual(await filter.getAttribute('toolautosubmit'),null);
+        await filter.locator('[name="q"]').fill('pendant');
+        const filtered=page.waitForResponse(r=>r.request().isNavigationRequest()&&r.request().method()==='GET'
+            &&new URL(r.url()).pathname==='/shop'&&new URL(r.url()).searchParams.get('q')==='pendant',{timeout:15000});
+        const [filteredResponse]=await Promise.all([filtered,filter.locator('button[type="submit"]').click()]);
+        assert.equal(filteredResponse.status(),200,'Shop filter GET must serve the actual results');
+        await page.waitForURL(url=>url.pathname==='/shop'&&url.searchParams.get('q')==='pendant',{waitUntil:'load',timeout:15000});
+        assert.equal(await page.locator('form[toolname="filter_visible_shop"] [name="q"]').inputValue(),'pendant');
         assert.deepEqual(errors,[]);
-        console.log('LIVE WEBMCP '+(native?'NATIVE':'POLYFILL')+' A2UI PASS: landing 11 tools; shop 12 tools ('+results.names.join(', ')+'), rendered 1 public item, no commerce actions invoked, no JS exceptions.');
+        console.log('LIVE WEBMCP '+(native?'NATIVE':'POLYFILL')+' A2UI PASS: landing 11 tools; shop 12 imperative tools'+(native?' + 1 declarative tool':'')+' ('+results.names.join(', ')+'), verified GET filter navigation, rendered 1 public item, no commerce actions invoked, no JS exceptions.');
         await page.close();
     }finally{
         await browser.close();
