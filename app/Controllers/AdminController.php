@@ -215,28 +215,41 @@ final class AdminController extends BaseController {
         header('Cache-Control: private, no-store');
         $query = is_string($_GET['q'] ?? null) ? mb_substr(trim($_GET['q']), 0, 150) : '';
         $roles = ['customer' => 'Customer', 'admin' => 'Admin', 'astrologer' => 'Legacy consultant', 'unknown' => 'Unspecified'];
-        $activityOptions = ['with_orders' => 'Has orders', 'no_orders' => 'No orders', 'repeat' => 'Two or more orders'];
+        $activityOptions = [
+            'with_orders' => 'Has orders', 'one_order' => 'One order',
+            'repeat' => '2+ orders', 'no_orders' => 'No orders',
+        ];
+        $periodOptions = [30 => 'Last 30 days', 90 => 'Last 90 days', 365 => 'Last 365 days'];
         $sortOptions = ['name' => 'Name A–Z', 'recent_order' => 'Latest order', 'order_count' => 'Most orders'];
         $role = is_string($_GET['role'] ?? null) && isset($roles[$_GET['role']]) ? $_GET['role'] : '';
         $activity = is_string($_GET['activity'] ?? null) && isset($activityOptions[$_GET['activity']]) ? $_GET['activity'] : '';
+        $period = is_string($_GET['period'] ?? null) && isset($periodOptions[$_GET['period']]) ? $_GET['period'] : '';
+        $today = new \DateTimeImmutable('today', new \DateTimeZone('Asia/Kolkata'));
+        $periodStart = $period !== '' ? $today->modify('-' . ((int)$period - 1) . ' days') : null;
+        $tomorrow = $today->modify('+1 day');
         $sort = is_string($_GET['sort'] ?? null) && isset($sortOptions[$_GET['sort']]) ? $_GET['sort'] : 'name';
         $sizeOptions = [10, 25, 50];
         $pageSize = is_string($_GET['per_page'] ?? null) && in_array($_GET['per_page'], ['10', '25', '50'], true) ? (int)$_GET['per_page'] : 25;
         $directory = \App\Services\UserOrderHistoryService::forUsers((new ResourceService('users'))->all(), (new OrderService())->all());
-        $stats = ['accounts' => count($directory), 'with_orders' => 0, 'repeat' => 0];
+        $stats = ['accounts' => count($directory), 'no_orders' => 0, 'one_order' => 0, 'repeat' => 0];
         $users = [];
         foreach ($directory as $user) {
             $orderCount = count($user['orders']);
-            if ($orderCount > 0) $stats['with_orders']++;
-            if ($orderCount > 1) $stats['repeat']++;
+            $segment = match ($orderCount) {
+                0 => 'no_orders',
+                1 => 'one_order',
+                default => 'repeat',
+            };
+            $stats[$segment]++;
+            $latest = $user['orders'][0]['date'] ?? null;
+            if ($periodStart !== null && ($latest === null || $latest < $periodStart || $latest >= $tomorrow)) continue;
             $user['role'] = isset($roles[$user['role']]) ? $user['role'] : 'unknown';
             if ($role !== '' && $user['role'] !== $role) continue;
             if ($query !== '' && mb_stripos($user['name'], $query) === false && mb_stripos($user['email'], $query) === false) continue;
             $matchesActivity = match ($activity) {
                 'with_orders' => $orderCount > 0,
-                'no_orders' => $orderCount === 0,
-                'repeat' => $orderCount > 1,
-                default => true,
+                '' => true,
+                default => $activity === $segment,
             };
             if ($matchesActivity) $users[] = $user;
         }
@@ -256,8 +269,8 @@ final class AdminController extends BaseController {
         $offset = ($page - 1) * $pageSize;
         $users = array_slice($users, $offset, $pageSize);
         $this->render('admin/users', ['pageTitle' => 'Users'] + compact(
-            'users', 'count', 'pages', 'page', 'query', 'role', 'activity', 'sort', 'pageSize',
-            'sizeOptions', 'roles', 'activityOptions', 'sortOptions', 'stats', 'offset'
+            'users', 'count', 'pages', 'page', 'query', 'role', 'activity', 'period', 'sort', 'pageSize',
+            'sizeOptions', 'roles', 'activityOptions', 'periodOptions', 'sortOptions', 'stats', 'offset'
         ));
     }
     public function orders(): void{$this->list('Orders','orders');}

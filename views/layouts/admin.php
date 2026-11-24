@@ -1,5 +1,43 @@
 <?php $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); $csrf = $_SESSION['csrf_token'];
-$__modules = (new \App\Services\SettingsService())->modules(); ?>
+$__modules = (new \App\Services\SettingsService())->modules();
+
+// The sidebar supplies only literal icon names from this private set.
+$navIcon = static function (string $name): string {
+    $path = match ($name) {
+        'page' => 'M6 3h9l4 4v14H6zM14 3v5h5M9 12h7m-7 4h7',
+        'chat' => 'M4 5h16v11H9l-5 4zM8 9h8m-8 3h5',
+        'pulse' => 'M3 12h4l3-7 4 14 3-7h4',
+        'ticket' => 'M3 6h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4zM15 9v1m0 4v1',
+        'calendar' => 'M4 6h16v14H4zM4 10h16M8 4v4m8-4v4',
+        'channel' => 'M3 4h18v13H3zM9 21h6m-3-4v4M10 8l5 2.5-5 2.5z',
+        'bag' => 'M4 8h16l1 13H3zM8 9V7a4 4 0 0 1 8 0v2',
+        'truck' => 'M3 6h12v11H3zM15 10h3l3 3v4h-6M6 17a2 2 0 1 0 4 0m5 0a2 2 0 1 0 4 0',
+        'contact' => 'M5 4h15v16H5zM3 8h3m-3 4h3m-3 4h3m4 0h6m-6-5a2 2 0 1 0 4 0 2 2 0 0 0-4 0',
+        'box' => 'm12 3 9 5-9 5-9-5 9-5ZM3 8v8l9 5 9-5V8m-9 5v8',
+        'grid' => 'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z',
+        'layers' => 'm12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5',
+        'tag' => 'M3 5h9l9 9-7 7-9-9V5zm5 3h.01',
+        'bars' => 'M3 3v18h18M8 16v-4m5 4V8m5 8V5',
+        'receipt' => 'M5 3h14v18l-3-2-4 2-4-2-3 2zM8 8h8m-8 4h8',
+        'line' => 'M3 3v18h18M6 16l4-5 4 2 6-7',
+        'globe' => 'M2 12h20M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 0a15 15 0 0 1 0 20 15 15 0 0 1 0-20Z',
+        'template' => 'M4 5h16v14H4zM4 9h16M8 13h8m-8 3h5',
+        'inbox' => 'm3 13 3-8h12l3 8v6H3zM3 13h5l2 3h4l2-3h5',
+        'send' => 'm3 4 18 8-18 8 3-8-3-8Zm3 8h15',
+        'mail' => 'M3 5h18v14H3zM4 7l8 6 8-6',
+        'temple' => 'M3 10l9-7 9 7H3zm2 10h14M7 10v10m5-10v10m5-10v10',
+        'image' => 'M3 4h18v16H3zM3 17l6-6 5 5 3-3 4 4M15 8h.01',
+        'brand' => 'M12 2l2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5z',
+        'menu' => 'M4 6h16M4 12h16M4 18h16',
+        'plug' => 'M9 3v4m6-4v4M6 7h12v3a6 6 0 0 1-12 0V7Zm6 9v5',
+        'settings' => 'M4 7h4m5 0h7M4 17h9m5 0h2M8 4v6m10 4v6',
+    };
+
+    return '<svg class="admin-nav-icon" viewBox="0 0 24 24" width="16" height="16" fill="none"'
+        . ' stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"'
+        . ' aria-hidden="true" focusable="false"><path d="' . $path . '"/></svg>';
+};
+?>
 <!doctype html>
 <html lang="en">
 <head>
@@ -82,9 +120,9 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
             <details class="admin-agent-nav" <?= in_array($agentNavPath, ['/admin/agent', '/admin/agent/monitoring', '/admin/support-tickets'], true) ? 'open' : '' ?>>
                 <summary class="admin-nav-top admin-nav-agent"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 11.5a8 8 0 0 1-8 8H6l-3 2V11.5a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8Z"/><path d="M8 10h8M8 14h5"/></svg>Enterprise Agent<svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg></summary>
                 <div class="admin-nav-group">
-                    <a href="/admin/agent" <?= $agentNavPath === '/admin/agent' ? 'class="active" aria-current="page"' : '' ?>>Chat</a>
-                    <a href="/admin/agent/monitoring" <?= $agentNavPath === '/admin/agent/monitoring' ? 'class="active" aria-current="page"' : '' ?>>Agent Monitoring</a>
-                    <a href="/admin/support-tickets" <?= $agentNavPath === '/admin/support-tickets' ? 'class="active" aria-current="page"' : '' ?>>AI Support Tickets</a>
+                    <a href="/admin/agent" <?= $agentNavPath === '/admin/agent' ? 'class="active" aria-current="page"' : '' ?>><?= $navIcon('chat') ?>Chat</a>
+                    <a href="/admin/agent/monitoring" <?= $agentNavPath === '/admin/agent/monitoring' ? 'class="active" aria-current="page"' : '' ?>><?= $navIcon('pulse') ?>Agent Monitoring</a>
+                    <a href="/admin/support-tickets" <?= $agentNavPath === '/admin/support-tickets' ? 'class="active" aria-current="page"' : '' ?>><?= $navIcon('ticket') ?>AI Support Tickets</a>
                 </div>
             </details>
             <button type="button" class="admin-nav-toggle" data-target="menu-services" aria-controls="menu-services" aria-expanded="true">
@@ -93,9 +131,9 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
                 <svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
             <div class="admin-submenu" id="menu-services">
-                <a href="/admin/appointments" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/appointments') === 0 ? 'active' : '') ?>">Sessions</a>
+                <a href="/admin/appointments" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/appointments') === 0 ? 'active' : '') ?>"><?= $navIcon('calendar') ?>Sessions</a>
             </div>
-            <a href="/admin/pages" class="admin-nav-top <?= str_starts_with($_SERVER['REQUEST_URI'], '/admin/pages') ? 'active' : '' ?>">Pages</a>
+            <a href="/admin/pages" class="admin-nav-top <?= str_starts_with($_SERVER['REQUEST_URI'], '/admin/pages') ? 'active' : '' ?>"><?= $navIcon('page') ?>Pages</a>
             <?php if ($__modules['blog']): ?>
             <a href="/admin/blog" class="admin-nav-top <?= (strpos($_SERVER['REQUEST_URI'], '/admin/blog') === 0 ? 'active' : '') ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -108,16 +146,16 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
                 <svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
             <div class="admin-submenu" id="menu-commerce">
-                <a data-google-channel-nav href="/admin/google-merchant" class="<?= $agentNavPath==='/admin/google-merchant'?'active':'' ?>">Google &amp; YouTube</a>
-                <a href="/admin/orders" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/orders') === 0 ? 'active' : '') ?>">Orders</a>
-                <a href="/admin/shipping" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/shipping') === 0 ? 'active' : '') ?>">Shipping</a>
-                <a href="/admin/contact-submissions" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/contact-submissions') === 0 ? 'active' : '') ?>">Contacts</a>
+                <a data-google-channel-nav href="/admin/google-merchant" class="<?= $agentNavPath==='/admin/google-merchant'?'active':'' ?>"><?= $navIcon('channel') ?>Google &amp; YouTube</a>
+                <a href="/admin/orders" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/orders') === 0 ? 'active' : '') ?>"><?= $navIcon('bag') ?>Orders</a>
+                <a href="/admin/shipping" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/shipping') === 0 ? 'active' : '') ?>"><?= $navIcon('truck') ?>Shipping</a>
+                <a href="/admin/contact-submissions" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/contact-submissions') === 0 ? 'active' : '') ?>"><?= $navIcon('contact') ?>Contacts</a>
                 <?php if ($__modules['shop']): ?>
                     <span class="admin-nav-section-label">Catalog</span>
-                <a href="/admin/products" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/products') === 0 ? 'active' : '') ?>">Products</a>
-                <a href="/admin/categories" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/categories') === 0 ? 'active' : '') ?>">Categories</a>
-                <a href="/admin/collections" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/collections') === 0 ? 'active' : '') ?>">Special Collections</a>
-                <a href="/admin/coupons" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/coupons') === 0 ? 'active' : '') ?>">Coupons</a>
+                <a href="/admin/products" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/products') === 0 ? 'active' : '') ?>"><?= $navIcon('box') ?>Products</a>
+                <a href="/admin/categories" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/categories') === 0 ? 'active' : '') ?>"><?= $navIcon('grid') ?>Categories</a>
+                <a href="/admin/collections" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/collections') === 0 ? 'active' : '') ?>"><?= $navIcon('layers') ?>Special Collections</a>
+                <a href="/admin/coupons" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/coupons') === 0 ? 'active' : '') ?>"><?= $navIcon('tag') ?>Coupons</a>
                 <?php endif; ?>
             </div>
             <a href="/admin/users" class="admin-nav-top<?= $agentNavPath === '/admin/users' ? ' active' : '' ?>"<?= $agentNavPath === '/admin/users' ? ' aria-current="page"' : '' ?>>
@@ -126,17 +164,17 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
             </a>
             <button type="button" class="admin-nav-toggle" data-target="menu-analytics" aria-controls="menu-analytics" aria-expanded="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 3v18h18M8 16v-3m5 3V9m5 7V5"/></svg>Analytics<svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg></button>
             <div class="admin-submenu" id="menu-analytics">
-                <a href="/admin/#dashboard-commerce-title">Commerce overview</a>
-                <a href="/admin/tax-report" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/tax-report') === 0 ? 'active' : '') ?>">Commerce Reports</a>
-                <a href="/admin/consultation-analytics" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/consultation-analytics') === 0 ? 'active' : '') ?>">Session analytics</a>
-                <a href="/admin/#web-analytics">Web analytics</a>
+                <a href="/admin/#dashboard-commerce-title"><?= $navIcon('bars') ?>Commerce overview</a>
+                <a href="/admin/tax-report" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/tax-report') === 0 ? 'active' : '') ?>"><?= $navIcon('receipt') ?>Commerce Reports</a>
+                <a href="/admin/consultation-analytics" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/consultation-analytics') === 0 ? 'active' : '') ?>"><?= $navIcon('line') ?>Session analytics</a>
+                <a href="/admin/#web-analytics"><?= $navIcon('globe') ?>Web analytics</a>
             </div>
             <button type="button" class="admin-nav-toggle" data-target="menu-email" aria-controls="menu-email" aria-expanded="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>Email<svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg></button>
             <div class="admin-submenu" id="menu-email">
-                <a data-mail-templates-nav href="/admin/email-templates" class="<?= $agentNavPath==='/admin/email-templates'?'active':'' ?>">Templates &amp; triggers</a>
-                <a href="/admin/email-inbox" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/email-inbox') === 0 ? 'active' : '') ?>">Inbox</a>
-                <a href="/admin/email-outbox" class="<?= ($agentNavPath === '/admin/email-outbox' && ($_GET['type'] ?? '') !== 'newsletter' ? 'active' : '') ?>">Outbox</a>
-                <a href="/admin/email-outbox?type=newsletter" class="<?= $agentNavPath === '/admin/email-outbox' && ($_GET['type'] ?? '') === 'newsletter' ? 'active' : '' ?>">Newsletters</a>
+                <a data-mail-templates-nav href="/admin/email-templates" class="<?= $agentNavPath==='/admin/email-templates'?'active':'' ?>"><?= $navIcon('template') ?>Templates &amp; triggers</a>
+                <a href="/admin/email-inbox" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/email-inbox') === 0 ? 'active' : '') ?>"><?= $navIcon('inbox') ?>Inbox</a>
+                <a href="/admin/email-outbox" class="<?= ($agentNavPath === '/admin/email-outbox' && ($_GET['type'] ?? '') !== 'newsletter' ? 'active' : '') ?>"><?= $navIcon('send') ?>Outbox</a>
+                <a href="/admin/email-outbox?type=newsletter" class="<?= $agentNavPath === '/admin/email-outbox' && ($_GET['type'] ?? '') === 'newsletter' ? 'active' : '' ?>"><?= $navIcon('mail') ?>Newsletters</a>
             </div>
             <button type="button" class="admin-nav-toggle" data-target="menu-appearance" aria-controls="menu-appearance" aria-expanded="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
@@ -144,10 +182,10 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
                 <svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
             <div class="admin-submenu" id="menu-appearance">
-                <a href="/admin/temples" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/temples') === 0 ? 'active' : '') ?>">Temples</a>
-                <a href="/admin/media" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/media') === 0 ? 'active' : '') ?>">Media Library</a>
-                <a href="/admin/appearance" class="<?= ($agentNavPath === '/admin/appearance' ? 'active' : '') ?>">Logo & Favicon</a>
-                <a href="/admin/appearance/menu" <?= $agentNavPath === '/admin/appearance/menu' ? 'aria-current="page" class="active"' : '' ?>>Header menu</a>
+                <a href="/admin/temples" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/temples') === 0 ? 'active' : '') ?>"><?= $navIcon('temple') ?>Temples</a>
+                <a href="/admin/media" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/media') === 0 ? 'active' : '') ?>"><?= $navIcon('image') ?>Media Library</a>
+                <a href="/admin/appearance" class="<?= ($agentNavPath === '/admin/appearance' ? 'active' : '') ?>"><?= $navIcon('brand') ?>Logo &amp; Favicon</a>
+                <a href="/admin/appearance/menu" <?= $agentNavPath === '/admin/appearance/menu' ? 'aria-current="page" class="active"' : '' ?>><?= $navIcon('menu') ?>Header menu</a>
             </div>
             <button type="button" class="admin-nav-toggle" data-target="menu-settings" aria-controls="menu-settings" aria-expanded="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
@@ -155,9 +193,9 @@ $__modules = (new \App\Services\SettingsService())->modules(); ?>
                 <svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
             <div class="admin-submenu" id="menu-settings">
-                <a data-system-health-nav href="/admin/system-health" class="<?= $agentNavPath==='/admin/system-health'?'active':'' ?>">System Health</a>
-                <a href="/admin/integrations" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/integrations') === 0 ? 'active' : '') ?>">Integrations</a>
-                <a href="/admin/settings" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/settings') === 0 ? 'active' : '') ?>">Site Settings</a>
+                <a data-system-health-nav href="/admin/system-health" class="<?= $agentNavPath==='/admin/system-health'?'active':'' ?>"><?= $navIcon('pulse') ?>System Health</a>
+                <a href="/admin/integrations" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/integrations') === 0 ? 'active' : '') ?>"><?= $navIcon('plug') ?>Integrations</a>
+                <a href="/admin/settings" class="<?= (strpos($_SERVER['REQUEST_URI'], '/admin/settings') === 0 ? 'active' : '') ?>"><?= $navIcon('settings') ?>Site Settings</a>
             </div>
             <?php $helpPath=(string)(parse_url($_SERVER['REQUEST_URI']??'/admin',PHP_URL_PATH)?:'/admin'); ?>
             <a data-admin-help-nav href="/admin/docs" class="admin-nav-top <?= $helpPath==='/admin/docs'||str_starts_with($helpPath,'/admin/docs/')?'active':'' ?>"<?= $helpPath==='/admin/docs'?' aria-current="page"':'' ?>>
