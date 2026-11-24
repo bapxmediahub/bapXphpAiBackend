@@ -49,3 +49,18 @@
 
 /* Long OAuth callback and provider paths must wrap inside the narrow admin form. */
 .admin-form code{white-space:normal;overflow-wrap:anywhere;word-break:break-word;}
+
+
+/* Prevent long URLs and inline API paths from imposing a min-content width on
+   the owner-only Integrations layout at 320–390px. Keep the text selectable. */
+.admin-body,.admin-body .admin-card,.admin-body .admin-form,
+.admin-body .admin-form fieldset,.admin-body .admin-form p {
+    min-width:0;
+    max-width:100%;
+    box-sizing:border-box;
+}
+.admin-body .admin-form code {
+    white-space:normal;
+    overflow-wrap:anywhere;
+    word-break:break-all;
+}
