@@ -45,6 +45,9 @@ if (isset($payload['query'])) {
             'revision' => (string)($page['revision'] ?? ''),
         ], $pages);
         echo json_encode(['success'=>true,'data'=>$rows], JSON_THROW_ON_ERROR); exit;
+    } elseif ($query === 'SELECT * FROM media_files WHERE id = ?') {
+        $id = $payload['params'][0] ?? null;
+        $records = array_filter($data['collections']['media_files'] ?? [], static fn(array $row): bool => $row['id'] === $id);
     } elseif (preg_match('/^SELECT \* FROM (media_files|products|temples|categories|settings)$/D',$query,$m)) {
         $records=$data['collections'][$m[1]]??[];
     } else {

@@ -52,17 +52,35 @@
     <?php if(empty($items)): ?>
         <p><?= !empty($paging['search']) || !empty($paging['context']) ? 'No images match these filters.' : 'No media files yet.' ?></p>
     <?php else: ?>
+        <?php if (array_filter($items, [\App\Services\MediaService::class, 'canDeleteRecord'])): ?>
+            <form id="media-delete-selection" method="post" action="/admin/media/delete-selection" class="admin-form">
+                <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+                <input type="hidden" name="step" value="preview">
+                <p>Select up to <?= \App\Services\MediaService::MAX_DELETE_SELECTION ?> uploads on this page to review for removal.</p>
+                <button class="btn btn-outline" type="submit">Review selected uploads</button>
+            </form>
+        <?php endif; ?>
         <div class="admin-media-grid" id="media-library-grid">
             <?php foreach($items as $media): ?>
-                <?php $context = (string)($media['context'] ?? 'shared'); ?>
+                <?php
+                $context = (string)($media['context'] ?? 'shared');
+                $canDelete = \App\Services\MediaService::canDeleteRecord($media);
+                $name = (string)($media['original_name'] ?? $media['filename'] ?? 'Media');
+                ?>
                 <div class="admin-media-tile" data-media-context="<?= e($context) ?>">
                     <img src="<?= e($media['url'] ?? $media['path']) ?>" alt="<?= e($media['alt_text'] ?? $media['original_name'] ?? $media['filename'] ?? 'Media') ?>" loading="lazy" decoding="async">
-                    <strong><?= e($media['original_name'] ?? $media['filename'] ?? 'Media') ?></strong>
+                    <strong><?= e($name) ?></strong>
+                    <?php if ($canDelete): ?>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="ids[]" value="<?= e($media['id']) ?>" form="media-delete-selection"
+                                   aria-label="Select <?= e($name) ?> for removal"> Select for removal
+                        </label>
+                    <?php endif; ?>
                     <?php if(!empty($media['description'])): ?>
                         <small class="media-desc"><?= e($media['description']) ?></small>
                     <?php endif; ?>
                     <?php if (!empty($media['caption'])): ?><small><?= e($media['caption']) ?></small><?php endif; ?>
-                    <?php if (\App\Services\MediaService::canDeleteRecord($media) && in_array($context, ['shared','products','temples','blog'], true)): ?>
+                    <?php if ($canDelete && in_array($context, ['shared','products','temples','blog'], true)): ?>
                         <details class="admin-media-metadata">
                             <summary>Edit metadata</summary>
                             <form method="post" action="/admin/media/metadata" class="admin-form">
@@ -79,7 +97,7 @@
                     <span class="badge badge--info"><?= e($context) ?></span>
                     <span><?= e(substr((string)($media['created_at'] ?? ''), 0, 10)) ?></span>
                     <code><?= e($media['url'] ?? $media['path']) ?></code>
-                    <?php if (\App\Services\MediaService::canDeleteRecord($media)): ?>
+                    <?php if ($canDelete): ?>
                         <form method="post" action="/admin/media/delete"
                               onsubmit="return confirm('Delete this uploaded image permanently? This cannot be undone.');">
                             <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
