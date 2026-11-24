@@ -38,9 +38,9 @@
             "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
         },
         "interface": {
-            "source_sha256": "09a98a797beca8b092e8f1613c9b178469945c31c92a1c4cd6e008cfe0ed975f",
+            "source_sha256": "b5f63abcbab847a7b0dbf3e17bc61b9a3e4cc1033042a70924af8aa3ea9cfef6",
             "references_sha256": "bff9a14168a36201f57f076af1f2537353f85ad4d321258efd3c402933a4b899",
-            "review_note": "Reviewed 375px and 1280px screenshots and synthetic Chromium fixtures. Existing Support panel gains a compact composer, inline contact view and bounded product swipe rail; Enterprise answer cards gain wider responsive layout."
+            "review_note": "Reviewed owner Integrations mobile 375px Chromium overflow after #351 merge: a long code URL imposed min-content width, causing 445px scroll. Scoped CSS now constrains the existing admin form, fieldsets and inline API paths without truncating text, changing model secrets, or altering role permissions. Native integration and browser tests guard the fix."
         },
         "mail": {
             "source_sha256": "064a2db84e324ad8cdf377ad2d9ee07289391409e44d5bfd92a0dba85586993a",
