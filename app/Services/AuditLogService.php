@@ -79,7 +79,7 @@ final class AuditLogService {
 
     private static function providerAttempts(array $attempts): array {
         $safe = [];
-        foreach (array_slice($attempts, 0, 9) as $attempt) {
+        foreach (array_slice($attempts, 0, AiClient::MAX_TRANSFERS) as $attempt) {
             if (!is_array($attempt)) continue;
             $model = $attempt['model'] ?? null;
             $entry = [

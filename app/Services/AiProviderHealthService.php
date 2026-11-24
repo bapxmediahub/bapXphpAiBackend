@@ -36,16 +36,21 @@ final class AiProviderHealthService
         $data=json_decode($raw,true);
         if(!is_array($data))return [];
         $out=[];
-        foreach($data as $key=>$until) {
+        foreach($data as $key=>$record) {
+            // Older deployments stored integer expiries for all transient errors.
+            // Such observations are not provider-mandated holds.
+            $until=is_int($record)?$record:($record['until']??null);
             if(is_string($key)&&preg_match('/^[a-f0-9]{64}$/D',$key)&&is_int($until)
-                &&$until>$now&&$until<=$now+self::MAX_COOLDOWN)$out[$key]=$until;
+                &&$until>$now&&$until<=$now+self::MAX_COOLDOWN)$out[$key]=[
+                    'until'=>$until,'provider_hold'=>is_array($record)&&($record['provider_hold']??false)===true];
         }
         return array_slice($out,0,self::MAX_ENTRIES,true);
     }
 
     /** Filter only at the start of a new generation, never switch a locked tool conversation. */
-    public function availablePlan(array $plan,?int $now=null): array {
+    public function availablePlan(array $plan,?int $now=null,bool $providerHoldsOnly=false): array {
         $cooldowns=$this->read($now??time());
+        if($providerHoldsOnly)$cooldowns=array_filter($cooldowns,static fn(array $r):bool=>$r['provider_hold']);
         $out=[];
         foreach($plan as $connection) {
             $models=array_values(array_filter($connection['models'],static fn(string $model):bool=>!isset($cooldowns[self::key($connection,$model)])));
@@ -73,8 +78,10 @@ final class AiProviderHealthService
             $now??=time();
             $data=$this->read($now);
             $key=self::key($connection,$model);
-            if($success)unset($data[$key]);else $data[$key]=max($data[$key]??0,$now+$seconds);
-            arsort($data,SORT_NUMERIC);
+            if($success)unset($data[$key]);else $data[$key]=[
+                'until'=>max($data[$key]['until']??0,$now+$seconds),
+                'provider_hold'=>($data[$key]['provider_hold']??false)||$status===429||($retryAfterMs??0)>2000];
+            uasort($data,static fn(array $a,array $b):int=>$b['until']<=>$a['until']);
             $data=array_slice($data,0,self::MAX_ENTRIES,true);
             $json=json_encode((object)$data);
             if(!is_string($json))return;

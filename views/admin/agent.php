@@ -664,7 +664,7 @@
         thinking.appendChild(response);
         let failed = false;
         const abort = new AbortController();
-        const timeout = setTimeout(() => abort.abort(), 35000);
+        const timeout = setTimeout(() => abort.abort(), window.AgentRequestStatus.timeoutMs);
 
         try {
             const body = new URLSearchParams({

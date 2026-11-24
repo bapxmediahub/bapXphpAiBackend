@@ -23,11 +23,11 @@ expect(!isset($wire['parameters'])&&$wire['parametersJsonSchema']===$decl['param
 $settings=['ai_api_key'=>'fixture-google','ai_google_enabled'=>'1','ai_google_models'=>"gemma-4-31b-it\nother-google-model",'ai_google_disabled_models'=>['gemma-4-31b-it'],'ai_openrouter_key'=>'fixture-router-key-12345','ai_openrouter_enabled'=>'1','ai_openrouter_models'=>"openrouter/free\nvendor/model:free",'ai_provider'=>'google','ai_compatible_enabled'=>'1','ai_compatible_url'=>'https://example.com/v1','ai_compatible_key'=>'fixture-compatible','ai_compatible_models'=>'vendor/model'];
 $s=new SecretService();
 $plan=$s->providerPlan($settings);
-expect(array_column($plan,'provider')===['openrouter','google','openai_compatible'],'Independent enabled providers use the configured fallback order');
-expect($plan[1]['models']===['other-google-model'],'Disabled Google model is excluded');
-expect($plan[0]['models']===['openrouter/free','vendor/model:free'],'OpenRouter model IDs are editable');
+expect(array_column($plan,'provider')===['google','openai_compatible','openrouter'],'Independent enabled providers use the configured fallback order');
+expect($plan[0]['models']===['other-google-model'],'Disabled Google model is excluded');
+expect($plan[2]['models']===['openrouter/free','vendor/model:free'],'OpenRouter model IDs are editable');
 $settings['ai_google_enabled']='0';
-expect(array_column($s->providerPlan($settings),'provider')===['openrouter','openai_compatible'],'Disabled Google does not run as a hidden fallback');
+expect(array_column($s->providerPlan($settings),'provider')===['openai_compatible','openrouter'],'Disabled Google does not run as a hidden fallback');
 $settings['ai_openrouter_enabled']='0';$settings['ai_compatible_enabled']='0';
 expect($s->providerPlan($settings)===[],'All disabled providers produce no route');
 expect(AiClient::googleAttemptPlan('other-google-model',false,['other-google-model','gemma-4-31b-it'])[0]['model']==='other-google-model','Custom Google model ID reaches route');

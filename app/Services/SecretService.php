@@ -57,8 +57,16 @@ final class SecretService {
             // merge is impossible, so refuse rather than overwrite with a subset.
             throw new \RuntimeException('Could not read existing settings, so nothing was saved. Try again.');
         }
-        foreach (['ai_api_key', 'ai_compatible_key'] as $field) {
-            if (array_key_exists('ai_provider', $values) && ($values[$field] ?? null) === '') unset($values[$field]);
+        // An empty replacement input preserves its existing key on every save.
+        // Reject displayed masks and malformed replacement fields rather than storing them.
+        foreach(['ai_api_key','ai_compatible_key','ai_openrouter_key'] as $field){
+            if(!array_key_exists($field,$values))continue;
+            $key=$values[$field];
+            if(!is_string($key))throw new \InvalidArgumentException('Enter a valid API key.');
+            $key=trim($key);
+            if($key===''){unset($values[$field]);continue;}
+            if(strlen($key)>512||preg_match('/[^\x21-\x7e]|\*/',$key))throw new \InvalidArgumentException('Enter the complete API key, not a masked value.');
+            $values[$field]=$key;
         }
         // Never clear the separately stored OpenRouter key when the masked field is blank.
         // The toggle persists independently of the older Google/compatible selection.
@@ -194,7 +202,7 @@ final class SecretService {
         $google['configured']=$googleEnabled&&$google['configured'];
         $compatible=self::compatibleConfig($settings);
         $compatible['configured']=$compatibleEnabled&&$compatible['configured'];
-        $ordered=$primary==='google'?[$router,$google,$compatible]:[$router,$compatible,$google];
+        $ordered=$primary==='google'?[$google,$compatible,$router]:[$compatible,$google,$router];
         return array_values(array_filter($ordered,static fn(array $c):bool=>$c['configured']));
     }
 
@@ -202,6 +210,15 @@ final class SecretService {
         $s=$this->all();$config=$this->googleConfig($s);
         if(($s['ai_google_enabled']??'1')!=='1'){$config['configured']=false;$config['apiKey']='';}
         return $config;
+    }
+
+    /** Show only a short suffix of a normal-length API key, never the full value. */
+    public static function savedKeyLabel(string $key): string {
+        $key=trim($key);
+        if($key==='')return 'No key is saved.';
+        $suffix=strlen($key)>=24&&preg_match('/^[A-Za-z0-9_-]{4}$/D',substr($key,-4))===1
+            ?' (ending in '.substr($key,-4).')':'';
+        return 'A key is saved'.$suffix.'. Leave blank to keep it.';
     }
 
     private static function validOpenRouterKey(string $key): bool {

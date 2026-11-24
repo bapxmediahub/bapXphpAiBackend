@@ -750,11 +750,13 @@ $tests['provider cooldown is bounded, deployment local, and stores no raw creden
         $now=1800000000;
         $health->record($plan[0],'primary',503,0,null,$now);
         assertSame(['fallback'],$health->availablePlan($plan,$now)[0]['models'],'Primary failure cannot suppress healthy alternate');
+        assertSame($plan,$health->availablePlan($plan,$now,true),'Ordinary transient failure cannot change requested routing order');
         assertSame($plan,$health->availablePlan($plan,$now+20),'Cooldown expires automatically');
         $other=$plan;$other[0]['endpoint']='https://other.example.invalid/v1';
         assertSame($other,$health->availablePlan($other,$now),'Separate connections remain independent');
         $health->record($plan[0],'fallback',429,0,500000,$now);
         assertSame([],$health->availablePlan($plan,$now),'All cooling models produce no eligible route');
+        assertSame(['primary'],$health->availablePlan($plan,$now,true)[0]['models'],'Only provider quota hold excludes an ordered model');
         assertSame($plan,$health->availablePlan($plan,$now+120),'Retry-After cache has a finite ceiling');
         assertTrue(!str_contains(file_get_contents($path),'private-fixture-key')&&!str_contains(file_get_contents($path),'provider.example.invalid'),'Only digests and expiry timestamps stored');
         assertSame(0,\App\Services\AiProviderHealthService::cooldownSeconds(400,0),'Malformed request never triggers cooldown');
@@ -2671,6 +2673,24 @@ $tests['admin login rejects plaintext password storage'] = function (): void {
     assertTrue(!str_contains($source, 'hash_equals'), 'AuthController must not accept a plaintext password');
 };
 
+$tests['configured owner accepts username and email but never an arbitrary default'] = function (): void {
+    $owner=['username'=>'fixture-owner','email'=>'owner@example.invalid','password'=>password_hash('fixture-password',PASSWORD_BCRYPT)];
+    assertTrue(\App\Services\AuthService::matchesAdminIdentifier($owner,'fixture-owner'),'Configured username is accepted');
+    assertTrue(\App\Services\AuthService::matchesAdminIdentifier($owner,'OWNER@example.invalid'),'Configured email is accepted');
+    assertTrue(!\App\Services\AuthService::matchesAdminIdentifier($owner,'admin'),'Never invent a default admin identity');
+    assertTrue(!\App\Services\AuthService::matchesAdminIdentifier($owner,''),'Empty identity rejected');
+    assertTrue(password_verify('fixture-password',$owner['password']),'Owner password hash stays unchanged');
+    $source=file_get_contents(app_path('app/Controllers/AuthController.php'));
+    assertTrue(str_contains($source,'AuthService::matchesAdminIdentifier($admin,$email)'),'Actual login uses the configured identity boundary');
+};
+
+$tests['saved AI key status exposes only a bounded suffix'] = function (): void {
+    $fixture='fixture-secret-value-long-enough-1234';
+    assertSame('A key is saved (ending in 1234). Leave blank to keep it.',\App\Services\SecretService::savedKeyLabel($fixture),'Only the last four characters identify the saved key');
+    assertSame('A key is saved. Leave blank to keep it.',\App\Services\SecretService::savedKeyLabel('short'),'Short key must not expose its whole value');
+    assertSame('No key is saved.',\App\Services\SecretService::savedKeyLabel(''),'Missing key status');
+};
+
 $tests['admin settings can update env admin credentials'] = function (): void {
     $view = file_get_contents(app_path('views/admin/settings.php'));
     $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
@@ -2953,7 +2973,7 @@ $tests['support assistant widget uses browser session memory and google model se
     assertTrue(str_contains($client, 'getModelConfig'), 'AiClient should resolve endpoint and model from Admin → Integrations');
     assertTrue(!str_contains($client, 'curl_close($ch)'), 'PHP 8.5 transport must not emit obsolete curl_close warnings into JSON');
     assertTrue(str_contains($client, 'MODEL_ATTEMPT_TIMEOUT_MS = 12000')
-        && str_contains($client, 'GENERATION_TIMEOUT_NS = 26_000_000_000')
+        && str_contains($client, 'GENERATION_TIMEOUT_NS = 110_000_000_000')
         && str_contains($client, 'CURLOPT_TIMEOUT_MS => $timeoutMs'),
         'Model attempts and backoff must fit the shared generation deadline');
     $admin = file_get_contents(app_path('app/Controllers/AdminController.php'));
@@ -3917,7 +3937,7 @@ $tests['AI transport diagnostics distinguish causes without assuming the provide
             ['model' => 'gemma-4-26b-a4b-it', 'timeout_ms' => 12000],
         ],
         $client::googleAttemptPlan('gemma-4-31b-it'),
-        'Each eligible model gets a single bounded attempt'
+        'Model descriptor order is independent of per-model retries'
     );
     assertSame(
         [['model' => 'gemma-4-26b-a4b-it', 'timeout_ms' => 12000]],
@@ -4013,13 +4033,14 @@ $tests['product breadcrumb uses the category identifier accepted by the shop'] =
 $tests['both chat surfaces share accessible bounded request status'] = function (): void {
     $status = file_get_contents(app_path('assets/agent-status.js'));
     assertTrue(str_contains($status, "createElement('details')") && str_contains($status, "createElement('summary')"), 'Status toggle must use keyboard-accessible native disclosure');
+    assertTrue(str_contains($status, 'timeoutMs: '.\App\Services\AiClient::CLIENT_TIMEOUT_MS), 'Browser waiting limit matches the inference client contract');
     assertTrue(str_contains($status, 'performance.now()') && str_contains($status, 'clearInterval(timer)'), 'Elapsed timer must stop on completion');
     assertTrue(str_contains($status, "label.hidden = true") && str_contains($status, "Response completed in"), 'Completed thinking state should reduce to duration only');
     assertTrue(!str_contains($status, 'server processing') && !str_contains($status, 'Response ready'), 'Status must not show processing explanations or completion labels');
     foreach (['views/layouts/app.php', 'views/admin/agent.php'] as $path) {
         $source = file_get_contents(app_path($path));
         assertTrue(str_contains($source, 'window.AgentRequestStatus.start('), "{$path} must use shared request status");
-        assertTrue(str_contains($source, 'progress.finish(failed)') && str_contains($source, '35000'), "{$path} must settle status and bound waiting");
+        assertTrue(str_contains($source, 'progress.finish(failed)') && str_contains($source, 'window.AgentRequestStatus.timeoutMs'), "{$path} must settle status and bound waiting");
     }
     $css = file_get_contents(app_path('assets/css/band.css'));
     assertTrue(str_contains($css, '.ai-request-status summary:focus-visible') && str_contains($css, 'prefers-reduced-motion'), 'Status needs focus and reduced-motion behavior');

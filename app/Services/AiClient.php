@@ -20,7 +20,14 @@ namespace App\Services;
 final class AiClient
 {
     private const MODEL_ATTEMPT_TIMEOUT_MS = 12000;
-    private const GENERATION_TIMEOUT_NS = 26_000_000_000;
+    private const GENERATION_TIMEOUT_NS = 110_000_000_000;
+    public const ATTEMPTS_PER_MODEL = 3;
+    public const MAX_PROVIDER_CYCLES = 2;
+    public const MAX_TRANSFERS = 32;
+    public const CLIENT_TIMEOUT_MS = 120000;
+    public static function agentLimits(): array {
+        return ['max_model_calls'=>self::MAX_TRANSFERS,'max_duration_ms'=>115000];
+    }
     private const FINALIZE_RESERVE_MS = 2000;
     private const MIN_ATTEMPT_MS = 1000;
     private const MAX_TOOL_CALLS_PER_ROUND = 8;
@@ -31,8 +38,8 @@ final class AiClient
     private array $transferTimings = [];
     private int $toolCalls = 0;
     private bool $toolExchangeStarted = false;
-    private bool $transientRetryUsed = false;
-    private bool $lastConnection = true;
+    private int $cycle = 1;
+    private int $modelAttempt = 1;
     private array $activeConnection = [];
 
     /** Bounded operational category; never includes provider messages or credentials. */
@@ -323,7 +330,7 @@ final class AiClient
     private function route(string $prompt,int $maxTokens,float $temperature,?string $override,
         AgentToolRegistry|RuntimeAgentToolRegistry|null $tools,int $rounds,?array $selectedPlan=null,bool $diagnostic=false): string {
         $this->failureCategory=null;$this->transferTimings=[];$this->toolCalls=0;$this->toolExchangeStarted=false;$this->activeConnection=[];
-        $this->transientRetryUsed=false;$this->lastConnection=true;
+        $this->cycle=1;$this->modelAttempt=1;
         $plan=$selectedPlan??$this->secrets->getProviderPlan();
         // A deliberate diagnostic model probe must not silently switch model or provider.
         if($override!==null){
@@ -333,7 +340,7 @@ final class AiClient
         }
         if(!$plan){$this->failureCategory='not_configured';return 'No AI API key or enabled model is configured. Check Admin → Integrations.';}
         if(!$diagnostic&&$override===null&&$this->health!==null){
-            $plan=$this->health->availablePlan($plan);
+            $plan=$this->health->availablePlan($plan,null,true);
             if(!$plan){
                 $this->failureCategory='provider_cooldown';
                 return 'AI request failed: the configured models are briefly cooling down after recent transport failures. Try again shortly.';
@@ -341,16 +348,49 @@ final class AiClient
         }
         if(!function_exists('curl_init')){$this->failureCategory='transport';return 'AI request failed: cURL is not available on this server.';}
         $deadline=hrtime(true)+self::GENERATION_TIMEOUT_NS;
-        $answer='';
-        foreach($plan as $index=>$config){
-            $this->lastConnection=$index+1===count($plan);
-            $this->activeConnection=['provider'=>$config['provider'],'endpoint'=>$config['endpoint']];
-            if(self::remainingProviderMs($deadline)<self::MIN_ATTEMPT_MS){$this->failureCategory='request_deadline';break;}
-            $answer=$config['provider']==='google'
+        return $this->completeWithFallbacks($plan,$deadline,!$diagnostic&&$override===null,
+            fn(array $config):string=>$config['provider']==='google'
                 ?($tools===null?$this->completeGoogleText($config,$prompt,$maxTokens,$temperature,$deadline)
                     :$this->completeGoogleTools($config,$prompt,$tools,$maxTokens,$temperature,$rounds,$override,$deadline))
-                :$this->completeCompatible($config,$this->withAnswerFence($prompt),$maxTokens,$override,$tools,$rounds,$deadline,$index+1<count($plan));
-            if(!$this->routerNeedsGoogleFallback()||$override!==null)return $answer;
+                :$this->completeCompatible($config,$this->withAnswerFence($prompt),$maxTokens,$override,$tools,$rounds,$deadline));
+    }
+
+    /** Direct synchronous fallback loop; no scheduled jobs or worker.
+     * Wire adapters receive one model and preserve its tool exchange. */
+    private function completeWithFallbacks(array $plan,int $deadline,bool $repeat,callable $generate): string {
+        $eligible=[];
+        foreach($plan as $connection)foreach($connection['models'] as $model){
+            $single=$connection;$single['models']=[$model];$single['model']=$model;
+            $eligible[]=$single;
+        }
+        $answer='';$nextDelay=0;
+        for($cycle=1;$cycle<=($repeat?self::MAX_PROVIDER_CYCLES:1)&&$eligible!==[];$cycle++){
+            $this->cycle=$cycle;$next=[];
+            foreach($eligible as $config){
+                if($nextDelay>0&&!$this->waitForRetry($nextDelay,$deadline)){
+                    $this->failureCategory='request_deadline';return $this->failureMessage(0,false);
+                }
+                if(self::remainingProviderMs($deadline)<self::MIN_ATTEMPT_MS){
+                    $this->failureCategory='request_deadline';return $this->failureMessage(0,false);
+                }
+                $this->activeConnection=['provider'=>$config['provider'],'endpoint'=>$config['endpoint']];
+                $before=count($this->transferTimings);
+                $answer=$generate($config);
+                // A started tool exchange stays on the original model, including
+                // its retries. Never restart it through another provider.
+                if(!$this->routerNeedsGoogleFallback())return $answer;
+                // Invalid model IDs, credentials, schema errors and quota/long
+                // Retry-After failures are not retried in the following cycle.
+                $last=end($this->transferTimings)?:[];
+                $retryable=count($this->transferTimings)>$before
+                    &&$this->retryableInferenceFailure((int)($last['status']??0))
+                    &&($last['model']??null)===$config['model']
+                    &&($last['provider']??null)===$config['provider'];
+                if($retryable)$next[]=$config;
+                $nextDelay=self::backoffMs($retryable?3:1);
+            }
+            $eligible=$next;
+            if($eligible!==[])$nextDelay=max($nextDelay,self::backoffMs(3));
         }
         return $answer!==''?$answer:'AI request failed: no enabled provider completed the request.';
     }
@@ -363,7 +403,7 @@ final class AiClient
                 'thinkingConfig' => ['thinkingLevel' => 'MINIMAL']],
         ],JSON_UNESCAPED_SLASHES);
         $headers=['Content-Type: application/json','x-goog-api-key: '.$config['apiKey']];
-        $body=$this->postGoogleRouted($config['endpoint'],$model,$payload,$headers,$status,$modelLocked,$deadline,$config['models']);
+        $body=$this->postGoogleRouted($config['endpoint'],$model,$payload,$headers,$status,$modelLocked,$deadline,$config['models'],true);
         if($status!==200||$body===false)return $this->failureMessage($status,$body);
         $result=json_decode((string)$body,true);
         $answer=self::answerFromParts($result['candidates'][0]['content']['parts']??[]);
@@ -445,11 +485,7 @@ final class AiClient
                 $hasAlternate = $hasModelAlternate || ($round === 0 && $laterGoogleFallback
                     && $this->toolCalls === 0);
                 $wire=json_encode($payload,JSON_THROW_ON_ERROR);
-                $body = $this->post($url, $wire, $headers, $status,
-                    $model, $deadline, $hasAlternate, $options);
-                if($tools!==null&&!$hasAlternate&&$this->retryTransientInference($status,$deadline)){
-                    $body=$this->post($url,$wire,$headers,$status,$model,$deadline,false,$options);
-                }
+                $body=$this->postWithRetries($url,$wire,$headers,$status,$model,$deadline,$hasAlternate,$options);
                 if ($status !== 200 || $body === false) {
                     if ($hasModelAlternate && $this->waitForFailover($status, $deadline, $index)) break;
                     return $this->failureMessage($status, $body);
@@ -637,8 +673,8 @@ final class AiClient
         return false;
     }
 
-    /** Try each eligible model at most once before tools, except the single
-     * bounded transient inference recovery. A tool exchange stays on its original model. */
+    /** Google wire adapter. Normal routed turns pass a single model and use the
+     * shared three-attempt transfer loop; locked tool history never changes model. */
     private function postGoogleRouted(
         string $endpoint,
         string &$activeModel,
@@ -665,12 +701,8 @@ final class AiClient
                     $wire=json_encode($request,JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
                 }
             }
-            $body = $this->post($url, $wire, $headers, $status, $model, $deadline, $hasAlternate);
-            if($allowRecovery&&!$hasAlternate&&$this->retryTransientInference($status,$deadline)){
-                // Only replay the same immutable HTTP request. Earlier function
-                // results are already in this payload; no business tool runs again.
-                $body=$this->post($url,$wire,$headers,$status,$model,$deadline,false);
-            }
+            $body=$allowRecovery?$this->postWithRetries($url,$wire,$headers,$status,$model,$deadline,$hasAlternate)
+                :$this->post($url,$wire,$headers,$status,$model,$deadline,$hasAlternate);
             if ($status === 200 && $body !== false) {
                 if ($model !== $activeModel) $modelLocked = true;
                 $activeModel = $model;
@@ -687,37 +719,54 @@ final class AiClient
         return min($local, AgentTraceService::remainingMs() - self::FINALIZE_RESERVE_MS);
     }
 
-    /** At most one extra inference transfer per turn, never an action replay.
-     * Retry only an explicit transient server response, not an ambiguous timeout,
-     * authentication/schema error, quota failure or rejected model answer. */
-    private function retryTransientInference(int $status,int $deadline): bool {
-        if($this->transientRetryUsed||(!$this->lastConnection&&!$this->toolExchangeStarted)
-            ||$this->transportError!==0||!in_array($status,[408,500,502,503,504],true)
-            ||in_array($this->failureCategory,['request_deadline','provider_budget'],true))return false;
-        $budget=AgentTraceService::snapshot()['budget']??[];
-        if(($budget['model_calls']??0)>=($budget['max_model_calls']??6)
-            ||($budget['observed_total_tokens']??0)>=($budget['max_observed_tokens']??16000))return false;
-        $delay=max(random_int(500,1000),$this->retryAfterMs??0);
-        // Do not consume the finalization reserve or wait through a long outage.
-        if($delay>2000||self::remainingProviderMs($deadline)<$delay+4000)return false;
-        $this->transientRetryUsed=true;
+    /** Retry a recoverable inference transfer, never a business action.
+     * Explicit quota or a long provider Retry-After is a provider hold. */
+    private function retryableInferenceFailure(int $status): bool {
+        return !in_array($this->failureCategory,['request_deadline','provider_budget'],true)
+            &&$status!==404&&($this->retryAfterMs??0)<=8000
+            &&($status!==429||($this->retryAfterMs??0)>0)
+            &&self::canFailOver($status,$this->transportError);
+    }
+
+    /** Exactly three attempts on the same immutable payload unless successful,
+     * non-retryable, or the shared request budget is exhausted. */
+    private function postWithRetries(string $url,string $payload,array $headers,?int &$status,string $model,
+        int $deadline,bool $hasAlternate,array $options=[]): string|false {
+        $body=false;
+        for($attempt=1;$attempt<=self::ATTEMPTS_PER_MODEL;$attempt++){
+            $this->modelAttempt=$attempt;
+            $body=$this->post($url,$payload,$headers,$status,$model,$deadline,$hasAlternate,$options);
+            if($status===200&&$body!==false)return $body;
+            if($attempt===self::ATTEMPTS_PER_MODEL||!$this->retryableInferenceFailure($status))break;
+            if(!$this->waitForRetry(self::backoffMs($attempt,$this->retryAfterMs),$deadline))break;
+        }
+        return $body;
+    }
+
+    /** Google REST exponential backoff example: 1s, 2s, 4s, plus jitter.
+     * Retry-After is a minimum. The attempt count and deadline are app policy.
+     * https://ai.google.dev/gemini-api/docs/troubleshooting#retry-strategy
+     * https://openrouter.ai/docs/api_reference/errors-and-debugging
+     * https://github.com/openai/openai-python#retries
+     * https://ai-sdk.dev/docs/ai-sdk-core/settings
+     */
+    private static function backoffMs(int $attempt,?int $retryAfterMs=null): int {
+        return max(1000*(2**min(3,max(0,$attempt-1))),$retryAfterMs??0)+random_int(0,250);
+    }
+
+    private function waitForRetry(int $delay,int $deadline): bool {
+        if($delay+self::MIN_ATTEMPT_MS>self::remainingProviderMs($deadline))return false;
+        DatabaseService::releaseIdleConnection();
+        $span=AgentTraceService::startSpan('retrieval','provider_backoff');
         usleep($delay*1000);
+        AgentTraceService::endSpan($span,'complete');
         return true;
     }
 
-    private function waitForFailover(int $status, int $deadline, int $index): bool
-    {
-        if (in_array($this->failureCategory, ['request_deadline','provider_budget'], true)
-            || !self::canFailOver($status, $this->transportError)) return false;
-        // Google recommends exponential backoff with jitter for transient failures.
-        // https://ai.google.dev/gemini-api/docs/troubleshooting
-        // OpenAI distinguishes transient server errors from malformed requests/authentication.
-        // https://developers.openai.com/api/docs/guides/error-codes/
-        $delay = $status === 404 ? 0 : random_int(500, 1000) * (2 ** min($index, 3));
-        $delay = max($delay, $this->retryAfterMs ?? 0);
-        if ($delay + self::MIN_ATTEMPT_MS > self::remainingProviderMs($deadline)) return false;
-        if ($delay > 0) usleep($delay * 1000);
-        return true;
+    private function waitForFailover(int $status,int $deadline,int $index): bool {
+        if(in_array($this->failureCategory,['request_deadline','provider_budget'],true)
+            ||!self::canFailOver($status,$this->transportError))return false;
+        return $this->waitForRetry(self::backoffMs($index+1,$this->retryAfterMs),$deadline);
     }
 
     private function failureMessage(int $status, string|false $body): string
@@ -735,6 +784,9 @@ final class AiClient
         $this->retryAfterMs = null;
         $this->transportError = 0;
         $status = 0;
+        if(count($this->transferTimings)>=self::MAX_TRANSFERS){
+            $this->failureCategory='provider_budget';return false;
+        }
         if (self::remainingProviderMs($deadline) < self::MIN_ATTEMPT_MS) {
             $this->failureCategory = 'request_deadline';
             return false;
@@ -790,6 +842,7 @@ final class AiClient
         $this->health?->record($this->activeConnection,$model,$status,$this->transportError,$this->retryAfterMs);
         $this->transferTimings[] = [
             'model' => $model,
+            'cycle'=>$this->cycle,'attempt_in_model'=>$this->modelAttempt,
             'status' => $status,
             'curl_error' => $this->transportError,
             'dns_ms' => 1000 * curl_getinfo($ch, CURLINFO_NAMELOOKUP_TIME),
@@ -800,6 +853,7 @@ final class AiClient
         ] + $this->activeConnection + $diagnosticFields + ($firstByteMs > 0 ? ['first_byte_ms' => $firstByteMs] : []);
         AgentTraceService::endSpan($span,($body===false||$status<200||$status>=300)?'error':'complete',[
             'http_status'=>$status, 'curl_error'=>$this->transportError, 'timeout_ms'=>$timeoutMs,
+            'cycle'=>$this->cycle,'attempt_in_model'=>$this->modelAttempt,'provider'=>$this->activeConnection['provider']??null,
             'request_sha256'=>hash('sha256',$payload),
             'usage'=>AgentTraceService::usageFromResponse($body),
         ] + $diagnosticFields + ($firstByteMs > 0 ? ['first_byte_ms' => $firstByteMs] : []));

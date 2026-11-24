@@ -41,10 +41,18 @@ $secrets->save(['ai_openrouter_enabled'=>'0','ai_openrouter_key'=>$routerFixture
 checkReporting(!str_contains(json_encode($db->read('secrets')),$routerFixture),
     'OpenRouter key was stored as plaintext in the SQL record.');
 $secrets->save(['ai_openrouter_enabled'=>'1','ai_openrouter_key'=>'']);
-checkReporting(($secrets->getModelConfig()['provider']??'')==='openrouter'
-    && ($secrets->getModelConfig()['model']??'')===SecretService::OPENROUTER_MODEL
-    && ($secrets->getGoogleFallbackConfig()['model']??'')===SecretService::PRIMARY_MODEL,
-    'Enabled OpenRouter did not preserve existing Google Gemma backup.');
+checkReporting(array_column($secrets->getProviderPlan(),'provider')===['google','openrouter']
+    && ($secrets->getModelConfig()['model']??'')===SecretService::PRIMARY_MODEL
+    && ($secrets->getProviderPlan()[1]['models']??[])===[SecretService::OPENROUTER_MODEL],
+    'Enabled OpenRouter must stay after the ordered Google models.');
+$before=$secrets->all();
+$secrets->save(['ai_api_key'=>'','ai_openrouter_key'=>'','ai_compatible_key'=>'']);
+checkReporting($secrets->all()===$before,'Blank replacement fields must preserve all stored credentials.');
+foreach(['ai_api_key','ai_openrouter_key','ai_compatible_key'] as $field){
+    $rejected=false;
+    try{$secrets->save([$field=>'********1234']);}catch(InvalidArgumentException){$rejected=true;}
+    checkReporting($rejected&&$secrets->all()===$before,'Masked value must not overwrite a stored credential.');
+}
 $rejected=false;
 try {$secrets->save(['ai_openrouter_enabled'=>'invalid']);} catch (InvalidArgumentException) {$rejected=true;}
 checkReporting($rejected,'Unsafe OpenRouter toggle was accepted.');

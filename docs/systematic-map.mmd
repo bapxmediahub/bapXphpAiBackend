@@ -1433,6 +1433,7 @@ flowchart LR
   controller_authcontroller -. source new .-> service_passwordresetservice
   controller_authcontroller -. source new .-> service_secretservice
   controller_authcontroller -- extends --> controller_basecontroller
+  controller_authcontroller -. static reference .-> service_authservice
   controller_authcontroller -. static reference .-> service_ratelimiter
   controller_authcontroller -. static reference .-> service_taxservice
   controller_basecontroller -. source new .-> service_cartservice
@@ -1509,6 +1510,7 @@ flowchart LR
   controller_supportcontroller -- extends --> controller_basecontroller
   controller_supportcontroller -. static reference .-> service_agentconversationservice
   controller_supportcontroller -. static reference .-> service_agenttraceservice
+  controller_supportcontroller -. static reference .-> service_aiclient
   integration_pagespeedinsightsclient -. static reference .-> service_publicsiteurlservice
   service_addressservice -. source new .-> service_databaseservice
   service_addressservice -. static reference .-> service_taxservice
@@ -1528,6 +1530,7 @@ flowchart LR
   service_agentconversationservice -. static reference .-> service_agentevaluationservice
   service_agentconversationservice -. static reference .-> service_agenttraceservice
   service_agentconversationservice -. static reference .-> service_agenttranscriptsanitizer
+  service_agentconversationservice -. static reference .-> service_aiclient
   service_agentdraftservice -. source new .-> service_aiclient
   service_agentdraftservice -. source new .-> service_schemaservice
   service_agentevaluationservice -. source new .-> service_agenttoolregistry

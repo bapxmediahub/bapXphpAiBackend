@@ -12,6 +12,19 @@ if (PHP_SAPI === 'cli-server') {
     [$scenario, $model] = explode('/', trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/'), 2);
     $primary = str_starts_with($model, 'gemma-4-31b-it:');
     header('Content-Type: application/json');
+    if($scenario==='cycle'){
+        $payload=json_decode((string)file_get_contents('php://input'),true);
+        $id=$model==='chat/completions'?($payload['model']??''):explode(':',$model)[0];
+        $dir=getenv('BAPX_CYCLE_FIXTURE_DIR');
+        if(!is_string($dir)||!is_dir($dir)){http_response_code(400);echo '{}';return;}
+        $key=$dir.'/'.hash('sha256',$id);
+        $count=(int)@file_get_contents($key)+1;
+        file_put_contents($key,(string)$count,LOCK_EX);
+        if($id==='gemma-4-31b-it'&&$count===4){
+            echo json_encode(['candidates'=>[['content'=>['parts'=>[['text'=>'<final_answer>connection ok</final_answer>']]]]]]);return;
+        }
+        http_response_code(503);echo '{"error":{"status":"UNAVAILABLE"}}';return;
+    }
     if($scenario==='cooldown') {
         if($primary){http_response_code(503);echo '{"error":{"status":"UNAVAILABLE"}}';return;}
         echo json_encode(['candidates'=>[['content'=>['parts'=>[['text'=>'<final_answer>connection ok</final_answer>']]]]]]);return;
@@ -85,9 +98,11 @@ $socket = stream_socket_server('tcp://127.0.0.1:0');
 if (!$socket) throw new RuntimeException('Unable to allocate loopback port');
 $address = stream_socket_get_name($socket, false);
 fclose($socket);
+$cycleDir=sys_get_temp_dir().'/bapx-cycle-fixture-'.bin2hex(random_bytes(8));
+mkdir($cycleDir,0700);
 $fixture = proc_open([PHP_BINARY, '-S', $address, __FILE__], [
     0 => ['file','/dev/null','r'], 1 => ['file','/dev/null','w'], 2 => ['file','/dev/null','w'],
-], $pipes, null, ['BAPX_PROVIDER_TRANSPORT_FIXTURE'=>'1'] + getenv());
+], $pipes, null, ['BAPX_PROVIDER_TRANSPORT_FIXTURE'=>'1','BAPX_CYCLE_FIXTURE_DIR'=>$cycleDir] + getenv());
 if (!is_resource($fixture)) throw new RuntimeException('Loopback provider fixture unavailable');
 
 try {
@@ -190,11 +205,12 @@ try {
         $routeAll=new ReflectionMethod(AiClient::class,'route');
         $client=new AiClient(health:$health);
         $reply=$routeAll->invoke($client,'Reply connection ok',256,0.0,null,null,0,$plan);
-        check($reply==='connection ok'&&array_column($client->transferTimings(),'status')===[503,200],'First real failure recovers on fallback');
+        check($reply==='connection ok'&&array_column($client->transferTimings(),'status')===[503,503,503,200],'Three real failures before recovering on fallback');
         $client=new AiClient(health:new \App\Services\AiProviderHealthService($healthFile));
         $reply=$routeAll->invoke($client,'Reply connection ok',256,0.0,null,null,0,$plan);
-        check($reply==='connection ok'&&array_column($client->transferTimings(),'model')===[SecretService::FALLBACK_MODEL],'Fresh request skips only recently failed primary');
-        $health->record($plan[0],SecretService::FALLBACK_MODEL,503,0);
+        check($reply==='connection ok'&&array_column($client->transferTimings(),'model')===[SecretService::PRIMARY_MODEL,SecretService::PRIMARY_MODEL,SecretService::PRIMARY_MODEL,SecretService::FALLBACK_MODEL],'Fresh request starts at primary despite prior transient failures');
+        $health->record($plan[0],SecretService::PRIMARY_MODEL,429,0,60000);
+        $health->record($plan[0],SecretService::FALLBACK_MODEL,429,0,60000);
         $client=new AiClient(health:$health);
         $reply=$routeAll->invoke($client,'Reply connection ok',256,0.0,null,null,0,$plan);
         check(AiClient::isError($reply)&&$client->failureCategory()==='provider_cooldown'&&$client->transferTimings()===[],'All cooled models return honest local outcome without transfers');
@@ -205,13 +221,46 @@ try {
         $bad=$plan;$bad[0]['endpoint']='http://'.$address.'/bad_schema';$client=new AiClient(health:$health);
         $reply=$routeAll->invoke($client,'Reply connection ok',256,0.0,null,null,0,$bad);
         $attempts=$client->transferTimings();
-        check(AiClient::isError($reply)&&count($attempts)===1&&($attempts[0]['request_error_hint']??null)==='tool_schema','HTTP 400 receives an allowlisted hint without repeating the invalid request');
+        check(AiClient::isError($reply)&&count($attempts)===2&&($attempts[0]['request_error_hint']??null)==='tool_schema'&&($attempts[1]['request_error_hint']??null)==='tool_schema','HTTP 400 receives an allowlisted hint without repeating the invalid request');
         check(!str_contains(json_encode($attempts),'private-fixture-raw-error')&&!str_contains($reply,'private-fixture-raw-error'),'Provider error body never reaches output');
         check($health->availablePlan($bad)===$bad,'Request/schema failure never cools an endpoint');
     }finally{
         foreach(glob($healthDir.'/*')?:[] as $file)unlink($file);
         rmdir($healthDir);
     }
+    // Exercise the real synchronous fallback loop and both wire adapters over loopback.
+    // The production compatible endpoint's DNS/HTTPS guard is unchanged.
+    AgentTraceService::begin(str_repeat('b',16),null,AiClient::agentLimits());
+    $client=new AiClient();
+    $plan=[
+        ['provider'=>'google','endpoint'=>'http://'.$address.'/cycle','apiKey'=>'fixture','model'=>SecretService::PRIMARY_MODEL,'models'=>SecretService::GOOGLE_MODELS,'configured'=>true],
+        ['provider'=>'openrouter','endpoint'=>'http://'.$address.'/cycle','apiKey'=>'fixture','model'=>'openrouter/free','models'=>['openrouter/free'],'configured'=>true],
+    ];
+    $googleText=new ReflectionMethod(AiClient::class,'completeGoogleText');
+    $compatibleLoop=new ReflectionMethod(AiClient::class,'completeCompatibleLoop');
+    $ordered=new ReflectionMethod(AiClient::class,'completeWithFallbacks');
+    $deadline=hrtime(true)+40000000000;
+    $reply=$ordered->invoke($client,$plan,$deadline,true,
+        static function(array $cfg)use($client,$googleText,$compatibleLoop,$deadline):string{
+            return $cfg['provider']==='google'?$googleText->invoke($client,$cfg,'Fixture',32,0.0,$deadline)
+                :$compatibleLoop->invoke($client,$cfg,'Fixture',32,null,null,0,$deadline,false,[CURLOPT_PROXY=>'',CURLOPT_FOLLOWLOCATION=>false]);
+        });
+    $attempts=$client->transferTimings();
+    $expected=array_merge(array_fill(0,3,SecretService::PRIMARY_MODEL),array_fill(0,3,SecretService::FALLBACK_MODEL),
+        array_fill(0,3,'openrouter/free'),[SecretService::PRIMARY_MODEL]);
+    check($reply==='connection ok'&&array_column($attempts,'model')===$expected,'Three tries per model, OpenRouter last, then first model again');
+    check(array_column($attempts,'cycle')===array_merge(array_fill(0,9,1),[2]),'Actual cycle numbers retained');
+    check(array_column($attempts,'attempt_in_model')===[1,2,3,1,2,3,1,2,3,1],'Per-model retry numbers retained');
+    check(array_column($attempts,'status')===array_merge(array_fill(0,9,503),[200]),'Actual provider statuses preserved');
+    $spans=array_values(array_filter(AgentTraceService::snapshot()['spans'],static fn(array $span):bool=>$span['type']==='model_attempt'));
+    check(count($spans)===10&&($spans[9]['cycle']??null)===2,'All ten observed transfers survive trace budget and metadata projection');
+    $waits=array_values(array_filter(AgentTraceService::snapshot()['spans'],static fn(array $span):bool=>$span['name']==='provider_backoff'));
+    check(count($waits)===9,'Every failed attempt waits before the next transfer');
+    foreach($waits as $i=>$wait)check($wait['duration_ms']>=[1000,2000,4000][$i%3]-5,'Observed exponential backoff before retries and model switches');
+
+    echo "PASS exact three-model ordered retry cycle: ".implode(' -> ',array_column($attempts,'model'))."\n";
+    AgentTraceService::reset();
+
     AgentTraceService::begin(str_repeat('a',16), null, ['max_model_calls' => 1]);
     $prior = AgentTraceService::startSpan('model_attempt', SecretService::PRIMARY_MODEL);
     AgentTraceService::endSpan($prior, 'complete');
@@ -223,4 +272,6 @@ try {
     AgentTraceService::reset();
     proc_terminate($fixture);
     proc_close($fixture);
+    foreach(glob($cycleDir.'/*')?:[] as $file)unlink($file);
+    rmdir($cycleDir);
 }

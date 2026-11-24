@@ -174,7 +174,7 @@ try{
         $raw=stream_get_contents($io[1]);$err=stream_get_contents($io[2]);fclose($io[1]);fclose($io[2]);$exit=proc_close($child);
         $result=json_decode($raw,true);
         $expected=in_array($scenario,['outage','duplicate','truncated','unfinished','quota','long_retry','schema_error'],true)?'error':'model';
-        $rounds=match($scenario){'mixed'=>3,'denied'=>2,'unfinished','transient_continuation'=>5,'transient_start','outage'=>2,default=>$tool!==null?4:1};
+        $rounds=match($scenario){'mixed'=>3,'denied'=>2,'unfinished','transient_continuation'=>5,'transient_start'=>2,'outage'=>$protocol==='google'?6:3,default=>$tool!==null?4:1};
         $turn=$result['turn']??[];$response=$result['response']??[];
         if($exit!==0||($turn['outcome']??null)!==$expected||count($turn['model_attempts']??[])!==$rounds||($turn['turn_id']??null)!==($response['turn_id']??null)){
             throw new RuntimeException("$scenario/$surface: unexpected model lifecycle: ".substr($raw,0,2500)." STDERR: ".substr($err,0,1000));

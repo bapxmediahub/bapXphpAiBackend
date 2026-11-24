@@ -8,6 +8,17 @@ final class AuthService {
         return $digits >= 7 && $digits <= 15;
     }
 
+    /** Match only the actual configured owner identity; password verification remains mandatory. */
+    public static function matchesAdminIdentifier(array $admin,string $identifier): bool {
+        $identifier=trim($identifier);
+        if($identifier==='')return false;
+        foreach(['email','username'] as $field){
+            $stored=$admin[$field]??null;
+            if(is_string($stored)&&$stored!==''&&strcasecmp($stored,$identifier)===0)return true;
+        }
+        return false;
+    }
+
     public function user(): ?array {
         return $_SESSION['user'] ?? null;
     }

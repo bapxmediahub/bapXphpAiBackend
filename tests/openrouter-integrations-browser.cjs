@@ -26,6 +26,8 @@ const renderPage=enabled=>'<!doctype html><html lang="en"><head>'
 for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at '+width+'px',async()=>{
     const html=render(false);
     assert.ok(!html.includes(fakeKey),'Rendered admin HTML cannot expose the saved key.');
+    assert.ok(html.includes('ending in bbbb'),'Owner sees only the final four characters of the saved key');
+    assert.ok(!html.includes('fixture-google-key'),'Google key never renders as a value');
     const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined,headless:true,args:['--no-sandbox']});
     const context=await browser.newContext({viewport:{width,height:850}});
     const page=await context.newPage();

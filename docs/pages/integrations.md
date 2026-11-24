@@ -19,12 +19,15 @@ OpenAI-compatible HTTPS connection. Each connection has a masked API-key field
 and ordered model IDs; Google also has per-model enable switches. The default
 Google IDs remain Gemma 4 31B and 26B A4B; the default OpenRouter ID remains
 openrouter/free. Editing the list adds model IDs rather than modifying PHP.
-OpenRouter is first when enabled, then the preferred enabled connection and
-the other enabled connection. Disabled or unconfigured connections are never
+The preferred enabled connection runs first, then the other enabled connection,
+then OpenRouter as the final fallback. The default Google-first order is
+Gemma 31B, Gemma 26B A4B, then OpenRouter Free. Each model gets up to three
+recoverable inference attempts before moving on, then a second cycle returns
+to the first eligible model if the shared deadline permits. Disabled or unconfigured connections are never
 used as hidden fallbacks. A named model test does not fall back to another
 model. OpenRouter IDs other than free models can have provider charges.
 
-Blank masked inputs preserve saved keys; a changed compatible endpoint needs
+API-key inputs stay blank and show only a short saved-key suffix outside the field. Blank replacement inputs preserve saved keys, and masked values are rejected. OpenRouter chat needs a standard inference key, not a management key. A changed compatible endpoint needs
 its own key. The existing encrypted app_secrets MySQL record remains the only
 runtime credential store. No secret values appear in the AI fields, diagnostics
 or test fixtures. The shared request deadline applies across providers; once
@@ -32,9 +35,14 @@ a tool exchange starts, it never switches providers. The Google wire adapter
 uses parametersJsonSchema for canonical JSON Schema, retaining server-side
 authorization and validation.
 
-References: https://docs.openwebui.com/getting-started/quick-start/connect-a-provider/starting-with-openai-compatible/
-and https://docs.litellm.ai/docs/router/api_reference/configuration and
-https://ai.google.dev/api/generate-content#FunctionDeclaration .
+Provider references: [Google REST function declarations](https://ai.google.dev/api/generate-content#FunctionDeclaration),
+[Google retry strategy](https://ai.google.dev/gemini-api/docs/troubleshooting#retry-strategy),
+[OpenAI SDK retries](https://github.com/openai/openai-python#retries),
+[Vercel AI SDK settings](https://ai-sdk.dev/docs/ai-sdk-core/settings),
+[OpenRouter error handling](https://openrouter.ai/docs/api_reference/errors-and-debugging).
+The native PHP client applies these patterns synchronously; there is no scheduled
+fallback job. Three attempts per model, the connection order and total budgets
+are product choices, not mandates from the providers.
 
 ## Verify an actual provider response
 
