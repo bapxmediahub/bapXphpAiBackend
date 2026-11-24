@@ -64,3 +64,19 @@
     overflow-wrap:anywhere;
     word-break:break-all;
 }
+
+/* Built-in Google PageSpeed report cards: bounded, keyboard-readable on phones. */
+.google-pagespeed {min-width:0;max-width:100%;overflow-wrap:anywhere}
+.google-pagespeed code {white-space:normal;overflow-wrap:anywhere}
+.google-pagespeed__results {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+.google-pagespeed__result {min-width:0;padding:1rem;border:1px solid var(--color-border);border-radius:8px}
+.google-pagespeed__result h3 {margin:0 0 1rem}
+.google-pagespeed__score strong {font-size:1.6rem}
+.google-pagespeed__result dl {margin:0 0 1rem}
+.google-pagespeed__result dl>div {display:flex;justify-content:space-between;gap:1rem;border-bottom:1px solid var(--color-border);padding:.4rem 0}
+.google-pagespeed__result dd {margin:0;text-align:right;overflow-wrap:anywhere}
+.google-pagespeed__result ul {padding-inline-start:1.3rem}
+@media(max-width:760px) {
+  .google-pagespeed__results {grid-template-columns:minmax(0,1fr)}
+  .google-pagespeed__result {padding:.75rem}
+}

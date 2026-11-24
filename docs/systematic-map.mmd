@@ -14,14 +14,14 @@ flowchart LR
     legend_limits["No execution, autoload or dynamic reachability proof; gaps are inspection candidates"]:::arch
   end
 
-  subgraph ARCH["Architecture Overview — 178 routes, 17 controllers, 84 services, 71 views, 0 data files, 30 tools"]
-    arch_routes["> Routes: 178 (Public + Auth + Payment + Admin + Support)"]:::arch
-    arch_ctrl["> Controllers: 17"]:::arch
+  subgraph ARCH["Architecture Overview — 180 routes, 18 controllers, 84 services, 72 views, 0 data files, 30 tools"]
+    arch_routes["> Routes: 180 (Public + Auth + Payment + Admin + Support)"]:::arch
+    arch_ctrl["> Controllers: 18"]:::arch
     arch_svc["> Services: 84"]:::arch
-    arch_views["> Views: 71"]:::arch
+    arch_views["> Views: 72"]:::arch
     arch_data["> Collections: 24 schema | 0 files"]:::arch
     arch_tools["> Tools: 30"]:::arch
-    arch_gaps["> Gaps: 5"]:::arch
+    arch_gaps["> Gaps: 6"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -142,6 +142,8 @@ flowchart LR
     route_get_admin_google_reporting_callback["GET /admin/google-reporting/callback"]:::route
     route_post_admin_google_reporting_select["POST /admin/google-reporting/select"]:::route
     route_post_admin_google_reporting_disconnect["POST /admin/google-reporting/disconnect"]:::route
+    route_get_admin_google_pagespeed["GET /admin/google-pagespeed"]:::route
+    route_post_admin_google_pagespeed_run["POST /admin/google-pagespeed/run"]:::route
     route_get_admin_google_merchant["GET /admin/google-merchant"]:::route
     route_get_admin_products["GET /admin/products — Admin — manage products"]:::route
     route_get_admin_categories["GET /admin/categories — Admin — manage categories"]:::route
@@ -232,6 +234,7 @@ flowchart LR
     controller_admincontroller["AdminController"]:::code
     controller_admingooglereportingcontroller["AdminGoogleReportingController"]:::code
     controller_adminmcpclientcontroller["AdminMcpClientController"]:::code
+    controller_adminpagespeedcontroller["AdminPageSpeedController"]:::code
     controller_apicontroller["ApiController"]:::code
     controller_authcontroller["AuthController"]:::code
     controller_basecontroller["BaseController"]:::code
@@ -355,6 +358,7 @@ flowchart LR
     view_admin_detail["admin/detail"]:::code
     view_admin_email_templates["admin/email-templates"]:::code
     view_admin_google_merchant["admin/google-merchant"]:::code
+    view_admin_google_pagespeed["admin/google-pagespeed"]:::code
     view_admin_google_reporting["admin/google-reporting"]:::code
     view_admin_header_menu["admin/header-menu"]:::code
     view_admin_help["admin/help"]:::code
@@ -413,6 +417,7 @@ flowchart LR
     integration_googlereportingclient["GoogleReportingClient"]:::code
     integration_googlesitekitclient["GoogleSiteKitClient"]:::code
     integration_metapixelclient["MetaPixelClient"]:::code
+    integration_pagespeedinsightsclient["PageSpeedInsightsClient"]:::code
     integration_razorpayclient["RazorpayClient"]:::code
     integration_stripeclient["StripeClient"]:::code
   end
@@ -480,9 +485,10 @@ flowchart LR
   subgraph GAPS["Gaps & Missing Links — inventory checks"]
     gap_35faf425c4["no declared or scanned reference: AstrologerService"]:::gap
     gap_006b2fd1e7["no declared or scanned reference: RequestFailureService"]:::gap
-    gap_02fdee86e5["POST /admin/email-templates/test — missing AuditLogService"]:::gap
-    gap_63c4de0521["POST /admin/blog/enhance-title — missing AuditLogService"]:::gap
-    gap_90db15aec7["POST /admin/blog/enhance-content — missing AuditLogService"]:::gap
+    gap_751b59f88f["POST /admin/google-pagespeed/run — missing AuditLogService"]:::gap
+    gap_2ef5891fe7["POST /admin/email-templates/test — missing AuditLogService"]:::gap
+    gap_7af883609a["POST /admin/blog/enhance-title — missing AuditLogService"]:::gap
+    gap_39cbb52331["POST /admin/blog/enhance-content — missing AuditLogService"]:::gap
   end
 
   route_get -- registered handler --> controller_publiccontroller
@@ -811,6 +817,14 @@ flowchart LR
   controller_admingooglereportingcontroller -. declared service .-> service_authservice
   controller_admingooglereportingcontroller -. declared service .-> service_auditlogservice
   controller_admingooglereportingcontroller -. declared related view .-> view_admin_google_reporting
+  route_get_admin_google_pagespeed -- registered handler --> controller_adminpagespeedcontroller
+  controller_adminpagespeedcontroller -. declared service .-> service_authservice
+  controller_adminpagespeedcontroller -. declared service .-> service_publicsiteurlservice
+  controller_adminpagespeedcontroller -. declared related view .-> view_admin_google_pagespeed
+  route_post_admin_google_pagespeed_run -- registered handler --> controller_adminpagespeedcontroller
+  controller_adminpagespeedcontroller -. declared service .-> service_authservice
+  controller_adminpagespeedcontroller -. declared service .-> service_publicsiteurlservice
+  controller_adminpagespeedcontroller -. declared related view .-> view_admin_google_pagespeed
   route_get_admin_google_merchant -- registered handler --> controller_admincontroller
   controller_admincontroller -. declared service .-> service_merchantfeedservice
   controller_admincontroller -. declared service .-> service_productservice
@@ -1379,6 +1393,10 @@ flowchart LR
   controller_adminmcpclientcontroller -. source new .-> service_authservice
   controller_adminmcpclientcontroller -. source new .-> service_mcpclientservice
   controller_adminmcpclientcontroller -- extends --> controller_basecontroller
+  controller_adminpagespeedcontroller -. source new .-> integration_pagespeedinsightsclient
+  controller_adminpagespeedcontroller -. source new .-> service_authservice
+  controller_adminpagespeedcontroller -- extends --> controller_basecontroller
+  controller_adminpagespeedcontroller -. static reference .-> service_publicsiteurlservice
   controller_apicontroller -. source new .-> service_categoryservice
   controller_apicontroller -. source new .-> service_deploymentrevisionservice
   controller_apicontroller -. source new .-> service_productservice
@@ -1470,6 +1488,7 @@ flowchart LR
   controller_supportcontroller -. static reference .-> service_agentconversationservice
   controller_supportcontroller -. static reference .-> service_agenttraceservice
   controller_supportcontroller -. static reference .-> service_supportbotservice
+  integration_pagespeedinsightsclient -. static reference .-> service_publicsiteurlservice
   service_addressservice -. source new .-> service_databaseservice
   service_addressservice -. static reference .-> service_taxservice
   service_adminhelpservice -. source new .-> service_markdownrenderer
@@ -1748,6 +1767,7 @@ flowchart LR
   tool_smoke_local -. declared probe coverage .-> ROUTES_ADMIN
   gap_35faf425c4 -. inspect .-> service_astrologerservice
   gap_006b2fd1e7 -. inspect .-> service_requestfailureservice
-  gap_02fdee86e5 -. missing .-> controller_admincontroller
-  gap_63c4de0521 -. missing .-> controller_admincontroller
-  gap_90db15aec7 -. missing .-> controller_admincontroller
+  gap_751b59f88f -. missing .-> controller_adminpagespeedcontroller
+  gap_2ef5891fe7 -. missing .-> controller_admincontroller
+  gap_7af883609a -. missing .-> controller_admincontroller
+  gap_39cbb52331 -. missing .-> controller_admincontroller

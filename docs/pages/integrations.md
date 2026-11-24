@@ -130,6 +130,29 @@ References:
 - https://developers.google.com/tag-platform/gtagjs/configure
 - https://support.google.com/webmasters/answer/9008080
 
+## Built-in Google PageSpeed Insights
+
+From the existing owner dashboard, open **PageSpeed Insights** at
+`/admin/google-pagespeed`. The native view uses the site's configured HTTPS
+origin and retrieves mobile/desktop results from Google's **fixed**
+PageSpeed Insights v5 API endpoint only after the authenticated owner presses
+**Analyze**. The POST is CSRF-protected. No WordPress plugin, additional Google
+OAuth consent, browser API key or arbitrary target URL is involved.
+
+Results contain the actual provider performance score, Lighthouse lab measurements,
+available CrUX field data and up to four measured opportunities. If Google supplies
+no score, insufficient field data, denies access or exhausts quota, the screen says
+so instead of displaying fabricated zero metrics. A ten-minute PHP session cooldown
+prevents repeated costly requests, and the last report is retained for up to
+30 minutes in that owner's session; no database record or customer data is written.
+
+The source analysis was derived from `google-site-kit.1.192.0.zip` and is
+implemented independently in `PageSpeedInsightsClient` and
+`AdminPageSpeedController`. Site Kit's other modules (AdSense, Tag Manager,
+Ads, consent and email reports) are **not** implicitly implemented.
+See `docs/research/native-wordpress-woocommerce-sitekit-20261124.md` and
+[PageSpeed Insights API](https://developers.google.com/resources/api-libraries/documentation/pagespeedonline/v5/csharp/latest/classGoogle_1_1Apis_1_1PagespeedInsights_1_1v5_1_1PagespeedapiResource_1_1RunpagespeedRequest.html).
+
 ## Local MCP reporting clients
 
 Open **Manage local MCP clients** from Integrations to issue or revoke a 30-day credential for paid-sales totals. The local client receives the credential through its process environment. The client access list shows expiry, revocation and last successful read. See the [local MCP client guide](shop.md#local-mcp-client).
