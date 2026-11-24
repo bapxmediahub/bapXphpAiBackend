@@ -18,14 +18,14 @@
             "review_note": "Cross-reviewed current-price cart paise precision, captured-INR predicate, shared idempotent VerifiedOrderService, actual-discount GST and frozen tax evidence. Order/checkout docs distinguish captured payment from saved order and preserve later browser-cart edits on retry."
         },
         "content": {
-            "source_sha256": "12e40630e473f8d50774e654dc207c19fe3c8b5eb8158ea8da0e392330a3655d",
-            "references_sha256": "1dbca4f4b169d19f1046bee61138053549c0ecff231d0c389c2628f74f517cf1",
-            "review_note": "Reviewed the Docs skill provenance guidance against the unchanged BlogService and authored-content guide boundary. Static map references are discovery evidence only; publication visibility, Markdown storage, rendering and private-help exclusion remain the existing source contracts."
+            "source_sha256": "31a628f8963f037d93aa9f927866829b951dfac10282993b91f7cfa6cee433f0",
+            "references_sha256": "e8ef7076f00fa294db6d59bae7e381e0de58e018ddfa15ae5b6306409d14d427",
+            "review_note": "Authored-page source and content guide agree that autosave is browser-only, revision-scoped, never publishes, and server compare-and-swap is unchanged."
         },
         "foundation": {
-            "source_sha256": "d0bac5d94dca18432bfb88b24cfef3e82a92c17a7b2d53bb42041b4025aab5c4",
+            "source_sha256": "243648083c433823dca521dfaa422902874535b840bca0f4c7299043498d1dab",
             "references_sha256": "44504ddbd485f9ab5d6c71a6443726f531f7e0d7ed34ec16215741902635cc0e",
-            "review_note": "Cross-checked merged Support/Enterprise/WebMCP/OpenRouter source against architecture maps and docs. No separate chatbot app, SQL schema, external chat plugin or production browser engine is introduced."
+            "review_note": "Test additions and unchanged MySQL page persistence retain existing storage contracts; browser snapshots do not write to the server."
         },
         "google-tags": {
             "source_sha256": "f05c993af547a7e72406e694a7d049d905c3f21410f1eddeb54a9b86f8fce54e",
@@ -38,14 +38,14 @@
             "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
         },
         "interface": {
-            "source_sha256": "b5f63abcbab847a7b0dbf3e17bc61b9a3e4cc1033042a70924af8aa3ea9cfef6",
+            "source_sha256": "96ec78fa126b21efe932aab44988dd535c637f877bbb1677cca055b185698779",
             "references_sha256": "bff9a14168a36201f57f076af1f2537353f85ad4d321258efd3c402933a4b899",
-            "review_note": "Reviewed owner Integrations mobile 375px Chromium overflow after #351 merge: a long code URL imposed min-content width, causing 445px scroll. Scoped CSS now constrains the existing admin form, fieldsets and inline API paths without truncating text, changing model secrets, or altering role permissions. Native integration and browser tests guard the fix."
+            "review_note": "New native form recovery controls respect existing admin layout, are accessible and work at desktop and 375px; no shared design change."
         },
         "mail": {
-            "source_sha256": "064a2db84e324ad8cdf377ad2d9ee07289391409e44d5bfd92a0dba85586993a",
+            "source_sha256": "8bc59511587d4566f6dbe8df2da8387b7043b940ae73a77babcfa06f4cf8f6d9",
             "references_sha256": "6d6153ae2fed6f1aebbf9fa93225d6cc74b6c098d9a34deffce7bc4f3c6e9273",
-            "review_note": "Reviewed the in-panel reuse of original /contact form with existing ContactService persistence and SMTP mail queue; no automatic real contact submission, mass retry or new email notification route was introduced."
+            "review_note": "AdminController edits are limited to authored pages and saved draft tokens; no email queue or mailbox changes."
         },
         "mcp-clients": {
             "source_sha256": "8b2e7629876c1e5facae0a92e30f91e7e11ba59bd979a528022807b0193be7bc",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed product image paths and the bounded A2UI gallery against current media hosting paths; styling does not move uploads, delete media or expose private asset directories."
         },
         "operator-help": {
-            "source_sha256": "d1b66edea41bf1876d3e5bc741fadb89fb541bc50bd13ed73a20932064ee9edf",
-            "references_sha256": "2201c0efbcc49c20384beab8cbef25fa6bcd6928e2928d7fd8474d6522cdf6bf",
-            "review_note": "Reviewed existing admin guide and settings dependencies after adding the opt-in OpenRouter field and Enterprise answer-width CSS; operator scope and help links remain, with no new permission surface."
+            "source_sha256": "1034184d6f9021f4acc35202970e7027ea2b91433ed21a5c5a37d0401bd956b7",
+            "references_sha256": "04b203673f70a32b750cba3ee14044d1c8fd258cc3de07f3ef4113b13310f6dc",
+            "review_note": "Cross-checked authored page UI, controller token handling and owner guide; added restore, discard, stale download and explicit publication instructions."
         },
         "public-mcp": {
             "source_sha256": "22723ee0587e495732100b21d8b8f1f94997d25ed12f6ddde8349cd88989f5fd",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed the sales-channel CLI references and catalogue guidance. This change only fixes generic PHP lint argument forwarding and failure propagation; feed, channel and catalogue operations are unchanged."
         },
         "workflow": {
-            "source_sha256": "6334311e40c48472574558cb34081bc758457f33fb53243b412fba4298e6a3d1",
+            "source_sha256": "4b4b4552c9bf3416f29d36569e8bebf8961afcd6cd2c26c1b6180bd212573af3",
             "references_sha256": "6bddcf08be3819fe8ec98d7f78e96b359a9571f9043255f5ce207927e4732284",
-            "review_note": "Reviewed the existing developer-only Playwright runner on macOS and GitHub Linux. The Chrome executable discovery now honors CHROMIUM_PATH and checks both PATH and standard macOS app locations; the synthetic admin monitoring test fixture supplies the controller optional golden suite. Verified PHP 293/293 and Support Enterprise A2UI Chromium QA; no production credentials or new runtime dependency."
+            "review_note": "CI runs the new Chromium fixture test for reload, tab conflicts, owner isolation, stale recovery and explicit save."
         }
     }
 }

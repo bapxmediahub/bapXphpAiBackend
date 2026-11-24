@@ -1149,7 +1149,14 @@ final class AdminController extends BaseController {
         $page = $edit === '' ? null : (is_string($edit) ? $service->find($edit) : null);
         if ($edit !== '' && $page === null) { $this->renderNotFound(); return; }
         $form = $page ? $page + ['original_slug'=>$page['slug'], 'expected_revision'=>(string)$page['revision']] : [];
-        $this->render('admin/pages', ['pages'=>$service->all(), 'form'=>$form]);
+        $this->render('admin/pages', ['pages'=>$service->all(), 'form'=>$form] + $this->pageDraftContext());
+    }
+
+    private function pageDraftContext(): array {
+        $owner = (string)($_SESSION['user']['sub'] ?? '');
+        $saved = $_SESSION['page_saved_draft_token'] ?? '';
+        unset($_SESSION['page_saved_draft_token']);
+        return ['pageDraftOwner'=>$owner !== '' ? hash('sha256', $owner) : '', 'savedPageDraftToken'=>$saved];
     }
 
     public function deleteAuthoredPage(): void {
@@ -1163,7 +1170,7 @@ final class AdminController extends BaseController {
             $this->redirect('/admin/pages');
         } catch (\InvalidArgumentException|\DomainException $exception) {
             http_response_code($exception instanceof \DomainException ? 409 : 422);
-            $this->render('admin/pages', ['pages'=>$service->all(), 'form'=>[], 'error'=>$exception->getMessage()]);
+            $this->render('admin/pages', ['pages'=>$service->all(), 'form'=>[], 'error'=>$exception->getMessage()] + $this->pageDraftContext());
         }
     }
 
@@ -1184,6 +1191,10 @@ final class AdminController extends BaseController {
                 $preview = $service::renderContent($valid['content']);
             } elseif (($_POST['action'] ?? '') === 'save') {
                 $service->save($form);
+                $draftToken = $_POST['browser_draft_token'] ?? '';
+                if (is_string($draftToken) && preg_match('/^[a-f0-9]{32}$/D', $draftToken)) {
+                    $_SESSION['page_saved_draft_token'] = $draftToken;
+                }
                 (new AuditLogService())->record('save', 'authored_page', $form['slug'], ['status'=>$form['status']]);
                 $this->flash($form['status'] === 'published' ? 'Page published.' : 'Draft saved.', 'success');
                 $this->redirect('/admin/pages?edit='.rawurlencode($form['slug']));
@@ -1192,7 +1203,7 @@ final class AdminController extends BaseController {
             http_response_code($exception instanceof \DomainException ? 409 : 422);
             $error = $exception->getMessage();
         }
-        $this->render('admin/pages', ['pages'=>$service->all(), 'form'=>$form, 'preview'=>$preview, 'error'=>$error]);
+        $this->render('admin/pages', ['pages'=>$service->all(), 'form'=>$form, 'preview'=>$preview, 'error'=>$error] + $this->pageDraftContext());
     }
 
     public function blog(): void{
