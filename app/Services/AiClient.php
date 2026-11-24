@@ -322,6 +322,7 @@ final class AiClient
             if($plan){$plan[0]['models']=[$override];$plan[0]['model']=$override;}
         }
         if(!$plan){$this->failureCategory='not_configured';return 'No AI API key or enabled model is configured. Check Admin → Integrations.';}
+        if(!function_exists('curl_init')){$this->failureCategory='transport';return 'AI request failed: cURL is not available on this server.';}
         $deadline=hrtime(true)+self::GENERATION_TIMEOUT_NS;
         $answer='';
         foreach($plan as $index=>$config){

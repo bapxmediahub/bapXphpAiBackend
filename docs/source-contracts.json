@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "1b1870c6d72aad782f37ad91f689b7ff4e06de0c30f4f2cf0ad3da74d7874bfe",
+            "source_sha256": "761b364cf797654a002104cb876f7e9ff48a6670cc9a3f5ee5845055379b5e2e",
             "references_sha256": "63d78199c80aa4fe00921be8156da0376d7e03244e96a9dcf2ec11e3945700b1",
-            "review_note": "Object-preserving custom Google transport and existing role-scoped runtime adapter verified together."
+            "review_note": "Reconciled merged provider missing-cURL guard with the shared role-filtered tool loop; retained red/green transport regression and instruction evidence."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
