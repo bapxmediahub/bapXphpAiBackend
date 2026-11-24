@@ -10,7 +10,7 @@ Open Email Outbox. The health summary is based on canonical queue records, while
 
 An unknown or interrupted attempt needs investigation before any resend: the provider may already have accepted it. Do not repeatedly trigger messages or replay historical queued mail. Ask the authorized team to check provider configuration, limits and the exact outcome. Never paste mail passwords into a support chat or screenshot.
 
-Email Inbox shows stored incoming evidence. Newsletters are a separate selection of outbox records, not authorization to send a campaign. Customer confirmation and owner notification are separate messages; verify the intended recipients for both.
+Email Inbox shows stored incoming evidence. Automatic visitor contact confirmations and owner enquiry notifications are paused; review admitted enquiries in Contacts or Email Inbox. The held pending count is a subset of pending mail and is excluded from automatic delivery. Do not replay historical contact messages. Newsletters are a separate selection of outbox records, not authorization to send a campaign. Customer confirmation and owner notification are separate messages; verify the intended recipients for both.
 
 ## Preview templates without sending
 

@@ -2610,7 +2610,7 @@ $tests['contact page exposes general enquiry form and confirmation delivery'] = 
     $controller = file_get_contents(app_path('app/Controllers/PublicController.php'));
     $mail = file_get_contents(app_path('app/Services/MailQueueService.php'));
     $css = file_get_contents(app_path('assets/css/band.css'));
-    assertTrue(str_contains($controller, 'enqueueContactConfirmation') && str_contains($controller, 'notifyAdmin'), 'Contact submissions should notify the customer and owner');
+    assertTrue(str_contains($controller, 'RateLimiter::consumeContact') && str_contains($controller, 'ContactService())->save'), 'Contact submissions require admission before saving to the inbox');
     assertTrue(str_contains($mail, 'contact_customer_confirmation') && str_contains($mail, 'We received your enquiry'), 'Mail queue should define the contact confirmation email');
     foreach (['grid-template-columns: repeat(2, minmax(0, 1fr))', '.contact-form .form-group { min-width: 0; }', '.contact-form__row { grid-template-columns: minmax(0, 1fr); }'] as $needle) {
         assertTrue(str_contains($css, $needle), "Contact form CSS should include {$needle}");
@@ -3205,10 +3205,10 @@ $tests['retired consultation routes preserve only protected owner status access'
     assertTrue(str_contains($controller, "['role'] ?? '') !== 'admin'"), 'Only an owner can update historical session status');
 };
 
-$tests['contact form sends customer confirmation and owner notification'] = function (): void {
+$tests['contact form saves enquiries without sending automatic mail'] = function (): void {
     $controller = file_get_contents(app_path('app/Controllers/PublicController.php'));
     $mail = file_get_contents(app_path('app/Services/MailQueueService.php'));
-    assertTrue(str_contains($controller, 'enqueueContactConfirmation') && str_contains($controller, 'notifyAdmin'), 'Contact handler should queue both notifications');
+    assertTrue(!str_contains($controller, 'enqueueContactConfirmation') && !str_contains($controller, 'notifyAdmin'), 'Public form must not enqueue customer or owner mail during containment');
     foreach (['contact_customer_confirmation', 'We received your enquiry', "['contact_id'"] as $needle) {
         assertTrue(str_contains($mail, $needle), "Contact confirmation should include {$needle}");
     }
@@ -3222,7 +3222,49 @@ $tests['contact form sends customer confirmation and owner notification'] = func
     $general = MailQueueService::contactOwnerNotification(['subject' => 'Order Support', 'message' => 'Where is my parcel?']);
     assertSame('New contact form submission', $general['subject'], 'Ordinary contact mail should keep the general owner subject');
     assertSame('general_enquiry', $general['meta']['contact_kind'], 'Ordinary owner mail should keep general classification metadata');
-    assertTrue(str_contains($controller, 'contactOwnerNotification'), 'Contact handler should use the tested owner notification builder');
+    assertTrue(!str_contains($controller, 'contactOwnerNotification'), 'The public form must not generate automated owner notifications');
+};
+
+$tests['contact admission rejects flood-shaped and malformed fields without rejecting Unicode'] = static function (): void {
+    $subjects = \App\Services\PublicKnowledgeService::contactSubjects();
+    $valid = ['name'=>'Fixture customer','email'=>'test@example.invalid','phone'=>'','subject'=>'general','message'=>'எனக்கு இந்த பொருளைப் பற்றிய விவரம் வேண்டும்'];
+    assertSame([], \App\Services\ContactService::validationErrors($valid,$subjects), 'Tamil enquiry remains valid');
+    foreach (['message'=>'ABCDEF','email'=>'bad address','subject'=>'unknown','name'=>str_repeat('x',121),'phone'=>str_repeat('1',41)] as $key=>$value) {
+        $input=$valid;$input[$key]=$value;
+        assertTrue(isset(\App\Services\ContactService::validationErrors($input,$subjects)[$key]), 'Server rejects malformed '.$key);
+    }
+    $input=$valid;$input['message']=str_repeat('x',4001);
+    assertTrue(isset(\App\Services\ContactService::validationErrors($input,$subjects)['message']), 'Server rejects overlong message');
+};
+
+$tests['contact mail quarantine blocks new enqueue and historical claims without changing order mail'] = static function (): void {
+    $q=MailQueueService::class;$now=new DateTimeImmutable('2026-11-24T20:00:00+05:30');
+    $base=['status'=>'pending','available_at'=>'2026-11-24T19:00:00+05:30'];
+    $held=[
+        ['type'=>'contact_customer_confirmation'],
+        ['type'=>'admin_notification','meta'=>['contact_id'=>'fixture']],
+        ['type'=>'admin_notification','subject'=>'New contact form submission'],
+        ['type'=>'admin_notification','subject'=>'New consultation or appointment enquiry'],
+        ['type'=>'appointment_owner_notification'],
+    ];
+    foreach($held as $row) {
+        $row+=$base;
+        assertTrue($q::contactAutomationHeld($row), 'Recognized legacy contact mail');
+        assertSame(null,$q::transitionDelivery($row,'claim',str_repeat('a',32),[],$now),'Held mail cannot be claimed');
+        $rejected=false;
+        try{(new MailQueueService())->enqueue($row['type'],'fixture@example.invalid',$row['subject']??'Fixture','<p>Test</p>',null,$row['meta']??[]);}catch(DomainException){$rejected=true;}
+        assertTrue($rejected,'New held mail cannot enter queue');
+    }
+    $eligible=[['type'=>'welcome'],['type'=>'password_reset'],['type'=>'payment_confirmation'],['type'=>'shipment_notification'],['type'=>'admin_notification','meta'=>['order_id'=>'fixture']]];
+    foreach($eligible as $row) {
+        assertTrue(!$q::contactAutomationHeld($row),'Legitimate account/order mail is not held');
+        assertSame('sending',$q::transitionDelivery($row+$base,'claim',str_repeat('a',32),[],$now)['status'],'Normal mail remains claimable');
+    }
+    $rows=array_map(static fn($row)=>$row+$base,array_merge($held,$eligible));
+    $h=$q::health($rows,$now->getTimestamp());
+    assertSame(5,$h['held_contact_pending'],'Held pending rows remain visible');
+    assertSame(5,$h['due_pending'],'Held rows are not eligible to send');
+    assertSame(10,$h['states']['pending'],'No history rewritten');
 };
 
 $tests['registration creates a default delivery address'] = function (): void {

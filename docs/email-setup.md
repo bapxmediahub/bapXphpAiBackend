@@ -45,6 +45,27 @@ identities, so repeating the same new-event call does not create new mail. This
 does **not** retroactively deduplicate older random-ID records or guarantee
 exactly-once delivery to external mail providers.
 
+## Public enquiry containment
+
+The existing contact form saves admitted enquiries in Contacts and Email Inbox;
+it does not automatically send a visitor confirmation or an owner email.
+The server checks bounded Unicode fields and requires 12–4,000 message
+characters. A deployment-local private locked JSON admission state applies
+3 accepted submissions per IP per 120 seconds, 2 per normalized email per
+24 hours, 20 per site per hour and 60 per site per 24 hours. All budgets are
+reserved atomically; only hashed bucket identifiers and timestamps are stored.
+Unavailable or corrupt state fails closed. Users can use the direct contact
+options when the form is limited. These limits are a containment measure,
+not proof of human identity or spam classification.
+
+Existing pending contact and legacy appointment automation is excluded from
+worker selection and cannot acquire a database-host delivery claim. Outbox
+shows the held subset separately from eligible due messages. Historical rows,
+including failures and uncertain attempts, are preserved without replay.
+Account and commerce notifications retain their existing delivery contract.
+Re-enabling automated enquiry mail requires a reviewed anti-abuse and recipient
+verification policy; do not remove this guard simply to retry old mail.
+
 ## Configuration
 
 All of it lives in **Admin → Integrations**, stored encrypted in the MySQL `secrets`
@@ -89,7 +110,7 @@ receipts, never receipt in the owner's different inbox.
 | Checkout completion not confirmed | Payment-attention guidance | Existing owner failure notice | Never claim the bank made no charge; avoid a second payment while uncertain |
 | Shipped / delivered update | Status-specific courier/delivery message | No additional owner confirmation | The saved state determines wording; delivered is not described as newly shipped |
 | Product review request | Delayed message | None | Queued for ten days after the existing shipped/delivered update; due-pending processing is still required |
-| Contact enquiry | Acknowledgement | Distinct contact notification | Current contact workflow, not an order receipt |
+| Contact enquiry | On-page confirmation only | Existing Admin Contacts and Email Inbox | Automatic contact emails are held; unverified visitors cannot trigger SMTP |
 | Newsletter | Explicitly selected recipients | Existing workflow | Not an automatic broadcast merely because an article has a date or a preview is opened |
 
 Refund/cancellation changes do not imply an automatic email or PDF attachment

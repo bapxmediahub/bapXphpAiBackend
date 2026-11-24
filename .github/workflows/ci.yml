@@ -47,6 +47,8 @@ jobs:
         run: node --test tests/cli-lint.test.cjs
       - name: Validate reviewer metadata safety and deduplication
         run: node --test tests/review-automation.test.cjs
+      - name: Verify atomic contact admission and flood containment
+        run: php tests/contact-admission.php
       - name: Verify guarded deletion and stale upload history
         run: php tests/media-delete-integration.php
       - name: Verify current checkout SHA and safe failure on untrusted references
@@ -98,7 +100,7 @@ jobs:
       - name: Exercise the owner composer, installed admin app and public header editing in Chrome
         run: |
           npm install --prefix "$RUNNER_TEMP/agent-browser" --no-audit --no-fund --ignore-scripts playwright@1.62.1 @modelcontextprotocol/client@2.4.0 @modelcontextprotocol/ext-apps@2.0.4
-          NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/agent-history-browser.cjs tests/admin-pwa-browser.cjs tests/header-menu-browser.cjs tests/mobile-cart-restore-browser.cjs tests/a2ui-public-browser.cjs tests/enterprise-capabilities-browser.cjs tests/openrouter-integrations-browser.cjs tests/home-full-card-browser.cjs tests/homepage-release-browser.cjs tests/google-pagespeed-browser.cjs tests/media-metadata-browser.cjs tests/page-draft-browser.cjs tests/shipping-preview-browser.cjs
+          NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/agent-history-browser.cjs tests/admin-pwa-browser.cjs tests/header-menu-browser.cjs tests/mobile-cart-restore-browser.cjs tests/a2ui-public-browser.cjs tests/enterprise-capabilities-browser.cjs tests/openrouter-integrations-browser.cjs tests/home-full-card-browser.cjs tests/homepage-release-browser.cjs tests/google-pagespeed-browser.cjs tests/media-metadata-browser.cjs tests/page-draft-browser.cjs tests/shipping-preview-browser.cjs tests/contact-admission-browser.cjs
       - name: Exercise reusable About layout and live-link contracts
         run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/about-release-browser.cjs
       - name: Exercise native Support checkout and explicit cart handoff at desktop and mobile widths

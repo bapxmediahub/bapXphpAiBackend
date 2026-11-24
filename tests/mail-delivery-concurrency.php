@@ -3,15 +3,29 @@ declare(strict_types=1);
 foreach(['BAPX_MYSQL_HOST'=>'127.0.0.1','BAPX_MYSQL_PORT'=>'33068','BAPX_MYSQL_DB'=>'sps_order_test',
     'BAPX_MYSQL_USER'=>'sps_test','BAPX_MYSQL_PASS'=>'sps_ci_fixture','BAPX_REMOTE_DB_URL'=>'http://127.0.0.1:1/remotedb','BAPX_TEST_MODE'=>'0'] as $k=>$v){putenv($k.'='.$v);$_SERVER[$k]=$v;}
 require dirname(__DIR__).'/app/bootstrap.php';
-use App\Services\{DatabaseService,MailQueueService,MailStorageService,SmtpMailer};
+use App\Services\{ContactService,DatabaseService,MailQueueService,MailStorageService,SmtpMailer};
 $store=new DatabaseService(true);$id=$argv[2]??bin2hex(random_bytes(8));
 if(($argv[1]??'')==='claim'){$a=bin2hex(random_bytes(16));$r=$store->transitionMailDelivery($id,'claim',$a,[]);echo json_encode(['claimed'=>$r!==null,'attempt'=>$r['attempt_id']??null]),"\n";exit;}
 $pdo=$store->connection();if($pdo->query('SELECT DATABASE()')->fetchColumn()!=='sps_order_test')throw new RuntimeException('Refuse a nonfixture database');
-foreach(['mail_queue','mail_outbox'] as $table)$pdo->exec("CREATE TABLE IF NOT EXISTS $table (id VARCHAR(36) PRIMARY KEY,_data JSON NOT NULL,_owner VARCHAR(255),_status VARCHAR(50),_created_at VARCHAR(40),_updated_at VARCHAR(40)) ENGINE=InnoDB");
-$other=bin2hex(random_bytes(8));$smtpId=bin2hex(random_bytes(8));
+foreach(['mail_queue','mail_outbox','contact_submissions','mail_inbox'] as $table)$pdo->exec("CREATE TABLE IF NOT EXISTS $table (id VARCHAR(36) PRIMARY KEY,_data JSON NOT NULL,_owner VARCHAR(255),_status VARCHAR(50),_created_at VARCHAR(40),_updated_at VARCHAR(40)) ENGINE=InnoDB");
+$other=bin2hex(random_bytes(8));$smtpId=bin2hex(random_bytes(8));$heldId=bin2hex(random_bytes(8));$contactId='contact_fixture_'.bin2hex(random_bytes(5));
 $row=static fn($id)=>['id'=>$id,'status'=>'pending','available_at'=>gmdate('c',time()-5),'to'=>'recipient@example.invalid','subject'=>'Fixture','html'=>'<p>Local test only</p>','created_at'=>gmdate('c')];
 try{
     $store->upsert('mail_queue',$row($id));$store->upsert('mail_queue',$row($other));
+    $heldRow=$row($heldId)+['type'=>'admin_notification','meta'=>['contact_id'=>$contactId]];
+    $store->upsert('mail_queue',$heldRow);
+    if($store->transitionMailDelivery($heldId,'claim',bin2hex(random_bytes(16)),[])!==null)
+        throw new RuntimeException('Held contact acquired a database claim');
+    if(in_array($heldId,array_column((new MailQueueService($store))->due(),'id'),true))
+        throw new RuntimeException('Held contact was selected by worker');
+    if($store->find('mail_queue',$heldId)['status']!=='pending')
+        throw new RuntimeException('Historical held row was rewritten');
+    $before=(int)$pdo->query('SELECT COUNT(*) FROM mail_queue')->fetchColumn();
+    (new ContactService($store))->save(['id'=>$contactId,'name'=>'Fixture','email'=>'fixture@example.invalid','subject'=>'general','message'=>'A valid fixture enquiry']);
+    if(!$store->find('contact_submissions',$contactId)||!$store->find('mail_inbox','in_'.$contactId))
+        throw new RuntimeException('Contact or inbox persistence missing');
+    if((int)$pdo->query('SELECT COUNT(*) FROM mail_queue')->fetchColumn()!==$before)
+        throw new RuntimeException('Saving contact unexpectedly queued mail');
     $jobs=[];$results=[];
     for($i=0;$i<6;$i++){$p=proc_open([PHP_BINARY,__FILE__,'claim',$id],[0=>['pipe','r'],1=>['pipe','w'],2=>['pipe','w']],$pipes);fclose($pipes[0]);$jobs[]=[$p,$pipes];}
     foreach($jobs as [$p,$pipes]){$out=stream_get_contents($pipes[1]);$error=stream_get_contents($pipes[2]);fclose($pipes[1]);fclose($pipes[2]);if(proc_close($p)!==0)throw new RuntimeException('Fixture claim worker failed');$results[]=json_decode($out,true,512,JSON_THROW_ON_ERROR);}
@@ -30,8 +44,10 @@ try{
         if($saved['status']!=='sent'||$saved['delivery_state']!=='accepted_by_smtp'||$saved['inbox_receipt']!=='unverified')throw new RuntimeException('Receipt evidence incorrect');
         if((new MailQueueService($store))->deliverNow($row($smtpId),$mailer))throw new RuntimeException('Already accepted mail retried');
     }finally{foreach([1,2] as $i){stream_get_contents($pipes[$i]);fclose($pipes[$i]);}proc_terminate($p);proc_close($p);}
-    echo "Mail MySQL: six workers claim once; unknown delivery cannot replay; unrelated rows preserved; accepted SMTP survives lost QUIT and repeat invocation.\n";
+    echo "Mail MySQL: six workers claim once; unknown delivery cannot replay; unrelated rows preserved; accepted SMTP survives lost QUIT and repeat invocation; held contact claims denied and enquiries persist in inbox without mail.\n";
 }finally{
-    foreach([$id,$other,$smtpId] as $clean){$q=$pdo->prepare('DELETE FROM mail_queue WHERE id=?');$q->execute([$clean]);}
+    foreach([$id,$other,$smtpId,$heldId] as $clean){$q=$pdo->prepare('DELETE FROM mail_queue WHERE id=?');$q->execute([$clean]);}
     $q=$pdo->prepare('DELETE FROM mail_outbox WHERE id=?');$q->execute(['out_'.$smtpId]);
+    $q=$pdo->prepare('DELETE FROM contact_submissions WHERE id=?');$q->execute([$contactId]);
+    $q=$pdo->prepare('DELETE FROM mail_inbox WHERE id=?');$q->execute(['in_'.$contactId]);
 }

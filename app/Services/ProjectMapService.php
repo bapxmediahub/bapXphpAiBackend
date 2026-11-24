@@ -56,7 +56,7 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/feeds/google-products.xml','name'=>'merchant.feed','page'=>'public/merchant-feed','controller'=>'PublicController@merchantFeed','services'=>['MerchantFeedService','ProductService','SettingsService']],
             ['method'=>'GET','path'=>'/sitemap.xml','name'=>'sitemap','page'=>'public/sitemap','controller'=>'PublicController@sitemap','services'=>['BlogService','ProductService','AuthoredPageService']],
             ['method'=>'GET','path'=>'/contact','name'=>'contact','page'=>'public/contact','controller'=>'PublicController@contact','services'=>['PublicKnowledgeService']],
-            ['method'=>'POST','path'=>'/contact','name'=>'contact.post','page'=>'public/contact','controller'=>'PublicController@contact','services'=>['ContactService','PublicKnowledgeService']],
+            ['method'=>'POST','path'=>'/contact','name'=>'contact.post','page'=>'public/contact','controller'=>'PublicController@contact','services'=>['ContactService','PublicKnowledgeService','RateLimiter']],
             ['method'=>'GET','path'=>'/login','name'=>'login','page'=>'public/login','controller'=>'PublicController@login','services'=>['AuthService']],
             ['method'=>'GET','path'=>'/forgot-password','name'=>'forgot-password','page'=>'public/forgot-password','controller'=>'AuthController@forgotPassword','services'=>['PasswordResetService']],
             ['method'=>'POST','path'=>'/forgot-password','name'=>'forgot-password.post','page'=>'public/forgot-password','controller'=>'AuthController@forgotPasswordPost','services'=>['PasswordResetService']],
