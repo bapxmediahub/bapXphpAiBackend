@@ -97,6 +97,11 @@ show the applied filters below the toolbar. Each removal keeps the other criteri
 and returns to the first results page. Verify removal by keyboard and touch,
 including long search values and navigation with JavaScript disabled.
 
+Verify GST unit and per-item quantity together in the product editor. Invalid
+values preserve the edit draft. Reports and invoices use the issued values
+and show missing historical evidence for review. Keep the HSN table locally
+scrollable on mobile and verify the downloaded line values.
+
 ## Keeping this skill current
 
 Update when an admin route, sidebar group, or CRUD form contract changes. The sidebar is gated by `SettingsService::modules()`; re-check both the on and off states.

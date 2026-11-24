@@ -193,6 +193,9 @@ final class CommerceController extends BaseController {
                 $this->jsonResponse(['error' => e($item['name']) . ' is currently unavailable.'], 400);
             }
         }
+        $pendingItems = array_map(static fn(array $item): array => [
+            'slug' => $item['slug'], 'name' => $item['name'], 'qty' => $item['qty'], 'line_total' => $item['line_total'],
+        ] + TaxService::reportingUnit($item['product']), $items);
         (new \App\Services\SiteTelemetryService())->record('checkout_initiated');
         $shippingState = TaxService::normaliseState((string)($_POST['state'] ?? ''));
         if ($shippingState === null) {
@@ -241,7 +244,7 @@ final class CommerceController extends BaseController {
                 'shipping_pincode' => trim((string)($_POST['pincode'] ?? '')),
                 'shipping_state' => $shippingState,
                 'customer_gstin' => trim((string)($_POST['customer_gstin'] ?? '')),
-                'items' => array_map(fn($i) => ['slug' => $i['slug'], 'name' => $i['name'], 'qty' => $i['qty'], 'line_total' => $i['line_total']], $items),
+                'items' => $pendingItems,
                 'stripe_session_id' => $stripeSession['id'] ?? '',
                 'coupon_code' => '',
                 'discount' => 0,
@@ -289,7 +292,7 @@ final class CommerceController extends BaseController {
         $_SESSION['pending_order'] = [
             'razorpay_order_id' => $order['id'] ?? '',
             'total' => $amount / 100,
-            'items' => array_map(fn($i) => ['slug' => $i['slug'], 'name' => $i['name'], 'qty' => $i['qty'], 'line_total' => $i['line_total']], $items),
+            'items' => $pendingItems,
             'coupon_code' => $couponCode,
             'discount' => $discount,
             'customer_email' => $_SESSION['user']['email'] ?? ($_POST['email'] ?? 'guest'),

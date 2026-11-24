@@ -98,6 +98,20 @@
                         <input type="number" name="gst_rate" id="field-gst_rate" placeholder="e.g. 12" min="0" max="100" step="0.01">
                     </label>
                 </div>
+                <div class="admin-form__row">
+                    <label>GST unit (UQC)
+                        <select name="gst_uqc" id="field-gst_uqc" aria-describedby="product-tax-quantity-help">
+                            <option value="">Unspecified</option>
+                            <?php foreach (\App\Services\TaxService::QUANTITY_UNITS as $code => $label): ?>
+                                <option value="<?= e($code) ?>"><?= e($label . ' (' . $code . ')') ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </label>
+                    <label>GST quantity per sale item
+                        <input type="number" name="gst_qty_per_unit" id="field-gst_qty_per_unit" min="0.001" max="999999.999" step="0.001" inputmode="decimal" aria-describedby="product-tax-quantity-help">
+                    </label>
+                </div>
+                <small id="product-tax-quantity-help">Enter the amount represented by one item sold, such as 0.250 kilograms. Use the unit confirmed by your accountant.</small>
                 <p class="pf-section">Description</p>
                 <label>Description
                     <textarea name="description" id="field-description" rows="4"></textarea>
@@ -385,6 +399,8 @@ function fillProductForm(item) {
         document.getElementById('field-stock_status').value = item.stock_status || 'in_stock';
         document.getElementById('field-hsn_code').value = item.hsn_code || '';
         document.getElementById('field-gst_rate').value = item.gst_rate || '';
+        document.getElementById('field-gst_uqc').value = item.gst_uqc || '';
+        document.getElementById('field-gst_qty_per_unit').value = item.gst_qty_per_unit || '';
         document.getElementById('field-description').value = item.description || '';
         document.getElementById('field-highlights').value = lines(item.highlights);
         document.getElementById('field-description_points').value = lines(item.description_points);

@@ -59,19 +59,29 @@ try {
 
     $frozen=$pending;
     $frozen['tax_settings']=$settings;
-    $frozen['items'][0]+=['unit_price'=>105.0,'gst_rate'=>5.0,'hsn_code'=>'8306'];
+    $frozen['items'][0]+=['unit_price'=>105.0,'gst_rate'=>5.0,'hsn_code'=>'8306','gst_uqc'=>'KGS','gst_qty_per_unit'=>'0.125'];
     $catalogue['item']['gst_rate']=18;$settings['gst_state']='Karnataka';
+    $catalogue['item'] += ['gst_uqc'=>'PCS','gst_qty_per_unit'=>'1.000'];
     $frozenId=$service->persist($frozen,'pay_frozen',[],$ports);
     $expect($records[$frozenId]['tax_total']===4.5 && $records[$frozenId]['supply_type']==='intrastate',
         'Later catalogue/supplier edits cannot rewrite confirmed quote tax evidence.');
     $expect($records[$frozenId]['items'][0]['gst_rate']===5.0 && $records[$frozenId]['supplier']['state']==='Tamil Nadu',
         'Frozen rate and supplier state must be preserved.');
+    $line = $records[$frozenId]['tax_lines'][0];
+    $expect($line['uqc']==='KGS' && $line['uqc_quantity']==='0.125', 'Changing the catalogue cannot reclassify a frozen unit.');
+    $browserPending = $pending;
+    $browserPending['items'][0] += ['gst_uqc'=>'KGS','gst_qty_per_unit'=>'0.125'];
+    $browserUnits = $service->persist($browserPending, 'pay_browser_units', [], $ports);
+    $expect($records[$browserUnits]['tax_lines'][0]['uqc']==='KGS', 'Native pending order preserves its configured unit independently of older rate calculation.');
+    $oldPending = $service->persist($pending, 'pay_browser_legacy_units', [], $ports);
+    $expect(!isset($records[$oldPending]['tax_lines'][0]['uqc']), 'New catalogue units cannot backfill an in-flight legacy order.');
     $catalogue=[];
     $missingId=$service->persist($frozen,'pay_missing_frozen',[],$ports);
     $expect($records[$missingId]['status']==='on_hold' && $records[$missingId]['fulfillment_review_required']===true,
         'A product removed after payment must require fulfillment review.');
     $expect($records[$missingId]['tax_review_required']===false && isset($records[$missingId]['invoice_number']),
         'Complete frozen tax evidence can preserve an invoice after catalogue removal.');
+    $expect($records[$missingId]['tax_lines'][0]['uqc_quantity']==='0.125', 'Frozen quantity survives product removal.');
     $legacyId=$service->persist($pending,'pay_missing_legacy',[],$ports);
     $expect($records[$legacyId]['tax_review_required']===true && !isset($records[$legacyId]['invoice_number']),
         'Legacy missing product tax data cannot produce an invented invoice.');

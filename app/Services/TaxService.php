@@ -33,6 +33,50 @@ final class TaxService {
         return trim((string)($settings['default_hsn_code'] ?? self::DEFAULT_HSN_CODE));
     }
 
+    // NIC Unit master, aligned to GSTN codes.
+    // https://docs.ewaybillgst.gov.in/apidocs/master-codes-list.html
+    public const QUANTITY_UNITS = [
+        'BAG' => 'Bags', 'BAL' => 'Bales', 'BDL' => 'Bundles', 'BKL' => 'Buckles',
+        'BOU' => 'Billions of units', 'BOX' => 'Boxes', 'BTL' => 'Bottles', 'BUN' => 'Bunches',
+        'CAN' => 'Cans', 'CBM' => 'Cubic metres', 'CCM' => 'Cubic centimetres', 'CMS' => 'Centimetres',
+        'CTN' => 'Cartons', 'DOZ' => 'Dozens', 'DRM' => 'Drums', 'GGK' => 'Great gross',
+        'GMS' => 'Grams', 'GRS' => 'Gross', 'GYD' => 'Gross yards', 'KGS' => 'Kilograms',
+        'KLR' => 'Kilolitres', 'KME' => 'Kilometres', 'LTR' => 'Litres', 'MLT' => 'Millilitres',
+        'MTR' => 'Metres', 'MTS' => 'Metric tons', 'NOS' => 'Numbers', 'OTH' => 'Other units',
+        'PAC' => 'Packs', 'PCS' => 'Pieces', 'PRS' => 'Pairs', 'QTL' => 'Quintals',
+        'ROL' => 'Rolls', 'SET' => 'Sets', 'SQF' => 'Square feet', 'SQM' => 'Square metres',
+        'SQY' => 'Square yards', 'TBS' => 'Tablets', 'TGM' => 'Ten gross', 'THD' => 'Thousands',
+        'TON' => 'Tonnes', 'TUB' => 'Tubes', 'UGS' => 'US gallons', 'UNT' => 'Units', 'YDS' => 'Yards',
+    ];
+    private const MAX_PER_ITEM_MILLIS = 999999999;
+    private const MAX_REPORTED_MILLIS = 999999999999999;
+
+    public static function quantityUnit(mixed $unit): string {
+        $unit = is_string($unit) ? strtoupper(trim($unit)) : '';
+        return isset(self::QUANTITY_UNITS[$unit]) ? $unit : '';
+    }
+
+    public static function quantityMillis(mixed $quantity): ?int {
+        if (!is_int($quantity) && !is_string($quantity)) return null;
+        $quantity = trim((string)$quantity);
+        if (str_starts_with($quantity, '.')) $quantity = '0' . $quantity;
+        if (!preg_match('/^(\d{1,12})(?:\.(\d{1,3}))?$/D', $quantity, $parts)) return null;
+        $millis = (int)$parts[1] * 1000 + (int)str_pad($parts[2] ?? '', 3, '0');
+        return $millis > 0 ? $millis : null;
+    }
+
+    public static function quantityDecimal(int $millis): string {
+        return intdiv($millis, 1000) . '.' . str_pad((string)($millis % 1000), 3, '0', STR_PAD_LEFT);
+    }
+
+    /** The owner configures how much one cart item represents in an explicit reporting unit. */
+    public static function reportingUnit(array $product): array {
+        $uqc = self::quantityUnit($product['gst_uqc'] ?? null);
+        $quantity = self::quantityMillis($product['gst_qty_per_unit'] ?? null);
+        if ($uqc === '' || $quantity === null || $quantity > self::MAX_PER_ITEM_MILLIS) return [];
+        return ['gst_uqc' => $uqc, 'gst_qty_per_unit' => self::quantityDecimal($quantity)];
+    }
+
     /** Cart amounts use each product's rate, including mixed-rate baskets. */
     public static function cartSummary(array $items, array $settings): array {
         $total = $tax = 0.0;
@@ -75,11 +119,12 @@ final class TaxService {
             $cgst = $interstate ? 0 : $tax / 2;
             $sgst = $interstate ? 0 : $tax / 2;
             $igst = $interstate ? $tax : 0;
-            $lines[] = [
+            $qty = (int)($item['qty'] ?? 1);
+            $line = [
                 'slug' => (string)($item['slug'] ?? ''),
                 'name' => (string)($item['name'] ?? 'Product'),
                 'hsn_code' => self::hsnFor($item, $settings),
-                'qty' => (int)($item['qty'] ?? 1),
+                'qty' => $qty,
                 'unit_price' => $this->money((float)($item['unit_price'] ?? 0)),
                 'gross_value' => $this->money($lineGross),
                 'taxable_value' => $this->money($taxable),
@@ -89,6 +134,15 @@ final class TaxService {
                 'igst' => $this->money($igst),
                 'tax_total' => $this->money($tax),
             ];
+            $unit = self::reportingUnit($item);
+            if ($unit !== [] && $qty > 0) {
+                $perItem = self::quantityMillis($unit['gst_qty_per_unit']);
+                if ($qty <= intdiv(self::MAX_REPORTED_MILLIS, $perItem)) {
+                    $line['uqc'] = $unit['gst_uqc'];
+                    $line['uqc_quantity'] = self::quantityDecimal($perItem * $qty);
+                }
+            }
+            $lines[] = $line;
             $taxableTotal += $taxable;
             $taxTotal += $tax;
             $cgstTotal += $cgst;

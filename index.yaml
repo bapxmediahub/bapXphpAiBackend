@@ -47,7 +47,7 @@ query_examples:
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
   concepts: 501
-  relationships: 449
+  relationships: 450
   by_type:
     blog: 16
     controller: 18
@@ -6805,6 +6805,9 @@ relationships:
     relation: "references"
   - from: "doc:rea-agent-commerce-gap-audit"
     to: "doc:ai-review-workflow"
+    relation: "references"
+  - from: "doc:remote-commerce"
+    to: "doc:gst-commerce"
     relation: "references"
   - from: "doc:remote-commerce"
     to: "doc:public-mcp"

@@ -13,9 +13,9 @@
             "review_note": "Compared the shared backend skill and mail change with account lifecycle guidance. Ordinary verified signup and password recovery retain their original event and queue paths."
         },
         "commerce": {
-            "source_sha256": "a05e401e6a379a17ad8d6353f0f6d59396679f9f6d8d8d99afe33cbc7a57f9f2",
-            "references_sha256": "3cb623c78c3e69961b6e5a14f77c97baed5a32a436c38d3e7558f924b60cd6a5",
-            "review_note": "Compared the queue change with order and shipping guidance. The ordinary pending path and stable order-event keys still apply to paid orders, shipments and reviews."
+            "source_sha256": "4d8f53718f4495182ccef03d41eacb3da729dbe5ff1b5db5b54cbfd88957749e",
+            "references_sha256": "49ed13d7bb4503ead03763ce9c02b37edb4aed8e340ec2ac68dea584dd2d8f35",
+            "review_note": "Compared canonical optional fields, verified payment snapshots, historical flags, HSN groups and CSV review aggregation with the GST commerce guide."
         },
         "content": {
             "source_sha256": "8047c1092ae63a74262a3b32464a4d4b02c698563ab63c8551da0b04ce9c7f72",
@@ -23,9 +23,9 @@
             "review_note": "Reviewed Blog direct-route gating, sitemap module filtering, canonical URL and optional brand image defaults. Profile story is published as bounded plain paragraphs."
         },
         "foundation": {
-            "source_sha256": "db67d6140929d72b239e7fc977e9ca87befeb50cf85529e5ff6f20162108b8a2",
+            "source_sha256": "0f824a341e6e70cb0e5f0184a2a9fd047865be430e810f7870a86a54b1a0c142",
             "references_sha256": "5e72734d9a12aeaba4d4bdc192b0b9de3199d6590ba2e7c1b1482350e5cb0bd5",
-            "review_note": "Inspected the Users route and unchanged owner authorization/data store. New status filtering uses the canonical order enum and the existing checkout-email history."
+            "review_note": "Reviewed schemas, payment snapshots, operator validation and unchanged MySQL boundary against deployed PHP and checkout architecture."
         },
         "google-tags": {
             "source_sha256": "187c8971da4cad73fccba340fb2f7424e60c4cb704bed864594f6c2dd3308c72",
@@ -38,14 +38,14 @@
             "review_note": "Reviewed the new hosting instructions against existing request-failure guidance. A transport receipt remains distinct from a rendering response, and the worker preserves the canonical queue before reporting an outcome."
         },
         "interface": {
-            "source_sha256": "25393cb154f0931b213817c4eb6b4bb6fa6c6ab3a7f8a83fe3c642c27ae51a45",
-            "references_sha256": "139f72bba26766664206c32f9fe17b7877d720474dd548fd2a830f7b4765d6c3",
-            "review_note": "Compared the admin guide and Design with the account list toolbar, compact help link, icon visibility and filter/result hierarchy on desktop and mobile."
+            "source_sha256": "92d56abf355e74aad2ef02400382ffea46637d884b8fff31203bc63c29b9ee6a",
+            "references_sha256": "34082447f846e765d95438afbeb42bdd2085f923a3084f78b75e34a84a15ae6a",
+            "review_note": "Compared the product form, unit reconciliation and issued invoice with Design and operator guidance. Directory layout and filters retain their merged behavior."
         },
         "mail": {
-            "source_sha256": "d65891f4bf22f894979a68c9c51b4fdfcaf067c0f1564dbd86052227f91cc26c",
+            "source_sha256": "9968c413be2e4cd5b18c6d713da563ba2ba5b6bcbd00cc6cb27f6659a63e0480",
             "references_sha256": "e67f0fbc67954b174b852d9fc84ad03d27a8d6b4923528018c622f0097e1a262",
-            "review_note": "Reviewed the AdminController change to its Users method. Email recording, inbox and send forms are unaffected."
+            "review_note": "Checked the reconciled AdminController change in product editing. Mail defaults, rendering and queue behavior remain as documented."
         },
         "mcp-clients": {
             "source_sha256": "78b45576da2d1ffc37e26fdf5701db6321d7df0b22488288b1879d91472778f1",
@@ -54,33 +54,33 @@
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
-            "references_sha256": "e67787f676acefb2ce698978923eaf78e64361ab1183308f91bcabec0d50c67a",
-            "review_note": "Compared the revised admin UI skill to preserved media review and deletion controls. Latest-order filtering applies to the Users directory only."
+            "references_sha256": "f926c1d591d9756e68e254174776c7d2706496ba2f4f2c6aa834aaea6a901641",
+            "review_note": "Checked shared admin UI guidance and product validation. Media reference ownership and reviewed deletion remain as documented."
         },
         "operator-help": {
-            "source_sha256": "a33dfe2c5347b75259d3f1a454735d52a8a581310b7cce7b635130334ac57ec4",
-            "references_sha256": "d9be60de971188f1b6df2884fccf1091ad82b13a44da0b385f1f9cd6aa39d642",
-            "review_note": "Compared the Users guide route, advanced filters, status date scope and invoice links with the directory controller, layout and native form."
+            "source_sha256": "deeb36e5050c659bbefd045781c0217cb56faa20ac49541250ac85eade70f1e6",
+            "references_sha256": "4085806967ce3add36533b16ad368aa9e84651519cc1ec2ef4b5bab00f2eb10c",
+            "review_note": "Reviewed product tax edits, Reports help, checkout-email account help and the reconciled admin layout. Unit fields and historical review rules match the forms and exports."
         },
         "public-mcp": {
             "source_sha256": "e5d2bb67604d7b9c3588dba3d04e75ad9925c1c686f3a4d13dffd1dc8dd99325",
-            "references_sha256": "43d68fd861a0035d83d3af03b2a8d33110f91049d62a8bd70b58034dbd10aa59",
-            "review_note": "Compared the skill addition with the public MCP and commerce tool contracts. Its synthetic samples remain inside the owner email form and CLI, with no change to public transports or tool schemas."
+            "references_sha256": "b7b593e717c34bd2d587fe066462410dc6806da1eb0822d0ddb1204946c98291",
+            "review_note": "Checked the shared remote documentation against the public MCP checkout projection. Unit options remain private catalogue and invoice metadata."
         },
         "remote-commerce": {
-            "source_sha256": "e57f1d5e32c8a297bb085291e48e2f4fd3574c39841b0fe2444b2223d3ac59da",
-            "references_sha256": "59f19e7af9b3e46cbc5f364c95d6ef3a3fd7ffc448ab38ca1b073b56f359bbd2",
-            "review_note": "Reviewed the Design update to private directory layout. Storefront checkout and public commerce presentation guidance remain accurate."
+            "source_sha256": "20def67683e671cd66be902f690208bfe1c5638987528b10e3889b195954274b",
+            "references_sha256": "3e8b008cb8d15348202f6cb096d4a22443ec44b0dff3dc9447ce5a8ce008339c",
+            "review_note": "Compared private quote, digest and verified-order snapshots with the remote flow and documented the optional canonical unit pair."
         },
         "sales-channels": {
             "source_sha256": "6e5ee7b44dd92cc4dadec7a3c02f4bb9da797ba98d4e541e9f956687db236142",
-            "references_sha256": "ce84b911bce7bb5435cc905a83819e015bad8a111c795fd143c86cb59f903c4f",
-            "review_note": "Confirmed the existing catalogue optimiser and filename handling remain the default. Only brand uploads retain the original raster type."
+            "references_sha256": "ed194e15ddaa5ac6ee1118994fceeb94723165cedba02bc92ad745a196a18fd1",
+            "review_note": "Reviewed the optional canonical catalogue fields against the merchant feed projection. Published product, price and inventory fields remain as documented."
         },
         "workflow": {
-            "source_sha256": "f04d9a35611c321cbef13582bbf9ab54fbb9f9a42281247553e866031efa504c",
+            "source_sha256": "5d2e3d1994b33620349945837ae38cd6a8d7639c90c6418ef6dc27d1c6325906",
             "references_sha256": "7770887213db03241a85f7bbee17bf25b2c58350058ebc59e25fd76b29ad80df",
-            "review_note": "Compared the admin UI skill with the development workflow, including native filter regression and browser checks at 375px."
+            "review_note": "Checked the added synthetic browser regression and reconciled documentation against the existing CI, owner-only QA and release workflows."
         }
     }
 }
