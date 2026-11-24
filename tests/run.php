@@ -420,6 +420,35 @@ $tests['Tamil named festive retrieval matches English collection without guessin
     assertSame(null,\App\Services\AgentContextService::requestedCollection('பண்டிகை பொருட்கள்',$collections),'Generic Tamil festival query requires clarification');
 };
 
+$tests['developer index remains portable across client deployment configuration'] = static function (): void {
+    $names=['APP_URL','BAPX_REMOTE_DB_URL'];$saved=[];
+    foreach($names as $name)$saved[$name]=getenv($name);
+    $server=$_SERVER;$env=$_ENV;
+    $tmp=tempnam(sys_get_temp_dir(),'bapx-index-');
+    try {
+        $graph=new \App\Services\KnowledgeGraphService();$graph->build();
+        $outputs=[];
+        foreach(['https://client-one.example','https://client-two.example'] as $url) {
+            $_SERVER['APP_URL']=$_ENV['APP_URL']=$url;putenv('APP_URL='.$url);
+            $_SERVER['BAPX_REMOTE_DB_URL']=$_ENV['BAPX_REMOTE_DB_URL']=$url.'/remotedb';
+            putenv('BAPX_REMOTE_DB_URL='.$url.'/remotedb');
+            $graph->writeYamlIndex($tmp);
+            $outputs[]=file_get_contents($tmp);
+        }
+        assertSame($outputs[0],$outputs[1],'Developer index must not change across client configurations');
+        assertTrue(!str_contains($outputs[0],'client-one.example')&&!str_contains($outputs[0],'client-two.example'),'No configured runtime origin embedded');
+        assertTrue(str_contains($outputs[0],'BAPX_REMOTE_DB_URL'),'Actual configurable transport is discoverable');
+        $schema=(new \App\Services\SchemaService())->collection('settings');
+        foreach(['id','module_shop','module_blog','logo_url','favicon_url','palette_primary','palette_secondary','palette_canvas','palette_text','palette_link'] as $field)
+            assertTrue(isset($schema['fields'][$field]),'Existing owner setting represented in schema: '.$field);
+        assertSame([], $schema['agent_context']??[], 'Settings descriptors grant no new agent access');
+    } finally {
+        $_SERVER=$server;$_ENV=$env;
+        foreach($saved as $name=>$value)putenv($value===false?$name:$name.'='.$value);
+        @unlink($tmp);
+    }
+};
+
 $tests['developer knowledge index distinguishes runtime instructions without copying prompt bodies'] = static function (): void {
     $graph=(new \App\Services\KnowledgeGraphService())->build();
     $runtime=array_values(array_filter($graph['concepts'],static fn(array $row):bool=>($row['type']??'')==='runtime_instruction'));
@@ -2553,17 +2582,35 @@ $tests['contact page exposes general enquiry form and confirmation delivery'] = 
     }
 };
 
-$tests['about page uses focused responsive cards'] = function (): void {
-    $view = file_get_contents(app_path('views/public/about.php'));
-    $css = file_get_contents(app_path('assets/css/band.css'));
-    assertTrue(!str_contains($view, 'Positive Energy'), 'About page should not show the removed Positive Energy card');
-    foreach (['about-story-grid', 'about-feature-grid', 'about-feature-card', 'page-cta-card'] as $needle) {
-        assertTrue(str_contains($view, $needle), "About page should use {$needle}");
+$tests['About story profile is reusable, module gated and canonical'] = static function (): void {
+    $profile = require app_path('config/about.php');
+    foreach ([$profile['hero_image'], $profile['story']['image']] as $image) {
+        assertTrue(str_starts_with($image['src'], '/assets/images/'), 'Use shipped imagery');
+        $size = getimagesize(app_path(ltrim($image['src'], '/')));
+        assertSame([$image['width'],$image['height']], [$size[0],$size[1]], 'Image dimensions reserve the real aspect ratio');
+        assertTrue(trim($image['alt']) !== '', 'Editorial images have descriptive alt text');
     }
-    assertTrue(str_contains($view, 'href="/contact#contact-form"'), 'About page CTA should link to the contact booking form');
-    assertTrue(!str_contains($view, 'GST Registration'), 'About page CTA should replace the old GST/business detail block');
-    assertTrue(str_contains($css, '.about-feature-grid') && str_contains($css, 'repeat(3, minmax(0, 1fr))'), 'About feature cards should align as three columns on desktop');
-    assertTrue(str_contains($css, '.about-story-grid,') && str_contains($css, '.about-feature-grid { grid-template-columns: 1fr; }'), 'About cards should stack on smaller screens');
+    $controller = \App\Controllers\PublicController::class;
+    assertSame(['/shop','/temples','/blog'], array_column($controller::aboutPathways($profile,['shop'=>true,'blog'=>true]),'path'), 'All enabled destinations');
+    $profile['paths']['arbitrary']=['title'=>'Invalid','path'=>'https://untrusted.invalid'];
+    $profile['paths']['temples']['path']='https://untrusted.invalid';
+    $aboutPaths=$controller::aboutPathways($profile,['shop'=>false,'blog'=>false]);
+    assertSame(['/temples'],array_column($aboutPaths,'path'),'Disabled and unknown destinations omitted, canonical route wins');
+    $about=$profile;
+    $about['headline']='Example business <script>fixture()</script>';
+    $publicContact=(new \App\Services\PublicKnowledgeService())->contact();
+    $service=new \App\Services\SeoService(['seo_site_name'=>'Example Business'],'https://configured.example');
+    $seo=$service->page('about',['canonical'=>'https://configured.example/about','description'=>$about['intro']]);
+    ob_start();require app_path('views/public/about.php');$rendered=ob_get_clean();
+    assertTrue(str_contains($rendered,'About Example Business'),'Use configured brand identity');
+    assertTrue(str_contains($rendered,'Example business &lt;script&gt;fixture()&lt;/script&gt;'),'Escape profile copy');
+    assertTrue(!str_contains($rendered,'href="/shop"')&&!str_contains($rendered,'href="/blog"'),'Disabled modules do not leak links');
+    assertTrue(str_contains($rendered,'href="/contact#contact-form"'),'Real enquiry route retained');
+    assertSame(1,substr_count($rendered,'<h1>'),'One meaningful primary heading');
+    assertSame(1,substr_count($rendered,'"@type":"AboutPage"'),'Exactly one canonical AboutPage schema');
+    assertTrue(str_contains($rendered,'"url":"https://configured.example/about"'),'Schema uses configured origin');
+    assertTrue(!str_contains($seo['description'],'since 2020'),'No unsupported founding-date claim');
+    assertTrue(!str_contains(fileRead('views/public/about.php'),'Sri Panchami Spiritual'),'Reusable template has no client brand literals');
 };
 
 $tests['public pages expose shared general enquiry cta'] = function (): void {

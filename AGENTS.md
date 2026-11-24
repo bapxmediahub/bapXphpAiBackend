@@ -47,6 +47,37 @@ This file is the single binding contract for coding agents in this repository.
   See `docs/runtime-agents.md`. Both private trees are denied to direct HTTP access.
 - The product has exactly two PHP agent surfaces: customer support and owner/admin chat.
 
+## White-label product contract (binding)
+
+- Maintain a reusable native PHP/MySQL/vanilla-JS core for separately deployed
+  bapX customers. Sri Panchami is a reference deployment, not the framework's
+  generic identity. Preserve its verified behavior during migration.
+- Framework code owns stable routes, validation, schema, authorization, service
+  contracts and neutral defaults. Client identity, domain, contact, logos,
+  favicon, palette, content, policies, catalogue, integration configuration and
+  business-specific instructions belong in approved deployment configuration,
+  content or owner-managed records. Do not add new client literals in shared
+  services/templates. Track existing exceptions; never copy another client's
+  live records or change its identity as a side effect.
+- Expand existing Settings, Appearance and Integrations, not duplicate stores.
+  Keep credentials encrypted/private and separate DB, media, conversation
+  storage and secret material per client.
+- Defer `/install` and package setup (DB access, identity, appearance, unique
+  owner credentials, SMTP, AI, Google OAuth and other integrations) until
+  current capability and defect work is verified. Do not build it now.
+- Reusable means tests with two distinct synthetic business profiles, authorized
+  owner edit/save/reload, module gating, cross-client isolation and live
+  reference-deployment regression. A schema field or green fixture alone does
+  not certify a feature or an installation.
+- Keep Knowledge, Instruction and Tool RAG distinct in the native bounded
+  agent loop. .bapX supplies scoped business guidance; .agents and generated
+  project indexes are development-only. Record retrieved facts, activated
+  instruction hashes and actual executed tool results separately.
+- Generate Mermaid/YAML/JSON from canonical code and schema, independently of
+  deployment configuration. Reference the configured data transport, never
+  publish a resolved runtime client URL or record. Review README diagrams and
+  durable documentation against actual source after regeneration.
+
 ## Work order
 
 ### Navigation budget

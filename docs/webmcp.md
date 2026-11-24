@@ -46,9 +46,9 @@ Unknown arguments, private fields and unapproved response paths are rejected.
 
 ## Declarative reuse of existing forms
 
-The shop's real \`GET /shop\` keyword/category/sort form advertises \`filter_visible_shop\` with \`toolautosubmit\` because it only navigates to filtered public results. This does not duplicate the canonical \`search_public_products\` read, which queries the entire published catalogue.
+The shop's real `GET /shop` keyword/category/sort form advertises `filter_visible_shop` with `toolautosubmit` because it only navigates to filtered public results. This does not duplicate the canonical `search_public_products` read, which queries the entire published catalogue.
 
-The existing \`POST /contact\` form advertises \`prepare_contact_enquiry\` with field descriptions and **no** \`toolautosubmit\`: an AI-enabled browser may help fill fields, but the visitor must explicitly submit the message. A contact enquiry never books a retired consultation. Support may reuse this same-origin form inside its existing panel, with the original server's CSRF, validation, rate limit and confirmation. WebMCP registration on these elements does not install remote chat tools or permit unattended writes.
+The existing `POST /contact` form advertises `prepare_contact_enquiry` with field descriptions and **no** `toolautosubmit`: an AI-enabled browser may help fill fields, but the visitor must explicitly submit the message. A contact enquiry never books a retired consultation. Support may reuse this same-origin form inside its existing panel, with the original server's CSRF, validation, rate limit and confirmation. WebMCP registration on these elements does not install remote chat tools or permit unattended writes.
 
 ## Finding the public tools
 
@@ -212,7 +212,14 @@ pages, and invokes only `get_public_contact` with empty arguments. The command's
 `invocationId` must match both the invocation and completion events, including
 the observed frame/tool identity. The returned public contact must equal the
 existing native JavaScript result. Discovery of a commerce tool does not execute
-that tool.
+that tool. The native CDP shop registry includes exactly one additional
+declarative HTML form tool, `filter_visible_shop`, alongside the imperative
+registry. Chrome synthesizes its schema from the existing GET form (see
+[Chrome Agentic Forms](https://developer.chrome.com/docs/modern-web-guidance/guides/webmcp/agentic-forms)).
+Native JavaScript discovery waits for the same full registry because the form
+can register asynchronously after the imperative tools. The pinned imperative
+polyfill is checked separately; the form is not a new backend capability. Unknown CDP
+names still fail the exact page allowlist.
 
 Each CDP result logs `Browser.getVersion` product, protocol version and revision,
 plus the observed descriptor profile and tool names. The helper uses the opaque
@@ -263,6 +270,9 @@ After the deployment SHA gate, `tests/live-webmcp-a2ui-browser.cjs` independentl
 checks the real landing and shop pages in polyfill and native modes. It renders
 a returned card in a test host on the page. The native mode repeats the bounded
 CDP discovery and public contact read on both pages, without invoking commerce
-actions. This proves browser-level production behavior in the recorded Chrome
+actions. Both lanes also verify the actual shop filter's declarative attributes
+and one ordinary read-only GET navigation, without submitting any contact form.
+Discovery and form navigation are distinct checks, not a CDP form invocation.
+This proves browser-level production behavior in the recorded Chrome
 version; it does not claim that an unrelated chat client has installed the site's
 connector or rendered its MCP App.

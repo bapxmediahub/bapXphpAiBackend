@@ -47,6 +47,9 @@ final class SeoService {
         $meta['og_image'] = $this->imageUrl((string)($meta['og_image'] ?? ''));
         $meta['twitter_image'] = empty($meta['twitter_image']) ? $meta['og_image'] : $this->imageUrl((string)$meta['twitter_image']);
         $meta['organization_json_ld'] = $this->jsonLdScript($this->organizationSchema());
+        if ($key === 'about') {
+            $meta['about_json_ld'] = $this->jsonLdScript($this->aboutPageSchema($meta['description'], $meta['canonical']));
+        }
         $meta['twitter_title'] ??= $meta['og_title'] ?? $meta['title'];
         $meta['twitter_description'] ??= $meta['og_description'] ?? $meta['description'];
         $meta['og_title'] ??= $meta['title'];
@@ -102,8 +105,8 @@ final class SeoService {
                 'robots' => 'index, follow',
             ],
             'about' => [
-                'title' => 'About ' . $brand . ' – Chennai\'s Trusted Spiritual Store',
-                'description' => 'Learn about ' . $brand . ', Chennai\'s trusted destination for authentic spiritual products and temple guidance since 2020.',
+                'title' => 'About ' . $brand,
+                'description' => 'Learn about ' . $brand . ', our products, purpose and customer support.',
                 'og_type' => 'website',
                 'robots' => 'index, follow',
             ],
@@ -275,12 +278,13 @@ final class SeoService {
         ];
     }
 
-    public function aboutPageSchema(): array {
+    public function aboutPageSchema(?string $description = null, ?string $canonical = null): array {
         return [
             '@context' => 'https://schema.org',
             '@type' => 'AboutPage',
             'name' => 'About ' . $this->siteName,
-            'description' => 'Learn about ' . $this->siteName . ', Chennai\'s trusted destination for authentic spiritual products and temple guidance.',
+            'description' => $description ?? $this->defaults('about')['description'],
+            'url' => $this->overrideUrl($canonical) ?? $this->pageUrl('/about'),
             'mainEntity' => $this->organizationSchema(),
         ];
     }

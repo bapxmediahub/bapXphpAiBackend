@@ -6,6 +6,16 @@ category: docs
 ---
 # Architecture
 
+## Product and client boundary
+
+Native PHP, MySQL, server-rendered UI and vanilla JavaScript form the shared
+core. Each client has its own approved configuration, database, private storage,
+media and credentials. Current Sri Panchami identity literals are migration gaps,
+not generic framework defaults. Expand the existing owner Settings, Appearance
+and Integrations. See [client runtime adaptation](client-runtime-adaptation.md).
+The package and /install wizard are deferred until reusable capability
+verification is complete.
+
 ## Frontend
 
 - PHP-rendered public, account, and admin templates in `views/`.
@@ -28,7 +38,7 @@ category: docs
   `storage/agent-conversations/<conversation-id>.json` through
   `AgentConversationService`. Conversation files are not MySQL tables.
   Their trace/feedback/evaluation records are stored in the same JSON file.
-- Business records are remote-only: `.env` supplies direct hosted MySQL credentials to `DatabaseService`; when direct access is unavailable, the CLI/application use `APP_URL/remotedb`. The local checkout is not a customer-data fallback.
+- Business records are remote-only: `.env` supplies direct hosted MySQL credentials to `DatabaseService`; when direct access is unavailable, the CLI/application use the configured remote endpoint (BAPX_REMOTE_DB_URL, default APP_URL/remotedb). The local checkout is not a customer-data fallback.
 - Blog posts are file-based: `content/blog/posts/*.md` with YAML frontmatter.
 - `PublicKnowledgeService` is the shared read-only projection for visible products, published blog/customer-help metadata, public contact details and existing enquiry services. Both PHP agent surfaces reuse its public tools; local MCP shares the canonical product schema, and landing-page WebMCP calls bounded public GET endpoints. Contact page facts and service links come from the same explicit projection, even when Shop/Blog are disabled. A public request cannot address private Markdown, owner Help, broad settings rows or JSON conversation storage. See [WebMCP contracts and verification](webmcp.md).
 - Media metadata lives in MySQL `media_files` collection.
@@ -36,6 +46,7 @@ category: docs
   deployment checkout; `index.php` serves their existing public media URLs.
   Legacy media YAML is read-only compatibility input.
 - `AgentContextService` builds safe user-specific support context.
+  Both model surfaces share AiClient and RuntimeAgentToolRegistry: Knowledge RAG retrieves facts, Instruction RAG activates guidance, and Tool RAG activates scoped capabilities.
   `SupportToolRegistry` and `EnterpriseToolRegistry` expose separate
   capabilities enforced by `AgentCapabilityPolicy`.
   `AgentTraceService` correlates observed retrieval, named tool calls,
