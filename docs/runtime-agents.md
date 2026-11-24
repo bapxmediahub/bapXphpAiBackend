@@ -75,6 +75,10 @@ evaluations record both role manifests and include their content hashes in the
 implementation fingerprint; the explicit admin actor there is a local test
 fixture, not a production browser privilege grant.
 
+## Provider availability
+
+Both agents use the shared AiClient and the same deployment-local transport cooldown. New ordinary generations can skip recently failed connections/models; explicit diagnostics retain actual transfers. Cooldowns do not change saved provider configuration or permit retry of a locked tool exchange. If no model is eligible, the agent reports a local failure/fallback without fabricating HTTP attempts. Exact owner capability questions, including “What kinds of store tasks can you help me with?”, are answered by the existing scoped capability guide without inference. See [agent observability](agent-observability.md) for evidence semantics and bounds.
+
 ## Native processing loop: three RAG layers
 
 See the README processing diagram. Both model paths use the shared bounded

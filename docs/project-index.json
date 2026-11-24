@@ -191,7 +191,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1165
+            "line": 1158
         },
         {
             "from": "controller:AdminController",
@@ -199,7 +199,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1410
+            "line": 1403
         },
         {
             "from": "controller:AdminController",
@@ -255,7 +255,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1008
+            "line": 1001
         },
         {
             "from": "controller:AdminController",
@@ -263,7 +263,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1049
+            "line": 1042
         },
         {
             "from": "controller:AdminController",
@@ -271,7 +271,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1385
+            "line": 1378
         },
         {
             "from": "controller:AdminController",
@@ -343,7 +343,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1634
+            "line": 1627
         },
         {
             "from": "controller:AdminController",
@@ -367,7 +367,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1135
+            "line": 1128
         },
         {
             "from": "controller:AdminController",
@@ -447,7 +447,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1436
+            "line": 1429
         },
         {
             "from": "controller:AdminController",
@@ -463,7 +463,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1461
+            "line": 1454
         },
         {
             "from": "controller:AdminController",
@@ -471,7 +471,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1058
+            "line": 1051
         },
         {
             "from": "controller:AdminController",
@@ -479,7 +479,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1005
+            "line": 998
         },
         {
             "from": "controller:AdminController",
@@ -487,7 +487,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1071
+            "line": 1064
         },
         {
             "from": "controller:AdminController",
@@ -503,7 +503,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1563
+            "line": 1556
         },
         {
             "from": "controller:AdminController",
@@ -1811,11 +1811,27 @@
         },
         {
             "from": "service:AgentTraceService",
+            "to": "service:AiClient",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AgentTraceService.php",
+            "line": 354
+        },
+        {
+            "from": "service:AgentTraceService",
             "to": "service:SecretService",
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AgentTraceService.php",
             "line": 311
+        },
+        {
+            "from": "service:AiClient",
+            "to": "service:AiProviderHealthService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/AiClient.php",
+            "line": 87
         },
         {
             "from": "service:AiClient",
@@ -1831,7 +1847,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AiClient.php",
-            "line": 598
+            "line": 608
         },
         {
             "from": "service:AiClient",
@@ -1839,7 +1855,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AiClient.php",
-            "line": 635
+            "line": 645
         },
         {
             "from": "service:AiClient",
@@ -1871,7 +1887,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/AuditLogService.php",
-            "line": 44
+            "line": 50
         },
         {
             "from": "service:AuditLogService",
@@ -1879,7 +1895,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AuditLogService.php",
-            "line": 94
+            "line": 100
         },
         {
             "from": "service:AuditLogService",
@@ -1887,7 +1903,15 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AuditLogService.php",
-            "line": 54
+            "line": 60
+        },
+        {
+            "from": "service:AuditLogService",
+            "to": "service:AiClient",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AuditLogService.php",
+            "line": 43
         },
         {
             "from": "service:AuditLogService",
@@ -1895,7 +1919,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AuditLogService.php",
-            "line": 80
+            "line": 86
         },
         {
             "from": "service:AuthoredPageService",
@@ -3237,7 +3261,7 @@
     "summary": {
         "routes": 182,
         "controllers": 18,
-        "services": 85,
+        "services": 86,
         "views": 74,
         "collections": 24
     },
@@ -5736,6 +5760,7 @@
         "AgentTraceService",
         "AgentTranscriptSanitizer",
         "AiClient",
+        "AiProviderHealthService",
         "AiReplyCleaner",
         "AppointmentService",
         "AstrologerService",

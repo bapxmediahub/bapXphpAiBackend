@@ -872,19 +872,12 @@ final class AdminController extends BaseController {
         if (\App\Services\AiClient::isError($answer)) return $answer;
         if (trim($answer) === '') return 'AI request failed: the provider returned no answer. Please try again.';
 
-        // A bare figure is the failure this persona exists to prevent, so it is caught
-        // rather than trusted. One retry, then whatever comes back is shown — an
-        // unadorned number the owner can see is better than a loop they wait through.
+        // Do not start another model/tool generation just to explain an ambiguous
+        // number. Retain the original attempt evidence and let existing verified
+        // local fallback handle it rather than displaying an unsupported figure.
         if (self::isBareFigure($answer) && !self::wantsNumberOnly($message)) {
-            $retry = $client->completeWithTools(
-                $prompt . "\n\nYour previous reply was just \"" . trim($answer) . "\". "
-                . "Say what that number counts, which data you checked to get it, and how you interpreted the question.",
-                $modelTools
-            );
-            if (!\App\Services\AiClient::isError($retry) && trim($retry) !== '') {
-                $answer = $retry;
-                $reason = $client->failureCategory();
-            } // A failed retry is discarded: the original answer is still shown.
+            $reason = 'rejected_response';
+            return 'AI request failed: the model returned an unexplained number. Ask for the exact report or date range so I can verify it.';
         }
         $clean = $this->cleanAnswer($answer);
         if ($clean === 'I could not produce a clear answer to that. Try asking it a different way.') {

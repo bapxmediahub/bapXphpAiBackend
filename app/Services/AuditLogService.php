@@ -4,7 +4,7 @@ namespace App\Services;
 final class AuditLogService {
     private const RUN_REASONS = ['not_configured', 'timeout', 'transport', 'authentication', 'rate_limit',
         'provider_server', 'provider_request', 'provider_response', 'empty_response', 'rejected_response',
-        'internal_error', 'lookup_unavailable', 'request_deadline', 'provider_budget', 'trace_step_budget'];
+        'internal_error', 'lookup_unavailable', 'provider_cooldown', 'request_deadline', 'provider_budget', 'trace_step_budget'];
 
     public const DIAGNOSTICS = [
         'transfer_timeout' => ['Transfer timed out', 'Check the recorded HTTP status and first-byte timing. A timeout alone cannot identify where the delay occurred.'],
@@ -13,6 +13,11 @@ final class AuditLogService {
         'rate_limit' => ['Provider rate or quota limit', 'Check provider quota and rate limits before retrying.'],
         'access_denied' => ['Provider denied access', 'Check the configured credentials and the account permissions for this model.'],
         'request_error' => ['Provider rejected the request', 'Check the endpoint, model and supported request fields.'],
+        'tool_schema' => ['Provider response suggests a tool-schema rejection', 'Compare the actual declaration format against the configured model API. The hint is not a proven root cause.'],
+        'tool_history' => ['Provider response suggests a tool-history rejection', 'Inspect correlation and history shape using a synthetic fixture. Do not replay the production tool exchange.'],
+        'generation_config' => ['Provider response suggests a generation-config rejection', 'Check supported model-specific settings. The provider message is not stored.'],
+        'invalid_argument' => ['Provider reported invalid arguments', 'Review the exact model and supported request fields.'],
+        'provider_cooldown' => ['Recent provider failure: temporary cooldown', 'No new provider attempt was made for a held model. Wait briefly or use an explicit integration diagnostic.'],
         'other_http' => ['Unexpected HTTP status', 'Check the configured endpoint and the recorded status.'],
         'no_http' => ['No HTTP status recorded', 'Check the host connection and the trace for a transport error.'],
         'http_success' => ['HTTP success', ''],
@@ -35,6 +40,7 @@ final class AuditLogService {
             $status >= 500 && $status < 600 => 'upstream_http',
             $status === 429 => 'rate_limit',
             $status === 401 || $status === 403 => 'access_denied',
+            in_array($status,[400,422],true) && in_array($attempt['request_error_hint']??null,AiClient::REQUEST_ERROR_HINTS,true) => $attempt['request_error_hint'],
             $status >= 400 && $status < 500 => 'request_error',
             $status >= 200 && $status < 300 => 'http_success',
             default => 'other_http',

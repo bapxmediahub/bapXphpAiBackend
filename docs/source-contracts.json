@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "c7e5e36cb45f12b8138d25b7a3ea1a5de41f2e5c0c207d566e0136b7f2e8c608",
-            "references_sha256": "6ad94a0956a664389ab3ff5176430d56e0df8d7a6564fafeffd07f7c427852c0",
-            "review_note": "Reviewed exact local aggregate scope, shared article tool, role permissions, selected runtime guidance, and bounded source evidence against generated contracts."
+            "source_sha256": "fdb3666ddc83471efc2762f85fd7ae5f0819082071b14ae70dc68c26501686cd",
+            "references_sha256": "54329fdd722dd7de093f362e6ef1da91347be2eed177e4737acdb3e9bb3edb01",
+            "review_note": "Reviewed shared bounded provider routing, cooldown scope and expiry, explicit diagnostic bypass, no locked tool replay, redacted 400/422 hints, and removal of duplicate unexplained-number generation."
         },
         "auth": {
             "source_sha256": "8ab8b0dfe90dd456bb2e5e4f76b35784ecf0d5796d96bcd5beef93f794b73cc6",
@@ -23,9 +23,9 @@
             "review_note": "Reviewed browser snapshot bounds, per-owner and page key, revision conflict, explicit save token cleanup and unchanged MySQL CAS and publication status."
         },
         "foundation": {
-            "source_sha256": "eb90d0353805428f5c127010dc6c25fa6f25e0c9894622a0fb72f5aabbf26f01",
+            "source_sha256": "a0402309bd81f65ddc5df05e6f45abd9cf66441c20def334b59b3b25cd747e7e",
             "references_sha256": "72143dfd889ce423f5ccc0968c40110236a3f849a1e1b5ced859cb29fe18ccc8",
-            "review_note": "Reviewed shared published knowledge and audit evidence; storage, schema, HTTP and deployment contracts unchanged."
+            "review_note": "Reviewed optional private deployment-local health cache, atomic replacement, bounded expiry, fail-open semantics and no business schema or conversation changes."
         },
         "google-tags": {
             "source_sha256": "74608f4b6615a7a06cdd2df0b96a71cd47560b68c272654f4cf12dedf2fc4658",
@@ -43,14 +43,14 @@
             "review_note": "Existing integrations diagnostic links to canonical sample workspace; contact hold labels corrected."
         },
         "mail": {
-            "source_sha256": "fdb83f10b5a01648d20b8d462900561abc1de84cc0d59aa9ebcb57640cffa3bb",
+            "source_sha256": "8eb853cb4e129c90b440c156359c4f928d66ee14e50150d267bdcc50fb7b829b",
             "references_sha256": "94953d8cc1be8d94770cc0ce54fa176e7f8593d84e7bdf969759f205a77f3ee2",
-            "review_note": "Public signup/recovery atomic admission; no unaudited legacy diagnostic send; curated synthetic sample and actual inbox verification retained."
+            "review_note": "Reviewed AdminController diff: only Enterprise inference handling changed; mail triggers, queued samples and SMTP transport remain unchanged."
         },
         "mcp-clients": {
-            "source_sha256": "bcc2b9ad797452e656d3af100b575408b46db08f69f1c9c99326ec7e21072ecd",
+            "source_sha256": "cb08fbb82a36095ae5ae7d211a6f0e12904564e2f1f2bb1ee7404184b627b85e",
             "references_sha256": "1390a1ae3be706072f85e628f3065e2170dc2685b3841c008d02536d232f2d1c",
-            "review_note": "Reviewed audit reason and public tool contracts; MCP client authorization and CLI are unchanged."
+            "review_note": "Reviewed shared audit categories and transport metadata; no change to MCP client scopes, authentication, or CLI protocol."
         },
         "media": {
             "source_sha256": "c99bf5f35495fb29a3025b39dc32c1fbd2f20640fbacd2784598a53cd3a8584f",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed upload eligibility, revision hash, bounded UTF-8 metadata, row lock, exact patch, no row creation, and view/search/isolated DB tests."
         },
         "operator-help": {
-            "source_sha256": "e6358ca08989896f0c1a014bb4ba0965d453d25555a3ed6829c665911344e10b",
-            "references_sha256": "10e9fc94988d3c75da19ecc0ede247393d6636a956b7b33f9ea7613237fb8da2",
-            "review_note": "Reviewed existing owner and customer guides; shared published-article tool does not expose private operator help and local catalogue route adds no owner action."
+            "source_sha256": "fc457ebd9df44fb644c78f98bc8943a1aabd1622b9d413943681f4ea25bbdc93",
+            "references_sha256": "d71ae7fc3cc07db2645077d32f54f7d871609ec9c82f93b55c10e862dda9c49c",
+            "review_note": "Cross-checked owner capability guide and monitoring explanation; exact general task question is local, scoped reports remain on existing authorized paths."
         },
         "public-mcp": {
             "source_sha256": "a995cec1d69a5ce74182a969e99390b21abddac3489fb0219b64c2ac5c9c3259",

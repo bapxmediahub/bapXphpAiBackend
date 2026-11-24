@@ -721,6 +721,44 @@ $tests['uncaught CLI errors exit nonzero without HTML or sensitive exception bod
     }finally{@unlink($fixture);}
 };
 
+$tests['provider cooldown is bounded, deployment local, and stores no raw credentials or requests'] = static function (): void {
+    $dir=sys_get_temp_dir().'/bapx-provider-health-'.bin2hex(random_bytes(6));mkdir($dir,0700);
+    $path=$dir.'/health.json';
+    try {
+        $health=new \App\Services\AiProviderHealthService($path);
+        $plan=[['provider'=>'google','endpoint'=>'https://provider.example.invalid/v1','apiKey'=>'private-fixture-key',
+            'model'=>'primary','models'=>['primary','fallback']]];
+        $now=1800000000;
+        $health->record($plan[0],'primary',503,0,null,$now);
+        assertSame(['fallback'],$health->availablePlan($plan,$now)[0]['models'],'Primary failure cannot suppress healthy alternate');
+        assertSame($plan,$health->availablePlan($plan,$now+20),'Cooldown expires automatically');
+        $other=$plan;$other[0]['endpoint']='https://other.example.invalid/v1';
+        assertSame($other,$health->availablePlan($other,$now),'Separate connections remain independent');
+        $health->record($plan[0],'fallback',429,0,500000,$now);
+        assertSame([],$health->availablePlan($plan,$now),'All cooling models produce no eligible route');
+        assertSame($plan,$health->availablePlan($plan,$now+120),'Retry-After cache has a finite ceiling');
+        assertTrue(!str_contains(file_get_contents($path),'private-fixture-key')&&!str_contains(file_get_contents($path),'provider.example.invalid'),'Only digests and expiry timestamps stored');
+        assertSame(0,\App\Services\AiProviderHealthService::cooldownSeconds(400,0),'Malformed request never triggers cooldown');
+        assertSame(0,\App\Services\AiProviderHealthService::cooldownSeconds(403,0),'Authentication rejection never triggers cooldown');
+        assertSame(15,\App\Services\AiProviderHealthService::cooldownSeconds(0,28),'Bound client timeout');
+        file_put_contents($path,'corrupt');
+        assertSame($plan,$health->availablePlan($plan,$now),'Optional health storage failure cannot disable inference');
+    } finally {foreach(glob($dir.'/*')?:[] as $file)unlink($file);rmdir($dir);}
+};
+
+$tests['request rejection hints remain redacted and do not claim an exact cause'] = static function (): void {
+    $client=\App\Services\AiClient::class;
+    foreach(['function_declarations parameters_json_schema'=>'tool_schema','missing thought signature'=>'tool_history','thinkingConfig unsupported'=>'generation_config'] as $message=>$hint){
+        $body=json_encode(['error'=>['message'=>$message.' PRIVATE-FIXTURE','status'=>'INVALID_ARGUMENT']]);
+        assertSame($hint,$client::requestErrorHint(400,$body),'Recognized bounded hint');
+        assertSame($hint,\App\Services\AuditLogService::attemptDiagnosis(['status'=>400,'request_error_hint'=>$hint]),'Monitoring uses the bounded hint');
+        assertSame($hint,\App\Services\AgentTraceService::attemptTimings(['request_error_hint'=>$hint])['request_error_hint'],'Trace keeps hint only');
+        assertTrue(!str_contains($client::describeFailure(400,$body),'PRIVATE-FIXTURE'),'Raw provider errors never render');
+    }
+    assertSame([], \App\Services\AgentTraceService::attemptTimings(['request_error_hint'=>'private arbitrary string']),'Unrecognized hints dropped');
+    assertSame(null,$client::requestErrorHint(503,'{"error":{"message":"tool schema"}}'),'Transient response does not prove a malformed schema');
+};
+
 $tests['operator help reads the canonical owner guide without calling a model'] = static function (): void {
     $prior = $_SESSION['user'] ?? null;
     try {
@@ -740,6 +778,8 @@ $tests['operator help reads the canonical owner guide without calling a model'] 
         assertSame(null, $tools->guideAnswer('How do I write a post about my latest sales?'), 'Mixed questions need interpretation');
         assertTrue(str_contains($tools->guideAnswer('/help'), 'blog-publishing'), 'Available topics are discoverable without a provider');
         assertTrue(str_contains($tools->guideAnswer('/help catalogue'), 'product'), 'Explicit guide topic returns canonical text');
+        assertTrue(str_contains((string)$tools->guideAnswer('What kinds of store tasks can you help me with?'),'Paid sales'),'Original live capability question stays local');
+        assertSame(null,$tools->guideAnswer('What kinds of store tasks can you help me with for orders today?'),'Scoped questions are not intercepted by general capability guide');
         assertTrue(isset($tools->run('operator_guide', ['topic'=>'../settings'])['error']), 'Only allowlisted topics are readable');
     } finally {
         if ($prior === null) unset($_SESSION['user']); else $_SESSION['user'] = $prior;
@@ -3574,6 +3614,9 @@ $tests['the admin agent grounds a count instead of returning the nearest number'
     }
 
     $admin = file_get_contents(app_path('app/Controllers/AdminController.php'));
+    $method=substr($admin,strpos($admin,'private function callAiApi('),strpos($admin,'private static function isBareFigure(')-strpos($admin,'private function callAiApi('));
+    assertSame(1,substr_count($method,'->completeWithTools('),'Unexplained answer never starts a second full model/tool generation');
+    assertTrue(str_contains($method,"$"."reason = 'rejected_response'"),'Unexplained numeric reply is rejected with observed evidence preserved');
     assertTrue(str_contains($admin, 'Use the matching read-only tool before making any claim'),
         'The admin persona should require a number to carry its source');
     assertTrue(str_contains($admin, 'distinguish empty results from failed lookups'),
