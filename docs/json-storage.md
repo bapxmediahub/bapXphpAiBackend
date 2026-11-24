@@ -43,6 +43,22 @@ directory.
 - Optional one-time seed fixtures: `storage/data/*.json`; they are **not**
   runtime fallbacks for business data.
 
+
+## CI check for filesystem writes
+
+`./bapXphp test` and `./bapXphp ci` inspect PHP tokens in the runtime entrypoint,
+application, API, configuration, integrations and views. New direct filesystem
+writers and changes to reviewed destination expressions fail the test with a
+file and line. The existing writers are documented in
+`tests/runtime-storage-boundary.php` alongside their approved operational paths.
+Opening a file for reading and writing to memory or standard streams remain
+available.
+
+This is a source regression check. Review the origin of computed paths when
+editing an existing writer. Keep new business persistence in `DatabaseService`;
+for an approved filesystem feature, review its destination and update the test
+and this contract in the same change.
+
 ## Commands and provenance
 
 ```bash
