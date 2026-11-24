@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "6e1ac25f57bba660e3060d2ff383829b11e0b8aa75ebc8c315a162900740ca78",
+            "source_sha256": "a8c57d586c02a87009274e6d2654660ff4b9ff66dedc2e5c9004ad324578dc1e",
             "references_sha256": "4db8c915776e898bd080ad21d7b88500ee584a1f02134bc05f2751fd0db4084c",
-            "review_note": "Reviewed object-preserving custom Google wire serialization and actual correlated custom-model tool exchange."
+            "review_note": "Reviewed central missing-cURL guard and isolated disabled-function regression: safe recognized transport failure, no outbound request."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",

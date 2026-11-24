@@ -4,6 +4,19 @@ putenv('BAPX_TEST_MODE=1');
 require dirname(__DIR__).'/app/bootstrap.php';
 use App\Services\{AiClient,SecretService};
 function expect(bool $ok,string $message):void { if(!$ok)throw new RuntimeException($message); }
+if(!function_exists('curl_init')) {
+    $client=new AiClient();
+    $route=new ReflectionMethod(AiClient::class,'route');
+    $plan=[['provider'=>'google','endpoint'=>'https://generativelanguage.googleapis.com/v1beta/models','apiKey'=>'fixture','model'=>'gemma-4-31b-it','models'=>['gemma-4-31b-it'],'configured'=>true]];
+    $answer=$route->invoke($client,'Fixture',32,0.0,null,null,0,$plan);
+    expect(AiClient::isError($answer)&&$client->failureCategory()==='transport'&&$client->transferTimings()===[],'Missing cURL must return a recognized transport failure before sending');
+    echo "PASS missing-cURL text guard\n";
+    exit;
+}
+$guardOutput=[];$guardStatus=0;
+exec(escapeshellarg(PHP_BINARY).' -d disable_functions=curl_init '.escapeshellarg(__FILE__).' 2>&1',$guardOutput,$guardStatus);
+expect($guardStatus===0&&in_array('PASS missing-cURL text guard',$guardOutput,true),'Missing-cURL subprocess must succeed');
+
 $decl=['name'=>'lookup','description'=>'Fixture','parameters'=>['type'=>'object','properties'=>['query'=>['type'=>'string']],'required'=>['query'],'additionalProperties'=>false]];
 $wire=AiClient::googleDeclarations([$decl])[0];
 expect(!isset($wire['parameters'])&&$wire['parametersJsonSchema']===$decl['parameters'],'Google must use the JSON Schema field without weakening validation');
