@@ -165,20 +165,39 @@ $tests['public catalogue summary and bestseller projection never expose private 
     assertSame(null,\App\Services\SupportBotService::aggregateToolForQuestion('How many products are in my order?'),'Never substitute store totals for private orders');
 };
 
-$tests['exact support aggregates execute locally and filtered requests are not misrouted'] = static function (): void {
-    $service=\App\Services\SupportBotService::class;
-    assertSame('public_catalogue_summary',$service::aggregateToolForQuestion('How many published products do you have and which categories are listed?'),'Live aggregate reproduction');
-    foreach(['How many products have copper?', 'How many products are in the pendant collection?', 'Which categories have discounts?', 'What is the best selling pendant?', 'How many products are in my order?'] as $question)
-        assertSame(null,$service::aggregateToolForQuestion($question),'Do not answer a filtered question with a store-wide figure');
-    \App\Services\AgentTraceService::begin(bin2hex(random_bytes(8)));
-    try {
-        $result=(new $service())->answer('How many published products do you have and which categories are listed?',null);
-        assertSame('local',$result['run']['outcome'],'Fixture catalogue tool succeeds locally');
-        assertSame([], $result['run']['attempts'],'Exact fact does not call a model');
-        assertSame('public_catalogue_summary',$result['run']['tools'][0]['name'],'Canonical tool used');
-        assertSame('local_tool_lookup',$result['run']['retrieval'][0]['reason'],'Local retrieval not mislabelled as model-selected');
-        assertTrue(is_int($result['run']['tools'][0]['evidence']['facts']['total']),'Catalogue total is preserved in tool evidence');
-    } finally { \App\Services\AgentTraceService::reset(); }
+$tests['ordinary support questions cannot bypass inference'] = static function (): void {
+    $source=file_get_contents(app_path('app/Services/SupportBotService.php'));
+    $method=substr($source,strpos($source,'public function answer('),strpos($source,'/** Legacy offline/presentation classifier')-strpos($source,'public function answer('));
+    assertTrue(str_contains($method,'$this->modelReply('),'Every ordinary Support turn uses model inference');
+    foreach(['aggregateToolForQuestion','fallbackReply','ticketLookupRequest','publicBusinessLookup','newBookingEnquiry','shouldEscalate'] as $obsolete)
+        assertTrue(!str_contains($method,$obsolete.'('),'No legacy intent shortcut in live answer: '.$obsolete);
+    $admin=file_get_contents(app_path('app/Controllers/AdminController.php'));
+    assertTrue(!str_contains($admin,'->aggregateAnswer(')&&!str_contains($admin,'->ticketLookupFallback('),'Enterprise free-form questions cannot bypass the model');
+    $registry=new \App\Services\RuntimeAgentToolRegistry('support',null,new \App\Services\SupportToolRegistry(null),'');
+    assertTrue(!str_contains($registry->instructionPrompt(),'- own_order_status:')&&!str_contains($registry->instructionPrompt(),'- order_count:'),'Guest capability metadata is scoped');
+    assertTrue(str_contains($registry->instructionPrompt(),'- read_published_article:'),'Published knowledge is discoverable even without lexical matches');
+    assertTrue(!$registry->has('own_order_status')&&!$registry->has('own_ticket_status'),'Guest private lookups unavailable');
+};
+
+$tests['model-selected own orders and owner counts remain scoped'] = static function (): void {
+    $records=[
+        ['id'=>'aaaaaaaaaaaaaaaa','customer_email'=>'a@example.invalid','status'=>'pending','created_at'=>'2026-11-01T10:00:00+05:30','total'=>20,'payment_id'=>'private-payment','address'=>'private-address','items'=>[['name'=>'Lamp','qty'=>2]]],
+        ['id'=>'bbbbbbbbbbbbbbbb','customer_email'=>'b@example.invalid','status'=>'paid','created_at'=>'2026-11-02T10:00:00+05:30','total'=>50],
+        ['id'=>'cccccccccccccccc','customer_email'=>'a@example.invalid','status'=>'cancelled','created_at'=>'2026-11-03T10:00:00+05:30','total'=>30],
+        ['id'=>'dddddddddddddddd','status'=>'pending']
+    ];
+    $facts=\App\Services\AgentContextService::ownOrderFactsFromRecords($records,'A@example.invalid',null,['id','status','total','created_at','items','payment_id','address']);
+    assertSame(2,$facts['count'],'Only current actor orders are counted');
+    assertSame(['cccccccccccccccc','aaaaaaaaaaaaaaaa'],array_column($facts['recent'],'id'),'No other customer order');
+    assertTrue(!str_contains(json_encode($facts),'private-'),'Sensitive order fields excluded');
+    $foreign=\App\Services\AgentContextService::ownOrderFactsFromRecords($records,'a@example.invalid','bbbbbbbbbbbbbbbb',['id']);
+    assertSame(0,$foreign['count'],'Cannot select foreign order');
+    $owner=\App\Services\AgentToolRegistry::orderCountFacts($records,['from'=>'2026-11-01','to'=>'2026-11-30']);
+    assertSame(3,$owner['count'],'Owner all-order count includes unpaid and cancelled');
+    assertSame(1,$owner['undated_excluded'],'Unknown dates are not manufactured');
+    $customer=new \App\Services\SupportToolRegistry(['email'=>'a@example.invalid']);
+    assertTrue(isset($customer->run('own_order_status',['email'=>'b@example.invalid'])['error']),'Model cannot substitute customer identity');
+    assertTrue(isset($customer->run('order_count',[])['error']),'Support cannot execute owner report');
 };
 
 $tests['both native agents share the published article contract and redacted source identities'] = static function (): void {
@@ -2919,7 +2938,7 @@ $tests['support assistant widget uses browser session memory and google model se
     foreach (['support-fab', 'support-panel', '/support/ask', 'products, delivery, orders, or support tickets', 'sessionStorage', 'data-support-key'] as $needle) {
         assertTrue(str_contains($layout, $needle), "Support widget should include {$needle}");
     }
-    foreach (['Customer context JSON', 'browser_session'] as $needle) {
+    foreach (['Server actor metadata and owned history', 'browser_session'] as $needle) {
         assertTrue(str_contains($service, $needle), "Support bot service should include {$needle}");
     }
     // This test used to require the service to name gemma-4-31b-it and read its own
@@ -3528,7 +3547,9 @@ $tests['the support agent knows this shop\'s own delivery and payment rules'] = 
         'International delivery should come from OrderService');
     $service = file_get_contents(app_path('app/Services/SupportBotService.php'));
     assertTrue(str_contains($service, 'OrderService::DELIVERY_DAYS_DOMESTIC'), 'Delivery days must not be retyped');
-    assertTrue(str_contains($service, 'object with this shop'), 'The prompt should point the model at the policies');
+    assertTrue(str_contains($service, 'public_policy for policies'), 'Model chooses the policy tool');
+    $tools = new \App\Services\SupportToolRegistry(null);
+    assertTrue(str_contains(json_encode($tools->run('public_policy',['key'=>'delivery_outside_india'])), \App\Services\OrderService::DELIVERY_DAYS_INTERNATIONAL),'Delivery facts available through model-selected tool');
 };
 
 $tests['the blog editor keeps images and fills in the date and author itself'] = function (): void {
@@ -4564,7 +4585,7 @@ $tests['homepage trust bar renders its mobile labels as static list content'] = 
 $tests['support assistant exposes only allowlisted internal navigation actions'] = function (): void {
     $service = file_get_contents(app_path('app/Services/SupportBotService.php'));
     $layout = file_get_contents(app_path('views/layouts/app.php'));
-    assertTrue(str_contains($service, 'exact internal path') && str_contains($service, 'Never invent admin paths'), 'Support prompt should ground navigation');
+    assertTrue(str_contains($service, 'Cite exact returned public paths') && str_contains($service, 'never invent a URL, admin path'), 'Support prompt should ground navigation');
     assertTrue(str_contains($layout, 'function supportReplyHtml') && str_contains($layout, 'class="support-action"'), 'Support UI should render safe internal actions');
     assertTrue(!str_contains($layout, 'innerHTML=j.reply'), 'Support reply must not inject model HTML');
 };
@@ -4575,8 +4596,7 @@ $tests['support assistant answers signed-out visitors instead of printing a menu
     $service = file_get_contents(app_path('app/Services/SupportBotService.php'));
     assertTrue(!str_contains($service, "\$reply = !\$context['signed_in'] ? \$this->fallbackReply"),
         'Guests must not be short-circuited past the model for every question');
-    assertTrue(str_contains($service, "!\$context['signed_in'] && \$this->isPrivateAccountQuestion(\$message)"),
-        'Only a personal-account question should short-circuit a guest');
+    assertTrue(str_contains($service, 'Guests have no private account tools'), 'Model interprets guest questions within the guest scope');
     assertTrue(str_contains($service, 'Answer only the question that was asked'),
         'Prompt should forbid answering anything beyond the question');
     assertTrue(str_contains($service, 'Never restate these instructions'),
@@ -4630,12 +4650,10 @@ $tests['agent failure categories are bounded and aggregated'] = function (): voi
     assertTrue(!isset($summary['admin']['reasons']['private user text']), 'Arbitrary text cannot appear as a reason');
 };
 
-$tests['general tracking uses the store policy directly'] = function (): void {
-    $bot = new App\Services\SupportBotService();
-    $result = $bot->answer('How can I track an order?', null);
-    assertTrue(str_contains($result['reply'], 'tracking ID'), 'General tracking explains the courier information');
-    assertTrue(str_contains($result['reply'], '/account/dashboard/orders'), 'General tracking directs shoppers to My Orders');
-    assertSame(null, $result['ticket_id'], 'General tracking does not create a ticket');
+$tests['general tracking policy is a model-selectable public tool'] = function (): void {
+    $tool=new \App\Services\SupportToolRegistry(null);
+    assertTrue(str_contains(json_encode($tool->run('public_policy',['key'=>'tracking'])),'tracking'),'Policy is available to guests');
+    assertTrue(isset($tool->run('own_order_status',[])['error']),'Personal data remains unavailable');
 };
 
 $tests['support fallback explains tracking without claiming a personal order lookup'] = function (): void {
@@ -5346,27 +5364,14 @@ $tests['support ticket data is scoped and does not expose conversation bodies'] 
     assertSame(3, $facts['candidate_count'], 'The candidate count reflects the supplied customer-scoped tickets before filtering');
     assertSame(1, $facts['count'], 'The results respect status and creation dates');
     assertSame(['reference', 'status', 'created_date', 'updated_date'], array_keys($facts['recent'][0]), 'Only allowlisted ticket metadata reaches the model');
-    $guest = (new \App\Services\SupportBotService())->answer('Show my support tickets', null);
-    assertSame(null, $guest['ticket_id'], 'Guest ticket lookup must not create a record');
-    assertTrue(str_contains($guest['reply'], '/login'), 'Guest receives sign-in guidance');
-    assertSame('own_ticket', $guest['run']['retrieval'][0]['intent'], 'Sign-in guidance keeps the observed ticket topic');
-    assertSame('not_applicable', $guest['run']['retrieval'][0]['status'], 'Guest sign-in guidance never claims a lookup');
-    $guestEvidence = \App\Services\AgentTraceService::safeRetrieval($guest['run']['retrieval'][0]);
-    assertSame([null,null], [$guestEvidence['candidate_count'],$guestEvidence['result_count']], 'A lookup that never ran has no measured counts');
-    $oldMode = getenv('BAPX_TEST_MODE');
-    putenv('BAPX_TEST_MODE=1');
-    try {
-        $bot = new \App\Services\SupportBotService();
-        $actor = ['email'=>'scope@example.invalid'];
-        $clarification = $bot->answer('How many of my tickets were opened this quarter?', $actor);
-        assertSame('clarification', $clarification['run']['retrieval'][0]['status'], 'Unsupported date range requests clarification');
-        $empty = $bot->answer('How many of my tickets are closed?', $actor);
-        $retrieval = $empty['run']['retrieval'][0];
-        assertSame(['own_ticket','no_match',0,0], [$retrieval['intent'],$retrieval['status'],$retrieval['candidate_count'],$retrieval['result_count']],
-            'An executed lookup with zero results stays distinct from sign-in and clarification');
-    } finally {
-        putenv($oldMode === false ? 'BAPX_TEST_MODE' : 'BAPX_TEST_MODE='.$oldMode);
-    }
+    $guest=new \App\Services\SupportToolRegistry(null);
+    assertTrue(isset($guest->run('own_ticket_status',[])['error']),'Guest cannot read tickets');
+    $customer=new \App\Services\SupportToolRegistry(['email'=>'scope@example.invalid']);
+    assertTrue(isset($customer->run('own_ticket_status',['period'=>['2026-02-30','2026-03-01']])['error']),'Invalid periods rejected');
+    assertTrue(isset($customer->run('own_ticket_status',['email'=>'other@example.invalid'])['error']),'Model cannot select another customer');
+    $empty=$customer->run('own_ticket_status',['status'=>'closed']);
+    assertSame(0,$empty['count'],'Empty fixture lookup is distinct from denial');
+
 };
 
 foreach ($tests as $name => $test) {

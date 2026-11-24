@@ -130,28 +130,13 @@ try {
             throw new RuntimeException('Personal question was mistaken for a public contact lookup.');
         }
     }
-    foreach (['How can I contact you?'=>'get_public_contact', 'What services do you offer?'=>'list_public_services'] as $question=>$tool) {
-        $answer = (new SupportBotService())->answer($question, null);
-        if (($answer['run']['outcome'] ?? '') !== 'local' || ($answer['run']['tools'][0]['name'] ?? '') !== $tool
-            || $answer['ticket_id'] !== null || $answer['run']['attempts'] !== []) {
-            throw new RuntimeException('Public business question did not use its grounded read-only tool.');
-        }
-    }
-
-    foreach (['Please book me an appointment','Can I schedule a consultation?','Appointment availability?','நான் ஆலோசனை முன்பதிவு செய்ய வேண்டும்'] as $bookingQuestion) {
-        if (!SupportBotService::newBookingEnquiry($bookingQuestion)) throw new RuntimeException('New booking request did not select the honest enquiry path.');
-    }
-    foreach (['What is my previous appointment status?','Can you book a product?','How can I contact you?'] as $notNewBooking) {
-        if (SupportBotService::newBookingEnquiry($notNewBooking)) throw new RuntimeException('Unrelated request was diverted to a new booking enquiry.');
-    }
-    $booking=(new SupportBotService())->answer('Please book me an appointment',null);
-    if (($booking['run']['outcome']??null)!=='local'
-        || ($booking['ui']['kind']??null)!=='contact_enquiry'
-        || ($booking['run']['attempts']??null)!==[]
-        || !str_contains($booking['reply'],'cannot currently be booked')
-        || !str_contains($booking['reply'],'does not reserve a slot')) {
-        throw new RuntimeException('Retired booking response was not grounded and reviewable.');
-    }
+    $proposal=$tools->run('present_contact_enquiry',[]);
+    if(($proposal['submitted']??null)!==false || ($proposal['path']??'')!=='/contact')throw new RuntimeException('Contact form proposal must never submit.');
+    if(!isset($tools->run('present_contact_enquiry',['submit'=>true])['error']))throw new RuntimeException('Proposal must reject mutation arguments.');
+    $body=$service->readArticleForAgent(['slug'=>'published-guide']);
+    if(($body['articles'][0]['text']??null)!=='Public guidance.' || ($body['articles'][0]['content_sha256']??null)!==hash('sha256','Public guidance.'))throw new RuntimeException('Published body retrieval failed.');
+    foreach(['hidden-guide','future-guide','retired-guide','linked-guide','../private-instructions'] as $slug)
+        if(!isset($service->readArticleForAgent(['slug'=>$slug])['error']))throw new RuntimeException('Private article selector accepted.');
     $productPath = new ReflectionMethod(PublicKnowledgeService::class, 'productPath');
     foreach (['legacy item.v2'=>'/product/legacy%20item.v2', '珊瑚 pendant'=>'/product/%E7%8F%8A%E7%91%9A%20pendant',
         'தமிழ் pendant'=>'/product/%E0%AE%A4%E0%AE%AE%E0%AE%BF%E0%AE%B4%E0%AF%8D%20pendant',

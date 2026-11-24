@@ -700,9 +700,10 @@ final class AdminController extends BaseController {
                 ownerQuestion: $message,
                 previousReport: $previousReport
             );
-            // Straight aggregate questions do not need a model round trip. The same
-            // allowlisted sales tool supplies a deterministic, privacy-safe answer.
-            $localAnswer = $attachments['context'] === '' ? ($tools->guideAnswer($message) ?? $tools->aggregateAnswer($message)) : null;
+            // Explicit slash commands are user-selected UI operations. Every ordinary
+            // natural-language question goes through model-selected knowledge/tools.
+            $localAnswer = $attachments['context'] === '' && preg_match('~^/(?:help(?:\\s+[a-z-]+)?|capabilities)\\s*$~iD',$message)
+                ? $tools->guideAnswer($message) : null;
             if ($localAnswer !== null) {
                 (new AuditLogService())->agentRun('admin', 'local', $startedAt, tools: $tools->activity(), traceId: $traceId);
                 $record = $this->agentConversationRecord($actor, $conversationId, $message,
@@ -721,9 +722,9 @@ final class AdminController extends BaseController {
             $context = $attachments['context'] !== ''
                 ? "Documents the owner attached with @ (reference material):\n" . $attachments['context']
                 : '';
-            if (($period = $tools->followUpContext()) !== null) {
+            if (($period = $tools->validatedPreviousReport()) !== null) {
                 $context .= "\nPrevious report: {$period['tool']}, {$period['from']} to {$period['to']} inclusive. "
-                    . "Use these dates for lookups referring to that same period.";
+                    . "Use these dates only if the owner refers to that same period; interpret the current question yourself.";
                 if (isset($period['topic'])) $context .= " The previous ticket topic was {$period['topic']}.";
                 if (isset($period['report'])) $context .= " The previous commerce report was {$period['report']}.";
             }
@@ -739,12 +740,7 @@ final class AdminController extends BaseController {
                 $answer = "AI model not configured. Go to Admin → Integrations and set api_endpoint, ai_api_key, and agent_model.";
             }
             $failed = empty($modelConfig['apiKey']) || \App\Services\AiClient::isError($answer) || $reason === 'rejected_response';
-            $fallback = $failed ? $tools->ticketLookupFallback() : null;
             $outcome = $failed ? 'error' : 'model';
-            if ($fallback !== null) {
-                $answer = $fallback;
-                $outcome = 'fallback';
-            }
             (new AuditLogService())->agentRun('admin', $outcome, $startedAt, $reason, $attempts, $tools->activity(), $traceId);
             $record = $this->agentConversationRecord($actor, $conversationId, $message,
                 $answer, $traceId, $outcome, $tools->activity(), $tools->reportContext(), $attempts);
@@ -765,27 +761,21 @@ final class AdminController extends BaseController {
     /** Owner aggregates must never trigger a public catalogue lookup. */
     private function agentPublicReferences(string $message,string $answer,array $activity): ?array
     {
-        $groundedPublic=false;$businessView=null;
-        foreach($activity as $entry) {
-            if(!is_array($entry))continue;
-            $name=$entry['name']??'';
-            if(!in_array($name,['product_status','search_articles','get_public_contact','list_public_services'],true))return null;
+        // Only actual completed published reads can create public reference cards.
+        // Private reports stay in the owner presentation. No question-intent fallback.
+        if($activity===[])return null;
+        $eligible=false;
+        foreach($activity as $entry){
+            if(!in_array($entry['name']??'',['product_status','search_articles','read_published_article','get_public_contact','list_public_services'],true))return null;
             if(($entry['status']??'')!=='complete')continue;
-            if(in_array($name,['get_public_contact','list_public_services'],true)) {
-                $evidence=\App\Services\AgentTraceService::safeTool($entry)['evidence'];
-                if($name==='get_public_contact'&&$evidence['source']==='public_contact'&&$evidence['result_count']===1) {
-                    $businessView='contact';$groundedPublic=true;
-                } elseif($name==='list_public_services'&&$evidence['source']==='public_services'
-                    &&is_int($evidence['result_count'])&&$evidence['result_count']>0&&$evidence['result_count']<=4) {
-                    $businessView='services';$groundedPublic=true;
-                }
-            }
-            if($name==='product_status'&&preg_match('~/product/[A-Za-z0-9%_.-]{1,2039}(?![A-Za-z0-9%_.-])~',$answer))$groundedPublic=true;
-            if($name==='search_articles'&&preg_match('~/blog/[a-z0-9-]{1,120}~',$answer))$groundedPublic=true;
+            $safe=\App\Services\AgentTraceService::safeTool($entry);$e=$safe['evidence'];
+            if(($safe['name']==='get_public_contact'&&$e['source']==='public_contact'&&$e['result_count']===1)
+                ||($safe['name']==='list_public_services'&&$e['source']==='public_services'&&$e['result_count']>=1&&$e['result_count']<=4&&!empty($e['service_subjects']))
+                ||(!empty($e['public_products'])&&str_contains($answer,'/product/'))
+                ||(!empty($e['sources'])&&str_contains($answer,'/blog/')))$eligible=true;
         }
-        if(!$groundedPublic)return null;
-        return (new \App\Services\PublicA2uiService())->forQuestion(
-            $message,$businessView===null?[]:['public_business_view'=>$businessView],$answer);
+        if(!$eligible)return null;
+        return (new \App\Services\PublicA2uiService())->forAgentEvidence([],$activity,$answer);
     }
 
     private function agentConversationRecord(
@@ -857,7 +847,7 @@ final class AdminController extends BaseController {
         $prompt = $modelTools->instructionPrompt() . "\n"
             . "You are the Enterprise Agent for Sri Panchami Spiritual. Answer in plain language.\n"
             . "The current date in India is {$today}.\n"
-            . "Use the matching read-only tool before making any claim about store records or metrics. "
+            . "You decide what knowledge, instructions and capabilities to retrieve. Use tool_search and read_runtime_skill as needed, inspect results, then formulate the answer. Use the matching read-only tool before making any claim about store records or metrics. "
             . "Tools cover orders, products, coupons, sales, GST, support tickets, store counts and published articles. "
             . "Use only the identifiers the owner supplied. For date-based questions use the requested period, "
             . "state the dates you checked, and distinguish empty results from failed lookups. "
@@ -874,12 +864,16 @@ final class AdminController extends BaseController {
 
         // Do not start another model/tool generation just to explain an ambiguous
         // number. Retain the original attempt evidence and let existing verified
-        // local fallback handle it rather than displaying an unsupported figure.
+        // error be shown rather than displaying an unsupported figure.
         if (self::isBareFigure($answer) && !self::wantsNumberOnly($message)) {
             $reason = 'rejected_response';
             return 'AI request failed: the model returned an unexplained number. Ask for the exact report or date range so I can verify it.';
         }
         $clean = $this->cleanAnswer($answer);
+        if(!\App\Services\AgentEvaluationService::publicArticleLinksSupported($clean,$tools->activity())){
+            $reason='rejected_response';
+            return 'AI request failed: an article reference could not be verified.';
+        }
         if ($clean === 'I could not produce a clear answer to that. Try asking it a different way.') {
             $reason = 'rejected_response';
         }

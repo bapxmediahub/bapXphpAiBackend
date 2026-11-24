@@ -65,7 +65,8 @@ $services=$policy->invoke($controller,'Tell me about temple guidance services.',
 if(array_column($services['messages'][0]['createSurface']['dataModel']['items']??[],'path')!==['/contact?subject=temple#contact-form']) {
     throw new RuntimeException('Completed public service evidence lost its relevant service subject.');
 }
-if($policy->invoke($controller,'Change my phone number.','Recorded public contact answer.',[$contactTool])!==null) {
-    throw new RuntimeException('Completed public evidence overrode a personal contact change.');
+$another=$policy->invoke($controller,'Another phrasing.','Recorded public contact answer.',[$contactTool]);
+if(($another['messages'][0]['createSurface']['dataModel']??null)!==($contact['messages'][0]['createSurface']['dataModel']??null)) {
+    throw new RuntimeException('Presentation must follow actual completed tool evidence rather than question keywords.');
 }
 echo "Owner private/mixed/ungrounded tools perform no public lookup; completed public evidence selects relevant business cards PASS.\n";

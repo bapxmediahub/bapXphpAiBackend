@@ -692,7 +692,7 @@ if(supportForm){supportForm.addEventListener('submit',async function(e){
     try{
         var r=await fetch('/support/ask',{method:'POST',body:data,signal:abort.signal});
         var j=await r.json();failed=!r.ok||!!j.error;
-        if(!failed)supportPendingRequest=null;
+        if(!failed||typeof j.turn_id==='string')supportPendingRequest=null;
         if(typeof j.conversation_id==='string')supportConversationId=j.conversation_id;
         supportRenderAnswer(j);
         if(!failed&&j.ui?.kind==='contact_enquiry')void supportOpenEnquiry();

@@ -445,6 +445,26 @@ final class PublicKnowledgeService
                 'required'=>['query'],'additionalProperties'=>false]];
     }
 
+    public static function agentReadArticleDeclaration(): array {
+        return ['name'=>'read_published_article','description'=>'Read a bounded text excerpt from an exact currently published blog/help article slug. Use after article discovery to answer content questions. No private files.',
+            'parameters'=>['type'=>'object','properties'=>['slug'=>['type'=>'string','pattern'=>'^[a-z0-9-]{1,120}$']],
+                'required'=>['slug'],'additionalProperties'=>false]];
+    }
+
+    public function readArticleForAgent(array $args): array {
+        if(array_keys($args)!==['slug']||!is_string($args['slug'])||!preg_match('/^[a-z0-9-]{1,120}$/D',$args['slug']))
+            return ['error'=>'Invalid article slug.'];
+        if(!(new SettingsService())->modules(requireReadable:true)['blog'])return ['error'=>'Public blog unavailable.'];
+        $source=$this->articlesSource();$post=$source->find($args['slug']);
+        if(!$source->isPublic($post))return ['error'=>'No published article found.'];
+        $body=trim(html_entity_decode(strip_tags((string)($post['html']??'')),ENT_QUOTES|ENT_HTML5,'UTF-8'));
+        if($body==='')return ['error'=>'Published article text unavailable.'];
+        $text=mb_substr($body,0,6000);
+        return ['found'=>1,'articles'=>[['title'=>self::plainText((string)($post['title']??''),160),
+            'path'=>'/blog/'.$args['slug'],'text'=>$text,'truncated'=>mb_strlen($body)>6000,
+            'content_sha256'=>hash('sha256',$text)]]];
+    }
+
     public function searchArticlesForAgent(array $args): array
     {
         if (array_keys($args)!==['query'] || !is_string($args['query']) ||

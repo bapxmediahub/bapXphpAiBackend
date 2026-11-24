@@ -22,11 +22,11 @@ final class AgentInstructionService
     /** Existing OKF runtime concept IDs; callers never provide a filesystem path. */
     private const SKILLS = [
         'catalogue'=>['path'=>'bapXcl/support/catalog.md','description'=>'Published products, categories, collections, comparison, pricing and availability.',
-            'tools'=>['public_catalog','public_catalogue_summary','public_best_sellers','product_status']],
+            'tools'=>['public_catalog','public_catalogue_summary','public_best_sellers','public_product_details','product_status']],
         'customer-policy'=>['path'=>'bapXcl/support/policy-and-tickets.md','description'=>'Public policies, customer-owned account facts, tickets and confirmed human handoff.',
-            'tools'=>['public_policy','own_ticket_status','find_order','support_enquiries','get_public_contact','list_public_services','search_articles']],
+            'tools'=>['public_policy','own_ticket_status','own_order_status','own_cart','present_contact_enquiry','find_order','support_enquiries','get_public_contact','list_public_services','search_articles','read_published_article']],
         'reporting'=>['path'=>'bapXcl/enterprise/reporting.md','description'=>'Owner reporting scope, paid orders, GST, inventory status, coupons and date windows.',
-            'tools'=>['sales_summary','commerce_report','gst_register_summary','store_count','coupon_status','support_enquiries']],
+            'tools'=>['sales_summary','order_count','commerce_report','gst_register_summary','store_count','coupon_status','support_enquiries']],
     ];
 
     public static function skillCatalog(string $surface, ?array $actor): array {

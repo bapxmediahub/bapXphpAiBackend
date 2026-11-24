@@ -56,8 +56,9 @@ business tools per turn. The `tool_search` meta-tool can enable up to four
 matching declarations per search, with eight active business tools total; an
 unknown exact identifier never activates a substitute. Both provider loops
 refresh declarations each round while retaining correlated tool-call history.
-Discovery returns metadata, not records. The PHP aggregate fallback can still
-execute a server-selected authorized lookup even when it was not discovered.
+Discovery returns metadata, not records. The full role-filtered tool metadata
+catalogue is visible to the model; lexical seeding only prioritizes declarations.
+A fresh free-form turn has no server-selected business lookup or answer bypass.
 Trace spans record safe activation names and counts, never the raw search text.
 The old forSurface() method remains the full-bundle offline/legacy contract.
  `manifestForSurface()` returns
@@ -69,7 +70,7 @@ admin access fail closed. The service does not fall back to `AGENTS.md`,
 generated indexes, arbitrary URLs, model-supplied paths or recursive globbing.
 
 The trace fingerprints the **actual loaded Markdown bundle**, not just the PHP
-loader file. Deterministic local answers which never load an instruction document leave
+loader file. Explicit UI commands which never load an instruction document leave
 that trace field unset rather than inventing a loaded instruction. Offline
 evaluations record both role manifests and include their content hashes in the
 implementation fingerprint; the explicit admin actor there is a local test
@@ -77,16 +78,18 @@ fixture, not a production browser privilege grant.
 
 ## Provider availability
 
-Both agents use the shared AiClient and the same deployment-local transport cooldown. New ordinary generations can skip recently failed connections/models; explicit diagnostics retain actual transfers. Cooldowns do not change saved provider configuration or permit retry of a locked tool exchange. If no model is eligible, the agent reports a local failure/fallback without fabricating HTTP attempts. Exact owner capability questions, including “What kinds of store tasks can you help me with?”, are answered by the existing scoped capability guide without inference. See [agent observability](agent-observability.md) for evidence semantics and bounds.
+Both agents use the shared AiClient and the same deployment-local transport cooldown. New ordinary generations can skip recently failed connections/models; explicit diagnostics retain actual transfers. Cooldowns do not change saved provider configuration or permit retry of a locked tool exchange. If no model is eligible, the agent reports an explicit unavailable outcome without fabricating HTTP attempts. Owner capability questions are ordinary model turns; explicit /help and /capabilities are separate user-selected UI commands. See [agent observability](agent-observability.md) for evidence semantics and bounds.
 
 ## Native processing loop: three RAG layers
 
-See the README processing diagram. Both model paths use the shared bounded
-AiClient loop through RuntimeAgentToolRegistry. Deterministic PHP lookups,
-reports and draft paths can bypass it.
+See the README processing diagram. Every fresh free-form question uses the shared bounded
+AiClient loop through RuntimeAgentToolRegistry. The model interprets the question,
+chooses retrieval and tools, examines results, and synthesizes the response.
+PHP handles authorization, typed input validation, deterministic calculations,
+execution and presentation. It does not select a canned answer.
 
 1. Knowledge RAG: retrieve actor-owned context, approved public facts, current
-   business-service results and published articles. Revalidate identities and
+   business-service results and bounded published article bodies selected by the model. Revalidate identities and
    scope. General authorized MD/JSON excerpts and flexible schema-aware queries
    remain separate work.
 2. Instruction RAG: load the role constitution and shared contract; discover
@@ -190,10 +193,12 @@ Both model surfaces reuse AiClient's bounded provider loop and provider fallback
 rules. Support tool declarations hide private account lookups from guests and
 never expose owner reports. Current public catalogue totals, configured
 category membership and all-time published bestseller ranking are retrieved
-from the actual store services. For recognized whole-store aggregate questions,
-the exact tool result is rendered deterministically; when the provider is
-unavailable or misses the tool, the same safe lookup supplies the fallback.
-A failed query does not become an empty catalogue or invented ranking.
+from the actual store services when the model selects the corresponding tool.
+Support can retrieve its own customer-scoped orders, tickets and session cart.
+Enterprise can separately count all dated orders or request paid-sales reports.
+Both roles can search published articles and read an exact public article excerpt.
+A provider failure is an error; a failed query does not become an empty catalogue
+or invented ranking. A model-selected contact form proposal never submits a form.
 This slice does not add autonomous workers, embeddings, a vector database,
 arbitrary SQL, or another production runtime.
 

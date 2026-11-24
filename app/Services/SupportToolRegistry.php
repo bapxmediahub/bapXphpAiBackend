@@ -14,7 +14,7 @@ final class SupportToolRegistry {
     ];
 
     public static function policyInputSchema(): array {
-        return ['type'=>'object', 'properties'=>['key'=>['type'=>'string', 'enum'=>array_keys(self::PUBLIC_POLICIES)]], 'required'=>['key']];
+        return ['type'=>'object', 'properties'=>['key'=>['type'=>'string', 'enum'=>array_merge(array_keys(self::PUBLIC_POLICIES),['delivery_within_india','delivery_outside_india','consultation_booking'])]], 'required'=>['key']];
     }
 
     public function __construct(private ?array $actor, private ?AgentContextService $context = null, private DatabaseService $store = new DatabaseService()) {
@@ -41,6 +41,15 @@ final class SupportToolRegistry {
             ['name'=>'public_best_sellers','description'=>'Get up to four currently visible storefront best sellers by recorded paid, non-cancelled, non-refunded orders, all time only. No sales amounts, private orders or date filters.',
              'parameters'=>['type'=>'object','properties'=>(object)[]]],
             PublicKnowledgeService::agentArticleDeclaration(),
+            ['name'=>'public_product_details','description'=>'Read exact currently published products by raw slug; use for comparisons, follow-ups and current specifications.',
+                'parameters'=>['type'=>'object','properties'=>['slugs'=>['type'=>'array','items'=>['type'=>'string'],'minItems'=>1,'maxItems'=>3]],'required'=>['slugs'],'additionalProperties'=>false]],
+            ['name'=>'own_order_status','description'=>'Count matching orders and read up to five recent orders belonging only to the signed-in customer; optional exact order reference. Never accepts an email or user ID.',
+                'parameters'=>['type'=>'object','properties'=>['reference'=>['type'=>'string','pattern'=>'^[a-fA-F0-9]{16}$']],'additionalProperties'=>false]],
+            ['name'=>'own_cart','description'=>'Read this browser session cart item names, product slugs and quantities. No cart mutation.',
+                'parameters'=>['type'=>'object','properties'=>(object)[],'additionalProperties'=>false]],
+            ['name'=>'present_contact_enquiry','description'=>'Offer the existing customer-reviewed contact form when a human enquiry is useful. Does not submit, email, create tickets or reserve appointments.',
+                'parameters'=>['type'=>'object','properties'=>(object)[],'additionalProperties'=>false]],
+            PublicKnowledgeService::agentReadArticleDeclaration(),
         ];
     }
     /** Project only distinct published identities and configured public categories. */
@@ -90,6 +99,7 @@ final class SupportToolRegistry {
         if (!AgentCapabilityPolicy::allows(AgentCapabilityPolicy::SUPPORT, $tool, $this->actor)) {
             return ['error'=>'Not permitted'];
         }
+        if ($tool === 'read_published_article') return (new PublicKnowledgeService())->readArticleForAgent($args);
         if ($tool === 'search_articles') return (new PublicKnowledgeService())->searchArticlesForAgent($args);
         if (in_array($tool,['public_catalogue_summary','public_best_sellers'],true)) {
             if($args!==[])return ['error'=>'Invalid arguments'];
@@ -103,12 +113,42 @@ final class SupportToolRegistry {
         if ($tool === 'public_catalog') {
             if (array_keys($args) !== ['question'] || !is_string($args['question']) || trim($args['question']) === '' || mb_strlen($args['question']) > 256)
                 return ['error'=>'Invalid arguments'];
-            return ['products'=>$this->context->forUserEmail('', $args['question'])['site']['products'] ?? []];
+            if(!(new SettingsService($this->store))->modules(requireReadable:true)['shop'])return ['error'=>'Public shop unavailable'];
+            return $this->context->publicCatalogueFacts($args['question']);
         }
         if ($tool === 'public_policy') {
             if (array_keys($args) !== ['key'] || !is_string($args['key'])) return ['error'=>'Invalid arguments'];
-            return isset(self::PUBLIC_POLICIES[$args['key']]) ? ['value'=>self::PUBLIC_POLICIES[$args['key']]] : ['error'=>'Invalid policy'];
+            $policies=self::PUBLIC_POLICIES+[
+                'delivery_within_india'=>OrderService::DELIVERY_DAYS_DOMESTIC.' after dispatch',
+                'delivery_outside_india'=>OrderService::DELIVERY_DAYS_INTERNATIONAL.' after dispatch',
+                'consultation_booking'=>'Online consultation booking is retired. General enquiries can be submitted for human review; an enquiry does not reserve an appointment.',
+            ];
+            return isset($policies[$args['key']])?['value'=>$policies[$args['key']]]:['error'=>'Invalid policy'];
         }
+        if($tool==='public_product_details'){
+            if(array_keys($args)!==['slugs']||!is_array($args['slugs'])||!array_is_list($args['slugs'])||count($args['slugs'])<1||count($args['slugs'])>3)
+                return ['error'=>'Select one to three exact public product slugs.'];
+            try {
+                $found=(new PublicKnowledgeService(products:new ProductService($this->store)))->products('',0,count($args['slugs']),$args['slugs']);
+                $found['products']=array_map(static fn(array $p):array=>$p+['slug'=>rawurldecode(substr($p['path'],9)),'url'=>$p['path']],$found['products']);
+                return $found;
+            }catch(\InvalidArgumentException){return ['error'=>'Invalid public product selection'];}
+        }
+        if($tool==='own_order_status'){
+            if(array_diff(array_keys($args),['reference'])||(array_key_exists('reference',$args)&&(!is_string($args['reference'])||!preg_match('/^[a-f0-9]{16}$/Di',$args['reference']))))
+                return ['error'=>'Invalid order reference'];
+            return $this->context->ownOrderFacts((string)($this->actor['email']??''),$args['reference']??null);
+        }
+        if($tool==='own_cart'){
+            if($args!==[])return ['error'=>'Invalid arguments'];
+            if(!(new SettingsService($this->store))->modules(requireReadable:true)['shop'])return ['error'=>'Public shop unavailable'];
+            $cart=new CartService(new ProductService($this->store));
+            $lines=$cart->resolve(array_slice($cart->items(),0,30));
+            $items=array_map(static fn(array $item):array=>['slug'=>$item['slug'],'name'=>$item['name'],
+                'qty'=>$item['qty'],'unit_price'=>$item['unit_price'],'line_total'=>$item['line_total']],$lines);
+            return ['items'=>$items,'count'=>count($items),'path'=>'/cart','subtotal'=>$cart::total($lines),'currency'=>'INR'];
+        }
+        if($tool==='present_contact_enquiry')return $args===[]?['kind'=>'contact_enquiry','subject'=>'general','path'=>'/contact','submitted'=>false]:['error'=>'Invalid arguments'];
         if ($tool === 'get_public_contact') {
             return $args === [] ? (new PublicKnowledgeService())->contact() : ['error'=>'Invalid arguments'];
         }

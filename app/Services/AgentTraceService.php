@@ -19,10 +19,11 @@ final class AgentTraceService
         'gst_register_summary' => 'orders', 'product_status' => 'products',
         'store_count' => 'business_counts', 'support_enquiries' => 'support_tickets',
         'customer_ticket_lookup' => 'support_tickets',
-        'own_ticket_status' => 'support_tickets', 'search_articles' => 'published_blog',
+        'own_ticket_status' => 'support_tickets', 'search_articles' => 'published_blog','read_published_article'=>'published_blog','order_count'=>'orders',
         'coupon_status' => 'coupons', 'public_catalog' => 'visible_products',
         'public_policy' => 'public_policy', 'operator_guide' => 'operator_help',
-        'public_catalogue_summary'=>'visible_products','public_best_sellers'=>'visible_products',
+        'public_catalogue_summary'=>'visible_products','public_best_sellers'=>'visible_products','public_product_details'=>'visible_products',
+        'own_order_status'=>'orders','own_cart'=>'session_cart','present_contact_enquiry'=>'public_contact',
         'get_public_contact' => 'public_contact', 'list_public_services' => 'public_services',
     ];
 
@@ -54,15 +55,32 @@ final class AgentTraceService
             && ($result['path'] ?? null) === '/contact') $count = 1;
         $facts=self::aggregateFacts($name,$result);
         $report = $name === 'commerce_report' && !isset($result['error']) ? self::safeCommerceReport($result) : null;
-        $articleSources=$name==='search_articles'?self::articleSources($result):[];
+        $articleSources=in_array($name,['search_articles','read_published_article'],true)?self::articleSources($result):[];
+        $publicProducts=[];
+        if($name==='product_status'&&!isset($result['error'])){
+            foreach(array_slice((array)($result['products']??[]),0,20) as $product){
+                if(!is_array($product)||($product['hidden_from_shop']??true)!==false||!is_string($product['slug']??null)||PublicKnowledgeService::productPath($product['slug'])===null)continue;
+                $publicProducts[]=['id'=>'product:'.rawurlencode($product['slug']),'last_updated'=>null];
+            }
+            $publicProducts=self::safeRetrieval(['sources'=>$publicProducts])['sources'];
+        }
+        $serviceSubjects=[];
+        if($name==='list_public_services'&&!isset($result['error'])){
+            foreach((array)($result['services']??[]) as $service){
+                if(is_string($service['path']??null)&&preg_match('~^/contact\\?subject=(product|temple|order|general)#contact-form$~D',$service['path'],$m))$serviceSubjects[]=$m[1];
+            }
+            $serviceSubjects=array_values(array_unique($serviceSubjects));
+        }
         $fingerprint = ['filters'=>$filters,'facts'=>$facts];
-        if($name==='search_articles')$fingerprint['sources']=$articleSources;
+        if($name==='product_status')$fingerprint['public_products']=$publicProducts;
+        if($name==='list_public_services')$fingerprint['service_subjects']=$serviceSubjects;
+        if(in_array($name,['search_articles','read_published_article'],true))$fingerprint['sources']=$articleSources;
         if ($report !== null) $fingerprint['report'] = $report;
         $evidence = [
             'observed_at'=>self::now(),
             'facts'=>$facts,
             'facts_sha256'=>hash('sha256',json_encode($fingerprint,JSON_THROW_ON_ERROR)),
-            'tool_version_sha256'=>hash_file('sha256',app_path('app/Services/'.($name==='search_articles'?'PublicKnowledgeService':(in_array($name,AgentCapabilityPolicy::tools('support'),true)&&!in_array($name,AgentCapabilityPolicy::tools('enterprise'),true)?'SupportToolRegistry':'AgentToolRegistry')).'.php')),
+            'tool_version_sha256'=>hash_file('sha256',app_path('app/Services/'.(in_array($name,['search_articles','read_published_article'],true)?'PublicKnowledgeService':(in_array($name,AgentCapabilityPolicy::tools('support'),true)&&!in_array($name,AgentCapabilityPolicy::tools('enterprise'),true)?'SupportToolRegistry':'AgentToolRegistry')).'.php')),
             'source' => self::SOURCES[$name] ?? 'unknown',
             'filters' => $filters,
             'result_count' => $count,
@@ -70,7 +88,9 @@ final class AgentTraceService
                 && preg_match('#^/admin/[a-z0-9/?=&_%-]+$#i', $result['report_url'])
                 ? mb_substr($result['report_url'], 0, 250) : null,
         ];
-        if ($name==='search_articles') $evidence['sources']=$articleSources;
+        if (in_array($name,['search_articles','read_published_article'],true)) $evidence['sources']=$articleSources;
+        if($name==='product_status')$evidence['public_products']=$publicProducts;
+        if($name==='list_public_services')$evidence['service_subjects']=$serviceSubjects;
         if ($report !== null) $evidence['report'] = $report;
         return $evidence;
     }
@@ -98,10 +118,14 @@ final class AgentTraceService
                     ? mb_substr($evidence['source_path'],0,250) : null,
             ],
         ];
-        if ($name==='search_articles' && $safe['status']==='complete'
+        if (in_array($name,['search_articles','read_published_article'],true) && $safe['status']==='complete'
             && $safe['evidence']['source']==='published_blog') {
             $safe['evidence']['sources']=self::safeRetrieval(['intent'=>'published_articles','sources'=>$evidence['sources']??[]])['sources'];
         }
+        if($name==='product_status'&&$safe['status']==='complete'&&$safe['evidence']['source']==='products')
+            $safe['evidence']['public_products']=self::safeRetrieval(['sources'=>$evidence['public_products']??[]])['sources'];
+        if($name==='list_public_services'&&$safe['status']==='complete'&&$safe['evidence']['source']==='public_services')
+            $safe['evidence']['service_subjects']=array_values(array_unique(array_intersect(['product','temple','order','general'],array_filter((array)($evidence['service_subjects']??[]),'is_string'))));
         if ($name === 'commerce_report' && $safe['status'] === 'complete'
             && $safe['evidence']['source'] === 'commerce_reports' && is_array($evidence['report'] ?? null)) {
             $report = self::safeCommerceReport($evidence['report']);
@@ -219,8 +243,9 @@ final class AgentTraceService
             'support_enquiries'=>['total'],
             'public_catalogue_summary'=>['total','category_count','more_categories'],
             'public_best_sellers'=>['count'],
-            'search_articles'=>['found'],
-            'store_count','customer_ticket_lookup','own_ticket_status'=>['count'],
+            'search_articles','read_published_article'=>['found'],
+            'order_count'=>['count','undated_excluded'],
+            'store_count','customer_ticket_lookup','own_ticket_status','own_order_status','own_cart'=>['count'],
             'product_status'=>['price','offer_price'],
             default=>[],
         };
@@ -364,6 +389,7 @@ final class AgentTraceService
             if(!is_array($article)||!is_string($article['path']??null)
                 ||!preg_match('~^/blog/([a-z0-9-]{1,160})$~D',$article['path'],$match))continue;
             $sources[$match[1]]=['id'=>'article:'.$match[1],'last_updated'=>null];
+            if(($digest=self::validDigest($article['content_sha256']??null))!==null)$sources[$match[1]]['content_sha256']=$digest;
         }
         return array_values($sources);
     }

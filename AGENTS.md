@@ -29,6 +29,20 @@ globs and Git history unless the indexed target is absent.
 
 - Model facts, including the AI model in use, live in `AGENTS.md`. Verify against a provider's own docs before saying a model or field does not exist.
 
+
+### Mandatory live-agent decision boundary
+
+Every fresh free-form question to Support or Enterprise must use model inference.
+The model interprets intent and selects Knowledge RAG, Instruction RAG and Tool
+RAG resources as needed, inspects returned results, and composes the response.
+PHP validates role, arguments, evidence and operations; it must never substitute
+regex-selected answers or deterministic report shortcuts for model decisions.
+Explicit slash commands, user-confirmed forms and replay of an already completed
+turn are separate operations. Unavailable inference must be an explicit error,
+not a successful canned answer. Preserve role-scoped access, budgets and private
+JSON conversations. Regression coverage must exercise both controllers through
+model-selected tool calls, including simple counts and provider failure.
+
 ## Binding contract
 
 This file is the single binding contract for coding agents in this repository.

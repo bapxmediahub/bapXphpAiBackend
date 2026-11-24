@@ -11,12 +11,12 @@ final class AgentCapabilityPolicy {
 
     private const SUPPORT_TOOLS = [
         'public_catalog', 'public_policy', 'get_public_contact', 'list_public_services', 'own_ticket_status',
-        'public_catalogue_summary', 'public_best_sellers', 'search_articles',
+        'public_catalogue_summary', 'public_best_sellers', 'search_articles', 'public_product_details', 'own_order_status', 'own_cart', 'present_contact_enquiry', 'read_published_article',
     ];
     private const ENTERPRISE_TOOLS = [
         'find_order', 'product_status', 'sales_summary', 'commerce_report', 'gst_register_summary',
         'support_enquiries', 'store_count', 'search_articles', 'operator_guide', 'coupon_status',
-        'get_public_contact', 'list_public_services',
+        'get_public_contact', 'list_public_services', 'order_count', 'read_published_article',
     ];
 
     public static function tools(string $agent): array {
@@ -32,7 +32,7 @@ final class AgentCapabilityPolicy {
         if ($agent === self::ENTERPRISE) {
             return ($actor['role'] ?? '') === 'admin' || !empty($actor['is_admin']);
         }
-        if ($agent === self::SUPPORT && $tool === 'own_ticket_status') {
+        if ($agent === self::SUPPORT && in_array($tool,['own_ticket_status','own_order_status'],true)) {
             return trim((string)($actor['email'] ?? '')) !== '';
         }
         return $agent === self::SUPPORT;

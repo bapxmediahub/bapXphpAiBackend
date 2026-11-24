@@ -357,6 +357,48 @@ final class PublicA2uiService
             || preg_match('/(?:என்|எனது|என்னுடைய)\s+(?:மின்னஞ்சல்|தொலைபேசி|மொபைல்|தொடர்பு|சேவை)/u',$question)===1;
     }
 
+    /** Native chat presentation follows actual model-selected evidence, not question words. */
+    public function forAgentEvidence(array $knowledge,array $tools,string $answer): ?array {
+        $slugs=array_slice(array_values(array_unique(array_filter((array)($knowledge['public_product_slugs']??[]),'is_string'))),0,3);
+        $articlePaths=[];$subjects=[];$contact=false;
+        foreach($tools as $tool){
+            if(($tool['status']??'')!=='complete')continue;
+            $safe=AgentTraceService::safeTool($tool);$e=$safe['evidence'];
+            if($safe['name']==='get_public_contact'&&$e['source']==='public_contact'&&$e['result_count']===1)$contact=true;
+            if($safe['name']==='list_public_services'&&$e['source']==='public_services'&&is_int($e['result_count'])&&$e['result_count']>=1&&$e['result_count']<=4)
+                $subjects=array_merge($subjects,$e['service_subjects']??[]);
+            if($safe['name']==='product_status')foreach($e['public_products']??[] as $source){
+                $slug=substr($source['id'],8);
+                if(str_contains($answer,'/product/'.$slug))$slugs[]=rawurldecode($slug);
+            }
+            if(in_array($safe['name'],['search_articles','read_published_article'],true))foreach($e['sources']??[] as $source){
+                $path='/blog/'.substr($source['id'],8);
+                if(str_contains($answer,$path))$articlePaths[]=$path;
+            }
+        }
+        try{
+            $slugs=array_slice(array_values(array_unique($slugs)),0,3);
+            if($slugs!==[])return $this->present('products','',count($slugs),'auto',$slugs);
+            if($articlePaths!==[]){
+                $items=[];
+                foreach(array_slice(array_unique($articlePaths),0,4) as $path){
+                    $surface=$this->present('articles',str_replace('-',' ',substr($path,6)),4);
+                    foreach($surface['messages'][0]['createSurface']['dataModel']['items']??[] as $item)
+                        if($item['path']===$path)$items[$path]=$item;
+                }
+                if($items!==[])return self::buildSurface('articles',array_values($items));
+            }
+            if($subjects!==[]){
+                $surface=$this->present('services','',4);
+                $paths=array_map(static fn(string $subject):string=>'/contact?subject='.$subject.'#contact-form',$subjects);
+                $items=array_values(array_filter($surface['messages'][0]['createSurface']['dataModel']['items']??[],static fn(array $item):bool=>in_array($item['path'],$paths,true)));
+                if($items!==[])return self::buildSurface('services',$items);
+            }
+            if($contact)return $this->present('contact','',4);
+        }catch(\Throwable){return null;}
+        return null;
+    }
+
     /** Only public references for the actual question or products shown in its answer. */
     public function forQuestion(string $question, array $knowledge = [], string $answer = ''): ?array
     {

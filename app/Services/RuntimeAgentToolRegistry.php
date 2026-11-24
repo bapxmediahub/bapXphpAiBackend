@@ -34,7 +34,11 @@ final class RuntimeAgentToolRegistry
 
     public function instructionPrompt(): string {
         AgentTraceService::observeInstructionManifest($this->bundle['manifest']);
-        return $this->bundle['text'];
+        // The model sees a compact role-filtered catalogue even if lexical seeding
+        // misses a paraphrase or another language. Only active declarations execute.
+        $catalogue="\n\nAuthorized business capability catalogue (metadata, activate via tool_search):\n";
+        foreach($this->available as $name=>$tool)$catalogue.='- '.$name.': '.$tool['description']."\n";
+        return $this->bundle['text'].$catalogue;
     }
 
     public function declarations(): array {
@@ -125,12 +129,6 @@ final class RuntimeAgentToolRegistry
         return $this->executeBusiness($name,$args);
     }
 
-    /** Server-owned deterministic fallback, never declared to the model. */
-    public function lookupTrusted(string $name,array $args): array {
-        if(!isset($this->available[$name]))return ['error'=>'Not permitted'];
-        return $this->executeBusiness($name,$args,'local_tool_lookup');
-    }
-
     private function executeBusiness(string $name,array $args,string $origin='model_tool_lookup'): array {
         // Apply relevant task guidance even if the model omitted a separate activation.
         $guidance=[];
@@ -154,20 +152,29 @@ final class RuntimeAgentToolRegistry
                 $this->results[$name]=$result;
                 if($name==='public_catalogue_summary')$this->retrieval[]=AgentTraceService::safeRetrieval([
                     'intent'=>'catalogue_summary','status'=>'matched','reason'=>$origin,'result_count'=>$result['total']]);
-                if($name==='search_articles') {
+                if($name==='own_order_status'||$name==='own_ticket_status'){
+                    $count=(int)($result['count']??0);
+                    $this->retrieval[]=AgentTraceService::safeRetrieval(['intent'=>$name==='own_order_status'?'own_order':'own_ticket',
+                        'status'=>$count?'matched':'no_match','reason'=>$origin,'result_count'=>$count,'candidate_count'=>$result['candidate_count']??null]);
+                }
+                if(in_array($name,['search_articles','read_published_article'],true)) {
                     $sources=AgentTraceService::articleSources($result);
                     $this->retrieval[]=AgentTraceService::safeRetrieval(['intent'=>'published_articles',
                         'status'=>$sources?'matched':'no_match','reason'=>$origin,
                         'candidate_count'=>(int)($result['found']??0),'result_count'=>count($sources),'sources'=>$sources]);
                 }
-                if(in_array($name,['public_catalog','public_best_sellers'],true)) {
+                if(in_array($name,['public_catalog','public_best_sellers','public_product_details'],true)) {
                     $sources=[];
                     foreach((array)($result['products']??[]) as $p) {
                         if(!is_array($p)||!is_string($p['slug']??null)||PublicKnowledgeService::productPath($p['slug'])===null)continue;
                         $this->products[$p['slug']]=$p;
                         $sources[]=['id'=>'product:'.rawurlencode($p['slug']),'last_updated'=>null];
                     }
-                    $this->retrieval[]=AgentTraceService::safeRetrieval(['intent'=>$name==='public_best_sellers'?'best_sellers':'catalogue_search','status'=>$sources?'matched':'no_match','reason'=>$origin,'result_count'=>count($sources),'sources'=>$sources]);
+                    $selection=is_array($result['retrieval']??null)?$result['retrieval']:[];
+                    $this->retrieval[]=AgentTraceService::safeRetrieval([
+                        'intent'=>$name==='public_best_sellers'?'best_sellers':($selection['intent']??'catalogue_search'),
+                        'status'=>$selection['status']??($sources?'matched':'no_match'),'reason'=>$origin,
+                        'candidate_count'=>$selection['candidate_count']??null,'result_count'=>count($sources),'sources'=>$sources]);
                 }
             }
         }
