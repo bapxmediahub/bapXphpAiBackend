@@ -2,6 +2,10 @@
 
 Site Settings controls the supported public business/site configuration. Integrations contains provider credentials and payment, mail, login and AI connection settings. Logo & Favicon manages identity images; Temples manages the supported temple records. These are different responsibilities.
 
+## Update the logo or favicon
+
+Use **Logo & Favicon** to upload a PNG or JPEG logo up to 512 × 512 pixels and 100 KiB, or a PNG favicon up to 64 × 64 pixels and 50 KiB. Convert SVG or ICO files to PNG before uploading. After saving, reload the page and check the previews and public header. New images are available in Media Library under Shared. If saving fails, reload to verify the active images before retrying.
+
 ## Before changing a connection
 
 Confirm who authorized the change and which environment it affects. A live payment mode is not a test environment. Never submit a real payment simply to test a configuration. Preserve a verified recovery route for administrator access and do not overwrite keys accidentally. Do not share credentials in help, screenshots or chat.

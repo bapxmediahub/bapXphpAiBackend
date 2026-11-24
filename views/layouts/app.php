@@ -13,7 +13,7 @@ $__settingsService = new \App\Services\SettingsService();
 $__settings = $__settingsService->public();
 $__modules = $__settingsService->modules();
 $__logo = $__settings['logo_url'] ?? '/assets/images/logo-small.jpeg';
-$__favicon = $__settings['favicon_url'] ?? '/assets/images/sps-favicon.svg';
+$__favicon = ($__settings['favicon_url'] ?? '') ?: '/assets/images/sps-favicon.svg';
 $__faviconMime = str_contains($__favicon,'.svg') ? 'image/svg+xml' : 'image/png';
 ?>
 <link rel="icon" type="<?= e($__faviconMime) ?>" href="<?= e($__favicon) ?>">

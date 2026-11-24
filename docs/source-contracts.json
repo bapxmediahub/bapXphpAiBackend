@@ -23,64 +23,64 @@
             "review_note": "Reviewed browser snapshot bounds, per-owner and page key, revision conflict, explicit save token cleanup and unchanged MySQL CAS and publication status."
         },
         "foundation": {
-            "source_sha256": "4ee70d41503ee7e37bbc6077c36942f95edda1c8e4289aac0c196d4939b507e6",
-            "references_sha256": "946576ecf5f70c6584261be1035171a23570581935217c3eca527a4368e2256c",
-            "review_note": "Reviewed the controller and fixture changes. The existing media service owns reference checks and MySQL and file mutations, with no new runtime data store."
+            "source_sha256": "74e608b8003b52bb1baf8c7fad026c9c3ff1cdb118664310f09a5a2bdf2fe34b",
+            "references_sha256": "c2067088cbcfaf8b1b72f6e313c2783c60fb4dc43dd3b986bf911743d9883cfe",
+            "review_note": "Reviewed the isolated file-validation regression and existing settings persistence. Brand uploads reuse the ordinary media store and do not change schema or hosting prerequisites."
         },
         "google-tags": {
-            "source_sha256": "8b68da9256999202a6f234001498211abfad52ce744837490e58ebfd580d3115",
-            "references_sha256": "1f8d916b404e18fe6c8f6e18d277e96ecb8e2a5db480599363003de0bbf40f54",
-            "review_note": "Reviewed integration retry copy; existing analytics and reporting settings unchanged."
+            "source_sha256": "7edbdefed03dedb366ca2201e7af5423ce0e41c37e60de4ad0e9912f27f10e22",
+            "references_sha256": "ffea01d2a86c8a6ac0417c3923ea3211e8fe37194f5e6099f83634e498fd5c9e",
+            "review_note": "Reviewed the owner settings guide and site head. Brand favicon fallback is independent of Google IDs and authorization."
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
-            "references_sha256": "b657b61053f39b7dd1062742849c80194689186c65548a5d26fdcf1019685552",
-            "review_note": "Reviewed shared request failure docs and backend skill; unavailable inference is an explicit saved agent error; HTTP boundary handler unchanged."
+            "references_sha256": "b86e6c1c25007ee7892d587ab2ca1bf71bdb634bbe40d2b1043989989e509ac0",
+            "review_note": "Checked the common layout and controller feedback against the HTTP response boundary. The appearance redirect reports failed writes without provider details."
         },
         "interface": {
-            "source_sha256": "40f8eb66c0159b796064f0443575dd0d2e4a8707313bca83f7aa8a60b3061076",
-            "references_sha256": "ae022df16c410e3426bb8758ce2b545b1b5d5e611637188342e21dd6c7c8ef82",
-            "review_note": "Verified the Media Library controls and review screen against Design.md in desktop and 375 px Chromium."
+            "source_sha256": "88da847e29355d7c5eab63edde7185233fcf3da8fa3c181f93a9337e69188b00",
+            "references_sha256": "3aee7b3b984637e05c1e3e0e602bd3b4062a15dbaa8168c426628ab4ab9d5d17",
+            "review_note": "Compared the real 1280 and 375 px previews, labels and failure messages with the appearance design and owner help."
         },
         "mail": {
-            "source_sha256": "987443cbf42294138acbe60139a4f161e6af46cc5731b25096820eb9f6eafa46",
+            "source_sha256": "bf54512cf96b10c8fa07b6350058fe14b250aa04a19488af9660c3a6d297223e",
             "references_sha256": "d0441fde213c5b374c849b9d794dfbaea6d62867d12dda15ceef35633209f768",
-            "review_note": "Reviewed the AdminController diff against the queued mail flow. The new media-only action does not enqueue, process or display mail."
+            "review_note": "Compared the appearance-only controller change to mail and authentication routes. The handler stores brand settings and audit events without using SMTP."
         },
         "mcp-clients": {
             "source_sha256": "78b45576da2d1ffc37e26fdf5701db6321d7df0b22488288b1879d91472778f1",
-            "references_sha256": "4b2800bedc35741c04a12a19ebbfeb7da0ea8c464170df72ef62067b01c35018",
-            "review_note": "Reviewed shared provider transport telemetry; authorized MCP protocols and business tool permissions unchanged."
+            "references_sha256": "833dd5a697abaed9f3e90d7859a8fc9b5d4dfb3b29a3d11ea461e3bf30474ad9",
+            "review_note": "Reviewed the shared site layout and settings guide. Brand-only favicon fallback does not change MCP client grants, prerequisites or URLs."
         },
         "media": {
-            "source_sha256": "fdb17330ca1dbfb89b4e613c324db2d1b27e99c5046b564be14d1db778a015ac",
-            "references_sha256": "90af24b525e5429f2f730116f9c7f9c917a82750570f948a2bf73f61ea94e672",
-            "review_note": "Checked selection validation, quarantine rollback, referenced-file handling and per-item results against the media deletion guide."
+            "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
+            "references_sha256": "04717572b15051f759dc76de1eb41e169074bbc8baaf4cbcd317f25ded76b57f",
+            "review_note": "Checked format, size and storage controls, original favicon format and existing media deletion references against the host persistence contract."
         },
         "operator-help": {
-            "source_sha256": "5a2eff4178fad5141f938407347d94ee55ee35a803516b701ed08ac0840db24e",
-            "references_sha256": "4d1ddc679d8123a5f493fa20eee0ff00b76d5e076d50d369a5ed43c34a920134",
-            "review_note": "Compared the Media Library controls and two-step deletion results with the uploaded-image operator guide."
+            "source_sha256": "9d45f0f27cdb3295aaa3afc7576f26a9d134484bbae6f51847f5980256a016be",
+            "references_sha256": "5ffe5bfa3bcadef0bf9eda2f506fd6a98918fc20b26531c90c2b052cae6322f5",
+            "review_note": "Compared the active brand preview, file limits, persistent library storage and failure handling with the owner settings guide."
         },
         "public-mcp": {
-            "source_sha256": "f51dc38e88c82afbb5d664c7d1cd939033972979c1a93b83580d80e2a147fd4d",
+            "source_sha256": "3342adc5aa7dcf4c375bc8f4c3010f978a98c0b3e42c9c4cc4b9fb51d078c282",
             "references_sha256": "475a614c13ba4a5e34c83585738934e923a66761a23482f928fa1f8aab00d92b",
-            "review_note": "Compared the project route registry with the public MCP transport guide. The additional POST route stays owner-authenticated and does not appear in public MCP profiles."
+            "review_note": "Checked the route inventory. The MediaService relation describes an existing owner appearance POST and introduces no public tool."
         },
         "remote-commerce": {
-            "source_sha256": "36b697376431ea4e00161b49b1bbe64f5e16b85623422e5d3d1157c67e4438a8",
-            "references_sha256": "4172935be0cd13ea85b255c3238e5132e1ba8163c0be5bef95877240f3ad520c",
-            "review_note": "Checked the Design.md addition and current checkout architecture. The new review pattern applies to admin uploads and does not change cart or checkout controls."
+            "source_sha256": "fdbee076578636fc2de96f884ddf628b0660d3931ce118bafe56423314da1511",
+            "references_sha256": "f4db6eb72be1e05fc6a6f0f3241f6de077b4762466b06cde0f9e64e530fd4f45",
+            "review_note": "Compared the shared layout and Design.md change with checkout and cart guidance. Appearance still uses a distinct owner form and does not touch commerce state."
         },
         "sales-channels": {
-            "source_sha256": "fcb34fc1739c7c9d587bacd24124224db9d4ba2be50d4cd19d3dcc91b6df3575",
+            "source_sha256": "6e5ee7b44dd92cc4dadec7a3c02f4bb9da797ba98d4e541e9f956687db236142",
             "references_sha256": "ce84b911bce7bb5435cc905a83819e015bad8a111c795fd143c86cb59f903c4f",
-            "review_note": "Compared MediaService changes with merchant-feed image resolution. Selection review does not alter catalogue image metadata, URLs or feed output."
+            "review_note": "Confirmed the existing catalogue optimiser and filename handling remain the default. Only brand uploads retain the original raster type."
         },
         "workflow": {
-            "source_sha256": "c3be5b85abea4b3ed0b00b9075b0e24815358fdff3f2f8e52eb85f38524121ab",
+            "source_sha256": "658f927bf8de1f7a1ec16b36fe9381189e75b8fbaef9e86d193407eb02a2e127",
             "references_sha256": "e34bc6f1ebc75679c05889ba2d5c65285603a62a53ccb61f230877a7eac24340",
-            "review_note": "Verified that the route registry and admin skill describe an authenticated POST with a reviewed and consumed selection. The release and documentation procedures still apply."
+            "review_note": "Reviewed the declared MediaService route relationship and admin testing guidance. The workflow still uses the same route, store and browser verification."
         }
     }
 }

@@ -2235,6 +2235,35 @@ $tests['support named festive collection listing uses only collection members'] 
     assertTrue(str_contains($empty, 'no visible products'), 'Empty collections do not fabricate results');
 };
 
+$tests['brand upload formats and limits use real file contents'] = static function (): void {
+    $validate = new ReflectionMethod(App\Services\MediaService::class, 'brandAssetExtension');
+    $media = new App\Services\MediaService();
+    $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAe0lEQVR4nO3PQQ0AIBDAsPOCFh74N4QIHg3JkgnoZp39dcMFDWhBA1rQgBY0oAUNaEEDWtCAFjSgBQ1oQQNa0IAWNKAFDWhBA1rQgBY0oAUNaEEDWtCAFjSgBQ1oQQNa0IAWNKAFDWhBA1rQgBY0oAUNaEEDWtCAFjx2AbRBEKa5uP8cAAAAAElFTkSuQmCC');
+    $large = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAEEAAABBCAIAAAABlV4SAAAAZUlEQVR4nO3PQQ0AIBDAsPthEGM4RgYjaVIB2+x1fjfPCzx46PDQ4KHBQ4OHBg8NHho8NHho8NDgocFDg4cGDw0eGjw0eGjw0OChwUODhwYPDR4aPDR4aPDQ4KHBQ4OHBg8NHhouDyg3zjF6b/IAAAAASUVORK5CYII=');
+    foreach ([
+        ['logo', 'logo.PNG', $png, 'png'],
+        ['favicon', 'icon.png', $png, 'png'],
+        ['logo', 'logo.jpg', $png, null],
+        ['logo', 'logo.png', 'Plain text is not an image.', null],
+        ['logo', 'logo.png', $png . str_repeat(' ', 102400), null],
+        ['favicon', 'icon.png', $large, null],
+        ['favicon', 'icon.svg', '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"/>', null],
+    ] as [$slot, $name, $bytes, $expected]) {
+        $path = tempnam(sys_get_temp_dir(), 'sps-brand-');
+        try {
+            file_put_contents($path, $bytes);
+            try {
+                $actual = $validate->invoke($media, $slot, ucfirst($slot), $path, $name);
+            } catch (InvalidArgumentException) {
+                $actual = null;
+            }
+            assertSame($expected, $actual, 'Validate actual type, dimensions and bytes for ' . $name);
+        } finally {
+            unlink($path);
+        }
+    }
+};
+
 $tests['native media metadata is bounded and conflict safe'] = static function (): void {
     $m = \App\Services\MediaService::class;
     $row = ['id'=>'0123456789abcdef','url'=>'/assets/images/media/2026/11/test.webp','context'=>'shared','used_in'=>[['id'=>'keep']], 'description'=>'Old'];

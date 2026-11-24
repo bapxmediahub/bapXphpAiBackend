@@ -1080,6 +1080,7 @@ flowchart LR
   controller_admincontroller -. declared related view .-> view_admin_header_menu
   route_post_admin_appearance_save -- registered handler --> controller_admincontroller
   controller_admincontroller -. declared service .-> service_settingsservice
+  controller_admincontroller -. declared service .-> service_mediaservice
   controller_admincontroller -. declared service .-> service_auditlogservice
   controller_admincontroller -. declared service .-> service_authservice
   controller_admincontroller -. declared related view .-> view_admin_appearance

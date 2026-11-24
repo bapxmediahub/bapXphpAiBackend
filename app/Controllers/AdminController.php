@@ -914,61 +914,78 @@ final class AdminController extends BaseController {
         $this->redirect('/admin/appearance/menu');
     }
 
-    public function appearance(): void{
-        $s=(new SettingsService())->public();
-        $d = ['#3A0003','#D1B368','#FAF7F0','#222222','#3A0003'];
-        $this->render('admin/appearance',['pageTitle'=>'Logo & Favicon','logo_url'=>$s['logo_url']??'','favicon_url'=>$s['favicon_url']??'','palette_primary'=>$s['palette_primary']??$d[0],'palette_secondary'=>$s['palette_secondary']??$d[1],'palette_canvas'=>$s['palette_canvas']??$d[2],'palette_text'=>$s['palette_text']??$d[3],'palette_link'=>$s['palette_link']??$d[4]]);
+    private const PALETTE_DEFAULTS = [
+        'palette_primary' => '#3A0003',
+        'palette_secondary' => '#D1B368',
+        'palette_canvas' => '#FAF7F0',
+        'palette_text' => '#222222',
+        'palette_link' => '#3A0003',
+    ];
+
+    public function appearance(): void {
+        $settings = (new SettingsService())->public();
+        $palette = array_filter(array_intersect_key($settings, self::PALETTE_DEFAULTS), 'is_string');
+        $this->render('admin/appearance', $palette + self::PALETTE_DEFAULTS + [
+            'pageTitle' => 'Logo & Favicon',
+            'logo_url' => $settings['logo_url'] ?? '',
+            'favicon_url' => $settings['favicon_url'] ?? '',
+        ]);
     }
-    public function saveAppearance(): void{
-        $s=(new SettingsService())->public(); $d=app_path('assets/images/brand'); if(!is_dir($d)) mkdir($d,0775,true); $e='';
-        if(!empty($_POST['logo_remove'])){$s['logo_url']='';}
-        if(!empty($_FILES['logo_file']['name'])&&$_FILES['logo_file']['error']===UPLOAD_ERR_OK){
-            $i=getimagesize($_FILES['logo_file']['tmp_name']);$w=$i[0]??0;$h=$i[1]??0;$sz=$_FILES['logo_file']['size'];
-            if($w>512||$h>512)$e='Logo exceeds 512×512 px.';
-            elseif($sz>102400)$e='Logo exceeds 100 KB.';
-            else{$x=strtolower(pathinfo($_FILES['logo_file']['name'],PATHINFO_EXTENSION));move_uploaded_file($_FILES['logo_file']['tmp_name'],$d.'/logo.'.$x);$s['logo_url']='/assets/images/brand/logo.'.$x;}
-        }
-        if(!empty($_POST['favicon_remove'])){$s['favicon_url']='';}
-        if(!empty($_FILES['favicon_file']['name'])&&$_FILES['favicon_file']['error']===UPLOAD_ERR_OK){
-            $i=getimagesize($_FILES['favicon_file']['tmp_name']);$w=$i[0]??0;$h=$i[1]??0;$sz=$_FILES['favicon_file']['size'];
-            if($w>64||$h>64)$e='Favicon exceeds 64×64 px.';
-            elseif($sz>51200)$e='Favicon exceeds 50 KB.';
-            else{$x=strtolower(pathinfo($_FILES['favicon_file']['name'],PATHINFO_EXTENSION));move_uploaded_file($_FILES['favicon_file']['tmp_name'],$d.'/favicon.'.$x);$s['favicon_url']='/assets/images/brand/favicon.'.$x;}
-        }
-        $paletteBefore = array_intersect_key($s, array_flip(['palette_primary','palette_secondary','palette_canvas','palette_text','palette_link']));
-        if (!empty($_POST['reset_palette'])) {
-            foreach (['palette_primary','palette_secondary','palette_canvas','palette_text','palette_link'] as $k) unset($s[$k]);
-        } else {
-            $defaults = ['#3A0003','#D1B368','#FAF7F0','#222222','#3A0003'];
-            $keys = ['palette_primary','palette_secondary','palette_canvas','palette_text','palette_link'];
-            $vals = [];
-            $errs = [];
-            foreach ($keys as $i => $k) {
-                $v = strtoupper(trim((string)($_POST[$k] ?? '')));
-                if ($v === '') continue;
-                if (!preg_match('/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/', $v)) {
-                    $errs[] = 'Invalid hex color for ' . str_replace('_', ' ', $k) . '.';
-                    continue;
-                }
-                if (strlen($v) === 4) $v = '#' . $v[1] . $v[1] . $v[2] . $v[2] . $v[3] . $v[3];
-                $vals[$k] = $v;
+
+    public function saveAppearance(): void {
+        $settings = new SettingsService();
+        try {
+            $current = $settings->public(requireReadable: true);
+            $changes = $this->appearancePalette($current);
+            foreach (['logo', 'favicon'] as $slot) {
+                if (($_POST[$slot . '_remove'] ?? null) === '1') $changes[$slot . '_url'] = '';
             }
-            if (empty($errs) && !empty($vals)) {
-                $canvas = $vals['palette_canvas'] ?? $s['palette_canvas'] ?? $defaults[2];
-                $text = $vals['palette_text'] ?? $s['palette_text'] ?? $defaults[3];
-                $link = $vals['palette_link'] ?? $s['palette_link'] ?? $defaults[4];
-                $tc = self::contrast($text, $canvas);
-                if ($tc < 4.5) $errs[] = 'Text contrast ratio ' . number_format($tc,2) . ':1 is below 4.5:1 minimum against canvas.';
-                else { $lc = self::contrast($link, $canvas); if ($lc < 4.5) $errs[] = 'Link contrast ratio ' . number_format($lc,2) . ':1 is below 4.5:1 minimum against canvas.'; }
+            $changes = (new MediaService())->uploadBrandAssets($_FILES) + $changes;
+            $changes = array_filter($changes, static fn(string $value, string $key): bool =>
+                $value !== ($current[$key] ?? null), ARRAY_FILTER_USE_BOTH);
+            if ($changes !== []) {
+                $settings->savePublic($changes);
+                (new AuditLogService())->record('save', 'appearance', 'settings', [
+                    'changed_fields' => array_keys($changes),
+                    'reset' => ($_POST['reset_palette'] ?? null) === '1',
+                ]);
             }
-            if ($errs) { $e = implode(' ', $errs); }
-            else { foreach ($vals as $k => $v) $s[$k] = $v; }
+        } catch (\InvalidArgumentException $error) {
+            $this->flash($error->getMessage(), 'error');
+            $this->redirect('/admin/appearance');
+        } catch (\Throwable $error) {
+            error_log('Appearance save failed (' . $error::class . ')');
+            $this->flash('Appearance could not be saved. Reload to check the current settings before retrying.', 'error');
+            $this->redirect('/admin/appearance');
         }
-        $paletteAfter = array_intersect_key($s, array_flip(['palette_primary','palette_secondary','palette_canvas','palette_text','palette_link']));
-        $changed = array_keys(array_diff_assoc($paletteAfter, $paletteBefore));
-        (new SettingsService())->savePublic($s);
-        if ($changed) (new AuditLogService())->record('save','appearance','palette',['changed_fields'=>$changed,'reset'=>!empty($_POST['reset_palette'])]);
-        $this->flash($e ?: 'Appearance saved.','success'); $this->redirect('/admin/appearance');
+        $this->flash($changes === [] ? 'No appearance changes to save.' : 'Appearance saved.', 'success');
+        $this->redirect('/admin/appearance');
+    }
+
+    private function appearancePalette(array $current): array {
+        if (($_POST['reset_palette'] ?? null) === '1') return self::PALETTE_DEFAULTS;
+
+        $palette = [];
+        foreach (array_keys(self::PALETTE_DEFAULTS) as $key) {
+            $value = $_POST[$key] ?? '';
+            if (is_string($value) && trim($value) === '') continue;
+            $value = is_string($value) ? strtoupper(trim($value)) : '';
+            if (!preg_match('/^#(?:[0-9A-F]{3}|[0-9A-F]{6})$/D', $value)) {
+                throw new \InvalidArgumentException('Enter a valid hex color for ' . str_replace('_', ' ', $key) . '.');
+            }
+            if (strlen($value) === 4) $value = '#' . $value[1] . $value[1] . $value[2] . $value[2] . $value[3] . $value[3];
+            $palette[$key] = $value;
+        }
+        if ($palette === []) return [];
+
+        $colors = $palette + array_filter(array_intersect_key($current, self::PALETTE_DEFAULTS), 'is_string') + self::PALETTE_DEFAULTS;
+        foreach (['palette_text' => 'Text', 'palette_link' => 'Link'] as $key => $label) {
+            $contrast = self::contrast($colors[$key], $colors['palette_canvas']);
+            if ($contrast < 4.5) {
+                throw new \InvalidArgumentException($label . ' contrast against the canvas must be at least 4.5:1.');
+            }
+        }
+        return $palette;
     }
     public function contactSubmissions(): void{$this->resource('Contact Submissions','contact_submissions',['name','email','phone','subject','message','status']);}
     public function saveContactSubmission(): void{$this->save('contact_submissions');}

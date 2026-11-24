@@ -4083,6 +4083,7 @@ concepts:
     controller: "AdminController@saveAppearance"
     services:
       - "SettingsService"
+      - "MediaService"
       - "AuditLogService"
       - "AuthService"
     view: "admin/appearance"

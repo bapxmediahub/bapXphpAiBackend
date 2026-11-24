@@ -143,7 +143,7 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/admin/appearance','name'=>'admin.appearance','page'=>'admin/appearance','controller'=>'AdminController@appearance','services'=>['SettingsService']],
             ['method'=>'GET','path'=>'/admin/appearance/menu','name'=>'admin.appearance.menu','page'=>'admin/header-menu','controller'=>'AdminController@headerMenu','services'=>['SettingsService','AuthoredPageService']],
             ['method'=>'POST','path'=>'/admin/appearance/menu','name'=>'admin.appearance.menu.save','page'=>'admin/header-menu','controller'=>'AdminController@saveHeaderMenu','services'=>['SettingsService','AuthoredPageService','AuditLogService']],
-            ['method'=>'POST','path'=>'/admin/appearance/save','name'=>'admin.appearance.save','page'=>'admin/appearance','controller'=>'AdminController@saveAppearance','services'=>['SettingsService','AuditLogService']],
+            ['method'=>'POST','path'=>'/admin/appearance/save','name'=>'admin.appearance.save','page'=>'admin/appearance','controller'=>'AdminController@saveAppearance','services'=>['SettingsService','MediaService','AuditLogService']],
             ['method'=>'GET','path'=>'/admin/media','name'=>'admin.media','page'=>'admin/media','controller'=>'AdminController@media','services'=>['MediaService']],
             ['method'=>'POST','path'=>'/admin/media/upload','name'=>'admin.media.upload','page'=>'admin/media','controller'=>'AdminController@uploadMedia','services'=>['MediaService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/media/metadata','name'=>'admin.media.metadata','page'=>'admin/media','controller'=>'AdminController@updateMediaMetadata','services'=>['MediaService','AuditLogService']],

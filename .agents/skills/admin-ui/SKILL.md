@@ -13,6 +13,7 @@ description: Use when editing owner/admin pages, CRUD forms, media library, envi
 - Admin mutations should route through controllers/services and remain auditable.
 - Media metadata editing is owner-only, bounded, revision-checked and limited to existing MySQL uploads; never replace binaries or enable bundled/legacy editing.
 - Media bulk removal uses named per-upload checkboxes and a separate owner review. Confirm only the recorded selection, consume its token once, and apply the single-upload reference checks and audit to each item. Test cancel, partial results, and 375 px without JavaScript.
+- Logo & Favicon uses persistent Media Library uploads and the saved settings for previews. Test size and format rejection, a failed write, and successful reload with disposable brand profiles. Production verification reads the existing brand without replacing it.
 - Use schema-driven resource fields and the media library for product, temple, and blog media.
 - Astrologer profile management and portraits are retired in admin as well as publicly. Do not restore their navigation, upload category, or bundled assets. Existing historical session and financial records remain owner-accessible; they do not authorize reintroducing profile management.
 - Validate with `php tests/run.php`; use a browser workflow for changed admin pages.
