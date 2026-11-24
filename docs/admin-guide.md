@@ -54,13 +54,14 @@ outside these tools.
 
 The owner-only **Users** workspace shows registered-account segments and
 keeps name/email search visible. **More filters** lets the owner combine
-role, matched order count and latest-order period, and adjust sorting or page size.
+role, matched order count, and the date or status of the latest dated order.
+The toolbar also supports sorting and page size.
 The applied values and reset remain accessible when the panel is closed.
 Select an applied value to remove it while keeping the other selections.
 Filters carry through pagination. Expand an account for linked order
 and invoice history matched by checkout email. The directory uses IST for
-order times and date cutoffs. See the Customers operator guide for the scope
-of the counts.
+order times and date cutoffs. Use **Users guide** beside the segment counts
+for details on matching by checkout email.
 
 ## Other workflows
 

@@ -220,6 +220,12 @@ final class AdminController extends BaseController {
             'repeat' => '2+ orders', 'no_orders' => 'No orders',
         ];
         $periodOptions = [30 => 'Last 30 days', 90 => 'Last 90 days', 365 => 'Last 365 days'];
+        $orderStatuses = (new SchemaService())->collection('orders')['fields']['status']['values'];
+        $statusOptions = array_combine($orderStatuses, array_map(
+            static fn(string $status): string => ucfirst(str_replace('_', ' ', $status)),
+            $orderStatuses
+        ));
+        $status = is_string($_GET['status'] ?? null) && isset($statusOptions[$_GET['status']]) ? $_GET['status'] : '';
         $sortOptions = ['name' => 'Name A–Z', 'recent_order' => 'Latest order', 'order_count' => 'Most orders'];
         $role = is_string($_GET['role'] ?? null) && isset($roles[$_GET['role']]) ? $_GET['role'] : '';
         $activity = is_string($_GET['activity'] ?? null) && isset($activityOptions[$_GET['activity']]) ? $_GET['activity'] : '';
@@ -241,8 +247,10 @@ final class AdminController extends BaseController {
                 default => 'repeat',
             };
             $stats[$segment]++;
-            $latest = $user['orders'][0]['date'] ?? null;
-            if ($periodStart !== null && ($latest === null || $latest < $periodStart || $latest >= $tomorrow)) continue;
+            $latest = $user['orders'][0] ?? null;
+            $latestDate = $latest['date'] ?? null;
+            if ($periodStart !== null && ($latestDate === null || $latestDate < $periodStart || $latestDate >= $tomorrow)) continue;
+            if ($status !== '' && ($latestDate === null || $latest['status'] !== $status)) continue;
             $user['role'] = isset($roles[$user['role']]) ? $user['role'] : 'unknown';
             if ($role !== '' && $user['role'] !== $role) continue;
             if ($query !== '' && mb_stripos($user['name'], $query) === false && mb_stripos($user['email'], $query) === false) continue;
@@ -270,7 +278,7 @@ final class AdminController extends BaseController {
         $users = array_slice($users, $offset, $pageSize);
         $this->render('admin/users', ['pageTitle' => 'Users'] + compact(
             'users', 'count', 'pages', 'page', 'query', 'role', 'activity', 'period', 'sort', 'pageSize',
-            'sizeOptions', 'roles', 'activityOptions', 'periodOptions', 'sortOptions', 'stats', 'offset'
+            'sizeOptions', 'roles', 'activityOptions', 'periodOptions', 'status', 'statusOptions', 'sortOptions', 'stats', 'offset'
         ));
     }
     public function orders(): void{$this->list('Orders','orders');}

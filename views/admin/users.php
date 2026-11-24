@@ -1,16 +1,17 @@
 <?php
-$filters = ['q' => $query, 'role' => $role, 'activity' => $activity, 'period' => $period, 'sort' => $sort, 'per_page' => $pageSize];
+$filters = ['q' => $query, 'role' => $role, 'activity' => $activity, 'period' => $period, 'status' => $status, 'sort' => $sort, 'per_page' => $pageSize];
 $directoryUrl = static function (array $changes) use ($filters): string {
     $params = array_filter($changes + $filters, static fn($value) => $value !== '');
     return '/admin/users?' . http_build_query($params);
 };
-$advancedCount = count(array_filter([$role !== '', $activity !== '', $period !== '', $sort !== 'name', $pageSize !== 25]));
+$advancedCount = count(array_filter([$role !== '', $activity !== '', $period !== '', $status !== '', $sort !== 'name', $pageSize !== 25]));
 $activeFilters = $query !== '' || $advancedCount > 0;
 $appliedFilters = [
     'q' => ['Search', $query, ''],
     'role' => ['Role', $roles[$role] ?? '', ''],
     'activity' => ['Order activity', $activityOptions[$activity] ?? '', ''],
     'period' => ['Latest order', $periodOptions[$period] ?? '', ''],
+    'status' => ['Latest order status', $statusOptions[$status] ?? '', ''],
     'sort' => ['Sort', $sort !== 'name' ? $sortOptions[$sort] : '', 'name'],
     'per_page' => ['Page size', $pageSize !== 25 ? $pageSize . ' per page' : '', 25],
 ];
@@ -24,11 +25,14 @@ $segments = [
 <section class="users-workspace">
     <header class="report-head">
         <h1>Users</h1>
-        <a class="btn btn-outline" href="/admin/orders">All orders</a>
+        <a class="btn btn-outline" href="/admin/orders"><?= $navIcon('bag') ?>All orders</a>
     </header>
 
     <section class="users-overview" aria-labelledby="users-overview-title">
-        <h2 id="users-overview-title">Registered accounts</h2>
+        <header class="users-overview__heading">
+            <h2 id="users-overview-title">Registered accounts</h2>
+            <a href="<?= e($helpContext['url']) ?>"><?= $navIcon('help') ?>Users guide</a>
+        </header>
         <div class="users-metrics">
             <?php foreach ($segments as $segment): ?>
                 <a href="<?= e($directoryUrl(['activity' => $segment['activity']])) ?>"
@@ -42,10 +46,10 @@ $segments = [
 
     <section class="users-directory" aria-labelledby="users-directory-title">
         <header class="users-directory__head">
-            <h2 id="users-directory-title">Account directory</h2>
+            <h2 id="users-directory-title">Directory</h2>
             <p class="users-result-count"><?= $count ? number_format($offset + 1) . '–' . number_format($offset + count($users)) . ' of ' . number_format($count) : '0' ?>
                 <?= $count === 1 ? 'account' : 'accounts' ?></p>
-            <p class="users-directory__scope">Orders matched by checkout email. Times in IST.</p>
+            <p class="users-directory__scope">Orders matched by checkout email · IST</p>
         </header>
         <form class="users-filters" method="get" action="/admin/users" aria-label="Filter accounts">
             <div class="users-search">
@@ -83,6 +87,14 @@ $segments = [
                         <select id="users-period" name="period"><option value="">Any date</option>
                             <?php foreach ($periodOptions as $value => $label): ?>
                                 <option value="<?= $value ?>" <?= $period === (string)$value ? 'selected' : '' ?>><?= e($label) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="users-field">
+                        <label for="users-status">Latest order status</label>
+                        <select id="users-status" name="status"><option value="">Any status</option>
+                            <?php foreach ($statusOptions as $value => $label): ?>
+                                <option value="<?= e($value) ?>" <?= $status === $value ? 'selected' : '' ?>><?= e($label) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -130,7 +142,8 @@ $segments = [
         <?php foreach ($users as $user):
             $name = $user['name'] ?: ($user['email'] ?: 'Unnamed account');
             $orderCount = count($user['orders']);
-            $latest = $user['orders'][0]['date'] ?? null;
+            $latest = $user['orders'][0] ?? null;
+            $latestDate = $latest['date'] ?? null;
             ?>
             <details class="users-entry">
                 <summary class="users-row">
@@ -142,12 +155,15 @@ $segments = [
                     </span>
                     <span class="users-role<?= $user['role'] === 'admin' ? ' users-role--admin' : '' ?>"><?= e($roles[$user['role']]) ?></span>
                     <span class="users-orders"><?= number_format($orderCount) ?> <span class="users-order-unit"><?= $orderCount === 1 ? 'order' : 'orders' ?></span></span>
-                    <span class="users-latest">
-                        <?php if ($latest): ?>
+                    <span class="users-latest<?= $latest === null ? ' users-latest--empty' : '' ?>">
+                        <?php if ($latestDate): ?>
                             <span class="users-sr-only">Latest order</span>
-                            <time datetime="<?= e($latest->format(DATE_ATOM)) ?>"><strong><?= e($latest->format('d M Y')) ?></strong> <span><?= e($latest->format('g:i a')) ?></span></time>
+                            <span class="users-latest-status"><?= e($statusOptions[$latest['status']] ?? ($latest['status'] !== '' ? ucfirst(str_replace('_', ' ', $latest['status'])) : 'Status unavailable')) ?></span>
+                            <time datetime="<?= e($latestDate->format(DATE_ATOM)) ?>">
+                                <span><?= e($latestDate->format('d M Y')) ?></span><span><?= e($latestDate->format('g:i a')) ?></span>
+                            </time>
                         <?php else: ?>
-                            <?= $orderCount > 0 ? 'Date unavailable' : 'No matched orders' ?>
+                            <?= $latest !== null ? 'Order date unavailable' : 'No matched orders' ?>
                         <?php endif; ?>
                     </span>
                     <svg class="users-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg>
