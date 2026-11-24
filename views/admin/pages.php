@@ -13,7 +13,21 @@
     <?php if (!empty($error)): ?><p role="alert"><?= e($error) ?></p>
         <?php if (!empty($form['slug'])): ?><p><a href="/admin/pages?edit=<?= e(rawurlencode($form['slug'])) ?>">Reopen the saved page</a></p><?php endif; ?>
     <?php endif; ?>
-    <form class="admin-form" action="/admin/pages/save" method="post">
+    <form class="admin-form" action="/admin/pages/save" method="post" id="page-draft-form"
+          data-draft-owner="<?= e($pageDraftOwner ?? '') ?>" data-saved-draft="<?= e($savedPageDraftToken ?? '') ?>"
+          data-submitted="<?= isset($preview) || !empty($error) ? '1' : '0' ?>">
+        <section id="page-draft-recovery" hidden aria-labelledby="page-draft-heading">
+            <h3 id="page-draft-heading">Unsaved browser draft</h3>
+            <p id="page-draft-message"></p>
+            <div class="admin-card__actions">
+                <button type="button" class="btn btn-primary" id="page-draft-restore">Restore draft</button>
+                <button type="button" class="btn btn-outline" id="page-draft-download">Download browser draft</button>
+                <button type="button" class="btn btn-outline" id="page-draft-discard">Discard browser copy</button>
+            </div>
+        </section>
+        <p role="status" id="page-draft-status"></p>
+        <input type="hidden" name="browser_draft_token" value="">
+        <div id="page-draft-fields">
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
         <input type="hidden" name="original_slug" value="<?= e($form['original_slug'] ?? '') ?>">
         <input type="hidden" name="expected_revision" value="<?= e($form['expected_revision'] ?? '0') ?>">
@@ -29,6 +43,7 @@
         <div class="admin-card__actions">
             <button class="btn btn-outline" name="action" value="preview">Preview</button>
             <button class="btn btn-primary" name="action" value="save">Save page</button>
+        </div>
         </div>
     </form>
     <?php if ($editing && empty($error) && !isset($preview) && ($form['status'] ?? '') === 'published'): ?>
@@ -51,3 +66,5 @@
         <h3><?= e($form['title']) ?></h3><div class="blog-post__body"><?= $preview ?></div>
     </section>
 <?php endif; ?>
+
+<script src="/assets/page-draft.js?v=<?= filemtime(app_path('assets/page-draft.js')) ?>" defer></script>

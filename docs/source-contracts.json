@@ -18,14 +18,14 @@
             "review_note": "Cross-reviewed current-price cart paise precision, captured-INR predicate, shared idempotent VerifiedOrderService, actual-discount GST and frozen tax evidence. Order/checkout docs distinguish captured payment from saved order and preserve later browser-cart edits on retry."
         },
         "content": {
-            "source_sha256": "d7485310a720a17884d7831b72d467c85d287de941fc4c48e0412fccf666ec16",
-            "references_sha256": "e62f6d23f30dd4b8d56c5c24691140f5ff10f6a95044d9a50c9be191dcd1585e",
-            "review_note": "Verified editorial profile, factual copy, approved image dimensions, module-filtered links and canonical AboutPage metadata against content guide."
+            "source_sha256": "81e089883371054ee864877c253114a37fa8858f072adf2040da41482d911a85",
+            "references_sha256": "233541c29706cce5926813681d7679fa7b852b55743c6e569dca51bca84e31f7",
+            "review_note": "Reviewed browser snapshot bounds, per-owner and page key, revision conflict, explicit save token cleanup and unchanged MySQL CAS and publication status."
         },
         "foundation": {
-            "source_sha256": "52b15f87e7ad8c917ac4db39997bb32d5af280fe68b5e88166b145b6be7d1c1f",
+            "source_sha256": "a06e8f5e01ffa1570f7470c922568f7d3e245dae0ebedacb8b5445feca4f79f8",
             "references_sha256": "000d979cca9c14e5f6e0eebefde37373223f7c6c589ef50b358331394336c289",
-            "review_note": "Reviewed canonical media schema and existing MySQL ownership, authenticated bridge, revision-safe update and no binary change."
+            "review_note": "Reviewed local-only authored-page browser draft, no new database or server-side autosave and unchanged authorization/persistence."
         },
         "google-tags": {
             "source_sha256": "dd4c57dad073ad54bfc7deda652d9936407a7e5aac192878bdf9052fdc776287",
@@ -38,14 +38,14 @@
             "review_note": "Reviewed architecture guidance; existing safe failure/HTTP status boundary unchanged by deployment-neutral developer metadata."
         },
         "interface": {
-            "source_sha256": "4f3e55ceb32a1b01cb1390d5df2e66bc18118b9ae6973f25d0ee66f8147ee974",
+            "source_sha256": "4742b1ed66d134a28cf3e2fac552bc48fa294d0c4e3c297f0dd25fa38b2c136c",
             "references_sha256": "431f6eb3fbd7961de74e85d22454ac61a8e54d3f514fc80e02eaaeb62b4b2aea",
-            "review_note": "Reviewed owner media edit details, preview alt text, search, conflict feedback, and corresponding operator documentation."
+            "review_note": "Reviewed actual editor DOM and page-draft script restore/discard and stale-download behavior, with existing responsive view and help."
         },
         "mail": {
-            "source_sha256": "04c68f784052cbccc1178d058e50c386bdc210f40808a05837c7558f17074eb5",
+            "source_sha256": "d65cfdf66aa768b7a8e9d6a9903b5ffa52b3f6e7ee046bada2dafced5cf61054",
             "references_sha256": "6d6153ae2fed6f1aebbf9fa93225d6cc74b6c098d9a34deffce7bc4f3c6e9273",
-            "review_note": "Reviewed AdminController addition: metadata route only; no mail lifecycle or delivery behavior modified."
+            "review_note": "Reviewed AdminController changes confined to authored-page draft context and save acknowledgement; no SMTP or lifecycle change."
         },
         "mcp-clients": {
             "source_sha256": "ffb43129fe7e2633e2b790587a52729a82486fc1e08a692607623632c17756ad",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed upload eligibility, revision hash, bounded UTF-8 metadata, row lock, exact patch, no row creation, and view/search/isolated DB tests."
         },
         "operator-help": {
-            "source_sha256": "9039736b15607de4ff44e169481909bd099dc7601237cc6478f17da41a15e356",
-            "references_sha256": "7b2417548ef9767a977b90e8e027ba853428805f5b35b613f4b08c228cc5cc5e",
-            "review_note": "Cross-checked actual owner media edit form, authenticated CSRF route, revision-conflict message, limits and help guide."
+            "source_sha256": "7da942f5d3bfcc0cd30d6ae9e5a59c84e036a6932068f2ceef9cd4fb6417a6f4",
+            "references_sha256": "0edde1e87b2eb82a506b3b36a1b61f68eb44e33dc60d889dcdfd47eecfe3b2e6",
+            "review_note": "Cross-checked authored page owner scope, preview and save paths and the actual restore/discard/download controls with operator guide."
         },
         "public-mcp": {
             "source_sha256": "fa4cfa48087dc5d020000f9a23a5f176ce65cfd1465b81dd29d608348d2708b5",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed MediaService metadata/search patch; URL, binary and usage fields used by published feeds remain unchanged."
         },
         "workflow": {
-            "source_sha256": "930a7b5bca638c3895899718ec8fe2406208f33b07c23d25e5b03a68acc80a60",
+            "source_sha256": "4ad2a3e6c9ed905e2b2f382bd1ca833c395b9792e6ca5684871b57862b7d3f31",
             "references_sha256": "02547adbcf78d518e43216cd4f2c24d3bd81892187ee5f6e02347ab81c23e83c",
-            "review_note": "Retained current About and PageSpeed browser jobs plus media browser test; regenerated code-driven index and maps."
+            "review_note": "Preserved current About, PageSpeed and media browser tests plus the page-draft test and regenerated indexes."
         }
     }
 }

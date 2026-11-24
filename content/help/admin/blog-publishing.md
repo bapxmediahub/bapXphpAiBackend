@@ -46,5 +46,6 @@ its Markdown, and use **Preview** to inspect the unsaved draft. Select
 to check it. Select **Draft** and save to withdraw the page from its address,
 search, and the sitemap. The address stays fixed across edits. If another
 editor saved first, copy your text before reopening the current version.
+Unsaved page title, address and Markdown are saved in this browser when storage is available. Reopen the same page as the same owner to restore or discard the draft. If the saved page changed, download the browser copy instead; review visibility before using Save page. Autosave does not publish or send content to the server.
 To remove the page and its text permanently, open **Delete page**, tick the
 confirmation and choose **Delete this page**.

@@ -162,6 +162,14 @@ compares the current revision and removes only the corresponding page row.
 Recreating the same address generates a new revision so a stale form cannot
 edit or delete the replacement.
 
+The authored-page editor also saves unsent title, address and Markdown locally
+in the current browser, scoped to the signed-in owner and original page address.
+It offers explicit restore/discard for the same revision and Markdown download
+rather than restore when the saved revision changed. Publication status is
+never autosaved or restored. Browser drafts are not server-side drafts or a
+distributed edit lock. A competing tab can prevent a local snapshot replacement;
+the existing MySQL revision check remains the authoritative save guard.
+
 Editing and publishing stay with the existing owner role. The workflows do
 not delegate drafts to a separate editor or require a second publisher. Add
 granular editorial permissions when a delegated editing or approval workflow
