@@ -34,6 +34,8 @@ final class AiClient
     private const ERROR_PREFIXES = ['AI request failed', 'No AI API key'];
     private int $transportError = 0;
     private ?int $retryAfterMs = null;
+    private ?string $quotaKind = null;
+    private int $inferenceRound = 1;
     private ?string $failureCategory = null;
     private array $transferTimings = [];
     private int $toolCalls = 0;
@@ -152,6 +154,7 @@ final class AiClient
         $deadline ??= hrtime(true) + self::GENERATION_TIMEOUT_NS;
         $seenCalls=[];
         for ($round = 0; $round <= $maxRounds; $round++) {
+            $this->inferenceRound=$round+1;
             $finalRound = $round === $maxRounds;
             $declared=$tools->declarations();
             $advertised=array_column($declared,'name');
@@ -330,7 +333,7 @@ final class AiClient
     private function route(string $prompt,int $maxTokens,float $temperature,?string $override,
         AgentToolRegistry|RuntimeAgentToolRegistry|null $tools,int $rounds,?array $selectedPlan=null,bool $diagnostic=false): string {
         $this->failureCategory=null;$this->transferTimings=[];$this->toolCalls=0;$this->toolExchangeStarted=false;$this->activeConnection=[];
-        $this->cycle=1;$this->modelAttempt=1;
+        $this->cycle=1;$this->modelAttempt=1;$this->inferenceRound=1;$this->quotaKind=null;$this->retryAfterMs=null;
         $plan=$selectedPlan??$this->secrets->getProviderPlan();
         // A deliberate diagnostic model probe must not silently switch model or provider.
         if($override!==null){
@@ -363,11 +366,13 @@ final class AiClient
             $single=$connection;$single['models']=[$model];$single['model']=$model;
             $eligible[]=$single;
         }
-        $answer='';$nextDelay=0;
+        $answer='';$nextDelay=0;$notBefore=[];
         for($cycle=1;$cycle<=($repeat?self::MAX_PROVIDER_CYCLES:1)&&$eligible!==[];$cycle++){
             $this->cycle=$cycle;$next=[];
             foreach($eligible as $config){
-                if($nextDelay>0&&!$this->waitForRetry($nextDelay,$deadline)){
+                $identity=$config['provider']."\0".$config['endpoint']."\0".$config['model'];
+                $delay=max($nextDelay,(int)ceil((($notBefore[$identity]??0)-hrtime(true))/1_000_000));
+                if($delay>0&&!$this->waitForRetry($delay,$deadline)){
                     $this->failureCategory='request_deadline';return $this->failureMessage(0,false);
                 }
                 if(self::remainingProviderMs($deadline)<self::MIN_ATTEMPT_MS){
@@ -375,6 +380,7 @@ final class AiClient
                 }
                 $this->activeConnection=['provider'=>$config['provider'],'endpoint'=>$config['endpoint']];
                 $before=count($this->transferTimings);
+                $this->inferenceRound=1;
                 $answer=$generate($config);
                 // A started tool exchange stays on the original model, including
                 // its retries. Never restart it through another provider.
@@ -386,7 +392,10 @@ final class AiClient
                     &&$this->retryableInferenceFailure((int)($last['status']??0))
                     &&($last['model']??null)===$config['model']
                     &&($last['provider']??null)===$config['provider'];
-                if($retryable)$next[]=$config;
+                if($retryable){
+                    $next[]=$config;
+                    $notBefore[$identity]=hrtime(true)+($this->retryAfterMs??0)*1000000;
+                }
                 $nextDelay=self::backoffMs($retryable?3:1);
             }
             $eligible=$next;
@@ -470,6 +479,7 @@ final class AiClient
         foreach ($models as $index => $model) {
             $seenCalls=[];
             for ($round = 0; $round <= $maxRounds; $round++) {
+                $this->inferenceRound=$round+1;
                 $declarations = $tools === null ? [] : array_map(
                     static fn(array $declaration): array => ['type' => 'function', 'function' => $declaration],
                     $tools->declarations()
@@ -723,6 +733,7 @@ final class AiClient
      * Explicit quota or a long provider Retry-After is a provider hold. */
     private function retryableInferenceFailure(int $status): bool {
         return !in_array($this->failureCategory,['request_deadline','provider_budget'],true)
+            &&!in_array($this->quotaKind,['daily','zero'],true)
             &&$status!==404&&($this->retryAfterMs??0)<=8000
             &&($status!==429||($this->retryAfterMs??0)>0)
             &&self::canFailOver($status,$this->transportError);
@@ -782,6 +793,7 @@ final class AiClient
         int $deadline, bool $hasAlternate, array $options = []): string|false
     {
         $this->retryAfterMs = null;
+        $this->quotaKind = null;
         $this->transportError = 0;
         $status = 0;
         if(count($this->transferTimings)>=self::MAX_TRANSFERS){
@@ -839,6 +851,18 @@ final class AiClient
         // Keep only an allowlisted diagnostic hint, never the provider body/message.
         $hint=self::requestErrorHint($status,$body);
         $diagnosticFields=$hint===null?[]:['request_error_hint'=>$hint];
+        if(($this->activeConnection['provider']??null)==='google'){
+            $details=self::googleErrorDetails($status,$body);
+            $this->quotaKind=$details['quota_kind']??null;
+            if(isset($details['retry_after_ms']))$this->retryAfterMs=max($this->retryAfterMs??0,$details['retry_after_ms']);
+            $diagnosticFields+=$details;
+        }
+        if($this->retryAfterMs!==null)$diagnosticFields['retry_after_ms']=$this->retryAfterMs;
+        $diagnosticFields['inference_round']=$this->inferenceRound;
+        $diagnosticFields['inference_phase']=$this->toolExchangeStarted?'continuation':'initial';
+        $diagnosticFields+=self::responseMetadata($status,$body);
+        $usage=AgentTraceService::usageFromResponse($body);
+        $diagnosticFields['usage']=$usage;
         $this->health?->record($this->activeConnection,$model,$status,$this->transportError,$this->retryAfterMs);
         $this->transferTimings[] = [
             'model' => $model,
@@ -855,11 +879,68 @@ final class AiClient
             'http_status'=>$status, 'curl_error'=>$this->transportError, 'timeout_ms'=>$timeoutMs,
             'cycle'=>$this->cycle,'attempt_in_model'=>$this->modelAttempt,'provider'=>$this->activeConnection['provider']??null,
             'request_sha256'=>hash('sha256',$payload),
-            'usage'=>AgentTraceService::usageFromResponse($body),
+            'usage'=>$usage,
         ] + $diagnosticFields + ($firstByteMs > 0 ? ['first_byte_ms' => $firstByteMs] : []));
         unset($ch);
         $this->failureCategory = ($body === false || $status !== 200) ? self::classifyFailure($status, $this->transportError) : null;
         return $body;
+    }
+
+    /** Google REST error details use ProtoJSON Duration and typed quota violations.
+     * Retain fixed categories only, never provider descriptions or project identifiers.
+     * https://github.com/googleapis/googleapis/blob/master/google/rpc/error_details.proto
+     * https://protobuf.dev/programming-guides/json/
+     */
+    public static function googleErrorDetails(int $status,string|false $body): array {
+        if(!in_array($status,[429,503],true)||!is_string($body)||strlen($body)>65536)return [];
+        $error=json_decode($body,true)['error']??null;
+        if(!is_array($error))return [];
+        $safe=[];$quota=[];
+        foreach(array_slice((array)($error['details']??[]),0,16) as $detail){
+            if(!is_array($detail))continue;
+            $type=$detail['@type']??null;
+            if($type==='type.googleapis.com/google.rpc.RetryInfo'){
+                $delay=$detail['retryDelay']??null;
+                if(is_string($delay)&&preg_match('/^([0-9]{1,12})(?:\\.([0-9]{1,9}))?s$/D',$delay,$match)){
+                    $ms=(int)min(86400000,ceil((float)substr($delay,0,-1)*1000));
+                    $safe['retry_after_ms']=max($safe['retry_after_ms']??0,$ms);
+                }
+            }
+            if($status===429&&$type==='type.googleapis.com/google.rpc.QuotaFailure'){
+                foreach(array_slice((array)($detail['violations']??[]),0,16) as $violation){
+                    if(!is_array($violation))continue;
+                    $value=$violation['quotaValue']??null;
+                    if($value===0||$value==='0')$quota['zero']=true;
+                    $id=is_string($violation['quotaId']??null)?strtolower(preg_replace('/[^A-Za-z0-9]/','',$violation['quotaId'])):'';
+                    $quota[str_contains($id,'perday')?'daily':(str_contains($id,'perminute')?'minute':'other')]=true;
+                }
+            }
+        }
+        foreach(['zero','daily','minute','other'] as $kind)if(isset($quota[$kind])){$safe['quota_kind']=$kind;break;}
+        return $safe;
+    }
+
+    /** A successful HTTP transfer may be a tool request, not an answer.
+     * Only bounded structural metadata is retained; no prompt or raw response.
+     */
+    private static function responseMetadata(int $status,string|false $body): array {
+        if($status!==200||!is_string($body))return [];
+        $response=json_decode($body,true);
+        if(!is_array($response))return ['response_kind'=>'invalid'];
+        $candidate=is_array($response['candidates']??null)?($response['candidates'][0]??null):null;
+        $choice=is_array($response['choices']??null)?($response['choices'][0]??null):null;
+        $candidate=is_array($candidate)?$candidate:null;$choice=is_array($choice)?$choice:null;
+        $parts=is_array($candidate)?($candidate['content']['parts']??[]):[];
+        $message=is_array($choice)?($choice['message']??[]):[];
+        $calls=is_array($message)?(array)($message['tool_calls']??[]):[];
+        foreach((array)$parts as $part)if(is_array($part)&&isset($part['functionCall']))$calls[]=$part['functionCall'];
+        $finish=$candidate['finishReason']??$choice['finish_reason']??null;
+        $safe=['response_kind'=>$calls!==[]?'tool_calls':((is_array($candidate)||is_array($choice))?'text_or_empty':'invalid')];
+        $safe['requested_tool_count']=min(100,count($calls));
+        if(is_string($finish)&&in_array($finish,['STOP','MAX_TOKENS','SAFETY','RECITATION','OTHER','MALFORMED_FUNCTION_CALL','stop','length','tool_calls','content_filter','function_call','error'],true))$safe['finish_reason']=$finish;
+        $actual=$response['modelVersion']??$response['model']??null;
+        if(is_string($actual)&&SecretService::validModelId($actual)&&!preg_match('/^(?:sk-|AIza)/i',$actual))$safe['response_model']=$actual;
+        return $safe;
     }
 
     public const REQUEST_ERROR_HINTS=['tool_schema','tool_history','generation_config','invalid_argument'];

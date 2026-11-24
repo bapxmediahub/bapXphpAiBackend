@@ -25,6 +25,20 @@ if (PHP_SAPI === 'cli-server') {
         }
         http_response_code(503);echo '{"error":{"status":"UNAVAILABLE"}}';return;
     }
+    if($scenario==='body_retry'||$scenario==='daily_quota'){
+        $file=getenv('BAPX_CYCLE_FIXTURE_DIR').'/'.$scenario;
+        $count=(int)@file_get_contents($file)+1;file_put_contents($file,(string)$count,LOCK_EX);
+        if($count===1||$scenario==='daily_quota'){
+            http_response_code(429);header('Retry-After: 1');
+            echo json_encode(['error'=>['details'=>[
+                ['@type'=>'type.googleapis.com/google.rpc.RetryInfo','retryDelay'=>'1.25s'],
+                ['@type'=>'type.googleapis.com/google.rpc.QuotaFailure','violations'=>[['quotaId'=>$scenario==='daily_quota'?'RequestsPerDay':'RequestsPerMinute','quotaValue'=>'10','subject'=>'private-fixture-project']]]
+            ]]]);
+            return;
+        }
+        echo json_encode(['candidates'=>[['content'=>['parts'=>[['text'=>'<final_answer>connection ok</final_answer>']]],'finishReason'=>'STOP']],'usageMetadata'=>['promptTokenCount'=>3,'candidatesTokenCount'=>2,'totalTokenCount'=>5],'modelVersion'=>'gemma-4-31b-it']);
+        return;
+    }
     if($scenario==='cooldown') {
         if($primary){http_response_code(503);echo '{"error":{"status":"UNAVAILABLE"}}';return;}
         echo json_encode(['candidates'=>[['content'=>['parts'=>[['text'=>'<final_answer>connection ok</final_answer>']]]]]]);return;
@@ -261,6 +275,26 @@ try {
     echo "PASS exact three-model ordered retry cycle: ".implode(' -> ',array_column($attempts,'model'))."\n";
     AgentTraceService::reset();
 
+    // Structured Google RetryInfo can exceed a Retry-After header. The client
+    // must wait the full minimum and retain only bounded quota metadata.
+    foreach(['body_retry','daily_quota'] as $scenario){
+        AgentTraceService::begin(bin2hex(random_bytes(8)),null,AiClient::agentLimits());
+        $client=new AiClient();
+        $cfg=[['provider'=>'google','endpoint'=>'http://'.$address.'/'.$scenario,'apiKey'=>'fixture','model'=>SecretService::PRIMARY_MODEL,'models'=>[SecretService::PRIMARY_MODEL],'configured'=>true]];
+        $routeAll=new ReflectionMethod(AiClient::class,'route');
+        $start=hrtime(true);
+        $reply=$routeAll->invoke($client,'Fixture',64,0.0,null,null,0,$cfg,true);
+        $attempts=$client->transferTimings();
+        check(($attempts[0]['retry_after_ms']??null)===1250,'Body RetryInfo is not truncated to smaller header');
+        check(($attempts[0]['quota_kind']??null)===($scenario==='daily_quota'?'daily':'minute'),'Safe quota classification retained');
+        check(!str_contains(json_encode($attempts),'private-fixture-project'),'Quota subject is never persisted');
+        if($scenario==='body_retry'){
+            check($reply==='connection ok'&&array_column($attempts,'status')===[429,200],'Temporary quota recovers after the indicated delay');
+            check((hrtime(true)-$start)/1000000>=1250,'Measured wait honors structured provider minimum');
+            check(($attempts[1]['usage']['total_tokens']??null)===5&&($attempts[1]['finish_reason']??null)==='STOP','Response usage and finish reason retained');
+        }else check(AiClient::isError($reply)&&count($attempts)===1,'Daily quota does not blindly retry within the same request');
+        AgentTraceService::reset();
+    }
     AgentTraceService::begin(str_repeat('a',16), null, ['max_model_calls' => 1]);
     $prior = AgentTraceService::startSpan('model_attempt', SecretService::PRIMARY_MODEL);
     AgentTraceService::endSpan($prior, 'complete');

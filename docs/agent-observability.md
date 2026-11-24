@@ -417,3 +417,29 @@ telemetry. Model-selected Support reads record their own tool spans, evidence
 and public product-source identities. Public catalogue counts and bestseller
 ranking are business reads, not customer or owner-wide private records.
 All fresh free-form questions use model inference. Catalogue totals and best sellers are computed by model-selected tools, not natural-language shortcuts. Both surfaces share published article search and bounded exact body retrieval; evidence records public identities and excerpt digests, not raw query text or private documents. A failed lookup never becomes zero counts. Explicit commands and historical local-answer records remain distinguishable from model outcomes.
+
+### Provider and model reliability dashboard
+
+The existing 24-hour Admin Monitoring view separates observed HTTP transfers,
+accepted model answers and recovered turns. Provider/model rows show transfer
+errors, mean transfer latency, accepted model answers attributed to their last
+successful transfer, and reported tokens with a coverage denominator. These are
+recorded operational events, not a synthetic availability test or accuracy score.
+Unknown provider/usage fields on legacy runs are not fabricated.
+
+Recent runs distinguish errors before any observed transfer, during provider
+transfer or continuation, after completed business tools, business tool errors,
+and response/application failure. This stage is inferred conservatively from
+observed attempts and completed tools, not from private reasoning. New inference
+attempts retain round, phase, retry/cycle, requested tool count, bounded finish
+reason and reported response model. Structured Google quota details retain only
+fixed categories and numeric retry delay, not descriptions, project IDs or raw
+bodies. Backoff spans measure actual waiting time; tool-search and instruction
+read counts remain separate from executed business tools. Token totals include
+only reported usage and missing usage remains unknown.
+
+References: https://ai-sdk.dev/docs/ai-sdk-core/telemetry and
+https://opentelemetry.io/docs/specs/semconv/general/recording-errors/
+and https://opentelemetry.io/docs/specs/semconv/registry/attributes/gen-ai/ .
+These inform the existing native metadata schema; this release does not claim
+OpenTelemetry exporter compliance or install a third-party observability service.

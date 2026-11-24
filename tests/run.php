@@ -1,4 +1,8 @@
 <?php
+// The general regression suite is always a disposable, non-production run.
+// Dedicated hosted checks use their own explicitly isolated test entrypoints.
+if(PHP_SAPI!=='cli'){http_response_code(404);exit;}
+putenv('BAPX_TEST_MODE=1');
 require __DIR__ . '/../app/bootstrap.php';
 
 // Capture the real bootstrap result before any fixture can preload or stub an integration.
@@ -757,7 +761,8 @@ $tests['provider cooldown is bounded, deployment local, and stores no raw creden
         $health->record($plan[0],'fallback',429,0,500000,$now);
         assertSame([],$health->availablePlan($plan,$now),'All cooling models produce no eligible route');
         assertSame(['primary'],$health->availablePlan($plan,$now,true)[0]['models'],'Only provider quota hold excludes an ordered model');
-        assertSame($plan,$health->availablePlan($plan,$now+120),'Retry-After cache has a finite ceiling');
+        assertSame(['primary'],$health->availablePlan($plan,$now+120,true)[0]['models'],'A longer explicit provider hold is not shortened to 120 seconds');
+        assertSame($plan,$health->availablePlan($plan,$now+500),'Explicit provider hold expires at the supplied delay');
         assertTrue(!str_contains(file_get_contents($path),'private-fixture-key')&&!str_contains(file_get_contents($path),'provider.example.invalid'),'Only digests and expiry timestamps stored');
         assertSame(0,\App\Services\AiProviderHealthService::cooldownSeconds(400,0),'Malformed request never triggers cooldown');
         assertSame(0,\App\Services\AiProviderHealthService::cooldownSeconds(403,0),'Authentication rejection never triggers cooldown');
@@ -765,6 +770,42 @@ $tests['provider cooldown is bounded, deployment local, and stores no raw creden
         file_put_contents($path,'corrupt');
         assertSame($plan,$health->availablePlan($plan,$now),'Optional health storage failure cannot disable inference');
     } finally {foreach(glob($dir.'/*')?:[] as $file)unlink($file);rmdir($dir);}
+};
+
+$tests['Google structured quota recovery respects provider delays and redacts project metadata'] = static function (): void {
+    $client=\App\Services\AiClient::class;
+    $body=json_encode(['error'=>['message'=>'private-project-detail','details'=>[
+        ['@type'=>'type.googleapis.com/google.rpc.RetryInfo','retryDelay'=>'1.23456789s'],
+        ['@type'=>'type.googleapis.com/google.rpc.QuotaFailure','violations'=>[
+            ['quotaId'=>'GenerateRequestsPerMinutePerProject','quotaValue'=>'15','subject'=>'private-project-detail']
+        ]]
+    ]]]);
+    assertSame(['retry_after_ms'=>1235,'quota_kind'=>'minute'],$client::googleErrorDetails(429,$body),'Fractional ProtoJSON duration rounds upward');
+    $zero=json_encode(['error'=>['details'=>[['@type'=>'type.googleapis.com/google.rpc.QuotaFailure','violations'=>[['quotaId'=>'RequestsPerDay','quotaValue'=>'0']]]]]]);
+    assertSame(['quota_kind'=>'zero'],$client::googleErrorDetails(429,$zero),'Explicit zero quota is distinct');
+    assertSame([],$client::googleErrorDetails(400,$body),'Do not apply retry metadata to an invalid request');
+    assertSame([],$client::googleErrorDetails(429,'{"error":{"details":[{"@type":"type.googleapis.com/google.rpc.RetryInfo","retryDelay":"-1s"}]}}'),'Invalid duration rejected');
+    assertTrue(!str_contains(json_encode($client::googleErrorDetails(429,$body)),'private-project-detail'),'No project identifiers retained');
+};
+
+$tests['monitoring distinguishes model transfer success from completed turn and continuation failure'] = static function (): void {
+    $now=time();
+    $initial=['model'=>'gemma-4-26b-a4b-it','provider'=>'google','status'=>200,'inference_phase'=>'initial','inference_round'=>1,'response_kind'=>'tool_calls','requested_tool_count'=>1,'usage'=>['input_tokens'=>10,'output_tokens'=>2,'total_tokens'=>12],'total_ms'=>200];
+    $quota=['model'=>'gemma-4-26b-a4b-it','provider'=>'google','status'=>429,'inference_phase'=>'continuation','inference_round'=>2,'quota_kind'=>'minute','retry_after_ms'=>1500,'total_ms'=>100,'response_body'=>'private-provider-body'];
+    $success=['model'=>'gemma-4-26b-a4b-it','provider'=>'google','status'=>200,'inference_phase'=>'continuation','response_kind'=>'text_or_empty','inference_round'=>2,'total_ms'=>300];
+    $event=static fn($outcome,$attempts,$tools,$counts)=>['event'=>'agent.run','created_at'=>gmdate('c',$now),'meta'=>['surface'=>'support','outcome'=>$outcome,'provider_attempts'=>$attempts,'tool_activity'=>$tools,'execution_counts'=>$counts]];
+    $tools=[['name'=>'public_policy','status'=>'complete','duration_ms'=>4]];
+    $events=[$event('error',[$initial,$quota],$tools,['backoff_ms'=>1500,'tool_searches'=>1,'instruction_reads'=>0]),$event('model',[$initial,$quota,$success],$tools,null)];
+    $row=\App\Services\AuditLogService::agentSummary($events,$now)['support'];
+    $stats=$row['provider_models']['google|gemma-4-26b-a4b-it'];
+    assertSame([5,3,2,1,24,2],[$stats['attempts'],$stats['http_success'],$stats['errors'],$stats['accepted_answers'],$stats['observed_tokens'],$stats['usage_reported']],'Observed transfer, completion and token denominators are distinct');
+    assertSame(['provider_after_business_tool'=>1],$row['failure_stages'],'Failure after completed business lookup is visible');
+    assertSame(1,$row['recovered_model_runs'],'Recovered run counted once');
+    assertSame('quota_minute',\App\Services\AuditLogService::attemptDiagnosis($quota),'Structured quota diagnosis');
+    assertTrue(!str_contains(json_encode($row),'private-provider-body'),'Provider content not exposed');
+    $agentMonitoring=['support'=>$row];$agentConversations=[];$agentGoldenSuite=null;
+    ob_start();require app_path('views/admin/agent-monitoring.php');$html=ob_get_clean();
+    assertTrue(str_contains($html,'Provider and model reliability')&&str_contains($html,'provider after business tool')&&str_contains($html,'provider retry delay'),'Admin sees recovery, stage and delay evidence');
 };
 
 $tests['request rejection hints remain redacted and do not claim an exact cause'] = static function (): void {
@@ -2238,6 +2279,10 @@ $tests['media removal is restricted to unused uploaded media with CSRF'] = stati
 };
 
 $tests['database service can connect to MySQL'] = function (): void {
+    if(getenv('BAPX_TEST_MODE')==='1'){
+        try{(new DatabaseService())->connection();}catch(RuntimeException){assertTrue(true,'Fixture mode disables direct database connections');return;}
+        throw new RuntimeException('Fixture mode allowed a database connection');
+    }
     try {
         // Quick pre-check: verify the host is reachable before attempting PDO
         $cfg = require app_path('config/database.php');

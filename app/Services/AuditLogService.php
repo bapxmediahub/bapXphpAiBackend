@@ -11,6 +11,10 @@ final class AuditLogService {
         'transport_error' => ['Transport error', 'Use the cURL error number to check DNS, connectivity or TLS on the application host.'],
         'upstream_http' => ['Upstream service error', 'Check the provider status page and the attempt time before making another request.'],
         'rate_limit' => ['Provider rate or quota limit', 'Check provider quota and rate limits before retrying.'],
+        'google_capacity' => ['Google capacity unavailable', 'Google returned HTTP 503. Check provider service capacity; the configured retry loop handles transient errors.'],
+        'quota_daily' => ['Daily quota exceeded', 'Provider quota details identify a per-day limit. Check the configured project rate limits; do not immediately repeat this model.'],
+        'quota_zero' => ['Reported quota is zero', 'Check project entitlement and model access. Retrying a zero quota will not create capacity.'],
+        'quota_minute' => ['Per-minute quota exceeded', 'Honor the provider retry delay and inspect request/token rate limits.'],
         'access_denied' => ['Provider denied access', 'Check the configured credentials and the account permissions for this model.'],
         'request_error' => ['Provider rejected the request', 'Check the endpoint, model and supported request fields.'],
         'tool_schema' => ['Provider response suggests a tool-schema rejection', 'Compare the actual declaration format against the configured model API. The hint is not a proven root cause.'],
@@ -37,7 +41,11 @@ final class AuditLogService {
             $error === 28 => 'transfer_timeout',
             $error !== 0 => 'transport_error',
             $status === 0 => 'no_http',
+            $status === 503 && ($attempt['provider']??null)==='google' => 'google_capacity',
             $status >= 500 && $status < 600 => 'upstream_http',
+            $status === 429 && ($attempt['quota_kind']??null)==='zero' => 'quota_zero',
+            $status === 429 && ($attempt['quota_kind']??null)==='daily' => 'quota_daily',
+            $status === 429 && ($attempt['quota_kind']??null)==='minute' => 'quota_minute',
             $status === 429 => 'rate_limit',
             $status === 401 || $status === 403 => 'access_denied',
             in_array($status,[400,422],true) && in_array($attempt['request_error_hint']??null,AiClient::REQUEST_ERROR_HINTS,true) => $attempt['request_error_hint'],
@@ -57,9 +65,9 @@ final class AuditLogService {
     public function agentRun(string $surface, string $outcome, float $startedAt, ?string $reason = null, array $attempts = [], array $tools = [], ?string $traceId = null): void {
         if (!in_array($surface, ['support', 'admin'], true)) return;
         if (!in_array($outcome, ['model', 'local', 'fallback', 'private_account', 'draft', 'error'], true)) return;
-        $trace = AgentTraceService::snapshot();
-        if ($traceId !== null && ($trace['trace_id'] ?? null) === $traceId) {
-            $reason = AgentTraceService::budgetReason($trace) ?? $reason;
+        $execution = AgentTraceService::snapshot();
+        if ($traceId !== null && ($execution['trace_id'] ?? null) === $traceId) {
+            $reason = AgentTraceService::budgetReason($execution) ?? $reason;
         }
         $meta = [
             'surface' => $surface,
@@ -70,6 +78,16 @@ final class AuditLogService {
         if (($trace = self::validTraceId($traceId)) !== null) $meta['trace_id'] = $trace;
         if ($attempts !== []) $meta['provider_attempts'] = self::providerAttempts($attempts);
         if ($tools !== []) $meta['tool_activity'] = self::toolActivity($tools);
+        if($traceId!==null&&($execution['trace_id']??null)===$traceId){
+            $backoff=0;$discovery=0;$skills=0;
+            foreach((array)($execution['spans']??[]) as $span){
+                if(($span['status']??null)!=='complete')continue;
+                if(($span['name']??null)==='provider_backoff')$backoff+=(float)($span['duration_ms']??0);
+                if(($span['name']??null)==='tool_search')$discovery++;
+                if(($span['name']??null)==='runtime_skill')$skills++;
+            }
+            $meta['execution_counts']=['backoff_ms'=>(int)round($backoff),'tool_searches'=>$discovery,'instruction_reads'=>$skills];
+        }
         $this->record('run', 'agent', $surface, $meta, ['email' => 'system', 'name' => 'Agent monitoring']);
     }
 
@@ -116,13 +134,22 @@ final class AuditLogService {
         return $safe;
     }
 
+    private static function safeExecutionCounts(mixed $counts): ?array {
+        if(!is_array($counts))return null;
+        $safe=[];
+        foreach(['backoff_ms'=>120000,'tool_searches'=>128,'instruction_reads'=>128] as $key=>$max){
+            if(is_int($counts[$key]??null)&&$counts[$key]>=0&&$counts[$key]<=$max)$safe[$key]=$counts[$key];
+        }
+        return $safe?:null;
+    }
+
     public static function agentSummary(array $events, ?int $now = null): array {
         $now ??= time();
         $cutoff = $now - 86400;
         $durations = ['support' => [], 'admin' => []];
         $summary = [];
         foreach (['support', 'admin'] as $surface) {
-            $summary[$surface] = ['requests' => 0, 'model' => 0, 'local' => 0, 'fallback' => 0, 'private_account' => 0, 'draft' => 0, 'error' => 0, 'duration_ms' => 0, 'last_seen' => '', 'reasons' => [], 'latest_provider_run' => null, 'recent_runs' => [], 'provider_attempt_count'=>0, 'provider_error_count'=>0, 'tool_call_count'=>0, 'tool_error_count'=>0];
+            $summary[$surface] = ['requests' => 0, 'model' => 0, 'local' => 0, 'fallback' => 0, 'private_account' => 0, 'draft' => 0, 'error' => 0, 'duration_ms' => 0, 'last_seen' => '', 'reasons' => [], 'latest_provider_run' => null, 'recent_runs' => [], 'provider_attempt_count'=>0, 'provider_error_count'=>0, 'tool_call_count'=>0, 'tool_error_count'=>0,'provider_models'=>[],'failure_stages'=>[],'recovered_model_runs'=>0];
         }
         foreach ($events as $event) {
             if (($event['event'] ?? '') !== 'agent.run') continue;
@@ -134,12 +161,47 @@ final class AuditLogService {
             $timestamp = strtotime($created);
             if (!isset($summary[$surface]) || !in_array($outcome, ['model', 'local', 'fallback', 'private_account', 'draft', 'error'], true) || $timestamp === false || $timestamp < $cutoff || $timestamp > $now) continue;
             $summary[$surface]['requests']++;
-            $attempts = $meta['provider_attempts'] ?? [];
-            foreach(self::providerAttempts(is_array($attempts)?$attempts:[]) as $attempt){
+            $attempts = self::providerAttempts(is_array($meta['provider_attempts']??null)?$meta['provider_attempts']:[]);
+            $tools=self::toolActivity(is_array($meta['tool_activity']??null)?$meta['tool_activity']:[]);
+            $failedTransfers=0;
+            foreach($attempts as $attempt){
                 $summary[$surface]['provider_attempt_count']++;
-                if($attempt['status']<200||$attempt['status']>=300||$attempt['curl_error']!==0)$summary[$surface]['provider_error_count']++;
+                $diagnosis=self::attemptDiagnosis($attempt);
+                $failed=$diagnosis!=='http_success';
+                if($failed){$summary[$surface]['provider_error_count']++;$failedTransfers++;}
+                $provider=$attempt['provider']??'unknown';
+                $model=$attempt['model']??'unknown';
+                $key=$provider.'|'.$model;
+                if(!isset($summary[$surface]['provider_models'][$key])){
+                    $summary[$surface]['provider_models'][$key]=['provider'=>$provider,'model'=>$model,'attempts'=>0,'http_success'=>0,'errors'=>0,'duration_ms'=>0,'accepted_answers'=>0,'diagnoses'=>[],'observed_tokens'=>0,'usage_reported'=>0];
+                }
+                $stat=&$summary[$surface]['provider_models'][$key];
+                $stat['attempts']++;$stat[$failed?'errors':'http_success']++;
+                $stat['duration_ms']+=$attempt['total_ms'];
+                $stat['diagnoses'][$diagnosis]=($stat['diagnoses'][$diagnosis]??0)+1;
+                $usage=$attempt['usage']??[];
+                $total=$usage['total_tokens']??(isset($usage['input_tokens'],$usage['output_tokens'])?$usage['input_tokens']+$usage['output_tokens']:null);
+                if(is_int($total)){$stat['observed_tokens']+=$total;$stat['usage_reported']++;}
+                unset($stat);
             }
-            foreach(self::toolActivity(is_array($meta['tool_activity']??null)?$meta['tool_activity']:[]) as $tool){
+            $last=end($attempts)?:[];
+            if($outcome==='model'&&$last!==[]&&self::attemptDiagnosis($last)==='http_success'){
+                $key=($last['provider']??'unknown').'|'.($last['model']??'unknown');
+                $summary[$surface]['provider_models'][$key]['accepted_answers']++;
+                if($failedTransfers>0)$summary[$surface]['recovered_model_runs']++;
+            }
+            $stage=null;
+            if($outcome==='error'){
+                $toolCompleted=in_array('complete',array_column($tools,'status'),true);
+                $toolFailed=in_array('error',array_column($tools,'status'),true);
+                if($last!==[]&&self::attemptDiagnosis($last)!=='http_success'){
+                    $stage=$toolCompleted?'provider_after_business_tool':(($last['inference_phase']??null)==='continuation'?'provider_during_continuation':'provider_transfer');
+                }elseif($toolFailed)$stage='business_tool';
+                elseif($last!==[])$stage='response_or_application';
+                else $stage='no_observed_transfer';
+                $summary[$surface]['failure_stages'][$stage]=($summary[$surface]['failure_stages'][$stage]??0)+1;
+            }
+            foreach($tools as $tool){
                 $summary[$surface]['tool_call_count']++;
                 if($tool['status']==='error')$summary[$surface]['tool_error_count']++;
             }
@@ -148,7 +210,7 @@ final class AuditLogService {
                 $summary[$surface]['latest_provider_run'] = [
                     'at' => $created,
                     'outcome' => $outcome,
-                    'attempts' => self::providerAttempts($attempts),
+                    'attempts' => $attempts,
                 ];
             }
             $summary[$surface][$outcome]++;
@@ -166,8 +228,10 @@ final class AuditLogService {
                 'outcome' => $outcome,
                 'reason' => is_string($reason) && isset($summary[$surface]['reasons'][$reason]) ? $reason : null,
                 'duration_ms' => $duration,
-                'attempts' => is_array($attempts) ? self::providerAttempts($attempts) : [],
-                'tools' => is_array($meta['tool_activity'] ?? null) ? self::toolActivity($meta['tool_activity']) : [],
+                'attempts' => $attempts,
+                'tools' => $tools,
+                'failure_stage'=>$stage,
+                'execution_counts'=>self::safeExecutionCounts($meta['execution_counts']??null),
             ];
             if ($created > $summary[$surface]['last_seen']) $summary[$surface]['last_seen'] = $created;
         }

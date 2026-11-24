@@ -8,7 +8,7 @@ namespace App\Services;
  */
 final class AiProviderHealthService
 {
-    private const MAX_COOLDOWN = 120;
+    private const MAX_COOLDOWN = 86400;
     private const MAX_ENTRIES = 64;
 
     public function __construct(private ?string $path = null) {
