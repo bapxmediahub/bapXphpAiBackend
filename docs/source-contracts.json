@@ -24,8 +24,8 @@
         },
         "foundation": {
             "source_sha256": "2a87cb5f93b3dd0a335d1cf0dba669154636b668486a793270285436784e48eb",
-            "references_sha256": "44504ddbd485f9ab5d6c71a6443726f531f7e0d7ed34ec16215741902635cc0e",
-            "review_note": "Regenerated combined About and role-scoped tool-discovery route/service knowledge map and checked canonical contracts."
+            "references_sha256": "eeb5a6c867fb13329ea4ed9fd46043a54d3b943e166418d4016a70bc383ea5d2",
+            "review_note": "Cross-checked views/public/shop.php GET declarative form, native CDP and JavaScript exact discovery in actual Chrome, public contact invocation and the official Chrome form documentation; no runtime change."
         },
         "google-tags": {
             "source_sha256": "0641eacf6c60aab4a8c8fe3df9cc7695111ca1c6e7d8448d9dabbb425894eb16",
@@ -69,8 +69,8 @@
         },
         "remote-commerce": {
             "source_sha256": "e37cc8ba99c3a47927c78728355f06a8732fca92aff81908560da8281dcafd6a",
-            "references_sha256": "fbebd2e5642ed22c5c8f2f69659ee88ddc916e097c058a572c0650f31cae8b70",
-            "review_note": "About navigation uses existing module switches and published contact data; no commerce mutation or checkout behavior changed."
+            "references_sha256": "aafbc778d27e19816b6069a0bb16194afced7f59b4185261374f1a3c03fa1b72",
+            "review_note": "Cross-checked shop form GET navigation and existing commerce registrations with exact native and polyfill discovery; no commerce invocation, authorization, checkout or payment semantics changed."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
