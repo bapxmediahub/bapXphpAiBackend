@@ -12,6 +12,15 @@ if (PHP_SAPI === 'cli-server') {
     [$scenario, $model] = explode('/', trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/'), 2);
     $primary = str_starts_with($model, 'gemma-4-31b-it:');
     header('Content-Type: application/json');
+    if($scenario==='cooldown') {
+        if($primary){http_response_code(503);echo '{"error":{"status":"UNAVAILABLE"}}';return;}
+        echo json_encode(['candidates'=>[['content'=>['parts'=>[['text'=>'<final_answer>connection ok</final_answer>']]]]]]);return;
+    }
+    if($scenario==='bad_schema') {
+        http_response_code(400);
+        echo json_encode(['error'=>['status'=>'INVALID_ARGUMENT','message'=>'function_declarations parameters_json_schema: private-fixture-raw-error']]);
+        return;
+    }
     if($scenario==='tool_probe') {
         $request=json_decode((string)file_get_contents('php://input'),true,512,JSON_THROW_ON_ERROR);
         $tool=$request['tools'][0]['functionDeclarations'][0]??[];
@@ -169,6 +178,40 @@ try {
     $reply=$complete->invoke($client,$config,'Find the appropriate tool.', $registry,256,0.0,2,null,hrtime(true)+6000000000);
     check($reply==='Shipping is calculated at checkout.'&&$client->toolCalls()===2,'Deferred discovery must update subsequent wire declarations and execute the actual policy tool');
     check(count($client->transferTimings())===3,'Expected exactly three provider transfers for discovery and execution');
+    // Ordinary generation avoids only a previously observed transient failure.
+    // Explicit diagnostics still contact the selected endpoint, with no fake attempts.
+    $healthDir=sys_get_temp_dir().'/bapx-ai-health-fixture-'.bin2hex(random_bytes(6));
+    mkdir($healthDir,0700);
+    $healthFile=$healthDir.'/state.json';
+    try{
+        $health=new \App\Services\AiProviderHealthService($healthFile);
+        $plan=[['provider'=>'google','endpoint'=>'http://'.$address.'/cooldown','apiKey'=>'fixture-key',
+            'model'=>SecretService::PRIMARY_MODEL,'models'=>SecretService::GOOGLE_MODELS,'configured'=>true]];
+        $routeAll=new ReflectionMethod(AiClient::class,'route');
+        $client=new AiClient(health:$health);
+        $reply=$routeAll->invoke($client,'Reply connection ok',256,0.0,null,null,0,$plan);
+        check($reply==='connection ok'&&array_column($client->transferTimings(),'status')===[503,200],'First real failure recovers on fallback');
+        $client=new AiClient(health:new \App\Services\AiProviderHealthService($healthFile));
+        $reply=$routeAll->invoke($client,'Reply connection ok',256,0.0,null,null,0,$plan);
+        check($reply==='connection ok'&&array_column($client->transferTimings(),'model')===[SecretService::FALLBACK_MODEL],'Fresh request skips only recently failed primary');
+        $health->record($plan[0],SecretService::FALLBACK_MODEL,503,0);
+        $client=new AiClient(health:$health);
+        $reply=$routeAll->invoke($client,'Reply connection ok',256,0.0,null,null,0,$plan);
+        check(AiClient::isError($reply)&&$client->failureCategory()==='provider_cooldown'&&$client->transferTimings()===[],'All cooled models return honest local outcome without transfers');
+        $diagnosticPlan=$plan;$diagnosticPlan[0]['models']=[SecretService::FALLBACK_MODEL];$diagnosticPlan[0]['model']=SecretService::FALLBACK_MODEL;
+        $reply=$routeAll->invoke($client,'Reply connection ok',256,0.0,null,null,0,$diagnosticPlan,true);
+        check($reply==='connection ok'&&count($client->transferTimings())===1,'Explicit diagnostic bypasses cooldown');
+        check($health->availablePlan($plan)[0]['models']===[SecretService::FALLBACK_MODEL],'Successful diagnostic clears only its own cooldown');
+        $bad=$plan;$bad[0]['endpoint']='http://'.$address.'/bad_schema';$client=new AiClient(health:$health);
+        $reply=$routeAll->invoke($client,'Reply connection ok',256,0.0,null,null,0,$bad);
+        $attempts=$client->transferTimings();
+        check(AiClient::isError($reply)&&count($attempts)===1&&($attempts[0]['request_error_hint']??null)==='tool_schema','HTTP 400 receives an allowlisted hint without repeating the invalid request');
+        check(!str_contains(json_encode($attempts),'private-fixture-raw-error')&&!str_contains($reply,'private-fixture-raw-error'),'Provider error body never reaches output');
+        check($health->availablePlan($bad)===$bad,'Request/schema failure never cools an endpoint');
+    }finally{
+        foreach(glob($healthDir.'/*')?:[] as $file)unlink($file);
+        rmdir($healthDir);
+    }
     AgentTraceService::begin(str_repeat('a',16), null, ['max_model_calls' => 1]);
     $prior = AgentTraceService::startSpan('model_attempt', SecretService::PRIMARY_MODEL);
     AgentTraceService::endSpan($prior, 'complete');

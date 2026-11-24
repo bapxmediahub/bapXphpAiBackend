@@ -63,7 +63,7 @@ final class EnterpriseToolRegistry extends AgentToolRegistry {
     public function guideAnswer(string $question): ?string {
         if (!AgentCapabilityPolicy::allows(AgentCapabilityPolicy::ENTERPRISE, 'operator_guide', $_SESSION['user'] ?? null)) return null;
         $question = trim($question);
-        if (preg_match('~^(?:/capabilities|what can you (?:do|help(?: me)? with)(?: (?:for me|in (?:my|this) store))?|how can you help(?: me)?)[?!. ]*$~iD', $question)) {
+        if (preg_match('~^(?:/capabilities|what can you (?:do|help(?: me)? with)(?: (?:for me|in (?:my|this) store))?|how can you help(?: me)?|what kinds? of (?:store|business|admin) tasks can you help(?: me)? with)[?!. ]*$~iD', $question)) {
             $lines = ['I can help with these owner tasks:'];
             foreach (self::capabilities($_SESSION['user'] ?? null) as $task) {
                 $lines[] = '- ' . $task['title'] . ': ' . $task['description'];

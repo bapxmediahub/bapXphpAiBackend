@@ -82,7 +82,10 @@ final class AiClient
         return in_array($status, [0,404,408,429,500,502,503,504], true);
     }
 
-    public function __construct(private SecretService $secrets = new SecretService()) {}
+    public function __construct(private SecretService $secrets = new SecretService(),
+        private ?AiProviderHealthService $health = null) {
+        if (getenv('BAPX_TEST_MODE')!=='1') $this->health ??= new AiProviderHealthService();
+    }
 
     /** True when a key is present, so callers can skip the round trip. */
     public function configured(): bool
@@ -301,7 +304,7 @@ final class AiClient
             }
         }:null;
         $prompt=$withTool?'Call connection_probe with no arguments, then return exactly its challenge value as your final answer.':'Reply with exactly: connection ok';
-        $answer=$this->route($prompt,256,0.0,null,$registry,$withTool?2:0,$plan);
+        $answer=$this->route($prompt,256,0.0,null,$registry,$withTool?2:0,$plan,true);
         $ok=self::probeSucceeded($answer,$expected,$this->toolCalls,$withTool);
         $attempts=$this->transferTimings;$last=end($attempts)?:[];
         $reason=$ok?null:($this->failureCategory??($withTool&&$this->toolCalls===0?'tool_not_called':'unexpected_probe_answer'));
@@ -312,7 +315,7 @@ final class AiClient
     }
 
     private function route(string $prompt,int $maxTokens,float $temperature,?string $override,
-        AgentToolRegistry|RuntimeAgentToolRegistry|null $tools,int $rounds,?array $selectedPlan=null): string {
+        AgentToolRegistry|RuntimeAgentToolRegistry|null $tools,int $rounds,?array $selectedPlan=null,bool $diagnostic=false): string {
         $this->failureCategory=null;$this->transferTimings=[];$this->toolCalls=0;$this->toolExchangeStarted=false;$this->activeConnection=[];
         $plan=$selectedPlan??$this->secrets->getProviderPlan();
         // A deliberate diagnostic model probe must not silently switch model or provider.
@@ -322,6 +325,13 @@ final class AiClient
             if($plan){$plan[0]['models']=[$override];$plan[0]['model']=$override;}
         }
         if(!$plan){$this->failureCategory='not_configured';return 'No AI API key or enabled model is configured. Check Admin → Integrations.';}
+        if(!$diagnostic&&$override===null&&$this->health!==null){
+            $plan=$this->health->availablePlan($plan);
+            if(!$plan){
+                $this->failureCategory='provider_cooldown';
+                return 'AI request failed: the configured models are briefly cooling down after recent transport failures. Try again shortly.';
+            }
+        }
         if(!function_exists('curl_init')){$this->failureCategory='transport';return 'AI request failed: cURL is not available on this server.';}
         $deadline=hrtime(true)+self::GENERATION_TIMEOUT_NS;
         $answer='';
@@ -677,6 +687,10 @@ final class AiClient
         // PHP reports these milestones in seconds and uses zero for unreached stages.
         // https://www.php.net/manual/en/function.curl-getinfo.php
         $firstByteMs = 1000 * curl_getinfo($ch, CURLINFO_STARTTRANSFER_TIME);
+        // Keep only an allowlisted diagnostic hint, never the provider body/message.
+        $hint=self::requestErrorHint($status,$body);
+        $diagnosticFields=$hint===null?[]:['request_error_hint'=>$hint];
+        $this->health?->record($this->activeConnection,$model,$status,$this->transportError,$this->retryAfterMs);
         $this->transferTimings[] = [
             'model' => $model,
             'status' => $status,
@@ -686,15 +700,30 @@ final class AiClient
             'ready_ms' => 1000 * curl_getinfo($ch, CURLINFO_PRETRANSFER_TIME),
             'timeout_ms' => $timeoutMs,
             'total_ms' => 1000 * curl_getinfo($ch, CURLINFO_TOTAL_TIME),
-        ] + $this->activeConnection + ($firstByteMs > 0 ? ['first_byte_ms' => $firstByteMs] : []);
+        ] + $this->activeConnection + $diagnosticFields + ($firstByteMs > 0 ? ['first_byte_ms' => $firstByteMs] : []);
         AgentTraceService::endSpan($span,($body===false||$status<200||$status>=300)?'error':'complete',[
             'http_status'=>$status, 'curl_error'=>$this->transportError, 'timeout_ms'=>$timeoutMs,
             'request_sha256'=>hash('sha256',$payload),
             'usage'=>AgentTraceService::usageFromResponse($body),
-        ] + ($firstByteMs > 0 ? ['first_byte_ms' => $firstByteMs] : []));
+        ] + $diagnosticFields + ($firstByteMs > 0 ? ['first_byte_ms' => $firstByteMs] : []));
         unset($ch);
         $this->failureCategory = ($body === false || $status !== 200) ? self::classifyFailure($status, $this->transportError) : null;
         return $body;
+    }
+
+    public const REQUEST_ERROR_HINTS=['tool_schema','tool_history','generation_config','invalid_argument'];
+
+    /** Heuristic from an error response, not a determination of root cause. */
+    public static function requestErrorHint(int $status,string|false $body): ?string {
+        if(!in_array($status,[400,422],true)||!is_string($body)||strlen($body)>65536)return null;
+        $error=json_decode($body,true)['error']??null;
+        if(!is_array($error))return null;
+        $message=is_string($error['message']??null)?strtolower($error['message']):'';
+        if(preg_match('/thought.?signature|function.?response|tool.?call.?id|tool.?response|function.?call.?history/',$message))return 'tool_history';
+        if(preg_match('/function.?declarations?|parameters.?json.?schema|tool.?schema|json.?schema|invalid schema/',$message))return 'tool_schema';
+        if(preg_match('/thinking.?config|thinking.?level|generation.?config|temperature|max.?output.?tokens/',$message))return 'generation_config';
+        if(($error['status']??null)==='INVALID_ARGUMENT')return 'invalid_argument';
+        return null;
     }
 
     /**

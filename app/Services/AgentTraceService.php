@@ -339,7 +339,7 @@ final class AgentTraceService
         };
     }
 
-    /** Only measured numeric transport metadata can enter audit and conversation records. */
+    /** Measured transport metadata and a fixed request-rejection hint; no provider content. */
     public static function attemptTimings(array $attempt): array {
         $timings = [];
         if (is_int($attempt['curl_error'] ?? null) && $attempt['curl_error'] >= 0) {
@@ -351,6 +351,8 @@ final class AgentTraceService
         if (is_numeric($attempt['first_byte_ms'] ?? null) && is_finite((float)$attempt['first_byte_ms']) && $attempt['first_byte_ms'] > 0) {
             $timings['first_byte_ms'] = round((float)$attempt['first_byte_ms'], 3);
         }
+        if(in_array($attempt['request_error_hint']??null,AiClient::REQUEST_ERROR_HINTS,true))
+            $timings['request_error_hint']=$attempt['request_error_hint'];
         return $timings;
     }
 
