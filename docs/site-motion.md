@@ -36,8 +36,7 @@ change data, fake a chart value or script a purchase.
 - The first devotional portrait renders in PHP. Eleven native dot buttons and
   previous/next controls select the supplied images. Autoplay advances after
   two seconds with a 420 ms opacity crossfade, only when motion is allowed and
-  the artwork is visible. Pause/play, focus, hover, hidden tabs and reduced
-  motion control rotation; image decode must succeed before selection.
+  the artwork is visible. Previous and next flank eleven compact dots in a single row. Any manual selection or keyboard focus stops rotation for the visit, and hover, hidden tabs and reduced motion suspend it. Image decode must succeed before selection. Full-width scroll cards have square outer edges; internal content cards retain their original rounding.
 - The homepage sections share an opaque native sticky stack. Each fills the
   available stable viewport, or grows to expose all content. A single
   ResizeObserver measures card/header heights only when geometry changes;

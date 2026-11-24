@@ -37,9 +37,18 @@ test('actual public layout: pinned brand, complete editorial sequence, readable 
    await p.evaluate(()=>document.fonts.ready);
    const slider=p.locator('[data-varahi-slider]');
    assert.equal(await slider.locator('[data-portrait-index]').count(),11);
+   assert.equal(await slider.locator('[data-portrait-rotation]').count(),0);
+   const controls=await slider.locator('[data-portrait-controls]').evaluate(e=>{
+    const rect=x=>{const r=x.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height};};
+    return {row:rect(e),prev:rect(e.querySelector('[data-portrait-step="-1"]')),next:rect(e.querySelector('[data-portrait-step="1"]')),dots:[...e.querySelectorAll('[data-portrait-index]')].map(rect)};
+   });
+   assert.ok(controls.row.h<=44,'Single compact row');
+   assert.ok(controls.prev.x<controls.dots[0].x&&controls.next.x>controls.dots[10].x,'Arrows flank dots');
+   assert.ok(controls.dots.every(d=>Math.abs(d.y-controls.dots[0].y)<1&&d.w>=24&&d.h>=24),'One row of accessible dot targets');
+   assert.ok(controls.row.x>=0&&controls.row.x+controls.row.w<=width+1,'Controls stay inside viewport');
+
    if(width===1280){
     await p.waitForFunction(()=>document.querySelector('[data-varahi-slider]').dataset.activeIndex!=='0',{},{timeout:8000});
-    await slider.getByRole('button',{name:'Pause automatic portraits'}).click();
     const dots=slider.locator('[data-portrait-index]');
     await dots.nth(10).click();
     await p.waitForFunction(()=>document.querySelector('[data-varahi-slider]').dataset.activeIndex==='10');
@@ -47,6 +56,8 @@ test('actual public layout: pinned brand, complete editorial sequence, readable 
     await p.waitForFunction(()=>document.querySelector('[data-varahi-slider]').dataset.activeIndex==='0');
     await p.evaluate(()=>document.activeElement.blur());
    }
+   const outerCorners=await p.locator('[data-home-stack]').evaluate(stack=>[...stack.children].flatMap(e=>[e,...(e.matches('.home-chapter')?[e.firstElementChild]:[])].filter(Boolean)).map(e=>({name:e.className,left:getComputedStyle(e).borderTopLeftRadius,right:getComputedStyle(e).borderTopRightRadius})));
+   assert.ok(outerCorners.every(e=>e.left==='0px'&&e.right==='0px'),'Outer editorial sheets have square corners: '+JSON.stringify(outerCorners));
    const header=p.locator('#site-header');
    assert.equal(await header.locator('.brand span').innerText(),'Sri Panchami Spiritual');
    assert.ok(await header.locator('.brand img').isVisible());

@@ -35,16 +35,13 @@
                 <?php endforeach; ?>
             </div>
             <div class="portrait-controls" data-portrait-controls hidden>
-                <div class="portrait-controls__actions">
-                    <button type="button" aria-label="Pause automatic portraits" data-portrait-rotation><span aria-hidden="true">Ⅱ</span></button>
-                    <button type="button" aria-label="Previous portrait" data-portrait-step="-1">‹</button>
-                    <button type="button" aria-label="Next portrait" data-portrait-step="1">›</button>
-                </div>
-                <div class="portrait-dots" role="group" aria-label="Choose a portrait">
+                <button type="button" aria-label="Previous portrait" title="Previous portrait; stop automatic rotation" data-portrait-step="-1">‹</button>
+                <div class="portrait-dots" role="group" aria-label="Choose a portrait and stop automatic rotation">
                     <?php foreach ($heroSlides as $index => $slide): ?>
-                    <button type="button" data-portrait-index="<?= $index ?>" aria-label="<?= e($slide['alt']) ?>" aria-current="<?= $index === 0 ? 'true' : 'false' ?>"></button>
+                    <button type="button" data-portrait-index="<?= $index ?>" aria-label="<?= e($slide['alt']) ?>; stop automatic rotation" title="Select portrait and stop automatic rotation" aria-current="<?= $index === 0 ? 'true' : 'false' ?>"></button>
                     <?php endforeach; ?>
                 </div>
+                <button type="button" aria-label="Next portrait" title="Next portrait; stop automatic rotation" data-portrait-step="1">›</button>
                 <span class="sr-only" data-portrait-status aria-live="off"><?= e($heroSlides[0]['alt']) ?></span>
             </div>
         </div>

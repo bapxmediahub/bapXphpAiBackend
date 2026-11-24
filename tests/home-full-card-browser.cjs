@@ -122,7 +122,7 @@ test('hero has eleven dot controls, stable frame and accessible rotation', {time
   const dots=root.locator('[data-portrait-index]');
   assert.equal(await dots.count(),11);
   await p.waitForFunction(()=>document.querySelector('[data-varahi-slider]').dataset.activeIndex==='1',{},{timeout:6000});
-  await root.getByRole('button',{name:'Pause automatic portraits'}).click();
+  await dots.nth(1).click();
   const selected=await root.getAttribute('data-active-index');
   await p.waitForTimeout(2200);
   assert.equal(await root.getAttribute('data-active-index'),selected);
@@ -135,7 +135,6 @@ test('hero has eleven dot controls, stable frame and accessible rotation', {time
   assert.equal((await root.locator('.deity-frame').boundingBox()).height,frame.height);
   assert.equal(await root.locator('.varahi-slide.is-active').count(),1);
   await p.emulateMedia({reducedMotion:'reduce'});
-  await root.getByRole('button',{name:'Play automatic portraits'}).click();
   await p.waitForTimeout(2200);
   assert.equal(await root.getAttribute('data-active-index'),'0');
   assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
@@ -164,8 +163,10 @@ test('delayed manual portrait survives focus changes; covered artwork never rest
   await dots.nth(9).focus();
   await p.evaluate(()=>window.releasePortrait());
   await p.waitForFunction(()=>document.querySelector('[data-varahi-slider]').dataset.activeIndex==='10',{},{timeout:2000});
-  await root.getByRole('button',{name:'Play automatic portraits'}).click();
+  // New visit enables autoplay; manual selection permanently stops it for this visit.
   await p.mouse.move(1,1);
+  await p.reload();
+  await p.waitForFunction(()=>document.querySelector('[data-varahi-slider]').dataset.activeIndex==='1',{},{timeout:6000});
   await p.evaluate(()=>{
    document.activeElement.blur();
    const frame=document.querySelector('[data-varahi-slider] .deity-frame').getBoundingClientRect();
@@ -177,8 +178,8 @@ test('delayed manual portrait survives focus changes; covered artwork never rest
    document.dispatchEvent(new Event('visibilitychange'));
   });
   await p.waitForTimeout(2300);
-  assert.equal(await root.getAttribute('data-active-index'),'10','Covered artwork must not restart');
+  assert.equal(await root.getAttribute('data-active-index'),'1','Covered artwork must not restart');
   await p.evaluate(()=>{document.querySelector('#test-portrait-cover').remove();window.dispatchEvent(new Event('scroll'));});
-  await p.waitForFunction(()=>document.querySelector('[data-varahi-slider]').dataset.activeIndex==='0',{},{timeout:6000});
+  await p.waitForFunction(()=>document.querySelector('[data-varahi-slider]').dataset.activeIndex==='2',{},{timeout:6000});
  } finally {await b.close();}
 });

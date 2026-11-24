@@ -237,9 +237,8 @@
             var controls = root.querySelector('[data-portrait-controls]');
             if (!controls || slides.length < 2) return;
             var dots = Array.from(controls.querySelectorAll('[data-portrait-index]'));
-            var rotation = controls.querySelector('[data-portrait-rotation]');
             var status = controls.querySelector('[data-portrait-status]');
-            if (!rotation || !status || dots.length !== slides.length) return;
+            if (!status || dots.length !== slides.length) return;
             var current = 0, timer = null, request = 0;
             var pending = false, pendingAutomatic = false;
             var frame = root.querySelector(".deity-frame");
@@ -253,8 +252,6 @@
             }
             function renderRotation() {
                 var enabled = isPlaying();
-                rotation.setAttribute('aria-label', enabled ? 'Pause automatic portraits' : 'Play automatic portraits');
-                rotation.firstElementChild.textContent = enabled ? 'Ⅱ' : '▶';
                 status.setAttribute('aria-live', enabled ? 'off' : 'polite');
             }
             function artworkVisible() {
@@ -329,17 +326,6 @@
             });
             dots.forEach(function (dot, i) {
                 dot.addEventListener('click', function () { pause(); selectPortrait(i, false); });
-            });
-            // Pointer focus must not invert the intended pause/play button action.
-            var pointerAction = null;
-            rotation.addEventListener('pointerdown', function () { pointerAction = isPlaying(); });
-            rotation.addEventListener('pointercancel', function () { pointerAction = null; });
-            rotation.addEventListener('click', function () {
-                var wasPlaying = pointerAction === null ? isPlaying() : pointerAction;
-                pointerAction = null;
-                playing = !wasPlaying && canMove();
-                cancelAutomatic();
-                schedule();
             });
             root.addEventListener('focusin', function () { pause(); });
             root.addEventListener('pointerenter', function (event) {
