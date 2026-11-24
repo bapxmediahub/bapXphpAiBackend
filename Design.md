@@ -113,6 +113,7 @@ Keep the existing PHP templates, routes, forms, and hosted MySQL-backed behavior
 - **Primary -- deep maroon (`#3a0003`):** headers, primary buttons, price, active nav state. `on-primary` is white; `primary-container` (`#651016`) is the maroon-active/pressed state.
 - **Secondary -- warm brown (`#7a4a35`):** supporting accent, links-on-dark, secondary emphasis.
 - **Tertiary -- muted gold (`#d1b368`):** secondary buttons, active underline, eyebrow labels, dividers. `on-tertiary` is maroon text for contrast.
+- **Enquiry card labels** use `--color-text-muted` on the white card surface. The shared stylesheet owns the color pair so labels remain readable if a page stylesheet is unavailable. Small text needs at least 4.5:1 contrast. [WCAG 2.2 contrast minimum](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)
 - **Surface (`#faf7f0`) / surface-container (`#f6ede4`):** canvas and warm alternate-section background. Never pure white as a page background; white (`on-primary`) is reserved for cards and inputs so they read as raised above the canvas.
 - **Outline / outline-variant:** hairline borders only -- no heavy strokes.
 - **Ink / ink-muted / ink-soft:** body text hierarchy from primary copy down to placeholders.

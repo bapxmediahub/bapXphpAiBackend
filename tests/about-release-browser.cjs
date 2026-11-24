@@ -15,6 +15,27 @@ async function freePort(){
     const server=net.createServer();server.listen(0,'127.0.0.1');await once(server,'listening');
     const port=server.address().port;await new Promise(resolve=>server.close(resolve));return port;
 }
+function measureTextContrast(scope, selector) {
+    return scope.evaluate((container, selector)=>{
+        const luminance=color=>color.match(/[\d.]+/g).slice(0,3).map(Number).map(x=>{
+            x/=255;
+            return x<=.04045 ? x/12.92 : ((x+.055)/1.055)**2.4;
+        }).reduce((sum,x,i)=>sum+x*[.2126,.7152,.0722][i],0);
+        return [...container.querySelectorAll(selector)].map(element=>{
+            let background=element;
+            while (background && getComputedStyle(background).backgroundColor==='rgba(0, 0, 0, 0)') {
+                background=background.parentElement;
+            }
+            const foregroundLuminance=luminance(getComputedStyle(element).color);
+            const backgroundLuminance=luminance(getComputedStyle(background).backgroundColor);
+            return {
+                text:element.textContent.trim().slice(0,50),
+                ratio:(Math.max(foregroundLuminance,backgroundLuminance)+.05)/(Math.min(foregroundLuminance,backgroundLuminance)+.05),
+            };
+        });
+    },selector);
+}
+
 test('real About route: editorial layout, image loading, canonical metadata and native enquiry navigation',{timeout:120000},async()=>{
     const live=Boolean(expected),root=path.resolve(__dirname,'..'),port=live?null:await freePort();
     const origin=live?'https://sripanchamispiritual.com':'http://127.0.0.1:'+port;
@@ -33,6 +54,8 @@ test('real About route: editorial layout, image loading, canonical metadata and 
             await page.waitFor();
             assert.equal(await page.locator('h1').count(),1);
             assert.ok(await page.locator('h1').isVisible());
+            await p.waitForFunction(()=>getComputedStyle(document.querySelector('.about-hero__inner')).display==='grid',
+                null,{timeout:8000});
             await p.evaluate(()=>document.fonts.ready);
             const metadata=await p.evaluate(()=>({
                 canonical:document.querySelector('link[rel=canonical]').href,
@@ -43,17 +66,14 @@ test('real About route: editorial layout, image loading, canonical metadata and 
             assert.equal(metadata.schemas.length,1);
             assert.equal(metadata.schemas[0].url,metadata.canonical);
             assert.ok(metadata.title.startsWith('About '));
-            const contrasts=await page.evaluate(()=>{
-                const luminance=color=>color.match(/[\d.]+/g).slice(0,3).map(Number).map(x=>{x/=255;return x<=.04045?x/12.92:((x+.055)/1.055)**2.4}).reduce((sum,x,i)=>sum+x*[.2126,.7152,.0722][i],0);
-                return [...document.querySelectorAll('.about-editorial :is(.about-kicker,h1,h2,h3,.about-hero__lede,.about-hero__link,.about-pathway__number,.about-pathway p,.about-pathway a,.about-story__copy p,.about-story__figure figcaption,.about-contact__details a,.about-contact__details span,.page-cta-card__eyebrow)')].map(e=>{
-                    let bg=e;while(bg&&getComputedStyle(bg).backgroundColor==='rgba(0, 0, 0, 0)')bg=bg.parentElement;
-                    const a=luminance(getComputedStyle(e).color),b=luminance(getComputedStyle(bg).backgroundColor);
-                    return {text:e.textContent.trim().slice(0,50),ratio:(Math.max(a,b)+.05)/(Math.min(a,b)+.05)};
-                });
-            });
+            const contrasts=await measureTextContrast(page, ':is(.about-kicker,h1,h2,h3,.about-hero__lede,.about-hero__link,.about-pathway__number,.about-pathway p,.about-pathway a,.about-story__copy p,.about-story__figure figcaption,.about-contact__details a,.about-contact__details span,.page-cta-card__eyebrow)');
             assert.ok(contrasts.every(x=>x.ratio>=4.5),'Text contrast: '+JSON.stringify(contrasts.filter(x=>x.ratio<4.5)));
-            const columns=await page.locator('.about-hero__inner').evaluate(e=>getComputedStyle(e).gridTemplateColumns.trim().split(/\s+/).length);
-            assert.equal(columns,width>743?2:1);
+            const layout=await page.locator('.about-hero__inner').evaluate(element=>{
+                const style=getComputedStyle(element);
+                return {display:style.display,columns:style.gridTemplateColumns.trim().split(/\s+/).length};
+            });
+            assert.equal(layout.display,'grid','About editorial layout stylesheet applied');
+            assert.equal(layout.columns,width>743?2:1);
             const photos=page.locator('img');
             assert.equal(await photos.count(),2);
             await page.locator('.about-hero__link').click();
@@ -75,6 +95,16 @@ test('real About route: editorial layout, image loading, canonical metadata and 
             assert.ok(await p.locator('#contact-form').isVisible(),'Real enquiry form reached without submitting');
             assert.deepEqual(errors,[]);
             console.log(JSON.stringify({mode:live?'live':'local',width,height,js,canonical:true,photos:2,links,contact:true,errors:0}));
+            if (!live && !js) {
+                await p.route('**/assets/css/about-editorial.css*',route=>route.abort());
+                const fallbackPage=await p.goto(origin+'/about',{waitUntil:'load'});
+                assert.equal(fallbackPage.status(),200);
+                assert.notEqual(await page.locator('.about-hero__inner').evaluate(element=>getComputedStyle(element).display),
+                    'grid','Page-specific CSS was blocked');
+                const fallback=await measureTextContrast(page,'.page-cta-card__eyebrow');
+                assert.equal(fallback.length,1,'Shared enquiry label still rendered');
+                assert.ok(fallback[0].ratio>=4.5,'Shared label contrast without About CSS: '+JSON.stringify(fallback));
+            }
             await context.close();
         }
     }finally{await browser?.close();server?.kill();if(tmp)rmSync(tmp,{recursive:true,force:true});}
