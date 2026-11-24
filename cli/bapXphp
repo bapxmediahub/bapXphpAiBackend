@@ -73,7 +73,7 @@ set -euo pipefail
 #   bapXphp media:reconcile [--apply] — check legacy media metadata against MySQL
 #   bapXphp merchant:check [--json|--schema] — inspect current Google product data without publishing
 #   bapXphp merchant:feed           — write the public Google RSS feed to stdout
-#   bapXphp mail:process            — process pending mail queue
+#   bapXphp mail:process [--scheduled-test-only] — process due mail
 #   bapXphp images:optimize         — convert/resize images to WebP
 #   bapXphp product:images <source> [--dry-run|--assets-only|--database-only]
 #                                   — import ordered product galleries from a ZIP/folder
@@ -897,8 +897,19 @@ cmd_runtime_check() {
 }
 
 cmd_mail_process() {
+  local mode="${1:-}"
+  if (( $# > 1 )) || [[ $# -eq 1 && "$mode" != "--scheduled-test-only" ]]; then
+    die "Usage: bapXphp mail:process [--scheduled-test-only]"
+  fi
   require_php
-  php -r 'require "app/bootstrap.php"; $m=new App\Services\MailQueueService(); $n=0; foreach(array_slice($m->due(),0,25) as $r){ if($m->deliverNow($r)) $n++; } echo "SMTP accepted $n queued emails. Inbox receipt is unverified.\n";' 2>&1
+  php -r '
+    require $argv[1];
+    $samples = $argv[2] === "--scheduled-test-only";
+    $worker = new App\Services\MailQueueService();
+    $accepted = $worker->processDue(scheduledSamplesOnly: $samples);
+    $scope = $samples ? "scheduled samples" : "queued emails";
+    printf("%s SMTP accepted %d %s. Inbox receipt is unverified.\n", gmdate("c"), $accepted, $scope);
+  ' -- "$ROOT/app/bootstrap.php" "$mode" 2>&1
 }
 
 cmd_images_optimize() {
@@ -2210,7 +2221,7 @@ main() {
       local merchant_action="${1#merchant:}"; shift
       require_php; php "$ROOT/cli/merchant.php" "$merchant_action" "$@" ;;
     mail:process|mail-process)
-      cmd_mail_process ;;
+      shift; cmd_mail_process "$@" ;;
     images:optimize|images-optimize|imgopt)
       cmd_images_optimize ;;
     product:images|product-images)

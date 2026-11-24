@@ -4,7 +4,14 @@
 <p>Review the actual email renderer with synthetic data. Customer messages and owner notifications are different audiences. Previewing never creates an order, issues an invoice or sends a message.</p></header>
 <?php if(is_array($testResult??null)): ?>
 <div class="admin-card" role="status" data-template-test-result data-queue-id="<?= e((string)($testResult['queue_id']??'')) ?>" data-send-status="<?= e((string)$testResult['status']) ?>">
-    <strong><?= $testResult['status']==='sent'?'SMTP accepted this test sample; inbox receipt is not verified.':'The sample did not produce a confirmed accepted-send result.' ?></strong>
+    <?php if(($testResult['timing']??'now')==='scheduled' && $testResult['status']==='pending'): ?>
+        <strong>Scheduled sample queued.</strong>
+        <?php if(is_string($testResult['available_at']??null) && ($eligibleAt=strtotime($testResult['available_at']))!==false): ?>
+            <p>Eligible at <time datetime="<?= e($testResult['available_at']) ?>"><?= e(gmdate('d M Y, H:i', $eligibleAt)) ?> UTC</time>. This sample expires 30 minutes after creation.</p>
+        <?php endif; ?>
+    <?php else: ?>
+        <strong><?= $testResult['status']==='sent'?'SMTP accepted this test sample. Inbox receipt is unverified.':'The sample has no confirmed SMTP acceptance.' ?></strong>
+    <?php endif; ?>
     <p>Destination role: <?= e($testResult['target']==='owner'?'configured owner notification inbox':'explicit customer test inbox') ?>. Check the actual recipient inbox and <a href="/admin/email-outbox">outbox evidence</a>. Do not repeat an uncertain send blindly.</p>
 </div>
 <?php endif; ?>
@@ -31,7 +38,7 @@
 </div>
 <section class="admin-card" aria-labelledby="mail-test-title" style="margin-top:24px">
     <h3 id="mail-test-title">Send one clearly labelled test sample</h3>
-    <p>This uses the configured SMTP sender and the normal mail queue. It creates no purchase, invoice, account or payment. A received sample tests transport/layout—not the real paid-order trigger.</p>
+    <p>This uses the configured SMTP sender and the normal mail queue. A received sample verifies the selected template and its transport.</p>
     <form action="/admin/email-templates/test" method="post" class="admin-form" data-mail-template-test>
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>"><input type="hidden" name="template" value="<?= e($template) ?>"><input type="hidden" name="test_token" value="<?= e($testToken) ?>">
         <fieldset style="border:1px solid var(--color-border);padding:18px"><legend>Choose the destination role explicitly</legend>
@@ -40,8 +47,16 @@
             <label><input type="radio" name="target" value="owner"<?= !$ownerConfigured||$preview['audience']!=='admin'?' disabled':' checked' ?>> Configured owner notification inbox — <?= e($ownerLabel) ?></label>
             <small>Customer templates go only to the entered customer test address; owner templates go only to the configured owner. Choosing owner ignores the customer email field. It does not change the saved owner address. The connected customer Gmail cannot prove receipt in this different inbox.</small>
         </fieldset>
+        <div class="form-group">
+            <label for="sample-timing">Delivery timing</label>
+            <select name="sample_timing" id="sample-timing" aria-describedby="sample-timing-help">
+                <option value="now">Send now</option>
+                <option value="scheduled">Queue for the sample-only worker</option>
+            </select>
+            <small id="sample-timing-help">A scheduled sample is ready in two minutes and needs the sample-only worker.</small>
+        </div>
         <label><input type="checkbox" name="confirm_sample" value="1" required> I confirm this is synthetic test content and I am authorized to send one sample to the selected recipient.</label>
-        <button class="btn btn-primary" type="submit">Send test sample once</button>
+        <button class="btn btn-primary" type="submit">Confirm test sample</button>
     </form>
 </section>
 <section class="admin-card" style="margin-top:24px"><h3>Other current lifecycle messages</h3>

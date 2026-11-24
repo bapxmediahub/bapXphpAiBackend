@@ -2,6 +2,10 @@
 namespace App\Services;
 
 final class MailQueueService {
+    public const SCHEDULED_SAMPLE_TYPE = 'scheduled_template_test';
+    private const SAMPLE_DELAY_MINUTES = 2;
+    private const SAMPLE_LIFETIME_SECONDS = 1800;
+
     private ?SiteProfileService $profile = null;
 
     public function __construct(private DatabaseService $store = new DatabaseService()) {}
@@ -176,12 +180,28 @@ final class MailQueueService {
             || in_array($row['subject'] ?? '', ['New contact form submission', 'New consultation or appointment enquiry'], true);
     }
 
+    private static function scheduledSampleOpen(array $row, int $now): bool {
+        $meta = is_array($row['meta'] ?? null) ? $row['meta'] : [];
+        $created = strtotime((string)($row['created_at'] ?? ''));
+        $template = $meta['template'] ?? null;
+        return ($meta['synthetic_sample'] ?? false) === true
+            && is_string($template) && isset(MailTemplateService::catalog()[$template])
+            && $created !== false && $created <= $now && $now < $created + self::SAMPLE_LIFETIME_SECONDS;
+    }
+
+    private static function eligibleForClaim(array $row, int $now, bool $scheduledSamplesOnly): bool {
+        $isSample = ($row['type'] ?? '') === self::SCHEDULED_SAMPLE_TYPE;
+        if ($isSample !== $scheduledSamplesOnly || ($isSample && !self::scheduledSampleOpen($row, $now))) return false;
+        $available = strtotime((string)($row['available_at'] ?? ''));
+        return !self::contactAutomationHeld($row) && ($row['status'] ?? '') === 'pending'
+            && $available !== false && $available <= $now;
+    }
+
     /** Pure state machine applied while the database host holds this row's lock. */
     public static function transitionDelivery(array $row,string $action,string $attempt,array $fields,\DateTimeImmutable $now): ?array {
         if (!preg_match('/^[a-f0-9]{32}$/D',$attempt)) throw new \InvalidArgumentException('Invalid mail attempt identity.');
         if ($action==='claim') {
-            $available=strtotime((string)($row['available_at']??''));
-            if (self::contactAutomationHeld($row)||($row['status']??'')!=='pending'||$available===false||$available>$now->getTimestamp())return null;
+            if (!self::eligibleForClaim($row, $now->getTimestamp(), ($fields['scheduled_samples_only'] ?? false) === true)) return null;
             $row['status']='sending';$row['delivery_state']='in_progress';$row['attempt_id']=$attempt;
             $row['attempts']=(int)($row['attempts']??0)+1;$row['attempted_at']=$now->format('c');
         } else {
@@ -217,15 +237,20 @@ final class MailQueueService {
     /** Canonical queue snapshot, not a receipt from a recipient mailbox. */
     public static function health(array $rows,?int $now=null): array {
         $now??=time();$states=array_fill_keys(['pending','sending','sent','failed','needs_review','unknown'],0);
-        $due=0;$oldest=null;$heldContact=0;
+        $due=0;$oldest=null;$heldContact=0;$scheduled=0;$expired=0;
         foreach($rows as $row){$status=(string)($row['status']??'unknown');
             if(!isset($states[$status]))$status='unknown';$states[$status]++;
             if($status==='pending' && self::contactAutomationHeld($row)){$heldContact++;continue;}
+            if($status==='pending' && ($row['type']??'')===self::SCHEDULED_SAMPLE_TYPE){
+                if(self::scheduledSampleOpen($row,$now))$scheduled++;else $expired++;
+                continue;
+            }
             if($status==='pending'){$at=strtotime((string)($row['available_at']??''));
                 if($at!==false&&$at<=$now){$due++;$oldest=$oldest===null?$at:min($oldest,$at);}}
         }
         return ['total'=>count($rows),'states'=>$states,'due_pending'=>$due,'held_contact_pending'=>$heldContact,
-            'oldest_due_age_seconds'=>$oldest===null?null:max(0,$now-$oldest),'inbox_delivery'=>'unverified'];
+            'oldest_due_age_seconds'=>$oldest===null?null:max(0,$now-$oldest),'inbox_delivery'=>'unverified',
+            'scheduled_samples'=>$scheduled,'inactive_samples'=>$expired];
     }
 
     public function all(): array {
@@ -258,9 +283,8 @@ final class MailQueueService {
         }else{$saved=$this->store->upsert('mail_queue',$record);}
         try{(new MailStorageService($this->store))->recordQueuedOutbox($saved);}
         catch(\Throwable){error_log('Mail outbox projection unavailable; canonical queue entry preserved.');}
-        // Deliver in this request. There is no cron on the host, so anything that is
-        // only queued is never sent. The row is still written first, so a failed send
-        // leaves an auditable record with the error rather than vanishing.
+        // Only immediate messages attempt transport in this request. The row is
+        // written first so a failed send leaves an auditable record.
         if ($availableAt === null) $this->deliverNow($saved);
         return $saved;
     }
@@ -269,10 +293,10 @@ final class MailQueueService {
      * Best-effort immediate delivery. Never throws: a mail failure must not break the
      * checkout, signup or password reset that triggered it.
      */
-    public function deliverNow(array $record, ?SmtpMailer $mailer = null): bool {
+    public function deliverNow(array $record, ?SmtpMailer $mailer = null, bool $scheduledSamplesOnly = false): bool {
         if (self::contactAutomationHeld($record)) return false;
         $attempt=bin2hex(random_bytes(16));$id=(string)($record['id']??'');
-        try{$claimed=$this->store->transitionMailDelivery($id,'claim',$attempt,[]);}
+        try{$claimed=$this->store->transitionMailDelivery($id,'claim',$attempt,['scheduled_samples_only'=>$scheduledSamplesOnly]);}
         catch(\Throwable){error_log('Mail delivery claim unavailable; no SMTP attempt was made.');return false;}
         if($claimed===null)return false;
         $receipt=null;
@@ -309,9 +333,11 @@ final class MailQueueService {
         $message=$this->templates()->render($key,$data);
         return $this->enqueue($key,$to,$message['subject'],$message['html'],null,$meta,$message['audience'],$eventKey,$message['preheader']);
     }
-    public function enqueueTemplateSample(string $key,string $to,string $eventKey): array {
+    public function enqueueTemplateSample(string $key,string $to,string $eventKey,bool $scheduled=false): array {
         $message=$this->templates()->sample($key);
-        $record=$this->enqueue('template_test',$to,$message['subject'],$message['html'],null,
+        $availableAt=$scheduled ? (new \DateTimeImmutable())->modify('+'.self::SAMPLE_DELAY_MINUTES.' minutes') : null;
+        $type=$scheduled ? self::SCHEDULED_SAMPLE_TYPE : 'template_test';
+        $record=$this->enqueue($type,$to,$message['subject'],$message['html'],$availableAt,
             ['template'=>$key,'synthetic_sample'=>true],$message['audience'],$eventKey,$message['preheader']);
         return $this->store->find('mail_queue',(string)$record['id'])??$record;
     }
@@ -482,13 +508,10 @@ final class MailQueueService {
         return $this->enqueue('product_review_request', $to, $subject, $html, $availableAt, ['order_id' => $order['id'] ?? ''], 'customer', 'review-request:'.(string)($order['id']??''));
     }
 
-    public function due(?\DateTimeImmutable $now = null): array {
+    public function due(?\DateTimeImmutable $now = null, bool $scheduledSamplesOnly = false): array {
         $now ??= new \DateTimeImmutable();
-        $due = array_values(array_filter($this->all(), function (array $record) use ($now): bool {
-            if (($record['status'] ?? '') !== 'pending' || self::contactAutomationHeld($record)) return false;
-            $availableAt = strtotime((string)($record['available_at'] ?? ''));
-            return $availableAt !== false && $availableAt <= $now->getTimestamp();
-        }));
+        $due = array_values(array_filter($this->all(), static fn(array $record): bool =>
+            self::eligibleForClaim($record, $now->getTimestamp(), $scheduledSamplesOnly)));
         usort($due, fn($a, $b) => strcmp((string)($a['available_at'] ?? ''), (string)($b['available_at'] ?? '')));
         return $due;
     }
@@ -501,10 +524,10 @@ final class MailQueueService {
         $this->updateStatus($id, 'failed', ['last_error' => $error, 'failed_at' => date('c')]);
     }
 
-    public function processDue(SmtpMailer $mailer, ?\DateTimeImmutable $now = null, int $limit = 25): int {
+    public function processDue(?SmtpMailer $mailer = null, ?\DateTimeImmutable $now = null, int $limit = 25, bool $scheduledSamplesOnly = false): int {
         $sent=0;
-        foreach(array_slice($this->due($now),0,max(0,min(25,$limit))) as $record){
-            if($this->deliverNow($record,$mailer))$sent++;
+        foreach(array_slice($this->due($now,$scheduledSamplesOnly),0,max(0,min(25,$limit))) as $record){
+            if($this->deliverNow($record,$mailer,$scheduledSamplesOnly))$sent++;
         }
         return $sent;
     }

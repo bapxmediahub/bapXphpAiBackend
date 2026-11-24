@@ -114,6 +114,11 @@ legacy sent status with real order/customer/owner acceptance. No live charge,
 password change or backlog replay merely for QA. Keep the separate late-view
 error-handling concern out of template patches.
 
+Scheduled diagnostics use one explicitly confirmed synthetic queue record.
+Keep sample-only selection and atomic claim checks aligned on scope, eligibility
+and expiry. Test with an unrelated due record and a loopback SMTP recipient in
+the disposable MySQL fixture.
+
 ## Structured answer review
 
 Use AgentConversationService reviewDetail/reviewTurn for owner-only per-answer
