@@ -103,7 +103,7 @@ final class SupportBotService {
             if ($reply !== null) $outcome = 'local';
         }
         if ($reply === null) {
-            $modelTools = new RuntimeAgentToolRegistry('support',$user,new SupportToolRegistry($user,$this->agentContext,$this->store));
+            $modelTools = new RuntimeAgentToolRegistry('support',$user,new SupportToolRegistry($user,$this->agentContext,$this->store),$message);
             $aiReply = $this->modelReply($message, $context, $reason, $attempts, $modelTools);
             $modelRetrieval = $modelTools->retrieval();
             $retrieval = array_merge($retrieval,$modelRetrieval);
@@ -120,7 +120,7 @@ final class SupportBotService {
             $facts=$modelTools->result($aggregateTool);
             if($facts===null) {
                 // Reliable exact-fact fallback on provider failure or incorrect tool choice.
-                $facts=$modelTools->run($aggregateTool,[]);
+                $facts=$modelTools->lookupTrusted($aggregateTool,[]);
                 $facts=isset($facts['error'])?null:$modelTools->result($aggregateTool);
             }
             $retrieval=array_merge($retrieval,array_slice($modelTools->retrieval(),count($modelRetrieval??[])));

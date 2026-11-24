@@ -50,6 +50,15 @@ with a catalogue identifier; related business lookups also load their matching
 guidance automatically. This adapts the Agent Skills progressive-disclosure
 pattern, with no arbitrary filesystem selector and no public transport
 registration. Actual loaded paths and content hashes accumulate in the trace.
+Business declarations use the same authenticated allowlist. A bounded lexical
+match against tool names, descriptions and parameter names seeds up to three
+business tools per turn. The `tool_search` meta-tool can enable up to four
+matching declarations per search, with eight active business tools total; an
+unknown exact identifier never activates a substitute. Both provider loops
+refresh declarations each round while retaining correlated tool-call history.
+Discovery returns metadata, not records. The PHP aggregate fallback can still
+execute a server-selected authorized lookup even when it was not discovered.
+Trace spans record safe activation names and counts, never the raw search text.
 The old forSurface() method remains the full-bundle offline/legacy contract.
  `manifestForSurface()` returns
 only version, surface, relative paths, per-document SHA-256 and the bundle hash.

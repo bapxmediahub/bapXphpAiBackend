@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "072225aaa0830bb81221bfb1399e1d88ed27850612738fc928ca9925f8e03da6",
-            "references_sha256": "63d78199c80aa4fe00921be8156da0376d7e03244e96a9dcf2ec11e3945700b1",
-            "review_note": "Compared merged exact-target probe and shared tool-loop signatures, role-filtered instruction activation, trace evidence and agent regressions."
+            "source_sha256": "5a88eefa5d99f2e9333426e42b407b5c7f553ff24af69119b46bed7ab8f85038",
+            "references_sha256": "a3194b5f9dd2fdc5f745078b87b7c8ba8413256e7f6727105c1b4622aedfd30b",
+            "review_note": "Reviewed bounded role-scoped lexical tool activation, both provider loops, generated manifests, runtime instructions, and regression coverage."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
@@ -23,9 +23,9 @@
             "review_note": "Reviewed the Docs skill provenance guidance against the unchanged BlogService and authored-content guide boundary. Static map references are discovery evidence only; publication visibility, Markdown storage, rendering and private-help exclusion remain the existing source contracts."
         },
         "foundation": {
-            "source_sha256": "53f1ae09d14ffab252fa8d54bf3f2b5d4a47440eb3a79f32678c01d81ee7ea7a",
+            "source_sha256": "961f6a693abf7a6fb55a671f824e751e83793e0c016e37f042bab6f6b9fc1fce",
             "references_sha256": "44504ddbd485f9ab5d6c71a6443726f531f7e0d7ed34ec16215741902635cc0e",
-            "review_note": "Existing business and conversation storage boundaries unchanged; runtime adapter and source map reflect actual code."
+            "review_note": "Reviewed generated project index and unchanged authentication/storage boundaries for request-local tool discovery."
         },
         "google-tags": {
             "source_sha256": "1794c941b2f0dcce13e5e4cda15b69d46565364cb7080ed8c5f4b074f623f938",
@@ -43,9 +43,9 @@
             "review_note": "Explicit label associations verified in desktop and mobile Chromium."
         },
         "mail": {
-            "source_sha256": "cc231ae9824a02bc62d144c128574005f524ec2204f9abd61653767483200f84",
+            "source_sha256": "79925cc0c003645e9e87eceadf1f34ae8c164e65840a4fde5c586fb91296ef75",
             "references_sha256": "6d6153ae2fed6f1aebbf9fa93225d6cc74b6c098d9a34deffce7bc4f3c6e9273",
-            "review_note": "Merged admin chat and integration diagnostic changes do not change SMTP or mail queue behavior."
+            "review_note": "Reviewed shared AdminController change: no mail behavior or delivery configuration changed."
         },
         "mcp-clients": {
             "source_sha256": "ffb43129fe7e2633e2b790587a52729a82486fc1e08a692607623632c17756ad",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed product image paths and the bounded A2UI gallery against current media hosting paths; styling does not move uploads, delete media or expose private asset directories."
         },
         "operator-help": {
-            "source_sha256": "56a9024f1cbd037439ea03c87738a7c2cadc03e1f2cd2c0c40b1a4019779b7e6",
+            "source_sha256": "faf47096f230d968afc92a67aa460ee1539d887d7e3873ed56f4f442a17eab77",
             "references_sha256": "2201c0efbcc49c20384beab8cbef25fa6bcd6928e2928d7fd8474d6522cdf6bf",
-            "review_note": "Reviewed both agent model paths and retained provider diagnostic controls from #373."
+            "review_note": "Reviewed AdminController tool declarations, unchanged operator routes and role-scoped runtime discovery."
         },
         "public-mcp": {
             "source_sha256": "28e7e05e5eba6567d5a03f8f5b77b2fcfabfc97e280ef0c01df70ac1533e53a2",

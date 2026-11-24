@@ -817,7 +817,7 @@ final class AdminController extends BaseController {
         // and explains its result. https://developers.openai.com/api/docs/guides/function-calling
         $today = (new \DateTimeImmutable('now', new \DateTimeZone('Asia/Kolkata')))->format('Y-m-d');
         $tools ??= new \App\Services\EnterpriseToolRegistry(ownerQuestion: $message);
-        $modelTools = new \App\Services\RuntimeAgentToolRegistry('admin', $_SESSION['user'] ?? null, $tools);
+        $modelTools = new \App\Services\RuntimeAgentToolRegistry('admin', $_SESSION['user'] ?? null, $tools,$message);
         $prompt = $modelTools->instructionPrompt() . "\n"
             . "You are the Enterprise Agent for Sri Panchami Spiritual. Answer in plain language.\n"
             . "The current date in India is {$today}.\n"

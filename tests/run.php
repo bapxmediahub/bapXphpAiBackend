@@ -104,6 +104,8 @@ $tests['runtime model adapter exposes only role-scoped tools and activates exist
         $prompt=$support->instructionPrompt();
         assertTrue(str_contains($prompt,'catalogue')&&!str_contains($prompt,'Use only currently visible products and the actual member IDs'),'Initially disclose metadata, not the full catalogue skill');
         assertTrue(!$support->has('find_order')&&!$support->has('own_ticket_status')&&!$support->has('commerce_report'),'Guest never receives private or owner declarations');
+        $support->run('tool_search',['query'=>'public_catalogue_summary']);
+        $support->run('tool_search',['query'=>'public_best_sellers']);
         assertTrue($support->has('public_catalogue_summary')&&$support->has('public_best_sellers'),'Public facts discoverable by model');
         assertTrue(isset($support->run('read_runtime_skill',['skill'=>'reporting'])['error']),'No Enterprise skill in Support');
         assertTrue(isset($support->run('read_runtime_skill',['skill'=>'../enterpriseagent.md'])['error']),'No path-shaped skill selectors');
@@ -112,6 +114,7 @@ $tests['runtime model adapter exposes only role-scoped tools and activates exist
         $manifest=\App\Services\AgentTraceService::snapshot()['instruction_manifest'];
         assertTrue(in_array('.bapX/bapXcl/support/catalog.md',array_column($manifest['files'],'path'),true),'Trace records actually activated skill');
         assertTrue(!str_contains(json_encode($manifest),'Use only currently visible products'),'Trace contains no instruction body');
+        $admin->run('tool_search',['query'=>'commerce_report']);
         assertTrue($admin->has('commerce_report')&&$admin->has('read_runtime_skill'),'Admin has owner capabilities');
         $adminPrompt=$admin->instructionPrompt();
         assertTrue(!str_contains($adminPrompt,'Enterprise-only reporting'),'Report skill is selectively loaded');
@@ -121,6 +124,27 @@ $tests['runtime model adapter exposes only role-scoped tools and activates exist
             assertTrue(false,'Customer must not construct an owner model adapter');
         } catch (\RuntimeException) { assertTrue(true,'Owner-only boundary'); }
     } finally { \App\Services\AgentTraceService::reset(); }
+};
+
+$tests['tool discovery activates bounded relevant tools and never broadens the actor role'] = static function (): void {
+    $guest=new \App\Services\RuntimeAgentToolRegistry('support',null,new \App\Services\SupportToolRegistry(null),'');
+    assertSame(['read_runtime_skill','tool_search'],array_column($guest->declarations(),'name'),'Empty query starts with discovery tools only');
+    assertTrue(isset($guest->run('public_catalogue_summary',[])['error']),'Undiscovered business tool cannot run through the model');
+    assertSame([], $guest->run('tool_search',['query'=>'zzzxq-no-such-capability'])['matches'],'Unknown query never loads arbitrary tools');
+    assertSame([], $guest->run('tool_search',['query'=>'own_ticket_status'])['matches'],'Exact private identifier is unavailable to a guest');
+    assertSame([], $guest->run('tool_search',['query'=>'commerce_report'])['matches'],'Exact owner identifier is unavailable to Support');
+    $found=$guest->run('tool_search',['query'=>'public_catalogue_summary']);
+    assertSame('public_catalogue_summary',$found['matches'][0]['name'],'Exact authorized ID ranks first');
+    assertTrue($guest->has('public_catalogue_summary'),'Matching declaration becomes available in the next model step');
+    assertTrue(!$guest->has('own_ticket_status'),'Activation cannot broaden role');
+    assertTrue(isset($guest->run('tool_search',['query'=>'','limit'=>4])['error']),'Empty search rejected');
+    $owner=new \App\Services\RuntimeAgentToolRegistry('admin',['role'=>'admin'],new \App\Services\EnterpriseToolRegistry(),'sales summary');
+    assertTrue($owner->has('sales_summary'),'Seed the initial turn with relevant authorized tools');
+    assertTrue(count($owner->declarations())<=5,'Initial business tool budget is three plus discovery');
+    $more=$owner->run('tool_search',['query'=>'commerce_report']);
+    assertSame('commerce_report',$more['matches'][0]['name'],'Owner may activate a specific additional authorized tool');
+    assertTrue($owner->has('commerce_report'),'Deferred owner capability now available');
+    assertTrue(!$owner->has('write_file'),'Arbitrary file write never available');
 };
 
 $tests['public catalogue summary and bestseller projection never expose private records'] = static function (): void {
