@@ -1067,6 +1067,22 @@ final class AdminController extends BaseController {
         $redirect = (string)($_POST['redirect'] ?? '');
         $this->redirect(preg_match('#^/admin/[a-z0-9/-]*$#i', $redirect) ? $redirect : '/admin/media');
     }
+    public function updateMediaMetadata(): void {
+        $this->validateCsrf();
+        $id = is_string($_POST['id'] ?? null) ? $_POST['id'] : '';
+        $expected = is_string($_POST['expected_revision'] ?? null) ? $_POST['expected_revision'] : '';
+        try {
+            (new MediaService())->saveMetadata($id, array_intersect_key($_POST, array_flip(['description','alt_text','caption'])), $expected);
+            (new AuditLogService())->record('update', 'media', $id, ['source'=>'media_metadata']);
+            $this->flash('Media metadata saved.', 'success');
+        } catch (\InvalidArgumentException $error) {
+            $this->flash($error->getMessage(), 'error');
+        } catch (\RuntimeException $error) {
+            $this->flash('Media metadata could not be saved. Reload and retry.', 'error');
+        }
+        $this->redirect('/admin/media#media-library');
+    }
+
     public function deleteMedia(): void {
         $this->validateCsrf();
         $id = trim((string)($_POST['id'] ?? ''));

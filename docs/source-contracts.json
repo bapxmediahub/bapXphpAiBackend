@@ -23,9 +23,9 @@
             "review_note": "Verified editorial profile, factual copy, approved image dimensions, module-filtered links and canonical AboutPage metadata against content guide."
         },
         "foundation": {
-            "source_sha256": "52394e2bc05533ebff4bd88aeb4d5db9cd1f5401a5082822c2781449a755d120",
-            "references_sha256": "02bcf2c086ef51d57a58c2cf6946d5ba38f2eaa8bf26bac6aa8bbae04a531939",
-            "review_note": "Reviewed PageSpeed route/controller, fixed integration transport and generated index against current platform contract; no data migration or auth grant."
+            "source_sha256": "52b15f87e7ad8c917ac4db39997bb32d5af280fe68b5e88166b145b6be7d1c1f",
+            "references_sha256": "000d979cca9c14e5f6e0eebefde37373223f7c6c589ef50b358331394336c289",
+            "review_note": "Reviewed canonical media schema and existing MySQL ownership, authenticated bridge, revision-safe update and no binary change."
         },
         "google-tags": {
             "source_sha256": "dd4c57dad073ad54bfc7deda652d9936407a7e5aac192878bdf9052fdc776287",
@@ -39,13 +39,13 @@
         },
         "interface": {
             "source_sha256": "4f3e55ceb32a1b01cb1390d5df2e66bc18118b9ae6973f25d0ee66f8147ee974",
-            "references_sha256": "e50099f9a28a4e3b06a7c6aebf5ec74dfd115cfeaf5f635fd6109b30ac12ef04",
-            "review_note": "Reviewed owner PageSpeed view and dashboard link, responsive CSS and browser fixture; no new frontend runtime."
+            "references_sha256": "431f6eb3fbd7961de74e85d22454ac61a8e54d3f514fc80e02eaaeb62b4b2aea",
+            "review_note": "Reviewed owner media edit details, preview alt text, search, conflict feedback, and corresponding operator documentation."
         },
         "mail": {
-            "source_sha256": "79925cc0c003645e9e87eceadf1f34ae8c164e65840a4fde5c586fb91296ef75",
+            "source_sha256": "04c68f784052cbccc1178d058e50c386bdc210f40808a05837c7558f17074eb5",
             "references_sha256": "6d6153ae2fed6f1aebbf9fa93225d6cc74b6c098d9a34deffce7bc4f3c6e9273",
-            "review_note": "Reviewed SupportBotService discovery-only change against unchanged mail behavior and docs."
+            "review_note": "Reviewed AdminController addition: metadata route only; no mail lifecycle or delivery behavior modified."
         },
         "mcp-clients": {
             "source_sha256": "ffb43129fe7e2633e2b790587a52729a82486fc1e08a692607623632c17756ad",
@@ -53,34 +53,34 @@
             "review_note": "Reviewed new PageSpeed integration documentation; owner Google reports are not exposed via MCP and client grants are unchanged."
         },
         "media": {
-            "source_sha256": "7b9d3d9aa746f16f1441148550d143e7094388b247c423b90c310ed5441db99d",
-            "references_sha256": "8bc2f30746ed23afee3426d2ffbf03a101ac7c98795bfa62b83f0d5e49503490",
-            "review_note": "Reviewed architecture storage boundaries: no binary relocation in this slice; existing media metadata and domain-local file ownership preserved."
+            "source_sha256": "c99bf5f35495fb29a3025b39dc32c1fbd2f20640fbacd2784598a53cd3a8584f",
+            "references_sha256": "e6db8e5e954aa98a647fa4c1f8d7d7bac960dc2ffe0561b451be2844ecbedb48",
+            "review_note": "Reviewed upload eligibility, revision hash, bounded UTF-8 metadata, row lock, exact patch, no row creation, and view/search/isolated DB tests."
         },
         "operator-help": {
-            "source_sha256": "6c83bd79f7517530635bba637bfc6d5cea9172862c2440eaf7c78b41806da883",
-            "references_sha256": "2201c0efbcc49c20384beab8cbef25fa6bcd6928e2928d7fd8474d6522cdf6bf",
-            "review_note": "Checked the new owner dashboard PageSpeed link and admin-only route, unchanged operator access and existing help references."
+            "source_sha256": "9039736b15607de4ff44e169481909bd099dc7601237cc6478f17da41a15e356",
+            "references_sha256": "7b2417548ef9767a977b90e8e027ba853428805f5b35b613f4b08c228cc5cc5e",
+            "review_note": "Cross-checked actual owner media edit form, authenticated CSRF route, revision-conflict message, limits and help guide."
         },
         "public-mcp": {
-            "source_sha256": "44e12ad73403a6fc87486a863f502caf12e098da2aac440b8a9b62b2a205a463",
+            "source_sha256": "fa4cfa48087dc5d020000f9a23a5f176ce65cfd1465b81dd29d608348d2708b5",
             "references_sha256": "66f314f4d27575d8d1ab7394d8e28aae3feb90467ef6445ce18d804604d40f3d",
-            "review_note": "Checked ProjectMapService PageSpeed route declaration and public MCP dispatcher boundary: no public PageSpeed capability."
+            "review_note": "Reviewed ProjectMapService route addition and canonical dispatcher; media edits are owner-only and not exposed as public tools."
         },
         "remote-commerce": {
-            "source_sha256": "4853741d899eb0745553fcf1620ec564193730671b5005b63662ee10ac44ece0",
+            "source_sha256": "290b7c3db6fb9194fed4286baddd9ef828de57cc9017bbc67dad485ef6c7c050",
             "references_sha256": "aafbc778d27e19816b6069a0bb16194afced7f59b4185261374f1a3c03fa1b72",
-            "review_note": "Cross-checked existing scoped commerce registrations and read-only shop GET navigation; no authorization, checkout or payment semantics changed."
+            "review_note": "Reviewed narrow DatabaseService row-lock patch and password-protected remotedb action; no changes to cart/checkout methods or authority."
         },
         "sales-channels": {
-            "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
+            "source_sha256": "4b05a2d9436a74c6e60b28ce25987bf531cabf698294fb51554219a138c88167",
             "references_sha256": "ce84b911bce7bb5435cc905a83819e015bad8a111c795fd143c86cb59f903c4f",
-            "review_note": "Reviewed the sales-channel CLI references and catalogue guidance. This change only fixes generic PHP lint argument forwarding and failure propagation; feed, channel and catalogue operations are unchanged."
+            "review_note": "Reviewed MediaService metadata/search patch; URL, binary and usage fields used by published feeds remain unchanged."
         },
         "workflow": {
-            "source_sha256": "bdf079118134c4e018ca9893376be6506119677b18567bade01db8d7ad1651c9",
+            "source_sha256": "930a7b5bca638c3895899718ec8fe2406208f33b07c23d25e5b03a68acc80a60",
             "references_sha256": "02547adbcf78d518e43216cd4f2c24d3bd81892187ee5f6e02347ab81c23e83c",
-            "review_note": "Preserved both latest About browser acceptance and native PageSpeed browser test in CI; regenerated project metadata from source."
+            "review_note": "Retained current About and PageSpeed browser jobs plus media browser test; regenerated code-driven index and maps."
         }
     }
 }

@@ -145,6 +145,7 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/admin/appearance/save','name'=>'admin.appearance.save','page'=>'admin/appearance','controller'=>'AdminController@saveAppearance','services'=>['SettingsService','AuditLogService']],
             ['method'=>'GET','path'=>'/admin/media','name'=>'admin.media','page'=>'admin/media','controller'=>'AdminController@media','services'=>['MediaService']],
             ['method'=>'POST','path'=>'/admin/media/upload','name'=>'admin.media.upload','page'=>'admin/media','controller'=>'AdminController@uploadMedia','services'=>['MediaService','AuditLogService']],
+            ['method'=>'POST','path'=>'/admin/media/metadata','name'=>'admin.media.metadata','page'=>'admin/media','controller'=>'AdminController@updateMediaMetadata','services'=>['MediaService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/media/delete','name'=>'admin.media.delete','page'=>'admin/media','controller'=>'AdminController@deleteMedia','services'=>['MediaService','AuditLogService']],
             ['method'=>'GET','path'=>'/admin/products/import','name'=>'admin.products.import','page'=>'admin/product-import','controller'=>'AdminController@importProducts','services'=>['ProductImportService','DatabaseService']],
             ['method'=>'POST','path'=>'/admin/products/import','name'=>'admin.products.import.submit','page'=>'admin/product-import','controller'=>'AdminController@importProducts','services'=>['ProductImportService','DatabaseService','AuditLogService']],

@@ -80,7 +80,7 @@ feedback is never overwritten, and review time is separate from customer activit
 
 ## Reconcile historical Media Library metadata
 
-The shipped catalogue is archived in `storage/migrations/legacy-media/products.yaml` for migration. Runtime uploads and usage edits write to MySQL `media_files`. Installations with additional historical `storage/media.yaml` or `storage/media/*.yaml` files should check them from their own deployment checkout.
+The shipped catalogue is archived in `storage/migrations/legacy-media/products.yaml` for migration. Runtime uploads, usage edits and revision-checked media metadata edits write to MySQL `media_files`. Installations with additional historical `storage/media.yaml` or `storage/media/*.yaml` files should check them from their own deployment checkout.
 
 Run `./bapXphp media:reconcile` for a read-only comparison of source rows, unique IDs, missing rows, missing fields, conflicting ID/URL ownership and covered rows. Existing MySQL fields win, including empty descriptions or usage arrays. The tool accepts up to 250 historical rows and 1 MiB of source data, rejects unsupported YAML, and reports counts without item contents.
 

@@ -11,6 +11,7 @@ description: Use when editing owner/admin pages, CRUD forms, media library, envi
   Keep table reading and focus steady. Verify dense and narrow layouts in the
   browser, and update this skill and `Design.md` when the pattern is reusable.
 - Admin mutations should route through controllers/services and remain auditable.
+- Media metadata editing is owner-only, bounded, revision-checked and limited to existing MySQL uploads; never replace binaries or enable bundled/legacy editing.
 - Use schema-driven resource fields and the media library for product, temple, and blog media.
 - Astrologer profile management and portraits are retired in admin as well as publicly. Do not restore their navigation, upload category, or bundled assets. Existing historical session and financial records remain owner-accessible; they do not authorize reintroducing profile management.
 - Validate with `php tests/run.php`; use a browser workflow for changed admin pages.

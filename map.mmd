@@ -14,8 +14,8 @@ flowchart LR
     legend_limits["No execution, autoload or dynamic reachability proof; gaps are inspection candidates"]:::arch
   end
 
-  subgraph ARCH["Architecture Overview — 180 routes, 18 controllers, 85 services, 73 views, 0 data files, 30 tools"]
-    arch_routes["> Routes: 180 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 181 routes, 18 controllers, 85 services, 73 views, 0 data files, 30 tools"]
+    arch_routes["> Routes: 181 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 18"]:::arch
     arch_svc["> Services: 85"]:::arch
     arch_views["> Views: 73"]:::arch
@@ -190,6 +190,7 @@ flowchart LR
     route_post_admin_appearance_save["POST /admin/appearance/save — Admin — save logo/favicon"]:::route
     route_get_admin_media["GET /admin/media — Admin — media library"]:::route
     route_post_admin_media_upload["POST /admin/media/upload — Admin — upload media"]:::route
+    route_post_admin_media_metadata["POST /admin/media/metadata"]:::route
     route_post_admin_media_delete["POST /admin/media/delete"]:::route
     route_get_admin_products_import["GET /admin/products/import — Admin — import product CSV"]:::route
     route_post_admin_products_import["POST /admin/products/import — Admin — review or confirm product CSV"]:::route
@@ -1076,6 +1077,11 @@ flowchart LR
   controller_admincontroller -. declared service .-> service_auditlogservice
   controller_admincontroller -. declared service .-> service_authservice
   controller_admincontroller -. declared related view .-> view_admin_media
+  route_post_admin_media_metadata -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_mediaservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_media
   route_post_admin_media_delete -- registered handler --> controller_admincontroller
   controller_admincontroller -. declared service .-> service_mediaservice
   controller_admincontroller -. declared service .-> service_auditlogservice
@@ -1572,6 +1578,7 @@ flowchart LR
   service_databaseservice -. source new .-> service_taxservice
   service_databaseservice -. static reference .-> service_authoredpageservice
   service_databaseservice -. static reference .-> service_mailqueueservice
+  service_databaseservice -. static reference .-> service_mediaservice
   service_databaseservice -. static reference .-> service_orderservice
   service_databaseservice -. static reference .-> service_productimportservice
   service_databaseservice -. static reference .-> service_remotecartservice
