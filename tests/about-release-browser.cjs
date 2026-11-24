@@ -43,6 +43,15 @@ test('real About route: editorial layout, image loading, canonical metadata and 
             assert.equal(metadata.schemas.length,1);
             assert.equal(metadata.schemas[0].url,metadata.canonical);
             assert.ok(metadata.title.startsWith('About '));
+            const contrasts=await page.evaluate(()=>{
+                const luminance=color=>color.match(/[\d.]+/g).slice(0,3).map(Number).map(x=>{x/=255;return x<=.04045?x/12.92:((x+.055)/1.055)**2.4}).reduce((sum,x,i)=>sum+x*[.2126,.7152,.0722][i],0);
+                return [...document.querySelectorAll('.about-editorial :is(.about-kicker,h1,h2,h3,.about-hero__lede,.about-hero__link,.about-pathway__number,.about-pathway p,.about-pathway a,.about-story__copy p,.about-story__figure figcaption,.about-contact__details a,.about-contact__details span,.page-cta-card__eyebrow)')].map(e=>{
+                    let bg=e;while(bg&&getComputedStyle(bg).backgroundColor==='rgba(0, 0, 0, 0)')bg=bg.parentElement;
+                    const a=luminance(getComputedStyle(e).color),b=luminance(getComputedStyle(bg).backgroundColor);
+                    return {text:e.textContent.trim().slice(0,50),ratio:(Math.max(a,b)+.05)/(Math.min(a,b)+.05)};
+                });
+            });
+            assert.ok(contrasts.every(x=>x.ratio>=4.5),'Text contrast: '+JSON.stringify(contrasts.filter(x=>x.ratio<4.5)));
             const columns=await page.locator('.about-hero__inner').evaluate(e=>getComputedStyle(e).gridTemplateColumns.trim().split(/\s+/).length);
             assert.equal(columns,width>743?2:1);
             const photos=page.locator('img');

@@ -38,9 +38,9 @@
             "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
         },
         "interface": {
-            "source_sha256": "7fe40ef272328fb936160316ca1af5055761e015b28ca0c796362c911c86b9fd",
+            "source_sha256": "e03caadbc7cc8ec5889f33401b49003ca0a8fcba9090fbfc4ba71ec8fb3e59c8",
             "references_sha256": "e50099f9a28a4e3b06a7c6aebf5ec74dfd115cfeaf5f635fd6109b30ac12ef04",
-            "review_note": "Reviewed semantic tokens and actual responsive About layout, images and enquiry navigation at desktop, two phone heights and no JS."
+            "review_note": "Measured normal-text contrast on the actual About page, corrected low-contrast secondary token on warm surfaces and retained red/green browser contrast regression across desktop and mobile."
         },
         "mail": {
             "source_sha256": "cc231ae9824a02bc62d144c128574005f524ec2204f9abd61653767483200f84",

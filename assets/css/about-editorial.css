@@ -23,7 +23,7 @@ main.about-main { padding: 0; }
     letter-spacing: .13em;
     text-transform: uppercase;
     margin: 0 0 var(--space-md);
-    color: var(--color-secondary);
+    color: var(--color-text-muted);
 }
 .about-hero {
     background: var(--color-primary);
@@ -113,7 +113,7 @@ main.about-main { padding: 0; }
     padding-top: var(--space-lg);
     min-width: 0;
 }
-.about-pathway__number { font-size: .8rem; font-weight: 600; letter-spacing: .12em; color: var(--color-secondary); }
+.about-pathway__number { font-size: .8rem; font-weight: 600; letter-spacing: .12em; color: var(--color-text-muted); }
 .about-pathway h3 { font-size: clamp(1.35rem, 2.5vw, 1.75rem); color: var(--color-primary); margin: var(--space-md) 0 var(--space-sm); }
 .about-pathway p { color: var(--color-text-muted); margin: 0 0 var(--space-md); }
 .about-pathway a {
@@ -153,6 +153,7 @@ main.about-main { padding: 0; }
 }
 .about-contact__details span { color: var(--color-text-muted); font-size: .9rem; }
 .about-editorial .page-cta-card { margin: 0; }
+.about-editorial .page-cta-card__eyebrow { color: var(--color-text-muted); }
 .about-editorial a:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 4px; }
 .about-hero a:focus-visible { outline-color: var(--color-on-primary); }
 @media (max-width: 743px) {
