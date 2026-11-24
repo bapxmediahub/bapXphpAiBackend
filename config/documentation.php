@@ -26,7 +26,7 @@ $rules = [
   'references'=>['docs/google-sales-channels.md','content/help/admin/catalogue.md','.agents/skills/bapxphp-cli/SKILL.md']],
 
  'agents'=>['sources'=>['app/Services/Agent*.php','app/Services/*ToolRegistry.php','app/Services/Support*.php','app/Services/Ai*.php','app/Controllers/SupportController.php','.bapX/*','cli/agent-*.php','views/admin/agent*.php'],
-  'references'=>['docs/agent-observability.md','docs/runtime-agents.md','docs/agent-tool-contracts.md','.agents/skills/backend-php-mysql/SKILL.md']],
+  'references'=>['README.md','docs/agent-observability.md','docs/runtime-agents.md','docs/agent-tool-contracts.md','.agents/skills/backend-php-mysql/SKILL.md']],
  'mail'=>['sources'=>['app/Services/*Mail*.php','app/Services/Smtp*.php','views/admin/mailbox.php','views/admin/email-templates.php'],
   'dependencies'=>['app/Controllers/AuthController.php','app/Controllers/AccountController.php','app/Controllers/AdminController.php'],
   'references'=>['docs/email-setup.md','.agents/skills/backend-php-mysql/SKILL.md']],
@@ -39,7 +39,7 @@ $rules = [
  'media'=>['sources'=>['app/Services/Media*.php','app/Services/StoragePermissionService.php','views/admin/media.php'],
   'references'=>['docs/engineering/media-deletion-verification.md','docs/architecture.md','.agents/skills/admin-ui/SKILL.md']],
  'workflow'=>['sources'=>['cli/*','.github/*','.agents/*','config/documentation.php','app/Services/*MapService.php','app/Services/KnowledgeGraphService.php','AGENTS.md'],
-  'references'=>['docs/development-workflow.md','docs/README.md','.agents/skills/git/SKILL.md','.agents/skills/docs/SKILL.md']],
+  'references'=>['README.md','docs/client-runtime-adaptation.md','docs/development-workflow.md','docs/README.md','.agents/skills/git/SKILL.md','.agents/skills/docs/SKILL.md']],
  'interface'=>['sources'=>['views/*','assets/*','Design.md','content/help/*','app/Services/*Help*.php'],
   'references'=>['docs/admin-guide.md','docs/site-motion.md','Design.md','.agents/skills/frontend-php/SKILL.md','.agents/skills/admin-ui/SKILL.md']],
  'foundation'=>['sources'=>['*'],

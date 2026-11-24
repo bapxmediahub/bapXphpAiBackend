@@ -1,94 +1,87 @@
-<section class="section section--warm">
-    <div class="container">
-        <div class="section-header">
-            <span class="eyebrow serif-accent">Our Story</span>
-            <h1 class="section-title" style="margin-bottom:var(--space-sm);">About Sri Panchami Spiritual</h1>
-            <p class="lede">A sacred space dedicated to spiritual growth, inner peace, and divine connection. Serving devotees across Chennai and India with authentic spiritual products and temple guidance.</p>
-        </div>
-        <div class="about-story-grid">
-            <div class="about-story-card reveal">
-                <h3>Our Mission</h3>
-                <p>To support meaningful spiritual journeys through traditional Vedic wisdom, authentic devotional practices, and genuine spiritual products.</p>
+<link rel="stylesheet" href="/assets/css/about-editorial.css?v=<?= filemtime(app_path('assets/css/about-editorial.css')) ?>">
+<div class="about-editorial" data-about-editorial>
+    <header class="about-hero">
+        <div class="container about-hero__inner">
+            <div class="about-hero__copy">
+                <p class="about-kicker">About <?= e($seo['og_site_name']) ?></p>
+                <h1><?= e($about['headline']) ?></h1>
+                <p class="about-hero__lede"><?= e($about['intro']) ?></p>
+                <a class="about-hero__link" href="#our-story">Discover our story <span aria-hidden="true">↓</span></a>
             </div>
-            <div class="about-story-card reveal">
-                <h3>Our Vision</h3>
-                <p>Making sacred products and trusted spiritual guidance accessible to devotees across India, from devotional jewellery and pooja samagri to temple traditions.</p>
-            </div>
-        </div>
-        <div class="about-feature-grid">
-            <article class="about-feature-card reveal">
-                <span class="about-feature-card__icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><path d="M12 8v8"/><path d="M8 12h8"/></svg></span>
-                <h3>Spiritual Practice</h3>
-                <p>Thoughtful products and traditions for your devotional journey.</p>
-            </article>
-            <article class="about-feature-card reveal">
-                <span class="about-feature-card__icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><circle cx="12" cy="12" r="3"/><path d="M12 5v2"/><path d="M12 17v2"/><path d="M5 12h2"/><path d="M17 12h2"/></svg></span>
-                <h3>Sacred Products</h3>
-                <p>Authentic rudraksha, devotional items, and spiritual jewellery.</p>
-            </article>
-            <article class="about-feature-card reveal">
-                <span class="about-feature-card__icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><path d="M12 7a5 5 0 00-3 9v4h6v-4a5 5 0 00-3-9z"/><path d="M10 18h4"/></svg></span>
-                <h3>Pooja Support</h3>
-                <p>Complete pooja samagri and ritual guidance for all occasions.</p>
-            </article>
-        </div>
-        <div class="section-header" style="margin-top:var(--space-3xl);">
-            <span class="eyebrow serif-accent">Why Sri Panchami Spiritual</span>
-            <h2 class="section-title">Faith · Trust · Tradition</h2>
-            <p class="lede">Rooted in devotion, committed to authenticity — every product and service reflects our reverence for India's spiritual heritage.</p>
-        </div>
-        <div class="value-strip">
-            <article class="value-card reveal">
-                <div class="value-card__icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            <?php if (!empty($about['hero_image'])): $image = $about['hero_image']; ?>
+                <div class="about-hero__visual">
+                    <img src="<?= e($image['src']) ?>" alt="<?= e($image['alt']) ?>" width="<?= (int)$image['width'] ?>" height="<?= (int)$image['height'] ?>" fetchpriority="high" decoding="async">
                 </div>
-                <h3>Authenticity</h3>
-                <p>Every item sourced with devotion — authentic rudraksha, pure pooja essentials, and sacred jewellery verified for spiritual genuineness.</p>
-            </article>
-            <article class="value-card reveal">
-                <div class="value-card__icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                </div>
-                <h3>Spiritual Growth</h3>
-                <p>Our products are more than offerings — they are symbols of faith that help keep alive the divine traditions connecting every devotee with spirituality.</p>
-            </article>
-            <article class="value-card reveal">
-                <div class="value-card__icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                </div>
-                <h3>Devotion</h3>
-                <p>Crafted with reverence, our products support sacred rituals and deepen your connection with the divine through every offering.</p>
-            </article>
-            <article class="value-card reveal">
-                <div class="value-card__icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                </div>
-                <h3>Community</h3>
-                <p>Fostering belonging and connection through shared spiritual experiences — bringing temples, traditions, and devotees closer together.</p>
-            </article>
+            <?php endif; ?>
         </div>
-        <div class="page-cta-card reveal" style="margin-top:var(--space-2xl);">
-            <div>
-                <span class="page-cta-card__eyebrow">Need help?</span>
-                <h3>Send a General Enquiry</h3>
-                <p>Use the contact form for product questions, order support, temple guidance, or general store enquiries.</p>
-            </div>
-            <a class="btn btn-primary page-cta-card__button" href="/contact#contact-form">Let’s Get Connected →</a>
-        </div>
-    </div>
-</section>
+    </header>
 
-<script type="application/ld+json">
-{
-    "@context": "https://schema.org",
-    "@type": "AboutPage",
-    "name": "About Sri Panchami Spiritual",
-    "description": "Learn about Sri Panchami Spiritual — Chennai's trusted store for authentic rudraksha, pooja items, spiritual jewellery, and temple traditions.",
-    "url": "https://sripanchamispiritual.com/about",
-    "mainEntity": {
-        "@type": "LocalBusiness",
-        "name": "Sri Panchami Spiritual",
-        "email": "support@sripanchamispiritual.com"
-    }
-}
-</script>
+    <section class="about-section" id="our-story" aria-labelledby="about-story-title">
+        <div class="container about-story">
+            <?php if (!empty($about['story']['image'])): $image = $about['story']['image']; ?>
+                <figure class="about-story__figure">
+                    <img src="<?= e($image['src']) ?>" alt="<?= e($image['alt']) ?>" width="<?= (int)$image['width'] ?>" height="<?= (int)$image['height'] ?>" loading="lazy" decoding="async">
+                    <?php if (!empty($about['story']['caption'])): ?>
+                        <figcaption><?= e($about['story']['caption']) ?></figcaption>
+                    <?php endif; ?>
+                </figure>
+            <?php endif; ?>
+            <div class="about-story__copy">
+                <p class="about-kicker"><?= e($about['story']['eyebrow']) ?></p>
+                <h2 id="about-story-title"><?= e($about['story']['title']) ?></h2>
+                <?php foreach ($about['story']['paragraphs'] as $paragraph): ?>
+                    <p><?= e($paragraph) ?></p>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+
+    <?php if ($aboutPaths): ?>
+    <section class="about-section about-explore" aria-labelledby="about-explore-title">
+        <div class="container">
+            <p class="about-kicker">Explore</p>
+            <h2 id="about-explore-title"><?= e($about['explore_title']) ?></h2>
+            <div class="about-pathways">
+                <?php foreach ($aboutPaths as $index => $entry): ?>
+                    <article class="about-pathway">
+                        <span class="about-pathway__number" aria-hidden="true"><?= str_pad((string)($index + 1), 2, '0', STR_PAD_LEFT) ?></span>
+                        <h3><?= e($entry['title']) ?></h3>
+                        <p><?= e($entry['description']) ?></p>
+                        <a href="<?= e($entry['path']) ?>"><?= e($entry['label']) ?> <span aria-hidden="true">↗</span></a>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+    <?php endif; ?>
+
+    <section class="about-section about-contact" aria-labelledby="about-contact-title">
+        <div class="container">
+            <div class="about-contact__grid">
+                <div>
+                    <p class="about-kicker">Here to help</p>
+                    <h2 id="about-contact-title"><?= e($about['contact_title']) ?></h2>
+                    <p><?= e($about['contact_intro']) ?></p>
+                </div>
+                <address class="about-contact__details">
+                    <?php foreach ($publicContact['phones'] as $phone): ?>
+                        <a href="tel:<?= e($phone['number']) ?>"><?= e($phone['label']) ?></a>
+                    <?php endforeach; ?>
+                    <a href="mailto:<?= e($publicContact['email']) ?>"><?= e($publicContact['email']) ?></a>
+                    <?php foreach ($publicContact['hours'] as $slot): ?>
+                        <span><?= e($slot['days']) ?> · <?= e($slot['hours']) ?></span>
+                    <?php endforeach; ?>
+                </address>
+            </div>
+            <div class="page-cta-card about-contact__cta">
+                <div>
+                    <span class="page-cta-card__eyebrow">Send a message</span>
+                    <h3>Send a General Enquiry</h3>
+                    <p>Tell us what you need and how we can help.</p>
+                </div>
+                <a class="btn btn-primary page-cta-card__button" href="/contact#contact-form">Let’s Get Connected →</a>
+            </div>
+        </div>
+    </section>
+</div>
+<?= $seo['about_json_ld'] ?? '' ?>

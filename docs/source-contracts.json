@@ -4,8 +4,8 @@
     "reviews": {
         "agents": {
             "source_sha256": "5d2a8318f694c8bdb74b88e8f5b0054198559b0753da6c84ef7784308273b049",
-            "references_sha256": "a3194b5f9dd2fdc5f745078b87b7c8ba8413256e7f6727105c1b4622aedfd30b",
-            "review_note": "Retain deployed provider missing-cURL guard and its regression in the role-scoped discovery loop."
+            "references_sha256": "7cb3c6897bd2abd5d80728c2dd1fa4b35d3b800483a88dee7480ddb8b5a59519",
+            "review_note": "Compared README three-RAG processing diagram and runtime docs against both actual AiClient loops, RuntimeAgentToolRegistry, AgentInstructionService and scoped data/trace services."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
@@ -18,69 +18,69 @@
             "review_note": "Cross-reviewed current-price cart paise precision, captured-INR predicate, shared idempotent VerifiedOrderService, actual-discount GST and frozen tax evidence. Order/checkout docs distinguish captured payment from saved order and preserve later browser-cart edits on retry."
         },
         "content": {
-            "source_sha256": "31a628f8963f037d93aa9f927866829b951dfac10282993b91f7cfa6cee433f0",
-            "references_sha256": "e8ef7076f00fa294db6d59bae7e381e0de58e018ddfa15ae5b6306409d14d427",
-            "review_note": "Reviewed browser-local draft recovery, stale revision protection and unchanged publishing semantics against content guide."
+            "source_sha256": "81e089883371054ee864877c253114a37fa8858f072adf2040da41482d911a85",
+            "references_sha256": "233541c29706cce5926813681d7679fa7b852b55743c6e569dca51bca84e31f7",
+            "review_note": "Reviewed browser snapshot bounds, per-owner and page key, revision conflict, explicit save token cleanup and unchanged MySQL CAS and publication status."
         },
         "foundation": {
-            "source_sha256": "2e151d9aa4fe86bed095e54cf2f2e91c6c1cbf9264e74841c36f3bbd07a9ed08",
-            "references_sha256": "711c1de347e396eb44d5953de4e6e89d6f33f17cf4833d1335c6d955d49270b7",
-            "review_note": "Regenerated project index; drafts remain browser-local and no new database or server storage introduced."
+            "source_sha256": "a06e8f5e01ffa1570f7470c922568f7d3e245dae0ebedacb8b5445feca4f79f8",
+            "references_sha256": "000d979cca9c14e5f6e0eebefde37373223f7c6c589ef50b358331394336c289",
+            "review_note": "Reviewed local-only authored-page browser draft, no new database or server-side autosave and unchanged authorization/persistence."
         },
         "google-tags": {
-            "source_sha256": "b22e2a0262f519e899f17885599f6d10995d12e714378f30e15d513618d81f41",
-            "references_sha256": "dc2c123ec3959c5b29d43cffa2e680d0661e3ca68b31fcc52aa8ef1b004b9816",
-            "review_note": "Both configurable AI connections and PageSpeed report guidance survive the merged integrations documentation; Google reporting remains separate."
+            "source_sha256": "dd4c57dad073ad54bfc7deda652d9936407a7e5aac192878bdf9052fdc776287",
+            "references_sha256": "657a277dd510eaf66bee6f0b0ada17e7fef2a016752a6b940c9f7084849063e2",
+            "review_note": "Reviewed fixed Google v5 endpoint, canonical HTTPS origin, CSRF owner-only routes, bounded report projection and unavailable/quota states against integration documentation and fixtures."
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
-            "references_sha256": "7a1a19d88900be4d0bba1040c1aa4642b7b9774f97f3b2796090e24eb57809ea",
-            "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
+            "references_sha256": "c8ddca8644145adc5f0116806c8b4f2786dff8ae667f708c216a4cc02c10489e",
+            "review_note": "Reviewed architecture guidance; existing safe failure/HTTP status boundary unchanged by deployment-neutral developer metadata."
         },
         "interface": {
-            "source_sha256": "5e777a3a40993dd0a4b8f46531f299815b9eed800e95c590935fbac8172029a9",
-            "references_sha256": "46f2d374009adf6d6e27117f48463103a2cec53a1d15a7b3ac2f412904d972c8",
-            "review_note": "Reviewed native page editor draft recovery controls and responsive form."
+            "source_sha256": "4742b1ed66d134a28cf3e2fac552bc48fa294d0c4e3c297f0dd25fa38b2c136c",
+            "references_sha256": "431f6eb3fbd7961de74e85d22454ac61a8e54d3f514fc80e02eaaeb62b4b2aea",
+            "review_note": "Reviewed actual editor DOM and page-draft script restore/discard and stale-download behavior, with existing responsive view and help."
         },
         "mail": {
             "source_sha256": "d65cfdf66aa768b7a8e9d6a9903b5ffa52b3f6e7ee046bada2dafced5cf61054",
             "references_sha256": "6d6153ae2fed6f1aebbf9fa93225d6cc74b6c098d9a34deffce7bc4f3c6e9273",
-            "review_note": "Shared admin controller draft handling does not change mail delivery."
+            "review_note": "Reviewed AdminController changes confined to authored-page draft context and save acknowledgement; no SMTP or lifecycle change."
         },
         "mcp-clients": {
             "source_sha256": "ffb43129fe7e2633e2b790587a52729a82486fc1e08a692607623632c17756ad",
             "references_sha256": "1390a1ae3be706072f85e628f3065e2170dc2685b3841c008d02536d232f2d1c",
-            "review_note": "PageSpeed reporting remains owner-only and does not expose a public MCP capability."
+            "review_note": "Reviewed new PageSpeed integration documentation; owner Google reports are not exposed via MCP and client grants are unchanged."
         },
         "media": {
             "source_sha256": "c99bf5f35495fb29a3025b39dc32c1fbd2f20640fbacd2784598a53cd3a8584f",
-            "references_sha256": "2794618b02963d55f3e327e274003239bba39eaf2b893deb40a351f48521aae2",
-            "review_note": "Reviewed locked existing row, expected revision, bounded fields and no binary replacement."
+            "references_sha256": "e6db8e5e954aa98a647fa4c1f8d7d7bac960dc2ffe0561b451be2844ecbedb48",
+            "review_note": "Reviewed upload eligibility, revision hash, bounded UTF-8 metadata, row lock, exact patch, no row creation, and view/search/isolated DB tests."
         },
         "operator-help": {
-            "source_sha256": "f04acbadb5730a31f8940fa5c43d16649ae1924e13f546448e6d293a2f58f747",
+            "source_sha256": "7da942f5d3bfcc0cd30d6ae9e5a59c84e036a6932068f2ceef9cd4fb6417a6f4",
             "references_sha256": "0edde1e87b2eb82a506b3b36a1b61f68eb44e33dc60d889dcdfd47eecfe3b2e6",
-            "review_note": "Reviewed authored-page recovery, owner guide and unchanged surrounding admin controls."
+            "review_note": "Cross-checked authored page owner scope, preview and save paths and the actual restore/discard/download controls with operator guide."
         },
         "public-mcp": {
             "source_sha256": "fa4cfa48087dc5d020000f9a23a5f176ce65cfd1465b81dd29d608348d2708b5",
             "references_sha256": "66f314f4d27575d8d1ab7394d8e28aae3feb90467ef6445ce18d804604d40f3d",
-            "review_note": "Media editing remains owner-only; no new public capability."
+            "review_note": "Reviewed ProjectMapService route addition and canonical dispatcher; media edits are owner-only and not exposed as public tools."
         },
         "remote-commerce": {
-            "source_sha256": "c2959d00a8dae68a43bc3fb2b22440adf3a29ecd24c577db4f3b4fccf0f64fa7",
-            "references_sha256": "e00aba6f254f3552728ebcf0e7cd24d757eceb2ffa55060db99dd42562b481e9",
-            "review_note": "Dedicated revision-checked media mutation remains separate from checkout and payment."
+            "source_sha256": "290b7c3db6fb9194fed4286baddd9ef828de57cc9017bbc67dad485ef6c7c050",
+            "references_sha256": "aafbc778d27e19816b6069a0bb16194afced7f59b4185261374f1a3c03fa1b72",
+            "review_note": "Reviewed narrow DatabaseService row-lock patch and password-protected remotedb action; no changes to cart/checkout methods or authority."
         },
         "sales-channels": {
             "source_sha256": "4b05a2d9436a74c6e60b28ce25987bf531cabf698294fb51554219a138c88167",
             "references_sha256": "ce84b911bce7bb5435cc905a83819e015bad8a111c795fd143c86cb59f903c4f",
-            "review_note": "Metadata editing only changes library text and preview; feed behavior unchanged."
+            "review_note": "Reviewed MediaService metadata/search patch; URL, binary and usage fields used by published feeds remain unchanged."
         },
         "workflow": {
-            "source_sha256": "511bd421ad198087d262cebcd5726c6cf1b804f8b020e3e5276b839f88119067",
-            "references_sha256": "a242b3bec435e5f0b0b1191b95c4d0a8fe98fec35e78981816b1bd71023ecf27",
-            "review_note": "Retained all earlier homepage, provider, PageSpeed and media tests with the page-draft browser suite."
+            "source_sha256": "4ad2a3e6c9ed905e2b2f382bd1ca833c395b9792e6ca5684871b57862b7d3f31",
+            "references_sha256": "02547adbcf78d518e43216cd4f2c24d3bd81892187ee5f6e02347ab81c23e83c",
+            "review_note": "Preserved current About, PageSpeed and media browser tests plus the page-draft test and regenerated indexes."
         }
     }
 }

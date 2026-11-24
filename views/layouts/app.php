@@ -428,7 +428,7 @@ catch (\RuntimeException) { $__publicProductsOrigin=null; }
         </a>
     </div>
 </header>
-<main class="<?= $currentPath === '/' ? 'home-main' : '' ?>">
+<main class="<?= $currentPath === '/' ? 'home-main' : ($currentPath === '/about' ? 'about-main' : '') ?>">
 <?php
 $__flash = $_SESSION['flash'] ?? null;
 if ($__flash):
