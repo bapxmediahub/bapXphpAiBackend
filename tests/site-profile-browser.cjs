@@ -13,15 +13,29 @@ const {chromium} = require('playwright');
 
 const root = path.resolve(__dirname, '..');
 
-async function fixture(t, id, modules) {
+async function fixture(cleanup, id, modules) {
     const sessionDirectory = await mkdtemp(path.join(os.tmpdir(), 'bapx-profile-' + id + '-'));
-    t.after(() => rm(sessionDirectory, {recursive:true, force:true}));
+    let bridge;
+    let server;
+    let serverClosed;
+    cleanup.push(async () => {
+        if (server) {
+            server.kill();
+            await serverClosed;
+        }
+        if (bridge?.listening) {
+            const closed = new Promise(resolve => bridge.close(resolve));
+            bridge.closeAllConnections();
+            await closed;
+        }
+        await rm(sessionDirectory, {recursive:true, force:true});
+    });
     const password = 'synthetic-bridge-' + id;
     const privateMarker = 'PRIVATE-ADMIN-' + id;
     const settings = {id:'app_settings', ...modules, shipping_mode:'flat', flat_rate:75, admin_email:privateMarker};
     const product = {id:id+'-product', slug:id+'-product', name:'Fixture product '+id, price:120, in_stock:true};
     const audit = [];
-    const bridge = createServer(async (request, response) => {
+    bridge = createServer(async (request, response) => {
         const chunks = [];
         for await (const chunk of request) chunks.push(chunk);
         const input = JSON.parse(Buffer.concat(chunks));
@@ -48,7 +62,6 @@ async function fixture(t, id, modules) {
     });
     bridge.listen(0, '127.0.0.1');
     await once(bridge, 'listening');
-    t.after(() => new Promise(resolve => bridge.close(resolve)));
 
     const socket = net.createServer().listen(0, '127.0.0.1');
     await once(socket, 'listening');
@@ -64,16 +77,26 @@ async function fixture(t, id, modules) {
     execFileSync('php', ['-d','session.save_path='+sessionDirectory,'-r',
         'session_id($argv[1]); session_start(); $_SESSION["user"]=["id"=>"fixture","role"=>"admin","email"=>"owner@example.test"]; session_write_close();',
         sessionId], {cwd:root,env});
-    const server = spawn('php',['-d','session.save_path='+sessionDirectory,'-S','127.0.0.1:'+port,'index.php'],{cwd:root,env,stdio:'ignore'});
-    t.after(() => server.kill());
+    server = spawn('php',['-d','session.save_path='+sessionDirectory,'-S','127.0.0.1:'+port,'index.php'],{cwd:root,env,stdio:'ignore'});
+    serverClosed = new Promise(resolve => server.once('close', resolve));
     return {origin,canonical,sessionId,settings,audit,privateMarker,product};
 }
 
 test('two deployments publish separately saved identity and contact facts through actual browser, SEO and MCP', {timeout:90000}, async t => {
-    const alpha = await fixture(t, 'alpha', {module_shop:'0',module_blog:'0'});
-    const beta = await fixture(t, 'beta', {module_shop:'1',module_blog:'1'});
-    const browser = await chromium.launch({executablePath:process.env.CHROMIUM_PATH || undefined});
-    t.after(() => browser.close());
+    const cleanup = [];
+    let browser;
+    t.after(async () => {
+        try {
+            await browser?.close();
+        } finally {
+            const results = await Promise.allSettled(cleanup.map(stop => stop()));
+            const errors = results.filter(result => result.status === 'rejected').map(result => result.reason);
+            if (errors.length) throw new AggregateError(errors, 'Site-profile fixture cleanup failed');
+        }
+    });
+    const alpha = await fixture(cleanup, 'alpha', {module_shop:'0',module_blog:'0'});
+    const beta = await fixture(cleanup, 'beta', {module_shop:'1',module_blog:'1'});
+    browser = await chromium.launch({executablePath:process.env.CHROMIUM_PATH || undefined});
 
     for (const [install,width,name,email,phone,otherName] of [
         [alpha,1280,'Caldera & Iris','hello@alpha.example.test','+44 (20) 7000-0123','Vela Workshop'],
