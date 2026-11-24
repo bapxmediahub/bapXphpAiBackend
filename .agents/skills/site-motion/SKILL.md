@@ -34,3 +34,5 @@ computed visibility, overflow, actual controls, private-directory HTTP denial
 and console errors. Do not publish credentials or real customer screenshots.
 
 For a sequence of sticky sections, measure each outgoing section and verify its top stays stationary while the next surface advances. Repeat in reverse and with a section taller than a short phone viewport.
+
+For the hero portrait carousel, keep the first image visible without JS. Test eleven labeled dots, pause/play, 2-second autoplay, loaded-image crossfade, wrapping, focus/hover/hidden/covered and reduced-motion behavior. Use the W3C carousel pattern for controls.

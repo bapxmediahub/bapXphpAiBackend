@@ -35,6 +35,18 @@ test('actual public layout: pinned brand, complete editorial sequence, readable 
    for(let i=0;i<20;i++){try{const r=await p.goto(origin+'/',{waitUntil:'domcontentloaded',timeout:live?25000:2000});assert.equal(r.status(),200);break;}catch(e){if(i===19||live)throw e;await new Promise(r=>setTimeout(r,100));}}
    await p.locator('[data-home-stack][data-stack-ready]').waitFor({timeout:10000});
    await p.evaluate(()=>document.fonts.ready);
+   const slider=p.locator('[data-varahi-slider]');
+   assert.equal(await slider.locator('[data-portrait-index]').count(),11);
+   if(width===1280){
+    await p.waitForFunction(()=>document.querySelector('[data-varahi-slider]').dataset.activeIndex!=='0',{},{timeout:8000});
+    await slider.getByRole('button',{name:'Pause automatic portraits'}).click();
+    const dots=slider.locator('[data-portrait-index]');
+    await dots.nth(10).click();
+    await p.waitForFunction(()=>document.querySelector('[data-varahi-slider]').dataset.activeIndex==='10');
+    await slider.getByRole('button',{name:'Next portrait'}).click();
+    await p.waitForFunction(()=>document.querySelector('[data-varahi-slider]').dataset.activeIndex==='0');
+    await p.evaluate(()=>document.activeElement.blur());
+   }
    const header=p.locator('#site-header');
    assert.equal(await header.locator('.brand span').innerText(),'Sri Panchami Spiritual');
    assert.ok(await header.locator('.brand img').isVisible());

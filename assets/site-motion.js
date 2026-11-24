@@ -236,21 +236,113 @@
             var slides = Array.from(root.querySelectorAll('.varahi-slide'));
             var controls = root.querySelector('[data-portrait-controls]');
             if (!controls || slides.length < 2) return;
-            var current = 0;
-            var position = controls.querySelector('[role="status"]');
-            function selectPortrait(index) {
-                slides[current].classList.remove('is-active');
-                current = (index + slides.length) % slides.length;
-                slides[current].classList.add('is-active');
-                root.dataset.currentSlide = slides[current].classList.contains('hero-guruji') ? 'guruji' : 'deity';
-                position.textContent = (current + 1) + ' / ' + slides.length;
+            var dots = Array.from(controls.querySelectorAll('[data-portrait-index]'));
+            var rotation = controls.querySelector('[data-portrait-rotation]');
+            var status = controls.querySelector('[data-portrait-status]');
+            if (!rotation || !status || dots.length !== slides.length) return;
+            var current = 0, timer = null, request = 0;
+            var playing = true, hovering = false, visible = false;
+            function stopTimer() {
+                if (timer !== null) win.clearTimeout(timer);
+                timer = null;
+            }
+            function isPlaying() {
+                return playing && canMove();
+            }
+            function renderRotation() {
+                var enabled = isPlaying();
+                rotation.setAttribute('aria-label', enabled ? 'Pause automatic portraits' : 'Play automatic portraits');
+                rotation.firstElementChild.textContent = enabled ? 'Ⅱ' : '▶';
+                status.setAttribute('aria-live', enabled ? 'off' : 'polite');
+            }
+            function schedule() {
+                stopTimer();
+                renderRotation();
+                if (!isPlaying() || hovering || !visible) return;
+                timer = win.setTimeout(function () { selectPortrait(current + 1, true); }, 2000);
+            }
+            function pause() {
+                playing = false;
+                request++;
+                schedule();
+            }
+            function selectPortrait(index, automatic) {
+                stopTimer();
+                var next = (index + slides.length) % slides.length;
+                var ticket = ++request;
+                var image = slides[next];
+                function apply() {
+                    if (ticket !== request) return;
+                    if (automatic && (!isPlaying() || hovering || !visible)) { schedule(); return; }
+                    if (!image.naturalWidth) { schedule(); return; }
+                    slides[current].classList.remove('is-active');
+                    slides[current].setAttribute('aria-hidden', 'true');
+                    current = next;
+                    image.classList.add('is-active');
+                    image.removeAttribute('aria-hidden');
+                    root.dataset.currentSlide = image.classList.contains('hero-guruji') ? 'guruji' : 'deity';
+                    root.dataset.activeIndex = String(current);
+                    dots.forEach(function (dot, i) { dot.setAttribute('aria-current', String(i === current)); });
+                    status.textContent = image.alt;
+                    schedule();
+                }
+                // Do not fade to an unloaded image; keep the current artwork visible.
+                image.loading = 'eager';
+                if (typeof image.decode === 'function') image.decode().then(apply, function () { if (ticket === request) schedule(); });
+                else if (image.complete) apply();
+                else {
+                    image.addEventListener('load', apply, { once: true });
+                    image.addEventListener('error', function () { if (ticket === request) schedule(); }, { once: true });
+                }
             }
             controls.querySelectorAll('[data-portrait-step]').forEach(function (button) {
-                button.addEventListener('click', function () {
-                    selectPortrait(current + Number(button.dataset.portraitStep));
-                });
+                button.addEventListener('click', function () { pause(); selectPortrait(current + Number(button.dataset.portraitStep), false); });
             });
+            dots.forEach(function (dot, i) {
+                dot.addEventListener('click', function () { pause(); selectPortrait(i, false); });
+            });
+            // Pointer focus must not invert the intended pause/play button action.
+            var pointerAction = null;
+            rotation.addEventListener('pointerdown', function () { pointerAction = isPlaying(); });
+            rotation.addEventListener('pointercancel', function () { pointerAction = null; });
+            rotation.addEventListener('click', function () {
+                var wasPlaying = pointerAction === null ? isPlaying() : pointerAction;
+                pointerAction = null;
+                playing = !wasPlaying && canMove();
+                request++;
+                schedule();
+            });
+            root.addEventListener('focusin', function () { pause(); });
+            root.addEventListener('pointerenter', function (event) {
+                if (event.pointerType === 'mouse') { hovering = true; request++; schedule(); }
+            });
+            root.addEventListener('pointerleave', function () { hovering = false; schedule(); });
+            if (typeof win.IntersectionObserver === 'function') {
+                new win.IntersectionObserver(function (entries) {
+                    visible = entries[0].isIntersecting && entries[0].intersectionRatio >= 0.5;
+                    if (!visible) request++;
+                    schedule();
+                }, { threshold: [0, 0.5] }).observe(root);
+            }
+            // Sticky cards may be geometrically visible but painted under a later slide.
+            // Check the actual artwork hit target during native scrolling.
+            function checkCover() {
+                if (!visible || !playing) return;
+                var box = root.querySelector('.deity-frame').getBoundingClientRect();
+                var hit = doc.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+                if (!hit || !root.contains(hit)) { stopTimer(); request++; }
+                else if (timer === null) schedule();
+            }
+            win.addEventListener('scroll', checkCover, { passive: true });
+            doc.addEventListener('visibilitychange', function () { request++; schedule(); });
+            if (typeof media.addEventListener === 'function') media.addEventListener('change', function () {
+                if (media.matches) playing = false;
+                request++; schedule();
+            });
+            win.addEventListener('pagehide', function () { request++; stopTimer(); });
+            win.addEventListener('pageshow', schedule);
             controls.hidden = false;
+            schedule();
         });
     }
     return { motionAllowed: motionAllowed, entrance: entrance, showReturnControl: showReturnControl, init: init };
