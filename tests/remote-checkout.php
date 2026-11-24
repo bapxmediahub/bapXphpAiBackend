@@ -190,6 +190,9 @@ try {
 // Signed completion works after the browser closes and the 24-hour cart disappears.
 $f=new RemoteCheckoutFixture();
 try {
+    $products=$f->cartFixture->records();
+    $products[0] += ['gst_uqc'=>'KGS','gst_qty_per_unit'=>'0.125'];
+    $f->cartFixture->setProducts($products);
     [$cart,$review,$args]=checkoutQuote($f);$prepared=$f->service()->preparePayment($args);$id=$prepared['attemptId'];
     $body=json_encode(['event'=>'payment_link.paid','payload'=>['payment_link'=>['entity'=>['reference_id'=>'ac_'.$id]]]],JSON_THROW_ON_ERROR);
     $signature=hash_hmac('sha256',$body,$f->secrets['razorpay_test_webhook_secret']);$before=count($f->operations);
@@ -204,6 +207,8 @@ try {
     checkoutCheck(count($f->orders)===1&&$f->attempts[$id]['order_status']==='saved','Signed callback could not finish after cart cleanup.');
     $order=reset($f->orders);
     checkoutCheck($order['fulfillment_review_required']&&!$order['tax_review_required']&&isset($order['invoice_number']),'Deleted product lost frozen invoice facts or bypassed fulfillment hold.');
+    $line=$order['tax_lines'][0];
+    checkoutCheck($line['uqc']==='KGS'&&$line['uqc_quantity']==='0.125','Remote quote must freeze the unit through signed payment after product removal.');
     $f->service()->receiveWebhook($body,$signature);
     checkoutCheck(count($f->orders)===1,'Duplicate webhook made a duplicate order.');
     $f->advance(604800);

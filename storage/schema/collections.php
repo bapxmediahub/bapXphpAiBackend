@@ -88,7 +88,7 @@
             'primary_key' => 'id',
             'admin_managed' => true,
             'media_fields' => ['image_url', 'image_urls'],
-            'admin_fields' => ['slug', 'name', 'description', 'highlights', 'description_points', 'specifications', 'category', 'image_url', 'image_urls', 'price', 'offer_price', 'offer_starts_at', 'offer_ends_at', 'hsn_code', 'gst_rate', 'stock_status', 'status'],
+            'admin_fields' => ['slug', 'name', 'description', 'highlights', 'description_points', 'specifications', 'category', 'image_url', 'image_urls', 'price', 'offer_price', 'offer_starts_at', 'offer_ends_at', 'hsn_code', 'gst_rate', 'gst_uqc', 'gst_qty_per_unit', 'stock_status', 'status'],
             'agent_context' => ['id', 'slug', 'name', 'description', 'highlights', 'description_points', 'specifications', 'category', 'categories', 'price', 'offer_price', 'hsn_code', 'gst_rate', 'stock_status'],
             'fields' => [
                 'id' => ['type' => 'string', 'required' => true],
@@ -106,6 +106,8 @@
                 'offer_price' => ['type' => 'number'],
                 'hsn_code' => ['type' => 'string'],
                 'gst_rate' => ['type' => 'number'],
+                'gst_uqc' => ['type' => 'string', 'description' => 'Optional owner-confirmed GST unit quantity code'],
+                'gst_qty_per_unit' => ['type' => 'string', 'description' => 'Decimal quantity in the selected GST unit per one sale item'],
                 'stock_status' => ['type' => 'enum', 'values' => ['in_stock', 'active', 'inactive', 'draft', 'out_of_stock']],
                 // Visibility, separate from stock. Without it the only way to take a
                 // product off the shop was to delete it, losing the record past orders
@@ -181,7 +183,7 @@
                 'shipping_pincode' => ['type' => 'string'],
                 'shipping_state' => ['type' => 'string', 'required' => true],
                 'customer_gstin' => ['type' => 'string'],
-                'tax_lines' => ['type' => 'array'],
+                'tax_lines' => ['type' => 'array', 'items' => 'object', 'description' => 'Issued lines may include a frozen uqc code and decimal uqc_quantity'],
                 'taxable_value' => ['type' => 'number'],
                 'cgst_total' => ['type' => 'number'],
                 'sgst_total' => ['type' => 'number'],

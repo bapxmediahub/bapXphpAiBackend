@@ -7,6 +7,7 @@ final class GstRegisterService {
         'Invoice', 'Invoice date', 'Order', 'Supplier GSTIN', 'Recipient GSTIN', 'Recipient classification',
         'Place of supply', 'Supply type', 'Line', 'Item', 'HSN', 'Quantity', 'GST rate (%)',
         'Taxable (INR)', 'CGST (INR)', 'SGST (INR)', 'IGST (INR)', 'Line total (INR)', 'Review',
+        'UQC', 'Quantity in UQC',
     ];
 
     public const SEQUENCE_HEADERS = [
@@ -111,9 +112,10 @@ final class GstRegisterService {
     /** Aggregate all review notes that the line export shows, once per invoice. */
     public static function reviewCount(array $orders, array $reviewReasons): int {
         $count = 0;
+        $reviewColumn = array_search('Review', self::HEADERS, true);
         foreach ($orders as $order) {
             foreach (self::lines([$order], $reviewReasons) as $line) {
-                if ($line[array_key_last($line)] === '') continue;
+                if ($line[$reviewColumn] === '') continue;
                 $count++;
                 break;
             }
@@ -126,10 +128,10 @@ final class GstRegisterService {
         return preg_match('/^[\x00-\x20]*[=+@-]|^[\t\r\n]/', $value) ? "'" . $value : $value;
     }
 
-    /** Reconcile monetary amounts by issued HSN, recipient class and recorded rate. */
+    /** Reconcile quantities and monetary amounts by issued HSN, recipient class, unit and rate. */
     public static function hsnSummary(array $orders, array $reviewReasons): array {
         $groups = [];
-        $excluded = 0;
+        $excluded = $missingUnits = 0;
         foreach (self::lines($orders, $reviewReasons) as $values) {
             $line = array_combine(self::HEADERS, $values);
             $amounts = [$line['Taxable (INR)'], $line['CGST (INR)'], $line['SGST (INR)'], $line['IGST (INR)']];
@@ -138,9 +140,14 @@ final class GstRegisterService {
                 $excluded++;
                 continue;
             }
-            $key = implode('|', [$line['HSN'], $line['Recipient classification'], $line['GST rate (%)']]);
+            $quantity = TaxService::quantityMillis($line['Quantity in UQC']);
+            $uqc = $quantity === null ? '' : $line['UQC'];
+            if ($uqc === '') $missingUnits++;
+            $key = implode('|', [$line['HSN'], $line['Recipient classification'], $line['GST rate (%)'], $uqc]);
             $groups[$key] ??= ['hsn'=>$line['HSN'], 'recipient'=>$line['Recipient classification'],
-                'rate'=>$line['GST rate (%)'], 'lines'=>0, 'review'=>0, 'taxablePaise'=>0, 'taxPaise'=>0];
+                'rate'=>$line['GST rate (%)'], 'uqc'=>$uqc, 'quantityMillis'=>0,
+                'lines'=>0, 'review'=>0, 'taxablePaise'=>0, 'taxPaise'=>0];
+            if ($quantity !== null) $groups[$key]['quantityMillis'] += $quantity;
             $groups[$key]['lines']++;
             $groups[$key]['review'] += (int)($line['Review'] !== '');
             $paise = array_map(static fn($amount): int => (int)round((float)$amount * 100), $amounts);
@@ -148,7 +155,7 @@ final class GstRegisterService {
             $groups[$key]['taxPaise'] += $paise[1] + $paise[2] + $paise[3];
         }
         ksort($groups, SORT_STRING);
-        return ['groups'=>array_values($groups), 'excluded'=>$excluded];
+        return ['groups'=>array_values($groups), 'excluded'=>$excluded, 'missingUnits'=>$missingUnits];
     }
 
     public static function lines(array $orders, array $reviewReasons): \Generator {
@@ -170,12 +177,15 @@ final class GstRegisterService {
             ]);
             $lines = array_values(array_filter((array)($order['tax_lines'] ?? []), 'is_array'));
             if (!$lines) {
-                yield [...$prefix, ...array_fill(0, 10, ''), implode('; ', [...$issues, 'No issued tax lines'])];
+                yield [...$prefix, ...array_fill(0, 10, ''), implode('; ', [...$issues, 'No issued tax lines']), '', ''];
             }
             foreach ($lines as $index => $line) {
                 $hsn = trim((string)($line['hsn_code'] ?? ''));
                 $lineIssues = $issues;
                 if (!preg_match('/^\d{4}(?:\d{2}(?:\d{2})?)?$/D', $hsn)) $lineIssues[] = 'Missing or invalid HSN format';
+                $uqc = TaxService::quantityUnit($line['uqc'] ?? null);
+                $quantity = TaxService::quantityMillis($line['uqc_quantity'] ?? null);
+                if ($uqc === '' || $quantity === null) $lineIssues[] = 'Missing or invalid issued GST unit or quantity';
                 $numbers = [];
                 foreach (['qty','gst_rate','taxable_value','cgst','sgst','igst','gross_value'] as $key) {
                     $value = $line[$key] ?? null;
@@ -187,7 +197,8 @@ final class GstRegisterService {
                     }
                 }
                 yield [...$prefix, $index + 1, self::text((string)($line['name'] ?? '')), self::text($hsn),
-                    ...$numbers, implode('; ', $lineIssues)];
+                    ...$numbers, implode('; ', $lineIssues), $uqc,
+                    $uqc === '' || $quantity === null ? '' : TaxService::quantityDecimal($quantity)];
             }
         }
     }

@@ -84,13 +84,19 @@ $query = http_build_query(['report'=>$reportType, 'from'=>$from, 'to'=>$to, 'gro
         </div>
         <?php $hsnSummary = \App\Services\GstRegisterService::hsnSummary($orders, $invoiceReviewReasons); ?>
         <details class="admin-card">
-            <summary>HSN reconciliation by recipient and tax rate</summary>
+            <summary>HSN reconciliation by recipient, unit and tax rate</summary>
             <p>Amounts come from issued invoice lines. <?= (int)$hsnSummary['excluded'] ?> incomplete register rows are excluded. Review them in the invoice lines CSV.</p>
+            <?php if ($hsnSummary['missingUnits'] > 0): ?>
+                <p><?= (int)$hsnSummary['missingUnits'] ?> included lines have no valid issued unit or quantity. Their amounts appear under Unrecorded for review.</p>
+            <?php endif; ?>
             <?php if ($hsnSummary['groups']): ?>
-            <div class="table-wrap"><table>
-                <thead><tr><th>HSN</th><th>Recipient</th><th>Rate</th><th>Lines</th><th>Taxable</th><th>GST</th><th>Lines flagged for review</th></tr></thead>
+            <div class="table-wrap" role="region" aria-label="HSN reconciliation" tabindex="0"><table>
+                <thead><tr><th>HSN</th><th>Recipient</th><th>UQC</th><th>Quantity in UQC</th><th>Rate</th><th>Lines</th><th>Taxable</th><th>GST</th><th>Lines flagged for review</th></tr></thead>
                 <tbody><?php foreach ($hsnSummary['groups'] as $group): ?><tr>
-                    <td><?= e($group['hsn']) ?></td><td><?= e($group['recipient']) ?></td><td><?= e($group['rate']) ?>%</td>
+                    <td><?= e($group['hsn']) ?></td><td><?= e($group['recipient']) ?></td>
+                    <td><?= e($group['uqc'] ?: 'Unrecorded') ?></td>
+                    <td><?= $group['uqc'] === '' ? '—' : e(\App\Services\TaxService::quantityDecimal($group['quantityMillis'])) ?></td>
+                    <td><?= e($group['rate']) ?>%</td>
                     <td><?= $group['lines'] ?></td><td><?= e($money($group['taxablePaise'] / 100)) ?></td>
                     <td><?= e($money($group['taxPaise'] / 100)) ?></td><td><?= $group['review'] ?></td>
                 </tr><?php endforeach; ?></tbody>

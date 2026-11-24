@@ -1651,6 +1651,19 @@ final class AdminController extends BaseController {
     private function saveProductRecord(): void{
         $data=$this->cleanPost();
         $data=$this->mergeExistingRecord('products', $data);
+        if (array_key_exists('gst_uqc', $_POST) || array_key_exists('gst_qty_per_unit', $_POST)) {
+            $code = $_POST['gst_uqc'] ?? $data['gst_uqc'] ?? '';
+            $quantity = $_POST['gst_qty_per_unit'] ?? $data['gst_qty_per_unit'] ?? '';
+            $unit = \App\Services\TaxService::reportingUnit(['gst_uqc'=>$code, 'gst_qty_per_unit'=>$quantity]);
+            if ($unit === [] && ($code !== '' || $quantity !== '')) {
+                $draft = $_POST;
+                unset($draft['_csrf']);
+                $_SESSION['product_form_draft'] = $draft;
+                $this->flash('Select a GST unit and enter a positive quantity per sale item with up to three decimal places, or clear both fields.', 'error');
+                $this->redirect('/admin/products');
+            }
+            $data = array_replace($data, $unit ?: ['gst_uqc'=>'', 'gst_qty_per_unit'=>'']);
+        }
         // Product details are structured so the public product page can present them
         // consistently. Empty fields intentionally clear old imported values.
         foreach (['highlights', 'description_points'] as $field) {

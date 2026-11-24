@@ -5441,7 +5441,8 @@ $tests['invoice sequence worksheet reconciles native issued documents within the
 };
 
 $tests['HSN reconciliation splits recipient classes and preserves excluded lines'] = static function (): void {
-    $line = ['hsn_code'=>'7117','qty'=>1,'gst_rate'=>3,'taxable_value'=>10.01,'cgst'=>0.15,'sgst'=>0.15,'igst'=>0,'gross_value'=>10.31];
+    $line = ['hsn_code'=>'7117','qty'=>1,'uqc'=>'PCS','uqc_quantity'=>'1.000','gst_rate'=>3,
+        'taxable_value'=>10.01,'cgst'=>0.15,'sgst'=>0.15,'igst'=>0,'gross_value'=>10.31];
     $supplier = ['gstin'=>'33ABCDE1234F1Z5'];
     $summary = \App\Services\GstRegisterService::hsnSummary([
         ['invoice_number'=>'A','supplier'=>$supplier,'tax_lines'=>[$line, $line, array_replace($line, ['hsn_code'=>''])]],
@@ -5454,6 +5455,39 @@ $tests['HSN reconciliation splits recipient classes and preserves excluded lines
     assertSame([1,0,1], array_column($summary['groups'], 'review'), 'Review notes survive aggregation');
     assertSame([1001,2002,1001], array_column($summary['groups'], 'taxablePaise'), 'Reconcile taxable amounts in paise');
     assertSame([30,60,30], array_column($summary['groups'], 'taxPaise'), 'Sum recorded component tax in paise');
+};
+
+$tests['GST quantity reconciles only matching issued units and preserves historical money'] = static function (): void {
+    $tax = new \App\Services\TaxService();
+    $sale = ['hsn_code'=>'3307','qty'=>3,'unit_price'=>100,'line_total'=>300,'gst_rate'=>12];
+    $kilograms = \App\Services\TaxService::reportingUnit(['gst_uqc'=>' kgs ', 'gst_qty_per_unit'=>'0.125']);
+    assertSame(['gst_uqc'=>'KGS','gst_qty_per_unit'=>'0.125'], $kilograms, 'Owner gets a canonical code and exact quantity');
+    foreach ([
+        ['gst_uqc'=>'ZZZ', 'gst_qty_per_unit'=>'1'],
+        ['gst_uqc'=>'PCS', 'gst_qty_per_unit'=>'0'],
+        ['gst_uqc'=>'PCS', 'gst_qty_per_unit'=>'0.1234'],
+        ['gst_uqc'=>'PCS', 'gst_qty_per_unit'=>'1000000'],
+        ['gst_uqc'=>['PCS'], 'gst_qty_per_unit'=>'1'],
+    ] as $invalid) {
+        assertSame([], \App\Services\TaxService::reportingUnit($invalid), 'Malformed units cannot enter an invoice snapshot');
+    }
+    $units = $tax->snapshot([$sale + $kilograms, $sale + ['gst_uqc'=>'KGS', 'gst_qty_per_unit'=>'0.25'],
+        $sale + ['gst_uqc'=>'PCS', 'gst_qty_per_unit'=>'1'], $sale], 0, 'Tamil Nadu', ['gst_state'=>'Tamil Nadu']);
+    $legacy = $tax->snapshot([$sale, $sale, $sale, $sale], 0, 'Tamil Nadu', ['gst_state'=>'Tamil Nadu']);
+    assertSame($legacy['total'], $units['total'], 'Unit configuration does not change the payable amount');
+    assertSame($legacy['tax_total'], $units['tax_total'], 'Unit configuration does not change tax');
+    assertSame(['0.375','0.750','3.000'], array_column($units['tax_lines'], 'uqc_quantity'), 'Multiply the cart count exactly in thousandths');
+    assertTrue(!isset($units['tax_lines'][3]['uqc']), 'Missing historic units are not inferred');
+    $issued = [array_replace($units, ['invoice_number'=>'Fixture','supplier'=>['gstin'=>'33ABCDE1234F1Z5']])];
+    $summary = \App\Services\GstRegisterService::hsnSummary($issued, []);
+    assertSame(['','KGS','PCS'], array_column($summary['groups'], 'uqc'), 'Different units with the same HSN and rate stay separate');
+    assertSame([0,1125,3000], array_column($summary['groups'], 'quantityMillis'), 'Total quantity is exact and belongs to its unit group');
+    assertSame(1, $summary['missingUnits'], 'Unitless line remains visible for review');
+    assertSame(0, $summary['excluded'], 'Unitless line keeps its monetary evidence');
+    $export = iterator_to_array(\App\Services\GstRegisterService::lines($issued, []));
+    assertSame(['KGS','0.375'], array_slice($export[0], -2), 'CSV appends issued unit and quantity to legacy columns');
+    assertSame(['',''], array_slice($export[3], -2), 'Legacy unit and reported quantity remain blank');
+    assertTrue(str_contains($export[3][18], 'issued GST unit'), 'CSV explains missing historical quantity evidence');
 };
 
 $tests['Enterprise can recover verified ticket counts after model synthesis fails'] = static function (): void {

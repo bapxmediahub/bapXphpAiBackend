@@ -107,6 +107,8 @@ jobs:
         run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/users-directory-browser.cjs
       - name: Exercise owner scheduled mail confirmation in Chromium
         run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/mail-scheduled-browser.cjs
+      - name: Exercise owner GST unit configuration and issued reconciliation in Chromium
+        run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/gst-unit-browser.cjs
       - name: Exercise native Support checkout and explicit cart handoff at desktop and mobile widths
         run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/support-checkout-browser.cjs tests/remote-cart-review-browser.cjs
       - name: Verify the public tools with the official MCP client

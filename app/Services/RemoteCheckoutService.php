@@ -252,7 +252,8 @@ final class RemoteCheckoutService
         foreach($resolved as $line) {
             $items[]=['slug'=>$line['slug'],'name'=>$line['name'],'qty'=>$line['qty'],
                 'unit_price'=>$line['unit_price'],'line_total'=>$line['line_total'],
-                'gst_rate'=>TaxService::rateFor($line['product'],$settings),'hsn_code'=>TaxService::hsnFor($line['product'],$settings)];
+                'gst_rate'=>TaxService::rateFor($line['product'],$settings),'hsn_code'=>TaxService::hsnFor($line['product'],$settings)]
+                + TaxService::reportingUnit($line['product']);
         }
         $itemsPaise=(int)round(CartService::total($resolved)*100);$discount=0.0;
         if($coupon!=='') {

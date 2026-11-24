@@ -4,6 +4,11 @@ Open Products and choose the record you need to edit. Review its name, public de
 
 Use **Browse products** to search the whole catalogue by name, slug or category. Set the page size or sort by name. **Edit** opens the original record, including a scheduled offer or hidden item.
 
+In **Tax**, select **GST unit (UQC)** and enter **GST quantity per sale item**
+using the values confirmed by your accountant. A sold item representing a
+250-gram pack can report `0.250` kilograms when that is the approved unit.
+Saved values apply to new checkouts and leave issued invoices intact.
+
 ## Import new products
 
 In **Products → Import CSV**, download the sample and replace its example row. Include `slug`, `name` and `price`. The optional columns are `category` and `description`. Save a UTF-8 CSV of up to 100 products and 64 KiB. Use each lowercase, hyphenated slug once and enter the INR price as a positive decimal without a currency symbol.

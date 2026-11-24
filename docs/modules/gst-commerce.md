@@ -14,9 +14,23 @@ This workflow applies only to paid ecommerce product orders.
 2. Open **Admin -> Products** and enter the confirmed HSN code and GST rate for every taxable product. Do not infer a rate from the product name; confirm classification with the business tax professional.
 3. Open **Admin -> Integrations** to configure Meta Pixel, GA4, Google Ads, and Search Console identifiers.
 
+In a product's **Tax** section, select **GST unit (UQC)** and enter the quantity
+represented by one item sold. For example, choose **Kilograms (KGS)** and enter
+`0.250` when one item represents 250 grams. The owner confirms the unit and
+conversion with the accountant. The form accepts three decimal places and keeps
+an unconfigured product available for ordinary catalogue work.
+[NIC unit code master](https://docs.ewaybillgst.gov.in/apidocs/master-codes-list.html)
+
 ## Product Order Tax Data
 
 Storefront prices are treated as GST-inclusive. At checkout the order records the delivery state and optional customer GSTIN. The order stores an immutable product-tax snapshot containing HSN, rate, taxable value, CGST, SGST, IGST, total tax, place of supply, and supplier identity.
+
+Both checkout paths capture the product's reporting unit and per-item amount
+before payment. Issued lines multiply the saved amount by the checkout item count
+in thousandths. The invoice shows the reported amount and unit next to the item
+count. This evidence leaves payable amounts intact and survives later catalogue
+edits. Historical invoices keep their original fields.
+[CBIC tax invoice rules](https://cbic-gst.gov.in/hindi/gst-invoice-rules.html)
 
 Checkout requires a valid Indian state or Union Territory before starting payment. `TaxService` refuses to create a tax snapshot when the delivery or supplier state is missing or invalid; it never substitutes the supplier state while classifying the supply another way.
 
@@ -30,7 +44,8 @@ Checkout requires a valid Indian state or Union Territory before starting paymen
 Open **Admin → Analytics → Commerce Reports**, select **GST**, and apply the invoice date range.
 The totals CSV contains one row per issued invoice. The lines CSV contains one row per recorded tax line and
 includes supplier and recipient GSTIN, a provisional recipient classification, place of supply, HSN, quantity,
-rate and tax amounts. If an issued invoice has no lines, the export keeps a row with a review note.
+rate and tax amounts. The last two columns contain the issued unit and quantity in that unit. If an issued
+invoice has no lines, the export keeps a row with a review note.
 Invoice snapshots stay intact; a gateway refund is flagged for review and is not a GST credit note.
 
 Before calling an export filing ready, reconcile invoices and cancellations against the documents-issued sequence,
@@ -65,7 +80,13 @@ arbitrary SQL or file a return. See [OpenAI function calling](https://developers
 
 When IDs are configured, the storefront sends `view_item`, `add_to_cart`, `begin_checkout`, and `purchase` events to GA4 and maps them to Meta ecommerce events. No tracking library is loaded when its identifier is absent.
 
-The owner tax report groups issued lines by HSN, recipient classification and recorded tax rate. Taxable value and component taxes sum in paise. Each group shows how many included lines carry review notes. A separate count identifies incomplete snapshots or lines without enough data to group. Review the line register and credit notes with the accountant before filing.
+The owner tax report groups issued lines by HSN, recipient classification, unit
+and rate. Taxable value and component taxes sum in paise. Historical lines without
+a valid unit and quantity contribute their money amounts to **Unrecorded** and
+carry a review note. No quantity is assigned to that group. A separate count
+identifies incomplete snapshots or lines without enough data to group. GSTN
+describes the combination of HSN, UQC and rate in Table 12.
+[GSTN GSTR-1 guide](https://tutorial.gst.gov.in/userguide/returns/Creation_of_Outward_Supplies_Return_in_GSTR-1.htm)
 
 ## Remaining Operations
 

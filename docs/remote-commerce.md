@@ -159,11 +159,16 @@ The shared `PaymentService::isCapturedRazorpayPayment` predicate rejects
 authorized-only, wrong-currency, wrong-amount and mismatched-ID responses.
 `VerifiedOrderService` preserves the verified total, passes the actual discount
 to tax, and uses the database's idempotent order/invoice boundary. Complete
-server-frozen GST/HSN/unit/line fields plus all eight supplier/default settings
+server-frozen GST/HSN/unit-price/line fields plus all eight supplier/default settings
 remain usable after product deletion; fulfillment still requires review.
 Incomplete/invalid tax evidence records the payment with tax review required,
 without inventing an invoice. Shared persistence never changes `$_SESSION`.
 The browser wrapper clears only its matching pending order and matching cart.
+
+Configured GST reporting unit and per-item quantity are also captured in the
+private quote and its digest. Issued lines use the confirmed values even if the
+catalogue changes before the verified callback. A legacy quote may lack these
+optional fields. See [GST reconciliation](modules/gst-commerce.md).
 
 Native Support saves one versioned `sessionStorage` recovery snapshot containing
 only current/Buy-now cart tokens, revisions and expiries, plus status token,
