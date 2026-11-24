@@ -131,6 +131,7 @@
         <?php endforeach; ?>
     <?php endif; ?>
     <p><a href="/admin/google-reporting"><?= $googleConnected ? 'Manage Google reporting' : 'Set up Google reporting' ?></a></p>
+    <p><a href="/admin/google-pagespeed">PageSpeed Insights — mobile and desktop diagnostics</a></p>
     <p><a href="/admin/integrations#google-tags">Configure Google tags</a> · <a href="https://tagassistant.google.com/" target="_blank" rel="noopener noreferrer">Validate with Tag Assistant ↗</a> · <a href="/admin/google-merchant">Product feed &amp; shopping channels</a></p>
 </section>
 </div>

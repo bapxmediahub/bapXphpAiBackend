@@ -463,12 +463,17 @@ final class AdminController extends BaseController {
         $this->render('admin/integrations', [
             'pageTitle' => 'Integrations',
             'secrets' => $secrets->all(),
-            'comparisonModels' => self::comparisonModels($secrets->getModelConfig()),
+            'comparisonModels' => self::comparisonModels($secrets->getProviderPlan()),
         ]);
     }
     public function saveIntegrations(): void {
         try {
-            (new SecretService())->save($_POST);
+            $values=$_POST;
+            if(($values['save_ai_only']??'')==='1') {
+                $values=array_filter($values,static fn($name):bool=>is_string($name)&&(str_starts_with($name,'ai_')||$name==='agent_name'),ARRAY_FILTER_USE_KEY);
+            }
+            unset($values['save_ai_only']);
+            (new SecretService())->save($values);
             (new AuditLogService())->record('save', 'integrations', 'secrets');
             $this->flash('Integration settings saved.', 'success');
         } catch (\InvalidArgumentException $error) {
@@ -811,7 +816,9 @@ final class AdminController extends BaseController {
         // Tool arguments and access are validated in PHP. The model selects the lookup
         // and explains its result. https://developers.openai.com/api/docs/guides/function-calling
         $today = (new \DateTimeImmutable('now', new \DateTimeZone('Asia/Kolkata')))->format('Y-m-d');
-        $prompt = \App\Services\AgentInstructionService::forSurface('admin') . "\n"
+        $tools ??= new \App\Services\EnterpriseToolRegistry(ownerQuestion: $message);
+        $modelTools = new \App\Services\RuntimeAgentToolRegistry('admin', $_SESSION['user'] ?? null, $tools,$message);
+        $prompt = $modelTools->instructionPrompt() . "\n"
             . "You are the Enterprise Agent for Sri Panchami Spiritual. Answer in plain language.\n"
             . "The current date in India is {$today}.\n"
             . "Use the matching read-only tool before making any claim about store records or metrics. "
@@ -823,8 +830,7 @@ final class AdminController extends BaseController {
             . "Never expose credentials or unrelated customer data. The interface shows source links. "
             . "Do not show your reasoning.\n\n{$context}\n\nOwner question: {$message}";
         $client = new \App\Services\AiClient();
-        $tools ??= new \App\Services\EnterpriseToolRegistry(ownerQuestion: $message);
-        $answer = $client->completeWithTools($prompt, $tools);
+        $answer = $client->completeWithTools($prompt, $modelTools);
         $reason = $client->failureCategory();
         $attempts = $client->transferTimings();
         if (\App\Services\AiClient::isError($answer)) return $answer;
@@ -837,7 +843,7 @@ final class AdminController extends BaseController {
             $retry = $client->completeWithTools(
                 $prompt . "\n\nYour previous reply was just \"" . trim($answer) . "\". "
                 . "Say what that number counts, which data you checked to get it, and how you interpreted the question.",
-                $tools
+                $modelTools
             );
             if (!\App\Services\AiClient::isError($retry) && trim($retry) !== '') {
                 $answer = $retry;
@@ -1101,33 +1107,16 @@ final class AdminController extends BaseController {
      */
     public function testAi(): void{
         $this->validateCsrf();
-        $config = (new SecretService())->getModelConfig();
-        $model = (string)($config['model'] ?? \App\Services\SecretService::PRIMARY_MODEL);
-        $client = new \App\Services\AiClient();
-        $probe = (string)($_POST['probe'] ?? '');
-        $override = in_array($probe, self::comparisonModels($config), true) ? $probe : null;
-        $answer = $client->complete('Reply with exactly: connection ok', 128, 0.0, $override);
-        $ok = !\App\Services\AiClient::isError($answer) && trim($answer) !== '';
-        $timings = $client->transferTimings();
-        $lastAttempt = end($timings);
-        $answeringModel = $ok ? ($lastAttempt['model'] ?? $model) : $model;
-        $answeringEndpoint = in_array($answeringModel, \App\Services\SecretService::GOOGLE_MODELS, true)
-            ? \App\Services\SecretService::GOOGLE_ENDPOINT
-            : (string)($config['endpoint'] ?? '');
-        $_SESSION['ai_test_result'] = [
-            'ok' => $ok,
-            'model' => $answeringModel,
-            'endpoint' => $answeringEndpoint,
-            'message' => $ok ? trim($answer) : ($answer !== '' ? $answer : 'The provider returned an empty response.'),
-            'timings' => $timings,
-            'tool_calls' => null,
-        ];
-        (new AuditLogService())->record('test','ai',$model,['result'=>$ok ? 'ok' : 'failed']);
+        $probe=is_string($_POST['probe']??null)?$_POST['probe']:'';
+        $mode=($_POST['probe_mode']??'')==='tools'?'tools':'text';
+        $result=(new \App\Services\AiClient())->probe($probe,$mode==='tools');
+        $_SESSION['ai_test_result']=$result;
+        (new AuditLogService())->record('test','ai',$result['model'],['result'=>$result['ok']?'ok':'failed','mode'=>$mode]);
         $this->redirect('/admin/integrations');
     }
 
-    private static function comparisonModels(array $config): array {
-        return $config['models'] ?? [];
+    private static function comparisonModels(array $plan): array {
+        return \App\Services\AiClient::probeTargets($plan);
     }
 
     public function testEmail(): void{

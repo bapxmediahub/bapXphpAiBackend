@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "f82e6811e4e72d390c373f0b79a2c6fb044d8c320234351b2214e92ef2581492",
-            "references_sha256": "4db8c915776e898bd080ad21d7b88500ee584a1f02134bc05f2751fd0db4084c",
-            "review_note": "Compared Support deterministic retired-booking path, Enterprise grounded answers, shared OpenRouter/Gemma failover, tool result replay guard and role policy against current source; existing private chat JSON location remains unchanged."
+            "source_sha256": "5d2a8318f694c8bdb74b88e8f5b0054198559b0753da6c84ef7784308273b049",
+            "references_sha256": "a3194b5f9dd2fdc5f745078b87b7c8ba8413256e7f6727105c1b4622aedfd30b",
+            "review_note": "Retain deployed provider missing-cURL guard and its regression in the role-scoped discovery loop."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
@@ -23,14 +23,14 @@
             "review_note": "Reviewed the Docs skill provenance guidance against the unchanged BlogService and authored-content guide boundary. Static map references are discovery evidence only; publication visibility, Markdown storage, rendering and private-help exclusion remain the existing source contracts."
         },
         "foundation": {
-            "source_sha256": "96175e8f5284f214b6686943273fa6313e2cb3ff43bc0c692db5986867e70567",
+            "source_sha256": "8a37778dd2c354cd18c32180acb6b797f1f3bd362faa43b1342b875b0397e727",
             "references_sha256": "711c1de347e396eb44d5953de4e6e89d6f33f17cf4833d1335c6d955d49270b7",
-            "review_note": "Schema metadata and generated project maps match actual MySQL-backed route/service changes."
+            "review_note": "Regenerated schema and maps after preserving native metadata service and remotedb mutation."
         },
         "google-tags": {
-            "source_sha256": "9931f2724eec9875f4be1105fee72b70167373d61e7ecf95888dae86b1cdbd40",
-            "references_sha256": "1bc780fef929af6855d54ec574f50f3ed194f65ebd66ddb6bdbbcf4952a51081",
-            "review_note": "Reviewed shared layout footer/description changes; Google tags, consent and script configuration unchanged."
+            "source_sha256": "b22e2a0262f519e899f17885599f6d10995d12e714378f30e15d513618d81f41",
+            "references_sha256": "dc2c123ec3959c5b29d43cffa2e680d0661e3ca68b31fcc52aa8ef1b004b9816",
+            "review_note": "Both configurable AI connections and PageSpeed report guidance survive the merged integrations documentation; Google reporting remains separate."
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
@@ -38,49 +38,49 @@
             "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
         },
         "interface": {
-            "source_sha256": "42209d1cd026c69769edd045bf59e56afd7dfa9e63d0c12fd7e225c0da1c9c6a",
+            "source_sha256": "fa8e9f93ec78f82fdf70e37abcc908200014c5a4f18dbf0546dec2e75ccc8717",
             "references_sha256": "46f2d374009adf6d6e27117f48463103a2cec53a1d15a7b3ac2f412904d972c8",
-            "review_note": "Reviewed native media edit fields, preview and 375px browser coverage."
+            "review_note": "Reviewed owner media form and preserved parent UI styling."
         },
         "mail": {
-            "source_sha256": "e8634dcfdad6efad294d115bf2512a4254766c24bff0aa067bbd0e263b1fcd51",
+            "source_sha256": "04c68f784052cbccc1178d058e50c386bdc210f40808a05837c7558f17074eb5",
             "references_sha256": "6d6153ae2fed6f1aebbf9fa93225d6cc74b6c098d9a34deffce7bc4f3c6e9273",
-            "review_note": "Database and admin media changes are separate from mail queue and delivery."
+            "review_note": "Reviewed shared controller and database changes; mail behavior unchanged."
         },
         "mcp-clients": {
-            "source_sha256": "8b2e7629876c1e5facae0a92e30f91e7e11ba59bd979a528022807b0193be7bc",
-            "references_sha256": "912c2decd557b138de9c5ca0f72cd5aab0f94d8430c46bd5c442c73d6cdccde8",
-            "review_note": "Compared existing MCP client grants and owner-only tool restrictions against merged WebMCP annotations and OpenRouter model routing; the changes do not issue an owner grant or promote browser agent capabilities."
+            "source_sha256": "ffb43129fe7e2633e2b790587a52729a82486fc1e08a692607623632c17756ad",
+            "references_sha256": "1390a1ae3be706072f85e628f3065e2170dc2685b3841c008d02536d232f2d1c",
+            "review_note": "PageSpeed reporting remains owner-only and does not expose a public MCP capability."
         },
         "media": {
             "source_sha256": "c99bf5f35495fb29a3025b39dc32c1fbd2f20640fbacd2784598a53cd3a8584f",
             "references_sha256": "2794618b02963d55f3e327e274003239bba39eaf2b893deb40a351f48521aae2",
-            "review_note": "Verified row lock, expected revision, three bounded fields, missing/legacy rejection and no binary replacement against source and media guide."
+            "review_note": "Reviewed locked existing row, expected revision, bounded fields and no binary replacement."
         },
         "operator-help": {
-            "source_sha256": "ac6448f98b85fe179ee5296426c42882ee9b13448b8cb90f7eb44e6c5d676727",
+            "source_sha256": "5ed3c0a0f1a3e5b8be7458ba0cefce3e090a6fbea5f4ec2402a6e8ce6472d7b1",
             "references_sha256": "7b2417548ef9767a977b90e8e027ba853428805f5b35b613f4b08c228cc5cc5e",
-            "review_note": "Compared media edit form, upload-only restrictions and owner help with current merged UI."
+            "review_note": "Preserved the reviewed media metadata editing form and owner guide within the release stack."
         },
         "public-mcp": {
-            "source_sha256": "959d9dd1a20fb1057ecab23c94bb465415aad195c4ad41d23a63bb8610e83bfe",
+            "source_sha256": "fa4cfa48087dc5d020000f9a23a5f176ce65cfd1465b81dd29d608348d2708b5",
             "references_sha256": "66f314f4d27575d8d1ab7394d8e28aae3feb90467ef6445ce18d804604d40f3d",
-            "review_note": "Metadata patch is admin-only; no public tool schema or permission changes."
+            "review_note": "Media editing remains owner-only; no new public capability."
         },
         "remote-commerce": {
-            "source_sha256": "9edf64aa2e5f5e16c435c75530e1afa2961d63c5423401d1373bbbd7c02a9997",
+            "source_sha256": "c2959d00a8dae68a43bc3fb2b22440adf3a29ecd24c577db4f3b4fccf0f64fa7",
             "references_sha256": "e00aba6f254f3552728ebcf0e7cd24d757eceb2ffa55060db99dd42562b481e9",
-            "review_note": "Reviewed dedicated authenticated media metadata mutation; cart, order, payment and checkout code unchanged."
+            "review_note": "Dedicated revision-checked media mutation remains separate from checkout and payment."
         },
         "sales-channels": {
             "source_sha256": "4b05a2d9436a74c6e60b28ce25987bf531cabf698294fb51554219a138c88167",
             "references_sha256": "ce84b911bce7bb5435cc905a83819e015bad8a111c795fd143c86cb59f903c4f",
-            "review_note": "Media search/preview metadata is internal; product feed and channel export remain unchanged."
+            "review_note": "Metadata editing only changes library text and preview; feed behavior unchanged."
         },
         "workflow": {
-            "source_sha256": "600ce266c6f94689c59608f43e14cb994670cc1b7ece2ce1e523ed647a17c8fc",
-            "references_sha256": "6bddcf08be3819fe8ec98d7f78e96b359a9571f9043255f5ce207927e4732284",
-            "review_note": "Preserved homepage and media-specific browser CI tests, no older tests removed."
+            "source_sha256": "d10a46225e4375fe345ecaf62eec369592315d728aaaa3d2d2f3d82a22f93289",
+            "references_sha256": "a242b3bec435e5f0b0b1191b95c4d0a8fe98fec35e78981816b1bd71023ecf27",
+            "review_note": "Retain PageSpeed, media, provider and homepage browser tests in the combined CI."
         }
     }
 }

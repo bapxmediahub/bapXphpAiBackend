@@ -361,6 +361,8 @@ final class PublicA2uiService
     public function forQuestion(string $question, array $knowledge = [], string $answer = ''): ?array
     {
         if(self::personalContactOrServiceQuestion($question))return null;
+        $aggregate=SupportBotService::aggregateToolForQuestion($question);
+        if($aggregate==='public_catalogue_summary'||($aggregate==='public_best_sellers'&&empty($knowledge['public_product_slugs'])))return null;
         // This hint is set by the owner controller only after checking completed public-tool evidence.
         $view=in_array($knowledge['public_business_view']??null,['contact','services'],true)
             ?$knowledge['public_business_view']:null;

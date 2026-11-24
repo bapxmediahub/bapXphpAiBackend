@@ -70,6 +70,7 @@ $tests['Stripe integration autoloads from its canonical file through the real bo
         'Stripe must load the existing canonical integration rather than a test stub or parallel client');
 };
 require __DIR__ . '/google-reporting.php';
+require __DIR__ . '/google-pagespeed.php';
 require __DIR__ . '/project-map.php';
 
 $tests['legitimate internal ticket activity is evaluated without exposing it as a model capability'] = static function (): void {
@@ -93,6 +94,75 @@ $tests['support exposed tool contracts match executable capabilities and reject 
     $customer=new \App\Services\SupportToolRegistry(['email'=>'fixture@example.invalid']);
     assertTrue(isset($customer->run('own_ticket_status',['period'=>['2026-99-32','2026-11-01']])['error']), 'Impossible dates fail before any data lookup');
     assertTrue(isset($customer->run('own_ticket_status',['period'=>['2026-11-15','2026-11-01']])['error']), 'Reversed dates fail before any data lookup');
+};
+
+$tests['runtime model adapter exposes only role-scoped tools and activates existing instructions on demand'] = static function (): void {
+    $support = new \App\Services\RuntimeAgentToolRegistry('support',null,new \App\Services\SupportToolRegistry(null));
+    $adminActor=['role'=>'admin'];
+    $admin = new \App\Services\RuntimeAgentToolRegistry('admin',$adminActor,new \App\Services\EnterpriseToolRegistry());
+    \App\Services\AgentTraceService::begin(bin2hex(random_bytes(8)));
+    try {
+        $prompt=$support->instructionPrompt();
+        assertTrue(str_contains($prompt,'catalogue')&&!str_contains($prompt,'Use only currently visible products and the actual member IDs'),'Initially disclose metadata, not the full catalogue skill');
+        assertTrue(!$support->has('find_order')&&!$support->has('own_ticket_status')&&!$support->has('commerce_report'),'Guest never receives private or owner declarations');
+        $support->run('tool_search',['query'=>'public_catalogue_summary']);
+        $support->run('tool_search',['query'=>'public_best_sellers']);
+        assertTrue($support->has('public_catalogue_summary')&&$support->has('public_best_sellers'),'Public facts discoverable by model');
+        assertTrue(isset($support->run('read_runtime_skill',['skill'=>'reporting'])['error']),'No Enterprise skill in Support');
+        assertTrue(isset($support->run('read_runtime_skill',['skill'=>'../enterpriseagent.md'])['error']),'No path-shaped skill selectors');
+        $skill=$support->run('read_runtime_skill',['skill'=>'catalogue']);
+        assertTrue(str_contains($skill['instructions'],'Use only currently visible products'),'Selected runtime instruction loaded');
+        $manifest=\App\Services\AgentTraceService::snapshot()['instruction_manifest'];
+        assertTrue(in_array('.bapX/bapXcl/support/catalog.md',array_column($manifest['files'],'path'),true),'Trace records actually activated skill');
+        assertTrue(!str_contains(json_encode($manifest),'Use only currently visible products'),'Trace contains no instruction body');
+        $admin->run('tool_search',['query'=>'commerce_report']);
+        assertTrue($admin->has('commerce_report')&&$admin->has('read_runtime_skill'),'Admin has owner capabilities');
+        $adminPrompt=$admin->instructionPrompt();
+        assertTrue(!str_contains($adminPrompt,'Enterprise-only reporting'),'Report skill is selectively loaded');
+        assertTrue(str_contains($admin->run('read_runtime_skill',['skill'=>'reporting'])['instructions'],'Enterprise-only reporting'),'Admin can activate reporting');
+        try {
+            new \App\Services\RuntimeAgentToolRegistry('admin',['role'=>'customer'],new \App\Services\EnterpriseToolRegistry());
+            assertTrue(false,'Customer must not construct an owner model adapter');
+        } catch (\RuntimeException) { assertTrue(true,'Owner-only boundary'); }
+    } finally { \App\Services\AgentTraceService::reset(); }
+};
+
+$tests['tool discovery activates bounded relevant tools and never broadens the actor role'] = static function (): void {
+    $guest=new \App\Services\RuntimeAgentToolRegistry('support',null,new \App\Services\SupportToolRegistry(null),'');
+    assertSame(['read_runtime_skill','tool_search'],array_column($guest->declarations(),'name'),'Empty query starts with discovery tools only');
+    assertTrue(isset($guest->run('public_catalogue_summary',[])['error']),'Undiscovered business tool cannot run through the model');
+    assertSame([], $guest->run('tool_search',['query'=>'zzzxq-no-such-capability'])['matches'],'Unknown query never loads arbitrary tools');
+    assertSame([], $guest->run('tool_search',['query'=>'own_ticket_status'])['matches'],'Exact private identifier is unavailable to a guest');
+    assertSame([], $guest->run('tool_search',['query'=>'commerce_report'])['matches'],'Exact owner identifier is unavailable to Support');
+    $found=$guest->run('tool_search',['query'=>'public_catalogue_summary']);
+    assertSame('public_catalogue_summary',$found['matches'][0]['name'],'Exact authorized ID ranks first');
+    assertTrue($guest->has('public_catalogue_summary'),'Matching declaration becomes available in the next model step');
+    assertTrue(!$guest->has('own_ticket_status'),'Activation cannot broaden role');
+    assertTrue(isset($guest->run('tool_search',['query'=>'','limit'=>4])['error']),'Empty search rejected');
+    $owner=new \App\Services\RuntimeAgentToolRegistry('admin',['role'=>'admin'],new \App\Services\EnterpriseToolRegistry(),'sales summary');
+    assertTrue($owner->has('sales_summary'),'Seed the initial turn with relevant authorized tools');
+    assertTrue(count($owner->declarations())<=5,'Initial business tool budget is three plus discovery');
+    $more=$owner->run('tool_search',['query'=>'commerce_report']);
+    assertSame('commerce_report',$more['matches'][0]['name'],'Owner may activate a specific additional authorized tool');
+    assertTrue($owner->has('commerce_report'),'Deferred owner capability now available');
+    assertTrue(!$owner->has('write_file'),'Arbitrary file write never available');
+};
+
+$tests['public catalogue summary and bestseller projection never expose private records'] = static function (): void {
+    $registry=\App\Services\SupportToolRegistry::class;
+    $products=[['slug'=>'lamp','name'=>'Lamp','category'=>'lamps','categories'=>['lamps','puja'],'private_cost'=>10],
+        ['slug'=>'ring','name'=>'Ring','category'=>'rings'],['slug'=>'hidden','name'=>'Hidden','is_hidden'=>true],
+        ['slug'=>'other','name'=>'Other','category'=>'retired']];
+    $categories=[['slug'=>'lamps','name'=>'Lamps'],['slug'=>'puja','name'=>'Puja'],['slug'=>'rings','name'=>'Rings'],['slug'=>'retired','name'=>'Secret Collection','is_collection'=>true]];
+    $summary=$registry::catalogueSummary($products,$categories);
+    assertSame(3,$summary['total'],'Count distinct visible products');
+    assertSame(['Lamps'=>1,'Puja'=>1,'Rings'=>1,'Uncategorised'=>1],array_column($summary['categories'],'count','name'),'Use current public categories only; deduplicate memberships');
+    assertTrue(!str_contains(json_encode($summary),'Secret Collection')&&!str_contains(json_encode($summary),'private_cost'),'No private or retired collection details');
+    $bestsellers=$registry::publicRankedProducts([$products[0],$products[2],$products[1]]);
+    assertSame([['name'=>'Lamp','slug'=>'lamp','url'=>'/product/lamp'],['name'=>'Ring','slug'=>'ring','url'=>'/product/ring']],$bestsellers,'Only approved product links and names, no hidden rows or sales amounts');
+    assertSame('public_catalogue_summary',\App\Services\SupportBotService::aggregateToolForQuestion('how many total products ther are selling in what what categories'),'Original failed question');
+    assertSame('public_best_sellers',\App\Services\SupportBotService::aggregateToolForQuestion('what is top selling'),'Original failed followup');
+    assertSame(null,\App\Services\SupportBotService::aggregateToolForQuestion('How many products are in my order?'),'Never substitute store totals for private orders');
 };
 
 $tests['trace evidence uses executed scope rather than contradictory requested dates'] = static function (): void {
@@ -2555,6 +2625,11 @@ $tests['admin integrations explain api setup and support bot keys'] = function (
     }
 };
 
+$tests['provider route and Google wire schema regression'] = static function():void {
+    $output=[];$status=1;
+    exec(escapeshellarg(PHP_BINARY).' '.escapeshellarg(app_path('tests/provider-config-regression.php')).' 2>&1',$output,$status);
+    assertSame(0,$status,implode("\n",$output));
+};
 $tests['compatible provider normalizes a shared URL and ordered model IDs'] = function (): void {
     $settings = [
         'ai_compatible_url' => 'https://example.com/v1/chat/completions/',
