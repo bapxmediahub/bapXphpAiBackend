@@ -816,7 +816,9 @@ final class AdminController extends BaseController {
         // Tool arguments and access are validated in PHP. The model selects the lookup
         // and explains its result. https://developers.openai.com/api/docs/guides/function-calling
         $today = (new \DateTimeImmutable('now', new \DateTimeZone('Asia/Kolkata')))->format('Y-m-d');
-        $prompt = \App\Services\AgentInstructionService::forSurface('admin') . "\n"
+        $tools ??= new \App\Services\EnterpriseToolRegistry(ownerQuestion: $message);
+        $modelTools = new \App\Services\RuntimeAgentToolRegistry('admin', $_SESSION['user'] ?? null, $tools);
+        $prompt = $modelTools->instructionPrompt() . "\n"
             . "You are the Enterprise Agent for Sri Panchami Spiritual. Answer in plain language.\n"
             . "The current date in India is {$today}.\n"
             . "Use the matching read-only tool before making any claim about store records or metrics. "
@@ -828,8 +830,7 @@ final class AdminController extends BaseController {
             . "Never expose credentials or unrelated customer data. The interface shows source links. "
             . "Do not show your reasoning.\n\n{$context}\n\nOwner question: {$message}";
         $client = new \App\Services\AiClient();
-        $tools ??= new \App\Services\EnterpriseToolRegistry(ownerQuestion: $message);
-        $answer = $client->completeWithTools($prompt, $tools);
+        $answer = $client->completeWithTools($prompt, $modelTools);
         $reason = $client->failureCategory();
         $attempts = $client->transferTimings();
         if (\App\Services\AiClient::isError($answer)) return $answer;
@@ -842,7 +843,7 @@ final class AdminController extends BaseController {
             $retry = $client->completeWithTools(
                 $prompt . "\n\nYour previous reply was just \"" . trim($answer) . "\". "
                 . "Say what that number counts, which data you checked to get it, and how you interpreted the question.",
-                $tools
+                $modelTools
             );
             if (!\App\Services\AiClient::isError($retry) && trim($retry) !== '') {
                 $answer = $retry;

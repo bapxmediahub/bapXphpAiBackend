@@ -115,7 +115,7 @@ final class AiClient
      */
     public function completeWithTools(
         string $prompt,
-        AgentToolRegistry $tools,
+        AgentToolRegistry|RuntimeAgentToolRegistry $tools,
         int $maxTokens = 1024,
         float $temperature = 0.3,
         int $maxRounds = 4,
@@ -124,7 +124,7 @@ final class AiClient
         return $this->route($prompt,$maxTokens,$temperature,$modelOverride,$tools,$maxRounds);
     }
 
-    private function completeGoogleTools(array $config,string $prompt,AgentToolRegistry $tools,int $maxTokens,
+    private function completeGoogleTools(array $config,string $prompt,AgentToolRegistry|RuntimeAgentToolRegistry $tools,int $maxTokens,
         float $temperature,int $maxRounds,?string $modelOverride,int $deadline): string {
         $key = trim((string)($config['apiKey'] ?? ''));
         if ($key === '') { $this->failureCategory = 'not_configured'; return 'No AI API key is configured. Set ai_api_key in Admin → Integrations, then try again.'; }
@@ -312,7 +312,7 @@ final class AiClient
     }
 
     private function route(string $prompt,int $maxTokens,float $temperature,?string $override,
-        ?AgentToolRegistry $tools,int $rounds,?array $selectedPlan=null): string {
+        AgentToolRegistry|RuntimeAgentToolRegistry|null $tools,int $rounds,?array $selectedPlan=null): string {
         $this->failureCategory=null;$this->transferTimings=[];$this->toolCalls=0;$this->toolExchangeStarted=false;$this->activeConnection=[];
         $plan=$selectedPlan??$this->secrets->getProviderPlan();
         // A deliberate diagnostic model probe must not silently switch model or provider.
@@ -363,7 +363,7 @@ final class AiClient
         string $prompt,
         int $maxTokens,
         ?string $modelOverride,
-        ?AgentToolRegistry $tools = null,
+        AgentToolRegistry|RuntimeAgentToolRegistry|null $tools = null,
         int $maxRounds = 0,
         ?int $deadline = null,
         bool $laterGoogleFallback = false

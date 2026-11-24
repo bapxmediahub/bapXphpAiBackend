@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "a8c57d586c02a87009274e6d2654660ff4b9ff66dedc2e5c9004ad324578dc1e",
-            "references_sha256": "4db8c915776e898bd080ad21d7b88500ee584a1f02134bc05f2751fd0db4084c",
-            "review_note": "Reviewed central missing-cURL guard and isolated disabled-function regression: safe recognized transport failure, no outbound request."
+            "source_sha256": "761b364cf797654a002104cb876f7e9ff48a6670cc9a3f5ee5845055379b5e2e",
+            "references_sha256": "63d78199c80aa4fe00921be8156da0376d7e03244e96a9dcf2ec11e3945700b1",
+            "review_note": "Reconciled merged provider missing-cURL guard with the shared role-filtered tool loop; retained red/green transport regression and instruction evidence."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
@@ -23,14 +23,14 @@
             "review_note": "Reviewed the Docs skill provenance guidance against the unchanged BlogService and authored-content guide boundary. Static map references are discovery evidence only; publication visibility, Markdown storage, rendering and private-help exclusion remain the existing source contracts."
         },
         "foundation": {
-            "source_sha256": "14643e1b4c7256c0cffb7ecac89d4ae77b423a952a66e7c12cc0b68d9e45bb8c",
+            "source_sha256": "53f1ae09d14ffab252fa8d54bf3f2b5d4a47440eb3a79f32678c01d81ee7ea7a",
             "references_sha256": "44504ddbd485f9ab5d6c71a6443726f531f7e0d7ed34ec16215741902635cc0e",
-            "review_note": "CLI diagnostic uses current service instead of duplicating HTTP; no new dependency or persistence."
+            "review_note": "Existing business and conversation storage boundaries unchanged; runtime adapter and source map reflect actual code."
         },
         "google-tags": {
             "source_sha256": "e8358d29b16227e79ba6455e2259f1a5fe357a6cbefc4a27b223929a10ff2fe1",
             "references_sha256": "c1a578dc4920789808501aedecd633d3dccca229eb29d4942401a05d50cf992b",
-            "review_note": "Reviewed default full integrations save behavior including unchanged Google tag fields."
+            "review_note": "Full integrations keyboard save remains intact."
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
@@ -40,12 +40,12 @@
         "interface": {
             "source_sha256": "0680d57bd90c9fd1702d7baafdb88055f2137d811c5eb97d97afc7a76caaf4f1",
             "references_sha256": "f1fc313dfc585e3dc0569dd2c52ac2b412aa8924f154978be71464130fe13375",
-            "review_note": "Verified Enter and explicit AI-only button submission in desktop and 375px Chromium fixtures."
+            "review_note": "Verified keyboard and explicit AI-only submitter regression on parent."
         },
         "mail": {
-            "source_sha256": "054b0478701fae161aa768b268ce05ab63ebe944f6b388f4bbd395df66828322",
+            "source_sha256": "cc231ae9824a02bc62d144c128574005f524ec2204f9abd61653767483200f84",
             "references_sha256": "6d6153ae2fed6f1aebbf9fa93225d6cc74b6c098d9a34deffce7bc4f3c6e9273",
-            "review_note": "Reviewed existing integrations controller; mail settings and testEmail behavior unchanged."
+            "review_note": "Merged admin chat and integration diagnostic changes do not change SMTP or mail queue behavior."
         },
         "mcp-clients": {
             "source_sha256": "ffb43129fe7e2633e2b790587a52729a82486fc1e08a692607623632c17756ad",
@@ -58,14 +58,14 @@
             "review_note": "Reviewed product image paths and the bounded A2UI gallery against current media hosting paths; styling does not move uploads, delete media or expose private asset directories."
         },
         "operator-help": {
-            "source_sha256": "787dbf5cc65ae3eaa43900e9f606be4c806732309d87e56c1929dcaef4110126",
+            "source_sha256": "ce03aefb91e5f1473d6ad074490335f9ff839eb712d1ca96e52cd70d30e353f6",
             "references_sha256": "2201c0efbcc49c20384beab8cbef25fa6bcd6928e2928d7fd8474d6522cdf6bf",
-            "review_note": "Reviewed full-form default keyboard submission and explicit AI-only button; existing integrations routes retained."
+            "review_note": "Retain reviewed full-save default submitter."
         },
         "public-mcp": {
-            "source_sha256": "63c58fcaa8f86f54433c86067579355c9632622a41e732eb14b29ce7509d5af9",
+            "source_sha256": "28e7e05e5eba6567d5a03f8f5b77b2fcfabfc97e280ef0c01df70ac1533e53a2",
             "references_sha256": "66f314f4d27575d8d1ab7394d8e28aae3feb90467ef6445ce18d804604d40f3d",
-            "review_note": "Shared view registration adds only native homepage rail controls; public MCP registry, schemas and actions unchanged."
+            "review_note": "Role-filtered internal runtime adapter does not register new public MCP methods or broaden external access."
         },
         "remote-commerce": {
             "source_sha256": "fc0f3595df50e982963b63d00e9da7c54abe395b79928bf79e44266c5205e9ac",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed the sales-channel CLI references and catalogue guidance. This change only fixes generic PHP lint argument forwarding and failure propagation; feed, channel and catalogue operations are unchanged."
         },
         "workflow": {
-            "source_sha256": "fb00ac41b8d18e6bea24a1421fa27f8683e0c983095460df0c813d8ecd23ef3e",
+            "source_sha256": "d3f494d9723dc0ecab53c64fd87c922f326c138417277178b637652192fb6ab9",
             "references_sha256": "a242b3bec435e5f0b0b1191b95c4d0a8fe98fec35e78981816b1bd71023ecf27",
-            "review_note": "Real loopback tool round-trip and desktop/mobile diagnostic controls added; CLI uses same guarded client."
+            "review_note": "Both prior feature and provider regression checks preserved; generated maps regenerated after conflict resolution."
         }
     }
 }

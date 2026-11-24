@@ -9,7 +9,7 @@ namespace App\Services {
         public function getModelConfig(): array { return ['apiKey'=>'fixture']; }
     }
     final class AiClient {
-        public function completeWithTools(string $prompt, AgentToolRegistry $tools): string {
+        public function completeWithTools(string $prompt, AgentToolRegistry|RuntimeAgentToolRegistry $tools): string {
             return $GLOBALS['argv'][1] === 'accepted' ? 'A clear synthetic answer.' : 'Reasoning: private outline';
         }
         public function failureCategory(): ?string { return null; }

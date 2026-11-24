@@ -22,6 +22,7 @@ final class AgentTraceService
         'own_ticket_status' => 'support_tickets', 'search_articles' => 'published_blog',
         'coupon_status' => 'coupons', 'public_catalog' => 'visible_products',
         'public_policy' => 'public_policy', 'operator_guide' => 'operator_help',
+        'public_catalogue_summary'=>'visible_products','public_best_sellers'=>'visible_products',
         'get_public_contact' => 'public_contact', 'list_public_services' => 'public_services',
     ];
 
@@ -59,7 +60,7 @@ final class AgentTraceService
             'observed_at'=>self::now(),
             'facts'=>$facts,
             'facts_sha256'=>hash('sha256',json_encode($fingerprint,JSON_THROW_ON_ERROR)),
-            'tool_version_sha256'=>hash_file('sha256',app_path('app/Services/AgentToolRegistry.php')),
+            'tool_version_sha256'=>hash_file('sha256',app_path('app/Services/'.(in_array($name,AgentCapabilityPolicy::tools('support'),true)&&!in_array($name,AgentCapabilityPolicy::tools('enterprise'),true)?'SupportToolRegistry':'AgentToolRegistry').'.php')),
             'source' => self::SOURCES[$name] ?? 'unknown',
             'filters' => $filters,
             'result_count' => $count,
@@ -344,7 +345,7 @@ final class AgentTraceService
     }
 
     public static function safeRetrieval(array $entry): array {
-        $intent=in_array($entry['intent']??'',['catalogue_search','catalogue_browse','collection','comparison','public_policy','public_contact','public_services','own_order','own_ticket','unknown'],true)?$entry['intent']:'unknown';
+        $intent=in_array($entry['intent']??'',['catalogue_search','catalogue_browse','catalogue_summary','best_sellers','collection','comparison','public_policy','public_contact','public_services','own_order','own_ticket','unknown'],true)?$entry['intent']:'unknown';
         $sources=[];
         foreach(array_slice((array)($entry['sources']??[]),0,20) as $source){
             if(!is_array($source)||!preg_match('/^product:(?:[a-zA-Z0-9_.-]|%[a-fA-F0-9]{2}){1,640}$/D',(string)($source['id']??'')))continue;
