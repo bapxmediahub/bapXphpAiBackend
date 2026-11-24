@@ -4,7 +4,8 @@ $directoryUrl = static function (array $changes) use ($filters): string {
     $params = array_filter($changes + $filters, static fn($value) => $value !== '');
     return '/admin/users?' . http_build_query($params);
 };
-$activeFilters = $query !== '' || $role !== '' || $activity !== '' || $period !== '' || $sort !== 'name' || $pageSize !== 25;
+$advancedCount = count(array_filter([$role !== '', $activity !== '', $period !== '', $sort !== 'name', $pageSize !== 25]));
+$activeFilters = $query !== '' || $advancedCount > 0;
 $segments = [
     ['activity' => '', 'stat' => 'accounts', 'label' => 'All accounts'],
     ['activity' => 'no_orders', 'stat' => 'no_orders', 'label' => 'No orders'],
@@ -37,58 +38,70 @@ $segments = [
                 <h2 id="users-directory-title">Account directory</h2>
                 <p>Orders matched by checkout email. Times in IST.</p>
             </div>
-            <p class="users-result-count"><?= $count ? 'Showing ' . number_format($offset + 1) . '–' . number_format($offset + count($users)) . ' of ' . number_format($count) : '0' ?>
-                <?= $count === 1 ? 'account' : 'accounts' ?></p>
+            <div class="users-directory__meta">
+                <p class="users-result-count"><?= $count ? 'Showing ' . number_format($offset + 1) . '–' . number_format($offset + count($users)) . ' of ' . number_format($count) : '0' ?>
+                    <?= $count === 1 ? 'account' : 'accounts' ?></p>
+                <?php if ($activeFilters): ?><a class="users-reset" href="/admin/users">Reset filters</a><?php endif; ?>
+            </div>
         </header>
         <form class="users-filters" method="get" action="/admin/users" aria-label="Filter accounts">
-            <div class="users-field users-search">
-                <label for="users-q">Search accounts</label>
-                <input type="search" id="users-q" name="q" value="<?= e($query) ?>" maxlength="150" placeholder="Name or email">
+            <div class="users-search">
+                <div class="users-field">
+                    <label for="users-q">Search accounts</label>
+                    <input type="search" id="users-q" name="q" value="<?= e($query) ?>" maxlength="150" placeholder="Name or email">
+                </div>
+                <button type="submit" class="btn btn-primary">Search</button>
             </div>
-            <div class="users-field">
-                <label for="users-role">Role</label>
-                <select id="users-role" name="role"><option value="">All roles</option>
-                    <?php foreach ($roles as $value => $label): ?>
-                        <option value="<?= e($value) ?>" <?= $role === $value ? 'selected' : '' ?>><?= e($label) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="users-field">
-                <label for="users-activity">Order activity</label>
-                <select id="users-activity" name="activity"><option value="">All activity</option>
-                    <?php foreach ($activityOptions as $value => $label): ?>
-                        <option value="<?= e($value) ?>" <?= $activity === $value ? 'selected' : '' ?>><?= e($label) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="users-field">
-                <label for="users-period">Latest order</label>
-                <select id="users-period" name="period"><option value="">Any date</option>
-                    <?php foreach ($periodOptions as $value => $label): ?>
-                        <option value="<?= $value ?>" <?= $period === (string)$value ? 'selected' : '' ?>><?= e($label) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="users-field">
-                <label for="users-sort">Sort by</label>
-                <select id="users-sort" name="sort">
-                    <?php foreach ($sortOptions as $value => $label): ?>
-                        <option value="<?= e($value) ?>" <?= $sort === $value ? 'selected' : '' ?>><?= e($label) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="users-field">
-                <label for="users-per_page">Per page</label>
-                <select id="users-per_page" name="per_page">
-                    <?php foreach ($sizeOptions as $value): ?>
-                        <option value="<?= $value ?>" <?= $pageSize === $value ? 'selected' : '' ?>><?= $value ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="users-actions">
-                <button class="btn btn-primary">Apply filters</button>
-                <?php if ($activeFilters): ?><a class="btn btn-ghost" href="/admin/users">Reset filters</a><?php endif; ?>
-            </div>
+            <details class="users-filter-options">
+                <summary>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 7h16M7 12h10m-7 5h4"/></svg>
+                    <span>More filters</span>
+                    <?php if ($advancedCount): ?><span class="users-filter-count"><?= $advancedCount ?> active</span><?php endif; ?>
+                </summary>
+                <div class="users-filter-fields">
+                    <div class="users-field">
+                        <label for="users-role">Role</label>
+                        <select id="users-role" name="role"><option value="">All roles</option>
+                            <?php foreach ($roles as $value => $label): ?>
+                                <option value="<?= e($value) ?>" <?= $role === $value ? 'selected' : '' ?>><?= e($label) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="users-field">
+                        <label for="users-activity">Order activity</label>
+                        <select id="users-activity" name="activity"><option value="">All activity</option>
+                            <?php foreach ($activityOptions as $value => $label): ?>
+                                <option value="<?= e($value) ?>" <?= $activity === $value ? 'selected' : '' ?>><?= e($label) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="users-field">
+                        <label for="users-period">Latest order</label>
+                        <select id="users-period" name="period"><option value="">Any date</option>
+                            <?php foreach ($periodOptions as $value => $label): ?>
+                                <option value="<?= $value ?>" <?= $period === (string)$value ? 'selected' : '' ?>><?= e($label) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="users-field">
+                        <label for="users-sort">Sort by</label>
+                        <select id="users-sort" name="sort">
+                            <?php foreach ($sortOptions as $value => $label): ?>
+                                <option value="<?= e($value) ?>" <?= $sort === $value ? 'selected' : '' ?>><?= e($label) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="users-field">
+                        <label for="users-per_page">Per page</label>
+                        <select id="users-per_page" name="per_page">
+                            <?php foreach ($sizeOptions as $value): ?>
+                                <option value="<?= $value ?>" <?= $pageSize === $value ? 'selected' : '' ?>><?= $value ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="users-actions"><button type="submit" class="btn btn-primary">Apply filters</button></div>
+                </div>
+            </details>
         </form>
 
         <?php if ($users): ?>

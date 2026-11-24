@@ -53,8 +53,10 @@ outside these tools.
 ## Users directory
 
 The owner-only **Users** workspace shows registered-account segments and
-combines name/email search with role, matched order count and latest-order
-period. Filters carry through pagination. Expand an account for linked order
+keeps name/email search visible. **More filters** lets the owner combine
+role, matched order count and latest-order period, and adjust sorting or page size.
+The active count and reset remain accessible when the panel is closed. Filters
+carry through pagination. Expand an account for linked order
 and invoice history matched by checkout email. The directory uses IST for
 order times and date cutoffs. See the Customers operator guide for the scope
 of the counts.

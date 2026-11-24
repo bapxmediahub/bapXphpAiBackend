@@ -2,7 +2,7 @@
 
 Open **Users**. The registered-account counts cover the full directory. Select **No orders**, **One order** or **2+ orders** to narrow it by matched order count.
 
-Use **Search accounts** for a name or email. Combine **Role**, **Order activity** and **Latest order**, then select **Apply filters**. The latest-order periods count calendar days in IST, including today. Use **Reset filters** to return to the default list.
+Use **Search accounts** for a name or email and select **Search**. Open **More filters** for role, order activity, latest order, sort order and page size. Select **Apply filters** to update the list. The latest-order periods count calendar days in IST, including today. More filters shows how many advanced settings are active. **Reset filters** next to the result count returns to the default list.
 
 Expand an account row to see its order history. Open an order by its reference or follow an issued invoice link. The list and order history show times in IST. Check identity carefully before discussing private information.
 
