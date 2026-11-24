@@ -1831,7 +1831,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/AiClient.php",
-            "line": 87
+            "line": 89
         },
         {
             "from": "service:AiClient",
@@ -1839,7 +1839,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/AiClient.php",
-            "line": 85
+            "line": 87
         },
         {
             "from": "service:AiClient",
@@ -1847,7 +1847,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AiClient.php",
-            "line": 523
+            "line": 531
         },
         {
             "from": "service:AiClient",
@@ -1855,7 +1855,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AiClient.php",
-            "line": 710
+            "line": 742
         },
         {
             "from": "service:AiClient",
@@ -1863,7 +1863,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AiClient.php",
-            "line": 57
+            "line": 59
         },
         {
             "from": "service:AppointmentService",
@@ -3007,7 +3007,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 254
+            "line": 256
         },
         {
             "from": "service:SupportBotService",
@@ -3015,7 +3015,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 262
+            "line": 264
         },
         {
             "from": "service:SupportBotService",
@@ -3023,7 +3023,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 42
+            "line": 44
         },
         {
             "from": "service:SupportBotService",
@@ -3031,7 +3031,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 333
+            "line": 335
         },
         {
             "from": "service:SupportBotService",
@@ -3071,7 +3071,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 407
+            "line": 409
         },
         {
             "from": "service:SupportBotService",
@@ -3087,7 +3087,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 258
+            "line": 260
         },
         {
             "from": "service:SupportBotService",
@@ -3095,7 +3095,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 320
+            "line": 322
         },
         {
             "from": "service:SupportTicketService",

@@ -6,11 +6,27 @@ if(PHP_SAPI==='cli-server'){
     header('Content-Type: application/json');
     $scenario=explode('/',trim(parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH),'/'))[0];
     if($scenario==='outage'){http_response_code(503);echo '{"error":{"status":"UNAVAILABLE"}}';return;}
-    $r=json_decode(file_get_contents('php://input'),true,512,JSON_THROW_ON_ERROR);
+    if($scenario==='quota'){http_response_code(429);header('Retry-After: 60');echo '{}';return;}
+    if($scenario==='long_retry'){http_response_code(503);header('Retry-After: 60');echo '{}';return;}
+    if($scenario==='schema_error'){http_response_code(400);echo '{}';return;}
+    $wire=file_get_contents('php://input');
+    $r=json_decode($wire,true,512,JSON_THROW_ON_ERROR);
     $compatible=isset($r['messages']);
     $names=$compatible?array_column(array_column($r['tools']??[],'function'),'name'):array_column($r['tools'][0]['functionDeclarations']??[],'name');
     $contents=$compatible?$r['messages']:$r['contents'];
     $n=$compatible?1+2*count(array_filter($contents,static fn(array $m):bool=>($m['role']??null)==='assistant')):count($contents);
+    // Force a single failed HTTP transfer, then require a byte-identical retry.
+    // State is isolated in this test runner's temporary directory.
+    if(($scenario==='transient_start'&&$n===1)||($scenario==='transient_continuation'&&$n===7)){
+        $file=getenv('BAPX_RECOVERY_FIXTURE_DIR').'/'.($compatible?'compatible':'google').'-'.$scenario;
+        if(!is_file($file)){
+            file_put_contents($file,hash('sha256',$wire),LOCK_EX);
+            http_response_code(503);echo '{"error":{"status":"UNAVAILABLE"}}';return;
+        }
+        if(file_get_contents($file)!==hash('sha256',$wire)){
+            http_response_code(400);echo '{"error":{"message":"Retry changed the request"}}';return;
+        }
+    }
     $responses=[];
     if($n>1){
         if($compatible){
@@ -47,7 +63,7 @@ if(PHP_SAPI==='cli-server'){
         'ticket'=>['own_ticket_status',[],'count','customer-policy'],
         'article'=>['read_published_article',['slug'=>'get-support'],'found','customer-policy'],
         'contact'=>['present_contact_enquiry',[],'submitted','customer-policy'],
-        'policy'=>['public_policy',['key'=>'shipping_cost'],'value','customer-policy'],
+        'policy','transient_continuation'=>['public_policy',['key'=>'shipping_cost'],'value','customer-policy'],
         default=>null
     };
     $finish='STOP';
@@ -73,6 +89,8 @@ if(PHP_SAPI==='cli-server'){
     }elseif($scenario==='unfinished'){
         $parts=[$call('tool_search',['query'=>'public_policy'],'r'.$n)];
         if($n===9)$parts[]=['text'=>'<final_answer>Not a completed answer.</final_answer>'];
+    }elseif($scenario==='transient_start'){
+        $parts=[['text'=>'<final_answer>Hello! How can I help?</final_answer>']];
     }elseif($scenario==='guest'||$scenario==='capability'){
         if($n!==1){$fail('Unexpected tool round');return;}
         $parts=[['text'=>'<final_answer>'.($scenario==='guest'?'Please sign in to view your own orders at /login.':'I can use your authorized business tools. Ask me what you would like to investigate.').'</final_answer>']];
@@ -87,7 +105,7 @@ if(PHP_SAPI==='cli-server'){
                 'owner'=>'There are '.$last['count'].' dated order records in the requested period.',
                 'customer'=>'Your matching order count is '.$last['count'].'.',
                 'ticket'=>'Your matching ticket count is '.$last['count'].'.',
-                'policy'=>$last['value'],
+                'policy','transient_continuation'=>$last['value'],
                 'contact'=>'I can offer a contact form for your review; nothing has been submitted.',
                 'article'=>'See the published support guide at '.$last['articles'][0]['path'].'.',
             };
@@ -115,7 +133,9 @@ if(PHP_SAPI==='cli-server'){
 if(PHP_SAPI!=='cli')exit;
 $socket=stream_socket_server('tcp://127.0.0.1:0');if(!$socket)throw new RuntimeException('Loopback bind failed');
 $address=stream_socket_get_name($socket,false);fclose($socket);
-$process=proc_open([PHP_BINARY,'-S',$address,__FILE__],[0=>['file','/dev/null','r'],1=>['file','/dev/null','w'],2=>['file','/dev/null','w']],$pipes,null,['BAPX_MODEL_DRIVEN_FIXTURE'=>'1']+getenv());
+$recoveryDir=sys_get_temp_dir().'/bapx-recovery-fixture-'.bin2hex(random_bytes(8));
+mkdir($recoveryDir,0700);
+$process=proc_open([PHP_BINARY,'-S',$address,__FILE__],[0=>['file','/dev/null','r'],1=>['file','/dev/null','w'],2=>['file','/dev/null','w']],$pipes,null,['BAPX_MODEL_DRIVEN_FIXTURE'=>'1','BAPX_RECOVERY_FIXTURE_DIR'=>$recoveryDir]+getenv());
 if(!is_resource($process))throw new RuntimeException('Loopback startup failed');
 try{
     $ready=false;
@@ -141,6 +161,11 @@ try{
         ['duplicate','support','guest','வணக்கம்',null],
         ['truncated','support','guest','Explain',null],
         ['unfinished','support','guest','Explain',null],
+        ['transient_start','support','guest','hi',null],
+        ['transient_continuation','support','guest','How is shipping calculated?','public_policy'],
+        ['quota','support','guest','hi',null],
+        ['long_retry','support','guest','hi',null],
+        ['schema_error','support','guest','hi',null],
     ]);
     foreach(['google','compatible'] as $protocol)foreach($cases as [$scenario,$surface,$role,$question,$tool]){
         $env=['BAPX_MODEL_DRIVEN_FIXTURE'=>'1','BAPX_FIXTURE_ENDPOINT'=>'http://'.$address.'/'.$scenario,'BAPX_TEST_MODE'=>'1','BAPX_FIXTURE_PROTOCOL'=>$protocol]+getenv();
@@ -148,8 +173,8 @@ try{
         if(!is_resource($child))throw new RuntimeException('Child startup failed');
         $raw=stream_get_contents($io[1]);$err=stream_get_contents($io[2]);fclose($io[1]);fclose($io[2]);$exit=proc_close($child);
         $result=json_decode($raw,true);
-        $expected=in_array($scenario,['outage','duplicate','truncated','unfinished'],true)?'error':'model';
-        $rounds=match($scenario){'mixed'=>3,'denied'=>2,'unfinished'=>5,default=>$tool!==null?4:1};
+        $expected=in_array($scenario,['outage','duplicate','truncated','unfinished','quota','long_retry','schema_error'],true)?'error':'model';
+        $rounds=match($scenario){'mixed'=>3,'denied'=>2,'unfinished','transient_continuation'=>5,'transient_start','outage'=>2,default=>$tool!==null?4:1};
         $turn=$result['turn']??[];$response=$result['response']??[];
         if($exit!==0||($turn['outcome']??null)!==$expected||count($turn['model_attempts']??[])!==$rounds||($turn['turn_id']??null)!==($response['turn_id']??null)){
             throw new RuntimeException("$scenario/$surface: unexpected model lifecycle: ".substr($raw,0,2500)." STDERR: ".substr($err,0,1000));
@@ -161,7 +186,13 @@ try{
         if($scenario==='outage'&&($turn['tools']??[])!==[])throw new RuntimeException('Outage must not trigger canned lookup');
         if(in_array($scenario,['denied','duplicate','truncated'],true)&&($turn['tools']??[])!==[])throw new RuntimeException('Denied call executed');
         if($scenario==='recover'&&count(array_filter($turn['tools']??[],static fn(array $t):bool=>$t['name']==='public_policy'))!==2)throw new RuntimeException('Unadvertised tool executed');
+        if($scenario==='transient_start'||$scenario==='transient_continuation'){
+            $attempts=$turn['model_attempts'];
+            $statusKey=array_key_exists('http_status',$attempts[0])?'http_status':'status';
+            if(array_column($attempts,$statusKey)!==($scenario==='transient_start'?[503,200]:[200,200,200,503,200]))throw new RuntimeException('Missing observed transient recovery');
+            if(count($turn['tools']??[])!==($scenario==='transient_start'?0:1))throw new RuntimeException('Recovery repeated business execution');
+        }
         if($scenario==='article'&&empty($turn['tools'][0]['evidence']['sources'][0]['content_sha256']))throw new RuntimeException('Retrieved document digest missing');
         echo "PASS $protocol/$surface/$scenario: $expected, ".count($turn['model_attempts'])." HTTP rounds\n";
     }
-}finally{proc_terminate($process);proc_close($process);}
+}finally{proc_terminate($process);proc_close($process);foreach(glob($recoveryDir.'/*')?:[] as $file)unlink($file);rmdir($recoveryDir);}
