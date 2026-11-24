@@ -12,7 +12,7 @@ Regenerate with `php cli/agent-contracts.php` or `./bapXphp update`; validate wi
 No provider calls, credentials or business-data queries are made during generation. No conversation SQL table is introduced.
 
 Discovery is not authorization. Every invocation still passes its PHP execution policy. These registries expose only named reads; ticket creation and owner-approved draft saves remain distinct controller/service actions.
-The historical `customer_ticket_lookup` activity label is not an invocable support capability. The Support bot uses local routing and scoped context; declarations do not imply that every model receives an unrestricted tool loop.
+The historical `customer_ticket_lookup` activity label is not an invocable support capability. Both model surfaces use the bounded AiClient tool loop through RuntimeAgentToolRegistry. The model adapter filters declarations by the authenticated actor and adds a private read_runtime_skill activation operation, never a public MCP or arbitrary file capability. The file manifest below lists all available role documents; individual model prompts initially load only the constitution and shared runtime contract, then activate relevant skills.
 
 ## Support
 
@@ -23,11 +23,11 @@ Source: `app/Services/SupportToolRegistry.php`; instruction version 2.
 Private runtime Markdown is not duplicated into developer documentation.
 
 - `.bapX/supportagent.md` — SHA-256 `a64c9cff83ad19a01ee9da90d2afe8f3845f87c4146d5cdd5c704ccaedb8c9f1`
-- `.bapX/bapXcl/skill.md` — SHA-256 `4acade6d2f5dfd9ae0926807364315b9400efabcad5b55deabd33254f7f64f5d`
+- `.bapX/bapXcl/skill.md` — SHA-256 `300793ad430a1aba904aea06e51665187af5d299502a0e21d3bdae0ea442f354`
 - `.bapX/bapXcl/support/catalog.md` — SHA-256 `0b85f5605a1eee35dcb09a147d8905059508151be9d46465d226a9b0816cc9a6`
 - `.bapX/bapXcl/support/policy-and-tickets.md` — SHA-256 `4d7cefdc76d5f24b56be31848b568147bb2ce3af8bfcbd65081a93c5a9740892`
 
-Bundle SHA-256: `f8c98eff7033db666c00794e99a6306b6f5694b7e6dd71a18221ceb5e5622ba5`.
+Bundle SHA-256: `9777bfe8e3afb388cb7e1ef4c5a64c5d7109ac1b73cce91093e30bc93be9a4b1`.
 
 ### `public_catalog`
 
@@ -165,6 +165,32 @@ Read only the authenticated customer support-ticket metadata.
 }
 ```
 
+### `public_catalogue_summary`
+
+Count all currently published products and their configured public category memberships. Use for overall catalogue counts and category overview, not a named product or private order.
+
+**Access:** Guest or authenticated customer; published/public data only.
+
+```json
+{
+    "type": "object",
+    "properties": {}
+}
+```
+
+### `public_best_sellers`
+
+Get up to four currently visible storefront best sellers by recorded paid, non-cancelled, non-refunded orders, all time only. No sales amounts, private orders or date filters.
+
+**Access:** Guest or authenticated customer; published/public data only.
+
+```json
+{
+    "type": "object",
+    "properties": {}
+}
+```
+
 ## Enterprise Admin
 
 Source: `app/Services/EnterpriseToolRegistry.php`; instruction version 2.
@@ -174,12 +200,12 @@ Source: `app/Services/EnterpriseToolRegistry.php`; instruction version 2.
 Private runtime Markdown is not duplicated into developer documentation.
 
 - `.bapX/enterpriseagent.md` — SHA-256 `488b908267cc25cf98136655a21c6b58b33fbbf0047a880cd3123f9ec876f198`
-- `.bapX/bapXcl/skill.md` — SHA-256 `4acade6d2f5dfd9ae0926807364315b9400efabcad5b55deabd33254f7f64f5d`
+- `.bapX/bapXcl/skill.md` — SHA-256 `300793ad430a1aba904aea06e51665187af5d299502a0e21d3bdae0ea442f354`
 - `.bapX/bapXcl/support/catalog.md` — SHA-256 `0b85f5605a1eee35dcb09a147d8905059508151be9d46465d226a9b0816cc9a6`
 - `.bapX/bapXcl/support/policy-and-tickets.md` — SHA-256 `4d7cefdc76d5f24b56be31848b568147bb2ce3af8bfcbd65081a93c5a9740892`
 - `.bapX/bapXcl/enterprise/reporting.md` — SHA-256 `432827fa7c6fa1d5bc7a57d6a3c77bd4f29832d35fa3dd07df6a09ab55f7f942`
 
-Bundle SHA-256: `1fd5bf210e7c2e6249df662f169ae4582ff26600edd1f987c3f48b36e3f51108`.
+Bundle SHA-256: `c0bdf3447cdd684c64a912583b2fe9134d0a8dd236f59a87ade8ff7b3a12754b`.
 
 ### `find_order`
 

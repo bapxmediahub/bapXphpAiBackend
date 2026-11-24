@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "f82e6811e4e72d390c373f0b79a2c6fb044d8c320234351b2214e92ef2581492",
-            "references_sha256": "4db8c915776e898bd080ad21d7b88500ee584a1f02134bc05f2751fd0db4084c",
-            "review_note": "Compared Support deterministic retired-booking path, Enterprise grounded answers, shared OpenRouter/Gemma failover, tool result replay guard and role policy against current source; existing private chat JSON location remains unchanged."
+            "source_sha256": "5d2a8318f694c8bdb74b88e8f5b0054198559b0753da6c84ef7784308273b049",
+            "references_sha256": "a3194b5f9dd2fdc5f745078b87b7c8ba8413256e7f6727105c1b4622aedfd30b",
+            "review_note": "Retain deployed provider missing-cURL guard and its regression in the role-scoped discovery loop."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
@@ -15,22 +15,22 @@
         "commerce": {
             "source_sha256": "a05e401e6a379a17ad8d6353f0f6d59396679f9f6d8d8d99afe33cbc7a57f9f2",
             "references_sha256": "70193e787d7443b2b0ed166a0fb3081cfac6908de8850386dd2224bd04399159",
-            "review_note": "Reviewed first-match ordered rules, exact paise and no persisted configuration against orders guide."
+            "review_note": "Reviewed first-match rules and exact integer paise; dry-run limitations preserved."
         },
         "content": {
-            "source_sha256": "12e40630e473f8d50774e654dc207c19fe3c8b5eb8158ea8da0e392330a3655d",
-            "references_sha256": "1dbca4f4b169d19f1046bee61138053549c0ecff231d0c389c2628f74f517cf1",
-            "review_note": "Reviewed the Docs skill provenance guidance against the unchanged BlogService and authored-content guide boundary. Static map references are discovery evidence only; publication visibility, Markdown storage, rendering and private-help exclusion remain the existing source contracts."
+            "source_sha256": "31a628f8963f037d93aa9f927866829b951dfac10282993b91f7cfa6cee433f0",
+            "references_sha256": "e8ef7076f00fa294db6d59bae7e381e0de58e018ddfa15ae5b6306409d14d427",
+            "review_note": "Reviewed browser-local draft recovery, stale revision protection and unchanged publishing semantics against content guide."
         },
         "foundation": {
-            "source_sha256": "d0f460a33ead1a7bec9a8ea43ab1494c962dbb2b0e43553ebf332e7eb66ad18a",
-            "references_sha256": "44504ddbd485f9ab5d6c71a6443726f531f7e0d7ed34ec16215741902635cc0e",
-            "review_note": "Regenerated route and service inventory; no persistence or remote DB changes."
+            "source_sha256": "d6eb186eb07a7b15cbab214b3543ba7fc5ff48748aa7bf8bb5ea2c5db7fc63ef",
+            "references_sha256": "711c1de347e396eb44d5953de4e6e89d6f33f17cf4833d1335c6d955d49270b7",
+            "review_note": "Regenerated combined maps; no new storage boundary."
         },
         "google-tags": {
-            "source_sha256": "9931f2724eec9875f4be1105fee72b70167373d61e7ecf95888dae86b1cdbd40",
-            "references_sha256": "1bc780fef929af6855d54ec574f50f3ed194f65ebd66ddb6bdbbcf4952a51081",
-            "review_note": "Reviewed shared layout footer/description changes; Google tags, consent and script configuration unchanged."
+            "source_sha256": "b22e2a0262f519e899f17885599f6d10995d12e714378f30e15d513618d81f41",
+            "references_sha256": "dc2c123ec3959c5b29d43cffa2e680d0661e3ca68b31fcc52aa8ef1b004b9816",
+            "review_note": "Both configurable AI connections and PageSpeed report guidance survive the merged integrations documentation; Google reporting remains separate."
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
@@ -38,49 +38,49 @@
             "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
         },
         "interface": {
-            "source_sha256": "81c8c2b4f7399f6cafc851c793690bb938e3d4020a7136cca324c50127eb16b2",
-            "references_sha256": "f1fc313dfc585e3dc0569dd2c52ac2b412aa8924f154978be71464130fe13375",
-            "review_note": "Reviewed accessible preview form, validation, and link to existing shipping settings."
+            "source_sha256": "35d6108657bea8f0ef953d6a96c75229297dc75500be483e2350614e13370c56",
+            "references_sha256": "46f2d374009adf6d6e27117f48463103a2cec53a1d15a7b3ac2f412904d972c8",
+            "review_note": "Reviewed accessible preview controls and unchanged checkout UI."
         },
         "mail": {
-            "source_sha256": "23a8f89f83d6fbe76d22b1da4067a766e1a3fe2ede02aaa2b5a58808643bfc41",
+            "source_sha256": "8e6f8fe3aee8ce1fde541e0f654cad10ee5758e7baf2b8c7bb868a518bb7d92b",
             "references_sha256": "6d6153ae2fed6f1aebbf9fa93225d6cc74b6c098d9a34deffce7bc4f3c6e9273",
-            "review_note": "Admin controller change only adds read-only preview; mail unchanged."
+            "review_note": "Reviewed shared controller change; mail behavior unchanged."
         },
         "mcp-clients": {
-            "source_sha256": "8b2e7629876c1e5facae0a92e30f91e7e11ba59bd979a528022807b0193be7bc",
-            "references_sha256": "912c2decd557b138de9c5ca0f72cd5aab0f94d8430c46bd5c442c73d6cdccde8",
-            "review_note": "Compared existing MCP client grants and owner-only tool restrictions against merged WebMCP annotations and OpenRouter model routing; the changes do not issue an owner grant or promote browser agent capabilities."
+            "source_sha256": "ffb43129fe7e2633e2b790587a52729a82486fc1e08a692607623632c17756ad",
+            "references_sha256": "1390a1ae3be706072f85e628f3065e2170dc2685b3841c008d02536d232f2d1c",
+            "review_note": "PageSpeed reporting remains owner-only and does not expose a public MCP capability."
         },
         "media": {
-            "source_sha256": "7b9d3d9aa746f16f1441148550d143e7094388b247c423b90c310ed5441db99d",
-            "references_sha256": "9e2512ff958dd3a7cb3241f21cbc5132977edab9c5ba4535eebf3ea69cc79b1d",
-            "review_note": "Reviewed product image paths and the bounded A2UI gallery against current media hosting paths; styling does not move uploads, delete media or expose private asset directories."
+            "source_sha256": "c99bf5f35495fb29a3025b39dc32c1fbd2f20640fbacd2784598a53cd3a8584f",
+            "references_sha256": "2794618b02963d55f3e327e274003239bba39eaf2b893deb40a351f48521aae2",
+            "review_note": "Reviewed locked existing row, expected revision, bounded fields and no binary replacement."
         },
         "operator-help": {
-            "source_sha256": "b808f6e9453d5e78e584dff02612e32384d37d4813d0f0c466bbfd26c4a861a1",
-            "references_sha256": "a0ff95e7af0247f590128e004dd07abdd13afe1258daf49f0437103cc3f6c43a",
-            "review_note": "Reviewed shipping preview form, state/PIN rules and explicit dry-run limitations with owner help."
+            "source_sha256": "89025f4b53d303b7d0e2a8f7f839ab177c32cf802d4a85d3b27feb385af07127",
+            "references_sha256": "09e903769b6a1f9ed4f2659c344b0ce469839de37f10e5c9c5cfd934297dbe01",
+            "review_note": "Reviewed ordered shipping preview and owner guide within cumulative release."
         },
         "public-mcp": {
-            "source_sha256": "c4c43d1a3ff76df3d458d400ae8425ab94eb3c7c899c96647969a00ab3b8f188",
+            "source_sha256": "f6aac495d87ec5e1bc7ad42a699aef5b68164197e20e78978edc5583ee41a539",
             "references_sha256": "66f314f4d27575d8d1ab7394d8e28aae3feb90467ef6445ce18d804604d40f3d",
-            "review_note": "No new public tool or shipping quote mutation exposed."
+            "review_note": "No public tool or customer quote mutation added."
         },
         "remote-commerce": {
-            "source_sha256": "4158663ee0618880bed2832d4e0c789789f46c71af15cd68796652a3e2e272d8",
+            "source_sha256": "c2959d00a8dae68a43bc3fb2b22440adf3a29ecd24c577db4f3b4fccf0f64fa7",
             "references_sha256": "e69f1df859674ebae909db1f925ea55615d214e260e05f83c368a654a9dfefaa",
-            "review_note": "Preview uses hypothetical subtotal; checkout, payment, tax and remote commerce operations unchanged."
+            "review_note": "Preview is a hypothetical fee calculation, without persistence, tax or checkout changes."
         },
         "sales-channels": {
-            "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
+            "source_sha256": "4b05a2d9436a74c6e60b28ce25987bf531cabf698294fb51554219a138c88167",
             "references_sha256": "ce84b911bce7bb5435cc905a83819e015bad8a111c795fd143c86cb59f903c4f",
-            "review_note": "Reviewed the sales-channel CLI references and catalogue guidance. This change only fixes generic PHP lint argument forwarding and failure propagation; feed, channel and catalogue operations are unchanged."
+            "review_note": "Metadata editing only changes library text and preview; feed behavior unchanged."
         },
         "workflow": {
-            "source_sha256": "6484381f714bae20ca786c67101a90a071ce8b433da54f1fc98d6490aa5f4e5b",
-            "references_sha256": "6bddcf08be3819fe8ec98d7f78e96b359a9571f9043255f5ce207927e4732284",
-            "review_note": "Preserved existing homepage and shipping-specific browser CI."
+            "source_sha256": "8548f94e823396afd3d7bc94579481f110c250c381ac15b7034f377e3a89ed62",
+            "references_sha256": "a242b3bec435e5f0b0b1191b95c4d0a8fe98fec35e78981816b1bd71023ecf27",
+            "review_note": "All previous browser and provider suites preserved with shipping preview tests."
         }
     }
 }

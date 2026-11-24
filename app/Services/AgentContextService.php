@@ -356,7 +356,7 @@ final class AgentContextService {
             'matched_collection' => $collection !== null
                 ? ['name'=>(string)$collection['name'], 'slug'=>(string)$collection['slug']]
                 : null,
-            'support_scope' => 'Answer only from this JSON context and public site links. Do not access tools, files, admin data, or other users.',
+            'support_scope' => 'Answer using current supplied evidence and authorized Support tools. Do not access arbitrary files, admin data or other users.',
         ];
     }
 }

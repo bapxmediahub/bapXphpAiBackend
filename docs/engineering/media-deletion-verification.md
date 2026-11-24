@@ -43,3 +43,18 @@ its image URL is no longer served. Never delete an existing customer image.
 Record execution results, candidate SHA and deployed verification on the
 relevant GitHub issue/PR. Private credentials, cookies and uploaded test binaries
 remain outside Git; this guide describes procedure rather than release status.
+
+
+## Metadata-only editing
+
+\`POST /admin/media/metadata\` uses the existing owner authentication and CSRF guard.
+It checks a revision of the editable metadata and identity on a locked MySQL row,
+including when invoked through the dedicated authenticated remotedb mutation.
+Only description, alternative text and caption are patched. No binary is moved,
+no missing record is recreated, and no URL or usage fields are changed by this action.
+The library search and preview use the new metadata. This is not a storefront-wide
+alternative-text migration. Bundled and legacy-only assets are read-only.
+The isolated MySQL cases in \`tests/admin-list-pagination.php\` verify persistence,
+field isolation, search, stale and missing rows, and explicit clearing.
+\`tests/media-metadata-browser.cjs\` exercises the PHP view and form with intercepted
+fixture responses at 375px and 1280px.

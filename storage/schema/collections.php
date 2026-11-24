@@ -492,6 +492,8 @@
                 'url' => ['type' => 'local_or_remote_path'],
                 'original_url' => ['type' => 'local_or_remote_path'],
                 'description' => ['type' => 'text'],
+                'alt_text' => ['type' => 'string'],
+                'caption' => ['type' => 'text'],
                 'context' => ['type' => 'enum', 'values' => ['shared', 'products', 'temples', 'astrologers', 'blog']],
                 'mime' => ['type' => 'string'],
                 'used_in' => ['type' => 'array', 'items' => 'object'],
