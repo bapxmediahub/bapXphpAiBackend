@@ -25,12 +25,12 @@
         "foundation": {
             "source_sha256": "96175e8f5284f214b6686943273fa6313e2cb3ff43bc0c692db5986867e70567",
             "references_sha256": "711c1de347e396eb44d5953de4e6e89d6f33f17cf4833d1335c6d955d49270b7",
-            "review_note": "Schema gains optional alt_text and caption fields in existing media_files JSON records; dedicated bridge mutation preserves hosted MySQL authority, other fields and binaries."
+            "review_note": "Schema metadata and generated project maps match actual MySQL-backed route/service changes."
         },
         "google-tags": {
-            "source_sha256": "f05c993af547a7e72406e694a7d049d905c3f21410f1eddeb54a9b86f8fce54e",
+            "source_sha256": "9931f2724eec9875f4be1105fee72b70167373d61e7ecf95888dae86b1cdbd40",
             "references_sha256": "1bc780fef929af6855d54ec574f50f3ed194f65ebd66ddb6bdbbcf4952a51081",
-            "review_note": "Reviewed public layout changes against existing Google Analytics and advertising tags. Google AI credentials remain independent of OAuth, analytics tags and OpenRouter encrypted provider key."
+            "review_note": "Reviewed shared layout footer/description changes; Google tags, consent and script configuration unchanged."
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
@@ -38,14 +38,14 @@
             "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
         },
         "interface": {
-            "source_sha256": "b5f63abcbab847a7b0dbf3e17bc61b9a3e4cc1033042a70924af8aa3ea9cfef6",
-            "references_sha256": "25331a5790c81c2566153dc5849c6593fb5f0c4e2dfed3050ee7d3bab6ecab8b",
-            "review_note": "Compared accessible native details/form, existing mobile grid, and owner guide; documented library-only metadata editing."
+            "source_sha256": "42209d1cd026c69769edd045bf59e56afd7dfa9e63d0c12fd7e225c0da1c9c6a",
+            "references_sha256": "46f2d374009adf6d6e27117f48463103a2cec53a1d15a7b3ac2f412904d972c8",
+            "review_note": "Reviewed native media edit fields, preview and 375px browser coverage."
         },
         "mail": {
             "source_sha256": "e8634dcfdad6efad294d115bf2512a4254766c24bff0aa067bbd0e263b1fcd51",
             "references_sha256": "6d6153ae2fed6f1aebbf9fa93225d6cc74b6c098d9a34deffce7bc4f3c6e9273",
-            "review_note": "AdminController adds a separate media mutation method; no mailbox, queue, receipt or notification changes."
+            "review_note": "Database and admin media changes are separate from mail queue and delivery."
         },
         "mcp-clients": {
             "source_sha256": "8b2e7629876c1e5facae0a92e30f91e7e11ba59bd979a528022807b0193be7bc",
@@ -55,32 +55,32 @@
         "media": {
             "source_sha256": "c99bf5f35495fb29a3025b39dc32c1fbd2f20640fbacd2784598a53cd3a8584f",
             "references_sha256": "2794618b02963d55f3e327e274003239bba39eaf2b893deb40a351f48521aae2",
-            "review_note": "Compared metadata edit and deletion guards, database patch, rendered form and operator instructions; documented separate metadata-only edit and isolated acceptance checks."
+            "review_note": "Verified row lock, expected revision, three bounded fields, missing/legacy rejection and no binary replacement against source and media guide."
         },
         "operator-help": {
-            "source_sha256": "30e806559d6acf1d423328666bf938190a85553526cc885b7217b0079c8c4091",
+            "source_sha256": "ac6448f98b85fe179ee5296426c42882ee9b13448b8cb90f7eb44e6c5d676727",
             "references_sha256": "7b2417548ef9767a977b90e8e027ba853428805f5b35b613f4b08c228cc5cc5e",
-            "review_note": "Compared the media guide with the owner-only form, existing upload and deletion actions, library search and the revision-checked save; documented limits and preview-only alt text."
+            "review_note": "Compared media edit form, upload-only restrictions and owner help with current merged UI."
         },
         "public-mcp": {
-            "source_sha256": "dce1b7013e2ce5cfc3ac1dab09748ab93d8dff2031fceb3bd3d49baea958f1fe",
+            "source_sha256": "959d9dd1a20fb1057ecab23c94bb465415aad195c4ad41d23a63bb8610e83bfe",
             "references_sha256": "66f314f4d27575d8d1ab7394d8e28aae3feb90467ef6445ce18d804604d40f3d",
-            "review_note": "ProjectMapService adds an authenticated admin media POST only; no public MCP capability or commerce discovery changes."
+            "review_note": "Metadata patch is admin-only; no public tool schema or permission changes."
         },
         "remote-commerce": {
-            "source_sha256": "2fb4ceb026005e55c3b852b70ee934340c4b685755ef5d32fdfcd672285246fe",
-            "references_sha256": "c9b0ed4ab144ead0c449c61a45498cf875fc248de8f8e0df2f68ef76b11801a6",
-            "review_note": "Reviewed DatabaseService and RemoteDbController additions: new media-only branch, row lock and field patch do not touch remote cart, checkout, payment or their contracts."
+            "source_sha256": "9edf64aa2e5f5e16c435c75530e1afa2961d63c5423401d1373bbbd7c02a9997",
+            "references_sha256": "e00aba6f254f3552728ebcf0e7cd24d757eceb2ffa55060db99dd42562b481e9",
+            "review_note": "Reviewed dedicated authenticated media metadata mutation; cart, order, payment and checkout code unchanged."
         },
         "sales-channels": {
             "source_sha256": "4b05a2d9436a74c6e60b28ce25987bf531cabf698294fb51554219a138c88167",
             "references_sha256": "ce84b911bce7bb5435cc905a83819e015bad8a111c795fd143c86cb59f903c4f",
-            "review_note": "MediaService adds metadata-only fields and admin search; existing product image URL and merchant feed behavior remain unchanged."
+            "review_note": "Media search/preview metadata is internal; product feed and channel export remain unchanged."
         },
         "workflow": {
-            "source_sha256": "d91e1fb36f9369f2d31ae43e960f8ca65444547e53ca391648eebcbcd22082e2",
+            "source_sha256": "600ce266c6f94689c59608f43e14cb994670cc1b7ece2ce1e523ed647a17c8fc",
             "references_sha256": "6bddcf08be3819fe8ec98d7f78e96b359a9571f9043255f5ce207927e4732284",
-            "review_note": "CI includes the new 375/1280 Chromium metadata form test and existing MySQL temporary-table suite exercises persistence; repository maps regenerated for the new POST."
+            "review_note": "Preserved homepage and media-specific browser CI tests, no older tests removed."
         }
     }
 }

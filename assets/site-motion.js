@@ -100,6 +100,8 @@
             && win.CSS.supports('animation-range', 'entry 0% cover 38%');
         var candidates = doc.querySelectorAll(panelSelector + ',' + sectionHeadingSelector + ',' + homePhotoSelector + ',' + homePanelSelector + ',.product-card:not(.home-product-card),.blog-card,.temple-card,.auth-card,.section-title,.page-title,.admin-stat,.report-kpi,.admin-card > h2,.enterprise-chat__intro');
         var entranceTargets = Array.from(candidates).filter(function (target) {
+            // Full homepage sections are already the motion surface. Avoid simultaneous nested timelines.
+            if (target.closest('[data-home-stack]')) return false;
             if (!nativeSections) return true;
             if (target.matches(homePhotoSelector) || target.matches(homePanelSelector)) {
                 target.classList.add('sps-home-scroll');
@@ -156,49 +158,51 @@
         }
 
         var header = doc.querySelector(surface === 'admin' ? '.admin-topbar' : '#site-header');
-        var opening = doc.querySelector('[data-home-opening]');
-        var hero = opening?.querySelector('.home-hero');
-        if (hero && typeof win.ResizeObserver === 'function' && win.CSS?.supports('overflow-x', 'clip')) {
-            function measureHero() {
-                opening.style.setProperty('--home-hero-height', hero.offsetHeight + 'px');
+        var stack = doc.querySelector('[data-home-stack]');
+        // Keep a single footer, with the same navigation and contentinfo landmark.
+        // Move only when the native sticky stack can actually be enhanced.
+        var footer = stack ? doc.querySelector('body > .site-footer') : null;
+        if (stack && typeof win.ResizeObserver === 'function' && win.CSS?.supports('overflow-x', 'clip')) {
+            if (footer) {
+                footer.setAttribute('role', 'contentinfo');
+                stack.append(footer);
             }
-            measureHero();
-            new win.ResizeObserver(measureHero).observe(hero, { box: 'border-box' });
-            opening.dataset.homeLayer = 'ready';
-            hero.addEventListener('focusin', function (event) {
-                if (!canMove() || !event.target.matches(':focus-visible')) return;
-                win.requestAnimationFrame(function () {
-                    if (doc.activeElement !== event.target) return;
-                    var bounds = event.target.getBoundingClientRect();
-                    var covered = Array.from(doc.querySelectorAll('#bottom-nav, #mobile-cart-tray:not([hidden]), .support-fab')).some(function (control) {
-                        var area = control.getBoundingClientRect();
-                        return area.width > 0 && bounds.left < area.right && bounds.right > area.left
-                            && bounds.top < area.bottom && bounds.bottom > area.top;
-                    });
-                    if (bounds.top < 0 || bounds.bottom > win.innerHeight || covered) {
-                        event.target.scrollIntoView({ block: 'center', behavior: 'instant' });
-                    }
-                });
+            var cards = Array.from(stack.children).filter(function (card) {
+                return card.matches('.home-opening,.home-bestsellers,.home-collection,.home-chapter,.home-faq,.site-footer');
             });
-        }
-        var chapters = doc.querySelectorAll('.home-chapter > section');
-        if (chapters.length && typeof win.ResizeObserver === 'function') {
-            var sizes = new win.ResizeObserver(function (entries) {
+            function measureCard(card, height) {
+                var value = Math.ceil(height) + 'px';
+                if (card.style.getPropertyValue('--home-card-height') !== value) card.style.setProperty('--home-card-height', value);
+            }
+            function measureHeader(height) {
+                var value = Math.ceil(height) + 'px';
+                if (stack.style.getPropertyValue('--home-header-height') !== value) stack.style.setProperty('--home-header-height', value);
+                updateHeaderOffset(height);
+            }
+            measureHeader(header ? header.offsetHeight : 0);
+            cards.forEach(function (card) { measureCard(card, card.offsetHeight); });
+            var resize = new win.ResizeObserver(function (entries) {
                 entries.forEach(function (entry) {
-                    var section = entry.target;
-                    section.parentElement.style.setProperty('--chapter-height', section.offsetHeight + 'px');
-                    section.parentElement.classList.add('is-measured');
+                    var height = entry.borderBoxSize?.[0]?.blockSize ?? entry.target.offsetHeight;
+                    if (entry.target === header) measureHeader(height);
+                    else measureCard(entry.target, height);
                 });
             });
-            chapters.forEach(function (section) { sizes.observe(section, { box: 'border-box' }); });
+            if (header) resize.observe(header, { box: 'border-box' });
+            cards.forEach(function (card) { resize.observe(card, { box: 'border-box' }); });
+            stack.dataset.stackReady = 'true';
         }
-        function updateHeaderOffset() {
-            var height = header ? Math.ceil(header.getBoundingClientRect().height) : 0;
-            doc.documentElement.style.setProperty('--sps-scroll-offset', (height + 16) + 'px');
+        function updateHeaderOffset(measured) {
+            var height = typeof measured === 'number' ? Math.ceil(measured) : (header ? Math.ceil(header.getBoundingClientRect().height) : 0);
+            var value = (height + 16) + 'px';
+            if (doc.documentElement.style.getPropertyValue('--sps-scroll-offset') !== value) doc.documentElement.style.setProperty('--sps-scroll-offset', value);
         }
-        updateHeaderOffset();
-        if (header && typeof win.ResizeObserver === 'function') new win.ResizeObserver(updateHeaderOffset).observe(header);
-        else win.addEventListener('resize', updateHeaderOffset, { passive: true });
+        // The stack's observer already owns header measurements on the homepage.
+        if (!stack || !stack.dataset.stackReady) {
+            updateHeaderOffset();
+            if (header && typeof win.ResizeObserver === 'function') new win.ResizeObserver(updateHeaderOffset).observe(header);
+            else win.addEventListener('resize', updateHeaderOffset, { passive: true });
+        }
         var returnButton = doc.createElement('button');
         returnButton.type = 'button'; returnButton.className = 'sps-return-top'; returnButton.hidden = true;
         returnButton.setAttribute('aria-label', 'Return to top'); returnButton.title = 'Return to top';
@@ -232,21 +236,131 @@
             var slides = Array.from(root.querySelectorAll('.varahi-slide'));
             var controls = root.querySelector('[data-portrait-controls]');
             if (!controls || slides.length < 2) return;
-            var current = 0;
-            var position = controls.querySelector('[role="status"]');
-            function selectPortrait(index) {
-                slides[current].classList.remove('is-active');
-                current = (index + slides.length) % slides.length;
-                slides[current].classList.add('is-active');
-                root.dataset.currentSlide = slides[current].classList.contains('hero-guruji') ? 'guruji' : 'deity';
-                position.textContent = (current + 1) + ' / ' + slides.length;
+            var dots = Array.from(controls.querySelectorAll('[data-portrait-index]'));
+            var status = controls.querySelector('[data-portrait-status]');
+            if (!status || dots.length !== slides.length) return;
+            var current = 0, timer = null, request = 0;
+            var pending = false, pendingAutomatic = false;
+            var frame = root.querySelector(".deity-frame");
+            var playing = true, hovering = false, visible = false;
+            function stopTimer() {
+                if (timer !== null) win.clearTimeout(timer);
+                timer = null;
+            }
+            function isPlaying() {
+                return playing && canMove();
+            }
+            function renderRotation() {
+                var enabled = isPlaying();
+                status.setAttribute('aria-live', enabled ? 'off' : 'polite');
+            }
+            function artworkVisible() {
+                if (!visible || !frame) return false;
+                var box = frame.getBoundingClientRect();
+                var hit = doc.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+                return !!hit && root.contains(hit);
+            }
+            function canRotate() {
+                return isPlaying() && !hovering && artworkVisible();
+            }
+            function cancelAutomatic() {
+                stopTimer();
+                if (pending && pendingAutomatic) {
+                    request++;
+                    pending = pendingAutomatic = false;
+                }
+            }
+            function schedule() {
+                stopTimer();
+                renderRotation();
+                if (pending || !canRotate()) return;
+                timer = win.setTimeout(function () {
+                    timer = null;
+                    if (canRotate()) selectPortrait(current + 1, true);
+                }, 2000);
+            }
+            function pause() {
+                playing = false;
+                cancelAutomatic();
+                schedule();
+            }
+            function selectPortrait(index, automatic) {
+                stopTimer();
+                var next = (index + slides.length) % slides.length;
+                var ticket = ++request;
+                var image = slides[next];
+                pending = true;
+                pendingAutomatic = automatic;
+                function finish() {
+                    if (ticket !== request) return false;
+                    pending = pendingAutomatic = false;
+                    return true;
+                }
+                function fail() { if (finish()) schedule(); }
+                function apply() {
+                    if (!finish()) return;
+                    if (automatic && !canRotate()) { schedule(); return; }
+                    if (!image.naturalWidth) { schedule(); return; }
+                    slides[current].classList.remove('is-active');
+                    slides[current].setAttribute('aria-hidden', 'true');
+                    current = next;
+                    image.classList.add('is-active');
+                    image.removeAttribute('aria-hidden');
+                    root.dataset.currentSlide = image.classList.contains('hero-guruji') ? 'guruji' : 'deity';
+                    root.dataset.activeIndex = String(current);
+                    dots.forEach(function (dot, i) { dot.setAttribute('aria-current', String(i === current)); });
+                    status.textContent = image.alt;
+                    schedule();
+                }
+                // Do not fade to an unloaded image; keep the current artwork visible.
+                image.loading = 'eager';
+                if (typeof image.decode === 'function') image.decode().then(apply, fail);
+                else if (image.complete) apply();
+                else {
+                    image.addEventListener('load', apply, { once: true });
+                    image.addEventListener('error', fail, { once: true });
+                }
             }
             controls.querySelectorAll('[data-portrait-step]').forEach(function (button) {
-                button.addEventListener('click', function () {
-                    selectPortrait(current + Number(button.dataset.portraitStep));
-                });
+                button.addEventListener('click', function () { pause(); selectPortrait(current + Number(button.dataset.portraitStep), false); });
             });
+            dots.forEach(function (dot, i) {
+                dot.addEventListener('click', function () { pause(); selectPortrait(i, false); });
+            });
+            root.addEventListener('focusin', function () { pause(); });
+            root.addEventListener('pointerenter', function (event) {
+                if (event.pointerType === 'mouse') { hovering = true; cancelAutomatic(); schedule(); }
+            });
+            root.addEventListener('pointerleave', function () { hovering = false; schedule(); });
+            if (typeof win.IntersectionObserver === 'function') {
+                new win.IntersectionObserver(function (entries) {
+                    visible = entries[0].isIntersecting && entries[0].intersectionRatio >= 0.5;
+                    if (!visible) cancelAutomatic();
+                    schedule();
+                }, { threshold: [0, 0.5] }).observe(root);
+            }
+            // Sticky cards may be geometrically visible but painted under a later slide.
+            // Check the actual artwork hit target during native scrolling.
+            var coverCheckQueued = false;
+            function checkCover() {
+                if (coverCheckQueued || !playing) return;
+                coverCheckQueued = true;
+                win.requestAnimationFrame(function () {
+                    coverCheckQueued = false;
+                    if (!canRotate()) cancelAutomatic();
+                    else if (timer === null && !pending) schedule();
+                });
+            }
+            win.addEventListener('scroll', checkCover, { passive: true });
+            doc.addEventListener('visibilitychange', function () { cancelAutomatic(); schedule(); });
+            if (typeof media.addEventListener === 'function') media.addEventListener('change', function () {
+                if (media.matches) playing = false;
+                cancelAutomatic(); schedule();
+            });
+            win.addEventListener('pagehide', cancelAutomatic);
+            win.addEventListener('pageshow', schedule);
             controls.hidden = false;
+            schedule();
         });
     }
     return { motionAllowed: motionAllowed, entrance: entrance, showReturnControl: showReturnControl, init: init };

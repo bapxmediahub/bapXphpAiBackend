@@ -173,7 +173,7 @@ Shape should stay consistent within a component family -- don't mix `sm` and `lg
 
 ## Components
 
-- **Header:** warm-neutral (`rgba(250,247,240,0.98)`), ~`80px` tall, non-sticky, hairline bottom border (`rgba(209,179,104,0.45)`), compact logo, centered primary nav with a gold active underline, right-aligned account/cart actions.
+- **Header:** warm-neutral (`rgba(250,247,240,0.98)`), ~`80px` tall, non-sticky, hairline bottom border (`rgba(209,179,104,0.45)`), compact logo, centered primary nav with a gold active underline, right-aligned account/cart actions. Exception: the homepage keeps the existing logo and primary navigation pinned regardless of animation preference, including reduced-motion and no-JavaScript modes. Mobile uses menu left, visible brand centered and cart right; the header physically occupies the measured editorial-stack offset.
 - **Navigation:** the linked brand mark and name are the sole home control. Do not repeat a separate Home item in desktop or mobile navigation.
 - **Appearance → Header menu** controls the order and visibility of the six public page slots. The brand, account actions and cart retain their own positions. Without JavaScript the mobile Menu and Close menu links reveal and dismiss the same primary navigation.
 - **Mobile navigation:** scope the collapsible menu styles to the primary header. Account links, blog categories, report controls, and other in-page navigation remain visible and keyboard accessible.
@@ -189,8 +189,8 @@ Shape should stay consistent within a component family -- don't mix `sm` and `lg
 - **Cart layout:** lead with the item count, a jump to the order summary, and a checkout link. Use the full mobile content rail. Give each item a square image, readable title, and one row for quantity and line total. Give the summary more elevation than its items. On mobile, keep a total and checkout shortcut within reach while both inline checkout links are outside the usable viewport.
 - **Cart quantity:** provide `−` and `+` controls beside every product, update line totals and the cart count, and remove the line when decreased to zero. Repeated additions of the same product merge into one line. Distinguish selecting a quantity to add from editing the quantity already in the cart.
 - **Commerce responsiveness:** use `minmax(0, 1fr)` for purchase-button columns, wrap quantity labels when space is tight, and keep keyboard focus visible. Verify home, shop, product and cart at 375px and desktop in the built-in Browser. Do not shrink purchase controls to 30px to force them onto one row.
-- **Product action alignment:** related-product prices and purchase controls sit at the bottom of equal-height cards. Long names remain readable without shifting buttons between columns.
-- **Hero:** product-first offer over actual devotional imagery. The primary action opens the shop. Public consultation booking is retired. Desktop text is left aligned. Mobile uses one column, a compact image, and must reveal the next content band without requiring a full-screen scroll.
+- **Product action alignment:** related-product prices and purchase controls sit at the bottom of equal-height cards. Long names remain readable without shifting buttons between columns. The homepage rail uses two-line visual previews with the complete linked product name available in its accessible text and title; the product detail page retains the full name.
+- **Hero:** product-first offer over actual devotional imagery. The primary action opens the shop. Public consultation booking is retired. Desktop text is left aligned. Mobile uses one column and a compact image on normal-height screens, with a two-column treatment on short screens. The opening is a complete editorial card.
 - **Authentication:** login and registration are task pages, not marketing pages. Use a centered form surface, suppress the public footer, and keep the complete form visible on common mobile heights.
 - **Section actions:** offer jump links where a page has distinct tasks or information sections. Keep the heading visible after the jump and mark the section in view. Keep the destinations in ordinary document order.
 - **Form feedback:** show a short pending status for slow native submissions. Use the submitted form and button as authored. Let existing cart and checkout interactions own their async feedback.
@@ -248,11 +248,13 @@ Shape should stay consistent within a component family -- don't mix `sm` and `lg
 
 Motion is progressive and causal. Public section entrances may follow native scroll position. Use a perceptible offset, readable content and clear still frames. Public and operational surfaces share
 `assets/site-motion.js` and `site-motion.css`, with shorter operational timing.
-The homepage opening uses a bounded handoff from the hero to the reassurance
-strip and top sellers. Tall heroes scroll to expose the primary action before
-holding. Read the reassurance labels directly at every width. Later sections
-derive their motion from their own content. Use photo motion within product and
-temple frames and a short lift for order steps and informational panels.
+The homepage uses a complete opaque editorial-card stack, inspired by Nebo.
+Each section fills the available stable viewport or grows to fit its content.
+Tall cards scroll to reveal their final controls before holding; incoming
+cards cover the previous card in normal paint order. Product and collection
+rails snap complete cards horizontally, with one per mobile viewport and
+two or three complete cards on wider screens. Avoid nested per-item scroll
+animations inside the editorial stack; the card handoff itself is the motion.
 Keep shopping controls, text-only collection links and FAQ disclosures steady.
 Never animate fabricated KPI values, hide text pending JavaScript, hijack native
 scrolling or move controls away from keyboard focus. Respect reduced motion
@@ -275,7 +277,7 @@ See `docs/site-motion.md` for source attribution and browser acceptance.
   content if a request fails. Verify keyboard focus, computed visibility,
   recovery after reload, and absence of page overflow at 375px and desktop.
 
-The mobile homepage places the primary action beside the devotional portrait. Visitors switch portraits manually. Group the temple name and address beside the photo, give hours and the detail action the full card width, and group rail navigation in a single row above the cards. The order guide, temples and values each hand off to the next section within a short, measured overlap.
+The mobile homepage stacks the devotional portrait and primary action on normal-height screens, retaining a compact side-by-side composition on short screens. Eleven compact dots sit between previous and next arrows in one row; selecting any portrait stops the two-second automatic rotation for the visit. Full-width scroll sections have straight outer edges, while internal cards retain their existing radius. A stable frame crossfades opacity without changing the layout. Group the temple name and address beside the photo, give hours and the detail action the full card width, and group rail navigation in a single row above the cards. The order guide, temples and values hand off as complete editorial cards; focus and reduced motion restore ordinary flow. On the homepage the header stays visible at the measured sticky offset. FAQ is the last sticky predecessor; the same real footer becomes the final full-height opaque slide when enhanced, with readable cream text on maroon. Long footer content grows naturally; no-JS retains the ordinary footer. Allow bottom clearance inside each opaque card for the real floating cart, return and support controls; never reduce their touch targets. Mobile value rows use a compact icon-and-text layout.
 
 ## Chat checkout
 

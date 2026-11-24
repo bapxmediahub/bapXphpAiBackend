@@ -1,5 +1,6 @@
 <link rel="stylesheet" href="/assets/css/home-editorial.css?v=<?= filemtime(__DIR__ . '/../../assets/css/home-editorial.css') ?>">
-<div class="home-opening"<?= module_on('shop') ? ' data-home-opening' : '' ?>>
+<div class="home-editorial-stack" data-home-stack>
+<div class="home-opening">
 <section class="home-hero">
     <div class="container home-hero-inner">
         <div class="hero-copy">
@@ -27,16 +28,21 @@
                 ];
             }
         ?>
-        <div class="hero-deity" data-varahi-slider data-current-slide="guruji">
+        <div class="hero-deity" data-varahi-slider data-current-slide="guruji" data-active-index="0" role="region" aria-roledescription="carousel" aria-label="Devotional portraits">
             <div class="deity-frame">
                 <?php foreach ($heroSlides as $index => $slide): ?>
-                    <img class="varahi-slide <?= e($slide['class']) ?> <?= $index === 0 ? 'is-active' : '' ?>" src="<?= e($slide['src']) ?>" alt="<?= e($slide['alt']) ?>" width="480" height="640" <?= $index === 0 ? 'fetchpriority="high"' : 'loading="lazy"' ?>>
+                    <img class="varahi-slide <?= e($slide['class']) ?> <?= $index === 0 ? 'is-active' : '' ?>" src="<?= e($slide['src']) ?>" alt="<?= e($slide['alt']) ?>" <?= $index === 0 ? '' : 'aria-hidden="true"' ?> width="480" height="640" <?= $index === 0 ? 'fetchpriority="high"' : 'loading="lazy"' ?>>
                 <?php endforeach; ?>
             </div>
             <div class="portrait-controls" data-portrait-controls hidden>
-                <button type="button" aria-label="Previous portrait" data-portrait-step="-1">‹</button>
-                <span role="status" aria-label="Portrait position">1 / <?= count($heroSlides) ?></span>
-                <button type="button" aria-label="Next portrait" data-portrait-step="1">›</button>
+                <button type="button" aria-label="Previous portrait" title="Previous portrait; stop automatic rotation" data-portrait-step="-1">‹</button>
+                <div class="portrait-dots" role="group" aria-label="Choose a portrait and stop automatic rotation">
+                    <?php foreach ($heroSlides as $index => $slide): ?>
+                    <button type="button" data-portrait-index="<?= $index ?>" aria-label="<?= e($slide['alt']) ?>; stop automatic rotation" title="Select portrait and stop automatic rotation" aria-current="<?= $index === 0 ? 'true' : 'false' ?>"></button>
+                    <?php endforeach; ?>
+                </div>
+                <button type="button" aria-label="Next portrait" title="Next portrait; stop automatic rotation" data-portrait-step="1">›</button>
+                <span class="sr-only" data-portrait-status aria-live="off"><?= e($heroSlides[0]['alt']) ?></span>
             </div>
         </div>
     </div>
@@ -59,6 +65,7 @@
         </li>
     </ul>
 </div>
+</div>
 
 <?php if (module_on('shop')): ?>
 <section class="section home-bestsellers">
@@ -77,16 +84,20 @@
             </a>
         </div>
         <div data-section-index hidden></div>
-        <div class="product-grid">
+        <div data-home-rail>
+        <?php if (count($bestSellers ?? []) > 1): ?>
+            <?php $railId = 'home-bestseller-rail'; require __DIR__ . '/home-rail-controls.php'; ?>
+        <?php endif; ?>
+        <div class="product-grid home-product-rail" id="home-bestseller-rail" data-home-track tabindex="0" role="region" aria-label="Top selling products">
         <?php foreach(($bestSellers ?? []) as $item): ?>
             <?php require __DIR__ . '/home-product-card.php'; ?>
         <?php endforeach; ?>
         <?php if (empty($bestSellers)): ?><p>Our top sellers will appear here as orders are completed. <a href="/shop">Browse all products</a>.</p><?php endif; ?>
     </div>
+        </div>
     </div>
 </section>
 <?php endif; ?>
-</div>
 
 <?php if (module_on('shop')): ?>
 <?php require __DIR__ . '/home-collections.php'; ?>
@@ -259,6 +270,7 @@
         </div>
     </div>
 </section>
+</div>
 <script type="application/ld+json"><?= json_encode([
     '@context' => 'https://schema.org',
     '@type' => 'FAQPage',
