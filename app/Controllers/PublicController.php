@@ -79,7 +79,22 @@ final class PublicController extends BaseController {
     public function about(): void { 
         $this->detectApiRequest();
         $this->seoKey = 'about';
-        $this->render('public/about'); 
+        $about = require app_path('config/about.php');
+        $aboutPaths = self::aboutPathways($about, (new SettingsService())->modules());
+        $publicContact = (new \App\Services\PublicKnowledgeService())->contact();
+        $this->seoOverrides = ['description' => $about['intro'], 'canonical' => $this->siteUrl('/about')];
+        $this->render('public/about', compact('about', 'aboutPaths', 'publicContact'));
+    }
+
+    /** Only approved, currently enabled public navigation targets become About links. */
+    public static function aboutPathways(array $about, array $modules): array {
+        $paths = [];
+        foreach ($about['paths'] as $key => $entry) {
+            $target = SettingsService::MENU_TARGETS[$key] ?? null;
+            if ($target === null || (isset($target['module']) && empty($modules[$target['module']]))) continue;
+            $paths[] = ['path' => $target['path']] + $entry;
+        }
+        return $paths;
     }
 
     /** Public connection guidance, never a developer or private business-agent instruction file. */
